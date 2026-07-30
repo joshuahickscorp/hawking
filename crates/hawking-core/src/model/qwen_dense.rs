@@ -1461,20 +1461,41 @@ impl Engine for QwenDense {
             // unchanged until the wider batch is measured, not merely correct.
             let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 32);
             let positions: Vec<usize> = (0..prompt_len).collect();
+            // Reserve the last prompt token for the per-token decode kernel.
+            //
+            // Batched prefill and decode use disjoint kernel sets, so a purely
+            // batched prefill leaves every decode pipeline uncompiled and the
+            // first decode token eats the whole compile. That cost is measured
+            // and constant: ~1076 ms on the 14B, identical at a 43-token and a
+            // 422-token prompt, which is what rules out the KV mirror (that
+            // one scales with prompt length) and points at pipeline creation
+            // (a fixed set of kernels).
+            //
+            // Running the final token through forward_token_greedy_tcb warms
+            // exactly the kernels decode will use, for the price of one
+            // per-token forward. The KV is unchanged: the token still lands
+            // once here at pos prompt_len-1, and decode still re-feeds it at
+            // pos prompt_len as it always has.
+            let batch_end = prompt_len.saturating_sub(1).max(prefill_skipped);
             let mut i = prefill_skipped;
-            while i < prompt_len {
+            while i < batch_end {
                 if abort_set(&req) {
                     prefill_aborted = true;
                     break;
                 }
                 let step_start = Instant::now();
-                let end = (i + b_max).min(prompt_len);
+                let end = (i + b_max).min(batch_end);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
                 if stall_active && step_start.elapsed() > stall_limit {
                     prefill_aborted = true;
                     break;
                 }
                 i = end;
+            }
+            if !prefill_aborted {
+                for j in batch_end..prompt_len {
+                    let _ = self.forward_token_greedy_tcb(prompt_ids[j], positions[j])?;
+                }
             }
         } else {
             for (i, &t) in prompt_ids.iter().enumerate().skip(prefill_skipped) {
