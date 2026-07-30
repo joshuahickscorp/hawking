@@ -142,7 +142,7 @@
       "family": "deepseek2 (MoE)",
       "engine_path": "deepseek_v2",
       "admitted": true,
-      "k0_truth": "FAIL: argmax pinned to token 0, so the logits are degenerate",
+      "k0_truth": "FAIL: deterministic and input-conditioned, but locks into repetition after the first token",
       "deepest_stable_rung": null,
       "first_failing_rung": "TG20",
       "hawking_decode_ms": 28.51,
@@ -151,7 +151,7 @@
       "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
       "adapter_grade": "RUNS BUT WRONG: needs an autotuned kernel profile even to start, then returns degenerate tokens while llama.cpp reads the same file at 136.79 tok/s",
       "receipt": "evidence/tg/TG_MOE_INSTRUMENT.json",
-      "second_defect": "logits carry no signal; BOS was necessary but not sufficient"
+      "second_defect": "state appears not to advance between decode steps; not an empty forward"
     }
   },
   "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986",
