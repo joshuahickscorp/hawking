@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.pre_restream_audit.v1",
   "status": "AUDIT_COMPLETE_BEHAVIOUR_PROBED",
-  "hawking_commit": "f1c55a3028d0759e18ac8c85ff6c8aa89581cd2a",
+  "hawking_commit": "7a4297c4f2b5babff940b625860408c7a760b4a6",
   "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
   "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
   "items": {
@@ -114,7 +114,7 @@
         "score": "2 of 7 implemented, 1 partial"
       },
       "absent_in_code": {
-        "Ledger": 0,
+        "Ledger": "BUILT this pass: ramanujan/ledger.py, 10 tests",
         "roles": 0,
         "prover": 0,
         "repair": 0,
@@ -149,7 +149,8 @@
       "verification lattice, enforced in code and tested",
       "retriever, research object graph, claims and citations",
       "Lean toolchain pinned; container harness restored, replay unverified pending a docker daemon",
-      "M1 claims and M2 evidence stores"
+      "M1 claims and M2 evidence stores",
+      "Ledger: append-only hash-chained, supersede-not-edit, all 12 contract kinds, tamper/deletion/truncation detected"
     ],
     "partial": [
       "M5 literature",
@@ -159,7 +160,6 @@
     "absent": [
       "prover controller",
       "repair controller",
-      "Ledger",
       "roles",
       "M3 trajectories",
       "M4 structure",
@@ -171,7 +171,7 @@
     "parent_dependent_out_of_scope": [
       "T1 through T5 execution"
     ],
-    "honest_verdict": "materially closer than either earlier pass said. The research apparatus is largely built and tested; what remains is two controllers, a Ledger and roles, five of seven stores, and two Q contracts. None of it is blocked by the parent, so all of it is in scope for this campaign, and none of it is measurement work."
+    "honest_verdict": "the research apparatus is largely built and tested, now 46 passing tests. What remains is two controllers (prover, repair), roles, five of seven stores, and the Q1 and Q2 contracts. None of it is blocked by the parent."
   },
   "method_note_on_this_correction": "the first pass searched for T1..T7 as directory or file names. The apparatus is a dispatcher plus a plan file, so the names never appear as paths. Probing behaviour, by running the dispatcher and calling the gate directly, gave the opposite answer.",
   "method_of_record": {
