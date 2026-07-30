@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.external_baseline.v1",
+  "status": "PASS_MEASURED",
+  "hawking_commit": "6e98810d7c26ed4b30aa751fef857d8146943c14",
+  "why": "an external engine on the identical file and hardware separates what the format and the box impose from what our runtime imposes",
+  "qwen2.5_14b_q4_k_m_imat": {
+    "file": "models/Qwen2.5-14B-Instruct-Q4_K_M-imat.gguf",
+    "bytes": 8988110944,
+    "roofline_floor_ms": 12.21,
+    "llama_cpp": {
+      "decode_tok_s": 54.16,
+      "decode_ms": 18.46,
+      "decode_stddev_ts": 0.01,
+      "prefill_tok_s": 483.3,
+      "prefill_ms_per_token": 2.07,
+      "pct_of_roofline": 66.2,
+      "clears_TG20": true,
+      "n_repeats": 2
+    },
+    "hawking": {
+      "decode_ms": 36.98,
+      "prefill_ms_per_token": 43.06,
+      "pct_of_roofline": 33.0,
+      "clears_TG20": false,
+      "dispatches_per_forward": 435
+    },
+    "gap": {
+      "decode_x": 2.0,
+      "prefill_x": 20.8
+    }
+  },
+  "llama_3.2_1b_q4_k_m": {
+    "k0_truth_hawking": "FAIL - degenerate output on both a raw prompt and the Llama-3 chat template",
+    "hawking": {
+      "decode_tok_s": 3.63,
+      "decode_ms": 275.7,
+      "dispatches_per_forward": 0,
+      "device_id": null
+    },
+    "llama_cpp": {
+      "decode_tok_s": 338.49,
+      "decode_ms": 2.95,
+      "prefill_tok_s": 5319.82
+    },
+    "gap_x": 93.5,
+    "verdict": "the GGUF is sound: llama.cpp reads the same bytes at 338 tok/s. hawking's llama path issues zero Metal dispatches and reports a null device, so it is running on CPU and producing degenerate text. This is a broken adapter, not a slow one."
+  },
+  "consequences": [
+    "TG20 is not merely reachable on this geometry, an external engine already clears it on the identical file, so the 23.31 ms fixed cost measured in K0 is implementation and not physics",
+    "there is a proven 2.00x on decode and 20.8x on prefill available before any representation work",
+    "the llama adapter must be graded as broken; section 4 forbids treating a path with zero dispatch accounting as a valid speed comparison, and this one also fails K0 truth",
+    "prefill is the larger gap by an order of magnitude and has had the least attention"
+  ],
+  "contention_note": "hawking and llama.cpp were measured under the same tenants within the same hour; the ratio is the claim, not the absolutes"
+}

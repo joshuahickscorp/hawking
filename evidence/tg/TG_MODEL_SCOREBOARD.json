@@ -1,6 +1,6 @@
 {
   "schema": "hawking.tg.model_scoreboard.v1",
-  "status": "FIRST_RUNG_MEASURED",
+  "status": "EXTERNAL_BASELINE_ESTABLISHED",
   "rung_ladder_ms": {
     "TG20": 20,
     "TG10": 10,
@@ -78,7 +78,8 @@
           "physically_reachable": true,
           "cleared": false,
           "software_gap_x": 1.9,
-          "note": "the only rung this geometry can reach; needs 1.9x of runtime work, not representation work"
+          "note": "llama.cpp clears TG20 on the identical file and hardware, so the 1.9x gap is entirely software and the 23.31 ms fixed cost is implementation, not physics",
+          "externally_demonstrated": true
         },
         "TG10_and_below": {
           "physically_reachable": false,
@@ -112,7 +113,30 @@
           0.1
         ],
         "note": "spread of 0.1 to 0.8 percent over 3 trials means these are reproducible under the stated contention; they are still not clean-room absolutes"
+      },
+      "external_baseline": {
+        "engine": "llama.cpp llama-bench",
+        "decode_ms": 18.46,
+        "clears_TG20": true,
+        "pct_of_roofline": 66.0,
+        "gap_vs_hawking_x": 2.0,
+        "receipt": "evidence/tg/TG_EXTERNAL_BASELINE.json"
       }
+    },
+    "Llama-3.2-1B-Instruct": {
+      "family": "llama",
+      "engine_path": "llama.rs",
+      "admitted": true,
+      "k0_truth": "FAIL",
+      "deepest_stable_rung": null,
+      "first_failing_rung": "TG20",
+      "hawking_decode_ms": 275.7,
+      "llama_cpp_decode_ms": 2.95,
+      "gap_x": 93.5,
+      "dispatches_per_forward": 0,
+      "device_id": null,
+      "adapter_grade": "BROKEN - not merely uninstrumented: zero Metal dispatches, null device, and degenerate output on both raw and templated prompts, while llama.cpp reads the same file at 338 tok/s",
+      "transfer_verdict": "no kernel grammar can transfer to this path until it dispatches at all; section 4 forbids using it as a speed comparison"
     }
   },
   "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986"
