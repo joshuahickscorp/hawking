@@ -48,6 +48,8 @@ Generated from `hawking-adapters` — do not hand-edit.
 - no standing PRODUCTION parity receipt
 - smoke and gravity_llama_forward skip when weights/artifacts are absent
 - REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents
+- executes on CPU only: dispatches_per_forward=0 and device_id=null, so no Metal path is reached
+- output is degenerate on both a raw prompt and a correct Llama-3 chat template, while llama.cpp reads the same GGUF at 338 tok/s against our 3.63
 
 ### minimax
 

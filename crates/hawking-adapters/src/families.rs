@@ -65,6 +65,11 @@ const LLAMA_GAPS: &[&str] = &[
     "no standing PRODUCTION parity receipt",
     "smoke and gravity_llama_forward skip when weights/artifacts are absent",
     "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents",
+    // Measured 2026-07-30 on Llama-3.2-1B-Instruct-Q4_K_M, evidence/tg/TG_EXTERNAL_BASELINE.json.
+    // `executes` stays true by its own definition, a forward does run, but these
+    // two are what a reader needs before treating that as working support.
+    "executes on CPU only: dispatches_per_forward=0 and device_id=null, so no Metal path is reached",
+    "output is degenerate on both a raw prompt and a correct Llama-3 chat template, while llama.cpp reads the same GGUF at 338 tok/s against our 3.63",
 ];
 const LLAMA_SOURCE_CLASSES: &[&str] = &[
     "gguf.llama",
