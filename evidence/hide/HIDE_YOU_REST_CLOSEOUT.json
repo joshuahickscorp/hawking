@@ -1,0 +1,117 @@
+{
+  "schema": "hide.you.rest_closeout.v1",
+  "at": "2026-07-27T19:35:00Z",
+  "resource_mode": "LIGHT_ONLY",
+  "grade": "READY_FOR_INTEGRATION",
+  "never": "PRODUCTION",
+  "heavy_md": "ABSENT_IN_WORKTREE",
+  "note": "Task asked for _HEAVY.md; file was not present. Followed task invariants, house style rules, and LIGHT_ONLY resource mode. Did not touch GLM52Gravity, model shards, or MOP.",
+
+  "what_was_already_live": [
+    "crates/hide-you: swarms, projects, typed handoffs, SurfaceGraph",
+    "crates/hide-backend surfaces: CHAT/IDE bound to one SurfaceGraph on host primary SessionId",
+    "crates/hawking-context memory_classes: six classes, eight scopes, eight user control verbs",
+    "crates/hawking-context privacy + personal_tools",
+    "crates/hide-connectors: 2 live (local_folder, rss), 13 declared unconstructible, no HTTP dep",
+    "crates/hide-objects: content-addressed store with finite StorageBudget",
+    "crates/hide-core automation: JobCapability non-widening pattern",
+    "hawking-events you_events: 17 YOU events on canonical bus",
+    "ramanujan/you_research.py: four claim categories with guarded transition"
+  ],
+
+  "what_this_lane_closed": [
+    {
+      "item": "capability live seal",
+      "detail": "SurfaceCapability and JobCapability gained a non-serialized live flag. Only derive_capability paths set live=true. Serde-forged capability-shaped JSON is dead and fails every gate. Closes export/handoff smuggling of authority."
+    },
+    {
+      "item": "forget dangling edges",
+      "detail": "forget() now deletes mem_scope_promotions for the id and nulls supersedes pointers that named it, across workspace tables, user.db, and working RAM."
+    },
+    {
+      "item": "workspace schema migration",
+      "detail": "Workspace class tables now use the same PRAGMA table_info + ALTER path as user.db for control columns (scope/pin/expire/supersedes)."
+    },
+    {
+      "item": "legacy user.db migration test",
+      "detail": "property_user_db_legacy_schema_migrates_idempotently reproduces the exact shipped bug (pre-scope user.db) and proves open() migrates idempotently."
+    },
+    {
+      "item": "adversarial tests",
+      "detail": "handoff body forge, serde capability forge, export-no-capability, forget-edge cleanup, no silent reimport of forgotten rows."
+    }
+  ],
+
+  "tests_run": {
+    "hide-you": "15 passed (7 lib + 8 properties)",
+    "hide-core": "24 passed including adversarial_forged_job_capability_via_serde_is_dead",
+    "hawking-context property_*": "18 passed (memory controls + privacy + personal tools)",
+    "hawking-context full lib": "75 passed",
+    "hide-connectors": "13 passed",
+    "hide-objects": "24 passed",
+    "ramanujan.test_you_research": "24 passed",
+    "hide-backend surfaces": "handoff_does_not_widen_chat_capability + lenses_share_primary_session ok",
+    "hide-backend host (out of scope)": "2 pre-existing failures unrelated to YOU rest (host_records_run_command_intent_and_executes_command_api, trace_d_service_process_persists_streams_and_captures)"
+  },
+
+  "live_vs_scaffold": {
+    "live_fixture_backed": [
+      "Swarm declare/spawn/run_round with FixtureProvider",
+      "Project member graph and state transitions",
+      "HandoffCapsule seal/receive claim-only",
+      "SurfaceGraph shared SessionId",
+      "Six-class memory with inspect/correct/pin/scope/expire/forget/export/disable",
+      "Privacy mode construction gates",
+      "Personal tools: calculator + task_lists",
+      "Connectors: local_folder + rss",
+      "Object store ingest/dedup/budget",
+      "Automations with JobCapability containment",
+      "Research controller offline over fixtures"
+    ],
+    "scaffold_or_declared_unreachable": [
+      {
+        "what": "real model inference on YOU",
+        "why": "no flagship model qualifies; FixtureProvider / stubs only; never claim working personal AI"
+      },
+      {
+        "what": "13 declared connectors (gmail, calendar, drive, ...)",
+        "why": "ABI filled, construction refused; no OAuth, no HTTP dependency in hide-connectors"
+      },
+      {
+        "what": "13 declared personal tools (web_search, local_shell, mcp_tools, ...)",
+        "why": "effect classes declared; construct fails closed; high-risk path needs receipts"
+      },
+      {
+        "what": "hide-fleet JobGraph as YOU swarm substrate",
+        "why": "deliberate non-goal; YOU swarms are domain layer, not machine GPU scheduler"
+      },
+      {
+        "what": "OS-level vault crypto",
+        "why": "EncryptedVaultHandle is a construction boundary only"
+      },
+      {
+        "what": "memory reimport / restore from export",
+        "why": "export is portable user-readable dump; no import API that would reintroduce forgotten rows or mint write authority"
+      },
+      {
+        "what": "frontend Vision visuals",
+        "why": "state contracts frozen; design deferred; no PRODUCTION UI claim"
+      },
+      {
+        "what": "live web research",
+        "why": "offline fixture corpus only; network forbidden in research tests"
+      }
+    ]
+  },
+
+  "invariants_held": [
+    "handoff capsule carries CLAIM never CAPABILITY",
+    "JobCapability / SurfaceCapability fields private; live seal; no widen path via serde",
+    "default read-only, least privilege",
+    "connectors: 2 live, 13 declared, no HTTP dep",
+    "forget is real deletion including dangling edges",
+    "export does not outlive forget or mint capability",
+    "never claim literal unlimited storage (StorageBudget)",
+    "research: 4 categories; inference cannot silently become fact"
+  ]
+}

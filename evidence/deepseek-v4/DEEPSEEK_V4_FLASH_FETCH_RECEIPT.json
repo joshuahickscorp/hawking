@@ -1,0 +1,26 @@
+{
+  "adapter_reconciliation": "GREEN; byte-exact against resident safetensors headers via deepseek_v4_adapter verify",
+  "complete_and_verified": true,
+  "download_seconds": 690.5,
+  "fetched_at": "2026-07-23T19:32:24Z",
+  "ffn_experts_stored_elements": 150592290816,
+  "free_after_gb": 374.6,
+  "mismatched": [],
+  "missing": [],
+  "repo": "deepseek-ai/DeepSeek-V4-Flash",
+  "resident_bytes": 159628935853,
+  "resident_gb": 159.6,
+  "resident_safetensors": 46,
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "schema": "hawking.deepseek_v4_flash.fetch_receipt.v1",
+  "seal_sha256": "bc29ff8ffacfaf3e59adc92284cb283e769303684807b27bd2dcd4790fb1139d",
+  "source_root": "/Users/scammermike/Library/Application Support/Hawking/DeepSeekV4Flash/source",
+  "source_status": "LOCAL_COMPLETE_VERIFIED",
+  "storage_after_fetch": {
+    "free_gib": 348.9,
+    "margin_gib": 248.9,
+    "reserve_gib": 100,
+    "reserve_ok": true
+  },
+  "verified_against_blobs_sha256": 46
+}

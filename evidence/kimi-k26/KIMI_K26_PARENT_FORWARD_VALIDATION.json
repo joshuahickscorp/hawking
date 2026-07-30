@@ -1,0 +1,184 @@
+{
+  "coherent_probe_count": 8,
+  "deterministic_replay": {
+    "comparison": "two independent five-token mathematics passes; exact signature over source, tokens, float32 top logits, every layer hidden hash, and every router selection",
+    "first_signature_sha256": "f9fdc33630d475e7c4854329130f5e1fb287f1f9c02f87da3a0c4e4e8a3c811d",
+    "probe_signatures_compared": 1,
+    "replay_signature_sha256": "f9fdc33630d475e7c4854329130f5e1fb287f1f9c02f87da3a0c4e4e8a3c811d",
+    "status": "PASS"
+  },
+  "finite_probe_count": 8,
+  "official_runtime_comparison": "NOT_FEASIBLE_ON_THIS_96_GIB_APPLE_HOST",
+  "official_runtime_parity_claimed": false,
+  "probe_count": 8,
+  "probes": [
+    {
+      "coherent": true,
+      "id": "factual",
+      "result_sha256": "4f8a413227f36f47342c208b73b328535a45c58ee0cd3837f3353b86e6d8abe0",
+      "runtime_seconds": 199.33302187919617,
+      "token_count": 5,
+      "top_token_text": [
+        " Paris",
+        " a",
+        " one",
+        " the",
+        " known",
+        " (",
+        " not",
+        " famous",
+        " an",
+        " \\"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "science",
+      "result_sha256": "f926fe7d5bdbe0645e191038c3899b7a9f8d49319f2f8941d98aadfdd76d3e4d",
+      "runtime_seconds": 199.3565068244934,
+      "token_count": 7,
+      "top_token_text": [
+        " ",
+        " \\(",
+        " $",
+        " exactly",
+        " a",
+        " {",
+        " temperatures",
+        " zero",
+        " $\\",
+        " temperature"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "coding",
+      "result_sha256": "33f99b061cbff8ced400625d11ea33defceb6578f3ff486c21150bf770f118ef",
+      "runtime_seconds": 199.37916016578674,
+      "token_count": 8,
+      "top_token_text": [
+        " a",
+        " (",
+        " int",
+        " [",
+        "(a",
+        " float",
+        " ",
+        " np",
+        " f",
+        " round"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "mathematics",
+      "result_sha256": "3f057d0621814f3b5f80d313134e9cd8dc8b5b34334525c9659b1a259f0a7ce9",
+      "runtime_seconds": 199.40901613235474,
+      "token_count": 5,
+      "top_token_text": [
+        " ",
+        " -",
+        " \\",
+        " x",
+        " (",
+        "4",
+        " n",
+        " a",
+        "0",
+        " ?"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "reasoning",
+      "result_sha256": "9d9e62323bfe9ecee85fb567909a05c7c18e137e554261ab15ae55647cceab87",
+      "runtime_seconds": 199.4355149269104,
+      "token_count": 16,
+      "top_token_text": [
+        " mammal",
+        " cat",
+        " mamm",
+        "\n",
+        " mam",
+        " Mamm",
+        " ______",
+        " mammals",
+        "\n\n",
+        "..."
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "instruction",
+      "result_sha256": "55ff14a39380e45f86781a8f387b2d0c5dab55df3c834df49a60c272f977d0aa",
+      "runtime_seconds": 199.46551203727722,
+      "token_count": 14,
+      "top_token_text": [
+        "OK",
+        "The",
+        "Okay",
+        "I",
+        "No",
+        "Exactly",
+        "**",
+        "O",
+        "\n\n",
+        "ok"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "tool_thinking_protocol",
+      "result_sha256": "6128d9f1789376021a81de8f09ff68035538e5a4aa4829b6c6b85c82f1adcec7",
+      "runtime_seconds": 199.53620195388794,
+      "token_count": 21,
+      "top_token_text": [
+        "The",
+        "This",
+        "We",
+        "2",
+        "User",
+        "Let",
+        "\u7528\u6237",
+        "1",
+        "Okay",
+        "Two"
+      ]
+    },
+    {
+      "coherent": true,
+      "id": "rare_token",
+      "result_sha256": "0e323a97f9d8fdcfc368d77232e3ad822eed78e3435371ad9daf7562b5a63877",
+      "runtime_seconds": 199.58102202415466,
+      "token_count": 10,
+      "top_token_text": [
+        " a",
+        " defined",
+        " the",
+        " called",
+        " well",
+        " bounded",
+        " linear",
+        " continuous",
+        " bil",
+        " an"
+      ]
+    }
+  ],
+  "runtime": "MLX Metal; native packed routed experts; one source shard window",
+  "schema": "hawking.kimi_k26.parent_forward_validation.v1",
+  "seal_sha256": "8283f3f1588c841a00205cf06c31408347a2a77b2c12a4ec566742219b919a24",
+  "sealed_at": "2026-07-21T05:40:00Z",
+  "source": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "shards_present": 64,
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "source_layer_read_passes": 3,
+  "speed_law": "eight validation probes share one block-diagonal layer-outer pass; two five-token passes prove exact deterministic replay without re-reading all eight probes",
+  "status": "PASS",
+  "validation_claim": "COHERENT_TEXT_CORE_NEXT_TOKEN_BEHAVIOR"
+}

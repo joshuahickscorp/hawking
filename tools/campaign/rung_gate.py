@@ -267,7 +267,7 @@ def group_rollback(tags: list[str]) -> list[dict]:
 
 
 def group_migration() -> list[dict]:
-    contract = ROOT / "REBUILD_DATA_MIGRATION_CONTRACT.json"
+    contract = ROOT / "evidence" / "rebuild" / "REBUILD_DATA_MIGRATION_CONTRACT.json"
     if not contract.exists():
         return [check("migration", "unavailable",
                       "REBUILD_DATA_MIGRATION_CONTRACT.json does not exist yet")]

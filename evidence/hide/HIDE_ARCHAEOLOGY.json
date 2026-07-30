@@ -1,0 +1,427 @@
+{
+  "commit": "fccb6b3036f94ad85453f130f394b8ff7be4bca9",
+  "method": "entry-points-inward static tracing + cargo build/test on HIDE crates",
+  "entry_points": [
+    {
+      "name": "hide-serve",
+      "path": "crates/hide-serve/src/main.rs:20-40",
+      "role": "primary live host transport: BackendHost::open_workspace + axum router"
+    },
+    {
+      "name": "hide-serve routes",
+      "path": "crates/hide-serve/src/lib.rs:39-53",
+      "routes": [
+        "POST /v1/hide/intent -> handle_intent",
+        "GET /v1/hide/events (WS + catch-up)",
+        "POST /v1/hide/connector -> call_connector",
+        "POST /v1/hide/rpc -> rpc",
+        "GET /healthz"
+      ]
+    },
+    {
+      "name": "hide-desktop tauri",
+      "path": "app/src-tauri/src/main.rs",
+      "role": "spawns hide-serve sidecar only"
+    },
+    {
+      "name": "hide-acp-server",
+      "path": "crates/hide-acp/src/bin/hide-acp-server.rs:19-30",
+      "role": "ACP stdio with DeferredTurnHandler; no BackendHost"
+    },
+    {
+      "name": "hawking serve/CLI",
+      "path": "crates/hawking, crates/hawking-serve",
+      "role": "inference runtime; HIDE reaches via HTTP when RuntimeSupervisor Ready"
+    }
+  ],
+  "subsystems": [
+    {
+      "id": 1,
+      "name": "backend host",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hide-backend/src/host.rs",
+        "crates/hide-backend/src/rpc.rs",
+        "crates/hide-backend/src/initialize.rs",
+        "crates/hide-serve"
+      ],
+      "entry_path": "hide-serve main:20-40 -> BackendHost::open_workspace host.rs:572 -> router; POST /v1/hide/intent lib.rs:46 -> handle_intent host.rs:714; POST /v1/hide/rpc lib.rs:51 -> rpc.rs:154; POST /v1/hide/connector -> call_connector host.rs:2424",
+      "evidence": "Route table and host construction read; hide-serve/hide-backend build green; extensive host/rpc unit tests",
+      "missing_link": "BackendHost::initialize (host.rs:4532) has no hide-serve route; ConnectionRegistry never populated from live transport",
+      "tests": "host/rpc unit tests; serve 10 tests pass; integration bins construct BackendHost directly",
+      "confidence": "high"
+    },
+    {
+      "id": 2,
+      "name": "Planner / Executor / Verifier loop",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-kernel/src/plan",
+        "crates/hide-kernel/src/machine",
+        "crates/hide-kernel/src/verify",
+        "crates/hide-backend/src/host.rs (run_turn_kernel, build_turn_kernel, run_turn_core)"
+      ],
+      "entry_path": "SubmitTurn -> spawn_submit_turn_generation host.rs:2316; default kernel_turn_enabled OFF (host.rs:6124-6128) uses run_turn_core single-shot; HIDE_KERNEL_TURN=1 + model Ready -> build_turn_kernel:2245 -> run_turn_kernel:6165 -> AgentKernel start_run/step",
+      "evidence": "Explicit opt-in comment host.rs:6116-6123; AgentKernel::new still StubPlanner on fleet path; kernel tests exist",
+      "missing_link": "Default-on kernel when model Ready; HIDE_MODEL_WEIGHTS required for any generation",
+      "tests": "hide-kernel unit + full_run pass; host kernel tests unit-only for opt-in path",
+      "confidence": "high"
+    },
+    {
+      "id": 3,
+      "name": "worktree fleets (hide-fleet)",
+      "verdict": "REAL_UNWIRED",
+      "crates_files": [
+        "crates/hide-fleet",
+        "crates/hide-backend/src/host.rs:fleet_run"
+      ],
+      "entry_path": "NONE FOUND from intent/rpc/connector/bin. create_worktree intent uses plain git worktree (host.rs:1185), not FleetManager",
+      "evidence": "fleet_run only referenced by definition + unit test host_fleet_run_schedules_and_completes; not in HANDLED_CUSTOM_NAMES",
+      "missing_link": "Live intent/RPC/connector calling BackendHost::fleet_run or hosting a long-lived FleetManager",
+      "tests": "hide-fleet 53 pass; host unit test only for fleet_run",
+      "confidence": "high"
+    },
+    {
+      "id": 4,
+      "name": "fleet governor",
+      "verdict": "REAL_UNWIRED",
+      "crates_files": [
+        "crates/hide-fleet/src/scheduler.rs",
+        "crates/hide-fleet/src/manager.rs"
+      ],
+      "entry_path": "Only via fleet_run -> FleetManager::new(..., FleetGovernor::default(), ...) host.rs:2723-2726; fleet_run has no live entry",
+      "evidence": "No other host/serve call sites for FleetGovernor",
+      "missing_link": "Same as fleet: live entry that runs FleetManager under real traffic",
+      "tests": "scheduler/manager unit tests only",
+      "confidence": "high"
+    },
+    {
+      "id": 5,
+      "name": "merge funnel",
+      "verdict": "REAL_UNWIRED",
+      "crates_files": [
+        "crates/hide-fleet/src/merge.rs"
+      ],
+      "entry_path": "NONE FOUND; FleetManager never calls integrate/TournamentSelector",
+      "evidence": "grep integrate|TournamentSelector finds only merge.rs tests and patterns.rs comment",
+      "missing_link": "Wire tournament/fan-out completion into FleetManager after parallel runs",
+      "tests": "merge.rs unit tests only",
+      "confidence": "high"
+    },
+    {
+      "id": 6,
+      "name": "repository index (hawking-index)",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hawking-index",
+        "crates/hide-backend/src/services.rs",
+        "crates/hide-backend/src/connectors.rs"
+      ],
+      "entry_path": "BackendServices always installs empty InMemoryCodeIndex (services.rs:1518); connector code_index (connectors.rs:782) via POST /v1/hide/connector; ContextCompiler + Grounding use it on SubmitTurn. SqliteCodeIndex/daemon never selected by open_workspace",
+      "evidence": "No SqliteCodeIndex in hide-backend production construction; index empty until connector ingest",
+      "missing_link": "Bind SqliteCodeIndex + optional daemon at open_workspace; auto-ingest workspace",
+      "tests": "hawking-index 44 pass including Sqlite; host uses InMemory only",
+      "confidence": "high"
+    },
+    {
+      "id": 7,
+      "name": "Context Stack / Context OS (hawking-context)",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hawking-context",
+        "crates/hide-backend/src/host.rs (run_turn_*)",
+        "crates/hide-backend/src/services.rs (SqliteMemoryStore)"
+      ],
+      "entry_path": "open_workspace -> SqliteMemoryStore services.rs:1565-1569; SubmitTurn -> ContextCompiler + CodeIndexContextSource host.rs:6204-6220 (and run_turn_core twin); context connector; live ceiling via HttpModelProvider::get_context_info when Ready",
+      "evidence": "Production host paths publish context_manifest UiEvents; not test-only",
+      "missing_link": "Live KvStore bridge to serve remains a seam (secondary)",
+      "tests": "hawking-context 37 pass; host compiled-context tests",
+      "confidence": "high"
+    },
+    {
+      "id": 8,
+      "name": "session registry",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hide-backend/src/services.rs (SessionRegistry)",
+        "crates/hide-backend/src/host.rs"
+      ],
+      "entry_path": "session()/open_or_create services.rs:1590; intents new_session/open_session host.rs:1189-1196; fork/side-chat ancestry; RPC session/get thread/get thread/list rpc.rs:188-194",
+      "evidence": "Stable session across reopen tests; HANDLED_CUSTOM_NAMES includes session intents",
+      "missing_link": "RPC session/new|list|close still NotImplemented (lifecycle partly intent-only)",
+      "tests": "services/host/rpc coverage",
+      "confidence": "high"
+    },
+    {
+      "id": 9,
+      "name": "fork / time travel / rewind",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hide-backend/src/replay.rs",
+        "crates/hide-backend/src/rewind.rs",
+        "crates/hide-backend/src/host.rs",
+        "crates/hide-backend/src/rpc.rs"
+      ],
+      "entry_path": "Intent::ForkSession host.rs:1143-1145; RPC thread/fork rpc.rs:160-182; checkpoint_* intents host.rs:817-831; RPC checkpoint/create|list|restore; internal scrub via checkpoint_create host.rs:3934",
+      "evidence": "Fork/rewind unit+integration tests; methods on live intent and RPC",
+      "missing_link": "scrub_to_event in command catalog but not HANDLED_CUSTOM_NAMES — not a client intent",
+      "tests": "replay/rewind modules + host checkpoint tests",
+      "confidence": "high"
+    },
+    {
+      "id": 10,
+      "name": "tool parser and tool runner",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-tools",
+        "crates/hide-kernel/src/tools/parse.rs",
+        "crates/hide-kernel/src/tools/runner.rs",
+        "crates/hide-kernel/src/machine/driver.rs",
+        "crates/hide-backend/src/tools.rs"
+      ],
+      "entry_path": "from_services builds registry+dispatcher host.rs:578-586; live save_file/RunCommand/dispatch_tool without parser; parser only on kernel Act when HIDE_KERNEL_TURN=1 (driver.rs:370-374)",
+      "evidence": "Default SubmitTurn does not parse tools; register_builtin_tools full catalog",
+      "missing_link": "Default-on kernel (or other surface) for parse->run; MCP registration for external tools",
+      "tests": "hide-tools mostly pass (2 shell failures env); kernel parse tests pass",
+      "confidence": "high"
+    },
+    {
+      "id": 11,
+      "name": "memory",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hide-backend/src/memory.rs",
+        "crates/hide-backend/src/host.rs"
+      ],
+      "entry_path": "intents memory_add|supersede|record_outcome|revalidate host.rs:867-877,1223-1226 -> MemoryLedger KV; distinct from hawking_context Project Brain (also wired in §7)",
+      "evidence": "HANDLED_CUSTOM_NAMES includes memory_*; host revalidation tests",
+      "missing_link": "Automatic injection of Active MemoryLedger records into every ContextCompiler pack not fully proven always-on",
+      "tests": "host memory unit tests pass",
+      "confidence": "high"
+    },
+    {
+      "id": 12,
+      "name": "MCP integration",
+      "verdict": "REAL_UNWIRED",
+      "crates_files": [
+        "crates/hide-tools/src/mcp.rs"
+      ],
+      "entry_path": "NONE FOUND outside hide-tools unit tests",
+      "evidence": "register_mcp_servers only referenced in mcp.rs; host never calls it; no MCP intent/connector",
+      "missing_link": "register_mcp_servers from BackendHost::from_services / config load",
+      "tests": "MCP unit tests in hide-tools only",
+      "confidence": "high"
+    },
+    {
+      "id": 13,
+      "name": "ACP integration",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-acp"
+      ],
+      "entry_path": "hide-acp-server bin uses DeferredTurnHandler (no model, no BackendHost); protocol map/handshake real; crate does not depend on hide-backend",
+      "evidence": "bin comment DEFERRED_MODEL_REQUIRED; server.rs DeferredTurnHandler",
+      "missing_link": "TurnHandler binding BackendHost SubmitTurn (+ model)",
+      "tests": "24 acp integration tests pass with scripted/deferred handlers",
+      "confidence": "high"
+    },
+    {
+      "id": 14,
+      "name": "serve path",
+      "verdict": "REAL_WIRED",
+      "crates_files": [
+        "crates/hide-serve/src/main.rs",
+        "crates/hide-serve/src/lib.rs"
+      ],
+      "entry_path": "bin -> open_workspace -> router -> axum 127.0.0.1:8744; Tauri/FE client",
+      "evidence": "Build green; 10 serve tests pass",
+      "missing_link": "Initialize route; fleet/MCP routes absent until host wiring exists",
+      "tests": "hide-serve 10 pass",
+      "confidence": "high"
+    },
+    {
+      "id": 15,
+      "name": "model/provider registry",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-backend/src/model_provider.rs",
+        "crates/hide-backend/src/supervisor.rs",
+        "hawking_orch RoleRegistry"
+      ],
+      "entry_path": "HIDE_MODEL_WEIGHTS -> maybe_boot_runtime host.rs:632; Ready base_url -> HttpModelProvider for SubmitTurn; else model offline. RoleRegistry always present",
+      "evidence": "T5 HTTP-only design; supervisor testkit fakes",
+      "missing_link": "Default production boot without manual env; multi-provider catalog not present",
+      "tests": "supervisor + host generation unit tests; no real weights in recon",
+      "confidence": "high"
+    },
+    {
+      "id": 16,
+      "name": "permissions and effect adjudication",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-security",
+        "crates/hide-backend/src/security.rs",
+        "crates/hide-backend/src/tools.rs",
+        "crates/hide-backend/src/approval.rs",
+        "crates/hide-backend/src/policy.rs"
+      ],
+      "entry_path": "ToolDispatcher uses permission_engine on every tool dispatch; intent Ask gates + approve/deny_gate; ApprovalHub via approve_effect/deny_effect host.rs:1135-1141 drained in run_turn_kernel. evaluate_tool_policy host.rs:3154 only called from unit tests",
+      "evidence": "grep evaluate_tool_policy shows test-only callers; dispatcher load-bearing for writes",
+      "missing_link": "Wire evaluate_tool_policy onto real dispatch if ledger is product-required; default kernel for mid-turn approvals",
+      "tests": "policy unit tests; tools lease tests; hide-security 40 pass",
+      "confidence": "high"
+    },
+    {
+      "id": 17,
+      "name": "verification",
+      "verdict": "PARTIAL",
+      "crates_files": [
+        "crates/hide-verify",
+        "crates/hide-backend/src/host.rs (run_static_analysis, receipts)",
+        "crates/hide-kernel verify/oracles"
+      ],
+      "entry_path": "intent run_static_analysis -> StaticAnalysisOracle; export_review_receipt; kernel with_standard_oracles only when HIDE_KERNEL_TURN=1. Probabilistic review profiles data-only DEFERRED_MODEL_REQUIRED",
+      "evidence": "crate docs + host intent arms + build_turn_kernel",
+      "missing_link": "Default kernel so post-edit oracles run; model-backed review roles if claimed",
+      "tests": "hide-verify 15 pass; host static-analysis tests",
+      "confidence": "high"
+    },
+    {
+      "id": 18,
+      "name": "durable sessions / checkpointing (hide-state)",
+      "verdict": "REAL_UNWIRED",
+      "crates_files": [
+        "crates/hide-state",
+        "note: host CheckpointStore is separate and REAL_WIRED under hide-backend services/host"
+      ],
+      "entry_path": "hide-state: NONE FOUND (not a dep of hide-backend/serve). RPC state/save|load|fork|release NotImplemented rpc.rs:457-464. Host checkpoint_* intents/RPC are a different implementation (event-log KV), not hide-state capsules",
+      "evidence": "grep hide_state only hits hide-state + protocol comment; no Cargo dep from host",
+      "missing_link": "Depend on hide-state and map RPC state/* onto capsules, or demote crate in doctrine",
+      "tests": "hide-state 26 pass isolation (schema-only, matches docs)",
+      "confidence": "high"
+    }
+  ],
+  "summary": {
+    "counts": {
+      "REAL_WIRED": 6,
+      "REAL_UNWIRED": 5,
+      "PARTIAL": 7,
+      "STUB": 0,
+      "OBSOLETE": 0,
+      "BLOCKED": 0,
+      "MISSING": 0
+    },
+    "real_wired": [1, 7, 8, 9, 11, 14],
+    "real_unwired": [3, 4, 5, 12, 18],
+    "partial": [2, 6, 10, 13, 15, 16, 17],
+    "shortest_missing_wires": [
+      {
+        "rank": 1,
+        "action": "Wire FleetManager to a live intent/RPC (e.g. fleet_run) and keep host-owned manager",
+        "flips": ["worktree fleets", "fleet governor"]
+      },
+      {
+        "rank": 2,
+        "action": "Call merge::integrate / tournament select from FleetManager on job completion",
+        "flips": ["merge funnel"],
+        "depends_on": 1
+      },
+      {
+        "rank": 3,
+        "action": "Call hide_tools::register_mcp_servers from host boot/config",
+        "flips": ["MCP integration"]
+      },
+      {
+        "rank": 4,
+        "action": "Default HIDE_KERNEL_TURN=1 when model Ready (or remove opt-in once stable)",
+        "upgrades": ["PEV loop", "tool parser/runner", "mid-turn approvals", "kernel oracles"]
+      },
+      {
+        "rank": 5,
+        "action": "Bind SqliteCodeIndex (+ optional daemon) in open_workspace with auto-ingest",
+        "upgrades": ["repository index"]
+      },
+      {
+        "rank": 6,
+        "action": "hide-serve route for Initialize -> BackendHost::initialize",
+        "upgrades": ["backend host Initialize hole"]
+      },
+      {
+        "rank": 7,
+        "action": "ACP TurnHandler -> BackendHost SubmitTurn",
+        "upgrades": ["ACP integration"]
+      },
+      {
+        "rank": 8,
+        "action": "Implement RPC state/* on hide-state capsules or demote hide-state in doctrine",
+        "flips": ["hide-state durable capsules"]
+      },
+      {
+        "rank": 9,
+        "action": "Optional: evaluate_tool_policy on real dispatch path",
+        "upgrades": ["policy ledger half of permissions"]
+      }
+    ],
+    "docs_contradictions": [
+      {
+        "doc": "docs/hide-bible/SCAFFOLD_STATUS.md",
+        "claim": "hide-backend fleet wired; hide-fleet schedule_tick launching real kernel runs as completed scaffold",
+        "reality": "fleet_run exists but no live entry; create_worktree is plain git, not FleetManager"
+      },
+      {
+        "doc": "docs/hide-bible/SCAFFOLD_STATUS.md",
+        "claim": "hide-tools real MCP as part of completed backend",
+        "reality": "MCP client real in-crate; host never registers MCP servers"
+      },
+      {
+        "doc": "docs/hide-bible/SCAFFOLD_STATUS.md",
+        "claim": "agent loop complete; no further development needed on agent loop",
+        "reality": "Full PEV is opt-in HIDE_KERNEL_TURN and model-gated; default SubmitTurn is single-shot"
+      },
+      {
+        "doc": "docs/hide-bible/SCAFFOLD_STATUS.md",
+        "claim": "hawking-index durable Sqlite + daemon is the standing organ",
+        "reality": "Host only constructs empty InMemoryCodeIndex; Sqlite/daemon unused by host"
+      },
+      {
+        "doc": "scaffold / protocol narrative for hide-state",
+        "claim": "hide-state is the durable agent state plane",
+        "reality": "hide-state schema-only and unlinked; RPC state/* NotImplemented; real checkpoints are host KV/event-log"
+      },
+      {
+        "doc": "crates/hide-backend/src/lib.rs",
+        "claim": "hide-fleet is load-bearing via fleet_run",
+        "reality": "Dependency and method real; reachability from transport is not"
+      }
+    ],
+    "build": {
+      "command": "cargo build -p hide-serve -p hide-backend -p hide-fleet -p hide-tools -p hide-verify -p hide-state -p hide-acp -p hawking-context -p hawking-index -p hide-kernel",
+      "result": "success",
+      "notes": "Finished dev ~27s; one non-fatal strand-quant cfg(kani) warning"
+    },
+    "tests": {
+      "packages": {
+        "hawking-context": {"passed": 37, "failed": 0},
+        "hawking-index": {"passed": 44, "failed": 0},
+        "hide-acp": {"passed": 24, "failed": 0},
+        "hide-backend_lib": {"passed": 200, "failed": 2},
+        "hide-backend_integration": {"passed": 33, "failed": 0},
+        "hide-fleet": {"passed": 53, "failed": 0},
+        "hide-tools": {"passed": 60, "failed": 2},
+        "hide-verify": {"passed": 15, "failed": 0},
+        "hide-state": {"passed": 26, "failed": 0},
+        "hide-kernel": {"passed": 74, "failed": 0},
+        "hide-security": {"passed": 40, "failed": 0},
+        "hide-serve": {"passed": 10, "failed": 0}
+      },
+      "totals": {"passed": 616, "failed": 4},
+      "failures": [
+        "hide-backend::host::tests::host_records_run_command_intent_and_executes_command_api",
+        "hide-backend::host::tests::trace_d_service_process_persists_streams_and_captures",
+        "hide-tools::shell::tests::shell_run_executes_and_captures_stdout",
+        "hide-tools::shell::tests::shell_run_nonzero_exit_is_ok_data"
+      ],
+      "failure_note": "Appear to be sandbox/process environment issues on recon host, not missing dispatch tables; still means full green gate is false"
+    }
+  }
+}

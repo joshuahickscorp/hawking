@@ -757,7 +757,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.n < 8:
             print(f"warning: protocol prefers n>=8 (1 warm-up + 7 kept); got {args.n}", file=sys.stderr)
         doc = do_capture(args.n, args.include_cold, args.include_glm_tps)
-        out = args.out or (REPO / "REBUILD_PERFORMANCE_BASELINE_MEASURED.json")
+        out = args.out or (REPO / "evidence" / "rebuild" / "REBUILD_PERFORMANCE_BASELINE_MEASURED.json")
         out.write_text(json.dumps(doc, indent=2) + "\n")
         print(f"wrote {out}")
         print(json.dumps(doc["summary"], indent=2))

@@ -1,0 +1,43 @@
+{
+ "at": "2026-07-26T09:11:03Z",
+ "motherload": {
+  "endpoint": "HAWKING_ODYSSEY_READY",
+  "gates_closed": 6,
+  "gates_total": 6,
+  "odyssey_launch_authorized": false,
+  "terminal_gate_set": "PROMETHEUS_STREAMED_PRE_ODYSSEY_AMENDMENT"
+ },
+ "odyssey_validation": {
+  "at": "2026-07-26T09:10:59Z",
+  "checks_failed": 0,
+  "checks_total": 87,
+  "odyssey_launch_authorized": false,
+  "problems": [],
+  "schema": "hawking.odyssey.validation.v1",
+  "verdict": "DRY_RUN_PASS"
+ },
+ "pass3": {
+  "actual_complete_bpw": 0.9774017488417455,
+  "actual_package_bytes": 92038250160,
+  "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+  "artifact": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+  "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+  "headroom_bytes": 244667548,
+  "one_bit_law": {
+   "complete_bpw_exact": "127830903/130786448",
+   "complete_bpw_float": 0.9774017488417455,
+   "headroom_bits": "17023939200",
+   "legal": true,
+   "reserve_bits": "0",
+   "schema": "hawking.foundry.one_bit_ceiling.v1",
+   "scope": "whole_model"
+  },
+  "receipt": "/Users/scammermike/Downloads/hawking/GLM52_H0_98_MATH_PRESERVE_RECEIPT.json",
+  "shards_verified": 282,
+  "target_complete_bpw": 0.98,
+  "tensor_decisions_verified": 59585
+ },
+ "runner_refused_t0": true,
+ "schema": "hawking.odyssey_ready.audit.v1",
+ "verdict": "HAWKING_ODYSSEY_READY"
+}

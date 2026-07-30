@@ -1,0 +1,357 @@
+{
+  "causal_interpretation": "Router intervention has value primarily after a margin crossing; exact-route tokens retain state damage that only MoE-output or hidden-state intervention can address.",
+  "classification": "ROUTE_CAUSAL_ONLY_AFTER_CROSSING_STATE_PRIMARY_GLOBALLY",
+  "collapsed_by_route_crossing": {
+    "MATCH": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 5.95005394643522e-07,
+          "ci95_low": -4.875665126746754e-07,
+          "mean": 3.921559255104512e-08,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.009078029543161392,
+        "candidate_row_relative_l2_mean": 0.009077990427613258,
+        "fractional_rescue_of_mean_row_error": 4.3088148091730005e-06,
+        "tokens": 128
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.00014630727696385296,
+          "ci95_low": 4.244694559929485e-05,
+          "mean": 8.532166248187423e-05,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.009078029543161392,
+        "candidate_row_relative_l2_mean": 0.00899270735681057,
+        "fractional_rescue_of_mean_row_error": 0.009398756188791713,
+        "tokens": 128
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.001324214770988874,
+          "ci95_low": 0.0008839368488224864,
+          "mean": 0.0010776576773423585,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.009078029543161392,
+        "candidate_row_relative_l2_mean": 0.008000371977686882,
+        "fractional_rescue_of_mean_row_error": 0.1187105153547694,
+        "tokens": 128
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.009476825640081187,
+          "ci95_low": 0.006334399942215896,
+          "mean": 0.007747108487819787,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.009078029543161392,
+        "candidate_row_relative_l2_mean": 0.0013309206115081906,
+        "fractional_rescue_of_mean_row_error": 0.8533910244309799,
+        "tokens": 128
+      }
+    },
+    "MISMATCH": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 0.03952404774172465,
+          "ci95_low": 0.03282720313909522,
+          "mean": 0.03614735776500311,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.07929369062185287,
+        "candidate_row_relative_l2_mean": 0.04314632713794708,
+        "fractional_rescue_of_mean_row_error": 0.4558668312752716,
+        "tokens": 128
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.04002841446144885,
+          "ci95_low": 0.03341666510750656,
+          "mean": 0.036739269191457424,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.07929369062185287,
+        "candidate_row_relative_l2_mean": 0.042554423213005066,
+        "fractional_rescue_of_mean_row_error": 0.4633315352170363,
+        "tokens": 128
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.047213436643505705,
+          "ci95_low": 0.03969350309253059,
+          "mean": 0.04333924233651487,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.07929369062185287,
+        "candidate_row_relative_l2_mean": 0.03595444932579994,
+        "fractional_rescue_of_mean_row_error": 0.546566075512052,
+        "tokens": 128
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.026592304348741894,
+          "ci95_low": 0.013448795888689347,
+          "mean": 0.01969630607345607,
+          "n": 128
+        },
+        "baseline_row_relative_l2_mean": 0.07929369062185287,
+        "candidate_row_relative_l2_mean": 0.05959738418459892,
+        "fractional_rescue_of_mean_row_error": 0.24839689365935214,
+        "tokens": 128
+      }
+    }
+  },
+  "config": {
+    "seed": 26072109,
+    "selected_tokens": 256,
+    "selection_seed": 26072108,
+    "strata_cap": 64
+  },
+  "decision": "ESTABLISH_CONDITIONAL_ROUTE_AMPLIFICATION_LAW",
+  "duration_seconds": 2.9445149898529053,
+  "ended_at": "2026-07-21T17:46:54Z",
+  "evidence_parent": {
+    "capture_sha256": "c67767b807d535f150da63527dd156e603db1302d62011eed903ca7d09fa69b6",
+    "guard_audit_seal_sha256": "2be24bb9082ef69bb4a1ce38a1b49bf8cbca6456b199528b9bd204943788aca4",
+    "lr08_seal_sha256": "3c3bd634ef7cfcbb634018ee990d3ec499b6910c712af277379e626735eb5eda"
+  },
+  "experiment_id": "LR09_STRATIFIED_RESCUE_CONFIDENCE",
+  "faults": [],
+  "hypothesis": "Route restoration rescues mismatch strata but cannot repair matched-route state damage.",
+  "key_effects": {
+    "route_weight_rescue_match": 0.009398756188791713,
+    "route_weight_rescue_mismatch": 0.4633315352170363,
+    "teacher_hidden_rescue_all": 1.0,
+    "teacher_moe_rescue_mismatch": 0.546566075512052
+  },
+  "next_run_rationale": "Auction remaining physical bits upstream at the compact expert output, where drift begins.",
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 8756854784,
+      "floor_green": true,
+      "free_disk_bytes": 43116593152,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 595.56M  free = 1452.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 8756957184,
+      "floor_green": true,
+      "free_disk_bytes": 43116695552,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 595.56M  free = 1452.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "schema": "hawking.kimi_k26.long_run_stratified_rescue.v1",
+  "seal_sha256": "df3c4cc62fff7f9e3c25113d076e1603da0d5b64bb1551513b5406281476b97e",
+  "started_at": "2026-07-21T17:46:51Z",
+  "status": "PASS",
+  "stratified_intervention_matrix": {
+    "MATCH_HIGH_MARGIN": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 0.0,
+          "ci95_low": -1.3119279174134135e-06,
+          "mean": -5.683177732862532e-07,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.011220702901482582,
+        "candidate_row_relative_l2_mean": 0.011221271008253098,
+        "fractional_rescue_of_mean_row_error": -5.063023016504964e-05,
+        "tokens": 64
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.00013610084888568963,
+          "ci95_low": 4.645481949410169e-05,
+          "mean": 8.609192809672095e-05,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.011220702901482582,
+        "candidate_row_relative_l2_mean": 0.011134609580039978,
+        "fractional_rescue_of_mean_row_error": 0.00767272088018911,
+        "tokens": 64
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.001521981376299664,
+          "ci95_low": 0.000940804350466351,
+          "mean": 0.0012083466117474018,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.011220702901482582,
+        "candidate_row_relative_l2_mean": 0.010012354701757431,
+        "fractional_rescue_of_mean_row_error": 0.10768917155497393,
+        "tokens": 64
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.012477922083462545,
+          "ci95_low": 0.007237838200990154,
+          "mean": 0.00961642800939444,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.011220702901482582,
+        "candidate_row_relative_l2_mean": 0.0016042743809521198,
+        "fractional_rescue_of_mean_row_error": 0.8570255005379255,
+        "tokens": 64
+      }
+    },
+    "MATCH_LOW_MARGIN": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 1.58385173563147e-06,
+          "ci95_low": 6.946356734260917e-08,
+          "mean": 6.467489583883435e-07,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.006935356184840202,
+        "candidate_row_relative_l2_mean": 0.006934709381312132,
+        "fractional_rescue_of_mean_row_error": 9.326176058332969e-05,
+        "tokens": 64
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.0001996128693463107,
+          "ci95_low": 1.7701122942526126e-05,
+          "mean": 8.45513968670275e-05,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.006935356184840202,
+        "candidate_row_relative_l2_mean": 0.006850804202258587,
+        "fractional_rescue_of_mean_row_error": 0.012191440544385479,
+        "tokens": 64
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.0013107403972298926,
+          "ci95_low": 0.0007228706296700694,
+          "mean": 0.0009469687429373153,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.006935356184840202,
+        "candidate_row_relative_l2_mean": 0.0059883869253098965,
+        "fractional_rescue_of_mean_row_error": 0.13654226751904375,
+        "tokens": 64
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.007998270695043176,
+          "ci95_low": 0.00449369923571794,
+          "mean": 0.005877788966245134,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.006935356184840202,
+        "candidate_row_relative_l2_mean": 0.0010575668420642614,
+        "fractional_rescue_of_mean_row_error": 0.8475108107099147,
+        "tokens": 64
+      }
+    },
+    "MISMATCH_HIGH_MARGIN": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 0.039494061788718685,
+          "ci95_low": 0.030333561466250103,
+          "mean": 0.03474147879751399,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.09608489274978638,
+        "candidate_row_relative_l2_mean": 0.06134342402219772,
+        "fractional_rescue_of_mean_row_error": 0.36157056258634257,
+        "tokens": 64
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.040178559013293126,
+          "ci95_low": 0.031178298666782213,
+          "mean": 0.03555292764212936,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.09608489274978638,
+        "candidate_row_relative_l2_mean": 0.06053197383880615,
+        "fractional_rescue_of_mean_row_error": 0.3700157006321815,
+        "tokens": 64
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.051390440079558175,
+          "ci95_low": 0.041132226631452794,
+          "mean": 0.045954673492815346,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.09608489274978638,
+        "candidate_row_relative_l2_mean": 0.050130221992731094,
+        "fractional_rescue_of_mean_row_error": 0.47827155176959335,
+        "tokens": 64
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.04017204529955052,
+          "ci95_low": 0.019850605423562227,
+          "mean": 0.02926150118582882,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.09608489274978638,
+        "candidate_row_relative_l2_mean": 0.06682339310646057,
+        "fractional_rescue_of_mean_row_error": 0.3045379851703156,
+        "tokens": 64
+      }
+    },
+    "MISMATCH_LOW_MARGIN": {
+      "FORCE_TEACHER_INDICES": {
+        "absolute_improvement": {
+          "ci95_high": 0.04242779023625189,
+          "ci95_low": 0.032993611897109074,
+          "mean": 0.03755323673249222,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.06250247359275818,
+        "candidate_row_relative_l2_mean": 0.024949245154857635,
+        "fractional_rescue_of_mean_row_error": 0.6008278757506909,
+        "tokens": 64
+      },
+      "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+        "absolute_improvement": {
+          "ci95_high": 0.042908164744221725,
+          "ci95_low": 0.03329992000290076,
+          "mean": 0.03792561074078549,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.06250247359275818,
+        "candidate_row_relative_l2_mean": 0.02457686886191368,
+        "fractional_rescue_of_mean_row_error": 0.606785660643657,
+        "tokens": 64
+      },
+      "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+        "absolute_improvement": {
+          "ci95_high": 0.04586313523650461,
+          "ci95_low": 0.03573923914009356,
+          "mean": 0.0407238111802144,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.06250247359275818,
+        "candidate_row_relative_l2_mean": 0.021778669208288193,
+        "fractional_rescue_of_mean_row_error": 0.6515550832405524,
+        "tokens": 64
+      },
+      "TEACHER_STATE_STUDENT_ROUTER": {
+        "absolute_improvement": {
+          "ci95_high": 0.01833283159066923,
+          "ci95_low": 0.0034589671464345883,
+          "mean": 0.010131110961083323,
+          "n": 64
+        },
+        "baseline_row_relative_l2_mean": 0.06250247359275818,
+        "candidate_row_relative_l2_mean": 0.05237136781215668,
+        "fractional_rescue_of_mean_row_error": 0.162091277324668,
+        "tokens": 64
+      }
+    }
+  }
+}

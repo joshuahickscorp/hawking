@@ -113,7 +113,7 @@
         "glm-5.2"
       ],
       "evidence_paths": [
-        "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+        "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
         "crates/hawking-core/src/model/gravity_engine.rs",
         "crates/hawking-core/tests/gravity_engine_registry.rs",
         "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -155,7 +155,7 @@
         "moonshot"
       ],
       "evidence_paths": [
-        "KIMI_K26_ADAPTER_TWIN.json",
+        "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
         "crates/hawking-core/src/model/mod.rs"
       ],
       "executes": false,
@@ -237,7 +237,7 @@
         "minimax-m3"
       ],
       "evidence_paths": [
-        "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+        "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
       ],
       "executes": false,
       "family": "minimax",

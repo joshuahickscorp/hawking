@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import prometheus as P  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
-LEDGER = REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
+LEDGER = REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
 GLM_DENOMINATOR = 753329940480  # sealed logical_weight_denominator
 
 

@@ -1,0 +1,49 @@
+{
+  "active_heavy_lane": null,
+  "active_light_lanes": [],
+  "controller": {
+    "alive": true,
+    "heartbeat_age_seconds": 23.431654,
+    "heartbeat_current": true,
+    "heartbeat_state": "MONITOR",
+    "heartbeat_status": "RUNNING",
+    "lease_matches": true,
+    "lease_pid": 73361,
+    "lease_process_group": 73361,
+    "pid": 73361,
+    "process_group": 73361
+  },
+  "current_best_bpw": 0.9085909525553385,
+  "current_best_candidate": "P1_DUAL_PATH_RECOVERY_R16X2",
+  "disk_policy_seal_sha256": "0aedffaf56766e576a5f662cf5ac18a988ac4254160410e754506dd66039947c",
+  "experiments_completed": 13,
+  "f2_promotable": false,
+  "latest_result": {
+    "decision": "OUTCOME_C",
+    "evidence_seal_sha256": "63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a",
+    "experiment_id": "GRAVITY_FINAL_CLOSURE",
+    "input_fingerprint_sha256": "1ad1fcc4e466cd12fb106c82243bbfa494ab2792d52d76e8926833ccb4a31801"
+  },
+  "mop_protected": true,
+  "next_experiment": "NEXT_PARENT_TRANSFER",
+  "nonlinear_families_adjudicated": 6,
+  "one_copy": true,
+  "oneoffs_adjudicated": 7,
+  "phase": "GRAVITY_FINAL_CLOSURE",
+  "primary_causal_diagnosis": "UPSTREAM_STATE_PRIMARY_ROUTE_SECONDARY_CONDITIONAL_AMPLIFIER",
+  "resources": {
+    "disk_floor_bytes": 5368709120,
+    "disk_headroom_bytes": 38502600704,
+    "floor_green": true,
+    "free_disk_bytes": 43871309824,
+    "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+    "swap": "total = 2048.00M  used = 579.56M  free = 1468.44M  (encrypted)",
+    "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+  },
+  "schema": "hawking.kimi_k26.final_chapter_status.v1",
+  "seal_sha256": "d22003fb5705eb91891b13a494c4bbd21faf90dc665163a4f4347b6f83e68121",
+  "started_at": "2026-07-21T18:56:37Z",
+  "status": "CLOSED",
+  "updated_at": "2026-07-21T19:28:03Z",
+  "wall_clock_seconds": 1886.516311
+}

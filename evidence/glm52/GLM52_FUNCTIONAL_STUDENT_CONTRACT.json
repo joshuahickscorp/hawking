@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.glm52.functional_student_contract.v1",
+  "representation_id": "glm52.functional.moe.v1",
+  "sealed_at": "2026-07-23T17:10:00Z",
+  "purpose": "replace the teacher MoE function, not reconstruct teacher expert weights",
+  "status": "IMPLEMENTED_AND_MEASURED, held under FUNCTIONAL_PARTIAL_ONLY",
+  "inputs": {
+    "bound_at_inference": [
+      "input hidden state, post-attention-layernorm, shape [.., 6144]",
+      "layer identity, stored in the payload"
+    ],
+    "forbidden_at_inference": [
+      "router logits",
+      "top-k indices or weights",
+      "any expert activation",
+      "teacher post_moe",
+      "any statistic of the evaluation target"
+    ]
+  },
+  "output": "the shared-plus-routed MoE output replacement, shape [.., 6144], which the block adds to the post-attention residual",
+  "physical_components": {
+    "feature_map_seed": "uint64, in the header, 8 bytes",
+    "generator_algorithm_id": "gen.splitmix64_boxmuller.v1",
+    "generator_version": 1,
+    "feature_map_parameters_stored": 0,
+    "readout_weights": "[hidden, 6144] float16, or [hidden, rank] and [rank, 6144] when factored",
+    "bias": "none; the fit is unbiased and the affine control measured the difference at 0.001 skill",
+    "normalization": "none inside the organ; the block's own norms are protected tensors",
+    "selectors_or_gates": "none; routing is removed, not approximated",
+    "doctor_state": "none fitted",
+    "header": 64,
+    "trailer_layer_id": 4,
+    "alignment": "float16 payload is 2-byte aligned by construction",
+    "runtime_tables": "none",
+    "per_layer_metadata": "carried in the .gravity tensor descriptor, not in the payload"
+  },
+  "runtime_state": {
+    "artifact_bytes_h1024": 12582980,
+    "expanded_resident_bytes_explicit_feature_map": 25165824,
+    "resident_bytes_explicit": 37748804,
+    "resident_bytes_procedural": 12582980,
+    "active_bytes_per_token_explicit": 37748804,
+    "active_bytes_per_token_procedural": 12582980,
+    "multiply_accumulate_per_token": 12582912,
+    "generator_calls_per_token_procedural": 6291456,
+    "initialization_time": "zero for the procedural grammar; the explicit grammar pays one 12.6 MB generation and upload per layer, measured at 1.58 ms per layer for the readout alone",
+    "note": "a tiny seed with a large expanded runtime matrix is not zero cost, which is why both grammars are billed and why the procedural one won"
+  },
+  "determinism": {
+    "frozen": ["seed", "generator algorithm", "generator version", "dtype", "rounding", "feature ordering", "fit solver", "regularization"],
+    "reimplementation_gate": "reproduce projection(width=8, hidden=4, seed=17) exactly; see GLM52_FUNCTIONAL_CPU_PARITY.json golden_vector",
+    "why_not_numpy_pcg64": "the pilot fitted against NumPy's PCG64 with the Ziggurat normal, which is sequential and cannot be evaluated element-wise inside a Metal kernel. The frozen generator is a stateless hash so any element is addressable independently, which is what makes procedural in-kernel generation possible at all. Refitting under it changed layer-38 skill from 0.5318 to 0.5287, inside the four-seed spread of 0.0025."
+  },
+  "measured": {
+    "layer_38_local_bpw": 0.01037450870113893,
+    "layer_38_skill": 0.5287,
+    "layer_38_skill_lower": 0.5198,
+    "layer_38_centered_cosine": 0.7282,
+    "block_skill": 0.8798,
+    "score_positions": 4096
+  },
+  "source_disposition": {
+    "manifest_state": "REPLACED_BY_FUNCTIONAL_CODEC",
+    "replaces_per_layer": [
+      "model.layers.{n}.mlp.experts.*",
+      "model.layers.{n}.mlp.shared_experts.*",
+      "model.layers.{n}.mlp.gate.weight",
+      "model.layers.{n}.mlp.gate.e_score_correction_bias"
+    ],
+    "replaced_weights_per_layer": 9702998272,
+    "no_source_tensor_silently_disappears": true
+  },
+  "honest_scope": "one stage of one layer at a time, fitted on 12288 positions and scored on 4096 disjoint ones. Passing this contract is not capability and not a model."
+}

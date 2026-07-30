@@ -2,7 +2,7 @@
 """Run the eight G2 topology analyses and emit cluster map + recomposition queue.
 
 Usage:
-    python3.12 tools/graph/hawking_analyze.py --graph HAWKING_SEMANTIC_GRAPH.jsonl --out .
+    python3.12 tools/graph/hawking_analyze.py --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl
     python3.12 tools/graph/hawking_analyze.py --graph /tmp/fixture.jsonl --out /tmp/out \\
         --behaviour-map /tmp/beh.json --betweenness-k 64
 
@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 _GRAPH_DIR = Path(__file__).resolve().parent
+_BUILD_GRAPH = _GRAPH_DIR.parents[1] / "build" / "graph"
 if str(_GRAPH_DIR) not in sys.path:
     sys.path.insert(0, str(_GRAPH_DIR))
 
@@ -192,7 +193,8 @@ def verify_planted(cluster: dict[str, Any], planted_path: Path) -> dict[str, Any
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--graph", required=True, help="HAWKING_SEMANTIC_GRAPH.jsonl path")
-    p.add_argument("--out", default=".", help="Output directory")
+    p.add_argument("--out", default=str(_BUILD_GRAPH),
+                   help="Output directory (default: build/graph, gitignored — regenerable)")
     p.add_argument(
         "--behaviour-map",
         default=None,
@@ -225,7 +227,7 @@ def main(argv: list[str] | None = None) -> int:
         candidates = [
             graph_path.parent / "HAWKING_BEHAVIOUR_TO_CODE_MAP.json",
             out_dir / "HAWKING_BEHAVIOUR_TO_CODE_MAP.json",
-            Path("HAWKING_BEHAVIOUR_TO_CODE_MAP.json"),
+            _BUILD_GRAPH / "HAWKING_BEHAVIOUR_TO_CODE_MAP.json",
         ]
         for c in candidates:
             if c.is_file():

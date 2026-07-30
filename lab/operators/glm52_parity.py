@@ -51,7 +51,7 @@ def _passes(metrics: dict[str, Any], limits: dict[str, float]) -> bool:
 
 def _official_schema_sweep() -> dict[str, Any]:
     graph = read_sealed_json(resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json'))
-    manifest = read_sealed_json(REPO_ROOT / 'GLM52_OFFICIAL_MANIFEST.json')
+    manifest = read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json')
     config_path = Path(manifest['one_copy']['snapshot_view']) / 'config.json'
     config = json.loads(config_path.read_text(encoding='utf-8'))
     geometry = validate_config(config, profile=PROFILE_OFFICIAL)
@@ -244,7 +244,7 @@ def _run() -> tuple[dict[str, Any], dict[str, Any]]:
     schema = _official_schema_sweep()
     if schema['status'] != 'PASS':
         raise RuntimeError('official adapter schema sweep failed')
-    manifest = read_sealed_json(REPO_ROOT / 'GLM52_OFFICIAL_MANIFEST.json')
+    manifest = read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json')
     tokenizer_assembly = load_official_tokenizer_assembly(Path(manifest['one_copy']['snapshot_view']))
     tokenizer_chat_receipt = tokenizer_assembly.assemble_chat(({'role': 'system', 'content': 'You are exact.'}, {'role': 'user', 'content': 'Return 2+2.'}))
     tokenizer_tool_receipt = tokenizer_assembly.assemble_chat(({'role': 'user', 'content': 'Use lookup for x.'}, {'role': 'assistant', 'content': None, 'reasoning_content': 'The declared lookup tool is required.', 'tool_calls': [{'type': 'function', 'function': {'name': 'lookup', 'arguments': {'x': 4}}}]}, {'role': 'tool', 'content': '{"result":16}'}), tools=({'type': 'function', 'function': {'name': 'lookup', 'description': 'Return the square of x.', 'parameters': {'type': 'object', 'properties': {'x': {'type': 'integer'}}, 'required': ['x']}}},), enable_thinking=False)

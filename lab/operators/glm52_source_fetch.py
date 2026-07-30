@@ -27,9 +27,9 @@ PROBES = STATE_DIR / 'probes'
 ROLLUP = STATE_DIR / 'GLM52_SOURCE_WEIGHT_ATLAS.json'
 GRAPH = resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json')
 COMPACT = Path(os.environ.get('GLM52_COMPACT_ROOT', '/Users/scammermike/Desktop/GLM52-Gravity-SubBit'))
-MANIFEST = ROOT / 'GLM52_OFFICIAL_MANIFEST.json'
-SCHEDULE = ROOT / 'GLM52_STREAMING_SCHEDULE.json'
-POLICY = ROOT / 'GLM52_RESOURCE_RESERVE_POLICY.json'
+MANIFEST = ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json'
+SCHEDULE = ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE.json'
+POLICY = ROOT / 'evidence' / 'glm52' / 'GLM52_RESOURCE_RESERVE_POLICY.json'
 os.environ.setdefault('HF_HOME', str(STATE_DIR / 'hf_home'))
 os.environ.setdefault('HF_HUB_CACHE', str(STATE_DIR / 'hf_cache'))
 os.environ.setdefault('HF_XET_HIGH_PERFORMANCE', '1')

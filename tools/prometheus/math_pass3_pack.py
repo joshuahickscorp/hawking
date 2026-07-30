@@ -36,7 +36,7 @@ from glm52_common import resolve_artifact  # noqa: E402
 
 MANIFEST = resolve_artifact("PROMETHEUS_MATH_ALLOCATION_MANIFEST.json")
 GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
-OFFICIAL_MANIFEST = REPO / "GLM52_OFFICIAL_MANIFEST.json"
+OFFICIAL_MANIFEST = REPO / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json"
 
 STATE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus/pass3"
@@ -52,7 +52,7 @@ COMPACT = Path(
     "GLM-5.2-H0.98-Math-Preserve.gravity"
 )
 GENERAL = COMPACT.parent / "General-R0"
-RECEIPT = REPO / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
+RECEIPT = REPO / "evidence" / "glm52" / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
 
 os.environ.setdefault("HF_HOME", str(STATE_DIR / "hf_home"))
 os.environ.setdefault("HF_HUB_CACHE", str(STATE_DIR / "hf_cache"))

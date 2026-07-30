@@ -1,0 +1,1246 @@
+{
+  "schema": "hawking.hide.archaeology.v2",
+  "at": "2026-07-27T02:10:00Z",
+  "commit": "d9bca273e86ca189a7b550f80734db7bf9ca94ad",
+  "method": "entry-points-inward static tracing from live bins/routes; cargo build --workspace (CARGO_TARGET_DIR=/tmp/hide-archaeology-v2-target); cargo test -p for every hide-* + hawking-context + hawking-index; re-derive all verdicts (old HIDE_ARCHAEOLOGY.json at fccb6b30 is not trusted)",
+  "worktree_write": "DENIED: macOS com.apple.macl on repo root; deliverables written to scratchpad + /tmp/hide-archaeology-v2/",
+  "wiring_increments_since_v1": [
+    {
+      "commit": "8682e8a6",
+      "title": "HIDE increment 1: wire MCP registration, fleet dispatch, merge funnel, SQLite index"
+    },
+    {
+      "commit": "5309baa8",
+      "title": "HIDE increment 2: effectful-step approval round-trip"
+    },
+    {
+      "commit": "35be6027",
+      "title": "HIDE increment 3: permission hole, initialize route, hide-state absorbed"
+    },
+    {
+      "commit": "8ec49108",
+      "title": "HIDE: Context OS capability honesty, rot detection, reversible compaction"
+    },
+    {
+      "commit": "def433ff",
+      "title": "HIDE: live model turn loop producing real tokens end to end"
+    },
+    {
+      "commit": "30958bcc",
+      "title": "HIDE produces real tokens end to end"
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "hide-serve",
+      "path": "crates/hide-serve/src/main.rs:20-40",
+      "role": "primary live host: BackendHost::open_workspace + axum on 127.0.0.1:8744"
+    },
+    {
+      "name": "hide-serve routes",
+      "path": "crates/hide-serve/src/lib.rs:43-64",
+      "routes": [
+        "GET /healthz",
+        "POST /v1/hide/intent -> handle_intent",
+        "GET /v1/hide/events (WS + catch-up)",
+        "POST /v1/hide/connector -> call_connector",
+        "POST /v1/hide/rpc -> rpc",
+        "POST /v1/hide/initialize -> host.initialize (new since v1)"
+      ]
+    },
+    {
+      "name": "hide-desktop tauri",
+      "path": "app/src-tauri/src/main.rs:19-72",
+      "role": "spawns hide-serve sidecar; FE uses app/src/ipc.ts"
+    },
+    {
+      "name": "hide-acp-server",
+      "path": "crates/hide-acp/src/bin/hide-acp-server.rs:23-39",
+      "role": "ACP stdio with BackendHost + BackendTurnHandler (not DeferredTurnHandler)"
+    },
+    {
+      "name": "hide-sdk-codegen",
+      "path": "crates/hide-sdk/src/bin/hide-sdk-codegen.rs",
+      "role": "offline codegen only"
+    },
+    {
+      "name": "hawking serve/CLI",
+      "path": "crates/hawking, crates/hawking-serve",
+      "role": "inference runtime reached via HTTP when RuntimeSupervisor Ready"
+    }
+  ],
+  "subsystems": [
+    {
+      "name": "backend host",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend",
+        "hide-serve",
+        "hide-core"
+      ],
+      "entry_path": [
+        "crates/hide-serve/src/main.rs:29-31 open_workspace",
+        "crates/hide-backend/src/host.rs:654-708 from_services",
+        "crates/hide-serve/src/lib.rs:43-64 router incl initialize",
+        "host.rs:807 handle_intent",
+        "host.rs:4675 initialize",
+        "rpc.rs"
+      ],
+      "evidence": "Initialize route + ConnectionRegistry live; host wires tools/dispatcher/connectors/runtime/approvals.",
+      "missing_link": "None load-bearing (remote_protocol cap still false)",
+      "fixtures_in_place": [],
+      "tests": "hide-serve 11 pass; initialize_route test",
+      "confidence": "high"
+    },
+    {
+      "name": "live model turn loop",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-backend",
+        "hawking-serve",
+        "hawking"
+      ],
+      "entry_path": [
+        "POST /v1/hide/intent SubmitTurn",
+        "host.rs:2452 spawn_submit_turn_generation",
+        "host.rs:725 maybe_boot_runtime requires HIDE_MODEL_WEIGHTS",
+        "host.rs:6873 run_turn_core",
+        "model_provider.rs HttpModelProvider.generate -> POST /v1/hawking/generate SSE"
+      ],
+      "evidence": "Provider is hawking native serve (HttpModelProvider), not canned. def433ff live_model_turn proves non-empty TokenBatch. Gated on HIDE_MODEL_WEIGHTS (default unset => honest model-offline, no fake tokens). Recon observed real hawking serve spawn with Qwen2.5-0.5B GGUF when discoverable.",
+      "missing_link": "Operational: set HIDE_MODEL_WEIGHTS + hawking binary; not a code stub",
+      "fixtures_in_place": [
+        "supervisor::testkit fake only for unit tests"
+      ],
+      "tests": "live_model_turn (skip or real); host generation units",
+      "confidence": "high"
+    },
+    {
+      "name": "Planner/Executor/Verifier kernel loop",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-kernel",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "host.rs:2468 kernel_turn_enabled()",
+        "host.rs:2383 build_turn_kernel (RuntimePlanner+dispatcher+oracles)",
+        "host.rs:6338 run_turn_kernel",
+        "else host.rs:2509 single-shot generate_submit_turn (DEFAULT)"
+      ],
+      "evidence": "HIDE_KERNEL_TURN defaults OFF. When on: real PEV. Documented prereqs (approval round-trip + answer surfacing) are MET in code+unit tests; default stays off by design.",
+      "missing_link": "Do NOT flip default. Soak-test kernel under live model before any default change.",
+      "fixtures_in_place": [
+        "default single-shot path"
+      ],
+      "tests": "hide-kernel 73 pass 1 fail; host kernel units",
+      "confidence": "high"
+    },
+    {
+      "name": "Context Stack / Context OS",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "run_turn_core/run_turn_kernel",
+        "ContextCompiler + CodeIndexContextSource",
+        "declare_turn_capability + detect_context_rot + seal_compiled_manifest"
+      ],
+      "evidence": "8ec49108: capability honesty, rot, reversible compaction on live compile path.",
+      "missing_link": "KvStore/prefix reuse still separate unwired seam",
+      "fixtures_in_place": [],
+      "tests": "hawking-context 45; host capability/rot tests",
+      "confidence": "high"
+    },
+    {
+      "name": "tokenizer-true budgeting",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "TokenCounter::discover_from_env (HIDE_TOKENIZER | beside HIDE_MODEL_WEIGHTS)",
+        "BackendServices.token_counter + context_compiler()",
+        "run_turn_core / run_turn_kernel / context connector: ContextCompiler::with_counter",
+        "seal_compiled_manifest(tokens_estimated) from CompiledContext.tokens_estimated"
+      ],
+      "evidence": "Live compile path installs tokenizer when discoverable; meter reports used_estimated honestly when only chars/4 is available. Process-cached discovery avoids re-parse every turn.",
+      "missing_link": "Operational: set HIDE_TOKENIZER or ship tokenizer.json next to weights",
+      "fixtures_in_place": [
+        "heuristic only when no tokenizer file exists (honest estimated flag)"
+      ],
+      "tests": "discover_from_env_loads_hide_tokenizer_when_set; services_token_counter_is_tokenizer_true_when_hide_tokenizer_set",
+      "confidence": "high"
+    },
+    {
+      "name": "repository index and symbol graph",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-index",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "services.rs:1733 bind_workspace_code_index SqliteCodeIndex + bounded ingest",
+        "CodeIndexContextSource / connector definition|references"
+      ],
+      "evidence": "8682e8a6 W4 binds durable code.sqlite at open. Symbol graph filled during index. Daemon not started.",
+      "missing_link": "Optional: start living-index daemon",
+      "fixtures_in_place": [
+        "InMemoryCodeIndex for test constructors"
+      ],
+      "tests": "hawking-index 44; open_workspace_binds_sqlite_index",
+      "confidence": "high"
+    },
+    {
+      "name": "lexical retrieval",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-index",
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "SqliteCodeIndex.search FTS5 lexical leg via CodeIndexContextSource on every compile"
+      ],
+      "evidence": "FTS5 is load-bearing on SubmitTurn compile path.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "hawking-index FTS tests",
+      "confidence": "high"
+    },
+    {
+      "name": "semantic retrieval",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hawking-index",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "SqliteCodeIndex.hybrid_search_opts: semantic only with installed embedder",
+        "host.runtime_base_url -> install_runtime_embedder(HttpEmbeddingClient)",
+        "StubEmbeddingClient.embed refuses (no silent fixture vectors)"
+      ],
+      "evidence": "Production path no longer ranks on bag-of-chars fixtures. When runtime Ready, HttpEmbeddingClient is installed on the sqlite index. Without embedder, hybrid search is honest lexical⊕symbol only.",
+      "missing_link": "Semantic leg only active when runtime Ready (operational); offline remains lexical⊕symbol by design",
+      "fixtures_in_place": [
+        "BagOfCharsEmbeddingClient for unit tests only (explicit)"
+      ],
+      "tests": "stub_embedding_client_refuses_rather_than_fixture_results; hybrid_search_skips_semantic_without_embedder_rather_than_using_stub",
+      "confidence": "high"
+    },
+    {
+      "name": "change-aware retrieval",
+      "verdict": "REAL_UNWIRED",
+      "crates": [
+        "hawking-index"
+      ],
+      "entry_path": "NONE FOUND",
+      "evidence": "daemon.rs incremental indexer exists; no host/serve caller starts it or ranks by change.",
+      "missing_link": "Start IndexDaemon at open_workspace",
+      "fixtures_in_place": [],
+      "tests": "daemon unit only",
+      "confidence": "high"
+    },
+    {
+      "name": "context-rot detection",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "host.rs:6242/6800/7239 detect_context_rot",
+        "published on context_manifest"
+      ],
+      "evidence": "Pure detector + host publish on single-shot and kernel paths.",
+      "missing_link": "None for detection",
+      "fixtures_in_place": [],
+      "tests": "rot unit + host occupancy test",
+      "confidence": "high"
+    },
+    {
+      "name": "reversible compaction",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "compiler admit/degrade archives compacted_from",
+        "live ContextCompiler on turn path"
+      ],
+      "evidence": "Archive-on-compact real; live path uses same compiler.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "compaction_archives_original_for_reversible_restore",
+      "confidence": "high"
+    },
+    {
+      "name": "prefix/KV reuse",
+      "verdict": "REAL_UNWIRED",
+      "crates": [
+        "hawking-context"
+      ],
+      "entry_path": "NONE FOUND",
+      "evidence": "HttpKvStore/StubKvStore in kv.rs; no hide-backend caller.",
+      "missing_link": "HttpKvStore against supervisor base_url on turn start",
+      "fixtures_in_place": [
+        "StubKvStore tests"
+      ],
+      "tests": "kv unit only",
+      "confidence": "high"
+    },
+    {
+      "name": "copy-on-write warm forks",
+      "verdict": "REAL_UNWIRED",
+      "crates": [
+        "hawking-context"
+      ],
+      "entry_path": "NONE FOUND",
+      "evidence": "KV warm/slot APIs exist; no host CoW KV fork path. Event-log session fork is a different REAL_WIRED subsystem.",
+      "missing_link": "Host path to fork KV slot/prefix for child run",
+      "fixtures_in_place": [],
+      "tests": "kv unit only",
+      "confidence": "high"
+    },
+    {
+      "name": "six memory classes",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hawking-context",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "SqliteMemoryStore one DB kinds Working|Episodic|Semantic|Procedural|Project",
+        "MemoryLedger claims on KV (User is a scope, not a store)",
+        "verification = hide-verify receipts, not MemoryKind"
+      ],
+      "evidence": "NOT six real stores. One SQLite table with 5 kind labels + separate claim ledger. Labels do not count.",
+      "missing_link": "Add real User/Verification stores or demote doctrine to 5 kinds + ledger + receipts",
+      "fixtures_in_place": [
+        "InMemoryMemoryStore tests"
+      ],
+      "tests": "memory unit + memory_add intents",
+      "confidence": "high"
+    },
+    {
+      "name": "session registry",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend"
+      ],
+      "entry_path": [
+        "SessionRegistry open_or_create",
+        "new_session/open_session",
+        "rpc session/thread",
+        "ACP HostSessionBinder"
+      ],
+      "evidence": "Stable across reopen; FE and ACP share host registry.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "session/host/serve tests",
+      "confidence": "high"
+    },
+    {
+      "name": "session identity shared between Chat and IDE",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend",
+        "hide-acp",
+        "app"
+      ],
+      "entry_path": [
+        "SessionRegistry host authority",
+        "Chat: ipc.ts -> hide-serve intents with store sessionId",
+        "ACP: BackendTurnHandler -> same handle_intent",
+        "store.ts tracks UiEvent.session_id"
+      ],
+      "evidence": "One registry; Tauri is transport-only sidecar.",
+      "missing_link": "None for identity wire",
+      "fixtures_in_place": [],
+      "tests": "ACP backend_host + FE store tests",
+      "confidence": "high"
+    },
+    {
+      "name": "fork / time travel",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend"
+      ],
+      "entry_path": [
+        "ForkSession, side_chat, checkpoint_*, scrub_to_event, fork_session",
+        "RPC state/*"
+      ],
+      "evidence": "Event-log prefix copy-forward + CheckpointStore.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "replay/rewind/side_chat tests",
+      "confidence": "high"
+    },
+    {
+      "name": "semantic checkpoints",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend"
+      ],
+      "entry_path": [
+        "checkpoint_* intents",
+        "RPC state/save|load|fork|release -> CheckpointStore not hide-state"
+      ],
+      "evidence": "35be6027 absorbed hide-state into host CheckpointStore.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "checkpoint + rpc state tests",
+      "confidence": "high"
+    },
+    {
+      "name": "tool parser",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-kernel",
+        "hide-tools"
+      ],
+      "entry_path": [
+        "kernel driver Act parses tools when HIDE_KERNEL_TURN=1",
+        "default single-shot does not parse tools"
+      ],
+      "evidence": "Parser real; only on kernel path.",
+      "missing_link": "Opt-in kernel or alternate surface \u2014 not default flip alone",
+      "fixtures_in_place": [],
+      "tests": "kernel parse tests",
+      "confidence": "high"
+    },
+    {
+      "name": "tool runner",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-tools",
+        "hide-kernel",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "from_services registry+dispatcher",
+        "host dispatch_tool/save_file/RunCommand",
+        "kernel runner when HIDE_KERNEL_TURN=1"
+      ],
+      "evidence": "Full builtin catalog; agent multi-tool loop only on kernel path.",
+      "missing_link": "Same as tool parser",
+      "fixtures_in_place": [],
+      "tests": "hide-tools 60/62; host tool tests",
+      "confidence": "high"
+    },
+    {
+      "name": "tool/effect registry",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-core",
+        "hide-tools",
+        "hide-extension-registry",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "ToolSpec+annotations",
+        "register_builtin_tools",
+        "extension-registry effects",
+        "ToolDispatcher"
+      ],
+      "evidence": "Nine fields: schema YES; effects YES; permission YES; sandbox YES (shell); parallel_safety NO field; idempotence YES; timeout YES; rollback NO (host rewind only); receipt PARTIAL (tool.call/result events, not ToolSpec field).",
+      "missing_link": "Add parallel_safe+rollback fields if doctrine requires nine enforced fields",
+      "fixtures_in_place": [],
+      "tests": "extension-registry 33; hide-core; hide-tools",
+      "confidence": "high"
+    },
+    {
+      "name": "permission system and approval round-trip",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-security",
+        "hide-backend",
+        "hide-core"
+      ],
+      "entry_path": [
+        "ToolDispatcher permission_engine",
+        "approve_gate/deny_gate",
+        "approve_effect/deny_effect -> ApprovalHub drain in run_turn_kernel",
+        "approve_effect requires step_id"
+      ],
+      "evidence": "5309baa8+35be6027 closed approval round-trip and permission hole. evaluate_tool_policy still mostly unit-test callers (secondary ledger).",
+      "missing_link": "Optional: evaluate_tool_policy on every dispatch",
+      "fixtures_in_place": [],
+      "tests": "host approval tests; hide-security 40",
+      "confidence": "high"
+    },
+    {
+      "name": "MCP",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-tools",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "host.rs:667 register_mcp_servers_at_boot",
+        "load_mcp_descriptors .hide/mcp.json",
+        "hide_tools::mcp::register_mcp_servers"
+      ],
+      "evidence": "8682e8a6 W1: live boot registration; per-server failure non-fatal. Absent config = empty list not a stub.",
+      "missing_link": "None for wire; need real mcp.json operationally",
+      "fixtures_in_place": [],
+      "tests": "MCP unit + host boot tests",
+      "confidence": "high"
+    },
+    {
+      "name": "ACP",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-acp",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "hide-acp-server open_workspace",
+        "BackendTurnHandler -> Intent::SubmitTurn handle_intent",
+        "HostSessionBinder"
+      ],
+      "evidence": "35be6027 replaced DeferredTurnHandler. Model offline remains honest.",
+      "missing_link": "Streaming ACP updates from Wire-B is polish",
+      "fixtures_in_place": [],
+      "tests": "hide-acp 25 pass",
+      "confidence": "high"
+    },
+    {
+      "name": "fleet dispatch",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-fleet",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "Custom intent fleet_run -> BackendHost::fleet_run",
+        "build_fleet_kernel: RuntimePlanner via AgentKernel::builder.runtime",
+        "OsResourceProbe + real FleetConfig.repo_root + KernelRunLauncher"
+      ],
+      "evidence": "Live intent reaches FleetManager. Kernel is RuntimePlanner (default_dag offline, live model when Ready), not StubPlanner. OsResourceProbe already closed (b4f8a701).",
+      "missing_link": "None load-bearing for dispatch entry; merge footprints still synthetic (separate subsystem)",
+      "fixtures_in_place": [],
+      "tests": "fleet_run_uses_real_worktrees_and_runtime_planner; fleet_run_intent_reaches_fleet_manager; host_fleet_run_schedules_and_completes",
+      "confidence": "high"
+    },
+    {
+      "name": "fleet governor",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-fleet",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "fleet_run: FleetManager::new(..., OsResourceProbe::default(), ...)"
+      ],
+      "evidence": "OsResourceProbe on production fleet_run (already closed at b4f8a701; reconfirmed). Governor admits under real free-RAM/thermal snapshot.",
+      "missing_link": "None",
+      "fixtures_in_place": [
+        "FixedResourceProbe only in unit tests that inject it"
+      ],
+      "tests": "hide-fleet scheduler tests; host fleet_run path",
+      "confidence": "high"
+    },
+    {
+      "name": "worktree fleets",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-fleet",
+        "hide-backend",
+        "hide-tools"
+      ],
+      "entry_path": [
+        "fleet_run: FleetConfig.repo_root = workspace; NO with_fake_worktrees",
+        "WorktreeManager::isolate_run real git worktree add under .hide/wt/<job>",
+        "release_run cleans up per agent; never shared between agents"
+      ],
+      "evidence": "Production fleet path uses system git. Isolation fails honestly when workspace is not a git checkout. Tests seed git+cargo fixtures.",
+      "missing_link": "None load-bearing",
+      "fixtures_in_place": [
+        "with_fake_worktrees only on hide-fleet unit tests, not host fleet_run"
+      ],
+      "tests": "fleet_run_uses_real_worktrees_and_runtime_planner",
+      "confidence": "high"
+    },
+    {
+      "name": "merge funnel",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-fleet"
+      ],
+      "entry_path": [
+        "run_to_quiescence -> merge_terminal_jobs",
+        "TournamentSelector/integrate"
+      ],
+      "evidence": "Wired but synthetic footprints {job_id} and status-derived oracle_passed.",
+      "missing_link": "Real file footprints + oracle signals into CandidatePatch",
+      "fixtures_in_place": [
+        "synthetic footprints/oracle_passed"
+      ],
+      "tests": "fanout_converges_through_merge_funnel",
+      "confidence": "high"
+    },
+    {
+      "name": "independent verification",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-verify",
+        "hide-backend",
+        "hide-kernel"
+      ],
+      "entry_path": [
+        "run_static_analysis intent REAL",
+        "kernel oracles if HIDE_KERNEL_TURN=1",
+        "SessionRecord::verifier_branch factory no live creator",
+        "review_role_profiles DEFERRED_MODEL_REQUIRED"
+      ],
+      "evidence": "Static analysis live; independent verifier branch taxonomy only.",
+      "missing_link": "Live intent to mint VerifierBranch + run checks",
+      "fixtures_in_place": [],
+      "tests": "hide-verify 15; static analysis intents",
+      "confidence": "high"
+    },
+    {
+      "name": "durable goals",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend"
+      ],
+      "entry_path": [
+        "goal_* intents GoalStore KV"
+      ],
+      "evidence": "Durable goals across reopen.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "host goal tests",
+      "confidence": "high"
+    },
+    {
+      "name": "restart/reboot recovery",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-backend"
+      ],
+      "entry_path": [
+        "event log + sessions + checkpoints + jobs_recover",
+        "RuntimeSupervisor runtime.lock when HIDE_MODEL_WEIGHTS",
+        "re-run recovered jobs DEFERRED_MODEL_REQUIRED"
+      ],
+      "evidence": "State survives reopen; automatic resume of interrupted kernel turns not claimed.",
+      "missing_link": "Resume interrupted runs from durable markers",
+      "fixtures_in_place": [],
+      "tests": "job restart survival; serve reload",
+      "confidence": "high"
+    },
+    {
+      "name": "subagents",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-backend",
+        "hide-protocol"
+      ],
+      "entry_path": [
+        "create_side_chat/merge_side_chat REAL",
+        "RPC agent/* NotImplemented DEFERRED_MODEL_REQUIRED"
+      ],
+      "evidence": "Side chats are session lineage, not full subagent runtime.",
+      "missing_link": "Implement agent/* or demote claim to side_chat",
+      "fixtures_in_place": [],
+      "tests": "side_chat tests; rpc not_implemented",
+      "confidence": "high"
+    },
+    {
+      "name": "canonical event stream",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-core",
+        "hide-backend",
+        "hide-serve"
+      ],
+      "entry_path": [
+        "JsonlEventLog",
+        "UiEventBus",
+        "GET/WS /v1/hide/events"
+      ],
+      "evidence": "Single session event authority with integrity chain.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "hide-core event tests",
+      "confidence": "high"
+    },
+    {
+      "name": "SQLite index",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hawking-index",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "services.rs:1733-1757 bind_workspace_code_index"
+      ],
+      "evidence": "Durable code.sqlite at workspace open.",
+      "missing_link": "None",
+      "fixtures_in_place": [
+        "InMemory fallback on failure"
+      ],
+      "tests": "open_workspace_binds_sqlite_index",
+      "confidence": "high"
+    },
+    {
+      "name": "Git/worktree tools",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-tools",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "register_builtin_tools git.*",
+        "create_worktree intent real git"
+      ],
+      "evidence": "Real git tools; EXEC_NONZERO is data.",
+      "missing_link": "None for tools (fleet fake separate)",
+      "fixtures_in_place": [],
+      "tests": "hide-tools git tests",
+      "confidence": "high"
+    },
+    {
+      "name": "shell/process continuity",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-tools",
+        "hide-backend"
+      ],
+      "entry_path": [
+        "shell.run",
+        "ProcessSupervisor attach/stop/capture_process_artifact"
+      ],
+      "evidence": "Long-lived processes + artifact capture. Two shell unit fails this env (seatbelt).",
+      "missing_link": "Stabilize shell tests under seatbelt (env, not missing wire)",
+      "fixtures_in_place": [],
+      "tests": "shell 60/62; process host tests",
+      "confidence": "high"
+    },
+    {
+      "name": "tests/build/debugger tools",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-tools",
+        "hide-kernel"
+      ],
+      "entry_path": [
+        "test.run/build.run/compile.check",
+        "kernel oracles if HIDE_KERNEL_TURN=1"
+      ],
+      "evidence": "Proc tools real; no debugger tool; oracles kernel-gated.",
+      "missing_link": "Debugger if claimed; kernel for oracle loop",
+      "fixtures_in_place": [],
+      "tests": "proc unit; full_run 1 fail",
+      "confidence": "high"
+    },
+    {
+      "name": "notebooks",
+      "verdict": "MISSING",
+      "crates": [],
+      "entry_path": "NONE FOUND",
+      "evidence": "No notebook/ipynb tools, connectors, or intents.",
+      "missing_link": "Define notebook surface or remove from doctrine",
+      "fixtures_in_place": [],
+      "tests": "none",
+      "confidence": "high"
+    },
+    {
+      "name": "browser/retrieval tools",
+      "verdict": "REAL_UNWIRED",
+      "crates": [
+        "hide-browser"
+      ],
+      "entry_path": "NONE FOUND",
+      "evidence": "ReplayDriver fixtures only; live CDP DEFERRED; not a hide-backend dep. No web retrieval tools in catalog.",
+      "missing_link": "CDP driver + host registration",
+      "fixtures_in_place": [
+        "ReplayDriver sessions"
+      ],
+      "tests": "hide-browser 19 isolation",
+      "confidence": "high"
+    },
+    {
+      "name": "skills/hooks",
+      "verdict": "PARTIAL",
+      "crates": [
+        "hide-compat",
+        "hide-extension-registry"
+      ],
+      "entry_path": [
+        "compat parse skills/rules -> repo_instructions in context",
+        "CapabilityKind Skill/Hook schema only",
+        "no host skill/hook executor"
+      ],
+      "evidence": "Migration instructions feed context; live skill/hook execution unwired.",
+      "missing_link": "Register skill/hook into live registry/command path",
+      "fixtures_in_place": [],
+      "tests": "hide-compat 39",
+      "confidence": "high"
+    },
+    {
+      "name": "artifact control",
+      "verdict": "REAL_WIRED",
+      "crates": [
+        "hide-backend",
+        "hide-core"
+      ],
+      "entry_path": [
+        "capture_process_artifact",
+        "FileBlobStore",
+        "checkpoint artifact refs"
+      ],
+      "evidence": "Process capture + blob CAS + checkpoint artifact StateRef live.",
+      "missing_link": "None",
+      "fixtures_in_place": [],
+      "tests": "wire_write_path artifact; blob tests",
+      "confidence": "high"
+    },
+    {
+      "name": "hide-state capsules",
+      "verdict": "OBSOLETE",
+      "crates": [
+        "hide-state"
+      ],
+      "entry_path": "NONE FOUND",
+      "evidence": "Crate docs: NOT wired; superseded by host CheckpointStore. RPC state/* maps to host.",
+      "missing_link": "Demote/archive crate; do not re-wire as second authority",
+      "fixtures_in_place": [
+        "schema fixtures"
+      ],
+      "tests": "hide-state 26 isolation",
+      "confidence": "high"
+    }
+  ],
+  "supersessions": [
+    {
+      "subsystem": "MCP integration",
+      "old_verdict": "REAL_UNWIRED",
+      "new_verdict": "REAL_WIRED",
+      "commit": "8682e8a6",
+      "evidence": "register_mcp_servers_at_boot from from_services host.rs:667"
+    },
+    {
+      "subsystem": "worktree fleets",
+      "old_verdict": "REAL_UNWIRED",
+      "new_verdict": "PARTIAL",
+      "commit": "8682e8a6",
+      "evidence": "fleet_run intent live; still fake worktrees + FixedResourceProbe + StubPlanner"
+    },
+    {
+      "subsystem": "fleet governor",
+      "old_verdict": "REAL_UNWIRED",
+      "new_verdict": "PARTIAL",
+      "commit": "8682e8a6",
+      "evidence": "Governor on fleet_run; FixedResourceProbe remains"
+    },
+    {
+      "subsystem": "merge funnel",
+      "old_verdict": "REAL_UNWIRED",
+      "new_verdict": "PARTIAL",
+      "commit": "8682e8a6",
+      "evidence": "run_to_quiescence->merge_terminal_jobs; synthetic footprints"
+    },
+    {
+      "subsystem": "repository index",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "REAL_WIRED",
+      "commit": "8682e8a6",
+      "evidence": "SqliteCodeIndex bound at open_workspace"
+    },
+    {
+      "subsystem": "ACP integration",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "REAL_WIRED",
+      "commit": "35be6027",
+      "evidence": "BackendTurnHandler + BackendHost in hide-acp-server"
+    },
+    {
+      "subsystem": "hide-state durable capsules",
+      "old_verdict": "REAL_UNWIRED",
+      "new_verdict": "OBSOLETE",
+      "commit": "35be6027",
+      "evidence": "crate superseded; RPC state/* -> CheckpointStore"
+    },
+    {
+      "subsystem": "initialize route hole",
+      "old_verdict": "missing_link on REAL_WIRED host",
+      "new_verdict": "closed REAL_WIRED",
+      "commit": "35be6027",
+      "evidence": "POST /v1/hide/initialize"
+    },
+    {
+      "subsystem": "permissions / approval",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "REAL_WIRED",
+      "commit": "5309baa8+35be6027",
+      "evidence": "approve_effect round-trip + step_id required"
+    },
+    {
+      "subsystem": "Context OS",
+      "old_verdict": "REAL_WIRED",
+      "new_verdict": "REAL_WIRED",
+      "commit": "8ec49108",
+      "evidence": "capability+rot+reversible compaction added on live path"
+    },
+    {
+      "subsystem": "live model turn",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "PARTIAL",
+      "commit": "def433ff",
+      "evidence": "real tokens proven end-to-end; still HIDE_MODEL_WEIGHTS-gated"
+    },
+    {
+      "subsystem": "PEV kernel loop",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "PARTIAL",
+      "commit": "5309baa8",
+      "evidence": "approval+answer prereqs met; HIDE_KERNEL_TURN still default-off"
+    },
+    {
+      "subsystem": "tool parser/runner",
+      "old_verdict": "PARTIAL",
+      "new_verdict": "PARTIAL",
+      "commit": "n/a",
+      "evidence": "still kernel-gated"
+    },
+    {
+      "subsystem": "memory (six classes)",
+      "old_verdict": "REAL_WIRED (as single memory)",
+      "new_verdict": "PARTIAL",
+      "commit": "n/a reclassify",
+      "evidence": "v1 REAL_WIRED collapsed claim; v2 finds one store with 5 kinds not six stores"
+    },
+    {
+      "subsystem": "backend host / session / fork / serve",
+      "old_verdict": "REAL_WIRED",
+      "new_verdict": "REAL_WIRED",
+      "commit": "n/a",
+      "evidence": "unchanged REAL_WIRED with initialize closed"
+    }
+  ],
+  "facades": [
+    {
+      "what": "SCAFFOLD_STATUS: agent loop complete, no further development",
+      "reality": "PEV opt-in HIDE_KERNEL_TURN; default single-shot",
+      "file_line": "docs/hide-bible/SCAFFOLD_STATUS.md:4"
+    },
+    {
+      "what": "SCAFFOLD_STATUS: hide-fleet real kernel runs + merge solid 5/5",
+      "reality": "fake worktrees, FixedResourceProbe, StubPlanner, synthetic merge",
+      "file_line": "docs/hide-bible/SCAFFOLD_STATUS.md:33"
+    },
+    {
+      "what": "SCAFFOLD_STATUS: hawking-index Sqlite+daemon standing organ",
+      "reality": "Sqlite now bound; daemon still not started by host",
+      "file_line": "docs/hide-bible/SCAFFOLD_STATUS.md:28"
+    },
+    {
+      "what": "hide-backend lib.rs fleet load-bearing via fleet_run",
+      "reality": "intent reachable but isolation fake-git",
+      "file_line": "crates/hide-backend/src/lib.rs:18-19"
+    },
+    {
+      "what": "BackendCapabilities.fleet=true implies production isolation",
+      "reality": "path real, fixtures understate quality",
+      "file_line": "crates/hide-backend/src/services.rs:1821-1831"
+    },
+    {
+      "what": "hybrid_search full semantic quality",
+      "reality": "always StubEmbeddingClient",
+      "file_line": "crates/hawking-index/src/query.rs:614-633"
+    },
+    {
+      "what": "kernel_turn_enabled comment: approval+answer have not landed",
+      "reality": "stale; both landed; default still correctly off",
+      "file_line": "crates/hide-backend/src/host.rs:6294-6296"
+    },
+    {
+      "what": "six memory classes as separate stores",
+      "reality": "one Sqlite store, 5 kinds; User/Verification not MemoryKind stores",
+      "file_line": "crates/hawking-context/src/memory.rs:85-91"
+    },
+    {
+      "what": "hide-state durable agent state plane",
+      "reality": "OBSOLETE; CheckpointStore is authority",
+      "file_line": "crates/hide-state/src/lib.rs:3-12"
+    }
+  ],
+  "build_truth": {
+    "cargo_build_workspace": {
+      "command": "CARGO_TARGET_DIR=/tmp/hide-archaeology-v2-target cargo build --workspace",
+      "exit_code": 0,
+      "notes": "Finished ~27s; strand-quant cfg(kani) warning. Default target lock denied in sandbox \u2014 alternate target dir used."
+    },
+    "tests": {
+      "hide-core": {
+        "passed": 12,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-serve": {
+        "passed": 11,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-backend_lib": {
+        "passed": 212,
+        "failed": 2,
+        "exit": 101
+      },
+      "hide-backend_integration": {
+        "passed": 33,
+        "failed": 1,
+        "note": "first_model_free 1 fail PermissionDenied; live_model_turn skip under HIDE_LIVE_MODEL_TURN=0"
+      },
+      "hide-kernel": {
+        "passed": 73,
+        "failed": 1,
+        "exit": 101
+      },
+      "hide-tools": {
+        "passed": 60,
+        "failed": 2,
+        "exit": 101
+      },
+      "hide-security": {
+        "passed": 40,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-fleet": {
+        "passed": 55,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-personalize": {
+        "passed": 38,
+        "failed": 0,
+        "exit": 0
+      },
+      "hawking-context": {
+        "passed": 45,
+        "failed": 0,
+        "exit": 0
+      },
+      "hawking-index": {
+        "passed": 44,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-compat": {
+        "passed": 39,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-extension-registry": {
+        "passed": 33,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-state": {
+        "passed": 26,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-protocol": {
+        "passed": 27,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-program-runtime": {
+        "passed": 34,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-browser": {
+        "passed": 19,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-acp": {
+        "passed": 25,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-sdk": {
+        "passed": 18,
+        "failed": 0,
+        "exit": 0
+      },
+      "hide-verify": {
+        "passed": 15,
+        "failed": 0,
+        "exit": 0
+      }
+    },
+    "totals_approx": {
+      "passed": 859,
+      "failed": 6
+    },
+    "failures": [
+      "hide-backend::host::tests::host_records_run_command_intent_and_executes_command_api",
+      "hide-backend::host::tests::trace_d_service_process_persists_streams_and_captures",
+      "hide-tools::shell::tests::shell_run_executes_and_captures_stdout",
+      "hide-tools::shell::tests::shell_run_nonzero_exit_is_ok_data",
+      "hide-kernel::full_run::failing_real_oracle_triggers_repair",
+      "hide-backend::first_model_free_implementation_receipt (PermissionDenied)"
+    ],
+    "failure_note": "Shell/process failures consistent with seatbelt/sandbox env on this host (same class as v1). Not fixed (read-only audit)."
+  },
+  "ranked_missing_wires": [
+    {
+      "rank": 1,
+      "action": "fleet_run: real WorktreeManager (no fake), OsResourceProbe, build_turn_kernel-class launcher",
+      "upgrades": [
+        "fleet dispatch",
+        "fleet governor",
+        "worktree fleets"
+      ]
+    },
+    {
+      "rank": 2,
+      "action": "Real diff footprints + oracle results into merge_terminal_jobs",
+      "upgrades": [
+        "merge funnel"
+      ],
+      "depends_on": 1
+    },
+    {
+      "rank": 3,
+      "action": "HttpEmbeddingClient into SqliteCodeIndex::search when Ready",
+      "upgrades": [
+        "semantic retrieval"
+      ]
+    },
+    {
+      "rank": 4,
+      "action": "Tokenizer-true TokenCounter on ContextCompiler at host boot",
+      "upgrades": [
+        "tokenizer-true budgeting"
+      ]
+    },
+    {
+      "rank": 5,
+      "action": "HIDE_KERNEL_TURN: prereqs approval round-trip + answer surfacing are MET; do NOT flip default; define soak promotion criteria",
+      "upgrades": [
+        "PEV",
+        "tool parser",
+        "tool runner",
+        "kernel oracles"
+      ],
+      "prerequisites": {
+        "approval_round_trip": true,
+        "answer_surfacing": true
+      },
+      "do_not": "flip HIDE_KERNEL_TURN default as sole fix"
+    },
+    {
+      "rank": 6,
+      "action": "HttpKvStore lookup/warm on turn start",
+      "upgrades": [
+        "prefix/KV reuse",
+        "CoW warm forks"
+      ]
+    },
+    {
+      "rank": 7,
+      "action": "Start living-index daemon at open_workspace",
+      "upgrades": [
+        "change-aware retrieval"
+      ]
+    },
+    {
+      "rank": 8,
+      "action": "Six memory classes: implement User+Verification stores or demote doctrine",
+      "upgrades": [
+        "six memory classes"
+      ]
+    },
+    {
+      "rank": 9,
+      "action": "agent/* subagent RPC or demote to side_chat",
+      "upgrades": [
+        "subagents"
+      ]
+    },
+    {
+      "rank": 10,
+      "action": "browser CDP+host; notebooks decision; skill/hook executor",
+      "upgrades": [
+        "browser",
+        "notebooks",
+        "skills/hooks"
+      ]
+    }
+  ],
+  "summary": {
+    "counts": {
+      "REAL_WIRED": 23,
+      "PARTIAL": 13,
+      "REAL_UNWIRED": 4,
+      "MISSING": 1,
+      "OBSOLETE": 1
+    },
+    "headline": "Wiring campaign closed tokenizer-true budgeting, real fleet worktrees, RuntimePlanner on fleet_run, and silent-fixture semantic search. Remaining PARTIAL mass: opt-in HIDE_KERNEL_TURN, six-class writers, merge footprints, tools/skills polish. Still MISSING notebooks; hide-browser ReplayDriver only.",
+    "hide_kernel_turn_prereqs_met": true,
+    "do_not_flip_hide_kernel_turn_default": true,
+    "subsystem_count": 42
+  },
+  "controller_note_on_staleness": {
+    "at": "2026-07-27T14:45:00Z",
+    "what": "Audit at d9bca273; subsequent merges + this wiring campaign overtook several PARTIAL fixtures.",
+    "already_superseded_by_integrated_work": [
+      {
+        "subsystem": "six memory classes",
+        "audit_said": "PARTIAL -- one SQLite store with 5 MemoryKind labels, not six stores",
+        "now": "five separate tables (mem_episodic, mem_semantic_project, mem_procedural, mem_verification, mem_user) plus working in RAM, merged at 097539a0. Still PARTIAL for a different reason: the production writers are not connected, so the stores are real but unpopulated."
+      },
+      {
+        "subsystem": "fleet_run resource probe",
+        "audit_said": "FixedResourceProbe fixture",
+        "now": "OsResourceProbe, merged at b4f8a701. Confirmed still on fleet_run."
+      },
+      {
+        "subsystem": "canonical events",
+        "audit_said": "multiple competing authorities",
+        "now": "one canonical model in the new hawking-events crate, merged at 64ab44a5."
+      },
+      {
+        "subsystem": "tokenizer-true budgeting",
+        "audit_said": "PARTIAL -- chars/4 heuristic on live host",
+        "now": "REAL_WIRED: TokenCounter::discover_from_env + ContextCompiler.with_counter on run_turn_core/run_turn_kernel/context connector; meter used_estimated honest."
+      },
+      {
+        "subsystem": "with_fake_worktrees and StubPlanner on fleet_run",
+        "audit_said": "PARTIAL fixtures on production path",
+        "now": "REAL_WIRED: real git worktrees + RuntimePlanner via build_fleet_kernel; with_fake_worktrees only in hide-fleet unit tests."
+      },
+      {
+        "subsystem": "StubEmbeddingClient fixture results on CodeIndex::search",
+        "audit_said": "semantic leg returns bag-of-chars fixtures",
+        "now": "StubEmbeddingClient refuses; hybrid_search skips semantic without embedder; HttpEmbeddingClient installed when runtime Ready."
+      }
+    ],
+    "still_standing": [
+      "notebooks MISSING",
+      "hide-browser is ReplayDriver only",
+      "semantic retrieval still PARTIAL (needs Ready runtime for vector leg; offline is honest lexical⊕symbol)",
+      "HIDE_KERNEL_TURN stays default-off by design",
+      "six memory classes: stores real, production writers unpopulated"
+    ],
+    "controller_decision_on_HIDE_KERNEL_TURN": {
+      "finding": "the audit reports both documented prerequisites now MET -- the approval round-trip and answer surfacing -- and correctly says do not flip the default as the fix.",
+      "decision": "HIDE_KERNEL_TURN stays FALSE, and this is now an explicit off-by-design declaration rather than a pending item, as Odyssey gate G4 permits.",
+      "consequence_stated_as_G4_requires": "The default turn is the single-shot run_turn_core path. Planner/Executor/Verifier, mid-turn tool loops and mid-turn approval are opt-in only, so the shipped default product does not plan, use tools or verify within a turn.",
+      "why_not_promote_now": "The prerequisites being met makes promotion possible, not correct. The substrate this would drive produced byte-identical prompt-independent output in its first measured generation (HAWKING_GRAVITY_SERVE_FIRST_GENERATION.json). Turning on a planning, tool-using, self-verifying loop over a model that may not be conditioning on its input would manufacture exactly the facade the archaeology exists to find. Revisit once GRAVITY_DEGENERATE_ATTRIBUTION settles H1 vs H2."
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.300k.track_decision.v1",
+  "at": "2026-07-28",
+  "decision": "TRACK_A_SELECTED",
+  "track_b": {
+    "verdict": "REJECTED",
+    "donor_tag": "clean-slate-collapse-subtraction",
+    "donor_loc": 295213,
+    "head_loc": 602669,
+    "growth_since_donor": 307456,
+    "growth_identity_proven": "new-file 318233 + modified net 25091 - deleted 35869 = 307455",
+    "commits_since_donor": 611,
+    "new_capability_loc": 162900,
+    "repeated_architecture_loc": 144556,
+    "expected_loc_after_forward_port": 458113,
+    "expected_band": [440000, 480000],
+    "non_negotiable_floor_alone": 392000,
+    "why_rejected": "Forward-porting the capability the donor lacks lands at ~458k, above the current tree's own achievable floor, and costs a full migration to get there. The donor is not a better architecture; it is the same architecture before the capability arrived.",
+    "blocking_gaps": [
+      {"capability": "HIDE YOU/CHAT/IDE wiring", "loc": 40000},
+      {"capability": "Condense/GLM52 encode+pack path", "loc": 37000},
+      {"capability": "GLM-5.2 gravity traversal", "loc": 25234},
+      {"capability": "Temporal Gravity substrate", "loc": 18294},
+      {"capability": "Numeric Parity V2.1 f64 oracle", "loc": 1146},
+      {"capability": "Empty-command-buffer Drop fix", "loc": 170},
+      {"capability": "Artifact resolver", "loc": 50}
+    ]
+  },
+  "structural_finding": {
+    "statement": "All six named single authorities are absent from BOTH the donor and HEAD.",
+    "authorities_absent_in_both": [
+      "single_campaign_state_machine",
+      "single_receipt_provenance_library",
+      "single_hide_core",
+      "single_model_adapter_registry",
+      "single_cli_event_schema_authority",
+      "single_supervisor"
+    ],
+    "consequence": "There is no donor architecture to copy. The arc's target authorities have never existed in this repository's history. The donor was smaller because capability had not landed yet, not because it was better factored. Track A is therefore not 'condense in place' -- it is 'build authorities that have never existed'."
+  },
+  "second_structural_attempt": {
+    "preserved_as": "TRACK_B_MEASURED_REJECTION",
+    "evidence": "/private/tmp/arc300k/B1-report.md",
+    "note": "Rejected on arithmetic with a proven growth identity, not abandoned. Satisfies the campaign's two-architecture requirement for any later floor claim."
+  },
+  "budget_consequence": {
+    "current": 602669,
+    "target": 300000,
+    "required_reduction": 302669,
+    "repeated_architecture_available": 144556,
+    "gap_after_removing_all_repeated_architecture": 158113,
+    "implication": "Eliminating every line of repeated architecture is necessary but not sufficient. The remaining gap must come from test semantic compression (85,630 test LOC), laboratory condensation (271,167), and language authority. Whether <=300k is reachable without the HIDE relocation -- which the campaign gives zero credit -- is an open question to be answered by measurement, not assumed."
+  }
+}

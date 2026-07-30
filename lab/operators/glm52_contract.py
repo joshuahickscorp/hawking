@@ -684,14 +684,14 @@ def run_admission(*, workers: int) -> dict[str, Any]:
     from huggingface_hub import HfApi
     main_revision = HfApi().model_info(REPO_ID).sha
     admission = build_source_admission(manifest=manifest, architecture=architecture, logical=logical, source_format=source_format, graph=graph, schedule=schedule, snapshot=snapshot, main_revision=main_revision)
-    atomic_json(REPO_ROOT / 'GLM52_OFFICIAL_MANIFEST.json', manifest)
-    atomic_json(REPO_ROOT / 'GLM52_ARCHITECTURE_CONTRACT.json', architecture)
-    atomic_json(REPO_ROOT / 'GLM52_LOGICAL_WEIGHT_LEDGER.json', logical)
-    atomic_json(REPO_ROOT / 'GLM52_SOURCE_FORMAT_LEDGER.json', source_format)
-    atomic_json(REPO_ROOT / 'GLM52_SHARD_DEPENDENCY_GRAPH.json', graph)
-    atomic_json(REPO_ROOT / 'GLM52_STREAMING_SCHEDULE.json', schedule)
-    atomic_text(REPO_ROOT / 'GLM52_STREAMING_SCHEDULE.md', schedule_md)
-    atomic_json(REPO_ROOT / 'GLM52_SOURCE_ADMISSION.json', admission)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json', manifest)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_ARCHITECTURE_CONTRACT.json', architecture)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_LOGICAL_WEIGHT_LEDGER.json', logical)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SOURCE_FORMAT_LEDGER.json', source_format)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SHARD_DEPENDENCY_GRAPH.json', graph)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE.json', schedule)
+    atomic_text(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE.md', schedule_md)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SOURCE_ADMISSION.json', admission)
     return {'status': admission['status'], 'revision': REVISION, 'files': manifest['file_count'], 'shards': manifest['weight_shards'], 'tensors': logical['tensor_count'], 'logical_weights': logical['logical_weight_denominator'], 'source_logical_bytes': manifest['source_logical_bytes'], 'windows': schedule['window_count'], 'admission_seal_sha256': admission['seal_sha256']}
 
 def refresh_source_admission_offline() -> dict[str, Any]:
@@ -701,8 +701,8 @@ def refresh_source_admission_offline() -> dict[str, Any]:
     used after an intentional lock/tooling update so the admission cannot silently pin
     stale runtime provenance.  It never calls ``snapshot_download`` or ``HfApi``.
     """
-    artifacts = {'manifest': read_sealed_json(REPO_ROOT / 'GLM52_OFFICIAL_MANIFEST.json'), 'architecture': read_sealed_json(REPO_ROOT / 'GLM52_ARCHITECTURE_CONTRACT.json'), 'logical': read_sealed_json(REPO_ROOT / 'GLM52_LOGICAL_WEIGHT_LEDGER.json'), 'source_format': read_sealed_json(REPO_ROOT / 'GLM52_SOURCE_FORMAT_LEDGER.json'), 'graph': read_sealed_json(resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json')), 'schedule': read_sealed_json(REPO_ROOT / 'GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json')}
-    existing = read_sealed_json(REPO_ROOT / 'GLM52_SOURCE_ADMISSION.json')
+    artifacts = {'manifest': read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json'), 'architecture': read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_ARCHITECTURE_CONTRACT.json'), 'logical': read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_LOGICAL_WEIGHT_LEDGER.json'), 'source_format': read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SOURCE_FORMAT_LEDGER.json'), 'graph': read_sealed_json(resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json')), 'schedule': read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json')}
+    existing = read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SOURCE_ADMISSION.json')
     expected = {'official_manifest_seal_sha256': artifacts['manifest']['seal_sha256'], 'architecture_contract_seal_sha256': artifacts['architecture']['seal_sha256'], 'logical_weight_ledger_seal_sha256': artifacts['logical']['seal_sha256'], 'source_format_ledger_seal_sha256': artifacts['source_format']['seal_sha256'], 'dependency_graph_seal_sha256': artifacts['graph']['seal_sha256'], 'streaming_schedule_seal_sha256': artifacts['schedule']['seal_sha256']}
     if existing.get('evidence') != expected:
         raise Glm52Error('offline admission refresh refuses drifted immutable header-ledger inputs')
@@ -713,7 +713,7 @@ def refresh_source_admission_offline() -> dict[str, Any]:
     if existing.get('main_resolved_live') != REVISION or existing.get('revision') != REVISION:
         raise Glm52Error('offline admission refresh lacks the prior immutable-main binding')
     admission = build_source_admission(manifest=artifacts['manifest'], architecture=artifacts['architecture'], logical=artifacts['logical'], source_format=artifacts['source_format'], graph=artifacts['graph'], schedule=artifacts['schedule'], snapshot=snapshot, main_revision=REVISION)
-    atomic_json(REPO_ROOT / 'GLM52_SOURCE_ADMISSION.json', admission)
+    atomic_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_SOURCE_ADMISSION.json', admission)
     return {'status': admission['status'], 'network_access': False, 'model_body_bytes_read': 0, 'immutable_input_seals_unchanged': True, 'requirements_lock_sha256': admission['local_runtime']['requirements_lock']['sha256'], 'admission_seal_sha256': admission['seal_sha256']}
 
 def selfcheck() -> dict[str, Any]:

@@ -1,2 +1,0 @@
-{"at": "2026-07-26T00:50:24Z", "event": "STATE", "from": null, "to": "FINISH_MATH_PRESERVE", "why": "29/282 shards packed (10.28%)"}
-{"at": "2026-07-26T09:11:06Z", "event": "STATE", "from": "FINISH_MATH_PRESERVE", "to": "SEAL_CLAIM_A", "why": "Math-Preserve receipt exists; Odyssey-ready audit not sealed"}

@@ -28,23 +28,24 @@ def resolve_artifact(name: str) -> Path:
 
     Search order:
 
-    1. Repository root (preserves today's in-tree behaviour)
-    2. ``$HAWKING_ARTIFACT_ROOT`` (default ``~/Downloads/hawking-evidence``)
+    1. Repository root (pre-``evidence/`` layout; kept so a stray copy still wins)
+    2. ``evidence/<campaign>/`` in the repository, campaign dirs in sorted order
+    3. ``$HAWKING_ARTIFACT_ROOT`` (default ``~/Downloads/hawking-evidence``)
 
     Raises ``Glm52Error`` naming the artifact and the exact ``git checkout``
-    command that restores it when neither location has a regular file.
+    command that restores it when no location has a regular file.
     """
     if not isinstance(name, str) or not name or name != Path(name).name:
         raise Glm52Error(f'resolve_artifact expects a basename, got {name!r}')
     external = hawking_artifact_root()
-    candidates = (REPO_ROOT / name, external / name)
+    candidates = (REPO_ROOT / name, *sorted((REPO_ROOT / 'evidence').glob(f'*/{name}')), external / name)
     for candidate in candidates:
         try:
             if candidate.is_file():
                 return candidate
         except OSError:
             continue
-    restore = f'git checkout HEAD -- {name}'
+    restore = f"git checkout HEAD -- '*{name}'"
     searched = ', '.join((str(path) for path in candidates))
     raise Glm52Error(f'campaign artifact not found: {name}\nsearched: {searched}\nrestore with: {restore}')
 

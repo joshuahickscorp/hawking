@@ -45,7 +45,7 @@ pass — see `docs/ARCHIVE_INDEX.md` for retrieval instructions.)
 | `HAWKING_QWEN_SPEC_GOVERNOR` (+ `_WINDOW` / `_MIN_RATE` / `_FORCE_DISABLE`) | optional accept-rate governor that may skip proposing on cold drafts |
 | `--speculate exact-shared` / `HAWKING_SPEC_DECODE=exact-shared` | ExactShared shared-expert draft (DeepSeek family); `off` disables |
 
-Historical archaeology only (not live controls; product-released under BC-ACCEL-009 / B-RT3): former names `HAWKING_QWEN_EVENT_HORIZON`, `HAWKING_EH_SAM`, `HAWKING_EH_PARALLEL_DRAFT`, and `HAWKING_QWEN_EAGLE5[_K/_CAPTURE/_BATCHED]` referred to a deleted Event Horizon proposal market and EAGLE5 trained-head path. They are not accepted as live engine inputs. See `ACCELERATION_ARCHAEOLOGY.md` and `control/BRT3-report.md`.
+Historical archaeology only (not live controls; product-released under BC-ACCEL-009 / B-RT3): former names `HAWKING_QWEN_EVENT_HORIZON`, `HAWKING_EH_SAM`, `HAWKING_EH_PARALLEL_DRAFT`, and `HAWKING_QWEN_EAGLE5[_K/_CAPTURE/_BATCHED]` referred to a deleted Event Horizon proposal market and EAGLE5 trained-head path. They are not accepted as live engine inputs. See `evidence/acceleration/ACCELERATION_ARCHAEOLOGY.md` and `control/BRT3-report.md`.
 
 ## Prefix cache / stateful / capture / debug
 | Flag | Effect |

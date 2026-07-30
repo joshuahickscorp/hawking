@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.glm52.math_preserve_v2_plan.v1",
+  "at": "2026-07-27T11:00:00Z",
+  "owner": "controller",
+  "status": "PLANNED_NOT_EXECUTED",
+  "purpose": "The endpoint's blocking gate is a whole-model artifact that passes the whole-model gates. This states exactly what that costs, so the next window is planned rather than discovered.",
+
+  "the_representation": {
+    "arm": "activation-aware projection: W restricted to the top-k directions of the layer's REAL captured activation covariance",
+    "measured": "cosine 0.755 at 0.167 BPW and 0.793 at 0.667 BPW on real routed experts, against a real-activation null of 0.651",
+    "replication": "12/12 routed experts beat the null at 0.167 BPW; raw-weight low-rank 0/12 at four times the rate",
+    "basis_source": "the 33 retained teacher capsules, 80 GB of real captured activations",
+    "basis_transfer": "measured: a neighbouring layer's basis is as good or better, and degrades gently to at least four layers away, so 33 capsules cover 78 layers"
+  },
+
+  "whole_model_cost_model": {
+    "logical_weights": 753329940480,
+    "formula": "rank k over an [out,in] tensor costs (out*k + in*k)*16 bits, plus the stored basis, plus headers and index",
+    "projected": [
+      {"k": 16, "complete_bpw": 0.1667, "artifact_gb": 15.7, "measured_expert_cosine": 0.755},
+      {"k": 64, "complete_bpw": 0.6667, "artifact_gb": 62.8, "measured_expert_cosine": 0.793}
+    ],
+    "for_comparison": {"artifact": "Math-Preserve, semantically collapsed", "gb": 92.0, "complete_bpw": 0.9774},
+    "caveat": "these are projections from measured per-organ costs, not a packed artifact. Bases, headers and the index are counted in the arm's BPW as measured; whole-model overheads (manifest, per-shard framing) are not yet included and will raise the figure."
+  },
+
+  "execution_plan": {
+    "phase_1_measurement": {"unit": "shardwise, streaming", "cost": "~1.7 h of fetch at the measured 2.0 Gbit/s, overlapped with measurement"},
+    "phase_2_allocation": {"unit": "global", "input": "every tensor's measured cost/preservation curve", "objective": "maximise preserved function at a whole-model BPW target, driven by functional preservation and never by reconstruction error"},
+    "phase_3_packing": {"unit": "shardwise, streaming", "cost": "prior PASS3 took ~13 h under a different program; this one is cheaper per tensor (an eigendecomposition and two matmuls) but the figure is unmeasured"},
+    "hard_constraint": "141 GiB free against a 1.507 TB parent. Streaming with eviction is mandatory; the parent is never resident."
+  },
+
+  "the_gates_that_decide": {
+    "order": "cheapest first, so a failure costs the least",
+    "G_math": "tokens [17, 488, 220, 17, 284] -- one forward pass. Math-Preserve fails this and it would have caught it in minutes.",
+    "G_live": "prompt-dependent generation: two unrelated prompts must not produce identical output",
+    "G_parity": "numpy oracle over the same container and codec versus Rust/Metal, argmax and top-5 in exact order. A failure here implicates the runtime and stops everything.",
+    "G_cascade": "composed end to end, not judged per layer",
+    "G_halo": "the frozen 26-task corpus, only after the cheap gates pass",
+    "law": "reconstruction error cannot promote, at any stage"
+  },
+
+  "what_would_make_this_Math_Preserve_v2": "an artifact that passes G_math and G_live, whose hash is then bound into odyssey/launch/SUBSTRATE_CAPABILITY.json with capability_verdict APPROVED. No artifact currently holds that verdict, and the current Math-Preserve is REFUSED by hash.",
+
+  "honest_uncertainty": [
+    "A per-organ cosine of 0.79 against a 0.651 null is a real margin, not an overwhelming one. Whether it composes across 78 layers into coherent generation is exactly what G_cascade and G_live exist to answer, and no window measurement can predict it.",
+    "Only routed experts and four non-expert organs were measured. Attention, norms and the head under real activations are unmeasured.",
+    "Distant basis transfer (layer 10's basis onto a layer-60 expert) is untested; the program should prefer the nearest donor and record which it used."
+  ]
+}

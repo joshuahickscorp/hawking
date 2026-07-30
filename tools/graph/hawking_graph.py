@@ -5,9 +5,12 @@ Obeys control/SEMANTIC_GRAPH_SCHEMA.json exactly — no added/renamed/dropped
 node types, edge types, attribute names, or id formats.
 
 Usage:
-    python3.12 tools/graph/hawking_graph.py --emit all --out .
+    python3.12 tools/graph/hawking_graph.py --emit all
     python3.12 tools/graph/hawking_graph.py --emit jsonl
     python3.12 tools/graph/hawking_graph.py --verify
+
+Output defaults to build/graph/ (gitignored): every artifact here is
+deterministic and rebuilt by --emit all in about 40s.
 
 Dependencies: stdlib + networkx (optional for future G2; not required to emit).
 No tree_sitter, no rust-analyzer, no SCIP, no new pip/cargo deps.
@@ -426,7 +429,8 @@ def count_report(g: Graph) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Hawking semantic graph extractor (G1)")
     ap.add_argument("--repo", default=str(REPO), help="repository root")
-    ap.add_argument("--out", default=".", help="output directory (default: repo root via cwd)")
+    ap.add_argument("--out", default=str(REPO / "build" / "graph"),
+                    help="output directory (default: build/graph, gitignored — these are regenerable)")
     ap.add_argument(
         "--emit",
         choices=["all", "jsonl", "gexf", "dot", "behaviour", "none"],

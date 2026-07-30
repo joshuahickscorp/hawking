@@ -51,7 +51,7 @@ CAPSULE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus/capsules"
 )
 GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
-LEDGER = REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
+LEDGER = REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
 
 # Same convention `architecture.py`'s equal-budget solver already uses for the
 # coalition's size, so PASS 2's membership and PASS 1/M09's existing byte machinery
@@ -523,7 +523,7 @@ def main(argv: list[str]) -> int:
         return 0
     if command == "freeze":
         out = Path(argv[argv.index("--out") + 1]) if "--out" in argv \
-            else REPO / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
+            else REPO / "evidence" / "prometheus" / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
         freeze(out)
         return 0
     if command == "selftest":

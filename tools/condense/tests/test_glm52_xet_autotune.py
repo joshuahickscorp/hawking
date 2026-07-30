@@ -107,7 +107,7 @@ def test_plan_binds_exact_resource_policy_and_rejects_substitution(plan: dict) -
 
 def test_committed_plan_is_rebuilt_against_current_sealed_inputs() -> None:
     committed = json.loads(
-        (REPO_ROOT / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
+        (REPO_ROOT / "evidence" / "glm52" / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
     )
     verified = autotune.verify_plan(committed, root=REPO_ROOT, rebuild=True)
     assert verified["seal_sha256"] == committed["seal_sha256"]

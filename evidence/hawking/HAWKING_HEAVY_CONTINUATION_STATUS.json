@@ -1,0 +1,162 @@
+{
+  "schema": "hawking.heavy_continuation.status.v1",
+  "at": "2026-07-27T19:25:19Z",
+  "endpoint": "RAMANUJAN_SANDBOX_READY",
+  "endpoint_reached": false,
+  "honest_position": "The blocking gate is executing. It is a ~15 hour job, not the ~5 the packer's own model projected, because fetch and measure are serial rather than overlapped. Whether the artifact GENERATES is still unproven and only the whole-model gates answer it.",
+  "machine": {
+    "MOP": "STOPPED. Load 4.26 is desktop applications; zero Python workers. The heavy window is genuinely open.",
+    "heavy_window": "OPEN, and used for the GLM rebuild pilot",
+    "governor_note": "the load-average veto reads a desktop idle of ~4 as busy. Correct for MOP detection, conservative here. Not changed: a governor that under-claims idleness is the safe direction."
+  },
+  "rebuild_glm": {
+    "step_1_rehydrate": {
+      "status": "DONE for the pilot window",
+      "shards_verified": 5,
+      "of": 282,
+      "bytes": 26773797888,
+      "throughput_measured_mbit_s": 2020,
+      "full_parent_estimate_hours": 1.7,
+      "prior_estimate_hours": 8,
+      "why_bounded": "pilot before freezing a program is the campaign's own ordering"
+    },
+    "step_2_pilot": {
+      "status": "BREAKTHROUGH, replicated",
+      "headline": "A sub-bit representation of GLM-5.2's routed experts that preserves function EXISTS and replicates: activation-aware projection, cosine 0.755 at 0.167 BPW, 12/12 experts.",
+      "the_reversal": "Six families first measured negative sub-bit under GAUSSIAN proxy activations. Refitted against real captured teacher-capsule activations, the ranking inverts and the null moves from 0.126 to 0.651.",
+      "raw_weight_low_rank": "0/12 experts beat the null at 0.667 BPW -- four times the rate at which activation-aware succeeds",
+      "structural_reason": "top 16 activation directions carry 88.9 percent of variance; weights are stored across 6144 dimensions the model never visits"
+    },
+    "step_3_gates": "the whole-model gates -- 2+2, live generation, cascade, halo, long context -- are NOT measurable on a four-layer window and none was claimed",
+    "step_4_freeze_program": {
+      "status": "FROZEN AND EXECUTING",
+      "program": "activation-aware projection onto the top-k directions of each layer's real captured activation covariance, with beating the constant-mean null as a HARD allocation constraint",
+      "tool": "tools/condense/glm52_activation_aware_pack.py",
+      "phases": "measurement shardwise streaming -> allocation global -> packing shardwise",
+      "launched": "full run over 282 shards, fetch+evict, disk floor 110 GiB",
+      "projected_hours": 4.9,
+      "projected_complete_bpw": 0.091,
+      "projected_artifact_gb": 8.6
+    },
+    "step_5_escape_receipt": "OFF THE TABLE. It would have been prepared on measurements that the correct input distribution reverses.",
+    "step_6_math_preserve_v2": "NOT REACHED",
+    "the_catch_that_mattered": {
+      "what": "the first dry run reconciled its bytes and came in under budget, and would still have shipped lm_head at cosine 0.683 against a null of 0.852 -- 18 tensors below their null carrying 17 percent of the activation-aware mass",
+      "why_fatal": "an lm_head below its null produces logits worse than the mean row, which is exactly Math-Preserve's failure mode",
+      "fix": "beats-null is now a hard allocation constraint; a tensor that cannot beat its null at any rank falls through to native",
+      "cost_whole_model": "~0.04 BPW. Close to free at scale."
+    }
+  },
+  "odyssey": {
+    "status": "CORRECTLY BLOCKED",
+    "why": "gated on Math-Preserve-v2, which does not exist. The fence is false and the capability register refuses the current artifact by hash."
+  },
+  "math_frozen": {
+    "status": "UNREACHABLE",
+    "why": "downstream of Odyssey"
+  },
+  "ramanujan_migration": {
+    "status": "NOT STARTED",
+    "why": "gated on HAWKING_EVOLUTION_COMPLETE"
+  },
+  "parallel_lanes_landed_this_session": [
+    "HIDE YOU swarms, projects, typed handoffs -- capsule carries the claim never the capability, verified by fail-closed extraction",
+    "six-class memory controls, eight personal scopes, privacy modes enforced at construction, personal tools",
+    "A5 decoder, which answered the island question negatively",
+    "bounded GLM rehydration tool with seal verification and quarantine-on-mismatch",
+    "pilot harness and rate sweep on real BF16 tensors"
+  ],
+  "lane_still_running": "bridge-cli (Bridge events, adapter registry, CLI, schemas, SDK types)",
+  "fences": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "substrate_capability_gate": "REFUSING the current Math-Preserve by hash",
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "next_command": "bash HAWKING_LIGHT_ONLY_NEXT_COMMAND.sh",
+  "next_scientific_action": "When the pack completes, run tools/condense/glm52_capability_gate.py against it. G_math is one forward pass on '2 + 2 ='. If it passes, G_live. Only an artifact passing both gets its hash bound APPROVED in the capability register, and only then does Odyssey become a live question.",
+  "method_lesson_for_the_next_session": "Never evaluate a compression scheme on synthetic activations. The input distribution is not a detail -- it decides which family wins, and it moved the null five-fold here.",
+  "full_pack_run": {
+    "progress": "74/282 shards packed",
+    "complete_bpw_exact": "401814614/367836885",
+    "complete_bpw_float": 1.0923717288438868,
+    "projected_artifact_gib": 95.8,
+    "activation_aware_weight_share": "93.49%",
+    "pass_through_weight_share": "6.51%",
+    "bottleneck": "network, not CPU. ~780 Mbit/s per connection on a 10Gbase-T link; packer at 97% of one core of 28.",
+    "accelerators_that_did_nothing": "hf_transfer (deprecated, unused by hub 1.24) and Xet high-performance both measured no gain",
+    "lever_that_works": "concurrency. A second stream sustained 760 Mbit/s while the pack held 765, so the cap is PER CONNECTION."
+  },
+  "parallel_lanes_landed": [
+    "HIDE YOU: swarms, projects, typed handoffs (capsule carries the claim never the capability)",
+    "HIDE YOU: six-class memory controls, eight scopes, privacy enforced at CONSTRUCTION, personal tools",
+    "HIDE YOU: objects (hash=identity, derivatives-only compile view, dead-letter never drop)",
+    "HIDE YOU: connectors (2 live, 13 declared-unconstructible, no HTTP dependency at all)",
+    "HIDE YOU: research controller (four claim categories, one guarded transition)",
+    "HIDE YOU: automations (JobCapability private, no widen path)",
+    "Bridge: CLI surface, completions, fabric declarations, schema migrations, all generated with drift tests",
+    "Bridge: the seventeen YOU events on the EXISTING canonical bus with the provisional flag",
+    "Ramanujan: ten roles with non-wideable capabilities; 10 generators, 2 promoters, ZERO generators holding promote_claim, enforced at construction",
+    "Ramanujan: branch economics that halt and record, Limit Registry consulted on the write path",
+    "Ramanujan: PremiseRetrieval trainable and honestly labelled until trained"
+  ],
+  "still_running": [
+    "the 282-shard activation-aware pack",
+    "hide-wiring (tokenizer-true budgeting, real worktrees, RuntimePlanner, embedding stub refusal)"
+  ],
+  "shared_tree": "Codex commits into this tree. Two silent failures recorded in HAWKING_SHARED_TREE_PROTOCOL.json: unstaged work reverted by a concurrent commit, and git apply -3 reporting success while writing nothing. Protocol: apply and commit atomically, assert a named file exists before concluding from the tree.",
+  "disk": {
+    "freed_this_session_gb": 83,
+    "what": "~/Desktop/GLM52-Gravity-SubBit, generation A's PQ R0 negative control, deleted on explicit user authorization with GLM52_GENERATION_A_DELETION_RECEIPT.json",
+    "new_artifact_location": "~/Library/Application Support/Hawking/GLM52Gravity/activation_aware_pack -- never the Desktop"
+  },
+  "formal_environment": {
+    "status": "Lean and Mathlib REAL and pinned",
+    "elan": "4.2.3",
+    "lean": "4.32.1",
+    "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+    "proof": "machine-checked two real theorems, exit 0",
+    "installed_count": "7 of 12",
+    "still_missing": [
+      "z3 binary",
+      "cvc5",
+      "PARI/GP",
+      "GAP",
+      "cadical"
+    ],
+    "q0": "BLOCKED -> UNBLOCKED_FOR_LEAN"
+  },
+  "newly_unblocked": "Six of nine Ramanujan data sources are generated locally from the pinned Mathlib and need no licensing decision. A lane is generating them now: proof traces, state transitions, premise pairs, compiler-error repair pairs, counterexample negatives, tool-use traces.",
+  "speed_work": {
+    "measured": "46.9 s per shard: 24.0 s fetch, 22.9 s work, serial, on 1.2 of 28 cores",
+    "prefetch": "overlaps fetch N+1 with work N, roughly halves both phases",
+    "workers": "parallel shard workers with per-layer basis locks; emission ordered by shard rather than completion so allocation is reproducible",
+    "applies_to": "the pack phase, not the running measure"
+  },
+  "endpoint_blockers": [
+    "Math-Preserve-v2 does not exist: the pack is at 74/282 shards",
+    "Odyssey T0-T7 not run and cannot be: gated on an artifact that passes G_math",
+    "Math-Frozen does not exist",
+    "Q1-Q6 not started (Q0 ACHIEVED and verified by running the container)",
+    "no separate /Users/scammermike/Downloads/ramanujan directory yet -- migration happens at HAWKING_EVOLUTION_COMPLETE",
+    "formal system training in flight, no held-out metrics yet"
+  ],
+  "law_change_today": {
+    "directive": "no tier choice: condense and gravity convey one philosophy",
+    "law": "capability is the constraint, BPW is what gets minimized; lowest usable rate wins",
+    "sealed_receipt_above": "3/2 BPW",
+    "why_it_matters_here": "at 1.0924 BPW this artifact needed a sealed Escape Receipt under the old sub-bit law. Under the new law it is admissible if and only if G_math and G_live pass.",
+    "hole_closed": "Evidence had no capability field, so sub-bit alone returned allow. That is how Math-Preserve was sealed at 0.9774 with six green gates."
+  },
+  "verified_by_running_not_by_reading": [
+    "Q0 container replay: two_plus_two exit 0; 2 + 2 = 5 exit 1 with 'unsolved goals' from Lean inside --network=none",
+    "codec round-trip: 5 tests through the real pack_shard, corrupt magic and SHA-256 mismatch both refused",
+    "contamination barrier negative control: a sealed halo item returns exact_match, clean Lean text returns empty",
+    "capability gate selfcheck: a correct ' 4' now passes where it previously graded FAIL"
+  ],
+  "open_defect": {
+    "what": "host::tests::every_write_lease_revocation_trigger_revokes is order-dependent",
+    "evidence": "219 pass without the patch (parallel), 222 pass with it single-threaded, 1 fails with it in parallel",
+    "cause": "the write lease is process-global; revoke_write_lease is a free function with no session scoping, so every lease-touching test mutates one object",
+    "status": "delegated; forbidden to fix by weakening the assertion, ignoring the test, or forcing single-threaded"
+  }
+}

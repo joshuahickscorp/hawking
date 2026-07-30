@@ -364,7 +364,7 @@ def test_streaming_window_rejects_partial_global_index_and_bad_carry_algebra(
 
 def test_official_tokenizer_and_chat_template_assemble_offline() -> None:
     manifest = json.loads(
-        (REPO_ROOT / "GLM52_OFFICIAL_MANIFEST.json").read_text(encoding="utf-8")
+        (REPO_ROOT / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json").read_text(encoding="utf-8")
     )
     root = Path(manifest["one_copy"]["snapshot_view"])
     assembly = A.load_official_tokenizer_assembly(root)

@@ -1,0 +1,390 @@
+{
+  "corpus": {
+    "corpus_assignment_sha256": "6ce9c7f9d57a93a5c2354735ddc171b7b94435089b51296eb04bdc8c0259aa75",
+    "documents_discovered": 400,
+    "duplicates_dropped": 1,
+    "evaluation_probe_documents_quarantined": 16,
+    "evaluation_prompts_absent": [
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "bbaff4d2ecd5892d4a442b0f53131641bf6e6f284761dd20fc0664bc97145762",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "b7fa1bcf02b6ff56e8d8db22e951e1d36439cbcfea800dfd71f7abc1c7c07b8a",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "04977aaa1eba8b47357b286923401a83ab2d98f2ebebd748ff947e0a7cdaa90f",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "154e0c9c6176389176dd7a541d8f5a34cdeffc97ddf6360af63543ac155888cf",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "81bc8d1109ab57fc2fe67c804a804cdf046e8ee54bfff01139cd88de694861a1",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "b4d50a67a784a449e0c763c401bb9f95fb37804dff5765d8b4f95fd202eb7d77",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "ca11d8d9dfa7b8dfcb8fb05ebb5859595875cf139aad49bec4c9e26f77e3e8ab",
+        "token_sequence_present": false
+      },
+      {
+        "normalized_substring_present": false,
+        "probe_sha256": "1d58873b69519d70dc4f2465ffe7c1ebfce0f0ec1d4b58ab4e3c396ada8809f2",
+        "token_sequence_present": false
+      }
+    ],
+    "failures": [],
+    "layer_zero_unique_token_split": {
+      "fit_probe_token_ids": [
+        0,
+        2,
+        3,
+        6,
+        9,
+        10,
+        13,
+        15,
+        16,
+        25,
+        26,
+        29,
+        30,
+        31,
+        34,
+        36,
+        41,
+        46,
+        47,
+        48,
+        49,
+        51,
+        52,
+        55,
+        56,
+        59,
+        60,
+        61,
+        62,
+        64,
+        65,
+        69
+      ],
+      "fit_unique_token_ids": 12495,
+      "overlap": 0,
+      "score_probe_token_ids": [
+        1,
+        4,
+        5,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        27,
+        28,
+        32,
+        33,
+        35,
+        37,
+        38,
+        39,
+        40,
+        42,
+        43,
+        44,
+        45,
+        50,
+        53,
+        54
+      ],
+      "score_unique_token_ids": 12495
+    },
+    "overlap": {
+      "codec_calibration|doctor_training": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "codec_calibration|holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "codec_calibration|protected_domain_holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "codec_calibration|validation": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "doctor_training|holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "doctor_training|protected_domain_holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "doctor_training|validation": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "holdout|protected_domain_holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "routing_calibration|codec_calibration": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "routing_calibration|doctor_training": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "routing_calibration|holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "routing_calibration|protected_domain_holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "routing_calibration|validation": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "validation|holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      },
+      "validation|protected_domain_holdout": {
+        "context_window_hash": 0,
+        "domain_conditioned_context_hash": {
+          "code": 0,
+          "prose": 0,
+          "tool_format": 0
+        },
+        "segment_hash": 0,
+        "source_document_hash": 0
+      }
+    },
+    "splits": {
+      "codec_calibration": {
+        "context_windows": 1779,
+        "documents": 87,
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "segments": 1779,
+        "tokens": 253077,
+        "unique_token_ids": 14040
+      },
+      "doctor_training": {
+        "context_windows": 1741,
+        "documents": 86,
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "segments": 1741,
+        "tokens": 239863,
+        "unique_token_ids": 12981
+      },
+      "holdout": {
+        "context_windows": 1755,
+        "documents": 46,
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "segments": 1755,
+        "tokens": 233917,
+        "unique_token_ids": 12656
+      },
+      "protected_domain_holdout": {
+        "context_windows": 1100,
+        "documents": 43,
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "segments": 1100,
+        "tokens": 150950,
+        "unique_token_ids": 10113
+      },
+      "routing_calibration": {
+        "context_windows": 2614,
+        "documents": 107,
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "segments": 2614,
+        "tokens": 359370,
+        "unique_token_ids": 15358
+      },
+      "validation": {
+        "context_windows": 856,
+        "documents": 31,
+        "domains": [
+          "code"
+        ],
+        "segments": 856,
+        "tokens": 121282,
+        "unique_token_ids": 9283
+      }
+    },
+    "unique_token_ids_total": 24990
+  },
+  "growth": {
+    "axes": {
+      "context_windows": [
+        768,
+        4757
+      ],
+      "documents": [
+        40,
+        200
+      ],
+      "segments": [
+        768,
+        4757
+      ],
+      "unique_token_ids": [
+        8045,
+        18232
+      ]
+    },
+    "axes_that_grew": [
+      "context_windows",
+      "documents",
+      "segments",
+      "unique_token_ids"
+    ],
+    "status": "PASS"
+  },
+  "rules": {
+    "assignment_unit": "content-deduplicated source document",
+    "evaluation_prompts_absent_from_calibration": true,
+    "global_context_window_dedup": true,
+    "layer_zero_partition_unit": "unique token ID"
+  },
+  "schema": "hawking.kimi_k26.corpus_integrity.v1",
+  "seal_sha256": "91e6cdd09bfcc293f67dcdf7d7c675c4a615aeccac1ea4147411e61636ffd5f6",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "tokenizer_sha256": "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103"
+  },
+  "status": "PASS"
+}

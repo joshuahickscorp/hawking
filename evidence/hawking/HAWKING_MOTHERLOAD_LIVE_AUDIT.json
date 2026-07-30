@@ -1,0 +1,2628 @@
+{
+ "artifacts": {
+  "count": 285,
+  "gravity_artifacts": [
+   {
+    "body_sha256": "78052ad16cc3f49cf2b738bd78deddf5690349c2c4894b8974840b4ee25a7acc",
+    "bytes": 135575074,
+    "complete_bpw": 0.877372084351825,
+    "model": "llama32-1b-bf16",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.gravity",
+    "revision": "local",
+    "tensor_count": 146
+   },
+   {
+    "body_sha256": "88f60df6402c6befb53217bceea5535c5af1d6d4a3b4c1051c77871db583e4ae",
+    "bytes": 135575252,
+    "complete_bpw": 0.877372084351825,
+    "model": "llama32-1b-bf16",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+    "revision": "local",
+    "tensor_count": 146
+   },
+   {
+    "body_sha256": "6138fdc63d2fd25a1e556dab87cb8d9fc47f2e2094ee9f8be29203423a037d1e",
+    "bytes": 12584647,
+    "complete_bpw": 0.01037450870113893,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/compact/generation_b_functional/GLM52_FUNCTIONAL_L38_L38.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 1
+   },
+   {
+    "body_sha256": "38deedeed394abebd47d49c2fd0d3209e01d3ed5473a1985b86cc653357823cd",
+    "bytes": 3925903121,
+    "complete_bpw": 11.756742138858995,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00001-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 35
+   },
+   {
+    "body_sha256": "58eb36848e48783aac317d5a83116ef011cda0e6c5b88c73af24d55b5161fb5c",
+    "bytes": 293301876,
+    "complete_bpw": 0.876366973895381,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00002-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 212
+   },
+   {
+    "body_sha256": "9dba37b8a5cee2aadd4cfb99bd5762abf3a4dff194781103bd2ff73411ae9197",
+    "bytes": 293753736,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00003-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "fdf3e0ad184ffb994f90a4f79332c6fc38d4236d39f7673e128cf92b03d3745d",
+    "bytes": 293753523,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00004-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "11ed0f1e1a6c6de7e0479811f04acb4f7d8ffe49a8aaeaa246e6c7952ce6a4fc",
+    "bytes": 314433421,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00005-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "e869fb0fde52e8075a9db2bbeff770465666480c083ee542fc0e2a41e87186fe",
+    "bytes": 293753751,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00006-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "248c7f37c9454062fb5c75d00e41e993bfbc84ad1d424493f571a98e7a40556d",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00007-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "901aaba559ef2af97679cfd2c014b525e8e84e18cc26add977322b18dcba8dc8",
+    "bytes": 293753400,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00008-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "0cdd41fe6f45212246b8e911ab8a055eb599afbe64c5c11653dedac98f325fde",
+    "bytes": 297067069,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00009-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "704259857a18ff3900e8f51abd6c8fa9d18a498cdd77d843a2bce8280e58789b",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00010-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b59af3952f4edc143747228e1e5c4a52d842479d4821e4dd5b1b19206820397f",
+    "bytes": 293753688,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00011-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b82934e3c8e27dc53f74404fbcfb439e41f72f79c77ca3c5c5a6c5d77434f583",
+    "bytes": 296914850,
+    "complete_bpw": 0.8852534383168726,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00012-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 217
+   },
+   {
+    "body_sha256": "8a412cdaa8ae8b4b5a909e2d9e297b96d2bf17c17f287498bd792c77e858f9d4",
+    "bytes": 293905680,
+    "complete_bpw": 0.8763378469199163,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00013-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 207
+   },
+   {
+    "body_sha256": "cd56b89f0a580567e9d9c44a3cf244c8820c7b58276a92b764bd2dd1e3e9a02a",
+    "bytes": 293753742,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00014-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "82cddcd74a470c59df72d6e91331f77b8c924416da8d95c0ac06d08f30993c10",
+    "bytes": 293753544,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00015-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "422a9ba9d84c68005616fa7163f6416b20e68f8f70494b48a35fdac46e9865ae",
+    "bytes": 297066900,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00016-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "4ff89ac011a2a74e7c78a31a825074f0d9dbcf4c80e07eb0a27885a4d6461829",
+    "bytes": 293753751,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00017-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "dbd54c724a9fe1cd967bb58b396b4fbb79d1fd853043b00a69c130cff2321c4a",
+    "bytes": 293753732,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00018-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "58470d20828967da28d036a4024f4535e880bc71bea59a3283d6170753285f28",
+    "bytes": 293753409,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00019-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "23d2cd20357dc1c6b2a5ed3a05f5f7aff9f3def8082d1dcd45df64bbae1ba321",
+    "bytes": 314433538,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00020-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "3a2d679a1b538ed1d4f6f5a5cf396b1f5192c29938cdef023e49df45eff4c66e",
+    "bytes": 293753718,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00021-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b90ae8c2fc13745c9b9c66282de8f1619a11905852e4fec3b68cb7af130ec621",
+    "bytes": 293753647,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00022-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a37004397623a4ff0092b03107c64e557fcc99d58e12b2310081d52d3ef4ab9b",
+    "bytes": 293753307,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00023-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6a501a2585c353163ec7fac1b835d384eb09dd917a2da9db70b149a3b536c0b6",
+    "bytes": 297067175,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00024-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "4ea76880628b62a0c2962a7b29a4e4ca4a6b0ae4810e339b7d18b32e58b8274f",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00025-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7772ace5381055aa26bbfa9c3dc6edb380fedbe54acbb55f25097196b76be0ee",
+    "bytes": 293753541,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00026-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "fefb681740f2a10374645e8a27279ebf39acf0685781516556e17880826443c2",
+    "bytes": 297066899,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00027-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "0dc394366fa80cf0b05e8d65a582afaa4aae48671df43726cad1d6080c1220bb",
+    "bytes": 293753744,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00028-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e56afb95e98eeb132dddd514ccd4664ac9797fd96bac62f50f695b429bd4c27b",
+    "bytes": 293753723,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00029-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7fe4598b9e46ad68af7490889fb7b1deadf154e848579281cf9f0992eadf61d5",
+    "bytes": 293753421,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00030-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "d55b0495a9bf447ad8bb9280175d408904eb8d7e6829e4653e96cddc3a668fb6",
+    "bytes": 297067010,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00031-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "bbcb6a739b8463e962395c2c45425914347f01341787f69287c3b450eab1f4e5",
+    "bytes": 293753743,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00032-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9fe40784ae51d5b3913d8a0bfecb4c46facda33aef5156550fde5e41240e7307",
+    "bytes": 293753703,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00033-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "d99355d374ac53a2aba3eb61056c433676818e0844dfa93e773952ca30e26378",
+    "bytes": 293753281,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00034-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9c150581271971c7afc60f46dda1033062261126d94cb5f7fb378371e7827f1f",
+    "bytes": 314433639,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00035-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "f861f3f29078f7cbf0b3670c488211049b4fa47b78979900f4bf500acc4412b6",
+    "bytes": 293753712,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00036-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "84310f3c4deaf6fcd0c7f417f6e5dee5a11476e76efe85d5d9f4c65d6e81c72c",
+    "bytes": 293753558,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00037-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3651c355773a65c695fc66f7fa89fb78052086c6256abea417b3f93bd63e2123",
+    "bytes": 314556345,
+    "complete_bpw": 0.9380464177374881,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00038-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 196
+   },
+   {
+    "body_sha256": "073785554b707b2a433d1dc07136634d95f6bee5f9745f951529dd8f9acea716",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00039-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "826d933e254c7ec0fcb576bb51e8549488e0f8c2785cef051287c2cd567a5a61",
+    "bytes": 293753737,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00040-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "540044d1443e6caa7a22fc96f95e87df014a1d5aa964a37519d220b474b0d8f2",
+    "bytes": 293753520,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00041-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "82e4be15981c8bc70a9cfeca0fe84fb92776255816a2125ac88ee2ee73d8c3cd",
+    "bytes": 297066954,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00042-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "b0f25f8bad22f007bcb53e3dd2cbc386e3b07ef7751815544b63fc283755cd05",
+    "bytes": 293753747,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00043-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9d4366590ef49b2970df132978fdeac70c685380a824f12bcd4d3a5291789884",
+    "bytes": 293753722,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00044-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "0db4003a4b2423e1640da0cec845c1cc37b0db8a68f8bba171636005c24439c6",
+    "bytes": 293753345,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00045-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2f1acafd2ee7c5d229ed674af13c21a8382eed1b94f0c956cf10f9395178a232",
+    "bytes": 297067086,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00046-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "a7f82de175070b8fcb41a0c90f0691cfacbda7f3e442ee267a99f28bddf463f0",
+    "bytes": 293753727,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00047-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5562e7fd1d3fb69fb90dc0c21b2ac1cce1f12b46d25f736b27453f1b2f7427dd",
+    "bytes": 293753655,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00048-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "58759624adf143403b1dccf6d3a7f541d7cd9f1f169c37885ad81690cdc0250b",
+    "bytes": 308005105,
+    "complete_bpw": 0.939535083590025,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00049-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 217
+   },
+   {
+    "body_sha256": "e781839c9378fed27a86df5c071c03e9507dfb3e0e5f4ece4b27e81ba5493b63",
+    "bytes": 293286309,
+    "complete_bpw": 0.8763343507103781,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00050-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 206
+   },
+   {
+    "body_sha256": "616dff12832c6ca4195d3b7c7f4c65fec9c0fa3dc97e3f296b750ddcd0ef3ef9",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00051-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "94ad761a058fccc1cddfe07ba31c2d20c65ee7d1624141b64c610949fec5ed1c",
+    "bytes": 293753542,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00052-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c16a42ec506c28ad4565cde51a867ecb7d769ae70a0a33aad8512e2d8dfc87d1",
+    "bytes": 297066923,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00053-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "3b121671e46258c25df04e0aad2efaac08d8ad122407408a47718124edf5b1c6",
+    "bytes": 293753751,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00054-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7e622cc06cc35e681397172f1f325782468ecc9bd3ed86d8418d2e6942d81db0",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00055-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "f33c7fdca181322e4c967daa0c5642b896e9868c9e37071598a74752c7c8d2dc",
+    "bytes": 293753409,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00056-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "573e466eda60f3248b9e22d7fe0e91fd5d8fef113c361392be4d4672f9a7b9db",
+    "bytes": 297067062,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00057-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "d234811930be08503bb0d414fbe372399916ebbe6a2f88e07b09a8e5debfcda4",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00058-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6a7da0faf3f5a1957f3c2e356dad10d3706bb56978eecec288943c996baa7dcf",
+    "bytes": 293753696,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00059-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e3b537475574a37d3c99392649d1d00bef62311631e9d9711ef5cd543d0369e3",
+    "bytes": 293753316,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00060-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2d6d31ac91610dbc599f37ecc5407117931f5dbae898b685fd417af2a37222d3",
+    "bytes": 297067184,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00061-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "0dfd0edcbb22c6b1703c5c9fef46c2b38694e6a62262be643c98628cb3cd94f4",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00062-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3f0d7aef892b2d627db785beddad012b500553d238c320bf9b0a7d3cc522698e",
+    "bytes": 293753562,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00063-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "0f1b63b1a97105d7345af48120f75a4320ad0a748275918a4fbb3ccd4b4a1965",
+    "bytes": 314433382,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00064-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "9125b1e60a226467f8708a99a8017b9174b5b46847644098497e5694ed68fe44",
+    "bytes": 293753736,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00065-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7d88c1bef81525078b83ee77599e8816df343030fb09f809e5ce1de7eb9a96ea",
+    "bytes": 293753701,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00066-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "65c5595a6bce4a8afb0d50da4746f4f81d9edb83a83e4530f57d210f15e8fc36",
+    "bytes": 293753412,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00067-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6158b23a458a99a69873f427fd11a8daba32eb17addd85c2a584de8752d57e11",
+    "bytes": 297067031,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00068-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "5fc0877894735a50a79a5eee3e2b2dbfab60b540f7d6466cb1c52641d0ab3619",
+    "bytes": 293753757,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00069-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "bb50120193ca61794c34fdcb88dcc50ada2ea3024b6b642349840823b3ffdb1c",
+    "bytes": 293753682,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00070-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2e507afbb43c647e70e01c75831687a5f2bcb3185a77ef0af12227117d1f44fd",
+    "bytes": 293753307,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00071-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "cb30acd5abe782031488e0aca522cd6298498394c0766685c0be2ecc6218d164",
+    "bytes": 297067168,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00072-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "e44ce465c948305b44751d25caf9adc1f1e04f29e4207ea325a7904837578a40",
+    "bytes": 293753739,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00073-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ed12b89985199d1dc6b459631e956d56cd2313e39f578ad1cf4cfe835c51f545",
+    "bytes": 293753562,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00074-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5dda58e22c2c2f14602e9100c25a2b19a70c470dd0bb0031106395db1ea47d3e",
+    "bytes": 297066804,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00075-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "ba4989f2223a1ecadad88f26614b6bee345568e44c69b059f46fdb2f3f20c52e",
+    "bytes": 293753325,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00076-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "1060b3fe5f7bb780b66331e1c91ab15233270a2468bac65debe712d94829a4b9",
+    "bytes": 293753291,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00077-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3ade38268ffc306d77defc34ecb3ca8aac2f080f5920163bf8b571f04145150f",
+    "bytes": 293752998,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00078-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "cbc2ba28f8c92957357771008554c55e4cc646cbdf766f592a47008c423c0a8f",
+    "bytes": 297066804,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00079-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "80fc4253ca25e7be2ecd145560c95147f2bb972e4ec2ae2b0572d74c7f108c12",
+    "bytes": 293753723,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00080-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "713098a933e8b0bdd4816f69bed1c7b6f5e50c151b969b98a104f8d8acafbb44",
+    "bytes": 293753725,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00081-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "cb338429047f158e4575ac0938465f4bfb339ee17732cddbc54b9712c3910736",
+    "bytes": 293753323,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00082-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9aa9b7b2d1040b09695dd0afd7fe6e37d4c6828eb586fd0d5893828cd79fac85",
+    "bytes": 314433664,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00083-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "4a78fbcdb50a133245c6ae012922786a5ac8a461f31e7577924af3b563444d38",
+    "bytes": 293753725,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00084-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "46a95dac6e458bdb9a3abc895970bc955af76af08ab720b9c5270cd9de72c16f",
+    "bytes": 293753605,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00085-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "d412acbbf3b189bca74fb1073022047052fabd2e42f7f650e1425132a4bd7c68",
+    "bytes": 297066860,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00086-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "82048fa4a1889c22d486a703654a24652b9b71902a4686b7a808ac4d0709c31c",
+    "bytes": 293753744,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00087-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6c5ded1e4faa613bd2de0f1145aa65855159e6a2477958d6b103f4d3834cdb95",
+    "bytes": 293753746,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00088-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5dc9d86e6cd34c372283bcf1e47b545efa6c8d3ae2f59bbe26633d18a26aec92",
+    "bytes": 293753468,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00089-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "27ca6c86d502c9bf99f05c73dd803a0a4cb796e5ecbe43b4977d8818a9c36474",
+    "bytes": 297066983,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00090-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "f100f04fd810c7f92bf4cbee0231da411226192825c12ec23f2e73f729d24563",
+    "bytes": 293753737,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00091-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6a227d8077a9002bd6671d298bcd94975dc4aaee374f1c23caf2f2c9af5721be",
+    "bytes": 293753702,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00092-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ebbd63617298ddf89740e413e4c9d2c6756b0403aa92ca5b4d9585db13082e40",
+    "bytes": 293753332,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00093-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "35889a8f6b78ed55b65a7c1d1a002266173f7816d275ce0320aee05a05f9ca18",
+    "bytes": 297067125,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00094-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "cf24a4b3e2d6386b650442e565b400c9c9112c2ffa813f9392e4c3db785f99c7",
+    "bytes": 293753732,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00095-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9dd38ace9af884421ef3b9046d49a5392814f4b53ec174686da20ec359ef9e0b",
+    "bytes": 293753623,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00096-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c31c2512c7eabf73a63f2dc7671ca827ef8ad0e459e8b641413455947bc6cd8b",
+    "bytes": 314433325,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00097-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "b3ed557cd25092d7c8884f8912a593700f0dba93a2818736b747ad60e46a95fb",
+    "bytes": 293753742,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00098-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "1cc3182a292bf6dc760dd6f068f79756cb0ebb457497d8f35c7d60613802abc5",
+    "bytes": 293753734,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00099-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "97083c9d2dc03706ed9372c5dd53d9f40f2b8ad2c2bc24b8c8c2fefacfcd245a",
+    "bytes": 293753479,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00100-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b91561afbd543e85f0d32d82a2c6eccdd48ce1a03e52911c1a50cab94d5e988e",
+    "bytes": 297066953,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00101-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "11433f887e17979130f7d4456033533d15c308097ca6dfb038b583e2e14f593a",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00102-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6dee68c996f4c4a6f6398cbe56e6a491fc476aee9f0d6005c92e01e1d1cb4f98",
+    "bytes": 293753708,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00103-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ef3c5918206154a75d5aa2092b442658d4542ebb12e4ed25cf43ba6b3deb83aa",
+    "bytes": 293753350,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00104-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9cb8f291ee880e66b52080377f7a6638882e93a73bb9de9b2c46be29ad482167",
+    "bytes": 297067115,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00105-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "cc9466e1cfeff2dbc844fc460d9d385649e50b4640a295dd915cb481d41a7897",
+    "bytes": 293753718,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00106-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "171af383475b7db5fc19b773d445caa8715a9a76dd5e2f8a7abe668e7d748733",
+    "bytes": 293753626,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00107-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "981b517614e18710c250f5d253ce5e48e595a186695f2c13bb89439a28079b83",
+    "bytes": 297066820,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00108-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "d00fd34690e27143593d5b71db5acb2c4de7fe663d430f54987db5dedc41b293",
+    "bytes": 293753748,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00109-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ba5b1cd4aefe8386aa0056f5449181248623a6c781a92b05ed154eb391b107d2",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00110-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c33ad5ac27d33252bf15eade748da95cfcb50f1378e491da29afca19a053cd94",
+    "bytes": 293753511,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00111-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "effd8577a79f7b3c91e4be777662a9f7183c0dc8ffaf04b97933d0b948e9b9dd",
+    "bytes": 314433439,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00112-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "6e098f28c3ae5f0e6029b99c3e8aa9ff43a94137856ca0211e0b136482ff2326",
+    "bytes": 293753739,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00113-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b7005754b49675d22d723d0f9905934b70779dfc7968f620edf4bb3d8a224894",
+    "bytes": 293753728,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00114-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e49a5a923ce3f4c6abfdda9382f074a5715e7b68516fd8146dd97a3d93ee82f2",
+    "bytes": 293753357,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00115-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c9b7ba67b3ef3500d3fb14e0a7ea68246569841cd40d7cfaab26955e45db80ce",
+    "bytes": 297066806,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00116-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "dcb6c375372de244c2f91f27dd6dbe3a7a737caafc7438a38046fe5f2cf38ad4",
+    "bytes": 293753278,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00117-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "822bf59c93586c825b059c4e13bacd4858d0608872334d9d1e499cb04a55a72e",
+    "bytes": 293753219,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00118-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "80a8117c44419df4b64ff2d968f278fa2c5c8daf62d1c186cdf7999e0779cbfc",
+    "bytes": 296139108,
+    "complete_bpw": 0.8852474235575737,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00119-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "98cbddcb27258cf3a161d66ef426129f9516bdc0ee2ee15e1a570483c0da78cd",
+    "bytes": 293301904,
+    "complete_bpw": 0.876366973895381,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00120-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 212
+   },
+   {
+    "body_sha256": "4a2f418382a563bb9bd5608571b7a70b37964ff9fe5cae836a50ebbe76be5933",
+    "bytes": 293753728,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00121-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3fa745a03c4e883f3a43aa5e8a7de0527330b5967c5d8099bf5eaf0670215be3",
+    "bytes": 293753517,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00122-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c3bcb9735aaa9d6a6c1fc9964627d061e7577e24ec3e55436082d048de68a89c",
+    "bytes": 297066951,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00123-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "2c284896cba9ee6159a954a9a44ae3b51c1a7882bf27816df6953f36efb0a3e8",
+    "bytes": 293753740,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00124-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5024d80f4047fde3bc214458ca6927a6090024eeffee9fce3f7830b1fe86bf07",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00125-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "53abbf1219c5e2fada8cfdbb94cf12f032b27e7ae4e51529db11a0fa154ccc2f",
+    "bytes": 293753380,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00126-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "51a235304b24fc682ca2a2cf6da1b6789282f86d7554c1394be6c4da6a5edb95",
+    "bytes": 297067066,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00127-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "985050769436389abe730f0ce12cb9badb30bbac61afddb66fb75d9edd40d1bd",
+    "bytes": 293753734,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00128-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b7838f4da205a2d78fd7b9217ad2e95363462ef70413edffddc01c7b97647db6",
+    "bytes": 293753689,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00129-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "24d1eee47d710c51bf0fcf78f64f8ee4fb71fbe1f89c79b3f41c68516ae83106",
+    "bytes": 314671312,
+    "complete_bpw": 0.9381032121554348,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00130-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 222
+   },
+   {
+    "body_sha256": "f8b48397d45cbf06888442d9bc530c497820f047ee4ac328aaf9fa5742baa632",
+    "bytes": 293515714,
+    "complete_bpw": 0.876333305803073,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00131-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 206
+   },
+   {
+    "body_sha256": "e3fd279cd3b9b0d704fcf0fadf2b680ace3167a77e2ccf9debfb7dc706aa61c9",
+    "bytes": 293753730,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00132-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3d4e652e8fca5c6ba908f1c31ff68af919cead93ce43f190cf3f1db3a50c73eb",
+    "bytes": 293753545,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00133-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b6a2fd5eefd53fe5380b0cbef28dfbc08524579e392791d1c3939014bc7aee03",
+    "bytes": 297066908,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00134-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "b65388c46c9dbb49191ea4aa37d90ead74c8c2fe5cf2c2641a54c1ff81e901e6",
+    "bytes": 293753758,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00135-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2202efd74eef8a9baacafaa0e31fe6923965059fc5c5633eae25bf00c8b8a95e",
+    "bytes": 293753734,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00136-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7d1f6d9a132c6ede400bc89defee2f5daed9e87d4d72f6238f3740c1ae258a63",
+    "bytes": 293753413,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00137-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c34aac21bedb057920c0456c469cdfc297f67ff5c1554bc4af0f3d7265897767",
+    "bytes": 297067058,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00138-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "001e726df35b0890ea0129c481298385ecf99e406549ec6e38c41ef8357aaa5d",
+    "bytes": 293753729,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00139-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2fabbfc2bc9aa35a0cdb73926a4632186a3ff367e0e1f4bf8a96c8b55eb15fab",
+    "bytes": 293753684,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00140-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5b07220a3f8f756ffe3def726054d75b20ca036c535a354c73992ed2bc2f74f8",
+    "bytes": 293753302,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00141-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "cc83f3f6bbb677edff7ab5627586eaeb2053b5181603756ef1f1006eed8eca50",
+    "bytes": 297067187,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00142-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "1b2deb983ca291996babfbdfeb7648400603187e6965a711e32b8003b4e3e279",
+    "bytes": 293753730,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00143-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "6550f95d904d40ead55d6e901b40183ddab7ae41cd44285506949ff62f4e69d2",
+    "bytes": 293753555,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00144-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "77af8f01d2988b00b06936b6674b76dec118f28aa7171a58c6b7cdbffa17dd94",
+    "bytes": 314433393,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00145-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "2409a6fc58772db6c6f6c6141805fa638fc4029a04debbe6f647fb7c86dc49ae",
+    "bytes": 293753731,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00146-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5505f53c2fc663266e81e8afed32bfebb4664d7d95d65609c811d55be66e7f93",
+    "bytes": 293753753,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00147-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e95049736cb357119fa4c76d14be2507d41581a6e44be267a2bc181ead1b1fe7",
+    "bytes": 293753413,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00148-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c6542e50d2b870a71c8b31338a976ae6a7b0087217ebd7384dff38ea7b7b291c",
+    "bytes": 297067011,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00149-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "d5312b97a750f229e960b8eaa5445a645b0e8c56aa02c144a886226c03b4f834",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00150-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "28461e4f5b53516c6ece1f043364e2b9983337783f3a060f42d21cdca80c6c24",
+    "bytes": 293753725,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00151-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "27c51084d4d1923a79f6ebb155f1f1e6dce779802dceb69be29270d9866961c9",
+    "bytes": 293753324,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00152-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a8153b04f35cff8d664f71f0049e05f8deffccc2a6964ddac4b8a816b3d4d227",
+    "bytes": 297067166,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00153-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "5bcdb0e5f3ece0eff3895a21799a4be4aff45b25adab5a8bfaf3c6fe06d6cad9",
+    "bytes": 293753735,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00154-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "95167f16119b82781a73359940f82f083c9335c3db84c39b70fb92287c2c2306",
+    "bytes": 293753549,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00155-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "8c106a6405365324f8bf5c2c2ee8d2d0239be90ed9f5a6a7ee4085f436a80a44",
+    "bytes": 297066811,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00156-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "b07c9a23401aae92ad89c713a7c887bb0a545873c68448981e31da792f6d2a7b",
+    "bytes": 293753311,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00157-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b6f8688b5be0fb14bea0ad2264790cdc19065085c11059b6c5aafb72bb45c0e4",
+    "bytes": 293753304,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00158-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b0adf5f56380e6d91221af8879310830ef8c6df11f7acf9b2ddb42fc95f3801c",
+    "bytes": 293753028,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00159-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7d84d5ccf0747fb68b5171932ff00a2f94c19af4a5299d4e051f20ace0bae7bc",
+    "bytes": 297066802,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00160-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "626983796ddb07d2f70758c514d622cf53e910e293e69c6c2482d466e56f5479",
+    "bytes": 293753722,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00161-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2a1eb753b427682c0c3a37bc64a2ec6d9ec826c902c9f41f15ba99cb3714ce25",
+    "bytes": 293753720,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00162-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "95ac07ef2ffd97cdda5a440317b18b1a2f08e90f2ac3761733f8626e10f3d483",
+    "bytes": 293753296,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00163-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e0ed27d344ced91312debee6b3f3450698752f5328ce59a1c3905caa70d164d1",
+    "bytes": 314433628,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00164-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "3c5b41f4b9e0d369756df895f356a44e0b7818adffa4d95e11fee6f21ce0d4b6",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00165-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "16ad0b0b732e25a25876622d96a02f8ebaf24df9e823e164a8c9785f3adaab4e",
+    "bytes": 293753596,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00166-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "58f96c92fe4f0ef170421f85e8ce4f51de58dbb23305117fd5a576145cf15252",
+    "bytes": 297066850,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00167-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "c8abe6acf574ac45749ae2b1d9a9c7a568003793f892a4ecc682153bb4e5531a",
+    "bytes": 293753747,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00168-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "d8ed44cd9a4e55b61f5c660bc8adc73eedda714eda04aa2fec177fa29d80f78e",
+    "bytes": 293753737,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00169-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "8d9f6f064b08c709f9ce8c2d8c476cd09c669d9ba1c89b6702a1fbe76e8f9fa8",
+    "bytes": 293753459,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00170-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b36c3493cb4498a965cd25de2f27de7eaa1bd79a05685083955676522c6a228d",
+    "bytes": 297066986,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00171-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "7a4e7c2b709301ec7cb972afcb7c959c40a2379fc529fb4997129fb41ea958c5",
+    "bytes": 293753750,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00172-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a58be9af5a3b1d0fb48dcbf2824d3c4c17b4f1495679b2a1495ba1ed2a8f2d46",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00173-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b3be5b8872c01c2fc949c3bc1a1dd56146eab0315b30bad79d7843886e642c0d",
+    "bytes": 293753335,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00174-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "f49747d8afb55e443a2c899308c74ba9261c8e72654339f78fc508a0ab57dc36",
+    "bytes": 297067139,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00175-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "2689fa76722ff8a56bb81277958a0c9e76c6bb251f68833da377e0e5f099a28c",
+    "bytes": 293753709,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00176-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ddbb83956e0c3883c5fd5a4ef37734436d9529ebc74d409211a8d201f34814f4",
+    "bytes": 293753612,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00177-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "3391d65bba84c720abe989190401fe7bbf5913eaa489b5feaeadca6fc4a543ef",
+    "bytes": 314433296,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00178-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "c6f03de314191a4a99681c725162a93cce818d6d13bb14d0a3e88389bcf94a6f",
+    "bytes": 293753743,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00179-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ce732828f5c0e266bb358e5ee5e91e234321b3c50e0d10728f8f9a51bf626de5",
+    "bytes": 293753731,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00180-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7db7110f9f40c41508b83e16234f67c73724bd60a1242ab15dc762afc105a2ba",
+    "bytes": 293753486,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00181-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "302161d0a74daed3ffffcd51d827608d86fbc2d97e007acbeb34eebc43d65da4",
+    "bytes": 297066980,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00182-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "62ba03f4279853a64e7a23b1f94bef7734174d25a3d3a2930bfc68de3c1b163b",
+    "bytes": 293753740,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00183-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c724b68ca71a701e819e392c902410b321639bc53a6c4147ba4dcde97073e275",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00184-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b34779bb5d05ffa2b723cf733c9bc42366bd006656e2eb234b0f2a2feed20d8e",
+    "bytes": 293753362,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00185-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "2c6d3df958bfd5010fc2439a0b24ae746b5bc3e76ba2991405c74ea3023f76b8",
+    "bytes": 297067125,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00186-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "c7205d2a51c110adc64082f53e3cfeae21e72a2c52079688f49cd987a24a43e8",
+    "bytes": 293753737,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00187-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "df32ddcfedb1740aa471887174cbc8e2d5c39cad4d47d19bc1a9a76304aa19f3",
+    "bytes": 293753621,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00188-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "1c031bb2bfa71fc20feb8c55810e7c7e20a7887c22f0ea7b556f243409475e45",
+    "bytes": 297066827,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00189-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "dc31d2336ad7638ec1f26823c0b6c0cd54fc1dd27401fc885f3558424a8703ef",
+    "bytes": 293753727,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00190-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "fc2f4906c0c0495446293557fc3523a1bd9d518867fa30ba8966508511959069",
+    "bytes": 293753719,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00191-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "4aa7ac26d6109eb66c946a6f64f615f32ed40a498065c2da472eb3e452679102",
+    "bytes": 293753477,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00192-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b5b585e36e349e0e3c0234d797d7fa8275a1981d60391a930029322b2373d84f",
+    "bytes": 314433452,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00193-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "99f2035632dafef207528c98cc1dced3300423f7c30bffcc86f35e665e3ef0c1",
+    "bytes": 293753742,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00194-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "c9a13fa56d8f3e369a35fd3524d1db9055a6decd30f099dcc9d5960137dab93e",
+    "bytes": 293753729,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00195-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "349c9a43672d57db0f27918cb13507ac18e9fab2fae4d29cd857e5fdc391191e",
+    "bytes": 293753357,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00196-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "039832a465e1675337c92a8f61c3371b53e29c17ac327a6846017c2fcee28d49",
+    "bytes": 297066815,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00197-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "9f1f4ff65eafc61111dfcb5340d28689a9623b6d8dbedaeee6ef9ccf632695a4",
+    "bytes": 293753303,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00198-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "92ad621f54dd2ec7057403380e3f16cf73046ec288fc653a54d0aa0fe2a90ef9",
+    "bytes": 293753231,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00199-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7509fb4848ca788bbcff67bb8bd62b84a2077c5b29cfa470c8d24c4213f29c1e",
+    "bytes": 314884692,
+    "complete_bpw": 0.9380213386173122,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00200-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 216
+   },
+   {
+    "body_sha256": "20bf0f29ac4df3edc32e69f4c3b80f5381bd7f0bcdeee454b63a515e6109c6d9",
+    "bytes": 293301892,
+    "complete_bpw": 0.876366973895381,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00201-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 212
+   },
+   {
+    "body_sha256": "f2f97857c4fd7507a947bc37993734b0443fba570e44c8e51be8235276c830af",
+    "bytes": 293753721,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00202-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "69a8c80ed7062764c8fbc0b841e1bb4b3dca0485a45a88119b505c26e6da987c",
+    "bytes": 293753530,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00203-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "43c16e4e8dbaa1eac4b2a40de51b9bf1f0b4c319ad3fa4e9b9ae4c6f682426cf",
+    "bytes": 297066920,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00204-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "eb549bbdc8951cac4b67636b4d91e3885c2894f8e89bc31cfdcbc93ed3bf2507",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00205-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ca28a8d88072f6f8465a8b5697528ccd6f35f7c7d3f5738db802fc63bf970e16",
+    "bytes": 293753759,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00206-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "f639865b401dec42c8332c19e3073ed8ed4efb20f1efe3398ed22f9f55d1a8d1",
+    "bytes": 293753391,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00207-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "712b7cad3a88b81eeb4acaf29ac46979b23a9c7619af35600ca20db14593b6ce",
+    "bytes": 297067064,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00208-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "e6d5c43f3bd0e8475e8124a3e830fbe1fbda345771da4be21dc1b422a12925d9",
+    "bytes": 293753722,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00209-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "81f5ce8ea08d96bf4fe5b098aa4803d806664a05d92449590e83306435042340",
+    "bytes": 293753661,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00210-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "78162389ee556f799530594c737f17740879b3fe701ba7e9fb494614f4e2215a",
+    "bytes": 298881511,
+    "complete_bpw": 0.8907905482248674,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00211-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 220
+   },
+   {
+    "body_sha256": "819b0ddcc1a501d69da66f18b1cedd3c6b76020701b2607e9173cefbdcf67ec1",
+    "bytes": 309305525,
+    "complete_bpw": 0.9237246308273968,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00212-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 208
+   },
+   {
+    "body_sha256": "d4f0bd263fd4fde07315eb67cb4f515b1980abf1959b0a8c83cf543b2db7c1d2",
+    "bytes": 293753738,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00213-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "30da2e306c93600f077ea0fd2ed27fa067d64ebacf7f2c8624f29c2df967802c",
+    "bytes": 293753552,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00214-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "4d2067d21e23fd80fdee983956e276587a96a598622017e10083336cfea42fb9",
+    "bytes": 297066895,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00215-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "bff289865b43339846cf25d04d1dac34c318d5799dfd424dfee743daf2dd7263",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00216-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5add1979500a4c3e206bd5a0b9e5c225d1a51181151a35ffb3b76bca5a030e21",
+    "bytes": 293753707,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00217-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "dfab733fc3fdfccfb89836803eb1f27e3c5bb8cd96d39f3dcc76e9e497567725",
+    "bytes": 293753410,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00218-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "949d9da0845610ad8d1a1e121b65963c817db9cbbeb59c7faf8dd94a2ecd400b",
+    "bytes": 297067058,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00219-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "468be652db92e1eb7eb8c3115ab5ac0929de74be0fb514c0d7db2bfd76520f0b",
+    "bytes": 293753709,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00220-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "4fb20408ce3ec65d629250567e4adb67bcbd841141edb9518af406dda66ba98e",
+    "bytes": 293753685,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00221-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "61b69e5aba3ab8b2c5baaaae6701d761896082ca79b4b06143daf6e5bbf7db9d",
+    "bytes": 293753324,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00222-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9e30ac81d62c4f527ae19e7c999e0da599b3936096decb6406ebaf6759b42d18",
+    "bytes": 297067172,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00223-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "3eee7eb82469bb0c5a15a8badf10a5700944682e5f0f212911a2a4af7063f44a",
+    "bytes": 293753744,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00224-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "eebd14a8f46ed9bdb829e955c5184f8c0a144dd412b81f574e76621303c87c39",
+    "bytes": 293753546,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00225-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a417c7605e3caeba66d051d56481d461730ba1afdf4bf57a225664b51765fe96",
+    "bytes": 314433376,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00226-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "65d939d1d5b272e1c94525ab6f74d13ccb6ebe5ca7cfa1beef5fa078801dc117",
+    "bytes": 293753751,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00227-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "7348eefc9dd04a357c45ada92f0e6103ed3b266e48bc10a600f40beb0e5878cb",
+    "bytes": 293753729,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00228-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "d52a64d6fa3148decf3869631baafa47ab50557f58efdf635f79b155079ceebe",
+    "bytes": 293753427,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00229-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "406e3c8813f5fffaf4767921351e63e8997b49e6fe3ef2f13df2ba2765217ed3",
+    "bytes": 297067013,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00230-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "2993318f06e5919b13a0534c547cb0cff7e418160eef9fafb945277b56483d28",
+    "bytes": 293753739,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00231-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "62e899fb4939e47f62c7014dc1aea8b522fb35afadadeb75cb05536322cad9be",
+    "bytes": 293753676,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00232-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "280b32f5f7cda73d6ce142a37fdaba08800add0acaa7a8a49c21aa08f36c2982",
+    "bytes": 293753311,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00233-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "b6e760ddfff896d702d44197323a01b40870f61ba5244e99222e59bc78687403",
+    "bytes": 297067183,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00234-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "4f94e24c1b2440cc53846eca5db2c474089f19050a6a62efc9b1acf293c1ad17",
+    "bytes": 293753736,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00235-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "0e96dc58c6d7b4c13afeebc1ae6774db3ab09dc84cdc46c9a3565d8afc2b1dcb",
+    "bytes": 293753576,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00236-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e985163533783699eb83fce248b3f4dff834c138e1766215e033d2f47fcc8864",
+    "bytes": 297066802,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00237-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "3b9fc90eba768217f1777cffa52cb28321c260d8ffbdfd9a51ff9fa65c09853d",
+    "bytes": 293753299,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00238-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "19a44de38ce4efaae702c79267df1508f610a9f0728f50c03b064e89991c1c9b",
+    "bytes": 293753309,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00239-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a38d5d93d703066abd3e05873e26a155fbc121006f609e2bc16bffff2289c1f0",
+    "bytes": 293753027,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00240-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "61bcbb9b313d6655e59ddaced45f42be65aba24b9e10bda22bc74b77c48f6fc1",
+    "bytes": 297066800,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00241-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "dcf8f778ec19cbd4fe55b7e3aa203441ee62cd1c133cda010e4e53c7a9d74fbe",
+    "bytes": 293753715,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00242-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "107b632268a816b3fd8bacfe05741a88eefc498fd3715675bb76c95cc96fe093",
+    "bytes": 293753713,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00243-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "5d1c79ca67738eba83f3460b908af707066d49899b3664e481d69402548c8fbe",
+    "bytes": 293753304,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00244-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "108aec6760ee3e5f3f41851bc6998b6f6b536b41c9c31dcd379206475bc8ef7c",
+    "bytes": 314433647,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00245-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "971cb0766f41f7d875c4491c8fc5bf850fd531a6f8059f4ddc254aa209475d05",
+    "bytes": 293753724,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00246-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "ee307508a3d18bd8b8f726a34aeb63d9ff797c3f7be5aecb649c9bb0d5d69280",
+    "bytes": 293753611,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00247-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "1bcc8298342cfeb3bbdc110052708ac9c9ac86f12099d22b1decd546efdcd02f",
+    "bytes": 297066839,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00248-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "e69cd1ee053f2e4e34f821a154103188f7a5b03d6c4ac8a01e75fca5ac7d5487",
+    "bytes": 293753754,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00249-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "16ed396211bb59fa0202a195c88859b91d6ccdd2c9442a964bc72b67715aeec7",
+    "bytes": 293753733,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00250-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "731bd363038884e07cdd230aa22e40ed7673ebb1ca7eeb6a3b6482bcd8098899",
+    "bytes": 293753458,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00251-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "03ec8fc84f1440d8196d46135252a989fb7538d5eeeb311893cfef9b59ec27ef",
+    "bytes": 297066993,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00252-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "224b56e15033f6241ad42775405131bb21a3da5d66c58b849d6b607ee53f1d06",
+    "bytes": 293753737,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00253-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9d9f9d8f8d48a6c3f9b949ba642f7405b6e156d8e18047b78d16ff2b206fa093",
+    "bytes": 293753729,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00254-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "beeca8430106da8ab227302daba262aa236c9292d0b00c6f079b557891aa390a",
+    "bytes": 293753322,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00255-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "67c6ee62c625f0c763643065d052dc0f4000d0d1ec04e1e29fd72a57356badf4",
+    "bytes": 297067125,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00256-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "fda90bba15755076e10912a0e1f9a235fd32aca1587b70a28f5963488a070c08",
+    "bytes": 293753727,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00257-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a974c929a4c5db2a1bd9d01488ca1a1a008d8a1d62e0430ce9d2e339afa75e3a",
+    "bytes": 293753614,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00258-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "048a547d05c31900fe02bcb2e5b323728f30398477dd374c82c11f5cff08e5e5",
+    "bytes": 314433297,
+    "complete_bpw": 0.9381418915949956,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00259-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 215
+   },
+   {
+    "body_sha256": "4894521096b33c4d43cdc9e97336e124277bc2d9eea2d90173053a2549d2a4a2",
+    "bytes": 293753750,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00260-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "88178152f2c15c80be83b3d7d062706efe6366170b9007520f5b1d4bbab210b2",
+    "bytes": 293753736,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00261-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "16f7fa26ba25778c9d3670b8163d97a62392dea792f8cea3828cc39f3b15fcd6",
+    "bytes": 293753484,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00262-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9610f26a64b27e9bf3cd2763232586f6a362810bcf3da6d12612e2bdf481ad69",
+    "bytes": 297066970,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00263-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "5ea875e55b71af3224e8983bf1f6bdda2e7978d3623b4c6b871d5fac0a73c90f",
+    "bytes": 293753734,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00264-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "de82540f3bbf1bb3c9840646ae6fff20746f58f7fec34323d46e947015320fae",
+    "bytes": 293753726,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00265-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "88d3f02babb796af9fd3700b25f01e4d7c9cf37c7b891265778f4910ef89d558",
+    "bytes": 293753364,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00266-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "0ff8b86a7fe1648c7c57338890ecd9f199cdc9924f0e7b87e639c4bb7158cdb1",
+    "bytes": 297067105,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00267-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "90cb506860c73a7676ff31f6f03ac5487565839057553d7f9041c96dfca2b1aa",
+    "bytes": 293753725,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00268-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "cda3a780240ab21ae8bf5dfdb476b8c4211963095d18c96dadd251312e3c499d",
+    "bytes": 293753630,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00269-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "a4b7dd4708260ebc6709613e7d5e585a710582b9c80ff12a09d2b839710e021a",
+    "bytes": 297077794,
+    "complete_bpw": 0.885281434224648,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00270-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 208
+   },
+   {
+    "body_sha256": "19b7f2a0e05310fdaeddf44dbed28404045d23f37565cdc14552faf58c40e57f",
+    "bytes": 293753695,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00271-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "454a3ad8ed6e8fc63a844ae5a11dcecdc7c0fd153e4976c845d53b9aa528dbb9",
+    "bytes": 293753728,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00272-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "e776cd8ae82dae9f895932215c94d53e370ee83dd273c5cbac9d239fe9c07355",
+    "bytes": 293753496,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00273-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "8dd58b789e95b7281fbe6729afbf8b44d67b422b1a1d639cb48bb9f4b87aafd6",
+    "bytes": 314445920,
+    "complete_bpw": 0.9381764216580256,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00274-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 216
+   },
+   {
+    "body_sha256": "3905b3af63a2cca8a862d896bc86489c38413b62a205cb464b501e97145bc425",
+    "bytes": 293753304,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00275-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "fabc46a6c93ba3077bfba912b47f210679206bb98ed987f3a477d3b5344d1ae4",
+    "bytes": 293753313,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00276-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "516cbd183f45c0aff65e474b567bc3b76907fb8081e29c2824c8b00324e45d86",
+    "bytes": 293752943,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00277-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "708edd21a7b0eb62af3e8b225f5ac7a23e26b9682356d5cf3df2fe296054e92b",
+    "bytes": 297066650,
+    "complete_bpw": 0.8852436994160312,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00278-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 211
+   },
+   {
+    "body_sha256": "85e623b6c130118ac81c8236cfee30df09e693e4d29b9731540e77e09acd7926",
+    "bytes": 293753301,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00279-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "9469b340c903b438068441242f6f49a4f04c1dd3c6f9b4fc9256c362cc61054d",
+    "bytes": 293753248,
+    "complete_bpw": 0.8763427734375,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00280-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 213
+   },
+   {
+    "body_sha256": "207b11f4c32311c901ea1b4ab61548aec56ba851fbb05c91f4a8dd467011402c",
+    "bytes": 294775531,
+    "complete_bpw": 0.8853223099838171,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00281-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 216
+   },
+   {
+    "body_sha256": "6175a693191ef6a160ec0c960313fb47da794e543b91be35f2681c3ffc87c53b",
+    "bytes": 16083212,
+    "complete_bpw": 0.8761892472518275,
+    "model": "zai-org/GLM-5.2",
+    "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00282-of-00282.gravity",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "tensor_count": 5
+   }
+  ]
+ },
+ "at": "2026-07-25T03:56:45Z",
+ "git": {
+  "branch": "campaign/glm52-generation-b",
+  "dirty_count": 4,
+  "dirty_paths": [
+   "HAWKING_MOTHERLOAD_LEDGER.jsonl",
+   "HAWKING_MOTHERLOAD_STATUS.json",
+   "HAWKING_MOTHERLOAD_STATUS.md",
+   "GLM52_SELECTED_GENERAL_ARTIFACT.json"
+  ],
+  "head": "293e63c541a0b539e0d5a343d200c080de300e75",
+  "head_subject": "Correct the Escape Receipt claim: it does not exist, verified in enforced code",
+  "unpushed": 0,
+  "upstream": "origin/campaign/glm52-generation-b"
+ },
+ "host": {
+  "cpu_count": 28,
+  "free_disk_bytes": 455532744704,
+  "free_disk_gib": 424.2,
+  "physical_memory_bytes": 103079215104,
+  "swap_raw": "total = 2048.00M  used = 970.75M  free = 1077.25M  (encrypted)"
+ },
+ "processes": {
+  "hawking_lane_count": 0,
+  "hawking_lanes": [],
+  "mop_isolation": "UNTOUCHED -- separate project, not read or signalled by this campaign",
+  "mop_process_count": 10
+ },
+ "root": "/Users/scammermike/Downloads/hawking",
+ "schema": "hawking.motherload.live_audit.v1",
+ "source": {
+  "controller": {
+   "eviction_paused": null,
+   "heartbeat_age_seconds": 5324.8,
+   "launchd_label": "com.hawking.glm52.source-fetch",
+   "launchd_loaded": true,
+   "lease_held": false,
+   "lease_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/fetch.lock",
+   "pids": [],
+   "pids_alive": {}
+  },
+  "faults_total": 0,
+  "fraction_verified": 1.0,
+  "healthy": false,
+  "repo": "zai-org/GLM-5.2",
+  "resident_bytes": 0,
+  "resident_shard_files": 0,
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "shards_probed": 282,
+  "shards_verified": 282,
+  "state": "ALL_SHARDS_VERIFIED",
+  "teacher_capsules": 33,
+  "total_source_shards": 282,
+  "window": null,
+  "window_count": null
+ }
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.light_only.status.v1",
+  "at": "2026-07-27T04:55:00Z",
+  "endpoint": "HAWKING_LIGHT_ONLY_FOUNDATION_COMPLETE",
+  "resource_mode": "LIGHT_ONLY",
+  "machine": {
+    "at": "2026-07-27T04:54:58Z",
+    "ncpu": 28,
+    "load1": 24.29,
+    "load5": 22.75,
+    "load15": 23.22,
+    "load_per_core": 0.867,
+    "mem_total_gib": 96.0,
+    "mem_available_gib": 52.83,
+    "mem_available_frac": 0.5504,
+    "swap_used_mb": 10796.25,
+    "disk_free_gib": 173.98,
+    "thermal_green": true,
+    "foreign_cpu_pct": 1603.0,
+    "foreign_cpu_cores": 16.03,
+    "foreign_procs": 16
+  },
+  "fences": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": "false",
+    "substrate_capability_gate": "REFUSING",
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "adapter_grades": {
+    "deepseek": "SOURCE_HEADER_VALIDATED",
+    "gemma": "DECLARED",
+    "glm": "SMALL_REAL_CHECKPOINT",
+    "kimi": "SYNTHETIC_PARITY",
+    "llama": "SMALL_REAL_CHECKPOINT",
+    "minimax": "DECLARED",
+    "mistral_mixtral": "SMALL_REAL_CHECKPOINT",
+    "phi": "DECLARED",
+    "qwen": "SMALL_REAL_CHECKPOINT",
+    "state_space": "DECLARED"
+  },
+  "production_families": [],
+  "test_suites": {
+    "odyssey T0": {
+      "pass": true,
+      "last_line": "OK"
+    },
+    "odyssey apparatus": {
+      "pass": true,
+      "last_line": "OK"
+    },
+    "odyssey data": {
+      "pass": true,
+      "last_line": "OK"
+    },
+    "ramanujan governance": {
+      "pass": true,
+      "last_line": "OK"
+    },
+    "ramanujan search": {
+      "pass": true,
+      "last_line": "OK"
+    },
+    "ramanujan cognition": {
+      "pass": true,
+      "last_line": "OK"
+    }
+  },
+  "all_suites_green": true
+}

@@ -1,0 +1,110 @@
+{
+  "allocated_byte_reconciliation": {
+    "all_four_kimi_named_hf_roots_allocated_bytes": 595205173248,
+    "exact_kimi_k2_6_source_root_allocated_bytes": 595205144576,
+    "filesystem_free_delta_is_not_relabelled_as_source_only": true,
+    "other_three_cache_skeletons_allocated_bytes": 28672,
+    "total_cleanup_free_space_delta_bytes": 597515915264,
+    "total_delta_includes_runtime_and_other_targets": true
+  },
+  "authorization": "The GLM-5.2 campaign authorizes Kimi raw-source release after closure gates; live evidence proves the release had already occurred.",
+  "closure": {
+    "byte_auction_seal_sha256": "d8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719",
+    "cleanse_commit": "8d634af9702aa965728f057661b5d1fad1883f45",
+    "closure_commit": "0210e5aa05f0e3c69d6f2022c539c9dc90cce322",
+    "evidence_chain": [
+      {
+        "evidence_id": "M1",
+        "path": "KIMI_K26_GRAVITY_M1_ORACLE_BANDWIDTH.json",
+        "seal_sha256": "8ff3234bf77ca96bc3bbb6858745fa37ec937e0d4ce5829283480e29e4a52de2"
+      },
+      {
+        "evidence_id": "M2",
+        "path": "KIMI_K26_GRAVITY_M2_CONDITIONAL_GATE.json",
+        "seal_sha256": "c1a001c4bedb40ffc0b6a590514259fe7a198aaac402ffb5b691d5010c7881a1"
+      },
+      {
+        "evidence_id": "M5",
+        "path": "KIMI_K26_GRAVITY_RATE_LADDER.json",
+        "seal_sha256": "b03e1c75c591f43ba3ba8beeb88c6a21537c673e746e947f8a5e7098f9ee45b8"
+      },
+      {
+        "evidence_id": "M7",
+        "path": "KIMI_K26_GRAVITY_M7_ORACLE_GAP.json",
+        "seal_sha256": "5f82435a0c655b2384a1bfffb90e3d0106f7aa448d7f9c0e2687bc3adef4434e"
+      },
+      {
+        "evidence_id": "byte_auction",
+        "path": "KIMI_K26_FINAL_BYTE_AUCTION.json",
+        "seal_sha256": "d8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719"
+      },
+      {
+        "evidence_id": "disk_policy",
+        "path": "KIMI_K26_DISK_POLICY.json",
+        "seal_sha256": "e44219c1f448055c49f27e17bc410d107ff7a45b7bd9d6eab9109a0affe5c4f2"
+      },
+      {
+        "evidence_id": "nonlinear_tournament",
+        "path": "KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json",
+        "seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e"
+      },
+      {
+        "evidence_id": "oneoff_closure",
+        "path": "KIMI_K26_GRAVITY_ONEOFF_CLOSURE.json",
+        "seal_sha256": "6776748c50fbcdf45a3441144dda55986592530e60e0e39d5307745cb8248ce7"
+      },
+      {
+        "evidence_id": "prior_long_run",
+        "path": "KIMI_K26_LONG_RUN_FINAL.json",
+        "seal_sha256": "9c31d2a22e488d4234f4acad443beb564ab263a32ebee06f01c5ba4e76a18bff"
+      }
+    ],
+    "final_seal_sha256": "63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a",
+    "terminal_outcome": "OUTCOME_C"
+  },
+  "created_at": "2026-07-21T20:29:51.092439Z",
+  "credential_remediation_seal_sha256": "fd7fb566795030c1a0a21876c1d1302b780f0c5ac677bd30d9567867be72f2bd",
+  "live_absence": {
+    "installed_plist_absent": true,
+    "process_audit": {
+      "former_pids": {
+        "73361_alive": false,
+        "73362_alive": false
+      },
+      "matching_process_count": 0,
+      "matching_processes": []
+    },
+    "queue_or_outbox_possible": false,
+    "runtime_absent": true,
+    "source_absent": true
+  },
+  "new_deletion_performed_by_this_receipt": false,
+  "rehydration": {
+    "automatic": false,
+    "command": "HF_HUB_DISABLE_XET=0 HF_XET_HIGH_PERFORMANCE=1 /Library/Frameworks/Python.framework/Versions/3.12/bin/hf download moonshotai/Kimi-K2.6 --revision 7eb5002f6aadc958aed6a9177b7ed26bb94011bb --cache-dir /Users/scammermike/.cache/huggingface/hub --max-workers 8 --format agent"
+  },
+  "release_timing": "COMPLETED_BEFORE_THIS_GLM52_GOAL",
+  "rollback_boundary": {
+    "best_local_payload_preserved": false,
+    "implementation_recoverable_from_git_history": true,
+    "reproducibility_capsule_status": "DEGRADED_BY_PRIOR_BROAD_CLEANSE",
+    "runtime_preserved": false,
+    "scientific_reports_preserved": true
+  },
+  "schema": "hawking.kimi_k26.source_release_for_glm52.v1",
+  "seal_sha256": "580c923ef86cfdb2a7aa16d84fa80139f5d49177509958edee87f8792b488ee2",
+  "source": {
+    "exists_now": false,
+    "former_root": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+    "former_snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "logical_bytes": 595204999341,
+    "manifest_files": 96,
+    "manifest_path": "reports/condense/kimi_k26/KIMI_K26_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256": "22123f6ed9ae2688da383b5de8c671e70071802e6fc1ca0a16df90c607885c60",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "weight_bytes": 595177988208,
+    "weight_shards": 64
+  },
+  "status": "RECONCILED_ALREADY_RELEASED"
+}

@@ -7,7 +7,7 @@ them answers the question the rebuild actually turns on: **which code is reachab
 observable contract at all**, and is therefore a deletion or replacement candidate rather
 than something that has to be re-expressed.
 
-    python3.12 tools/graph/behaviour_map.py --out HAWKING_BEHAVIOUR_TO_CODE_MAP.json
+    python3.12 tools/graph/behaviour_map.py    # writes build/graph/HAWKING_BEHAVIOUR_TO_CODE_MAP.json
 
 Reachability is deliberately generous. A behaviour's seed set is every graph node whose path
 is named in its `current_code`, and the closure follows `contains` (a file owns its
@@ -70,9 +70,9 @@ def closure(seeds: set[str], out: dict[str, list[str]], depth: int) -> set[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--graph", default="HAWKING_SEMANTIC_GRAPH.jsonl")
-    ap.add_argument("--constitution", default="REBUILD_BEHAVIOUR_CONSTITUTION.json")
-    ap.add_argument("--out", default="HAWKING_BEHAVIOUR_TO_CODE_MAP.json")
+    ap.add_argument("--graph", default=str(ROOT / "build" / "graph" / "HAWKING_SEMANTIC_GRAPH.jsonl"))
+    ap.add_argument("--constitution", default="evidence/rebuild/REBUILD_BEHAVIOUR_CONSTITUTION.json")
+    ap.add_argument("--out", default=str(ROOT / "build" / "graph" / "HAWKING_BEHAVIOUR_TO_CODE_MAP.json"))
     ap.add_argument("--depth", type=int, default=DEFAULT_DEPTH)
     args = ap.parse_args()
 

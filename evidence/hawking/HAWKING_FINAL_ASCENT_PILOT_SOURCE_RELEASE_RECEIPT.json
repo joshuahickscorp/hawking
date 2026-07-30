@@ -1,0 +1,378 @@
+{
+  "bindings": {
+    "controller_reseal_sha256": "73580c79e98dc3422b593cc7ea480b0ebb80db60ad9cdc2a2c697798adfbb615",
+    "measurement_receipt_sha256": "36c1302636d903c06c3cf6c95fd437a7c30098a27a859f119c5cfed0c1a63cd0",
+    "release_controller_code": {
+      "glm52_pilot_source_release_py_sha256": "1ff79394a82984606f074080c066e81a8a38d1ce0a5029d67ae1863b9933a681",
+      "test_glm52_pilot_source_release_py_sha256": "39febad2a03e6ead53cca3c616aa1985d87152e2db7a7f2feae88ff13554daea"
+    },
+    "reviewed_current_code": {
+      "glm52_activation_aware_pack_py_sha256": "321cbd1f071683702bfc61c293785eb44cfbf6bb6098bde0f039134c4b3f4832",
+      "glm52_basis_pilot_py_sha256": "471593c0177bce5da659f769a589027732608ea7e4223afdeb5356555dbddcfb",
+      "test_glm52_basis_pilot_py_sha256": "d577a4f0753068352df1acc4c21f22167ca4d84f16fd0563d65b46bf4808e5dc"
+    },
+    "revision_0_content_sha256": "8928fad82967d2fc06e0ccad470f7e527b842faf766df20f4148e0db3f8ba357",
+    "revision_0_evidence_file_sha256": "f8b74ee4c0394d8efb7a9e9f12dff41e90be0d861402781d034831262d2ca3c5"
+  },
+  "confirm_phrase": "RELEASE_EXACT_SEALED_FIVE_SHARD_PILOT",
+  "controller_reseal_status": "SEALED_WITH_NON_MEASUREMENT_CONTROLLER_FIX",
+  "deletion": {
+    "aggregate_bytes_sealed": 26819553072,
+    "all_deleted": true,
+    "deleted_bytes": 26819553072,
+    "method": "explicit os.unlink per resolved file; no glob; no rmtree",
+    "remaining_bodies": [],
+    "results": [
+      {
+        "bytes": 5366406824,
+        "deleted": true,
+        "name": "model-00108-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00108-of-00282.safetensors",
+        "sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855"
+      },
+      {
+        "bytes": 5366406816,
+        "deleted": true,
+        "name": "model-00156-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00156-of-00282.safetensors",
+        "sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4"
+      },
+      {
+        "bytes": 5360347104,
+        "deleted": true,
+        "name": "model-00157-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00157-of-00282.safetensors",
+        "sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0"
+      },
+      {
+        "bytes": 5359985360,
+        "deleted": true,
+        "name": "model-00112-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00112-of-00282.safetensors",
+        "sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636"
+      },
+      {
+        "bytes": 5366406968,
+        "deleted": true,
+        "name": "model-00256-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00256-of-00282.safetensors",
+        "sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542"
+      }
+    ],
+    "targets": [
+      {
+        "bytes": 5366406824,
+        "name": "model-00108-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00108-of-00282.safetensors",
+        "sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855"
+      },
+      {
+        "bytes": 5366406816,
+        "name": "model-00156-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00156-of-00282.safetensors",
+        "sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4"
+      },
+      {
+        "bytes": 5360347104,
+        "name": "model-00157-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00157-of-00282.safetensors",
+        "sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0"
+      },
+      {
+        "bytes": 5359985360,
+        "name": "model-00112-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00112-of-00282.safetensors",
+        "sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636"
+      },
+      {
+        "bytes": 5366406968,
+        "name": "model-00256-of-00282.safetensors",
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00256-of-00282.safetensors",
+        "sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542"
+      }
+    ]
+  },
+  "disk": {
+    "free_bytes_after": 100826607616,
+    "free_bytes_before": 74006704128,
+    "free_delta_bytes": 26819903488
+  },
+  "fences": {
+    "HIDE_KERNEL_TURN": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "gate": {
+    "all_green": true,
+    "evaluated_at": "2026-07-28T12:55:47Z",
+    "gates": {
+      "g01_pilot_root_exact": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source",
+        "reason": "pilot root resolves without symlinks to the configured absolute path under support",
+        "status": "green",
+        "support": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity"
+      },
+      "g02_rehydration_deletion_set": {
+        "aggregate_bytes": 26819553072,
+        "reason": "exactly five sealed shards from rehydration receipt (26819553072 bytes)",
+        "repo": "zai-org/GLM-5.2",
+        "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+        "shards": [
+          {
+            "bytes": 5366406824,
+            "name": "model-00108-of-00282.safetensors",
+            "sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855"
+          },
+          {
+            "bytes": 5366406816,
+            "name": "model-00156-of-00282.safetensors",
+            "sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4"
+          },
+          {
+            "bytes": 5360347104,
+            "name": "model-00157-of-00282.safetensors",
+            "sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0"
+          },
+          {
+            "bytes": 5359985360,
+            "name": "model-00112-of-00282.safetensors",
+            "sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636"
+          },
+          {
+            "bytes": 5366406968,
+            "name": "model-00256-of-00282.safetensors",
+            "sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542"
+          }
+        ],
+        "status": "green"
+      },
+      "g03_exact_five_regular_bodies": {
+        "bodies": [
+          {
+            "bytes": 5366406824,
+            "name": "model-00108-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00108-of-00282.safetensors"
+          },
+          {
+            "bytes": 5366406816,
+            "name": "model-00156-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00156-of-00282.safetensors"
+          },
+          {
+            "bytes": 5360347104,
+            "name": "model-00157-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00157-of-00282.safetensors"
+          },
+          {
+            "bytes": 5359985360,
+            "name": "model-00112-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00112-of-00282.safetensors"
+          },
+          {
+            "bytes": 5366406968,
+            "name": "model-00256-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00256-of-00282.safetensors"
+          }
+        ],
+        "reason": "exactly five regular non-symlink sealed shard bodies present; no extras",
+        "status": "green"
+      },
+      "g04_full_hash_match": {
+        "bodies": [
+          {
+            "bytes": 5366406824,
+            "name": "model-00108-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00108-of-00282.safetensors",
+            "sealed_sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855",
+            "sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855"
+          },
+          {
+            "bytes": 5366406816,
+            "name": "model-00156-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00156-of-00282.safetensors",
+            "sealed_sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4",
+            "sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4"
+          },
+          {
+            "bytes": 5360347104,
+            "name": "model-00157-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00157-of-00282.safetensors",
+            "sealed_sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0",
+            "sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0"
+          },
+          {
+            "bytes": 5359985360,
+            "name": "model-00112-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00112-of-00282.safetensors",
+            "sealed_sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636",
+            "sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636"
+          },
+          {
+            "bytes": 5366406968,
+            "name": "model-00256-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00256-of-00282.safetensors",
+            "sealed_sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542",
+            "sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542"
+          }
+        ],
+        "reason": "all five bodies full-hash match the sealed rehydration values",
+        "status": "green"
+      },
+      "g05_controller_reseal": {
+        "full_traversal_authorized": false,
+        "measurement_math_changed": false,
+        "measurement_receipt_sha256": "36c1302636d903c06c3cf6c95fd437a7c30098a27a859f119c5cfed0c1a63cd0",
+        "reason": "controller reseal binds live measurement receipt, revision-0, and reviewed code",
+        "reviewed_current_code": {
+          "glm52_activation_aware_pack_py_sha256": "321cbd1f071683702bfc61c293785eb44cfbf6bb6098bde0f039134c4b3f4832",
+          "glm52_basis_pilot_py_sha256": "471593c0177bce5da659f769a589027732608ea7e4223afdeb5356555dbddcfb",
+          "test_glm52_basis_pilot_py_sha256": "d577a4f0753068352df1acc4c21f22167ca4d84f16fd0563d65b46bf4808e5dc"
+        },
+        "revision_0_evidence_file_sha256": "f8b74ee4c0394d8efb7a9e9f12dff41e90be0d861402781d034831262d2ca3c5",
+        "revision_0_sha256": "8928fad82967d2fc06e0ccad470f7e527b842faf766df20f4148e0db3f8ba357",
+        "status": "green"
+      },
+      "g06_measurement_receipt_safety": {
+        "fences": {
+          "HIDE_KERNEL_TURN": false,
+          "ODYSSEY_LAUNCH_AUTHORIZED": false,
+          "RAMANUJAN_RESEARCH_AUTHORIZED": false
+        },
+        "reason": "measurement receipt: five hashes verified, no Gaussian selection, no parent traversal, fences false",
+        "status": "green",
+        "verified_shards": [
+          "model-00108-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00157-of-00282.safetensors",
+          "model-00112-of-00282.safetensors",
+          "model-00256-of-00282.safetensors"
+        ]
+      },
+      "g07_final_ascent_fences": {
+        "fences": {
+          "HIDE_KERNEL_TURN": false,
+          "ODYSSEY_LAUNCH_AUTHORIZED": false,
+          "RAMANUJAN_RESEARCH_AUTHORIZED": false
+        },
+        "odyssey": {
+          "path": "/Users/scammermike/Downloads/hawking/odyssey/launch/ODYSSEY_LAUNCH_AUTHORIZED",
+          "raw": "false"
+        },
+        "reason": "final-ascent fences remain false (Odyssey, Ramanujan, HIDE)",
+        "status": "green"
+      },
+      "g08_process_quiescence": {
+        "reason": "no process other than this controller opens, maps, or names the pilot root",
+        "scan": {
+          "any_probe_ran": true,
+          "argv": {
+            "available": true,
+            "referencing_processes": 0
+          },
+          "both_probes_unavailable": false,
+          "clean": true,
+          "lsof": {
+            "available": true,
+            "open_references": 0
+          },
+          "matches": [],
+          "self_pid": 35537
+        },
+        "status": "green"
+      },
+      "g09_path_isolation": {
+        "protected": [
+          "repo",
+          "teacher_capsules",
+          "compact",
+          "mop",
+          "support_root"
+        ],
+        "reason": "five resolved file targets are under pilot root and isolated from protected paths",
+        "status": "green",
+        "targets": [
+          {
+            "name": "model-00108-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00108-of-00282.safetensors"
+          },
+          {
+            "name": "model-00156-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00156-of-00282.safetensors"
+          },
+          {
+            "name": "model-00157-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00157-of-00282.safetensors"
+          },
+          {
+            "name": "model-00112-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00112-of-00282.safetensors"
+          },
+          {
+            "name": "model-00256-of-00282.safetensors",
+            "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source/model-00256-of-00282.safetensors"
+          }
+        ]
+      },
+      "g10_free_and_deletion_bytes": {
+        "deletion_bytes": 26819553072,
+        "free_bytes_before": 74006704128,
+        "per_shard_bytes": [
+          {
+            "bytes": 5366406824,
+            "name": "model-00108-of-00282.safetensors"
+          },
+          {
+            "bytes": 5366406816,
+            "name": "model-00156-of-00282.safetensors"
+          },
+          {
+            "bytes": 5360347104,
+            "name": "model-00157-of-00282.safetensors"
+          },
+          {
+            "bytes": 5359985360,
+            "name": "model-00112-of-00282.safetensors"
+          },
+          {
+            "bytes": 5366406968,
+            "name": "model-00256-of-00282.safetensors"
+          }
+        ],
+        "reason": "recorded free_before=74006704128 deletion_bytes=26819553072",
+        "sealed_aggregate_bytes": 26819553072,
+        "status": "green"
+      }
+    },
+    "green": 10,
+    "total": 10
+  },
+  "pilot_root": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source",
+  "rehydration": {
+    "receipt_path": "/Users/scammermike/Downloads/hawking/HAWKING_FINAL_ASCENT_SOURCE_REHYDRATION_RECEIPT.json",
+    "receipt_sha256": "2cb48cb2155660c844776dd1676fed4e31d36467a94203ed11553783c0f48210",
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+  },
+  "released_at": "2026-07-28T12:55:58Z",
+  "retained": {
+    "evidence": {
+      ".cache": true,
+      "REHYDRATE_LEDGER.jsonl": true,
+      "final_ascent_rehydrate.stderr.log": true,
+      "final_ascent_rehydrate.stdout.log": true,
+      "hf_home": true
+    },
+    "note": "REHYDRATE_LEDGER.jsonl, rehydration logs, hf_home, and pilot dir retained",
+    "pilot_directory": true
+  },
+  "rollback": {
+    "method": "rehydration by immutable content hash",
+    "note": "Rollback never claims to restore deleted bytes in place; re-fetch the five sealed shards and verify sha256.",
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+  },
+  "schema": "hawking.final_ascent.pilot_source_release_receipt.v1",
+  "seal_sha256": "cf182549acb9cecd11e3a7437b5694809fff69ea2092f9043555f23e5c3117e9",
+  "success": true,
+  "support_root": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity"
+}

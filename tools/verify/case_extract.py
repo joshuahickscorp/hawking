@@ -83,6 +83,18 @@ def read_text(rev: str, rel: str) -> str:
         return ""
 
 
+def read_artifact(rev: str, name: str) -> str:
+    """Read a REBUILD_* artifact at `rev`, across the evidence/ move.
+
+    The artifacts live under ``evidence/rebuild/`` as of this revision but sat
+    at the repository root before it, and `read_text` returns "" for a missing
+    blob rather than raising. Without trying both, comparing against any
+    pre-move revision silently parses an empty document and reports every
+    behaviour as missing.
+    """
+    return read_text(rev, f"evidence/rebuild/{name}") or read_text(rev, name)
+
+
 def sha256_hex(data: str | bytes) -> str:
     if isinstance(data, str):
         data = data.encode("utf-8")
@@ -683,8 +695,8 @@ def extract_typescript(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 def extract_bb(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     bc_path = "REBUILD_BEHAVIOUR_CONSTITUTION.json"
     mx_path = "REBUILD_BLACKBOX_TEST_MATRIX.json"
-    bc = json.loads(read_text(rev, bc_path) or "{}")
-    mx = json.loads(read_text(rev, mx_path) or "{}")
+    bc = json.loads(read_artifact(rev, bc_path) or "{}")
+    mx = json.loads(read_artifact(rev, mx_path) or "{}")
     behaviours = {b["id"]: b for b in bc.get("behaviours", []) if "id" in b}
     checks = {c["behaviour_id"]: c for c in mx.get("checks", []) if "behaviour_id" in c}
     bc_ids = set(behaviours)
@@ -739,7 +751,7 @@ def extract_bb(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 
 def extract_mig(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     path = "REBUILD_DATA_MIGRATION_CONTRACT.json"
-    doc = json.loads(read_text(rev, path) or "{}")
+    doc = json.loads(read_artifact(rev, path) or "{}")
     out: list[dict[str, Any]] = []
     for item in doc.get("items", []):
         mid = item.get("id")
@@ -773,7 +785,7 @@ def extract_mig(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 
 def extract_perf(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     path = "REBUILD_PERFORMANCE_BASELINE_MEASURED.json"
-    doc = json.loads(read_text(rev, path) or "{}")
+    doc = json.loads(read_artifact(rev, path) or "{}")
     out: list[dict[str, Any]] = []
     for metric in doc.get("metrics", []):
         name = metric.get("name")

@@ -241,7 +241,7 @@ const QWEN_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const GLM_EVIDENCE: &[Evidence] = &[
-    Evidence { path: "GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
+    Evidence { path: "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
     Evidence { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: EvidenceKind::Description },
     Evidence { path: "crates/hawking-core/tests/gravity_engine_registry.rs", claim: "registry path for .gravity artifacts", kind: EvidenceKind::Description },
     // Stage C: this test runs UNCONDITIONALLY. Unlike the weight-gated tests, it does
@@ -365,7 +365,7 @@ const DEEPSEEK_ABI: FamilyAbi = FamilyAbi {
 };
 const KIMI_EVIDENCE: &[Evidence] = &[
     Evidence {
-        path: "KIMI_K26_ADAPTER_TWIN.json",
+        path: "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
         claim: "synthetic CPU reference + bound real-source metal K1 twin",
         kind: EvidenceKind::SyntheticParity,
     },
@@ -423,7 +423,7 @@ const KIMI_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const MINIMAX_EVIDENCE: &[Evidence] = &[Evidence {
-    path: "FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    path: "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
     claim: "family listed in bridge archaeology; no serve path found",
     kind: EvidenceKind::Description,
 }];

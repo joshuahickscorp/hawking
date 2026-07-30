@@ -1,0 +1,53 @@
+{
+  "at_or_below_action": [
+    "finish or checkpoint current atomic write",
+    "stop new write-heavy launches",
+    "run dependency-safe allowlisted GC",
+    "resume only after strict green audit"
+  ],
+  "atomic_write_law": "admit write only when free_disk_bytes - exact_next_write_bytes > hard_floor_bytes",
+  "audit_seal_sha256": "9f0e3ea90103dc0ea34741907d0945709b675c28349b38f6c4edb6803c762233",
+  "enforcement": {
+    "campaign_runtime_matches_repo": true,
+    "doctor_runtime_matches_repo": true,
+    "floor_bytes": 5368709120,
+    "installed_launchd_floor_bytes": 5368709120,
+    "live_launchd_contains_floor": true,
+    "manager_floor_bytes": 5368709120,
+    "repo_campaign_sha256": "d4d3521b554b35c6cb54dc9a1b8b6bf83ba33c0e40caac54f6d7638891775270",
+    "repo_doctor_sha256": "aaa80ec1db47434b905192c17e2bb9db2985ed0dca7a9b1164e5702bc76886db",
+    "runtime_campaign_sha256": "d4d3521b554b35c6cb54dc9a1b8b6bf83ba33c0e40caac54f6d7638891775270",
+    "runtime_doctor_sha256": "aaa80ec1db47434b905192c17e2bb9db2985ed0dca7a9b1164e5702bc76886db",
+    "static_launchd_floor_bytes": 5368709120,
+    "strict_comparison": "free_disk_bytes > 5368709120"
+  },
+  "green_law": "free_disk_bytes > hard_floor_bytes",
+  "hard_floor_bytes": 5368709120,
+  "hard_floor_gib": 5,
+  "protected": [
+    "sole Kimi source",
+    "MOP",
+    "credentials",
+    "unrelated user data",
+    "current best artifact",
+    "final laws",
+    "reproducibility manifests",
+    "code required for accepted results"
+  ],
+  "rollback_state": {
+    "authoritative_policy_bytes": 5368709120,
+    "controller_restart_required_after_code_or_plist restoration": true,
+    "never_delete_to_rollback": [
+      "sole Kimi source",
+      "MOP",
+      "credentials"
+    ],
+    "rollback_target": "5 GiB remains authoritative",
+    "superseded_policy_bytes": 88046829568,
+    "superseded_report_commit": "2910050ea93bd79309ba2e1af0b059a509e98b67"
+  },
+  "schema": "hawking.kimi_k26.disk_policy.v1",
+  "seal_sha256": "e44219c1f448055c49f27e17bc410d107ff7a45b7bd9d6eab9109a0affe5c4f2",
+  "sealed_at": "2026-07-21T19:26:11Z",
+  "status": "PASS"
+}

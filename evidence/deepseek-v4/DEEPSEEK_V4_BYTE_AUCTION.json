@@ -1,0 +1,37 @@
+{
+  "candidates": {
+    "student_h1024": {
+      "protected_int4": 0.177,
+      "protected_int8": 0.337,
+      "protected_source": 0.4092
+    },
+    "student_h256": {
+      "protected_int4": 0.1643,
+      "protected_int8": 0.3243,
+      "protected_source": 0.3965
+    },
+    "student_h512": {
+      "protected_int4": 0.1685,
+      "protected_int8": 0.3285,
+      "protected_source": 0.4007
+    }
+  },
+  "conditional": "these are the .gravity candidate rates IF the cascade promotes; billed payload+generator+protected+headers",
+  "honest_note": "a low complete-model BPW here is less impressive than on a BF16 parent because the source experts are already fp4; the real question is whether the functional student COMPOSES (cascade), not the rate",
+  "protected_floor_bpw": {
+    "int4": 0.16,
+    "int8": 0.32,
+    "source": 0.3922
+  },
+  "protected_fraction": 0.04,
+  "replaceable_fraction": 0.96,
+  "rungs": {
+    "0.333333": "reachable only with int4-protected + small student",
+    "0.50": "reachable",
+    "0.75": "reachable at all protected rates"
+  },
+  "schema": "hawking.deepseek_v4.byte_auction.v1",
+  "sealed_at": "2026-07-24T02:15:00Z",
+  "source_precision_note": "experts already fp4 (0.5 byte); source is ~8.08 bits/weight overall, so functional BPW is a reduction from an already-compressed model",
+  "total_logical_weights": 158070000000
+}

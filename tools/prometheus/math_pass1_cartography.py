@@ -57,8 +57,8 @@ LEDGER = STATE_DIR / "PASS1_LEDGER.jsonl"
 PROGRESS = STATE_DIR / "progress.json"
 LOCK = STATE_DIR / "pass1.lock"
 
-MANIFEST = REPO / "GLM52_OFFICIAL_MANIFEST.json"
-SCHEDULE = REPO / "GLM52_STREAMING_SCHEDULE.json"
+MANIFEST = REPO / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json"
+SCHEDULE = REPO / "evidence" / "glm52" / "GLM52_STREAMING_SCHEDULE.json"
 GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 
 # hf_xet cache/scratch stays inside this state root, same reasoning as the original

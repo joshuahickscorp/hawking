@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.fabric.qualification_ladder.v1",
+  "generated_at": "2026-07-26",
+  "terminal_hardware_state": "FABRIC_HARDWARE_QUALIFICATION_PENDING",
+  "machine": {
+    "chip": "Apple M3 Ultra",
+    "memory_gib": 96,
+    "cores": 28,
+    "note": "Single machine. No second node in this session. Load ~29 contaminates latency/throughput numbers."
+  },
+  "rungs": [
+    {
+      "rung": "local two-process fixture",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": {
+        "entry": "crates/hide-fleet/src/fabric/fixture.rs:run_two_process_fixture",
+        "test": "two_process_fixture_end_to_end_with_failure_replay",
+        "binary": "fabric-agent serve --node-id … --listen 127.0.0.1:PORT",
+        "what_ran": "two OS processes, real placement, real request, InjectFailure, replan, replay receipt with lost work named"
+      }
+    },
+    {
+      "rung": "simulated heterogeneous placement",
+      "status": "PASSED_SIMULATED",
+      "not_physical_qualification": true,
+      "evidence": {
+        "entry": "crates/hide-fleet/src/fabric/node.rs:SimulatedNodeSet::heterogeneous_sim + placement.rs:PlacementSimulator",
+        "test": "simulated_heterogeneous_placement_labelled",
+        "artifact_label_contains": "simulated",
+        "schema_rejects_unlabelled": "schema_rejects_unlabelled_simulated_result"
+      }
+    },
+    {
+      "rung": "two-node homogeneous",
+      "status": "PENDING_HARDWARE",
+      "not_physical_qualification": true,
+      "evidence": {
+        "reason": "No second physical node. SimulatedNodeSet::homogeneous_pair_sim exists for software-only exercise only.",
+        "software_helper": "SimulatedNodeSet::homogeneous_pair_sim"
+      }
+    },
+    {
+      "rung": "two-node heterogeneous",
+      "status": "PENDING_HARDWARE",
+      "not_physical_qualification": true,
+      "evidence": {
+        "reason": "No second physical node. Heterogeneous simulation passed as PASSED_SIMULATED above, not physical."
+      }
+    },
+    {
+      "rung": "failure / resume",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": {
+        "entry": "crates/hide-fleet/src/fabric/failure.rs + fixture InjectFailure",
+        "tests": [
+          "two_process_fixture_end_to_end_with_failure_replay",
+          "kv_ownership_invariant_across_placement_and_failure_replan",
+          "fabric::failure::tests::receipt_names_lost_and_replayed"
+        ],
+        "receipt_fields": [
+          "lost_work.stages",
+          "lost_work.kv_ranges",
+          "replayed_from_checkpoint",
+          "replan_plan_id"
+        ]
+      }
+    },
+    {
+      "rung": "single-user latency",
+      "status": "CONTAMINATED",
+      "not_physical_qualification": true,
+      "evidence": {
+        "reason": "Machine load ~29 of 28 cores; another campaign owns most capacity. No clean latency number reported.",
+        "measurable": true,
+        "headline_number_reported": false
+      }
+    },
+    {
+      "rung": "multi-request throughput",
+      "status": "CONTAMINATED",
+      "not_physical_qualification": true,
+      "evidence": {
+        "reason": "Same load contamination as single-user latency. No headline throughput claimed.",
+        "measurable": true,
+        "headline_number_reported": false
+      }
+    },
+    {
+      "rung": "memory accounting",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": {
+        "entry": "OsNodeProbe.total_memory_bytes / free_memory_bytes; OsResourceProbe.free_memory_mb",
+        "tests": [
+          "real_resource_probe_not_fake_32gib",
+          "fabric::node::tests::os_probe_returns_real_memory_not_fake_32gib"
+        ],
+        "observed_total_memory_bytes": 103079215104,
+        "observed_not_equal_to_fixed_fake_32gib": true,
+        "fleet_run_probe": "host.rs fleet_run now uses OsResourceProbe (not FixedResourceProbe 32768 MiB free)"
+      }
+    }
+  ]
+}

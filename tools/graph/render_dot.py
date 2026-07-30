@@ -2,8 +2,8 @@
 """Emit deterministic Graphviz DOT checkpoint diagrams for the crate level.
 
 Usage:
-    python3.12 tools/graph/render_dot.py --graph HAWKING_SEMANTIC_GRAPH.jsonl --out HAWKING_CRATE_GRAPH.dot
-    python3.12 tools/graph/render_dot.py --graph fixture.jsonl --out /tmp/crates.dot --cluster-map HAWKING_CLUSTER_MAP.json
+    python3.12 tools/graph/render_dot.py --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl --out tools/graph/HAWKING_CRATE_GRAPH.dot
+    python3.12 tools/graph/render_dot.py --graph fixture.jsonl --out /tmp/crates.dot --cluster-map build/graph/HAWKING_CLUSTER_MAP.json
 """
 
 from __future__ import annotations

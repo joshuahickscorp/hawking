@@ -314,7 +314,7 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
         == proofs.EXTERNAL_BASELINE_COMMON_SHA256
     )
     binding = json.loads(
-        (REPO_ROOT / "GRAVITY_EXTERNAL_BASELINE_MATRIX.json").read_text()
+        (REPO_ROOT / "evidence" / "gravity" / "GRAVITY_EXTERNAL_BASELINE_MATRIX.json").read_text()
     )["instrument_binding"]
     assert binding["generator"] == proofs.EXTERNAL_BASELINE_PRODUCER_PATH
     assert binding["generator_sha256"] == proofs.EXTERNAL_BASELINE_PRODUCER_SHA256
@@ -323,10 +323,10 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
     assert binding["timestamp_free_deterministic_rebuild"] is True
 
     # Adapter + reference parity: production set at INSTRUMENT_PRODUCTION_COMMIT.
-    twin = json.loads((REPO_ROOT / "GLM52_ADAPTER_TWIN.json").read_text())
+    twin = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_ADAPTER_TWIN.json").read_text())
     sealed = twin["instrument_binding"]["local_source_sha256"]
     assert sealed == proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256
-    parity = json.loads((REPO_ROOT / "GLM52_REFERENCE_PARITY.json").read_text())
+    parity = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_REFERENCE_PARITY.json").read_text())
     assert parity["instrument_binding"]["local_source_sha256"] == sealed
     for path, digest in proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256.items():
         assert (
@@ -334,7 +334,7 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
         ), path
 
     # Corpus builder + tools instruments; tokenizers_import_module is sealed-only.
-    corpus = json.loads((REPO_ROOT / "GLM52_CORPUS_INTEGRITY.json").read_text())
+    corpus = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_CORPUS_INTEGRITY.json").read_text())
     builder = corpus["deterministic_builder"]
     assert builder["builder_path"] == proofs.CORPUS_BUILDER_PATH
     assert builder["builder_sha256"] == proofs.CORPUS_BUILDER_SHA256

@@ -164,7 +164,7 @@ def load_and_validate_inputs(root: Path=REPO_ROOT) -> dict[str, dict[str, Any]]:
     root_path = Path(root)
     use_resolver = root_path.resolve() == REPO_ROOT.resolve()
     for name, expected_schema, status_prefixes in INPUT_CONTRACTS:
-        if use_resolver and name == 'GLM52_SHARD_DEPENDENCY_GRAPH.json':
+        if use_resolver:
             path = resolve_artifact(name)
         else:
             path = root_path / name
@@ -805,18 +805,18 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument('--root', type=Path, default=REPO_ROOT)
     plan.add_argument('--range-bytes', type=int, default=RANGE_BYTES)
     plan.add_argument('--network-cap-bytes', type=int, default=NETWORK_CAP_BYTES)
-    plan.add_argument('--output', type=Path, default=REPO_ROOT / 'GLM52_XET_AUTOTUNE_PLAN.json')
-    plan.add_argument('--markdown-output', type=Path, default=REPO_ROOT / 'GLM52_XET_AUTOTUNE_PLAN.md')
+    plan.add_argument('--output', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    plan.add_argument('--markdown-output', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.md')
     plan.set_defaults(handler=_command_plan)
     verify = subparsers.add_parser('verify', help='offline deterministic plan verification')
     verify.add_argument('--root', type=Path, default=REPO_ROOT)
-    verify.add_argument('--plan', type=Path, default=REPO_ROOT / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    verify.add_argument('--plan', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
     verify.add_argument('--offline', action='store_true', required=True)
     verify.set_defaults(handler=_command_verify)
     run = subparsers.add_parser('run', help='validate the offline authority boundary; never execute live trials')
     run.add_argument('--root', type=Path, default=REPO_ROOT)
-    run.add_argument('--plan', type=Path, default=REPO_ROOT / 'GLM52_XET_AUTOTUNE_PLAN.json')
-    run.add_argument('--expected-contract', type=Path, default=REPO_ROOT / 'GLM52_EXPECTED_CAMPAIGN_CONTRACT.json')
+    run.add_argument('--plan', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    run.add_argument('--expected-contract', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_EXPECTED_CAMPAIGN_CONTRACT.json')
     run.add_argument('--authority', type=Path)
     run.set_defaults(handler=_command_run)
     return parser

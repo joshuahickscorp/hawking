@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.hide.approval_roundtrip_finding.v1",
+  "at": "2026-07-26T03:25:00Z",
+  "commit": "fccb6b30",
+  "question": "HIDE_KERNEL_TURN is off by default, gated on 'its approval round-trip (effectful-step resume) and answer surfacing' landing. Is that comment still true, or is it stale and the flag simply flippable?",
+  "answer": "The comment is accurate. The round-trip has NOT landed, and the missing piece is a single named connection with both ends already built.",
+  "why_this_was_worth_checking": "The delegated archaeology recommended defaulting the kernel on as its highest-leverage fix. That was rejected on the strength of the comment alone, which is the same 'trust the doc' error the archaeology exists to correct. This verifies it from source instead.",
+  "the_missing_wire": {
+    "kernel_side_exists": [
+      "hide-kernel/src/machine/driver.rs:160-171 pauses on an effectful step under SuggestOnly and sets state.pending_approval",
+      "hide-kernel/src/machine/driver.rs:694-700 do_paused resumes Paused -> Act the moment pending_approval is None",
+      "hide-kernel/src/machine/state.rs:191 approve_pending_effect() -- documented verbatim as 'the sanctioned out-of-band clear the driver's do_paused waits for'; leaves the cursor intact so Act dispatches the very step that paused",
+      "hide-kernel/src/machine/state.rs:199 deny_pending_effect() -- marks the cursor Skipped and routes back to SelectStep so the effect never runs"
+    ],
+    "host_side_exists": [
+      "hide-backend/src/host.rs:478-492 approve_effect / deny_effect are registered intents",
+      "hide-backend/src/host.rs:766 the handler parses run_id and step_id from the payload",
+      "hide-backend/src/host.rs:548 ApprovalHub is constructed and held by the host"
+    ],
+    "what_is_absent": "hide-backend never calls approve_pending_effect or deny_pending_effect. Grep for them across the whole crate is empty. Approvals land in the ApprovalHub and are never drained into the running kernel's AgentState, so do_paused waits for a clear that no one issues.",
+    "consequence": "Under SuggestOnly -- the default autonomy -- a kernel turn that reaches any effectful step pauses permanently. That is why the flag is off, and defaulting it on without this wire would ship exactly the facade Bible law 18 forbids."
+  },
+  "the_real_design_problem": {
+    "statement": "This is not a one-line call. run_turn_kernel is spawned with the kernel MOVED into the task (host.rs:2338-2340), so the host holds no reference to the live AgentState it would need to mutate.",
+    "options": [
+      "A channel per run: the driver polls an mpsc receiver in do_paused; the host's approve_effect handler sends on the sender it registered under run_id. Keeps AgentState owned solely by the driver, which is why do_paused is already written to be idempotent and re-entrant.",
+      "A shared Arc<Mutex<AgentState>>: simplest to write, but it hands the host mutable access to kernel state the kernel is otherwise sole owner of, and invites lock contention on every transition.",
+      "Approval hub polled by the driver: do_paused asks the hub 'is run_id/step_id approved?'. Requires the kernel to depend on a backend type, inverting the current dependency direction."
+    ],
+    "recommendation": "The channel. It matches the ownership the driver already assumes, needs no new dependency edge from hide-kernel to hide-backend, and do_paused's existing idempotent shape means a spurious wake is harmless.",
+    "note": "Denial must route through deny_pending_effect, not just drop the pause. Clearing pending_approval alone would RESUME the step, so a denial implemented as a clear would run the effect the user just refused. That is the one way to get this wire dangerously wrong."
+  },
+  "answer_surfacing_the_second_prerequisite": {
+    "state": "Built and tested, but only on a path that avoids the question.",
+    "evidence": "host.rs:8110 tests F2 answer surfacing on the kernel turn, but its AnswerPlanner emits one NON-EFFECTFUL Synthesize step and the test's own comment says 'so no approval pause'. No test carries an effectful step through pause, approval, resume, and out to a surfaced answer.",
+    "consequence": "Answer surfacing is likely fine; it is simply unproven in combination with the pause. The combined test is the acceptance criterion for flipping the default."
+  },
+  "what_closing_this_unblocks": [
+    "subsystem 2, the Planner/Executor/Verifier loop, currently PARTIAL because the whole kernel path is opt-in",
+    "subsystem 10, tool parse and run, whose parser only executes on kernel Act (driver.rs:370-374)",
+    "mid-turn permission adjudication",
+    "the deterministic verification oracles",
+    "and only then, defaulting HIDE_KERNEL_TURN on"
+  ],
+  "acceptance_criterion_for_flipping_the_default": "One test in which a plan containing a genuinely effectful step runs under SuggestOnly, pauses, receives approve_effect through the live intent path, resumes, executes that step, and surfaces an answer -- plus its mirror in which deny_effect causes the effect never to run and the step to be marked Skipped.",
+  "status": "NOT IMPLEMENTED. Recorded as the next HIDE increment.",
+  "evidence_level": "STATIC_SOURCE_READING",
+  "not_evidence_of": "that the channel design works once built, or that answer surfacing survives the pause"
+}

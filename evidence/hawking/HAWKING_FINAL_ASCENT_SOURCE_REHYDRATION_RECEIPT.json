@@ -1,0 +1,96 @@
+{
+  "schema": "hawking.final_ascent.source_rehydration_receipt.v1",
+  "at": "2026-07-28T11:59:35Z",
+  "purpose": "Bounded real-activation basis pilot; this is not a full parent traversal.",
+  "source": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "manifest": "GLM52_REHYDRATION_RECEIPT.json",
+    "verified_ever_shards": 282,
+    "total_source_shards": 282,
+    "resident_now_shards": 5,
+    "resident_now_bytes": 26819553072,
+    "destination": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/pilot_source"
+  },
+  "shards": [
+    {
+      "name": "model-00108-of-00282.safetensors",
+      "role": "middle-layer routed expert gate/up/down tensors (layer 38)",
+      "bytes": 5366406824,
+      "sha256": "d201fa9064deea80a78282d315a5d124d35503e5b4b9b388daf4b2a9f092d855",
+      "seconds": 21.5,
+      "megabits_per_second": 1994.4
+    },
+    {
+      "name": "model-00156-of-00282.safetensors",
+      "role": "early-layer low-traffic routed expert control tensors (layer 5)",
+      "bytes": 5366406816,
+      "sha256": "abc8f728e74c908db917e71ce8a9c14137718be8c532bb9f8bb625e55ca51bc4",
+      "seconds": 21.8,
+      "megabits_per_second": 1968.2
+    },
+    {
+      "name": "model-00157-of-00282.safetensors",
+      "role": "early-layer high-traffic routed experts 11 and 165 (3,529 and 3,391 of 4,096 captured top-8 routes)",
+      "bytes": 5360347104,
+      "sha256": "219d858b9845807045fd1a0d31122e5f81bb542b7374d703b762f058fc99a3e0",
+      "seconds": 21.4,
+      "megabits_per_second": 1999.6
+    },
+    {
+      "name": "model-00112-of-00282.safetensors",
+      "role": "middle-layer high-traffic expert 73 (3,227 of 4,096 captured top-8 routes), plus shared expert and attention tensors",
+      "bytes": 5359985360,
+      "sha256": "07c4b6c43744d2aa477073dfe943e6e09c817b80939caab37574ce4b9db80636",
+      "seconds": 22.1,
+      "megabits_per_second": 1937.3
+    },
+    {
+      "name": "model-00256-of-00282.safetensors",
+      "role": "late-layer high-traffic experts 118, 126, and 130 (2,577, 1,119, and 877 of 4,096 captured top-8 routes)",
+      "bytes": 5366406968,
+      "sha256": "d4c1064d459bb858ed0e07970801a3bc3bed8a967aefe71e718bcd21c88a4542",
+      "seconds": 21.4,
+      "megabits_per_second": 2003.2
+    }
+  ],
+  "throughput": {
+    "aggregate_bytes": 26819553072,
+    "aggregate_seconds": 108.2,
+    "aggregate_megabits_per_second": 1983.0
+  },
+  "resource_state_after": {
+    "free_disk_bytes": 78748565504,
+    "free_disk_gib": 73.3,
+    "swap": "total = 2048.00M used = 1029.50M free = 1018.50M encrypted",
+    "thermal_warning": false,
+    "performance_warning": false
+  },
+  "controller": {
+    "first_run_label": "com.hawking.glm52.final-ascent-pilot-rehydrate",
+    "first_run_durability": "launchd plus caffeinate",
+    "representative_extension_durability": "bounded foreground caffeinate run, 43.5 seconds",
+    "completion_exit_codes": [
+      0,
+      0
+    ],
+    "keepalive_repeat_detected": true,
+    "repeat_effect": "completed shards were re-hashed and reported already present; no source body was downloaded or published twice",
+    "final_state": "UNLOADED_AFTER_SUCCESS"
+  },
+  "residency_class": {
+    "verified_ever": true,
+    "resident_now": true,
+    "sealed_and_evictable": false,
+    "why_not_evictable_yet": "the bounded pilot has not yet sealed measurements and input hashes"
+  },
+  "safety": {
+    "full_parent_traversal_started": false,
+    "teacher_capsules_modified": false,
+    "prior_artifacts_modified": false,
+    "MOP_touched": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "HIDE_KERNEL_TURN": false
+  }
+}

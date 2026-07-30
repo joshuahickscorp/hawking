@@ -1,0 +1,895 @@
+{
+  "K_histogram": {
+    "32": 0,
+    "48": 7,
+    "64": 77,
+    "80": 5,
+    "96": 5,
+    "112": 0,
+    "128": 0
+  },
+  "K_max": 96,
+  "K_mean": 65.362,
+  "K_min": 48,
+  "claim": "BYTE PLAN AND PREDICTOR ONLY. err() is built from measured routing mass and measured reconstruction error; it is NOT capability and selects nothing. Only a real parent-vs-packed forward may select a frontier.",
+  "coverage": {
+    "max": 0.940594,
+    "mean": 0.799431,
+    "min": 0.673363
+  },
+  "ledger": {
+    "budget_bits_for_experts": 225804762368,
+    "complete_bits": 234353958144,
+    "complete_bpw": 0.996853694,
+    "complete_bpw_exact": "915445149/918334510",
+    "expert_bits": 225065085952,
+    "fixed_bits": 9288872192,
+    "lambda": 1.1979599837854043e-10,
+    "legal_under_one_bit_ceiling": true,
+    "n_experts": 128,
+    "n_layers": 94,
+    "predicted_mean_layer_error": 0.46213
+  },
+  "miss_cost": 1.0,
+  "miss_cost_justification": "Lane E measured that an omitted expert is not reconstructible from survivors: best single survivor median held-out relative error 0.885/0.993/0.995, 4-survivor least-squares merge 0.863/0.988/0.995. ~1.0 is the trivial zero predictor.",
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "per_layer": [
+    {
+      "K": 96,
+      "coverage": 0.912034,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 0,
+      "predicted_err": 0.557237,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 96,
+      "coverage": 0.917936,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 1,
+      "predicted_err": 0.554372,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 80,
+      "coverage": 0.840537,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 2,
+      "predicted_err": 0.591946,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 96,
+      "coverage": 0.920126,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 3,
+      "predicted_err": 0.553309,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 96,
+      "coverage": 0.928979,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 4,
+      "predicted_err": 0.54901,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.792936,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 5,
+      "predicted_err": 0.446491,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.783511,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 6,
+      "predicted_err": 0.45307,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.774752,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 7,
+      "predicted_err": 0.459184,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.765137,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 8,
+      "predicted_err": 0.465896,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.822068,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 9,
+      "predicted_err": 0.426155,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.799124,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 10,
+      "predicted_err": 0.442171,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.70516,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 11,
+      "predicted_err": 0.507763,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.810929,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 12,
+      "predicted_err": 0.43393,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.722106,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 13,
+      "predicted_err": 0.495934,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.813024,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 14,
+      "predicted_err": 0.432468,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.811976,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 15,
+      "predicted_err": 0.433199,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.817308,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 16,
+      "predicted_err": 0.429478,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.798172,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 17,
+      "predicted_err": 0.442835,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.800933,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 18,
+      "predicted_err": 0.440908,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.803503,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 19,
+      "predicted_err": 0.439114,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.819497,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 20,
+      "predicted_err": 0.427949,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.805693,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 21,
+      "predicted_err": 0.437585,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.793507,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 22,
+      "predicted_err": 0.446092,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.797315,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 23,
+      "predicted_err": 0.443434,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.788366,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 24,
+      "predicted_err": 0.44968,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.777037,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 25,
+      "predicted_err": 0.457589,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 80,
+      "coverage": 0.862338,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 26,
+      "predicted_err": 0.581363,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.793698,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 27,
+      "predicted_err": 0.445959,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.791222,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 28,
+      "predicted_err": 0.447687,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 80,
+      "coverage": 0.864528,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 29,
+      "predicted_err": 0.5803,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.793793,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 30,
+      "predicted_err": 0.445892,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.814737,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 31,
+      "predicted_err": 0.431272,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.804075,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 32,
+      "predicted_err": 0.438715,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.834539,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 33,
+      "predicted_err": 0.417449,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.8254,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 34,
+      "predicted_err": 0.423829,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.808549,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 35,
+      "predicted_err": 0.435592,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.817308,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 36,
+      "predicted_err": 0.429478,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.808644,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 37,
+      "predicted_err": 0.435525,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.797696,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 38,
+      "predicted_err": 0.443168,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.799505,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 39,
+      "predicted_err": 0.441905,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.821877,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 40,
+      "predicted_err": 0.426288,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.807978,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 41,
+      "predicted_err": 0.435991,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.796935,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 42,
+      "predicted_err": 0.443699,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.791984,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 43,
+      "predicted_err": 0.447155,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.794554,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 44,
+      "predicted_err": 0.445361,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.765137,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 45,
+      "predicted_err": 0.465896,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 80,
+      "coverage": 0.863766,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 46,
+      "predicted_err": 0.580669,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.83235,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 47,
+      "predicted_err": 0.418978,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.801599,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 48,
+      "predicted_err": 0.440443,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.798553,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 49,
+      "predicted_err": 0.44257,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.798743,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 50,
+      "predicted_err": 0.442437,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.795316,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 51,
+      "predicted_err": 0.444829,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.780274,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 52,
+      "predicted_err": 0.455329,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.788081,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 53,
+      "predicted_err": 0.44988,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.80179,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 54,
+      "predicted_err": 0.44031,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.776561,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 55,
+      "predicted_err": 0.457921,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.777037,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 56,
+      "predicted_err": 0.457589,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.783416,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 57,
+      "predicted_err": 0.453136,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.782464,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 58,
+      "predicted_err": 0.453801,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 96,
+      "coverage": 0.940594,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 59,
+      "predicted_err": 0.543372,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.759615,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 60,
+      "predicted_err": 0.46975,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.797601,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 61,
+      "predicted_err": 0.443234,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.764471,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 62,
+      "predicted_err": 0.466361,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.781512,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 63,
+      "predicted_err": 0.454465,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.787414,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 64,
+      "predicted_err": 0.450345,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.791508,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 65,
+      "predicted_err": 0.447487,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.77818,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 66,
+      "predicted_err": 0.456791,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.805788,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 67,
+      "predicted_err": 0.437519,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.799981,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 68,
+      "predicted_err": 0.441573,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.805122,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 69,
+      "predicted_err": 0.437984,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.769136,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 70,
+      "predicted_err": 0.463104,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.673363,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 71,
+      "predicted_err": 0.529959,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.757616,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 72,
+      "predicted_err": 0.471146,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.774181,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 73,
+      "predicted_err": 0.459582,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.803789,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 74,
+      "predicted_err": 0.438915,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.7877,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 75,
+      "predicted_err": 0.450146,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.676504,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 76,
+      "predicted_err": 0.527766,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.784558,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 77,
+      "predicted_err": 0.452339,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.779703,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 78,
+      "predicted_err": 0.455728,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.769421,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 79,
+      "predicted_err": 0.462905,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 80,
+      "coverage": 0.869383,
+      "down_rung": "0.625",
+      "gate_rung": "1.25",
+      "layer": 80,
+      "predicted_err": 0.577942,
+      "recon_provenance": "gate:gaussian_rd_estimate,down:measured"
+    },
+    {
+      "K": 64,
+      "coverage": 0.799886,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 81,
+      "predicted_err": 0.441639,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.68412,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 82,
+      "predicted_err": 0.522449,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.809025,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 83,
+      "predicted_err": 0.43526,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.804551,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 84,
+      "predicted_err": 0.438383,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.8254,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 85,
+      "predicted_err": 0.423829,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.695164,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 86,
+      "predicted_err": 0.514741,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.77104,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 87,
+      "predicted_err": 0.461775,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.797315,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 88,
+      "predicted_err": 0.443434,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.804455,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 89,
+      "predicted_err": 0.438449,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.815308,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 90,
+      "predicted_err": 0.430873,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.820735,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 91,
+      "predicted_err": 0.427085,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 64,
+      "coverage": 0.833111,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 92,
+      "predicted_err": 0.418446,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    },
+    {
+      "K": 48,
+      "coverage": 0.733149,
+      "down_rung": "1.25",
+      "gate_rung": "2.5",
+      "layer": 93,
+      "predicted_err": 0.488225,
+      "recon_provenance": "gate:measured,down:gaussian_rd_estimate"
+    }
+  ],
+  "routing_source": "reports/subbit_reset/QWEN3_235B_ROUTING_CALIBRATION_1200.json",
+  "routing_tokens": 1313,
+  "rung_histogram": {
+    "g1.25_d0.625": 10,
+    "g2.5_d1.25": 84
+  },
+  "schema": "hawking.gravity.adaptive_k.v1",
+  "uniform64_reference": {
+    "mean_coverage": 0.791735,
+    "predicted_mean_layer_error": 0.521819
+  }
+}

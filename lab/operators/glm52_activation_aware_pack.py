@@ -43,7 +43,7 @@ HOLDOUT_MIN = 256
 PILOT_SOURCE = Path.home() / 'Library/Application Support/Hawking/GLM52Gravity/pilot_source'
 CAPSULE_DIR = Path.home() / 'Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/capsules'
 DEFAULT_OUT = Path.home() / 'Library/Application Support/Hawking/GLM52Gravity/activation_aware_pack'
-REHYDRATE_RECEIPT = REPO / 'GLM52_REHYDRATION_RECEIPT.json'
+REHYDRATE_RECEIPT = REPO / 'evidence' / 'glm52' / 'GLM52_REHYDRATION_RECEIPT.json'
 LAYER_RE = re.compile('model\\.layers\\.(\\d+)\\.')
 
 class PackError(RuntimeError):

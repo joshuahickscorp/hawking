@@ -1,0 +1,18 @@
+{
+  "failures": [],
+  "file_count": 96,
+  "index_tensor_count": 208550,
+  "index_total_size": 595148192736,
+  "post_download_free_bytes": 51162480640,
+  "repo": "moonshotai/Kimi-K2.6",
+  "reserve_green": true,
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "schema": "hawking.kimi_k26.source_verification.v1",
+  "seal_sha256": "867b40c58795c0b5fdd5a0ca9e6c9529f0b2ab92d89f3aaf56ca5e17c39a7b25",
+  "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "source_bytes": 595204999341,
+  "source_root": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+  "status": "PASS",
+  "verified_at": "2026-07-21T05:06:45Z",
+  "weight_shards": 64
+}

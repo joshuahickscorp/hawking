@@ -1,0 +1,88 @@
+{
+  "causal_explanation": {
+    "downstream": "The F1-surviving hidden Doctor retains 0.99498 mean hidden cosine after the next exact layer, yet exact route-set agreement is only 0.78125.",
+    "generalization": "Direct codebook functional fitting reaches 0.96144 fit cosine but only 0.86804 on disjoint score tokens.",
+    "local": "Independent gate/up cosine near 0.925 falls to 0.886 after multiplicative SiLU interaction and 0.838 after down projection.",
+    "residual": "The first residual add masks much of the norm error but does not guarantee causal equivalence at the next discontinuous top-k router."
+  },
+  "evidence_chain": [
+    {
+      "actual_bpw": 0.9534483410063244,
+      "mechanism": "INDEPENDENT_PQ_PLUS_WEIGHT_RESIDUAL_DOCTOR",
+      "reason": "Gate/up errors compound through multiplicative hidden state and down projection.",
+      "score_cosine": 0.8381807804107666,
+      "seal_sha256": "430f42a2e3731e9a4b55ee4c80f7330682266d22cdf42e494c14f04c1cbb5f02",
+      "verdict": "DEGRADED_F1"
+    },
+    {
+      "actual_bpw": 0.9085909525553385,
+      "downstream_route_set_agreement": 0.78125,
+      "f1_score_cosine": 0.9134416580200195,
+      "f1_verdict": "SURVIVES_F1",
+      "f2_verdict": "COLLAPSE_F2_SPARSE",
+      "mechanism": "FUNCTIONAL_HIDDEN_STATE_RECOVERY",
+      "reason": "Local repair crosses F1 but is not causally stable at the next native router.",
+      "seal_sha256": "ee4bd6d12afccd57c7bff00b31243c7eb4e80095e1200166412b8cdce0251f38"
+    },
+    {
+      "actual_bpw": 0.9510269619169689,
+      "aggregate_score_cosine": 0.7821149230003357,
+      "mechanism": "PROTECTED_ISLANDS",
+      "reason": "Salience concentration cannot restore enough expert-output direction.",
+      "routed_score_cosine": 0.7863376140594482,
+      "seal_sha256": "a507f0764cfcbd4fe83aa54283880e11e0668b350022191660c7cea9fdf2b623",
+      "verdict": "DEGRADED_F1"
+    },
+    {
+      "actual_bpw": 0.9559132031032017,
+      "aggregate_score_cosine": 0.7688037157058716,
+      "mechanism": "SHARED_ADDITIVE_GRAMMAR",
+      "reason": "Cross-expert codebook amortization saves bits but loses local expert structure.",
+      "routed_score_cosine": 0.7723102569580078,
+      "seal_sha256": "10fe8fca8a5a2bd01e4569ca274cae9a6cd51c62b9af52a63c47f34368a21fff",
+      "verdict": "DEGRADED_F1"
+    },
+    {
+      "actual_bpw": 0.9534779503231957,
+      "fit_score_cosine": 0.9614412784576416,
+      "holdout_score_cosine": 0.8680386543273926,
+      "mechanism": "FUNCTIONALLY_TUNED_FIXED_INDEX_CODEBOOKS",
+      "reason": "Functional optimization improves fit but does not generalize across disjoint tokens.",
+      "seal_sha256": "cb6e20a127aef44736e72a00d4e7b431c05e4f1924c86ba41c3cb0f5fc1d22c0",
+      "verdict": "DEGRADED_F1"
+    }
+  ],
+  "law": "Under the tested Kimi K2.6 layer-1 routed-expert constraints, no complete physical representation at or below 0.98 BPW is promotable beyond F1. Independent residual-weight PQ, salience-protected islands, shared additive grammar, and fixed-index functional codebook training fail routed expert-output fidelity. Sample-limited functional hidden-state recovery can pass local F1 at 0.908591 BPW, but its residual perturbation changes the next exact layer's native top-8 route set on 21.875% of held-out tokens, preventing F2 promotion.",
+  "outcome": "EMPIRICAL_BOUNDARY_ESTABLISHED",
+  "reopen_condition": "A materially nonlocal router-co-designed representation, a larger disjoint Doctor training capture, or a complete physical rate above 0.98 BPW.",
+  "schema": "hawking.kimi_k26.scientific_law.sub1_bpw.v1",
+  "scientific_decision": "CLOSE_TESTED_SUB_1_BPW_REGION",
+  "scope": {
+    "claim_exclusions": [
+      "not a proof above 0.98 BPW",
+      "not a multimodal claim",
+      "not a full-model impossibility theorem",
+      "not a deployment artifact"
+    ],
+    "downstream_propagation": "ONE_COMPLETE_EXACT_NATIVE_LAYER",
+    "families_tested": [
+      "independent_product_quantization",
+      "weight_residual_doctor",
+      "protected_islands",
+      "shared_additive_grammar",
+      "functional_fixed_index_codebooks",
+      "functional_hidden_state_recovery"
+    ],
+    "fit_tokens": 32,
+    "held_out_score_tokens": 32,
+    "model_component": "TEXT_CORE_LAYER_1_ROUTED_EXPERTS",
+    "rate_ceiling_complete_physical_bpw": 0.98
+  },
+  "seal_sha256": "38d3a944ccc78d57bf936571689a8fdf25872791820fda19628886e009907437",
+  "sealed_at": "2026-07-21T16:02:30Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS"
+}

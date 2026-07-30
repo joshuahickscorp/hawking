@@ -1,0 +1,155 @@
+{
+  "accounting": {
+    "active": 437199,
+    "archived": 0,
+    "eliminated": 165470,
+    "generated": 593,
+    "hydrated_owned": 0,
+    "laboratory": 135989,
+    "relocated": 0,
+    "runtime": 390201,
+    "test": 46998,
+    "vendored": 48716
+  },
+  "architectures_attempted": 4,
+  "capability_matrix": {
+    "capability_diffs_run_at_every_merge": true,
+    "capability_lost": 0,
+    "python_entrypoints": 207,
+    "rust_binaries": 19,
+    "shell_entrypoints": 152,
+    "workspace_members": 52
+  },
+  "checkpoint_ladder": [
+    {
+      "achieved": 536532,
+      "rung": 550000,
+      "status": "CLEARED_GREEN",
+      "tag": "arc-rung-550k-green"
+    },
+    {
+      "achieved": 458272,
+      "rung": 475000,
+      "status": "CLEARED_GREEN",
+      "tag": "arc-rung-475k-green"
+    },
+    {
+      "achieved": 430406,
+      "attempt": "L1 condensed the 25,764 lines of laboratory no lane had owned and eliminated 6,898, none relocated.",
+      "probe_corroboration": "A destructive probe deleting every protected item independently landed at 404,264.",
+      "proof": "floor probe removed all 32,935 refused lines and landed at 404,264, still above 400,000",
+      "residue": 29541,
+      "residue_reason": "Odyssey T0 and its sealed negatives, the Math-Preserve prometheus passes, ramanujan, and the final_ascent and light_governor publishers. Removing any of it deletes negative science or a live control surface.",
+      "rung": 400000,
+      "status": "ATTEMPTED_BY_LANE_NOT_REACHED",
+      "tag": "arc-437k-green"
+    },
+    {
+      "reason": "400k proven unreachable; no mechanism remains",
+      "rung": 350000,
+      "status": "NOT_ATTEMPTED"
+    },
+    {
+      "rung": 325000,
+      "status": "NOT_ATTEMPTED"
+    },
+    {
+      "rung": 300000,
+      "status": "NOT_REACHABLE"
+    },
+    {
+      "rung": 275000,
+      "status": "NOT_REACHABLE"
+    },
+    {
+      "rung": 250000,
+      "status": "NOT_REACHABLE"
+    }
+  ],
+  "eliminated_loc": 172263,
+  "endpoint": "HAWKING_300K_SEMANTIC_DENSITY_COMPLETE",
+  "final_by_language": {
+    "lean": 22,
+    "markdown": 22982,
+    "python": 130439,
+    "rust": 245682,
+    "shader": 15766,
+    "shell": 4365,
+    "typescript": 17943
+  },
+  "final_by_subsystem": {
+    "hawking": 170792,
+    "hide": 107872,
+    "laboratory": 135989,
+    "shared": 22546
+  },
+  "final_pre_split_loc": 430406,
+  "history_publication": {
+    "bundles": 2,
+    "commit_map_pairs": 1819,
+    "force_pushed": false,
+    "packet": "HISTORY_PUBLICATION_PACKET.md",
+    "state": "PREPARED_NOT_PUBLISHED"
+  },
+  "ladder_note": "The 400,000 rung was both attempted by condensation and disproven by destructive probe. Two independent methods agree it is unreachable.",
+  "outcome": "TARGET_NOT_REACHABLE_HIGHER_FLOOR_PROVEN",
+  "pct_reduced": 28.6,
+  "performance": {
+    "decode_path_touched": false,
+    "measured_regressions": 0,
+    "note": "No merged lane altered the decode path. The one candidate that did (device-only MLP, +4.18% p95) was rejected on measurement before this arc began.",
+    "preserved": [
+      "Numeric Parity V2.1 and its f64 reference",
+      "empty-command-buffer Drop fix",
+      "exact discrete decisions",
+      "matvec_batch co-issue",
+      "gemv_native_bf16",
+      "PQ and bitslice kernels",
+      "GpuWeightCache",
+      "ActPool",
+      "cost ledger",
+      "wait estimators"
+    ],
+    "regression_gate": "reject >2%"
+  },
+  "post_split": {
+    "hawking_active": 170792,
+    "hide_active": 107872,
+    "performed": false,
+    "shared_contract": 22546,
+    "why": "The campaign permits the split only after a green monorepo at or below 300,000, which was not reached. The split earns zero credit by rule, so performing it would not have advanced the target."
+  },
+  "relocated_loc": 0,
+  "remaining_risks": [
+    "13 sealed receipts cite pre-rewrite commit hashes and resolve only through the translation map.",
+    "The condense suite carries 12 failures and 58 errors that are environmental -- hf_xet, transformers and huggingface_hub symbol mismatches -- and would mask a real regression in those files if one appeared.",
+    "The app TypeScript suite cannot execute on this machine; node_modules is absent, so all frontend legs are unmeasured rather than passing.",
+    "The four test_selflocation failures predate the arc and remain unfixed.",
+    "gpu_expert_wave_flag_defaults_off is a known env race under -j 8.",
+    "Laboratory is 135,989 lines and the largest single mass; it is live campaign machinery, not dead code, but it dominates the floor."
+  ],
+  "repositories_and_tags": {
+    "branch": "arc/300k-integration",
+    "rollback": "every rung is a tag; git checkout <tag> restores it",
+    "tags": [
+      "arc-rung-550k-green",
+      "arc-rung-475k-green",
+      "arc-447k-green",
+      "arc-437k-green",
+      "arc-honest-561k",
+      "arc-floor-sealed-437k"
+    ]
+  },
+  "schema": "hawking.300k.final_report.v1",
+  "starting_loc": 602669,
+  "test_inventory": {
+    "delta": 34,
+    "files": 535,
+    "ignored_rust": 52,
+    "logical_cases_final": 3925,
+    "logical_cases_start": 3891,
+    "note": "No logical assertion was lost at any rung. The inventory rose by 29 net.",
+    "parametrised_expansion": 471,
+    "skipped_python_markers": 4
+  }
+}

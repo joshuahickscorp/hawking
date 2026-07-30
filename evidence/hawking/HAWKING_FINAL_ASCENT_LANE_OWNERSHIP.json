@@ -1,0 +1,437 @@
+{
+  "at": "2026-07-28T14:04:55Z",
+  "campaign": "HAWKING_FINAL_ASCENT",
+  "controller": {
+    "may_not_delegate": [
+      "flipping ODYSSEY_LAUNCH_AUTHORIZED",
+      "flipping RAMANUJAN_RESEARCH_AUTHORIZED",
+      "flipping HIDE_KERNEL_TURN default",
+      "merging any lane to main",
+      "accepting a delegated report as evidence"
+    ],
+    "retains": [
+      "architecture",
+      "sequencing",
+      "scientific contracts",
+      "artifact semantics",
+      "Odyssey promotion authority",
+      "fence authority",
+      "cross-lane integration"
+    ]
+  },
+  "do_not_hand_edit": true,
+  "fences": {
+    "HIDE_KERNEL_TURN": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "generated": true,
+  "generated_by": "tools/campaign/final_ascent_status.py",
+  "invariants": [
+    "live evidence overrides stale status snapshots",
+    "unknown live fields are null/UNKNOWN, never guessed",
+    "REFUSED/UNVERIFIED substrates are not training inputs",
+    "never touch MOP without explicit authorization",
+    "never delete teacher capsules or negative controls",
+    "publisher does not kill/start/modify live processes or launch agents"
+  ],
+  "lanes": [
+    {
+      "branch": "campaign/glm52-generation-b",
+      "dependencies": [],
+      "forbidden_files": [
+        "odyssey/launch/ODYSSEY_LAUNCH_AUTHORIZED",
+        "teacher capsules",
+        "model bodies",
+        "MOP-owned caches"
+      ],
+      "heartbeat": null,
+      "id": "FA01",
+      "inputs": [
+        "HAWKING_RESUME_CHECKPOINT.md",
+        "HAWKING_PARALLEL_STATUS.json",
+        "HAWKING_CONTINUUM_STATUS.json",
+        "HAWKING_HEAVY_CONTINUATION_STATUS.json",
+        "live git/worktree/process/launchd state"
+      ],
+      "lease": null,
+      "live": {
+        "live_hawking_jobs": []
+      },
+      "name": "live-state-control-plane",
+      "outputs": [
+        "HAWKING_FINAL_ASCENT_STATUS.md",
+        "HAWKING_FINAL_ASCENT_STATUS.json",
+        "HAWKING_FINAL_ASCENT_LEDGER.jsonl",
+        "HAWKING_FINAL_ASCENT_DEPENDENCY_DAG.json",
+        "HAWKING_FINAL_ASCENT_LANE_OWNERSHIP.json",
+        "HAWKING_FINAL_ASCENT_CONTINUATION_GOAL.md",
+        "HAWKING_FINAL_ASCENT_NEXT_COMMAND.sh"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "publisher is read-only by default; never flips fences",
+      "resource_class": "light-readonly",
+      "status": "ACTIVE",
+      "tests": "python3.12 -m tools.campaign.test_final_ascent_status",
+      "why": "control plane publisher derives status from live evidence",
+      "worktree": "/Users/scammermike/Downloads/hawking"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [],
+      "forbidden_files": [
+        "odyssey/launch/",
+        "teacher capsules (must not delete/modify)",
+        "prior refused artifact bodies (negative controls)"
+      ],
+      "heartbeat": null,
+      "id": "FA02",
+      "inputs": [
+        "GLM52_GENERATION_B_CAPABILITY_VERDICT.json",
+        "GLM52_BYTE_ATTRIBUTION.json",
+        "odyssey/launch/SUBSTRATE_CAPABILITY.json",
+        "HAWKING_RESUME_CHECKPOINT.md",
+        "HAWKING_FINAL_ASCENT_SOURCE_REHYDRATION_RECEIPT.json",
+        "real teacher capsules (READ ONLY)"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "capable-glm-basis-pilot-and-substrate",
+      "outputs": [
+        "hash-APPROVED Math-Preserve-v2 substrate entry in SUBSTRATE_CAPABILITY.json",
+        "capability gate receipt with G_math and G_live PASS"
+      ],
+      "owner": "controller+grok",
+      "pid": null,
+      "promotion_gate": "artifact_index_sha256 bound APPROVED in odyssey/launch/SUBSTRATE_CAPABILITY.json after G_math and G_live PASS; reconstruction metrics never substitute",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "status": "CAPABILITY_REFUSED",
+      "tests": ".venv/glm52/bin/python tools/condense/glm52_capability_gate.py --artifact <dir> --run --out CAPABILITY.json",
+      "why": "Generation B REFUSED; Math-Preserve family REFUSED; no Math-Preserve-v2 APPROVED",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA02"
+      ],
+      "forbidden_files": [
+        "odyssey/launch/",
+        "MOP-owned files"
+      ],
+      "heartbeat": null,
+      "id": "FA03",
+      "inputs": [
+        "HAWKING_BASE_TRUE_TPS.json",
+        "HAWKING_BASE_RUNTIME_*.json",
+        "Temporal Gravity external receipts"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "base-accelerated-runtime",
+      "outputs": [
+        "BASE_TRUE_TPS measured on a capable provider",
+        "acceleration provider receipt"
+      ],
+      "owner": "codex+controller",
+      "pid": null,
+      "promotion_gate": "real provider capable; TPS measured not estimated; no kernel turn flip",
+      "resource_class": "medium-gpu",
+      "status": "MEASURED_ON_REFUSED_OR_STALE_PROVIDER",
+      "tests": "runtime selfcheck + BASE_TRUE_TPS measurement harness",
+      "why": "BASE_TRUE_TPS exists but no hash-APPROVED capable substrate",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA02",
+        "FA03"
+      ],
+      "forbidden_files": [
+        "HIDE_KERNEL_TURN fence flip without capable provider",
+        "odyssey/launch/"
+      ],
+      "heartbeat": null,
+      "id": "FA04",
+      "inputs": [
+        "HIDE_YOU_*.json",
+        "HIDE archaeology / surface contracts",
+        "capable real provider"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "hide-you-chat-ide",
+      "outputs": [
+        "HIDE surfaces REAL_WIRED against a capable provider",
+        "kernel-turn still default-off until explicit promotion"
+      ],
+      "owner": "grok+controller",
+      "pid": null,
+      "promotion_gate": "HIDE_KERNEL_TURN stays false until a capable real provider passes its promotion gate; wiring prep may proceed without flipping the fence",
+      "resource_class": "light-medium",
+      "status": "PREP_ONLY_KERNEL_TURN_REFUSED",
+      "tests": "hide crate tests; surface authority checks",
+      "why": "HIDE_KERNEL_TURN cannot promote without capable real provider",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA02",
+        "FA03"
+      ],
+      "forbidden_files": [
+        "training on REFUSED/UNVERIFIED substrates",
+        "flipping ODYSSEY_LAUNCH_AUTHORIZED"
+      ],
+      "heartbeat": null,
+      "id": "FA05",
+      "inputs": [
+        "hash-APPROVED capable Math-Preserve-v2",
+        "ODYSSEY_LAUNCH_AUTHORIZED (human fence)",
+        "odyssey/** contracts"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "odyssey-t0-t7",
+      "outputs": [
+        "ODYSSEY_T0_RECEIPT.json through T7 receipts",
+        "winning checkpoint"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "requires hash-APPROVED capable Math-Preserve-v2 AND ODYSSEY_LAUNCH_AUTHORIZED=true (human only)",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "status": "BLOCKED_CAPABILITY_REFUSED",
+      "tests": "ODYSSEY_PROMOTION_GATE.md G1-G4; substrate hash verification",
+      "why": "Odyssey cannot promote without hash-APPROVED capable Math-Preserve-v2",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA02",
+        "FA05"
+      ],
+      "forbidden_files": [
+        "repacking a REFUSED substrate as Math-Frozen"
+      ],
+      "heartbeat": null,
+      "id": "FA06",
+      "inputs": [
+        "Odyssey winning checkpoint",
+        "hash-APPROVED capable Math-Preserve-v2 parent family"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "math-frozen",
+      "outputs": [
+        "Math-Frozen Director artifact",
+        "Math-Frozen capability receipt"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "cannot promote without hash-APPROVED capable Math-Preserve-v2 and an Odyssey winner to freeze",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "status": "BLOCKED_CAPABILITY_REFUSED",
+      "tests": "capability gate on frozen director; integrity seal",
+      "why": "Math-Frozen cannot promote without hash-APPROVED capable Math-Preserve-v2",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [],
+      "forbidden_files": [
+        "odyssey/launch/",
+        "destructive consolidation"
+      ],
+      "heartbeat": null,
+      "id": "FA07",
+      "inputs": [
+        "FABRIC_*.json",
+        "HAWKING_BRIDGE_*.json",
+        "HAWKING_ADAPTER_*.json"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "fabric-bridge-adapters-cli-model-vault",
+      "outputs": [
+        "Fabric/Bridge/adapter ABI sealed",
+        "CLI and model-vault surfaces"
+      ],
+      "owner": "grok",
+      "pid": null,
+      "promotion_gate": "contracts real; no overclaim on unwired surfaces",
+      "resource_class": "light-medium",
+      "status": "PREP_IN_TREE",
+      "tests": "FABRIC_TEST_EXECUTION_RECEIPT / adapter matrix",
+      "why": "fabric/bridge receipts present; not on critical capability path",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA04",
+        "FA06",
+        "FA07"
+      ],
+      "forbidden_files": [
+        "destructive refactor during or before Odyssey/Math-Frozen",
+        "main merge"
+      ],
+      "heartbeat": null,
+      "id": "FA08",
+      "inputs": [
+        "HAWKING_CONSOLIDATION_INVENTORY.json",
+        "completed Fabric/HIDE/Math-Frozen surfaces"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "hawking-consolidation",
+      "outputs": [
+        "HAWKING_EVOLUTION_COMPLETE seal",
+        "single authority per subsystem"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "campaign law: no destructive consolidation before Math-Frozen",
+      "resource_class": "medium",
+      "status": "INVENTORY_ONLY_BLOCKED_ON_MATH_FROZEN",
+      "tests": "inventory load-bearing checks; no dual authorities left silent",
+      "why": "inventory exists; destructive consolidation blocked until Math-Frozen",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA08"
+      ],
+      "forbidden_files": [
+        "flipping RAMANUJAN_RESEARCH_AUTHORIZED",
+        "training before Director freeze"
+      ],
+      "heartbeat": null,
+      "id": "FA09",
+      "inputs": [
+        "HAWKING_EVOLUTION_COMPLETE",
+        "owned Ramanujan contracts"
+      ],
+      "lease": null,
+      "live": {
+        "ramanujan_dir_exists": false
+      },
+      "name": "ramanujan-migration",
+      "outputs": [
+        "~/Downloads/ramanujan repository",
+        "migration receipt"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "separate repo only after evolution seal; research fence stays closed",
+      "resource_class": "medium-io",
+      "status": "BLOCKED_ON_EVOLUTION_SEAL",
+      "tests": "migration inventory completeness",
+      "why": "migration after HAWKING_EVOLUTION_COMPLETE",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA06",
+        "FA09"
+      ],
+      "forbidden_files": [
+        "training on REFUSED substrates",
+        "distilling teacher traces from refused artifacts"
+      ],
+      "heartbeat": null,
+      "id": "FA10",
+      "inputs": [
+        "frozen Math-Frozen Director",
+        "formal environment (Lean/Mathlib)",
+        "sealed corpora"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "local-formal-system-training",
+      "outputs": [
+        "retriever/formalizer/prover/repair metrics on held-out split"
+      ],
+      "owner": "controller+grok",
+      "pid": null,
+      "promotion_gate": "cannot promote without the frozen Director (FA06)",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "status": "BLOCKED_ON_FROZEN_DIRECTOR",
+      "tests": "held-out metrics; no train/test overlap",
+      "why": "local formal-system training cannot promote without frozen Director",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA09"
+      ],
+      "forbidden_files": [
+        "silencing adversarial invariant failures"
+      ],
+      "heartbeat": null,
+      "id": "FA11",
+      "inputs": [
+        "governance invariant tests",
+        "search/roles/memories/Ledger/Tribunal contracts"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "search-cognition-governance",
+      "outputs": [
+        "search + cognition stack with falsifiers",
+        "governance refusal layer"
+      ],
+      "owner": "controller+grok",
+      "pid": null,
+      "promotion_gate": "invariants green; MOP refusal layer ported without touching MOP",
+      "resource_class": "medium",
+      "status": "PREP_OR_BLOCKED",
+      "tests": "adversarial invariant suite",
+      "why": "governance prep may exist; full stack waits on migration/Director path",
+      "worktree": "UNKNOWN"
+    },
+    {
+      "branch": "UNKNOWN",
+      "dependencies": [
+        "FA06",
+        "FA10",
+        "FA11"
+      ],
+      "forbidden_files": [
+        "claiming sandbox ready without Q0-Q6",
+        "flipping RAMANUJAN_RESEARCH_AUTHORIZED"
+      ],
+      "heartbeat": null,
+      "id": "FA12",
+      "inputs": [
+        "Q0 capsule/container proof",
+        "formal system + governance + Director"
+      ],
+      "lease": null,
+      "live": {},
+      "name": "q0-q6-offline-recovery",
+      "outputs": [
+        "Q0-Q6 qualification receipts",
+        "multi-day pre-sandbox rehearsal",
+        "RAMANUJAN_SANDBOX_READY"
+      ],
+      "owner": "controller",
+      "pid": null,
+      "promotion_gate": "Q0 may already be achieved by receipt; Q1-Q6 cannot promote without the frozen Director",
+      "resource_class": "medium",
+      "status": "Q0_ACHIEVED_Q1Q6_BLOCKED",
+      "tests": "Q0 container re-prove; Q1-Q6 offline recovery drills",
+      "why": "Q0 achieved by receipt; Q1-Q6 blocked without frozen Director / capable substrate",
+      "worktree": "UNKNOWN"
+    }
+  ],
+  "schema": "hawking.final_ascent.lane_ownership.v1"
+}

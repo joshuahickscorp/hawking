@@ -1,0 +1,138 @@
+{
+  "schema": "hide.you.memory_controls.v1",
+  "at": "2026-07-27T12:00:00Z",
+  "status": "IMPLEMENTED",
+  "resource_mode": "LIGHT_ONLY",
+  "purpose": "Eight user controls across the six HIDE memory classes, with personal scopes orthogonal to class, portable export, and real deletion. No hidden permanent memory.",
+  "module": {
+    "crate": "hawking-context",
+    "path": "crates/hawking-context/src/memory_classes.rs",
+    "rationale": "Six class stores and capability-typed writes already live here; controls extend that substrate rather than inventing a seventh store."
+  },
+  "classes": ["working", "episodic", "semantic_project", "procedural", "user", "verification"],
+  "write_authority_unchanged": {
+    "law": "Do not weaken any existing write-authority type.",
+    "holds": {
+      "working": "TurnWriteCap",
+      "episodic": "EpisodicWriteCap",
+      "semantic_project": "ProjectWriteCap",
+      "procedural": "ProceduralWriteCap",
+      "user": "UserWriteCap",
+      "verification": "VerifierWriteCap"
+    },
+    "correct_honours_authority": "correct_verification still requires VerifierWriteCap; correct_user requires UserWriteCap; etc. Authority is stamped by the write method, not the draft."
+  },
+  "personal_scopes": {
+    "law": "Scope is orthogonal to class. A record has exactly one class and exactly one scope. Connector-scoped content never becomes global without an explicit, recorded promotion.",
+    "scopes": [
+      "global",
+      "workspace",
+      "project",
+      "conversation",
+      "connector",
+      "person",
+      "private_vault",
+      "ephemeral"
+    ],
+    "type": "PersonalScope",
+    "defaults": {
+      "working": "conversation",
+      "episodic": "conversation",
+      "semantic_project": "workspace",
+      "procedural": "workspace",
+      "user": "global",
+      "verification": "workspace"
+    },
+    "promotion": {
+      "api": "ClassedMemorySystem::set_scope(id, to_scope, approved_by)",
+      "requires": "non-empty approved_by",
+      "audit": "mem_scope_promotions table (ScopePromotion records)"
+    }
+  },
+  "user_controls": {
+    "verbs": ["inspect", "correct", "pin", "scope", "expire", "forget", "export", "disable"],
+    "law": "No hidden permanent memory. Every durable record is reachable by inspect and removable by forget, and forget is real deletion for user-scoped data rather than a tombstone.",
+    "apis": {
+      "inspect": "ClassedMemorySystem::inspect(InspectFilter) — class/scope filters; include_expired; include_working",
+      "correct": {
+        "user": "correct_user(UserWriteCap, ...)",
+        "verification": "correct_verification(VerifierWriteCap, ...)",
+        "semantic_project": "correct_semantic_project(ProjectWriteCap, ...)",
+        "procedural": "correct_procedural(ProceduralWriteCap, ...)",
+        "episodic": "correct_episodic(EpisodicWriteCap, ...)",
+        "semantics": "supersession: new record names old via supersedes; both remain until forgotten"
+      },
+      "pin": "pin(id, pinned) — exempt from expire, never from forget",
+      "scope": "set_scope(id, to, approved_by) — recorded promotion",
+      "expire": "expire_due(now_ms) — marks expired; pinned survive",
+      "forget": "forget(id) / forget_scope(scope) — real DELETE from SQLite/RAM, not a tombstone",
+      "export": "export() → MemoryExport schema hide.you.memory_export.v1 (JSON-serializable without this tool)",
+      "disable": "disable_class(class, bool) — blocks new writes and compile retrieval; records stay inspectable/forgettable"
+    }
+  },
+  "export": {
+    "schema": "hide.you.memory_export.v1",
+    "fields": ["exported_at_ms", "workspace_id", "records", "promotions", "disabled_classes"],
+    "portable": true,
+    "readable_without_this_tool": "serde JSON; ClassMemoryRecord is fully serializable"
+  },
+  "deletion": {
+    "forget": "DELETE FROM table WHERE id = ?",
+    "forget_scope": "inspect + forget each id",
+    "evict_session": "DELETE episodic (and other tables) WHERE session_id = ?",
+    "not_tombstone": true
+  },
+  "tests": [
+    {
+      "name": "property_no_hidden_permanent_memory_inspect_and_forget",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "every durable record inspectable; forget real-deletes user data; export round-trips as JSON"
+    },
+    {
+      "name": "property_correct_verification_requires_verifier_cap",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "correct on verification still stamps Verifier authority and requires the cap"
+    },
+    {
+      "name": "property_scope_orthogonal_to_class_and_promotion_recorded",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "class+scope product; connector not global until explicit promotion with approver"
+    },
+    {
+      "name": "property_pin_expire_disable_controls",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "pin survives expire; disable blocks write+compile; inspect still sees records"
+    },
+    {
+      "name": "property_export_and_real_deletion_path",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "export contains record; forget removes from store and subsequent export"
+    },
+    {
+      "name": "property_eight_scopes_closed_vocabulary",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "exactly eight scopes; parse is closed"
+    },
+    {
+      "name": "property_user_db_legacy_schema_migrates_idempotently",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "PRAGMA table_info + ALTER migrates an existing user.db that lacks control columns; CREATE TABLE IF NOT EXISTS alone is insufficient"
+    },
+    {
+      "name": "property_forget_clears_dangling_edges_and_export",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "forget deletes the row, supersedes pointers, and scope-promotion rows; subsequent export retains no residual of the forgotten id"
+    },
+    {
+      "name": "property_export_carries_no_capability_and_no_reimport_path",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "export JSON has no tools/connectors grant vocabulary; deserializing a stale export does not rehydrate the store"
+    }
+  ],
+  "non_goals": [
+    "No real network, credentials, or model",
+    "Production writers still not fully wired into SubmitTurn (prior memory-classes gap)",
+    "Vault encryption is a handle boundary; platform crypto at rest is deferred"
+  ],
+  "grade_ceiling": "READY_FOR_INTEGRATION"
+}

@@ -1,6 +1,6 @@
 //! Seventeen YOU surface events that join the **same** canonical bus.
 //!
-//! Authority: [`HIDE_YOU_EVENTS_AND_FRONTEND_CONTRACT.json`]. These are not a
+//! Authority: [`evidence/hide/HIDE_YOU_EVENTS_AND_FRONTEND_CONTRACT.json`]. These are not a
 //! second event bus — they are named open kinds on [`hide_core::event::Event`]
 //! with the full envelope (id, seq, session, surface, subsystem, verification).
 //!

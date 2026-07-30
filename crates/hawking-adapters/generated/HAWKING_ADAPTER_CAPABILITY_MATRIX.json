@@ -460,7 +460,7 @@
         "attention_or_state_declared": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -471,7 +471,7 @@
         "chat_template_declared": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -482,7 +482,7 @@
         "cpu_provider": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -493,7 +493,7 @@
         "cuda_provider": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -504,7 +504,7 @@
         "dense_topology": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -515,7 +515,7 @@
         "execute_forward": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -526,7 +526,7 @@
         "fabric_partition_declared": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -537,7 +537,7 @@
         "full_parent_validated": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -548,7 +548,7 @@
         "gguf_codec": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -559,7 +559,7 @@
         "gravity_codec": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -570,7 +570,7 @@
         "metal_provider": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -581,7 +581,7 @@
         "moe_topology": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -592,7 +592,7 @@
         "production": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -603,7 +603,7 @@
         "real_tensor_decode": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -614,7 +614,7 @@
         "safetensors_codec": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -625,7 +625,7 @@
         "serve_registered": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -636,7 +636,7 @@
         "small_real_checkpoint": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -647,7 +647,7 @@
         "source_header_validated": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -658,7 +658,7 @@
         "synthetic_parity": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -669,7 +669,7 @@
         "tokenizer_declared": {
           "backing_grade": "SMALL_REAL_CHECKPOINT",
           "evidence_paths": [
-            "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+            "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
             "crates/hawking-core/tests/gravity_engine_registry.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
@@ -686,7 +686,7 @@
         "attention_or_state_declared": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.attention_or_state",
@@ -695,7 +695,7 @@
         "chat_template_declared": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.chat_template",
@@ -704,7 +704,7 @@
         "cpu_provider": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.cpu",
@@ -713,7 +713,7 @@
         "cuda_provider": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.cuda",
@@ -722,7 +722,7 @@
         "dense_topology": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.topology",
@@ -731,7 +731,7 @@
         "execute_forward": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "descriptor.executes",
@@ -740,7 +740,7 @@
         "fabric_partition_declared": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.fabric_partition_boundaries",
@@ -749,7 +749,7 @@
         "full_parent_validated": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
@@ -758,7 +758,7 @@
         "gguf_codec": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -767,7 +767,7 @@
         "gravity_codec": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -776,7 +776,7 @@
         "metal_provider": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.metal",
@@ -785,7 +785,7 @@
         "moe_topology": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.topology",
@@ -794,7 +794,7 @@
         "production": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "no family is PRODUCTION today",
@@ -803,7 +803,7 @@
         "real_tensor_decode": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
@@ -812,7 +812,7 @@
         "safetensors_codec": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -821,7 +821,7 @@
         "serve_registered": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "descriptor.serve_registered",
@@ -830,7 +830,7 @@
         "small_real_checkpoint": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
@@ -839,7 +839,7 @@
         "source_header_validated": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
@@ -848,7 +848,7 @@
         "synthetic_parity": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
@@ -857,7 +857,7 @@
         "tokenizer_declared": {
           "backing_grade": "SYNTHETIC_PARITY",
           "evidence_paths": [
-            "KIMI_K26_ADAPTER_TWIN.json",
+            "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.tokenizer",
@@ -1118,7 +1118,7 @@
         "attention_or_state_declared": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.attention_or_state",
           "present": true
@@ -1126,7 +1126,7 @@
         "chat_template_declared": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.chat_template",
           "present": false
@@ -1134,7 +1134,7 @@
         "cpu_provider": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.providers.cpu",
           "present": false
@@ -1142,7 +1142,7 @@
         "cuda_provider": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.providers.cuda",
           "present": false
@@ -1150,7 +1150,7 @@
         "dense_topology": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.topology",
           "present": true
@@ -1158,7 +1158,7 @@
         "execute_forward": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "descriptor.executes",
           "present": false
@@ -1166,7 +1166,7 @@
         "fabric_partition_declared": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.fabric_partition_boundaries",
           "present": false
@@ -1174,7 +1174,7 @@
         "full_parent_validated": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1182,7 +1182,7 @@
         "gguf_codec": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1190,7 +1190,7 @@
         "gravity_codec": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1198,7 +1198,7 @@
         "metal_provider": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.providers.metal",
           "present": false
@@ -1206,7 +1206,7 @@
         "moe_topology": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.topology",
           "present": true
@@ -1214,7 +1214,7 @@
         "production": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "no family is PRODUCTION today",
           "present": false
@@ -1222,7 +1222,7 @@
         "real_tensor_decode": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1230,7 +1230,7 @@
         "safetensors_codec": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1238,7 +1238,7 @@
         "serve_registered": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "descriptor.serve_registered",
           "present": false
@@ -1246,7 +1246,7 @@
         "small_real_checkpoint": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1254,7 +1254,7 @@
         "source_header_validated": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1262,7 +1262,7 @@
         "synthetic_parity": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1270,7 +1270,7 @@
         "tokenizer_declared": {
           "backing_grade": "DECLARED",
           "evidence_paths": [
-            "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           ],
           "note": "abi.tokenizer",
           "present": false

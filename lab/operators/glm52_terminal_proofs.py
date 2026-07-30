@@ -236,10 +236,27 @@ class _Reader:
             _fail(f'unsafe evidence path: {relative!r}')
         return tuple(pure.parts)
 
+    def _locate(self, relative: str) -> str:
+        """Map a bare basename onto ``evidence/<campaign>/<basename>``.
+
+        Callers address artifacts by basename, and that same string is the
+        ``FROZEN_ARTIFACT_SEALS`` key and the ``path`` reported in every
+        binding, so it must not change when the file moves. Only the
+        directory walk below sees the real location; each component of it is
+        still opened with ``O_NOFOLLOW``, so this picks a path, it does not
+        relax the check.
+        """
+        if '/' in relative or (self.root / relative).is_file():
+            return relative
+        found = sorted((self.root / 'evidence').glob(f'*/{relative}'))
+        if not found:
+            return relative
+        return found[0].relative_to(self.root).as_posix()
+
     def raw(self, relative: str) -> bytes:
         if relative in self._raw:
             return self._raw[relative]
-        parts = self._parts(relative)
+        parts = self._parts(self._locate(relative))
         root_descriptors, root_links, root_stat = self._open_absolute_root()
         if self._identity(root_stat) != self._root_identity:
             for descriptor in reversed(root_descriptors):

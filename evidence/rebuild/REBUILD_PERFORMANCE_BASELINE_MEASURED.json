@@ -1,0 +1,2225 @@
+{
+  "schema": "hawking.rebuild.perfgate.v1",
+  "mode": "capture",
+  "at": "2026-07-29T17:03:21.735347+00:00",
+  "finished_at": "2026-07-29T17:11:04.532348+00:00",
+  "host": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.6",
+    "ncpu": 28,
+    "repo": "/Users/scammermike/Downloads/hawking",
+    "hawking_bin": "/Users/scammermike/Downloads/hawking/target/release/hawking"
+  },
+  "protocol": {
+    "n_runs_per_metric": 5,
+    "warm_up_discarded": true,
+    "summary": "median + min/max; never mean alone",
+    "contamination_note": "This machine is not a clean room. Absolute numbers are contaminated. Prefer --paired for A/B. Every sample records loadavg/memory; ps heavy-process probe when permitted.",
+    "include_cold_build": false,
+    "include_glm_tps": false,
+    "metal": {
+      "ok": true,
+      "reason": "bench-q4k-shapes ok"
+    }
+  },
+  "system_at_start": {
+    "ts": "2026-07-29T17:03:21.736968+00:00",
+    "loadavg_1_5_15": [
+      43.80908203125,
+      44.123046875,
+      43.57568359375
+    ],
+    "ncpu": 28,
+    "free_bytes": 5891719168,
+    "active_bytes": 37027790848,
+    "heavy_process_gt_4_cores": false,
+    "heavy_process_detail": [],
+    "ps_status": "ok"
+  },
+  "system_at_end": {
+    "ts": "2026-07-29T17:11:04.563078+00:00",
+    "loadavg_1_5_15": [
+      68.18115234375,
+      56.65283203125,
+      49.12255859375
+    ],
+    "ncpu": 28,
+    "free_bytes": 17548771328,
+    "active_bytes": 28700262400,
+    "heavy_process_gt_4_cores": false,
+    "heavy_process_detail": [],
+    "ps_status": "ok"
+  },
+  "metrics": [
+    {
+      "name": "build.cargo_check_s",
+      "family": "build",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        0.4092499159742147,
+        0.3346277920063585,
+        0.3909450829960406,
+        0.34830629196949303
+      ],
+      "median": 0.3696256874827668,
+      "min": 0.3346277920063585,
+      "max": 0.4092499159742147,
+      "samples": [
+        {
+          "i": 0,
+          "value": 1.58103962498717,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:03:21.940732+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 5873876992,
+            "active_bytes": 37013585920,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:03:23.597055+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 5933498368,
+            "active_bytes": 37193826304,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo check -p hawking"
+        },
+        {
+          "i": 1,
+          "value": 0.4092499159742147,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:03:23.677567+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 5926649856,
+            "active_bytes": 37143855104,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:03:24.163098+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 5909331968,
+            "active_bytes": 37479792640,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo check -p hawking"
+        },
+        {
+          "i": 2,
+          "value": 0.3346277920063585,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:03:24.236551+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 5895585792,
+            "active_bytes": 37485527040,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:03:24.645572+00:00",
+            "loadavg_1_5_15": [
+              43.80908203125,
+              44.123046875,
+              43.57568359375
+            ],
+            "ncpu": 28,
+            "free_bytes": 6036701184,
+            "active_bytes": 37318082560,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo check -p hawking"
+        },
+        {
+          "i": 3,
+          "value": 0.3909450829960406,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:03:24.726353+00:00",
+            "loadavg_1_5_15": [
+              43.744140625,
+              44.10400390625,
+              43.572265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 6029410304,
+            "active_bytes": 37328863232,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:03:25.184487+00:00",
+            "loadavg_1_5_15": [
+              43.744140625,
+              44.10400390625,
+              43.572265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 5997395968,
+            "active_bytes": 37369708544,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo check -p hawking"
+        },
+        {
+          "i": 4,
+          "value": 0.34830629196949303,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:03:25.264963+00:00",
+            "loadavg_1_5_15": [
+              43.744140625,
+              44.10400390625,
+              43.572265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 5989154816,
+            "active_bytes": 37376753664,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:03:25.705204+00:00",
+            "loadavg_1_5_15": [
+              43.744140625,
+              44.10400390625,
+              43.572265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 6132547584,
+            "active_bytes": 37242716160,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo check -p hawking"
+        }
+      ]
+    },
+    {
+      "name": "build.cargo_build_warm_s",
+      "family": "build",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        79.06789812503848,
+        90.64016687497497,
+        94.54472358291969,
+        85.566316750017
+      ],
+      "median": 88.10324181249598,
+      "min": 79.06789812503848,
+      "max": 94.54472358291969,
+      "samples": [
+        {
+          "i": 0,
+          "value": 83.81817500002217,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:03:25.787976+00:00",
+            "loadavg_1_5_15": [
+              43.744140625,
+              44.10400390625,
+              43.572265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 6127861760,
+            "active_bytes": 37246631936,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:04:49.677873+00:00",
+            "loadavg_1_5_15": [
+              42.47265625,
+              43.5615234375,
+              43.4072265625
+            ],
+            "ncpu": 28,
+            "free_bytes": 16735436800,
+            "active_bytes": 32052051968,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo build -p hawking --release"
+        },
+        {
+          "i": 1,
+          "value": 79.06789812503848,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:04:49.770050+00:00",
+            "loadavg_1_5_15": [
+              42.1943359375,
+              43.4853515625,
+              43.38134765625
+            ],
+            "ncpu": 28,
+            "free_bytes": 18552766464,
+            "active_bytes": 30783619072,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:06:08.936290+00:00",
+            "loadavg_1_5_15": [
+              41.3896484375,
+              42.9091796875,
+              43.1669921875
+            ],
+            "ncpu": 28,
+            "free_bytes": 30326145024,
+            "active_bytes": 25365348352,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo build -p hawking --release"
+        },
+        {
+          "i": 2,
+          "value": 90.64016687497497,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:06:09.007311+00:00",
+            "loadavg_1_5_15": [
+              41.3896484375,
+              42.9091796875,
+              43.1669921875
+            ],
+            "ncpu": 28,
+            "free_bytes": 30325948416,
+            "active_bytes": 25368264704,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:07:39.709846+00:00",
+            "loadavg_1_5_15": [
+              47.0888671875,
+              45.00244140625,
+              43.98388671875
+            ],
+            "ncpu": 28,
+            "free_bytes": 27720171520,
+            "active_bytes": 26682458112,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo build -p hawking --release"
+        },
+        {
+          "i": 3,
+          "value": 94.54472358291969,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:07:39.783956+00:00",
+            "loadavg_1_5_15": [
+              47.64208984375,
+              45.1513671875,
+              44.04248046875
+            ],
+            "ncpu": 28,
+            "free_bytes": 27625062400,
+            "active_bytes": 26740768768,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:09:14.403241+00:00",
+            "loadavg_1_5_15": [
+              64.0537109375,
+              50.42626953125,
+              46.12158203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 21931327488,
+            "active_bytes": 28877520896,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo build -p hawking --release"
+        },
+        {
+          "i": 4,
+          "value": 85.566316750017,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:09:14.492545+00:00",
+            "loadavg_1_5_15": [
+              64.0537109375,
+              50.42626953125,
+              46.12158203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 21910257664,
+            "active_bytes": 28897001472,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:40.146810+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17880596480,
+            "active_bytes": 28980838400,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "cmd": "cargo build -p hawking --release"
+        }
+      ]
+    },
+    {
+      "name": "build.cargo_build_cold_s",
+      "family": "build",
+      "status": "skipped",
+      "reason": "opt-in via --include-cold",
+      "label": "skipped",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 5,
+      "n_kept": 0,
+      "values": [],
+      "median": null,
+      "min": null,
+      "max": null,
+      "samples": []
+    },
+    {
+      "name": "build.binary_size_bytes",
+      "family": "build",
+      "status": "measured",
+      "reason": "stat /Users/scammermike/Downloads/hawking/target/release/hawking",
+      "label": "measured",
+      "unit": "bytes",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 1,
+      "n_kept": 1,
+      "values": [
+        7555168.0
+      ],
+      "median": 7555168.0,
+      "min": 7555168.0,
+      "max": 7555168.0,
+      "samples": [
+        {
+          "i": 0,
+          "value": 7555168.0,
+          "path": "/Users/scammermike/Downloads/hawking/target/release/hawking",
+          "system_before": {
+            "ts": "2026-07-29T17:10:40.222034+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17988354048,
+            "active_bytes": 28914909184,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          }
+        }
+      ],
+      "extras": {
+        "path": "/Users/scammermike/Downloads/hawking/target/release/hawking"
+      }
+    },
+    {
+      "name": "startup.help_s",
+      "family": "startup",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        0.008658167091198266,
+        0.007859708974137902,
+        0.008662167005240917,
+        0.010883542010560632
+      ],
+      "median": 0.008660167048219591,
+      "min": 0.007859708974137902,
+      "max": 0.010883542010560632,
+      "samples": [
+        {
+          "i": 0,
+          "value": 0.01434195798356086,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:40.302514+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17972232192,
+            "active_bytes": 28927066112,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:40.403324+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18087690240,
+            "active_bytes": 29119184896,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout_bytes": 3379
+        },
+        {
+          "i": 1,
+          "value": 0.008658167091198266,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:40.514180+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18016862208,
+            "active_bytes": 29184131072,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:40.606701+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18040602624,
+            "active_bytes": 29154459648,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout_bytes": 3379
+        },
+        {
+          "i": 2,
+          "value": 0.007859708974137902,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:40.705865+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18038423552,
+            "active_bytes": 29152821248,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:40.802895+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17716150272,
+            "active_bytes": 28996960256,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout_bytes": 3379
+        },
+        {
+          "i": 3,
+          "value": 0.008662167005240917,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:40.919543+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17674731520,
+            "active_bytes": 29035036672,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.016679+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17658839040,
+            "active_bytes": 29050306560,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout_bytes": 3379
+        },
+        {
+          "i": 4,
+          "value": 0.010883542010560632,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.101092+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17668931584,
+            "active_bytes": 29054517248,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.200861+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17662148608,
+            "active_bytes": 29061120000,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout_bytes": 3379
+        }
+      ]
+    },
+    {
+      "name": "startup.version_s",
+      "family": "startup",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        0.011253667064011097,
+        0.01489150000270456,
+        0.007653415901586413,
+        0.014744375017471611
+      ],
+      "median": 0.012999021040741354,
+      "min": 0.007653415901586413,
+      "max": 0.01489150000270456,
+      "samples": [
+        {
+          "i": 0,
+          "value": 0.006480875075794756,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.282619+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17678385152,
+            "active_bytes": 29045850112,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.367029+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17602641920,
+            "active_bytes": 29127622656,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout": "hawking 0.2.2"
+        },
+        {
+          "i": 1,
+          "value": 0.011253667064011097,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.441479+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17575395328,
+            "active_bytes": 29154459648,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 481.2,
+                "comm": "/opt/homebrew/Cellar/go/1.26.2/libexec/pkg/tool/darwin_arm64/compile"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.529043+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17514446848,
+            "active_bytes": 29215244288,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 481.2,
+                "comm": "/opt/homebrew/Cellar/go/1.26.2/libexec/pkg/tool/darwin_arm64/compile"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "stdout": "hawking 0.2.2"
+        },
+        {
+          "i": 2,
+          "value": 0.01489150000270456,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.604137+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17503715328,
+            "active_bytes": 29224402944,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 572.2,
+                "comm": "(compile)"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.691506+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17831133184,
+            "active_bytes": 28886810624,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout": "hawking 0.2.2"
+        },
+        {
+          "i": 3,
+          "value": 0.007653415901586413,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.763033+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17828462592,
+            "active_bytes": 28888956928,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:41.856151+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17812914176,
+            "active_bytes": 29318692864,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout": "hawking 0.2.2"
+        },
+        {
+          "i": 4,
+          "value": 0.014744375017471611,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:41.934567+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17752506368,
+            "active_bytes": 29371023360,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:42.030565+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17727537152,
+            "active_bytes": 29389291520,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "stdout": "hawking 0.2.2"
+        }
+      ]
+    },
+    {
+      "name": "startup.doctor_s",
+      "family": "startup",
+      "status": "unavailable",
+      "reason": "no GGUF for doctor; models/**/*.gguf or $HAWKING_GGUF",
+      "label": "unavailable",
+      "unit": "",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 0,
+      "n_kept": 0,
+      "values": [],
+      "median": null,
+      "min": null,
+      "max": null,
+      "samples": []
+    },
+    {
+      "name": "base_tps.llama1b_decode_tps",
+      "family": "base_tps",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "tps",
+      "higher_is_better": true,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        122.55214817945681,
+        136.20131651000779,
+        134.4294000862012,
+        126.33756641299372
+      ],
+      "median": 130.38348324959748,
+      "min": 122.55214817945681,
+      "max": 136.20131651000779,
+      "samples": [
+        {
+          "i": 0,
+          "value": 135.3131816824381,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:42.302708+00:00",
+            "loadavg_1_5_15": [
+              71.27783203125,
+              56.41650390625,
+              48.8642578125
+            ],
+            "ncpu": 28,
+            "free_bytes": 17635180544,
+            "active_bytes": 29606363136,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:45.174483+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17898700800,
+            "active_bytes": 29115990016,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+          "wall_s": 2.774456667015329,
+          "dispatches_per_token": 210.0
+        },
+        {
+          "i": 1,
+          "value": 122.55214817945681,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:45.267958+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17868767232,
+            "active_bytes": 29136076800,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:47.328957+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17706106880,
+            "active_bytes": 29250502656,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+          "wall_s": 1.985227374942042,
+          "dispatches_per_token": 210.0
+        },
+        {
+          "i": 2,
+          "value": 136.20131651000779,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:47.405411+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17699192832,
+            "active_bytes": 29784621056,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:49.492302+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17790910464,
+            "active_bytes": 29238460416,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 595.4,
+                "comm": "(compile)"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+          "wall_s": 1.9924621660029516,
+          "dispatches_per_token": 210.0
+        },
+        {
+          "i": 3,
+          "value": 134.4294000862012,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:49.561797+00:00",
+            "loadavg_1_5_15": [
+              69.57373046875,
+              56.3095703125,
+              48.87060546875
+            ],
+            "ncpu": 28,
+            "free_bytes": 18102206464,
+            "active_bytes": 28913860608,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:51.581608+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 17949917184,
+            "active_bytes": 28779610112,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+          "wall_s": 1.9320529999677092,
+          "dispatches_per_token": 210.0
+        },
+        {
+          "i": 4,
+          "value": 126.33756641299372,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:51.660201+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 16912269312,
+            "active_bytes": 29814947840,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:53.740428+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19360317440,
+            "active_bytes": 27486519296,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+          "wall_s": 1.9893828330095857,
+          "dispatches_per_token": 210.0
+        }
+      ]
+    },
+    {
+      "name": "base_tps.glm52_math_preserve_tps",
+      "family": "base_tps",
+      "status": "skipped",
+      "reason": "artifact present (/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity); pass --include-glm-tps (multi-minute samples)",
+      "label": "skipped",
+      "unit": "",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 0,
+      "n_kept": 0,
+      "values": [],
+      "median": null,
+      "min": null,
+      "max": null,
+      "samples": [],
+      "extras": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity"
+      }
+    },
+    {
+      "name": "accelerated_tps.profile_fast_decode_tps",
+      "family": "accelerated_tps",
+      "status": "unavailable",
+      "reason": "no GGUF; models/**/*.gguf or $HAWKING_GGUF",
+      "label": "unavailable",
+      "unit": "",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 0,
+      "n_kept": 0,
+      "values": [],
+      "median": null,
+      "min": null,
+      "max": null,
+      "samples": []
+    },
+    {
+      "name": "transform.gravity_format_selftest_s",
+      "family": "transform",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        0.06923533300869167,
+        0.06217262498103082,
+        0.07555812504142523,
+        0.05410233302973211
+      ],
+      "median": 0.06570397899486125,
+      "min": 0.05410233302973211,
+      "max": 0.07555812504142523,
+      "samples": [
+        {
+          "i": 0,
+          "value": 0.07529395900201052,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:53.900675+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19302694912,
+            "active_bytes": 27542945792,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:54.054868+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19274334208,
+            "active_bytes": 27569733632,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "tool": "gravity_format.py selftest"
+        },
+        {
+          "i": 1,
+          "value": 0.06923533300869167,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:54.118965+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19262636032,
+            "active_bytes": 27583315968,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:54.258286+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19159613440,
+            "active_bytes": 27682783232,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "tool": "gravity_format.py selftest"
+        },
+        {
+          "i": 2,
+          "value": 0.06217262498103082,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:54.336250+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19076825088,
+            "active_bytes": 27762769920,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 490.7,
+                "comm": "/opt/homebrew/Cellar/go/1.26.2/libexec/pkg/tool/darwin_arm64/compile"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:54.484516+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19150520320,
+            "active_bytes": 27982381056,
+            "heavy_process_gt_4_cores": true,
+            "heavy_process_detail": [
+              {
+                "cpu_pct": 544.3,
+                "comm": "(compile)"
+              }
+            ],
+            "ps_status": "ok"
+          },
+          "tool": "gravity_format.py selftest"
+        },
+        {
+          "i": 3,
+          "value": 0.07555812504142523,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:54.572338+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19456278528,
+            "active_bytes": 27667398656,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:54.721424+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19350650880,
+            "active_bytes": 27765719040,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "tool": "gravity_format.py selftest"
+        },
+        {
+          "i": 4,
+          "value": 0.05410233302973211,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:54.810235+00:00",
+            "loadavg_1_5_15": [
+              68.56640625,
+              56.32080078125,
+              48.91796875
+            ],
+            "ncpu": 28,
+            "free_bytes": 19339378688,
+            "active_bytes": 27770781696,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:54.944845+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19295272960,
+            "active_bytes": 27810807808,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "tool": "gravity_format.py selftest"
+        }
+      ]
+    },
+    {
+      "name": "transform.shard_write_verify_bytes_per_s",
+      "family": "transform",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "bytes/s",
+      "higher_is_better": true,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        105955832.20018654,
+        159619238.09964854,
+        99008349.11057527,
+        102977571.42021984
+      ],
+      "median": 104466701.8102032,
+      "min": 99008349.11057527,
+      "max": 159619238.09964854,
+      "samples": [
+        {
+          "i": 0,
+          "value": 96241276.24496137,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:55.021459+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19205242880,
+            "active_bytes": 27894333440,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:55.191363+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19302940672,
+            "active_bytes": 27779727360,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 96241276.24496137,
+          "tensors_per_s": 23496.40533324252,
+          "wall_s": 0.02723820903338492,
+          "bytes": 2621440
+        },
+        {
+          "i": 1,
+          "value": 105955832.20018654,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:55.262876+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19220283392,
+            "active_bytes": 27859681280,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:55.438668+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19357908992,
+            "active_bytes": 27704655872,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 105955832.20018654,
+          "tensors_per_s": 25868.123095748666,
+          "wall_s": 0.02474087500013411,
+          "bytes": 2621440
+        },
+        {
+          "i": 2,
+          "value": 159619238.09964854,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:55.547310+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19339968512,
+            "active_bytes": 27716239360,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:55.708152+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19620265984,
+            "active_bytes": 27473920000,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 159619238.09964854,
+          "tensors_per_s": 38969.540551672006,
+          "wall_s": 0.016423083026893437,
+          "bytes": 2621440
+        },
+        {
+          "i": 3,
+          "value": 99008349.11057527,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:55.790440+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19745882112,
+            "active_bytes": 27393540096,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:55.997540+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19683803136,
+            "active_bytes": 27443118080,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 99008349.11057527,
+          "tensors_per_s": 24171.96023207404,
+          "wall_s": 0.02647695899941027,
+          "bytes": 2621440
+        },
+        {
+          "i": 4,
+          "value": 102977571.42021984,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:56.074853+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19700432896,
+            "active_bytes": 27424260096,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:56.252746+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19613696000,
+            "active_bytes": 27512389632,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 102977571.42021984,
+          "tensors_per_s": 25141.00864751461,
+          "wall_s": 0.02545641700271517,
+          "bytes": 2621440
+        }
+      ]
+    },
+    {
+      "name": "transform.pack_indices_bytes_per_s",
+      "family": "transform",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "bytes/s",
+      "higher_is_better": true,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        43533436.646550156,
+        44209407.82306945,
+        47459812.620091915,
+        32982482.18063076
+      ],
+      "median": 43871422.2348098,
+      "min": 32982482.18063076,
+      "max": 47459812.620091915,
+      "samples": [
+        {
+          "i": 0,
+          "value": 42936671.68214381,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:56.338669+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19561906176,
+            "active_bytes": 27562164224,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:56.765557+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19158220800,
+            "active_bytes": 27484405760,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 42936671.68214381,
+          "wall_s": 0.18632091605104506,
+          "bytes": 1000000
+        },
+        {
+          "i": 1,
+          "value": 43533436.646550156,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:56.869428+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19114426368,
+            "active_bytes": 27554136064,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:57.243115+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19278413824,
+            "active_bytes": 27354759168,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 43533436.646550156,
+          "wall_s": 0.18376679206267,
+          "bytes": 1000000
+        },
+        {
+          "i": 2,
+          "value": 44209407.82306945,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:57.320602+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 19235471360,
+            "active_bytes": 27383595008,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:57.722246+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18995986432,
+            "active_bytes": 28029517824,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 44209407.82306945,
+          "wall_s": 0.18095695902593434,
+          "bytes": 1000000
+        },
+        {
+          "i": 3,
+          "value": 47459812.620091915,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:57.815644+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18886770688,
+            "active_bytes": 27817426944,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:58.211447+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18821349376,
+            "active_bytes": 28359524352,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 47459812.620091915,
+          "wall_s": 0.16856366593856364,
+          "bytes": 1000000
+        },
+        {
+          "i": 4,
+          "value": 32982482.18063076,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:58.282397+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18879905792,
+            "active_bytes": 28329836544,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:58.743277+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18819055616,
+            "active_bytes": 27884044288,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "bytes_per_s": 32982482.18063076,
+          "wall_s": 0.2425529999891296,
+          "bytes": 1000000
+        }
+      ]
+    },
+    {
+      "name": "kernel.bench_kernel_dispatch",
+      "family": "kernel",
+      "status": "unavailable",
+      "reason": "hawking bench-kernel not on CLI (extracted to hawking-bench pack)",
+      "label": "unavailable",
+      "unit": "",
+      "higher_is_better": false,
+      "warm_up_discarded": false,
+      "n_requested": 0,
+      "n_kept": 0,
+      "values": [],
+      "median": null,
+      "min": null,
+      "max": null,
+      "samples": []
+    },
+    {
+      "name": "kernel.bench_q4k_shapes_median_us",
+      "family": "kernel",
+      "status": "measured",
+      "reason": "some samples used wall-time fallback; see sample notes",
+      "label": "estimated",
+      "unit": "us",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        859965.4999561608,
+        740221.1659355089,
+        758951.54196769,
+        609847.4590107799
+      ],
+      "median": 749586.3539515994,
+      "min": 609847.4590107799,
+      "max": 859965.4999561608,
+      "samples": [
+        {
+          "i": 0,
+          "value": 692677.7919288725,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:10:58.920610+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18739838976,
+            "active_bytes": 28268625920,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:10:59.698167+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18904940544,
+            "active_bytes": 28134506496,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "label": "estimated",
+          "note": "JSON shape unexpected; used wall_s*1e6",
+          "wall_s": 0.6926777919288725
+        },
+        {
+          "i": 1,
+          "value": 859965.4999561608,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:10:59.768371+00:00",
+            "loadavg_1_5_15": [
+              69.24169921875,
+              56.6640625,
+              49.08203125
+            ],
+            "ncpu": 28,
+            "free_bytes": 18886656000,
+            "active_bytes": 28148547584,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:00.707373+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18745507840,
+            "active_bytes": 28207988736,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "label": "estimated",
+          "note": "JSON shape unexpected; used wall_s*1e6",
+          "wall_s": 0.8599654999561608
+        },
+        {
+          "i": 2,
+          "value": 740221.1659355089,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:00.779499+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18732597248,
+            "active_bytes": 28217704448,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:01.597281+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18441535488,
+            "active_bytes": 28161703936,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "label": "estimated",
+          "note": "JSON shape unexpected; used wall_s*1e6",
+          "wall_s": 0.7402211659355089
+        },
+        {
+          "i": 3,
+          "value": 758951.54196769,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:01.678671+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18426937344,
+            "active_bytes": 28178219008,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:02.517586+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18054447104,
+            "active_bytes": 28414001152,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "label": "estimated",
+          "note": "JSON shape unexpected; used wall_s*1e6",
+          "wall_s": 0.75895154196769
+        },
+        {
+          "i": 4,
+          "value": 609847.4590107799,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:02.622585+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 18001002496,
+            "active_bytes": 28446113792,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:03.305802+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17669308416,
+            "active_bytes": 29327638528,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "label": "estimated",
+          "note": "JSON shape unexpected; used wall_s*1e6",
+          "wall_s": 0.6098474590107799
+        }
+      ]
+    },
+    {
+      "name": "numeric_parity.gravity_verify_roundtrip_s",
+      "family": "numeric_parity",
+      "status": "measured",
+      "reason": "ok",
+      "label": "measured",
+      "unit": "s",
+      "higher_is_better": false,
+      "warm_up_discarded": true,
+      "n_requested": 5,
+      "n_kept": 4,
+      "values": [
+        0.07350370800122619,
+        0.05804183310829103,
+        0.06290441600140184,
+        0.0706824999069795
+      ],
+      "median": 0.06679345795419067,
+      "min": 0.05804183310829103,
+      "max": 0.07350370800122619,
+      "samples": [
+        {
+          "i": 0,
+          "value": 0.06034416693728417,
+          "warm_up": true,
+          "system_before": {
+            "ts": "2026-07-29T17:11:03.380177+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17606574080,
+            "active_bytes": 29398171648,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:03.535353+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17869602816,
+            "active_bytes": 29186293760,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "path": "gravity_format write/verify/tamper/rate-claim"
+        },
+        {
+          "i": 1,
+          "value": 0.07350370800122619,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:03.611498+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17843617792,
+            "active_bytes": 29210574848,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:03.761990+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17776574464,
+            "active_bytes": 29267410944,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "path": "gravity_format write/verify/tamper/rate-claim"
+        },
+        {
+          "i": 2,
+          "value": 0.05804183310829103,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:03.840325+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17986961408,
+            "active_bytes": 29057007616,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:03.985764+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17805672448,
+            "active_bytes": 28789719040,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "path": "gravity_format write/verify/tamper/rate-claim"
+        },
+        {
+          "i": 3,
+          "value": 0.06290441600140184,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:04.056872+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17778212864,
+            "active_bytes": 28815228928,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:04.193258+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17724866560,
+            "active_bytes": 28865298432,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "path": "gravity_format write/verify/tamper/rate-claim"
+        },
+        {
+          "i": 4,
+          "value": 0.0706824999069795,
+          "warm_up": false,
+          "system_before": {
+            "ts": "2026-07-29T17:11:04.265262+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17712152576,
+            "active_bytes": 28875341824,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "system_after": {
+            "ts": "2026-07-29T17:11:04.422016+00:00",
+            "loadavg_1_5_15": [
+              68.18115234375,
+              56.65283203125,
+              49.12255859375
+            ],
+            "ncpu": 28,
+            "free_bytes": 17658200064,
+            "active_bytes": 28930605056,
+            "heavy_process_gt_4_cores": false,
+            "heavy_process_detail": [],
+            "ps_status": "ok"
+          },
+          "path": "gravity_format write/verify/tamper/rate-claim"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "measured": 11,
+    "skipped": 2,
+    "unavailable": 3,
+    "gate_enforceability": {
+      "base_tps_enforceable": true,
+      "accelerated_tps_enforceable": false,
+      "transform_enforceable": true,
+      "build_startup_enforceable": true,
+      "kernel_enforceable": true
+    },
+    "measured_names": [
+      "build.cargo_check_s",
+      "build.cargo_build_warm_s",
+      "build.binary_size_bytes",
+      "startup.help_s",
+      "startup.version_s",
+      "base_tps.llama1b_decode_tps",
+      "transform.gravity_format_selftest_s",
+      "transform.shard_write_verify_bytes_per_s",
+      "transform.pack_indices_bytes_per_s",
+      "kernel.bench_q4k_shapes_median_us",
+      "numeric_parity.gravity_verify_roundtrip_s"
+    ],
+    "skipped_names": [
+      "build.cargo_build_cold_s",
+      "base_tps.glm52_math_preserve_tps"
+    ],
+    "unavailable_names": [
+      "startup.doctor_s",
+      "accelerated_tps.profile_fast_decode_tps",
+      "kernel.bench_kernel_dispatch"
+    ]
+  }
+}

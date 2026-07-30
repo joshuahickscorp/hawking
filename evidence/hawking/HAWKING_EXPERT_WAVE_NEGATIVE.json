@@ -1,0 +1,12 @@
+{
+  "schema": "hawking.gravity.expert_wave_measured.v1",
+  "at": "2026-07-27T04:20:00Z",
+  "verdict": "NEGATIVE. Correct, gated, and slower. NOT promoted; flag remains off by default.",
+  "measured": {"expert_wave_plus_bf16_ms": 1413, "bf16_only_ms": 828, "ratio": 0.59, "regression_pct": 71},
+  "correctness": "Passed every gate it was given: default_path_never_enables_expert_wave_without_flag, device_silu_mul_v21_against_f64_over_several_vectors under Parity V2.1, and the static drain check. Default resident path re-verified 3/3 after merge. The implementation is not wrong; it is slower.",
+  "static_expectation_vs_outcome": "Drains were expected to fall 234 -> 78 per token and full resident waits 583 -> 430. Fewer synchronizations did NOT produce a faster token -- it produced a 71 percent slower one.",
+  "what_this_falsifies": "The assumption that synchronization count is the thing to minimize. The post-memoization ledger already put metal_synchronize_cpu_wait at 520.3 ms of 2,339 ms and 0.83 ms per synchronization; removing two thirds of the drains should have bought at most a few hundred ms, and instead cost 585 ms. Collapsing three batched matvec calls into one fused wave evidently serializes work the three-call path was overlapping, or the fused kernel is materially less efficient per expert than the batched matvec it replaced.",
+  "controller_note": "This is the second time a structurally appealing collapse has failed to pay. GPU-resident state was exactly 1.00x; expert-wave is 0.59x. Both were necessary-sounding and neither moved the number. The measured ledger has now outranked architectural reasoning three times tonight -- syncs at 23 percent not 100, lm_head as the real prize, and now fewer drains being actively worse.",
+  "next": "Do not pursue further drain reduction on the assumption it pays. Profile the expert-wave path itself to find where the 585 ms went before attempting <=8 or <=3 drains. If fused waves are inherently slower per expert here, the collapse ladder below 78 is not the route to TG20 and the remaining levers are active-expert reduction, KV/state reduction, and sequential-depth collapse.",
+  "evidence_level": "MEASURED_60_TOKEN_RUN_STACKED_ON_A_MEASURED_BASELINE"
+}

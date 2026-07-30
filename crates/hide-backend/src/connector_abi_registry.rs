@@ -115,7 +115,7 @@ impl ConnectorRegistry {
         }
     }
 
-    /// Export the registry document for `HIDE_YOU_CONNECTOR_REGISTRY.json`.
+    /// Export the registry document for `evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json`.
     pub fn export_document(&self) -> RegistryDocument {
         let mut families: Vec<ConnectorAbi> = self.families().cloned().collect();
         families.sort_by(|a, b| a.family_id.as_str().cmp(b.family_id.as_str()));
@@ -166,7 +166,7 @@ impl Default for ConnectorRegistry {
     }
 }
 
-/// Top-level document for `HIDE_YOU_CONNECTOR_REGISTRY.json`.
+/// Top-level document for `evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegistryDocument {
     pub schema: String,

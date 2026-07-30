@@ -19,7 +19,12 @@ REGISTRY_PATH = T0_DIR / "KNOWN_FAILURES_REGISTRY.json"
 
 
 def _load_json(rel: str) -> dict[str, Any] | None:
+    # Callers name receipts by basename and that same string is the "source"
+    # field of every registry entry, so it stays a basename; only the lookup
+    # follows the artifact into evidence/<campaign>/.
     path = ROOT / rel
+    if not path.is_file():
+        path = next(iter(sorted((ROOT / "evidence").glob(f"*/{rel}"))), path)
     if not path.is_file():
         return None
     return json.loads(path.read_text())

@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.glm52.basis_pilot.controller_reseal.v1",
+  "at": "2026-07-28T12:45:03Z",
+  "status": "SEALED_WITH_NON_MEASUREMENT_CONTROLLER_FIX",
+  "measurement_receipt": {
+    "path": "GLM52_BASIS_PILOT_RECEIPT.json",
+    "sha256": "36c1302636d903c06c3cf6c95fd437a7c30098a27a859f119c5cfed0c1a63cd0",
+    "tensor_results_canonical_sha256": "35f3ce58e4f1174156b6b3621e287dba3a12b2113a42b00fda3914fd0845be3c",
+    "revision": 1,
+    "free_disk_bytes_before": 75719962624,
+    "disk_floor_bytes": 75000000000,
+    "disk_floor_met_at_launch": true,
+    "elapsed_seconds": 320.615
+  },
+  "measurement_code": {
+    "glm52_basis_pilot_py_sha256": "dcce2d751da36e196ee4b4634d5ae35078f4ed59ac800533fc53d832efa7be5d",
+    "glm52_activation_aware_pack_py_sha256": "321cbd1f071683702bfc61c293785eb44cfbf6bb6098bde0f039134c4b3f4832"
+  },
+  "reviewed_current_code": {
+    "glm52_basis_pilot_py_sha256": "471593c0177bce5da659f769a589027732608ea7e4223afdeb5356555dbddcfb",
+    "glm52_activation_aware_pack_py_sha256": "321cbd1f071683702bfc61c293785eb44cfbf6bb6098bde0f039134c4b3f4832",
+    "test_glm52_basis_pilot_py_sha256": "d577a4f0753068352df1acc4c21f22167ca4d84f16fd0563d65b46bf4808e5dc"
+  },
+  "post_measurement_fix": {
+    "measurement_math_changed": false,
+    "tensor_catalog_changed": false,
+    "source_or_capsule_inputs_changed": false,
+    "rank_or_panel_aggregation_changed": false,
+    "receipt_measurements_rewritten": false,
+    "changes": [
+      "Removed the future soft-allow path below the preregistered 75000000000-byte launch floor.",
+      "The current runner now fails closed below the floor and directs the controller to recover space without releasing pilot source shards.",
+      "Added a deterministic regression proving the hard floor has no soft exception.",
+      "Replaced a stale conditional uncertainty sentence with the measured outcome: input-side down cleared the bounded panel, while transfer remains unproven."
+    ],
+    "why_no_measurement_rerun": "The measured run itself launched above the hard floor. The controller fix changes only the pre-launch refusal branch and narrative text, not any tensor load, activation, basis, projection, score, rank, panel, byte, or verdict computation. The original measurement receipt and its exact code hash remain immutable and separately bound here."
+  },
+  "controller_verification": {
+    "pilot_tests": {
+      "command": "python3.12 -m pytest tools/condense/tests/test_glm52_basis_pilot.py -q",
+      "passed": 22,
+      "failed": 0
+    },
+    "production_pack_regressions": {
+      "command": "python3.12 -m pytest tools/condense/tests/test_glm52_activation_aware_pack.py tools/condense/tests/test_glm52_pack_atomic.py tools/condense/tests/test_glm52_pack_coverage.py tools/condense/tests/test_glm52_pack_rate_override.py tools/condense/tests/test_glm52_pack_indices.py -q",
+      "passed": 215,
+      "failed": 0
+    },
+    "selftest": "PASS"
+  },
+  "scientific_disposition": {
+    "activation_matched_input_side_down": "CLEARS_BOUNDED_PROMOTION_PANEL",
+    "production_output_side_down": "NEGATIVE_CONTROL_FAILS",
+    "uncentered_vs_explicit_mean": "NUMERICALLY_TIED",
+    "full_traversal_authorized": false,
+    "whole_model_capability_claimed": false
+  },
+  "fences": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "HIDE_KERNEL_TURN": false
+  }
+}

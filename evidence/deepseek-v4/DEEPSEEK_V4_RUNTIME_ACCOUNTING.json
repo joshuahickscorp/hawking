@@ -1,0 +1,29 @@
+{
+  "basis": "served (weights resident); analytical from real tensor shapes; bandwidth 417.7 GB/s measured on this M3 Ultra",
+  "binding_organ": "attention",
+  "complete_token_bytes": {
+    "functional_gb": 7.732,
+    "functional_student": 7732199424,
+    "teacher": 11700011008,
+    "teacher_gb": 11.7
+  },
+  "complete_token_forward": "demonstrated: the validated streamed forward runs embedding -> 43 layers -> logit lens -> greedy token (deepseek_v4_reference.py + cascade _head_agreement)",
+  "energy": "UNAVAILABLE (no accepted on-device source; none inferred)",
+  "flop_byte_verdict": "FEWER_BYTES_MODEST \u2014 DeepSeek experts are already fp4 so the functional student's byte win on the MoE is ~9.8x, and attention dominates the token traffic, so the whole-token win is small",
+  "honest_scope": "analytical served roofline + demonstrated complete-token forward; wall-clock served-TPS pending a resident compact model",
+  "moe_byte_reduction_functional_vs_teacher": 9.8,
+  "per_layer_bytes": {
+    "attention_active": 144703488,
+    "moe_teacher_active": 102760448,
+    "total": 247463936
+  },
+  "roofline_tps": {
+    "functional": 54.02,
+    "note": "bandwidth-bound ceiling = measured BW / active bytes per token; not a measured wall-clock",
+    "teacher": 35.7
+  },
+  "schema": "hawking.deepseek_v4.runtime_accounting.v1",
+  "sealed_at": "2026-07-24T02:00:00Z",
+  "source_precision": "experts already fp4 (0.5 byte), shared fp8, attention fp8 - so functional gain is ~4x on MoE, not 16x",
+  "true_tps_measured": "streamed forward is streaming-bound (weights reloaded+dequanted per layer), so its wall-clock is not a served-TPS; served-TPS is the roofline above. A measured served-TPS needs the compact model resident, which needs promotion."
+}

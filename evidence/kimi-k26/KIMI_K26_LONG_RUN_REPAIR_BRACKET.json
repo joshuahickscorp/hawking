@@ -1,0 +1,380 @@
+{
+  "baseline": {
+    "candidate": "P1_DUAL_PATH_RECOVERY_R16X2_NO_ADDITIONAL_REPAIR",
+    "complete_bpw": 0.9085909525553385,
+    "complete_physical_bytes": 5001815,
+    "hidden": {
+      "cosine_mean": 0.9987979531288147,
+      "cosine_min": 0.9817196130752563,
+      "cosine_p10": 0.9972627758979797,
+      "norm_ratio": 0.9851852655410767,
+      "normalized_rmse": 0.0831180214881897,
+      "relative_l2": 0.0831180065870285
+    },
+    "route_matches": 50,
+    "route_set_agreement": 0.819672131147541,
+    "route_set_change": 0.180327868852459,
+    "row_relative_l2_mean": 0.032936062663793564
+  },
+  "causal_upper_bounds_from_lr01": {
+    "FORCE_TEACHER_INDICES": {
+      "layer2_hidden": {
+        "cosine_mean": 0.9987375736236572,
+        "cosine_min": 0.9819077849388123,
+        "cosine_p10": 0.9974579811096191,
+        "norm_ratio": 0.9777170419692993,
+        "normalized_rmse": 0.08796944469213486,
+        "relative_l2": 0.08796911686658859
+      },
+      "rescue_fraction_relative_l2": 0.08575791981424963
+    },
+    "FORCE_TEACHER_INDICES_AND_WEIGHTS": {
+      "layer2_hidden": {
+        "cosine_mean": 0.998772382736206,
+        "cosine_min": 0.9827346801757812,
+        "cosine_p10": 0.9975224733352661,
+        "norm_ratio": 0.9779481291770935,
+        "normalized_rmse": 0.08590538054704666,
+        "relative_l2": 0.08590506762266159
+      },
+      "rescue_fraction_relative_l2": 0.10720909201637008
+    },
+    "NATURAL_STUDENT": {
+      "layer2_hidden": {
+        "cosine_mean": 0.9982894062995911,
+        "cosine_min": 0.9753893613815308,
+        "cosine_p10": 0.9965226650238037,
+        "norm_ratio": 0.9776780009269714,
+        "normalized_rmse": 0.09622108936309814,
+        "relative_l2": 0.09622081369161606
+      },
+      "rescue_fraction_relative_l2": 0.0
+    },
+    "RESTORE_TEACHER_HIDDEN_AFTER_LAYER2": {
+      "layer2_hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "rescue_fraction_relative_l2": 1.0
+    },
+    "RESTORE_TEACHER_HIDDEN_BEFORE_LAYER2": {
+      "layer2_hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "rescue_fraction_relative_l2": 1.0
+    },
+    "SUBSTITUTE_TEACHER_WEIGHTED_MOE": {
+      "layer2_hidden": {
+        "cosine_mean": 0.9991135597229004,
+        "cosine_min": 0.9885692596435547,
+        "cosine_p10": 0.9979301691055298,
+        "norm_ratio": 0.9908998012542725,
+        "normalized_rmse": 0.06236013397574425,
+        "relative_l2": 0.062360040843486786
+      },
+      "rescue_fraction_relative_l2": 0.3519069476657277
+    },
+    "TEACHER": {
+      "layer2_hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "rescue_fraction_relative_l2": 1.0
+    },
+    "TEACHER_STATE_STUDENT_ROUTER": {
+      "layer2_hidden": {
+        "cosine_mean": 0.9995242357254028,
+        "cosine_min": 0.9933721423149109,
+        "cosine_p10": 0.9979694485664368,
+        "norm_ratio": 0.9990612864494324,
+        "normalized_rmse": 0.04110740125179291,
+        "relative_l2": 0.041107386350631714
+      },
+      "rescue_fraction_relative_l2": 0.572780724112568
+    }
+  },
+  "config": {
+    "complete_bpw_ceiling": 0.98,
+    "complete_ceiling_bytes": 5394923,
+    "fit_segments": [
+      "coding",
+      "factual",
+      "mathematics",
+      "science"
+    ],
+    "fit_tokens": 25,
+    "heldout_segments": [
+      "instruction",
+      "rare_token",
+      "reasoning",
+      "tool_thinking_protocol"
+    ],
+    "heldout_tokens": 61,
+    "seed": 26072102,
+    "selection_uses_heldout": false
+  },
+  "decision": "NO_PHYSICAL_ROW_PROMOTED_TESTED_REGION_RETIRED",
+  "duration_seconds": 4.15338397026062,
+  "ended_at": "2026-07-21T17:21:22Z",
+  "evidence_parent": {
+    "capture_sha256": "5557e29d3b286c430fc2a9dabe00b05d849a943fa69ce72b5ab84d0f7f7facb6",
+    "guard_audit_seal_sha256": "2f56889c538175cfdfde975fb079e963add4fc4d4d353576bd258ca85fc6838d",
+    "lr01_seal_sha256": "b7acbc36f72d48b318b0cd52ccb2f524d7b29a4455b08a033ccbfab6bd90812d"
+  },
+  "experiment_id": "LR02_CAUSALLY_TARGETED_PHYSICAL_BRACKET",
+  "faults": [
+    "ATTEMPT_0_QUANTIZED_KERNEL_BATCH_SHAPE_MISMATCH"
+  ],
+  "hypothesis": "Upstream state repair buys more held-out F2 survival per bit than route-only repair.",
+  "next_run_rationale": "Falsify the closure with a new-split boundary test before declaring the <=0.98 region closed.",
+  "parent": {
+    "bytes": 5001815,
+    "candidate": "P1_DUAL_PATH_RECOVERY_R16X2",
+    "complete_bpw": 0.9085909525553385,
+    "payload_sha256": "3546c9b17f720d6d5197c8a8d1dae80e5994e053a808de708aef6bb5e97561bb"
+  },
+  "promotion": null,
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9752162304,
+      "floor_green": true,
+      "free_disk_bytes": 44111900672,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 91%",
+      "swap": "total = 2048.00M  used = 611.56M  free = 1436.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9753374720,
+      "floor_green": true,
+      "free_disk_bytes": 44113113088,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 611.56M  free = 1436.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 1,
+  "schema": "hawking.kimi_k26.long_run_repair_bracket.v1",
+  "scientific_interpretation": "The physical bracket adjudicates whether the LR01 causal upper bounds are learnable from calibration-only low-rank state, route-logit, or MoE-output corrections.",
+  "seal_sha256": "454402d139356a1abcfa426ace236f5701a56cf968bff04c9ff26c5634145c6a",
+  "started_at": "2026-07-21T17:21:18Z",
+  "status": "PASS",
+  "treatment_frontier": [
+    {
+      "candidate": "FIRST_DIVERGENCE_PROTECTION_R12",
+      "complete_bpw": 0.9426284063430059,
+      "complete_physical_bytes": 5189192,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_tokens": 61,
+      "hidden": {
+        "cosine_mean": 0.9984091520309448,
+        "cosine_min": 0.9859561324119568,
+        "cosine_p10": 0.9949336051940918,
+        "norm_ratio": 0.986630916595459,
+        "normalized_rmse": 0.083065927028656,
+        "relative_l2": 0.08306591957807541
+      },
+      "parent_bytes": 5001815,
+      "physical_allocation": {
+        "first_divergence_state_repair_bytes": 187377,
+        "parent_base_bytes": 4022298,
+        "parent_doctor_bytes": 974848
+      },
+      "physical_payload": {
+        "bytes": 187377,
+        "component_count": 5,
+        "header_bytes": 913,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR02/LR02_FIRST_DIVERGENCE_PROTECTION_R12.k26repair",
+        "sha256": "934e1bcbd03c97b151613bebd6f2b4a6b895bb21739f3021ba39e59155911073"
+      },
+      "relative_l2_improvement": {
+        "ci95_high": -0.0042505796487275205,
+        "ci95_low": -0.017299975082659944,
+        "mean": -0.010357730166956049,
+        "n": 61
+      },
+      "route_matches": 40,
+      "route_set_agreement": 0.6557377049180327,
+      "route_set_change": 0.34426229508196726,
+      "row_cosine_mean": 0.9984091520309448,
+      "row_relative_l2_mean": 0.0432937890291214,
+      "within_0_98_bpw": true
+    },
+    {
+      "candidate": "PRE_ROUTER_STATE_R24",
+      "complete_bpw": 0.973861331031436,
+      "complete_physical_bytes": 5361130,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_tokens": 61,
+      "hidden": {
+        "cosine_mean": 0.9985224008560181,
+        "cosine_min": 0.9859301447868347,
+        "cosine_p10": 0.9961392283439636,
+        "norm_ratio": 0.9946997165679932,
+        "normalized_rmse": 0.07141350954771042,
+        "relative_l2": 0.0714135393500328
+      },
+      "parent_bytes": 5001815,
+      "physical_allocation": {
+        "parent_base_bytes": 4022298,
+        "parent_doctor_bytes": 974848,
+        "pre_router_state_repair_bytes": 359315
+      },
+      "physical_payload": {
+        "bytes": 359315,
+        "component_count": 5,
+        "header_bytes": 723,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR02/LR02_PRE_ROUTER_STATE_R24.k26repair",
+        "sha256": "b7ff730817ce6409a676fe9fe84dfd5e56ec0914081e5b0959d47684ab1dcaf8"
+      },
+      "relative_l2_improvement": {
+        "ci95_high": -0.0021034376844611064,
+        "ci95_low": -0.01593719646754507,
+        "mean": -0.008711499085680384,
+        "n": 61
+      },
+      "route_matches": 40,
+      "route_set_agreement": 0.6557377049180327,
+      "route_set_change": 0.34426229508196726,
+      "row_cosine_mean": 0.9985224008560181,
+      "row_relative_l2_mean": 0.04164756461977959,
+      "within_0_98_bpw": true
+    },
+    {
+      "candidate": "LOW_MARGIN_ROUTER_R24",
+      "complete_bpw": 0.9418509347098214,
+      "complete_physical_bytes": 5184912,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_tokens": 61,
+      "hidden": {
+        "cosine_mean": 0.9984952211380005,
+        "cosine_min": 0.9846153855323792,
+        "cosine_p10": 0.9949414134025574,
+        "norm_ratio": 0.9860854148864746,
+        "normalized_rmse": 0.08312394469976425,
+        "relative_l2": 0.08312393724918365
+      },
+      "parent_bytes": 5001815,
+      "physical_allocation": {
+        "conditional_router_repair_bytes": 183097,
+        "parent_base_bytes": 4022298,
+        "parent_doctor_bytes": 974848
+      },
+      "physical_payload": {
+        "bytes": 183097,
+        "component_count": 5,
+        "header_bytes": 889,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR02/LR02_LOW_MARGIN_ROUTER_R24.k26repair",
+        "sha256": "08773166660e6553fbf29087e0a7913f2708a2328cce42a39d36601329c88d0b"
+      },
+      "relative_l2_improvement": {
+        "ci95_high": -0.0020955564154571554,
+        "ci95_low": -0.014875668114562687,
+        "mean": -0.008124207635028441,
+        "n": 61
+      },
+      "route_matches": 41,
+      "route_set_agreement": 0.6721311475409836,
+      "route_set_change": 0.3278688524590164,
+      "row_cosine_mean": 0.9984952211380005,
+      "row_relative_l2_mean": 0.04106026887893677,
+      "within_0_98_bpw": true
+    },
+    {
+      "candidate": "WEIGHTED_MOE_OUTPUT_R24",
+      "complete_bpw": 0.9738651457287016,
+      "complete_physical_bytes": 5361151,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_tokens": 61,
+      "hidden": {
+        "cosine_mean": 0.9985231161117554,
+        "cosine_min": 0.9796627163887024,
+        "cosine_p10": 0.9971492886543274,
+        "norm_ratio": 0.9941303730010986,
+        "normalized_rmse": 0.07703549414873123,
+        "relative_l2": 0.07703547924757004
+      },
+      "parent_bytes": 5001815,
+      "physical_allocation": {
+        "parent_base_bytes": 4022298,
+        "parent_doctor_bytes": 974848,
+        "weighted_moe_output_repair_bytes": 359336
+      },
+      "physical_payload": {
+        "bytes": 359336,
+        "component_count": 5,
+        "header_bytes": 744,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR02/LR02_WEIGHTED_MOE_OUTPUT_R24.k26repair",
+        "sha256": "66f3130f3435f94bafbf7b4dae244908cd8e4ef1b8fd4fd65be7fdedc25e07c0"
+      },
+      "relative_l2_improvement": {
+        "ci95_high": -0.005226642248358149,
+        "ci95_low": -0.011761603820839989,
+        "mean": -0.009026688050295486,
+        "n": 61
+      },
+      "route_matches": 50,
+      "route_set_agreement": 0.819672131147541,
+      "route_set_change": 0.180327868852459,
+      "row_cosine_mean": 0.9985231161117554,
+      "row_relative_l2_mean": 0.041962746530771255,
+      "within_0_98_bpw": true
+    },
+    {
+      "candidate": "HYBRID_R12X2",
+      "complete_bpw": 0.9765592302594867,
+      "complete_physical_bytes": 5375982,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_tokens": 61,
+      "hidden": {
+        "cosine_mean": 0.998152494430542,
+        "cosine_min": 0.988324761390686,
+        "cosine_p10": 0.9953637719154358,
+        "norm_ratio": 0.9965907335281372,
+        "normalized_rmse": 0.06979673355817795,
+        "relative_l2": 0.06979677081108093
+      },
+      "parent_bytes": 5001815,
+      "physical_allocation": {
+        "parent_base_bytes": 4022298,
+        "parent_doctor_bytes": 974848,
+        "post_moe_repair_bytes": 186464,
+        "pre_router_repair_bytes": 186464,
+        "repair_header_bytes": 1239
+      },
+      "physical_payload": {
+        "bytes": 374167,
+        "component_count": 10,
+        "header_bytes": 1239,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR02/LR02_HYBRID_R12X2.k26repair",
+        "sha256": "5a82118daacd1e43154114022da5293423c7a0f1f1736d955e59636a7ac5c5de"
+      },
+      "relative_l2_improvement": {
+        "ci95_high": -0.00929400625669199,
+        "ci95_low": -0.02715523807316652,
+        "mean": -0.018527407107538866,
+        "n": 61
+      },
+      "route_matches": 40,
+      "route_set_agreement": 0.6557377049180327,
+      "route_set_change": 0.34426229508196726,
+      "row_cosine_mean": 0.998152494430542,
+      "row_relative_l2_mean": 0.05146346241235733,
+      "within_0_98_bpw": true
+    }
+  ]
+}

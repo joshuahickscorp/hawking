@@ -1,0 +1,84 @@
+{
+  "active_denominator_rule": "all non-routed text weights plus 8/384 of each routed-expert layer for one token",
+  "active_routed_expert_logical_weights_per_token": 21139292160,
+  "active_text_core_logical_weights_per_token": 32861477888,
+  "all_logical_original_weights": 1026879004160,
+  "attention_logical_weights": 6168569856,
+  "complete_official_source_bytes": 595204999341,
+  "compressible_logical_weights": 1014686023680,
+  "denominator_rule": "I32 weight_packed stores eight signed INT4 logical weights; scale/shape tensors are installed bits, not logical weights",
+  "official_source_bits_per_logical_weight": 4.637001998714622,
+  "organs": {
+    "attention_mla": {
+      "logical_weights": 6168569856,
+      "metadata_bits": 0,
+      "physical_bits": 98697117696,
+      "tensors": 427
+    },
+    "dense_mlp": {
+      "logical_weights": 561512448,
+      "metadata_bits": 737280,
+      "physical_bits": 8984199168,
+      "tensors": 123
+    },
+    "embedding": {
+      "logical_weights": 1174405120,
+      "metadata_bits": 0,
+      "physical_bits": 18790481920,
+      "tensors": 1
+    },
+    "lm_head": {
+      "logical_weights": 1174405120,
+      "metadata_bits": 0,
+      "physical_bits": 18790481920,
+      "tensors": 1
+    },
+    "normalization": {
+      "logical_weights": 881664,
+      "metadata_bits": 0,
+      "physical_bits": 14106624,
+      "tensors": 123
+    },
+    "routed_expert": {
+      "logical_weights": 1014686023680,
+      "metadata_bits": 507347435520,
+      "physical_bits": 4058744094720,
+      "tensors": 207360
+    },
+    "shared_expert": {
+      "logical_weights": 2642411520,
+      "metadata_bits": 0,
+      "physical_bits": 42278584320,
+      "tensors": 180
+    },
+    "vision": {
+      "logical_weights": 416529792,
+      "metadata_bits": 5379840,
+      "physical_bits": 6664476672,
+      "tensors": 329
+    },
+    "vision_text_adapter": {
+      "logical_weights": 54264960,
+      "metadata_bits": 206848,
+      "physical_bits": 868239360,
+      "tensors": 6
+    }
+  },
+  "physical_weight_payload_bits": 4253831782400,
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "routed_expert_logical_weights": 1014686023680,
+  "safetensors_container_overhead_bits": 238363776,
+  "scale_and_metadata_bits": 507353759488,
+  "schema": "hawking.kimi_k26.logical_weight_ledger.v1",
+  "seal_sha256": "865d9b512ed2c80dbef572e0c45d1b9c586bf15279d0385d5ce2aa85ce42524a",
+  "sealed_at": "2026-07-21T05:07:07Z",
+  "shared_expert_logical_weights": 2642411520,
+  "status": "PASS",
+  "tensor_count": 208550,
+  "tensor_payload_bits_per_logical_weight": 4.636559441375189,
+  "text_core_logical_weights": 1026408209408,
+  "vision_logical_weights": 470794752,
+  "weight_shard_file_bits_per_logical_weight": 4.636791565875773,
+  "weight_shard_file_bytes": 595177988208
+}

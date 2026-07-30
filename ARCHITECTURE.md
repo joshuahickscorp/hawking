@@ -79,15 +79,42 @@ hawking/
 │   │   │   └── tokenizer/        # wrapper over tokenizers crate
 │   │   └── shaders/              # .metal source, embedded at build
 │   ├── hawking-serve/          # axum HTTP server
-│   └── hawking-bench/          # benchmark suites
-├── tools/
+│   ├── hawking-bench/          # benchmark suites
+│   ├── hawking-adapters/       # model-family registry; generated/ is codegen output
+│   └── hide-*/                 # HIDE product crates (backend, protocol, acp, ...)
+├── app/                          # HIDE front end (Vite + React + Tauri)
+├── tools/                        # Python + shell instruments
 │   ├── bench/                    # shell bench harness + oracle scripts
-│   ├── bisect/                   # automated perf-regression bisect
-│   ├── headbank/                 # Eagle5 head staging tool
-│   └── training/                 # corpus + Eagle5 training scripts
+│   ├── graph/                    # semantic-graph extractor, analyses, viewer
+│   ├── prometheus/               # allocation passes
+│   └── verify/                   # blackbox, perfgate, case extractor
+├── lab/                          # Python campaign operators + bench harness
+├── evidence/                     # campaign evidence, one dir per campaign
+│   ├── glm52/  kimi-k26/  hawking/  hide/  deepseek-v4/  rebuild/
+│   └── fabric/  acceleration/  gravity/  prometheus/  ...
+├── control/                      # per-lane ledgers, verdicts, manifests
+├── odyssey/                      # Odyssey contracts, gates, checkpoints
+├── ramanujan/                    # governance spine (code + its own artifacts)
+├── receipts/                     # schema'd condensation receipts
+├── adapters/ packs/ profiles/ preregistrations/   # smaller artifact sets
+├── build/                        # regenerable output (gitignored)
 ├── docs/                         # design docs, kernel notes
 └── tests/                        # integration tests (correctness + golden)
 ```
+
+**Evidence does not live at the repository root.** Campaign artifacts go in
+`evidence/<campaign>/`, named for the `hawking.<family>.*` schema they carry.
+Anything a tool can rebuild — the semantic graph, its analyses, the viewer —
+is build output and belongs in `build/`, not in `evidence/` and not at the
+root. The root holds the workspace manifests and the entry-point docs, nothing
+else.
+
+Code addresses campaign artifacts **by basename**, not by path: the frozen
+seals, contract `path` fields and registry `source` fields are identity
+strings, and the readers resolve `evidence/<campaign>/` themselves
+(`resolve_artifact()` in `lab/operators/glm52_common.py`, plus the `_locate`
+helpers on the two no-follow evidence readers). Artifacts can therefore be
+re-filed without breaking a seal.
 
 ## Module responsibilities
 

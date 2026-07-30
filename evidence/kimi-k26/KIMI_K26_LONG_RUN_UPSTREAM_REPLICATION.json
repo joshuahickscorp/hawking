@@ -1,0 +1,320 @@
+{
+  "candidate": {
+    "complete_bpw": 0.9165534973144531,
+    "complete_physical_bytes": 5045649,
+    "name": "UPSTREAM_RESIDUAL_CV",
+    "payload": {
+      "bytes": 43834,
+      "component_count": 5,
+      "header_bytes": 810,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR10/LR10_UPSTREAM_RESIDUAL.k26repair",
+      "sha256": "224ace2ced75f8cf8b4c12e7e8c2bb87b83ba15a2ac90755681995b436c532d9"
+    },
+    "shrinkage": 0.125
+  },
+  "capture": {
+    "bytes": 396670012,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+    "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634"
+  },
+  "causal_interpretation": "The candidate modifies the compact expert output before layer-1 residual propagation; F2 promotion requires a paired held-out token improvement without route loss.",
+  "config": {
+    "candidate_count": 1,
+    "prompt_count": 16,
+    "refit": false,
+    "repeated_parent_forward": false,
+    "retuning": false,
+    "seed": 26072112,
+    "shared_parent_forward": true
+  },
+  "decision": "RETIRE_UPSTREAM_RESIDUAL_REPLICATION_FAILED",
+  "duration_seconds": 33.74433779716492,
+  "ended_at": "2026-07-21T17:57:11Z",
+  "evidence_parent": {
+    "guard_audit_seal_sha256": "1a3aa539db2bf829d2e1435cd1e0eb6efea3a7fc701aa4bbcde906cfb5dbfa14",
+    "lr10_seal_sha256": "f98e81213a7525008ed5130799d7abd35b6c19428c84ef31ca5e1da8cdf37caf"
+  },
+  "experiment_id": "LR12_UPSTREAM_RESIDUAL_REPLICATION",
+  "f1_untouched": {
+    "all_tokens_candidate": {
+      "cosine_mean": 0.18443574011325836,
+      "cosine_min": -0.05800701305270195,
+      "cosine_p10": 0.0733330175280571,
+      "norm_ratio": 2.578396797180176,
+      "normalized_rmse": 2.5491535663604736,
+      "relative_l2": 2.5491418838500977
+    },
+    "all_tokens_parent": {
+      "cosine_mean": 0.18443579971790314,
+      "cosine_min": -0.05799274891614914,
+      "cosine_p10": 0.073348768055439,
+      "norm_ratio": 2.578333854675293,
+      "normalized_rmse": 2.549161434173584,
+      "relative_l2": 2.549118757247925
+    },
+    "routed_candidate": {
+      "cosine_mean": 0.4478980600833893,
+      "cosine_min": 0.07869166135787964,
+      "cosine_p10": 0.12702131271362305,
+      "norm_ratio": 0.943982720375061,
+      "normalized_rmse": 0.8379184603691101,
+      "relative_l2": 0.8379182815551758
+    },
+    "routed_parent": {
+      "cosine_mean": 0.44788816571235657,
+      "cosine_min": 0.07870714366436005,
+      "cosine_p10": 0.1269996464252472,
+      "norm_ratio": 0.9441009163856506,
+      "normalized_rmse": 0.837938666343689,
+      "relative_l2": 0.837938666343689
+    },
+    "routed_tokens": 36
+  },
+  "f2": {
+    "candidate": {
+      "hidden": {
+        "cosine_mean": 0.9995163083076477,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9989719986915588,
+        "norm_ratio": 0.9952930808067322,
+        "normalized_rmse": 0.052196480333805084,
+        "relative_l2": 0.05219298601150513
+      },
+      "route_matches": 1218,
+      "route_set_agreement": 0.8806941431670282,
+      "row_relative_l2_mean": 0.015953555703163147
+    },
+    "domain_improvement": {
+      "code": {
+        "ci95_high": 0.0002551536242757264,
+        "ci95_low": -0.0003000123739247984,
+        "mean": -4.1088020787425014e-05,
+        "n": 343
+      },
+      "prose": {
+        "ci95_high": 0.0004339432722764273,
+        "ci95_low": 5.749942944713046e-07,
+        "mean": 0.00014756204114413598,
+        "n": 355
+      },
+      "reasoning": {
+        "ci95_high": 0.0003187171459228679,
+        "ci95_low": -0.0007499608095326813,
+        "mean": -0.00013394593567905312,
+        "n": 334
+      },
+      "tool_format": {
+        "ci95_high": 0.0005199164485968809,
+        "ci95_low": -0.0004719338764203049,
+        "mean": 4.272401847603314e-05,
+        "n": 351
+      }
+    },
+    "paired_row_relative_l2_improvement": {
+      "ci95_high": 0.00020638734722794167,
+      "ci95_low": -0.00020338789260992003,
+      "mean": 6.1818665541325976e-06,
+      "n": 1383
+    },
+    "parent": {
+      "hidden": {
+        "cosine_mean": 0.9995176196098328,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9989580512046814,
+        "norm_ratio": 0.9952901601791382,
+        "normalized_rmse": 0.05221198871731758,
+        "relative_l2": 0.05220846086740494
+      },
+      "route_matches": 1216,
+      "route_set_agreement": 0.8792480115690527,
+      "row_relative_l2_mean": 0.015959735959768295
+    }
+  },
+  "faults": [],
+  "hypothesis": "The LR11 upstream F2 gain replicates through layer 3 without route loss.",
+  "input_capture": {
+    "attention": {
+      "heads": 64,
+      "kv_rank": 512,
+      "q_rank": 1536,
+      "query_dim": 192,
+      "segment_lengths": [
+        84,
+        89,
+        91,
+        94,
+        89,
+        88,
+        90,
+        78,
+        81,
+        86,
+        82,
+        87,
+        83,
+        86,
+        83,
+        92
+      ],
+      "sequence": 1383,
+      "softmax_scale": 0.14467962580268923,
+      "value_dim": 128
+    },
+    "layer_zero": {
+      "attention": {
+        "heads": 64,
+        "kv_rank": 512,
+        "q_rank": 1536,
+        "query_dim": 192,
+        "segment_lengths": [
+          84,
+          89,
+          91,
+          94,
+          89,
+          88,
+          90,
+          78,
+          81,
+          86,
+          82,
+          87,
+          83,
+          86,
+          83,
+          92
+        ],
+        "sequence": 1383,
+        "softmax_scale": 0.14467962580268923,
+        "value_dim": 128
+      },
+      "finite": true,
+      "hidden_sha256": "74532814d6ee450d1b5e4fd48bf4e11e63a895d41591c7755651e4a2419f7463",
+      "moe": {
+        "kind": "dense",
+        "used_expert_count": 0
+      },
+      "segment_hidden_sha256": [
+        "1dffe9df08178a524207f23f6c0d07b164b654578aa2b7c55ca85692a56d0644",
+        "ac8a81c1fc80d37f43c2b05c042038776bd3181916c23f1af99c851993d3dfae",
+        "8849eca6c8b99aaa07d63627103424753bed20e63490505e1e62a7b8ae701e82",
+        "c34b34c14c9c253ab2ab9b2583aff485577a0926e7fb085555cf80335618e495",
+        "123de09e8875d1116c1347695f1a9d7995024968981c7bea5b73c6a0c41d9ece",
+        "fdd6c54c239c2bf24b71a8e5f48d0f7b9cabc3f635f468dc1bbcb58fd503fbc0",
+        "fd1ca532e15b2485f9740382dc2bae1a0ce8ad179b4eafb1c7c1a5fb65b4af72",
+        "ea06766c3e8ea69489fdb5b9547e723bc52011cc7222fa1ea8129dbbc94f7863",
+        "adf82d7b352ce2cceab28af81f0dc5d4c32a942c199db55c9ce4e65a9b066aed",
+        "a0b0b0f6104cc6912c8612dea7da14af9e2b229ad92e046eb439d90a3c681eed",
+        "45f5d208dedbbe272d8d14e72979025c676f6be978df51a370361cd5dc14f468",
+        "60cb375ea2cd684e765d148f899a62b765f05a661cf7e4e7a836d2720429b4d3",
+        "ffccd21e4850578ec5062cfe79790351c0a179820fe65e96af4939c8a451b683",
+        "ffcbb820dfcfc381ea62996eef37066d8b8d1e3bc0c0f108d4f57ad97a10ec44",
+        "d8ebd6c445aa082bc74e6f28ea89ada9ef7f51b42861c0cb31eda1f7d3e1e8ec",
+        "94ff8eeafd8ad8549348ae32a453fb91785e448845c42d82f972603415788c48"
+      ],
+      "tensor_audit": {
+        "accessed_tensors": 12,
+        "conditionally_inactive_routed_expert_tensors": 0,
+        "source_tensors": 12,
+        "unaccounted_tensors": []
+      }
+    }
+  },
+  "layer3_amplification": {
+    "CANDIDATE": {
+      "hidden": {
+        "cosine_mean": 0.9993405938148499,
+        "cosine_min": 0.9712490439414978,
+        "cosine_p10": 0.998207151889801,
+        "norm_ratio": 0.985640287399292,
+        "normalized_rmse": 0.07660060375928879,
+        "relative_l2": 0.07659532874822617
+      },
+      "hidden_sha256": "f215b0f170aaa61771515548329f5df82c3e0fd61ccba7a0d9c8b3292b8fe98c",
+      "route_matches": 1179,
+      "route_set_agreement": 0.8524945770065075
+    },
+    "PARENT": {
+      "hidden": {
+        "cosine_mean": 0.9993481040000916,
+        "cosine_min": 0.9712490439414978,
+        "cosine_p10": 0.9982820153236389,
+        "norm_ratio": 0.9855672121047974,
+        "normalized_rmse": 0.07659447938203812,
+        "relative_l2": 0.07658915966749191
+      },
+      "hidden_sha256": "5e23d2f03e417d39866cc11b9fdab7e5e00fc4c2ee40979636369dfcf98d9543",
+      "route_matches": 1178,
+      "route_set_agreement": 0.8517715112075199
+    },
+    "TEACHER": {
+      "hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "hidden_sha256": "cd82c0bea1bc4f5c2b36f54ea2fc2f4da29a4d0da31387cdec10ec21e74df445",
+      "route_matches": 1383,
+      "route_set_agreement": 1.0
+    }
+  },
+  "next_run_rationale": "The microscopic F1 gain does not buy robust F2; close the tested linear representation region.",
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 7778197504,
+      "floor_green": true,
+      "free_disk_bytes": 42137935872,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 93%",
+      "swap": "total = 2048.00M  used = 587.56M  free = 1460.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 8203587584,
+      "floor_green": true,
+      "free_disk_bytes": 42563325952,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 93%",
+      "swap": "total = 2048.00M  used = 587.56M  free = 1460.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "schema": "hawking.kimi_k26.long_run_upstream_f2.v1",
+  "seal_sha256": "810a67028e0232795d67473cc9529700d7c7b9677a7342d44f416b7fb13b97a1",
+  "source": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "shards_present": 64,
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "started_at": "2026-07-21T17:56:38Z",
+  "status": "PASS",
+  "tokenization": {
+    "segment_lengths": [
+      84,
+      89,
+      91,
+      94,
+      89,
+      88,
+      90,
+      78,
+      81,
+      86,
+      82,
+      87,
+      83,
+      86,
+      83,
+      92
+    ],
+    "token_id_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7",
+    "tokens": 1383
+  }
+}

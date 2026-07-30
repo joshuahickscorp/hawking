@@ -1,0 +1,9 @@
+{"at": "2026-07-24T18:48:14Z", "kind": "job", "log": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/launchd.stdout.log", "name": "glm52_source_fetch", "pid": 67579}
+{"at": "2026-07-24T18:48:14Z", "gate": "T01", "kind": "gate", "note": "GLM source rehydration streaming: 282 shards / 1.507 TB, launchd com.hawking.glm52.source-fetch, eviction ON", "state": "IN_PROGRESS"}
+{"at": "2026-07-24T18:48:14Z", "cad": 6.0, "kind": "spend", "note": "Phase A audit"}
+{"at": "2026-07-24T19:00:52Z", "gate": "T08", "kind": "gate", "note": "Rust .gravity reader + Metal PQ matvec kernel landing; S0.8 vehicle = Llama-3.2-1B BF16 packed to R0 gravity", "state": "IN_PROGRESS"}
+{"at": "2026-07-24T19:00:52Z", "gate": "T13", "kind": "gate", "note": "GLM rehydration replays the sealed rollback receipt end to end; stale pack ledger archived, not deleted", "state": "IN_PROGRESS"}
+{"at": "2026-07-24T19:00:52Z", "cad": 20.0, "kind": "spend", "note": "serve-path build, fixtures, packer"}
+{"at": "2026-07-24T19:11:14Z", "gate": "T13", "kind": "gate", "note": "rollback seal live: 23/282 verified, 0 hash mismatches, fidelity GREEN", "state": "IN_PROGRESS"}
+{"at": "2026-07-24T19:11:14Z", "cad": 25.0, "kind": "spend", "note": "oracle, rollback seal, sovereignty+metal lanes"}
+{"at": "2026-07-24T19:19:30Z", "gate": "T07", "kind": "gate", "note": "sovereignty spine built + 13 invariants green; false_refusal/boundary_error GATED on served model", "state": "IN_PROGRESS"}

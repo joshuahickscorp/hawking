@@ -5,32 +5,43 @@ A rollback: `0250cdb2ba035303da723e2a2eb41edcaf1fc45e`. AX rollback: `ad03a1bd18
 
 ## Retained operative authorities
 
-- `KIMI_K26_GRAVITY_FINAL.md` (1100) — sealed gravity final. glm52_terminal_proofs FROZEN sha.
-- `KIMI_K26_NEXT_PARENT_TRANSFER.md` (60) — sealed parent transfer. same terminal-proof reader.
+Campaign evidence moved from the repository root to `evidence/<campaign>/`;
+paths below are current. Code still *addresses* these artifacts by basename —
+the frozen seals in `glm52_terminal_proofs.py`, the contract `path` fields, and
+the `source` fields of the known-failure registry are all bare basenames on
+purpose, because those strings are identity, not location. The readers resolve
+`evidence/<campaign>/` themselves. Do not "fix" a basename into a path there.
+
+- `evidence/kimi-k26/KIMI_K26_GRAVITY_FINAL.md` (1100) — sealed gravity final. glm52_terminal_proofs FROZEN sha.
+- `evidence/kimi-k26/KIMI_K26_NEXT_PARENT_TRANSFER.md` (60) — sealed parent transfer. same terminal-proof reader.
 - `docs/dead_levers.md` (88) — kill ledger densified AX-EVID-R1. BB BC-ACCEL-012.
 - `BASELINES.md` (87) — source pins densified AX-EVID-R1. BB BC-SOURCE-010.
-- `ACCELERATION_ARCHAEOLOGY.md` (93) — accel archaeology densified AX-EVID-R1. BC-ACCEL-009.
-- `HAWKING_250K_GRAPH_FINDINGS.md` (191) — graph findings. graph mission authority.
+- `evidence/acceleration/ACCELERATION_ARCHAEOLOGY.md` (93) — accel archaeology densified AX-EVID-R1. BC-ACCEL-009.
+- `evidence/hawking/HAWKING_250K_GRAPH_FINDINGS.md` (191) — graph findings. graph mission authority.
 - `README.md` (185) — user entry. BC-CLI/ARTIFACT/GENERATION/SERVER evidence.
 - `docs/serve.md` (158) — server ops. BC-SERVER-001..004,013.
 - `docs/gravity/GRAVITY_CONTAINER_SPEC.md` (153) — Gravity container. BB BC-ARTIFACT-014.
 - `ARCHITECTURE.md` (135) — architecture. BC-ARTIFACT/BRIDGE/GENERATION/SERVER.
 - `docs/BENCHMARKS.md` (112) — bench + hotness. BC-CLI-011; extract_other.py read.
-- `FABRIC_BRIDGE_ARCHAEOLOGY.md` (98) — bridge archaeology. BC-BRIDGE-002.
+- `evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md` (98) — bridge archaeology. BC-BRIDGE-002.
 - `docs/env_flags.md` (60) — env flags. MIG-021; multi-BC.
 - `MODELS.md` (46) — model/quant. BC-ARTIFACT-002; BC-GENERATION-*.
 - `docs/kernels.md` (28) — kernels + hotness. extract_other.py read.
-- `GLM52_V2_PROGRAM_FEASIBILITY.md` (167) — Core C dual write. glm52_activation_aware_pack_v2.py.
-- `GLM52_CORPUS_INTEGRITY.md` (71) — Core C dual write. glm52_corpus.py.
-- `GLM52_STREAMING_SCHEDULE.md` (37) — Core C dual write. glm52_contract.py.
-- `GLM52_REFERENCE_PARITY.md` (16) — Core C dual write. glm52_parity.py.
-- `GLM52_XET_AUTOTUNE_PLAN.md` (16) — Core C dual write. glm52_xet_autotune.py.
+- `evidence/glm52/GLM52_V2_PROGRAM_FEASIBILITY.md` (167) — Core C dual write. glm52_activation_aware_pack_v2.py.
+- `evidence/glm52/GLM52_CORPUS_INTEGRITY.md` (71) — Core C dual write. glm52_corpus.py.
+- `evidence/glm52/GLM52_STREAMING_SCHEDULE.md` (37) — Core C dual write. glm52_contract.py.
+- `evidence/glm52/GLM52_REFERENCE_PARITY.md` (16) — Core C dual write. glm52_parity.py.
+- `evidence/glm52/GLM52_XET_AUTOTUNE_PLAN.md` (16) — Core C dual write. glm52_xet_autotune.py.
 
-Also retained untouched: Gravity schema/compat/vectors JSON; constitution;
-blackbox matrix; migrations; performance baselines; F1 seals; capability;
-`control/**/*.md`; graph payload/viewer.
+Also retained untouched: Gravity schema/compat/vectors JSON; F1 seals;
+capability; `control/**/*.md`. Constitution, blackbox matrix, migrations and
+performance baselines are now `evidence/rebuild/REBUILD_*.json`. The graph
+payload and viewer are regenerable build output, not evidence, and live under
+`build/graph/` (gitignored).
 
 ## Sealed KIMI digests
+
+Keyed by basename, matching how `glm52_terminal_proofs.py` addresses them.
 
 - `KIMI_K26_GRAVITY_FINAL.md` — `04370b55d1073923877989874cbf336869c949cd4892dbe3e1a845c5e2fc0752`
 - `KIMI_K26_NEXT_PARENT_TRANSFER.md` — `8c34b679524327e4a3ff61bc82fe7d451f62c42f3d200e7aafe0423a10a01a34`

@@ -48,7 +48,7 @@ Instrument that decides the rebuild hard gate:
 
 ```bash
 python3.12 tools/verify/perfgate.py --list
-python3.12 tools/verify/perfgate.py --capture --out REBUILD_PERFORMANCE_BASELINE_MEASURED.json
+python3.12 tools/verify/perfgate.py --capture --out evidence/rebuild/REBUILD_PERFORMANCE_BASELINE_MEASURED.json
 python3.12 tools/verify/perfgate.py --compare A.json B.json --gate 2.0
 python3.12 tools/verify/perfgate.py --paired --a-cmd '…' --b-cmd '…' --n 9
 ```

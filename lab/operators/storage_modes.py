@@ -92,7 +92,7 @@ def vulture_release_ok(pinned_revision, retained_metadata) -> dict:
     if absent:
         reasons.append(f'rehydration metadata not retained: {absent}')
     return {'predicate': 'vulture_release', 'ok': not reasons, 'reasons': reasons, 'pinned_revision': pinned_revision, 'retained_metadata': sorted(retained), 'required_metadata': sorted(REQUIRED_REHYDRATION_METADATA), 'independent_of_capability_gate': True}
-LADDER_AUTHORITY = Path(__file__).resolve().parents[2] / 'HAWKING_LADDER_V3.json'
+LADDER_AUTHORITY = Path(__file__).resolve().parents[2] / 'evidence' / 'hawking' / 'HAWKING_LADDER_V3.json'
 
 def load_ladder(path: Path | None=None) -> list[dict]:
     """Rungs from the one ladder authority. Rungs with no released weights (no bytes) are skipped:

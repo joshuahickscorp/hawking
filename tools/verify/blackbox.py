@@ -21,8 +21,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-MATRIX_PATH = ROOT / "REBUILD_BLACKBOX_TEST_MATRIX.json"
-CONSTITUTION_PATH = ROOT / "REBUILD_BEHAVIOUR_CONSTITUTION.json"
+MATRIX_PATH = ROOT / "evidence" / "rebuild" / "REBUILD_BLACKBOX_TEST_MATRIX.json"
+CONSTITUTION_PATH = ROOT / "evidence" / "rebuild" / "REBUILD_BEHAVIOUR_CONSTITUTION.json"
 BASELINE_RUNNABLE_PATH = ROOT / "tools" / "verify" / "blackbox_runnable_baseline.json"
 DEFAULT_TIMEOUT_S = 60
 

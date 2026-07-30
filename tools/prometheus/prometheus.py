@@ -386,7 +386,7 @@ def run_pipeline(ledger: Path, profile_name: str, coalition_fraction: float,
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Prometheus allocation pipeline (L1 spine)")
-    ap.add_argument("--ledger", default=str(REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
+    ap.add_argument("--ledger", default=str(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
     ap.add_argument("--profile", default="math-v1")
     ap.add_argument("--coalition-fraction", type=float, default=0.05)
     ap.add_argument("--coalition-protect-bpw", type=float, default=4.0)

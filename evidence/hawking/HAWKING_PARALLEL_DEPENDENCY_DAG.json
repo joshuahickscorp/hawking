@@ -1,0 +1,122 @@
+{
+  "schema": "hawking.parallel.dependency_dag.v1",
+  "at": "2026-07-27T01:35:00Z",
+  "law": "No lane waits idly for another lane unless its next operation directly consumes that lane's immutable output. An edge below is a real data dependency, not a preference.",
+  "nodes": {
+    "TG": "Temporal Gravity (Codex, external)",
+    "L01": "hide-archaeology-v2",
+    "L02": "hide-memory-six",
+    "L03": "odyssey-t0",
+    "L04": "fabric-software",
+    "L05": "bridge-events-adapters",
+    "L06": "consolidation-inventory",
+    "L07": "speculation-safety",
+    "L08": "hide-os-wiring",
+    "L09": "ramanujan-migration-prep",
+    "L10": "odyssey-t1-t7",
+    "L11": "math-frozen",
+    "L12": "consolidation-execute",
+    "L13": "ramanujan-migrate",
+    "L14": "ramanujan-cognition",
+    "L15": "local-forge-training",
+    "L16": "search-governance",
+    "L17": "q0-q6-qualification"
+  },
+  "edges": [
+    {
+      "from": "L01",
+      "to": "L08",
+      "consumes": "HIDE_ARCHAEOLOGY_V2.json",
+      "why_real": "L08 rewires what is genuinely unwired at HEAD. Acting on the stale fccb6b30 archaeology would rewire subsystems that five merged increments already fixed, and would miss facades those increments introduced."
+    },
+    {
+      "from": "L03",
+      "to": "L10",
+      "consumes": "ODYSSEY_FEASIBILITY.json + ODYSSEY_T0_RECEIPT.json",
+      "why_real": "T1 trains against a substrate T0 has not yet proven reproducible. Training on an unproven substrate is the exact failure ODYSSEY_PROMOTION_GATE.md exists to prevent, and it cannot be un-trained."
+    },
+    {
+      "from": "L10",
+      "to": "L11",
+      "consumes": "the winning checkpoint",
+      "why_real": "Math-Frozen is the repack of a trained winner. There is nothing to repack until Odyssey produces one."
+    },
+    {
+      "from": "L11",
+      "to": "L15",
+      "consumes": "the frozen Math-Frozen Director",
+      "why_real": "the local forge freezes the giant and trains the small against it; the giant must exist first"
+    },
+    {
+      "from": "L06", "to": "L12", "consumes": "HAWKING_CONSOLIDATION_INVENTORY.json",
+      "why_real": "you cannot collapse duplicate authorities before knowing which one is load-bearing"
+    },
+    {"from": "L02", "to": "L12", "consumes": "a real Context OS to consolidate around", "why_real": "consolidating a subsystem still under construction invalidates the plan"},
+    {"from": "L04", "to": "L12", "consumes": "real Fabric software", "why_real": "same"},
+    {"from": "L05", "to": "L12", "consumes": "one canonical event model and one adapter ABI", "why_real": "the consolidation target IS these"},
+    {"from": "L08", "to": "L12", "consumes": "HIDE wired", "why_real": "same"},
+    {"from": "L11", "to": "L12", "consumes": "Math-Frozen", "why_real": "campaign law: no destructive refactor during or before Odyssey/Math-Frozen"},
+    {"from": "L12", "to": "L13", "consumes": "HAWKING_EVOLUTION_COMPLETE", "why_real": "the repository split is defined to happen at that seal"},
+    {"from": "L13", "to": "L14", "consumes": "the ramanujan repository", "why_real": "nowhere to build until it exists"},
+    {"from": "L13", "to": "L15", "consumes": "the ramanujan repository", "why_real": "same"},
+    {"from": "L13", "to": "L16", "consumes": "the ramanujan repository", "why_real": "same"},
+    {"from": "L14", "to": "L17", "consumes": "cognition mechanisms", "why_real": "Q0-Q6 qualifies them"},
+    {"from": "L15", "to": "L17", "consumes": "the trained formal system", "why_real": "same"},
+    {"from": "L16", "to": "L17", "consumes": "search, roles, Ledger, Tribunal", "why_real": "same"}
+  ],
+  "non_edges": [
+    {
+      "asserted_dependency": "TG -> everything",
+      "verdict": "REJECTED",
+      "why": "the campaign's central instruction. HIDE, Odyssey preparation, Fabric software, Bridge, adapters, schemas, CLI and Ramanujan scaffolding do not consume any TG output. They consume a stable ABI, which is a contract, not a measurement."
+    },
+    {
+      "asserted_dependency": "TG -> L07 (speculation safety)",
+      "verdict": "REJECTED",
+      "why": "the safety boundary constrains what speculation is ALLOWED to do. It is correct independent of how fast speculation runs, and must exist before any provider is promoted, not after."
+    },
+    {
+      "asserted_dependency": "TG -> L10 (Odyssey)",
+      "verdict": "REJECTED with a caveat",
+      "why": "Odyssey does not require TG1. It requires a stable artifact/runtime ABI, correct CPU authority, reproducibility, and one heavy-lane window. However G2 of the promotion gate requires the dominant decode cost to be IDENTIFIED by measurement, and that measurement lives in the TG lane. So TG gates the GATE, not the preparation."
+    },
+    {
+      "asserted_dependency": "L04 (Fabric) -> second physical node",
+      "verdict": "REJECTED",
+      "why": "missing hardware produces FABRIC_HARDWARE_QUALIFICATION_PENDING and blocks nothing else. Software and simulator qualification proceed now."
+    },
+    {
+      "asserted_dependency": "L05 (Bridge) -> L04 (Fabric)",
+      "verdict": "REJECTED",
+      "why": "Bridge declares Fabric event categories and registry output; it does not consume a running Fabric. Both proceed in parallel; the controller reconciles the seam at integration."
+    }
+  ],
+  "critical_path": {
+    "path": ["L03", "L10", "L11", "L12", "L13", "L15", "L17"],
+    "note": "Every other lane is off the critical path and is therefore run now, at full width. The critical path is gated at L10 by resource reality, not by engineering.",
+    "hard_walls": [
+      {
+        "at": "L10",
+        "wall": "training a 92 GB artifact on a 96 GB machine that is already at load ~29 of 28 cores because a separate campaign (MOP) holds most of them",
+        "measured_by": "L03 must produce ODYSSEY_FEASIBILITY.json with real numbers rather than an assumption",
+        "controller_position": "this is a resource wall, not an engineering one. It is not routed around by shrinking the task until something runs."
+      },
+      {
+        "at": "L10",
+        "wall": "ODYSSEY_LAUNCH_AUTHORIZED is false and only the controller may flip it, after G1-G4 of ODYSSEY_PROMOTION_GATE.md",
+        "status": "G1 MET (substrate sealed, verified live). G2 open: BASE_TRUE_TPS 0.3961 measured but the dominant decode cost is still being attributed inside the Codex TG lane. G3 open. G4 open pending L01/L02/L08."
+      },
+      {
+        "at": "L15",
+        "wall": "F0-F9 local training requires the frozen Math-Frozen Director, which is downstream of the L10 wall"
+      }
+    ]
+  },
+  "wave_plan": [
+    {"wave": 1, "lanes": ["L01", "L02", "L03", "L04", "L05", "L06"], "status": "RUNNING", "width": 6, "note": "concurrency limit is 6; this is saturation"},
+    {"wave": 2, "lanes": ["L07", "L08", "L09"], "status": "QUEUED", "trigger": "first wave-1 slot to free; L08 additionally requires L01"},
+    {"wave": 3, "lanes": ["L10", "L11"], "status": "GATED", "trigger": "controller authorization after G1-G4 and a real heavy-lane window"},
+    {"wave": 4, "lanes": ["L12", "L13"], "status": "GATED"},
+    {"wave": 5, "lanes": ["L14", "L15", "L16", "L17"], "status": "GATED"}
+  ]
+}

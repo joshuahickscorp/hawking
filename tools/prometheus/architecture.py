@@ -535,8 +535,8 @@ def selftest() -> None:
     assert s.as_dict()["gate"] == "M10"
     assert "value" in Stage.measured("y", 1).as_dict()
 
-    result = run(REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json",
-                 REPO / "GLM52_ARCHITECTURE_CONTRACT.json", 0.05, 4.0, 20260724)
+    result = run(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json",
+                 REPO / "evidence" / "glm52" / "GLM52_ARCHITECTURE_CONTRACT.json", 0.05, 4.0, 20260724)
     assert result["components_present"] >= 14, result["components_present"]
     assert result["claim_a"]["status"] == "NOT_SEALED"
 
@@ -559,8 +559,8 @@ def selftest() -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Prometheus architecture (Revision 3 §7)")
-    ap.add_argument("--ledger", default=str(REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
-    ap.add_argument("--contract", default=str(REPO / "GLM52_ARCHITECTURE_CONTRACT.json"))
+    ap.add_argument("--ledger", default=str(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
+    ap.add_argument("--contract", default=str(REPO / "evidence" / "glm52" / "GLM52_ARCHITECTURE_CONTRACT.json"))
     ap.add_argument("--coalition-fraction", type=float, default=0.05)
     ap.add_argument("--coalition-protect-bpw", type=float, default=4.0)
     ap.add_argument("--seed", type=int, default=20260724)

@@ -844,8 +844,23 @@ class TrustedArtifactStore:
             raise StateError('trusted artifact path escapes or ambiguously names its root')
         return tuple(parts)
 
+    def _locate(self, relative_path: str) -> str:
+        """Map a bare basename onto ``evidence/<campaign>/<basename>``.
+
+        Contracts name campaign artifacts by basename and compare that string
+        against sealed ``path`` fields, so it must survive the move. Only the
+        walk below sees the real location, and it still opens every component
+        with ``O_NOFOLLOW``.
+        """
+        if '/' in relative_path or (self.root / relative_path).is_file():
+            return relative_path
+        found = sorted((self.root / 'evidence').glob(f'*/{relative_path}'))
+        if not found:
+            return relative_path
+        return found[0].relative_to(self.root).as_posix()
+
     def read_bytes(self, relative_path: str) -> bytes:
-        parts = self._parts(relative_path)
+        parts = self._parts(self._locate(relative_path))
         root_descriptors, root_links, root_stat = self._open_absolute_root()
         if self._identity(root_stat) != self._root_identity:
             for descriptor in reversed(root_descriptors):

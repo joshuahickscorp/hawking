@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.hide.context_os_review.v1",
+  "at": "2026-07-26T07:45:00Z",
+  "subject": "Context OS gap analysis and the two campaign-critical closures",
+  "status": "VERIFIED BY CLAUDE. 246 passed, 0 failed (was 244). Not merged.",
+  "finding_that_shaped_the_lane": "The Context Stack was already REAL_WIRED at 4,947 lines with a live compiler, index legs and memory store. This was never a build-from-nothing task, and treating it as one would have added surface to a working subsystem.",
+  "closed": [
+    {
+      "gap": "Honest capability declaration",
+      "why_it_was_first": "Section 7.3's stated failure is 'a virtual memory system does not become a fake native context claim'. A wrong context number causes silent truncation and bad answers, so misreporting capability outranks every other gap.",
+      "implementation": "manifest.rs now always distinguishes native from effective, carries native_tokens explicitly, and emits the explanation 'usable context (retrieval+compaction) is not native_maximum'. The comment at line 56 names the exact confusion it exists to prevent."
+    },
+    {
+      "gap": "Context-rot detection",
+      "implementation": "New rot.rs, 352 lines. Pure and deterministic: detect_context_rot reads a compiled manifest plus optional live occupancy and returns severity, concrete signals, and meter-ready explanations. Thresholds default to matching the existing watermarks and recall floors so the two systems cannot disagree.",
+      "why_it_matters": "The turn loop previously had no way to notice its own context had degraded."
+    },
+    {
+      "gap": "Reversible compaction",
+      "implementation": "Compiler admit path, with the host still receiving events on real degrades."
+    }
+  ],
+  "refused_correctly": {
+    "gap": "Validated quality context, validated agentic context, KV curve, prefill curve",
+    "reason_given": "Needs real calibration runs against models; inventing numbers would be the failure mode the section forbids.",
+    "assessment": "Right call, and the most important judgement in the lane. A constant in a config presented as a measured curve IS the fake-native-claim failure. Refusing to fabricate them is worth more than closing them wrongly."
+  },
+  "honestly_left_open": [
+    "Six memory types remain ONE store. Reported as not done rather than papered over -- 'adding labels alone is not REAL_WIRED', which is the correct standard.",
+    "RepoMap is real in the index but unwired to the compiler",
+    "Tokenizer-true allocation needs the tokenizer asset on the turn path",
+    "Copy-on-write warm forks / KV banking sit at the engine/serve seam; the host does not fork KV",
+    "HIDE_KERNEL_TURN default deliberately untouched"
+  ],
+  "test_count_discrepancy_reconciled": {
+    "reported": "208 -> 210 passed with 3 pre-existing failures",
+    "measured_by_claude": "213 passed 0 failed on --lib; 246 passed 0 failed on the full suite, up from 244",
+    "explanation": "Two causes. Scope: they ran --lib, which excludes the integration targets, hence 213 versus 246. And their 3 failures -- run_command api, service process heartbeats, write-lease revoke -- are timing-sensitive process tests that flaked under the contention of a live pack plus concurrent lanes. They do not reproduce here. No regression."
+  },
+  "evidence_level": "TESTS_RE_RUN_INDEPENDENTLY_PLUS_STATIC_READING",
+  "not_evidence_of": "that the declared context numbers are correct -- the measurement infrastructure to validate them is exactly what was left open"
+}

@@ -8,10 +8,10 @@ use crate::support_level::SupportLevel;
 /// Paths that are allowed as evidence even when the binary artifact itself is
 /// off-tree / sealed (we still require the *receipt* file in-repo).
 const RECEIPT_ALLOWLIST: &[&str] = &[
-    "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
-    "KIMI_K26_ADAPTER_TWIN.json",
+    "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+    "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
     "packs/hawking-adapters-extra.json",
-    "FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
 ];
 
 /// Validate that a family's declared level is backed by named evidence of the

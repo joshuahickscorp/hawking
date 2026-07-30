@@ -1,0 +1,226 @@
+{
+  "caveat": "This stage tests whether a teacher-free gate predicts damage. It does not claim F2 rescue because no high-precision residual representation is installed. The cached LR11/LR12 export lacks layer-1 route identity, so this is a conservative activation/compact-output gate; a physical M2 export must add and bill expert/layer routing features.",
+  "decision": "GATE_HAS_HELDOUT_SKILL_WAITING_PHYSICAL_HIGH_PRECISION_MODULE",
+  "deployable_candidate": false,
+  "disjointness": {
+    "fit_context_sha256": "f8cf93c05f58724ee819dc9638dbd72b0a9187ab40e90951ab6d6213e6c91290",
+    "fit_cv": "LR11_FOUR_FOLD",
+    "score": "LR12",
+    "score_context_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7",
+    "score_used_for_threshold_selection": false
+  },
+  "duration_seconds": 0.6337490081787109,
+  "ended_at": "2026-07-21T19:11:20Z",
+  "event_definition": {
+    "fit_threshold": 0.0471261091530323,
+    "quantile": 0.9,
+    "score_prevalence": 0.1005061460592914,
+    "score_threshold": 0.04572519809007643
+  },
+  "experiment_id": "M2_CONDITIONAL_HIGH_PRECISION_GATE_CACHED_STAGE",
+  "fit": {
+    "features": 144,
+    "four_fold_train_log_losses": [
+      0.37552726580135615,
+      0.3763632144434436,
+      0.3562204244092845,
+      0.35828050985874516
+    ],
+    "oof_average_precision": 0.48772540501390305,
+    "tokens": 1397
+  },
+  "inputs": {
+    "feature_hash_bins": 64,
+    "fit_context_sha256": "f8cf93c05f58724ee819dc9638dbd72b0a9187ab40e90951ab6d6213e6c91290",
+    "l2": 0.001,
+    "lr11": {
+      "artifact": "KIMI_K26_LONG_RUN_UPSTREAM_F2.json",
+      "artifact_seal_sha256": "254122fff882c136ec93f6f56cefd7beaeecc5aea58381ef69ee5828d3d7ffbb",
+      "bytes": 400685436,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR11/LR11_UPSTREAM_F2_CAPTURE.npz",
+      "sha256": "cdc9e196aabcfc7f66b17ccd3e3858a197610f15f60f2b853f8cd5027203fad6"
+    },
+    "lr12": {
+      "artifact": "KIMI_K26_LONG_RUN_UPSTREAM_REPLICATION.json",
+      "artifact_seal_sha256": "810a67028e0232795d67473cc9529700d7c7b9677a7342d44f416b7fb13b97a1",
+      "bytes": 396670012,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+      "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634"
+    },
+    "score_context_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7",
+    "seed": 26072121,
+    "stage": "M2",
+    "steps": 300,
+    "tournament": {
+      "searched": [
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_CONTEXTUAL_SEAM_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_CONTEXTUAL_SEAMS.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_NONLINEAR_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_CHAPTER_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_BYTE_AUCTION.json"
+      ],
+      "status": "ABSENT"
+    },
+    "trigger_rates": [
+      0.01,
+      0.02,
+      0.05,
+      0.1,
+      0.2
+    ]
+  },
+  "projected_parent_plus_gate_bpw": 0.9090955825079055,
+  "projected_parent_plus_gate_bytes": 5004593,
+  "requires_physical_high_precision_module_for_deployable_M2": true,
+  "requires_real_model_forward": false,
+  "run_fingerprint_sha256": "f8075b9a2108f3c4fc31e0e1b90c44972e6a70b4ab0eca2ae7beb18083e98c7c",
+  "schema": "hawking.kimi_k26.gravity.m2_conditional_gate.v1",
+  "score": {
+    "average_precision": 0.5708248492281462,
+    "tokens": 1383,
+    "trigger_rows": {
+      "0.01": {
+        "event_prevalence": 0.1005061460592914,
+        "false_negative": 127,
+        "false_negative_rate": 0.9136690647482014,
+        "false_positive": 0,
+        "false_positive_rate": 0.0,
+        "precision": 1.0,
+        "precision_lift_over_prevalence": 9.949640287769784,
+        "recall": 0.08633093525179857,
+        "threshold_selected_from_lr11_oof": 0.9996638179324964,
+        "trigger_rate": 0.008676789587852495,
+        "true_negative": 1244,
+        "true_positive": 12
+      },
+      "0.02": {
+        "event_prevalence": 0.1005061460592914,
+        "false_negative": 112,
+        "false_negative_rate": 0.8057553956834532,
+        "false_positive": 0,
+        "false_positive_rate": 0.0,
+        "precision": 1.0,
+        "precision_lift_over_prevalence": 9.949640287769784,
+        "recall": 0.19424460431654678,
+        "threshold_selected_from_lr11_oof": 0.9759993248970482,
+        "trigger_rate": 0.019522776572668113,
+        "true_negative": 1244,
+        "true_positive": 27
+      },
+      "0.05": {
+        "event_prevalence": 0.1005061460592914,
+        "false_negative": 93,
+        "false_negative_rate": 0.6690647482014388,
+        "false_positive": 29,
+        "false_positive_rate": 0.023311897106109324,
+        "precision": 0.6133333333333333,
+        "precision_lift_over_prevalence": 6.102446043165467,
+        "recall": 0.33093525179856115,
+        "threshold_selected_from_lr11_oof": 0.9079237108260414,
+        "trigger_rate": 0.05422993492407809,
+        "true_negative": 1215,
+        "true_positive": 46
+      },
+      "0.1": {
+        "event_prevalence": 0.1005061460592914,
+        "false_negative": 68,
+        "false_negative_rate": 0.4892086330935252,
+        "false_positive": 67,
+        "false_positive_rate": 0.053858520900321546,
+        "precision": 0.5144927536231884,
+        "precision_lift_over_prevalence": 5.119017829214888,
+        "recall": 0.5107913669064749,
+        "threshold_selected_from_lr11_oof": 0.7886195432987203,
+        "trigger_rate": 0.09978308026030369,
+        "true_negative": 1177,
+        "true_positive": 71
+      },
+      "0.2": {
+        "event_prevalence": 0.1005061460592914,
+        "false_negative": 37,
+        "false_negative_rate": 0.26618705035971224,
+        "false_positive": 212,
+        "false_positive_rate": 0.17041800643086816,
+        "precision": 0.3248407643312102,
+        "precision_lift_over_prevalence": 3.2320487558997386,
+        "recall": 0.7338129496402878,
+        "threshold_selected_from_lr11_oof": 0.5632162853025523,
+        "trigger_rate": 0.22704266088214028,
+        "true_negative": 1032,
+        "true_positive": 102
+      }
+    }
+  },
+  "seal_sha256": "c1a001c4bedb40ffc0b6a590514259fe7a198aaac402ffb5b691d5010c7881a1",
+  "serialized_gate_payload": {
+    "bytes": 2778,
+    "component_bytes": 1321,
+    "components": [
+      {
+        "count": 145,
+        "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+        "name": "logistic_weight_and_bias_values",
+        "nbytes": 145,
+        "sha256": "eb30bd6ed9852d1a3d1305184e715634f30c8d88ef02559a12c8c32db4280951",
+        "shape": [
+          1,
+          145
+        ]
+      },
+      {
+        "count": 1,
+        "encoding": "FLOAT32_LE",
+        "name": "logistic_weight_and_bias_scales",
+        "nbytes": 4,
+        "sha256": "bca5b241c3966806efb42520605029faa711e7599a81730b32bc3fb383e8381f",
+        "shape": [
+          1
+        ]
+      },
+      {
+        "count": 144,
+        "encoding": "FLOAT32_LE",
+        "name": "feature_mean",
+        "nbytes": 576,
+        "sha256": "8b31df20767c2e2d99e307e25b0c897c091d90e0d1e80841c08eb75b210a6023",
+        "shape": [
+          144
+        ]
+      },
+      {
+        "count": 144,
+        "encoding": "FLOAT32_LE",
+        "name": "feature_scale",
+        "nbytes": 576,
+        "sha256": "70f44ae5f572a13a22f9ca96b6e8a717936e7268366deabaa01e0eb5f1fa87c1",
+        "shape": [
+          144
+        ]
+      },
+      {
+        "count": 5,
+        "encoding": "FLOAT32_LE",
+        "name": "trigger_thresholds",
+        "nbytes": 20,
+        "sha256": "e9dd89341dbd93e42b1f38be697ba806a47a3b1845d00b37a31da85ed0405b21",
+        "shape": [
+          5
+        ]
+      }
+    ],
+    "header_bytes": 1457,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M2/M2_CONDITIONAL_TRIGGER_GATE.k26gate",
+    "sha256": "32b46d0c2295c7641cb975b5b8dc5fd6b076b9ad32812d5bd25260c88d30e717"
+  },
+  "skillful_trigger_rates": [
+    0.1,
+    0.2
+  ],
+  "started_at": "2026-07-21T19:11:20Z",
+  "status": "PASS",
+  "terminal_criteria": {
+    "gate_reject": "precision<=event prevalence OR top-decile false-negative rate>0.50",
+    "physical_reject": "static/worst-case BPW>0.98 OR paired pre-router improvement CI95 low<=0"
+  },
+  "within_0_98_before_high_precision_module": true
+}

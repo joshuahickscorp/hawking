@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.recomposition.binding_contract.v1",
+  "at": "2026-07-29",
+  "question": "Which single behaviour contract prevents descent below the measured floor?",
+  "method": "Five contracts were produced by five programmes. The destructive probe deletes every protection and reports where the tree actually stops. The binding contract is the one whose removal the probe proves insufficient -- that is, the constraint that still holds when everything else is gone.",
+  "probe_result": {
+    "loc_after_deleting_every_protection": 349455,
+    "clears_350k": true,
+    "clears_300k": false,
+    "remaining_above_300k": 49455
+  },
+  "the_binding_contract": {
+    "name": "Protected mass is the product, not the architecture",
+    "statement": "After deleting every named protection the tree stands at 349,455, and the residue sits INSIDE the protected set: laboratory science 105,631, HIDE product 91,849, hawking-core runtime 129,227. No further architectural change reaches 300,000, because what remains is not structure that can be re-expressed -- it is capability the product is required to keep.",
+    "why_this_one_binds": "The other four contracts are real but each is locally escapable. The runtime graph rejection blocks one unification; the laboratory fusion turned out historical and was decomposed; the function-merge ceiling of 0.95% limits one technique; the Bridge floor was overturned and 5,376 lines remain available. None of them is what stops the descent. This one does: it is the only constraint that survives deleting everything else.",
+    "first_gate_that_fails": {
+      "gate": "cargo build -p hawking",
+      "exit": 101,
+      "file": "crates/hawking-seed-c/Cargo.toml",
+      "capability": "seed-c isolation -- the pack and gravity law plus provider registry, whose manifest forbids a hawking-core dependency by design"
+    },
+    "falsifiable_by": "A product decision that releases part of the protected set. Retiring laboratory science, cutting HIDE surface, or accepting relocation as credit each move the number immediately. None of them is an architecture question."
+  },
+  "the_other_four_contracts": [
+    {"programme": "runtime graph", "contract": "WKV-7's fixed per-head S state and token-shift cannot share an executable LayerOp core with a transformer's growing KV + RoPE + MHA while staying bit-exact on argmax and top-k, holding one command buffer per token, and being net-negative in LOC.", "binding": false, "why": "blocks one unification; the probe deletes both executors and still stops at 349,455"},
+    {"programme": "function merging", "contract": "Behavioural equivalence across 12,258 functions yields 138 twins, 0.95%. Twelve near-misses differ in tie-break, numeric type, error mode or side effect.", "binding": false, "why": "a ceiling on one technique, not on the tree"},
+    {"programme": "laboratory", "contract": "none -- the glm52_state fusion proved historical rather than semantic and decomposed cleanly", "binding": false, "why": "resolved, not a constraint"},
+    {"programme": "Bridge", "contract": "claimed capability floor of 20,426", "binding": false, "why": "OVERTURNED by independent review; honest floor 15,148 with 5,376 available and a generative path the lane had dismissed"}
+  ],
+  "what_recomposition_actually_bought": {
+    "visible_loc_delta": -109,
+    "structural_floor_delta": -54809,
+    "old_architecture_probe": 404264,
+    "new_architecture_probe": 349455,
+    "reading": "The architecture became materially smaller in a way the headline number cannot show. The prior arc's probe could not clear 400,000; this one clears 350,000. That is the campaign's real result, and it is why the binding order puts folders before files before lines."
+  }
+}
