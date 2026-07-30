@@ -1,0 +1,493 @@
+{
+  "schema": "hawking.coree.e4b.f1_manifest_projection.v1",
+  "rung": "E4b",
+  "parent_manifest": "control/TEST_CASE_MANIFEST.json",
+  "parent_manifest_untouched": true,
+  "note": "Additive projection only; does not rewrite S6F2/C-HIST rows.",
+  "entries": [
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::every_top_type_round_trips_through_serde_json",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "every_top_type_round_trips_through_serde_json",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::json_schema_generates_for_the_core_wire_types",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "json_schema_generates_for_the_core_wire_types",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::item_kind_covers_every_listed_kind",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "item_kind_covers_every_listed_kind",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_request_matches_sec_15_3_shape",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "initialize_request_matches_sec_15_3_shape",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_result_carries_single_negotiated_version",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "initialize_result_carries_single_negotiated_version",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::version_negotiation_picks_the_highest_shared_by_server_preference",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "version_negotiation_picks_the_highest_shared_by_server_preference",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::capability_negotiation_ands_shared_flags",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "capability_negotiation_ands_shared_flags",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::methods_cover_every_required_namespace",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "methods_cover_every_required_namespace",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::method_serializes_as_its_slash_string",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "method_serializes_as_its_slash_string",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::plan_dag_validation_accepts_acyclic_rejects_cycles_and_dangling",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "plan_dag_validation_accepts_acyclic_rejects_cycles_and_dangling",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::notification_method_tag_matches_serialized_form",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "symbol": "notification_method_tag_matches_serialized_form",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_is_non_empty_with_unique_ids",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "catalog_is_non_empty_with_unique_ids",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_command_has_a_shortcut_or_lives_in_the_palette",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "every_command_has_a_shortcut_or_lives_in_the_palette",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::backend_bindings_resolve_to_real_targets",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "backend_bindings_resolve_to_real_targets",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_live_custom_name_has_a_command",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "every_live_custom_name_has_a_command",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::wire_custom_names_mirror_wire_ts",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "wire_custom_names_mirror_wire_ts",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_writing_command_declares_the_write_and_its_undo",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "every_writing_command_declares_the_write_and_its_undo",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_covers_the_seven_priority_domains",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "catalog_covers_the_seven_priority_domains",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::specs_round_trip_through_serde_json",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "specs_round_trip_through_serde_json",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_data_carries_no_en_or_em_dashes",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "symbol": "catalog_data_carries_no_en_or_em_dashes",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_maps_to_user_message_item",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "symbol": "submit_turn_maps_to_user_message_item",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_round_trips_through_the_bridge",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "symbol": "submit_turn_round_trips_through_the_bridge",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::non_submit_intents_do_not_map_to_a_turn",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "symbol": "non_submit_intents_do_not_map_to_a_turn",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::uievents_elevate_to_notifications",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "symbol": "uievents_elevate_to_notifications",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_serialize_transparently_as_bare_strings",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/ids.rs",
+      "symbol": "ids_serialize_transparently_as_bare_strings",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_display_and_as_str_agree",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/src/ids.rs",
+      "symbol": "ids_display_and_as_str_agree",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::session_start_sends_typed_method_and_parses_typed_result",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "symbol": "session_start_sends_typed_method_and_parses_typed_result",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::turn_start_parses_a_typed_turn_and_mints_sequential_ids",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "symbol": "turn_start_parses_a_typed_turn_and_mints_sequential_ids",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::rpc_error_envelope_surfaces_as_sdk_error",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "symbol": "rpc_error_envelope_surfaces_as_sdk_error",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::unhandled_method_reports_a_missing_mock_handler",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "symbol": "unhandled_method_reports_a_missing_mock_handler",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::item_subscribe_acks_then_drains_notifications",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "symbol": "item_subscribe_acks_then_drains_notifications",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::item_fixtures_round_trip_through_serde",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "symbol": "item_fixtures_round_trip_through_serde",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::notification_fixtures_round_trip_through_serde",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "symbol": "notification_fixtures_round_trip_through_serde",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::events_golden_is_stable_and_every_entry_reparses",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "symbol": "events_golden_is_stable_and_every_entry_reparses",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::json_schema_golden_is_stable",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "json_schema_golden_is_stable",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_golden_is_stable",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "typescript_golden_is_stable",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_catalog_json_golden_is_stable",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "command_catalog_json_golden_is_stable",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_typescript_golden_is_stable",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "command_typescript_golden_is_stable",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generation_is_deterministic_across_runs",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "generation_is_deterministic_across_runs",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generated_artifacts_carry_no_en_or_em_dashes",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "generated_artifacts_carry_no_en_or_em_dashes",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_the_core_interfaces",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "typescript_covers_the_core_interfaces",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_string_literal_union",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "typescript_covers_a_string_literal_union",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_tagged_union",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "typescript_covers_a_tagged_union",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_optionals_refs_maps_and_value",
+      "disposition": "execute",
+      "replaces": [],
+      "receipt_map": {},
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "symbol": "typescript_covers_optionals_refs_maps_and_value",
+      "executor": {
+        "command": "cargo test -p hide-protocol"
+      }
+    }
+  ]
+}
