@@ -511,7 +511,6 @@ pub fn integrate(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn cand(id: &str, ok: bool, oracles: u32, warns: u32, diff: u32) -> CandidatePatch {
         CandidatePatch {
             job_id: id.to_string(),
@@ -525,7 +524,6 @@ mod tests {
             summary: String::new(),
         }
     }
-
     #[test]
     fn selector_is_oracle_first_and_filters_regressions() {
         let cands = vec![
@@ -534,12 +532,10 @@ mod tests {
             cand("c", true, 4, 1, 40),
         ];
         let d = TournamentSelector::select(&cands);
-        // c has more oracles passed than a (4 > 3) → c wins; b filtered out.
         assert_eq!(d.winner_job_id, Some("c".to_string()));
         assert!(d.beaten.contains(&"a".to_string()));
         assert!(!d.needs_judge);
     }
-
     #[test]
     fn selector_flags_judge_on_oracle_equivalent_leaders() {
         let cands = vec![cand("a", true, 3, 0, 20), cand("b", true, 3, 0, 20)];
@@ -547,7 +543,6 @@ mod tests {
         assert!(d.needs_judge);
         assert_eq!(d.judge_leaders.len(), 2);
     }
-
     #[test]
     fn selector_rejects_when_nothing_viable() {
         let cands = vec![cand("a", false, 1, 0, 5)];
@@ -555,7 +550,6 @@ mod tests {
         assert_eq!(d.strategy, MergeStrategy::RejectAll);
         assert!(d.winner_job_id.is_none());
     }
-
     #[test]
     fn footprints_partition_disjoint_and_record_overlaps() {
         let fps = vec![
@@ -565,13 +559,11 @@ mod tests {
         ];
         let plan = plan_footprints(&fps);
         assert!(plan.overlaps.contains(&("a".to_string(), "c".to_string())));
-        // a and b are disjoint → same parallel group; c opens a new one.
         assert!(plan
             .parallel_groups
             .iter()
             .any(|g| g.contains(&"a".to_string()) && g.contains(&"b".to_string())));
     }
-
     #[test]
     fn three_way_merge_fast_forwards_when_one_side_unchanged() {
         let base = "line1\nline2\n";
@@ -582,7 +574,6 @@ mod tests {
         assert_eq!(m.by, ResolvedBy::FastForward);
         assert_eq!(m.merged, theirs);
     }
-
     #[test]
     fn three_way_merge_combines_disjoint_edits() {
         let base = "a\nb\nc\nd\n";
@@ -593,7 +584,6 @@ mod tests {
         assert!(m.merged.contains("AA"));
         assert!(m.merged.contains("DD"));
     }
-
     #[test]
     fn three_way_merge_conflicts_on_same_region() {
         let base = "a\nb\nc\n";
@@ -604,7 +594,6 @@ mod tests {
         assert_eq!(m.by, ResolvedBy::Conflict);
         assert!(m.merged.contains("<<<<<<<"));
     }
-
     #[test]
     fn integrate_holds_overlapping_footprints_for_the_ladder() {
         let cands = vec![cand("a", true, 2, 0, 5), cand("c", true, 2, 0, 5)];
@@ -613,7 +602,6 @@ mod tests {
             Footprint::new("c", ["shared.rs".to_string()]),
         ];
         let r = integrate(&cands, &fps, true);
-        // Both touch shared.rs → neither silently adopted.
         assert!(r.adopted.is_empty());
         assert!(r.conflicts.contains(&"shared.rs".to_string()));
     }

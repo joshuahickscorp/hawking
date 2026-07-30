@@ -1,0 +1,9 @@
+{
+  "id": "grant_001",
+  "session_id": "01HSESSIONYOU00000000000000",
+  "tool": "fs.read",
+  "path": "README.md",
+  "decision": "allow",
+  "ts_ms": 1720000000300,
+  "reason": "workspace read of README.md granted for fixture"
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.rebuild.s0_ledger.v1",
+  "slice": "S0",
+  "title": "Campaign apparatus -- the instruments and records the campaign itself added",
+  "at": "2026-07-29",
+  "why_this_exists": "tools/campaign/ledger_rollup.py reported a residual of +14,410 lines that no slice ledger accounted for. A residual that large, left unnamed, is exactly how a campaign credits itself for a reduction it did not make. This is the naming.",
+  "measured": {
+    "graph_instrument": {
+      "loc": 9728,
+      "paths": [
+        "tools/graph/**"
+      ],
+      "note": "extractor, eight analyses, behaviour-map binder, offline viewer generator, planted-truth fixture and its oracle. Required by the endpoint, which lists 'semantic graph and interactive viewer' as a deliverable."
+    },
+    "verify_instrument": {
+      "loc": 1346,
+      "paths": [
+        "tools/verify/**"
+      ],
+      "note": "black-box runner, performance gate, capability manifest"
+    },
+    "campaign_instrument": {
+      "loc": 705,
+      "paths": [
+        "tools/campaign/rung_gate.py",
+        "tools/campaign/ledger_rollup.py",
+        "tools/loc/hawking_generation_audit.py"
+      ],
+      "note": "the rung gate, this rollup, and the generation audit that closes the generated-source loophole"
+    },
+    "campaign_records": {
+      "loc": 1868,
+      "paths": [
+        "HAWKING_250K_*.md",
+        "HAWKING_VNEXT_ARCHITECTURE_*.md",
+        "control/LANE_MAP.md",
+        "control/S3-report.md",
+        "REBUILD_PERFORMANCE_BASELINE_RECONCILIATION.md"
+      ],
+      "note": "markdown is counted as source by the authority; the campaign's paperwork is spent from the same budget as the code"
+    }
+  },
+  "ledger": {
+    "eliminated": 0,
+    "rewritten": 0,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "added_apparatus": 13647
+  },
+  "reading": "This slice only adds. It is not a facade -- a facade is a compatibility shim that must reach zero before a rung closes, and none of this is that. It is instrumentation, and the campaign mandates most of it. But it is 13,647 lines that have to come out of the same 186,427 the rebuild owes, and the honest place to record that is here rather than in a residual nobody reads.",
+  "disposition_at_endpoint": "The graph extractor and viewer are required deliverables and stay. The gates stay as long as the tree is under active reduction. The records should be consolidated at the end -- much of the root markdown from prior arcs is superseded, and the behaviour-coverage analysis independently puts 21,577 LOC of `shared` (overwhelmingly root markdown) in the reachable-from-no-behaviour bucket."
+}

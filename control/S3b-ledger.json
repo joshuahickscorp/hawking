@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.rebuild.s3b_ledger.v1",
+  "slice": "S3b",
+  "title": "Re-express the 87 host assertions S3 dropped, and split memory_classes",
+  "at": "2026-07-29",
+  "measurement": {
+    "authority": "tools/loc/hawking_loc.py + tools/loc/hawking_inventory.py",
+    "host_test_lines_deleted_by_S3": 4284,
+    "public_api_suite_added": 1600,
+    "memory_classes_split_overhead": 20,
+    "net_loc": 1620
+  },
+  "ledger": {
+    "eliminated": 0,
+    "rewritten": -1620,
+    "rewritten_note": "Negative rewrite credit: this slice ADDS lines on purpose. S3 removed 4,284 lines of test bodies living inside src/ via include!; this puts back ~1,600 of public-API black-box suite that exercises the same contracts from outside. The trade is worth making and it is still an addition, recorded as one.",
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0
+  },
+  "gates": {
+    "inventory_tests": "3,947 -> 3,959 (+12), nothing lost",
+    "inventory_caps": "nothing lost",
+    "files_over_1500": "27 -> 26, back to the campaign start value",
+    "cargo_build_workspace": "green",
+    "hide_suites": "0 failed across 12 suites",
+    "blackbox": "86/86"
+  },
+  "constitution_gaps_found": {
+    "count": 10,
+    "significance": "Classifying all 87 assertions against the constitution turned up ten contracts the constitution did not name, four of them security outcomes: the approval gate on destructive shell (held is not done), the durable tool-policy ledger, write-lease revocation on session fork and rewind, and trust-before-config on an untrusted workspace. Under-recording those would have licensed deleting the code that provides them.",
+    "added_as": ["BC-SECURITY-021", "BC-SECURITY-022", "BC-SECURITY-023", "BC-SECURITY-024", "BC-HIDE_SESSION-023", "BC-HIDE_SESSION-024", "BC-HIDE_SESSION-025", "BC-HIDE_SESSION-026", "BC-HIDE_SESSION-027", "BC-AGENTS-013"]
+  },
+  "target_reached": true
+}

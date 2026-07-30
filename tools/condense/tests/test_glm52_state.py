@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline adversarial tests for the GLM-5.2 durable state spine."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import copy
 import hashlib
@@ -12,12 +17,9 @@ import sys
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_state as gs  # noqa: E402
-from glm52_common import atomic_json, seal  # noqa: E402
-
+from lab.operators import glm52_state as gs  # noqa: E402
+from lab.operators.glm52_common import atomic_json, seal  # noqa: E402
 
 REVISION = "b4734de4facf877f85769a911abafc5283eab3d9"
 CAMPAIGN = "glm52-bf16-xet-gravity-test"
@@ -29,7 +31,6 @@ CHAT_ID = -100424242
 CHAT_DIGEST = gs.telegram_chat_identity_digest(CHAT_ID)
 HMAC_KEY = b"offline-test-only-hmac-key-32-bytes-minimum!!"
 EVIDENCE_HMAC_KEY = b"offline-test-only-evidence-key-32-bytes-minimum!!"
-
 
 def _source_shard(
     path=SHARD,
@@ -43,7 +44,6 @@ def _source_shard(
         "xet_hash": xet_hash,
         "lfs_sha256": lfs_sha256,
     }
-
 
 def test_evidence_policies_bind_actual_validator_module_bytes() -> None:
     implementation_sha256 = hashlib.sha256(
@@ -60,7 +60,6 @@ def test_evidence_policies_bind_actual_validator_module_bytes() -> None:
         for key, value in gs.EVIDENCE_VALIDATOR_SOURCE_SHA256.items()
         if key != "terminal_semantic_proof_v1"
     } == {implementation_sha256}
-
 
 def test_trusted_artifact_store_rejects_root_replacement_and_symlink_ancestor(
     tmp_path,
@@ -84,7 +83,6 @@ def test_trusted_artifact_store_rejects_root_replacement_and_symlink_ancestor(
     with pytest.raises(gs.StateError, match="root component"):
         gs.TrustedArtifactStore(alias / "artifacts")
 
-
 def test_trusted_artifact_store_rejects_hardlinks_and_read_time_mutation(
     tmp_path,
 ) -> None:
@@ -106,7 +104,6 @@ def test_trusted_artifact_store_rejects_hardlinks_and_read_time_mutation(
     with pytest.raises(gs.StateError, match="changed while reading"):
         MutatingStore(root).read_bytes("proof.json")
 
-
 def test_trusted_artifact_store_rejects_name_to_inode_swap(tmp_path) -> None:
     root = tmp_path / "artifacts"
     root.mkdir()
@@ -123,11 +120,9 @@ def test_trusted_artifact_store_rejects_name_to_inode_swap(tmp_path) -> None:
     with pytest.raises(gs.StateError, match="name changed"):
         SwappingStore(root).read_bytes("proof.json")
 
-
 def _state_gates():
-    def policy(
-        path, schema, statuses=("PASS",), expected=None, validator="campaign_artifact_v1"
-    ):
+    skeleton = json.loads((pathlib.Path(__file__).parent / "fixtures" / "glm52_state_gates.json").read_text())
+    def policy(path, schema, statuses=("PASS",), expected=None, validator="campaign_artifact_v1"):
         return {
             "path": path,
             "expected_seal_sha256": expected,
@@ -135,63 +130,29 @@ def _state_gates():
             "allowed_statuses": list(statuses),
             "validator_id": validator,
             "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[validator],
-            "require_producer_hmac": validator in {
-                "campaign_artifact_v1", "stop_condition_v1"
-            },
+            "require_producer_hmac": validator in {"campaign_artifact_v1", "stop_condition_v1"},
         }
-
-    return {
-        "ASSEMBLE_ARTIFACT": {
-            "require_source_complete": True,
-            "require_tensor_complete": True,
-            "require_final_source_eviction": True,
-            "require_telegram_delivery": True,
-            "require_phone_status": False,
-            "required_phone_status_path": None,
-            "required_artifacts": {
-                "source_manifest": policy(
-                    "reports/GLM52_OFFICIAL_MANIFEST.json", "test.source_manifest.v1"
-                )
-            },
-            "required_checklist": {
-                item: policy(
-                    f"evidence/{item}.json",
-                    gs.STOP_CONDITION_EVIDENCE_SCHEMA,
-                    validator="stop_condition_v1",
-                )
-                for item in ("source_stream_complete", "tensor_coverage_complete")
-            },
-        },
-        "COMPLETE": {
-            "require_source_complete": True,
-            "require_tensor_complete": True,
-            "require_final_source_eviction": True,
-            "require_telegram_delivery": True,
-            "require_phone_status": True,
-            "required_phone_status_path": "reports/GLM52_PHONE_STATUS.json",
-            "required_artifacts": {
-                "final_result": policy(
-                    "reports/GLM52_GRAVITY_FINAL.json", "test.final_result.v1"
-                ),
-                "gravity_audit": policy(
-                    "reports/GRAVITY_COMPLETENESS_AUDIT_GLM52_FINAL.json",
-                    "test.gravity_audit.v1",
-                ),
-            },
-            "required_checklist": {
-                item: policy(
-                    f"evidence/{item}.json",
-                    gs.STOP_CONDITION_EVIDENCE_SCHEMA,
-                    validator="stop_condition_v1",
-                )
-                for item in (
-                    "source_evicted", "all_artifacts_sealed", "phone_current",
-                    "stop_conditions_met",
-                )
-            },
-        },
-    }
-
+    out = {}
+    for state, body in skeleton.items():
+        arts = {
+            name: policy(spec["path"], spec["expected_schema"], validator=spec["validator_id"])
+            for name, spec in body.get("required_artifacts", {}).items()
+        }
+        checks = {
+            item: policy(f"evidence/{item}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, validator="stop_condition_v1")
+            for item in body.get("required_checklist_items", [])
+        }
+        out[state] = {
+            "require_source_complete": body["require_source_complete"],
+            "require_tensor_complete": body["require_tensor_complete"],
+            "require_final_source_eviction": body["require_final_source_eviction"],
+            "require_telegram_delivery": body["require_telegram_delivery"],
+            "require_phone_status": body["require_phone_status"],
+            "required_phone_status_path": body["required_phone_status_path"],
+            "required_artifacts": arts,
+            "required_checklist": checks,
+        }
+    return out
 
 def _resource_policy(expected=HASH_A):
     return {
@@ -205,7 +166,6 @@ def _resource_policy(expected=HASH_A):
         ],
         "require_producer_hmac": False,
     }
-
 
 def _contract():
     shard = _source_shard()
@@ -233,13 +193,11 @@ def _contract():
         created_at="2026-07-21T00:00:00Z",
     )
 
-
 def _auth():
     return gs.TelegramAuthConfig(
         hmac_key=HMAC_KEY,
         expected_chat_identity_digest=CHAT_DIGEST,
     )
-
 
 def _evidence_auth():
     return gs.EvidenceAuthConfig(
@@ -248,6 +206,15 @@ def _evidence_auth():
         source_revision=REVISION,
     )
 
+
+def _snap_policy(tmp_path, policy, contract, label):
+    return gs._snapshot_policy_evidence(
+        gs.TrustedArtifactStore(tmp_path), policy, label=label,
+        contract=contract, evidence_auth=_evidence_auth(),
+    )
+
+def _unsealed(value):
+    return {k: copy.deepcopy(v) for k, v in value.items() if k not in {"seal_sha256", "producer_hmac_sha256"}}
 
 def _wrap_xet_raw_result(raw, contract):
     semantic = {
@@ -268,115 +235,79 @@ def _wrap_xet_raw_result(raw, contract):
     })
     return gs.seal_producer_authenticated_evidence(body, auth=_evidence_auth())
 
-
 def _xet_result_for_plan(plan, contract):
     import glm52_xet_live as live
-
     trial_ids = [row["trial_id"] for row in plan["trial_matrix"]]
     selected_trial = plan["trial_matrix"][0]
+    tid = selected_trial["trial_id"]
+    streams = selected_trial["caller_concurrent_shard_streams"]
 
     def selection(lane):
         return {
-            "lane": lane,
-            "status": "SELECTED",
-            "trial_id": selected_trial["trial_id"],
-            "selected_trial": {"trial_id": selected_trial["trial_id"]},
-            "selected_caller_concurrent_shard_streams": selected_trial[
-                "caller_concurrent_shard_streams"
-            ],
+            "lane": lane, "status": "SELECTED", "trial_id": tid,
+            "selected_trial": {"trial_id": tid},
+            "selected_caller_concurrent_shard_streams": streams,
             "post_autotune_schedule_refreeze_required": True,
         }
 
-    selections = {
-        "acquisition": selection("acquisition"),
-        "steady": selection("steady"),
+    selections = {"acquisition": selection("acquisition"), "steady": selection("steady")}
+    source_paths = {
+        "GLM52_OFFICIAL_MANIFEST.json", "GLM52_SOURCE_FORMAT_LEDGER.json",
+        "GLM52_SHARD_DEPENDENCY_GRAPH.json", "GLM52_SOURCE_ADMISSION.json",
     }
-    source_refs = [
-        dict(item) for item in plan["inputs"]
-        if item.get("path") in {
-            "GLM52_OFFICIAL_MANIFEST.json",
-            "GLM52_SOURCE_FORMAT_LEDGER.json",
-            "GLM52_SHARD_DEPENDENCY_GRAPH.json",
-            "GLM52_SOURCE_ADMISSION.json",
-        }
-    ]
+    source_refs = [dict(item) for item in plan["inputs"] if item.get("path") in source_paths]
     budget = plan["network_budget"]
+    settings = [8, 16, 24, 32, 48]
     raw = seal({
         "schema": live.AUTOTUNE_RESULT_SCHEMA,
         "status": "PASS_LIVE_XET_AUTOTUNE_COMPLETE_SCHEDULE_REFREEZE_REQUIRED",
-        "repo": live.REPO_ID,
-        "revision": live.REVISION,
+        "repo": live.REPO_ID, "revision": live.REVISION,
         "bindings": {
             "plan_seal_sha256": plan["seal_sha256"],
             "plan_toolchain_binding_sha256": gs._sha256(plan["toolchain_binding"]),
             "plan_input_refs_sha256": gs._sha256(plan["inputs"]),
             "source_refs": source_refs,
-            "live_executor_sha256": hashlib.sha256(
-                pathlib.Path(live.__file__).read_bytes()
-            ).hexdigest(),
-            "resource_reserve_policy": copy.deepcopy(
-                plan["resource_reserve_policy"]
-            ),
+            "live_executor_sha256": hashlib.sha256(pathlib.Path(live.__file__).read_bytes()).hexdigest(),
+            "resource_reserve_policy": copy.deepcopy(plan["resource_reserve_policy"]),
         },
         "coverage": {
             "trial_ids_in_plan_order": trial_ids,
-            "trial_results": [
-                {
-                    "trial_id": trial_id,
-                    "trial_result_seal_sha256": hashlib.sha256(
-                        f"trial:{trial_id}".encode()
-                    ).hexdigest(),
-                    "resource_verdict": {"status": "PASS", "measured": {}},
-                    "selection_candidate_sha256": hashlib.sha256(
-                        f"candidate:{trial_id}".encode()
-                    ).hexdigest(),
-                }
-                for trial_id in trial_ids
-            ],
-            "required_file_settings": [8, 16, 24, 32, 48],
-            "required_file_settings_measured": [8, 16, 24, 32, 48],
+            "trial_results": [{
+                "trial_id": trial_id,
+                "trial_result_seal_sha256": hashlib.sha256(f"trial:{trial_id}".encode()).hexdigest(),
+                "resource_verdict": {"status": "PASS", "measured": {}},
+                "selection_candidate_sha256": hashlib.sha256(f"candidate:{trial_id}".encode()).hexdigest(),
+            } for trial_id in trial_ids],
+            "required_file_settings": settings, "required_file_settings_measured": settings,
             "fixed_profiles_measured": ["FIXED_16", "FIXED_32", "FIXED_64"],
             "high_performance_measured": True,
             "cache_profiles_measured": ["CACHE_1G_COLD", "CACHE_1G_REPLAY"],
             "unique_sealed_ranges_hashed": len(plan["range_strategy"]["body_ranges"]),
             "repeated_range_sha256_consistent": True,
         },
-        "selections": selections,
-        "selected_profile": copy.deepcopy(selections),
-        "largest_shard_validations": [
-            {
-                "lane": lane,
-                "evidence_seal_sha256": hashlib.sha256(
-                    f"largest:{lane}".encode()
-                ).hexdigest(),
-                "selected_trial_id": selected_trial["trial_id"],
-                "observed_sha256": plan["largest_shard_validation"]["lfs_sha256"],
-            }
-            for lane in ("acquisition", "steady")
-        ],
+        "selections": selections, "selected_profile": copy.deepcopy(selections),
+        "largest_shard_validations": [{
+            "lane": lane,
+            "evidence_seal_sha256": hashlib.sha256(f"largest:{lane}".encode()).hexdigest(),
+            "selected_trial_id": tid,
+            "observed_sha256": plan["largest_shard_validation"]["lfs_sha256"],
+        } for lane in ("acquisition", "steady")],
         "network_budget": {
             "planned_range_payload_bytes": budget["bounded_range_payload_bytes"],
-            "planned_full_validation_payload_bytes": budget[
-                "largest_shard_validation_bytes"
-            ],
+            "planned_full_validation_payload_bytes": budget["largest_shard_validation_bytes"],
             "planned_total_payload_bytes": budget["planned_maximum_bytes"],
-            "actual_network_bytes": 1,
-            "hard_cap_bytes": budget["hard_cap_bytes"],
+            "actual_network_bytes": 1, "hard_cap_bytes": budget["hard_cap_bytes"],
             "remaining_bytes": budget["hard_cap_bytes"] - 1,
             "protocol_overhead_and_retries_included": True,
         },
         "claim_boundary": {
-            "xet_autotune_complete": True,
-            "all_12_trials_measured": True,
+            "xet_autotune_complete": True, "all_12_trials_measured": True,
             "two_largest_shard_full_hash_passes": True,
-            "model_body_files_created_by_executor": 0,
-            "full_model_downloaded": False,
-            "model_capability_claimed": False,
-            "streaming_schedule_refreeze_required": True,
+            "model_body_files_created_by_executor": 0, "full_model_downloaded": False,
+            "model_capability_claimed": False, "streaming_schedule_refreeze_required": True,
         },
     })
     return raw, _wrap_xet_raw_result(raw, contract)
-
 
 def _controller(tmp_path):
     (tmp_path / "artifacts").mkdir(parents=True, exist_ok=True)
@@ -390,7 +321,6 @@ def _controller(tmp_path):
         evidence_auth=_evidence_auth(),
         allow_synthetic_contract=True,
     )
-
 
 def _delivery(controller, state, claim, payload=None, message_id=None):
     intent = controller.prepare_transition(state, claim_id=claim, payload=payload)
@@ -414,14 +344,12 @@ def _delivery(controller, state, claim, payload=None, message_id=None):
         delivered_at="2026-07-21T00:00:01Z",
     )
 
-
 def _boot(controller):
     claim = "test:boot:0001"
     return controller.boot(
         claim_id=claim,
         telegram_delivery=_delivery(controller, "PRECHECK", claim),
     )
-
 
 def _transition(controller, state, number, payload=None):
     claim = f"test:transition:{number:04d}"
@@ -431,7 +359,6 @@ def _transition(controller, state, number, payload=None):
         payload=payload,
         telegram_delivery=_delivery(controller, state, claim, payload),
     )
-
 
 def _reach_freeze(controller):
     _boot(controller)
@@ -444,7 +371,6 @@ def _reach_freeze(controller):
         1,
     ):
         _transition(controller, state, number)
-
 
 def _window_args(claim="test:window:declare:0001", tensor=TENSOR, window="window-0001"):
     return {
@@ -464,7 +390,6 @@ def _window_args(claim="test:window:declare:0001", tensor=TENSOR, window="window
         "claim_id": claim,
     }
 
-
 def _advance(ledger, phase, number, *, patch=None, source=None, tensor=None):
     return ledger.advance(
         "window-0001",
@@ -475,89 +400,52 @@ def _advance(ledger, phase, number, *, patch=None, source=None, tensor=None):
         tensor_coverage=tensor,
     )
 
+_WINDOW_STEPS = (
+    # (phase, number, patch, source, tensor, pre_transition_or_None)
+    ("FETCHING", 1, {"download_start": "2026-07-21T12:00:00Z"}, {SHARD: "FETCHING"}, None, None),
+    ("FETCHED", 2, {
+        "download_end": "2026-07-21T12:01:00Z", "bytes_transferred": 5_000_000_100,
+        "transfer_accounting": {
+            "new_fetch_network_bytes": 5_000_000_000, "refetch_network_bytes": 0,
+            "protocol_overhead_bytes": 100,
+        },
+    }, {SHARD: "FETCHED"}, None, None),
+    ("VERIFIED", 3, {"hash_verification": {"status": "VERIFIED", "verified_shards": [SHARD]}},
+     {SHARD: "HASH_VERIFIED"}, {TENSOR: "SOURCE_VERIFIED"}, ("VERIFY_WINDOW", 101)),
+    ("TEACHER_CAPTURED", 4, {"teacher_evidence_produced": [{"path": "teacher/w1.json", "sha256": HASH_A}]},
+     None, {TENSOR: "TEACHER_EVIDENCED"}, ("CAPTURE_TEACHER", 102)),
+    ("CANDIDATES_FIT", 5, {"metrics": {"fit_loss": 0.01}}, None, None, ("FIT_CANDIDATES", 103)),
+    ("CANDIDATES_PACKED", 6, {"candidate_payloads_produced": [{"path": "candidate/w1.bin", "sha256": HASH_B}]},
+     None, {TENSOR: "CANDIDATE_PACKED"}, ("PACK_CANDIDATES", 104)),
+    ("FORWARD_COMPLETE", 7, {"metrics": {"fit_loss": 0.01, "forward_cosine": 0.999}},
+     None, {TENSOR: "FORWARD_VERIFIED"}, ("RUN_WINDOW_FORWARD", 105)),
+    ("SEALED", 8, {
+        "compact_shard_hashes": {"compact/core-0001.bin": HASH_B},
+        "terminal_coverage_evidence": {
+            TENSOR: {"disposition": "PACKED_IN_CORE_ARTIFACT", "evidence_sha256": HASH_A},
+        },
+    }, {SHARD: "CONSUMED"}, {TENSOR: "PACKED_IN_CORE_ARTIFACT"}, ("SEAL_WINDOW", 106)),
+    ("EVICTED", 9, {
+        "source_eviction": {"status": "EVICTED", "evicted_shards": [SHARD], "receipt_sha256": HASH_B},
+        "disk_after": {"free_bytes": 605_000_000_000, "allocated_bytes": 20_000_000},
+    }, {SHARD: "EVICTED"}, None, ("EVICT_WINDOW", 107)),
+)
 
 def _complete_window(ledger):
-    _advance(
-        ledger,
-        "FETCHING",
-        1,
-        patch={"download_start": "2026-07-21T12:00:00Z"},
-        source={SHARD: "FETCHING"},
-    )
-    _advance(
-        ledger,
-        "FETCHED",
-        2,
-        patch={
-            "download_end": "2026-07-21T12:01:00Z",
-            "bytes_transferred": 5_000_000_100,
-            "transfer_accounting": {
-                "new_fetch_network_bytes": 5_000_000_000,
-                "refetch_network_bytes": 0,
-                "protocol_overhead_bytes": 100,
-            },
-        },
-        source={SHARD: "FETCHED"},
-    )
-    _advance(
-        ledger,
-        "VERIFIED",
-        3,
-        patch={"hash_verification": {"status": "VERIFIED", "verified_shards": [SHARD]}},
-        source={SHARD: "HASH_VERIFIED"},
-        tensor={TENSOR: "SOURCE_VERIFIED"},
-    )
-    _advance(
-        ledger,
-        "TEACHER_CAPTURED",
-        4,
-        patch={"teacher_evidence_produced": [{"path": "teacher/w1.json", "sha256": HASH_A}]},
-        tensor={TENSOR: "TEACHER_EVIDENCED"},
-    )
-    _advance(ledger, "CANDIDATES_FIT", 5, patch={"metrics": {"fit_loss": 0.01}})
-    _advance(
-        ledger,
-        "CANDIDATES_PACKED",
-        6,
-        patch={"candidate_payloads_produced": [{"path": "candidate/w1.bin", "sha256": HASH_B}]},
-        tensor={TENSOR: "CANDIDATE_PACKED"},
-    )
-    _advance(
-        ledger,
-        "FORWARD_COMPLETE",
-        7,
-        patch={"metrics": {"fit_loss": 0.01, "forward_cosine": 0.999}},
-        tensor={TENSOR: "FORWARD_VERIFIED"},
-    )
-    _advance(
-        ledger,
-        "SEALED",
-        8,
-        patch={
-            "compact_shard_hashes": {"compact/core-0001.bin": HASH_B},
-            "terminal_coverage_evidence": {
-                TENSOR: {
-                    "disposition": "PACKED_IN_CORE_ARTIFACT",
-                    "evidence_sha256": HASH_A,
-                }
-            },
-        },
-        source={SHARD: "CONSUMED"},
-        tensor={TENSOR: "PACKED_IN_CORE_ARTIFACT"},
-    )
-    return _advance(
-        ledger,
-        "EVICTED",
-        9,
-        patch={
-            "source_eviction": {
-                "status": "EVICTED", "evicted_shards": [SHARD], "receipt_sha256": HASH_B,
-            },
-            "disk_after": {"free_bytes": 605_000_000_000, "allocated_bytes": 20_000_000},
-        },
-        source={SHARD: "EVICTED"},
-    )
+    result = None
+    for phase, number, patch, source, tensor, _pre in _WINDOW_STEPS:
+        result = _advance(ledger, phase, number, patch=patch, source=source, tensor=tensor)
+    return result
 
+def _run_single_controller_window(controller):
+    _transition(controller, "FETCH_WINDOW", 100, {"window_id": "window-0001"})
+    for phase, number, patch, source, tensor, pre in _WINDOW_STEPS:
+        if pre is not None:
+            name, claim = pre
+            _transition(controller, name, claim, {"window_id": "window-0001"})
+        _advance_controller_window(
+            controller, phase, number, patch=patch, source=source, tensor=tensor
+        )
 
 def _terminal_evidence(controller, state):
     gate = controller.expected_contract["state_gates"][state]
@@ -565,13 +453,10 @@ def _terminal_evidence(controller, state):
     for name, spec in gate["required_artifacts"].items():
         semantic = {"artifact": name, "test": True}
         body = {
-            "schema": spec["expected_schema"],
-            "status": spec["allowed_statuses"][0],
-            "campaign_id": controller.campaign_id,
-            "source_revision": controller.source_revision,
+            "schema": spec["expected_schema"], "status": spec["allowed_statuses"][0],
+            "campaign_id": controller.campaign_id, "source_revision": controller.source_revision,
             "expected_contract_sha256": controller.expected_contract_sha256,
-            "evidence": semantic,
-            "evidence_sha256": gs._sha256(semantic),
+            "evidence": semantic, "evidence_sha256": gs._sha256(semantic),
         }
         value = (
             gs.seal_producer_authenticated_evidence(body, auth=controller.evidence_auth)
@@ -581,64 +466,43 @@ def _terminal_evidence(controller, state):
     for item, spec in gate["required_checklist"].items():
         semantic = {"test": True}
         body = {
-            "schema": spec["expected_schema"],
-            "status": "PASS",
-            "campaign_id": controller.campaign_id,
-            "source_revision": controller.source_revision,
+            "schema": spec["expected_schema"], "status": "PASS",
+            "campaign_id": controller.campaign_id, "source_revision": controller.source_revision,
             "expected_contract_sha256": controller.expected_contract_sha256,
-            "stop_condition": item,
-            "evidence": semantic,
-            "evidence_sha256": gs._sha256(semantic),
+            "stop_condition": item, "evidence": semantic, "evidence_sha256": gs._sha256(semantic),
         }
-        value = gs.seal_producer_authenticated_evidence(
-            body, auth=controller.evidence_auth
+        atomic_json(
+            root / spec["path"],
+            gs.seal_producer_authenticated_evidence(body, auth=controller.evidence_auth),
         )
-        atomic_json(root / spec["path"], value)
     checkpoint = controller.resume()
     anchor = controller._controller_anchor(checkpoint)
     if gate["require_phone_status"]:
         phone_body = {
-            "schema": "hawking.glm52.phone_status.v2",
-            "status": "GREEN",
-            "overall_status": "GREEN",
-            "campaign_id": controller.campaign_id,
-            "source_revision": controller.source_revision,
+            "schema": "hawking.glm52.phone_status.v2", "status": "GREEN", "overall_status": "GREEN",
+            "campaign_id": controller.campaign_id, "source_revision": controller.source_revision,
             "controller_epoch": controller.controller_epoch,
             "expected_contract_sha256": controller.expected_contract_sha256,
             "cli_config_sha256": HASH_A,
             "controller": {
-                "durable_state_ok": True,
-                "live_worker_lease_ok": True,
-                "heartbeat_fresh_ok": True,
+                "durable_state_ok": True, "live_worker_lease_ok": True, "heartbeat_fresh_ok": True,
                 "heartbeat_max_age_seconds": gs.CONTROLLER_HEARTBEAT_MAX_AGE_SECONDS,
                 "heartbeat_at": checkpoint["heartbeat"]["at"],
             },
             "operator_control": {
-                "application_state": "IN_SYNC",
-                "requested_sequence": 7,
-                "requested_action": "RESUME",
-                "applied": {
-                    "applied_request_sequence": 7,
-                    "applied_action": "RESUME",
-                },
+                "application_state": "IN_SYNC", "requested_sequence": 7, "requested_action": "RESUME",
+                "applied": {"applied_request_sequence": 7, "applied_action": "RESUME"},
             },
             "checkpoint_anchor": anchor["checkpoint"],
         }
         atomic_json(
             root / gate["required_phone_status_path"],
-            gs.seal_producer_authenticated_evidence(
-                phone_body, auth=controller.evidence_auth
-            ),
+            gs.seal_producer_authenticated_evidence(phone_body, auth=controller.evidence_auth),
         )
     return gs.make_state_terminal_evidence(
-        controller.expected_contract,
-        state,
-        artifact_root=root,
-        controller_anchor=anchor,
-        evidence_auth=controller.evidence_auth,
-        created_at="2026-07-21T12:10:00Z",
+        controller.expected_contract, state, artifact_root=root, controller_anchor=anchor,
+        evidence_auth=controller.evidence_auth, created_at="2026-07-21T12:10:00Z",
     )
-
 
 def _advance_controller_window(controller, phase, number, *, patch=None, source=None, tensor=None):
     return controller.advance_window(
@@ -649,100 +513,6 @@ def _advance_controller_window(controller, phase, number, *, patch=None, source=
         source_coverage=source,
         tensor_coverage=tensor,
     )
-
-
-def _run_single_controller_window(controller):
-    _transition(controller, "FETCH_WINDOW", 100, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "FETCHING",
-        1,
-        patch={"download_start": "2026-07-21T12:00:00Z"},
-        source={SHARD: "FETCHING"},
-    )
-    _advance_controller_window(
-        controller,
-        "FETCHED",
-        2,
-        patch={
-            "download_end": "2026-07-21T12:01:00Z",
-            "bytes_transferred": 5_000_000_100,
-            "transfer_accounting": {
-                "new_fetch_network_bytes": 5_000_000_000,
-                "refetch_network_bytes": 0,
-                "protocol_overhead_bytes": 100,
-            },
-        },
-        source={SHARD: "FETCHED"},
-    )
-    _transition(controller, "VERIFY_WINDOW", 101, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "VERIFIED",
-        3,
-        patch={"hash_verification": {"status": "VERIFIED", "verified_shards": [SHARD]}},
-        source={SHARD: "HASH_VERIFIED"},
-        tensor={TENSOR: "SOURCE_VERIFIED"},
-    )
-    _transition(controller, "CAPTURE_TEACHER", 102, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "TEACHER_CAPTURED",
-        4,
-        patch={"teacher_evidence_produced": [{"path": "teacher/w1.json", "sha256": HASH_A}]},
-        tensor={TENSOR: "TEACHER_EVIDENCED"},
-    )
-    _transition(controller, "FIT_CANDIDATES", 103, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller, "CANDIDATES_FIT", 5, patch={"metrics": {"fit_loss": 0.01}}
-    )
-    _transition(controller, "PACK_CANDIDATES", 104, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "CANDIDATES_PACKED",
-        6,
-        patch={"candidate_payloads_produced": [{"path": "candidate/w1.bin", "sha256": HASH_B}]},
-        tensor={TENSOR: "CANDIDATE_PACKED"},
-    )
-    _transition(controller, "RUN_WINDOW_FORWARD", 105, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "FORWARD_COMPLETE",
-        7,
-        patch={"metrics": {"fit_loss": 0.01, "forward_cosine": 0.999}},
-        tensor={TENSOR: "FORWARD_VERIFIED"},
-    )
-    _transition(controller, "SEAL_WINDOW", 106, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "SEALED",
-        8,
-        patch={
-            "compact_shard_hashes": {"compact/core-0001.bin": HASH_B},
-            "terminal_coverage_evidence": {
-                TENSOR: {
-                    "disposition": "PACKED_IN_CORE_ARTIFACT",
-                    "evidence_sha256": HASH_A,
-                }
-            },
-        },
-        source={SHARD: "CONSUMED"},
-        tensor={TENSOR: "PACKED_IN_CORE_ARTIFACT"},
-    )
-    _transition(controller, "EVICT_WINDOW", 107, {"window_id": "window-0001"})
-    _advance_controller_window(
-        controller,
-        "EVICTED",
-        9,
-        patch={
-            "source_eviction": {
-                "status": "EVICTED", "evicted_shards": [SHARD], "receipt_sha256": HASH_B,
-            },
-            "disk_after": {"free_bytes": 605_000_000_000, "allocated_bytes": 20_000_000},
-        },
-        source={SHARD: "EVICTED"},
-    )
-
 
 def test_exact_part_vi_state_list_and_selfcheck():
     assert gs.STATES == (
@@ -756,7 +526,6 @@ def test_exact_part_vi_state_list_and_selfcheck():
         "FINAL_GRAVITY_AUDIT", "COMPLETE", "BLOCKED",
     )
     assert gs.selfcheck()["status"] == "PASS"
-
 
 def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrication(
     tmp_path,
@@ -805,20 +574,10 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
     atomic_json(tmp_path / plan_policy["path"], plan)
     raw, wrapped = _xet_result_for_plan(plan, contract)
     atomic_json(tmp_path / policy["path"], wrapped)
-    snapshot = gs._snapshot_policy_evidence(
-        gs.TrustedArtifactStore(tmp_path),
-        policy,
-        label="Xet result",
-        contract=contract,
-        evidence_auth=_evidence_auth(),
-    )
+    snapshot = _snap_policy(tmp_path, policy, contract, "Xet result")
     assert snapshot["seal_sha256"] == wrapped["seal_sha256"]
 
-    unanchored_body = {
-        key: copy.deepcopy(item)
-        for key, item in wrapped.items()
-        if key not in {"seal_sha256", "producer_hmac_sha256"}
-    }
+    unanchored_body = _unsealed(wrapped)
     unanchored_body["evidence"].pop("controller_anchor_sha256")
     unanchored_body["evidence_sha256"] = gs._sha256(
         unanchored_body["evidence"]
@@ -830,13 +589,7 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
         ),
     )
     with pytest.raises(gs.StateError, match="producing controller anchor"):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="Xet result",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
+        _snap_policy(tmp_path, policy, contract, "Xet result")
 
     fabricated_body = copy.deepcopy(raw)
     fabricated_body.pop("seal_sha256")
@@ -847,14 +600,7 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
         _wrap_xet_raw_result(fabricated_raw, contract),
     )
     with pytest.raises(gs.StateError, match="raw live-Xet result validation failed.*coverage"):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="Xet result",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
-
+        _snap_policy(tmp_path, policy, contract, "Xet result")
 
 def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer_hmac(
     tmp_path,
@@ -923,20 +669,10 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
         "require_producer_hmac": True,
     }
     atomic_json(tmp_path / policy["path"], schedule)
-    snapshot = gs._snapshot_policy_evidence(
-        gs.TrustedArtifactStore(tmp_path),
-        policy,
-        label="frozen schedule",
-        contract=contract,
-        evidence_auth=_evidence_auth(),
-    )
+    snapshot = _snap_policy(tmp_path, policy, contract, "frozen schedule")
     assert snapshot["seal_sha256"] == schedule["seal_sha256"]
 
-    wrong_resource_body = {
-        key: copy.deepcopy(item)
-        for key, item in schedule.items()
-        if key not in {"seal_sha256", "producer_hmac_sha256"}
-    }
+    wrong_resource_body = _unsealed(schedule)
     wrong_resource_body["resource_policy_binding"]["required_free_disk_bytes"] -= 1
     atomic_json(
         tmp_path / policy["path"],
@@ -945,19 +681,9 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
         ),
     )
     with pytest.raises(gs.StateError, match="resource policy binding mismatch"):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="frozen schedule",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
+        _snap_policy(tmp_path, policy, contract, "frozen schedule")
 
-    wrong_identity_body = {
-        key: copy.deepcopy(item)
-        for key, item in schedule.items()
-        if key not in {"seal_sha256", "producer_hmac_sha256"}
-    }
+    wrong_identity_body = _unsealed(schedule)
     wrong_identity_body["campaign_id"] = "different-campaign"
     atomic_json(
         tmp_path / policy["path"],
@@ -966,27 +692,14 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
         ),
     )
     with pytest.raises(gs.StateError, match="campaign_id identity mismatch"):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="frozen schedule",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
+        _snap_policy(tmp_path, policy, contract, "frozen schedule")
 
     tampered = copy.deepcopy(schedule)
     tampered.pop("seal_sha256")
     tampered["producer_hmac_sha256"] = "d" * 64
     atomic_json(tmp_path / policy["path"], seal(tampered))
     with pytest.raises(gs.StateError, match="producer HMAC authentication failed"):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="frozen schedule",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
-
+        _snap_policy(tmp_path, policy, contract, "frozen schedule")
 
 @pytest.mark.parametrize(
     ("validator_id", "message"),
@@ -1026,14 +739,7 @@ def test_unimplemented_official_evidence_cannot_be_satisfied_by_signed_pass(
         "require_producer_hmac": True,
     }
     with pytest.raises(gs.StateError, match=message):
-        gs._snapshot_policy_evidence(
-            gs.TrustedArtifactStore(tmp_path),
-            policy,
-            label="unimplemented evidence",
-            contract=contract,
-            evidence_auth=_evidence_auth(),
-        )
-
+        _snap_policy(tmp_path, policy, contract, "unimplemented evidence")
 
 def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
     tmp_path,
@@ -1221,7 +927,6 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
             created_at="2026-07-21T00:00:00Z",
         )
 
-
 def test_controller_requires_explicit_opt_in_for_synthetic_contract(tmp_path):
     with pytest.raises(gs.StateError, match="test-only opt-in"):
         gs.Controller(
@@ -1233,7 +938,6 @@ def test_controller_requires_explicit_opt_in_for_synthetic_contract(tmp_path):
             telegram_auth=_auth(),
             evidence_auth=_evidence_auth(),
         )
-
 
 def test_scientific_evidence_auth_is_independent_from_telegram(tmp_path):
     with pytest.raises(gs.StateError, match="requires EvidenceAuthConfig"):
@@ -1257,7 +961,6 @@ def test_scientific_evidence_auth_is_independent_from_telegram(tmp_path):
             evidence_auth=reused_key,
             allow_synthetic_contract=True,
         )
-
 
 def test_transition_is_claimed_idempotent_heartbeat_and_telegram_bound(tmp_path):
     with _controller(tmp_path) as controller:
@@ -1284,7 +987,6 @@ def test_transition_is_claimed_idempotent_heartbeat_and_telegram_bound(tmp_path)
                 telegram_delivery=_delivery(controller, "RELEASE_KIMI_SOURCE", claim),
             )
 
-
 def test_illegal_transition_and_missing_or_wrong_delivery_fail_closed(tmp_path):
     with _controller(tmp_path) as controller:
         _boot(controller)
@@ -1310,7 +1012,6 @@ def test_illegal_transition_and_missing_or_wrong_delivery_fail_closed(tmp_path):
                 "CLOSE_KIMI", claim_id="test:transition:wrongkey:0001", telegram_delivery=wrong
             )
         assert controller.resume()["state"] == "PRECHECK"
-
 
 def test_telegram_receipt_is_hmac_authenticated_response_and_chat_bound(tmp_path):
     with _controller(tmp_path) as controller:
@@ -1352,7 +1053,6 @@ def test_telegram_receipt_is_hmac_authenticated_response_and_chat_bound(tmp_path
         assert HMAC_KEY not in persisted
         assert HMAC_KEY.hex().encode("ascii") not in persisted
 
-
 def test_authenticated_operator_confirmation_cannot_advance_state(tmp_path):
     with _controller(tmp_path) as controller:
         _boot(controller)
@@ -1393,7 +1093,6 @@ def test_authenticated_operator_confirmation_cannot_advance_state(tmp_path):
             controller.commit_transition(intent, telegram_delivery=proof)
         assert controller.resume()["state"] == "PRECHECK"
 
-
 def test_status_requires_fresh_strict_utc_heartbeat_for_live_worker(
     tmp_path, monkeypatch
 ):
@@ -1427,7 +1126,6 @@ def test_status_requires_fresh_strict_utc_heartbeat_for_live_worker(
         assert "RFC3339 UTC timestamp" in invalid["heartbeat_freshness_reason"]
         assert invalid["live_worker_lease_ok"] is False
 
-
 def test_status_never_reports_stale_checkpoint_green(tmp_path, monkeypatch):
     with _controller(tmp_path) as controller:
         _boot(controller)
@@ -1453,7 +1151,6 @@ def test_status_never_reports_stale_checkpoint_green(tmp_path, monkeypatch):
         controller.resume()
         assert controller.status()["durable_state_ok"] is True
 
-
 def test_blocked_can_only_resume_exact_prior_state_with_resolution(tmp_path):
     with _controller(tmp_path) as controller:
         _boot(controller)
@@ -1474,7 +1171,6 @@ def test_blocked_can_only_resume_exact_prior_state_with_resolution(tmp_path):
         assert resumed["state"] == "PRECHECK"
         assert resumed["blocked_from"] is None
 
-
 def test_singleton_lease_refuses_second_controller(tmp_path):
     first = _controller(tmp_path)
     second = _controller(tmp_path)
@@ -1486,7 +1182,6 @@ def test_singleton_lease_refuses_second_controller(tmp_path):
         first.close()
     second.acquire()
     second.close()
-
 
 def test_singleton_lease_rejects_static_symlink_and_hardlink_without_touching_victim(
     tmp_path,
@@ -1515,7 +1210,6 @@ def test_singleton_lease_rejects_static_symlink_and_hardlink_without_touching_vi
             controller_epoch="hardlink-test",
         ).acquire()
     assert victim.read_bytes() == victim_bytes
-
 
 def test_singleton_lease_revalidates_name_after_lock_before_any_write(tmp_path):
     victim = tmp_path / "victim"
@@ -1547,7 +1241,6 @@ def test_singleton_lease_revalidates_name_after_lock_before_any_write(tmp_path):
     assert victim.read_bytes() == victim_bytes
     assert (tmp_path / "controller-original.lease").read_bytes() == original_lease_bytes
 
-
 def test_singleton_lease_revalidates_parent_identity_before_any_write(tmp_path):
     parent = tmp_path / "lease-parent"
     parent.mkdir()
@@ -1575,7 +1268,6 @@ def test_singleton_lease_revalidates_parent_identity_before_any_write(tmp_path):
     assert (moved_parent / "controller.lease").read_bytes() == original_lease_bytes
     assert (parent / "controller.lease").read_bytes() == replacement_bytes
 
-
 def test_singleton_lease_rejects_file_not_owned_by_effective_user(
     tmp_path, monkeypatch
 ):
@@ -1591,7 +1283,6 @@ def test_singleton_lease_rejects_file_not_owned_by_effective_user(
             controller_epoch="foreign-owner-test",
         ).acquire()
     assert lease_path.read_bytes() == original
-
 
 def test_resume_rejects_checkpoint_tamper_and_log_truncation(tmp_path):
     controller = _controller(tmp_path)
@@ -1613,7 +1304,6 @@ def test_resume_rejects_checkpoint_tamper_and_log_truncation(tmp_path):
         controller.events.path.write_text(lines[0] + "\n", encoding="utf-8")
         with pytest.raises(gs.StateError, match="ahead of a log"):
             controller.resume()
-
 
 def test_single_valid_crash_tail_is_recovered_but_fork_anchor_is_rejected(tmp_path, monkeypatch):
     controller = _controller(tmp_path)
@@ -1646,7 +1336,6 @@ def test_single_valid_crash_tail_is_recovered_but_fork_anchor_is_rejected(tmp_pa
     finally:
         controller.close()
 
-
 def test_boot_transition_is_idempotent_after_checkpoint_power_loss(tmp_path, monkeypatch):
     controller = _controller(tmp_path)
     controller.acquire()
@@ -1667,7 +1356,6 @@ def test_boot_transition_is_idempotent_after_checkpoint_power_loss(tmp_path, mon
         assert recovered["event_count"] == 1
     finally:
         controller.close()
-
 
 def test_resume_rejects_multiple_valid_orphan_events_as_ambiguous(tmp_path):
     with _controller(tmp_path) as controller:
@@ -1707,7 +1395,6 @@ def test_resume_rejects_multiple_valid_orphan_events_as_ambiguous(tmp_path):
         with pytest.raises(gs.StateError, match="ambiguous uncheckpointed tails"):
             controller.resume()
 
-
 def test_hash_chain_detects_in_place_edit_and_torn_tail(tmp_path):
     with _controller(tmp_path) as controller:
         _boot(controller)
@@ -1724,7 +1411,6 @@ def test_hash_chain_detects_in_place_edit_and_torn_tail(tmp_path):
         controller.events.path.write_bytes(raw[:-1])
         ok, reasons = controller.events.verify_chain()
         assert not ok and any("torn" in reason for reason in reasons)
-
 
 def test_window_ledger_full_monotonic_lifecycle_and_exact_terminal_coverage(tmp_path):
     lease = gs.SingletonLease(
@@ -1757,7 +1443,6 @@ def test_window_ledger_full_monotonic_lifecycle_and_exact_terminal_coverage(tmp_
         assert ledger.resume_plan()["campaign_windows_complete"] is True
         assert ledger.log.verify_chain() == (True, [])
 
-
 def test_window_ledger_rejects_backward_skipped_and_off_schedule_declaration(tmp_path):
     with gs.SingletonLease(
         tmp_path / "lease", campaign_id=CAMPAIGN, controller_epoch="test-window-ledger"
@@ -1788,7 +1473,6 @@ def test_window_ledger_rejects_backward_skipped_and_off_schedule_declaration(tmp
         with pytest.raises(gs.StateError, match="authoritative schedule"):
             ledger.declare_window(**second)
 
-
 def test_window_retry_is_exactly_incremented_and_idempotent(tmp_path):
     with gs.SingletonLease(
         tmp_path / "lease", campaign_id=CAMPAIGN, controller_epoch="test-window-ledger"
@@ -1808,7 +1492,6 @@ def test_window_retry_is_exactly_incremented_and_idempotent(tmp_path):
         assert first["retry_count"] == 1
         with pytest.raises(gs.StateError, match="different window operation"):
             ledger.record_retry("window-0001", claim_id=claim, metrics={"fault": "other"})
-
 
 def test_sequential_carry_refetch_and_eventual_eviction_accounting(tmp_path):
     shard_b = "model-00002-of-00282.safetensors"
@@ -2004,7 +1687,6 @@ def test_sequential_carry_refetch_and_eventual_eviction_accounting(tmp_path):
         assert complete["all_eventually_evicted"] is True
         assert ledger.assert_complete_tensor_coverage()["terminal_tensor_count"] == 2
 
-
 def test_window_ledger_requires_lease_and_controller_binds_ledger_checkpoint(tmp_path):
     standalone = gs.WindowLedger(
         tmp_path / "bare.jsonl",
@@ -2043,7 +1725,6 @@ def test_window_ledger_requires_lease_and_controller_binds_ledger_checkpoint(tmp
         assert checkpoint["state"] == "FETCH_WINDOW"
         assert checkpoint["window_event_count"] == 2
 
-
 def test_authoritative_terminal_gates_block_incomplete_and_require_closure_evidence(tmp_path):
     with _controller(tmp_path) as controller:
         _reach_freeze(controller)
@@ -2076,7 +1757,6 @@ def test_authoritative_terminal_gates_block_incomplete_and_require_closure_evide
         assert final["telegram"]["status"] == "DELIVERED"
         assert final["campaign_completeness"]["source"]["expected_logical_bytes"] == 5_000_000_000
         assert controller.status()["durable_state_ok"] is True
-
 
 def test_controller_rejects_claim_reuse_across_logs(tmp_path):
     with _controller(tmp_path) as controller:

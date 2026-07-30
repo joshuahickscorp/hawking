@@ -187,7 +187,6 @@ pub fn category_for_kind(kind: &str) -> Option<Category> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn every_category_has_unique_kind() {
         let mut seen = std::collections::BTreeSet::new();

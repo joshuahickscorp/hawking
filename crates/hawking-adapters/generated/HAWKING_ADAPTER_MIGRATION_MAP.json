@@ -57,7 +57,7 @@
       "canonical_for": [
         "execution_gravity"
       ],
-      "migration": "Remains execution path. GLM/llama gravity ABI + grade live under families/glm.rs and families/llama.rs.",
+      "migration": "Remains execution path. GLM/llama gravity ABI + grade live under families.rs rows glm / llama.",
       "not_canonical_for": [
         "support_level",
         "full_abi_metadata"

@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.recomposition.programme_verdict.v1",
+  "programme": "1 — laboratory as one experiment IR (Track V campaign slice, built)",
+  "claim_tested": "A Track V scout measured the minimal campaign spec -> experiment -> receipt -> resume path at 2,800 LOC against 95,766 currently spent on it.",
+  "verdict": "CLAIM_REFUTED_BUT_PATH_CONFIRMED",
+  "measured": {
+    "path_engine_loc": 2540,
+    "scout_claimed": 2800,
+    "full_capability_loc": 35682,
+    "composition": {"science_floor": 27594, "glm52_state": 5548, "path_engine": 2540},
+    "loc_before": 430458, "loc_after": 430697, "delta": 239,
+    "files_before": 113, "files_after": 153,
+    "modules": 13, "facade": 0,
+    "suite": {"failed": 6, "passed": 1236, "errors": 55},
+    "logical_cases": {"before": 3925, "after": 3935, "diff_ok": true}
+  },
+  "what_the_scout_got_right": "The path itself is 2,540 lines, within 10% of its 2,800 estimate. A campaign spec can drive experiment, receipt and resume through one small engine. That part of Track V is real.",
+  "what_the_scout_missed": "The path is not the capability. Full capability costs 35,682 -- the path plus 27,594 lines of science floor plus a 5,548-line residual controller. The scout measured the corridor and not the rooms.",
+  "convergence": {
+    "this_lane_measured": 27594,
+    "track_S_scout_estimated": 27500,
+    "significance": "Two lanes, one building and one designing, independently land within 100 lines on the size of the live pack, parity and gravity science. That is not repeated architecture; it is the science itself, and it is now measured twice."
+  },
+  "module_classification": {
+    "operator": 19, "eval_rule": 9, "numerical_authority": 8,
+    "dataset_adapter": 4, "fixture": 2, "UNCLASSIFIED": 1
+  },
+  "the_unclassifiable_module": {
+    "module": "glm52_state", "loc": 5548,
+    "what_it_is": "a residual production controller fusing TOCTOU-hardened lease handling with campaign state",
+    "why_it_matters": "Forty-two of forty-three laboratory modules fit the six categories the arc defines -- operator, spec, dataset adapter, evaluation rule, fixture, numerical authority. One does not. It is the second precise behaviour contract this arc has produced."
+  },
+  "merged": false,
+  "why_not_merged": "The lane ends mid-migration: it built the engine without completing the deletion, so LOC rose by 239 and files by 40. That is a partial state, not a result. Its measurements stand; its diff does not. The suite improved -- 6 failures against a 12 baseline, 55 errors against 58, and logical cases rose from 3,925 to 3,935 -- so the work is sound, just unfinished."
+}

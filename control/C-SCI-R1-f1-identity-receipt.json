@@ -1,0 +1,88 @@
+{
+  "assertion_ledger_entries_hold": 4623,
+  "identities": [
+    {
+      "disposition": "released",
+      "reason": "doctor_v5 research",
+      "replacement": null,
+      "subject": "tools/condense/doctor_v5_gptoss_mxfp4.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "gptoss real forward research",
+      "replacement": null,
+      "subject": "tools/condense/gptoss_real_forward.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "gptoss moe runtime research",
+      "replacement": null,
+      "subject": "tools/condense/gptoss_moe_runtime.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "gptoss block research",
+      "replacement": null,
+      "subject": "tools/condense/gptoss_block.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "eco_common helpers absorbed+released path",
+      "replacement": null,
+      "subject": "tools/condense/eco_common.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "seal_f1 research",
+      "replacement": null,
+      "subject": "tools/foundry/seal_f1_qwen3_235b.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "post_parent_review research",
+      "replacement": null,
+      "subject": "tools/foundry/post_parent_review.py"
+    },
+    {
+      "disposition": "released",
+      "reason": "lab_harness release",
+      "replacement": null,
+      "subject": "tree:tools/foundry/lab_harness/**"
+    },
+    {
+      "disposition": "replaced",
+      "reason": "pack",
+      "replacement": "lab.operators.glm52_pack",
+      "subject": "tools/condense/glm52_pack.py"
+    },
+    {
+      "disposition": "replaced",
+      "reason": "forge",
+      "replacement": "lab.operators.gravity_forge",
+      "subject": "tools/condense/gravity_forge.py"
+    },
+    {
+      "disposition": "replaced",
+      "reason": "flop",
+      "replacement": "lab.operators.gravity_flop_ledger",
+      "subject": "tools/condense/gravity_flop_ledger.py"
+    },
+    {
+      "disposition": "replaced",
+      "reason": "source_fetch",
+      "replacement": "tools/condense/glm52_source_fetch.py + lab.operators.glm52_source_fetch",
+      "subject": "tools/condense/glm52_source_fetch.py"
+    },
+    {
+      "disposition": "replaced",
+      "reason": "potency",
+      "replacement": "lab.operators.gravity_potency",
+      "subject": "tools/foundry/gravity_potency.py"
+    }
+  ],
+  "note": "No ASSERTION_LEDGER or TCM bytes modified. Deleted production modules mapped to release or lab.operators replacement subjects.",
+  "parent": "cbfff8f33ec397510810ec2840e437e043d8f445",
+  "rung": "C-SCI-R1",
+  "schema": "hawking.csci.f1_identity_receipt.v1",
+  "tcm_entries_hold": 1395
+}

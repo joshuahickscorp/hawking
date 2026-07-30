@@ -104,7 +104,6 @@ impl ConnectionRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn uninitialized_connection_is_the_safe_baseline() {
         let reg = ConnectionRegistry::default();
@@ -112,7 +111,6 @@ mod tests {
         assert!(!reg.is_notification_suppressed("conn-unknown", "runtime/status"));
         assert!(reg.capabilities("conn-unknown").is_none());
     }
-
     #[test]
     fn opt_out_suppresses_only_the_named_methods() {
         let reg = ConnectionRegistry::default();
@@ -125,12 +123,8 @@ mod tests {
         );
         assert!(reg.experimental_api("conn-1"));
         assert!(reg.is_notification_suppressed("conn-1", "runtime/status"));
-        assert!(
-            !reg.is_notification_suppressed("conn-1", "tool/progress"),
-            "a method NOT opted out is still delivered"
-        );
+        assert!(!reg.is_notification_suppressed("conn-1", "tool/progress"));
     }
-
     #[test]
     fn forget_drops_the_connection() {
         let reg = ConnectionRegistry::default();
@@ -139,7 +133,6 @@ mod tests {
         reg.forget("conn-2");
         assert!(reg.capabilities("conn-2").is_none());
     }
-
     #[test]
     fn capabilities_default_off() {
         let caps = ClientCapabilities::default();

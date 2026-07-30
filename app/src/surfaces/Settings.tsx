@@ -17,9 +17,9 @@ import { Icon } from "../shell/icons";
 import { ModelChooser } from "../shell/ModelChooser";
 import { useFocusTrap } from "../shell/a11y";
 import { checkForUpdate } from "../shell/updater";
-import { useActions } from "./contextstack/state";
-import { ENVIRONMENT_NOTE, environmentPlan, workspaceRows } from "./home/actions";
-import { keyLabel } from "./chat/actions";
+import { useActions } from './contextstack_state';
+import { ENVIRONMENT_NOTE, environmentPlan, workspaceRows } from './home_actions';
+import { keyLabel } from './chat_actions';
 
 export function Settings({ onClose }: { onClose: () => void }) {
   const manifest = useStore((s) => s.manifest);

@@ -1,4 +1,4 @@
-//! One trait/ABI for architecture-family adapters.
+//! Architecture-family ABI types and descriptors.
 //!
 //! Every registered family MUST declare every ABI field. Unknown or
 //! inapplicable fields use [`AbiField::null`] / [`AbiListField::null`] with a
@@ -288,10 +288,10 @@ pub const ABI_FIELD_NAMES: &[&str] = &[
 ];
 
 // ---------------------------------------------------------------------------
-// Family descriptor + trait
+// Family descriptor
 // ---------------------------------------------------------------------------
 
-/// Static descriptor exported by each family module.
+/// Static descriptor for one architecture family (row in the family table).
 #[derive(Debug, Clone, Copy)]
 pub struct FamilyDescriptor {
     pub id: &'static str,
@@ -309,20 +309,6 @@ pub struct FamilyDescriptor {
     pub gaps: &'static [&'static str],
     /// Full ABI surface.
     pub abi: FamilyAbi,
-}
-
-/// The one family-adapter ABI. Implementations are thin static descriptors;
-/// this trait exists so the registry can be extended without a giant match.
-pub trait FamilyAdapter: Send + Sync {
-    fn descriptor(&self) -> FamilyDescriptor;
-
-    fn family_id(&self) -> &'static str {
-        self.descriptor().id
-    }
-
-    fn support_level(&self) -> SupportLevel {
-        self.descriptor().level
-    }
 }
 
 /// Evidence kind required to claim a given support grade.

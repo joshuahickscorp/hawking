@@ -96,7 +96,6 @@ pub fn ui_event_to_canonical(event: &UiEvent, fallback_session: SessionId) -> Ca
 mod tests {
     use super::*;
     use hide_core::ids::with_deterministic_ids;
-
     #[test]
     fn token_batch_elevates_to_text() {
         with_deterministic_ids(20, || {
@@ -116,7 +115,6 @@ mod tests {
             assert_eq!(c.event.payload["text"], "hello");
         });
     }
-
     #[test]
     fn error_elevates_to_errors_category() {
         with_deterministic_ids(21, || {

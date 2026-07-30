@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline tests for the strict GLM-5.2 adapter and deterministic twin."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import os
@@ -14,12 +19,9 @@ import pytest
 HERE = Path(__file__).resolve().parent
 CONDENSE = HERE.parent
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_adapter as A  # noqa: E402
-import glm52_synthetic as S  # noqa: E402
-
+from lab.operators import glm52_adapter as A  # noqa: E402
+from lab.operators import glm52_synthetic as S  # noqa: E402
 
 def _official_config() -> dict:
     config = json.loads(json.dumps(dict(A.OFFICIAL_CONFIG_CONTRACT)))
@@ -27,15 +29,12 @@ def _official_config() -> dict:
     config["mlp_layer_types"] = ["dense"] * 3 + ["sparse"] * 75
     return config
 
-
 @pytest.fixture()
 def fixture(tmp_path: Path) -> S.SyntheticFixture:
     return S.build_synthetic_fixture(tmp_path / "glm52-fixture")
 
-
 def _write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, sort_keys=True, indent=2) + "\n")
-
 
 def _mutate_header(path: Path, tensor_name: str, mutation) -> None:
     raw = path.read_bytes()
@@ -47,7 +46,6 @@ def _mutate_header(path: Path, tensor_name: str, mutation) -> None:
         raise AssertionError("test mutation unexpectedly grew the safetensors header")
     encoded += b" " * (header_len - len(encoded))
     path.write_bytes(raw[:8] + encoded + raw[8 + header_len:])
-
 
 def test_official_schema_census_and_exact_shapes_without_source_download():
     geometry = A.validate_config(_official_config(), profile=A.PROFILE_OFFICIAL)
@@ -78,7 +76,6 @@ def test_official_schema_census_and_exact_shapes_without_source_download():
     assert correction.dtype == "F32" and correction.shape == (256,)
     assert specs["model.layers.78.eh_proj.weight"].shape == (6_144, 12_288)
 
-
 def test_official_and_synthetic_config_contracts_fail_closed():
     official = _official_config()
     official["num_experts_per_tok"] = 7
@@ -89,7 +86,6 @@ def test_official_and_synthetic_config_contracts_fail_closed():
     synthetic["indexer_types"][4] = "full"
     with pytest.raises(A.Glm52AdapterError, match="IndexShare pattern mismatch"):
         A.validate_config(synthetic, profile=A.PROFILE_SYNTHETIC)
-
 
 def test_synthetic_fixture_has_exact_architecture_and_hf_views(fixture: S.SyntheticFixture):
     full = fixture.full_inventory
@@ -113,7 +109,6 @@ def test_synthetic_fixture_has_exact_architecture_and_hf_views(fixture: S.Synthe
     assert (fixture.main_only_dir / "model.safetensors.index.json").is_file()
     assert fixture.metadata["views"]["main_only"]["is_exact_core_filter"] is True
 
-
 def test_fixture_is_byte_deterministic(tmp_path: Path):
     first = S.build_synthetic_fixture(tmp_path / "first")
     second = S.build_synthetic_fixture(tmp_path / "second")
@@ -121,7 +116,6 @@ def test_fixture_is_byte_deterministic(tmp_path: Path):
     assert first.metadata["views"]["full"]["index_sha256"] == second.metadata["views"]["full"]["index_sha256"]
     assert first.index == second.index
     assert first.config == second.config
-
 
 def test_indexshare_omissions_and_sources_are_exact(fixture: S.SyntheticFixture):
     names = set(fixture.full_inventory.tensors)
@@ -145,7 +139,6 @@ def test_indexshare_omissions_and_sources_are_exact(fixture: S.SyntheticFixture)
             "model.layers.4.self_attn.indexer.wk.weight",
         )
 
-
 def test_core_mtp_boundary_and_mtp_extras(fixture: S.SyntheticFixture):
     full = fixture.full_inventory
     assert all(row.spec.section == A.MTP for name, row in full.tensors.items() if name.startswith("model.layers.7."))
@@ -157,7 +150,6 @@ def test_core_mtp_boundary_and_mtp_extras(fixture: S.SyntheticFixture):
         A.tensor_spec(full.geometry, "model.layers.8.input_layernorm.weight")
     with pytest.raises(A.Glm52AdapterError, match="unknown or misplaced"):
         A.tensor_spec(full.geometry, "model.layers.6.eh_proj.weight")
-
 
 def test_bounded_reader_decodes_bf16_and_f32_and_counts_exact_bytes(fixture: S.SyntheticFixture):
     reader = fixture.full_reader(max_tensor_bytes=8_192)
@@ -176,7 +168,6 @@ def test_bounded_reader_decodes_bf16_and_f32_and_counts_exact_bytes(fixture: S.S
         fixture.full_inventory.tensors[f32_name].byte_count,
     )
 
-
 def test_bounded_reader_refuses_over_limit_and_unknown(fixture: S.SyntheticFixture):
     reader = fixture.full_reader(max_tensor_bytes=128)
     with pytest.raises(A.Glm52AdapterError, match="bounded read refused"):
@@ -184,7 +175,6 @@ def test_bounded_reader_refuses_over_limit_and_unknown(fixture: S.SyntheticFixtu
     with pytest.raises(A.Glm52AdapterError, match="absent"):
         reader.tensor("model.layers.3.mlp.experts.256.gate_proj.weight")
     assert reader.read_calls == 0 and reader.payload_bytes_read == 0
-
 
 def test_router_fixture_is_tie_free(fixture: S.SyntheticFixture):
     reader = fixture.full_reader(max_tensor_bytes=32_768)
@@ -194,7 +184,6 @@ def test_router_fixture_is_tie_free(fixture: S.SyntheticFixture):
     assert np.all(np.diff(scores) > 0)
     correction = reader.tensor("model.layers.3.mlp.gate.e_score_correction_bias")
     assert np.all(np.diff(correction) > 0)
-
 
 def test_gate_up_pack_is_gate_then_up_without_interleaving(fixture: S.SyntheticFixture):
     reader = fixture.full_reader(max_tensor_bytes=8_192)
@@ -210,7 +199,6 @@ def test_gate_up_pack_is_gate_then_up_without_interleaving(fixture: S.SyntheticF
     assert np.array_equal(split_gate, gate) and np.array_equal(split_up, up)
     assert A.GATE_UP_ORDER == ("gate_proj", "up_proj")
 
-
 def test_missing_and_unknown_index_names_are_rejected(fixture: S.SyntheticFixture):
     index_path = fixture.full_dir / "model.safetensors.index.json"
     index = json.loads(index_path.read_text())
@@ -225,7 +213,6 @@ def test_missing_and_unknown_index_names_are_rejected(fixture: S.SyntheticFixtur
     _write_json(index_path, index)
     with pytest.raises(A.Glm52AdapterError, match="checkpoint tensor census mismatch"):
         A.verify_checkpoint(fixture.full_dir, profile=A.PROFILE_SYNTHETIC)
-
 
 def test_duplicate_index_key_is_rejected_before_header_access(fixture: S.SyntheticFixture):
     index_path = fixture.full_dir / "model.safetensors.index.json"
@@ -247,7 +234,6 @@ def test_duplicate_index_key_is_rejected_before_header_access(fixture: S.Synthet
     with pytest.raises(A.Glm52AdapterError, match="duplicate JSON key"):
         A.verify_checkpoint(fixture.full_dir, profile=A.PROFILE_SYNTHETIC)
 
-
 def test_wrong_header_shape_and_dtype_are_rejected(fixture: S.SyntheticFixture):
     name = "model.layers.3.mlp.experts.0.gate_proj.weight"
     shard_name = fixture.index["weight_map"][name]
@@ -262,7 +248,6 @@ def test_wrong_header_shape_and_dtype_are_rejected(fixture: S.SyntheticFixture):
     _mutate_header(bf16_shard, bf16_name, lambda row: row.__setitem__("dtype", "F32"))
     with pytest.raises(A.Glm52AdapterError, match="shape/dtype extent mismatch"):
         A.verify_checkpoint(second.full_dir, profile=A.PROFILE_SYNTHETIC)
-
 
 def test_unindexed_shard_and_changed_shard_identity_are_rejected(fixture: S.SyntheticFixture):
     extra = fixture.full_dir / "unindexed.safetensors"
@@ -285,13 +270,11 @@ def test_unindexed_shard_and_changed_shard_identity_are_rejected(fixture: S.Synt
     with pytest.raises(A.Glm52AdapterError, match="identity changed"):
         reader.tensor(name)
 
-
 def test_main_only_view_cannot_read_mtp(fixture: S.SyntheticFixture):
     reader = fixture.main_only_reader(max_tensor_bytes=32_768)
     assert reader.tensor("model.layers.6.mlp.gate.weight").shape == (256, 32)
     with pytest.raises(A.Glm52AdapterError, match="absent"):
         reader.tensor("model.layers.7.mlp.gate.weight")
-
 
 def test_streaming_window_retains_complete_index_but_reads_only_resident_shards(
     fixture: S.SyntheticFixture,
@@ -337,7 +320,6 @@ def test_streaming_window_retains_complete_index_but_reads_only_resident_shards(
             profile=A.PROFILE_SYNTHETIC,
         )
 
-
 def test_streaming_window_rejects_partial_global_index_and_bad_carry_algebra(
     fixture: S.SyntheticFixture,
     tmp_path: Path,
@@ -379,7 +361,6 @@ def test_streaming_window_rejects_partial_global_index_and_bad_carry_algebra(
             window,
             profile=A.PROFILE_SYNTHETIC,
         )
-
 
 def test_official_tokenizer_and_chat_template_assemble_offline() -> None:
     manifest = json.loads(

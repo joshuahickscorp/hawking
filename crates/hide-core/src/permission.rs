@@ -198,7 +198,6 @@ fn pattern_matches(pattern: &str, target: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn deny_beats_allow() {
         let engine = StaticPermissionEngine::new(PermissionPolicy {

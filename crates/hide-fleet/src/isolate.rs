@@ -406,7 +406,6 @@ fn sanitize(id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn port_allocator_leases_disjoint_ranges() {
         let mut alloc = PortAllocator::new(4000, 4005);
@@ -414,38 +413,28 @@ mod tests {
         let b = alloc.lease("run_b", 2).unwrap();
         assert_eq!(a.ports.len(), 2);
         assert_eq!(b.ports.len(), 2);
-        // Disjoint.
         for p in &a.ports {
             assert!(!b.ports.contains(p));
         }
-        // Exhaustion is honest (only 2 left, ask for 3).
         assert!(alloc.lease("run_c", 3).is_none());
         alloc.release(&a);
-        // Released ports are reusable.
         assert!(alloc.lease("run_c", 2).is_some());
     }
-
     #[test]
     fn allocator_tracks_leased_count_and_runs_as_truth() {
         let mut alloc = PortAllocator::new(4000, 4010);
         assert_eq!(alloc.leased_count(), 0);
         assert_eq!(alloc.leased_runs(), 0);
-
         let a = alloc.lease("run_a", 2).unwrap();
         let b = alloc.lease("run_b", 3).unwrap();
         assert_eq!(alloc.leased_count(), 5, "2 + 3 ports leased");
         assert_eq!(alloc.leased_runs(), 2, "two distinct runs hold leases");
-
-        // Releasing one run returns exactly its ports + forgets the run.
         alloc.release(&a);
         assert_eq!(alloc.leased_count(), 3);
         assert_eq!(alloc.leased_runs(), 1);
-
         alloc.release(&b);
         assert_eq!(alloc.leased_count(), 0, "pool fully returned to baseline");
         assert_eq!(alloc.leased_runs(), 0);
-
-        // Releasing an empty/synthetic lease is a no-op (idempotent, can't leak).
         alloc.release(&PortLease {
             run_id: "run_a".to_string(),
             ports: Vec::new(),
@@ -453,7 +442,6 @@ mod tests {
         assert_eq!(alloc.leased_count(), 0);
         assert_eq!(alloc.leased_runs(), 0);
     }
-
     #[test]
     fn env_seed_namespaces_db_and_ports() {
         let lease = PortLease {
@@ -462,27 +450,20 @@ mod tests {
         };
         let env = env_seed("run_x", Path::new("/tmp/wt/run_x"), &lease);
         assert_eq!(env.get("PORT").map(String::as_str), Some("5100"));
-        assert_eq!(
-            env.get("HIDE_DB_NAME").map(String::as_str),
-            Some("hide_run_run_x")
-        );
+ assert_eq!( env.get("HIDE_DB_NAME").map(String::as_str), Some("hide_run_run_x") );
         assert!(env.get("DATABASE_URL").unwrap().contains(":5100/"));
         assert!(env.get("TMPDIR").unwrap().contains("run_x"));
     }
-
     #[tokio::test]
     async fn isolate_run_issues_worktree_add_and_leases_ports() {
         let dir = std::env::temp_dir().join(format!("hide_fleet_iso_{}", ulid::Ulid::new()));
         std::fs::create_dir_all(&dir).unwrap();
         let (mgr, log) = WorktreeManager::new(&dir, PortAllocator::new(4100, 4110)).with_fake_git();
-
         let ws = mgr.isolate_run("run_42", "main", 2).await.unwrap();
         assert_eq!(ws.ports.ports.len(), 2);
         assert_eq!(ws.worktree.branch, "hide/run_42");
         assert!(ws.worktree.path.ends_with(".hide/wt/run_42"));
         assert_eq!(ws.worktree.sandbox.tier, SandboxTier::WorkspaceWrite);
-
-        // The exact `git worktree add` invocation was issued.
         {
             let calls = log.lock();
             assert!(calls.iter().any(|c| {
@@ -492,8 +473,6 @@ mod tests {
                     && c.contains(&"hide/run_42".to_string())
             }));
         }
-
-        // Release a discarded run → force-remove + prune issued, ports returned.
         mgr.release_run(&ws, RunOutcome { discarded: true })
             .await
             .unwrap();

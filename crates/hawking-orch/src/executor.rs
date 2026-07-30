@@ -182,7 +182,6 @@ mod tests {
         ModelArchitecture, ModelDescriptor, ModelRole, ProviderCaps, SamplerProfile,
     };
     use std::collections::BTreeMap;
-
     fn role(name: &str, id: RoleId, purpose: RolePurpose, endpoint: &str) -> ModelRole {
         ModelRole {
             id,
@@ -207,7 +206,6 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     fn decision(role_id: RoleId) -> RouteDecision {
         RouteDecision {
             role_id,
@@ -222,7 +220,6 @@ mod tests {
             },
         }
     }
-
     fn request() -> InferenceRequest {
         InferenceRequest {
             task_kind: "code".into(),
@@ -235,7 +232,6 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     #[tokio::test]
     async fn executor_routes_role_to_client_and_collects() {
         let hero_id = RoleId::new();
@@ -253,7 +249,6 @@ mod tests {
             .unwrap();
         assert_eq!(text, "generated");
     }
-
     #[tokio::test]
     async fn executor_embeds_via_embedder_role() {
         let embed_id = RoleId::new();
@@ -272,7 +267,6 @@ mod tests {
             .unwrap();
         assert_eq!(v.len(), 8);
     }
-
     #[tokio::test]
     async fn unknown_role_is_an_error() {
         let registry = Arc::new(RoleRegistry::default());

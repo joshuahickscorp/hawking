@@ -258,153 +258,102 @@ fn collect_error_spans(node: Node, out: &mut Vec<(usize, usize)>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn extracts_rust_definitions_and_references() {
         let src = r#"
 pub struct Engine {
     name: String,
 }
-
 pub fn run_engine() {
     helper();
 }
-
 fn helper() {}
 "#;
         let out = parse_source("src/engine.rs", src);
         assert_eq!(out.lang, Some(LangId::Rust));
         assert!(!out.unparseable);
-
-        // definitions present: Engine (struct), run_engine + helper (fn)
         let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(def_names.contains(&"Engine"), "got {def_names:?}");
         assert!(def_names.contains(&"run_engine"));
         assert!(def_names.contains(&"helper"));
-
-        // a reference to `helper` must exist (so references() is non-empty)
         let refs: Vec<_> = out
             .occurrences
             .iter()
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
-        assert!(
-            refs.contains(&"helper"),
-            "expected ref to helper, got {refs:?}"
-        );
+ assert!( refs.contains(&"helper"), "expected ref to helper, got {refs:?}" );
     }
-
     #[test]
     fn scip_ids_are_stable_and_kind_scoped() {
         let id_fn = scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function);
         let id_struct = scip_symbol_id(LangId::Rust, "a.rs", "Foo", SymKind::Struct);
         assert!(id_fn.ends_with("foo()."));
         assert!(id_struct.ends_with("Foo#"));
-        // stable across calls
-        assert_eq!(
-            id_fn,
-            scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function)
-        );
+ assert_eq!( id_fn, scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function) );
     }
-
     #[test]
     fn typescript_extracts_defs_and_refs() {
-        // Ordinary TS source: a function, a class with a method, and call sites.
-        // The bundled grammar tags.scm would yield ZERO here (signature-only).
         let src = r#"
 function greet(name: string): string {
     return format(name);
 }
-
 class Greeter {
     render(): void {
         greet("world");
     }
 }
-
 const formatted = format("x");
 "#;
         let out = parse_source("ui.ts", src);
         assert_eq!(out.lang, Some(LangId::TypeScript));
         assert!(!out.unparseable);
-
         let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(def_names.contains(&"greet"), "got defs {def_names:?}");
         assert!(def_names.contains(&"Greeter"), "got defs {def_names:?}");
         assert!(def_names.contains(&"render"), "got defs {def_names:?}");
-        assert!(
-            !out.symbols.is_empty(),
-            "TS source must yield non-empty definitions"
-        );
-
+ assert!( !out.symbols.is_empty(), "TS source must yield non-empty definitions" );
         let refs: Vec<_> = out
             .occurrences
             .iter()
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
-        assert!(
-            !refs.is_empty(),
-            "TS source must yield non-empty references, got {refs:?}"
-        );
-        assert!(
-            refs.contains(&"greet"),
-            "expected call ref to greet: {refs:?}"
-        );
-        assert!(
-            refs.contains(&"format"),
-            "expected call ref to format: {refs:?}"
-        );
+ assert!( !refs.is_empty(), "TS source must yield non-empty references, got {refs:?}" );
+ assert!( refs.contains(&"greet"), "expected call ref to greet: {refs:?}" );
+ assert!( refs.contains(&"format"), "expected call ref to format: {refs:?}" );
     }
-
     #[test]
     fn javascript_extracts_defs_and_refs() {
-        // Plain JS (no types) routed through the TS superset grammar: a function,
-        // a class + method, an arrow-fn const, and call sites.
         let src = r#"
 function add(a, b) {
     return compute(a, b);
 }
-
 class Calculator {
     run() {
         add(1, 2);
     }
 }
-
 const square = (n) => add(n, n);
 "#;
         let out = parse_source("calc.js", src);
         assert_eq!(out.lang, Some(LangId::TypeScript));
         assert!(!out.unparseable);
-
         let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(def_names.contains(&"add"), "got defs {def_names:?}");
         assert!(def_names.contains(&"Calculator"), "got defs {def_names:?}");
         assert!(def_names.contains(&"run"), "got defs {def_names:?}");
-        assert!(
-            def_names.contains(&"square"),
-            "arrow-fn const def: {def_names:?}"
-        );
-
+ assert!( def_names.contains(&"square"), "arrow-fn const def: {def_names:?}" );
         let refs: Vec<_> = out
             .occurrences
             .iter()
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
-        assert!(
-            !refs.is_empty(),
-            "JS source must yield non-empty references, got {refs:?}"
-        );
-        assert!(
-            refs.contains(&"compute"),
-            "expected call ref to compute: {refs:?}"
-        );
+ assert!( !refs.is_empty(), "JS source must yield non-empty references, got {refs:?}" );
+ assert!( refs.contains(&"compute"), "expected call ref to compute: {refs:?}" );
         assert!(refs.contains(&"add"), "expected call ref to add: {refs:?}");
     }
-
     #[test]
     fn python_extracts_class_and_function() {
         let src = "class Widget:\n    def render(self):\n        draw()\n\ndef draw():\n    pass\n";
@@ -413,19 +362,13 @@ const square = (n) => add(n, n);
         assert!(names.contains(&"Widget"));
         assert!(names.contains(&"draw"));
     }
-
     #[test]
     fn records_error_spans_for_broken_code() {
         let src = "pub fn good() {}\npub fn broken( {\n";
         let out = parse_source("x.rs", src);
-        // good() still extracted despite the broken neighbor
         assert!(out.symbols.iter().any(|s| s.name == "good"));
-        assert!(
-            !out.error_spans.is_empty(),
-            "expected an ERROR/MISSING span"
-        );
+ assert!( !out.error_spans.is_empty(), "expected an ERROR/MISSING span" );
     }
-
     #[test]
     fn unknown_language_is_unparseable() {
         let out = parse_source("data.bin", "\u{0}\u{1}garbage");

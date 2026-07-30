@@ -1,0 +1,57 @@
+{
+  "schema": "hawking.campaign_ledger_rollup.v1",
+  "from": "rebuild-250k-start",
+  "to": "HEAD",
+  "loc_from": 431120,
+  "loc_to": 435467,
+  "measured_delta": 4347,
+  "slice_ledgers": [
+    {
+      "slice": "S0",
+      "file": "control/S0-ledger.json",
+      "eliminated": 0,
+      "rewritten": 0,
+      "generated": 0,
+      "relocated": 0,
+      "facade": 0,
+      "added_apparatus": 13647,
+      "target_reached": null,
+      "stop_reason": null
+    },
+    {
+      "slice": "S3",
+      "file": "control/S3-ledger.json",
+      "eliminated": 10063,
+      "rewritten": 0,
+      "generated": 0,
+      "relocated": 0,
+      "facade": 0,
+      "added_apparatus": 0,
+      "target_reached": false,
+      "stop_reason": "Measured gap to 52,500 is 20,867 LOC after honest elimination of unprotected mass and host surface restructure. Remaining mass is behaviour-bearing (see S3-report irreducible list). Full clean-room re-expression of the surviving ~73k was not completed in this rung; continuing would require multi-commit rewrite of kernel tooling, classed memory densification, objects, automation, and crate merge with out-of-scope dep rewires."
+    },
+    {
+      "slice": "S3b",
+      "file": "control/S3b-ledger.json",
+      "eliminated": 0,
+      "rewritten": -1620,
+      "generated": 0,
+      "relocated": 0,
+      "facade": 0,
+      "added_apparatus": 0,
+      "target_reached": true,
+      "stop_reason": null
+    }
+  ],
+  "totals": {
+    "eliminated": 10063,
+    "rewritten": -1620,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "added_apparatus": 13647
+  },
+  "claimed_delta": 5204,
+  "residual": -857,
+  "reading": "residual = measured - claimed. Positive residual is lines the campaign added that no slice ledger accounts for -- typically its own instruments and records. Negative residual is reduction no slice claimed. Either way it must be named, not absorbed."
+}

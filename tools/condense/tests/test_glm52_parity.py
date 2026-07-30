@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Acceptance tests for the sealed GLM-5.2 twin/reference parity run."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -8,15 +13,11 @@ import sys
 
 import pytest
 
-
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_parity as parity  # noqa: E402
-from glm52_common import canonical, verify_sealed  # noqa: E402
-
+from lab.operators import glm52_parity as parity  # noqa: E402
+from lab.operators.glm52_common import canonical, verify_sealed  # noqa: E402
 
 @pytest.fixture(scope="module")
 def fresh_run() -> tuple[dict, dict]:
@@ -24,7 +25,6 @@ def fresh_run() -> tuple[dict, dict]:
     verify_sealed(adapter, label="fresh adapter twin")
     verify_sealed(reference, label="fresh reference parity")
     return adapter, reference
-
 
 def test_fresh_acceptance_run_is_green_without_parent_overclaim(
     fresh_run: tuple[dict, dict],
@@ -60,7 +60,6 @@ def test_fresh_acceptance_run_is_green_without_parent_overclaim(
     assert long_probe["full_attention_or_model_executed"] is False
     assert long_probe["one_million_context_capability_claimed"] is False
 
-
 def test_indexer_records_strict_tie_and_raw_score_evidence(
     fresh_run: tuple[dict, dict],
 ) -> None:
@@ -79,7 +78,6 @@ def test_indexer_records_strict_tie_and_raw_score_evidence(
         assert max(row["official_candidate_scores"]) == min(
             row["official_candidate_scores"]
         )
-
 
 def test_cache_mtp_and_generated_artifact_seals(fresh_run: tuple[dict, dict]) -> None:
     adapter, reference = fresh_run

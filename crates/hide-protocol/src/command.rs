@@ -332,43 +332,225 @@ pub const HOST_CAPABILITIES: &[&str] = &[
     "environment_switch",
 ];
 
-/// A spec with lazy defaults; each command overrides only the fields that differ
-/// via struct-update syntax. Defaults: palette-visible, auto-approved, no
-/// selection, no effects, nothing to undo.
-fn base(
-    id: &str,
-    title: &str,
-    description: &str,
+/// How a catalog row reaches the backend. Live rows use only Intent and Custom;
+/// Rpc and LocalOnly remain on [`BackendBinding`] for the schema but are unused.
+#[derive(Clone, Copy)]
+enum Bind {
+    Intent(&'static str),
+    Custom(&'static str),
+}
+
+/// Common identity and routing fields for one command. Non-default security,
+/// effect, undo, selection, capability, shortcut, and policy fields live in the
+/// override match inside `command_catalog`, not here.
+struct Row {
+    id: &'static str,
+    title: &'static str,
+    description: &'static str,
     category: Category,
-    primary_surface: Surface,
-    available_surfaces: Vec<Surface>,
-    backend_binding: BackendBinding,
-) -> CommandSpec {
-    CommandSpec {
-        id: id.to_string(),
-        title: title.to_string(),
-        description: description.to_string(),
-        category,
-        primary_surface,
-        available_surfaces,
-        required_selection: RequiredSelection::None,
-        required_capabilities: Vec::new(),
-        effects: Vec::new(),
-        approval_policy: ApprovalPolicy::Auto,
-        keyboard_shortcut: None,
-        command_palette: true,
-        context_menu: false,
-        toolbar_binding: None,
-        backend_binding,
-        undo_strategy: UndoStrategy::None,
-        receipt_kind: None,
-        telemetry: None,
-    }
+    primary: Surface,
+    surfaces: &'static [Surface],
+    bind: Bind,
+}
+
+/// Build one common-field row. Argument order is fixed:
+/// id, title, description, category, primary, surfaces, bind.
+macro_rules! row {
+    ($id:expr, $title:expr, $desc:expr, $cat:expr, $pri:expr, $surf:expr, $bind:expr) => {
+        Row {
+            id: $id,
+            title: $title,
+            description: $desc,
+            category: $cat,
+            primary: $pri,
+            surfaces: $surf,
+            bind: $bind,
+        }
+    };
 }
 
 fn caps(names: &[&str]) -> Vec<String> {
     names.iter().map(|s| s.to_string()).collect()
 }
+
+/// Common identity/routing table in declaration order (stable golden order).
+const ROWS: &[Row] = {
+    use Category as C;
+    use Surface as S;
+    &[
+    row!("submit_turn", "Send message",
+        "Submit the composer text as a new turn.",
+        C::Turn, S::Chat, &[S::Chat, S::Home, S::Palette], Bind::Intent("submit_turn")),
+    row!("cancel_run", "Cancel run",
+        "Cancel the running turn.",
+        C::Turn, S::Chat, &[S::Chat, S::StatusBar, S::Palette], Bind::Intent("cancel_run")),
+    row!("pause_run", "Pause run",
+        "Pause the running turn.",
+        C::Turn, S::Chat, &[S::Chat, S::Palette], Bind::Intent("pause_run")),
+    row!("resume_run", "Resume run",
+        "Resume a paused turn.",
+        C::Turn, S::Chat, &[S::Chat, S::Palette], Bind::Intent("resume_run")),
+    row!("accept_diff", "Accept diff",
+        "Apply a proposed diff hunk to the working tree.",
+        C::Diff, S::DiffReview, &[S::DiffReview, S::Editor, S::Ide], Bind::Intent("accept_diff")),
+    row!("reject_diff", "Reject diff",
+        "Reject a proposed hunk, restoring that file on disk.",
+        C::Diff, S::DiffReview, &[S::DiffReview, S::Editor, S::Ide], Bind::Intent("reject_diff")),
+    row!("fork_session", "Fork from here",
+        "Fork a new session from the selected timeline event.",
+        C::Timeline, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Intent("fork_session")),
+    row!("open_file", "Open file",
+        "Open a file in the editor.",
+        C::File, S::Ide, &[S::Ide, S::Editor, S::Palette], Bind::Intent("open_file")),
+    row!("run_command", "Run command",
+        "Run a shell command in the terminal.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Intent("run_command")),
+    row!("run_static_analysis", "Run static analysis",
+        "Run Tier-1 deterministic static analysis and show real problem counts.",
+        C::Verify, S::StatusBar, &[S::StatusBar, S::ContextStack, S::Palette], Bind::Custom("run_static_analysis")),
+    row!("create_side_chat", "New side chat",
+        "Open a side chat thread that can later merge back.",
+        C::SideChat, S::Chat, &[S::Chat, S::Palette], Bind::Custom("create_side_chat")),
+    row!("merge_side_chat", "Merge side chat",
+        "Merge a side chat's summary back into the main thread.",
+        C::SideChat, S::Chat, &[S::Chat, S::Palette], Bind::Custom("merge_side_chat")),
+    row!("checkpoint_create", "Create checkpoint",
+        "Seal an integrity-verified restore point on the timeline.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_create")),
+    row!("checkpoint_restore", "Restore checkpoint",
+        "Restore the session to a sealed checkpoint.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_restore")),
+    row!("memory_add", "Add memory note",
+        "Store a durable outcome-governed note the agent keeps.",
+        C::Memory, S::ContextStack, &[S::ContextStack, S::Editor, S::Palette], Bind::Custom("memory_add")),
+    row!("memory_supersede", "Supersede memory",
+        "Replace a stale memory while keeping its history.",
+        C::Memory, S::ContextStack, &[S::ContextStack, S::Palette], Bind::Custom("memory_supersede")),
+    row!("memory_record_outcome", "Record memory outcome",
+        "Report that a remembered fact was right or wrong so it self-quarantines.",
+        C::Memory, S::ContextStack, &[S::ContextStack, S::Palette], Bind::Custom("memory_record_outcome")),
+    row!("memory_revalidate", "Revalidate memory",
+        "Re-check a memory's citations against the repo on disk.",
+        C::Memory, S::ContextStack, &[S::ContextStack, S::Palette], Bind::Custom("memory_revalidate")),
+    row!("goal_set", "Set goal",
+        "Set a durable goal and acceptance criteria for the session.",
+        C::Goal, S::Home, &[S::Home, S::Chat, S::Palette], Bind::Custom("goal_set")),
+    row!("goal_clear", "Clear goal",
+        "Clear the session's goal.",
+        C::Goal, S::Home, &[S::Home, S::Palette], Bind::Custom("goal_clear")),
+    row!("goal_evaluate", "Evaluate goal",
+        "Run the deterministic acceptance check for the goal.",
+        C::Goal, S::Home, &[S::Home, S::Chat, S::Palette], Bind::Custom("goal_evaluate")),
+    row!("steer", "Steer turn",
+        "Redirect the running turn mid-flight via the interrupt hub.",
+        C::Steer, S::Chat, &[S::Chat, S::Palette], Bind::Custom("redirect_run")),
+    row!("workspace_set_repo_trust", "Set repo trust",
+        "Trust a repo so its instructions and policy can activate.",
+        C::Workspace, S::Home, &[S::Home, S::Settings, S::Palette], Bind::Custom("workspace_set_repo_trust")),
+    row!("environment_switch", "Switch environment",
+        "Switch the session's dev, prod, or sandbox environment.",
+        C::Environment, S::Home, &[S::Home, S::StatusBar, S::Settings, S::Palette], Bind::Custom("environment_switch")),
+    row!("run_search", "Search transcript",
+        "Search the session transcript by literal or structured query, over the intent channel.",
+        C::Search, S::Palette, &[S::Palette, S::Chat, S::Ide], Bind::Custom("run_search")),
+    row!("checkpoint_rewind", "Rewind to checkpoint",
+        "Rewind code, conversation, or both to a checkpoint on a fresh child session.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_rewind")),
+    row!("checkpoint_replay", "Replay from checkpoint",
+        "Re-apply the recorded history from a checkpoint forward onto a new lineage.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_replay")),
+    row!("checkpoint_fork", "Fork from checkpoint",
+        "Branch an ephemeral session seeded only with a checkpoint's inherited prefix.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_fork")),
+    row!("checkpoint_compare", "Compare checkpoint",
+        "Show the file-level code differences against a checkpoint or another session.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_compare")),
+    row!("checkpoint_inspect", "Inspect checkpoint",
+        "Verify a checkpoint's integrity and coverage.",
+        C::Checkpoint, S::StateTimeline, &[S::StateTimeline, S::Palette], Bind::Custom("checkpoint_inspect")),
+    row!("approve_plan", "Approve plan",
+        "Approve a plan step, or the whole plan when no step is selected.",
+        C::Plan, S::ContextStack, &[S::ContextStack, S::Chat, S::Palette], Bind::Custom("approve_plan")),
+    row!("edit_plan_step", "Edit plan step",
+        "Edit the text of a plan step.",
+        C::Plan, S::ContextStack, &[S::ContextStack, S::Chat, S::Palette], Bind::Custom("edit_plan_step")),
+    row!("reorder_plan", "Reorder plan",
+        "Reorder the plan's steps to a new permutation.",
+        C::Plan, S::ContextStack, &[S::ContextStack, S::Chat, S::Palette], Bind::Custom("reorder_plan")),
+    row!("skip_step", "Skip step",
+        "Skip a plan step with a recorded reason.",
+        C::Plan, S::ContextStack, &[S::ContextStack, S::Chat, S::Palette], Bind::Custom("skip_step")),
+    row!("repair_step", "Repair step",
+        "Re-open a failed plan step so it can be retried.",
+        C::Plan, S::ContextStack, &[S::ContextStack, S::Chat, S::Palette], Bind::Custom("repair_step")),
+    row!("promote_run", "Run in background",
+        "Promote a live interactive run to a durable background job without restarting it.",
+        C::Background, S::StatusBar, &[S::StatusBar, S::Home, S::Palette], Bind::Custom("promote_run")),
+    row!("resume_run_foreground", "Resume in foreground",
+        "Reattach a reconnecting client to a promoted run and resume it in the foreground.",
+        C::Background, S::StatusBar, &[S::StatusBar, S::Home, S::Palette], Bind::Custom("resume_run_foreground")),
+    row!("pty_input", "Terminal input",
+        "Write input bytes to the live terminal process's stdin.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Custom("pty_input")),
+    row!("pty_resize", "Terminal resize",
+        "Record the live terminal process's column and row geometry.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Custom("pty_resize")),
+    row!("attach_process", "Attach to process",
+        "Re-attach to a running process and replay its buffered output into the terminal.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Custom("attach_process")),
+    row!("stop_process", "Stop process",
+        "Stop a running process: terminate its group, then kill it after a short grace.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Custom("stop_process")),
+    row!("capture_process_artifact", "Capture process output",
+        "Preserve a process's captured output as a durable artifact in the blob store.",
+        C::Terminal, S::Terminal, &[S::Terminal, S::Palette], Bind::Custom("capture_process_artifact")),
+    row!("export_review_receipt", "Export review receipt",
+        "Seal a diff's hunks and their verification receipts into a durable review receipt.",
+        C::Diff, S::DiffReview, &[S::DiffReview, S::Ide, S::Palette], Bind::Custom("export_review_receipt")),
+    row!("new_session", "New session",
+        "Start a fresh session thread from the launcher or the New-chat menu.",
+        C::SideChat, S::Home, &[S::Home, S::Chat, S::Palette], Bind::Custom("new_session")),
+    row!("revert_diff", "Revert diff",
+        "Revert a whole diff on disk once its hunks are already decided.",
+        C::Diff, S::DiffReview, &[S::DiffReview, S::Ide, S::Palette], Bind::Custom("revert_diff")),
+    row!("save_file", "Save file",
+        "Write the open editor buffer to disk through the permission-gated applier.",
+        C::File, S::Editor, &[S::Editor, S::Ide], Bind::Custom("save_file")),
+    row!("create_worktree", "Create worktree",
+        "Request an isolated git worktree on a fresh branch (the host holds it at a gate).",
+        C::Workspace, S::Home, &[S::Home, S::Palette], Bind::Custom("create_worktree")),
+    row!("open_session", "Open session",
+        "Reopen a recorded session and republish its transcript.",
+        C::SideChat, S::Home, &[S::Home, S::Palette], Bind::Custom("open_session")),
+    row!("approve_gate", "Approve held command",
+        "Release a command the security gate is holding so it runs.",
+        C::Terminal, S::Chat, &[S::Chat, S::Terminal, S::Palette], Bind::Custom("approve_gate")),
+    row!("deny_gate", "Deny held command",
+        "Drop a command the security gate is holding so it never runs.",
+        C::Terminal, S::Chat, &[S::Chat, S::Terminal, S::Palette], Bind::Custom("deny_gate")),
+    row!("approve_effect", "Approve effectful step",
+        "Let a paused effectful step in the running turn proceed.",
+        C::Plan, S::Chat, &[S::Chat, S::StateTimeline, S::Palette], Bind::Custom("approve_effect")),
+    row!("deny_effect", "Deny effectful step",
+        "Skip a paused effectful step in the running turn.",
+        C::Plan, S::Chat, &[S::Chat, S::StateTimeline, S::Palette], Bind::Custom("deny_effect")),
+    row!("grant_write_lease", "Grant write lease",
+        "Let this task edit files inside a declared, trusted scope without asking per file.",
+        C::Workspace, S::StatusBar, &[S::StatusBar, S::Home, S::Palette], Bind::Custom("grant_write_lease")),
+    row!("revoke_write_lease", "Revoke write lease",
+        "End the active write lease so workspace writes ask for approval again.",
+        C::Workspace, S::StatusBar, &[S::StatusBar, S::Palette], Bind::Custom("revoke_write_lease")),
+    row!("switch_surface", "Switch surface",
+        "Change the active lens (YOU, CHAT, or IDE) on the shared session. Does not mint a new session or move capability.",
+        C::Surface, S::You, &[S::You, S::Chat, S::Ide, S::Home, S::Palette], Bind::Custom("switch_surface")),
+    row!("handoff_create", "Create handoff",
+        "Seal a typed claim-only capsule from the active surface to another. Never transports authority.",
+        C::Handoff, S::You, &[S::You, S::Chat, S::Ide, S::Palette], Bind::Custom("handoff_create")),
+    row!("handoff_receive", "Receive handoff",
+        "Open a sealed capsule into its target lens on the same session. Receiver capability is unchanged.",
+        C::Handoff, S::Chat, &[S::You, S::Chat, S::Ide, S::Palette], Bind::Custom("handoff_receive")),
+    ]
+};
 
 /// The canonical command table: the ONE registry every surface resolves from.
 ///
@@ -377,846 +559,235 @@ fn caps(names: &[&str]) -> Vec<String> {
 /// checkpoints, memory, goals, steer, workspace trust) plus environment switch,
 /// transcript search, and the already-working core intents.
 pub fn command_catalog() -> Vec<CommandSpec> {
-    use ApprovalPolicy::*;
-    use BackendBinding as B;
-    use Category as C;
-    use RequiredSelection as Sel;
-    use Surface as S;
-    use UndoStrategy as U;
+    ROWS.iter()
+        .map(|row| {
+            let mut spec = CommandSpec {
+                id: row.id.to_string(),
+                title: row.title.to_string(),
+                description: row.description.to_string(),
+                category: row.category,
+                primary_surface: row.primary,
+                available_surfaces: row.surfaces.to_vec(),
+                required_selection: RequiredSelection::None,
+                required_capabilities: Vec::new(),
+                effects: Vec::new(),
+                approval_policy: ApprovalPolicy::Auto,
+                keyboard_shortcut: None,
+                command_palette: true,
+                context_menu: false,
+                toolbar_binding: None,
+                backend_binding: match row.bind {
+                    Bind::Intent(t) => BackendBinding::Intent(t.to_string()),
+                    Bind::Custom(t) => BackendBinding::Custom(t.to_string()),
+                },
+                undo_strategy: UndoStrategy::None,
+                receipt_kind: None,
+                telemetry: None,
+            };
+            // Explicit non-default security/effect/undo/selection/capability/
+            // shortcut/policy authority (pinned by security_policies_match_s4_matrix).
 
-    vec![
-        // -- core turn control (already working: real Intent variants) --------
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+Enter".into()),
-            toolbar_binding: Some("composer.send".into()),
-            telemetry: Some("turn.submit".into()),
-            ..base(
-                "submit_turn",
-                "Send message",
-                "Submit the composer text as a new turn.",
-                C::Turn,
-                S::Chat,
-                vec![S::Chat, S::Home, S::Palette],
-                B::Intent("submit_turn".into()),
-            )
-        },
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+.".into()),
-            ..base(
-                "cancel_run",
-                "Cancel run",
-                "Cancel the running turn.",
-                C::Turn,
-                S::Chat,
-                vec![S::Chat, S::StatusBar, S::Palette],
-                B::Intent("cancel_run".into()),
-            )
-        },
-        base(
-            "pause_run",
-            "Pause run",
-            "Pause the running turn.",
-            C::Turn,
-            S::Chat,
-            vec![S::Chat, S::Palette],
-            B::Intent("pause_run".into()),
-        ),
-        base(
-            "resume_run",
-            "Resume run",
-            "Resume a paused turn.",
-            C::Turn,
-            S::Chat,
-            vec![S::Chat, S::Palette],
-            B::Intent("resume_run".into()),
-        ),
-        // -- diff review (already working) -----------------------------------
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+Enter".into()),
-            command_palette: false,
-            context_menu: true,
-            effects: vec![Effect::WriteFs],
-            undo_strategy: U::Reject,
-            receipt_kind: Some("patch".into()),
-            required_selection: Sel::Hunk,
-            ..base(
-                "accept_diff",
-                "Accept diff",
-                "Apply a proposed diff hunk to the working tree.",
-                C::Diff,
-                S::DiffReview,
-                vec![S::DiffReview, S::Editor, S::Ide],
-                B::Intent("accept_diff".into()),
-            )
-        },
-        // Rejecting WRITES: it inverse-writes the hunk back to the working tree, so the row says
-        // so. With no `hunk_id` the host reads it as the whole diff, which is the same effect
-        // `revert_diff` declares `Ask` for, and `effect_command` holds it at the same gate: the
-        // policy follows the effect, not the wire name that carried it.
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+Backspace".into()),
-            command_palette: false,
-            context_menu: true,
-            required_selection: Sel::Hunk,
-            effects: vec![Effect::WriteFs, Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "reject_diff",
-                "Reject diff",
-                "Reject a proposed hunk, restoring that file on disk.",
-                C::Diff,
-                S::DiffReview,
-                vec![S::DiffReview, S::Editor, S::Ide],
-                B::Intent("reject_diff".into()),
-            )
-        },
-        // -- timeline (already working) --------------------------------------
-        CommandSpec {
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["state"]),
-            ..base(
-                "fork_session",
-                "Fork from here",
-                "Fork a new session from the selected timeline event.",
-                C::Timeline,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Intent("fork_session".into()),
-            )
-        },
-        // -- editor / terminal (already working) -----------------------------
-        // The `Mod+P` this used to declare was bound NOWHERE: a chord carries no
-        // path, so `required_selection: File` keeps `open_file` out of every
-        // derived key map, and Mod+P is the palette's own chord (store.ts
-        // SHELL_COMMANDS `toggle.palette`). A catalog that advertises a chord
-        // nothing binds is the drift this registry exists to remove, so it is
-        // dropped rather than faked. Open a file from the explorer, a diff chip,
-        // or the palette's file search.
-        CommandSpec {
-            context_menu: true,
-            effects: vec![Effect::ReadFs],
-            required_selection: Sel::File,
-            ..base(
-                "open_file",
-                "Open file",
-                "Open a file in the editor.",
-                C::File,
-                S::Ide,
-                vec![S::Ide, S::Editor, S::Palette],
-                B::Intent("open_file".into()),
-            )
-        },
-        CommandSpec {
-            approval_policy: RequireSandbox,
-            effects: vec![Effect::Shell, Effect::Process],
-            ..base(
-                "run_command",
-                "Run command",
-                "Run a shell command in the terminal.",
-                C::Terminal,
-                S::Terminal,
-                vec![S::Terminal, S::Palette],
-                B::Intent("run_command".into()),
-            )
-        },
-        // -- verify -> StatusBar Problems (census priority 1) ----------------
-        CommandSpec {
-            effects: vec![Effect::ReadFs, Effect::Process],
-            receipt_kind: Some("verification_receipt".into()),
-            ..base(
-                "run_static_analysis",
-                "Run static analysis",
-                "Run Tier-1 deterministic static analysis and show real problem counts.",
-                C::Verify,
-                S::StatusBar,
-                vec![S::StatusBar, S::ContextStack, S::Palette],
-                B::Custom("run_static_analysis".into()),
-            )
-        },
-        // -- side chat -> dead New-chat buttons (census priority 2) ----------
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+Shift+N".into()),
-            toolbar_binding: Some("chat.new".into()),
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["subscriptions"]),
-            ..base(
-                "create_side_chat",
-                "New side chat",
-                "Open a side chat thread that can later merge back.",
-                C::SideChat,
-                S::Chat,
-                vec![S::Chat, S::Palette],
-                B::Custom("create_side_chat".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "merge_side_chat",
-                "Merge side chat",
-                "Merge a side chat's summary back into the main thread.",
-                C::SideChat,
-                S::Chat,
-                vec![S::Chat, S::Palette],
-                B::Custom("merge_side_chat".into()),
-            )
-        },
-        // -- checkpoints -> StateTimeline (census priority 3) ----------------
-        CommandSpec {
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["checkpoints", "state"]),
-            receipt_kind: Some("checkpoint".into()),
-            ..base(
-                "checkpoint_create",
-                "Create checkpoint",
-                "Seal an integrity-verified restore point on the timeline.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_create".into()),
-            )
-        },
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["checkpoints", "state"]),
-            undo_strategy: U::Checkpoint,
-            ..base(
-                "checkpoint_restore",
-                "Restore checkpoint",
-                "Restore the session to a sealed checkpoint.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_restore".into()),
-            )
-        },
-        // -- memory -> ContextStack Memory stratum (census priority 4) -------
-        CommandSpec {
-            context_menu: true,
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            required_selection: Sel::Text,
-            ..base(
-                "memory_add",
-                "Add memory note",
-                "Store a durable outcome-governed note the agent keeps.",
-                C::Memory,
-                S::ContextStack,
-                vec![S::ContextStack, S::Editor, S::Palette],
-                B::Custom("memory_add".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            required_selection: Sel::Text,
-            ..base(
-                "memory_supersede",
-                "Supersede memory",
-                "Replace a stale memory while keeping its history.",
-                C::Memory,
-                S::ContextStack,
-                vec![S::ContextStack, S::Palette],
-                B::Custom("memory_supersede".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "memory_record_outcome",
-                "Record memory outcome",
-                "Report that a remembered fact was right or wrong so it self-quarantines.",
-                C::Memory,
-                S::ContextStack,
-                vec![S::ContextStack, S::Palette],
-                B::Custom("memory_record_outcome".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::ReadFs, Effect::State],
-            ..base(
-                "memory_revalidate",
-                "Revalidate memory",
-                "Re-check a memory's citations against the repo on disk.",
-                C::Memory,
-                S::ContextStack,
-                vec![S::ContextStack, S::Palette],
-                B::Custom("memory_revalidate".into()),
-            )
-        },
-        // -- goals -> HomeComposer goal field (census priority 5) ------------
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "goal_set",
-                "Set goal",
-                "Set a durable goal and acceptance criteria for the session.",
-                C::Goal,
-                S::Home,
-                vec![S::Home, S::Chat, S::Palette],
-                B::Custom("goal_set".into()),
-            )
-        },
-        // RETIRED: `goal_get`. It was the catalog's last `Rpc` row, and this frontend speaks
-        // `/v1/hide/intent` only, so no surface could dispatch it while it still declared
-        // `command_palette: true`: the palette advertised a row it can never run. Same reason
-        // `search_transcript` was collapsed. `goal/get` remains a real elevated-protocol Method
-        // (rpc.rs Method::GoalGet over BackendHost::goal_get); it is simply not a UI command.
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "goal_clear",
-                "Clear goal",
-                "Clear the session's goal.",
-                C::Goal,
-                S::Home,
-                vec![S::Home, S::Palette],
-                B::Custom("goal_clear".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Process],
-            receipt_kind: Some("verification_receipt".into()),
-            ..base(
-                "goal_evaluate",
-                "Evaluate goal",
-                "Run the deterministic acceptance check for the goal.",
-                C::Goal,
-                S::Home,
-                vec![S::Home, S::Chat, S::Palette],
-                B::Custom("goal_evaluate".into()),
-            )
-        },
-        // -- steer -> SteerBar (census priority 6, the true end-to-end hole) --
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+/".into()),
-            toolbar_binding: Some("composer.steer".into()),
-            required_capabilities: caps(&["streaming"]),
-            required_selection: Sel::Text,
-            ..base(
-                "steer",
-                "Steer turn",
-                "Redirect the running turn mid-flight via the interrupt hub.",
-                C::Steer,
-                S::Chat,
-                vec![S::Chat, S::Palette],
-                B::Custom("redirect_run".into()),
-            )
-        },
-        // -- workspace trust -> Add-folder flow (census priority 7) ----------
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "workspace_set_repo_trust",
-                "Set repo trust",
-                "Trust a repo so its instructions and policy can activate.",
-                C::Workspace,
-                S::Home,
-                vec![S::Home, S::Settings, S::Palette],
-                B::Custom("workspace_set_repo_trust".into()),
-            )
-        },
-        // -- environment switch -> SideBar popover ---------------------------
-        CommandSpec {
-            effects: vec![Effect::Environment],
-            undo_strategy: U::Inverse,
-            ..base(
-                "environment_switch",
-                "Switch environment",
-                "Switch the session's dev, prod, or sandbox environment.",
-                C::Environment,
-                S::Home,
-                vec![S::Home, S::StatusBar, S::Settings, S::Palette],
-                B::Custom("environment_switch".into()),
-            )
-        },
-        // -- transcript search -> the ONE search box (palette / Explorer field) --
-        // COLLAPSED from two ids for one capability: `search_transcript`, bound
-        // `Rpc(item/list)` and carrying a `Mod+Shift+F` that nothing could ever
-        // register (an Rpc binding is undispatchable from this FE, and a bare
-        // chord carries no query), plus this row. The host answers `run_search`,
-        // `search` and `search_transcript` on the SAME arm
-        // (host.rs handle_search_intent), so one command is the honest count.
-        // Search opens with the palette chord (Mod+P) and the query comes from
-        // the box; literal + structured filters, semantic stays
-        // DEFERRED_MODEL_REQUIRED.
-        CommandSpec {
-            effects: vec![Effect::ReadFs],
-            ..base(
-                "run_search",
-                "Search transcript",
-                "Search the session transcript by literal or structured query, over the intent channel.",
-                C::Search,
-                S::Palette,
-                vec![S::Palette, S::Chat, S::Ide],
-                B::Custom("run_search".into()),
-            )
-        },
-        // -- checkpoint rewind / replay / fork / compare / inspect (Trace E) -----
-        // Custom names the host already handles (handle_goal_checkpoint_intent);
-        // each acts on a sealed checkpoint from the StateTimeline.
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::State, Effect::WriteFs],
-            required_capabilities: caps(&["checkpoints", "state"]),
-            undo_strategy: U::Checkpoint,
-            ..base(
-                "checkpoint_rewind",
-                "Rewind to checkpoint",
-                "Rewind code, conversation, or both to a checkpoint on a fresh child session.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_rewind".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["checkpoints", "state"]),
-            ..base(
-                "checkpoint_replay",
-                "Replay from checkpoint",
-                "Re-apply the recorded history from a checkpoint forward onto a new lineage.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_replay".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            required_capabilities: caps(&["checkpoints", "state"]),
-            ..base(
-                "checkpoint_fork",
-                "Fork from checkpoint",
-                "Branch an ephemeral session seeded only with a checkpoint's inherited prefix.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_fork".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::ReadFs],
-            required_capabilities: caps(&["checkpoints"]),
-            ..base(
-                "checkpoint_compare",
-                "Compare checkpoint",
-                "Show the file-level code differences against a checkpoint or another session.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_compare".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::ReadFs],
-            required_capabilities: caps(&["checkpoints"]),
-            ..base(
-                "checkpoint_inspect",
-                "Inspect checkpoint",
-                "Verify a checkpoint's integrity and coverage.",
-                C::Checkpoint,
-                S::StateTimeline,
-                vec![S::StateTimeline, S::Palette],
-                B::Custom("checkpoint_inspect".into()),
-            )
-        },
-        // -- plan step approve / edit / reorder / skip / repair (plan domain) ----
-        // The PlanCard gestures on the ContextStack / Chat plan surface. Custom
-        // names routed through host.rs handle_plan_intent; they mutate the durable
-        // plan record and republish the `plan` projection.
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "approve_plan",
-                "Approve plan",
-                "Approve a plan step, or the whole plan when no step is selected.",
-                C::Plan,
-                S::ContextStack,
-                vec![S::ContextStack, S::Chat, S::Palette],
-                B::Custom("approve_plan".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            required_selection: Sel::PlanStep,
-            ..base(
-                "edit_plan_step",
-                "Edit plan step",
-                "Edit the text of a plan step.",
-                C::Plan,
-                S::ContextStack,
-                vec![S::ContextStack, S::Chat, S::Palette],
-                B::Custom("edit_plan_step".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "reorder_plan",
-                "Reorder plan",
-                "Reorder the plan's steps to a new permutation.",
-                C::Plan,
-                S::ContextStack,
-                vec![S::ContextStack, S::Chat, S::Palette],
-                B::Custom("reorder_plan".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            undo_strategy: U::Inverse,
-            required_selection: Sel::PlanStep,
-            ..base(
-                "skip_step",
-                "Skip step",
-                "Skip a plan step with a recorded reason.",
-                C::Plan,
-                S::ContextStack,
-                vec![S::ContextStack, S::Chat, S::Palette],
-                B::Custom("skip_step".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            required_selection: Sel::PlanStep,
-            ..base(
-                "repair_step",
-                "Repair step",
-                "Re-open a failed plan step so it can be retried.",
-                C::Plan,
-                S::ContextStack,
-                vec![S::ContextStack, S::Chat, S::Palette],
-                B::Custom("repair_step".into()),
-            )
-        },
-        // -- background job promotion / foreground resume (Stage 4, Trace G) -----
-        // Custom names the host already handles (handle_background_intent). Pause,
-        // stop, and fork of a promoted run reuse pause_run / cancel_run /
-        // fork_session, which already route by run id.
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "promote_run",
-                "Run in background",
-                "Promote a live interactive run to a durable background job without restarting it.",
-                C::Background,
-                S::StatusBar,
-                vec![S::StatusBar, S::Home, S::Palette],
-                B::Custom("promote_run".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "resume_run_foreground",
-                "Resume in foreground",
-                "Reattach a reconnecting client to a promoted run and resume it in the foreground.",
-                C::Background,
-                S::StatusBar,
-                vec![S::StatusBar, S::Home, S::Palette],
-                B::Custom("resume_run_foreground".into()),
-            )
-        },
-        // -- terminal input + process control (all wired) ------------------------
-        // Custom names (live in wire.ts) the host routes through
-        // handle_process_intent: pty_input writes bytes to a live process's stdin,
-        // pty_resize records its geometry, and attach_process / stop_process /
-        // capture_process_artifact reach the host methods of the same names. Those
-        // three had no wire trigger at all, so a client could start a sandboxed
-        // process and then not re-attach to it, stop it, or keep its output.
-        CommandSpec {
-            effects: vec![Effect::Process],
-            ..base(
-                "pty_input",
-                "Terminal input",
-                "Write input bytes to the live terminal process's stdin.",
-                C::Terminal,
-                S::Terminal,
-                vec![S::Terminal, S::Palette],
-                B::Custom("pty_input".into()),
-            )
-        },
-        base(
-            "pty_resize",
-            "Terminal resize",
-            "Record the live terminal process's column and row geometry.",
-            C::Terminal,
-            S::Terminal,
-            vec![S::Terminal, S::Palette],
-            B::Custom("pty_resize".into()),
-        ),
-        CommandSpec {
-            effects: vec![Effect::Process],
-            ..base(
-                "attach_process",
-                "Attach to process",
-                "Re-attach to a running process and replay its buffered output into the terminal.",
-                C::Terminal,
-                S::Terminal,
-                vec![S::Terminal, S::Palette],
-                B::Custom("attach_process".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Process],
-            ..base(
-                "stop_process",
-                "Stop process",
-                "Stop a running process: terminate its group, then kill it after a short grace.",
-                C::Terminal,
-                S::Terminal,
-                vec![S::Terminal, S::Palette],
-                B::Custom("stop_process".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Process, Effect::State],
-            receipt_kind: Some("artifact".into()),
-            ..base(
-                "capture_process_artifact",
-                "Capture process output",
-                "Preserve a process's captured output as a durable artifact in the blob store.",
-                C::Terminal,
-                S::Terminal,
-                vec![S::Terminal, S::Palette],
-                B::Custom("capture_process_artifact".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            receipt_kind: Some("diff_review_receipt".into()),
-            ..base(
-                "export_review_receipt",
-                "Export review receipt",
-                "Seal a diff's hunks and their verification receipts into a durable review receipt.",
-                C::Diff,
-                S::DiffReview,
-                vec![S::DiffReview, S::Ide, S::Palette],
-                B::Custom("export_review_receipt".into()),
-            )
-        },
-        // -- contract reconciliation: host-handled names that had NO CommandSpec ---
-        // Each was already dispatched raw by a surface (so it had no palette row and
-        // no shortcut parity) and each has a real arm in host.rs `handle_intent`.
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "new_session",
-                "New session",
-                "Start a fresh session thread from the launcher or the New-chat menu.",
-                C::SideChat,
-                S::Home,
-                vec![S::Home, S::Chat, S::Palette],
-                B::Custom("new_session".into()),
-            )
-        },
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::WriteFs, Effect::State],
-            undo_strategy: U::Inverse,
-            ..base(
-                "revert_diff",
-                "Revert diff",
-                "Revert a whole diff on disk once its hunks are already decided.",
-                C::Diff,
-                S::DiffReview,
-                vec![S::DiffReview, S::Ide, S::Palette],
-                B::Custom("revert_diff".into()),
-            )
-        },
-        // RETIRED: `edit_hunk`. It read only `diff_id` + `hunk_id` and routed to the SAME
-        // `apply_hunk` as `accept_diff{hunk_id}`, so it was one capability under two ids, and its
-        // description promised an edited body the host never received. Accept the hunk instead.
-        //
-        // The editor save. It used to be a raw `fs.write_file` connector call bound inside Monaco:
-        // no catalog row, no keyboard table entry, and the permission refusal thrown away. It is a
-        // command now, so it goes through the ONE dispatch spine and a refused write is held at the
-        // approval gate like every other refused effect. Not in the palette: the buffer being saved
-        // lives in the editor, and a palette gesture carries no buffer (the argument rule).
-        CommandSpec {
-            keyboard_shortcut: Some("Mod+S".into()),
-            command_palette: false,
-            required_selection: Sel::File,
-            effects: vec![Effect::WriteFs],
-            ..base(
-                "save_file",
-                "Save file",
-                "Write the open editor buffer to disk through the permission-gated applier.",
-                C::File,
-                S::Editor,
-                vec![S::Editor, S::Ide],
-                B::Custom("save_file".into()),
-            )
-        },
-        // -- contract cleanup: the last eight host-handled names with no spec ----
-        // Every one of these already had a REAL arm in host.rs and a REAL gesture in
-        // the app, and every one of those gestures built its own `Intent::Custom`
-        // because the registry did not carry the command. That is exactly the
-        // per-surface binding this registry exists to end, so they are declared here
-        // and the surfaces resolve them through `runCommand` like everything else.
-        // Argument-carrying rows stay out of the palette by the argument rule
-        // (`REQUIRED_ARGS` in app/src/store.ts), not by a second visibility flag.
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::Vcs, Effect::Process, Effect::WriteFs],
-            ..base(
-                "create_worktree",
-                "Create worktree",
-                "Request an isolated git worktree on a fresh branch (the host holds it at a gate).",
-                C::Workspace,
-                S::Home,
-                vec![S::Home, S::Palette],
-                B::Custom("create_worktree".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "open_session",
-                "Open session",
-                "Reopen a recorded session and republish its transcript.",
-                C::SideChat,
-                S::Home,
-                vec![S::Home, S::Palette],
-                B::Custom("open_session".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Approval],
-            ..base(
-                "approve_gate",
-                "Approve held command",
-                "Release a command the security gate is holding so it runs.",
-                C::Terminal,
-                S::Chat,
-                vec![S::Chat, S::Terminal, S::Palette],
-                B::Custom("approve_gate".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Approval],
-            ..base(
-                "deny_gate",
-                "Deny held command",
-                "Drop a command the security gate is holding so it never runs.",
-                C::Terminal,
-                S::Chat,
-                vec![S::Chat, S::Terminal, S::Palette],
-                B::Custom("deny_gate".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Approval],
-            ..base(
-                "approve_effect",
-                "Approve effectful step",
-                "Let a paused effectful step in the running turn proceed.",
-                C::Plan,
-                S::Chat,
-                vec![S::Chat, S::StateTimeline, S::Palette],
-                B::Custom("approve_effect".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::Approval],
-            ..base(
-                "deny_effect",
-                "Deny effectful step",
-                "Skip a paused effectful step in the running turn.",
-                C::Plan,
-                S::Chat,
-                vec![S::Chat, S::StateTimeline, S::Palette],
-                B::Custom("deny_effect".into()),
-            )
-        },
-        // -- the task-scoped write lease -------------------------------------
-        // The shipped policy asks before every workspace write, which is right for one stray edit
-        // and wrong for an approved implementation task: the agent's own edits were refused too, so
-        // the diff store stayed empty. The lease is the approval, taken ONCE per task and bounded by
-        // a declared scope. It is `Ask` precisely because the grant IS the human decision; it
-        // declares no `write_fs` of its own because it performs no write, it widens the policy for
-        // the writes the ordinary edit path already declares.
-        CommandSpec {
-            approval_policy: Ask,
-            effects: vec![Effect::Approval, Effect::State],
-            ..base(
-                "grant_write_lease",
-                "Grant write lease",
-                "Let this task edit files inside a declared, trusted scope without asking per file.",
-                C::Workspace,
-                S::StatusBar,
-                vec![S::StatusBar, S::Home, S::Palette],
-                B::Custom("grant_write_lease".into()),
-            )
-        },
-        // Auto, and it stays Auto: taking permission away may never wait on permission.
-        CommandSpec {
-            effects: vec![Effect::State],
-            ..base(
-                "revoke_write_lease",
-                "Revoke write lease",
-                "End the active write lease so workspace writes ask for approval again.",
-                C::Workspace,
-                S::StatusBar,
-                vec![S::StatusBar, S::Palette],
-                B::Custom("revoke_write_lease".into()),
-            )
-        },
-        // -- YOU / CHAT / IDE shared session graph --------------------------------
-        // Three lenses on ONE session. switch_surface changes the active lens only.
-        // handoff_create / handoff_receive seal and open claim capsules; capability
-        // never rides the capsule (HIDE_YOU_PROJECTS_HANDOFF_CONTRACT).
-        CommandSpec {
-            effects: vec![Effect::State],
-            keyboard_shortcut: Some("Mod+Shift+U".into()),
-            toolbar_binding: Some("surface.you".into()),
-            telemetry: Some("surface.switch".into()),
-            ..base(
-                "switch_surface",
-                "Switch surface",
-                "Change the active lens (YOU, CHAT, or IDE) on the shared session. Does not mint a new session or move capability.",
-                C::Surface,
-                S::You,
-                vec![S::You, S::Chat, S::Ide, S::Home, S::Palette],
-                B::Custom("switch_surface".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            telemetry: Some("handoff.create".into()),
-            ..base(
-                "handoff_create",
-                "Create handoff",
-                "Seal a typed claim-only capsule from the active surface to another. Never transports authority.",
-                C::Handoff,
-                S::You,
-                vec![S::You, S::Chat, S::Ide, S::Palette],
-                B::Custom("handoff_create".into()),
-            )
-        },
-        CommandSpec {
-            effects: vec![Effect::State],
-            telemetry: Some("handoff.receive".into()),
-            ..base(
-                "handoff_receive",
-                "Receive handoff",
-                "Open a sealed capsule into its target lens on the same session. Receiver capability is unchanged.",
-                C::Handoff,
-                S::Chat,
-                vec![S::You, S::Chat, S::Ide, S::Palette],
-                B::Custom("handoff_receive".into()),
-            )
-        },
-    ]
+            use ApprovalPolicy::*;
+            use Effect as E;
+            use RequiredSelection as Sel;
+            use UndoStrategy as U;
+
+            match spec.id.as_str() {
+                // -- shortcuts / chrome only -----------------------------------------
+                "submit_turn" => {
+                    // BC-HIDE_SESSION-015: approval stays Auto (default).
+                    spec.keyboard_shortcut = Some("Mod+Enter".into());
+                    spec.toolbar_binding = Some("composer.send".into());
+                    spec.telemetry = Some("turn.submit".into());
+                }
+                "cancel_run" => {
+                    spec.keyboard_shortcut = Some("Mod+.".into());
+                }
+                // -- diffs -----------------------------------------------------------
+                "accept_diff" => {
+                    spec.keyboard_shortcut = Some("Mod+Enter".into());
+                    spec.command_palette = false;
+                    spec.context_menu = true;
+                    spec.effects = vec![E::WriteFs];
+                    spec.undo_strategy = U::Reject;
+                    spec.receipt_kind = Some("patch".into());
+                    spec.required_selection = Sel::Hunk;
+                }
+                // Reject writes (inverse hunk restore); not Ask (policy follows effect gate).
+                "reject_diff" => {
+                    spec.keyboard_shortcut = Some("Mod+Backspace".into());
+                    spec.command_palette = false;
+                    spec.context_menu = true;
+                    spec.required_selection = Sel::Hunk;
+                    spec.effects = vec![E::WriteFs, E::State];
+                    spec.undo_strategy = U::Inverse;
+                }
+                "fork_session" => {
+                    spec.effects = vec![E::State];
+                    spec.required_capabilities = caps(&["state"]);
+                }
+                "open_file" => {
+                    spec.context_menu = true;
+                    spec.effects = vec![E::ReadFs];
+                    spec.required_selection = Sel::File;
+                }
+                // RequireSandbox exactly on run_command.
+                "run_command" => {
+                    spec.approval_policy = RequireSandbox;
+                    spec.effects = vec![E::Shell, E::Process];
+                }
+                "run_static_analysis" => {
+                    spec.effects = vec![E::ReadFs, E::Process];
+                    spec.receipt_kind = Some("verification_receipt".into());
+                }
+                "create_side_chat" => {
+                    spec.keyboard_shortcut = Some("Mod+Shift+N".into());
+                    spec.toolbar_binding = Some("chat.new".into());
+                    spec.effects = vec![E::State];
+                    spec.required_capabilities = caps(&["subscriptions"]);
+                }
+                "merge_side_chat" | "goal_set" | "goal_clear" | "reorder_plan" => {
+                    spec.effects = vec![E::State];
+                    spec.undo_strategy = U::Inverse;
+                }
+                "checkpoint_create" => {
+                    spec.effects = vec![E::State];
+                    spec.required_capabilities = caps(&["checkpoints", "state"]);
+                    spec.receipt_kind = Some("checkpoint".into());
+                }
+                // Ask exactly on checkpoint_restore.
+                "checkpoint_restore" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::State];
+                    spec.required_capabilities = caps(&["checkpoints", "state"]);
+                    spec.undo_strategy = U::Checkpoint;
+                }
+                "memory_add" => {
+                    spec.context_menu = true;
+                    spec.effects = vec![E::State];
+                    spec.undo_strategy = U::Inverse;
+                    spec.required_selection = Sel::Text;
+                }
+                "memory_supersede" => {
+                    spec.effects = vec![E::State];
+                    spec.undo_strategy = U::Inverse;
+                    spec.required_selection = Sel::Text;
+                }
+                "memory_record_outcome"
+                | "approve_plan"
+                | "promote_run"
+                | "resume_run_foreground"
+                | "new_session"
+                | "open_session"
+                | "revoke_write_lease" => {
+                    spec.effects = vec![E::State];
+                }
+                "memory_revalidate" => {
+                    spec.effects = vec![E::ReadFs, E::State];
+                }
+                "goal_evaluate" => {
+                    spec.effects = vec![E::Process];
+                    spec.receipt_kind = Some("verification_receipt".into());
+                }
+                "steer" => {
+                    spec.keyboard_shortcut = Some("Mod+/".into());
+                    spec.toolbar_binding = Some("composer.steer".into());
+                    spec.required_capabilities = caps(&["streaming"]);
+                    spec.required_selection = Sel::Text;
+                }
+                // Ask exactly on workspace_set_repo_trust.
+                "workspace_set_repo_trust" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::State];
+                    spec.undo_strategy = U::Inverse;
+                }
+                "environment_switch" => {
+                    spec.effects = vec![E::Environment];
+                    spec.undo_strategy = U::Inverse;
+                }
+                "run_search" => {
+                    spec.effects = vec![E::ReadFs];
+                }
+                // Ask exactly on checkpoint_rewind.
+                "checkpoint_rewind" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::State, E::WriteFs];
+                    spec.required_capabilities = caps(&["checkpoints", "state"]);
+                    spec.undo_strategy = U::Checkpoint;
+                }
+                "checkpoint_replay" | "checkpoint_fork" => {
+                    spec.effects = vec![E::State];
+                    spec.required_capabilities = caps(&["checkpoints", "state"]);
+                }
+                "checkpoint_compare" | "checkpoint_inspect" => {
+                    spec.effects = vec![E::ReadFs];
+                    spec.required_capabilities = caps(&["checkpoints"]);
+                }
+                "edit_plan_step" | "skip_step" => {
+                    spec.effects = vec![E::State];
+                    spec.undo_strategy = U::Inverse;
+                    spec.required_selection = Sel::PlanStep;
+                }
+                "repair_step" => {
+                    spec.effects = vec![E::State];
+                    spec.required_selection = Sel::PlanStep;
+                }
+                "pty_input" | "attach_process" | "stop_process" => {
+                    spec.effects = vec![E::Process];
+                }
+                "capture_process_artifact" => {
+                    spec.effects = vec![E::Process, E::State];
+                    spec.receipt_kind = Some("artifact".into());
+                }
+                "export_review_receipt" => {
+                    spec.effects = vec![E::State];
+                    spec.receipt_kind = Some("diff_review_receipt".into());
+                }
+                // Ask exactly on revert_diff.
+                "revert_diff" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::WriteFs, E::State];
+                    spec.undo_strategy = U::Inverse;
+                }
+                "save_file" => {
+                    spec.keyboard_shortcut = Some("Mod+S".into());
+                    spec.command_palette = false;
+                    spec.required_selection = Sel::File;
+                    spec.effects = vec![E::WriteFs];
+                }
+                // Ask exactly on create_worktree.
+                "create_worktree" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::Vcs, E::Process, E::WriteFs];
+                }
+                "approve_gate" | "deny_gate" | "approve_effect" | "deny_effect" => {
+                    spec.effects = vec![E::Approval];
+                }
+                // Ask exactly on grant_write_lease (no WriteFs on the grant itself).
+                "grant_write_lease" => {
+                    spec.approval_policy = Ask;
+                    spec.effects = vec![E::Approval, E::State];
+                }
+                "switch_surface" => {
+                    spec.effects = vec![E::State];
+                    spec.keyboard_shortcut = Some("Mod+Shift+U".into());
+                    spec.toolbar_binding = Some("surface.you".into());
+                    spec.telemetry = Some("surface.switch".into());
+                }
+                "handoff_create" => {
+                    spec.effects = vec![E::State];
+                    spec.telemetry = Some("handoff.create".into());
+                }
+                "handoff_receive" => {
+                    spec.effects = vec![E::State];
+                    spec.telemetry = Some("handoff.receive".into());
+                }
+                // Pure defaults: pause_run, resume_run, pty_resize.
+                _ => {}
+            }
+            spec
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -1224,7 +795,6 @@ mod tests {
     use super::*;
     use crate::protocol::Method;
     use std::collections::BTreeSet;
-
     #[test]
     fn catalog_is_non_empty_with_unique_ids() {
         let catalog = command_catalog();
@@ -1238,28 +808,18 @@ mod tests {
             );
         }
     }
-
-    /// Parity invariant: every command is reachable. No orphan actions: each has
-    /// a keyboard shortcut OR is listed in the command palette.
     #[test]
     fn every_command_has_a_shortcut_or_lives_in_the_palette() {
         for spec in command_catalog() {
-            assert!(
-                spec.keyboard_shortcut.is_some() || spec.command_palette,
-                "orphan command (no shortcut and not in the palette): {}",
-                spec.id
-            );
+            assert!(spec.keyboard_shortcut.is_some() || spec.command_palette);
         }
     }
-
-    /// Backend-binding integrity: nothing is silently invented.
     #[test]
     fn backend_bindings_resolve_to_real_targets() {
         let intents: BTreeSet<&str> = INTENT_NAMES.iter().copied().collect();
         let live_custom: BTreeSet<&str> = WIRE_CUSTOM_NAMES.iter().copied().collect();
         let host_caps: BTreeSet<&str> = HOST_CAPABILITIES.iter().copied().collect();
         let methods: BTreeSet<&str> = Method::ALL.iter().map(|m| m.as_str()).collect();
-
         for spec in command_catalog() {
             match &spec.backend_binding {
                 BackendBinding::Intent(name) => assert!(
@@ -1281,11 +841,6 @@ mod tests {
             }
         }
     }
-
-    /// The other direction of the same contract: a live custom name with no
-    /// `CommandSpec` is a capability the palette, the shortcut map and the SDK
-    /// cannot see, so every surface that wants it hand-builds an intent. Eight
-    /// names were in exactly that state before the contract-cleanup stage.
     #[test]
     fn every_live_custom_name_has_a_command() {
         let bound: BTreeSet<String> = command_catalog()
@@ -1302,11 +857,6 @@ mod tests {
             );
         }
     }
-
-    /// The mirror must BE a mirror. The previous guard compared two Rust consts
-    /// and so passed while [`WIRE_CUSTOM_NAMES`] drifted 17 names behind
-    /// `wire.ts`; this one reads the TypeScript contract itself, in order, so
-    /// either file changing alone fails here.
     #[test]
     fn wire_custom_names_mirror_wire_ts() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -1321,26 +871,16 @@ mod tests {
             .split_once("] as const;")
             .expect("CUSTOM_NAMES is a closed array")
             .0;
-        // One quoted name per line; comment lines carry no quotes.
         let names: Vec<&str> = body
             .lines()
             .filter_map(|l| l.trim().strip_prefix('"'))
             .filter_map(|l| l.split_once('"'))
             .map(|(name, _)| name)
             .collect();
-        assert_eq!(
-            names, WIRE_CUSTOM_NAMES,
-            "WIRE_CUSTOM_NAMES has drifted from app/src/wire.ts CUSTOM_NAMES"
-        );
+        assert_eq!(names, WIRE_CUSTOM_NAMES);
     }
-
-    /// Truth in the authority: every row whose host path writes the working tree declares the
-    /// write, and says whether that write can be unwound. `reject_diff` declared NO effects and NO
-    /// undo while inverse-writing files, which is also what made its `auto` policy next to
-    /// `revert_diff`'s `ask` look deliberate rather than a hole.
     #[test]
     fn every_writing_command_declares_the_write_and_its_undo() {
-        // (catalog id, whether the host can unwind the write it makes)
         let writers = [
             ("accept_diff", true),
             ("reject_diff", true),
@@ -1355,23 +895,13 @@ mod tests {
                 .iter()
                 .find(|s| s.id == id)
                 .unwrap_or_else(|| panic!("{id} is missing from the catalog"));
-            assert!(
-                spec.effects.contains(&Effect::WriteFs),
-                "{id} writes the working tree but does not declare write_fs"
-            );
-            assert_eq!(
-                spec.undo_strategy != UndoStrategy::None,
-                undoable,
-                "{id}: undo_strategy must say truthfully whether the write can be unwound"
-            );
+            assert!(spec.effects.contains(&Effect::WriteFs));
+            assert_eq!(spec.undo_strategy != UndoStrategy::None, undoable);
         }
     }
-
-    /// Coverage: the catalog contains at least the seven priority domains.
     #[test]
     fn catalog_covers_the_seven_priority_domains() {
-        let categories: BTreeSet<Category> =
-            command_catalog().iter().map(|s| s.category).collect();
+        let categories: BTreeSet<Category> = command_catalog().iter().map(|s| s.category).collect();
         for required in [
             Category::Verify,
             Category::SideChat,
@@ -1387,7 +917,6 @@ mod tests {
             );
         }
     }
-
     #[test]
     fn specs_round_trip_through_serde_json() {
         for spec in command_catalog() {
@@ -1396,14 +925,68 @@ mod tests {
             assert_eq!(back, spec, "a command spec must survive a serde round trip");
         }
     }
-
-    /// No added string carries an en or em dash (house rule).
     #[test]
     fn catalog_data_carries_no_en_or_em_dashes() {
         let json = serde_json::to_string(&command_catalog()).unwrap();
-        assert!(
-            !json.contains('\u{2013}') && !json.contains('\u{2014}'),
-            "catalog data must use plain hyphens only"
-        );
+        assert!(!json.contains('\u{2013}') && !json.contains('\u{2014}'));
+    }
+
+    /// Complete Ask / RequireSandbox matrix. Any unlisted elevated policy fails.
+    #[test]
+    fn security_policies_match_s4_matrix() {
+        const ASK: &[&str] = &[
+            "checkpoint_restore",
+            "workspace_set_repo_trust",
+            "checkpoint_rewind",
+            "revert_diff",
+            "create_worktree",
+            "grant_write_lease",
+        ];
+        const SANDBOX: &[&str] = &["run_command"];
+        let ask: BTreeSet<&str> = ASK.iter().copied().collect();
+        let sandbox: BTreeSet<&str> = SANDBOX.iter().copied().collect();
+        let catalog = command_catalog();
+        for id in ASK {
+            let spec = catalog
+                .iter()
+                .find(|s| s.id == *id)
+                .unwrap_or_else(|| panic!("missing {id}"));
+            assert_eq!(spec.approval_policy, ApprovalPolicy::Ask, "{id}");
+        }
+        for id in SANDBOX {
+            let spec = catalog
+                .iter()
+                .find(|s| s.id == *id)
+                .unwrap_or_else(|| panic!("missing {id}"));
+            assert_eq!(spec.approval_policy, ApprovalPolicy::RequireSandbox, "{id}");
+        }
+        for spec in &catalog {
+            match spec.approval_policy {
+                ApprovalPolicy::Ask => assert!(
+                    ask.contains(spec.id.as_str()),
+                    "unlisted Ask policy on {}",
+                    spec.id
+                ),
+                ApprovalPolicy::RequireSandbox => assert!(
+                    sandbox.contains(spec.id.as_str()),
+                    "unlisted RequireSandbox policy on {}",
+                    spec.id
+                ),
+                ApprovalPolicy::Auto => {}
+                other => panic!(
+                    "unexpected elevated policy {other:?} on {}; only Ask/RequireSandbox/Auto allowed",
+                    spec.id
+                ),
+            }
+        }
+        // submit_turn remains Auto (BC-HIDE_SESSION-015).
+        let submit = catalog.iter().find(|s| s.id == "submit_turn").unwrap();
+        assert_eq!(submit.approval_policy, ApprovalPolicy::Auto);
+        // reject_diff remains WriteFs+State with inverse undo (not Ask).
+        let reject = catalog.iter().find(|s| s.id == "reject_diff").unwrap();
+        assert!(reject.effects.contains(&Effect::WriteFs));
+        assert!(reject.effects.contains(&Effect::State));
+        assert_eq!(reject.undo_strategy, UndoStrategy::Inverse);
+        assert_eq!(reject.approval_policy, ApprovalPolicy::Auto);
     }
 }

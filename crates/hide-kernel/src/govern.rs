@@ -276,13 +276,11 @@ pub enum EffectAuthorization {
 mod tests {
     use super::*;
     use hide_core::ids::{RunId, SessionId};
-
     fn state_with_budget(budget: Budget) -> AgentState {
         let mut s = AgentState::new(SessionId::new(), RunId::new(), "obj".to_string());
         s.budget = budget;
         s
     }
-
     #[test]
     fn governor_aborts_on_step_cap_with_structured_reason() {
         let mut gov = Governor::default();
@@ -296,7 +294,6 @@ mod tests {
             other => panic!("expected step-cap abort, got {other:?}"),
         }
     }
-
     #[test]
     fn governor_aborts_on_wallclock() {
         let mut gov = Governor::default();
@@ -304,25 +301,19 @@ mod tests {
             max_wallclock_ms: 100,
             ..Budget::default()
         });
-        // started at t=0, now at t=500 → elapsed 500 > 100.
         state.ledger.tick(0);
         match gov.check(&mut state, 500) {
             GovernDecision::Abort(AbortReason::Wallclock(_)) => {}
             other => panic!("expected wallclock abort, got {other:?}"),
         }
     }
-
     #[test]
     fn governor_abort_interrupt_beats_budget() {
         let mut gov = Governor::default();
         gov.interrupt(Interrupt::Abort);
         let mut state = state_with_budget(Budget::default());
-        assert!(matches!(
-            gov.check(&mut state, 0),
-            GovernDecision::Abort(AbortReason::Interrupted(_))
-        ));
+ assert!(matches!( gov.check(&mut state, 0), GovernDecision::Abort(AbortReason::Interrupted(_)) ));
     }
-
     #[test]
     fn suggest_only_needs_approval_for_effects() {
         let gov = Governor::new(Autonomy::SuggestOnly);

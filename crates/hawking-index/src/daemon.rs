@@ -250,7 +250,6 @@ fn collect_all_files(node: &MerkleNode, out: &mut Vec<PathBuf>) {
 mod tests {
     use super::*;
     use std::fs;
-
     fn write(dir: &Path, rel: &str, content: &str) {
         let p = dir.join(rel);
         if let Some(parent) = p.parent() {
@@ -258,7 +257,6 @@ mod tests {
         }
         fs::write(p, content).unwrap();
     }
-
     #[test]
     fn bootstrap_cold_indexes_all_files() {
         let tmp = tempfile::tempdir().unwrap();
@@ -270,7 +268,6 @@ mod tests {
         assert!(gen >= 2, "two files indexed → generation advanced");
         assert_eq!(index.store().file_count().unwrap(), 2);
     }
-
     #[test]
     fn tick_applies_incremental_change() {
         let tmp = tempfile::tempdir().unwrap();
@@ -279,8 +276,6 @@ mod tests {
         let mut daemon = IndexDaemon::new(tmp.path(), index.clone());
         daemon.bootstrap().unwrap();
         assert_eq!(index.store().file_count().unwrap(), 1);
-
-        // add a new file, modify the old one, then tick.
         write(tmp.path(), "b.rs", "pub fn beta() {}");
         write(tmp.path(), "a.rs", "pub fn alpha_renamed() {}");
         let cs = daemon.tick().unwrap();
@@ -288,7 +283,6 @@ mod tests {
         assert!(cs.modified.iter().any(|p| p.ends_with("a.rs")));
         assert_eq!(index.store().file_count().unwrap(), 2);
     }
-
     #[test]
     fn tick_handles_deletion_and_rename() {
         let tmp = tempfile::tempdir().unwrap();
@@ -298,26 +292,21 @@ mod tests {
         let index = Arc::new(SqliteCodeIndex::open_in_memory().unwrap());
         let mut daemon = IndexDaemon::new(tmp.path(), index.clone());
         daemon.bootstrap().unwrap();
-
         fs::remove_file(tmp.path().join("gone.rs")).unwrap();
         fs::rename(tmp.path().join("old.rs"), tmp.path().join("new.rs")).unwrap();
         let cs = daemon.tick().unwrap();
         assert!(cs.removed.iter().any(|p| p.ends_with("gone.rs")));
         assert_eq!(cs.renamed.len(), 1, "rename detected, got {cs:?}");
-        // store reflects: keep + new (gone removed, old→new)
         assert_eq!(index.store().file_count().unwrap(), 2);
     }
-
     #[test]
     fn bootstrap_recovers_from_torn_generation() {
         let tmp = tempfile::tempdir().unwrap();
         write(tmp.path(), "a.rs", "pub fn a() {}");
         let index = Arc::new(SqliteCodeIndex::open_in_memory().unwrap());
-        // simulate a torn (uncommitted) generation
         index.store().begin_generation(99, "torn").unwrap();
         let mut daemon = IndexDaemon::new(tmp.path(), index.clone());
         daemon.bootstrap().unwrap();
-        // recovery dropped the torn gen; committed generation is the real one
         assert!(index.store().last_committed_generation().unwrap() >= 1);
     }
 }

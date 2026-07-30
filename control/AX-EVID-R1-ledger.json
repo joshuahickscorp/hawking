@@ -1,0 +1,452 @@
+{
+  "schema": "hawking.ax_evid_r1.ledger.v1",
+  "rung": "AX-EVID-R1",
+  "parent": "ad03a1bd18d249a6e2b833e2275800749fe2f24a",
+  "base": "ad03a1bd18d249a6e2b833e2275800749fe2f24a",
+  "parent_tree": "19abf8ebe5a6d14b3e0371b883a3fbd9f2a2eba5",
+  "c_sci_parent": "ad03a1bd18d249a6e2b833e2275800749fe2f24a",
+  "a_evid_parent": "0250cdb2ba035303da723e2a2eb41edcaf1fc45e",
+  "a_evid_landed_commit": "eb4e5b07ed41b23b2a5db90684a6d9179a312649",
+  "design_input": "HAWKING_AX_POST_CSCI_EXACT_PARENT_BUILDER_CONTRACT_20260730 + Arch1 clean room; A-CTRL/X-EVID design OIDs design-only no separate earn",
+  "parent_active_loc": 339540,
+  "release_path_count": 64,
+  "release_active_loc": 6672,
+  "bands": {
+    "FA": {
+      "files": 33,
+      "loc": 4402
+    },
+    "NR": {
+      "files": 6,
+      "loc": 646
+    },
+    "RP": {
+      "files": 19,
+      "loc": 1315
+    },
+    "PR": {
+      "files": 1,
+      "loc": 121
+    },
+    "SH": {
+      "files": 4,
+      "loc": 115
+    },
+    "RC": {
+      "files": 1,
+      "loc": 73
+    }
+  },
+  "rewrite": {
+    "docs/dead_levers.md": {
+      "before": 492,
+      "after": 88,
+      "credit": 404,
+      "cap": 240,
+      "floor_credit": 252,
+      "bb": "BC-ACCEL-012"
+    },
+    "BASELINES.md": {
+      "before": 296,
+      "after": 87,
+      "credit": 209,
+      "cap": 180,
+      "floor_credit": 116,
+      "bb": "BC-SOURCE-010"
+    },
+    "ACCELERATION_ARCHAEOLOGY.md": {
+      "before": 214,
+      "after": 93,
+      "credit": 121,
+      "cap": 130,
+      "floor_credit": 84,
+      "bb_constitution": "BC-ACCEL-009"
+    },
+    "rewrite_credit_total": 734,
+    "design_target_at_caps": 452
+  },
+  "apparatus": {
+    "docs/EVIDENCE_INDEX.md": {
+      "parent_lines": 148,
+      "candidate_lines": 251,
+      "delta": 103
+    },
+    "control/AX-EVID-R1-ledger.json": {
+      "loc_credit": 0,
+      "note": "JSON exclusion"
+    }
+  },
+  "apparatus_delta_lines": 103,
+  "families": {
+    "FA_final_ascent_contracts": {
+      "paths": [
+        {
+          "path": "control/final_ascent/contracts/control-plane.md",
+          "loc": 108
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-basis-diagnosis.md",
+          "loc": 64
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-basis-pilot-revision-1.md",
+          "loc": 89
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-basis-pilot.md",
+          "loc": 100
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-pack-v2-feasibility-revision-1.md",
+          "loc": 118
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-pack-v2-feasibility.md",
+          "loc": 196
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-pilot-source-release.md",
+          "loc": 119
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-rare-route-basis-pilot-revision-13-executable-closure.md",
+          "loc": 313
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-rare-route-basis-pilot-revision-bundle.md",
+          "loc": 31
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-rare-route-basis-pilot.md",
+          "loc": 354
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-rare-route-representation-consult.md",
+          "loc": 148
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-route-population-census-revision-1.md",
+          "loc": 61
+        },
+        {
+          "path": "control/final_ascent/contracts/glm52-route-population-census.md",
+          "loc": 169
+        },
+        {
+          "path": "control/final_ascent/contracts/hide-classed-writers-revision-1.md",
+          "loc": 60
+        },
+        {
+          "path": "control/final_ascent/contracts/hide-classed-writers.md",
+          "loc": 78
+        },
+        {
+          "path": "control/final_ascent/contracts/hide-integration-audit.md",
+          "loc": 50
+        },
+        {
+          "path": "control/final_ascent/contracts/ramanujan-audit.md",
+          "loc": 47
+        },
+        {
+          "path": "control/final_ascent/contracts/runtime-audit.md",
+          "loc": 47
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-cheap-hotpath-residual-router-scalars-revision-2.md",
+          "loc": 124
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-cheap-hotpath-residual-router-scalars.md",
+          "loc": 181
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-device-resident-three-batch-mlp-revision-4.md",
+          "loc": 124
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-device-resident-three-batch-mlp.md",
+          "loc": 188
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-hide-glm-live-token-path-revision-4.md",
+          "loc": 192
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-hide-glm-live-token-path.md",
+          "loc": 229
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-k11-active-byte-collapse.md",
+          "loc": 163
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-k4-descriptor-indexed-nonwave-three-batch.md",
+          "loc": 182
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-kernel-token-loop-frontier-consult.md",
+          "loc": 70
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-numeric-parity-near-tie-fallback-revision-4.md",
+          "loc": 140
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-numeric-parity-near-tie-fallback.md",
+          "loc": 135
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-router-bias-residency-bind-once-revision-2.md",
+          "loc": 155
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-router-bias-residency-bind-once.md",
+          "loc": 105
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-runtime-receipt-profiler-hardening-revision-4.md",
+          "loc": 134
+        },
+        {
+          "path": "control/final_ascent/contracts/tg-runtime-receipt-profiler-hardening.md",
+          "loc": 128
+        }
+      ],
+      "loc": 4402,
+      "file_count": 33,
+      "successor": "git history at pre-AX parent; sealed final-ascent JSON receipts/ledgers",
+      "reason": "historical pilot/contract MD; no product/gate hard open"
+    },
+    "NR_non_brt_control_reports": {
+      "paths": [
+        {
+          "path": "control/E0-report.md",
+          "loc": 5
+        },
+        {
+          "path": "control/S2-report.md",
+          "loc": 111
+        },
+        {
+          "path": "control/S3-report.md",
+          "loc": 169
+        },
+        {
+          "path": "control/S4-report.md",
+          "loc": 146
+        },
+        {
+          "path": "control/S6F1-report.md",
+          "loc": 41
+        },
+        {
+          "path": "control/S6F2-report.md",
+          "loc": 174
+        }
+      ],
+      "loc": 646,
+      "file_count": 6,
+      "successor": "control/*-ledger.json, CAP rows, S5 receipts; BRT3/BRT5/LANE_MAP retained",
+      "reason": "narrative stage reports; machine authorities kept"
+    },
+    "RP_reports_md": {
+      "paths": [
+        {
+          "path": "reports/condense/breakthrough/GLM52_BREAKTHROUGH_BASELINE.md",
+          "loc": 141
+        },
+        {
+          "path": "reports/condense/breakthrough/GLM52_ENERGY_CONTRACT.md",
+          "loc": 224
+        },
+        {
+          "path": "reports/condense/breakthrough/HAWKING_MULTI_THOUSAND_ROADMAP.md",
+          "loc": 156
+        },
+        {
+          "path": "reports/condense/breakthrough/HAWKING_SCIENCE_HANDOFF_REQUEST.md",
+          "loc": 88
+        },
+        {
+          "path": "reports/condense/glm52_generation_b/GLM52_NEXT_PARENT_TRANSFER.md",
+          "loc": 214
+        },
+        {
+          "path": "reports/condense/gravity_forge/condensation/CODEBASE_CENSUS.md",
+          "loc": 43
+        },
+        {
+          "path": "reports/condense/storage_stripdown/HAWKING_FULL_RESIDENT_FIRST_LADDER.md",
+          "loc": 45
+        },
+        {
+          "path": "reports/condense/storage_stripdown/STORAGE_STRIPDOWN_FINAL.md",
+          "loc": 13
+        },
+        {
+          "path": "reports/condense/storage_stripdown/STORAGE_STRIPDOWN_INVENTORY.md",
+          "loc": 46
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/B0_REPORT.md",
+          "loc": 30
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/B1_REPORT.md",
+          "loc": 29
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/HAWKING_MECHANICS_THERMODYNAMICS_REPORT.md",
+          "loc": 38
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M1_REPORT.md",
+          "loc": 38
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M2_REPORT.md",
+          "loc": 53
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M3_REPORT.md",
+          "loc": 69
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M4_REPORT.md",
+          "loc": 21
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M5_REPORT.md",
+          "loc": 21
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/M6_REPORT.md",
+          "loc": 21
+        },
+        {
+          "path": "reports/mechanics_thermodynamics/MECHANICS_THERMODYNAMICS_LEDGER.md",
+          "loc": 25
+        }
+      ],
+      "loc": 1315,
+      "file_count": 19,
+      "successor": "sibling JSON claim artifacts under reports/**",
+      "reason": "MD narrative only; non-MD reports kept"
+    },
+    "PR_prereg_md": {
+      "paths": [
+        {
+          "path": "preregistrations/PROM-001-isomemory-randompolicy.md",
+          "loc": 121
+        }
+      ],
+      "loc": 121,
+      "file_count": 1,
+      "successor": "preregistrations/**/*.json twins",
+      "reason": "prereg MD narrative; JSON twins kept"
+    },
+    "SH_next_command_shells": {
+      "paths": [
+        {
+          "path": "HAWKING_FINAL_ASCENT_NEXT_COMMAND.sh",
+          "loc": 89
+        },
+        {
+          "path": "HAWKING_CONTINUUM_NEXT_COMMAND.sh",
+          "loc": 10
+        },
+        {
+          "path": "HAWKING_LIGHT_ONLY_NEXT_COMMAND.sh",
+          "loc": 13
+        },
+        {
+          "path": "HAWKING_PARALLEL_NEXT_COMMAND.sh",
+          "loc": 3
+        }
+      ],
+      "loc": 115,
+      "file_count": 4,
+      "successor": "operator ledgers and status JSON",
+      "reason": "historical next-command shells"
+    },
+    "RC_receipts_readme": {
+      "paths": [
+        {
+          "path": "receipts/README.md",
+          "loc": 73
+        }
+      ],
+      "loc": 73,
+      "file_count": 1,
+      "successor": "receipts/schema/**",
+      "reason": "receipts README narrative; schema kept"
+    }
+  },
+  "retain_explicit": [
+    "control/LANE_MAP.md",
+    "control/BRT3-report.md",
+    "control/BRT5-report.md",
+    "KIMI_K26_GRAVITY_FINAL.md",
+    "KIMI_K26_NEXT_PARENT_TRANSFER.md",
+    "docs/dead_levers.md",
+    "BASELINES.md",
+    "ACCELERATION_ARCHAEOLOGY.md",
+    "docs/EVIDENCE_INDEX.md",
+    "control/A-EVID-R1-ledger.json",
+    "control/C-SCI-R1-ledger.json",
+    "control/C-AUX-LAB-R1-CONS-ledger.json"
+  ],
+  "kimi_digests": {
+    "KIMI_K26_GRAVITY_FINAL.md": "04370b55d1073923877989874cbf336869c949cd4892dbe3e1a845c5e2fc0752",
+    "KIMI_K26_NEXT_PARENT_TRANSFER.md": "8c34b679524327e4a3ff61bc82fe7d451f62c42f3d200e7aafe0423a10a01a34"
+  },
+  "six_buckets": {
+    "eliminated": 6672,
+    "rewritten": 734,
+    "generated": 0,
+    "relocated": 0,
+    "compatibility_facade": 0,
+    "added_apparatus": 103,
+    "net_projected": -7303
+  },
+  "credit_fences": {
+    "A_EVID_CREDIT": 0,
+    "S5_CREDIT": 0,
+    "B_KDRY_CREDIT": 0,
+    "R3_CREDIT": 0,
+    "C_SCI_CREDIT": 0,
+    "C_AUX_CREDIT": 0,
+    "A_CTRL_SEPARATE_NET": 0,
+    "X_EVID_SEPARATE_NET": 0,
+    "PACKING": 0,
+    "GENERATED": 0,
+    "FACADE": 0,
+    "RELOC": 0
+  },
+  "supersedes": [
+    "A-CTRL-R1",
+    "X-EVID-R1-CONS"
+  ],
+  "authorities_hold": {
+    "CAP": "58861a02abb6aebd000333701dc528da873f678c",
+    "TCM": "1a04b790c51c350e16dc45b579c498753d48330e",
+    "F1": "9e041bdf5f5b729237c91b86aceee5609f5ca90d",
+    "blackbox_matrix": "538e2e199d5460839954c7c25620cc4180411cf2",
+    "note": "AX zero writes to CAP/TCM/F1/matrix/constitution/migration"
+  },
+  "reference_class": {
+    "product_hard_open": [],
+    "soft_historical_inventory": "retained docs may cite released paths; recover via git show parent"
+  },
+  "parent_topology": {
+    "directories_all": 115,
+    "directories_leaf": 90,
+    "source_files": 872,
+    "rust_crates": 19,
+    "public_symbols": 7683,
+    "functions": 11927,
+    "files_over_1500_lines": 16,
+    "tiny_forwarders": 15
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "hawking.brt3.f1_identity_receipt.v1",
+  "product_decision": "BC-ACCEL-009 release",
+  "disposition": "subject_deleted",
+  "count": 14,
+  "assert_macros_approx": 40,
+  "fingerprint_algorithm": "sha256(newline_joined_identity_strings_document_order + trailing_newline)[:16]",
+  "fingerprint_sha256_16": "68b942ec05678825",
+  "identities": [
+    {
+      "file": "crates/hawking-core/tests/qwen_eagle5_speculate.rs",
+      "kind": "rust_test_fn",
+      "name": "qwen_eagle5_speculate_off_bit_identical_to_baseline",
+      "identity": "crates/hawking-core/tests/qwen_eagle5_speculate.rs::qwen_eagle5_speculate_off_bit_identical_to_baseline",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/qwen_eagle5_speculate.rs",
+      "kind": "rust_test_fn",
+      "name": "qwen_eagle5_speculate_on_mock_head_engages_and_preserves_greedy",
+      "identity": "crates/hawking-core/tests/qwen_eagle5_speculate.rs::qwen_eagle5_speculate_on_mock_head_engages_and_preserves_greedy",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/qwen_eagle5_speculate.rs",
+      "kind": "rust_test_fn",
+      "name": "qwen_eagle5_batched_mock_head_preserves_greedy",
+      "identity": "crates/hawking-core/tests/qwen_eagle5_speculate.rs::qwen_eagle5_batched_mock_head_preserves_greedy",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/qwen_eagle5_speculate.rs",
+      "kind": "rust_test_fn",
+      "name": "qwen_eagle5_capture_preserves_greedy",
+      "identity": "crates/hawking-core/tests/qwen_eagle5_speculate.rs::qwen_eagle5_capture_preserves_greedy",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_forward_parity.rs",
+      "kind": "rust_test_fn",
+      "name": "eagle6_forward_matches_pytorch_q3b",
+      "identity": "crates/hawking-core/tests/eagle5_forward_parity.rs::eagle6_forward_matches_pytorch_q3b",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_forward_parity.rs",
+      "kind": "rust_test_fn",
+      "name": "eagle6_forward_matches_pytorch_q1p5",
+      "identity": "crates/hawking-core/tests/eagle5_forward_parity.rs::eagle6_forward_matches_pytorch_q1p5",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_spec_parity.rs",
+      "kind": "rust_test_fn",
+      "name": "eagle5_greedy_parity_k4",
+      "identity": "crates/hawking-core/tests/eagle5_spec_parity.rs::eagle5_greedy_parity_k4",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_spec_parity.rs",
+      "kind": "rust_test_fn",
+      "name": "eagle5_greedy_parity_k2_and_k8",
+      "identity": "crates/hawking-core/tests/eagle5_spec_parity.rs::eagle5_greedy_parity_k2_and_k8",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_trained_head_load.rs",
+      "kind": "rust_test_fn",
+      "name": "trained_head_q3b_loads",
+      "identity": "crates/hawking-core/tests/eagle5_trained_head_load.rs::trained_head_q3b_loads",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_trained_head_load.rs",
+      "kind": "rust_test_fn",
+      "name": "trained_head_q1p5_loads",
+      "identity": "crates/hawking-core/tests/eagle5_trained_head_load.rs::trained_head_q1p5_loads",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/eagle5_trained_head_load.rs",
+      "kind": "rust_test_fn",
+      "name": "trained_head_rejects_wrong_hidden",
+      "identity": "crates/hawking-core/tests/eagle5_trained_head_load.rs::trained_head_rejects_wrong_hidden",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/event_horizon_parity_prop.rs",
+      "kind": "rust_test_fn",
+      "name": "event_horizon_parity_property",
+      "identity": "crates/hawking-core/tests/event_horizon_parity_prop.rs::event_horizon_parity_property",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/user_draft_parity_e2e.rs",
+      "kind": "rust_test_fn",
+      "name": "event_horizon_bit_identical_default",
+      "identity": "crates/hawking-core/tests/user_draft_parity_e2e.rs::event_horizon_bit_identical_default",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    },
+    {
+      "file": "crates/hawking-core/tests/user_draft_parity_e2e.rs",
+      "kind": "rust_test_fn",
+      "name": "event_horizon_bit_identical_fast_pruned_q4k",
+      "identity": "crates/hawking-core/tests/user_draft_parity_e2e.rs::event_horizon_bit_identical_fast_pruned_q4k",
+      "disposition": "subject_deleted",
+      "product_decision": "BC-ACCEL-009 release",
+      "replacement": null
+    }
+  ],
+  "fixtures_deleted": [
+    "crates/hawking-core/tests/fixtures/eagle5_parity_q1p5.json",
+    "crates/hawking-core/tests/fixtures/eagle5_parity_q3b.json"
+  ],
+  "note": "F1+F2 builds from older base ea33af24 concurrently. This receipt maps each deleted Rust subject-test identity (14) to disposition subject_deleted under product decision BC-ACCEL-009. Includes 12 tests from fully deleted subject files plus 2 vacuous Event Horizon toggle tests removed from user_draft_parity_e2e.rs (HAWKING_QWEN_EVENT_HORIZON unread after release). No replacement assertion is claimed. Module-internal unit tests in the ten released production modules and spec_oracle_cli are deleted with their subjects. Core C R1 / C-HIST-R1 owns tools/training/** EAGLE training entrypoints still listed in capability inventory. Rev4: blackbox matrix restored to base; identities/fingerprint unchanged.",
+  "revision": 4,
+  "verdict": "READY_FOR_INDEPENDENT_REVIEW_PENDING_F1_AND_COREC_R1_PROJECTION"
+}

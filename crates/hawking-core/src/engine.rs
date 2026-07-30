@@ -37,13 +37,6 @@ pub struct EngineConfig {
     /// re-quantized per layer to the dtype specified in the map. `None` ⇒
     /// GGUF native dtypes (default behavior, unchanged).
     pub quant_tier_map_path: Option<std::path::PathBuf>,
-    /// Eagle5 v2 trained head checkpoint path (safetensors). When `None` and
-    /// `speculate_mode == Eagle5`, the runtime constructs a deterministic
-    /// mock head with random weights of the correct shape. The mock-head
-    /// path is intended for runtime-wiring validation; production accept
-    /// rate requires a trained checkpoint produced by
-    /// `tools/training/eagle5_train.py`.
-    pub eagle5_head_path: Option<std::path::PathBuf>,
     /// Portability/reach knob (Phase 3.3): when `true` (or env
     /// `HAWKING_FORCE_CPU=1`), the engine loads with NO Metal context
     /// (`metal_ctx = None`), forcing the pure-Rust CPU reference path
@@ -78,7 +71,6 @@ impl Default for EngineConfig {
             memory_limit_mb: None,
             vocab_prune_path: None,
             quant_tier_map_path: None,
-            eagle5_head_path: None,
             force_cpu: false,
             concurrent_qkv: false,
         }
@@ -90,14 +82,6 @@ impl Default for EngineConfig {
 pub enum SpeculateMode {
     Off,
     ExactShared,
-    /// Eagle5 v2 activation-sparsity head: a small learned draft model that
-    /// proposes K tokens per step. Verify path is the full V2-Lite model so
-    /// greedy output at temperature=0 is bit-identical to no-spec greedy.
-    /// When no trained checkpoint is supplied via
-    /// `EngineConfig::eagle5_head_path`, the runtime builds a deterministic
-    /// mock head with random weights of the correct shape — useful for
-    /// runtime-path validation while the head trains.
-    Eagle5,
 }
 
 impl Default for SpeculateMode {
@@ -124,9 +108,8 @@ impl SpeculateMode {
             None => Ok(Self::Off),
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
-            Some("eagle5" | "eagle-5" | "eagle5-v2") => Ok(Self::Eagle5),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared, eagle5, or off"
+                "unknown speculate mode `{other}`; expected exact-shared or off"
             ))),
         }
     }
@@ -135,7 +118,6 @@ impl SpeculateMode {
         match self {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
-            Self::Eagle5 => "eagle5",
         }
     }
 }

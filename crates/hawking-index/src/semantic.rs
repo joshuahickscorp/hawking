@@ -406,13 +406,11 @@ impl<'a, E: EmbeddingClient> HybridRetriever<'a, E> {
 mod tests {
     use super::*;
     use std::collections::HashMap;
-
     #[test]
     fn rrf_kernel_sums_reciprocals() {
         let v = reciprocal_rank_fusion(&[0, 1], 60.0);
         assert!((v - (1.0 / 60.0 + 1.0 / 61.0)).abs() < 1e-6);
     }
-
     #[test]
     fn fuse_legs_weights_and_orders() {
         let a = LegRanking {
@@ -426,16 +424,13 @@ mod tests {
             ranked_keys: vec!["y:1".into(), "x:1".into()],
         };
         let fused = fuse_legs(&[a, b], 60.0);
-        // x:1 is rank0 in the heavier leg → should lead
         assert_eq!(fused[0].0, "x:1");
     }
-
     #[test]
     fn cosine_basic() {
         assert!((cosine(&[1.0, 0.0], &[1.0, 0.0]) - 1.0).abs() < 1e-6);
         assert!(cosine(&[1.0, 0.0], &[0.0, 1.0]).abs() < 1e-6);
     }
-
     #[tokio::test]
     async fn vector_leg_uses_cosine_over_stored_vectors() {
         let store = SqliteStore::open_in_memory().unwrap();
@@ -455,20 +450,16 @@ mod tests {
             )
             .unwrap();
         let embedder = BagOfCharsEmbeddingClient::default();
-        // embed and store the chunk vector
         let pending = store.pending_chunks(10).unwrap();
         let txt = "pub fn alpha() { compute(); }";
         let vecs = embedder.embed(vec![txt.to_string()]).await.unwrap();
         store
             .store_vector(&pending[0].chunk_id, &embedder.model_id(), &vecs[0])
             .unwrap();
-
         let retriever = HybridRetriever::new(&store, &embedder);
         let leg = retriever.vector_leg("compute alpha", 5).await.unwrap();
         assert!(!leg.ranked_keys.is_empty(), "vector leg must return hits");
     }
-
-    /// Property: StubEmbeddingClient refuses rather than returning fixture vectors.
     #[tokio::test]
     async fn stub_embedding_client_refuses_rather_than_fixture_results() {
         let stub = StubEmbeddingClient::default();
@@ -477,14 +468,8 @@ mod tests {
             .await
             .expect_err("stub must refuse");
         let msg = err.to_string();
-        assert!(
-            msg.contains("refuses") || msg.contains("StubEmbeddingClient"),
-            "error must name the refusal, got: {msg}"
-        );
+        assert!(msg.contains("refuses") || msg.contains("StubEmbeddingClient"));
     }
-
-    /// An embedder that records how many times `embed()` was invoked, so a test
-    /// can prove the vector leg was (or wasn't) run.
     struct CountingEmbedder {
         calls: std::sync::Arc<std::sync::atomic::AtomicUsize>,
     }
@@ -497,7 +482,6 @@ mod tests {
             "counting:test".into()
         }
     }
-
     #[tokio::test]
     async fn include_semantic_toggles_vector_leg() {
         use std::sync::atomic::Ordering;
@@ -508,7 +492,6 @@ mod tests {
             calls: calls.clone(),
         };
         let retriever = HybridRetriever::new(&store, &embedder);
-
         let snippets: HashMap<String, FusedHit> = HashMap::new();
         let lexical = LegRanking {
             name: "lexical".into(),
@@ -520,8 +503,6 @@ mod tests {
             weight: 1.0,
             ranked_keys: vec![],
         };
-
-        // include_semantic = false → embedder must NOT be called.
         retriever
             .search_with_legs(
                 "q",
@@ -534,13 +515,7 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(
-            calls.load(Ordering::SeqCst),
-            0,
-            "vector leg ran despite include_semantic=false"
-        );
-
-        // include_semantic = true → embedder IS called exactly once (the query embed).
+ assert_eq!( calls.load(Ordering::SeqCst), 0, "vector leg ran despite include_semantic=false" );
         retriever
             .search_with_legs(
                 "q",
@@ -553,19 +528,13 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(
-            calls.load(Ordering::SeqCst),
-            1,
-            "vector leg should have embedded the query"
-        );
+ assert_eq!( calls.load(Ordering::SeqCst), 1, "vector leg should have embedded the query" );
     }
-
     #[tokio::test]
     async fn full_search_fuses_and_reranks() {
         let store = SqliteStore::open_in_memory().unwrap();
         let embedder = BagOfCharsEmbeddingClient::default();
         let retriever = HybridRetriever::new(&store, &embedder);
-
         let mut snippets = HashMap::new();
         snippets.insert(
             "a.rs:1".to_string(),

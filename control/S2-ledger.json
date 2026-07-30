@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.rebuild.s2_ledger.v1",
+  "title": "Land the Core C laboratory cutover with its gates closed",
+  "slice": "S2b",
+  "revision": 6,
+  "at": "2026-07-29",
+  "base_commit": "eac7d8fe02ae26eeca20bc66b604ee87921e552d",
+  "main_projection_commit": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+  "target_reached": false,
+  "target_note": "r6 restores counted Python authority for 43 irreducible modules; narrow gates green; independent final review pending; worktree uncommitted.",
+  "gates": {
+    "blackbox": "86/86 runnable, exit 0",
+    "capability_manifest": "1 invocable / 0 not; --check exit 0",
+    "generation_audit": "no new unearned S2 files; campaign baseline 6 files / 2872 LOC pre-existing under worktree HEAD; main generated 0",
+    "inventory_caps": "python_entrypoints 197",
+    "inventory_tests": "logical_cases 3967",
+    "pytest_narrow": "test_glm52_terminal_proofs + test_campaign_engine = 119 passed",
+    "classification_parity": "43 records exact match pre-JSON r4/r5 authority",
+    "topology_main_projection": "PASS all dimensions hold or decrease",
+    "git_diff_check": "clean (content scan); lab lines <=120",
+    "json_authority": "lab/irreducible_modules.json deleted; science_registry.py is sole authority"
+  },
+  "terminal_proofs_disposition": {
+    "decision": "PROTECTED as content contracts + historical path+commit+digest instrument pins (binding A)",
+    "external": {
+      "generator_path": "tools/condense/glm52_external_baselines.py",
+      "generator_commit": "2ee17e0edf026e9ed0fa3c8b21f6e7b7dcd9b749",
+      "generator_sha256": "5a8f216905578f64bf6573fa1598250531d31fcf1a2d77ae1dd2a9e68ba65477",
+      "common_path": "tools/condense/glm52_common.py",
+      "common_commit": "753c73dc0685ce470090aba3e49c62fe4a4f9b08",
+      "common_sha256": "6e67ada54b6b4dac24b50682b3d900de349f33d545921fb10169625507201eb2"
+    },
+    "adapter_corpus_production_commit": "2a7fddad866ba73dda933daf310a948469f25bf3",
+    "implementation": "ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256 / CORPUS_* pins; no live reader.raw instrument hashing; git-blob regressions in tests; live drift non-interference",
+    "root_artifacts_resealed": false
+  },
+  "ledger": {
+    "eliminated": 0,
+    "facade": 0,
+    "generated": 0,
+    "relocated": 0,
+    "rewritten": 558,
+    "rewritten_detail": {
+      "formula": "rewritten = old_engine_loc - new_lab_loc = 2950 - 2392 = 558",
+      "old_loc": 2950,
+      "new_loc": 2392,
+      "note": "Process engine only. Science floor not claimed as rewritten."
+    },
+    "apparatus_added": {
+      "proof_and_tests": 338,
+      "report_md": 111,
+      "note": "All proof/test/report growth counted as added apparatus, not condensation credit."
+    }
+  },
+  "measurement": {
+    "authority": "tools/loc/hawking_loc.py + hawking_topology.py; path arithmetic on ea33af24 + intended S2 paths; archive-paired disposable delta confirms",
+    "main_base_honest_active_loc": 437285,
+    "main_proj_honest_active_loc": 437176,
+    "main_delta_honest_active_loc": -109,
+    "main_margin_below_base": 109,
+    "old_process_engine_active_loc": 2950,
+    "old_process_engine_path": "tools/condense/engine/",
+    "new_lab_active_loc": 2392,
+    "new_lab_path": "lab/",
+    "lab_python_physical_loc": 2392,
+    "irreducible_module_records": 43,
+    "irreducible_authority": "lab/science_registry.py (counted Python; no data-file catalog)",
+    "generated_credit_s2": 0,
+    "generated_main_ea33af24": 0,
+    "topology": {
+      "main_projection_ea33af24": {
+        "directories_all": {"base": 138, "final": 138, "delta": 0},
+        "directories_leaf": {"base": 110, "final": 110, "delta": 0},
+        "source_files": {"base": 1209, "final": 1207, "delta": -2},
+        "rust_crates": {"base": 20, "final": 20, "delta": 0},
+        "public_symbols": {"base": 9549, "final": 9542, "delta": -7},
+        "functions": {"base": 14691, "final": 14689, "delta": -2},
+        "files_over_1500": {"base": 26, "final": 26, "delta": 0},
+        "tiny_forwarders": {"base": 13, "final": 13, "delta": 0}
+      }
+    }
+  }
+}

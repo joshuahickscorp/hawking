@@ -5,7 +5,6 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { vi } from "vitest";
 
 /** Every TypeScript source file under a directory (recursive). */
 export function walk(dir: string, opts: { excludeTests?: boolean } = {}): string[] {

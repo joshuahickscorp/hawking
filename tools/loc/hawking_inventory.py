@@ -169,14 +169,50 @@ def diff(base: Path, new: Path) -> int:
     return lost
 
 
+def snapshot(prefix: str) -> int:
+    """Write both inventories under one prefix, so neither can be taken alone."""
+    Path(f"{prefix}.tests.json").write_text(json.dumps(logical_tests(), indent=2, sort_keys=True) + "\n")
+    Path(f"{prefix}.caps.json").write_text(json.dumps(capabilities(), indent=2, sort_keys=True) + "\n")
+    print(f"snapshot written: {prefix}.tests.json {prefix}.caps.json")
+    return 0
+
+
+def gate(base_prefix: str, new_prefix: str) -> int:
+    """Run BOTH diffs and fail if either regresses.
+
+    A merge once deleted verify_grades.py -- 220 lines with a live __main__ -- and was
+    reported as capability-preserving. The detector did not fail; only the test diff was
+    ever run, and the capability diff was never taken. One command that always checks both
+    is the fix, because the failure was choosing which half to look at.
+    """
+    worst = 0
+    for kind in ("tests", "caps"):
+        b, n = Path(f"{base_prefix}.{kind}.json"), Path(f"{new_prefix}.{kind}.json")
+        if not b.exists() or not n.exists():
+            print(f"MISSING {kind} snapshot — gate cannot pass without both", file=sys.stderr)
+            return 2
+        print(f"--- {kind} ---")
+        worst = max(worst, diff(b, n))
+    print("GATE PASS" if not worst else "GATE FAIL")
+    return worst
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--capabilities", action="store_true")
     ap.add_argument("--tests", action="store_true")
     ap.add_argument("--diff", nargs=2, metavar=("BASE", "NEW"))
+    ap.add_argument("--snapshot", default=None, metavar="PREFIX",
+                    help="write both inventories under PREFIX (use with --gate)")
+    ap.add_argument("--gate", nargs=2, metavar=("BASE_PREFIX", "NEW_PREFIX"),
+                    help="diff BOTH inventories; non-zero if either regressed")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
+    if args.snapshot:
+        return snapshot(args.snapshot)
+    if args.gate:
+        return gate(args.gate[0], args.gate[1])
     if args.diff:
         return diff(Path(args.diff[0]), Path(args.diff[1]))
 

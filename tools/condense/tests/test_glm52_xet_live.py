@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline adversarial tests for the GLM-5.2 live Xet executor foundation."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import hashlib
 import io
@@ -14,14 +19,10 @@ from typing import Any, Mapping
 
 import pytest
 
-
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_xet_live as live  # noqa: E402
-from glm52_common import Glm52Error, canonical, seal, verify_sealed  # noqa: E402
-
+from lab.operators import glm52_xet_live as live  # noqa: E402
+from lab.operators.glm52_common import Glm52Error, canonical, seal, verify_sealed  # noqa: E402
 
 TRIAL_IDS = [
     "DEFAULT_UNSET",
@@ -31,10 +32,8 @@ TRIAL_IDS = [
 ]
 COUNTS = [8, 8, 16, 24, 32, 48, 8, 8, 8, 8, 8, 8]
 
-
 def _sha(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
-
 
 def _fake_plan() -> dict[str, Any]:
     ranges = []
@@ -42,94 +41,61 @@ def _fake_plan() -> dict[str, Any]:
         identity = {
             "schema": "hawking.glm52.xet_body_range_identity.v1",
             "path": f"model-{index + 1:05d}-of-00282.safetensors",
-            "xet_hash": _sha(f"xet-{index}"),
-            "lfs_sha256": _sha(f"lfs-{index}"),
-            "start": 16,
-            "end": 32,
-            "length": 16,
+            "xet_hash": _sha(f"xet-{index}"), "lfs_sha256": _sha(f"lfs-{index}"),
+            "start": 16, "end": 32, "length": 16,
         }
         ranges.append({
             "range_id_sha256": hashlib.sha256(canonical(identity)).hexdigest(),
-            "path": identity["path"],
-            "xet_hash": identity["xet_hash"],
-            "lfs_sha256": identity["lfs_sha256"],
-            "file_bytes": 64,
-            "start": 16,
-            "end": 32,
-            "length": 16,
+            "path": identity["path"], "xet_hash": identity["xet_hash"],
+            "lfs_sha256": identity["lfs_sha256"], "file_bytes": 64,
+            "start": 16, "end": 32, "length": 16,
         })
     matrix = []
     for ordinal, (trial_id, count) in enumerate(zip(TRIAL_IDS, COUNTS)):
-        environment: dict[str, str] = {}
+        env: dict[str, str] = {}
         if trial_id.startswith("FILES_"):
-            environment["HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS"] = str(
-                int(trial_id.removeprefix("FILES_"))
-            )
+            env["HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS"] = str(int(trial_id.removeprefix("FILES_")))
         if trial_id.startswith("FIXED_"):
-            environment["HF_XET_FIXED_DOWNLOAD_CONCURRENCY"] = trial_id.removeprefix("FIXED_")
+            env["HF_XET_FIXED_DOWNLOAD_CONCURRENCY"] = trial_id.removeprefix("FIXED_")
         if trial_id == "HIGH_PERFORMANCE":
-            environment["HF_XET_HIGH_PERFORMANCE"] = "1"
+            env["HF_XET_HIGH_PERFORMANCE"] = "1"
         if trial_id.startswith("CACHE_"):
-            environment["HF_XET_CHUNK_CACHE_SIZE_BYTES"] = str(1024**3)
+            env["HF_XET_CHUNK_CACHE_SIZE_BYTES"] = str(1024**3)
         ids = [row["range_id_sha256"] for row in ranges[:count]]
         matrix.append({
-            "ordinal": ordinal,
-            "trial_id": trial_id,
-            "kind": "BOUNDED_XET_BODY_RANGE",
+            "ordinal": ordinal, "trial_id": trial_id, "kind": "BOUNDED_XET_BODY_RANGE",
             "caller_concurrent_shard_streams": count,
-            "configured_file_download_limit": "TEST",
-            "transfer_profile": "TEST",
+            "configured_file_download_limit": "TEST", "transfer_profile": "TEST",
             "high_performance": trial_id == "HIGH_PERFORMANCE",
-            "chunk_cache_policy": "TEST",
-            "environment": environment,
-            "range_count": count,
+            "chunk_cache_policy": "TEST", "environment": env, "range_count": count,
             "ordered_range_ids": ids,
             "ordered_range_ids_sha256": hashlib.sha256(canonical(ids)).hexdigest(),
             "planned_payload_bytes": count * 16,
-            "selectable_after_schedule_refreeze": True,
-            "diagnostic_only_reason": None,
+            "selectable_after_schedule_refreeze": True, "diagnostic_only_reason": None,
         })
     bounded = sum(row["planned_payload_bytes"] for row in matrix)
-    largest_bytes = 64
-    largest_hash = _sha("largest-full-body")
+    largest_bytes, largest_hash = 64, _sha("largest-full-body")
     return seal({
-        "schema": live.autotune.PLAN_SCHEMA,
-        "status": "PASS_OFFLINE_PLAN_BODY_NOT_READ",
-        "repo": live.REPO_ID,
-        "revision": live.REVISION,
-        "inputs": [
-            {
-                "path": path,
-                "schema": "test",
-                "status": "PASS",
-                "seal_sha256": _sha(path),
-            }
-            for path in (
-                "GLM52_OFFICIAL_MANIFEST.json",
-                "GLM52_SOURCE_FORMAT_LEDGER.json",
-                "GLM52_SHARD_DEPENDENCY_GRAPH.json",
-                "GLM52_SOURCE_ADMISSION.json",
-            )
-        ],
+        "schema": live.autotune.PLAN_SCHEMA, "status": "PASS_OFFLINE_PLAN_BODY_NOT_READ",
+        "repo": live.REPO_ID, "revision": live.REVISION,
+        "inputs": [{"path": path, "schema": "test", "status": "PASS", "seal_sha256": _sha(path)}
+                   for path in ("GLM52_OFFICIAL_MANIFEST.json", "GLM52_SOURCE_FORMAT_LEDGER.json",
+                                "GLM52_SHARD_DEPENDENCY_GRAPH.json", "GLM52_SOURCE_ADMISSION.json")],
         "toolchain_binding": {"schema": "test", "sha256": _sha("toolchain")},
         "resource_reserve_policy": live._expected_resource_policy_binding(),
         "range_strategy": {"body_ranges": ranges, "range_bytes": 16},
         "trial_matrix": matrix,
         "largest_shard_validation": {
-            "path": "model-00200-of-00282.safetensors",
-            "bytes": largest_bytes,
-            "xet_hash": _sha("largest-xet"),
-            "lfs_sha256": largest_hash,
+            "path": "model-00200-of-00282.safetensors", "bytes": largest_bytes,
+            "xet_hash": _sha("largest-xet"), "lfs_sha256": largest_hash,
             "passes": ["acquisition pass", "steady pass"],
         },
         "network_budget": {
             "bounded_range_payload_bytes": bounded,
             "largest_shard_validation_bytes": largest_bytes * 2,
-            "planned_maximum_bytes": bounded + largest_bytes * 2,
-            "hard_cap_bytes": 100_000,
+            "planned_maximum_bytes": bounded + largest_bytes * 2, "hard_cap_bytes": 100_000,
         },
     })
-
 
 @pytest.fixture
 def plan(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
@@ -147,7 +113,6 @@ def plan(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
 
     monkeypatch.setattr(live, "validate_live_plan", accept_plan)
     return value
-
 
 def _spec(
     plan: Mapping[str, Any],
@@ -167,7 +132,6 @@ def _spec(
         sample_interval_seconds=0.1,
         rebuild_plan=False,
     )
-
 
 def _capability(spec: Mapping[str, Any], *, expires: int = 10**30) -> dict[str, Any]:
     return seal({
@@ -189,7 +153,6 @@ def _capability(spec: Mapping[str, Any], *, expires: int = 10**30) -> dict[str, 
         "credentials_serialized": False,
     })
 
-
 class _Verifier:
     def __init__(self, accepted: bool = True) -> None:
         self.accepted = accepted
@@ -200,7 +163,6 @@ class _Verifier:
         assert kwargs["spec"]["credentials_serialized"] is False
         self.calls += 1
         return self.accepted
-
 
 def test_plan_verification_is_delegated_with_rebuild(monkeypatch: pytest.MonkeyPatch) -> None:
     value = _fake_plan()
@@ -213,7 +175,6 @@ def test_plan_verification_is_delegated_with_rebuild(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(live.autotune, "verify_plan", verify)
     assert live.validate_live_plan(value, root=pathlib.Path("/tmp/test"), rebuild=True) == value
     assert calls == [(pathlib.Path("/tmp/test"), True)]
-
 
 def test_trial_spec_is_exact_sealed_and_projects_ordered_ranges(plan: dict[str, Any]) -> None:
     spec = _spec(plan, "FILES_16")
@@ -229,7 +190,6 @@ def test_trial_spec_is_exact_sealed_and_projects_ordered_ranges(plan: dict[str, 
     assert spec["credentials_serialized"] is False
     assert spec["public_hub_auth"]["refresh_headers_serialized"] is False
     assert live.validate_trial_spec(spec, plan) == spec
-
 
 def test_spec_and_result_reject_resource_policy_substitution(plan: dict[str, Any]) -> None:
     spec = _spec(plan)
@@ -251,7 +211,6 @@ def test_spec_and_result_reject_resource_policy_substitution(plan: dict[str, Any
     with pytest.raises(Glm52Error, match="reserve policy"):
         live.validate_trial_result(seal(forged), plan=plan)
 
-
 def test_spec_budget_and_environment_are_fail_closed(plan: dict[str, Any]) -> None:
     with pytest.raises(Glm52Error, match="does not fit the trial"):
         _spec(plan, "FILES_48", cap=100)
@@ -262,7 +221,6 @@ def test_spec_budget_and_environment_are_fail_closed(plan: dict[str, Any]) -> No
     corrupt = seal(corrupt)
     with pytest.raises(Glm52Error, match="unapproved environment"):
         _spec(corrupt)
-
 
 def test_capability_requires_independent_live_verifier_and_expiry(plan: dict[str, Any]) -> None:
     provisional = _spec(plan)
@@ -288,7 +246,6 @@ def test_capability_requires_independent_live_verifier_and_expiry(plan: dict[str
             expired, plan=plan, spec=expired_spec, verifier=_Verifier(), now_unix_ns=2
         )
 
-
 def test_execute_refuses_without_explicit_environment_before_spawn(plan: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
     spec = _spec(plan)
     capability = _capability(spec)
@@ -311,7 +268,6 @@ def test_execute_refuses_without_explicit_environment_before_spawn(plan: dict[st
         )
     assert called is False
 
-
 def test_child_environment_removes_inherited_xet_and_secret_execution_flags(plan: dict[str, Any]) -> None:
     spec = _spec(plan, "FIXED_32")
     env = live.child_environment(spec, {
@@ -332,7 +288,6 @@ def test_child_environment_removes_inherited_xet_and_secret_execution_flags(plan
     assert env[live.SPEC_SEAL_ENV] == spec["seal_sha256"]
     assert env["HF_HUB_DISABLE_IMPLICIT_TOKEN"] == "1"
 
-
 def test_public_hub_group_uses_token_false_refresh_without_serializing_values() -> None:
     class Session:
         kwargs: dict[str, Any]
@@ -351,7 +306,6 @@ def test_public_hub_group_uses_token_false_refresh_without_serializing_values() 
     rendered = json.dumps(evidence)
     assert session.kwargs["token_refresh_url"] not in rendered
     assert all(value not in rendered for value in session.kwargs["token_refresh_headers"].values())
-
 
 def test_streams_exact_ranges_to_sha256_in_memory_without_network(
     plan: dict[str, Any], monkeypatch: pytest.MonkeyPatch
@@ -412,7 +366,6 @@ def test_streams_exact_ranges_to_sha256_in_memory_without_network(
         assert row["bytes"] == len(expected)
         assert row["sha256"] == hashlib.sha256(expected).hexdigest()
 
-
 def test_xet_log_parser_preserves_missing_metrics_as_null() -> None:
     missing = live.parse_xet_json_logs([
         json.dumps({"level": "info", "message": "download finished"}) + "\n",
@@ -437,7 +390,6 @@ def test_xet_log_parser_preserves_missing_metrics_as_null() -> None:
     assert explicit["maximum_temporary_amplification_ratio"] == 1.3
     assert explicit["configuration_related_json_events"] == 1
     assert explicit["raw_logs_serialized"] is False
-
 
 def test_darwin_parsers_are_strict_and_do_not_default_to_zero() -> None:
     assert live.parse_swapusage(
@@ -468,7 +420,6 @@ bridge0* 1500 <Link#3> aa:cc 40 0 400 50 0 500 0
     with pytest.raises(Glm52Error):
         live.parse_thermal_warning("")
 
-
 def test_resource_sample_rejects_missing_or_unknown_fields() -> None:
     sample = _resource_sample(123)
     assert live._validate_resource_sample(sample, pid=123) == sample
@@ -479,7 +430,6 @@ def test_resource_sample_rejects_missing_or_unknown_fields() -> None:
     unknown = {**sample, "made_up_zero": 0}
     with pytest.raises(Glm52Error, match="unknown"):
         live._validate_resource_sample(unknown, pid=123)
-
 
 class _TimeoutProcess:
     pid = 777
@@ -497,14 +447,12 @@ class _TimeoutProcess:
             raise subprocess.TimeoutExpired("child", 1)
         return -signal.SIGKILL
 
-
 def test_child_cancellation_escalates_from_sigint_to_sigkill(monkeypatch: pytest.MonkeyPatch) -> None:
     sent: list[tuple[int, int]] = []
     monkeypatch.setattr(os, "killpg", lambda pid, sig: sent.append((pid, sig)))
     process = _TimeoutProcess()
     live._cancel_child(process, grace_seconds=0.01)  # type: ignore[arg-type]
     assert sent == [(777, signal.SIGINT), (777, signal.SIGKILL)]
-
 
 def _resource_sample(pid: int, **updates: Any) -> dict[str, Any]:
     value = {
@@ -526,7 +474,6 @@ def _resource_sample(pid: int, **updates: Any) -> dict[str, Any]:
     }
     value.update(updates)
     return value
-
 
 @pytest.mark.parametrize(
     ("updates", "reason"),
@@ -560,7 +507,6 @@ def test_live_resource_policy_enforcement_is_fail_closed(
             policy=live._expected_resource_policy_binding(),
         )
 
-
 def _log_evidence() -> dict[str, Any]:
     return live.parse_xet_json_logs([
         json.dumps({
@@ -569,7 +515,6 @@ def _log_evidence() -> dict[str, Any]:
             "temporary_amplification_ratio": 1.1,
         }) + "\n"
     ])
-
 
 def _child_for_spec(
     spec: Mapping[str, Any],
@@ -619,7 +564,6 @@ def _child_for_spec(
         "error": None,
     })
 
-
 class _WritePipe:
     def __init__(self) -> None:
         self.writes: list[str] = []
@@ -633,7 +577,6 @@ class _WritePipe:
 
     def close(self) -> None:
         return None
-
 
 class _ProtocolProcess:
     pid = 123
@@ -667,7 +610,6 @@ class _ProtocolProcess:
         self.returncode = 0
         return 0
 
-
 class _Samples:
     def __init__(self, samples: list[dict[str, Any]]) -> None:
         self.samples = iter(samples)
@@ -677,7 +619,6 @@ class _Samples:
         assert pid == 123
         self.calls += 1
         return next(self.samples)
-
 
 class _Network:
     def __init__(self, counters: list[int]) -> None:
@@ -698,7 +639,6 @@ class _Network:
             "credentials_serialized": False,
         }
 
-
 def _authorized_spec(plan: Mapping[str, Any], *, cap: int = 10_000):
     provisional = _spec(plan, cap=cap)
     capability = _capability(provisional)
@@ -706,7 +646,6 @@ def _authorized_spec(plan: Mapping[str, Any], *, cap: int = 10_000):
         _spec(plan, capability_seal=capability["seal_sha256"], cap=cap),
         capability,
     )
-
 
 def test_subsecond_protocol_gets_three_real_samples_without_body_or_network(
     plan: dict[str, Any],
@@ -743,7 +682,6 @@ def test_subsecond_protocol_gets_three_real_samples_without_body_or_network(
     ] is True
     assert result["body_persistence"]["python_body_file_writes"] == 0
 
-
 def test_cap_crossing_cancels_then_accounts_post_cancel_counter(
     plan: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
@@ -772,7 +710,6 @@ def test_cap_crossing_cancels_then_accounts_post_cancel_counter(
     assert cancellations == [123, 123]
     assert counter.calls == 3
     assert not any('"command":"ACK"' in item for item in process.stdin.writes)
-
 
 def test_pre_go_thermal_gate_cancels_before_go(
     plan: dict[str, Any],
@@ -803,7 +740,6 @@ def test_pre_go_thermal_gate_cancels_before_go(
     assert counter.calls == 0
     assert not any('"command":"GO"' in item for item in process.stdin.writes)
 
-
 def _result_for_spec(
     spec: Mapping[str, Any],
     *,
@@ -833,7 +769,6 @@ def _result_for_spec(
     )
     return result
 
-
 def test_result_marks_missing_retry_metric_incomplete_not_zero(plan: dict[str, Any]) -> None:
     spec = _spec(plan)
     child = _child_for_spec(spec, elapsed=1.0)
@@ -851,7 +786,6 @@ def test_result_marks_missing_retry_metric_incomplete_not_zero(plan: dict[str, A
     assert result["status"] == "INCOMPLETE_REQUIRED_XET_METRICS"
     assert result["resource_observations"]["missing_metrics"] == ["retry_rate"]
     assert result["resource_observations"]["before"]["retry_rate"] is None
-
 
 def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dict[str, Any]) -> None:
     results = []
@@ -982,7 +916,6 @@ def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dic
             required_available_ram_bytes=live.autotune.MINIMUM_AVAILABLE_RAM_BYTES,
             rebuild_plan=False,
         )
-
 
 def test_module_has_no_destination_download_or_destructive_gc_surface() -> None:
     source = (CONDENSE / "glm52_xet_live.py").read_text(encoding="utf-8")

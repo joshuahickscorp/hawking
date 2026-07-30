@@ -27,7 +27,8 @@ pub struct GeneratedArtifact {
 pub fn generate_all() -> Vec<GeneratedArtifact> {
     vec![
         GeneratedArtifact {
-            relative_path: "generated/families.md",
+            // Counted source golden (not under generated/ exclusion).
+            relative_path: "goldens/families.md",
             contents: family_docs_md(),
         },
         GeneratedArtifact {
@@ -79,7 +80,8 @@ pub fn generate_all() -> Vec<GeneratedArtifact> {
             contents: cli_completion_zsh(),
         },
         GeneratedArtifact {
-            relative_path: "generated/sdk_types.d.ts",
+            // Counted source golden (not under generated/ exclusion).
+            relative_path: "goldens/sdk_types.d.ts",
             contents: sdk_types_ts(),
         },
         GeneratedArtifact {
@@ -207,6 +209,13 @@ fn family_docs_md() -> String {
         for g in d.gaps {
             out.push_str(&format!("- {g}\n"));
         }
+        out.push('\n');
+    }
+    // Single trailing newline only (git diff --check rejects blank line at EOF).
+    while out.ends_with("\n\n") {
+        out.pop();
+    }
+    if !out.ends_with('\n') {
         out.push('\n');
     }
     out

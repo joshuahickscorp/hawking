@@ -10,7 +10,13 @@ use std::sync::Arc;
 
 pub fn build_default_tool_registry() -> ToolRegistry {
     let registry = ToolRegistry::default();
-    hide_tools::register_builtin_tools(&registry);
+    // Unit tests assert EXEC behaviour; nested sandbox-exec is flaky under
+    // agent/CI seats. Profile/SBPL coverage lives in hide-kernel::security tests.
+    let shell = hide_kernel::tooling::ShellConfig {
+        disable_sandbox: cfg!(test),
+        ..Default::default()
+    };
+    hide_kernel::tooling::register_builtin_tools_with(&registry, shell);
     registry
 }
 
@@ -405,7 +411,6 @@ mod tests {
     use hide_core::tool::ToolCall;
     use hide_core::types::Decision;
     use serde_json::json;
-
     #[test]
     fn default_registry_contains_builtin_tools() {
         let registry = build_default_tool_registry();
@@ -414,7 +419,6 @@ mod tests {
         assert!(names.contains(&"fs.write".to_string()));
         assert!(names.contains(&"shell.plan".to_string()));
     }
-
     #[tokio::test]
     async fn dispatcher_uses_workspace_policy_for_writes() {
         let dir =
@@ -424,7 +428,6 @@ mod tests {
         let registry = Arc::new(build_default_tool_registry());
         let dispatcher = build_default_tool_dispatcher(&config, registry);
         let file = dir.join("allowed.txt");
-
         let result = dispatcher
             .dispatch(ToolCall::new(
                 "fs.write",
@@ -436,14 +439,10 @@ mod tests {
             ))
             .await
             .unwrap();
-
         assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "allowed");
         let _ = std::fs::remove_dir_all(dir);
     }
-
-    // --- write lease ----------------------------------------------------------------------
-
     fn lease(scopes: Vec<PathBuf>) -> WriteLease {
         WriteLease {
             lease_id: "lease-test".to_string(),
@@ -454,14 +453,10 @@ mod tests {
             granted_ms: hide_core::ids::now_ms(),
         }
     }
-
-    /// `lease_covering` reading the AMBIENT attribution, which is what the host's shared
-    /// dispatcher does.
     fn lease_covering_here(request: &PermissionRequest) -> Option<WriteLease> {
         let session = dispatch_context().map(|c| c.session_id.as_str().to_string());
         lease_covering(request, session.as_deref())
     }
-
     fn write_request(target: &str) -> PermissionRequest {
         PermissionRequest {
             capability_kind: "fs.write".to_string(),
@@ -477,7 +472,6 @@ mod tests {
             grant: None,
         }
     }
-
     #[test]
     fn lease_covers_only_paths_inside_a_declared_scope() {
         let l = lease(vec![PathBuf::from("/repo/app")]);
@@ -488,95 +482,52 @@ mod tests {
         assert!(!l.covers("/repo/app/../../etc/passwd"), "a parent walk cannot escape");
         assert!(!l.covers("relative/path.rs"), "a relative target is not provably in scope");
     }
-
-    /// The lease is read under a dispatch context, because that is the only way a real write
-    /// reaches it: the permission request itself carries no task, so the attribution is what binds
-    /// a covered write to the session the grant named.
     async fn as_session<T>(session: &str, fut: impl std::future::Future<Output = T>) -> T {
         with_dispatch_context(hide_core::ids::SessionId::from(session), None, fut).await
     }
-
     #[tokio::test]
     async fn lease_relaxes_only_fs_write_with_predicted_in_scope_effects() {
         let _guard = lease_test_guard();
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
         as_session("sess", async {
             assert!(lease_covering_here(&write_request("/repo/a.rs")).is_some());
-            assert!(
-                lease_covering_here(&write_request("/elsewhere/a.rs")).is_none(),
-                "outside the declared scope"
-            );
-
-            // A shell command is a different capability: force push, deploy and publish live here and
-            // the lease never touches them.
+            assert!(lease_covering_here(&write_request("/elsewhere/a.rs")).is_none());
             let mut shell = write_request("/repo/a.rs");
             shell.capability_kind = "shell.exec".to_string();
             assert!(lease_covering_here(&shell).is_none());
-
-            // A git mutation is a different capability too.
             let mut git = write_request("/repo/a.rs");
             git.capability_kind = "git.write".to_string();
             assert!(lease_covering_here(&git).is_none());
-
-            // No predicted effects means no proven target.
             let mut blind = write_request("/repo/a.rs");
             blind.effects.clear();
             assert!(lease_covering_here(&blind).is_none());
-
-            // One out-of-scope effect in the set poisons the whole call.
             let mut mixed = write_request("/repo/a.rs");
             mixed.effects.push(write_request("/elsewhere/b.rs").effects.remove(0));
             assert!(lease_covering_here(&mixed).is_none());
         })
         .await;
-
         revoke_write_lease("end of test");
     }
-
-    /// A lease authorizes ONE task, not the process: a write attributed to another session, or to
-    /// no session at all (any caller on the unauthenticated loopback transport), is not covered,
-    /// and neither is one that arrives after the grant expired.
     #[tokio::test]
     async fn a_lease_is_bound_to_the_granting_session_and_expires() {
         let _guard = lease_test_guard();
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
-
         assert!(
             as_session("sess", async {
                 lease_covering_here(&write_request("/repo/a.rs")).is_some()
             })
             .await
         );
-        assert!(
-            as_session("another-session", async {
-                lease_covering_here(&write_request("/repo/a.rs")).is_none()
-            })
-            .await,
-            "another session's write is not this task's write"
-        );
-        assert!(
-            lease_covering_here(&write_request("/repo/a.rs")).is_none(),
-            "an unattributed write is not provably this task's either"
-        );
-
+        assert!(as_session("another-session", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
+        assert!(lease_covering_here(&write_request("/repo/a.rs")).is_none());
         let expired = WriteLease {
             granted_ms: hide_core::ids::now_ms() - LEASE_TTL_MS - 1,
             ..lease(vec![PathBuf::from("/repo")])
         };
         install_write_lease(expired);
-        assert!(
-            as_session("sess", async {
-                lease_covering_here(&write_request("/repo/a.rs")).is_none()
-            })
-            .await,
-            "a lease past its TTL grants nothing"
-        );
-
+        assert!(as_session("sess", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
         revoke_write_lease("end of test");
     }
-
-    /// Task completion revokes the grant the app actually sends, which carries a session and no
-    /// run. Keyed on the run alone, the completion trigger could never match it.
     #[test]
     fn task_completion_revokes_a_session_only_grant() {
         let _guard = lease_test_guard();
@@ -584,16 +535,10 @@ mod tests {
             run_id: None,
             ..lease(vec![PathBuf::from("/repo")])
         });
-        assert!(
-            revoke_write_lease_for_run("any-run", Some("other-session")).is_none(),
-            "another session's task ending is not this grant's task ending"
-        );
+        assert!(revoke_write_lease_for_run("any-run", Some("other-session")).is_none());
         assert!(revoke_write_lease_for_run("any-run", Some("sess")).is_some());
         assert_eq!(active_write_lease(), None);
     }
-
-    /// Containment is checked on the real path, so a symlink inside the scope cannot carry the
-    /// lease out of the repo.
     #[test]
     fn a_symlink_inside_the_scope_does_not_escape_it() {
         let dir = std::env::temp_dir().join(format!("hide_lease_link_{}", hide_core::ids::now_ms()));
@@ -606,18 +551,13 @@ mod tests {
         let l = lease(vec![scope.clone()]);
         assert!(l.covers(&scope.join("in.rs").to_string_lossy()), "an ordinary path inside");
         #[cfg(unix)]
-        assert!(
-            !l.covers(&scope.join("link/escaped.rs").to_string_lossy()),
-            "a symlinked directory resolves to its target, which is outside the scope"
-        );
+        assert!(!l.covers(&scope.join("link/escaped.rs").to_string_lossy()));
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn lease_never_relaxes_a_deny_and_never_grants_the_gate() {
         let _guard = lease_test_guard();
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
-
         struct AlwaysDeny;
         impl PermissionEngine for AlwaysDeny {
             fn evaluate(&self, _: &PermissionRequest) -> PermissionVerdict {
@@ -632,62 +572,42 @@ mod tests {
             inner: AlwaysDeny,
             bound: None,
         };
-        assert_eq!(
-            engine.evaluate(&write_request("/repo/a.rs")).decision,
-            Decision::Deny,
-            "a lease widens Ask, never Deny"
-        );
-        // The approval-gated EFFECT path reads `gate_released`, which a lease deliberately leaves
-        // false, so /rpc and the connector route see exactly what they saw without a lease.
+        assert_eq!(engine.evaluate(&write_request("/repo/a.rs")).decision, Decision::Deny);
         assert!(!gate_released(), "a lease is not a released gate");
-
         revoke_write_lease("end of test");
     }
-
     #[test]
     fn a_lease_is_process_memory_only_so_restart_invalidates_it() {
         let _guard = lease_test_guard();
         let granted = install_write_lease(lease(vec![PathBuf::from("/repo")]));
-        // Nothing durable carries it: the lease type is only ever written to `LEASE`, so the only
-        // way to observe one is `active_write_lease`, and a fresh process starts at `None`.
         assert_eq!(active_write_lease().as_ref(), Some(&granted));
-        assert!(
-            !serde_json::to_string(&granted).unwrap().is_empty(),
-            "it serializes for the status projection, but is never stored"
-        );
+        assert!(!serde_json::to_string(&granted).unwrap().is_empty());
         revoke_write_lease("restart");
         assert_eq!(active_write_lease(), None, "a restart leaves no lease behind");
     }
-
     #[test]
     fn scoped_revokes_only_fire_for_their_own_lease() {
         let _guard = lease_test_guard();
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
-
         assert!(revoke_write_lease_for_run("other-run", None).is_none());
         assert!(revoke_write_lease_for_repo("other-repo").is_none());
         assert!(active_write_lease().is_some(), "another task's end is not this one's");
-
         assert!(revoke_write_lease_for_run("run", None).is_some());
         assert_eq!(active_write_lease(), None);
-
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
         assert!(revoke_write_lease_for_repo("repo").is_some());
         assert_eq!(active_write_lease(), None);
     }
-
     #[tokio::test]
     async fn a_leased_write_lands_and_an_out_of_scope_write_is_still_refused() {
         let _guard = lease_test_guard();
         let dir = std::env::temp_dir().join(format!("hide_lease_{}", hide_core::ids::now_ms()));
         let scope = dir.join("in");
         std::fs::create_dir_all(&scope).unwrap();
-        // The shipped default: every workspace write asks.
         let config = HideConfig::for_workspace(&dir);
         assert_eq!(config.security.workspace_write_default, Decision::Ask);
         let dispatcher =
             build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
-
         let write = |path: PathBuf| {
             with_dispatch_context(
                 hide_core::ids::SessionId::from("sess"),
@@ -698,29 +618,13 @@ mod tests {
                 )),
             )
         };
-
-        assert!(
-            write(scope.join("a.rs")).await.is_err(),
-            "with no lease the write is refused"
-        );
-
+ assert!( write(scope.join("a.rs")).await.is_err(), "with no lease the write is refused" );
         install_write_lease(lease(vec![scope.clone()]));
-        assert_eq!(
-            write(scope.join("a.rs")).await.unwrap().status,
-            hide_core::tool::ToolStatus::Ok,
-            "inside the declared scope the lease lets the edit land"
-        );
+        assert_eq!(write(scope.join("a.rs")).await.unwrap().status, hide_core::tool::ToolStatus::Ok);
         assert_eq!(std::fs::read_to_string(scope.join("a.rs")).unwrap(), "x");
-        assert!(
-            write(dir.join("out.rs")).await.is_err(),
-            "outside the declared scope the lease grants nothing"
-        );
-
+        assert!(write(dir.join("out.rs")).await.is_err());
         revoke_write_lease("end of test");
-        assert!(
-            write(scope.join("b.rs")).await.is_err(),
-            "after revocation the write asks again"
-        );
+ assert!( write(scope.join("b.rs")).await.is_err(), "after revocation the write asks again" );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

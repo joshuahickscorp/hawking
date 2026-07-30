@@ -3,7 +3,7 @@ import { useFocusTrap } from "./shell/a11y";
 import { callConnector, subscribeUi } from "./ipc";
 import { runCommand, useStore } from "./store";
 import { type IntentAck } from "./wire";
-import { keyLabel } from "./surfaces/chat/actions";
+import { keyLabel } from "./surfaces/chat_actions";
 
 // Shared UI primitives still used by the VS Code shell. (The old doctrine primitives —
 // Volume/Mark/LightEdge/ModeRail/StatusPill — were retired with the concrete design.)

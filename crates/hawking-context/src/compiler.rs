@@ -931,9 +931,7 @@ mod tests {
     use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
     use std::collections::HashSet;
     use std::sync::Mutex;
-
     struct StaticSource(Vec<ContextCandidate>);
-
     impl ContextSource for StaticSource {
         fn name(&self) -> &str {
             "static"
@@ -945,17 +943,10 @@ mod tests {
             Box::pin(async { Ok(self.0.clone()) })
         }
     }
-
-    /// A lazy source whose `candidates()` returns metadata-only handles (empty
-    /// body + an `est_tokens` estimate) and whose `realize()` materializes the
-    /// real body, recording *which* candidate ids were realized. Used to prove
-    /// the compiler never realizes a dropped candidate.
     struct SpySource {
-        /// (id, title, body, est_tokens, score) tuples.
         cands: Vec<(String, String, String, usize, f32)>,
         realized: Arc<Mutex<Vec<String>>>,
     }
-
     impl ContextSource for SpySource {
         fn name(&self) -> &str {
             "spy"
@@ -975,7 +966,6 @@ mod tests {
                     .cands
                     .iter()
                     .map(|(id, title, _body, est, score)| {
-                        // Metadata only: NO body, just a cost estimate.
                         let mut c = ContextCandidate::new(
                             id.clone(),
                             ContextSourceKind::Code,
@@ -1010,7 +1000,6 @@ mod tests {
             })
         }
     }
-
     fn model(ctx: usize) -> ModelDescriptor {
         ModelDescriptor {
             id: ModelId::new(),
@@ -1021,18 +1010,13 @@ mod tests {
             footprint_mb: 1,
         }
     }
-
     #[test]
     fn dropped_important_frac_weights_by_salience() {
         use crate::recall::DROPPED_IMPORTANT_CEIL;
-        // High-importance span losing 80% of its tokens -> over the ceiling (revert).
         assert!(dropped_important_frac(100, 20, 1.0) > DROPPED_IMPORTANT_CEIL);
-        // Same drop on a low-importance span -> under the ceiling (keep).
         assert!(dropped_important_frac(100, 20, 0.05) < DROPPED_IMPORTANT_CEIL);
-        // No drop -> zero regardless of importance.
         assert_eq!(dropped_important_frac(100, 100, 1.0), 0.0);
     }
-
     #[test]
     fn mask_observation_replaces_body_with_placeholder() {
         let counter = TokenCounter::heuristic();
@@ -1041,12 +1025,10 @@ mod tests {
         assert!(masked.compacted);
         assert!(masked.text.contains("masked"), "got: {}", masked.text);
         assert!(counter.count(&masked.text) < counter.count(&body));
-        // A short span already within budget is kept verbatim, not masked.
         let small = mask_observation("ok", 100, &counter).expect("small");
         assert!(!small.compacted);
         assert_eq!(small.text, "ok");
     }
-
     #[tokio::test]
     async fn degrade_masks_tool_output_but_truncates_code() {
         let counter = TokenCounter::heuristic();
@@ -1079,16 +1061,11 @@ mod tests {
             .unwrap()
             .expect("code degraded");
         assert!(dt.text.contains("masked"), "tool output should be masked");
-        assert!(
-            !dc.text.contains("masked"),
-            "code should be truncated, not masked"
-        );
+ assert!( !dc.text.contains("masked"), "code should be truncated, not masked" );
     }
-
     #[tokio::test]
     async fn compaction_archives_original_for_reversible_restore() {
         // Pin a bulky never-evict span so the degrade ladder must compact it;
-        // the original body must be archived on CompactionEvent for restore.
         let original = format!(
             "unique_needle_alpha must survive archive\n{}\nunique_needle_beta also required",
             "padding line with enough content to force degrade ".repeat(80)
@@ -1106,7 +1083,6 @@ mod tests {
         compiler.add_source(StaticSource(vec![cand]));
         let compiled = compiler
             .compile(CompileInput {
-                // Tiny window forces degrade-to-fit on the pin.
                 profile: ContextProfile::tight(48),
                 model: model(48),
                 task: "unique_needle_alpha".to_string(),
@@ -1114,29 +1090,15 @@ mod tests {
             .await
             .unwrap();
         let events = &compiled.manifest.compaction_events;
-        // Either a standing compaction or a recall-gated rollback — both archive.
-        assert!(
-            !events.is_empty()
-                || compiled
-                    .manifest
-                    .retained
-                    .iter()
-                    .any(|s| s.compacted_from.is_some()),
-            "expected a compaction or compacted retained span; events={events:?} retained={:?}",
-            compiled.manifest.retained
-        );
+        assert!(!events.is_empty() || compiled .manifest .retained .iter() .any(|s| s.compacted_from.is_some()));
         if let Some(ev) = events.first() {
             let restored = ev
                 .restore_original()
                 .expect("original_text must be archived for reversible compaction");
-            assert!(
-                restored.contains("unique_needle_alpha"),
-                "archive must preserve the pre-compaction evidence"
-            );
+            assert!(restored.contains("unique_needle_alpha"));
             assert_eq!(restored, original);
         }
     }
-
     #[tokio::test]
     async fn keeps_highest_value_under_budget() {
         let mut compiler = ContextCompiler::new();
@@ -1166,43 +1128,26 @@ mod tests {
             })
             .await
             .unwrap();
-        // The high-value short span must be retained.
         let high = compiled
             .manifest
             .retained
             .iter()
             .find(|s| s.title == "high")
             .expect("high retained");
-        // The bulky low-value span must either be dropped, or degraded
-        // (compacted) to fit — never admitted whole at full size.
         let low_dropped = compiled.manifest.dropped.iter().any(|d| d.id == "low");
         let low_compacted = compiled
             .manifest
             .retained
             .iter()
             .any(|s| s.title == "low" && s.compacted_from.is_some());
-        assert!(
-            low_dropped || low_compacted,
-            "bulky low span must be dropped or compacted; retained={:?}",
-            compiled
-                .manifest
-                .retained
-                .iter()
-                .map(|s| &s.title)
-                .collect::<Vec<_>>()
-        );
-        // High value outranks low value.
+        assert!(low_dropped || low_compacted);
         assert!(high.score >= 0.5);
         assert!(compiled.manifest.budget.is_some());
-        // F1 invariant recorded.
         let b = compiled.manifest.budget.unwrap();
         assert!(b.used + b.reservation_response <= b.total + b.reservation_system);
     }
-
     #[tokio::test]
     async fn tq_multiplier_sets_physical_effective_ceiling() {
-        // No multiplier: effective ceiling stays the per-pass budget (the field
-        // is NOT silently equal to native*2) -- no regression.
         let base = ContextCompiler::new()
             .compile(CompileInput {
                 profile: ContextProfile::coding_default(128),
@@ -1214,8 +1159,6 @@ mod tests {
         let m = base.manifest.model.expect("model manifest");
         assert_eq!(m.ctx_len_native, 4096);
         assert_ne!(m.ctx_len_effective, 8192);
-
-        // With a 2.0 multiplier: effective ceiling = native * 2.
         let scaled = ContextCompiler::new()
             .with_tq_multiplier(2.0)
             .compile(CompileInput {
@@ -1229,17 +1172,12 @@ mod tests {
         assert_eq!(sm.ctx_len_native, 4096);
         assert_eq!(sm.ctx_len_effective, 8192, "native 4096 x 2.0 multiplier");
     }
-
     #[tokio::test]
     async fn realize_not_called_for_dropped_candidates() {
-        // Budget fits only the small high-value span. The bulky low-value span
-        // must be dropped *without* its body ever being realized — proving the
-        // lazy candidates → select → realize split is live, not eager.
         let realized = Arc::new(Mutex::new(Vec::new()));
         let mut compiler = ContextCompiler::new();
         compiler.add_source(SpySource {
             cands: vec![
-                // id, title, body, est_tokens, score
                 (
                     "keep".to_string(),
                     "important task content".to_string(),
@@ -1250,7 +1188,6 @@ mod tests {
                 (
                     "drop".to_string(),
                     "irrelevant filler".to_string(),
-                    // A large body that would be expensive to materialize.
                     "z ".repeat(5_000),
                     5_000,
                     0.05,
@@ -1260,47 +1197,21 @@ mod tests {
         });
         let compiled = compiler
             .compile(CompileInput {
-                // Small window: after reservations only a few tokens compete, so
-                // only "keep" can be admitted.
                 profile: ContextProfile::tight(48),
                 model: model(48),
                 task: "important task content".to_string(),
             })
             .await
             .unwrap();
-
         let realized_ids: HashSet<String> = realized.lock().unwrap().iter().cloned().collect();
-        // The selected span was realized.
-        assert!(
-            realized_ids.contains("keep"),
-            "selected candidate must be realized; realized={realized_ids:?}"
-        );
-        // The dropped span was NEVER realized — its (huge) body was never touched.
-        assert!(
-            !realized_ids.contains("drop"),
-            "dropped candidate must NOT be realized; realized={realized_ids:?}"
-        );
-        // And it is recorded as a no-fit drop, not silently lost.
-        assert!(
-            compiled
-                .manifest
-                .dropped
-                .iter()
-                .any(|d| d.id == "drop" && d.reason == DropReason::NoFit),
-            "drop must be a recorded NoFit; dropped={:?}",
-            compiled.manifest.dropped
-        );
-        // The realized body actually made it into the prompt.
+        assert!(realized_ids.contains("keep"));
+        assert!(!realized_ids.contains("drop"));
+        assert!(compiled .manifest .dropped .iter() .any(|d| d.id == "drop" && d.reason == DropReason::NoFit));
         assert!(compiled.prompt.contains("important task content"));
     }
-
     #[tokio::test]
     async fn degrade_invoked_on_over_budget_pinned_span() {
-        // A pinned lazy span larger than the whole window must be admitted via
-        // the source's degrade() ladder (the over-budget path), proving degrade
-        // is dispatched — not the dead free-fn.
         let degraded_calls = Arc::new(Mutex::new(0usize));
-
         struct DegradeSpy {
             calls: Arc<Mutex<usize>>,
         }
@@ -1337,7 +1248,6 @@ mod tests {
                 _c: &'a ContextCandidate,
                 _budget_tokens: usize,
             ) -> BoxFuture<'a, Result<RealizedSpan>> {
-                // The whole body is far too large for any window.
                 Box::pin(async move {
                     Ok(RealizedSpan {
                         text: "word ".repeat(100_000),
@@ -1361,7 +1271,6 @@ mod tests {
                 })
             }
         }
-
         let mut compiler = ContextCompiler::new();
         compiler.add_source(DegradeSpy {
             calls: degraded_calls.clone(),
@@ -1374,15 +1283,8 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(
-            *degraded_calls.lock().unwrap() >= 1,
-            "degrade() must be dispatched for the over-budget pinned span"
-        );
-        // It was admitted compacted (degrade ladder), with a recorded event.
-        assert!(
-            !compiled.manifest.compaction_events.is_empty(),
-            "degrade should record a compaction event"
-        );
+        assert!(*degraded_calls.lock().unwrap() >= 1);
+        assert!(!compiled.manifest.compaction_events.is_empty());
         let span = compiled
             .manifest
             .retained
@@ -1391,11 +1293,9 @@ mod tests {
             .expect("pinned span retained via degrade");
         assert!(span.compacted_from.is_some(), "retained span is compacted");
     }
-
     #[tokio::test]
     async fn redundant_near_duplicate_is_penalized() {
         let mut compiler = ContextCompiler::new();
-        // Two near-identical spans; only one should survive (redundancy).
         let dup = "the database pool is built with sqlx in db pool rs";
         compiler.add_source(StaticSource(vec![
             ContextCandidate::new(
@@ -1431,24 +1331,10 @@ mod tests {
             })
             .await
             .unwrap();
-        // At least one of the duplicate pair is dropped as redundant.
-        assert!(
-            compiled
-                .manifest
-                .dropped
-                .iter()
-                .any(|d| d.reason == DropReason::Redundant),
-            "expected a redundancy drop, dropped={:?}",
-            compiled.manifest.dropped
-        );
+        assert!(compiled .manifest .dropped .iter() .any(|d| d.reason == DropReason::Redundant));
     }
-
     #[tokio::test]
     async fn debug_profile_band_boosts_diagnostics_over_code() {
-        // Two spans with identical declared score and length. Under the debug
-        // profile, the diagnostics band multiplier (>1.0) must make the
-        // diagnostic outrank the code span when only one fits — proving
-        // band_by_kind is exercised, not a no-op 1.0.
         let body = "alpha beta gamma delta epsilon zeta eta theta";
         let mut compiler = ContextCompiler::new();
         compiler.add_source(StaticSource(vec![
@@ -1469,7 +1355,6 @@ mod tests {
                 Provenance::trusted("t"),
             ),
         ]));
-        // Budget sized so only one of the two equal-length spans is admitted.
         let compiled = compiler
             .compile(CompileInput {
                 profile: ContextProfile::debug(72),
@@ -1478,23 +1363,7 @@ mod tests {
             })
             .await
             .unwrap();
-        // The diagnostic survives; the code span is dropped/degraded.
-        assert!(
-            compiled
-                .manifest
-                .retained
-                .iter()
-                .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)),
-            "diagnostics span should be retained under the debug band, retained={:?}",
-            compiled
-                .manifest
-                .retained
-                .iter()
-                .map(|s| &s.title)
-                .collect::<Vec<_>>()
-        );
-        // Sanity: with the *standard* profile (no band boost) the two equal
-        // spans tie-break on content id, so the band is what flips debug.
+        assert!(compiled .manifest .retained .iter() .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)));
         let standard = compiler
             .compile(CompileInput {
                 profile: ContextProfile::standard(72),
@@ -1503,21 +1372,9 @@ mod tests {
             })
             .await
             .unwrap();
-        // Under standard, "code" wins the id tie-break (c < d), so the band in
-        // the debug run genuinely changed the selection.
         let standard_kept_code = standard.manifest.retained.iter().any(|s| s.title == "code");
-        assert!(
-            standard_kept_code,
-            "control: standard profile keeps 'code' by id tie-break; got {:?}",
-            standard
-                .manifest
-                .retained
-                .iter()
-                .map(|s| &s.title)
-                .collect::<Vec<_>>()
-        );
+        assert!(standard_kept_code);
     }
-
     #[tokio::test]
     async fn pinned_span_admitted_first() {
         let mut compiler = ContextCompiler::new();
@@ -1541,7 +1398,6 @@ mod tests {
             .unwrap();
         assert_eq!(compiled.manifest.retained.len(), 1);
         assert_eq!(compiled.manifest.retained[0].pin, PinState::NeverEvict);
-        // System is pinned to the head.
         assert_eq!(compiled.manifest.retained[0].order_index, 0);
     }
 }

@@ -236,44 +236,28 @@ impl DualKv {
 mod tests {
     use super::*;
     use crate::token_boundary::{DraftTokenId, TargetVerification};
-
     #[test]
     fn rollback_restores_committed_bit_identical() {
         let gate = TargetVerification::gate();
         let mut dual = DualKv::new(CommittedKv::from_tokens(vec![10, 20, 30]));
         let fp_before = dual.committed().fingerprint().clone();
         let ids_before = dual.committed().token_ids().to_vec();
-
-        // Speculate a wrong draft window.
         dual.speculate(&[99, 100, 101]);
         assert_eq!(dual.provisional().draft_len(), 3);
         assert_eq!(dual.provisional().seq_len(), 6);
-
-        // Reject → rollback.
         dual.rollback();
-
-        assert_eq!(
-            dual.committed().fingerprint(),
-            &fp_before,
-            "committed fingerprint must be bit-identical after reject"
-        );
+        assert_eq!(dual.committed().fingerprint(), &fp_before);
         assert_eq!(dual.committed().token_ids(), &ids_before[..]);
         assert_eq!(dual.provisional().draft_len(), 0);
         assert_eq!(dual.provisional().seq_len(), dual.committed().seq_len);
         dual.assert_invariant();
-
-        // Sanity: a would-be promotion of the wrong draft fails.
-        assert!(gate
-            .try_promote(DraftTokenId::id(99), 11)
-            .is_err());
+ assert!(gate .try_promote(DraftTokenId::id(99), 11) .is_err());
     }
-
     #[test]
     fn rebase_advances_committed_by_verified_prefix_only() {
         let gate = TargetVerification::gate();
         let mut dual = DualKv::new(CommittedKv::from_tokens(vec![1]));
         dual.speculate(&[2, 3, 4]);
-        // Target agrees on first two only.
         let accepted = vec![
             gate.emit_target(2u32),
             gate.emit_target(3u32),
@@ -283,7 +267,6 @@ mod tests {
         assert_eq!(dual.provisional().draft_len(), 0);
         dual.assert_invariant();
     }
-
     #[test]
     fn invariant_holds_across_speculate_rollback_rebase() {
         let gate = TargetVerification::gate();

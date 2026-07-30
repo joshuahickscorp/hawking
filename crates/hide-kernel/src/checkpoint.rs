@@ -81,11 +81,9 @@ pub fn fold_to_seq(
 mod tests {
     use super::*;
     use hide_core::ids::SessionId;
-
     fn state() -> AgentState {
         AgentState::new(SessionId::new(), RunId::new(), "obj".to_string())
     }
-
     #[test]
     fn snapshot_restore_round_trips() {
         let mut s = state();
@@ -95,7 +93,6 @@ mod tests {
         assert_eq!(restored.ledger.steps, 7);
         assert_eq!(cp.seq, 42);
     }
-
     #[test]
     fn fork_changes_run_id_only() {
         let s = state();

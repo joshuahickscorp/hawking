@@ -135,26 +135,15 @@ impl SearchQuery {
 #[cfg(test)]
 mod routing_tests {
     use super::*;
-
     #[test]
     fn classifies_query_shapes() {
-        assert_eq!(
-            classify_query_shape("CodeIndex::search"),
-            QueryShape::ExactSymbol
-        );
+ assert_eq!( classify_query_shape("CodeIndex::search"), QueryShape::ExactSymbol );
         assert_eq!(classify_query_shape("foo_bar"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parseTree"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parse tree"), QueryShape::Identifier);
-        assert_eq!(
-            classify_query_shape("where do we handle retries?"),
-            QueryShape::NaturalLanguage
-        );
-        assert_eq!(
-            classify_query_shape("how does compaction work"),
-            QueryShape::NaturalLanguage
-        );
+ assert_eq!( classify_query_shape("where do we handle retries?"), QueryShape::NaturalLanguage );
+ assert_eq!( classify_query_shape("how does compaction work"), QueryShape::NaturalLanguage );
     }
-
     #[test]
     fn routed_sets_tier_flags() {
         let exact = SearchQuery::routed("Foo::bar", 10);
@@ -164,15 +153,10 @@ mod routing_tests {
         let nl = SearchQuery::routed("how does the gate decide rollback", 10);
         assert!(nl.include_symbols && nl.include_lexical && nl.include_semantic);
     }
-
     #[test]
     fn precise_sources_outrank_similar_code() {
-        assert!(
-            source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic)
-        );
-        assert!(
-            source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic)
-        );
+ assert!( source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic) );
+ assert!( source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic) );
     }
 }
 
@@ -931,7 +915,6 @@ impl Index for InMemoryCodeIndex {
 mod tests {
     use super::*;
     use crate::graph::Symbol;
-
     #[tokio::test]
     async fn search_finds_registered_symbol() {
         let index = InMemoryCodeIndex::default();
@@ -953,7 +936,6 @@ mod tests {
             .unwrap();
         assert_eq!(results.len(), 1);
     }
-
     #[tokio::test]
     async fn in_memory_extracts_real_references() {
         let index = InMemoryCodeIndex::default();
@@ -962,13 +944,11 @@ mod tests {
             "pub fn helper() {}\npub fn caller() { helper(); }\n",
             Some("hash".to_string()),
         );
-        // references(helper) must be non-empty now (was always empty before).
         let refs = index.references("helper").await.unwrap();
         assert!(!refs.is_empty(), "expected real references to helper");
         let defs = index.definition("helper").await.unwrap();
         assert!(!defs.is_empty(), "expected a definition of helper");
     }
-
     #[tokio::test]
     async fn index_text_file_supports_lexical_search_and_symbols() {
         let index = InMemoryCodeIndex::default();
@@ -989,7 +969,6 @@ mod tests {
             .unwrap();
         assert_eq!(lexical.len(), 2);
         assert_eq!(lexical[0].source, SearchResultSource::Lexical);
-
         let symbols = index
             .search(SearchQuery {
                 text: "SearchEngine".to_string(),
@@ -1003,7 +982,6 @@ mod tests {
         assert_eq!(symbols.len(), 1);
         assert_eq!(index.health().await.unwrap().indexed_files, 1);
     }
-
     #[tokio::test]
     async fn sqlite_index_search_and_nav() {
         let index = SqliteCodeIndex::open_in_memory().unwrap();
@@ -1014,12 +992,10 @@ mod tests {
                 "hash1",
             )
             .unwrap();
-
         let defs = index.definition("target_widget").await.unwrap();
         assert!(!defs.is_empty());
         let refs = index.references("helper").await.unwrap();
         assert!(!refs.is_empty());
-
         let hits = index
             .search(SearchQuery {
                 text: "target_widget".to_string(),
@@ -1033,7 +1009,6 @@ mod tests {
         assert!(hits.iter().any(|h| h.span.path.ends_with("src/m.rs")));
         assert_eq!(index.health().await.unwrap().indexed_files, 1);
     }
-
     #[tokio::test]
     async fn sqlite_repo_map_renders() {
         let index = SqliteCodeIndex::open_in_memory().unwrap();
@@ -1054,10 +1029,6 @@ mod tests {
             .unwrap();
         assert!(rm.rendered.contains("popular_api"));
     }
-
-    /// Property: hybrid search never installs StubEmbeddingClient fixture vectors.
-    /// Without a configured embedder, include_semantic is honored by skipping
-    /// the vector leg (lexical⊕symbol only), not by ranking on bag-of-chars.
     #[tokio::test]
     async fn hybrid_search_skips_semantic_without_embedder_rather_than_using_stub() {
         let index = SqliteCodeIndex::open_in_memory().unwrap();
@@ -1065,24 +1036,16 @@ mod tests {
         index
             .index_text("src/a.rs", "pub fn alpha_target() {}\n", "h")
             .unwrap();
-        // include_semantic=true but no embedder → must still succeed (lexical/symbol).
         let hits = index
             .hybrid_search_opts("alpha_target", 5, true)
             .await
             .expect("search without embedder must not error on stub refusal");
-        assert!(
-            hits.iter().any(|h| h.file.contains("a.rs") || h.snippet.contains("alpha")),
-            "lexical/symbol leg must still retrieve, got {hits:?}"
-        );
-        // Explicit refusing stub via search_with_embedder + include_semantic must error.
+        assert!(hits.iter().any(|h| h.file.contains("a.rs") || h.snippet.contains("alpha")));
         let refuse = crate::semantic::StubEmbeddingClient::default();
         let err = index
             .search_with_embedder("alpha_target", 5, &refuse, true)
             .await
             .expect_err("StubEmbeddingClient must refuse on the semantic path");
-        assert!(
-            err.to_string().contains("refuses") || err.to_string().contains("StubEmbedding"),
-            "got: {err}"
-        );
+        assert!(err.to_string().contains("refuses") || err.to_string().contains("StubEmbedding"));
     }
 }

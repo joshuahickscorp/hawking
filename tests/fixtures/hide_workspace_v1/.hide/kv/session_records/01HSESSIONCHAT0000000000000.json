@@ -1,0 +1,12 @@
+{
+  "session_id": "01HSESSIONCHAT0000000000000",
+  "parent_session_id": "01HSESSIONYOU00000000000000",
+  "forked_at": 2,
+  "forked_at_event": "01HEVENT000000000000000002",
+  "created_ms": 1720000000100,
+  "origin": "side_chat",
+  "relationship": "side_chat",
+  "read_only": true,
+  "lens": "CHAT",
+  "title": "fixture CHAT side session"
+}

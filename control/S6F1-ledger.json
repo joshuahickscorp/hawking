@@ -1,0 +1,114 @@
+{
+  "assertion_seal": {
+    "by_kind": {
+      "bb": 220,
+      "mig": 26,
+      "perf": 16,
+      "py_fn": 1786,
+      "py_param": 80,
+      "rust_int": 829,
+      "rust_unit": 1325,
+      "ts_it": 341
+    },
+    "check_policy": "re-extract at sealed_at_commit via git ls-tree/git show; not HEAD/worktree",
+    "extractor_version": "hawking.case_extract.v2",
+    "fingerprint_policy": "Rust full test item (attr+sig+body); Vitest full call including body/expect; Python full function span",
+    "gate_empty_manifest": "FAIL unaccounted=4623 (required anti-gaming behaviour)",
+    "identity_policy": "path + lexical describe chain + literal title; content digest for same-chain title collisions; never #L{line}; identical duplicates collision-fail",
+    "inventory_comparable_rust_plus_py_functions": 3958,
+    "inventory_delta_explained": "Inventory counts 2158 Rust test attrs including 5 string/doc false positives without a following fn; this extractor drops those five and adds one parenthesised #[tokio::test(...)] with a real fn (net -4). Python function count matches inventory at 1804; 18 of those expand to 80 literal parametrize rows (py_param).",
+    "inventory_logical_cases_v1": 3962,
+    "ledger_path": "control/ASSERTION_LEDGER.json",
+    "ledger_sha256": "5cd38adad4438db156086cacf49e405d0e9fdc050d95113c8e9cf359e3f12011",
+    "manifest_entries": 0,
+    "manifest_path": "control/TEST_CASE_MANIFEST.json",
+    "manifest_phase": "f1_scaffold",
+    "manifest_status": "no_rewrite_accounting",
+    "seal_check": "PASS",
+    "sealed_at_commit": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+    "total_case_ids": 4623
+  },
+  "base_commit": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+  "behaviour_gates": {
+    "blackbox_only_runnable": {
+      "baseline_runnable_count": 86,
+      "fail": 0,
+      "pass": 86,
+      "skip": 0
+    },
+    "generation_audit_gate": "PASS reclassified_active=0",
+    "git_diff_check": "PASS",
+    "unit_tests": "21 OK"
+  },
+  "branch": "grok/s6-f1-f2-atomic-builder-20260729-164118",
+  "commit": "NONE",
+  "ledger": {
+    "added_apparatus": 2877,
+    "eliminated": 0,
+    "facade": 0,
+    "generated": 0,
+    "relocated": 0,
+    "rewritten": 0
+  },
+  "measurement": {
+    "apparatus_breakdown": {
+      "control/S6F1-report.md": 124,
+      "tools/verify/README.md_delta": 37,
+      "tools/verify/case_extract.py": 1036,
+      "tools/verify/test_case_extract.py": 546,
+      "tools/verify/test_case_manifest.py": 650,
+      "tools/verify/test_test_case_manifest.py": 484
+    },
+    "authority": "tools/loc/hawking_loc.py + tools/loc/hawking_topology.py",
+    "combined_active_monorepo_LOC_after": 440162,
+    "combined_active_monorepo_LOC_before": 437285,
+    "delta": 2877,
+    "note": "Standalone F1 apparatus topology regresses. Combined F1+F2 working-tree authority measured separately in S6F2 ledgers (revision 5)."
+  },
+  "note": "Standalone topology regresses (source_files +4, public_symbols +43, functions +85). Semantic/adversarial gates pass. Not complete; hold for atomic pair. Prior 'F1 complete' claim retracted. Revision 5: no C5/C6 or comment-format credit.",
+  "product_deletion": {
+    "assertion_paths_deleted": 0,
+    "product_paths_changed": 0,
+    "test_paths_deleted": 0
+  },
+  "reconciles": {
+    "formula": "-(eliminated + rewritten) + generated + relocated + facade + added_apparatus == total LOC delta",
+    "left": 2877,
+    "ok": true,
+    "right": 2877
+  },
+  "revision": 5,
+  "schema": "hawking.rebuild.s6f1_ledger.v1",
+  "scope_paths": [
+    "tools/verify/case_extract.py",
+    "tools/verify/test_case_manifest.py",
+    "tools/verify/test_case_extract.py",
+    "tools/verify/test_test_case_manifest.py",
+    "tools/verify/README.md",
+    "control/ASSERTION_LEDGER.json",
+    "control/TEST_CASE_MANIFEST.json",
+    "control/S6F1-ledger.json",
+    "control/S6F1-report.md"
+  ],
+  "slice": "S6F1",
+  "title": "Deterministic assertion seal — revision 5 hold for atomic pair",
+  "topology": {
+    "directories_all_after": 138,
+    "directories_all_before": 138,
+    "files_over_1500_lines_after": 26,
+    "files_over_1500_lines_before": 26,
+    "functions_after": 14776,
+    "functions_before": 14691,
+    "functions_delta": 85,
+    "note": "Any positive topology delta is WORSE. Standalone F1 cannot close.",
+    "public_symbols_after": 9592,
+    "public_symbols_before": 9549,
+    "public_symbols_delta": 43,
+    "source_files_after": 1213,
+    "source_files_before": 1209,
+    "source_files_delta": 4,
+    "tiny_forwarders_after": 13,
+    "tiny_forwarders_before": 13
+  },
+  "verdict": "PASS_LOGIC_HOLD_FOR_ATOMIC_PAIR"
+}

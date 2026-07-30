@@ -16,7 +16,7 @@ use hide_core::persistence::{DynEventLog, DynProjectionStore};
 use hide_core::plugin::ExtensionContribution;
 use hide_core::runtime::{InferenceRequest, RolePurpose};
 use hide_core::types::Provenance;
-use hide_personalize::{DynPersonalizationStore, PersonalizationRecord, TaskClass};
+use crate::personalize::{DynPersonalizationStore, PersonalizationRecord, TaskClass};
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -861,21 +861,14 @@ pub fn register_backend_connectors(registry: &ConnectorRegistry, services: &Back
 #[cfg(test)]
 mod fs_tests {
     use super::*;
-
     #[test]
     fn resolve_confines_to_root() {
         let root = std::path::Path::new("/work/proj");
         assert!(workspace_resolve(root, "src/main.rs").is_ok());
-        // leading slash stripped, stays in root
         assert!(workspace_resolve(root, "/src/main.rs").is_ok());
         assert!(workspace_resolve(root, "../etc/passwd").is_err());
         assert!(workspace_resolve(root, "a/../../b").is_err());
     }
-
-    /// The `fs` connector is a READ surface. The write arm it used to carry was the app's second
-    /// write channel (see the type doc); a caller reaching for it now gets the same not-found every
-    /// other unknown method gets, and the save goes through `BackendHost::save_file_effect`, whose
-    /// policy refusal is covered by `save_through_the_wire_path_records_a_diff_and_publishes_it`.
     #[tokio::test]
     async fn the_fs_connector_has_no_write_arm() {
         let dir = std::env::temp_dir().join(format!("hide_fs_conn_{}", hide_core::ids::now_ms()));
@@ -889,7 +882,6 @@ mod fs_tests {
         assert!(!dir.join("a.txt").exists(), "nothing was written");
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn lang_detection() {
         assert_eq!(lang_for("a/b.rs"), "rust");
@@ -969,9 +961,8 @@ mod tests {
     use super::*;
     use hawking_research::{InMemoryResearchLedger, ResearchRun};
     use hide_core::runtime::InferenceRequest;
-    use hide_personalize::{InMemoryPersonalizationStore, Outcome};
+    use crate::personalize::{InMemoryPersonalizationStore, Outcome};
     use std::collections::BTreeMap;
-
     #[tokio::test]
     async fn registry_reports_connector_status() {
         let registry = ConnectorRegistry::default();
@@ -983,7 +974,6 @@ mod tests {
         assert_eq!(statuses.len(), 1);
         assert!(statuses[0].healthy);
     }
-
     #[tokio::test]
     async fn personalization_connector_appends_and_lists_records() {
         let registry = ConnectorRegistry::default();
@@ -991,7 +981,6 @@ mod tests {
             InMemoryPersonalizationStore::default(),
         )));
         let record = PersonalizationRecord::accepted(TaskClass::EditCode, "prompt", "diff");
-
         registry
             .call(
                 "personalization",
@@ -1004,11 +993,9 @@ mod tests {
             .call("personalization", "records.list", json!({ "limit": 5 }))
             .await
             .unwrap();
-
         assert_eq!(listed["records"].as_array().unwrap().len(), 1);
         assert_eq!(listed["records"][0]["outcome"], json!(Outcome::Accepted));
     }
-
     #[tokio::test]
     async fn research_connector_appends_and_lists_runs() {
         let registry = ConnectorRegistry::default();
@@ -1017,7 +1004,6 @@ mod tests {
         )));
         let mut run = ResearchRun::new("connectors");
         run.state = ResearchState::Complete;
-
         registry
             .call("research", "runs.append", json!({ "run": run }))
             .await
@@ -1026,24 +1012,20 @@ mod tests {
             .call("research", "runs.by_state", json!({ "state": "complete" }))
             .await
             .unwrap();
-
         assert_eq!(listed["runs"].as_array().unwrap().len(), 1);
         assert_eq!(listed["runs"][0]["topic"], "connectors");
     }
-
     #[tokio::test]
     async fn runtime_connector_lists_roles_and_routes_requests() {
         let registry = ConnectorRegistry::default();
         registry.register(RuntimeConnector::new(Arc::new(
             RoleRegistry::with_default_local_roles(),
         )));
-
         let roles = registry
             .call("runtime", "roles.list", json!({}))
             .await
             .unwrap();
         assert!(!roles["roles"].as_array().unwrap().is_empty());
-
         let routed = registry
             .call(
                 "runtime",
@@ -1065,14 +1047,12 @@ mod tests {
             .unwrap();
         assert_eq!(routed["decision"]["grammar"], "tool-call-json");
     }
-
     #[tokio::test]
     async fn code_index_connector_indexes_and_searches_text() {
         let registry = ConnectorRegistry::default();
         registry.register(CodeIndexConnector::from_memory(Arc::new(
             InMemoryCodeIndex::default(),
         )));
-
         registry
             .call(
                 "code_index",
@@ -1100,10 +1080,8 @@ mod tests {
             )
             .await
             .unwrap();
-
         assert!(!results["results"].as_array().unwrap().is_empty());
     }
-
     #[tokio::test]
     async fn context_connector_compiles_from_code_index() {
         let registry = ConnectorRegistry::default();
@@ -1122,7 +1100,6 @@ mod tests {
                     .expect("classed memory"),
             ),
         ));
-
         let compiled = registry
             .call(
                 "context",
@@ -1135,14 +1112,7 @@ mod tests {
             )
             .await
             .unwrap();
-
-        assert!(compiled["prompt"]
-            .as_str()
-            .unwrap()
-            .contains("context bridge"));
-        assert_eq!(
-            compiled["manifest"]["retained"].as_array().unwrap().len(),
-            1
-        );
+ assert!(compiled["prompt"] .as_str() .unwrap() .contains("context bridge"));
+ assert_eq!( compiled["manifest"]["retained"].as_array().unwrap().len(), 1 );
     }
 }

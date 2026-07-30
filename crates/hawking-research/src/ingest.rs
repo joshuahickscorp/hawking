@@ -470,7 +470,6 @@ fn urlencode(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     const SAMPLE: &str = r#"<?xml version="1.0"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
@@ -485,7 +484,6 @@ PagedAttention, which reduces KV cache &amp; memory waste.</summary>
     <summary>An IO-aware exact attention algorithm.</summary>
   </entry>
 </feed>"#;
-
     #[test]
     fn parses_arxiv_feed_entries() {
         let entries = parse_arxiv_feed(SAMPLE);
@@ -494,20 +492,17 @@ PagedAttention, which reduces KV cache &amp; memory waste.</summary>
         assert!(entries[0].title.contains("PagedAttention"));
         assert!(entries[0].summary.contains("KV cache &"));
     }
-
     #[test]
     fn arxiv_doc_has_populated_content_hash_and_is_addressed() {
         let entries = parse_arxiv_feed(SAMPLE);
         let doc = entries[0].clone().into_doc();
         assert!(doc.source.content_hash.is_some());
         assert!(doc.id.starts_with("doc:"));
-        // Idempotent: same entry → same id + hash.
         let doc2 = parse_arxiv_feed(SAMPLE)[0].clone().into_doc();
         assert_eq!(doc.id, doc2.id);
         assert_eq!(doc.source.content_hash, doc2.source.content_hash);
         assert_eq!(doc.source.provenance.trust, TrustLevel::Network);
     }
-
     #[test]
     fn urlencode_escapes_spaces() {
         assert_eq!(urlencode("kv cache"), "kv%20cache");

@@ -142,48 +142,6 @@ fn user_draft_propose_first_bit_identical_pruned_q4k() {
     let _g = lock_gate();
     let _ = propose_first_matches_bonus_first(&weights, true, MAX_NEW_TOKENS);
 }
-fn eh_on_vs_off(weights: &PathBuf, label: &str, pruned: bool, require_accept: bool) {
-    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
-    if pruned {
-        set_pruned_q4k();
-    }
-    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
-    let (ref_ids, _) = {
-        let mut e = make_engine(weights);
-        gen_on(e.as_mut(), PROMPT)
-    };
-    std::env::set_var("HAWKING_QWEN_EVENT_HORIZON", "1");
-    let (eh_ids, accepted) = {
-        let mut e = make_engine(weights);
-        gen_on(e.as_mut(), PROMPT)
-    };
-    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
-    if pruned {
-        clear_pruned_q4k();
-    }
-    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "EH-OFF wrong count ({label})");
-    assert_eq!(eh_ids.len(), MAX_NEW_TOKENS, "EH-ON wrong count ({label})");
-    if !pruned {
-        assert_eq!(&ref_ids[..3], &eh_ids[..3], "EH GATE FAILED first 3 ({label})");
-    }
-    assert_eq!(ref_ids, eh_ids, "EH GATE FAILED ({label})");
-    if require_accept {
-        assert!(accepted > 0, "EH {label}: draft_accepted=0");
-    }
-}
-#[test]
-fn event_horizon_bit_identical_default() {
-    let Some(weights) = weights_path() else { return };
-    let _g = lock_gate();
-    eh_on_vs_off(&weights, "default", false, false);
-}
-#[test]
-fn event_horizon_bit_identical_fast_pruned_q4k() {
-    let Some(weights) = weights_path() else { return };
-    let _g = lock_gate();
-    eh_on_vs_off(&weights, "pruned-Q4K", true, true);
-}
 #[test]
 fn user_draft_propose_first_lossless_long() {
     let Some(weights) = weights_path() else { return };

@@ -103,7 +103,6 @@ mod tests {
         ModelArchitecture, ModelDescriptor, ModelRole, ProviderCaps, RolePurpose, SamplerProfile,
     };
     use std::collections::BTreeMap;
-
     #[test]
     fn router_prefers_grammar_capable_tool_planner() {
         let registry = Arc::new(RoleRegistry::default());
@@ -144,7 +143,6 @@ mod tests {
             .unwrap();
         assert_eq!(decision.grammar.as_deref(), Some("tool-call-json"));
     }
-
     #[test]
     fn router_uses_default_roles_for_hard_requests() {
         let registry = Arc::new(RoleRegistry::with_default_local_roles());

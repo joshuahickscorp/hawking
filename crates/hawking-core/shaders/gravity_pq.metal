@@ -410,26 +410,6 @@ kernel void gravity_axpy_f32(
     y[id] = fma(a, x[id], y[id]);
 }
 
-kernel void gravity_scale_f32(
-    device       float *x [[buffer(0)]],
-    constant     float &s [[buffer(1)]],
-    constant     uint  &n [[buffer(2)]],
-    uint id [[thread_position_in_grid]])
-{
-    if (id >= n) { return; }
-    x[id] *= s;
-}
-
-kernel void gravity_sigmoid_f32(
-    device const float *x [[buffer(0)]],
-    device       float *y [[buffer(1)]],
-    constant     uint  &n [[buffer(2)]],
-    uint id [[thread_position_in_grid]])
-{
-    if (id >= n) { return; }
-    y[id] = 1.0f / (1.0f + exp(-x[id]));
-}
-
 // GLM interleaved RoPE with *concatenated* halves (not NeoX scatter).
 // For each head, input is rotary_dim wide; output[0..half) = first components,
 // output[half..rotary_dim) = second components. cos/sin are half long.

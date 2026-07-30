@@ -16,7 +16,7 @@ use super::dispatch::{gemv_f16_dispatch, rmsnorm_dispatch};
 use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
 use crate::engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
+    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
 };
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
@@ -29,7 +29,6 @@ use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 use half::f16;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -389,47 +388,6 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) awq_smoothing_silu_mul: Option<Vec<crate::metal::PinnedBuffer>>,
 
-    /// Eagle5 / Eagle6 trained-head draft model for speculative decoding.
-    /// `Some` when `EngineConfig::speculate_mode == SpeculateMode::Eagle5`
-    /// at construction; loaded from `EngineConfig::eagle5_head_path` if
-    /// present, else falls back to a deterministic Mock head for runtime
-    /// wiring tests. `None` when speculate is off — the qwen forward
-    /// path is a no-op on the head in that case.
-    ///
-    /// Storage only; the actual dispatch into this head is selected by
-    /// `EngineConfig::speculate_mode == SpeculateMode::Eagle5`.
-    pub(crate) eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head>,
-
-    /// Eagle5 verify window from `EngineConfig::verify_window`.
-    /// `HAWKING_QWEN_EAGLE5_K=N` remains as a diagnostic override.
-    pub(crate) eagle5_verify_window: usize,
-
-    /// Phase B.3: scratch buffers for capturing the verifier's
-    /// residual + intermediate streams at a chosen layer. The Eagle6
-    /// trained head's `in_proj` consumes
-    /// `[prev_token_embd | residual_in | intermediate_signal]` and was
-    /// trained with these captures from the verifier's layer 32
-    /// (Qwen-3B) or 22 (Qwen-1.5B). Lazy-init on the first
-    /// `forward_token_greedy_tcb` call when
-    /// `HAWKING_QWEN_EAGLE5_CAPTURE=1`. `None` when capture is off
-    /// (which is the default).
-    ///
-    /// Each buffer holds `hidden * sizeof::<f32>()` bytes. They're
-    /// repurposed across every decode token while capture is active —
-    /// at end of each token's forward, they hold the most recent
-    /// capture, which the Eagle5 dispatch then reads via shared memory.
-    #[cfg(target_os = "macos")]
-    pub(crate) eagle5_capture_residual_buf: Option<crate::metal::PinnedBuffer>,
-    #[cfg(target_os = "macos")]
-    pub(crate) eagle5_capture_intermediate_buf: Option<crate::metal::PinnedBuffer>,
-    /// Layer index (0-based) at which to capture. Defaults to
-    /// `n_layers - 4` (matches the trainer's choice for both
-    /// Qwen-3B 36-layer = 32 and Qwen-1.5B 28-layer = 24, with 24
-    /// being close to the trainer's 22 — accept rate may drift
-    /// slightly for q1p5; q3b matches exactly).
-    /// Override via `HAWKING_QWEN_EAGLE5_CAPTURE_LAYER=N`.
-    pub(crate) eagle5_capture_layer: usize,
-
     /// Track B (FFN contextual sparsity) capture sink. `Some` only while a
     /// `HAWKING_QWEN_CAPTURE_FFN_PATH` decode run is active. The
     /// `forward_token` FFN site appends one `(layer, ffn_norm_out[hidden],
@@ -476,7 +434,7 @@ pub(crate) const FFN_CAPTURE_BLOCK: usize = 256;
 /// companion packer `tools/orchestrator/pack_ffn.py` converts the stream to
 /// the int8 parquet schema `colab/sparsity_predictor_train.py` consumes.
 ///
-/// Binary layout (all little-endian), mirroring the eagle5 corpus dump:
+/// Binary layout (all little-endian), matching the residual-capture corpus dump:
 ///   per sequence:  u32 0xFFFFFFFF, u32 0xFFFFFFFF, u32 hidden, u32 n_blocks
 ///   per record:    u32 layer, f32 norm_in[hidden],
 ///                  f32 blockmax[n_blocks], f32 blockl2[n_blocks]
@@ -1296,54 +1254,6 @@ impl Engine for QwenDense {
             eprintln!("  {:42}{:>9.2} ms", "TOTAL", total.as_secs_f64() * 1000.0);
         }
 
-        // Phase B.3: compute the capture layer index from env or default
-        // before `cfg` is moved into the struct below.
-        let eagle5_capture_layer_resolved = {
-            let default_capture = cfg.n_layers.saturating_sub(4);
-            std::env::var("HAWKING_QWEN_EAGLE5_CAPTURE_LAYER")
-                .ok()
-                .and_then(|v| v.parse::<usize>().ok())
-                .filter(|&n| n < cfg.n_layers)
-                .unwrap_or(default_capture)
-        };
-
-        let eagle5_verify_window = config.verify_window.max(1);
-
-        // Eagle5/6 head load (Phase B.1). When speculate_mode==Eagle5,
-        // attempt to load the trained head from `eagle5_head_path`. If
-        // path is None, fall back to a deterministic Mock head so the
-        // runtime wiring still has something to invoke for smoke tests.
-        // No forward-path consumption yet — this commit only stages the
-        // head into the struct. Phase B.4 wires the dispatch.
-        let eagle5_head = if config.speculate_mode == SpeculateMode::Eagle5 {
-            let hidden = cfg.hidden;
-            let vocab = cfg.vocab_size;
-            match config.eagle5_head_path.as_deref() {
-                Some(p) => {
-                    eprintln!("[eagle5] loading trained head from {}", p.display());
-                    Some(
-                        hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(
-                            p, hidden, vocab,
-                        )?,
-                    )
-                }
-                None => {
-                    eprintln!(
-                        "[eagle5] no --eagle5-head provided; constructing deterministic Mock head \
-                         for runtime wiring (accept rate ≈ 1/vocab — set --eagle5-head to use the \
-                         trained checkpoint)"
-                    );
-                    Some(hawking_speculate::eagle5::Eagle5Head::mock(
-                        0xea91e5_u64,
-                        hidden,
-                        vocab,
-                    ))
-                }
-            }
-        } else {
-            None
-        };
-
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -1391,13 +1301,6 @@ impl Engine for QwenDense {
             awq_smoothing_ffn_act: None,
             #[cfg(target_os = "macos")]
             awq_smoothing_silu_mul: None,
-            eagle5_head,
-            eagle5_verify_window,
-            #[cfg(target_os = "macos")]
-            eagle5_capture_residual_buf: None,
-            #[cfg(target_os = "macos")]
-            eagle5_capture_intermediate_buf: None,
-            eagle5_capture_layer: eagle5_capture_layer_resolved,
             #[cfg(target_os = "macos")]
             ffn_capture: std::sync::Mutex::new(None),
             // B1: prefix cache is built lazily on first `generate` when the
@@ -1416,32 +1319,6 @@ impl Engine for QwenDense {
         sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
         use std::sync::atomic::Ordering;
-
-        // Phase B.2: Eagle5 pre-flight gate. Reject incompatible sampling
-        // configs UP FRONT rather than letting the (greedy-only) spec-decode
-        // dispatch silently emit wrong tokens. Same contract as
-        // deepseek_v2.rs:1049-1068. Spec-decode requires:
-        //   - temperature == 0 (greedy)
-        //   - repetition_penalty == 1.0 (no token-level reweighting)
-        //   - eagle5_head loaded (held in the struct after Phase B.1)
-        if self.eagle5_head.is_some() {
-            if req.sampling.temperature != 0.0 {
-                return Err(Error::Model(format!(
-                    "eagle5 spec-decode requires temperature=0 (got {})",
-                    req.sampling.temperature
-                )));
-            }
-            if req.sampling.repetition_penalty != 1.0 {
-                return Err(Error::Model(format!(
-                    "eagle5 spec-decode requires repetition_penalty=1.0 (got {})",
-                    req.sampling.repetition_penalty
-                )));
-            }
-            // Reset per-sequence head state at the start of each generation.
-            if let Some(head) = self.eagle5_head.as_mut() {
-                head.reset();
-            }
-        }
 
         if let Some(seed) = req.sampling.seed {
             self.sampler = Sampler::new(seed);
@@ -1691,63 +1568,16 @@ impl Engine for QwenDense {
             && self.metal_ctx.is_some()
             && crate::env_opt_out("HAWKING_QWEN_TCB");
 
-        // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
-        // `--speculate eagle5` / EngineConfig::speculate_mode == Eagle5.
-        // `--verify-window` controls K; HAWKING_QWEN_EAGLE5_K remains
-        // as a diagnostic override.
-        //
-        // This is the SERIAL verify path: K sequential forwards per
-        // verify cycle. Correctness-preserving (greedy at temp=0 emits
-        // the same tokens as no-spec greedy), but NO throughput win — the
-        // per-cycle cost is K forwards for K accepted drafts. The
-        // throughput win requires a batched-verify-with-logits helper
-        // that returns per-position logits in one TCB; that's its own
-        // ~2-day workstream (Phase B.5+ in the port plan). For now we
-        // ship this serial path so:
-        //   * the dispatch wires end-to-end,
-        //   * draft_accepted / draft_rejected counters increment,
-        //   * acceptance-rate measurement against trained heads works,
-        //   * users can A/B vs baseline without risking correctness.
-        //
-        // The trained head currently runs in ZERO-CAPTURE mode (Phase B.3
-        // tradeoff): residual and intermediate are zero vectors. The head
-        // was trained expecting REAL captures of the verifier's
-        // layer-32 (Qwen-3B) hidden state, so accept rate will be low
-        // (~0.05-0.15) until the capture wiring lands as a follow-up.
-        let use_eagle5 = use_tcb && self.eagle5_head.is_some();
-        if crate::env_on("HAWKING_QWEN_E5DIAG") {
-            eprintln!(
-                "[e5diag] use_eagle5={} use_tcb={} head_some={} vw={}",
-                use_eagle5,
-                use_tcb,
-                self.eagle5_head.is_some(),
-                self.eagle5_verify_window,
-            );
-        }
-        let eagle5_k: usize = std::env::var("HAWKING_QWEN_EAGLE5_K")
-            .ok()
-            .and_then(|v| v.parse::<usize>().ok())
-            .filter(|&k| k >= 1)
-            .unwrap_or(self.eagle5_verify_window);
-        // Legacy diagnostic flag from the pre-capture batched-verify path.
-        // The bonus-first capture restructure below currently uses serial
-        // verify; when this flag is set we keep capture disabled because
-        // forward_tokens_batched_with_logits has no capture plumbing yet.
-        let use_eagle5_batched = crate::env_on("HAWKING_QWEN_EAGLE5_BATCHED") && use_eagle5;
-
         // L3.1 §2.1b — per-user n-gram draft (HAWKING_QWEN_USER_DRAFT).
         // DEFAULT-OFF, opt-in. A draft SOURCE for a propose→batched-verify→
         // accept loop that reuses the landed lossless verify primitive
         // (forward_tokens_verify) UNCHANGED, so every emitted token is the
         // verifier's token and output is BIT-IDENTICAL to plain greedy — the
-        // draft only affects speed. Independent of eagle5 (no trained head;
-        // EAGLE-3 is NO-GO). Requires the TCB pipeline (greedy temp=0) for the
-        // verify GEMM + greedy bonus forward, and that no eagle5 head is in
-        // play (the two spec paths are mutually exclusive). Per-user draft K is
+        // draft only affects speed. Requires the TCB pipeline (greedy temp=0) for the
+        // verify GEMM + greedy bonus forward. Per-user draft K is
         // HAWKING_QWEN_USER_DRAFT_K (default 4, capped at 8 — the batched
         // verify primitive's max batch).
         let use_user_draft = use_tcb
-            && !use_eagle5
             && req.sampling.temperature == 0.0
             && crate::env_on("HAWKING_QWEN_USER_DRAFT");
         let user_draft_k: usize = std::env::var("HAWKING_QWEN_USER_DRAFT_K")
@@ -1758,10 +1588,10 @@ impl Engine for QwenDense {
             .min(8);
         // PROPOSE-FIRST opt-in for the user-ngram draft
         // (HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST). Sibling to the bonus-first
-        // 'ud_loop below; selects the 1-verify-forward/cycle restructure (the
-        // n-gram analog of the eagle5 'pf_loop) instead of the 2-forward/cycle
-        // bonus-first loop. Only meaningful when the draft itself is enabled.
-        // The bonus-first loop stays the bit-identical reference for the gate.
+        // 'ud_loop below; selects the 1-verify-forward/cycle restructure
+        // instead of the 2-forward/cycle bonus-first loop. Only meaningful when
+        // the draft itself is enabled. The bonus-first loop stays the
+        // bit-identical reference for the gate.
         let user_draft_propose_first =
             use_user_draft && crate::env_on("HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST");
         // MID (spec governor wiring): auto-disable proposing during a low-accept
@@ -1783,600 +1613,11 @@ impl Engine for QwenDense {
             .unwrap_or(0.35);
 
         #[cfg(target_os = "macos")]
-        if use_eagle5 {
-            // One-time: build the head's vocab-pruned LM head so the propose
-            // hot path argmaxes over the verifier's pruned vocab (~32K) rather
-            // than the full ~152K — the dominant per-draft cost. Gated by
-            // `needs_vocab_prune` so the build + remap clone run once. Skipped
-            // when vocab prune is inactive (head stays full-vocab). Parity is
-            // unaffected: drafts only change speed, never emitted tokens.
-            if self
-                .eagle5_head
-                .as_ref()
-                .map_or(false, |h| h.needs_vocab_prune())
-            {
-                // Reuse the verifier's prune mapping: an explicit corpus
-                // remap if present, else the legacy first-N identity prune
-                // (`HAWKING_QWEN_VOCAB_PRUNE=N` → pruned idx j == real id j).
-                let remap: Option<Vec<u32>> = match (&self.vocab_prune_remap, self.vocab_pruned) {
-                    (Some(r), _) => Some(r.clone()),
-                    (None, Some(n)) => Some((0..n as u32).collect()),
-                    _ => None,
-                };
-                if let Some(remap) = remap {
-                    if let Some(head) = self.eagle5_head.as_mut() {
-                        head.set_vocab_prune(&remap);
-                    }
-                }
-            }
-            // Eagle5 spec-decode (serial verify). See block comment above
-            // for design rationale.
-            let hidden = self.config.hidden;
-            // Always allocate the zero fallback; used on cycle 1 (before
-            // any forward has populated the capture buffers) and when
-            // capture mode is off.
-            let zeros = vec![0.0_f32; hidden];
-            // Capture-mode integration. The capture buffers are populated by
-            // the per-cycle Stage-1 bonus forward (forward_token_greedy_tcb,
-            // which has the memcpy at capture_layer) — this runs in BOTH the
-            // serial and batched verify paths, so capture is now compatible
-            // with batched verify (only Stage 3's verify differs).
-            let eagle5_capture_in_use = crate::env_on("HAWKING_QWEN_EAGLE5_CAPTURE");
-            // Part 1 (wiring fix 2026-05-30): in plain `--speculate eagle5`
-            // the corpus-dump flag (EAGLE5_CAPTURE) is OFF, but the head
-            // STILL needs the real layer-32 residual/intermediate or it is
-            // fed zeros → 0% accept (see plans/eagle_forward_parity_handoff.md).
-            // Populate + read the capture buffers whenever spec is active,
-            // independent of the corpus-dump flag. The expensive corpus
-            // quantize + disk-write stays gated on the corpus path (the
-            // `else` branch below, keyed on HAWKING_QWEN_CAPTURE_CORPUS_PATH).
-            // `forward_token_greedy_tcb` mirrors this: it populates the
-            // buffers when `self.eagle5_head.is_some()` too.
-            let feed_head_captures = eagle5_capture_in_use || use_eagle5;
-            let mut eagle5_accept_trace = if let Some(path) =
-                std::env::var_os("HAWKING_QWEN_EAGLE5_ACCEPT_TRACE").map(PathBuf::from)
-            {
-                if let Some(parent) = path.parent() {
-                    if !parent.as_os_str().is_empty() {
-                        std::fs::create_dir_all(parent)?;
-                    }
-                }
-                Some(
-                    std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open(&path)?,
-                )
-            } else {
-                None
-            };
-            let mut eagle5_cycle: usize = 0;
-            // Logit-lens ceiling probe accumulators (see insertion below).
-            let lens_probe = crate::env_on("HAWKING_QWEN_EAGLE5_LENS_PROBE");
-            let mut lens_hits: usize = 0;
-            let mut lens_total: usize = 0;
-            let mut pos = prompt_len;
-
-            // ── PROPOSE-FIRST batched spec-decode (HAWKING_QWEN_EAGLE5_PROPOSE_FIRST).
-            // The lever for realized speedup: ONE batched verify forward per
-            // cycle (no separate bonus forward), and the head's strong depth-1
-            // IS used (it becomes `carried_true`, the first verify token, carried
-            // from the previous cycle's correction). Parity holds unconditionally
-            // — we only ever emit model-VERIFIED tokens; drafts affect speed, not
-            // output. Requires capture (residual) + batched verify primitive.
-            let use_propose_first =
-                crate::env_on("HAWKING_QWEN_EAGLE5_PROPOSE_FIRST") && eagle5_capture_in_use;
-            if use_propose_first {
-                let k = eagle5_k.max(1);
-                // Read the capture-layer residual the bootstrap/cycle forward
-                // just wrote into the pinned buffer.
-                let read_res = |s: &Self| -> Vec<f32> {
-                    let buf = s
-                        .eagle5_capture_residual_buf
-                        .as_ref()
-                        .expect("residual capture buf");
-                    let ptr = buf.contents() as *const f32;
-                    unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec()
-                };
-                // ── Bootstrap: one forward of the last prompt token gives the
-                // first anchor residual + the true next token (carried_true).
-                let mut anchor_tok = last_id;
-                let mut anchor_pos = pos;
-                let carried0 = self.forward_token_greedy_tcb(anchor_tok, anchor_pos)?;
-                let mut anchor_res = read_res(self);
-                let mut carried_true = carried0;
-                {
-                    let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
-                    self.sampler.record(carried_true);
-                    crate::stateful::usage_capture::record_argmax(carried_true);
-                    sink(StreamEvent::Token {
-                        id: carried_true,
-                        text,
-                    });
-                    if let Some(head) = self.eagle5_head.as_mut() {
-                        head.note_token(carried_true);
-                    }
-                    produced += 1;
-                }
-                if Some(carried_true) == eos {
-                    reason = StopReason::Eos;
-                }
-                'pf_loop: while produced < req.max_new_tokens
-                    && matches!(reason, StopReason::MaxTokens)
-                {
-                    if abort_set(&req) {
-                        reason = StopReason::Aborted;
-                        break;
-                    }
-                    // Propose a chained-hidden draft chain from the anchor.
-                    // d[0] ~ carried_true (already emitted); d[1..] are lookahead.
-                    let drafts = {
-                        let head = self.eagle5_head.as_ref().expect("head");
-                        head.propose_rollout_chained(anchor_tok, &anchor_res, &zeros, k)
-                    };
-                    // Verify [carried_true, d[1..k-1]] at [anchor_pos+1 .. anchor_pos+k].
-                    let mut vtoks = Vec::with_capacity(k);
-                    vtoks.push(carried_true);
-                    for j in 1..k {
-                        vtoks.push(drafts[j]);
-                    }
-                    let vpos: Vec<usize> = (0..k).map(|j| anchor_pos + 1 + j).collect();
-                    let (preds, residuals) = self.forward_tokens_verify(&vtoks, &vpos)?;
-                    // preds[j] = true token at anchor_pos+2+j (valid while prefix
-                    // matched). Accept lookahead d[1+j] vs preds[j].
-                    let mut na = k - 1; // accepted lookahead count
-                    for j in 0..(k - 1) {
-                        if drafts[1 + j] != preds[j] {
-                            na = j;
-                            break;
-                        }
-                    }
-                    // Emit the verified-new tokens: preds[0..=na]
-                    // (= na accepted lookahead drafts + 1 correction). carried_true
-                    // was already emitted (invariant), so we never re-emit it.
-                    stats.draft_accepted += na;
-                    stats.draft_rejected += (k - 1) - na;
-                    // L3.1 §2.2 usage_capture: this cycle's draft was proposed
-                    // under the 2-gram (anchor_tok, carried_true); na accepted,
-                    // (k-1)-na rejected; the verifier emitted preds[0] next.
-                    crate::stateful::usage_capture::record_draft(
-                        (anchor_tok, carried_true),
-                        preds.first().copied(),
-                        na,
-                        (k - 1) - na,
-                    );
-                    let mut stop = false;
-                    for j in 0..=na {
-                        let id = preds[j];
-                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
-                        self.sampler.record(id);
-                        crate::stateful::usage_capture::record_argmax(id);
-                        sink(StreamEvent::Token { id, text });
-                        if let Some(head) = self.eagle5_head.as_mut() {
-                            head.note_token(id);
-                        }
-                        produced += 1;
-                        if Some(id) == eos {
-                            reason = StopReason::Eos;
-                            stop = true;
-                            break;
-                        }
-                        if produced >= req.max_new_tokens {
-                            stop = true;
-                            break;
-                        }
-                    }
-                    if stop {
-                        break 'pf_loop;
-                    }
-                    // Advance anchor to the last correctly-processed position
-                    // (anchor_pos+1+na), whose residual we have. carried_true'
-                    // = preds[na] (the just-emitted correction = true next token).
-                    anchor_pos = anchor_pos + 1 + na;
-                    anchor_tok = if na == 0 { carried_true } else { drafts[na] };
-                    anchor_res = residuals[na].clone();
-                    carried_true = preds[na];
-                    // KV: valid through anchor_pos (last accepted). Next cycle's
-                    // verify writes from anchor_pos+1.
-                    self.kv.seq_len = anchor_pos + 1;
-                }
-                // Finalize (mirror the shared tail; we return early).
-                stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
-                stats.completion_tokens = produced;
-                stats.dispatch_samples = self
-                    .metal_ctx
-                    .as_ref()
-                    .map(|ctx| ctx.drain_trace())
-                    .unwrap_or_default();
-                let (bc, ba, cm) = self
-                    .metal_ctx
-                    .as_ref()
-                    .map(|ctx| ctx.drain_stats())
-                    .unwrap_or_default();
-                stats.metal_buffers_created = bc;
-                stats.metal_bytes_allocated = ba;
-                stats.metal_commits = cm;
-                // Track 3.1 / 5.1: last-step dispatch count (always valid).
-                stats.metal_dispatches = self.last_dispatch_count;
-                stats.dispatches_per_forward = self.last_dispatch_count;
-                crate::stateful::usage_capture::flush();
-                sink(StreamEvent::Done {
-                    reason,
-                    stats: stats.clone(),
-                });
-                return Ok(stats);
-            }
-
-            'e5_loop: while produced < req.max_new_tokens {
-                if abort_set(&req) {
-                    reason = StopReason::Aborted;
-                    break;
-                }
-                let step_start = Instant::now();
-
-                // Phase B.6 verify-FIRST dispatch. Restructured from the
-                // original Phase B.4 "propose-first-then-verify" pattern,
-                // which fed the head captures from rejected-draft forwards
-                // (see reports/eagle5_phase_c_root_cause.md). New order:
-                //
-                //   Stage 1: forward(last_id, pos) -> bonus + populates captures
-                //   Stage 2: read captures, head proposes K drafts (after bonus)
-                //   Stage 3: serial verify drafts at pos+1..pos+1+K
-                //
-                // Captures now come from the LAST VERIFIED token's forward,
-                // matching what the trainer hook captured (ground-truth
-                // positions, not draft attempts).
-                //
-                // Each cycle emits 1+M tokens where M is the number of
-                // accepted drafts (0..K) plus an optional correction.
-
-                // Stage 1: bonus forward. Always runs; produces the next
-                // greedy token AND populates the capture buffers as a
-                // side effect of running through forward_token_greedy_tcb
-                // (which has the memcpy dispatches at capture_layer).
-                // `head_start` = the token T whose capture-layer residual the
-                // bonus forward produces. The head's rollout was trained to
-                // predict T+1, T+2, … from (T, residual_T), so the draft chain
-                // must START at T, not at the bonus token T+1.
-                let head_start = last_id;
-                let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
-                self.sampler.record(bonus);
-                crate::stateful::usage_capture::record_argmax(bonus);
-                let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
-                sink(StreamEvent::Token { id: bonus, text });
-                if let Some(head) = self.eagle5_head.as_mut() {
-                    head.note_token(bonus);
-                }
-                produced += 1;
-                if Some(bonus) == eos {
-                    reason = StopReason::Eos;
-                    break 'e5_loop;
-                }
-                if produced >= req.max_new_tokens {
-                    // Last token of the generation; no point proposing
-                    // drafts we won't emit.
-                    break 'e5_loop;
-                }
-                // After Stage 1: pos++ logically (bonus emitted at pos+1
-                // in old semantics, BUT forward_token_greedy_tcb writes
-                // KV[pos] and the bonus is the prediction for pos+1).
-                // We treat the bonus as "now at position pos+1" for the
-                // next forward. seq_len was bumped by the forward to
-                // pos+1.
-                let bonus_pos = pos + 1;
-                last_id = bonus;
-
-                // Stage 2: read captures + propose. Captures hold layer-L
-                // state from the bonus forward we just did = verified
-                // position state. This is what the trainer expected.
-                let remaining = req.max_new_tokens - produced;
-                let k_avail = eagle5_k.min(remaining);
-                if k_avail == 0 {
-                    break 'e5_loop;
-                }
-                let captured_residual: Option<Vec<f32>> = if feed_head_captures {
-                    let buf = self
-                        .eagle5_capture_residual_buf
-                        .as_ref()
-                        .expect("residual capture buf must exist when capture is in use");
-                    let ptr = buf.contents() as *const f32;
-                    let v: Vec<f32> = unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec();
-                    if std::env::var("HAWKING_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
-                        let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
-                        let mean = v.iter().sum::<f32>() / (v.len() as f32);
-                        let var =
-                            v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
-                        let nonzero = v.iter().filter(|&&x| x != 0.0).count();
-                        eprintln!(
-                            "[eagle5-debug] residual stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
-                            nonzero, v.len(), mean, var.sqrt(), abs_max, &v[..8.min(v.len())]
-                        );
-                    }
-                    Some(v)
-                } else {
-                    None
-                };
-                let captured_intermediate: Option<Vec<f32>> = if feed_head_captures {
-                    let buf = self
-                        .eagle5_capture_intermediate_buf
-                        .as_ref()
-                        .expect("intermediate capture buf must exist when capture is in use");
-                    let ptr = buf.contents() as *const f32;
-                    let v: Vec<f32> = unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec();
-                    if std::env::var("HAWKING_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
-                        let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
-                        let mean = v.iter().sum::<f32>() / (v.len() as f32);
-                        let var =
-                            v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
-                        let nonzero = v.iter().filter(|&&x| x != 0.0).count();
-                        eprintln!(
-                            "[eagle5-debug] intermediate stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
-                            nonzero, v.len(), mean, var.sqrt(), abs_max, &v[..8.min(v.len())]
-                        );
-                    }
-                    Some(v)
-                } else {
-                    None
-                };
-                // Logit-lens ceiling probe (HAWKING_QWEN_EAGLE5_LENS_PROBE=1).
-                // `bonus` is the real next token the full forward just produced
-                // from `last_id`; `captured_residual` is the layer-K residual of
-                // that same forward. lens_argmax(residual) == bonus measures how
-                // often the capture layer's logit-lens already agrees with the
-                // model's real output — the ceiling for any head at this layer,
-                // independent of head training.
-                if lens_probe {
-                    if let Some(res) = captured_residual.as_ref() {
-                        if let Some(head) = self.eagle5_head.as_ref() {
-                            if let Some(la) = head.lens_argmax(res) {
-                                lens_total += 1;
-                                if la == bonus {
-                                    lens_hits += 1;
-                                }
-                            }
-                        }
-                    }
-                }
-                // DIAGNOSTIC (part 2 investigation): dump the exact head
-                // inputs (head_start prev token, captured residual+intermediate,
-                // bonus) so the PyTorch head can be fed the runtime's real feed
-                // and out[0] compared to bonus. Set
-                // HAWKING_QWEN_EAGLE5_FEED_DUMP=<path> to emit one binary
-                // record per cycle: [u32 head_start][u32 bonus][f32 res*h][f32 int*h].
-                if let Some(dump_path) = std::env::var_os("HAWKING_QWEN_EAGLE5_FEED_DUMP") {
-                    if let (Some(res), Some(int)) =
-                        (captured_residual.as_ref(), captured_intermediate.as_ref())
-                    {
-                        use std::io::Write as _FeedW;
-                        if let Ok(mut f) = std::fs::OpenOptions::new()
-                            .create(true)
-                            .append(true)
-                            .open(&dump_path)
-                        {
-                            let _ = f.write_all(&head_start.to_le_bytes());
-                            let _ = f.write_all(&bonus.to_le_bytes());
-                            let rb = unsafe {
-                                std::slice::from_raw_parts(res.as_ptr() as *const u8, res.len() * 4)
-                            };
-                            let ib = unsafe {
-                                std::slice::from_raw_parts(int.as_ptr() as *const u8, int.len() * 4)
-                            };
-                            let _ = f.write_all(rb);
-                            let _ = f.write_all(ib);
-                        }
-                    }
-                }
-                let draft = {
-                    let head = self
-                        .eagle5_head
-                        .as_ref()
-                        .expect("eagle5_head must be Some when use_eagle5");
-                    let res_ref = captured_residual.as_deref().unwrap_or(&zeros);
-                    let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
-                    // Roll out K+1 from token T (head_start): out[0] is the
-                    // head's T+1 prediction (≈ bonus, which we already have),
-                    // out[1..] are the genuine look-ahead drafts for T+2,T+3,…
-                    // that the verifier checks. Dropping out[0] keeps the head
-                    // aligned with how it was trained (residual_T pairs with T).
-                    let mut rolled =
-                        head.propose_rollout_chained(head_start, res_ref, int_ref, k_avail + 1);
-                    if rolled.is_empty() {
-                        rolled
-                    } else {
-                        rolled.split_off(1)
-                    }
-                };
-                if std::env::var("HAWKING_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
-                    let toks: Vec<String> = draft
-                        .iter()
-                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
-                        .collect();
-                    eprintln!(
-                        "[eagle5-debug] bonus={} draft_ids={:?} draft_tokens={:?}",
-                        bonus, draft, toks
-                    );
-                }
-                let draft_len = draft.len();
-                if draft_len == 0 {
-                    pos = bonus_pos;
-                    continue;
-                }
-
-                // Stage 3: verify. preds[i] = model argmax after consuming
-                // verify_tokens[i] at bonus_pos+i, compared to draft[i].
-                // verify_tokens = [bonus, draft[0..draft_len-1)].
-                //
-                // Two paths, same accept semantics + same post-verify KV
-                // bookkeeping (the emit/advance code below sets pos/seq_len):
-                //   * BATCHED (HAWKING_QWEN_EAGLE5_BATCHED=1): all draft_len
-                //     positions verified in ONE forward (forward_tokens_verify),
-                //     sharing weight reads — the throughput path.
-                //   * SERIAL (default): draft_len sequential forwards. Safe
-                //     fallback; no throughput win but correctness-proven.
-                let mut first_reject = draft_len;
-                let mut correction: Option<u32> = None;
-                if use_eagle5_batched {
-                    let mut vtoks = Vec::with_capacity(draft_len);
-                    vtoks.push(bonus);
-                    if draft_len > 1 {
-                        vtoks.extend_from_slice(&draft[..draft_len - 1]);
-                    }
-                    let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
-                    let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
-                    for i in 0..draft_len {
-                        if preds[i] != draft[i] {
-                            first_reject = i;
-                            correction = Some(preds[i]);
-                            break;
-                        }
-                    }
-                } else {
-                    let mut tmp_last = bonus;
-                    for i in 0..draft_len {
-                        let pred = self.forward_token_greedy_tcb(tmp_last, bonus_pos + i)?;
-                        if pred != draft[i] {
-                            first_reject = i;
-                            correction = Some(pred);
-                            break;
-                        }
-                        tmp_last = pred;
-                    }
-                }
-                stats.draft_accepted += first_reject;
-                stats.draft_rejected += draft_len - first_reject;
-                // L3.1 §2.2 usage_capture: this cycle's draft was proposed
-                // under the 2-gram (head_start, bonus); first_reject accepted,
-                // draft_len-first_reject rejected; the next emitted token is the
-                // first accepted draft (or the correction on a head-of-window
-                // reject).
-                crate::stateful::usage_capture::record_draft(
-                    (head_start, bonus),
-                    draft.first().copied().or(correction),
-                    first_reject,
-                    draft_len - first_reject,
-                );
-                if let Some(trace) = eagle5_accept_trace.as_mut() {
-                    let draft_tokens: Vec<String> = draft
-                        .iter()
-                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
-                        .collect();
-                    let accepted_tokens: Vec<String> = draft[..first_reject]
-                        .iter()
-                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
-                        .collect();
-                    let correction_text =
-                        correction.and_then(|id| self.tokenizer.decode_one(id).ok());
-                    let record = serde_json::json!({
-                        "schema": "hawking-eagle5-accept-trace-v1",
-                        "cycle": eagle5_cycle,
-                        "capture": eagle5_capture_in_use,
-                        "verify_window": eagle5_k,
-                        "k_requested": k_avail,
-                        "draft_len": draft_len,
-                        "accepted": first_reject,
-                        "rejected": draft_len - first_reject,
-                        "pos": pos,
-                        "bonus_pos": bonus_pos,
-                        "bonus_id": bonus,
-                        "bonus_text": self.tokenizer.decode_one(bonus).unwrap_or_default(),
-                        "draft_ids": &draft,
-                        "draft_tokens": draft_tokens,
-                        "accepted_ids": &draft[..first_reject],
-                        "accepted_tokens": accepted_tokens,
-                        "correction_id": correction,
-                        "correction_text": correction_text,
-                    });
-                    writeln!(trace, "{record}")?;
-                }
-                eagle5_cycle += 1;
-
-                // Emit accepted drafts.
-                for k in 0..first_reject {
-                    let id = draft[k];
-                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
-                    sink(StreamEvent::Token { id, text });
-                    self.sampler.record(id);
-                    crate::stateful::usage_capture::record_argmax(id);
-                    if let Some(head) = self.eagle5_head.as_mut() {
-                        head.note_token(id);
-                    }
-                    produced += 1;
-                    if Some(id) == eos {
-                        reason = StopReason::Eos;
-                        break 'e5_loop;
-                    }
-                    if produced >= req.max_new_tokens {
-                        break 'e5_loop;
-                    }
-                }
-
-                // Emit correction (if any) and advance state.
-                if let Some(corr) = correction {
-                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
-                    sink(StreamEvent::Token { id: corr, text });
-                    self.sampler.record(corr);
-                    crate::stateful::usage_capture::record_argmax(corr);
-                    if let Some(head) = self.eagle5_head.as_mut() {
-                        head.note_token(corr);
-                    }
-                    produced += 1;
-                    last_id = corr;
-                    // KV state after stage 3 on reject at i:
-                    //   - Stage 1 wrote KV[pos] = old last_id, seq_len = pos+1.
-                    //   - Stage 3 did i+1 forwards (iters 0..=i), each
-                    //     writing KV[bonus_pos+iter] and bumping seq_len.
-                    //   - After break: seq_len = bonus_pos + i + 1 = pos + 2 + i.
-                    //   - Correction sits LOGICALLY at bonus_pos + i + 1 = pos + 2 + i.
-                    //     KV[pos+2+i] is NOT yet written; next cycle's stage 1
-                    //     will write it.
-                    //   - Need: pos = pos + 2 + i (= bonus_pos + i + 1).
-                    //     seq_len must equal new pos so the next stage 1's
-                    //     forward(corr, pos_new) writes KV[pos_new] without
-                    //     gap.
-                    pos = bonus_pos + first_reject + 1;
-                    self.kv.seq_len = pos;
-                    if Some(corr) == eos {
-                        reason = StopReason::Eos;
-                        break 'e5_loop;
-                    }
-                } else {
-                    // All drafts accepted. Stage 3 did K forwards, so
-                    // seq_len = bonus_pos + K. Last emitted token is
-                    // drafts[K-1], sitting at position bonus_pos + K.
-                    // The forward at iteration K-1 wrote KV[bonus_pos+K-1]
-                    // = drafts[K-2], so KV[bonus_pos+K] (= position of
-                    // drafts[K-1]) is NOT yet written. Next cycle's
-                    // stage 1 forward writes it.
-                    last_id = draft[draft_len - 1];
-                    pos = bonus_pos + draft_len;
-                    // seq_len bumped by stage 3 to bonus_pos + draft_len
-                    // = pos, so no rewind is needed.
-                }
-
-                if stall_active && step_start.elapsed() > stall_limit {
-                    reason = StopReason::Aborted;
-                    break 'e5_loop;
-                }
-            }
-            if lens_probe && lens_total > 0 {
-                eprintln!(
-                    "[eagle5-lens-probe] layer-K logit-lens ceiling: {}/{} = {:.1}% \
-                     (fraction of steps where argmax(RMSNorm(captured_residual)@lm_head) \
-                     == the model's real next token). This is the upper bound for any \
-                     head at this capture layer.",
-                    lens_hits,
-                    lens_total,
-                    100.0 * lens_hits as f32 / lens_total as f32,
-                );
-            }
-        } else if user_draft_propose_first {
+        if user_draft_propose_first {
             // ── L3.1 §2.1b — per-user n-gram draft, PROPOSE-FIRST variant
             // (HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST). The 1-verify-forward/
-            // cycle restructure: the n-gram analog of the eagle5 'pf_loop
-            // (the propose-first loop above), MINUS the head-specific machinery
-            // (no read_res / anchor_res / propose_rollout_chained — the n-gram
-            // is a CPU lookup with no hidden state, so no residual capture and
-            // no bootstrap-with-capture is needed).
+            // cycle restructure for the CPU n-gram draft (lookup only — no
+            // hidden residual capture and no bootstrap-with-capture).
             //
             // Per cycle the bonus-first 'ud_loop below pays TWO target forwards
             // (a Stage-1 bonus forward + a Stage-3 verify forward); this loop
@@ -2399,8 +1640,7 @@ impl Engine for QwenDense {
             // Lookahead count per cycle. The verify batch is `carried_true` +
             // up to `k_la` lookahead drafts, and forward_tokens_verify caps the
             // batch at 8 (the `1..=8` guard), so cap lookahead at 7 to keep
-            // vtoks.len() <= 8. (The eagle5 'pf_loop verifies k tokens =
-            // carried_true + k-1 lookahead for the same reason.)
+            // vtoks.len() <= 8.
             let k_la = user_draft_k.min(7);
             let mut spec_gov = if use_spec_governor {
                 let mut g = hawking_speculate::governor::SpecGovernor::new(
@@ -2612,12 +1852,11 @@ impl Engine for QwenDense {
         } else if use_user_draft {
             // ── L3.1 §2.1b — per-user n-gram draft, propose→batched-verify.
             //
-            // LOSSLESS by construction: this mirrors the eagle5 verify-FIRST
-            // accept loop exactly, but the draft source is a `UserNgramDraft`
-            // (a CPU n-gram automaton, no head) instead of the trained head.
-            // The verifier (`forward_tokens_verify`) emits, so the token stream
-            // is BIT-IDENTICAL to plain greedy — drafts only change how many
-            // tokens are emitted per verify forward, never which tokens.
+            // LOSSLESS by construction: draft source is a `UserNgramDraft`
+            // (CPU n-gram automaton). The verifier (`forward_tokens_verify`)
+            // emits, so the token stream is BIT-IDENTICAL to plain greedy —
+            // drafts only change how many tokens are emitted per verify
+            // forward, never which tokens.
             //
             // Per cycle:
             //   Stage 1: bonus = forward(last_id, pos)  → the true next token
@@ -2625,7 +1864,7 @@ impl Engine for QwenDense {
             //   Stage 2: draft = index.propose([prev,bonus], k)  → CPU lookup.
             //   Stage 3: verify [bonus, draft[..k-1]] in ONE batched forward;
             //            accept the longest agreeing prefix; correction on the
-            //            first mismatch. KV bookkeeping identical to e5_loop.
+            //            first mismatch.
             let mut draft_index = hawking_speculate::user_ngram::UserNgramDraft::new();
             // Warm-start from the prompt (the user's immediate history) so the
             // index has context from token one — the same in-prompt signal PLD
@@ -2652,30 +1891,6 @@ impl Engine for QwenDense {
             } else {
                 None
             };
-            // ── Event Horizon (P0.4-P0.7 / P1.3-P1.4) — behind HAWKING_QWEN_EVENT_HORIZON.
-            // Default OFF; the existing 'ud_loop accept path is the untouched fallback
-            // and the parity oracle. Never flip this default without the human-run
-            // bit-identity gate in user_draft_parity_e2e.rs.
-            use hawking_speculate::proposal::Proposer as _;
-            let eh_on = std::env::var("HAWKING_QWEN_EVENT_HORIZON").is_ok();
-            let mut ngram_proposer = hawking_speculate::user_ngram::NgramProposer::new();
-            let mut suffix_proposer = hawking_speculate::suffix_array::SuffixArrayDraft::new();
-            let mut router = hawking_speculate::router::ProposalRouter::new(
-                spec_gov_window,
-                spec_gov_min_rate,
-                0.0,
-            );
-            if eh_on {
-                ngram_proposer.warm(&prompt_ids);
-                suffix_proposer.warm(&prompt_ids);
-                // P1.4: register the suffix-array as a second always-on free slot.
-                router.add_free_slot(
-                    hawking_speculate::router::ProposerId::SuffixArray,
-                    spec_gov_window,
-                    spec_gov_min_rate,
-                );
-            }
-
             'ud_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
@@ -2695,10 +1910,6 @@ impl Engine for QwenDense {
                 produced += 1;
                 // Grow the index with the emitted bonus token.
                 draft_index.note_token(bonus);
-                if eh_on {
-                    ngram_proposer.observe(&[bonus]);
-                    suffix_proposer.observe(&[bonus]);
-                }
                 last_emit = bonus;
                 if Some(bonus) == eos {
                     reason = StopReason::Eos;
@@ -2720,77 +1931,21 @@ impl Engine for QwenDense {
                     continue;
                 }
                 let ctx_buf: [u32; 2] = [ctx_prev, bonus];
-                // Stage 2: propose. P0.7: route through ProposalRouter when EH is ON;
-                // fall back to the original gov_propose + draft_index path when OFF.
-                let mut eh_proposer_id = hawking_speculate::router::ProposerId::UserNgram;
-                let draft = if eh_on {
-                    use hawking_speculate::proposal::{Budget, Ctx as PCtx, Proposal, Telemetry};
-                    use hawking_speculate::router::{ProposerId, RouterCtx, RouterPlan};
-                    let rctx = RouterCtx {
-                        // 1ms placeholder: router always proposes on the parity gate
-                        // (benefit > 0 with zero costs). Tune with real timing in P0.7+.
-                        target_ns_per_token: 1_000_000.0,
-                        context_confidence: 0.5,
-                        hidden_available: false,
-                    };
-                    match router.plan(&rctx) {
-                        RouterPlan::NoSpec => {
-                            router.observe_disabled(ProposerId::UserNgram);
-                            router.observe_disabled(ProposerId::SuffixArray);
-                            pos = bonus_pos;
-                            continue;
-                        }
-                        RouterPlan::Spec {
-                            id, draft_len: k, ..
-                        } => {
-                            eh_proposer_id = id;
-                            let pctx = PCtx {
-                                tokens: &ctx_buf,
-                                pos: bonus_pos,
-                                hidden: None,
-                            };
-                            let tel = Telemetry::default();
-                            match id {
-                                ProposerId::SuffixArray => {
-                                    match suffix_proposer.propose(
-                                        &pctx,
-                                        Budget::line(k.min(k_avail)),
-                                        &tel,
-                                    ) {
-                                        Proposal::TokenLine(v) => v,
-                                        _ => Vec::new(),
-                                    }
-                                }
-                                _ => {
-                                    match ngram_proposer.propose(
-                                        &pctx,
-                                        Budget::line(k.min(k_avail)),
-                                        &tel,
-                                    ) {
-                                        Proposal::TokenLine(v) => v,
-                                        _ => Vec::new(),
-                                    }
-                                }
-                            }
-                        }
-                    }
+                // Stage 2: governor gate + draft_index propose.
+                // Governor gate: when disabled, skip proposing this cycle. An
+                // empty `draft` falls through the proven degenerate branch below
+                // (Stage-1 bonus already emitted the true token), so the emitted
+                // stream is byte-identical — the governor only suppresses
+                // speculation. We still step(false) per disabled cycle so the
+                // window/cooldown advance.
+                let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
+                let draft = if gov_propose {
+                    draft_index.propose(&ctx_buf, k_avail)
                 } else {
-                    // Original path: governor gate + draft_index propose.
-                    // Governor gate: when disabled, skip proposing this cycle. An
-                    // empty `draft` falls through the proven degenerate branch below
-                    // (Stage-1 bonus already emitted the true token), so the emitted
-                    // stream is byte-identical — the governor only suppresses
-                    // speculation. We still step(false) per disabled cycle so the
-                    // window/cooldown advance.
-                    let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
-                    if gov_propose {
-                        draft_index.propose(&ctx_buf, k_avail)
-                    } else {
-                        if let Some(g) = spec_gov.as_mut() {
-                            let _ = g.step(false);
-                        }
-                        Vec::new()
+                    if let Some(g) = spec_gov.as_mut() {
+                        let _ = g.step(false);
                     }
+                    Vec::new()
                 };
                 let draft_len = draft.len();
                 if draft_len == 0 {
@@ -2800,160 +1955,85 @@ impl Engine for QwenDense {
                     continue;
                 }
 
-                // Stage 3: batched verify — P0.6: route through Verifier::verify_line
-                // when EH is ON (bit-identical by construction); original inline accept
-                // block when OFF (the untouched fallback and parity oracle).
-                if eh_on {
-                    let outcome = {
-                        let v = hawking_speculate::verifier::Verifier::new(8, false);
-                        v.verify_line(self, bonus, bonus_pos, &draft)?
-                    };
-                    let na = outcome.accepted.len();
-                    stats.draft_accepted += na;
-                    stats.draft_rejected += draft_len - na;
-                    // Router feedback replaces spec_gov.step() in the EH path.
-                    router.record(
-                        eh_proposer_id,
-                        &hawking_speculate::router::StepObservation {
-                            accepted: na,
-                            drafted: draft_len,
-                            ..Default::default()
-                        },
-                    );
-                    // L3.1 §2.2 usage_capture: same inputs as the original block.
-                    crate::stateful::usage_capture::record_draft(
-                        (ctx_prev, bonus),
-                        draft.first().copied().or(outcome.correction),
-                        na,
-                        draft_len - na,
-                    );
-                    let mut stop = false;
-                    for &id in &outcome.accepted {
-                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
-                        sink(StreamEvent::Token { id, text });
-                        self.sampler.record(id);
-                        crate::stateful::usage_capture::record_argmax(id);
-                        draft_index.note_token(id);
-                        ngram_proposer.observe(&[id]);
-                        suffix_proposer.observe(&[id]);
-                        last_emit = id;
-                        produced += 1;
-                        if Some(id) == eos {
-                            reason = StopReason::Eos;
-                            stop = true;
-                            break;
-                        }
-                        if produced >= req.max_new_tokens {
-                            stop = true;
-                            break;
-                        }
+                // Stage 3: batched verify + inline accept (user-draft path).
+                let mut vtoks = Vec::with_capacity(draft_len);
+                vtoks.push(bonus);
+                if draft_len > 1 {
+                    vtoks.extend_from_slice(&draft[..draft_len - 1]);
+                }
+                let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
+                let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                let mut first_reject = draft_len;
+                let mut correction: Option<u32> = None;
+                for i in 0..draft_len {
+                    if preds[i] != draft[i] {
+                        first_reject = i;
+                        correction = Some(preds[i]);
+                        break;
                     }
-                    if stop {
+                }
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_len - first_reject;
+                // Governor: accepted >=1 draft iff first_reject > 0. Reached only
+                // on a proposed cycle (the real accept signal); disabled cycles
+                // were stepped above.
+                if let Some(g) = spec_gov.as_mut() {
+                    let _ = g.step(first_reject > 0);
+                }
+                // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
+                crate::stateful::usage_capture::record_draft(
+                    (ctx_prev, bonus),
+                    draft.first().copied().or(correction),
+                    first_reject,
+                    draft_len - first_reject,
+                );
+                // Emit accepted drafts. Each is a model-verified token, so the
+                // stream stays bit-identical to plain greedy.
+                let mut stop = false;
+                for k in 0..first_reject {
+                    let id = draft[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    crate::stateful::usage_capture::record_argmax(id);
+                    draft_index.note_token(id);
+                    last_emit = id;
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        stop = true;
+                        break;
+                    }
+                    if produced >= req.max_new_tokens {
+                        stop = true;
+                        break;
+                    }
+                }
+                if stop {
+                    break 'ud_loop;
+                }
+                // Emit correction (if any) and advance state. KV bookkeeping:
+                // on a reject at i, the verify wrote KV through bonus_pos+i,
+                // the correction sits at bonus_pos+i+1 (not yet written); on
+                // full accept, KV is valid through bonus_pos+draft_len.
+                if let Some(corr) = correction {
+                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                    sink(StreamEvent::Token { id: corr, text });
+                    self.sampler.record(corr);
+                    crate::stateful::usage_capture::record_argmax(corr);
+                    draft_index.note_token(corr);
+                    last_emit = corr;
+                    produced += 1;
+                    last_id = corr;
+                    pos = bonus_pos + first_reject + 1;
+                    self.kv.seq_len = pos;
+                    if Some(corr) == eos {
+                        reason = StopReason::Eos;
                         break 'ud_loop;
-                    }
-                    if let Some(corr) = outcome.correction {
-                        let text = self.tokenizer.decode_one(corr).unwrap_or_default();
-                        sink(StreamEvent::Token { id: corr, text });
-                        self.sampler.record(corr);
-                        crate::stateful::usage_capture::record_argmax(corr);
-                        draft_index.note_token(corr);
-                        ngram_proposer.observe(&[corr]);
-                        suffix_proposer.observe(&[corr]);
-                        last_emit = corr;
-                        produced += 1;
-                        last_id = corr;
-                        pos = outcome.next_seq_len;
-                        self.kv.seq_len = pos;
-                        if Some(corr) == eos {
-                            reason = StopReason::Eos;
-                            break 'ud_loop;
-                        }
-                    } else {
-                        last_id = *outcome.accepted.last().expect("non-empty on full accept");
-                        pos = outcome.next_seq_len;
                     }
                 } else {
-                    // Original inline accept block (unchanged — the parity oracle).
-                    let mut vtoks = Vec::with_capacity(draft_len);
-                    vtoks.push(bonus);
-                    if draft_len > 1 {
-                        vtoks.extend_from_slice(&draft[..draft_len - 1]);
-                    }
-                    let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
-                    let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
-                    let mut first_reject = draft_len;
-                    let mut correction: Option<u32> = None;
-                    for i in 0..draft_len {
-                        if preds[i] != draft[i] {
-                            first_reject = i;
-                            correction = Some(preds[i]);
-                            break;
-                        }
-                    }
-                    stats.draft_accepted += first_reject;
-                    stats.draft_rejected += draft_len - first_reject;
-                    // Governor: accepted >=1 draft iff first_reject > 0. Reached only
-                    // on a proposed cycle (the real accept signal); disabled cycles
-                    // were stepped above.
-                    if let Some(g) = spec_gov.as_mut() {
-                        let _ = g.step(first_reject > 0);
-                    }
-                    // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
-                    crate::stateful::usage_capture::record_draft(
-                        (ctx_prev, bonus),
-                        draft.first().copied().or(correction),
-                        first_reject,
-                        draft_len - first_reject,
-                    );
-                    // Emit accepted drafts. Each is a model-verified token, so the
-                    // stream stays bit-identical to plain greedy.
-                    let mut stop = false;
-                    for k in 0..first_reject {
-                        let id = draft[k];
-                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
-                        sink(StreamEvent::Token { id, text });
-                        self.sampler.record(id);
-                        crate::stateful::usage_capture::record_argmax(id);
-                        draft_index.note_token(id);
-                        last_emit = id;
-                        produced += 1;
-                        if Some(id) == eos {
-                            reason = StopReason::Eos;
-                            stop = true;
-                            break;
-                        }
-                        if produced >= req.max_new_tokens {
-                            stop = true;
-                            break;
-                        }
-                    }
-                    if stop {
-                        break 'ud_loop;
-                    }
-                    // Emit correction (if any) and advance state. KV bookkeeping is
-                    // identical to the eagle5 batched path: on a reject at i, the
-                    // verify wrote KV through bonus_pos+i, the correction sits at
-                    // bonus_pos+i+1 (not yet written); on full accept, KV is valid
-                    // through bonus_pos+draft_len.
-                    if let Some(corr) = correction {
-                        let text = self.tokenizer.decode_one(corr).unwrap_or_default();
-                        sink(StreamEvent::Token { id: corr, text });
-                        self.sampler.record(corr);
-                        crate::stateful::usage_capture::record_argmax(corr);
-                        draft_index.note_token(corr);
-                        last_emit = corr;
-                        produced += 1;
-                        last_id = corr;
-                        pos = bonus_pos + first_reject + 1;
-                        self.kv.seq_len = pos;
-                        if Some(corr) == eos {
-                            reason = StopReason::Eos;
-                            break 'ud_loop;
-                        }
-                    } else {
-                        last_id = draft[draft_len - 1];
-                        pos = bonus_pos + draft_len;
-                    }
+                    last_id = draft[draft_len - 1];
+                    pos = bonus_pos + draft_len;
                 }
 
                 if stall_active && step_start.elapsed() > stall_limit {
@@ -2962,46 +2042,7 @@ impl Engine for QwenDense {
                 }
             }
         } else {
-            // Quantized-residual corpus capture (HAWKING_QWEN_CAPTURE_CORPUS_PATH).
-            // When set AND HAWKING_QWEN_EAGLE5_CAPTURE=1, append per-step
-            // (prev_token, next_token, residual[h], intermediate[h]) records to
-            // the file, prefixed by a per-sequence sentinel. This captures the
-            // residuals the QUANTIZED runtime actually serves — eliminating the
-            // fp16→Q4_K_M training/serving distribution shift. A companion
-            // packer (tools/orchestrator/pack_corpus.py) converts the binary
-            // stream to the trainer's int8 parquet schema. Greedy decode only.
-            use std::io::Write as _CorpusWrite;
             let hidden = self.config.hidden;
-            let eagle5_capture_active = crate::env_on("HAWKING_QWEN_EAGLE5_CAPTURE");
-            let mut corpus_file: Option<std::fs::File> =
-                std::env::var_os("HAWKING_QWEN_CAPTURE_CORPUS_PATH").and_then(|p| {
-                    if !eagle5_capture_active {
-                        eprintln!(
-                            "[capture-corpus] WARN: CORPUS_PATH set but \
-                                   HAWKING_QWEN_EAGLE5_CAPTURE!=1; no residuals will \
-                                   be captured. Skipping dump."
-                        );
-                        return None;
-                    }
-                    match std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open(&p)
-                    {
-                        Ok(mut f) => {
-                            // Per-sequence sentinel: two u32 0xFFFFFFFF then the
-                            // hidden dim, so the packer can self-describe.
-                            let _ = f.write_all(&0xFFFF_FFFFu32.to_le_bytes());
-                            let _ = f.write_all(&0xFFFF_FFFFu32.to_le_bytes());
-                            let _ = f.write_all(&(hidden as u32).to_le_bytes());
-                            Some(f)
-                        }
-                        Err(e) => {
-                            eprintln!("[capture-corpus] WARN: cannot open {p:?}: {e}");
-                            None
-                        }
-                    }
-                });
             // Track B: FFN sparsity capture (HAWKING_QWEN_CAPTURE_FFN_PATH).
             // Forces the non-TCB `forward_token` path so each layer's ffn_norm
             // output + silu*up activations are computed on-host and tapped (the
@@ -3072,31 +2113,6 @@ impl Engine for QwenDense {
                     break;
                 }
                 self.sampler.record(next_id);
-                // Corpus dump: residual/intermediate of the forward that just
-                // processed `last_id` (the prev token) producing `next_id`.
-                if let Some(f) = corpus_file.as_mut() {
-                    if let (Some(res_buf), Some(int_buf)) = (
-                        self.eagle5_capture_residual_buf.as_ref(),
-                        self.eagle5_capture_intermediate_buf.as_ref(),
-                    ) {
-                        let res = unsafe {
-                            std::slice::from_raw_parts(res_buf.contents() as *const f32, hidden)
-                        };
-                        let inter = unsafe {
-                            std::slice::from_raw_parts(int_buf.contents() as *const f32, hidden)
-                        };
-                        let _ = f.write_all(&last_id.to_le_bytes());
-                        let _ = f.write_all(&next_id.to_le_bytes());
-                        let res_bytes = unsafe {
-                            std::slice::from_raw_parts(res.as_ptr() as *const u8, hidden * 4)
-                        };
-                        let int_bytes = unsafe {
-                            std::slice::from_raw_parts(inter.as_ptr() as *const u8, hidden * 4)
-                        };
-                        let _ = f.write_all(res_bytes);
-                        let _ = f.write_all(int_bytes);
-                    }
-                }
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 let json_done = if let Some(c) = json_constraint.as_mut() {
                     c.advance(&text);
@@ -3118,9 +2134,6 @@ impl Engine for QwenDense {
                     break;
                 }
                 last_id = next_id;
-            }
-            if let Some(mut f) = corpus_file {
-                let _ = f.flush();
             }
             if ffn_capturing {
                 if let Some(mut w) = self.ffn_capture.lock().unwrap().take() {
@@ -5097,34 +4110,6 @@ impl QwenDense {
         } else {
             None
         };
-        // Phase B.3: Eagle5 capture mode. Lazy-allocates two PinnedBuffers
-        // (residual + intermediate, hidden * f32 each) on first activation.
-        // The buffers persist across decode steps and are overwritten by
-        // every forward — the Eagle5 dispatch reads the most recent capture.
-        //
-        // Part 1 (wiring fix 2026-05-30): the capture buffers must also be
-        // populated in plain `--speculate eagle5` (no corpus-dump flag), or
-        // the head is fed zeros → 0% accept. We populate whenever a head is
-        // loaded (`self.eagle5_head.is_some()`), which costs only two cheap
-        // memcpy_f32 dispatches the GPU already has the data for — NOT the
-        // expensive corpus quantize+disk-write (that stays in `generate`'s
-        // corpus-path branch). The env flag still forces population for the
-        // corpus-capture decode.
-        let eagle5_capture_active =
-            crate::env_on("HAWKING_QWEN_EAGLE5_CAPTURE") || self.eagle5_head.is_some();
-        if eagle5_capture_active {
-            let h_bytes = self.config.hidden * std::mem::size_of::<f32>();
-            if self.eagle5_capture_residual_buf.is_none() {
-                if let Some(ctx) = self.metal_ctx.as_ref() {
-                    self.eagle5_capture_residual_buf = Some(ctx.new_buffer(h_bytes));
-                }
-            }
-            if self.eagle5_capture_intermediate_buf.is_none() {
-                if let Some(ctx) = self.metal_ctx.as_ref() {
-                    self.eagle5_capture_intermediate_buf = Some(ctx.new_buffer(h_bytes));
-                }
-            }
-        }
         // When AWQ is active the sidecar IS the AWQ-baked Q4K_FAST file,
         // so we must route the Q4_K projections through the q4k_fast
         // kernel even if HAWKING_QWEN_Q4K_FAST wasn't set explicitly.
@@ -7475,39 +6460,6 @@ impl QwenDense {
                     h,
                 )?;
             }
-            // Phase B.3: capture residual + intermediate at the chosen
-            // layer for Eagle5 spec-decode. Two `memcpy_f32_off` dispatches
-            // run in the same TCB as the layer compute (no commit split).
-            // Capture happens AFTER the fused add+rmsnorm so `x_buf` holds
-            // the layer's residual output (x + ffn_down). The intermediate
-            // (ffn_down output BEFORE the residual add) was already in
-            // ffn_down_buf since the fused dispatch reads it but doesn't
-            // overwrite it — so we can copy the same buffer here.
-            if eagle5_capture_active && li == self.eagle5_capture_layer {
-                let res_buf = self
-                    .eagle5_capture_residual_buf
-                    .as_ref()
-                    .ok_or_else(|| Error::Metal("eagle5 capture residual buf missing".into()))?;
-                let int_buf = self
-                    .eagle5_capture_intermediate_buf
-                    .as_ref()
-                    .ok_or_else(|| {
-                        Error::Metal("eagle5 capture intermediate buf missing".into())
-                    })?;
-                // DIAGNOSTIC: when HAWKING_QWEN_EAGLE5_CAPTURE_XNORM=1,
-                // capture the post-final-norm hidden (x_norm_buf — what
-                // literally feeds the LM head) into res_buf instead of the
-                // pre-norm residual. Used to validate the capture mechanism:
-                // (captured @ lm_head).argmax must equal the generated token.
-                let cap_xnorm = crate::env_on("HAWKING_QWEN_EAGLE5_CAPTURE_XNORM");
-                let res_src = if cap_xnorm {
-                    &arena.x_norm_buf
-                } else {
-                    &arena.x_buf
-                };
-                kernels::memcpy_f32_off_tcb(&mut tcb, res_src, res_buf, 0, 0, h)?;
-                kernels::memcpy_f32_off_tcb(&mut tcb, &arena.ffn_down_buf, int_buf, 0, 0, h)?;
-            }
             let _ = kv_dim_bytes;
         }
 
@@ -9314,12 +8266,10 @@ impl QwenDense {
         }
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
-            out.push(hawking_speculate::eagle5_forward::matmul_no_bias_f16w(
-                lm_head_src,
-                &x_norm_all[k * h..(k + 1) * h],
-                vocab,
-                h,
-            ));
+            let x_norm_k = &x_norm_all[k * h..(k + 1) * h];
+            let mut logits = vec![0.0f32; vocab];
+            crate::kernels::gemv_f16(lm_head_src, vocab, h, x_norm_k, &mut logits);
+            out.push(logits);
         }
         Ok(out)
     }
@@ -9508,13 +8458,11 @@ impl QwenDense {
     /// total; GPU would be ~10ms per dispatch × 5 = ~50ms plus another
     /// TCB commit.
     ///
-    /// Used by the Eagle5 verify branch in `generate()` when
-    /// `HAWKING_QWEN_EAGLE5_BATCHED=1` is set. Phase B.4's serial
-    /// verify is the fallback when the flag is off.
+    /// Batched forward returning full-vocab logits per position.
+    /// Used by the user-draft verify path.
     ///
-    /// Skips vocab pruning intentionally: spec-decode needs full-vocab
-    /// logits because the draft head proposes over the full vocabulary
-    /// (the trained Eagle6 head's `_lm_head` covers all 151936 ids).
+    /// Skips vocab pruning intentionally: speculative verify needs full-vocab
+    /// logits because draft proposers may emit any vocabulary id.
     #[cfg(target_os = "macos")]
     pub fn forward_tokens_batched_with_logits(
         &mut self,
@@ -9564,12 +8512,8 @@ impl QwenDense {
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
             let x_norm_k = &x_norm_all[k * h..(k + 1) * h];
-            let logits = hawking_speculate::eagle5_forward::matmul_no_bias_f16w(
-                lm_head_src,
-                x_norm_k,
-                vocab,
-                h,
-            );
+            let mut logits = vec![0.0f32; vocab];
+            crate::kernels::gemv_f16(lm_head_src, vocab, h, x_norm_k, &mut logits);
             out.push(logits);
         }
         Ok(out)
@@ -9604,9 +8548,8 @@ impl QwenDense {
         // exactly == greedy). It also mis-writes KV[pos], corrupting the next
         // cycle. Route a 1-token verify through the canonical greedy kernel: same
         // KV side-effect (write[pos] + seq_len += 1) but exact greedy argmax, so
-        // spec-decode (EH-ON AND the existing OFF user-draft path) is bit-identical
-        // to plain greedy. Residuals are empty here — the spec verify callers run
-        // want_residuals=false; any future EAGLE residual tap uses B>=2.
+        // user-draft / ExactShared verify stays bit-identical to plain greedy.
+        // Residuals are empty here — the verify callers run want_residuals=false.
         if b == 1 {
             let g = self.forward_token_greedy_tcb(tokens[0], positions[0])?;
             return Ok((vec![g], vec![Vec::new()]));
@@ -9699,7 +8642,7 @@ impl QwenDense {
     }
 }
 
-// ── Event Horizon: ExactTarget impl for QwenDense ────────────────────────
+// ── ExactTarget impl for QwenDense (user-draft / ExactShared verify) ─────
 // UFCS (fully-qualified path) avoids self-recursion: `QwenDense::forward_*`
 // resolves to the inherent method, not this trait impl.
 #[cfg(target_os = "macos")]

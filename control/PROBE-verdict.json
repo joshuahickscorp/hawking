@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.recomposition.destructive_probe.v1",
+  "purpose": "Identify the first precise capability break in the recomposed architecture, and test whether the mass above target sits inside the protected set.",
+  "measured": {
+    "loc_before": 429102,
+    "loc_after_full_override": 349455,
+    "removed": 79647,
+    "reaches_350k": true,
+    "reaches_300k": false,
+    "remaining_above_300k": 49455
+  },
+  "comparison_with_the_old_architecture": {
+    "old_probe_result": 404264,
+    "new_probe_result": 349455,
+    "structural_improvement": 54809,
+    "significance": "The prior arc's probe deleted every protection and could not clear 400,000. The recomposed tree clears 350,000 under the same treatment. Recomposition genuinely lowered the structural floor by roughly 55,000 lines even though its visible LOC barely moved -- the architecture got smaller in a way that only shows when the protections come off."
+  },
+  "first_break": {
+    "gate": "cargo build -p hawking",
+    "exit": 101,
+    "file": "crates/hawking-seed-c/Cargo.toml",
+    "symbol": "workspace member crates/hawking-seed-c",
+    "capability": "seed-c isolation: the pack and gravity law plus provider registry, whose manifest forbids a hawking-core dependency by design"
+  },
+  "hard_compile_breaks": [
+    {"capability": "Event Horizon speculative proposers", "file": "crates/hawking-speculate/src/lib.rs:32"},
+    {"capability": "qwen_dense MhaDecode + KvAppend + Rope, QuantGemvMatrix", "file": "crates/hawking-core/src/model/mod.rs:12"},
+    {"capability": "rwkv7 Wkv7Decode + TokenShiftLerp + ChannelMix", "file": "crates/hawking-core/src/model/mod.rs:14"},
+    {"capability": "QuantGemvMatrix host-selected A/B permutation lattice", "file": "crates/hawking-core/src/metal/mod.rs:269"}
+  ],
+  "silent_losses": [
+    {"what": "laboratory science floor (pack, parity, gravity)", "loc": 23476,
+     "why_no_signal": "not on cargo build -p hawking; only Python gates see it"},
+    {"what": "hide-protocol schema authority", "loc": 11818, "why_no_signal": "not a hawking dependency"},
+    {"what": "hawking-seed-c body after the shell breaks", "loc": 8960,
+     "why_no_signal": "the hawking package graph has zero path dependency on seed-c"},
+    {"what": "hide-core::automation", "loc": 1613, "why_no_signal": "no reverse callers outside hide"},
+    {"what": "adapter evidence allowlist", "loc": 326, "why_no_signal": "hawking-adapters is not in the hawking cargo tree"}
+  ],
+  "residue_above_target": {
+    "laboratory": 105631, "hide": 91849, "hawking_core": 129227, "other": 22748,
+    "was_inside_protected_set": true,
+    "significance": "This inverts the prior arc's decisive finding. There, the mass above target lived outside the refusals, so no amount of overriding protections reached the rung. Here it is inside the protected set -- which means the remaining distance is a question of what the product must keep, not of what the architecture can express."
+  },
+  "conclusion": "The recomposed architecture clears 350,000 under full override where the old one could not clear 400,000. It does not clear 300,000: roughly 49,455 lines remain above it after every named protection is deleted. The first pure gate break is the hawking-seed-c workspace member at exit 101, and the first rustc capability break follows in the model executors the runtime-graph analysis had already named irreducible."
+}

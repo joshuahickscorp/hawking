@@ -210,16 +210,13 @@ impl CompletionClient for OpenAiClient {
 mod tests {
     use super::*;
     use std::collections::HashMap;
-
     struct Mock(HashMap<String, String>);
-
     #[async_trait]
     impl CompletionClient for Mock {
         async fn complete(&self, prompt: &str) -> Result<String, EvalError> {
             Ok(self.0.get(prompt).cloned().unwrap_or_default())
         }
     }
-
     fn tasks() -> Vec<Task> {
         vec![
             Task {
@@ -234,7 +231,6 @@ mod tests {
             },
         ]
     }
-
     #[test]
     fn score_requires_all_substrings() {
         let t = Task {
@@ -245,7 +241,6 @@ mod tests {
         assert!(score(&t, "x a y b z"));
         assert!(!score(&t, "only a"));
     }
-
     #[test]
     fn wilson_half_width_is_about_ten_points_at_n100() {
         let (lo, hi) = wilson_interval(50, 100, Z_95);
@@ -253,20 +248,12 @@ mod tests {
         assert!((0.09..0.10).contains(&half), "half-width {half}");
         assert_eq!(wilson_interval(0, 0, Z_95), (0.0, 1.0));
     }
-
     #[test]
     fn nll_rewards_confident_correct_and_punishes_wrong() {
         let logits = vec![100.0, 0.0, 0.0];
-        assert!(
-            nll_from_logits(&logits, 0) < 1e-3,
-            "confident correct -> ~0 NLL"
-        );
-        assert!(
-            nll_from_logits(&logits, 1) > 50.0,
-            "confident wrong -> high NLL"
-        );
+ assert!( nll_from_logits(&logits, 0) < 1e-3, "confident correct -> ~0 NLL" );
+ assert!( nll_from_logits(&logits, 1) > 50.0, "confident wrong -> high NLL" );
     }
-
     #[test]
     fn nll_uniform_is_log_n_and_guards_bounds() {
         let logits = vec![0.0; 4];
@@ -274,7 +261,6 @@ mod tests {
         assert_eq!(nll_from_logits(&[], 0), f32::INFINITY);
         assert_eq!(nll_from_logits(&[1.0], 5), f32::INFINITY);
     }
-
     #[test]
     fn load_tasks_jsonl_parses_and_skips_blanks() {
         let jsonl = "\n{\"id\":\"a\",\"prompt\":\"p1\",\"expect\":[\"foo\"]}\n\n{\"id\":\"b\",\"prompt\":\"p2\",\"expect\":[]}\n";
@@ -284,14 +270,12 @@ mod tests {
         assert_eq!(tasks[0].expect, vec!["foo".to_string()]);
         assert!(tasks[1].expect.is_empty());
     }
-
     #[test]
     fn load_tasks_jsonl_reports_bad_line_number() {
         let bad = "{\"id\":\"a\",\"prompt\":\"p\",\"expect\":[]}\noops";
         let err = load_tasks_jsonl(bad).unwrap_err();
         assert!(format!("{err}").contains("line 2"), "got: {err}");
     }
-
     #[tokio::test]
     async fn run_suite_is_deterministic() {
         let mut m = HashMap::new();
@@ -304,10 +288,6 @@ mod tests {
         assert_eq!(r1.passes, 1);
         assert_eq!(r1.total, 2);
         assert!((r1.pass_at_1 - 0.5).abs() < 1e-9);
-        assert_eq!(
-            serde_json::to_string(&r1).unwrap(),
-            serde_json::to_string(&r2).unwrap(),
-            "verdict JSON is byte-identical across runs"
-        );
+        assert_eq!(serde_json::to_string(&r1).unwrap(), serde_json::to_string(&r2).unwrap());
     }
 }

@@ -1,0 +1,238 @@
+{
+  "schema": "hawking.vnext.architecture_a2.component_map.v1",
+  "architecture": "A2",
+  "method": "bottom_up_vertical_slices",
+  "at": "2026-07-29",
+  "deliberately_unread": [
+    "HAWKING_VNEXT_ARCHITECTURE_A1.md",
+    "control/RECOMP-SCOUT-COMPARISON.json"
+  ],
+  "baseline_measured": {
+    "source": "tools/loc/hawking_loc.py",
+    "combined_active_loc": 431120,
+    "rust": 247204,
+    "python": 126163,
+    "typescript": 15678,
+    "shader": 15766,
+    "subsystems": {
+      "hawking": 170792,
+      "hide": 107129,
+      "laboratory": 130068,
+      "shared": 23131
+    }
+  },
+  "component_count": 9,
+  "components": [
+    {
+      "id": "C1",
+      "name": "artifact",
+      "owns": "Gravity/activation-aware container, tensor table, index JSON, index SHA-256, shared codec contracts",
+      "slices": ["S1", "S2", "S4"],
+      "language": "rust",
+      "must_not_know": ["metal queues", "HIDE intents", "HTTP", "family marketing names"],
+      "absorbs": [
+        "crates/hawking-core/src/gravity.rs",
+        "tools/condense/gravity_format.py",
+        "tools/condense/gravity_functional_codec.py",
+        "docs/gravity/GRAVITY_CONTAINER_SPEC.md",
+        "docs/gravity/GRAVITY_CONTAINER_SCHEMA.json",
+        "crates/hawking-core/tests/gravity_container.rs",
+        "crates/hawking-core/tests/fixtures/gravity_glm/",
+        "crates/hawking-core/tests/fixtures/gravity_llama/",
+        "crates/hawking-core/tests/fixtures/gravity_pq/"
+      ],
+      "loc_target_estimated": 4000
+    },
+    {
+      "id": "C2",
+      "name": "device",
+      "owns": "MetalContext, shader embed/compile, kernel dispatch APIs, quant encode primitives, command-buffer discipline",
+      "slices": ["S1", "S2"],
+      "language": "rust+metal",
+      "must_not_know": ["chat templates", "tools", "experiment phases", "Fabric topology"],
+      "absorbs": [
+        "crates/hawking-core/src/metal/",
+        "crates/hawking-core/src/kernels/",
+        "crates/hawking-core/shaders/",
+        "crates/hawking-core/src/quant.rs",
+        "crates/hawking-core/src/q4k_fast.rs",
+        "crates/hawking-core/src/attn.rs",
+        "crates/hawking-core/src/moe.rs",
+        "crates/hawking-core/shaders/gravity_pq.metal"
+      ],
+      "loc_target_estimated": 28000,
+      "performance_note": "Protected: 1 command buffer and ~210 dispatches per token on base path; no extra CB/copy at this boundary"
+    },
+    {
+      "id": "C3",
+      "name": "runtime",
+      "owns": "Engine trait, load_engine, Gravity/GGUF family forwards, tokenizer, sampler, KV, cost ledger",
+      "slices": ["S1", "S2"],
+      "language": "rust",
+      "must_not_know": ["HIDE", "axum routes", "experiment checkpoints"],
+      "absorbs": [
+        "crates/hawking-core/src/engine.rs",
+        "crates/hawking-core/src/lib.rs",
+        "crates/hawking-core/src/error.rs",
+        "crates/hawking-core/src/model/",
+        "crates/hawking-core/src/gravity_glm.rs",
+        "crates/hawking-core/src/gravity_glm_resident.rs",
+        "crates/hawking-core/src/gravity_llama.rs",
+        "crates/hawking-core/src/sample.rs",
+        "crates/hawking-core/src/tokenizer.rs",
+        "crates/hawking-core/src/cache/",
+        "crates/hawking-core/src/gguf.rs",
+        "crates/hawking-core/src/cost_ledger.rs",
+        "crates/hawking-core/src/profile.rs",
+        "crates/hawking-core/src/speculate paths used by Engine",
+        "crates/hawking-speculate/ (if still product)"
+      ],
+      "loc_target_estimated": 32000
+    },
+    {
+      "id": "C4",
+      "name": "serve",
+      "owns": "OpenAI+native HTTP, SSE, slots, gravity serve meta/timeouts, wire chat-template render",
+      "slices": ["S1", "S3"],
+      "language": "rust",
+      "must_not_know": ["context compiler internals", "tool policy", "Fabric placement"],
+      "absorbs": [
+        "crates/hawking-serve/src/",
+        "docs/serve.md"
+      ],
+      "loc_target_estimated": 4500
+    },
+    {
+      "id": "C5",
+      "name": "lab",
+      "owns": "ExperimentSpec, state machine, checkpoint, receipt, lease, governor, operator registry, forge/pack operators",
+      "slices": ["S2"],
+      "language": "python",
+      "must_not_know": ["HIDE session graph", "live serve batching"],
+      "absorbs": [
+        "tools/condense/engine/",
+        "tools/condense/gravity_forge.py",
+        "tools/condense/gravity_*.py",
+        "tools/condense/glm52_*.py",
+        "tools/foundry/",
+        "tools/odyssey/checkpoints.py",
+        "tools/odyssey/receipts.py",
+        "tools/campaign/",
+        "tools/prometheus/",
+        "tools/training/"
+      ],
+      "loc_target_estimated": 35000,
+      "note": "Sole campaign controller; duplicate receipt/checkpoint stacks eliminated not relocated"
+    },
+    {
+      "id": "C6",
+      "name": "context",
+      "owns": "Context compiler, budgets, sources, classed memory, forget-as-real-deletion, rot/meter",
+      "slices": ["S3"],
+      "language": "rust",
+      "must_not_know": ["Metal", "gravity codecs", "Fabric nodes"],
+      "absorbs": [
+        "crates/hawking-context/src/"
+      ],
+      "loc_target_estimated": 7500
+    },
+    {
+      "id": "C7",
+      "name": "agent",
+      "owns": "Host, kernel machine, tools, permission application, connectors, surfaces/handoff, serve supervisor",
+      "slices": ["S3", "S1"],
+      "language": "rust",
+      "must_not_know": ["shader sources", "experiment state machines", "family ABI tables"],
+      "absorbs": [
+        "crates/hide-backend/src/",
+        "crates/hide-kernel/src/",
+        "crates/hide-core/src/runtime.rs",
+        "crates/hide-core/src/tool.rs",
+        "crates/hide-core/src/state.rs",
+        "crates/hide-core/src/persistence.rs",
+        "crates/hide-core/src/security.rs",
+        "crates/hide-core/src/supervision.rs",
+        "crates/hide-serve/src/",
+        "crates/hide-fleet/src/ (non-declaration runtime; optional trim)",
+        "crates/hawking-orch/src/",
+        "crates/hawking-index/src/"
+      ],
+      "loc_target_estimated": 45000
+    },
+    {
+      "id": "C8",
+      "name": "contract",
+      "owns": "Wire types, canonical events, family registry+adapters, Bridge codegen, Fabric declarations, capability-proof policy",
+      "slices": ["S3", "S4", "S1"],
+      "language": "rust",
+      "must_not_know": ["live GPU encode", "mutable session stores"],
+      "absorbs": [
+        "crates/hide-protocol/src/",
+        "crates/hide-core/src/api.rs",
+        "crates/hide-core/src/permission.rs",
+        "crates/hide-core/src/types.rs",
+        "crates/hide-core/src/ids.rs",
+        "crates/hide-core/src/event.rs",
+        "crates/hide-core/src/objects*.rs",
+        "crates/hawking-events/src/",
+        "crates/hawking-adapters/src/",
+        "crates/hawking-adapters/generated/",
+        "crates/hawking-seed-c/src/gravity.rs",
+        "crates/hide-acp/src/ (if retained as protocol projection)"
+      ],
+      "loc_target_estimated": 8000
+    },
+    {
+      "id": "C9",
+      "name": "surface",
+      "owns": "YOU/CHAT/IDE UI, intent client, event render",
+      "slices": ["S3"],
+      "language": "typescript",
+      "must_not_know": ["Rust internal types except generated SDK"],
+      "absorbs": [
+        "app/src/",
+        "app/src-tauri/ (shell only)"
+      ],
+      "loc_target_estimated": 12000
+    }
+  ],
+  "workspace_crates_plan": [
+    {"crate": "crates/artifact", "components": ["C1"], "lang": "rust"},
+    {"crate": "crates/device", "components": ["C2"], "lang": "rust+metal"},
+    {"crate": "crates/runtime", "components": ["C3"], "lang": "rust"},
+    {"crate": "crates/serve", "components": ["C4"], "lang": "rust"},
+    {"crate": "crates/hawking-cli", "components": [], "lang": "rust", "role": "thin CLI"},
+    {"crate": "crates/context", "components": ["C6"], "lang": "rust"},
+    {"crate": "crates/contract", "components": ["C8"], "lang": "rust"},
+    {"crate": "crates/agent", "components": ["C7"], "lang": "rust"},
+    {"crate": "crates/hide-cli", "components": [], "lang": "rust", "role": "thin hide-serve bin"},
+    {"crate": "crates/fabric", "components": [], "lang": "rust", "role": "optional multi-node placement; omit if declarations-only", "optional": true}
+  ],
+  "non_cargo_packages": [
+    {"path": "lab/", "components": ["C5"], "lang": "python"},
+    {"path": "surface/", "components": ["C9"], "lang": "typescript"}
+  ],
+  "slice_to_components": {
+    "S1": ["C1", "C2", "C3", "C4", "C7"],
+    "S2": ["C5", "C1", "C2", "C3"],
+    "S3": ["C9", "C8", "C7", "C6", "C4"],
+    "S4": ["C8"]
+  },
+  "out_of_slice_defer": [
+    "ramanujan/",
+    "odyssey/training/",
+    "tools/bench/oracle_*",
+    "crates/hawking-research/ (except optional memory bridges)",
+    "crates/hawking-eval/",
+    "hide-fleet fabric execution beyond declarations",
+    "personalize training loops not on YOU happy path"
+  ],
+  "loc_total_estimated_band": {
+    "primary": 188000,
+    "low": 180000,
+    "high": 230000,
+    "label": "estimated",
+    "reachable_250k": true,
+    "biggest_obstacle": "Metal token path integrity while splitting device/runtime around gravity_glm_resident (1 CB, ~210 dispatches, bit-exact sample)"
+  }
+}

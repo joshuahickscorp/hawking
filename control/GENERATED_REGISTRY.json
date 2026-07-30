@@ -1,0 +1,7 @@
+{
+  "schema": "hawking.generated_registry.v1",
+  "authority": "control/REBUILD_ACCOUNTING_RULES.json generation_rules",
+  "at": "2026-07-29",
+  "note": "S4 revision 2: no generated source is earned for exclusion. All former source goldens were moved to counted paths (app/src/wire_types.ts, app/src/catalog_sync.test.ts, crates/*/goldens/*). Remaining files under generated/ are non-source JSON/shell data outside hawking_loc LANGS and outside the generation audit SOURCE_SUFFIXES set. Empty entries: nothing is excluded as earned generated source.",
+  "entries": []
+}

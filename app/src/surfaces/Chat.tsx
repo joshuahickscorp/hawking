@@ -17,9 +17,9 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 
 import { noticeFailure, runCommand, useStore } from "../store";
 import { Icon } from "../shell/icons";
 import { Radiate } from "../shell/Radiate";
-import type { DiffChipPatch, PlanPatch } from "./chat/parts";
-import { SteerBar } from "./chat/SteerBar";
-import { Conversation } from "./chat/Conversation";
+import type { DiffChipPatch, PlanPatch } from './chat_parts';
+import { SteerBar } from './chat_SteerBar';
+import { Conversation } from './chat_Conversation';
 import {
   actionBlockedReason,
   actionEnabled,
@@ -34,7 +34,7 @@ import {
   runChatAction,
   type ChatActionId,
   type ComposerMode,
-} from "./chat/actions";
+} from './chat_actions';
 
 // The empty-composer prompt. Default terse (flight-log voice); flip DREAM_BIG to restore "dream big".
 const DREAM_BIG = false;

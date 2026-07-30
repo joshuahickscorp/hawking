@@ -28,7 +28,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools" / "condense"))
-import gravity_format as G  # noqa: E402  (read_header)
+import artifact_client as G  # noqa: E402  (read_header)
 
 DEFAULT_STATE_DIR = REPO / "state" / "sovereignty"
 EVENT_LOG_NAME = "sovereignty_events.jsonl"

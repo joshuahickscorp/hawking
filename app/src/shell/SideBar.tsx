@@ -10,7 +10,7 @@
 */
 import { useEffect, useRef, useState } from "react";
 import { useStore, type ContextManifest } from "../store";
-import { Explorer } from "../surfaces/ide/Explorer";
+import { Explorer } from "../surfaces/ide_Explorer";
 import { ModelChooser, modelId } from "./ModelChooser";
 
 const fmtTok = (n: number) =>

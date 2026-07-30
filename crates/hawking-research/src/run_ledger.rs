@@ -113,7 +113,6 @@ fn read_runs(path: &Path) -> Result<Vec<ResearchRun>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn jsonl_research_ledger_roundtrips_runs() {
         let dir =
@@ -123,21 +122,13 @@ mod tests {
         let mut run = ResearchRun::new("paged attention");
         run.state = ResearchState::Complete;
         run.docs_read = 2;
-
         ledger.append_run(&run).unwrap();
-
         let reopened = JsonlResearchLedger::open(&path).unwrap();
         let loaded = reopened.load_runs().unwrap();
         assert_eq!(loaded.len(), 1);
         assert_eq!(loaded[0].topic, "paged attention");
         assert_eq!(reopened.latest().unwrap().unwrap().docs_read, 2);
-        assert_eq!(
-            reopened
-                .load_by_state(ResearchState::Complete)
-                .unwrap()
-                .len(),
-            1
-        );
+ assert_eq!( reopened .load_by_state(ResearchState::Complete) .unwrap() .len(), 1 );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

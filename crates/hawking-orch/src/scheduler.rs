@@ -193,7 +193,6 @@ mod tests {
         ModelArchitecture, ModelDescriptor, ProviderCaps, RolePurpose, SamplerProfile,
     };
     use std::collections::BTreeMap;
-
     fn role(footprint_mb: u64) -> ModelRole {
         ModelRole {
             id: RoleId::new(),
@@ -215,15 +214,11 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     #[test]
     fn admits_when_budget_is_ample() {
         let s = Scheduler::default();
-        assert!(s
-            .admit(&role(4_600), &ResourceSnapshot::default())
-            .is_admit());
+ assert!(s .admit(&role(4_600), &ResourceSnapshot::default()) .is_admit());
     }
-
     #[test]
     fn defers_on_insufficient_ram() {
         let s = Scheduler::default();
@@ -236,7 +231,6 @@ mod tests {
             _ => panic!("expected RAM defer"),
         }
     }
-
     #[test]
     fn shared_process_role_ignores_ram() {
         let s = Scheduler::default();
@@ -246,7 +240,6 @@ mod tests {
         };
         assert!(s.admit(&role(0), &snap).is_admit());
     }
-
     #[test]
     fn defers_heavy_role_when_throttling() {
         let s = Scheduler::default();
@@ -258,10 +251,8 @@ mod tests {
             Admission::Defer { reason, .. } => assert_eq!(reason, DeferReason::Thermal),
             _ => panic!("expected thermal defer"),
         }
-        // A light role still admits when hot.
         assert!(s.admit(&role(500), &snap).is_admit());
     }
-
     #[test]
     fn defers_on_concurrency_cap() {
         let s = Scheduler::default();
@@ -274,7 +265,6 @@ mod tests {
             _ => panic!("expected concurrency defer"),
         }
     }
-
     #[test]
     fn battery_quiet_defers_heavy_for_energy() {
         let s = Scheduler::default();

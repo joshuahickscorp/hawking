@@ -477,7 +477,6 @@ pub fn empty_ext() -> BTreeMap<String, Value> {
 mod tests {
     use super::*;
     use hide_core::ids::with_deterministic_ids;
-
     #[test]
     fn envelope_round_trips_every_required_field() {
         with_deterministic_ids(1, || {
@@ -501,7 +500,6 @@ mod tests {
             assert_eq!(c.verification, ContentVerification::TargetVerified);
             assert_eq!(c.category, Category::Text);
             assert_eq!(c.kind(), "model.token");
-
             let again = c.round_trip_json().unwrap();
             assert_eq!(again.seq(), 7);
             assert_eq!(again.verification, ContentVerification::TargetVerified);

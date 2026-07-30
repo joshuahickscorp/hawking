@@ -167,7 +167,6 @@ pub fn self_certainty(probs: &[f32]) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn unanimous_vote_is_high_confidence() {
         let samples = vec!["yes".into(), "yes".into(), "yes".into()];
@@ -177,7 +176,6 @@ mod tests {
         assert_eq!(r.distinct, 1);
         assert!(r.confidence() > 0.95);
     }
-
     #[test]
     fn split_vote_is_low_confidence() {
         let samples = vec!["a".into(), "b".into(), "c".into()];
@@ -186,7 +184,6 @@ mod tests {
         assert!((r.agreement - 1.0 / 3.0).abs() < 1e-6);
         assert!(r.confidence() < 0.4);
     }
-
     #[test]
     fn json_clusters_regardless_of_key_order() {
         let samples = vec![
@@ -195,22 +192,17 @@ mod tests {
             "{\"name\":\"read\"}".into(),
         ];
         let r = self_consistency_vote(&samples, AnswerNormalizer::CanonicalJson);
-        // The two reorderings cluster → winner has 2 of 3.
         assert_eq!(r.distinct, 2);
         assert!((r.agreement - 2.0 / 3.0).abs() < 1e-6);
     }
-
     #[test]
     fn entropy_and_self_certainty() {
-        // Uniform over 2 → entropy ln(2), self-certainty 0.
         let uniform = [0.5, 0.5];
         assert!((entropy(&uniform) - 2.0_f32.ln()).abs() < 1e-5);
         assert!(self_certainty(&uniform) < 1e-5);
-        // Point mass → self-certainty 1.
         let point = [1.0, 0.0];
         assert!((self_certainty(&point) - 1.0).abs() < 1e-5);
     }
-
     #[test]
     fn empty_samples_are_zero_confidence() {
         let r = self_consistency_vote(&[], AnswerNormalizer::Trimmed);

@@ -1,28 +1,11 @@
 #!/usr/bin/env python3.12
-"""Unit tests for GLM-5.2 activation-aware pack v2 (feasibility + fake codec).
-
-Pins Generation B corrections and revision-1 route-population uncertainty:
-
-  * uncentered basis retains mean; differs from centered
-  * deterministic route selection; empty/undersampled fail closed
-  * real SwiGLU Z matches direct reference
-  * no Gaussian promotion path
-  * absolute floors override beats_null
-  * budget failure never reduces a floor
-  * basis identities / refcounts / exact-once billing
-  * gate/up share basis; experts non-alias; down separate SwiGLU basis
-  * fake down basis derived from actual swiglu_intermediate (not random)
-  * neutral static routed classification (not high_traffic_*)
-  * top-level within_target_bpw equals rank-128 uncertainty bound
-  * rank-64 lower bound is non-authorizing
-  * exact 0/25/50/75/100% monotonic sensitivity and threshold count
-  * no rank reduction to force uncertainty bound under budget
-  * native source-width billing
-  * full 59,585-tensor census reconciliation
-  * deterministic feasibility receipt
-  * all authorization fences false
-"""
+"""Pins Generation B corrections and revision-1 route-population uncertainty:"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -34,16 +17,16 @@ import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_activation_aware_pack as aap  # noqa: E402
-import glm52_activation_aware_pack_v2 as v2  # noqa: E402
+from lab.operators import glm52_activation_aware_pack as aap  # noqa: E402
+from lab.operators import glm52_activation_aware_pack_v2 as v2  # noqa: E402
 
+_needs_headers = pytest.mark.skipif(
+    not v2.SOURCE_HEADERS.exists(),
+    reason="sealed source headers not present",
+)
 
-# ---------------------------------------------------------------------------
 # Basis / mean retention
-# ---------------------------------------------------------------------------
 def test_uncentered_retains_nonzero_mean_direction_and_differs_from_centered():
     rng = np.random.default_rng(0xBEEF)
     h, n, r = 64, 400, 8
@@ -63,17 +46,13 @@ def test_uncentered_retains_nonzero_mean_direction_and_differs_from_centered():
     G = np.abs(bu.columns(r).T @ bc)
     assert float(np.max(G)) < 0.999 or float(np.trace(G)) < r - 0.5
 
-
 def test_centered_only_not_used_as_v2_promotion_mode():
     assert v2.PREREGISTERED_PROGRAM["high_traffic_routed_gate_up_down"]["basis_mode"] == "uncentered"
     assert v2.PREREGISTERED_PROGRAM["routed_experts"]["basis_mode"] == "uncentered"
     for prog in v2.PREREGISTERED_PROGRAM.values():
         assert prog["basis_mode"] == "uncentered"
 
-
-# ---------------------------------------------------------------------------
 # Route conditioning
-# ---------------------------------------------------------------------------
 def test_route_row_selection_deterministic():
     topk = np.array(
         [
@@ -89,7 +68,6 @@ def test_route_row_selection_deterministic():
     assert idx.tolist() == [0, 2, 4]
     assert v2.route_row_indices(topk, 11).tolist() == idx.tolist()
 
-
 def test_empty_route_fails_closed():
     topk = np.array([[1, 2], [3, 4]], dtype=np.int32)
     X = np.zeros((2, 8), dtype=np.float32)
@@ -98,7 +76,6 @@ def test_empty_route_fails_closed():
     # Never silently returns all rows
     with pytest.raises(v2.RouteUndersampledError):
         v2.select_route_rows(X, topk, 99, min_rows=1)
-
 
 def test_undersampled_route_fails_closed():
     topk = np.array([[7, 1], [2, 3], [7, 4]], dtype=np.int32)
@@ -109,10 +86,7 @@ def test_undersampled_route_fails_closed():
     got = v2.select_route_rows(X, topk, 7, min_rows=2)
     assert got.shape == (2, 4)
 
-
-# ---------------------------------------------------------------------------
 # Real SwiGLU
-# ---------------------------------------------------------------------------
 def test_real_swiglu_matches_direct_reference():
     rng = np.random.default_rng(3)
     X = rng.standard_normal((20, 16)).astype(np.float32)
@@ -122,7 +96,6 @@ def test_real_swiglu_matches_direct_reference():
     Z_ref = v2.silu(X @ Wg.T) * (X @ Wu.T)
     assert Z.shape == (20, 6)
     assert np.allclose(Z, Z_ref, atol=1e-5)
-
 
 def test_no_gaussian_proxy_promotion_path_in_v2_source():
     src = pathlib.Path(v2.__file__).read_text(encoding="utf-8")
@@ -137,10 +110,7 @@ def test_no_gaussian_proxy_promotion_path_in_v2_source():
     # production output-side down must not be the promotional path
     assert "v2 promotional path is input-side only" in src
 
-
-# ---------------------------------------------------------------------------
 # Absolute floors + budget
-# ---------------------------------------------------------------------------
 def test_absolute_floors_override_beats_null():
     floors = v2.FloorSpec(per_tensor_min=0.91)
     # beats null but below absolute floor
@@ -161,7 +131,6 @@ def test_absolute_floors_override_beats_null():
     assert sel["billing"] == "source_payload_width"
     assert sel["billed_bytes"] == 10_000
     assert sel["beats_null_overrode_floor"] is False
-
 
 def test_budget_failure_never_reduces_floor():
     with pytest.raises(v2.BudgetFailure, match="refuse to lower rank or floor"):
@@ -185,7 +154,6 @@ def test_budget_failure_never_reduces_floor():
     assert sel["disposition"] == "activation_aware_v2"
     assert sel["billed_bytes"] == 5_000
 
-
 def test_panel_floors_for_high_traffic_candidate():
     # Synthetic panel that clears the preregistered high-traffic floors
     cos = [0.86, 0.97, 0.98, 0.99, 0.96, 0.97]
@@ -197,10 +165,7 @@ def test_panel_floors_for_high_traffic_candidate():
     res2 = v2.check_absolute_floors(bad, floors)
     assert res2["ok"] is False
 
-
-# ---------------------------------------------------------------------------
 # Basis identity / billing
-# ---------------------------------------------------------------------------
 def test_basis_identities_refcounts_exact_once_billing():
     led = v2.BasisLedger()
     id_h = v2.basis_identity(
@@ -225,12 +190,10 @@ def test_basis_identities_refcounts_exact_once_billing():
     assert d["n_unique_bases"] == 2
     assert sum(d["component_totals"].values()) == d["total_bytes"]
 
-
 def test_experts_do_not_alias_basis_identities():
     a = v2.basis_identity(kind="uncentered_hidden", layer=5, expert_id=11, rank=64)
     b = v2.basis_identity(kind="uncentered_hidden", layer=5, expert_id=165, rank=64)
     assert a != b
-
 
 def test_native_source_width_billing():
     led = v2.BasisLedger()
@@ -239,10 +202,7 @@ def test_native_source_width_billing():
     assert led.native_bytes_total == 1_903_165_440
     assert led.n_native_tensors == 1
 
-
-# ---------------------------------------------------------------------------
 # Fake codec ABI — truthful SwiGLU down basis
-# ---------------------------------------------------------------------------
 def test_gate_up_share_basis_experts_non_alias_down_separate():
     proof = v2.fake_gate_up_down_roundtrip(seed=v2.SEED)
     assert proof["ok"] is True
@@ -255,7 +215,6 @@ def test_gate_up_share_basis_experts_non_alias_down_separate():
     assert proof2["basis_identities"] == proof["basis_identities"]
     assert proof2["witnesses"]["expert_a"] == proof["witnesses"]["expert_a"]
 
-
 def test_fake_hidden_bases_use_selected_route_rows():
     """Revision 1: hidden bases must be built from select_route_rows output."""
     proof = v2.fake_gate_up_down_roundtrip(seed=v2.SEED)
@@ -264,7 +223,6 @@ def test_fake_hidden_bases_use_selected_route_rows():
     assert proof["route_counts"]["expert_b"] > 0
     assert "X_route_a_sha256" in proof["fixture_handles"]
     assert "B_h_a_sha256" in proof["fixture_handles"]
-
 
 def test_fake_down_basis_derived_from_actual_swiglu_intermediate():
     """Revision 1: B_z must come from Z = swiglu_intermediate(X_route, Wg, Wu)."""
@@ -316,7 +274,6 @@ def test_fake_down_basis_derived_from_actual_swiglu_intermediate():
     # Serialized metadata still labels real_swiglu_input (via identities).
     assert "real_swiglu_input" in proof["basis_identities"]["down_a"]
 
-
 def test_substituted_unrelated_basis_fails_witness():
     """Revision 1 negative: random B_z cannot substitute while preserving witness."""
     rng = np.random.default_rng(99)
@@ -362,7 +319,6 @@ def test_substituted_unrelated_basis_fails_witness():
         != proof["witnesses"]["expert_a"]["B_z_sha256"]
     )
 
-
 def test_codec_metadata_roundtrip_fields():
     rng = np.random.default_rng(1)
     rows, cols, rank = 16, 32, 4
@@ -399,14 +355,8 @@ def test_codec_metadata_roundtrip_fields():
     assert m["activation_provenance"] == "unit_test"
     assert m["rank"] == rank
 
-
-# ---------------------------------------------------------------------------
 # Census + feasibility (revision 1)
-# ---------------------------------------------------------------------------
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_full_census_reconciliation():
     entries = v2.load_source_headers()
     census = v2.build_census(entries)
@@ -418,11 +368,7 @@ def test_full_census_reconciliation():
     assert r["original_weights_ok"]
     assert r["source_payload_bytes_ok"]
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_neutral_static_routed_classification():
     """Revision 1: census uses routed_gate/up/down, never high_traffic_*."""
     entries = v2.load_source_headers()
@@ -443,11 +389,7 @@ def test_neutral_static_routed_classification():
     assert tc.organ_class == "routed_gate"
     assert tc.program_group == "routed_experts"
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_top_level_decision_equals_rank128_uncertainty_bound():
     """Revision 1: within_target_bpw equals all-rank-128 uncertainty ledger only."""
     entries = v2.load_source_headers()
@@ -482,11 +424,7 @@ def test_top_level_decision_equals_rank128_uncertainty_bound():
     # Rank-64 total is smaller (lower bound).
     assert lb.total_bytes() < ub.total_bytes()
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_rank64_lower_bound_non_authorizing():
     receipt = v2.build_feasibility_receipt()
     lb = receipt["all_routed_rank64_lower_bound_ledger"]
@@ -504,11 +442,7 @@ def test_rank64_lower_bound_non_authorizing():
         # Classic revision-0 failure mode: rank64 fits, rank128 does not.
         pass
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_route_population_sensitivity_monotonic_and_threshold():
     """Revision 1: exact 0/25/50/75/100% sweep; monotonic; max-k under target."""
     entries = v2.load_source_headers()
@@ -560,11 +494,7 @@ def test_route_population_sensitivity_monotonic_and_threshold():
         f"{Fraction(best, n).numerator}/{Fraction(best, n).denominator}"
     )
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_no_rank_reduction_to_force_uncertainty_under_budget():
     """Revision 1: uncertainty ledger keeps routed rank 128 even if over budget."""
     receipt = v2.build_feasibility_receipt()
@@ -583,11 +513,7 @@ def test_no_rank_reduction_to_force_uncertainty_under_budget():
         assert ub["within_target_bpw"] is False
         assert ub["routed_rank"] == v2.ROUTED_RANK_UNCERTAINTY_BOUND
 
-
-@pytest.mark.skipif(
-    not v2.SOURCE_HEADERS.exists(),
-    reason="sealed source headers not present",
-)
+@_needs_headers
 def test_feasibility_receipt_deterministic_and_fenced():
     r1 = v2.build_feasibility_receipt()
     r2 = v2.build_feasibility_receipt()
@@ -617,7 +543,6 @@ def test_feasibility_receipt_deterministic_and_fenced():
     # Avoid calling the rank-64 whole-population total "conservative"
     assert "Conservative target-local ledger" not in md
 
-
 def test_all_authorization_fences_false():
     assert set(v2.SAFETY_FENCES) >= {
         "RAMANUJAN_RESEARCH_AUTHORIZED",
@@ -630,7 +555,6 @@ def test_all_authorization_fences_false():
     }
     assert all(v is False for v in v2.SAFETY_FENCES.values())
 
-
 def test_v1_defaults_untouched():
     """v2 must not alter production v1 module constants used by existing packs."""
     assert aap.SCHEMA == "hawking.glm52.activation_aware_pack.v1"
@@ -641,7 +565,6 @@ def test_v1_defaults_untouched():
     # v2 uses a distinct schema / seed
     assert v2.SCHEMA != aap.SCHEMA
     assert v2.SEED != aap.SEED
-
 
 def test_v2_selftest_entrypoint():
     assert v2.selftest() == 0

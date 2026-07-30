@@ -227,7 +227,6 @@ mod tests {
     use hide_protocol::item::UserMessage;
     use hide_protocol::protocol::Method;
     use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
-
     fn host() -> Arc<BackendHost> {
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let uniq = COUNTER.fetch_add(1, AtomicOrdering::Relaxed);
@@ -236,7 +235,6 @@ mod tests {
         let host = BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap();
         Arc::new(host)
     }
-
     #[test]
     fn backend_turn_handler_posts_submit_turn_to_the_host() {
         let host = host();
@@ -262,33 +260,13 @@ mod tests {
             )),
             "handler projects the user message: {events:?}"
         );
-        assert!(
-            events.iter().any(|e| matches!(
-                e,
-                TurnEvent::Item(Item {
-                    kind: ItemKind::Completion(_),
-                    ..
-                })
-            )),
-            "handler yields a completion: {events:?}"
-        );
-
-        // Side effect on the host: the SubmitTurn is durable on the event log.
+        assert!(events.iter().any(|e| matches!( e, TurnEvent::Item(Item { kind: ItemKind::Completion(_), .. }) )));
         let log = host.services.event_log.clone();
         let events_on_host = block_on(async move {
             log.scan(Some(session), None, None).await.unwrap()
         });
-        assert!(
-            events_on_host.iter().any(|e| {
-                e.kind.contains("submit")
-                    || e.payload
-                        .to_string()
-                        .contains("hello from acp")
-            }),
-            "SubmitTurn must reach the host event log: {events_on_host:?}"
-        );
+        assert!(events_on_host.iter().any(|e| { e.kind.contains("submit") || e.payload .to_string() .contains("hello from acp") }));
     }
-
     #[test]
     fn host_session_binder_mints_stable_host_sessions() {
         let host = host();
@@ -296,7 +274,6 @@ mod tests {
         let a = binder.new_session("/repo");
         let b = binder.new_session("/repo");
         assert_ne!(a.session.as_str(), b.session.as_str());
-        // Re-open the same name recovers the same id.
         let again = host.services.session_named("acp_1_/repo");
         assert_eq!(a.session.as_str(), again.as_str());
     }

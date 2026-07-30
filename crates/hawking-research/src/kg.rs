@@ -569,7 +569,6 @@ impl PetKnowledgeGraph {
 mod tests {
     use super::*;
     use crate::ingest::{DocSection, DocSpan, SourceQuality, SourceRecord, SourceType};
-
     fn doc(id: &str, title: &str, body: &str) -> StructuredDoc {
         StructuredDoc {
             id: id.to_string(),
@@ -597,7 +596,6 @@ mod tests {
             blob: None,
         }
     }
-
     #[test]
     fn ingest_is_idempotent_via_content_addressing() {
         let g = PetKnowledgeGraph::new();
@@ -605,56 +603,33 @@ mod tests {
         let c1 = g.ingest_doc(&d);
         let n1 = g.node_count();
         let c2 = g.ingest_doc(&d);
-        // Same ids the second time; node count unchanged.
         assert_eq!(c1[0].id, c2[0].id);
         assert_eq!(g.node_count(), n1);
     }
-
     #[test]
     fn claim_evidence_addresses_same_canonical_bytes_as_claim_id() {
         use crate::ingest::SectionEvidence;
         use hide_core::persistence::{DynBlobStore, InMemoryBlobStore};
         use std::sync::Arc;
-
         let cas: DynBlobStore = Arc::new(InMemoryBlobStore::default());
         let mut d = doc(
             "doc1",
             "Paged Attention",
             "  Paged   attention\n improves reuse.  ",
         );
-        // Pin the section's CANONICAL bytes (what pin_doc_evidence does) and
-        // stamp the receipt onto the section.
         let section_text = d.sections[0].text.clone();
         let (blob, hash) = cas::pin_canonical_evidence(&cas, &section_text).unwrap();
         d.sections[0].evidence = Some(SectionEvidence {
             blob: blob.clone(),
             content_hash: hash.clone(),
         });
-
         let claims = PetKnowledgeGraph::new().ingest_doc(&d);
         let claim = &claims[0];
-
-        // (1) The claim id is content-addressed over the same normalized text the
-        //     evidence receipt hashes — both reduce to canonical section bytes.
-        assert_eq!(
-            claim.id,
-            cas::composite_id("claim", &[&section_text, &d.id])
-        );
-        // (2) The recorded receipt hash equals blake3 of the canonical bytes...
+ assert_eq!( claim.id, cas::composite_id("claim", &[&section_text, &d.id]) );
         let canon = cas::canonical_evidence_bytes(&section_text);
-        assert_eq!(
-            claim.provenance.content_hash.as_deref(),
-            Some(cas::blake3_hex(&canon).as_str())
-        );
-        // ...and equals the per-section pin's hash (no doc-level divergence).
-        assert_eq!(
-            claim.provenance.content_hash.as_deref(),
-            Some(hash.as_str())
-        );
+ assert_eq!( claim.provenance.content_hash.as_deref(), Some(cas::blake3_hex(&canon).as_str()) );
+ assert_eq!( claim.provenance.content_hash.as_deref(), Some(hash.as_str()) );
         assert_eq!(claim.provenance.evidence_blob.as_ref(), Some(&blob));
-
-        // (3) Re-verification re-hashes the SAME blob bytes against the SAME
-        //     receipt → Intact (no false positive).
         let check = cas::verify_evidence(
             &cas,
             claim.provenance.evidence_blob.as_ref().unwrap(),
@@ -663,7 +638,6 @@ mod tests {
         .unwrap();
         assert!(check.is_intact());
     }
-
     #[test]
     fn entity_resolution_merges_by_name() {
         let g = PetKnowledgeGraph::new();
@@ -675,7 +649,6 @@ mod tests {
             provenance: vec![],
             created_at_ms: 1,
         });
-        // Different id, same normalized name+kind → merges.
         g.upsert_node(KnowledgeNode {
             id: "concept:b".into(),
             kind: NodeKind::Concept,
@@ -685,32 +658,24 @@ mod tests {
             created_at_ms: 2,
         });
         assert_eq!(g.nodes_by_kind(NodeKind::Concept).len(), 1);
-        // Stronger tier kept.
-        assert_eq!(
-            g.node("concept:a").unwrap().confidence,
-            ConfidenceTier::Measured
-        );
+ assert_eq!( g.node("concept:a").unwrap().confidence, ConfidenceTier::Measured );
     }
-
     #[test]
     fn local_global_path_queries() {
         let g = PetKnowledgeGraph::new();
         g.ingest_doc(&doc("d1", "A", "alpha claim text here"));
         let paper = g.nodes_by_kind(NodeKind::Paper)[0].id.clone();
         let claim = g.nodes_by_kind(NodeKind::Claim)[0].id.clone();
-
         let local = g.query(&GraphQuery::Local {
             seeds: vec![paper.clone()],
             hops: 1,
         });
         assert!(local.nodes.iter().any(|n| n.id == claim));
-
         let global = g.query(&GraphQuery::Global {
             kind: NodeKind::Paper,
             limit: 10,
         });
         assert_eq!(global.nodes.len(), 1);
-
         let path = g.query(&GraphQuery::Path {
             from: paper.clone(),
             to: claim.clone(),
@@ -718,7 +683,6 @@ mod tests {
         assert_eq!(path.nodes.len(), 2);
         assert_eq!(path.edges.len(), 1);
     }
-
     #[test]
     fn graph_persists_to_jsonl_and_reloads() {
         let g = PetKnowledgeGraph::new();

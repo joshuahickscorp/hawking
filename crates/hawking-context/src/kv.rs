@@ -483,41 +483,22 @@ impl KvStore for StubKvStore {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /// Interop lock: [`PrefixKey`] must be byte-identical to hawking-core's
-    /// in-tree disk/RAM prefill key so the shell and runtime agree on a prefix's
-    /// address. `hawking-core` is a heavy, macOS-Metal crate (`metal`, `objc2`),
-    /// so we do **not** pull it in as a dev-dependency; instead this test
-    /// replicates the *exact* in-tree byte derivation from:
-    ///
-    ///   crates/hawking-core/src/cache/prefill_disk.rs
-    ///     · `PrefillKey::from_model_and_prompt`  (model/tokenizer sha256)
-    ///     · `PrefillKey::rolling_prefix_hash`    (rolling sha256 over tokens)
-    ///     · `PrefillKey::path` → `<model_hex>/<prefix_hex>.kv`
-    ///
-    /// If the in-tree derivation ever changes, this hand-replicated reference
-    /// will diverge from `PrefixKey` and fail — locking the interop guarantee.
     #[test]
     fn prefix_key_matches_in_tree_derivation() {
         let model = "qwen-7b";
         let tok_sig = b"tokv1";
         let tokens = [1u32, 2, 3, 4];
         let key = PrefixKey::from_model_and_prompt(model, tok_sig, &tokens);
-
-        // --- begin: byte-for-byte copy of prefill_disk.rs derivation ---
-        // model_hash = sha256(model_id)
         let model_hash: [u8; 32] = {
             let mut h = Sha256::new();
             h.update(model.as_bytes());
             h.finalize().into()
         };
-        // tokenizer_hash = sha256(tokenizer_signature)
         let tokenizer_hash: [u8; 32] = {
             let mut h = Sha256::new();
             h.update(tok_sig);
             h.finalize().into()
         };
-        // prefix_hash = sha256(model_hash ‖ tokenizer_hash ‖ Σ tok.to_le_bytes())
         let prefix_hash: [u8; 32] = {
             let mut h = Sha256::new();
             h.update(model_hash);
@@ -527,25 +508,15 @@ mod tests {
             }
             h.finalize().into()
         };
-        // --- end: copy ---
-
         assert_eq!(key.model_hash, model_hash, "model_hash interop");
         assert_eq!(key.tokenizer_hash, tokenizer_hash, "tokenizer_hash interop");
         assert_eq!(key.prefix_hash, prefix_hash, "prefix_hash interop");
         assert_eq!(key.n_tokens, 4);
-
-        // Disk-tier path form: `<model_hex>/<prefix_hex>.kv` (prefill_disk.rs
-        // `PrefillKey::path`). `PrefixKey::prefix_hex` is the file stem.
         let model_hex = hex32(&model_hash);
         let prefix_hex = hex32(&prefix_hash);
         assert_eq!(key.prefix_hex(), prefix_hex);
         assert_eq!(key.prefix_hex().len(), 64);
-        assert_eq!(
-            format!("{model_hex}/{prefix_hex}.kv").len(),
-            64 + 1 + 64 + 3
-        );
-
-        // Empty-prompt edge: still seeded by model‖tokenizer (n_tokens == 0).
+ assert_eq!( format!("{model_hex}/{prefix_hex}.kv").len(), 64 + 1 + 64 + 3 );
         let empty = PrefixKey::from_model_and_prompt(model, tok_sig, &[]);
         assert_eq!(empty.n_tokens, 0);
         let empty_prefix: [u8; 32] = {
@@ -556,7 +527,6 @@ mod tests {
         };
         assert_eq!(empty.prefix_hash, empty_prefix);
     }
-
     #[tokio::test]
     async fn stub_models_prefix_reuse_and_stats() {
         let store = StubKvStore::new();
@@ -571,7 +541,6 @@ mod tests {
         assert_eq!(stats.bank_hits, 1);
         assert_eq!(stats.prefix_reuse_tokens, 3);
     }
-
     #[tokio::test]
     async fn stub_checkpoint_roundtrip() {
         let store = StubKvStore::new();

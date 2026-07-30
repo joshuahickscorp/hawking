@@ -1,24 +1,14 @@
-//! Drift test: regenerating schemas/types/CLI/events produces no diff against goldens.
-//!
-//! Adapter deliverables live only under `crates/hawking-adapters/generated/`.
-//! Hand-edits there fail until `hawking-adapters-codegen` is re-run. Repo-root
-//! duplicates of the nine published JSON names must not reappear.
-
 use std::path::PathBuf;
-
 use hawking_adapters::generate::{generate_all, repo_root_artifacts};
-
 fn crate_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
-
 fn workspace_root() -> PathBuf {
     let mut dir = crate_root();
     dir.pop(); // crates
     dir.pop(); // root
     dir
 }
-
 #[test]
 fn generated_artifacts_match_checked_in() {
     let root = crate_root();
@@ -42,13 +32,8 @@ fn generated_artifacts_match_checked_in() {
             ));
         }
     }
-    assert!(
-        failures.is_empty(),
-        "generated artifact drift:\n{}",
-        failures.join("\n")
-    );
+ assert!( failures.is_empty(), "generated artifact drift:\n{}", failures.join("\n") );
 }
-
 #[test]
 fn adapter_deliverables_live_under_generated_only() {
     let workspace = workspace_root();
@@ -77,20 +62,13 @@ fn adapter_deliverables_live_under_generated_only() {
             ));
         }
     }
-    assert!(
-        failures.is_empty(),
-        "adapter deliverable placement/drift:\n{}",
-        failures.join("\n")
-    );
+ assert!( failures.is_empty(), "adapter deliverable placement/drift:\n{}", failures.join("\n") );
 }
-
 #[test]
 fn regenerating_produces_no_diff() {
-    // Semantic alias of the two checks above: one assertion site for the contract.
     generated_artifacts_match_checked_in();
     adapter_deliverables_live_under_generated_only();
 }
-
 #[test]
 fn you_events_present_in_canonical_export() {
     let doc: serde_json::Value =
@@ -124,10 +102,7 @@ fn you_events_present_in_canonical_export() {
         "ProjectUpdated",
         "HandoffCreated",
     ] {
-        assert!(
-            names.contains(&expected),
-            "missing YOU event {expected} in export"
-        );
+ assert!( names.contains(&expected), "missing YOU event {expected} in export" );
     }
     let envelope = doc["chosen_model"]["envelope_fields"]
         .as_array()
@@ -140,14 +115,10 @@ fn you_events_present_in_canonical_export() {
         "subsystem",
         "verification",
     ] {
-        assert!(
-            envelope.iter().any(|v| v.as_str() == Some(field)),
-            "envelope missing {field}"
-        );
+ assert!( envelope.iter().any(|v| v.as_str() == Some(field)), "envelope missing {field}" );
     }
     assert_eq!(doc["category_count"], 24);
 }
-
 #[test]
 fn cli_surface_lists_registry_families() {
     let surface = generate_all()
@@ -159,13 +130,8 @@ fn cli_surface_lists_registry_families() {
     let r = hawking_adapters::builtin_registry();
     assert_eq!(families.len(), r.families().count());
     for d in r.families() {
-        assert!(
-            families.iter().any(|f| f["id"] == d.id && f["level"] == d.level.as_str()),
-            "CLI surface missing or grade-drifted family {}",
-            d.id
-        );
+        assert!(families.iter().any(|f| f["id"] == d.id && f["level"] == d.level.as_str()));
     }
-    // /v1/responses and /v1/messages stay honestly not_implemented
     let honesty = &doc["honesty"]["bridge_endpoints"];
     for ep in ["POST /v1/responses", "POST /v1/messages"] {
         let row = honesty
@@ -177,7 +143,6 @@ fn cli_surface_lists_registry_families() {
         assert_eq!(row["status"], "not_implemented");
     }
 }
-
 #[test]
 fn schema_migrations_cover_new_surfaces() {
     let mig = generate_all()
@@ -204,12 +169,11 @@ fn schema_migrations_cover_new_surfaces() {
         assert!(ids.contains(&need), "migrations missing {need}");
     }
 }
-
 #[test]
 fn sdk_types_cover_required_domains() {
     let ts = generate_all()
         .into_iter()
-        .find(|a| a.relative_path == "generated/sdk_types.d.ts")
+        .find(|a| a.relative_path == "goldens/sdk_types.d.ts")
         .expect("sdk_types")
         .contents;
     for needle in [
@@ -223,21 +187,14 @@ fn sdk_types_cover_required_domains() {
         "export interface ToolEffectSet",
         "export type ContentVerification",
     ] {
-        assert!(
-            ts.contains(needle),
-            "sdk_types.d.ts missing {needle}"
-        );
+ assert!( ts.contains(needle), "sdk_types.d.ts missing {needle}" );
     }
     assert!(ts.contains("ObjectAdded"));
     assert!(ts.contains("HandoffCreated"));
     assert_eq!(ts.matches("export type YouEventName").count(), 1);
 }
-
 #[test]
 fn honest_family_grades_match_evidence_ladder() {
-    // Guardrail: grades are claims about evidence. Inflated SMALL_REAL_CHECKPOINT
-    // claims that rested on skip/ignore-gated tests were demoted to Stage A
-    // SOURCE_HEADER_VALIDATED. Raising a grade requires evidence verify_grades accepts.
     let expected = [
         ("deepseek", "SOURCE_HEADER_VALIDATED"),
         ("gemma", "DECLARED"),
@@ -253,10 +210,6 @@ fn honest_family_grades_match_evidence_ladder() {
     let r = hawking_adapters::builtin_registry();
     for (id, level) in expected {
         let d = r.get(id).unwrap_or_else(|| panic!("missing family {id}"));
-        assert_eq!(
-            d.level.as_str(),
-            level,
-            "family {id} grade drifted from the honest evidence ladder"
-        );
+ assert_eq!( d.level.as_str(), level, "family {id} grade drifted from the honest evidence ladder" );
     }
 }

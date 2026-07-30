@@ -84,7 +84,6 @@ id_newtype!(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn ids_serialize_transparently_as_bare_strings() {
         let id = SessionId::from("ses_abc");
@@ -93,7 +92,6 @@ mod tests {
         let back: SessionId = serde_json::from_str(&json).unwrap();
         assert_eq!(back, id);
     }
-
     #[test]
     fn ids_display_and_as_str_agree() {
         let id = TurnId::new("trn_1");

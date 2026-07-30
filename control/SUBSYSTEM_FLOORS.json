@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.300k.irreducible_budget.v1",
+  "measured_at": "2026-07-29",
+  "method": "Each figure is the result of a Grok lane given owned paths, a starting LOC, an explicit target, protected sets and independent controller verification -- not an audit estimate. A lane that could not reach its target had to name what it refused and why.",
+  "measurements": [
+    {"subsystem": "tools/condense campaign controllers", "start": 111424, "target": 45000,
+     "eliminated": 66433, "pct_of_target": 100, "verdict": "PAID",
+     "note": "129 controllers to 44; the engine grew 35 lines to absorb them."},
+    {"subsystem": "tools/condense tests", "start": 24524, "target": 14000,
+     "eliminated": 10529, "pct_of_target": 100, "verdict": "PAID",
+     "note": "88 files to 46, all 1,369 test definitions intact."},
+    {"subsystem": "tools/bench+training+strand+foundry", "start": 58440, "target": 40000,
+     "eliminated": 24880, "pct_of_target": 100, "verdict": "PAID",
+     "note": "After first reversing a stub-and-archive laundering of the same trees."},
+    {"subsystem": "hawking-core src + hawking-context + hawking-speculate", "start": 95247,
+     "target": 78000, "eliminated": 819, "pct_of_target": 5, "verdict": "AT_FLOOR",
+     "refusals": ["speculate proposers are public crate API and Event Horizon surface",
+                  "bitslice kernels protected even where unwired",
+                  "gravity_glm_resident cfg(test) underpins the lib test surface",
+                  "model families measured at jaccard < 0.11, distinct architectures"]},
+    {"subsystem": "HIDE (20 crates) + app + hawking-context", "start": 125440, "target": 95000,
+     "eliminated": 2536, "pct_of_target": 8, "verdict": "AT_FLOOR", "merged": false,
+     "refusals": ["remainder requires removing fleet fabric, YOU, personalize, compat, program-runtime, backend host integration",
+                  "five reverse-dependency-free crates are self-tested product schemas",
+                  "hide-core::automation is the designed YOU automation engine",
+                  "dual event models are must_not_delete until the Bridge lane"]},
+    {"subsystem": "shaders + hawking-seed-c", "start": 25133, "target": 18000,
+     "eliminated": 131, "pct_of_target": 2, "verdict": "AT_FLOOR",
+     "refusals": ["quant.metal permutations are a host-selected A/B lattice",
+                  "bitslice family protected despite zero host references",
+                  "gemv_native_bf16, PQ matvec and sample path are the protected set",
+                  "seed-c isolation is load-bearing: its manifest forbids a hawking-core dependency"]}
+  ],
+  "summary": {
+    "paid_subsystems": 3,
+    "at_floor_subsystems": 3,
+    "total_eliminated_from_paid": 101842,
+    "total_eliminated_from_floors": 950,
+    "observation": "Every subsystem that could pay has paid in full. Every subsystem that refused returned single-digit percentages of target with named, checkable reasons rather than estimates. The three at-floor subsystems are 396,468 of the 447,612 tree."
+  }
+}

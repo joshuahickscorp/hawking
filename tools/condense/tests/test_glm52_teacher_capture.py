@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Teacher-capture invariants: the gate that stands between a BF16 body and rm."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -10,13 +15,10 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_synthetic as synthetic  # noqa: E402
-import glm52_teacher_capture as tc  # noqa: E402
-from glm52_adapter import CORE  # noqa: E402
-
+from lab.operators import glm52_synthetic as synthetic  # noqa: E402
+from lab.operators import glm52_teacher_capture as tc  # noqa: E402
+from lab.operators.glm52_adapter import CORE  # noqa: E402
 
 def _organ_id(spec) -> str:
     if spec.section != CORE:
@@ -24,7 +26,6 @@ def _organ_id(spec) -> str:
     if spec.layer is None:
         return "global_input" if "embed" in spec.name else "global_output"
     return f"text_layer_{spec.layer:02d}"
-
 
 def _graph_from(inventory, config) -> dict:
     tensors = []
@@ -53,7 +54,6 @@ def _graph_from(inventory, config) -> dict:
         "layers": config["num_hidden_layers"],
     }
 
-
 def _schedule_for(layers: list[int]) -> dict:
     return {
         "seal_sha256": "synthetic-schedule-seal",
@@ -63,7 +63,6 @@ def _schedule_for(layers: list[int]) -> dict:
             "evict_after_seal_shards": [],
         }],
     }
-
 
 @pytest.fixture()
 def environment(tmp_path, monkeypatch):
@@ -94,10 +93,8 @@ def environment(tmp_path, monkeypatch):
         "tmp": tmp_path,
     }
 
-
 def _capture(environment, layers):
     return tc.capture_layers(layers, capsule_dir=environment["capsules"])
-
 
 def test_capture_is_deterministic(environment):
     first = _capture(environment, [0])
@@ -107,7 +104,6 @@ def test_capture_is_deterministic(environment):
     assert first["array_sha256"] == second["array_sha256"]
     assert first["capsule_sha256"] == second["capsule_sha256"]
     assert first["metrics"] == second["metrics"]
-
 
 def test_capsule_reloads_and_reproduces_metrics(environment):
     receipt = _capture(environment, [3])
@@ -120,7 +116,6 @@ def test_capsule_reloads_and_reproduces_metrics(environment):
                 "routed_expert_output"):
         assert f"layer_03/{key}" in receipt["array_sha256"]
 
-
 def test_chained_run_carries_the_previous_output(environment):
     _capture(environment, [0])
     second = _capture(environment, [1])
@@ -131,12 +126,10 @@ def test_chained_run_carries_the_previous_output(environment):
     with np.load(environment["capsules"] / "L01_L01.npz") as loaded:
         assert np.array_equal(loaded["layer_01/input_hidden"], carry)
 
-
 def test_deep_run_without_a_chain_declares_its_gap(environment):
     receipt = _capture(environment, [3])
     assert receipt["input_provenance"] == "EMBEDDING_SEEDED_NOT_CHAINED"
     assert receipt["chain_gap_layers"] == [0, 1, 2]
-
 
 def test_partial_write_is_refused_and_recapture_repairs(environment):
     _capture(environment, [0])
@@ -149,7 +142,6 @@ def test_partial_write_is_refused_and_recapture_repairs(environment):
         "L00_L00", capsule_dir=environment["capsules"]
     )["status"] == "REPRODUCED"
 
-
 def test_broken_seal_is_refused(environment):
     _capture(environment, [0])
     path = environment["capsules"] / "L00_L00.json"
@@ -158,7 +150,6 @@ def test_broken_seal_is_refused(environment):
     path.write_text(json.dumps(receipt))
     with pytest.raises(tc.Glm52Error, match="seal mismatch"):
         tc.verify_capsule("L00_L00", capsule_dir=environment["capsules"])
-
 
 def test_metric_drift_under_a_resealed_receipt_is_refused(environment):
     _capture(environment, [0])
@@ -169,7 +160,6 @@ def test_metric_drift_under_a_resealed_receipt_is_refused(environment):
     with pytest.raises(tc.TeacherCaptureError, match="metric reproduction mismatch"):
         tc.verify_capsule("L00_L00", capsule_dir=environment["capsules"])
 
-
 def test_lineage_mismatch_is_refused(environment):
     _capture(environment, [0])
     path = environment["capsules"] / "L00_L00.json"
@@ -178,7 +168,6 @@ def test_lineage_mismatch_is_refused(environment):
     path.write_text(json.dumps(tc.seal(receipt)))
     with pytest.raises(tc.TeacherCaptureError, match="lineage mismatch"):
         tc.verify_capsule("L00_L00", capsule_dir=environment["capsules"])
-
 
 def test_membership_mismatch_is_refused(environment):
     _capture(environment, [0])
@@ -189,7 +178,6 @@ def test_membership_mismatch_is_refused(environment):
     with pytest.raises(tc.TeacherCaptureError, match="membership mismatch"):
         tc.verify_capsule("L00_L00", capsule_dir=environment["capsules"])
 
-
 def test_capture_refuses_a_layer_that_is_not_resident(environment, monkeypatch):
     graph = environment["graph"]
     organ = f"text_layer_{environment['config']['num_hidden_layers'] - 1:02d}"
@@ -198,7 +186,6 @@ def test_capture_refuses_a_layer_that_is_not_resident(environment, monkeypatch):
             entry["source_shards"] = ["model-99999-of-00003.safetensors"]
     with pytest.raises(tc.TeacherCaptureError, match="not fully resident"):
         _capture(environment, [environment["config"]["num_hidden_layers"] - 1])
-
 
 def test_eviction_is_refused_before_capture_and_authorized_after(environment):
     shard = environment["graph"]["organs"][0]["source_shards"][0]
@@ -227,14 +214,12 @@ def test_eviction_is_refused_before_capture_and_authorized_after(environment):
     assert after["authorized"] == [shard]
     assert after["refused_uncaptured_but_capturable"] == {}
 
-
 def _widen_layer_organs(graph, phantom="model-99999-of-00003.safetensors"):
     """Give every text layer one shard that is not on disk."""
     for entry in graph["organs"]:
         if tc.layer_of_organ(entry["organ_id"]) is not None:
             entry["source_shards"] = sorted(set(entry["source_shards"]) | {phantom})
     return phantom
-
 
 def test_already_destroyed_layers_do_not_deadlock_eviction(environment):
     """A layer whose siblings were fetched and destroyed is lost, not a block."""
@@ -251,7 +236,6 @@ def test_already_destroyed_layers_do_not_deadlock_eviction(environment):
     assert authority["authorized"] == [shard]
     assert authority["authorized_with_unrecoverable_organs"][shard]
 
-
 def test_not_yet_fetched_layers_are_refused_not_written_off(environment):
     """A layer that is merely incomplete must never be called unrecoverable."""
     graph = environment["graph"]
@@ -265,7 +249,6 @@ def test_not_yet_fetched_layers_are_refused_not_written_off(environment):
     assert shard in authority["refused_incomplete_organs"]
     assert authority["authorized_with_unrecoverable_organs"] == {}
 
-
 def test_capture_for_eviction_captures_then_authorizes(environment):
     shard = environment["graph"]["organs"][0]["source_shards"][0]
     authority = tc.capture_for_eviction(
@@ -275,7 +258,6 @@ def test_capture_for_eviction_captures_then_authorizes(environment):
     assert authority["authorized"] == [shard]
     assert set(authority["capture_outcome"].values()) == {"CAPTURED"}
     assert authority["refused_uncaptured_but_capturable"] == {}
-
 
 def test_ledger_row_carries_the_eviction_authorization(environment):
     _capture(environment, [0])
@@ -291,10 +273,8 @@ def test_ledger_row_carries_the_eviction_authorization(environment):
     assert row["capsule_sha256"] and row["seal_sha256"]
     assert row["calibration_membership_sha256"]
 
-
 def test_calibration_splits_are_disjoint_and_deterministic():
     assert tc.selftest()["status"] == "PASS"
-
 
 def test_bounded_reader_refuses_an_oversized_tensor(environment):
     source = tc.ShardTensorSource(
@@ -302,7 +282,6 @@ def test_bounded_reader_refuses_an_oversized_tensor(environment):
     )
     with pytest.raises(tc.TeacherCaptureError, match="bounded read refused"):
         source.tensor("model.embed_tokens.weight")
-
 
 def test_row_read_matches_a_full_tensor_read(environment):
     table = tc._tensor_table(environment["graph"])

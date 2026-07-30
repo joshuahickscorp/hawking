@@ -126,3 +126,8 @@ docs/plans/hide_build_handoff_*.md
 
 # sovereignty spine bytecode
 tools/sovereignty/__pycache__/
+.serena/
+
+# Semantic graph: deterministic, 41s to regenerate with tools/graph/hawking_graph.py --emit all
+HAWKING_SEMANTIC_GRAPH.jsonl
+HAWKING_SEMANTIC_GRAPH.gexf

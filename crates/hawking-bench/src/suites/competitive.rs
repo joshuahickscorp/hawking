@@ -119,7 +119,6 @@ fn detect_hw() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn parse_prompts_strips_comments_and_blanks() {
         let s = "# header\n\nSHORT|hello\nMED|world\n\n# trailer\n";

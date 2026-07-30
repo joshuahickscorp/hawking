@@ -3,7 +3,7 @@
   optional native folder-picker are unit-testable in the node-environment vitest suite.
 
   STATE OF THIS MODULE, corrected 2026-07-20 during the preview closeout. Only `pickWorkspaceFolder`
-  is wired: `surfaces/home/HomeComposer.tsx` calls it for the add-folder flow. The rest is NOT live.
+  is wired: `surfaces/home_HomeComposer.tsx` calls it for the add-folder flow. The rest is NOT live.
   There is no first-run onboarding surface: `surfaces/Onboarding.tsx` was described by this comment
   but never existed, so `shouldShowOnboarding`, `ONBOARDING_DONE_KEY` and `isTauri` have no production
   caller and are exercised only by onboarding.test.ts. HIDE currently boots straight to Home, which is

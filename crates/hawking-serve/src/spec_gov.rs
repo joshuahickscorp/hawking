@@ -90,7 +90,6 @@ impl SpecGovernor {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn spec_governor_starts_enabled_with_optimistic_rate() {
         let gov = SpecGovernor::new(20, 0.35);
@@ -98,11 +97,9 @@ mod tests {
         assert!(gov.should_enable());
         assert_eq!(gov.accept_rate(), 1.0);
     }
-
     #[test]
     fn spec_governor_tracks_rolling_window() {
         let mut gov = SpecGovernor::new(4, 0.35);
-        // 4 accepts then 4 rejections: window sees the 4 rejections.
         for _ in 0..4 {
             gov.record(true);
         }
@@ -112,33 +109,24 @@ mod tests {
         }
         assert!((gov.accept_rate() - 0.0).abs() < 1e-6);
     }
-
     #[test]
     fn spec_governor_disables_after_max_consecutive_rejections() {
         let mut gov = SpecGovernor::new(20, 0.35);
-        // 5 consecutive rejections → disabled.
         for _ in 0..5 {
             gov.record(false);
         }
         assert!(!gov.enabled);
         assert!(!gov.should_enable());
     }
-
     #[test]
     fn spec_governor_reenables_when_rate_recovers() {
         let mut gov = SpecGovernor::new(4, 0.35);
-        // Disable first.
         for _ in 0..5 {
             gov.record(false);
         }
         assert!(!gov.enabled);
-        // 3 consecutive accepts push the rolling window above 0.35.
         gov.record(true);
         gov.record(true);
-        // Window has 4 entries: [false, false, true, true] → rate = 0.5 > 0.35.
-        // The last record() call will re-enable.
-        // But first two records after disable still hit the re-enable check.
-        // Just verify the final state.
         assert!((gov.accept_rate() - 0.5).abs() < 1e-6);
         assert!(gov.enabled);
     }

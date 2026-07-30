@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Adversarial offline tests for the GLM-5.2 phone/operator CLI."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import base64
 import hashlib
@@ -10,7 +15,6 @@ import sys
 
 import pytest
 
-
 TOOLS = pathlib.Path(__file__).resolve().parents[2]
 CONDENSE = TOOLS / "condense"
 for directory in (TOOLS, CONDENSE):
@@ -18,18 +22,17 @@ for directory in (TOOLS, CONDENSE):
         sys.path.insert(0, str(directory))
 
 import glm52_gravity as cli  # noqa: E402
-import glm52_evidence_auth as gea  # noqa: E402
-import glm52_grounding_auth as gga  # noqa: E402
-import glm52_state as gs  # noqa: E402
-import glm52_telegram as gt  # noqa: E402
-from glm52_common import (  # noqa: E402
+from lab.operators import glm52_evidence_auth as gea  # noqa: E402
+from lab.operators import glm52_grounding_auth as gga  # noqa: E402
+from lab.operators import glm52_state as gs  # noqa: E402
+from lab.operators import glm52_telegram as gt  # noqa: E402
+from lab.operators.glm52_common import (  # noqa: E402
     atomic_json,
     canonical,
     read_sealed_json,
     seal,
     verify_sealed,
 )
-
 
 REVISION = "b4734de4facf877f85769a911abafc5283eab3d9"
 CAMPAIGN = "glm52-phone-cli-test"
@@ -41,17 +44,7 @@ KEY = b"offline-cli-test-hmac-key-at-least-32-bytes!!"
 EVIDENCE_KEY = b"e" * 32
 GROUNDING_KEY = b"g" * 32
 
-
-class FakeKeychain:
-    def __init__(self, values=None):
-        self.values = dict(values or {})
-
-    def get(self, service):
-        return self.values.get(service)
-
-    def set(self, service, value):
-        self.values[service] = value
-
+from tools.condense.tests._glm52_fakes import FakeKeychain  # noqa: E402
 
 def _keychain(
     key: bytes = KEY,
@@ -71,7 +64,6 @@ def _keychain(
         )
     return FakeKeychain(values)
 
-
 def _source_shard():
     return {
         "path": SHARD,
@@ -80,66 +72,33 @@ def _source_shard():
         "lfs_sha256": "b" * 64,
     }
 
-
 def _gates():
-    def artifact_policy(path, schema):
+    def policy(path, schema, validator, *, hmac=True):
         return {
-            "path": path,
-            "expected_seal_sha256": None,
-            "expected_schema": schema,
-            "allowed_statuses": ["PASS"],
-            "validator_id": "campaign_artifact_v1",
-            "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[
-                "campaign_artifact_v1"
-            ],
-            "require_producer_hmac": True,
+            "path": path, "expected_seal_sha256": None, "expected_schema": schema,
+            "allowed_statuses": ["PASS"], "validator_id": validator,
+            "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[validator],
+            "require_producer_hmac": hmac,
         }
-
-    def checklist_policy(name):
-        return {
-            "path": f"evidence/stop_conditions/{name}.json",
-            "expected_seal_sha256": None,
-            "expected_schema": gs.STOP_CONDITION_EVIDENCE_SCHEMA,
-            "allowed_statuses": ["PASS"],
-            "validator_id": "stop_condition_v1",
-            "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[
-                "stop_condition_v1"
-            ],
-            "require_producer_hmac": True,
-        }
-
+    def art(path, schema):
+        return policy(path, schema, "campaign_artifact_v1")
+    def check(name):
+        return policy(f"evidence/stop_conditions/{name}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, "stop_condition_v1")
+    base = {
+        "require_source_complete": True, "require_tensor_complete": True,
+        "require_final_source_eviction": True, "require_telegram_delivery": True,
+    }
     return {
         "ASSEMBLE_ARTIFACT": {
-            "require_source_complete": True,
-            "require_tensor_complete": True,
-            "require_final_source_eviction": True,
-            "require_telegram_delivery": True,
-            "require_phone_status": False,
-            "required_phone_status_path": None,
-            "required_artifacts": {
-                "source_manifest": artifact_policy(
-                    "GLM52_OFFICIAL_MANIFEST.json", "test.source_manifest.v1"
-                )
-            },
-            "required_checklist": {
-                "source_complete": checklist_policy("source_complete")
-            },
+            **base, "require_phone_status": False, "required_phone_status_path": None,
+            "required_artifacts": {"source_manifest": art("GLM52_OFFICIAL_MANIFEST.json", "test.source_manifest.v1")},
+            "required_checklist": {"source_complete": check("source_complete")},
         },
         "COMPLETE": {
-            "require_source_complete": True,
-            "require_tensor_complete": True,
-            "require_final_source_eviction": True,
-            "require_telegram_delivery": True,
-            "require_phone_status": True,
+            **base, "require_phone_status": True,
             "required_phone_status_path": "phone/GLM52_PHONE_STATUS.json",
-            "required_artifacts": {
-                "final": artifact_policy(
-                    "GLM52_GRAVITY_FINAL.json", "test.gravity_final.v1"
-                )
-            },
-            "required_checklist": {
-                "all_stop_conditions": checklist_policy("all_stop_conditions")
-            },
+            "required_artifacts": {"final": art("GLM52_GRAVITY_FINAL.json", "test.gravity_final.v1")},
+            "required_checklist": {"all_stop_conditions": check("all_stop_conditions")},
         },
     }
 
@@ -169,10 +128,8 @@ def _contract():
         created_at="2026-07-21T00:00:00Z",
     )
 
-
 def _auth():
     return gs.TelegramAuthConfig(hmac_key=KEY, expected_chat_identity_digest=CHAT_DIGEST)
-
 
 def _evidence_auth():
     return gs.EvidenceAuthConfig(
@@ -180,7 +137,6 @@ def _evidence_auth():
         campaign_id=CAMPAIGN,
         source_revision=REVISION,
     )
-
 
 def _delivery(controller, intent):
     claim_id = intent["claim_id"]
@@ -201,7 +157,6 @@ def _delivery(controller, intent):
         delivered_at="2026-07-21T00:00:01Z",
     )
 
-
 def _setup(tmp_path, *, reach_freeze=False):
     controller_root = tmp_path / "controller"
     contract_path = tmp_path / "expected-contract.json"
@@ -209,58 +164,34 @@ def _setup(tmp_path, *, reach_freeze=False):
     phone_dir = tmp_path / "phone"
     atomic_json(contract_path, _contract())
     config = cli.make_config(
-        campaign_id=CAMPAIGN,
-        source_revision=REVISION,
-        controller_root=controller_root,
-        artifact_root=tmp_path,
-        expected_contract_path=contract_path,
-        phone_status_directory=phone_dir,
-        expected_chat_identity_digest=CHAT_DIGEST,
+        campaign_id=CAMPAIGN, source_revision=REVISION, controller_root=controller_root,
+        artifact_root=tmp_path, expected_contract_path=contract_path,
+        phone_status_directory=phone_dir, expected_chat_identity_digest=CHAT_DIGEST,
         allow_synthetic_contract=True,
     )
     atomic_json(config_path, config)
     keychain = _keychain()
     controller = gs.Controller(
-        controller_root,
-        artifact_root=tmp_path,
-        campaign_id=CAMPAIGN,
-        source_revision=REVISION,
-        expected_contract=_contract(),
-        telegram_auth=_auth(),
-        evidence_auth=_evidence_auth(),
-        allow_synthetic_contract=True,
+        controller_root, artifact_root=tmp_path, campaign_id=CAMPAIGN,
+        source_revision=REVISION, expected_contract=_contract(),
+        telegram_auth=_auth(), evidence_auth=_evidence_auth(), allow_synthetic_contract=True,
     )
+    freeze_states = [
+        "CLOSE_KIMI", "RELEASE_KIMI_SOURCE", "ADMIT_GLM_SOURCE", "BUILD_MANIFEST",
+        "BUILD_DEPENDENCY_GRAPH", "AUTOTUNE_XET", "BUILD_ADAPTER", "BUILD_REFERENCE",
+        "BUILD_CORPUS", "PILOT_ORACLES", "FREEZE_PROGRAM",
+    ]
     with controller:
-        boot_claim = "cli:test:boot:0001"
-        intent = controller.prepare_transition("PRECHECK", claim_id=boot_claim)
-        controller.boot(
-            transition_intent=intent,
-            telegram_delivery=_delivery(controller, intent),
-        )
+        intent = controller.prepare_transition("PRECHECK", claim_id="cli:test:boot:0001")
+        controller.boot(transition_intent=intent, telegram_delivery=_delivery(controller, intent))
         if reach_freeze:
-            states = [
-                "CLOSE_KIMI",
-                "RELEASE_KIMI_SOURCE",
-                "ADMIT_GLM_SOURCE",
-                "BUILD_MANIFEST",
-                "BUILD_DEPENDENCY_GRAPH",
-                "AUTOTUNE_XET",
-                "BUILD_ADAPTER",
-                "BUILD_REFERENCE",
-                "BUILD_CORPUS",
-                "PILOT_ORACLES",
-                "FREEZE_PROGRAM",
-            ]
-            for number, to_state in enumerate(states, 1):
-                claim = f"cli:test:transition:{number:04d}"
-                intent = controller.prepare_transition(to_state, claim_id=claim)
+            for number, to_state in enumerate(freeze_states, 1):
+                intent = controller.prepare_transition(to_state, claim_id=f"cli:test:transition:{number:04d}")
                 controller.transition(
-                    to_state,
-                    transition_intent=intent,
+                    to_state, transition_intent=intent,
                     telegram_delivery=_delivery(controller, intent),
                 )
-    runtime = cli.load_runtime(config_path, keychain=keychain)
-    return runtime, config_path, keychain
+    return cli.load_runtime(config_path, keychain=keychain), config_path, keychain
 
 
 def test_contract_derived_config_uses_artifact_root_for_phone_status(tmp_path) -> None:
@@ -286,7 +217,6 @@ def test_contract_derived_config_uses_artifact_root_for_phone_status(tmp_path) -
     assert runtime.phone_json_path == artifact_root / "phone/GLM52_PHONE_STATUS.json"
     assert runtime.contract_phone_status_path == "phone/GLM52_PHONE_STATUS.json"
 
-
 def test_contract_derived_config_refuses_synthetic_without_explicit_opt_in(
     tmp_path,
 ) -> None:
@@ -298,7 +228,6 @@ def test_contract_derived_config_refuses_synthetic_without_explicit_opt_in(
             controller_root=tmp_path / "controller",
             artifact_root=tmp_path,
         )
-
 
 def test_status_is_deterministic_atomic_sealed_and_secret_free(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
@@ -353,7 +282,6 @@ def test_status_is_deterministic_atomic_sealed_and_secret_free(tmp_path):
     assert str(CHAT_ID).encode() not in persisted
     assert b"receipt_hmac_key_env" not in persisted
 
-
 def test_config_and_key_are_required_and_tamper_is_rejected(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
     with pytest.raises(cli.CliError, match="not configured"):
@@ -389,7 +317,6 @@ def test_config_and_key_are_required_and_tamper_is_rejected(tmp_path):
     with pytest.raises(cli.CliError, match="seal mismatch"):
         cli.load_runtime(config_path, keychain=keychain)
 
-
 def test_grounding_provider_is_sealed_exact_and_runtime_exposes_grounder(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
     config = read_sealed_json(config_path)
@@ -410,7 +337,6 @@ def test_grounding_provider_is_sealed_exact_and_runtime_exposes_grounder(tmp_pat
     with pytest.raises(cli.CliError, match="fixed grounding Keychain service/account"):
         cli.load_runtime(alternate_path, keychain=keychain)
 
-
 def test_grounding_credential_absent_or_malformed_fails_runtime_load(tmp_path):
     _, config_path, _ = _setup(tmp_path)
     with pytest.raises(cli.CliError, match="filesystem observation authentication is not configured"):
@@ -420,7 +346,6 @@ def test_grounding_credential_absent_or_malformed_fails_runtime_load(tmp_path):
     malformed.values[gga.GROUNDING_HMAC_SERVICE] = "not-base64!"
     with pytest.raises(cli.CliError, match="filesystem observation authentication is invalid"):
         cli.load_runtime(config_path, keychain=malformed)
-
 
 @pytest.mark.parametrize(
     ("telegram_key", "evidence_key", "grounding_key"),
@@ -444,7 +369,6 @@ def test_all_authentication_role_keys_must_be_pairwise_distinct(
             ),
         )
 
-
 def test_phone_output_is_contract_bound_and_existing_tamper_is_not_overwritten(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
     cli.run_command(runtime, "status")
@@ -467,7 +391,6 @@ def test_phone_output_is_contract_bound_and_existing_tamper_is_not_overwritten(t
     with pytest.raises(cli.CliError, match="does not match the COMPLETE contract path"):
         cli.load_runtime(config_path, keychain=keychain)
 
-
 def test_validly_resealed_phone_tamper_without_producer_key_is_rejected(tmp_path):
     runtime, _, _ = _setup(tmp_path)
     original = cli.run_command(runtime, "status")
@@ -483,7 +406,6 @@ def test_validly_resealed_phone_tamper_without_producer_key_is_rejected(tmp_path
     with pytest.raises(cli.CliError, match="invalid producer authentication"):
         cli.run_command(runtime, "status")
     assert runtime.phone_json_path.read_bytes() == tampered
-
 
 def test_phone_json_commit_recovers_from_crash_between_json_and_markdown(
     tmp_path, monkeypatch
@@ -513,7 +435,6 @@ def test_phone_json_commit_recovers_from_crash_between_json_and_markdown(
     )
     assert repaired["seal_sha256"] != baseline["seal_sha256"]
 
-
 def test_phone_recovers_when_crash_precedes_json_commit(tmp_path, monkeypatch):
     runtime, _, _ = _setup(tmp_path)
     baseline = cli.run_command(runtime, "status")
@@ -540,7 +461,6 @@ def test_phone_recovers_when_crash_precedes_json_commit(tmp_path, monkeypatch):
     assert recovered["phone_status"]["status"] == "RED"
     assert recovered["phone_status"]["controller"]["live_worker_lease_ok"] is False
     assert recovered["phone_status"]["seal_sha256"] != baseline["seal_sha256"]
-
 
 def test_operator_transition_law_idempotence_and_safe_state_gate(tmp_path):
     precheck, _, _ = _setup(tmp_path / "precheck")
@@ -571,7 +491,6 @@ def test_operator_transition_law_idempotence_and_safe_state_gate(tmp_path):
     final = cli.run_command(frozen, "pause-after-window")
     assert final["control_event_count"] == 4
     assert cli.OperatorControlJournal(frozen).replay()["journal_ok"] is True
-
 
 def test_worker_applies_requests_only_at_authenticated_safe_points(tmp_path):
     runtime, _, _ = _setup(tmp_path, reach_freeze=True)
@@ -626,7 +545,6 @@ def test_worker_applies_requests_only_at_authenticated_safe_points(tmp_path):
 
     assert cli.run_command(runtime, "status")["overall_status"] == "RED"
 
-
 def test_tampered_worker_acknowledgement_fails_phone_and_worker_closed(tmp_path):
     runtime, _, _ = _setup(tmp_path, reach_freeze=True)
     cli.run_command(runtime, "stop")
@@ -645,7 +563,6 @@ def test_tampered_worker_acknowledgement_fails_phone_and_worker_closed(tmp_path)
         with pytest.raises(cli.CliError, match="event chain hash mismatch"):
             acknowledgements.poll(worker, safe_point="BETWEEN_RANGE_READS")
 
-
 def test_tampered_controller_checkpoint_reports_red_and_blocks_mutation(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
     checkpoint_path = runtime.controller_root / "GLM52_CONTROLLER_CHECKPOINT.json"
@@ -663,7 +580,6 @@ def test_tampered_controller_checkpoint_reports_red_and_blocks_mutation(tmp_path
     assert cli.main(
         ["--config", str(config_path), "status"], keychain=keychain
     ) == 3
-
 
 def test_malformed_or_tampered_control_journal_is_fail_closed(tmp_path):
     runtime, _, _ = _setup(tmp_path)
@@ -684,7 +600,6 @@ def test_malformed_or_tampered_control_journal_is_fail_closed(tmp_path):
     torn = cli.run_command(runtime, "status")
     assert torn["overall_status"] == "RED"
     assert "unsealed/torn JSONL tail" in torn["operator_control_error"]
-
 
 def test_cli_errors_are_machine_readable_and_do_not_echo_secret(tmp_path, capsys):
     _, config_path, _ = _setup(tmp_path)

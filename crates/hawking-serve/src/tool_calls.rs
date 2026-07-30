@@ -243,7 +243,6 @@ fn balanced_end(bytes: &[u8], start: usize) -> Option<usize> {
 mod tests {
     use super::*;
     use serde_json::json;
-
     #[test]
     fn preamble_lists_tools_and_is_empty_when_none() {
         assert_eq!(render_tools_preamble(&[]), "");
@@ -255,13 +254,10 @@ mod tests {
         assert!(p.contains("<tools>"));
         assert!(p.contains("get_weather"));
         assert!(p.contains("<tool_call>"));
-        // The OpenAI envelope is unwrapped to the bare function spec.
         assert!(!p.contains("\"type\":\"function\""));
     }
-
     #[test]
     fn extracts_hermes_block_to_openai_shape() {
-        // Tagged blocks are honored regardless of the declared-tools list.
         let calls = extract_tool_calls(
             "I'll check.\n<tool_call>{\"name\":\"get_weather\",\"arguments\":{\"city\":\"NYC\"}}</tool_call>",
             &[],
@@ -269,12 +265,10 @@ mod tests {
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].name, "get_weather");
         assert_eq!(calls[0].id, "call_0");
-        // arguments is a JSON-encoded string.
         assert_eq!(calls[0].arguments, "{\"city\":\"NYC\"}");
         let oa = calls[0].to_openai();
         assert_eq!(oa["function"]["name"], "get_weather");
     }
-
     #[test]
     fn extracts_parallel_calls() {
         let calls = extract_tool_calls(
@@ -286,37 +280,28 @@ mod tests {
         assert_eq!(calls[0].id, "call_0");
         assert_eq!(calls[1].id, "call_1");
     }
-
     #[test]
     fn extracts_bare_declared_call_after_bracket() {
-        // A leading [...] must not shadow the object; and the untagged bare call is
-        // accepted only because "a" is a declared tool.
         let known = vec!["a".to_string()];
         let calls = extract_tool_calls("see [1] {\"name\":\"a\",\"arguments\":{\"x\":1}}", &known);
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].name, "a");
     }
-
     #[test]
     fn untagged_prose_json_is_not_a_false_tool_call() {
-        // A plain answer mentioning a JSON object must NOT become a tool call when
-        // its name is not a declared tool (else the real answer is discarded).
         let known = vec!["get_weather".to_string()];
         assert!(extract_tool_calls("Your record is {\"name\": \"Bob\"}", &known).is_empty());
-        // ...but a bare call to a DECLARED tool is still extracted.
         let calls = extract_tool_calls(
             "{\"name\":\"get_weather\",\"arguments\":{\"city\":\"NYC\"}}",
             &known,
         );
         assert_eq!(calls.len(), 1);
-        // ...and a tagged block is always honored, declared or not.
         let tagged = extract_tool_calls(
             "<tool_call>{\"name\":\"anything\",\"arguments\":{}}</tool_call>",
             &[],
         );
         assert_eq!(tagged.len(), 1);
     }
-
     #[test]
     fn tool_names_reads_both_shapes() {
         let tools = vec![
@@ -325,7 +310,6 @@ mod tests {
         ];
         assert_eq!(tool_names(&tools), vec!["a".to_string(), "b".to_string()]);
     }
-
     #[test]
     fn plain_text_yields_no_calls() {
         assert!(extract_tool_calls("just a normal answer", &[]).is_empty());

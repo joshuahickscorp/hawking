@@ -339,7 +339,6 @@ pub fn accepted_prefix_len(draft: &str, truth: &str) -> usize {
 mod tests {
     use super::*;
     use serde_json::json;
-
     fn grammar() -> ToolCallGrammar {
         ToolCallGrammar::new(vec![
             ToolSchema::new("fs.read", vec!["path".into()]),
@@ -348,40 +347,30 @@ mod tests {
             ToolSchema::new("shell.run", vec!["argv".into()]),
         ])
     }
-
     #[test]
     fn envelope_prefix_is_forced_opening() {
         assert_eq!(grammar().envelope_prefix(), "{\"name\": \"");
     }
-
     #[test]
     fn name_jump_shares_prefix_then_resolves() {
         let g = grammar();
-        // Empty typed: fs.* and git.* and shell.* share nothing -> no forced chars.
         assert_eq!(g.name_jump("").forced, "");
-        // "fs." is shared by fs.read and fs.list: typing "f" forces "s." (the LCP).
         let j = g.name_jump("f");
         assert_eq!(j.forced, "s.");
         assert_eq!(j.resolved, None);
-        // "fs.r" uniquely identifies fs.read: forced completes it, resolved set.
         let j = g.name_jump("fs.r");
         assert_eq!(j.forced, "ead");
         assert_eq!(j.resolved.as_deref(), Some("fs.read"));
-        // "git." uniquely identifies git.status.
         assert_eq!(g.name_jump("git.").resolved.as_deref(), Some("git.status"));
     }
-
     #[test]
     fn name_jump_flags_dead_branch() {
         let j = grammar().name_jump("nope");
         assert!(j.dead);
         assert_eq!(j.resolved, None);
     }
-
     #[test]
     fn scaffold_forces_sole_key_only_when_closed_single_prop() {
-        // A closed schema whose ONLY declared property IS the single required key:
-        // "path" is provably the only legal first key, so jumping it is lossless.
         let g = ToolCallGrammar::new(vec![ToolSchema::from_input_schema(
             "x.single",
             &json!({
@@ -391,24 +380,12 @@ mod tests {
                 "additionalProperties": false
             }),
         )]);
-        assert_eq!(
-            g.scaffold_for("x.single", true).unwrap(),
-            "{\"name\": \"x.single\", \"arguments\": {\"path\": "
-        );
-        // sole_key=false always stops at the object opener.
-        assert_eq!(
-            g.scaffold_for("x.single", false).unwrap(),
-            "{\"name\": \"x.single\", \"arguments\": {"
-        );
+        assert_eq!(g.scaffold_for("x.single", true).unwrap(), "{\"name\": \"x.single\", \"arguments\": {\"path\": ");
+        assert_eq!(g.scaffold_for("x.single", false).unwrap(), "{\"name\": \"x.single\", \"arguments\": {");
         assert_eq!(g.scaffold_for("made.up", true), None);
     }
-
     #[test]
     fn scaffold_does_not_force_key_when_optional_props_exist() {
-        // fs.read's REAL schema: required [path] but optional range/encoding, so the
-        // arguments object may legally begin with a non-required key. Forcing "path"
-        // would emit a token that was not the only legal continuation (a losslessness
-        // violation), so the scaffold must stop at the object opener.
         let g = ToolCallGrammar::new(vec![ToolSchema::from_input_schema(
             "fs.read",
             &json!({
@@ -422,25 +399,16 @@ mod tests {
                 "additionalProperties": false
             }),
         )]);
-        assert_eq!(
-            g.scaffold_for("fs.read", true).unwrap(),
-            "{\"name\": \"fs.read\", \"arguments\": {"
-        );
+ assert_eq!( g.scaffold_for("fs.read", true).unwrap(), "{\"name\": \"fs.read\", \"arguments\": {" );
     }
-
     #[test]
     fn scaffold_does_not_force_key_when_multiple_required() {
         let g = ToolCallGrammar::new(vec![ToolSchema::new(
             "x.multi",
             vec!["a".into(), "b".into()],
         )]);
-        // Two required keys: order is not forced, so only the object opener is emitted.
-        assert_eq!(
-            g.scaffold_for("x.multi", true).unwrap(),
-            "{\"name\": \"x.multi\", \"arguments\": {"
-        );
+ assert_eq!( g.scaffold_for("x.multi", true).unwrap(), "{\"name\": \"x.multi\", \"arguments\": {" );
     }
-
     #[test]
     fn validity_gate_checks_name_and_required_keys() {
         let g = grammar();
@@ -450,20 +418,16 @@ mod tests {
         assert!(g.is_valid_call("fs.read", &json!("not object")).is_err());
         assert!(g.is_valid_call("git.status", &json!({})).is_ok());
     }
-
     #[test]
     fn forced_fraction_is_a_real_lower_bound() {
         let g = grammar();
-        // git.status with empty args: almost all of it is forced scaffolding.
         let frac = g.forced_fraction("git.status", "{}").unwrap();
         assert!(frac > 0.9, "expected mostly-forced, got {frac}");
-        // A call with a long argument value has a lower forced fraction.
         let low = g
             .forced_fraction("shell.run", "{\"argv\": [\"a very long command here\"]}")
             .unwrap();
         assert!(low < frac);
     }
-
     #[test]
     fn schema_from_input_schema_reads_required() {
         let s = ToolSchema::from_input_schema(
@@ -472,30 +436,25 @@ mod tests {
         );
         assert_eq!(s.required_keys, vec!["path".to_string()]);
     }
-
     #[test]
     fn prompt_lookup_copies_run_from_context() {
         let lookup = PromptLookup::default();
-        // The model has emitted a path prefix that appears in the file it read.
         let haystack = "files: src/main.rs, src/lib.rs, README.md";
         let generated = "open src/li";
         let draft = lookup.draft(generated, haystack, 6).unwrap();
         assert_eq!(draft, "b.rs, ");
     }
-
     #[test]
     fn prompt_lookup_returns_none_without_match() {
         let lookup = PromptLookup::default();
         assert!(lookup.draft("zzz qqq", "nothing alike here", 8).is_none());
     }
-
     #[test]
     fn accepted_prefix_len_is_common_prefix() {
         assert_eq!(accepted_prefix_len("src/lib.rs", "src/lib.rs"), 10);
         assert_eq!(accepted_prefix_len("src/lib.rs", "src/main"), 4);
         assert_eq!(accepted_prefix_len("abc", "xyz"), 0);
     }
-
     #[test]
     fn longest_common_prefix_basic() {
         assert_eq!(longest_common_prefix(&["fs.read", "fs.list"]), "fs.");

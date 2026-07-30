@@ -5,6 +5,11 @@ every load path.  The old decode paid 145x the payload in uint64 temporaries; th
 pin both halves of the fix -- the answer must not move, and the cost must stay bounded.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import os
 import sys
@@ -14,15 +19,12 @@ import numpy as np
 import pytest
 
 _HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 
-import glm52_pack as pack  # noqa: E402
+from lab.operators import glm52_pack as pack  # noqa: E402
 
 # Real R0 geometry: gate/up [2048,6144] at D=8 is rows*nchunk = 2048*768 indices at 7 bits.
 R0_COUNT = 2048 * 768
 R0_BITS = 7
-
 
 def _reference_unpack(raw: bytes, count: int, bits: int) -> np.ndarray:
     """The pre-fix decode, kept verbatim as the parity oracle."""
@@ -30,7 +32,6 @@ def _reference_unpack(raw: bytes, count: int, bits: int) -> np.ndarray:
     grid = unpacked.reshape(count, bits).astype(np.uint64)
     weights = (np.uint64(1) << np.arange(bits - 1, -1, -1, dtype=np.uint64))
     return (grid * weights).sum(axis=1)
-
 
 @pytest.mark.parametrize("bits", list(range(1, 17)))
 @pytest.mark.parametrize("count", [1, 7, 8, 9, 63, 100, 255, 1000, 4097])
@@ -41,7 +42,6 @@ def test_parity_with_reference(bits, count):
     got = pack.unpack_indices(raw, count, bits)
     assert np.array_equal(got.astype(np.uint64), _reference_unpack(raw, count, bits))
 
-
 @pytest.mark.parametrize("bits", list(range(1, 17)))
 def test_round_trip_is_exact(bits):
     rng = np.random.default_rng(bits)
@@ -50,7 +50,6 @@ def test_round_trip_is_exact(bits):
         got = pack.unpack_indices(pack.pack_indices(values, bits), count, bits)
         assert np.array_equal(got.astype(np.uint64), values)
 
-
 @pytest.mark.parametrize("bits", list(range(1, 17)))
 def test_extremal_values_survive(bits):
     """Saturated and zero indices are where an off-by-one shift shows up."""
@@ -58,18 +57,15 @@ def test_extremal_values_survive(bits):
     got = pack.unpack_indices(pack.pack_indices(values, bits), values.size, bits)
     assert np.array_equal(got.astype(np.uint64), values)
 
-
 @pytest.mark.parametrize("bits,expected", [(1, np.uint8), (7, np.uint8), (8, np.uint8),
                                            (9, np.uint16), (16, np.uint16)])
 def test_output_dtype_is_narrow(bits, expected):
     raw = pack.pack_indices(np.zeros(64, dtype=np.uint64), bits)
     assert pack.unpack_indices(raw, 64, bits).dtype == expected
 
-
 def test_bits_over_sixteen_refused():
     with pytest.raises(ValueError):
         pack.unpack_indices(b"\x00" * 64, 8, 17)
-
 
 def test_peak_memory_bounded_at_r0():
     """MEASURED at the production index count: temporaries must stay near the payload."""
@@ -88,7 +84,6 @@ def test_peak_memory_bounded_at_r0():
     assert out.dtype == np.uint8
     assert peak <= 4 * len(raw), f"peak {peak} B is {peak / len(raw):.1f}x the payload"
 
-
 def test_no_uint64_grid_allocated():
     """The 145x blowup was one array; assert no allocation can hold a per-bit uint64 grid."""
     rng = np.random.default_rng(1)
@@ -101,10 +96,9 @@ def test_no_uint64_grid_allocated():
     tracemalloc.stop()
     assert peak < count * 7 * 8, f"peak {peak} B admits a uint64 bit grid"
 
-
 def test_deserialize_round_trip_on_a_real_pq_artifact():
     """End to end: the indices a packed tensor decodes to are the ones it was packed with."""
-    import gravity_forge as forge
+    from lab.operators import gravity_forge as forge
 
     rng = np.random.default_rng(0)
     weights = rng.standard_normal((256, 128)).astype(np.float32)

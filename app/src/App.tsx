@@ -23,15 +23,15 @@ import { StatusBar } from "./shell/StatusBar";
 import { Settings } from "./surfaces/Settings";
 import { CommandPalette, Gate, type Command } from "./ui";
 import { useFocusTrap } from "./shell/a11y";
-import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
-import { Home } from "./surfaces/home/Home";
-import type { ChatPanelKind } from "./surfaces/home/ChatPanel";
-import type { PermMode } from "./surfaces/home/HomeComposer";
+import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide_types";
+import { Home } from "./surfaces/home_Home";
+import type { ChatPanelKind } from "./surfaces/home_ChatPanel";
+import type { PermMode } from "./surfaces/home_HomeComposer";
 
 // The two chambers: Chat (Claude Code style, the front door) and Code (the IDE, Cursor style).
 type Mode = "chat" | "code";
 
-// The boot tab is a MOCK fixture path (it exists only in surfaces/ide/types.ts). On a live host
+// The boot tab is a MOCK fixture path (it exists only in surfaces/ide_types.ts). On a live host
 // there is no file this app may assume, so nothing is opened until the user opens one.
 const INITIAL_FILE = TRANSPORT_KIND === "mock" ? "crates/pool/src/guard.rs" : null;
 

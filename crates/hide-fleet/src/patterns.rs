@@ -193,7 +193,6 @@ fn tagged(mut job: AgentJob, pattern: OrchestrationPattern) -> AgentJob {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn oracle_plus_disjoint_picks_fanout() {
         let d = choose_pattern(TaskShape {
@@ -203,7 +202,6 @@ mod tests {
         });
         assert_eq!(d.pattern, OrchestrationPattern::FanOutMapReduce);
     }
-
     #[test]
     fn oracle_plus_hard_goal_picks_tournament() {
         let d = choose_pattern(TaskShape {
@@ -213,13 +211,11 @@ mod tests {
         });
         assert_eq!(d.pattern, OrchestrationPattern::Tournament);
     }
-
     #[test]
     fn no_oracle_ambiguous_defaults_to_single_agent() {
         let d = choose_pattern(TaskShape::default());
         assert_eq!(d.pattern, OrchestrationPattern::SingleAgent);
     }
-
     #[test]
     fn no_oracle_breadth_picks_planner_workers() {
         let d = choose_pattern(TaskShape {
@@ -228,7 +224,6 @@ mod tests {
         });
         assert_eq!(d.pattern, OrchestrationPattern::PlannerWorkersMerger);
     }
-
     #[test]
     fn materialise_fanout_adds_reduce_depending_on_children() {
         let jobs = materialise(
@@ -241,7 +236,6 @@ mod tests {
         let reduce = jobs.last().unwrap();
         assert_eq!(reduce.dependencies.len(), 3);
     }
-
     #[test]
     fn materialise_tournament_races_n_jobs_same_goal() {
         let jobs = materialise(
@@ -252,8 +246,6 @@ mod tests {
         );
         assert_eq!(jobs.len(), 4);
         assert!(jobs.iter().all(|j| j.dependencies.is_empty()));
-        assert!(jobs
-            .iter()
-            .all(|j| j.spec.pattern.as_deref() == Some("tournament")));
+ assert!(jobs .iter() .all(|j| j.spec.pattern.as_deref() == Some("tournament")));
     }
 }

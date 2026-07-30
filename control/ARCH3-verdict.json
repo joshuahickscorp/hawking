@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.300k.architecture_attempt.v1",
+  "architecture": "ARCH3 — one language per role (campaign program C7)",
+  "question_asked": "Where does the repository implement the same operation twice, once in Rust and once in Python, and keep both as production?",
+  "verdict": "ARCHITECTURE_CANNOT_DELIVER",
+  "measurement": {
+    "dual_presence_found": 6350,
+    "true_dual_production_collapse": 0,
+    "target": 20000,
+    "eliminated": 0,
+    "oracle_added": 0,
+    "changes_made": "none"
+  },
+  "why": "Of 6,350 lines with a presence in both languages, essentially none is dual production. It is production plus oracle, or an intentional encode/decode role split that the campaign's own rule prescribes. The compact PQ oracle already exists at 33 lines. Fit and pack have no Rust twin at all. Deleting the Metal labs or the quant and speculate oracles would erase protected science.",
+  "inventory": [
+    {"operation": "GGUF reading", "rust": 492, "python": 343, "verdict": "already_oracle"},
+    {"operation": "safetensors reading", "rust": 231, "python": 90, "verdict": "already_oracle"},
+    {"operation": "gravity container framing", "rust": 600, "python": 343, "verdict": "keep_both"},
+    {"operation": "gravity-pq pack versus decode", "rust": 437, "python": 835, "verdict": "already_oracle"},
+    {"operation": "k-means and PQ fit", "rust": 0, "python": 1453, "verdict": "keep_both — no Rust twin exists"},
+    {"operation": "quantization codecs", "rust": 2070, "python": 2794, "verdict": "already_oracle"},
+    {"operation": "ledger and receipt writers", "rust": 2666, "python": 1055, "verdict": "keep_both"},
+    {"operation": "manifest and hash validation", "rust": 0, "python": 633, "verdict": "keep_both — no Rust twin exists"}
+  ],
+  "significance": "The campaign's likely rule -- Rust owns the production artifact and runtime path, Python owns scientific orchestration and compact numeric authority -- is already the repository's actual state. There is no second full implementation to retire."
+}

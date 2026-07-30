@@ -156,46 +156,26 @@ impl SeparatedTpsScoreboard {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn accepted_tps_includes_rollback_cost() {
         let mut ledger = AccelCostLedger::default();
-        // 10 tokens drafted in 10ms, verify 10ms, rollback 10ms; 5 accepted.
         ledger.record_draft(10_000_000, 10);
         ledger.record_verify(10_000_000, 5, 5);
         ledger.record_rollback(10_000_000);
-
         let accepted = ledger.accelerated_accepted_tps();
-        // 5 tokens / 0.030 s ≈ 166.67 tps
         let expected = 5.0 / 0.030;
-        assert!(
-            (accepted.value() - expected).abs() < 1e-6,
-            "got {} expected {expected}",
-            accepted.value()
-        );
-
-        // Draft-side throughput would be 10 / 0.01 = 1000 — must not equal accepted TPS.
+        assert!((accepted.value() - expected).abs() < 1e-6);
         let draft_side = ledger.draft_side_throughput_not_scoreboard();
-        assert!(
-            (draft_side - accepted.value()).abs() > 1.0,
-            "draft-side throughput must not masquerade as ACCELERATED_ACCEPTED_TPS"
-        );
-
-        // Omitting rollback from the denominator would inflate TPS; pin that the
-        // ledger always adds it.
+        assert!((draft_side - accepted.value()).abs() > 1.0);
         let without_rollback = tps(
             ledger.accepted_tokens,
             Duration::from_nanos(ledger.draft_ns + ledger.verify_ns),
         );
-        assert!(
-            without_rollback > accepted.value(),
-            "including rollback must strictly lower (or equal only if zero) accepted TPS"
-        );
+        assert!(without_rollback > accepted.value());
         assert_eq!(ledger.total_ns(), 30_000_000);
         assert_eq!(AcceleratedAcceptedTps::SCOREBOARD, "ACCELERATED_ACCEPTED_TPS");
         assert_eq!(BaseTrueTps::SCOREBOARD, "BASE_TRUE_TPS");
     }
-
     #[test]
     fn base_and_accelerated_are_separate_types() {
         let base = BaseTrueTps::from_counts(100, Duration::from_secs(1));
@@ -206,9 +186,7 @@ mod tests {
         let accel = ledger.accelerated_accepted_tps();
         let board = SeparatedTpsScoreboard::new(base, accel);
         assert_eq!(board.base_true.value(), 100.0);
-        // 70 tokens / 1.0 s = 70 tps (full cost)
         assert!((board.accelerated_accepted.value() - 70.0).abs() < 1e-9);
-        // No average API exists; speedup is a ratio of the two scoreboards.
         let ratio = board.speedup_ratio().unwrap();
         assert!((ratio - 0.7).abs() < 1e-9);
     }

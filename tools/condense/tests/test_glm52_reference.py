@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Primitive and state tests for the inspectable GLM-5.2 reference forward."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 import sys
@@ -8,13 +13,9 @@ import sys
 import numpy as np
 import pytest
 
-
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_reference as ref  # noqa: E402
-
+from lab.operators import glm52_reference as ref  # noqa: E402
 
 def _tiny_config(*, layers: int, mlp_types: list[str], indexer_types: list[str]):
     from transformers import GlmMoeDsaConfig
@@ -55,7 +56,6 @@ def _tiny_config(*, layers: int, mlp_types: list[str], indexer_types: list[str])
     config._attn_implementation = "eager"
     return config
 
-
 def _official_state_with_separate_experts(model, config) -> dict[str, np.ndarray]:
     state = {name: value.detach().numpy() for name, value in model.state_dict().items()}
     intermediate = config.moe_intermediate_size
@@ -71,7 +71,6 @@ def _official_state_with_separate_experts(model, config) -> dict[str, np.ndarray
             state[f"{prefix}.{expert}.down_proj.weight"] = down[expert]
     return state
 
-
 def test_rmsnorm_accumulates_in_float32() -> None:
     x = np.array([[[3.0, 4.0]]], dtype=np.float16)
     weight = np.array([2.0, 0.5], dtype=np.float16)
@@ -79,7 +78,6 @@ def test_rmsnorm_accumulates_in_float32() -> None:
     expected = np.array([[[1.6970563, 0.56568545]]], dtype=np.float32)
     np.testing.assert_allclose(actual, expected, rtol=1e-6, atol=1e-6)
     assert actual.dtype == np.float32
-
 
 def test_interleaved_rope_returns_concatenated_components() -> None:
     positions = np.array([[0, 1]], dtype=np.int64)
@@ -90,7 +88,6 @@ def test_interleaved_rope_returns_concatenated_components() -> None:
     # returns [even components, odd components], not [x0,x1,x2,x3].
     np.testing.assert_array_equal(actual[0, 0, 0], [0.0, 2.0, 1.0, 3.0])
     assert not np.array_equal(actual[0, 0, 0], q[0, 0, 0])
-
 
 def test_router_corrects_selection_but_uses_raw_sigmoid_weights() -> None:
     hidden = np.zeros((1, 1, 2), dtype=np.float32)
@@ -111,7 +108,6 @@ def test_router_corrects_selection_but_uses_raw_sigmoid_weights() -> None:
     # mixture amplitudes.  Two equal selected weights normalize to 1.25 each.
     np.testing.assert_allclose(topk_weights, 1.25, rtol=0, atol=1e-7)
     np.testing.assert_allclose(topk_weights.sum(axis=-1), 2.5, rtol=0, atol=1e-7)
-
 
 def test_indexer_is_causal_and_cache_extends() -> None:
     rng = np.random.default_rng(11)
@@ -162,7 +158,6 @@ def test_indexer_is_causal_and_cache_extends() -> None:
     assert np.all(next_indices[0, 0] <= 3)
     assert np.all(next_indices[0, 1] <= 4)
 
-
 def test_canonical_pairs_remove_unsorted_slot_ambiguity() -> None:
     a = ref.canonical_topk_pairs(
         np.array([[[3, 1]]]), np.array([[[0.4, 0.6]]], dtype=np.float32)
@@ -171,7 +166,6 @@ def test_canonical_pairs_remove_unsorted_slot_ambiguity() -> None:
         np.array([[[1, 3]]]), np.array([[[0.6, 0.4]]], dtype=np.float32)
     )
     assert a == b
-
 
 def test_shared_indexshare_without_predecessor_fails_closed() -> None:
     # The guard is exercised before any shared-layer tensor access.
@@ -196,7 +190,6 @@ def test_shared_indexshare_without_predecessor_fails_closed() -> None:
             previous_topk=None,
         )
 
-
 def test_interleaved_rope_matches_pinned_transformers() -> None:
     torch = pytest.importorskip("torch")
     from transformers.models.glm_moe_dsa.modeling_glm_moe_dsa import (
@@ -217,7 +210,6 @@ def test_interleaved_rope_matches_pinned_transformers() -> None:
     )
     np.testing.assert_allclose(actual_q, expected_q.numpy(), rtol=1e-6, atol=1e-6)
     np.testing.assert_allclose(actual_k, expected_k.numpy(), rtol=1e-6, atol=1e-6)
-
 
 def test_router_matches_pinned_transformers_after_canonicalization() -> None:
     torch = pytest.importorskip("torch")
@@ -263,7 +255,6 @@ def test_router_matches_pinned_transformers_after_canonicalization() -> None:
             rtol=2e-6,
             atol=2e-6,
         )
-
 
 def test_indexer_indices_match_pinned_transformers() -> None:
     torch = pytest.importorskip("torch")
@@ -322,7 +313,6 @@ def test_indexer_indices_match_pinned_transformers() -> None:
     for actual_row, expected_row in zip(actual.reshape(-1, 2), expected.reshape(-1, 2)):
         np.testing.assert_array_equal(np.sort(actual_row), np.sort(expected_row))
 
-
 def test_full_dense_indexshare_logits_match_pinned_transformers() -> None:
     torch = pytest.importorskip("torch")
     from transformers import GlmMoeDsaForCausalLM
@@ -346,7 +336,6 @@ def test_full_dense_indexshare_logits_match_pinned_transformers() -> None:
         trace["layers"][1]["attention"]["topk_indices"],
     )
 
-
 def test_full_sparse_moe_logits_match_pinned_transformers() -> None:
     torch = pytest.importorskip("torch")
     from transformers import GlmMoeDsaForCausalLM
@@ -369,7 +358,6 @@ def test_full_sparse_moe_logits_match_pinned_transformers() -> None:
         rtol=2e-6,
         atol=2e-6,
     )
-
 
 def test_reference_prefill_and_tokenwise_cache_logits_match() -> None:
     torch = pytest.importorskip("torch")

@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.recomposition.independent_review.v1",
+  "laboratory": {
+    "verdict_upheld": true,
+    "lease_atomicity_preserved": true,
+    "fusion_really_historical": true,
+    "counterexample_sought": "none found -- no window where a lease is held and campaign state is inconsistent",
+    "loc_rise_justified": true,
+    "overstated_claims": [
+      "File count 113 -> 105 mixed yardsticks: the start counted py+sh, the end counted all files. On the same yardstick the reduction is smaller.",
+      "'Top-level modules to 12' describes the engine package. Laboratory top-level Python modules remain 43.",
+      "glm52_state is still UNCLASSIFIED at 5,148 after the lease came out. The residual Controller and ledger fusion was not resolved, only reduced."
+    ],
+    "honest_floor": 61457,
+    "note": "The correctness claims hold -- the TOCTOU guarantee survived the extraction and the fusion really was historical. The topology claims were measured generously."
+  },
+  "bridge": {
+    "verdict_upheld": false,
+    "floor_is_real": false,
+    "claimed_floor": 20426,
+    "honest_floor": 15148,
+    "available": 5376,
+    "lockstep_table_irreducible": false,
+    "finding": "The 20,426 figure is the sum of current adapters, serve, events and hide-fleet after measuring a 98-line mirror -- it is where the lane stopped, not a floor. The bridge_surface dual-source is hand-maintained lockstep with no crate dependency in either direction, so one side can generate the other.",
+    "must_not_delete_still_live": true
+  },
+  "significance": "Two results reviewed, one upheld and one overturned. The Bridge lane reported 'already near floor' and built nothing; a reviewer instructed to name what it would cut found 5,376 lines and a generative path the lane had dismissed. That is the second time in this arc an unreviewed acceptance proved wrong -- the first was the HIDE concatenation.",
+  "controller_note": "Both were accepted without adversarial review at the time. The pattern is now three for three: every unreviewed result in this campaign that was later attacked was found overstated."
+}

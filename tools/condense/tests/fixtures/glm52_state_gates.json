@@ -1,0 +1,47 @@
+{
+  "ASSEMBLE_ARTIFACT": {
+    "require_source_complete": true,
+    "require_tensor_complete": true,
+    "require_final_source_eviction": true,
+    "require_telegram_delivery": true,
+    "require_phone_status": false,
+    "required_phone_status_path": null,
+    "required_artifacts": {
+      "source_manifest": {
+        "path": "reports/GLM52_OFFICIAL_MANIFEST.json",
+        "expected_schema": "test.source_manifest.v1",
+        "validator_id": "campaign_artifact_v1"
+      }
+    },
+    "required_checklist_items": [
+      "source_stream_complete",
+      "tensor_coverage_complete"
+    ]
+  },
+  "COMPLETE": {
+    "require_source_complete": true,
+    "require_tensor_complete": true,
+    "require_final_source_eviction": true,
+    "require_telegram_delivery": true,
+    "require_phone_status": true,
+    "required_phone_status_path": "reports/GLM52_PHONE_STATUS.json",
+    "required_artifacts": {
+      "final_result": {
+        "path": "reports/GLM52_GRAVITY_FINAL.json",
+        "expected_schema": "test.final_result.v1",
+        "validator_id": "campaign_artifact_v1"
+      },
+      "gravity_audit": {
+        "path": "reports/GRAVITY_COMPLETENESS_AUDIT_GLM52_FINAL.json",
+        "expected_schema": "test.gravity_audit.v1",
+        "validator_id": "campaign_artifact_v1"
+      }
+    },
+    "required_checklist_items": [
+      "source_evicted",
+      "all_artifacts_sealed",
+      "phone_current",
+      "stop_conditions_met"
+    ]
+  }
+}

@@ -21,3 +21,5 @@ pub struct DraftControl {
     pub proposer: String,
     pub verify_greedy_lossless: bool,
 }
+
+

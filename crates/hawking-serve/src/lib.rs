@@ -1112,11 +1112,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
 #[cfg(test)]
 mod profile_lever_tests {
     use super::RuntimeProfile as RP;
-
     fn has(plan_keys: &[(&'static str, &'static str)], k: &str) -> bool {
         plan_keys.iter().any(|(kk, _)| *kk == k)
     }
-
     #[test]
     fn default_touches_nothing() {
         let p = RP::Default.lever_plan();
@@ -1125,7 +1123,6 @@ mod profile_lever_tests {
         assert_eq!(p.f16_kv, None);
         assert!(!p.concurrent_qkv);
     }
-
     #[test]
     fn fast_sets_full_bundle_no_f16kv() {
         let p = RP::Fast.lever_plan();
@@ -1142,7 +1139,6 @@ mod profile_lever_tests {
         assert!(p.concurrent_qkv);
         assert!(p.force_off.is_empty());
     }
-
     #[test]
     fn race_is_fast_plus_f16kv() {
         let p = RP::Race.lever_plan();
@@ -1151,18 +1147,13 @@ mod profile_lever_tests {
         assert!(p.concurrent_qkv);
         assert!(!has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"));
     }
-
     #[test]
     fn efficient_adds_energy_and_f16kv() {
         let p = RP::Efficient.lever_plan();
-        assert!(
-            has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"),
-            "efficient sets energy mode"
-        );
+ assert!( has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"), "efficient sets energy mode" );
         assert_eq!(p.f16_kv, Some(true), "efficient enables f16-KV");
         assert!(has(&p.set_if_unset, "HAWKING_QWEN_Q4K_PREDEC"));
     }
-
     #[test]
     fn exact_force_offs_every_quality_trade() {
         let p = RP::Exact.lever_plan();
@@ -1174,87 +1165,41 @@ mod profile_lever_tests {
             assert!(p.force_off.contains(&k), "exact must force-off {k}");
         }
         assert!(p.set_if_unset.is_empty(), "exact sets no quality-trade var");
-        assert_eq!(
-            p.f16_kv,
-            Some(false),
-            "exact leaves f16-KV off (bit-identity)"
-        );
+ assert_eq!( p.f16_kv, Some(false), "exact leaves f16-KV off (bit-identity)" );
         assert!(!p.concurrent_qkv);
     }
-
     #[test]
     fn contracts_are_nonempty_and_self_label() {
         for rp in [RP::Default, RP::Fast, RP::Race, RP::Efficient, RP::Exact] {
             let c = rp.contract();
-            assert!(
-                c.contains(rp.as_str()),
-                "contract for {rp} must name itself"
-            );
+ assert!( c.contains(rp.as_str()), "contract for {rp} must name itself" );
             assert!(c.len() > 20);
         }
     }
-
     #[test]
     fn from_str_roundtrips_all_known() {
         for s in ["default", "fast", "race", "efficient", "exact"] {
             assert_eq!(RP::from_str(s).unwrap().as_str(), s);
         }
-        assert!(
-            RP::from_str("m3-pro-18gb").is_none(),
-            "hardware string is not a runtime profile"
-        );
+ assert!( RP::from_str("m3-pro-18gb").is_none(), "hardware string is not a runtime profile" );
     }
-
-    /// Track 0/9 lock-in: the "fast is the CLI default" decision must keep
-    /// resolving an UNSET `--profile` to `Fast`. Validated GPU-side once
-    /// (~38-39 t/s middle variant); pin it on CPU so a refactor can't silently
-    /// flip the default back to the conservative bit-identical path.
     #[test]
     fn default_when_unset_is_fast() {
-        assert_eq!(
-            RP::default_when_unset(),
-            RP::Fast,
-            "unset --profile must resolve to fast (the shipped CLI default)"
-        );
+        assert_eq!(RP::default_when_unset(), RP::Fast);
     }
-
-    /// Track 0/9 lock-in: the UNSET-default contract is exactly
-    /// "fast bundle MINUS PREDEC_F16SCALES". i.e. the MIDDLE variant keeps the
-    /// 4 bit-identical-ish fast levers (Q4K LM-head, predec, vocab-prune,
-    /// Q4K FFN-down) but force-OFFs f16-scales (it failed quality_oracle
-    /// 0.792/11.46% @ e613dde). This pins both halves so neither can drift.
     #[test]
     fn unset_default_is_fast_minus_f16scales() {
         let bundle = RP::Fast.lever_plan().set_if_unset; // == fast_bundle()
         let force_off = RP::default_unset_force_off();
-
-        // (i) f16-scales is the one-and-only lever the unset default disables.
-        assert_eq!(
-            force_off,
-            &["HAWKING_QWEN_PREDEC_F16SCALES"],
-            "unset default must force-off exactly PREDEC_F16SCALES"
-        );
-
-        // (ii) the 4 kept fast levers remain in the bundle (so unset still
-        //      runs the fast path minus f16-scales, not the conservative path).
+        assert_eq!(force_off, &["HAWKING_QWEN_PREDEC_F16SCALES"]);
         for k in [
             "HAWKING_QWEN_Q4K_LMHEAD",
             "HAWKING_QWEN_Q4K_PREDEC",
             "HAWKING_QWEN_VOCAB_PRUNE",
             "HAWKING_QWEN_FFN_DOWN_Q4K",
         ] {
-            assert!(
-                has(&bundle, k),
-                "fast bundle must keep {k} (a kept lever under the unset default)"
-            );
+ assert!( has(&bundle, k), "fast bundle must keep {k} (a kept lever under the unset default)" );
         }
-
-        // (iii) f16-scales IS in the full fast bundle (so the force-off is what
-        //       removes it for the unset default — not its absence). This is the
-        //       load-bearing invariant: unset = fast bundle XOR-removed of f16s.
-        assert!(
-            has(&bundle, force_off[0]),
-            "the force-off lever must exist in the fast bundle (else force-off is a no-op)"
-        );
+        assert!(has(&bundle, force_off[0]));
     }
 }

@@ -547,7 +547,6 @@ mod tests {
     };
     use crate::kg::KnowledgeGraph;
     use crate::runtime_client::stub_runtime;
-
     fn mk_adapter() -> Arc<InMemorySourceAdapter> {
         let adapter = InMemorySourceAdapter::new("memory", SourceType::PdfLocal);
         let doc1 = structured_doc_from_text(
@@ -582,29 +581,21 @@ mod tests {
         adapter.insert(doc3);
         Arc::new(adapter)
     }
-
     #[tokio::test]
     async fn pipeline_runs_full_fsm_to_completion() {
         let graph = Arc::new(PetKnowledgeGraph::new());
         let mut pipeline = ResearchPipeline::in_memory(graph.clone());
         pipeline.add_adapter(mk_adapter());
         let run = pipeline.run_once("KV cache", 4).await.unwrap();
-
         assert_eq!(run.state, ResearchState::Complete);
         assert!(run.docs_read >= 2);
         assert!(!run.claims.is_empty());
         assert!(!run.sub_questions.is_empty());
         assert!(run.report.is_some());
-        // The two docs corroborate the same claim → at least one supported.
-        assert!(run
-            .verifications
-            .iter()
-            .any(|v| v.status == crate::verify::ClaimStatus::Supported));
-        // Findings were minted and persisted as a Report node.
+ assert!(run .verifications .iter() .any(|v| v.status == crate::verify::ClaimStatus::Supported));
         assert!(!run.findings.is_empty());
         assert!(!graph.nodes_by_kind(NodeKind::Note).is_empty());
     }
-
     #[tokio::test]
     async fn triage_dedups_identical_content() {
         let graph = Arc::new(PetKnowledgeGraph::new());
@@ -625,20 +616,13 @@ mod tests {
         ]);
         assert_eq!(out.len(), 1);
     }
-
-    // Regression: the integrated pipeline path must pin EXACTLY the bytes a
-    // claim is content-addressed over, so an untampered citation re-verifies
-    // Intact and only a real mutation reports Tampered (no false positive).
     #[tokio::test]
     async fn pipeline_citation_reverifies_intact_then_tampered() {
         use crate::verify::{AdversarialVerifier, CitationCheck};
         use hide_core::persistence::FileBlobStore;
-
-        // A real on-disk CAS so we can faithfully mutate the pinned evidence.
         let dir = std::env::temp_dir().join(format!("hawking_cas_{}", now_ms()));
         let store = FileBlobStore::open(&dir).unwrap();
         let cas: DynBlobStore = Arc::new(store);
-
         let graph = Arc::new(PetKnowledgeGraph::new());
         let mut pipeline = ResearchPipeline::new(
             graph,
@@ -654,48 +638,29 @@ mod tests {
         assert_eq!(run.state, ResearchState::Complete);
         assert!(run.docs_read >= 2, "expected docs to be fetched");
         assert!(!run.claims.is_empty());
-
-        // Every claim that was pinned must re-verify Intact through the SAME path
-        // production uses — not a single one should be a false-positive Tampered.
         let mut checked = 0usize;
         for claim in &run.claims {
             if claim.provenance.evidence_blob.is_none() {
                 continue;
             }
             let v = AdversarialVerifier::verify_with_cas(claim, &run.claims, &cas).unwrap();
-            assert_eq!(
-                v.citation_check,
-                CitationCheck::Intact,
-                "untampered claim {} falsely flagged: {:?}",
-                claim.id,
-                v.citation_check
-            );
+            assert_eq!(v.citation_check, CitationCheck::Intact);
             checked += 1;
         }
-        assert!(
-            checked > 0,
-            "expected at least one pinned claim to re-verify"
-        );
-
-        // Now deliberately mutate the on-disk evidence bytes of one claim's blob
-        // and confirm the re-check flips to Tampered (a REAL change is caught).
+ assert!( checked > 0, "expected at least one pinned claim to re-verify" );
         let target = run
             .claims
             .iter()
             .find(|c| c.provenance.evidence_blob.is_some())
             .unwrap();
         let blob = target.provenance.evidence_blob.clone().unwrap();
-        // FileBlobStore layout: <root>/<hash[..2]>/<hash>.
         let path = dir.join(&blob.hash[..2]).join(&blob.hash);
         assert!(path.exists(), "evidence blob must be on disk");
         std::fs::write(&path, b"tampered-evidence").unwrap();
-
         let vt = AdversarialVerifier::verify_with_cas(target, &run.claims, &cas).unwrap();
         assert_eq!(vt.citation_check, CitationCheck::Tampered);
-
         let _ = std::fs::remove_dir_all(&dir);
     }
-
     #[tokio::test]
     async fn synthesize_reports_insufficient_evidence_when_empty() {
         let graph = Arc::new(PetKnowledgeGraph::new());

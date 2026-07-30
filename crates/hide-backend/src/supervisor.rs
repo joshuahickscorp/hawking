@@ -623,24 +623,15 @@ fn pid_is_alive(pid: u32) -> bool {
 
 #[cfg(test)]
 pub(crate) mod testkit {
-    //! A fake in-process health server + launcher for supervisor tests. The
-    //! "runtime" is a `tokio` `TcpListener` answering `200 OK` on `/healthz`
-    //! (and a generate/embed stub the ModelProvider tests reuse) — no model, no
-    //! binary.
     use super::*;
     use std::sync::atomic::{AtomicBool, Ordering};
-
-    /// A controllable fake runtime: a TCP listener answering minimal HTTP. The
-    /// `healthy` flag flips Ready↔Degraded; `crashed` makes `is_alive` false.
     pub struct FakeRuntime {
         pub addr: String,
         pub healthy: Arc<AtomicBool>,
         pub crashed: Arc<AtomicBool>,
         shutdown: Arc<AtomicBool>,
     }
-
     impl FakeRuntime {
-        /// Bind an ephemeral port and serve until `shutdown` is set.
         pub async fn spawn() -> Self {
             let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
             let addr = listener.local_addr().unwrap().to_string();
@@ -687,26 +678,19 @@ pub(crate) mod testkit {
                 shutdown,
             }
         }
-
         pub fn base_url(&self) -> String {
             format!("http://{}", self.addr)
         }
-
         pub fn set_healthy(&self, v: bool) {
             self.healthy.store(v, Ordering::SeqCst);
         }
-
         pub fn set_crashed(&self, v: bool) {
             self.crashed.store(v, Ordering::SeqCst);
         }
-
         pub fn stop(&self) {
             self.shutdown.store(true, Ordering::SeqCst);
         }
     }
-
-    /// Minimal request router for the fake: `/healthz`, `/v1/chat/completions`,
-    /// `/v1/embeddings`, `/v1/hawking/generate`.
     fn serve_fake(req: &str, healthy: bool) -> String {
         let first = req.lines().next().unwrap_or_default();
         if first.contains("/healthz") {
@@ -729,7 +713,6 @@ pub(crate) mod testkit {
             .to_string();
         }
         if first.contains("/v1/hawking/generate") {
-            // Native non-stream JSON-full shape.
             return serde_json::json!({
                 "text": "fake generate",
                 "stats": { "input_tokens": 1, "output_tokens": 2, "dec_tps": 42.0 }
@@ -738,15 +721,11 @@ pub(crate) mod testkit {
         }
         "{}".to_string()
     }
-
-    /// A launcher backed by a [`FakeRuntime`]. `launch` returns a child wired to
-    /// the fake's `crashed` flag and the fake's `/healthz` URL.
     pub struct FakeLauncher {
         pub runtime: Arc<FakeRuntime>,
         pub fail_launch: Arc<AtomicBool>,
         client: reqwest::Client,
     }
-
     impl FakeLauncher {
         pub fn new(runtime: Arc<FakeRuntime>) -> Self {
             Self {
@@ -759,11 +738,9 @@ pub(crate) mod testkit {
             }
         }
     }
-
     struct FakeChild {
         crashed: Arc<AtomicBool>,
     }
-
     #[async_trait::async_trait]
     impl RuntimeChild for FakeChild {
         fn pid(&self) -> Option<u32> {
@@ -774,7 +751,6 @@ pub(crate) mod testkit {
         }
         async fn terminate(&self) {}
     }
-
     #[async_trait::async_trait]
     impl RuntimeLauncher for FakeLauncher {
         async fn launch(
@@ -791,7 +767,6 @@ pub(crate) mod testkit {
                 format!("{}/healthz", self.runtime.base_url()),
             ))
         }
-
         async fn poll_health(&self, url: &str) -> Result<bool, String> {
             match self.client.get(url).send().await {
                 Ok(resp) => Ok(resp.status().is_success()),
@@ -805,7 +780,6 @@ pub(crate) mod testkit {
 mod tests {
     use super::testkit::{FakeLauncher, FakeRuntime};
     use super::*;
-
     fn test_config() -> SupervisorConfig {
         SupervisorConfig {
             spec: ProcessSpec {
@@ -825,12 +799,10 @@ mod tests {
             lock_path: None,
         }
     }
-
     #[test]
     fn for_hawking_serve_honors_bin_and_boot_timeout_env() {
         let dir = std::env::temp_dir().join(format!("hide_sup_cfg_{}", now_ms()));
         let _ = std::fs::create_dir_all(&dir);
-        // Isolate from ambient env.
         let prev_bin = std::env::var("HIDE_HAWKING_BIN").ok();
         let prev_to = std::env::var("HIDE_MODEL_BOOT_TIMEOUT_SECS").ok();
         std::env::set_var("HIDE_HAWKING_BIN", "/tmp/custom-hawking-bin");
@@ -845,7 +817,6 @@ mod tests {
         assert_eq!(cfg.spec.argv[1], "serve");
         assert!(cfg.spec.argv.iter().any(|a| a == "--weights"));
         assert_eq!(cfg.boot_timeout, Duration::from_secs(123));
-        // Restore.
         match prev_bin {
             Some(v) => std::env::set_var("HIDE_HAWKING_BIN", v),
             None => std::env::remove_var("HIDE_HAWKING_BIN"),
@@ -856,7 +827,6 @@ mod tests {
         }
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[tokio::test]
     async fn boot_reaches_ready_against_fake() {
         let rt = Arc::new(FakeRuntime::spawn().await);
@@ -864,40 +834,30 @@ mod tests {
         assert_eq!(sup.state(), RuntimeSupervisorState::Down);
         sup.boot().await.unwrap();
         assert_eq!(sup.state(), RuntimeSupervisorState::Ready);
-        // base_url derives cleanly from the health URL.
         assert_eq!(sup.base_url(), Some(rt.base_url()));
         sup.shutdown().await;
         assert_eq!(sup.state(), RuntimeSupervisorState::Down);
         rt.stop();
     }
-
     #[tokio::test]
     async fn unhealthy_poll_degrades_then_restarts_to_ready() {
         let rt = Arc::new(FakeRuntime::spawn().await);
         let sup = RuntimeSupervisor::new(test_config(), Arc::new(FakeLauncher::new(rt.clone())));
         sup.boot().await.unwrap();
-        // Flip unhealthy: supervise_once degrades + restarts. The relaunch's
-        // immediate probe sees the (still-unhealthy) server, so it stays Booting.
         rt.set_healthy(false);
         let state = sup.supervise_once().await;
-        assert!(matches!(
-            state,
-            RuntimeSupervisorState::Booting | RuntimeSupervisorState::Degraded
-        ));
-        // Recover: a healthy poll returns to Ready.
+ assert!(matches!( state, RuntimeSupervisorState::Booting | RuntimeSupervisorState::Degraded ));
         rt.set_healthy(true);
         let state = sup.supervise_once().await;
         assert_eq!(state, RuntimeSupervisorState::Ready);
         rt.stop();
     }
-
     #[tokio::test]
     async fn restart_cap_drives_to_failed() {
         let rt = Arc::new(FakeRuntime::spawn().await);
         let sup = RuntimeSupervisor::new(test_config(), Arc::new(FakeLauncher::new(rt.clone())));
         sup.boot().await.unwrap();
         rt.set_healthy(false);
-        // window cap = 2: two restarts allowed, the third trips Failed.
         let _ = sup.supervise_once().await; // restart #1
         let _ = sup.supervise_once().await; // restart #2
         let state = sup.supervise_once().await; // cap → Failed
@@ -905,25 +865,17 @@ mod tests {
         assert!(sup.status().last_error.unwrap().contains("restart cap"));
         rt.stop();
     }
-
     #[tokio::test]
     async fn crashed_child_while_healthy_triggers_restart() {
         let rt = Arc::new(FakeRuntime::spawn().await);
         let sup = RuntimeSupervisor::new(test_config(), Arc::new(FakeLauncher::new(rt.clone())));
         sup.boot().await.unwrap();
-        // Health stays green but the child handle reports dead → restart path.
         rt.set_crashed(true);
         let state = sup.supervise_once().await;
-        // The relaunched child is alive again (a fresh FakeChild), so the
-        // post-restart immediate probe flips it back to Ready.
-        assert!(matches!(
-            state,
-            RuntimeSupervisorState::Ready | RuntimeSupervisorState::Booting
-        ));
+ assert!(matches!( state, RuntimeSupervisorState::Ready | RuntimeSupervisorState::Booting ));
         assert!(sup.status().restarts >= 1);
         rt.stop();
     }
-
     #[tokio::test]
     async fn launch_failure_is_failed_state() {
         let rt = Arc::new(FakeRuntime::spawn().await);
@@ -937,39 +889,27 @@ mod tests {
         assert_eq!(sup.state(), RuntimeSupervisorState::Failed);
         rt.stop();
     }
-
-    /// Pick a pid that is (almost certainly) not alive. We probe upward until
-    /// `pid_is_alive` reports false, so the test is robust regardless of which
-    /// pids happen to be running.
     fn dead_pid() -> u32 {
         for pid in (90_000u32..=100_000).rev() {
             if !pid_is_alive(pid) {
                 return pid;
             }
         }
-        // Fallback: pid 0 is reclaimable by construction.
         0
     }
-
     #[test]
     fn pid_is_alive_for_self_dead_for_bogus() {
-        // Our own pid is unmistakably alive.
         assert!(pid_is_alive(std::process::id()));
-        // A pid we just confirmed has no process must read dead.
         assert!(!pid_is_alive(dead_pid()));
     }
-
     #[tokio::test]
     async fn live_lock_is_not_stolen_but_stale_lock_is_reclaimed() {
         let dir = std::env::temp_dir().join(format!("hide_sup_steal_{}", now_ms()));
         std::fs::create_dir_all(&dir).unwrap();
         let lock = dir.join("runtime.lock");
-
         let rt = Arc::new(FakeRuntime::spawn().await);
         let mut cfg = test_config();
         cfg.lock_path = Some(lock.clone());
-
-        // 1) A lock stamped with the *current* (alive) pid must NOT be stolen.
         std::fs::write(
             &lock,
             serde_json::json!({
@@ -982,16 +922,10 @@ mod tests {
         .unwrap();
         let sup = RuntimeSupervisor::new(cfg.clone(), Arc::new(FakeLauncher::new(rt.clone())));
         let err = sup.boot().await.unwrap_err();
-        assert!(
-            err.contains("held by live process"),
-            "boot should refuse a live lock, got: {err}"
-        );
+ assert!( err.contains("held by live process"), "boot should refuse a live lock, got: {err}" );
         assert_eq!(sup.state(), RuntimeSupervisorState::Down);
-        // The live host's lock was left untouched (still names the live pid).
         let body = std::fs::read_to_string(&lock).unwrap();
         assert!(body.contains(&std::process::id().to_string()));
-
-        // 2) A lock stamped with a dead/bogus pid MUST be reclaimed and booted.
         std::fs::write(
             &lock,
             serde_json::json!({
@@ -1005,15 +939,12 @@ mod tests {
         let sup2 = RuntimeSupervisor::new(cfg, Arc::new(FakeLauncher::new(rt.clone())));
         sup2.boot().await.unwrap();
         assert_eq!(sup2.state(), RuntimeSupervisorState::Ready);
-        // The reclaimed lock is now ours — stamped with our own pid.
         let body = std::fs::read_to_string(&lock).unwrap();
         assert!(body.contains(&std::process::id().to_string()));
-
         sup2.shutdown().await;
         let _ = std::fs::remove_dir_all(dir);
         rt.stop();
     }
-
     #[tokio::test]
     async fn runtime_lock_is_written_and_released() {
         let dir = std::env::temp_dir().join(format!("hide_sup_lock_{}", now_ms()));
@@ -1026,10 +957,7 @@ mod tests {
         sup.boot().await.unwrap();
         assert!(lock.exists(), "runtime.lock should exist while Ready");
         sup.shutdown().await;
-        assert!(
-            !lock.exists(),
-            "runtime.lock should be released on shutdown"
-        );
+ assert!( !lock.exists(), "runtime.lock should be released on shutdown" );
         let _ = std::fs::remove_dir_all(dir);
         rt.stop();
     }

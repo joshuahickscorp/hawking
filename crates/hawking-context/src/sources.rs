@@ -491,7 +491,6 @@ mod tests {
     use hawking_index::InMemoryCodeIndex;
     use hide_core::ids::ModelId;
     use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
-
     fn model() -> ModelDescriptor {
         ModelDescriptor {
             id: ModelId::new(),
@@ -502,7 +501,6 @@ mod tests {
             footprint_mb: 1,
         }
     }
-
     #[tokio::test]
     async fn code_index_source_feeds_compiler() {
         let index = Arc::new(InMemoryCodeIndex::default());
@@ -523,11 +521,9 @@ mod tests {
             .unwrap();
         assert!(compiled.prompt.contains("context compiler"));
         assert!(!compiled.manifest.retained.is_empty());
-        // Provenance is workspace trust with a real path, not blanket-trusted.
         let span = &compiled.manifest.retained[0];
         assert_eq!(span.provenance.trust, TrustLevel::Workspace);
     }
-
     #[tokio::test]
     async fn memory_source_propagates_provenance_confidence() {
         let store = Arc::new(InMemoryMemoryStore::default());
@@ -544,7 +540,6 @@ mod tests {
         );
         rec.importance = 0.8;
         store.put(rec).await.unwrap();
-
         let mut compiler = ContextCompiler::new();
         compiler.add_source(MemoryContextSource::new(store, 5));
         let compiled = compiler
@@ -561,17 +556,14 @@ mod tests {
             .iter()
             .find(|s| matches!(s.source, ContextSourceKind::Memory))
             .expect("memory span retained");
-        // Confidence flowed through (not overwritten to 1.0).
         assert!((mem_span.provenance.confidence - 0.7).abs() < 1e-6);
         assert_eq!(mem_span.provenance.trust, TrustLevel::ToolOutput);
     }
-
     #[tokio::test]
     async fn classed_memory_compiler_retrieves_multiple_classes_independent_budgets() {
         use crate::memory_classes::{
             ClassMemoryDraft, MemoryClass, ProjectWriteCap, UserWriteCap, VerifierWriteCap,
         };
-
         let sys = Arc::new(ClassedMemorySystem::open_in_memory("ws-compile").unwrap());
         sys.write_semantic_project(
             &ProjectWriteCap::mint(),
@@ -598,7 +590,6 @@ mod tests {
                 .with_run("run-compile-test"),
         )
         .unwrap();
-
         let budgets = ClassBudgets {
             working: 32,
             episodic: 32,
@@ -617,34 +608,16 @@ mod tests {
             })
             .await
             .unwrap();
-
         let mem_spans: Vec<_> = compiled
             .manifest
             .retained
             .iter()
             .filter(|s| matches!(s.source, ContextSourceKind::Memory))
             .collect();
-        assert!(
-            mem_spans.len() >= 2,
-            "compile must retain spans from more than one class; got {:?}",
-            mem_spans
-                .iter()
-                .map(|s| s.title.as_str())
-                .collect::<Vec<_>>()
-        );
+        assert!(mem_spans.len() >= 2);
         let titles: Vec<&str> = mem_spans.iter().map(|s| s.title.as_str()).collect();
-        assert!(
-            titles.iter().any(|t| t.contains("semantic_project")),
-            "semantic_project missing: {titles:?}"
-        );
-        assert!(
-            titles
-                .iter()
-                .any(|t| t.contains("user") || t.contains("verification")),
-            "expected user or verification class: {titles:?}"
-        );
-
-        // Independent budgets recorded on the system after retrieve.
+        assert!(titles.iter().any(|t| t.contains("semantic_project")));
+        assert!(titles .iter() .any(|t| t.contains("user") || t.contains("verification")));
         let ret = sys.last_retrieval().expect("retrieval recorded");
         assert_eq!(ret.slices.len(), 6);
         let sem = ret.slice(MemoryClass::SemanticProject).unwrap();
@@ -654,7 +627,6 @@ mod tests {
         assert!(sem.budget_tokens != ver.budget_tokens);
         assert!(sem.used_tokens <= sem.budget_tokens);
         assert!(ver.used_tokens <= ver.budget_tokens);
-        // Meter-ready explanations exist for each class.
         let lines = ret.budget_explanations();
         assert!(lines.iter().any(|l| l.contains("memory_class.semantic_project")));
         assert!(lines.iter().any(|l| l.contains("memory_class.verification")));

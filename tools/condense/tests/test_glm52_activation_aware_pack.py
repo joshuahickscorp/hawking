@@ -1,14 +1,11 @@
 #!/usr/bin/env python3.12
-"""Activation-aware pack: byte accounting, provenance, disk floor, determinism.
-
-These pin the non-negotiable contracts of the program:
-
-  * sum(components) == total (exact complete-byte accounting)
-  * every activation-aware tensor carries basis provenance
-  * the disk floor halts rather than overruns
-  * allocation is deterministic for the same inputs
-"""
+"""These pin the non-negotiable contracts of the program:"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 import sys
@@ -18,11 +15,8 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_activation_aware_pack as aap  # noqa: E402
-
+from lab.operators import glm52_activation_aware_pack as aap  # noqa: E402
 
 def _synthetic_basis(layer: int = 10, max_rank: int = 32, n_act: int = 512):
     rng = np.random.default_rng(0xA17A7E ^ layer)
@@ -50,7 +44,6 @@ def _synthetic_basis(layer: int = 10, max_rank: int = 32, n_act: int = 512):
         X_fit_mean=mu.astype(np.float32),
     )
 
-
 def _measured_bundle():
     rng = np.random.default_rng(1)
     basis = _synthetic_basis()
@@ -72,7 +65,6 @@ def _measured_bundle():
             name, W, "BF16", basis, ranks, bill_basis_per_tensor=False,
         ).as_dict())
     return rows
-
 
 def test_byte_accounting_reconciles_on_payload():
     rng = np.random.default_rng(0)
@@ -102,7 +94,6 @@ def test_byte_accounting_reconciles_on_payload():
     assert doc["complete_bpw_exact"] == f"{bpw.numerator}/{bpw.denominator}"
     assert doc["itemization_reconciles"] is True
 
-
 def test_basis_provenance_present_on_measured_and_allocated_tensors():
     rows = _measured_bundle()
     aa = [r for r in rows if r["disposition"] == "activation_aware"]
@@ -125,7 +116,6 @@ def test_basis_provenance_present_on_measured_and_allocated_tensors():
     assert alloc["byte_ledger"]["itemization_reconciles"]
     assert sum(alloc["byte_ledger"]["component_bytes"].values()) == alloc["total_bytes"]
 
-
 def test_disk_floor_halts_rather_than_overruns():
     free = aap.free_bytes()
     with pytest.raises(aap.DiskFloorError):
@@ -135,7 +125,6 @@ def test_disk_floor_halts_rather_than_overruns():
         aap.assert_disk_floor(extra_bytes=free, floor=1)
     # Under a zero floor the check is a pure free-space probe and must not raise.
     assert aap.assert_disk_floor(extra_bytes=0, floor=0) >= 0
-
 
 def test_allocation_is_deterministic_for_same_inputs():
     rows = _measured_bundle()
@@ -155,7 +144,6 @@ def test_allocation_is_deterministic_for_same_inputs():
         (x["name"], x["rank"], x["disposition"]) for x in a3["allocations"]
     ] == ranks1
 
-
 def test_nearest_basis_layer_is_deterministic():
     avail = [0, 10, 11, 16, 22, 76]
     assert aap.nearest_basis_layer(10, avail) == 10
@@ -165,10 +153,8 @@ def test_nearest_basis_layer_is_deterministic():
     # Tie: equal distance prefers the lower index.
     assert aap.nearest_basis_layer(5, [0, 10]) == 0
 
-
 def test_selftest_entry_point():
     assert aap.selftest() == 0
-
 
 def test_pass_through_1d_and_output_side_projection():
     rng = np.random.default_rng(2)
@@ -192,19 +178,8 @@ def test_pass_through_1d_and_output_side_projection():
     assert down.side == "output"
     assert down.basis_provenance is not None
 
-
 def test_parallel_measure_emits_in_shard_order_not_completion_order():
-    """Allocation must not depend on which worker finished first.
-
-    This is the real risk in parallelising the measure phase: workers complete out of
-    order, and if results were appended as they landed, the measurement document -- and
-    therefore the global allocation and the artifact -- would differ run to run for the
-    same inputs. Reproducibility is not negotiable here, so emission iterates the requested
-    shard list rather than a completion queue.
-
-    Simulated by making later shards finish first, which is exactly what varying tensor
-    counts and basis-cache hits produce in practice.
-    """
+    """Allocation must not depend on which worker finished first. This is the real risk in parallelising th"""
     import glm52_activation_aware_pack as m
 
     shards = [1, 2, 3, 4]
@@ -221,14 +196,8 @@ def test_parallel_measure_emits_in_shard_order_not_completion_order():
     assert [r["shard"] for r in per_shard] == shards
     assert measurements == [f"tensor-of-{n}" for n in shards]
 
-
 def test_shared_basis_cache_builds_once_under_contention():
-    """Two workers wanting the same layer must build its basis once.
-
-    Building one is an eigendecomposition over a 4096x6144 capsule. Duplicating that per
-    worker would be correct and wasteful, and the per-layer lock exists to prevent it while
-    still letting different layers proceed in parallel.
-    """
+    """Two workers wanting the same layer must build its basis once. Building one is an eigendecomposition """
     import threading
     import glm52_activation_aware_pack as m
 
@@ -252,13 +221,8 @@ def test_shared_basis_cache_builds_once_under_contention():
     assert len(builds) == 1, f"basis built {len(builds)} times under contention"
     assert len({id(o) for o in out}) == 1, "workers received different basis objects"
 
-
 def test_prefetcher_preserves_order_under_out_of_order_completion(tmp_path):
-    """Pack order must follow the shard list, not which download finished first.
-
-    Same contract as the measure-phase emission fix: early completion of a later shard
-    must not deliver it early, or the receipt stops being reproducible.
-    """
+    """Pack order must follow the shard list, not which download finished first. Same contract as the measu"""
     import threading
     import time
     from pathlib import Path
@@ -302,7 +266,6 @@ def test_prefetcher_preserves_order_under_out_of_order_completion(tmp_path):
     assert got == [f"model-{n:05d}-of-00282.safetensors" for n in shards]
     assert pref.peak_resident <= 4
     assert peak <= 4, f"concurrent ensure calls peaked at {peak}"
-
 
 def test_prefetcher_residency_bounded_by_workers(tmp_path):
     """Residency must stay bounded by N and not grow with progress."""
@@ -351,7 +314,6 @@ def test_prefetcher_residency_bounded_by_workers(tmp_path):
         f"occupancy peaked at {pref.peak_resident} > {workers}"
     )
 
-
 def test_prefetcher_failed_shard_does_not_wedge_siblings(tmp_path):
     """A failed fetch must name its shard and let other in-flight fetches finish."""
     import time
@@ -393,13 +355,8 @@ def test_prefetcher_failed_shard_does_not_wedge_siblings(tmp_path):
     assert 12 in finished and 13 in finished
     assert 11 not in finished
 
-
 def test_ensure_shard_floor_accounts_for_concurrent_reservations(tmp_path, monkeypatch):
-    """N concurrent admissions must reserve N bodies, not one.
-
-    Two threads each needing a body of size B against free = floor + B + 1 must not
-    both pass: that is exactly the overrun that filled the disk once already.
-    """
+    """N concurrent admissions must reserve N bodies, not one. Two threads each needing a body of size B ag"""
     import threading
     import glm52_activation_aware_pack as m
 

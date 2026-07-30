@@ -154,7 +154,6 @@ impl EmbeddingClient for HashingEmbeddingClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[tokio::test]
     async fn hashing_embeddings_make_similar_text_closer() {
         let c = HashingEmbeddingClient::default();
@@ -172,7 +171,6 @@ mod tests {
         assert!(s_near > s_far, "near={s_near} far={s_far}");
         assert!(s_near > 0.0);
     }
-
     #[test]
     fn cosine_handles_degenerate() {
         assert_eq!(cosine(&[], &[]), 0.0);

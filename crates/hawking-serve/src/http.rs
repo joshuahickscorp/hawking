@@ -1379,10 +1379,6 @@ async fn embeddings(State(s): State<AppState>, body: Bytes) -> Response {
 #[cfg(test)]
 mod b1_roundtrip_tests {
     use super::*;
-
-    // B1: the standard OpenAI tools round-trip must PARSE. Before the fix, an assistant
-    // turn with content:null + tool_calls, and a role:tool result, both 400-ed
-    // ("invalid type: null, expected a string" / "missing field content").
     #[test]
     fn openai_tool_roundtrip_turn_two_parses() {
         let body = br#"{
@@ -1399,26 +1395,19 @@ mod b1_roundtrip_tests {
         }"#;
         let req: ChatReq = serde_json::from_slice(body).expect("turn-2 round-trip must parse");
         assert_eq!(req.messages.len(), 3);
-        // assistant content is null -> None; tool_calls carried through
         assert!(req.messages[1].content.is_none());
         assert!(req.messages[1].tool_calls.as_ref().unwrap().len() == 1);
-        // tool result carries its id and content
         assert_eq!(req.messages[2].role, "tool");
         assert_eq!(req.messages[2].tool_call_id.as_deref(), Some("call_1"));
     }
-
     #[test]
     fn omitted_content_parses() {
-        // A role:tool message may omit content entirely.
         let body = br#"{"messages":[{"role":"assistant","tool_calls":[]}]}"#;
         let req: ChatReq = serde_json::from_slice(body).expect("omitted content must parse");
         assert!(req.messages[0].content.is_none());
     }
-
     #[test]
     fn tool_interaction_is_rendered_not_dropped() {
-        // The prior tool call + result must appear in the prompt so the model sees the
-        // interaction on the next turn (fixing the drop, not just the 400).
         let msgs = vec![
             ChatMessage::new("user", "read foo.rs".into()),
             ChatMessage {
@@ -1440,26 +1429,10 @@ mod b1_roundtrip_tests {
             },
         ];
         let prompt = render_chat_qwen2(&msgs);
-        assert!(
-            prompt.contains("<tool_call>"),
-            "assistant tool_call must render: {prompt}"
-        );
-        assert!(
-            prompt.contains("fs.read"),
-            "tool name must render: {prompt}"
-        );
-        assert!(
-            prompt.contains("<tool_response>"),
-            "tool result must render: {prompt}"
-        );
-        assert!(
-            prompt.contains("fn foo() {}"),
-            "tool output must render: {prompt}"
-        );
-        // tool role maps to a user turn tag in the Qwen template
-        assert!(
-            !prompt.contains("<|im_start|>tool"),
-            "tool role tag should map to user"
-        );
+ assert!( prompt.contains("<tool_call>"), "assistant tool_call must render: {prompt}" );
+ assert!( prompt.contains("fs.read"), "tool name must render: {prompt}" );
+ assert!( prompt.contains("<tool_response>"), "tool result must render: {prompt}" );
+ assert!( prompt.contains("fn foo() {}"), "tool output must render: {prompt}" );
+ assert!( !prompt.contains("<|im_start|>tool"), "tool role tag should map to user" );
     }
 }

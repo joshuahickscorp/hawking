@@ -210,12 +210,10 @@ mod tests {
     use super::*;
     use hide_core::event::{Event, InMemoryEventLog};
     use std::sync::Arc;
-
     fn log_and_session() -> (DynEventLog, SessionId) {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         (log, SessionId::new())
     }
-
     async fn kinds(log: &DynEventLog, session: &SessionId) -> Vec<String> {
         log.scan(Some(session.clone()), None, None)
             .await
@@ -224,7 +222,6 @@ mod tests {
             .map(|e: Event| e.kind)
             .collect()
     }
-
     #[tokio::test]
     async fn flush_makes_pending_items_durable() {
         let (log, session) = log_and_session();
@@ -242,7 +239,6 @@ mod tests {
         let k = kinds(&log, &session).await;
         assert_eq!(k, vec!["item.a", "item.b"], "items are durable and ordered");
     }
-
     #[tokio::test]
     async fn discard_does_not_flush_lazy_items() {
         let (log, session) = log_and_session();
@@ -254,36 +250,25 @@ mod tests {
         assert!(thread.is_closed(), "discard closes the writer");
         let k = kinds(&log, &session).await;
         assert!(k.is_empty(), "a discarded thread writes NOTHING to the log");
-        // Append after close is rejected.
-        assert!(thread
-            .append_item(NewEvent::system(session.clone(), "item.b", json!({})))
-            .is_err());
+ assert!(thread .append_item(NewEvent::system(session.clone(), "item.b", json!({}))) .is_err());
     }
-
     #[tokio::test]
     async fn persist_writes_a_marker_that_flush_does_not() {
         let (log, session) = log_and_session();
-        // flush: items only, no persist marker.
         let mut a = LiveThread::open(session.clone(), log.clone());
         a.append_item(NewEvent::system(session.clone(), "item.a", json!({})))
             .unwrap();
         a.flush().await.unwrap();
         let after_flush = kinds(&log, &session).await;
         assert!(!after_flush.iter().any(|k| k == THREAD_PERSISTED_KIND));
-
-        // persist: materializes the lazy marker AND flushes.
         let mut b = LiveThread::open(session.clone(), log.clone());
         b.append_item(NewEvent::system(session.clone(), "item.b", json!({})))
             .unwrap();
         b.persist().await.unwrap();
         let after_persist = kinds(&log, &session).await;
-        assert!(
-            after_persist.iter().any(|k| k == THREAD_PERSISTED_KIND),
-            "persist materializes the lazy derived state as a durable marker"
-        );
+        assert!(after_persist.iter().any(|k| k == THREAD_PERSISTED_KIND));
         assert!(after_persist.iter().any(|k| k == "item.b"));
     }
-
     #[tokio::test]
     async fn shutdown_flushes_then_closes() {
         let (log, session) = log_and_session();
@@ -296,7 +281,6 @@ mod tests {
         assert!(thread.is_closed());
         assert_eq!(kinds(&log, &session).await, vec!["item.a"]);
     }
-
     #[tokio::test]
     async fn init_guard_discards_on_early_drop() {
         let (log, session) = log_and_session();
@@ -307,16 +291,10 @@ mod tests {
                 .unwrap()
                 .append_item(NewEvent::system(session.clone(), "partial.item", json!({})))
                 .unwrap();
-            // Simulate an early return from a failing init: the guard drops here
-            // WITHOUT commit.
         }
         let k = kinds(&log, &session).await;
-        assert!(
-            k.is_empty(),
-            "a failed init discards the partial event stream (nothing durable)"
-        );
+ assert!( k.is_empty(), "a failed init discards the partial event stream (nothing durable)" );
     }
-
     #[tokio::test]
     async fn init_guard_commit_hands_off_ownership_and_neutralizes_drop() {
         let (log, session) = log_and_session();
@@ -327,11 +305,8 @@ mod tests {
                 .unwrap()
                 .append_item(NewEvent::system(session.clone(), "kept.item", json!({})))
                 .unwrap();
-            // Init succeeded: commit hands the thread to the running session.
             guard.commit()
         };
-        // The dropped guard did NOT discard (commit neutralized it): the buffered
-        // item is still there to flush.
         assert_eq!(thread.pending_len(), 1);
         thread.flush().await.unwrap();
         assert_eq!(kinds(&log, &session).await, vec!["kept.item"]);

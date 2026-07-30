@@ -17,7 +17,7 @@
 //! planner / UI can reason over, not a second enforcement point.
 //!
 //! Effects are READ FROM THE REGISTRY, never hardcoded here: the mapping is keyed
-//! on `hide_extension_registry::build_builtin_tool_registry`, so if a tool's
+//! on `hide_kernel::extension_registry::build_builtin_tool_registry`, so if a tool's
 //! declared effects change, this classification follows without an edit.
 //!
 //! ## Deferred model leg
@@ -30,7 +30,7 @@
 
 use hide_core::permission::PermissionVerdict;
 use hide_core::types::Decision;
-use hide_extension_registry::{build_builtin_tool_registry, Effect};
+use hide_kernel::extension_registry::{build_builtin_tool_registry, Effect};
 use serde::{Deserialize, Serialize};
 
 /// The typed decision the policy layer derives for a tool call. Richer than the
@@ -109,7 +109,7 @@ pub struct PolicyDecisionRecord {
 /// Look up a tool id's DECLARED effects from the builtin capability registry.
 ///
 /// This is the [`Effect`] class mapping: it reuses
-/// `hide_extension_registry::build_builtin_tool_registry` so the effects come
+/// `hide_kernel::extension_registry::build_builtin_tool_registry` so the effects come
 /// from each tool's honest manifest declaration, not a table maintained here. An
 /// unknown / unregistered tool id yields an empty set (which the derivation
 /// treats conservatively as "ask").
@@ -211,7 +211,6 @@ pub fn derive_policy_decision(
 mod tests {
     use super::*;
     use hide_core::ids::GrantId;
-
     fn verdict(decision: Decision) -> PermissionVerdict {
         PermissionVerdict {
             decision,
@@ -219,24 +218,19 @@ mod tests {
             grant_id: None::<GrantId>,
         }
     }
-
     #[test]
     fn declared_effects_come_from_the_registry() {
-        // The classification source is the registry, not a local table.
         assert_eq!(tool_declared_effects("fs.read"), vec![Effect::Read]);
         assert!(tool_declared_effects("shell.run").contains(&Effect::Process));
         assert_eq!(tool_declared_effects("git.commit"), vec![Effect::GitMutation]);
-        // An unknown id is empty (conservative).
         assert!(tool_declared_effects("does.not.exist").is_empty());
     }
-
     #[test]
     fn read_only_is_allowed_without_sandbox() {
         let (d, _) = derive_policy_decision(&[Effect::Read], &verdict(Decision::Ask));
         assert_eq!(d, PolicyDecision::Allow);
         assert!(!d.requires_sandbox());
     }
-
     #[test]
     fn execute_requires_sandbox() {
         let (d, _) =
@@ -244,17 +238,12 @@ mod tests {
         assert_eq!(d, PolicyDecision::RequireSandbox);
         assert!(d.requires_sandbox());
     }
-
     #[test]
     fn git_mutation_requires_reviewer() {
         let (d, _) = derive_policy_decision(&[Effect::GitMutation], &verdict(Decision::Allow));
-        assert!(matches!(
-            d,
-            PolicyDecision::Ask | PolicyDecision::RequireReviewer
-        ));
+ assert!(matches!( d, PolicyDecision::Ask | PolicyDecision::RequireReviewer ));
         assert_eq!(d, PolicyDecision::RequireReviewer);
     }
-
     #[test]
     fn write_follows_engine_decision() {
         let (allow, _) = derive_policy_decision(&[Effect::Write], &verdict(Decision::Allow));
@@ -264,7 +253,6 @@ mod tests {
         let (deny, _) = derive_policy_decision(&[Effect::Write], &verdict(Decision::Deny));
         assert_eq!(deny, PolicyDecision::Deny);
     }
-
     #[test]
     fn network_and_external_ask() {
         let (d, _) = derive_policy_decision(
@@ -273,13 +261,11 @@ mod tests {
         );
         assert_eq!(d, PolicyDecision::Ask);
     }
-
     #[test]
     fn empty_effects_ask() {
         let (d, _) = derive_policy_decision(&[], &verdict(Decision::Allow));
         assert_eq!(d, PolicyDecision::Ask);
     }
-
     #[test]
     fn decision_serializes_snake_case() {
         assert_eq!(PolicyDecision::RequireSandbox.as_str(), "require_sandbox");

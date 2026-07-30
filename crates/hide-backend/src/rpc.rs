@@ -584,7 +584,6 @@ mod tests {
     use hide_core::ids::now_ms;
     use hide_core::types::Decision;
     use std::sync::atomic::{AtomicU64, Ordering};
-
     fn host_for_test() -> BackendHost {
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let uniq = COUNTER.fetch_add(1, Ordering::Relaxed);
@@ -593,9 +592,6 @@ mod tests {
         config.security.shell_default = Decision::Allow;
         BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap()
     }
-
-    /// Seed a session with one user turn so it has a durable transcript to search
-    /// and a tail to fork. Returns the session id.
     async fn seed_session(host: &BackendHost, text: &str) -> SessionId {
         let session = host.services.session();
         host.handle_intent(Intent::SubmitTurn {
@@ -607,7 +603,6 @@ mod tests {
         .unwrap();
         session
     }
-
     #[tokio::test]
     async fn thread_fork_forks_and_returns_a_new_session_id() {
         let host = host_for_test();
@@ -620,7 +615,6 @@ mod tests {
         assert!(!new_id.is_empty(), "the fork's session id is non-empty");
         assert_ne!(new_id, session.as_str(), "the fork is a NEW, independent session");
     }
-
     #[tokio::test]
     async fn item_list_searches_the_transcript_and_returns_hits() {
         let host = host_for_test();
@@ -635,7 +629,6 @@ mod tests {
         let hits = result["hits"].as_array().expect("carries a hits array");
         assert!(!hits.is_empty(), "the literal substring matches the seeded turn");
     }
-
     #[tokio::test]
     async fn goal_set_records_a_durable_goal() {
         let host = host_for_test();
@@ -651,12 +644,10 @@ mod tests {
             )
             .await;
         assert!(out.is_ok(), "goal/set dispatches successfully");
-        // The record is durable: goal_get reads it straight back.
         let stored = host.goal_get(&session).expect("the goal was recorded durably");
         assert_eq!(stored.condition, "all oracles pass");
         assert_eq!(stored.acceptance, vec!["build".to_string(), "test".to_string()]);
     }
-
     #[tokio::test]
     async fn checkpoint_create_records_a_checkpoint() {
         let host = host_for_test();
@@ -668,12 +659,10 @@ mod tests {
             )
             .await;
         assert!(out.is_ok(), "checkpoint/create dispatches successfully");
-        // The record is durable: checkpoint_list reads it straight back.
         let list = host.checkpoint_list(&session);
         assert_eq!(list.len(), 1, "exactly one checkpoint was recorded");
         assert_eq!(list[0].label, "before-refactor");
     }
-
     #[tokio::test]
     async fn approval_respond_deposits_a_decision() {
         let host = host_for_test();
@@ -690,10 +679,8 @@ mod tests {
             )
             .await;
         assert!(out.is_ok(), "approval/respond dispatches successfully");
-        // The decision landed in the hub's mailbox for that run.
         assert!(host.approvals().is_pending(&run), "the decision was deposited");
     }
-
     #[tokio::test]
     async fn approval_respond_refuse_approve_without_step_id() {
         let host = host_for_test();
@@ -704,16 +691,9 @@ mod tests {
                 json!({ "run_id": run.as_str(), "approve": true }),
             )
             .await;
-        assert!(
-            matches!(out, RpcResult::Error { .. }),
-            "approve without step_id must be a typed Error, got {out:?}"
-        );
-        assert!(
-            !host.approvals().is_pending(&run),
-            "no decision may be buffered for a blanket approve"
-        );
+        assert!(matches!(out, RpcResult::Error { .. }));
+ assert!( !host.approvals().is_pending(&run), "no decision may be buffered for a blanket approve" );
     }
-
     #[tokio::test]
     async fn approval_respond_allows_deny_without_step_id() {
         let host = host_for_test();
@@ -727,24 +707,17 @@ mod tests {
         assert!(out.is_ok(), "deny without step_id remains fail-safe");
         assert!(host.approvals().is_pending(&run));
     }
-
     #[tokio::test]
     async fn state_inspect_returns_a_model_free_snapshot() {
         let host = host_for_test();
         let out = host.rpc(Method::StateInspect, json!({})).await;
         let result = out.result().expect("state/inspect returns an Ok result");
-        // No model is configured in the harness, so model_configured is false and
-        // runtime is null. The point is a TYPED, non-panicking snapshot.
         assert_eq!(result["model_configured"], json!(false));
     }
-
-    /// W7: state/save|load|fork|release route onto the host CheckpointStore,
-    /// not the superseded hide-state capsule crate.
     #[tokio::test]
     async fn state_rpc_family_routes_onto_host_checkpoints() {
         let host = host_for_test();
         let session = seed_session(&host, "state rpc boundary").await;
-
         let save = host
             .rpc(
                 Method::StateSave,
@@ -758,46 +731,24 @@ mod tests {
             .and_then(|v| v.as_str())
             .expect("state/save returns a checkpoint_id")
             .to_string();
-        assert!(
-            host.checkpoint_list(&session)
-                .iter()
-                .any(|c| c.checkpoint_id == ckpt_id),
-            "state/save must land a durable CheckpointRecord"
-        );
-
+        assert!(host.checkpoint_list(&session) .iter() .any(|c| c.checkpoint_id == ckpt_id));
         let fork = host
             .rpc(Method::StateFork, json!({ "state_id": ckpt_id }))
             .await;
         assert!(fork.is_ok(), "state/fork -> checkpoint_fork: {fork:?}");
-        assert!(
-            fork.result()
-                .and_then(|r| r.get("session_id"))
-                .and_then(|v| v.as_str())
-                .is_some(),
-            "state/fork returns a child session id"
-        );
-
-        // load (restore) is gated Ask; exercise under the approved-writes seam
-        // the checkpoint_restore tests already use.
+        assert!(fork.result() .and_then(|r| r.get("session_id")) .and_then(|v| v.as_str()) .is_some());
         let load = crate::tools::with_approved_writes(host.rpc(
             Method::StateLoad,
             json!({ "state_id": ckpt_id }),
         ))
         .await;
         assert!(load.is_ok(), "state/load -> checkpoint_restore: {load:?}");
-
         let release = host
             .rpc(Method::StateRelease, json!({ "state_id": ckpt_id }))
             .await;
         assert!(release.is_ok(), "state/release -> checkpoint_release: {release:?}");
-        assert!(
-            host.checkpoint_list(&session)
-                .iter()
-                .all(|c| c.checkpoint_id != ckpt_id),
-            "state/release must drop the durable checkpoint"
-        );
+        assert!(host.checkpoint_list(&session) .iter() .all(|c| c.checkpoint_id != ckpt_id));
     }
-
     #[tokio::test]
     async fn unimplemented_method_returns_typed_not_implemented_not_a_panic() {
         let host = host_for_test();
@@ -808,25 +759,15 @@ mod tests {
             Method::TurnCreate,
         ] {
             let out = host.rpc(method, json!({})).await;
-            assert!(
-                out.is_not_implemented(),
-                "{} must return a typed NotImplemented",
-                method.as_str()
-            );
+ assert!( out.is_not_implemented(), "{} must return a typed NotImplemented", method.as_str() );
         }
     }
-
     #[tokio::test]
     async fn bad_params_return_a_typed_error_not_a_panic() {
         let host = host_for_test();
-        // thread/fork requires a `from` session id; an empty object is bad params.
         let out = host.rpc(Method::ThreadFork, json!({})).await;
-        assert!(
-            matches!(out, RpcResult::Error { .. }),
-            "missing required params surface as a typed Error"
-        );
+        assert!(matches!(out, RpcResult::Error { .. }));
     }
-
     #[test]
     fn ui_event_maps_onto_a_protocol_notification() {
         use hide_core::api::{UiEvent, UiEventKind};

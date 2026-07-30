@@ -5,9 +5,9 @@
 //! terminal a real, supervised process surface that inherits that safety:
 //!
 //! * **Sandboxed spawn** ([`confine`]) - every managed process is wrapped in the
-//!   SAME confinement `hide_tools::shell::run_command` uses: on macOS a
-//!   `sandbox-exec` profile rendered from `hide_tools::shell::sandbox_profile` +
-//!   `hide_security::sandbox::render_macos_seatbelt_with` (network-deny by default,
+//!   SAME confinement `hide_kernel::tooling::shell::run_command` uses: on macOS a
+//!   `sandbox-exec` profile rendered from `hide_kernel::tooling::shell::sandbox_profile` +
+//!   `hide_kernel::security::sandbox::render_macos_seatbelt_with` (network-deny by default,
 //!   writes confined to the workspace); on Linux a bubblewrap (`bwrap`) jail. If no
 //!   OS sandbox is available the spawn is REFUSED (fail-closed) rather than run
 //!   unconfined. The dangerous-command `SecurityGate` still sits UPSTREAM in the
@@ -32,8 +32,8 @@ use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynBlobStore;
 use hide_core::types::BlobRef;
-use hide_tools::shell::{runnable_sbpl, sandbox_render_options, sandbox_profile};
-use hide_tools::ShellConfig;
+use hide_kernel::tooling::shell::{runnable_sbpl, sandbox_render_options, sandbox_profile};
+use hide_kernel::tooling::ShellConfig;
 use parking_lot::Mutex;
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -506,7 +506,7 @@ struct Confined {
 }
 
 /// Build the sandbox-confined command, reusing the SAME rendering pipeline
-/// `hide_tools::shell` uses (no policy is duplicated: the macOS SBPL comes wholly
+/// `hide_kernel::tooling::shell` uses (no policy is duplicated: the macOS SBPL comes wholly
 /// from `sandbox_profile` + `render_macos_seatbelt_with` + `runnable_sbpl`).
 ///
 /// Fail-closed: with no usable OS sandbox we return `Err` rather than run
@@ -525,7 +525,7 @@ fn confine(argv: &[String], config: &ShellConfig) -> Result<Confined, String> {
         if std::path::Path::new("/usr/bin/sandbox-exec").exists() {
             let profile = sandbox_profile(config, argv);
             let opts = sandbox_render_options(config);
-            let rendered = hide_security::sandbox::render_macos_seatbelt_with(&profile, &opts);
+            let rendered = hide_kernel::security::sandbox::render_macos_seatbelt_with(&profile, &opts);
             let sbpl = runnable_sbpl(&rendered.profile_text);
             let mut c = Command::new("/usr/bin/sandbox-exec");
             c.arg("-p").arg(sbpl).arg("--").args(argv);
@@ -578,7 +578,7 @@ fn bwrap_path() -> Option<String> {
 
 /// Wrap argv in bubblewrap: read-only root, a writable worktree + tmp, and
 /// `--unshare-net` (network denied by default). ponytail: mirrors
-/// `hide_tools::shell::bubblewrap_command`; that builder is private, so the small
+/// `hide_kernel::tooling::shell::bubblewrap_command`; that builder is private, so the small
 /// arg list is replicated here rather than widening its crate API.
 #[cfg(target_os = "linux")]
 fn bubblewrap(bwrap: &str, argv: &[String], config: &ShellConfig) -> Command {
@@ -601,12 +601,9 @@ fn bubblewrap(bwrap: &str, argv: &[String], config: &ShellConfig) -> Command {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn macos_sandbox_available() -> bool {
         cfg!(target_os = "macos") && std::path::Path::new("/usr/bin/sandbox-exec").exists()
     }
-
-    /// A workspace-rooted config so the sandbox profile canonicalizes a real dir.
     fn config() -> ShellConfig {
         let dir = std::env::temp_dir();
         ShellConfig {
@@ -614,11 +611,8 @@ mod tests {
             ..Default::default()
         }
     }
-
     #[tokio::test]
     async fn fail_closed_when_no_sandbox_and_no_optout() {
-        // With no OS sandbox and no opt-out, confine refuses; a start records a
-        // Failed process rather than running unconfined.
         if macos_sandbox_available() {
             return; // this host has a sandbox; the refusal path is not reachable
         }
@@ -628,11 +622,8 @@ mod tests {
         assert_eq!(state.status, "failed");
         assert!(!state.sandboxed);
     }
-
     #[tokio::test]
     async fn disable_sandbox_runs_bare_and_captures_output() {
-        // The opt-out path is portable (no sandbox binary needed), so it exercises
-        // spawn + streaming + capture on any host.
         let cfg = ShellConfig {
             disable_sandbox: true,
             ..Default::default()
@@ -642,7 +633,6 @@ mod tests {
             StartSpec::command(vec!["printf".to_string(), "hi".to_string()], None),
             &cfg,
         );
-        // Wait for exit.
         for _ in 0..50 {
             if !sup.is_alive(&id) {
                 break;
@@ -655,11 +645,8 @@ mod tests {
         assert!(!state.sandboxed);
         assert!(sup.captured(&id).unwrap().iter().any(|l| l.contains("hi")));
     }
-
     #[tokio::test]
     async fn interactive_stdin_echo_roundtrips() {
-        // pty_input: write a line to an interactive process's stdin and see it
-        // echoed back on the buffered output. Uses the portable opt-out path.
         let cfg = ShellConfig {
             disable_sandbox: true,
             ..Default::default()

@@ -1,11 +1,11 @@
-//! Event Horizon — unified proposal-market contracts.
+//! Unified proposal-market contracts for user-draft / ExactShared.
 //!
-//! A *proposal market*: many cheap proposers compete each decode step under ONE
+//! A *proposal market*: cheap proposers compete each decode step under ONE
 //! exact verifier. Losslessness is structural — the verifier accepts the longest
 //! argmax-confirmed prefix and emits the target's own correction, so a proposer
-//! may be arbitrarily wrong with ZERO quality cost. Greedy-only (temperature==0)
-//! in Phase 0/1. This module defines contracts only; concrete impls live beside
-//! their state (user_ngram.rs, eagle5.rs).
+//! may be arbitrarily wrong with ZERO quality cost. Greedy-only (temperature==0).
+//! This module defines contracts only; concrete impls live beside their state
+//! (user_ngram.rs).
 
 use crate::shared::DraftToken;
 
@@ -112,9 +112,9 @@ pub trait Proposer {
     /// Stable identity, the router's telemetry/hysteresis key ("user_ngram", ...).
     fn name(&self) -> &'static str;
 
-    /// Taps target hidden states (EAGLE-family)? Base proposers: false. The
-    /// router uses this to turn the target's 2 capture dispatches on only when a
-    /// hidden proposer is live.
+    /// Taps target hidden states? Base proposers: false. The router uses this
+    /// to turn the target's capture dispatches on only when a hidden proposer
+    /// is live.
     fn requires_hidden(&self) -> bool {
         false
     }

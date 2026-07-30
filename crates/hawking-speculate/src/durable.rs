@@ -138,7 +138,6 @@ pub type VerifiedText = Verified<String>;
 mod tests {
     use super::*;
     use crate::token_boundary::{DraftTokenId, TargetVerification};
-
     #[test]
     fn all_five_sinks_accept_only_verified() {
         let gate = TargetVerification::gate();
@@ -150,12 +149,9 @@ mod tests {
         sink.edit_file(v).unwrap();
         sink.final_output(v).unwrap();
         assert_eq!(sink.events().len(), 5);
-        // A rejected draft never appears.
         let _draft = DraftTokenId::id(99);
-        // (no call possible without promotion)
         assert!(!sink.token_ids().contains(&99));
     }
-
     #[test]
     fn flush_verified_prefix_writes_in_order() {
         let gate = TargetVerification::gate();

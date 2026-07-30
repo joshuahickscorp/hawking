@@ -37,18 +37,21 @@ pass — see `docs/ARCHIVE_INDEX.md` for retrieval instructions.)
 | `HAWKING_TQ_RUNTIME_PATH=stored\|compact\|hashed\|computed` | `stored` | choose how the same TQ bytes are interpreted at runtime: expanded LUT baseline, 40-byte compact block metadata, hashed i16 quantiles, or full computed Acklam codebook | research A/B only; file bytes and encoding are unchanged; no speed claim until post-ladder parity/perf receipts |
 | `HAWKING_QWEN_W4A8`, `HAWKING_QWEN_AWQ` | OFF | 4-bit weight / 8-bit activation | quality-blocked (held) |
 
-## Spec-decode / Event-Horizon (NET-NEGATIVE for speed — default OFF)
-| Flag | Effect |
+## Spec-decode (live user-draft / ExactShared)
+| Flag / CLI | Effect |
 |---|---|
-| `HAWKING_QWEN_USER_DRAFT` | user-ngram draft path (set `=0` to force no-spec canonical greedy) |
-| `HAWKING_QWEN_EVENT_HORIZON`, `HAWKING_EH_SAM`, `HAWKING_EH_PARALLEL_DRAFT` | the EH proposal market (lossless, but slower — see kill_ledger) |
-| `HAWKING_QWEN_EAGLE5[_K/_CAPTURE/_BATCHED]` | trained EAGLE head (net-negative for speed) |
+| `HAWKING_QWEN_USER_DRAFT` | user-ngram draft path (set `=0` to force no-spec canonical greedy); also `--user-draft` |
+| `HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST` | propose-first user-draft loop (1 verify forward/cycle); also `--user-draft-propose-first` |
+| `HAWKING_QWEN_SPEC_GOVERNOR` (+ `_WINDOW` / `_MIN_RATE` / `_FORCE_DISABLE`) | optional accept-rate governor that may skip proposing on cold drafts |
+| `--speculate exact-shared` / `HAWKING_SPEC_DECODE=exact-shared` | ExactShared shared-expert draft (DeepSeek family); `off` disables |
+
+Historical archaeology only (not live controls; product-released under BC-ACCEL-009 / B-RT3): former names `HAWKING_QWEN_EVENT_HORIZON`, `HAWKING_EH_SAM`, `HAWKING_EH_PARALLEL_DRAFT`, and `HAWKING_QWEN_EAGLE5[_K/_CAPTURE/_BATCHED]` referred to a deleted Event Horizon proposal market and EAGLE5 trained-head path. They are not accepted as live engine inputs. See `ACCELERATION_ARCHAEOLOGY.md` and `control/BRT3-report.md`.
 
 ## Prefix cache / stateful / capture / debug
 | Flag | Effect |
 |---|---|
 | `HAWKING_QWEN_PREFIX_CACHE`, `HAWKING_PREFIX_CACHE_DIR` | prefill KV prefix cache (moat for repeated prefixes) |
-| `HAWKING_QWEN_USAGE_CAPTURE`, `_CAPTURE_FFN_PATH`, `_EAGLE5_CAPTURE` | activation / path capture for training/analysis |
+| `HAWKING_QWEN_USAGE_CAPTURE`, `_CAPTURE_FFN_PATH` | activation / path capture for training/analysis |
 | `HAWKING_TCB_TRACE`, `HAWKING_TRACE_DISPATCH` (`--trace-dispatch`) | Metal dispatch tracing + structural counters |
 | `HAWKING_BACKEND_SEAM`, `HAWKING_FORCE_CPU`, `HAWKING_RWKV7_F32_GGUF`, `HAWKING_ENERGY_EFFICIENT` | backend routing / CPU fallback / RWKV f32 / energy mode |
 

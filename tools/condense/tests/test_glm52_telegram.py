@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline security tests for the GLM-5.2 Telegram module."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import base64
 import concurrent.futures
@@ -13,15 +18,11 @@ from typing import Any, Mapping
 
 import pytest
 
-
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_telegram as gt  # noqa: E402
-import glm52_state as gs  # noqa: E402
-from glm52_common import canonical, seal  # noqa: E402
-
+from lab.operators import glm52_telegram as gt  # noqa: E402
+from lab.operators import glm52_state as gs  # noqa: E402
+from lab.operators.glm52_common import canonical, seal  # noqa: E402
 
 TOKEN = "123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcd"
 CHAT_ID = "123456789"
@@ -32,19 +33,7 @@ SOURCE_REVISION = "a" * 40
 CONTRACT_SHA = "b" * 64
 CONTROLLER_EPOCH = "glm52-telegram-test-epoch"
 
-
-class FakeKeychain:
-    def __init__(self, values: Mapping[str, str] | None = None) -> None:
-        self.values = dict(values or {})
-        self.set_calls: list[tuple[str, str]] = []
-
-    def get(self, service: str) -> str | None:
-        return self.values.get(service)
-
-    def set(self, service: str, value: str) -> None:
-        self.set_calls.append((service, value))
-        self.values[service] = value
-
+from tools.condense.tests._glm52_fakes import FakeKeychain  # noqa: E402
 
 class FakeTransport:
     def __init__(self, handler=None) -> None:
@@ -58,14 +47,12 @@ class FakeTransport:
             return self.handler(token, method, copied)
         raise AssertionError("unexpected fake Telegram call")
 
-
 def _get_me(_token: str, method: str, _payload: dict) -> gt.TelegramHTTPResponse:
     assert method == "getMe"
     return gt.TelegramHTTPResponse(
         200,
         {"ok": True, "result": {"id": 55, "is_bot": True, "username": "glm52_bot"}},
     )
-
 
 def _updates(chat_ids: list[int]) -> gt.TelegramHTTPResponse:
     result = []
@@ -81,14 +68,12 @@ def _updates(chat_ids: list[int]) -> gt.TelegramHTTPResponse:
         })
     return gt.TelegramHTTPResponse(200, {"ok": True, "result": result})
 
-
 def _configured_keychain() -> FakeKeychain:
     return FakeKeychain({
         gt.TOKEN_SERVICE: TOKEN,
         gt.CHAT_SERVICE: CHAT_ID,
         gt.HMAC_SERVICE: HMAC_ENCODED,
     })
-
 
 def _status() -> dict[str, Any]:
     return {
@@ -109,15 +94,9 @@ def _status() -> dict[str, Any]:
         "process": {"pid": 1234, "lease_held": True, "lease_owner": "glm52-controller"},
     }
 
-
-def _intent(
-    *,
-    dedupe_key: str = DEDUPE,
-    to_state: str = "PRECHECK",
-    claim_id: str = "claim-telegram-0001",
-    metric_delta: float = 0.0,
-    anchor_counter: int = 0,
-) -> dict[str, Any]:
+def _intent(*, dedupe_key: str = DEDUPE, to_state: str = "PRECHECK",
+            claim_id: str = "claim-telegram-0001", metric_delta: float = 0.0,
+            anchor_counter: int = 0) -> dict[str, Any]:
     event_kind = gs.TRANSITION_EVENT_KINDS[to_state]
     status = _status()
     status["state"] = to_state
@@ -130,61 +109,34 @@ def _intent(
         "checkpoint_seal_sha256": None,
     }
     anchor_body = {
-        "schema": gs.CONTROLLER_ANCHOR_SCHEMA,
-        "campaign_id": "glm52-test-campaign",
-        "source_revision": SOURCE_REVISION,
-        "controller_epoch": CONTROLLER_EPOCH,
-        "expected_contract_sha256": CONTRACT_SHA,
-        "from_state": None,
-        "checkpoint": checkpoint,
+        "schema": gs.CONTROLLER_ANCHOR_SCHEMA, "campaign_id": "glm52-test-campaign",
+        "source_revision": SOURCE_REVISION, "controller_epoch": CONTROLLER_EPOCH,
+        "expected_contract_sha256": CONTRACT_SHA, "from_state": None, "checkpoint": checkpoint,
     }
-    anchor = {
-        **anchor_body,
-        "anchor_sha256": hashlib.sha256(canonical(anchor_body)).hexdigest(),
-    }
-    status_sha = hashlib.sha256(canonical({
-        "schema": gs.CAMPAIGN_STATUS_SCHEMA,
-        "status": status,
-    })).hexdigest()
+    anchor = {**anchor_body, "anchor_sha256": hashlib.sha256(canonical(anchor_body)).hexdigest()}
+    status_sha = hashlib.sha256(canonical({"schema": gs.CAMPAIGN_STATUS_SCHEMA, "status": status})).hexdigest()
     rendered = gs.render_campaign_status_message(
-        event_kind,
-        dedupe_key,
-        status,
-        anchor,
-        claim_id=claim_id,
-        from_state=None,
-        to_state=to_state,
+        event_kind, dedupe_key, status, anchor, claim_id=claim_id, from_state=None, to_state=to_state,
     )
     sealed_intent = seal({
-        "schema": gs.TRANSITION_INTENT_SCHEMA,
-        "campaign_id": "glm52-test-campaign",
-        "source_revision": SOURCE_REVISION,
-        "controller_epoch": CONTROLLER_EPOCH,
-        "expected_contract_sha256": CONTRACT_SHA,
-        "event_kind": event_kind,
-        "from_state": None,
-        "to_state": to_state,
-        "claim_id": claim_id,
-        "requested_payload": {},
-        "state_payload": {},
+        "schema": gs.TRANSITION_INTENT_SCHEMA, "campaign_id": "glm52-test-campaign",
+        "source_revision": SOURCE_REVISION, "controller_epoch": CONTROLLER_EPOCH,
+        "expected_contract_sha256": CONTRACT_SHA, "event_kind": event_kind,
+        "from_state": None, "to_state": to_state, "claim_id": claim_id,
+        "requested_payload": {}, "state_payload": {},
         "request_sha256": hashlib.sha256(canonical({"claim_id": claim_id})).hexdigest(),
-        "dedupe_key": dedupe_key,
-        "controller_anchor": anchor,
-        "canonical_status": status,
-        "canonical_status_sha256": status_sha,
-        "rendered_message": rendered,
+        "dedupe_key": dedupe_key, "controller_anchor": anchor, "canonical_status": status,
+        "canonical_status_sha256": status_sha, "rendered_message": rendered,
         "rendered_message_sha256": hashlib.sha256(rendered.encode("utf-8")).hexdigest(),
         "prepared_at": "2026-07-21T12:00:00Z",
     })
     auth = gs.TelegramAuthConfig(
-        hmac_key=HMAC_RAW,
-        expected_chat_identity_digest=gs.telegram_chat_identity_digest(CHAT_ID),
+        hmac_key=HMAC_RAW, expected_chat_identity_digest=gs.telegram_chat_identity_digest(CHAT_ID),
     )
     return {
         **sealed_intent,
         "controller_hmac_sha256": auth.authenticate({
-            "schema": "hawking.glm52.state_transition_intent_auth.v1",
-            "intent": sealed_intent,
+            "schema": "hawking.glm52.state_transition_intent_auth.v1", "intent": sealed_intent,
         }),
     }
 
@@ -201,11 +153,16 @@ def _ledger(
     )
 
 
+def _send_status(intent, ledger, transport, *, keychain=None, **kwargs):
+    return gt.send_campaign_status(
+        intent, ledger=ledger, keychain=keychain or _configured_keychain(),
+        transport=transport, **kwargs,
+    )
+
 def test_services_are_unique_and_glm_specific() -> None:
     assert len(gt.KEYCHAIN_SERVICES) == len(set(gt.KEYCHAIN_SERVICES)) == 3
     assert all(service.startswith("com.hawking.glm52.gravity.telegram.") for service in gt.KEYCHAIN_SERVICES)
     assert gt.KEYCHAIN_ACCOUNT == "hawking-glm52-gravity"
-
 
 def test_macos_keychain_reads_and_writes_only_through_native_framework() -> None:
     reads: list[tuple[str, str]] = []
@@ -225,7 +182,6 @@ def test_macos_keychain_reads_and_writes_only_through_native_framework() -> None
     assert reads == [(gt.TOKEN_SERVICE, gt.KEYCHAIN_ACCOUNT)]
     assert "subprocess" not in vars(store)
 
-
 def test_macos_keychain_errors_never_echo_secret() -> None:
     def writer(_service: str, _account: str, _value: str) -> None:
         raise RuntimeError(f"native backend accidentally included {TOKEN}")
@@ -234,7 +190,6 @@ def test_macos_keychain_errors_never_echo_secret() -> None:
         gt.MacOSKeychain(native_writer=writer).set(gt.TOKEN_SERVICE, TOKEN)
     assert TOKEN not in str(caught.value)
     assert TOKEN not in repr(caught.value)
-
 
 @pytest.mark.parametrize("operation", ["get", "set"])
 def test_macos_keychain_redacts_backend_exceptions(operation: str) -> None:
@@ -252,7 +207,6 @@ def test_macos_keychain_redacts_backend_exceptions(operation: str) -> None:
             store.set(gt.TOKEN_SERVICE, TOKEN)
     assert TOKEN not in str(caught.value) + repr(caught.value)
 
-
 def test_urllib_transport_redacts_opener_exception() -> None:
     def opener(request, **_kwargs):
         raise RuntimeError(request.full_url)
@@ -261,7 +215,6 @@ def test_urllib_transport_redacts_opener_exception() -> None:
     with pytest.raises(gt.TelegramSecurityError) as caught:
         transport.call(TOKEN, "getMe", {})
     assert TOKEN not in str(caught.value) + repr(caught.value)
-
 
 def test_hidden_token_configuration_validates_getme_before_storage() -> None:
     keychain = FakeKeychain()
@@ -281,7 +234,6 @@ def test_hidden_token_configuration_validates_getme_before_storage() -> None:
     rendered = json.dumps(result)
     assert TOKEN not in rendered and "glm52_bot" not in rendered
 
-
 @pytest.mark.parametrize(
     "response",
     [
@@ -298,7 +250,6 @@ def test_invalid_getme_never_stores_or_leaks_token(response: gt.TelegramHTTPResp
     assert keychain.set_calls == []
     assert TOKEN not in str(caught.value)
 
-
 def test_injected_transport_exception_is_redacted() -> None:
     def handler(token: str, _method: str, _payload: dict) -> gt.TelegramHTTPResponse:
         raise RuntimeError(f"provider leaked {token}")
@@ -310,7 +261,6 @@ def test_injected_transport_exception_is_redacted() -> None:
             hidden_prompt=lambda _prompt: TOKEN,
         )
     assert TOKEN not in str(caught.value) + repr(caught.value)
-
 
 def test_discovery_stores_one_safe_human_private_chat_and_returns_only_digest() -> None:
     keychain = FakeKeychain({gt.TOKEN_SERVICE: TOKEN})
@@ -333,7 +283,6 @@ def test_discovery_stores_one_safe_human_private_chat_and_returns_only_digest() 
     rendered = json.dumps(result)
     assert CHAT_ID not in rendered and "secret-name" not in rendered
 
-
 @pytest.mark.parametrize("chat_ids", [[], [111, 222]])
 def test_discovery_refuses_zero_or_multiple_private_chats(chat_ids: list[int]) -> None:
     keychain = FakeKeychain({gt.TOKEN_SERVICE: TOKEN})
@@ -341,7 +290,6 @@ def test_discovery_refuses_zero_or_multiple_private_chats(chat_ids: list[int]) -
     with pytest.raises(gt.TelegramSecurityError):
         gt.discover_private_chat(keychain, transport)
     assert keychain.set_calls == []
-
 
 def test_hmac_key_is_generated_at_32_bytes_and_never_returned() -> None:
     keychain = FakeKeychain()
@@ -351,7 +299,6 @@ def test_hmac_key_is_generated_at_32_bytes_and_never_returned() -> None:
     assert result["hmac_key_configured"] is True
     assert gt.SHA256_RE.fullmatch(result["hmac_key_identity_digest"])
     assert "S0tL" not in json.dumps(result)
-
 
 def test_public_status_contains_only_booleans_and_digests() -> None:
     status = gt.credential_status(_configured_keychain())
@@ -363,7 +310,6 @@ def test_public_status_contains_only_booleans_and_digests() -> None:
         assert isinstance(value, bool) or (isinstance(value, str) and gt.SHA256_RE.fullmatch(value))
     rendered = json.dumps(status)
     assert TOKEN not in rendered and CHAT_ID not in rendered and HMAC_ENCODED not in rendered
-
 
 def test_malformed_public_status_is_fail_closed_without_secret_echo() -> None:
     keychain = FakeKeychain({
@@ -381,14 +327,12 @@ def test_malformed_public_status_is_fail_closed_without_secret_echo() -> None:
     rendered = json.dumps(status)
     assert "secret" not in rendered
 
-
 def test_load_auth_is_nonserializable_and_repr_redacts() -> None:
     auth = gt.load_telegram_auth(_configured_keychain())
     assert auth.expected_chat_identity_digest == gt.telegram_chat_identity_digest(CHAT_ID)
     assert "HHHH" not in repr(auth)
     with pytest.raises(TypeError):
         json.dumps(auth)
-
 
 def test_campaign_status_requires_every_field_and_rejects_inconsistent_counts() -> None:
     status = _status()
@@ -403,13 +347,11 @@ def test_campaign_status_requires_every_field_and_rejects_inconsistent_counts() 
     with pytest.raises(gt.TelegramSecurityError, match="inconsistent"):
         gt.validate_campaign_status(inconsistent)
 
-
 def test_campaign_status_rejects_non_string_metric_names_fail_closed() -> None:
     status = _status()
     status["best_metrics"] = {1: 0.999}
     with pytest.raises(gt.TelegramSecurityError, match="metric name"):
         gt.validate_campaign_status(status)
-
 
 def test_message_binds_dedupe_and_all_required_campaign_fields() -> None:
     text = gt.compose_message("xet_autotune_result", DEDUPE, _status())
@@ -431,7 +373,6 @@ def test_message_binds_dedupe_and_all_required_campaign_fields() -> None:
     )
     assert all(fragment in text for fragment in required_fragments)
 
-
 def _successful_sender() -> tuple[FakeTransport, list[str]]:
     sent_text: list[str] = []
 
@@ -449,7 +390,6 @@ def _successful_sender() -> tuple[FakeTransport, list[str]]:
 
     return FakeTransport(handler), sent_text
 
-
 def test_sender_returns_state_authenticated_receipt_only_on_exact_success(
     tmp_path: pathlib.Path,
 ) -> None:
@@ -457,12 +397,7 @@ def test_sender_returns_state_authenticated_receipt_only_on_exact_success(
     transport, sent_text = _successful_sender()
     intent = _intent()
     ledger = _ledger(tmp_path)
-    receipt = gt.send_campaign_status(
-        intent,
-        ledger=ledger,
-        keychain=keychain,
-        transport=transport,
-    )
+    receipt = _send_status(intent, ledger, transport, keychain=keychain)
     assert sent_text == [intent["rendered_message"]]
     assert receipt["status"] == "DELIVERED"
     assert receipt["dedupe_key"] == DEDUPE
@@ -482,27 +417,15 @@ def test_sender_returns_state_authenticated_receipt_only_on_exact_success(
     rendered = json.dumps(receipt)
     assert TOKEN not in rendered and CHAT_ID not in rendered and HMAC_ENCODED not in rendered
 
-
 def test_delivery_replay_returns_exact_receipt_without_network(tmp_path: pathlib.Path) -> None:
     intent = _intent()
     ledger = _ledger(tmp_path)
     first_transport, _sent = _successful_sender()
-    first = gt.send_campaign_status(
-        intent,
-        ledger=ledger,
-        keychain=_configured_keychain(),
-        transport=first_transport,
-    )
+    first = _send_status(intent, ledger, first_transport)
     replay_transport = FakeTransport()
-    replayed = gt.send_campaign_status(
-        intent,
-        ledger=gt.TelegramDeliveryLedger(ledger.path),
-        keychain=_configured_keychain(),
-        transport=replay_transport,
-    )
+    replayed = _send_status(intent, gt.TelegramDeliveryLedger(ledger.path), replay_transport)
     assert replayed == first
     assert replay_transport.calls == []
-
 
 def test_sender_rejects_fabricated_controller_intent_before_outbox_or_network(
     tmp_path: pathlib.Path,
@@ -512,15 +435,9 @@ def test_sender_rejects_fabricated_controller_intent_before_outbox_or_network(
     ledger = _ledger(tmp_path)
     transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="controller transition intent"):
-        gt.send_campaign_status(
-            intent,
-            ledger=ledger,
-            keychain=_configured_keychain(),
-            transport=transport,
-        )
+        _send_status(intent, ledger, transport)
     assert transport.calls == []
     assert not ledger.path.exists()
-
 
 @pytest.mark.parametrize("changed", ["event", "message", "status", "anchor"])
 def test_same_dedupe_rejects_changed_bound_intent_without_network(
@@ -529,12 +446,7 @@ def test_same_dedupe_rejects_changed_bound_intent_without_network(
 ) -> None:
     ledger = _ledger(tmp_path)
     transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(),
-        ledger=ledger,
-        keychain=_configured_keychain(),
-        transport=transport,
-    )
+    _send_status(_intent(), ledger, transport)
     if changed == "event":
         altered = _intent(to_state="CLOSE_KIMI")
     elif changed == "message":
@@ -545,14 +457,8 @@ def test_same_dedupe_rejects_changed_bound_intent_without_network(
         altered = _intent(anchor_counter=1)
     replay_transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="different delivery intent"):
-        gt.send_campaign_status(
-            altered,
-            ledger=gt.TelegramDeliveryLedger(ledger.path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
+        _send_status(altered, gt.TelegramDeliveryLedger(ledger.path), replay_transport)
     assert replay_transport.calls == []
-
 
 def test_crash_after_prepared_fsync_replays_safe_unsent_outbox(
     tmp_path: pathlib.Path,
@@ -565,23 +471,12 @@ def test_crash_after_prepared_fsync_replays_safe_unsent_outbox(
     path = tmp_path / "telegram-delivery.jsonl"
     untouched = FakeTransport()
     with pytest.raises(RuntimeError, match="simulated crash"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=crash),
-            keychain=_configured_keychain(),
-            transport=untouched,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path, fault_injector=crash), untouched)
     assert untouched.calls == []
     transport, _sent = _successful_sender()
-    receipt = gt.send_campaign_status(
-        intent,
-        ledger=gt.TelegramDeliveryLedger(path),
-        keychain=_configured_keychain(),
-        transport=transport,
-    )
+    receipt = _send_status(intent, gt.TelegramDeliveryLedger(path), transport)
     assert receipt["status"] == "DELIVERED"
     assert len(transport.calls) == 1
-
 
 def test_crash_after_send_success_is_ambiguous_and_never_resends(
     tmp_path: pathlib.Path,
@@ -593,21 +488,11 @@ def test_crash_after_send_success_is_ambiguous_and_never_resends(
     path = tmp_path / "telegram-delivery.jsonl"
     transport, _sent = _successful_sender()
     with pytest.raises(RuntimeError, match="post-send crash"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=crash),
-            keychain=_configured_keychain(),
-            transport=transport,
-        )
+        _send_status(_intent(), gt.TelegramDeliveryLedger(path, fault_injector=crash), transport)
     assert len(transport.calls) == 1
     replay_transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="ambiguous"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
+        _send_status(_intent(), gt.TelegramDeliveryLedger(path), replay_transport)
     assert replay_transport.calls == []
     auth = gt.load_telegram_auth(_configured_keychain())
     entries = gt.TelegramDeliveryLedger(path).verified_entries(auth)
@@ -620,7 +505,6 @@ def test_crash_after_send_success_is_ambiguous_and_never_resends(
     assert block["send_started_chain_sha256"] == entries[-2]["chain_sha256"]
     assert entries[-1]["receipt"] is None
 
-
 def test_hmac_authorized_duplicate_retry_is_bound_durable_and_one_attempt(
     tmp_path: pathlib.Path,
 ) -> None:
@@ -632,22 +516,12 @@ def test_hmac_authorized_duplicate_retry_is_bound_durable_and_one_attempt(
     path = tmp_path / "telegram-delivery.jsonl"
     first_transport, _sent = _successful_sender()
     with pytest.raises(RuntimeError, match="first-attempt crash"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=post_send_crash),
-            keychain=_configured_keychain(),
-            transport=first_transport,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path, fault_injector=post_send_crash), first_transport)
     assert len(first_transport.calls) == 1
 
     no_retry = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="durably blocked"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=no_retry,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path), no_retry)
     assert no_retry.calls == []
 
     auth = gt.load_telegram_auth(_configured_keychain())
@@ -683,13 +557,7 @@ def test_hmac_authorized_duplicate_retry_is_bound_durable_and_one_attempt(
     tampered["hmac_sha256"] = "0" * 64
     refused_transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="HMAC"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=refused_transport,
-            duplicate_retry_authorization=tampered,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path), refused_transport, duplicate_retry_authorization=tampered)
     assert refused_transport.calls == []
 
     def authorization_crash(phase: str) -> None:
@@ -698,22 +566,11 @@ def test_hmac_authorized_duplicate_retry_is_bound_durable_and_one_attempt(
 
     untouched_retry = FakeTransport()
     with pytest.raises(RuntimeError, match="authorization checkpoint crash"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=authorization_crash),
-            keychain=_configured_keychain(),
-            transport=untouched_retry,
-            duplicate_retry_authorization=authorization,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path, fault_injector=authorization_crash), untouched_retry, duplicate_retry_authorization=authorization)
     assert untouched_retry.calls == []
 
     retry_transport, _retry_text = _successful_sender()
-    receipt = gt.send_campaign_status(
-        intent,
-        ledger=gt.TelegramDeliveryLedger(path),
-        keychain=_configured_keychain(),
-        transport=retry_transport,
-    )
+    receipt = _send_status(intent, gt.TelegramDeliveryLedger(path), retry_transport)
     assert receipt["status"] == "DELIVERED"
     assert len(retry_transport.calls) == 1
     entries = gt.TelegramDeliveryLedger(path).verified_entries(auth)
@@ -730,15 +587,8 @@ def test_hmac_authorized_duplicate_retry_is_bound_durable_and_one_attempt(
         entries[1]["chain_sha256"]
 
     replay_transport = FakeTransport()
-    assert gt.send_campaign_status(
-        intent,
-        ledger=gt.TelegramDeliveryLedger(path),
-        keychain=_configured_keychain(),
-        transport=replay_transport,
-        duplicate_retry_authorization=authorization,
-    ) == receipt
+    assert _send_status(intent, gt.TelegramDeliveryLedger(path), replay_transport, duplicate_retry_authorization=authorization) == receipt
     assert replay_transport.calls == []
-
 
 def test_duplicate_retry_authorization_claim_is_consumed_only_once(
     tmp_path: pathlib.Path,
@@ -751,19 +601,9 @@ def test_duplicate_retry_authorization_claim_is_consumed_only_once(
     path = tmp_path / "telegram-delivery.jsonl"
     first_transport, _sent = _successful_sender()
     with pytest.raises(RuntimeError):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=first_attempt_crash),
-            keychain=_configured_keychain(),
-            transport=first_transport,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path, fault_injector=first_attempt_crash), first_transport)
     with pytest.raises(gt.TelegramSecurityError, match="durably blocked"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=FakeTransport(),
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path), FakeTransport())
 
     auth = gt.load_telegram_auth(_configured_keychain())
     first_block = gt.TelegramDeliveryLedger(path).verified_entries(auth)[-1]
@@ -782,20 +622,14 @@ def test_duplicate_retry_authorization_claim_is_consumed_only_once(
             raise RuntimeError("simulated retry crash")
 
     with pytest.raises(RuntimeError, match="retry crash"):
-        gt.send_campaign_status(
+        _send_status(
             intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=pre_network_crash),
-            keychain=_configured_keychain(),
-            transport=FakeTransport(),
+            gt.TelegramDeliveryLedger(path, fault_injector=pre_network_crash),
+            FakeTransport(),
             duplicate_retry_authorization=first_authorization,
         )
     with pytest.raises(gt.TelegramSecurityError, match="durably blocked"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=FakeTransport(),
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path), FakeTransport())
 
     second_block = gt.TelegramDeliveryLedger(path).verified_entries(auth)[-1]
     reused_claim = gt.make_reconciliation_authorization(
@@ -809,15 +643,8 @@ def test_duplicate_retry_authorization_claim_is_consumed_only_once(
     )
     refused_transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="already consumed"):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=refused_transport,
-            duplicate_retry_authorization=reused_claim,
-        )
+        _send_status(intent, gt.TelegramDeliveryLedger(path), refused_transport, duplicate_retry_authorization=reused_claim)
     assert refused_transport.calls == []
-
 
 def test_ambiguous_send_rejects_operator_claim_and_requires_exact_bot_receipt(
     tmp_path: pathlib.Path,
@@ -830,12 +657,7 @@ def test_ambiguous_send_rejects_operator_claim_and_requires_exact_bot_receipt(
     path = tmp_path / "telegram-delivery.jsonl"
     transport, _sent = _successful_sender()
     with pytest.raises(RuntimeError):
-        gt.send_campaign_status(
-            intent,
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=crash),
-            keychain=_configured_keychain(),
-            transport=transport,
-    )
+        _send_status(intent, gt.TelegramDeliveryLedger(path, fault_injector=crash), transport)
     auth = gt.load_telegram_auth(_configured_keychain())
     # Even an HMAC-authenticated operator assertion is not delivery evidence.  The
     # controller/outbox accept only the exact successful Bot API v3 receipt.
@@ -878,14 +700,8 @@ def test_ambiguous_send_rejects_operator_claim_and_requires_exact_bot_receipt(
     reconciled = ledger.reconcile_ambiguous(intent, receipt, auth=auth)
     assert reconciled == receipt
     replay_transport = FakeTransport()
-    assert gt.send_campaign_status(
-        intent,
-        ledger=ledger,
-        keychain=_configured_keychain(),
-        transport=replay_transport,
-    ) == receipt
+    assert _send_status(intent, ledger, replay_transport) == receipt
     assert replay_transport.calls == []
-
 
 def test_crash_after_receipt_ledger_fsync_recovers_without_network(
     tmp_path: pathlib.Path,
@@ -897,85 +713,51 @@ def test_crash_after_receipt_ledger_fsync_recovers_without_network(
     path = tmp_path / "telegram-delivery.jsonl"
     transport, _sent = _successful_sender()
     with pytest.raises(RuntimeError, match="head-update crash"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(path, fault_injector=crash),
-            keychain=_configured_keychain(),
-            transport=transport,
-        )
+        _send_status(_intent(), gt.TelegramDeliveryLedger(path, fault_injector=crash), transport)
     assert len(transport.calls) == 1
     replay_transport = FakeTransport()
-    receipt = gt.send_campaign_status(
-        _intent(),
-        ledger=gt.TelegramDeliveryLedger(path),
-        keychain=_configured_keychain(),
-        transport=replay_transport,
-    )
+    receipt = _send_status(_intent(), gt.TelegramDeliveryLedger(path), replay_transport)
     assert receipt["status"] == "DELIVERED"
     assert replay_transport.calls == []
 
-
-def test_ledger_tamper_is_rejected_before_network(tmp_path: pathlib.Path) -> None:
+def _ledger_after_one_send(tmp_path):
     ledger = _ledger(tmp_path)
     transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-    )
+    _send_status(_intent(), ledger, transport)
+    return ledger
+
+def _reject_before_network(ledger, match: str) -> None:
+    replay = FakeTransport()
+    with pytest.raises(gt.TelegramSecurityError, match=match):
+        _send_status(_intent(), gt.TelegramDeliveryLedger(ledger.path), replay)
+    assert replay.calls == []
+
+def test_ledger_tamper_is_rejected_before_network(tmp_path: pathlib.Path) -> None:
+    ledger = _ledger_after_one_send(tmp_path)
     lines = ledger.path.read_bytes().splitlines()
     row = json.loads(lines[0])
     row["recorded_at"] = "tampered"
     lines[0] = canonical(row)
     ledger.path.write_bytes(b"\n".join(lines) + b"\n")
-    replay_transport = FakeTransport()
-    with pytest.raises(gt.TelegramSecurityError, match="hash chain|HMAC"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(ledger.path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
-    assert replay_transport.calls == []
+    _reject_before_network(ledger, "hash chain|HMAC")
 
-
-def test_noncanonical_ledger_reencoding_is_rejected_before_network(
-    tmp_path: pathlib.Path,
-) -> None:
-    ledger = _ledger(tmp_path)
-    transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-    )
+def test_noncanonical_ledger_reencoding_is_rejected_before_network(tmp_path: pathlib.Path) -> None:
+    ledger = _ledger_after_one_send(tmp_path)
     lines = ledger.path.read_bytes().splitlines()
     lines[0] = b" " + lines[0]
     ledger.path.write_bytes(b"\n".join(lines) + b"\n")
-    replay_transport = FakeTransport()
-    with pytest.raises(gt.TelegramSecurityError, match="canonical JSON"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(ledger.path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
-    assert replay_transport.calls == []
-
+    _reject_before_network(ledger, "canonical JSON")
 
 def test_torn_jsonl_tail_recovers_only_from_authenticated_head_without_network(
     tmp_path: pathlib.Path,
 ) -> None:
     ledger = _ledger(tmp_path)
     transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-    )
+    _send_status(_intent(), ledger, transport)
     with ledger.path.open("ab") as handle:
         handle.write(b'{"schema":')
     replay_transport = FakeTransport()
-    receipt = gt.send_campaign_status(
-        _intent(),
-        ledger=gt.TelegramDeliveryLedger(ledger.path),
-        keychain=_configured_keychain(),
-        transport=replay_transport,
-    )
+    receipt = _send_status(_intent(), gt.TelegramDeliveryLedger(ledger.path), replay_transport)
     assert receipt["status"] == "DELIVERED"
     recovered = ledger.path.read_bytes()
     assert recovered.endswith(b"\n")
@@ -983,57 +765,22 @@ def test_torn_jsonl_tail_recovers_only_from_authenticated_head_without_network(
     assert b'{"schema":' not in recovered.splitlines()[-1]
     assert replay_transport.calls == []
 
-
 def test_unanchored_torn_first_record_is_refused(tmp_path: pathlib.Path) -> None:
     ledger = _ledger(tmp_path)
     ledger.path.write_bytes(b'{"partial":')
     with pytest.raises(gt.TelegramSecurityError, match="authenticated recovery head"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=ledger,
-            keychain=_configured_keychain(),
-            transport=FakeTransport(),
-        )
-
+        _send_status(_intent(), ledger, FakeTransport())
 
 def test_authenticated_head_detects_clean_tail_truncation(tmp_path: pathlib.Path) -> None:
-    ledger = _ledger(tmp_path)
-    transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-    )
+    ledger = _ledger_after_one_send(tmp_path)
     lines = ledger.path.read_bytes().splitlines()
     ledger.path.write_bytes(b"\n".join(lines[:-1]) + b"\n")
-    replay_transport = FakeTransport()
-    with pytest.raises(gt.TelegramSecurityError, match="clean-tail truncated"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(ledger.path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
-    assert replay_transport.calls == []
+    _reject_before_network(ledger, "clean-tail truncated")
 
-
-def test_missing_authenticated_head_is_rejected_before_network(
-    tmp_path: pathlib.Path,
-) -> None:
-    ledger = _ledger(tmp_path)
-    transport, _sent = _successful_sender()
-    gt.send_campaign_status(
-        _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-    )
+def test_missing_authenticated_head_is_rejected_before_network(tmp_path: pathlib.Path) -> None:
+    ledger = _ledger_after_one_send(tmp_path)
     ledger.head_path.unlink()
-    replay_transport = FakeTransport()
-    with pytest.raises(gt.TelegramSecurityError, match="lacks its authenticated durable head"):
-        gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(ledger.path),
-            keychain=_configured_keychain(),
-            transport=replay_transport,
-        )
-    assert replay_transport.calls == []
-
+    _reject_before_network(ledger, "lacks its authenticated durable head")
 
 @pytest.mark.parametrize("symlink_kind", ["parent", "ledger", "lock", "head"])
 def test_ledger_refuses_every_symlink_surface_before_network(
@@ -1058,11 +805,8 @@ def test_ledger_refuses_every_symlink_surface_before_network(
         ledger.head_path.symlink_to(target)
     transport = FakeTransport()
     with pytest.raises(gt.TelegramSecurityError, match="unsafe|regular|parent|head"):
-        gt.send_campaign_status(
-            _intent(), ledger=ledger, keychain=_configured_keychain(), transport=transport
-        )
+        _send_status(_intent(), ledger, transport)
     assert transport.calls == []
-
 
 def test_concurrent_same_dedupe_sends_once_and_replays_one_receipt(
     tmp_path: pathlib.Path,
@@ -1086,12 +830,7 @@ def test_concurrent_same_dedupe_sends_once_and_replays_one_receipt(
     transport = FakeTransport(handler)
 
     def deliver() -> dict[str, Any]:
-        return gt.send_campaign_status(
-            _intent(),
-            ledger=gt.TelegramDeliveryLedger(path),
-            keychain=_configured_keychain(),
-            transport=transport,
-        )
+        return _send_status(_intent(), gt.TelegramDeliveryLedger(path), transport)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
         first = pool.submit(deliver)
@@ -1102,7 +841,6 @@ def test_concurrent_same_dedupe_sends_once_and_replays_one_receipt(
         second_receipt = second.result(timeout=5)
     assert first_receipt == second_receipt
     assert len(transport.calls) == 1
-
 
 @pytest.mark.parametrize(
     "mutation",
@@ -1139,22 +877,15 @@ def test_sender_rejects_every_response_binding_failure_without_secret_leak(
         return gt.TelegramHTTPResponse(status, body)
 
     with pytest.raises(gt.TelegramSecurityError) as caught:
-        gt.send_campaign_status(
-            _intent(),
-            ledger=_ledger(tmp_path),
-            keychain=_configured_keychain(),
-            transport=FakeTransport(handler),
-        )
+        _send_status(_intent(), _ledger(tmp_path), FakeTransport(handler))
     rendered = str(caught.value) + repr(caught.value)
     assert TOKEN not in rendered and CHAT_ID not in rendered and HMAC_ENCODED not in rendered
-
 
 def test_sender_credentials_repr_is_redacted() -> None:
     credentials = gt._load_sender_credentials(_configured_keychain())
     rendered = repr(credentials)
     assert "<redacted>" in rendered
     assert TOKEN not in rendered and CHAT_ID not in rendered and HMAC_ENCODED not in rendered
-
 
 def test_cli_has_no_secret_arguments_or_send_payload_surface() -> None:
     parser = gt.build_parser()
@@ -1165,7 +896,6 @@ def test_cli_has_no_secret_arguments_or_send_payload_surface() -> None:
     for command in ("status", "configure-token", "discover-private-chat", "configure-hmac-key"):
         parsed = parser.parse_args([command])
         assert parsed.command == command
-
 
 def test_cli_rejects_mistaken_secret_argument_without_echo(
     capsys: pytest.CaptureFixture[str],
@@ -1178,7 +908,6 @@ def test_cli_rejects_mistaken_secret_argument_without_echo(
         )
     captured = capsys.readouterr()
     assert TOKEN not in captured.out + captured.err
-
 
 def test_cli_uses_only_injected_fakes(capsys: pytest.CaptureFixture[str]) -> None:
     keychain = FakeKeychain()

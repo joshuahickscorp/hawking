@@ -616,7 +616,6 @@ mod tests {
     use super::*;
     use hide_core::event::InMemoryEventLog;
     use std::sync::Arc;
-
     #[test]
     fn ready_jobs_respect_dependencies_and_priority() {
         let g = JobGraph::new();
@@ -625,17 +624,14 @@ mod tests {
         let b = AgentJob::new("b", PriorityClass::Interactive).depends_on([a_id.clone()]);
         g.enqueue(a);
         g.enqueue(b.clone());
-        // b depends on a (not done) → only a is ready.
         let ready = g.ready_jobs();
         assert_eq!(ready.len(), 1);
         assert_eq!(ready[0].id, a_id);
-        // Complete a → b becomes ready.
         g.set_status(&a_id, JobStatus::Done);
         let ready = g.ready_jobs();
         assert_eq!(ready.len(), 1);
         assert_eq!(ready[0].id, b.id);
     }
-
     #[test]
     fn cycle_detection_rejects_back_edge() {
         let g = JobGraph::new();
@@ -647,7 +643,6 @@ mod tests {
         g.enqueue(b);
         assert!(g.has_cycle());
     }
-
     #[test]
     fn two_pool_occupancy_counts_per_class() {
         let g = JobGraph::new();
@@ -661,7 +656,6 @@ mod tests {
         assert_eq!(g.live_in_class(ConcurrencyClass::Model), 1);
         assert_eq!(g.live_in_class(ConcurrencyClass::CpuOnly), 1);
     }
-
     #[tokio::test]
     async fn queue_is_a_projection_of_the_event_log() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -678,8 +672,6 @@ mod tests {
         g.set_status_logged(&log, &id, JobStatus::Done, json!({ "result": "ok" }))
             .await
             .unwrap();
-
-        // Rebuild a fresh graph purely from the log → identical terminal state.
         let events = log.scan(None, None, None).await.unwrap();
         let rebuilt = JobGraph::new();
         rebuilt.project_from(&events);
@@ -689,7 +681,6 @@ mod tests {
         assert!(job.finished_at_ms.is_some());
         assert_eq!(job.attempts, 1);
     }
-
     #[tokio::test]
     async fn enqueue_logged_rejects_cycle_and_emits_event() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -697,14 +688,10 @@ mod tests {
         let a = AgentJob::new("a", PriorityClass::Normal);
         let a_id = a.id.clone();
         g.enqueue_logged(&log, a).await.unwrap();
-        // A self-cycle via dependency on itself is rejected.
         let mut bad = AgentJob::new("bad", PriorityClass::Normal);
         bad.dependencies = vec![bad.id.clone()];
         assert!(g.enqueue_logged(&log, bad).await.is_err());
-        // The valid job's enqueue event is in the log.
         let events = log.scan(None, None, None).await.unwrap();
-        assert!(events
-            .iter()
-            .any(|e| e.kind == "job.enqueued" && e.payload["job_id"] == a_id.as_str()));
+ assert!(events .iter() .any(|e| e.kind == "job.enqueued" && e.payload["job_id"] == a_id.as_str()));
     }
 }

@@ -1,0 +1,151 @@
+{
+  "schema": "hawking.hide.workspace_fixture.v1",
+  "name": "hide_workspace_v1",
+  "purpose": "Small but real durable HIDE workspace sample: YOU+CHAT turns, memory write+forget, one object, one automation, one permission grant, one permission refusal.",
+  "layout_authority": "crates/hide-core/src/project.rs WorkspaceLayout + persistence.rs File* stores",
+  "producers": {
+    ".hide/log/events.jsonl": "hide-core JsonlEventLog shape (schema_version=1 Event records)",
+    ".hide/kv/<table>/<key>.json": "hide-core FileKeyValueStore",
+    ".hide/kv/session_records/*": "hide-backend SessionRecord namespace",
+    ".hide/kv/you_automations/*": "hide-core AutomationStore::NAMESPACE",
+    ".hide/kv/permission_grants/*": "fixture permission grant records",
+    ".hide/kv/permission_refusals/*": "fixture permission refusal records",
+    ".hide/blobs/**": "hide-core FileBlobStore (sha256 content-addressed)",
+    ".hide/objects/**": "hide-core ObjectStore objects/meta layout",
+    ".hide/projections/*.jsonl": "hide-core FileProjectionStore",
+    ".hide/memory/fixture_records.jsonl": "semantic stand-in for classed memory write+forget"
+  },
+  "could_not_produce": [
+    {
+      "path": ".hide/memory/memory.db",
+      "reason": "SqliteMemoryStore requires BackendServices::open_workspace / rusqlite write from a hide-backend binary; this repair lane is forbidden from editing crate sources to add a fixture-maker binary. JSONL records capture write+forget semantics."
+    },
+    {
+      "path": ".hide/memory/classes.db",
+      "reason": "ClassedMemorySystem SQLite lives in hawking-context; same constraint as memory.db."
+    },
+    {
+      "path": "live multi-turn model completions",
+      "reason": "No live model on disk; agent messages are fixture text, not model-generated."
+    }
+  ],
+  "sessions": [
+    {
+      "id": "01HSESSIONYOU00000000000000",
+      "lens": "YOU",
+      "relationship": "root"
+    },
+    {
+      "id": "01HSESSIONCHAT0000000000000",
+      "lens": "CHAT",
+      "relationship": "side_chat",
+      "parent": "01HSESSIONYOU00000000000000"
+    }
+  ],
+  "required_paths": [
+    "MANIFEST.json",
+    ".hide/log/events.jsonl",
+    ".hide/kv/session_records/01HSESSIONYOU00000000000000.json",
+    ".hide/kv/session_records/01HSESSIONCHAT0000000000000.json",
+    ".hide/kv/you_automations/01HAUTOMATION0000000000001.json",
+    ".hide/kv/permission_grants/grant_001.json",
+    ".hide/kv/permission_refusals/refuse_001.json",
+    ".hide/memory/fixture_records.jsonl",
+    ".hide/blobs/7e/7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6",
+    ".hide/objects/meta/7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6.json",
+    ".hide/projections/01HSESSIONYOU00000000000000.jsonl"
+  ],
+  "files": [
+    {
+      "path": ".hide/blobs/7e/7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6",
+      "bytes": 38,
+      "sha256": "7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6"
+    },
+    {
+      "path": ".hide/kv/permission_grants/grant_001.json",
+      "bytes": 227,
+      "sha256": "1184843a9653e5b79188f173e29decc82f79fb7d3d56aaed541dfa1d0041d876"
+    },
+    {
+      "path": ".hide/kv/permission_refusals/refuse_001.json",
+      "bytes": 231,
+      "sha256": "4481d65fb8fd50c47b1172e959d7b530c9fda9a9a2284acaf59770e19b20da7c"
+    },
+    {
+      "path": ".hide/kv/session_records/01HSESSIONCHAT0000000000000.json",
+      "bytes": 339,
+      "sha256": "11e60a117a0058f0d7702c0416de1a97409b1b6e3bb1c3ed5e079764190a0702"
+    },
+    {
+      "path": ".hide/kv/session_records/01HSESSIONYOU00000000000000.json",
+      "bytes": 285,
+      "sha256": "a4f993d19af8b4cdbc2472ed96b3bcc03ef6a6d9b0a8cc62f83e9b51b2f7eb9e"
+    },
+    {
+      "path": ".hide/kv/sessions/chat_side.json",
+      "bytes": 73,
+      "sha256": "87de02bebc01c246d077eef4f16cadc6af19e1b1f7b283c2961e7a3ecf88c513"
+    },
+    {
+      "path": ".hide/kv/sessions/primary.json",
+      "bytes": 71,
+      "sha256": "bfb54dfafe8b7ac48653ffc6eff0879f49b24ed2c03bcc1dc7beb9928781b3fe"
+    },
+    {
+      "path": ".hide/kv/you_automations/01HAUTOMATION0000000000001.json",
+      "bytes": 739,
+      "sha256": "3e36244a8c164a1c37b647fcda69aebdd2bb4cc264f15c57c942e3629546945b"
+    },
+    {
+      "path": ".hide/log/events.jsonl",
+      "bytes": 3216,
+      "sha256": "aac243cd9d7c2531e4c7091a1b1e8a78aa7f4b8bb3868906fa183259e0068099"
+    },
+    {
+      "path": ".hide/memory/README_MEMORY.txt",
+      "bytes": 437,
+      "sha256": "82d203f6bb65dc5d75cbca1f272091368fcc3e0429de5c1fa29cb4e6b771272d"
+    },
+    {
+      "path": ".hide/memory/fixture_records.jsonl",
+      "bytes": 484,
+      "sha256": "cd1605d2b22857b9b846c3c0b70a5d346a5f4f301c3c2335ec57792374ba5225"
+    },
+    {
+      "path": ".hide/objects/meta/7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6.json",
+      "bytes": 266,
+      "sha256": "6545ee707e3d79d0d09ad3a07e63c07e05bbc21ba202e0096a61ee1f251ce1d3"
+    },
+    {
+      "path": ".hide/objects/objects/7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6",
+      "bytes": 38,
+      "sha256": "7e8a7e2e80ede7b8a9d6428983822432d5c6e329bc2e8a06a8062c8fcba5deb6"
+    },
+    {
+      "path": ".hide/personalization/records.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hide/projections/01HSESSIONYOU00000000000000.jsonl",
+      "bytes": 90,
+      "sha256": "af13cc031b8083dad402db6b2c11444bc39f2adba5c284402e603b4f5d0b677d"
+    },
+    {
+      "path": ".hide/research/runs.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "MANIFEST.json",
+      "bytes": 5861,
+      "sha256": "31b41775dc2897b0e939de67cc80b1c69412098cff8a50c617164150ecd03e72"
+    },
+    {
+      "path": "README.md",
+      "bytes": 154,
+      "sha256": "a9741997e6fa7d18383fac1bb471edc09b6ea4a589f15d41e290a9e9d09e1523"
+    }
+  ],
+  "verification": "BC-HIDE_SESSION-022 / MIG-015 / MIG-025"
+}

@@ -1,0 +1,101 @@
+{
+  "schema": "hawking.250k.checkpoint.v1",
+  "checkpoint": "400k",
+  "status": "closed",
+  "at": "2026-07-29",
+  "commit": "173d341e6d61ec2dcd4974916231170246950510",
+  "subject": "post-BRT5 combined current-main checkpoint",
+  "loc": {
+    "combined_active": 399817,
+    "active_files": 1172,
+    "runtime": 353228,
+    "test": 46589,
+    "by_subsystem": {
+      "hawking": 156217,
+      "hide": 99229,
+      "laboratory": 116349,
+      "shared": 28022
+    },
+    "generated": 0,
+    "reclassified_generated": 0
+  },
+  "topology": {
+    "directories_all": 126,
+    "directories_leaf": 99,
+    "source_files": 1020,
+    "rust_crates": 19,
+    "public_symbols": 8159,
+    "functions": 12588,
+    "files_over_1500_lines": 25,
+    "tiny_forwarders": 11
+  },
+  "behaviour_coverage": {
+    "constitution_behaviours": 220,
+    "committed_runnable_blackbox": 86,
+    "committed_runnable_pass": 86,
+    "committed_runnable_fail": 0,
+    "assertion_ledger_cases": 4623,
+    "test_case_manifest_entries": 1378,
+    "test_case_dispositions": {
+      "rewrite": 1125,
+      "execute": 154,
+      "retired_subject": 99
+    },
+    "f2_status": "OPEN_BLOCKED",
+    "note": "The F1 ledger remains sealed. F2 is not relabelled complete."
+  },
+  "migration_coverage": {
+    "contracts": 26,
+    "committed_samples_present": 22,
+    "samples_absent_by_contract": [
+      "MIG-003",
+      "MIG-004",
+      "MIG-005",
+      "MIG-016"
+    ],
+    "note": "The four absent samples are respectively external GGUF, absent TQ, optional sidecar, and rebuildable cache; their declared policies permit absence."
+  },
+  "capability_coverage": {
+    "invocable_replacements": 1,
+    "released_capabilities": 57,
+    "invalid_entries": 0
+  },
+  "performance": {
+    "baseline_file": "REBUILD_PERFORMANCE_BASELINE_MEASURED.json",
+    "baseline_measured": 11,
+    "baseline_skipped": 2,
+    "baseline_unavailable": 3,
+    "latest_cut": "B-RT5",
+    "latest_cut_classification": "risk-disconnected",
+    "latest_cut_reason": "hawking-seed-c was outside hawking-core, load_engine, CLI, serve, bench, and speculation product paths",
+    "gpu_or_tps_claim": "none"
+  },
+  "compatibility_facade_loc": 0,
+  "old_tree_residue": {
+    "removed": [
+      "crates/hawking-seed-c/**",
+      "BRT3 EAGLE5/Event-Horizon production modules",
+      "C-HIST-R1 released training, Ramanujan research, and historical campaign executables",
+      "pre-S2b tools/condense/engine process authority"
+    ],
+    "remaining_major_work": [
+      "S5 legacy gravity artifact framing pending accepted cutover",
+      "Core C science bodies under tools/condense and tools/foundry",
+      "remaining Core B runtime authority",
+      "remaining Core D HIDE authority",
+      "remaining Core E protocol/Bridge surfaces",
+      "Core F behaviour-driven test recomposition",
+      "cross-core topology collapse"
+    ]
+  },
+  "gates": {
+    "loc_authority": "pass",
+    "topology_authority": "pass",
+    "capability_manifest": "pass",
+    "generation": "pass: 0 generated / 0 reclassified",
+    "committed_blackbox": "pass: 86 / 86",
+    "brt5_product_checks": "pass",
+    "protected_path_diff": "none in checkpoint commit"
+  },
+  "rollback": "git revert the checkpoint metadata commit; product rollback for B-RT5 is git revert 173d341e6d61ec2dcd4974916231170246950510"
+}

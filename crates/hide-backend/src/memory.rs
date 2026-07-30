@@ -449,18 +449,14 @@ impl MemoryLedger {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn contains_symbol_matches_whole_identifier_tokens_only() {
         assert!(contains_symbol("fn parse_line() {}", "parse_line"));
-        // A substring of a larger identifier does NOT match (whole-token scan).
         assert!(!contains_symbol("fn parse_lines() {}", "parse_line"));
-        // A non-identifier symbol falls back to substring.
         assert!(contains_symbol("impl Foo { fn bar() {} }", "Foo"));
         assert!(contains_symbol("let x = Foo::bar();", "Foo::bar"));
         assert!(!contains_symbol("let x = 1;", "missing"));
     }
-
     #[test]
     fn outcome_governance_raises_on_success_and_quarantines_below_floor() {
         let mut record = MemoryRecord::from_draft(MemoryDraft::new(
@@ -471,15 +467,11 @@ mod tests {
         ));
         assert_eq!(record.outcome_score, INITIAL_OUTCOME_SCORE);
         assert_eq!(record.use_count, 0);
-
-        // Successes raise the score and the use count, never past 1.0.
         record.record_outcome(true);
         record.record_outcome(true);
         assert!(record.outcome_score > INITIAL_OUTCOME_SCORE);
         assert_eq!(record.use_count, 2);
         assert_eq!(record.status, MemoryStatus::Active);
-
-        // Repeated failures drive the score below the floor -> Quarantined.
         for _ in 0..6 {
             record.record_outcome(false);
         }
@@ -487,24 +479,17 @@ mod tests {
         assert_eq!(record.status, MemoryStatus::Quarantined);
         assert_eq!(record.use_count, 8);
     }
-
     #[test]
     fn resolve_citation_checks_path_and_symbol_against_disk() {
         let dir = std::env::temp_dir().join(format!("hide_mem_cite_{}", now_ms()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join("a.rs"), "pub fn alpha() {}\n").unwrap();
-
-        // Bare path that exists resolves.
         assert!(resolve_citation(&dir, "a.rs").resolved);
-        // Missing path does not.
         assert!(!resolve_citation(&dir, "b.rs").resolved);
-        // path#symbol that exists resolves; a missing symbol does not.
         assert!(resolve_citation(&dir, "a.rs#alpha").resolved);
         assert!(!resolve_citation(&dir, "a.rs#omega").resolved);
-
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn scope_listing_is_by_value_and_expiry_gates_eligibility() {
         let now = now_ms();
@@ -515,7 +500,6 @@ mod tests {
             "author",
         ));
         assert!(record.is_eligible(now));
-        // A past expiry makes it ineligible even while Active.
         record.expiry_ms = Some(now.saturating_sub(1));
         assert!(!record.is_eligible(now));
     }

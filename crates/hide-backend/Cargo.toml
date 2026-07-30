@@ -16,19 +16,20 @@ default = []
 tq = ["dep:strand-quant"]
 
 [dependencies]
+anyhow = { workspace = true }
+rand = { workspace = true }
+tree-sitter = "0.25"
+ulid = { workspace = true }
+regex = { workspace = true }
+walkdir = { workspace = true }
 hide-core = { path = "../hide-core" }
 # YOU / CHAT / IDE surface graph: claim-only handoffs, one session three lenses.
 # Model-free fixture path; grade ceiling READY_FOR_INTEGRATION.
-hide-you = { path = "../hide-you" }
 hide-kernel = { path = "../hide-kernel" }
 hide-fleet = { path = "../hide-fleet" }
-hide-personalize = { path = "../hide-personalize" }
-hide-security = { path = "../hide-security" }
-hide-tools = { path = "../hide-tools" }
 # Bible sec 40 / sec 24: the unified capability registry. The policy/effect
 # ledger reads each tool's DECLARED effects from here (via
 # build_builtin_tool_registry) rather than hardcoding an effect table.
-hide-extension-registry = { path = "../hide-extension-registry" }
 # Bible sec 15, sec 78.1 #2: the elevated Agent Server protocol authority
 # (Method / Notification / Initialize). The host RPC dispatcher (crate::rpc)
 # maps each protocol Method onto an existing BackendHost capability, additively,
@@ -36,17 +37,14 @@ hide-extension-registry = { path = "../hide-extension-registry" }
 hide-protocol = { path = "../hide-protocol" }
 # Book V sec 18-19: the bounded programmatic-tool sandbox. The backend supplies
 # the read-only host handles (search/file/index/git) and runs programs through it.
-hide-program-runtime = { path = "../hide-program-runtime" }
 # Bible sec 20 / sec 78.1 #11: read + resolve a repo's Claude Code migration
 # config (CLAUDE.md tree + un-scoped rules) so its launch instructions fold into
 # the compiled turn context. Pure parsing + precedence, no model.
-hide-compat = { path = "../hide-compat" }
 # Bible Book IX sec 28-29 / sec 78.1 #6: the deterministic verification plane.
 # The host wires its model-free StaticAnalysisOracle into a durable verification
 # path (typed Findings + Verdict + a verify.result-shaped receipt) and exposes
 # the review-role profiles as DATA. Probabilistic review execution stays
 # DEFERRED_MODEL_REQUIRED: no model is called on this path.
-hide-verify = { path = "../hide-verify" }
 hawking-context = { path = "../hawking-context" }
 hawking-index = { path = "../hawking-index" }
 # Speculation safety: Draft/Verified type boundary + durable sinks that accept
@@ -86,4 +84,5 @@ globset = { workspace = true }
 libc = "0.2"
 
 [dev-dependencies]
+tempfile = "3"
 tokio = { workspace = true }

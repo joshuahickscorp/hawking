@@ -5,7 +5,7 @@
   workflows, so the old center status chip and the Try-N control are gone.
 */
 import { boundShortcuts, useStore } from "../store";
-import { keyLabel } from "../surfaces/chat/actions";
+import { keyLabel } from "../surfaces/chat_actions";
 import { Icon } from "./icons";
 import { LogoH } from "./Mark";
 

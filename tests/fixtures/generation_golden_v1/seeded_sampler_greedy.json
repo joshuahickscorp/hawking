@@ -1,0 +1,19 @@
+{
+  "schema": "hawking.generation.golden.v1",
+  "path": "greedy_argmax_over_fixed_logits",
+  "algorithm": "for each step t: token_ids[t] = argmax_j logits[t][j] (lowest index on ties)",
+  "seed": null,
+  "temperature": 0.0,
+  "token_ids": [
+    2,
+    1,
+    4,
+    7,
+    1,
+    15,
+    2,
+    0
+  ],
+  "logits_path": "logits.json",
+  "note": "No large model required. Freezes one generation path so rebuilds can prove bit-exact sampling."
+}

@@ -118,14 +118,12 @@ fn validate_glm_template(template: &str) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     const MINIMAL_GLM_TEMPLATE: &str = r#"[gMASK]<sop>
 {%- if add_generation_prompt -%}
     <|assistant|>{{- '<think></think>' if (enable_thinking is defined and not enable_thinking) else '<think>' -}}
 {%- endif -%}
 <|user|><|system|><think>
 "#;
-
     #[test]
     fn renders_simple_user_turn_with_thinking() {
         let prompt = render_glm_chat(
@@ -141,7 +139,6 @@ mod tests {
         assert!(prompt.contains("<|user|>Hello"));
         assert!(prompt.ends_with("<|assistant|><think>"));
     }
-
     #[test]
     fn renders_without_thinking() {
         let prompt = render_glm_chat(
@@ -157,13 +154,11 @@ mod tests {
         assert!(prompt.ends_with("<|assistant|><think></think>"));
         assert!(!prompt.contains("Reasoning Effort"));
     }
-
     #[test]
     fn refuses_foreign_template() {
         let err = render_glm_chat("not a glm template", &[], true).unwrap_err();
         assert!(err.contains("missing marker"));
     }
-
     #[test]
     fn refuses_tool_role() {
         let err = render_glm_chat(

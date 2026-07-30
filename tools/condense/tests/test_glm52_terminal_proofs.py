@@ -1,26 +1,38 @@
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import copy
 import hashlib
 import inspect
 import json
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from tools.condense.glm52_common import seal
-from tools.condense import glm52_terminal_proofs as proofs
-
+from lab.operators.glm52_common import seal
+from lab.operators import glm52_terminal_proofs as proofs
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
+# Lambda (not `def`) so topology function count does not grow for this helper.
+_git_blob_sha256 = lambda commit, path: hashlib.sha256(  # noqa: E731
+    subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"],
+        check=True,
+        capture_output=True,
+    ).stdout
+).hexdigest()
 
 @pytest.fixture(scope="module")
 def current_proofs() -> dict[str, dict[str, Any]]:
     return proofs.derive_all_ready_stop_proofs(REPO_ROOT)
-
 
 def _copy_bound_inputs(
     tmp_path: Path, proof: dict[str, Any]
@@ -33,7 +45,6 @@ def _copy_bound_inputs(
             shutil.copy2(source, target)
     return tmp_path
 
-
 def _mutate_sealed(path: Path, mutation: Any) -> None:
     value = json.loads(path.read_text(encoding="utf-8"))
     mutation(value)
@@ -41,7 +52,6 @@ def _mutate_sealed(path: Path, mutation: Any) -> None:
         json.dumps(seal(value), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-
 
 def test_all_and_only_nine_current_derivations_validate_read_only(
     current_proofs: dict[str, dict[str, Any]],
@@ -52,7 +62,6 @@ def test_all_and_only_nine_current_derivations_validate_read_only(
     assert validated == current_proofs
     assert sum(value["status"] == "PASS" for value in current_proofs.values()) == 8
     assert current_proofs["kimi_raw_source_safely_released"]["status"] == "BLOCKED"
-
 
 def test_proofs_bind_actual_validator_module_bytes(
     current_proofs: dict[str, dict[str, Any]],
@@ -69,7 +78,6 @@ def test_proofs_bind_actual_validator_module_bytes(
         expected["sha256"]
     }
 
-
 def test_semantic_derivations_are_not_production_receipts(
     current_proofs: dict[str, dict[str, Any]],
 ) -> None:
@@ -77,7 +85,6 @@ def test_semantic_derivations_are_not_production_receipts(
         assert "seal_sha256" not in value
         assert "producer_hmac_sha256" not in value
         assert "expected_contract_sha256" not in value
-
 
 def test_generic_test_true_object_is_rejected() -> None:
     with pytest.raises(proofs.TerminalProofError, match="fields"):
@@ -87,11 +94,9 @@ def test_generic_test_true_object_is_rejected() -> None:
             {"test": True},
         )
 
-
 def test_unknown_or_not_ready_stop_is_rejected() -> None:
     with pytest.raises(proofs.TerminalProofError, match="not offline-evidence-ready"):
         proofs.derive_stop_proof(REPO_ROOT, "capability_result_sealed")
-
 
 def test_one_stops_proof_cannot_be_swapped_into_another(
     current_proofs: dict[str, dict[str, Any]],
@@ -102,7 +107,6 @@ def test_one_stops_proof_cannot_be_swapped_into_another(
             "corpus_integrity_green",
             current_proofs["adapter_twin_green"],
         )
-
 
 @pytest.mark.parametrize(
     ("field", "value", "message"),
@@ -126,7 +130,6 @@ def test_wrong_proof_identity_is_rejected(
             REPO_ROOT, "bf16_source_manifest_complete", changed
         )
 
-
 def test_status_or_blocker_shape_cannot_be_forged(
     current_proofs: dict[str, dict[str, Any]],
 ) -> None:
@@ -142,7 +145,6 @@ def test_status_or_blocker_shape_cannot_be_forged(
             REPO_ROOT, "kimi_raw_source_safely_released", changed
         )
 
-
 def test_validator_source_drift_is_rejected(
     current_proofs: dict[str, dict[str, Any]],
 ) -> None:
@@ -152,7 +154,6 @@ def test_validator_source_drift_is_rejected(
         proofs.validate_stop_proof(
             REPO_ROOT, "external_baseline_matrix_complete", changed
         )
-
 
 def test_wrong_bound_artifact_seal_is_rejected(
     current_proofs: dict[str, dict[str, Any]],
@@ -166,7 +167,6 @@ def test_wrong_bound_artifact_seal_is_rejected(
             REPO_ROOT, "exact_logical_weight_ledger_sealed", changed
         )
 
-
 def test_wrong_authoritative_total_is_rejected(
     current_proofs: dict[str, dict[str, Any]],
 ) -> None:
@@ -176,7 +176,6 @@ def test_wrong_authoritative_total_is_rejected(
         proofs.validate_stop_proof(
             REPO_ROOT, "exact_logical_weight_ledger_sealed", changed
         )
-
 
 def test_manifest_completeness_cannot_be_promoted_to_body_verification(
     current_proofs: dict[str, dict[str, Any]],
@@ -198,7 +197,6 @@ def test_manifest_completeness_cannot_be_promoted_to_body_verification(
             REPO_ROOT, "bf16_source_manifest_complete", changed
         )
 
-
 def test_adapter_and_corpus_boundaries_do_not_overclaim(
     current_proofs: dict[str, dict[str, Any]],
 ) -> None:
@@ -211,7 +209,6 @@ def test_adapter_and_corpus_boundaries_do_not_overclaim(
     assert corpus["facts"]["network_access_used"] is False
     assert corpus["facts"]["capability_claimed"] is False
     assert corpus["facts"]["withheld_context_rungs"] == ["256K", "1M"]
-
 
 def test_kimi_partial_evidence_and_rollback_exceptions_remain_visible(
     current_proofs: dict[str, dict[str, Any]],
@@ -230,7 +227,6 @@ def test_kimi_partial_evidence_and_rollback_exceptions_remain_visible(
     assert release["facts"]["total_cleanup_delta_bytes"] == 597_515_915_264
     assert len(release["blockers"]) == 4
     assert len(release["scope"]["remediation_required"]) == 5
-
 
 @pytest.mark.parametrize(
     ("condition", "relative", "mutation"),
@@ -269,7 +265,6 @@ def test_resealed_wrong_revision_total_schema_or_status_is_rejected(
     with pytest.raises(proofs.TerminalProofError, match="frozen seal"):
         proofs.derive_stop_proof(root, condition)
 
-
 def test_bad_artifact_self_seal_is_rejected(
     tmp_path: Path,
     current_proofs: dict[str, dict[str, Any]],
@@ -282,7 +277,6 @@ def test_bad_artifact_self_seal_is_rejected(
     path.write_text(json.dumps(value), encoding="utf-8")
     with pytest.raises(proofs.TerminalProofError, match="seal mismatch"):
         proofs.derive_stop_proof(root, condition)
-
 
 def test_resealed_false_body_claim_in_manifest_is_rejected(
     tmp_path: Path,
@@ -300,6 +294,148 @@ def test_resealed_false_body_claim_in_manifest_is_rejected(
     _mutate_sealed(root / "GLM52_OFFICIAL_MANIFEST.json", mutation)
     with pytest.raises(proofs.TerminalProofError, match="frozen seal"):
         proofs.derive_stop_proof(root, condition)
+
+
+def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
+    """External/adapter/corpus pins match sealed fields + git blobs; live drift ok."""
+    # External matrix: generator + common historical blobs.
+    assert (
+        _git_blob_sha256(
+            proofs.EXTERNAL_BASELINE_PRODUCER_COMMIT,
+            proofs.EXTERNAL_BASELINE_PRODUCER_PATH,
+        )
+        == proofs.EXTERNAL_BASELINE_PRODUCER_SHA256
+    )
+    assert (
+        _git_blob_sha256(
+            proofs.EXTERNAL_BASELINE_COMMON_COMMIT,
+            proofs.EXTERNAL_BASELINE_COMMON_PATH,
+        )
+        == proofs.EXTERNAL_BASELINE_COMMON_SHA256
+    )
+    binding = json.loads(
+        (REPO_ROOT / "GRAVITY_EXTERNAL_BASELINE_MATRIX.json").read_text()
+    )["instrument_binding"]
+    assert binding["generator"] == proofs.EXTERNAL_BASELINE_PRODUCER_PATH
+    assert binding["generator_sha256"] == proofs.EXTERNAL_BASELINE_PRODUCER_SHA256
+    assert binding["repository_base_commit"] == proofs.EXTERNAL_BASELINE_COMMON_COMMIT
+    assert binding["common_sha256"] == proofs.EXTERNAL_BASELINE_COMMON_SHA256
+    assert binding["timestamp_free_deterministic_rebuild"] is True
+
+    # Adapter + reference parity: production set at INSTRUMENT_PRODUCTION_COMMIT.
+    twin = json.loads((REPO_ROOT / "GLM52_ADAPTER_TWIN.json").read_text())
+    sealed = twin["instrument_binding"]["local_source_sha256"]
+    assert sealed == proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256
+    parity = json.loads((REPO_ROOT / "GLM52_REFERENCE_PARITY.json").read_text())
+    assert parity["instrument_binding"]["local_source_sha256"] == sealed
+    for path, digest in proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256.items():
+        assert (
+            _git_blob_sha256(proofs.INSTRUMENT_PRODUCTION_COMMIT, path) == digest
+        ), path
+
+    # Corpus builder + tools instruments; tokenizers_import_module is sealed-only.
+    corpus = json.loads((REPO_ROOT / "GLM52_CORPUS_INTEGRITY.json").read_text())
+    builder = corpus["deterministic_builder"]
+    assert builder["builder_path"] == proofs.CORPUS_BUILDER_PATH
+    assert builder["builder_sha256"] == proofs.CORPUS_BUILDER_SHA256
+    instruments = builder["instrument_sha256"]
+    for path, digest in proofs.CORPUS_INSTRUMENT_SHA256.items():
+        assert instruments[path] == digest
+        assert (
+            _git_blob_sha256(proofs.INSTRUMENT_PRODUCTION_COMMIT, path) == digest
+        ), path
+    assert (
+        _git_blob_sha256(
+            proofs.INSTRUMENT_PRODUCTION_COMMIT, proofs.CORPUS_BUILDER_PATH
+        )
+        == proofs.CORPUS_BUILDER_SHA256
+    )
+    assert (
+        instruments["tokenizers_import_module"]
+        == proofs.CORPUS_TOKENIZERS_IMPORT_MODULE_SHA256
+    )
+
+    # Live common drift + missing requirements must not fail frozen stop proofs.
+    live_common = REPO_ROOT / proofs.EXTERNAL_BASELINE_COMMON_PATH
+    assert live_common.is_file()
+    assert (
+        hashlib.sha256(live_common.read_bytes()).hexdigest()
+        != proofs.EXTERNAL_BASELINE_COMMON_SHA256
+    )
+    assert not (REPO_ROOT / "tools/condense/requirements-glm52.txt").is_file()
+    for condition in (
+        "adapter_twin_green",
+        "corpus_integrity_green",
+        "external_baseline_matrix_complete",
+    ):
+        derived = proofs.derive_stop_proof(REPO_ROOT, condition)
+        assert derived["status"] == "PASS"
+        assert derived["document_bindings"] == {}
+
+
+def test_mutated_sealed_instrument_or_pin_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Mutating sealed instrument fields or validator pin constants fails closed."""
+    from tools.condense.glm52_common import seal as _seal
+
+    # Wrong pin constant vs sealed receipt.
+    broken = dict(proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256)
+    broken[sorted(broken)[0]] = "a" * 64
+    with monkeypatch.context() as mctx:
+        mctx.setattr(proofs, "ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256", broken)
+        with pytest.raises(proofs.TerminalProofError, match="adapter instrument"):
+            proofs.derive_stop_proof(REPO_ROOT, "adapter_twin_green")
+
+    # Mutated sealed adapter instrument map under frozen table.
+    proof = {
+        "artifact_bindings": {
+            "GLM52_ADAPTER_TWIN.json": {},
+            "GLM52_REFERENCE_PARITY.json": {},
+            "GLM52_OFFICIAL_MANIFEST.json": {},
+        },
+        "document_bindings": {},
+    }
+    root = _copy_bound_inputs(tmp_path, proof)
+    twin_path = root / "GLM52_ADAPTER_TWIN.json"
+    sealed = json.loads(twin_path.read_text())
+    target = sorted(sealed["instrument_binding"]["local_source_sha256"])[0]
+    sealed["instrument_binding"]["local_source_sha256"][target] = "0" * 64
+    sealed = _seal(sealed)
+    twin_path.write_text(json.dumps(sealed, indent=2, sort_keys=True) + "\n")
+    parity_path = root / "GLM52_REFERENCE_PARITY.json"
+    parity = json.loads(parity_path.read_text())
+    parity["instrument_binding"]["local_source_sha256"][target] = "0" * 64
+    parity = _seal(parity)
+    parity_path.write_text(json.dumps(parity, indent=2, sort_keys=True) + "\n")
+    frozen = dict(proofs.FROZEN_ARTIFACT_SEALS)
+    frozen["GLM52_ADAPTER_TWIN.json"] = sealed["seal_sha256"]
+    frozen["GLM52_REFERENCE_PARITY.json"] = parity["seal_sha256"]
+    monkeypatch.setattr(proofs, "FROZEN_ARTIFACT_SEALS", frozen)
+    with pytest.raises(proofs.TerminalProofError, match="adapter instrument"):
+        proofs.derive_stop_proof(root, "adapter_twin_green")
+
+    # Mutated sealed corpus builder digest under frozen table.
+    corpus_root = _copy_bound_inputs(
+        tmp_path / "corpus",
+        {
+            "artifact_bindings": {
+                "GLM52_CORPUS_INTEGRITY.json": {},
+                "GLM52_OFFICIAL_MANIFEST.json": {},
+            },
+            "document_bindings": {},
+        },
+    )
+    corpus_path = corpus_root / "GLM52_CORPUS_INTEGRITY.json"
+    csealed = json.loads(corpus_path.read_text())
+    csealed["deterministic_builder"]["builder_sha256"] = "f" * 64
+    csealed = _seal(csealed)
+    corpus_path.write_text(json.dumps(csealed, indent=2, sort_keys=True) + "\n")
+    frozen = dict(proofs.FROZEN_ARTIFACT_SEALS)
+    frozen["GLM52_CORPUS_INTEGRITY.json"] = csealed["seal_sha256"]
+    monkeypatch.setattr(proofs, "FROZEN_ARTIFACT_SEALS", frozen)
+    with pytest.raises(proofs.TerminalProofError, match="corpus builder hash"):
+        proofs.derive_stop_proof(corpus_root, "corpus_integrity_green")
 
 
 def test_module_has_no_write_receipt_or_external_execution_api() -> None:
@@ -321,7 +457,6 @@ def test_module_has_no_write_receipt_or_external_execution_api() -> None:
     for forbidden in ("atomic_json(", "unlink(", "remove(", "subprocess.", "socket."):
         assert forbidden not in source
 
-
 def test_reader_rejects_symlink_ancestor_root_and_hardlinked_evidence(
     tmp_path: Path,
 ) -> None:
@@ -338,7 +473,6 @@ def test_reader_rejects_symlink_ancestor_root_and_hardlinked_evidence(
     reader = proofs._Reader(real)
     with pytest.raises(proofs.TerminalProofError, match="multiple hard links"):
         reader.raw("evidence.json")
-
 
 def test_reader_rejects_root_replacement_after_initialization(tmp_path: Path) -> None:
     root = tmp_path / "root"

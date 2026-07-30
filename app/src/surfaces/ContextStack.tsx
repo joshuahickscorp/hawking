@@ -7,7 +7,7 @@
   quality; it only shows the manifest (crates/hawking-context ContextManifest, delivered over the
   projection_patch{context_manifest} stream the host publishes per turn).
 
-  MOUNTED as the Context face of the conversation side panel (surfaces/home/ChatPanel.tsx). It was
+  MOUNTED as the Context face of the conversation side panel (surfaces/home_ChatPanel.tsx). It was
   imported by no module at all, so every control on it rendered nowhere.
 
   Actions resolve through the ONE command spine (src/generated/command_catalog.json), so snapshot is
@@ -24,7 +24,7 @@
                                                          session id; it is not a memcpy (3.3).
 */
 import { useStore } from "../store";
-import { ActionMark, HardwareToggle, Line, NoteField, OkMark, Stratum } from "./contextstack/parts";
+import { ActionMark, HardwareToggle, Line, NoteField, OkMark, Stratum } from './contextstack_parts';
 import {
   asReceipt,
   excludedSources,
@@ -40,7 +40,7 @@ import {
   useActions,
   useSteer,
   type ActionState,
-} from "./contextstack/state";
+} from './contextstack_state';
 
 const fileName = (p: string) => p.split("/").pop() ?? p;
 

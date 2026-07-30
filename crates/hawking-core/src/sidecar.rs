@@ -30,7 +30,7 @@
 //!
 //! # Bake command
 //!
-//! ```
+//! ```text
 //! hawking bake-sidecar \
 //!   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
 //!   --out models/qwen2.5-3b-instruct-q4_k_m.hawking \

@@ -372,38 +372,28 @@ pub struct EphemeralEndReport {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn property_network_disabled_cannot_construct_network_handle() {
         let policy = PrivacyPolicy::open().with_mode(PrivacyMode::NetworkDisabled);
         let err = NetworkCapableHandle::try_construct(&policy).unwrap_err();
         assert_eq!(err.handle, "NetworkCapableHandle");
         assert!(err.modes.iter().any(|m| m == "network_disabled"));
-
-        // Open policy constructs fine.
         assert!(NetworkCapableHandle::try_construct(&PrivacyPolicy::open()).is_ok());
-
-        // local_offline also blocks network construction.
         let offline = PrivacyPolicy::open().with_mode(PrivacyMode::LocalOffline);
         assert!(NetworkCapableHandle::try_construct(&offline).is_err());
         assert!(ConnectorCapableHandle::try_construct(&offline).is_err());
     }
-
     #[test]
     fn property_connector_disabled_cannot_construct_connector_handle() {
         let policy = PrivacyPolicy::open().with_mode(PrivacyMode::ConnectorDisabled);
         assert!(ConnectorCapableHandle::try_construct(&policy).is_err());
-        // Network may still construct under connector_disabled alone.
         assert!(NetworkCapableHandle::try_construct(&policy).is_ok());
     }
-
     #[test]
     fn property_ephemeral_means_ephemeral_no_durable_trace() {
         let mem = ClassedMemorySystem::open_in_memory("ws-eph").unwrap();
         let policy = PrivacyPolicy::open().with_mode(PrivacyMode::EphemeralNoMemory);
         let session = PrivacySession::new("eph-sess-1", policy);
-
-        // Working is allowed.
         let tcap = TurnWriteCap::new("t1");
         session
             .write_working(
@@ -414,8 +404,6 @@ mod tests {
             )
             .unwrap();
         assert_eq!(mem.list_working("t1").len(), 1);
-
-        // Durable writes refused.
         assert!(session
             .write_episodic(
                 &mem,
@@ -440,23 +428,16 @@ mod tests {
                 ClassMemoryDraft::new("no verify"),
             )
             .is_err());
-
-        // End session: nothing durable references it.
         let report = session.end(&mem).unwrap();
         assert!(report.was_ephemeral);
         assert_eq!(report.durable_refs_after, 0);
         assert_eq!(mem.durable_refs_to_session("eph-sess-1").unwrap(), 0);
         assert_eq!(mem.count(MemoryClass::Episodic).unwrap(), 0);
-
-        // Turn end also clears working.
         mem.end_turn("t1");
         assert!(mem.list_working("t1").is_empty());
     }
-
     #[test]
     fn property_ephemeral_end_purges_accidental_session_refs() {
-        // Even if something wrote durable episodic outside the session wrapper,
-        // end() for an ephemeral session purges by session_id.
         let mem = ClassedMemorySystem::open_in_memory("ws-eph2").unwrap();
         mem.write_episodic(
             &EpisodicWriteCap::mint(),
@@ -465,7 +446,6 @@ mod tests {
         )
         .unwrap();
         assert_eq!(mem.durable_refs_to_session("eph-sess-2").unwrap(), 1);
-
         let session = PrivacySession::new(
             "eph-sess-2",
             PrivacyPolicy::open().with_mode(PrivacyMode::EphemeralNoMemory),
@@ -475,14 +455,11 @@ mod tests {
         assert!(report.purged >= 1);
         assert_eq!(mem.count(MemoryClass::Episodic).unwrap(), 0);
     }
-
     #[test]
     fn property_encrypted_vault_requires_handle() {
         let mem = ClassedMemorySystem::open_in_memory("ws-vault").unwrap();
         let policy = PrivacyPolicy::open().with_mode(PrivacyMode::EncryptedVault);
         let session = PrivacySession::new("s-vault", policy.clone());
-
-        // Cannot write private_vault without the vault handle.
         let err = session
             .write_user(
                 &mem,
@@ -492,8 +469,6 @@ mod tests {
             )
             .unwrap_err();
         assert!(matches!(err, HideError::CapabilityMissing(_)));
-
-        // Vault handle constructs only under encrypted_vault mode.
         assert!(EncryptedVaultHandle::try_construct(&PrivacyPolicy::open()).is_err());
         let vault = EncryptedVaultHandle::try_construct(&policy).unwrap();
         let rec = session

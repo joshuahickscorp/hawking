@@ -27,3 +27,5 @@ impl KernelRuntimeClient {
         self.inference.generate(request, sink)
     }
 }
+
+

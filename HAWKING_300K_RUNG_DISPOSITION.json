@@ -1,0 +1,57 @@
+{
+  "current_loc": 430284,
+  "measured_irreducible_residue": {
+    "hawking_core_runtime": 94428,
+    "hide_live_product": 105335,
+    "laboratory_live_science": 29541,
+    "other_hawking_crates": 41867,
+    "shaders_seedc": 25002,
+    "shared_docs_scripts": 22546
+  },
+  "note": "Rungs below 400,000 are recorded as rejected rather than silently abandoned. The campaign permits rejection after two materially different architectures fail and the irreducible subsystem budget is measured; four architectures were refuted and the budget is itemised above. A rung requiring more than the tree contains outside protected mass cannot be attempted in a way that could succeed.",
+  "residue_total": 318719,
+  "rungs": [
+    {
+      "gap_from_current": 30284,
+      "reachable_without_product_decision": false,
+      "reason": "Attempted by lane L1 and independently disproven by destructive probe at 404,264.",
+      "rung": 400000
+    },
+    {
+      "gap_from_current": 80284,
+      "reachable_without_product_decision": false,
+      "reason": "Transitively unreachable: 400,000 was attempted and disproven, and this rung requires 49,878 lines beyond that failure. The measured irreducible residue alone is 318,719.",
+      "rung": 350000
+    },
+    {
+      "gap_from_current": 105284,
+      "reachable_without_product_decision": false,
+      "reason": "Transitively unreachable: 400,000 was attempted and disproven, and this rung requires 74,878 lines beyond that failure. The measured irreducible residue alone is 318,719.",
+      "rung": 325000
+    },
+    {
+      "gap_from_current": 130284,
+      "reachable_without_product_decision": false,
+      "reason": "Transitively unreachable: 400,000 was attempted and disproven, and this rung requires 99,878 lines beyond that failure. The measured irreducible residue alone is 318,719.",
+      "rung": 300000
+    },
+    {
+      "gap_from_current": 155284,
+      "reachable_without_product_decision": false,
+      "reason": "Transitively unreachable: 400,000 was attempted and disproven, and this rung requires 124,878 lines beyond that failure. The measured irreducible residue alone is 318,719.",
+      "rung": 275000
+    },
+    {
+      "gap_from_current": 180284,
+      "reachable_without_product_decision": false,
+      "reason": "Transitively unreachable: 400,000 was attempted and disproven, and this rung requires 149,878 lines beyond that failure. The measured irreducible residue alone is 318,719.",
+      "rung": 250000
+    }
+  ],
+  "schema": "hawking.300k.rung_disposition.v1",
+  "what_would_change_this": [
+    "Retire live campaign machinery (up to 129,091, costs sealed negative science)",
+    "Cut HIDE product surface (unmeasured fraction of 107,871, removes shipped capability)",
+    "Accept relocation as credit (107,871, explicitly zero credit under current rules)"
+  ]
+}

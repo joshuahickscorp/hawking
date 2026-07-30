@@ -351,7 +351,7 @@ export const useStore = create<State>((set, get) => ({
         break;
 
       case "runtime_status":
-        set({ runtimeStatus: k.data.status, runtimeDetail: k.data.detail, runtimeSeq: ev.seq });
+        set({ runtimeStatus: k.data.status as RuntimeState, runtimeDetail: k.data.detail, runtimeSeq: ev.seq });
         break;
 
       case "tool_progress":
@@ -378,7 +378,7 @@ export const useStore = create<State>((set, get) => ({
         break;
 
       case "projection_patch":
-        set((s) => routeProjection(s, k.data.projection, k.data.patch as Patch, ev.seq));
+        set((s) => routeProjection(s, k.data.projection as ProjectionName, k.data.patch as Patch, ev.seq));
         break;
 
       case "custom": {
@@ -539,12 +539,12 @@ function routeProjection(s: State, projection: ProjectionName, patch: Patch, seq
 
 /* ---- The ONE command spine ------------------------------------------------------------------
    crates/hide-protocol command_catalog() is the authority; src/generated/command_catalog.json is a
-   byte-identical copy of its golden (drift fails src/generated/catalog.test.ts). Buttons, keyboard
+   byte-identical copy of its golden (drift fails catalog_sync.test.ts). Buttons, keyboard
    shortcuts, context menus, and the palette all resolve the SAME id here and dispatch through the
    SAME runCommand, so no surface can re-declare its own binding.
 */
 
-/** The fields of the generated CommandSpec the FE reads (see crates/hide-sdk/goldens/commands.d.ts). */
+/** The fields of the CommandSpec the FE reads (see crates/hide-protocol/goldens/commands.d.ts). */
 export interface CommandSpec {
   id: string;
   title: string;

@@ -465,7 +465,6 @@ impl JsonObjectFsm {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn compiler_produces_real_hashes() {
         let c = ShellGrammarCompiler;
@@ -478,7 +477,6 @@ mod tests {
             .unwrap();
         assert!(!out.grammar_hash.starts_with("stub:"));
         assert_eq!(out.grammar_hash.len(), 16);
-        // Tokenizer sig changes the mask cache key but not the grammar hash.
         let out2 = c
             .compile(GrammarRequest {
                 name: "tool".into(),
@@ -489,19 +487,11 @@ mod tests {
         assert_eq!(out.grammar_hash, out2.grammar_hash);
         assert_ne!(out.mask_cache_key, out2.mask_cache_key);
     }
-
     #[test]
     fn schema_to_choices_and_regex() {
-        assert_eq!(
-            ShellGrammarCompiler::spec_from_schema("{\"enum\":[\"a\",\"b\"]}").unwrap(),
-            GrammarSpec::Choices(vec!["a".into(), "b".into()])
-        );
-        assert_eq!(
-            ShellGrammarCompiler::spec_from_schema("{\"pattern\":\"^\\\\d+$\"}").unwrap(),
-            GrammarSpec::Regex("^\\d+$".into())
-        );
+        assert_eq!(ShellGrammarCompiler::spec_from_schema("{\"enum\":[\"a\",\"b\"]}").unwrap(), GrammarSpec::Choices(vec!["a".into(), "b".into()]));
+        assert_eq!(ShellGrammarCompiler::spec_from_schema("{\"pattern\":\"^\\\\d+$\"}").unwrap(), GrammarSpec::Regex("^\\d+$".into()));
     }
-
     #[test]
     fn json_object_validate_missing_key() {
         let m = GrammarMatcher::new(GrammarSpec::JsonObject {
@@ -518,7 +508,6 @@ mod tests {
             _ => panic!("expected retry"),
         }
     }
-
     #[test]
     fn choices_and_regex_validate() {
         let m = GrammarMatcher::new(GrammarSpec::Choices(vec!["yes".into(), "no".into()])).unwrap();
@@ -531,30 +520,25 @@ mod tests {
         assert_eq!(r.validate("v12"), GrammarValidation::Valid);
         assert!(matches!(r.validate("x"), GrammarValidation::Retry(_)));
     }
-
     #[test]
     fn fsm_accepts_flat_object_and_completes() {
         let mut fsm = JsonObjectFsm::new();
-        // At Start only `{` is legal.
         assert!(fsm.mask().allow_open_brace);
         assert!(!fsm.mask().allow_quote);
         fsm.accept_str("{\"name\":\"edit_file\"}");
         assert!(fsm.is_complete());
         assert!(!fsm.is_dead_ended());
     }
-
     #[test]
     fn fsm_dead_ends_on_value_where_key_expected() {
         let mut fsm = JsonObjectFsm::new();
         fsm.accept_str("{1");
         assert!(fsm.is_dead_ended());
     }
-
     #[test]
     fn fsm_goes_permissive_on_nesting() {
         let mut fsm = JsonObjectFsm::new();
         fsm.accept_str("{\"a\":{\"b\":1}}");
-        // Did not dead-end on the nested object.
         assert!(!fsm.is_dead_ended());
     }
 }

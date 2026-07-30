@@ -63,25 +63,13 @@ impl Default for VerifierCostCurve {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProposerId {
     UserNgram,
-    SuffixArray,
-    Eagle5,
-    Rest,
     CrossTokenizer,
-    Retrieval,     // Phase 2 — REST-style retrieval proposer
-    Tree,          // Phase 6 — token-tree CPU fallback
-    ParallelDraft, // Phase 5 — parallel-head scaffold (HAWKING_EH_PARALLEL_DRAFT; kill-ledger: τ≥2.5 required)
 }
 impl ProposerId {
     pub fn as_str(self) -> &'static str {
         match self {
             ProposerId::UserNgram => "user_ngram",
-            ProposerId::SuffixArray => "suffix_array",
-            ProposerId::Eagle5 => "eagle5",
-            ProposerId::Rest => "rest",
             ProposerId::CrossTokenizer => "cross_tokenizer",
-            ProposerId::Retrieval => "retrieval",
-            ProposerId::Tree => "tree",
-            ProposerId::ParallelDraft => "parallel_draft",
         }
     }
 }
@@ -102,7 +90,7 @@ pub struct StepObservation {
 pub struct RouterCtx {
     pub target_ns_per_token: f32, // value an accepted draft token SAVES (small on
     // fast Qwen-3B → auto-kills neural spec there)
-    pub context_confidence: f32, // [0,1]; higher ⇒ longer draft (EAGLE-2 length)
+    pub context_confidence: f32, // [0,1]; higher ⇒ longer draft
     pub hidden_available: bool,  // gates any requires_hidden proposer this step
 }
 
@@ -297,7 +285,7 @@ impl ProposalRouter {
         // costs. NoSpec if none clears the forward + wall-clock floor — this stops
         // EH being net-negative on short drafts / weak acceptance (the eff-TPS
         // finding). Long-exact-span proposers
-        // (suffix/SAM/retrieval) win naturally: their per-slot ewma_accept_len is
+        // longer-span proposers win naturally: their per-slot ewma_accept_len is
         // high when they match, so they out-payoff n-gram's low-confidence tails.
         let mut best: Option<(ProposerId, usize, f32)> = None;
         for slot in &self.slots {
@@ -365,7 +353,7 @@ impl ProposalRouter {
     }
 
     /// Register a model-free (oracle_cleared=true) base slot alongside UserNgram.
-    /// Used by the 'ud_loop to add SuffixArray for two-proposer arbitration (P1.4).
+    /// Register an additional free (always-on) proposer slot.
     pub fn add_free_slot(&mut self, id: ProposerId, window: usize, min_accept_rate: f32) {
         self.slots.push(Slot {
             id,
@@ -405,12 +393,8 @@ impl ProposalRouter {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn weak_accept_no_spec() {
-        // Recent accepted-prefix collapses to ~1 → no B clears the verify-cost
-        // payoff floor → NoSpec. This is the cure for the net-negative short-draft
-        // case: the router declines to spec when it won't pay.
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
         for _ in 0..50 {
             r.record(
@@ -429,11 +413,8 @@ mod tests {
         });
         assert_eq!(plan, RouterPlan::NoSpec);
     }
-
     #[test]
     fn strong_accept_specs_long() {
-        // Recent accepted-prefix is long (~6) → spec with a large B that clears
-        // the verify-cost curve (payoff > floor).
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
         for _ in 0..50 {
             r.record(
@@ -458,19 +439,14 @@ mod tests {
             other => panic!("expected long Spec, got {other:?}"),
         }
     }
-
     #[test]
     fn gated_neural_slot_denied_without_go() {
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
-        let denied = r.enable_neural_slot(ProposerId::Eagle5, 16, 0.35, true, false, "NO-GO");
-        assert!(
-            denied.is_err(),
-            "hidden slot must be refused without an oracle GO"
-        );
-        let ok = r.enable_neural_slot(ProposerId::Eagle5, 16, 0.35, true, false, "GO");
+        let denied = r.enable_neural_slot(ProposerId::CrossTokenizer, 16, 0.35, true, false, "NO-GO");
+ assert!( denied.is_err(), "hidden slot must be refused without an oracle GO" );
+        let ok = r.enable_neural_slot(ProposerId::CrossTokenizer, 16, 0.35, true, false, "GO");
         assert!(ok.is_ok());
     }
-
     #[test]
     fn measured_wall_clock_overhead_can_kill_a_high_accept_slot() {
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
@@ -486,16 +462,8 @@ mod tests {
                 },
             );
         }
-        assert_eq!(
-            r.plan(&RouterCtx {
-                target_ns_per_token: 100.0,
-                context_confidence: 1.0,
-                hidden_available: false,
-            }),
-            RouterPlan::NoSpec
-        );
+        assert_eq!(r.plan(&RouterCtx { target_ns_per_token: 100.0, context_confidence: 1.0, hidden_available: false, }), RouterPlan::NoSpec);
     }
-
     #[test]
     fn measured_verifier_curve_is_injectable() {
         let mut r = ProposalRouter::new(16, 0.35, 1.0);

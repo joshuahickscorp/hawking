@@ -1,11 +1,11 @@
 use hide_core::config::HideConfig;
 use hide_core::permission::{PermissionPolicy, PermissionRule, RiskGate, StaticPermissionEngine};
 use hide_core::types::RiskLevel;
-use hide_security::redaction::Redactor;
-use hide_security::sandbox::{
+use hide_kernel::security::redaction::Redactor;
+use hide_kernel::security::sandbox::{
     default_workspace_profile, render_macos_seatbelt, RenderedSandboxProfile,
 };
-use hide_security::storage::AtRestPolicy;
+use hide_kernel::security::storage::AtRestPolicy;
 
 #[derive(Debug, Clone, Default)]
 pub struct SecurityServices {
@@ -50,7 +50,7 @@ impl SecurityServices {
                 },
                 PermissionRule {
                     // The capability the builtin shell tools actually advertise
-                    // (`hide_tools::spec_helpers::exec_spec` → `shell.exec`). The
+                    // (`hide_kernel::tooling::spec_helpers::exec_spec` → `shell.exec`). The
                     // rule previously named `process.exec`, which matched no tool,
                     // so every `shell.run` fell through to `default_decision` and
                     // was denied even with `shell_default = Allow`.

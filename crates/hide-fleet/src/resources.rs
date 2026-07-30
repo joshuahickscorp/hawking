@@ -217,18 +217,15 @@ fn read_free_memory_mb_linux() -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn thermal_drop_is_fractional_and_clamped() {
         let mut s = ResourceSnapshot::idle();
         s.dec_tps_baseline = 100.0;
         s.dec_tps_now = 75.0;
         assert!((s.thermal_drop_pct() - 0.25).abs() < 1e-6);
-        // No baseline → 0 (don't false-throttle on cold start).
         s.dec_tps_baseline = 0.0;
         assert_eq!(s.thermal_drop_pct(), 0.0);
     }
-
     #[tokio::test]
     async fn os_probe_classifies_thermal_from_proxy() {
         let probe = OsResourceProbe {
@@ -239,10 +236,8 @@ mod tests {
         assert_eq!(snap.thermal, ThermalState::Critical);
         assert_eq!(snap.max_generation_slots, 4);
     }
-
     #[tokio::test]
     async fn os_probe_reads_some_memory_on_this_platform() {
-        // On macOS/Linux this returns a real number; on others it's 0 (None path).
         let probe = OsResourceProbe::default();
         let snap = probe.snapshot(1, 0).await;
         #[cfg(any(target_os = "macos", target_os = "linux"))]

@@ -241,7 +241,6 @@ mod tests {
     use hide_core::event::{EventLog, InMemoryEventLog};
     use hide_core::ids::RunId;
     use std::sync::Arc;
-
     #[tokio::test]
     async fn command_router_records_control_intents() {
         let log = Arc::new(InMemoryEventLog::new());
@@ -253,13 +252,11 @@ mod tests {
             })
             .await
             .unwrap();
-
         assert!(ack.accepted);
         let events = log.scan(Some(control_session), None, None).await.unwrap();
         assert_eq!(events.len(), 1);
         assert_eq!(events[0].kind.as_str(), "user.intent.cancel_run");
     }
-
     #[tokio::test]
     async fn command_router_records_submit_turn_in_session() {
         let log = Arc::new(InMemoryEventLog::new());
@@ -273,12 +270,10 @@ mod tests {
             })
             .await
             .unwrap();
-
         let events = log.scan(Some(session), None, None).await.unwrap();
         assert_eq!(events.len(), 1);
         assert_eq!(events[0].kind.as_str(), "user.intent.submit_turn");
     }
-
     #[tokio::test]
     async fn empty_submit_turn_is_rejected_without_logging() {
         let log = Arc::new(InMemoryEventLog::new());
@@ -294,11 +289,9 @@ mod tests {
             .unwrap();
         assert!(!ack.accepted);
         assert!(ack.message.unwrap().contains("must not be empty"));
-        // Rejection logs nothing.
         let events = log.scan(Some(session), None, None).await.unwrap();
         assert!(events.is_empty());
     }
-
     #[tokio::test]
     async fn empty_argv_run_command_is_rejected() {
         let log = Arc::new(InMemoryEventLog::new());
@@ -312,7 +305,6 @@ mod tests {
             .unwrap();
         assert!(!ack.accepted);
     }
-
     #[tokio::test]
     async fn cancel_run_signals_the_interrupt_hub() {
         let log = Arc::new(InMemoryEventLog::new());
@@ -324,10 +316,6 @@ mod tests {
             })
             .await
             .unwrap();
-        // The hub buffered an Abort for this run.
-        assert!(matches!(
-            router.interrupts().take(&run),
-            Some(Interrupt::Abort)
-        ));
+ assert!(matches!( router.interrupts().take(&run), Some(Interrupt::Abort) ));
     }
 }

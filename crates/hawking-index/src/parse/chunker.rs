@@ -316,13 +316,11 @@ fn window_chunks(rel_path: &str, source: &str) -> Vec<CodeChunk> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn chunks_rust_by_definition() {
         let src = "pub fn alpha() {\n    let x = 1;\n}\n\npub fn beta() {\n    let y = 2;\n}\n";
         let chunks = chunk_file("m.rs", src);
         assert!(!chunks.is_empty());
-        // each chunk is content-addressed and non-empty
         for c in &chunks {
             assert_eq!(c.chunk_id.len(), 64);
             assert!(!c.text.trim().is_empty());
@@ -331,30 +329,20 @@ mod tests {
         assert!(joined.contains("alpha"));
         assert!(joined.contains("beta"));
     }
-
     #[test]
     fn identical_text_yields_identical_chunk_id() {
         let a = chunk_file("a.rs", "pub fn f() { body(); }");
         let b = chunk_file("b.rs", "pub fn f() { body(); }");
         assert_eq!(a[0].chunk_id, b[0].chunk_id);
     }
-
     #[test]
     fn chunk_symbol_is_enclosing_def_scip_id() {
         use crate::parse::parse_source;
-        // Two top-level fns: each chunk must carry the SCIP id of the def it covers,
-        // and that id must equal the symbol the parser emits (so hits map back).
         let src = "pub fn alpha() {\n    work();\n}\n\npub fn beta() {\n    other();\n}\n";
         let chunks = chunk_file("m.rs", src);
         assert!(!chunks.is_empty());
-        // every chunk that wraps a single def must have a symbol (not None)
         let with_sym: Vec<_> = chunks.iter().filter(|c| c.symbol.is_some()).collect();
-        assert!(
-            !with_sym.is_empty(),
-            "expected at least one chunk tagged with its enclosing symbol"
-        );
-
-        // The symbol id must be byte-identical to a parsed symbol's qualified_name.
+ assert!( !with_sym.is_empty(), "expected at least one chunk tagged with its enclosing symbol" );
         let parsed = parse_source("m.rs", src);
         let parsed_ids: std::collections::HashSet<&str> = parsed
             .symbols
@@ -363,42 +351,19 @@ mod tests {
             .collect();
         for c in &with_sym {
             let sym = c.symbol.as_deref().unwrap();
-            assert!(
-                parsed_ids.contains(sym),
-                "chunk symbol {sym:?} must match a parsed symbol id; have {parsed_ids:?}"
-            );
+            assert!(parsed_ids.contains(sym));
         }
-
-        // Specifically, the chunk covering `alpha` resolves to alpha's id.
         let alpha_id = scip_symbol_id(LangId::Rust, "m.rs", "alpha", SymKind::Function);
-        assert!(
-            chunks
-                .iter()
-                .any(|c| c.symbol.as_deref() == Some(alpha_id.as_str())),
-            "a chunk should map to alpha's SCIP id {alpha_id:?}"
-        );
+        assert!(chunks .iter() .any(|c| c.symbol.as_deref() == Some(alpha_id.as_str())));
     }
-
     #[test]
     fn chunk_symbol_resolves_to_inner_method_not_class() {
-        // A method chunk inside a class must resolve to the *method* (smallest
-        // enclosing def), not the class. Make the method body large enough that it
-        // survives as its own chunk (cAST won't merge a >MIN-size sibling).
         let body: String = (0..40).map(|i| format!("        line_{i}();\n")).collect();
         let src = format!("class Greeter {{\n    render() {{\n{body}    }}\n}}\n");
         let chunks = chunk_file("ui.ts", &src);
         let method_id = scip_symbol_id(LangId::TypeScript, "ui.ts", "render", SymKind::Method);
-        // there must be a chunk that maps to the inner method's id (smallest
-        // enclosing def), proving nested resolution prefers the method over the class.
-        assert!(
-            chunks
-                .iter()
-                .any(|c| c.symbol.as_deref() == Some(method_id.as_str())),
-            "expected a chunk mapped to inner method {method_id:?}; got {:?}",
-            chunks.iter().map(|c| c.symbol.clone()).collect::<Vec<_>>()
-        );
+        assert!(chunks .iter() .any(|c| c.symbol.as_deref() == Some(method_id.as_str())));
     }
-
     #[test]
     fn unknown_language_uses_window_fallback() {
         let big = "x".repeat(5000);

@@ -410,7 +410,6 @@ fn leaf_hash_map(node: &MerkleNode) -> BTreeMap<PathBuf, String> {
 mod tests {
     use super::*;
     use std::fs;
-
     fn write(dir: &Path, rel: &str, content: &str) {
         let p = dir.join(rel);
         if let Some(parent) = p.parent() {
@@ -418,7 +417,6 @@ mod tests {
         }
         fs::write(p, content).unwrap();
     }
-
     #[test]
     fn identical_trees_have_equal_root_and_empty_diff() {
         let tmp = tempfile::tempdir().unwrap();
@@ -431,7 +429,6 @@ mod tests {
         let cs = scanner.diff(&t1, &t2).unwrap();
         assert!(cs.is_empty(), "no change → empty changeset, got {cs:?}");
     }
-
     #[test]
     fn detects_add_modify_delete() {
         let tmp = tempfile::tempdir().unwrap();
@@ -439,33 +436,28 @@ mod tests {
         write(tmp.path(), "b.rs", "fn b() {}");
         let scanner = Blake3MerkleScanner::new(tmp.path());
         let before = scanner.scan_workspace().unwrap();
-
         write(tmp.path(), "a.rs", "fn a() { changed(); }"); // modify
         fs::remove_file(tmp.path().join("b.rs")).unwrap(); // delete
         write(tmp.path(), "c.rs", "fn c() {}"); // add
         let after = scanner.scan_workspace().unwrap();
-
         let cs = scanner.diff(&before, &after).unwrap();
         assert!(cs.modified.iter().any(|p| p.ends_with("a.rs")));
         assert!(cs.removed.iter().any(|p| p.ends_with("b.rs")));
         assert!(cs.added.iter().any(|p| p.ends_with("c.rs")));
         assert!(cs.renamed.is_empty());
     }
-
     #[test]
     fn detects_rename_by_identical_hash() {
         let tmp = tempfile::tempdir().unwrap();
         write(tmp.path(), "old_name.rs", "fn unchanged_content() {}");
         let scanner = Blake3MerkleScanner::new(tmp.path());
         let before = scanner.scan_workspace().unwrap();
-
         fs::rename(
             tmp.path().join("old_name.rs"),
             tmp.path().join("new_name.rs"),
         )
         .unwrap();
         let after = scanner.scan_workspace().unwrap();
-
         let cs = scanner.diff(&before, &after).unwrap();
         assert_eq!(cs.renamed.len(), 1, "expected one rename, got {cs:?}");
         let (old, new) = &cs.renamed[0];
@@ -473,7 +465,6 @@ mod tests {
         assert!(new.ends_with("new_name.rs"));
         assert!(cs.added.is_empty() && cs.removed.is_empty());
     }
-
     #[test]
     fn diff_is_pruned_for_unchanged_subtrees() {
         let tmp = tempfile::tempdir().unwrap();
@@ -483,8 +474,6 @@ mod tests {
         let before = scanner.scan_workspace().unwrap();
         write(tmp.path(), "touched/y.rs", "fn y() { more(); }");
         let after = scanner.scan_workspace().unwrap();
-
-        // The 'untouched' subtree hash must be unchanged across snapshots.
         let find = |t: &MerkleNode, name: &str| -> String {
             t.children
                 .iter()

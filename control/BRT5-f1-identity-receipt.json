@@ -1,0 +1,1062 @@
+{
+  "schema": "hawking.brt5.f1_identity_receipt.v1",
+  "rung": "B-RT5",
+  "product_decision": "BC-BRIDGE-012 release",
+  "disposition": "retired_subject",
+  "disposition_all": "retired_subject",
+  "replacement_all": null,
+  "f1_ledger_path": "control/ASSERTION_LEDGER.json",
+  "f1_ledger_entries": 4623,
+  "f1_ledger_unmodified": true,
+  "deleted_case_count": 98,
+  "count": 98,
+  "fingerprint_algorithm": "sha256(newline_joined_case_ids_document_order + trailing_newline)[:16]",
+  "fingerprint_sha256_16": "73cf6802c365698e",
+  "identity_set_sha256": "73cf6802c365698e14dfac006f4b1d78b51864a81e86979bbd62c536ecf4b5be",
+  "closed_disposition_vocabulary": "retired_subject (F1 CLOSED_DISPOSITIONS); informal subject_deleted synonym used in product prose only",
+  "blackbox_case": {
+    "case_id": "CASE.bb.BC-BRIDGE-012",
+    "disposition": "retired_subject",
+    "product_decision": "BC-BRIDGE-012 release \u2014 surface absent; matrix not edited",
+    "note": "REBUILD_BLACKBOX_TEST_MATRIX.json is protected/user-dirty; disposition recorded here and in constitution only"
+  },
+  "note": "All 98 ASSERTION_LEDGER identities under crates/hawking-seed-c/** are retired_subject one-to-one mapped to BC-BRIDGE-012 product release. Ledger sealed unmodified. Manifest projections use retired_subject closed vocabulary.",
+  "by_source_path": {
+    "crates/hawking-seed-c/tests/parity.rs": [
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::corrupt_gguf_metadata_fails_closed",
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::cpu_metal_logits_agree_on_argmax",
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::direct_row_dequant_matches_whole_for_each_real_format",
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::full_smollm_parity_direct_quant",
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::q4_k_present_and_direct_dequant_runs",
+      "CASE.rust_int.crates_hawking_seed_c_tests_parity::tokenizer_multi_prompt_and_no_full_dequant"
+    ],
+    "crates/hawking-seed-c/tests/providers_harness.rs": [
+      "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::full_integration_under_real_hawking_seed",
+      "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::provider_cannot_mutate_hawking_state",
+      "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::tamper_refusal_and_rollback_under_seed"
+    ],
+    "crates/hawking-seed-c/src/cpu.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_cpu::gemv_quant_matches_dense_for_q8_0"
+    ],
+    "crates/hawking-seed-c/src/evidence.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_evidence::receipt_seals_and_verifies"
+    ],
+    "crates/hawking-seed-c/src/f2.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_f2::f2_bridge_exercises_moe_contract"
+    ],
+    "crates/hawking-seed-c/src/gravity.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::above_sealed_receipt_bound_requires_a_receipt",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::exact_rational_comparison_is_exact_and_does_not_overflow",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::failing_g_math_is_refused_at_any_rate",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::ladder_reports_the_lowest_rate_actually_proven",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::proof_does_not_inherit_to_another_rate_or_artifact",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::reconstruction_can_never_admit",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::representation_precedes_bpw_and_doctor_budget",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::small_is_not_legal_without_capability",
+      "CASE.rust_unit.crates_hawking_seed_c_src_gravity::usable_sub_bit_is_admitted_without_a_receipt"
+    ],
+    "crates/hawking-seed-c/src/mxfp4.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_mxfp4::e2m1_codes_and_row",
+      "CASE.rust_unit.crates_hawking_seed_c_src_mxfp4::ue8_is_power_of_two"
+    ],
+    "crates/hawking-seed-c/src/pack.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_pack::additive_schema_preserves_legacy_serialization",
+      "CASE.rust_unit.crates_hawking_seed_c_src_pack::capability_schema_validates_and_stays_seed_compatible",
+      "CASE.rust_unit.crates_hawking_seed_c_src_pack::content_identity_is_canonical_and_excludes_capability_schema",
+      "CASE.rust_unit.crates_hawking_seed_c_src_pack::rejects_capability_without_impl",
+      "CASE.rust_unit.crates_hawking_seed_c_src_pack::verifies_offline_and_rejects_tamper_and_rollback"
+    ],
+    "crates/hawking-seed-c/src/providers/adapters.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::adapters_are_small_by_construction",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::dense_adapter_emits_valid_plan",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::moe_adapter_emits_route_experts_combine",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::non_transformer_arch_refuses_dense_plan"
+    ],
+    "crates/hawking-seed-c/src/providers/doctor.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_doctor::sparse_residual_reduces_divergence_within_budget"
+    ],
+    "crates/hawking-seed-c/src/providers/experiment.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_experiment::one_runner_drives_hawking_controller_only"
+    ],
+    "crates/hawking-seed-c/src/providers/forge.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_forge::ternary_family_forges_subbit_artifact_and_executes_directly"
+    ],
+    "crates/hawking-seed-c/src/providers/ir.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::every_declared_family_is_reachable",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::experts_must_follow_a_matching_router",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::legal_qwen3_moe_plan_validates",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::mla_rank_must_compress",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::multimodal_profile_requires_vision_ops",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::plan_round_trips_as_json_for_a_launch_packet",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::provisional_families_are_surfaced",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::shape_relation_violation_is_rejected",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::text_core_cannot_carry_vision",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::undeclared_tensor_role_is_rejected",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::unknown_op_for_profile_is_rejected"
+    ],
+    "crates/hawking-seed-c/src/providers/metal.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_metal::one_op_cpu_metal_parity"
+    ],
+    "crates/hawking-seed-c/src/providers/profiles.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_profiles::profiles_group_and_account_honestly"
+    ],
+    "crates/hawking-seed-c/src/providers/provider.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_provider::provider_output_is_sealed_evidence"
+    ],
+    "crates/hawking-seed-c/src/providers/registry.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::activation_is_witnessed_by_one_sealed_admission_receipt",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::ambiguous_activation_requires_explicit_choice",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::one_registry_answers_all_questions"
+    ],
+    "crates/hawking-seed-c/src/providers/source_decl.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_decl::source_record_seals_and_is_content_addressed"
+    ],
+    "crates/hawking-seed-c/src/providers/source_formats.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::accounted_bits_equal_serialized_bits",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::decode_is_bounded",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::f32_f16_bf16_decode_exactly",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::formats_declare_into_the_one_source_record",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::fp8_block_and_tensor_scaling_round_trip",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::fp8_matches_ofp8_hand_values",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_decode_delegates_to_the_one_dequantizer",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_header_validation",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_rows_match_the_real_block_layout",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::int4_symmetric_and_asymmetric_round_trip",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::known_bits_per_weight_are_not_understated",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::mxfp4_and_nvfp4_round_trip",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::registry_keys_are_unique",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::row_span_reads_only_one_row",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::safetensors_header_validates_and_rejects_corruption",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::shape_validation",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::truncated_and_wrong_dtype_buffers_are_rejected",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::unknown_safetensors_dtype_is_refused_not_guessed"
+    ],
+    "crates/hawking-seed-c/src/providers/speculation.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_speculation::prompt_lookup_proposes_and_target_verifies"
+    ],
+    "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::deepseek_chat_thinking_and_tool_call",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::every_protocol_declares_provenance_and_seals_as_json",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::harmony_chat_thinking_and_tool_call",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::missing_capability_refuses_instead_of_degrading",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::multimodal_turn_assembles_only_where_declared",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_plain_chat_matches_local_chat_template",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_thinking_and_non_thinking_modes",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_tool_call_and_response",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::unknown_role_and_unknown_mode_are_refused",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::unverified_tokens_refuse_rather_than_guess"
+    ],
+    "crates/hawking-seed-c/src/providers/validation.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_validation::fail_closed_missing_pack_fails",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_validation::one_harness_runs_property_and_skips_absent_fixture"
+    ],
+    "crates/hawking-seed-c/src/providers/verify.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::incompatible_abi_is_refused",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::missing_dependency_is_reported",
+      "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::verify_hydrate_tamper_rollback_and_receipt"
+    ],
+    "crates/hawking-seed-c/src/quant.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_quant::f16_primitive_roundtrips_scales",
+      "CASE.rust_unit.crates_hawking_seed_c_src_quant::q5_0_center_is_zero",
+      "CASE.rust_unit.crates_hawking_seed_c_src_quant::q8_0_roundtrip_simple",
+      "CASE.rust_unit.crates_hawking_seed_c_src_quant::row_dequant_matches_whole_tensor"
+    ],
+    "crates/hawking-seed-c/src/record.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_record::identity_is_content_addressed_and_canonical",
+      "CASE.rust_unit.crates_hawking_seed_c_src_record::seal_roundtrip_and_tamper"
+    ],
+    "crates/hawking-seed-c/src/state.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_state::drain_then_seal",
+      "CASE.rust_unit.crates_hawking_seed_c_src_state::happy_path_and_crash_resume",
+      "CASE.rust_unit.crates_hawking_seed_c_src_state::unknown_transition_rejected"
+    ],
+    "crates/hawking-seed-c/src/subbit.rs": [
+      "CASE.rust_unit.crates_hawking_seed_c_src_subbit::doctor_rescue_reduces_divergence_within_budget",
+      "CASE.rust_unit.crates_hawking_seed_c_src_subbit::subbit_is_under_one_bpw_and_executes_directly"
+    ]
+  },
+  "identities": [
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::corrupt_gguf_metadata_fails_closed",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "corrupt_gguf_metadata_fails_closed",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::cpu_metal_logits_agree_on_argmax",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "cpu_metal_logits_agree_on_argmax",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::direct_row_dequant_matches_whole_for_each_real_format",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "direct_row_dequant_matches_whole_for_each_real_format",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::full_smollm_parity_direct_quant",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "full_smollm_parity_direct_quant",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::q4_k_present_and_direct_dequant_runs",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "q4_k_present_and_direct_dequant_runs",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_parity::tokenizer_multi_prompt_and_no_full_dequant",
+      "source_path": "crates/hawking-seed-c/tests/parity.rs",
+      "symbol": "tokenizer_multi_prompt_and_no_full_dequant",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::full_integration_under_real_hawking_seed",
+      "source_path": "crates/hawking-seed-c/tests/providers_harness.rs",
+      "symbol": "full_integration_under_real_hawking_seed",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::provider_cannot_mutate_hawking_state",
+      "source_path": "crates/hawking-seed-c/tests/providers_harness.rs",
+      "symbol": "provider_cannot_mutate_hawking_state",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_seed_c_tests_providers_harness::tamper_refusal_and_rollback_under_seed",
+      "source_path": "crates/hawking-seed-c/tests/providers_harness.rs",
+      "symbol": "tamper_refusal_and_rollback_under_seed",
+      "kind": "rust_int",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_cpu::gemv_quant_matches_dense_for_q8_0",
+      "source_path": "crates/hawking-seed-c/src/cpu.rs",
+      "symbol": "gemv_quant_matches_dense_for_q8_0",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_evidence::receipt_seals_and_verifies",
+      "source_path": "crates/hawking-seed-c/src/evidence.rs",
+      "symbol": "receipt_seals_and_verifies",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_f2::f2_bridge_exercises_moe_contract",
+      "source_path": "crates/hawking-seed-c/src/f2.rs",
+      "symbol": "f2_bridge_exercises_moe_contract",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::above_sealed_receipt_bound_requires_a_receipt",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "above_sealed_receipt_bound_requires_a_receipt",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::exact_rational_comparison_is_exact_and_does_not_overflow",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "exact_rational_comparison_is_exact_and_does_not_overflow",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::failing_g_math_is_refused_at_any_rate",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "failing_g_math_is_refused_at_any_rate",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::ladder_reports_the_lowest_rate_actually_proven",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "ladder_reports_the_lowest_rate_actually_proven",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::proof_does_not_inherit_to_another_rate_or_artifact",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "proof_does_not_inherit_to_another_rate_or_artifact",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::reconstruction_can_never_admit",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "reconstruction_can_never_admit",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::representation_precedes_bpw_and_doctor_budget",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "representation_precedes_bpw_and_doctor_budget",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::small_is_not_legal_without_capability",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "small_is_not_legal_without_capability",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_gravity::usable_sub_bit_is_admitted_without_a_receipt",
+      "source_path": "crates/hawking-seed-c/src/gravity.rs",
+      "symbol": "usable_sub_bit_is_admitted_without_a_receipt",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_mxfp4::e2m1_codes_and_row",
+      "source_path": "crates/hawking-seed-c/src/mxfp4.rs",
+      "symbol": "e2m1_codes_and_row",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_mxfp4::ue8_is_power_of_two",
+      "source_path": "crates/hawking-seed-c/src/mxfp4.rs",
+      "symbol": "ue8_is_power_of_two",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_pack::additive_schema_preserves_legacy_serialization",
+      "source_path": "crates/hawking-seed-c/src/pack.rs",
+      "symbol": "additive_schema_preserves_legacy_serialization",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_pack::capability_schema_validates_and_stays_seed_compatible",
+      "source_path": "crates/hawking-seed-c/src/pack.rs",
+      "symbol": "capability_schema_validates_and_stays_seed_compatible",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_pack::content_identity_is_canonical_and_excludes_capability_schema",
+      "source_path": "crates/hawking-seed-c/src/pack.rs",
+      "symbol": "content_identity_is_canonical_and_excludes_capability_schema",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_pack::rejects_capability_without_impl",
+      "source_path": "crates/hawking-seed-c/src/pack.rs",
+      "symbol": "rejects_capability_without_impl",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_pack::verifies_offline_and_rejects_tamper_and_rollback",
+      "source_path": "crates/hawking-seed-c/src/pack.rs",
+      "symbol": "verifies_offline_and_rejects_tamper_and_rollback",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::adapters_are_small_by_construction",
+      "source_path": "crates/hawking-seed-c/src/providers/adapters.rs",
+      "symbol": "adapters_are_small_by_construction",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::dense_adapter_emits_valid_plan",
+      "source_path": "crates/hawking-seed-c/src/providers/adapters.rs",
+      "symbol": "dense_adapter_emits_valid_plan",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::moe_adapter_emits_route_experts_combine",
+      "source_path": "crates/hawking-seed-c/src/providers/adapters.rs",
+      "symbol": "moe_adapter_emits_route_experts_combine",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_adapters::non_transformer_arch_refuses_dense_plan",
+      "source_path": "crates/hawking-seed-c/src/providers/adapters.rs",
+      "symbol": "non_transformer_arch_refuses_dense_plan",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_doctor::sparse_residual_reduces_divergence_within_budget",
+      "source_path": "crates/hawking-seed-c/src/providers/doctor.rs",
+      "symbol": "sparse_residual_reduces_divergence_within_budget",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_experiment::one_runner_drives_hawking_controller_only",
+      "source_path": "crates/hawking-seed-c/src/providers/experiment.rs",
+      "symbol": "one_runner_drives_hawking_controller_only",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_forge::ternary_family_forges_subbit_artifact_and_executes_directly",
+      "source_path": "crates/hawking-seed-c/src/providers/forge.rs",
+      "symbol": "ternary_family_forges_subbit_artifact_and_executes_directly",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::every_declared_family_is_reachable",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "every_declared_family_is_reachable",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::experts_must_follow_a_matching_router",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "experts_must_follow_a_matching_router",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::legal_qwen3_moe_plan_validates",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "legal_qwen3_moe_plan_validates",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::mla_rank_must_compress",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "mla_rank_must_compress",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::multimodal_profile_requires_vision_ops",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "multimodal_profile_requires_vision_ops",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::plan_round_trips_as_json_for_a_launch_packet",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "plan_round_trips_as_json_for_a_launch_packet",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::provisional_families_are_surfaced",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "provisional_families_are_surfaced",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::shape_relation_violation_is_rejected",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "shape_relation_violation_is_rejected",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::text_core_cannot_carry_vision",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "text_core_cannot_carry_vision",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::undeclared_tensor_role_is_rejected",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "undeclared_tensor_role_is_rejected",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_ir::unknown_op_for_profile_is_rejected",
+      "source_path": "crates/hawking-seed-c/src/providers/ir.rs",
+      "symbol": "unknown_op_for_profile_is_rejected",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_metal::one_op_cpu_metal_parity",
+      "source_path": "crates/hawking-seed-c/src/providers/metal.rs",
+      "symbol": "one_op_cpu_metal_parity",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_profiles::profiles_group_and_account_honestly",
+      "source_path": "crates/hawking-seed-c/src/providers/profiles.rs",
+      "symbol": "profiles_group_and_account_honestly",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_provider::provider_output_is_sealed_evidence",
+      "source_path": "crates/hawking-seed-c/src/providers/provider.rs",
+      "symbol": "provider_output_is_sealed_evidence",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::activation_is_witnessed_by_one_sealed_admission_receipt",
+      "source_path": "crates/hawking-seed-c/src/providers/registry.rs",
+      "symbol": "activation_is_witnessed_by_one_sealed_admission_receipt",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::ambiguous_activation_requires_explicit_choice",
+      "source_path": "crates/hawking-seed-c/src/providers/registry.rs",
+      "symbol": "ambiguous_activation_requires_explicit_choice",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_registry::one_registry_answers_all_questions",
+      "source_path": "crates/hawking-seed-c/src/providers/registry.rs",
+      "symbol": "one_registry_answers_all_questions",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_decl::source_record_seals_and_is_content_addressed",
+      "source_path": "crates/hawking-seed-c/src/providers/source_decl.rs",
+      "symbol": "source_record_seals_and_is_content_addressed",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::accounted_bits_equal_serialized_bits",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "accounted_bits_equal_serialized_bits",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::decode_is_bounded",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "decode_is_bounded",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::f32_f16_bf16_decode_exactly",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "f32_f16_bf16_decode_exactly",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::formats_declare_into_the_one_source_record",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "formats_declare_into_the_one_source_record",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::fp8_block_and_tensor_scaling_round_trip",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "fp8_block_and_tensor_scaling_round_trip",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::fp8_matches_ofp8_hand_values",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "fp8_matches_ofp8_hand_values",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_decode_delegates_to_the_one_dequantizer",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "gguf_decode_delegates_to_the_one_dequantizer",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_header_validation",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "gguf_header_validation",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::gguf_rows_match_the_real_block_layout",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "gguf_rows_match_the_real_block_layout",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::int4_symmetric_and_asymmetric_round_trip",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "int4_symmetric_and_asymmetric_round_trip",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::known_bits_per_weight_are_not_understated",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "known_bits_per_weight_are_not_understated",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::mxfp4_and_nvfp4_round_trip",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "mxfp4_and_nvfp4_round_trip",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::registry_keys_are_unique",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "registry_keys_are_unique",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::row_span_reads_only_one_row",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "row_span_reads_only_one_row",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::safetensors_header_validates_and_rejects_corruption",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "safetensors_header_validates_and_rejects_corruption",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::shape_validation",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "shape_validation",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::truncated_and_wrong_dtype_buffers_are_rejected",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "truncated_and_wrong_dtype_buffers_are_rejected",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_source_formats::unknown_safetensors_dtype_is_refused_not_guessed",
+      "source_path": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "symbol": "unknown_safetensors_dtype_is_refused_not_guessed",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_speculation::prompt_lookup_proposes_and_target_verifies",
+      "source_path": "crates/hawking-seed-c/src/providers/speculation.rs",
+      "symbol": "prompt_lookup_proposes_and_target_verifies",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::deepseek_chat_thinking_and_tool_call",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "deepseek_chat_thinking_and_tool_call",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::every_protocol_declares_provenance_and_seals_as_json",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "every_protocol_declares_provenance_and_seals_as_json",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::harmony_chat_thinking_and_tool_call",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "harmony_chat_thinking_and_tool_call",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::missing_capability_refuses_instead_of_degrading",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "missing_capability_refuses_instead_of_degrading",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::multimodal_turn_assembles_only_where_declared",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "multimodal_turn_assembles_only_where_declared",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_plain_chat_matches_local_chat_template",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "qwen_plain_chat_matches_local_chat_template",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_thinking_and_non_thinking_modes",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "qwen_thinking_and_non_thinking_modes",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::qwen_tool_call_and_response",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "qwen_tool_call_and_response",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::unknown_role_and_unknown_mode_are_refused",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "unknown_role_and_unknown_mode_are_refused",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_tokenizer_protocols::unverified_tokens_refuse_rather_than_guess",
+      "source_path": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
+      "symbol": "unverified_tokens_refuse_rather_than_guess",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_validation::fail_closed_missing_pack_fails",
+      "source_path": "crates/hawking-seed-c/src/providers/validation.rs",
+      "symbol": "fail_closed_missing_pack_fails",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_validation::one_harness_runs_property_and_skips_absent_fixture",
+      "source_path": "crates/hawking-seed-c/src/providers/validation.rs",
+      "symbol": "one_harness_runs_property_and_skips_absent_fixture",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::incompatible_abi_is_refused",
+      "source_path": "crates/hawking-seed-c/src/providers/verify.rs",
+      "symbol": "incompatible_abi_is_refused",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::missing_dependency_is_reported",
+      "source_path": "crates/hawking-seed-c/src/providers/verify.rs",
+      "symbol": "missing_dependency_is_reported",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_providers_verify::verify_hydrate_tamper_rollback_and_receipt",
+      "source_path": "crates/hawking-seed-c/src/providers/verify.rs",
+      "symbol": "verify_hydrate_tamper_rollback_and_receipt",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_quant::f16_primitive_roundtrips_scales",
+      "source_path": "crates/hawking-seed-c/src/quant.rs",
+      "symbol": "f16_primitive_roundtrips_scales",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_quant::q5_0_center_is_zero",
+      "source_path": "crates/hawking-seed-c/src/quant.rs",
+      "symbol": "q5_0_center_is_zero",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_quant::q8_0_roundtrip_simple",
+      "source_path": "crates/hawking-seed-c/src/quant.rs",
+      "symbol": "q8_0_roundtrip_simple",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_quant::row_dequant_matches_whole_tensor",
+      "source_path": "crates/hawking-seed-c/src/quant.rs",
+      "symbol": "row_dequant_matches_whole_tensor",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_record::identity_is_content_addressed_and_canonical",
+      "source_path": "crates/hawking-seed-c/src/record.rs",
+      "symbol": "identity_is_content_addressed_and_canonical",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_record::seal_roundtrip_and_tamper",
+      "source_path": "crates/hawking-seed-c/src/record.rs",
+      "symbol": "seal_roundtrip_and_tamper",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_state::drain_then_seal",
+      "source_path": "crates/hawking-seed-c/src/state.rs",
+      "symbol": "drain_then_seal",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_state::happy_path_and_crash_resume",
+      "source_path": "crates/hawking-seed-c/src/state.rs",
+      "symbol": "happy_path_and_crash_resume",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_state::unknown_transition_rejected",
+      "source_path": "crates/hawking-seed-c/src/state.rs",
+      "symbol": "unknown_transition_rejected",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_subbit::doctor_rescue_reduces_divergence_within_budget",
+      "source_path": "crates/hawking-seed-c/src/subbit.rs",
+      "symbol": "doctor_rescue_reduces_divergence_within_budget",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_seed_c_src_subbit::subbit_is_under_one_bpw_and_executes_directly",
+      "source_path": "crates/hawking-seed-c/src/subbit.rs",
+      "symbol": "subbit_is_under_one_bpw_and_executes_directly",
+      "kind": "rust_unit",
+      "disposition": "retired_subject",
+      "product_decision": "BC-BRIDGE-012 release",
+      "replacement": null
+    }
+  ]
+}

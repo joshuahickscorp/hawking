@@ -868,7 +868,6 @@ impl PersonalTool for TaskListsTool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn property_high_risk_external_actions_never_silent() {
         let reg = PersonalToolRegistry::builtin();
@@ -877,65 +876,48 @@ mod tests {
         let proposal = tool
             .prepare(json!({"op":"add","title":"buy milk"}))
             .unwrap();
-
-        // Silent execute refused.
         let err = execute_without_receipt(tool, &proposal).unwrap_err();
         assert!(matches!(err, HideError::PolicyDenied(_)));
-
-        // Deny-by-default gate.
         let gate = ToolPermissionGate::deny_by_default();
         let mut denied = gate.issue_receipt(proposal.clone());
         assert_eq!(denied.decision, PermissionDecision::Deny);
         assert!(execute_with_receipt(tool, &proposal, &mut denied).is_err());
-
-        // Allow path requires single-use receipt.
         let gate = ToolPermissionGate::deny_by_default().allow_tool("task_lists");
         let mut receipt = gate.issue_receipt(proposal.clone());
         let result = execute_with_receipt(tool, &proposal, &mut receipt).unwrap();
         assert!(result.receipt_id.is_some());
         assert_eq!(result.output["task"]["title"], "buy milk");
-        // Second use of same receipt fails.
         assert!(execute_with_receipt(tool, &proposal, &mut receipt).is_err());
     }
-
     #[test]
     fn property_calculator_fixture_pure_compute() {
         let reg = PersonalToolRegistry::builtin();
         let live = reg.construct("calculator").unwrap();
         let tool = live.as_tool();
         let proposal = tool.prepare(json!({"expression":"2 + 3 * 4"})).unwrap();
-        // Pure compute: no receipt required.
         let result = execute_without_receipt(tool, &proposal).unwrap();
-        // Left-to-right: ((2+3)*4)=20
         assert_eq!(result.output["result"], 20.0);
     }
-
     #[test]
     fn property_task_lists_rollback() {
         let reg = PersonalToolRegistry::builtin();
         let live = reg.construct("task_lists").unwrap();
         let tool = live.as_tool();
         let gate = ToolPermissionGate::deny_by_default().allow_tool("task_lists");
-
         let p1 = tool.prepare(json!({"op":"add","title":"a"})).unwrap();
         let mut r1 = gate.issue_receipt(p1.clone());
         let res = execute_with_receipt(tool, &p1, &mut r1).unwrap();
         let token = res.rollback_token.as_deref().unwrap();
-
         let list = tool.prepare(json!({"op":"list"})).unwrap();
-        // list is local write tool but "list" doesn't need receipt for execute_without
-        // — task_lists always requires_receipt, so use gate.
         let mut rl = gate.issue_receipt(list.clone());
         let listed = execute_with_receipt(tool, &list, &mut rl).unwrap();
         assert_eq!(listed.output["tasks"].as_array().unwrap().len(), 1);
-
         tool.rollback(token).unwrap();
         let list2 = tool.prepare(json!({"op":"list"})).unwrap();
         let mut rl2 = gate.issue_receipt(list2.clone());
         let listed2 = execute_with_receipt(tool, &list2, &mut rl2).unwrap();
         assert_eq!(listed2.output["tasks"].as_array().unwrap().len(), 0);
     }
-
     #[test]
     fn property_declared_tools_non_constructible() {
         let reg = PersonalToolRegistry::builtin();
@@ -961,12 +943,8 @@ mod tests {
             assert!(!abi.permissions.effects.is_empty(), "{id} must declare effects");
             assert!(reg.construct(id).is_err(), "{id} must refuse construct");
         }
-        // High-risk declared tools require receipts.
         for id in ["web_search", "email_drafting", "local_shell", "mcp_tools", "code_execution"] {
-            assert!(
-                reg.get(id).unwrap().permissions.requires_receipt,
-                "{id} must require receipt"
-            );
+ assert!( reg.get(id).unwrap().permissions.requires_receipt, "{id} must require receipt" );
         }
     }
 }

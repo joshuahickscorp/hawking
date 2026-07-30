@@ -689,7 +689,6 @@ fn lexical_overlap(a: &str, b: &str) -> f32 {
 mod tests {
     use super::*;
     use crate::embed::HashingEmbeddingClient;
-
     fn rec(id: &str, kind: MemoryKind, text: &str, importance: f32) -> MemoryRecord {
         MemoryRecord {
             id: id.to_string(),
@@ -702,7 +701,6 @@ mod tests {
             tags: Vec::new(),
         }
     }
-
     #[tokio::test]
     async fn sqlite_store_retrieves_by_relevance() {
         let store = SqliteMemoryStore::open_in_memory()
@@ -730,18 +728,12 @@ mod tests {
             .retrieve("database sqlx", 2, &[MemoryKind::Semantic])
             .await
             .unwrap();
-        assert_eq!(
-            hits[0].record.id, "a",
-            "relevance should rank the db note first"
-        );
+ assert_eq!( hits[0].record.id, "a", "relevance should rank the db note first" );
         assert_eq!(store.len().unwrap(), 2);
     }
-
     #[tokio::test]
     async fn fts5_match_is_token_aware_not_substring() {
-        // No embedder => relevance comes solely from the FTS5 keyword leg.
         let store = SqliteMemoryStore::open_in_memory().unwrap();
-        // "cat" is a whole token here.
         store
             .upsert(rec(
                 "hit",
@@ -751,9 +743,6 @@ mod tests {
             ))
             .await
             .unwrap();
-        // "cat" appears only as a *substring* of "concatenate" — a naive
-        // `text.contains("cat")` scan would (wrongly) match this row, but the
-        // FTS5 inverted index tokenizes and does NOT.
         store
             .upsert(rec(
                 "substring_only",
@@ -763,39 +752,22 @@ mod tests {
             ))
             .await
             .unwrap();
-
         let hits = store
             .retrieve("cat", 10, &[MemoryKind::Semantic])
             .await
             .unwrap();
-
-        // The token match gets non-zero relevance.
         let hit = hits
             .iter()
             .find(|h| h.record.id == "hit")
             .expect("token row present");
-        assert!(
-            hit.relevance > 0.0,
-            "FTS5 MATCH must give the token row keyword relevance"
-        );
-        // The substring-only row gets ZERO relevance from the MATCH path — the
-        // proof that retrieval went through FTS5, not a substring scan.
+ assert!( hit.relevance > 0.0, "FTS5 MATCH must give the token row keyword relevance" );
         let sub = hits
             .iter()
             .find(|h| h.record.id == "substring_only")
             .expect("substring row still listed (all_live), but unmatched");
-        assert_eq!(
-            sub.relevance, 0.0,
-            "substring-only row must NOT be matched by FTS5 (a substring scan would)"
-        );
-        // And the token row therefore outranks the substring-only row.
-        assert!(
-            hits[0].record.id == "hit",
-            "token match should rank first; got {:?}",
-            hits.iter().map(|h| &h.record.id).collect::<Vec<_>>()
-        );
+        assert_eq!(sub.relevance, 0.0);
+        assert!(hits[0].record.id == "hit");
     }
-
     #[tokio::test]
     async fn supersede_retires_old_and_chains() {
         let store = SqliteMemoryStore::open_in_memory().unwrap();
@@ -810,20 +782,9 @@ mod tests {
         let hits = store.retrieve("fact", 10, &[]).await.unwrap();
         let ids: Vec<_> = hits.iter().map(|h| h.record.id.as_str()).collect();
         assert!(ids.contains(&"v2"));
-        assert!(
-            !ids.contains(&"v1"),
-            "retired version hidden from retrieval"
-        );
-        assert_eq!(
-            hits.iter()
-                .find(|h| h.record.id == "v2")
-                .unwrap()
-                .meta
-                .supersedes,
-            Some("v1".to_string())
-        );
+ assert!( !ids.contains(&"v1"), "retired version hidden from retrieval" );
+        assert_eq!(hits.iter() .find(|h| h.record.id == "v2") .unwrap() .meta .supersedes, Some("v1".to_string()));
     }
-
     #[tokio::test]
     async fn pin_keeps_recency_high() {
         let store = SqliteMemoryStore::open_in_memory().unwrap();
@@ -834,7 +795,6 @@ mod tests {
         let hits = store.retrieve("thing", 1, &[]).await.unwrap();
         assert!((hits[0].recency - 1.0).abs() < 1e-6, "pinned => no decay");
     }
-
     #[tokio::test]
     async fn in_memory_store_still_works() {
         let store = InMemoryMemoryStore::default();

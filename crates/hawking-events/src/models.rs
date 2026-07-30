@@ -71,12 +71,12 @@ pub const COMPETING_MODELS: &[CompetingModel] = &[
     },
     CompetingModel {
         name: "hawking_seed_c::state::Event",
-        file: "crates/hawking-seed-c/src/state.rs",
-        line: 52,
-        role: "Campaign state-machine transitions (Prepare/Admit/Run/...)",
+        file: "crates/hawking-events/src/adapters/seed.rs",
+        line: 1,
+        role: "Historical campaign FSM (binary product-released under BC-BRIDGE-012 / B-RT5)",
         status: MigrationStatus::DeprecatedAdapted,
         adapter_module: Some("hawking_events::adapters::seed"),
-        notes: "Domain-specific FSM; do not expand as a product event bus. Adapter emits seed.transition.",
+        notes: "hawking-seed-c crate deleted under B-RT5; hermetic mirror retained for seed.transition projection only. Do not expand as a product event bus.",
     },
     CompetingModel {
         name: "campaign JSONL ledgers",

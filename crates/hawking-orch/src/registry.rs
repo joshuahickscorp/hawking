@@ -331,19 +331,14 @@ fn local_role(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn default_registry_contains_core_runtime_roles() {
         let registry = RoleRegistry::with_default_local_roles();
         assert!(!registry.by_purpose(RolePurpose::FastDraft).is_empty());
         assert!(!registry.by_purpose(RolePurpose::HeroCoder).is_empty());
         assert!(!registry.by_purpose(RolePurpose::Embedder).is_empty());
-        assert!(registry
-            .by_purpose(RolePurpose::ToolPlanner)
-            .iter()
-            .any(|role| role.caps.grammar));
+ assert!(registry .by_purpose(RolePurpose::ToolPlanner) .iter() .any(|role| role.caps.grammar));
     }
-
     #[test]
     fn roles_toml_loads_and_resolves_escalation() {
         let toml = r#"
@@ -359,7 +354,6 @@ ctx_len_native = 32768
 footprint_mb = 500
 [roles.fast_draft.caps]
 grammar = true
-
 [roles.hero]
 role_kind = "hero"
 endpoint = "http://127.0.0.1:8081"
@@ -381,7 +375,6 @@ grammar = true
         assert!(hero.escalates_to.is_none());
         assert_eq!(hero.model.footprint_mb, 4600);
     }
-
     #[test]
     fn missing_file_falls_back_to_defaults() {
         let registry =

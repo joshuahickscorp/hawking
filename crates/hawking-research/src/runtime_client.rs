@@ -143,7 +143,6 @@ pub fn stub_runtime(response: impl Into<String>) -> Arc<dyn RuntimeClient> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[tokio::test]
     async fn chat_collects_streamed_tokens() {
         let rt = stub_runtime("a cited synthesis");
@@ -153,7 +152,6 @@ mod tests {
             .unwrap();
         assert_eq!(out, "a cited synthesis");
     }
-
     #[tokio::test]
     async fn embed_is_deterministic() {
         let rt = stub_runtime("");
@@ -161,7 +159,6 @@ mod tests {
         let b = rt.embed("paged attention").await.unwrap();
         assert_eq!(a, b);
     }
-
     #[tokio::test]
     async fn embed_batch_matches_single() {
         let rt = stub_runtime("");

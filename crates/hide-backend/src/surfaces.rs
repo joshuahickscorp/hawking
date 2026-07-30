@@ -5,7 +5,7 @@
 //! They do not each own a copy. A handoff capsule carries a CLAIM, never a
 //! CAPABILITY.
 //!
-//! This module is the host-side holder of [`hide_you::SurfaceGraph`]. It is
+//! This module is the host-side holder of [`crate::lenses::SurfaceGraph`]. It is
 //! model-free: seal/receive/switch only. No connector credentials, no inference.
 
 use hide_core::api::{UiEvent, UiEventKind};
@@ -13,7 +13,7 @@ use hide_core::event::NewEvent;
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
-use hide_you::{
+use crate::lenses::{
     Claim, DeliberateExclusion, EvidenceTier, HandoffCapsule, HandoffKind, Surface, SurfaceGraph,
     SurfaceGraphView,
 };
@@ -306,13 +306,11 @@ mod tests {
     use hide_core::event::InMemoryEventLog;
     use hide_core::ids::with_deterministic_ids;
     use std::sync::Arc;
-
     fn service() -> SurfaceGraphService {
         let events: DynEventLog = Arc::new(InMemoryEventLog::new());
         let ui = Arc::new(UiEventBus::default());
         SurfaceGraphService::for_session(&SessionId::from("ses_test"), events, ui)
     }
-
     #[test]
     fn lenses_share_primary_session() {
         with_deterministic_ids(1, || {
@@ -323,18 +321,10 @@ mod tests {
             assert!(v.lenses.contains_key("you"));
             assert!(v.lenses.contains_key("chat"));
             assert!(v.lenses.contains_key("ide"));
-            // YOU holds personal connectors; CHAT does not.
-            assert!(v.lenses["you"]
-                .connectors
-                .iter()
-                .any(|c| c == "gmail"));
-            assert!(!v.lenses["chat"]
-                .connectors
-                .iter()
-                .any(|c| c == "gmail"));
+ assert!(v.lenses["you"] .connectors .iter() .any(|c| c == "gmail"));
+ assert!(!v.lenses["chat"] .connectors .iter() .any(|c| c == "gmail"));
         });
     }
-
     #[tokio::test]
     async fn handoff_does_not_widen_chat_capability() {
         let s = with_deterministic_ids(2, service);
@@ -360,16 +350,9 @@ mod tests {
             .expect("create");
         assert!(capsule.try_extract_capability().is_err());
         let view = s.handoff_receive(&capsule.id).await.expect("receive");
-        assert!(!view.lenses["chat"]
-            .connectors
-            .iter()
-            .any(|c| c == "gmail"));
-        assert!(view.lenses["you"]
-            .connectors
-            .iter()
-            .any(|c| c == "gmail"));
+ assert!(!view.lenses["chat"] .connectors .iter() .any(|c| c == "gmail"));
+ assert!(view.lenses["you"] .connectors .iter() .any(|c| c == "gmail"));
         assert_eq!(view.inbox["chat"].len(), 1);
-        // Same session after handoff.
         assert_eq!(view.session_id, "ses_test");
     }
 }

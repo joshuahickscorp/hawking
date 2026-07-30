@@ -510,7 +510,6 @@ mod tests {
     use super::*;
     use crate::supervisor::testkit::FakeRuntime;
     use std::sync::Arc;
-
     #[test]
     fn extract_native_completion_reads_text_and_stats() {
         let body = json!({
@@ -523,7 +522,6 @@ mod tests {
         assert_eq!(stats.output_tokens, 2);
         assert_eq!(stats.decode_tokens_per_second, Some(41.5));
     }
-
     #[test]
     fn extract_chat_completion_reads_delta_content() {
         let body = json!({
@@ -535,21 +533,14 @@ mod tests {
         assert_eq!(stats.input_tokens, 4);
         assert_eq!(stats.output_tokens, 5);
     }
-
     #[test]
     fn extract_embedding_reads_first_vector() {
         let body = json!({ "data": [{ "embedding": [0.5, 0.25] }] });
         assert_eq!(extract_embedding(&body).unwrap(), vec![0.5f32, 0.25]);
     }
-
     #[test]
     fn parse_native_sse_lines_cover_token_stats_error_done() {
-        // A token fragment.
-        assert_eq!(
-            parse_native_sse_line("data: {\"tok_index\": 0, \"text\": \" Paris\"}"),
-            SseChunk::Token(" Paris".to_string())
-        );
-        // The terminal stats object → Done carrying the parsed stats.
+        assert_eq!(parse_native_sse_line("data: {\"tok_index\": 0, \"text\": \" Paris\"}"), SseChunk::Token(" Paris".to_string()));
         match parse_native_sse_line(
             "data: {\"stats\": {\"prompt_tokens\": 3, \"completion_tokens\": 5, \"dec_tps\": 40.0}}",
         ) {
@@ -559,25 +550,11 @@ mod tests {
             }
             other => panic!("expected Done, got {other:?}"),
         }
-        // A server-side error.
-        assert_eq!(
-            parse_native_sse_line("data: {\"error\": {\"message\": \"server busy\"}}"),
-            SseChunk::Error("server busy".to_string())
-        );
-        // The terminator.
-        assert!(matches!(
-            parse_native_sse_line("data: [DONE]"),
-            SseChunk::Done(_)
-        ));
-        // Keep-alive / comment / blank lines are ignored.
+        assert_eq!(parse_native_sse_line("data: {\"error\": {\"message\": \"server busy\"}}"), SseChunk::Error("server busy".to_string()));
+ assert!(matches!( parse_native_sse_line("data: [DONE]"), SseChunk::Done(_) ));
         assert_eq!(parse_native_sse_line(": keep-alive"), SseChunk::Ignore);
         assert_eq!(parse_native_sse_line(""), SseChunk::Ignore);
     }
-
-    /// An in-process SSE server answering the native generate route exactly as
-    /// `hawking serve` does (token chunks → stats → [DONE]), so the provider's
-    /// real streaming path is exercised without a model. Proves: tokens arrive
-    /// individually (not one batch) and the terminal Done carries stats.
     #[tokio::test]
     async fn generate_streams_native_sse_token_by_token() {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -601,7 +578,6 @@ mod tests {
             let _ = stream.write_all(resp.as_bytes()).await;
             let _ = stream.flush().await;
         });
-
         let provider = HttpModelProvider::new(format!("http://{addr}"));
         let mut tokens: Vec<String> = Vec::new();
         let mut done = false;
@@ -627,11 +603,9 @@ mod tests {
             let stats = provider.generate(req, &mut sink).await.unwrap();
             assert_eq!(stats.output_tokens, 2);
         }
-        // Tokens arrived as individual fragments (streaming), not one blob.
         assert_eq!(tokens, vec![" Paris".to_string(), ".".to_string()]);
         assert!(done, "stream must end with a terminal Done");
     }
-
     #[tokio::test]
     async fn generate_against_fake_runtime_emits_token_and_done() {
         let rt = Arc::new(FakeRuntime::spawn().await);
@@ -664,7 +638,6 @@ mod tests {
         assert!(done);
         rt.stop();
     }
-
     #[tokio::test]
     async fn embed_against_fake_runtime_returns_vector() {
         let rt = Arc::new(FakeRuntime::spawn().await);

@@ -329,19 +329,12 @@ mod tests {
     use hawking_core::{
         EngineConfig, GenStats, GenerateRequest, Result as CoreResult, StreamEvent,
     };
-
-    /// A deterministic fake engine that implements only the batched seam.
-    /// "Tokenization" = bytes; decode = a fixed token stream per slot that ends
-    /// in EOS, so we can assert grouping + stop handling without a GPU.
     struct FakeEngine {
         eos: u32,
-        /// next-token map keyed by (current token) -> next token; EOS terminates.
         chain: std::collections::HashMap<u32, u32>,
     }
-
     impl FakeEngine {
         fn new() -> Self {
-            // 100 -> 101 -> 102 -> EOS(0); 200 -> 201 -> EOS(0)
             let mut chain = std::collections::HashMap::new();
             chain.insert(100, 101);
             chain.insert(101, 102);
@@ -351,7 +344,6 @@ mod tests {
             Self { eos: 0, chain }
         }
     }
-
     impl Engine for FakeEngine {
         fn load(_w: &std::path::Path, _c: EngineConfig) -> CoreResult<Self> {
             Ok(Self::new())
@@ -367,7 +359,6 @@ mod tests {
             "fake"
         }
         fn encode_prompt_for_batch(&self, p: &str) -> CoreResult<Vec<u32>> {
-            // first prompt byte 'a' -> seed 100, 'b' -> seed 200, else single tok
             Ok(p.bytes().map(u32::from).collect())
         }
         fn decode_token_for_batch(&self, t: u32) -> CoreResult<String> {
@@ -381,12 +372,9 @@ mod tests {
             tokens: &[u32],
             _pos: &[usize],
         ) -> CoreResult<Vec<Vec<f32>>> {
-            // Not used by the batched path, but required by the trait.
             Ok(tokens.iter().map(|_| vec![0.0]).collect())
         }
-        // The batched seam the capture driver actually calls:
         fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> CoreResult<Vec<u32>> {
-            // First generated token = 100 if prompt starts with 'a', else 200.
             Ok(slots
                 .iter()
                 .map(|(_, ids)| {
@@ -410,7 +398,6 @@ mod tests {
                 .collect())
         }
     }
-
     fn tmp(name: &str) -> PathBuf {
         let mut d = std::env::temp_dir();
         d.push(format!(
@@ -420,7 +407,6 @@ mod tests {
         ));
         d
     }
-
     #[test]
     fn shard_path_keeps_stem_and_ext() {
         let p = shard_path(Path::new("/tmp/x/teacher.jsonl"), 3);
@@ -428,7 +414,6 @@ mod tests {
         let p2 = shard_path(Path::new("out.jsonl"), 0);
         assert_eq!(p2, PathBuf::from("out.shard-0000.jsonl"));
     }
-
     #[test]
     fn batched_capture_groups_and_stops_on_eos() {
         let mut eng = FakeEngine::new();
@@ -443,30 +428,23 @@ mod tests {
         let abort = Arc::new(AtomicBool::new(false));
         let n = run_batched_capture(&mut eng, &prompts, &cfg, &abort).expect("capture");
         assert_eq!(n, 3, "all three prompts captured");
-
-        // Group 0 = prompts 0,1 ; group 1 = prompt 2. Read both shards.
         let s0 = std::fs::read_to_string(shard_path(&out, 0)).unwrap();
         let s1 = std::fs::read_to_string(shard_path(&out, 1)).unwrap();
         let lines0: Vec<_> = s0.lines().collect();
         let lines1: Vec<_> = s1.lines().collect();
         assert_eq!(lines0.len(), 2);
         assert_eq!(lines1.len(), 1);
-
-        // 'a' chain: 100,101,102 then EOS -> completion "[100][101][102]", stop eos
         let r0: serde_json::Value = serde_json::from_str(lines0[0]).unwrap();
         assert_eq!(r0["idx"], 0);
         assert_eq!(r0["completion"], "[100][101][102]");
         assert_eq!(r0["stop"], "eos");
-        // 'b' chain: 200,201 then EOS
         let r1: serde_json::Value = serde_json::from_str(lines0[1]).unwrap();
         assert_eq!(r1["idx"], 1);
         assert_eq!(r1["completion"], "[200][201]");
         assert_eq!(r1["stop"], "eos");
-
         let _ = std::fs::remove_file(shard_path(&out, 0));
         let _ = std::fs::remove_file(shard_path(&out, 1));
     }
-
     #[test]
     fn max_new_tokens_caps_completion() {
         let mut eng = FakeEngine::new();
@@ -482,7 +460,6 @@ mod tests {
         run_batched_capture(&mut eng, &prompts, &cfg, &abort).expect("capture");
         let s = std::fs::read_to_string(shard_path(&out, 0)).unwrap();
         let r: serde_json::Value = serde_json::from_str(s.lines().next().unwrap()).unwrap();
-        // seed=100 (counts as 1), then 101 -> budget 2 reached, stop max_tokens.
         assert_eq!(r["completion"], "[100][101]");
         assert_eq!(r["stop"], "max_tokens");
         let _ = std::fs::remove_file(shard_path(&out, 0));

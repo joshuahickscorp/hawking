@@ -209,7 +209,6 @@ mod tests {
     use super::*;
     use crate::kg::{ConfidenceTier, ProvenanceSpan};
     use hawking_index::query::InMemoryCodeIndex;
-
     fn claim(text: &str) -> Claim {
         Claim {
             id: "claim:1".into(),
@@ -226,7 +225,6 @@ mod tests {
             confidence: ConfidenceTier::Extracted,
         }
     }
-
     #[test]
     fn issue_draft_has_acceptance_criteria_and_effort() {
         let d = claim_to_issue(&claim("paged attention reduces kv cache memory waste"));
@@ -235,7 +233,6 @@ mod tests {
         let issue: FindingIssue = d.into();
         assert_eq!(issue.suggested_labels, vec!["research".to_string()]);
     }
-
     #[test]
     fn equation_to_code_emits_typed_stub() {
         let code = equation_to_code(
@@ -249,11 +246,9 @@ mod tests {
         assert!(code.contains("fn softmax_scale(x: f64, d: f64) -> f64"));
         assert!(code.contains("todo!"));
     }
-
     #[tokio::test]
     async fn claim_links_to_indexed_symbols() {
         let index = InMemoryCodeIndex::default();
-        // Register a symbol the claim's terms should match.
         index.add_symbol(Symbol {
             qualified_name: "crate::attn::paged_attention".to_string(),
             name: "paged_attention".to_string(),
@@ -265,7 +260,6 @@ mod tests {
             .unwrap();
         assert!(!d.linked_symbols.is_empty());
     }
-
     #[test]
     fn memory_record_backlinks_to_node() {
         let node = KnowledgeNode {
@@ -277,10 +271,6 @@ mod tests {
             created_at_ms: 1,
         };
         let rec = node_to_memory(&node, Provenance::trusted("kg"));
-        assert!(rec
-            .provenance
-            .derived_from
-            .iter()
-            .any(|d| d == "kg:concept:x"));
+ assert!(rec .provenance .derived_from .iter() .any(|d| d == "kg:concept:x"));
     }
 }

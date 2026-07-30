@@ -1,0 +1,40 @@
+{
+  "id": "01HAUTOMATION0000000000001",
+  "kind": "scheduled",
+  "goal": "fixture automation: summarize nightly notes",
+  "trigger": {
+    "type": "manual"
+  },
+  "connectors": [],
+  "tools": [
+    "memory.search"
+  ],
+  "permissions": {
+    "tools": [
+      "memory.search"
+    ],
+    "connectors": []
+  },
+  "budget": {
+    "max_runs": 3,
+    "max_tokens": 1000
+  },
+  "usage": {
+    "runs": 0,
+    "tokens": 0
+  },
+  "notification_policy": "on_failure",
+  "stop_condition": {
+    "type": "after_runs",
+    "count": 3
+  },
+  "status": "active",
+  "stop_reason": null,
+  "last_result": null,
+  "results": [],
+  "next_run_ms": null,
+  "fired_slots": [],
+  "failure_count": 0,
+  "created_ms": 1720000000200,
+  "updated_ms": 1720000000200
+}

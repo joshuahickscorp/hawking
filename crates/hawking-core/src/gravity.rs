@@ -1,1373 +1,25 @@
-//! `.gravity` container reader + `gravity-pq` tensor codec.
-//!
-//! Mirrors the container framing in `tools/condense/gravity_format.py` and
-//! the `gravity-pq` tensor payload codec in `tools/condense/glm52_pack.py`.
-//! [`pq_matvec`] mirrors the CPU reference `pq_execute` in
-//! `tools/condense/gravity_forge.py`.
-//!
-//! Container layout (little-endian throughout):
-//! ```text
-//! bytes 0..8    magic == b"GRAVITY\0"
-//! bytes 8..12   format_version: u32   (reject > 1)
-//! bytes 12..20  header_len: u64
-//! bytes 20..20+header_len   UTF-8 JSON header
-//! bytes 20+header_len..     tensor payload body (descriptor offsets are
-//!                           relative to this point)
-//! ```
-
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::path::{Path, PathBuf};
-
-use half::f16;
+//! Runtime + Metal PQ; container/PQ/AAP in artifact.
+pub use crate::artifact::{
+    activation_aware_sections, parse_activation_aware_header, parse_pq_header, pq_matvec,
+    pq_matvec_f64_authority, pq_row, pq_sections, widen_native, ActivationAwareHeader,
+    ActivationAwareSide, ActivationAwareTensor, GravityShard, PqHeader, PqTensor, TensorDescriptor,
+};
+use crate::{Error, Result};
 use memmap2::Mmap;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
-
-use crate::{Error, Result};
-
-const MAGIC: &[u8; 8] = b"GRAVITY\0";
-const MAX_FORMAT_VERSION: u32 = 1;
-const PREFIX_LEN: usize = 20;
-
-/// One tensor's location + integrity info inside a `.gravity` shard's
-/// `tensors` header array.
-#[derive(Debug, Clone, Deserialize)]
-pub struct TensorDescriptor {
-    pub name: String,
-    pub codec: String,
-    /// Byte offset relative to the body (i.e. relative to `20 + header_len`).
-    pub offset: u64,
-    pub bytes: u64,
-    /// Hex-encoded SHA-256 of this tensor's payload bytes.
-    pub sha256: String,
-    pub shape: Vec<u64>,
-    pub elements: u64,
-}
-
-#[derive(Deserialize)]
-struct GravityHeader {
-    tensors: Vec<TensorDescriptor>,
-}
-
-/// An mmap-backed `.gravity` shard. `open` parses only the prefix + JSON
-/// header (cheap); tensor bytes are read/copied on demand via
-/// [`GravityShard::read_tensor`].
-pub struct GravityShard {
-    mmap: Mmap,
-    body_offset: u64,
-    tensors: HashMap<String, TensorDescriptor>,
-    tensor_order: Vec<String>,
-    /// The parsed JSON header with `tensors` removed (that part is modeled
-    /// above). Carries whatever else the writer put there — `model`,
-    /// `compression`, `integrity`, `architecture`, `tokenizer`, `shard`,
-    /// `schema`, etc. — verbatim and untyped.
-    pub extra: serde_json::Value,
-}
-
-impl GravityShard {
-    pub fn open(path: &Path) -> Result<GravityShard> {
-        let f = File::open(path)?;
-        // Safety: treated as read-only for the lifetime of `GravityShard`;
-        // truncation under us is caller error, same contract as gguf.rs.
-        let mmap = unsafe { Mmap::map(&f)? };
-        Self::from_mmap(mmap)
-    }
-
-    fn from_mmap(mmap: Mmap) -> Result<GravityShard> {
-        if mmap.len() < PREFIX_LEN {
-            return Err(Error::Gravity(format!(
-                "file too short for prefix: {} bytes",
-                mmap.len()
-            )));
-        }
-        let magic = &mmap[0..8];
-        if magic != MAGIC {
-            return Err(Error::Gravity(format!(
-                "bad magic {magic:?}, expected {MAGIC:?}"
-            )));
-        }
-        let format_version = u32::from_le_bytes(mmap[8..12].try_into().unwrap());
-        if format_version > MAX_FORMAT_VERSION {
-            return Err(Error::Gravity(format!(
-                "unsupported format_version {format_version} (max {MAX_FORMAT_VERSION})"
-            )));
-        }
-        let header_len = u64::from_le_bytes(mmap[12..20].try_into().unwrap());
-        let header_end = (PREFIX_LEN as u64)
-            .checked_add(header_len)
-            .ok_or_else(|| Error::Gravity("header_len overflow".into()))?;
-        if header_end > mmap.len() as u64 {
-            return Err(Error::Gravity(format!(
-                "header end {header_end} past file length {}",
-                mmap.len()
-            )));
-        }
-        let header_bytes = &mmap[PREFIX_LEN..header_end as usize];
-
-        let mut header_value: serde_json::Value = serde_json::from_slice(header_bytes)
-            .map_err(|e| Error::Gravity(format!("header JSON parse: {e}")))?;
-        let header: GravityHeader = serde_json::from_value(header_value.clone())
-            .map_err(|e| Error::Gravity(format!("header `tensors` parse: {e}")))?;
-        if let Some(obj) = header_value.as_object_mut() {
-            obj.remove("tensors");
-        }
-
-        let mut tensors = HashMap::with_capacity(header.tensors.len());
-        let mut tensor_order = Vec::with_capacity(header.tensors.len());
-        for d in header.tensors {
-            tensor_order.push(d.name.clone());
-            tensors.insert(d.name.clone(), d);
-        }
-
-        Ok(GravityShard {
-            mmap,
-            body_offset: header_end,
-            tensors,
-            tensor_order,
-            extra: header_value,
-        })
-    }
-
-    pub fn tensor_names(&self) -> impl Iterator<Item = &str> {
-        self.tensor_order.iter().map(String::as_str)
-    }
-
-    pub fn descriptor(&self, name: &str) -> Option<&TensorDescriptor> {
-        self.tensors.get(name)
-    }
-
-    /// Read one tensor's raw payload bytes (untouched — codec-specific
-    /// decoding, e.g. `gravity-pq`, is the caller's job). When
-    /// `verify_hash` is set, the payload's SHA-256 is checked against the
-    /// descriptor's `sha256` and a mismatch is an error.
-    pub fn read_tensor(&self, name: &str, verify_hash: bool) -> Result<Vec<u8>> {
-        use crate::cost_ledger::{self, Bucket};
-
-        let d = {
-            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
-            self.descriptor(name)
-                .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?
-        };
-        let start = self
-            .body_offset
-            .checked_add(d.offset)
-            .ok_or_else(|| Error::Gravity(format!("tensor {name}: offset overflow")))?;
-        let end = start
-            .checked_add(d.bytes)
-            .ok_or_else(|| Error::Gravity(format!("tensor {name}: end overflow")))?;
-        if end > self.mmap.len() as u64 {
-            return Err(Error::Gravity(format!(
-                "tensor {name}: end {end} past file length {}",
-                self.mmap.len()
-            )));
-        }
-        let payload = {
-            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
-            &self.mmap[start as usize..end as usize]
-        };
-        if verify_hash {
-            let _verify = cost_ledger::Scope::new(Bucket::ArtifactVerificationAndSha);
-            cost_ledger::record_sha_verification();
-            let mut h = Sha256::new();
-            h.update(payload);
-            let digest = h.finalize();
-            let hex: String = digest.iter().map(|b| format!("{b:02x}")).collect();
-            if hex != d.sha256 {
-                return Err(Error::Gravity(format!(
-                    "tensor {name}: sha256 mismatch: expected {}, got {hex}",
-                    d.sha256
-                )));
-            }
-        }
-        // Host-side copy out of the mmap. Counts as a hot-loop allocation when
-        // the cost ledger is recording a decode token.
-        cost_ledger::record_allocation(payload.len() as u64);
-        Ok(payload.to_vec())
-    }
-
-    /// Copy only the first `prefix_len` bytes of one tensor payload.
-    ///
-    /// This deliberately does **not** claim SHA-256 verification: a digest
-    /// covers the complete payload, so a prefix cannot authenticate it.
-    /// Header-only admission may use this to reject unsupported codecs before
-    /// allocating runtime state; execution must still reach [`read_tensor`]
-    /// and its ordinary full-payload verification before using the weight.
-    fn read_tensor_prefix_unverified(&self, name: &str, prefix_len: usize) -> Result<Vec<u8>> {
-        use crate::cost_ledger::{self, Bucket};
-
-        let d = {
-            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
-            self.descriptor(name)
-                .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?
-        };
-        if prefix_len as u64 > d.bytes {
-            return Err(Error::Gravity(format!(
-                "tensor {name}: payload {} bytes is shorter than requested {prefix_len}-byte prefix",
-                d.bytes
-            )));
-        }
-        let start = self
-            .body_offset
-            .checked_add(d.offset)
-            .ok_or_else(|| Error::Gravity(format!("tensor {name}: offset overflow")))?;
-        let tensor_end = start
-            .checked_add(d.bytes)
-            .ok_or_else(|| Error::Gravity(format!("tensor {name}: end overflow")))?;
-        if tensor_end > self.mmap.len() as u64 {
-            return Err(Error::Gravity(format!(
-                "tensor {name}: end {tensor_end} past file length {}",
-                self.mmap.len()
-            )));
-        }
-        let prefix_end = start
-            .checked_add(prefix_len as u64)
-            .ok_or_else(|| Error::Gravity(format!("tensor {name}: prefix end overflow")))?;
-        let prefix = {
-            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
-            &self.mmap[start as usize..prefix_end as usize]
-        };
-        cost_ledger::record_allocation(prefix.len() as u64);
-        Ok(prefix.to_vec())
-    }
-}
-
-const AAP_SCHEMA: &str = "hawking.glm52.activation_aware_pack.v1";
-const AAP_MAX_INDEX_BYTES: u64 = 256 * 1024 * 1024;
-const AAP_PASS_MAGIC: &[u8; 8] = b"GLM52PT0";
-const AAP_BASIS_MAGIC: &[u8; 8] = b"GLM52BAS";
-
-#[derive(Debug, Clone, Deserialize)]
-struct AapBasisDescriptor {
-    basis_layer: u16,
-    rank: u32,
-    offset: u64,
-    bytes: u64,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-struct AapTensorDescriptor {
-    name: String,
-    disposition: String,
-    #[serde(default)]
-    dtype: Option<String>,
-    offset: u64,
-    bytes: u64,
-    shape: Vec<u64>,
-}
-
-#[derive(Deserialize)]
-struct AapIndex {
-    schema: String,
-    bases: Vec<AapBasisDescriptor>,
-    tensors: Vec<AapTensorDescriptor>,
-}
-
-/// Read-only mmap of one activation-aware pack shard.
-///
-/// Shared basis bytes stay singular on disk. `read_tensor` attaches only the
-/// requested rank's basis columns to the requested coefficient payload,
-/// yielding the self-contained `activation-aware.f16` ABI consumed by CPU or
-/// Metal execution.
-struct ActivationAwareShard {
-    mmap: Mmap,
-    body_offset: u64,
-    tensors: HashMap<String, AapTensorDescriptor>,
-    bases: HashMap<u16, AapBasisDescriptor>,
-    source_dtypes: HashMap<String, String>,
-}
-
-impl ActivationAwareShard {
-    fn open(
-        path: &Path,
-        source_dtypes: &HashMap<String, String>,
-        expected_sha256: Option<&str>,
-        verify_hash: bool,
-    ) -> Result<Self> {
-        let file = File::open(path)?;
-        // Safety: same read-only/no-truncation contract as GravityShard.
-        let mmap = unsafe { Mmap::map(&file)? };
-        if verify_hash {
-            let expected = expected_sha256.ok_or_else(|| {
-                Error::Gravity(format!(
-                    "{}: activation-aware model index has no shard SHA-256",
-                    path.display()
-                ))
-            })?;
-            let mut digest = Sha256::new();
-            digest.update(&mmap[..]);
-            let observed: String = digest
-                .finalize()
-                .iter()
-                .map(|byte| format!("{byte:02x}"))
-                .collect();
-            if observed != expected {
-                return Err(Error::Gravity(format!(
-                    "{}: activation-aware shard SHA-256 mismatch: expected {expected}, got {observed}",
-                    path.display()
-                )));
-            }
-        }
-        Self::from_mmap(mmap, source_dtypes.clone())
-    }
-
-    fn from_mmap(mmap: Mmap, source_dtypes: HashMap<String, String>) -> Result<Self> {
-        if mmap.len() < 8 {
-            return Err(Error::Gravity(
-                "activation-aware shard is shorter than its index-length prefix".into(),
-            ));
-        }
-        let index_len = u64::from_le_bytes(mmap[..8].try_into().unwrap());
-        if index_len == 0 || index_len > AAP_MAX_INDEX_BYTES {
-            return Err(Error::Gravity(format!(
-                "activation-aware shard has invalid index length {index_len}"
-            )));
-        }
-        let body_offset = 8u64
-            .checked_add(index_len)
-            .ok_or_else(|| Error::Gravity("activation-aware index length overflow".into()))?;
-        if body_offset > mmap.len() as u64 {
-            return Err(Error::Gravity(format!(
-                "activation-aware index ends at {body_offset}, past file length {}",
-                mmap.len()
-            )));
-        }
-        let index: AapIndex =
-            serde_json::from_slice(&mmap[8..body_offset as usize]).map_err(|error| {
-                Error::Gravity(format!("activation-aware index JSON parse: {error}"))
-            })?;
-        if index.schema != AAP_SCHEMA {
-            return Err(Error::Gravity(format!(
-                "activation-aware schema {:?}, expected {AAP_SCHEMA:?}",
-                index.schema
-            )));
-        }
-        let body_bytes = mmap.len() as u64 - body_offset;
-        let mut spans: Vec<(u64, u64, String)> = Vec::new();
-        let mut bases = HashMap::with_capacity(index.bases.len());
-        for basis in index.bases {
-            let end = basis
-                .offset
-                .checked_add(basis.bytes)
-                .ok_or_else(|| Error::Gravity("activation-aware basis span overflow".into()))?;
-            if basis.bytes < ACTIVATION_AWARE_HEADER_LEN as u64 || end > body_bytes {
-                return Err(Error::Gravity(format!(
-                    "activation-aware basis {} span [{}, {end}) outside {body_bytes}-byte body",
-                    basis.basis_layer, basis.offset
-                )));
-            }
-            if bases.insert(basis.basis_layer, basis.clone()).is_some() {
-                return Err(Error::Gravity(format!(
-                    "duplicate activation-aware basis layer {}",
-                    basis.basis_layer
-                )));
-            }
-            spans.push((basis.offset, end, format!("basis:{}", basis.basis_layer)));
-        }
-        let mut tensors = HashMap::with_capacity(index.tensors.len());
-        for tensor in index.tensors {
-            let end = tensor
-                .offset
-                .checked_add(tensor.bytes)
-                .ok_or_else(|| Error::Gravity("activation-aware tensor span overflow".into()))?;
-            if tensor.bytes < ACTIVATION_AWARE_HEADER_LEN as u64 || end > body_bytes {
-                return Err(Error::Gravity(format!(
-                    "activation-aware tensor {:?} span [{}, {end}) outside {body_bytes}-byte body",
-                    tensor.name, tensor.offset
-                )));
-            }
-            if tensor.shape.is_empty() || tensor.shape.len() > 2 {
-                return Err(Error::Gravity(format!(
-                    "activation-aware tensor {:?} has unsupported shape {:?}",
-                    tensor.name, tensor.shape
-                )));
-            }
-            if tensors
-                .insert(tensor.name.clone(), tensor.clone())
-                .is_some()
-            {
-                return Err(Error::Gravity(format!(
-                    "duplicate activation-aware tensor {:?}",
-                    tensor.name
-                )));
-            }
-            spans.push((tensor.offset, end, format!("tensor:{}", tensor.name)));
-        }
-        spans.sort_by_key(|span| span.0);
-        if spans.first().map(|span| span.0) != Some(0) {
-            return Err(Error::Gravity(
-                "activation-aware first payload does not begin at body offset zero".into(),
-            ));
-        }
-        for pair in spans.windows(2) {
-            if pair[0].1 != pair[1].0 {
-                return Err(Error::Gravity(format!(
-                    "activation-aware payloads {:?} and {:?} are not contiguous ({} != {})",
-                    pair[0].2, pair[1].2, pair[0].1, pair[1].0
-                )));
-            }
-        }
-        if spans.last().map(|span| span.1) != Some(body_bytes) {
-            return Err(Error::Gravity(format!(
-                "activation-aware indexed body ends at {}, physical body ends at {body_bytes}",
-                spans.last().map(|span| span.1).unwrap_or(0)
-            )));
-        }
-        Ok(Self {
-            mmap,
-            body_offset,
-            tensors,
-            bases,
-            source_dtypes,
-        })
-    }
-
-    fn descriptor(&self, name: &str) -> Result<&AapTensorDescriptor> {
-        self.tensors
-            .get(name)
-            .ok_or_else(|| Error::Gravity(format!("no such activation-aware tensor {name:?}")))
-    }
-
-    fn span(&self, offset: u64, bytes: u64, label: &str) -> Result<&[u8]> {
-        let start = self
-            .body_offset
-            .checked_add(offset)
-            .ok_or_else(|| Error::Gravity(format!("{label}: offset overflow")))?;
-        let end = start
-            .checked_add(bytes)
-            .ok_or_else(|| Error::Gravity(format!("{label}: end overflow")))?;
-        if end > self.mmap.len() as u64 {
-            return Err(Error::Gravity(format!(
-                "{label}: end {end} past shard length {}",
-                self.mmap.len()
-            )));
-        }
-        Ok(&self.mmap[start as usize..end as usize])
-    }
-
-    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
-        let descriptor = self.descriptor(name)?;
-        let codec = match descriptor.disposition.as_str() {
-            "activation_aware" => "activation-aware.f16".to_string(),
-            "pass_through" => {
-                let source_dtype = descriptor
-                    .dtype
-                    .as_deref()
-                    .or_else(|| self.source_dtypes.get(name).map(String::as_str))
-                    .ok_or_else(|| {
-                        Error::Gravity(format!(
-                            "activation-aware pass-through tensor {name:?} has no source dtype"
-                        ))
-                    })?;
-                match source_dtype {
-                    "BF16" | "BFLOAT16" => "native.bf16".to_string(),
-                    "F16" | "FLOAT16" => "native.f16".to_string(),
-                    "F32" | "FLOAT32" => "native.f32".to_string(),
-                    other => {
-                        return Err(Error::Gravity(format!(
-                        "activation-aware tensor {name:?} has unsupported source dtype {other:?}"
-                    )))
-                    }
-                }
-            }
-            other => {
-                return Err(Error::Gravity(format!(
-                    "activation-aware tensor {name:?} has unsupported disposition {other:?}"
-                )))
-            }
-        };
-        Ok((codec, descriptor.shape.clone()))
-    }
-
-    fn read_tensor(&self, name: &str) -> Result<Vec<u8>> {
-        let descriptor = self.descriptor(name)?;
-        let payload = self.span(descriptor.offset, descriptor.bytes, name)?;
-        match descriptor.disposition.as_str() {
-            "pass_through" => {
-                if &payload[..8] != AAP_PASS_MAGIC {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware pass-through tensor {name:?} has bad magic {:?}",
-                        &payload[..8]
-                    )));
-                }
-                let ndim = u32::from_le_bytes(payload[8..12].try_into().unwrap()) as usize;
-                let rows = u32::from_le_bytes(payload[12..16].try_into().unwrap()) as u64;
-                let cols = u32::from_le_bytes(payload[16..20].try_into().unwrap()) as u64;
-                if ndim != descriptor.shape.len()
-                    || descriptor.shape.first().copied().unwrap_or(0) != rows
-                    || (ndim > 1 && descriptor.shape.get(1).copied().unwrap_or(0) != cols)
-                {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware pass-through tensor {name:?} header shape disagrees with index {:?}",
-                        descriptor.shape
-                    )));
-                }
-                let (codec, _) = self.codec_and_shape(name)?;
-                let unit = if codec == "native.f32" { 4 } else { 2 };
-                let elements = descriptor.shape.iter().try_fold(1u64, |acc, &value| {
-                    acc.checked_mul(value)
-                        .ok_or_else(|| Error::Gravity(format!("{name}: element count overflow")))
-                })?;
-                let expected = elements
-                    .checked_mul(unit)
-                    .ok_or_else(|| Error::Gravity(format!("{name}: byte count overflow")))?;
-                let raw = &payload[ACTIVATION_AWARE_HEADER_LEN..];
-                if raw.len() as u64 != expected {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware pass-through tensor {name:?} has {} raw bytes, expected {expected}",
-                        raw.len()
-                    )));
-                }
-                Ok(raw.to_vec())
-            }
-            "activation_aware" => {
-                let header = parse_activation_aware_header(payload)?;
-                if descriptor.shape != vec![header.rows as u64, header.cols as u64] {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware tensor {name:?} payload shape [{}, {}] != index {:?}",
-                        header.rows, header.cols, descriptor.shape
-                    )));
-                }
-                if header.has_basis {
-                    return Ok(payload.to_vec());
-                }
-                let coefficient_values = match header.side {
-                    ActivationAwareSide::Input => {
-                        (header.rows as usize).checked_mul(header.rank as usize)
-                    }
-                    ActivationAwareSide::Output => {
-                        (header.rank as usize).checked_mul(header.cols as usize)
-                    }
-                }
-                .ok_or_else(|| Error::Gravity(format!("{name}: coefficient size overflow")))?;
-                let expected_coeff_bytes = ACTIVATION_AWARE_HEADER_LEN
-                    .checked_add(coefficient_values.saturating_mul(2))
-                    .ok_or_else(|| Error::Gravity(format!("{name}: payload size overflow")))?;
-                if payload.len() != expected_coeff_bytes {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware tensor {name:?} coefficient payload {} bytes != {expected_coeff_bytes}",
-                        payload.len()
-                    )));
-                }
-                let basis_descriptor = self.bases.get(&header.basis_layer).ok_or_else(|| {
-                    Error::Gravity(format!(
-                        "activation-aware tensor {name:?} references absent basis layer {}",
-                        header.basis_layer
-                    ))
-                })?;
-                let basis_payload = self.span(
-                    basis_descriptor.offset,
-                    basis_descriptor.bytes,
-                    &format!("basis:{}", header.basis_layer),
-                )?;
-                if &basis_payload[..8] != AAP_BASIS_MAGIC {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware basis layer {} has bad magic {:?}",
-                        header.basis_layer,
-                        &basis_payload[..8]
-                    )));
-                }
-                let hidden = u32::from_le_bytes(basis_payload[8..12].try_into().unwrap()) as usize;
-                let basis_rank =
-                    u32::from_le_bytes(basis_payload[12..16].try_into().unwrap()) as usize;
-                let expected_hidden = match header.side {
-                    ActivationAwareSide::Input => header.cols as usize,
-                    ActivationAwareSide::Output => header.rows as usize,
-                };
-                if hidden != expected_hidden
-                    || basis_rank != basis_descriptor.rank as usize
-                    || basis_rank < header.rank as usize
-                {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware tensor {name:?} basis geometry hidden={hidden}, rank={basis_rank}; expected hidden={expected_hidden}, rank>={}",
-                        header.rank
-                    )));
-                }
-                let expected_basis_bytes = ACTIVATION_AWARE_HEADER_LEN
-                    .checked_add(hidden.saturating_mul(basis_rank).saturating_mul(2))
-                    .ok_or_else(|| Error::Gravity(format!("{name}: basis size overflow")))?;
-                if basis_payload.len() != expected_basis_bytes {
-                    return Err(Error::Gravity(format!(
-                        "activation-aware basis layer {} has {} bytes, expected {expected_basis_bytes}",
-                        header.basis_layer,
-                        basis_payload.len()
-                    )));
-                }
-                let rank = header.rank as usize;
-                let mut runtime_payload = Vec::with_capacity(
-                    payload.len() + hidden.saturating_mul(rank).saturating_mul(2),
-                );
-                runtime_payload.extend_from_slice(payload);
-                runtime_payload[24] = 1;
-                let basis_values = &basis_payload[ACTIVATION_AWARE_HEADER_LEN..];
-                if rank == basis_rank {
-                    runtime_payload.extend_from_slice(basis_values);
-                } else {
-                    for row in 0..hidden {
-                        let start = row * basis_rank * 2;
-                        runtime_payload.extend_from_slice(&basis_values[start..start + rank * 2]);
-                    }
-                }
-                Ok(runtime_payload)
-            }
-            other => Err(Error::Gravity(format!(
-                "activation-aware tensor {name:?} has unsupported disposition {other:?}"
-            ))),
-        }
-    }
-}
-
-enum LazyShard {
-    Gravity(GravityShard),
-    ActivationAware(ActivationAwareShard),
-}
-
-impl LazyShard {
-    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
-        match self {
-            LazyShard::Gravity(shard) => {
-                let descriptor = shard
-                    .descriptor(name)
-                    .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?;
-                Ok((descriptor.codec.clone(), descriptor.shape.clone()))
-            }
-            LazyShard::ActivationAware(shard) => shard.codec_and_shape(name),
-        }
-    }
-
-    fn read_tensor(&self, name: &str, verify_hash: bool) -> Result<Vec<u8>> {
-        match self {
-            LazyShard::Gravity(shard) => shard.read_tensor(name, verify_hash),
-            LazyShard::ActivationAware(shard) => shard.read_tensor(name),
-        }
-    }
-
-    fn read_tensor_prefix_unverified(&self, name: &str, bytes: usize) -> Result<Vec<u8>> {
-        match self {
-            LazyShard::Gravity(shard) => shard.read_tensor_prefix_unverified(name, bytes),
-            LazyShard::ActivationAware(_) => Err(Error::Gravity(format!(
-                "tensor {name}: gravity-pq prefix requested from activation-aware shard"
-            ))),
-        }
-    }
-}
-
-// ---------------------------------------------------------------------
-// `gravity-pq` tensor payload codec.
-// ---------------------------------------------------------------------
-
-const PQ_MAGIC: &[u8; 8] = b"GLM52CPK";
-/// Fixed size of the `gravity-pq` payload header (8B magic + 28B packed
-/// fields + 28B zero padding), i.e. where the codebooks start.
-const PQ_HEADER_LEN: usize = 64;
-/// Size in bytes of the `"<HHHHIIIIH?B"` packed field block that follows
-/// the magic.
-const PQ_FIELDS_LEN: usize = 28;
-
-/// Parsed `gravity-pq` payload header (bytes `8..36` of the payload).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PqHeader {
-    pub d: u16,
-    /// Subspaces. Production artifacts use 1.
-    pub s: u16,
-    pub sub: u16,
-    /// Codebook cardinality, e.g. 128 or 256.
-    pub card: u16,
-    pub rows: u32,
-    pub cols: u32,
-    pub nchunk: u32,
-    pub seed: u32,
-    /// Index width in bits: 7 for card=128, 8 for card=256.
-    pub bits: u16,
-    /// 0 or 1. Rotated payloads (`rotate == 1`) are not yet supported.
-    pub rotate: u8,
-    /// Always equals `s`.
-    pub n_codebooks: u8,
-}
-
-/// Parse a `gravity-pq` payload's fixed 64-byte header.
-pub fn parse_pq_header(payload: &[u8]) -> Result<PqHeader> {
-    if payload.len() < PQ_HEADER_LEN {
-        return Err(Error::Gravity(format!(
-            "gravity-pq payload too short for header: {} bytes, need {PQ_HEADER_LEN}",
-            payload.len()
-        )));
-    }
-    let magic = &payload[0..8];
-    if magic != PQ_MAGIC {
-        return Err(Error::Gravity(format!(
-            "bad gravity-pq magic {magic:?}, expected {PQ_MAGIC:?}"
-        )));
-    }
-    let f = &payload[8..8 + PQ_FIELDS_LEN];
-    let d = u16::from_le_bytes(f[0..2].try_into().unwrap());
-    let s = u16::from_le_bytes(f[2..4].try_into().unwrap());
-    let sub = u16::from_le_bytes(f[4..6].try_into().unwrap());
-    let card = u16::from_le_bytes(f[6..8].try_into().unwrap());
-    let rows = u32::from_le_bytes(f[8..12].try_into().unwrap());
-    let cols = u32::from_le_bytes(f[12..16].try_into().unwrap());
-    let nchunk = u32::from_le_bytes(f[16..20].try_into().unwrap());
-    let seed = u32::from_le_bytes(f[20..24].try_into().unwrap());
-    let bits = u16::from_le_bytes(f[24..26].try_into().unwrap());
-    let rotate = f[26];
-    let n_codebooks = f[27];
-
-    if rotate > 1 {
-        return Err(Error::Gravity(format!(
-            "gravity-pq header: rotate byte {rotate} is not 0/1"
-        )));
-    }
-    if d != s.wrapping_mul(sub) {
-        return Err(Error::Gravity(format!(
-            "gravity-pq header: D {d} != S {s} * sub {sub}"
-        )));
-    }
-    if cols != nchunk.wrapping_mul(d as u32) {
-        return Err(Error::Gravity(format!(
-            "gravity-pq header: cols {cols} != nchunk {nchunk} * D {d}"
-        )));
-    }
-    if n_codebooks as u16 != s {
-        return Err(Error::Gravity(format!(
-            "gravity-pq header: n_codebooks {n_codebooks} != S {s}"
-        )));
-    }
-
-    Ok(PqHeader {
-        d,
-        s,
-        sub,
-        card,
-        rows,
-        cols,
-        nchunk,
-        seed,
-        bits,
-        rotate,
-        n_codebooks,
-    })
-}
-
-/// Unpack `count` MSB-first, `bits`-wide unsigned values from a
-/// numpy-`packbits`-order bitstream: value `i` occupies stream bits
-/// `[i*bits, (i+1)*bits)`, and stream bit `k` is bit `7 - k%8` of byte
-/// `k/8`. Trailing bits in the final byte (if any) are ignored.
-fn unpack_bits(stream: &[u8], count: usize, bits: u32) -> Result<Vec<u32>> {
-    let need_bits = count as u64 * bits as u64;
-    let need_bytes = need_bits.div_ceil(8);
-    if (stream.len() as u64) < need_bytes {
-        return Err(Error::Gravity(format!(
-            "gravity-pq index bitstream too short: have {} bytes, need {need_bytes}",
-            stream.len()
-        )));
-    }
-    // Rolling MSB-first window: feed whole bytes into `acc`, take `bits`
-    // off the top of the `nbits` live ones. `nbits` never exceeds
-    // `bits + 7 <= 39`, so shifting `acc` left by 8 cannot lose a live bit,
-    // and the mask discards the consumed ones still sitting above them.
-    let mask: u64 = if bits >= 32 {
-        u32::MAX as u64
-    } else {
-        (1u64 << bits) - 1
-    };
-    let mut out = Vec::with_capacity(count);
-    let mut acc: u64 = 0;
-    let mut nbits: u32 = 0;
-    let mut pos: usize = 0;
-    for _ in 0..count {
-        while nbits < bits {
-            acc = (acc << 8) | stream[pos] as u64;
-            nbits += 8;
-            pos += 1;
-        }
-        out.push(((acc >> (nbits - bits)) & mask) as u32);
-        nbits -= bits;
-    }
-    Ok(out)
-}
-
-/// Byte spans of a `gravity-pq` payload's two sections: the f16 codebooks
-/// and the packed index stream. Both are returned verbatim — the GPU path
-/// uploads them as-is, since the kernel reads `half` and walks the packed
-/// stream itself, so nothing is widened or unpacked on the way in.
-pub fn pq_sections(payload: &[u8]) -> Result<(&[u8], &[u8])> {
-    let h = parse_pq_header(payload)?;
-    if h.rotate != 0 {
-        return Err(Error::Gravity(
-            "rotated gravity-pq artifacts (rotate=1) are not yet supported".into(),
-        ));
-    }
-    let cb_values = h.n_codebooks as usize * h.card as usize * h.sub as usize;
-    let cb_end = PQ_HEADER_LEN
-        .checked_add(cb_values.checked_mul(2).unwrap_or(usize::MAX))
-        .ok_or_else(|| Error::Gravity("gravity-pq codebook size overflow".into()))?;
-    let idx_count = h.rows as usize * h.nchunk as usize * h.s as usize;
-    let idx_bytes = (idx_count as u64 * h.bits as u64).div_ceil(8) as usize;
-    let idx_end = cb_end
-        .checked_add(idx_bytes)
-        .ok_or_else(|| Error::Gravity("gravity-pq index size overflow".into()))?;
-    if payload.len() < idx_end {
-        return Err(Error::Gravity(format!(
-            "gravity-pq payload too short: have {} bytes, need {idx_end}",
-            payload.len()
-        )));
-    }
-    Ok((&payload[PQ_HEADER_LEN..cb_end], &payload[cb_end..idx_end]))
-}
-
-/// Read one `bits`-wide MSB-first value at position `i` of a packed index
-/// stream, without walking the values before it.
-fn index_at(stream: &[u8], i: usize, bits: u32) -> u32 {
-    let bitoff = i * bits as usize;
-    let mut acc: u64 = 0;
-    let mut taken = 0u32;
-    let mut byte = bitoff / 8;
-    let skip = (bitoff % 8) as u32;
-    // Pull whole bytes until `skip + bits` of them are in hand.
-    while taken < skip + bits {
-        acc = (acc << 8) | *stream.get(byte).unwrap_or(&0) as u64;
-        taken += 8;
-        byte += 1;
-    }
-    let mask: u64 = if bits >= 32 {
-        u32::MAX as u64
-    } else {
-        (1u64 << bits) - 1
-    };
-    ((acc >> (taken - skip - bits)) & mask) as u32
-}
-
-/// Decode a single row of a `gravity-pq` payload straight from its bytes —
-/// `cols` values, touching only that row's chunk codes. This is the
-/// embedding-lookup path: materializing a `[vocab, hidden]` matrix to read
-/// one row of it would defeat the point of the format.
-pub fn pq_row(payload: &[u8], index: usize) -> Result<Vec<f32>> {
-    let h = parse_pq_header(payload)?;
-    let (cb, codes) = pq_sections(payload)?;
-    if index >= h.rows as usize {
-        return Err(Error::Gravity(format!(
-            "pq_row: index {index} out of range for {} rows",
-            h.rows
-        )));
-    }
-    let (d, s, sub, card, nchunk) = (
-        h.d as usize,
-        h.s as usize,
-        h.sub as usize,
-        h.card as usize,
-        h.nchunk as usize,
-    );
-    let mut out = vec![0f32; nchunk * d];
-    for c in 0..nchunk {
-        for sub_idx in 0..s {
-            let flat = (index * nchunk + c) * s + sub_idx;
-            let code = index_at(codes, flat, h.bits as u32) as usize;
-            if code >= card {
-                return Err(Error::Gravity(format!(
-                    "pq_row: code {code} exceeds codebook cardinality {card}"
-                )));
-            }
-            let cb_row = (sub_idx * card + code) * sub;
-            let dst = c * d + sub_idx * sub;
-            for j in 0..sub {
-                let off = (cb_row + j) * 2;
-                out[dst + j] =
-                    f16::from_bits(u16::from_le_bytes(cb[off..off + 2].try_into().unwrap()))
-                        .to_f32();
-            }
-        }
-    }
-    Ok(out)
-}
-
-/// A `gravity-pq` payload decoded once into the two things execution
-/// actually needs: codebooks widened to f32, and the index bitstream
-/// unpacked to one value per (row, chunk, subspace).
-///
-/// [`pq_matvec`] decodes on every call, which is correct but re-walks the
-/// bitstream bit by bit each time. A forward pass hits the same tensor
-/// once per token, so anything holding weights across tokens wants this
-/// instead.
-pub struct PqTensor {
-    pub header: PqHeader,
-    /// `n_codebooks * card * sub` f32 values, flat index `(s*card + code)*sub + j`.
-    codebooks: Vec<f32>,
-    /// `rows * nchunk * s` codes, flat index `(r*nchunk + c)*s + subspace`.
-    /// `u16` covers every `card` the header can express (`bits <= 16`).
-    indices: Vec<u16>,
-}
-
-impl PqTensor {
-    /// Decode a `gravity-pq` payload. Rejects rotated payloads and any
-    /// `bits > 16` rather than guessing either construction.
-    pub fn from_payload(payload: &[u8]) -> Result<PqTensor> {
-        let h = parse_pq_header(payload)?;
-        if h.rotate != 0 {
-            // TODO(rotation): port `_pq_rotation_np(D, seed)` from
-            // tools/condense/gravity_forge.py — do not guess the construction.
-            return Err(Error::Gravity(
-                "rotated gravity-pq artifacts (rotate=1) are not yet supported".into(),
-            ));
-        }
-        if h.bits > 16 {
-            return Err(Error::Gravity(format!(
-                "gravity-pq bits {} exceeds the 16-bit index width this decoder stores",
-                h.bits
-            )));
-        }
-
-        let sub = h.sub as usize;
-        let card = h.card as usize;
-        let rows = h.rows as usize;
-        let nchunk = h.nchunk as usize;
-
-        // Codebooks: `n_codebooks` back to back, each `card * sub` f16 values.
-        let cb_values = h.n_codebooks as usize * card * sub;
-        let cb_bytes = cb_values
-            .checked_mul(2)
-            .ok_or_else(|| Error::Gravity("gravity-pq codebook size overflow".into()))?;
-        let cb_start = PQ_HEADER_LEN;
-        let cb_end = cb_start
-            .checked_add(cb_bytes)
-            .ok_or_else(|| Error::Gravity("gravity-pq codebook size overflow".into()))?;
-        if payload.len() < cb_end {
-            return Err(Error::Gravity(format!(
-                "gravity-pq payload too short for codebooks: have {} bytes, need {cb_end}",
-                payload.len()
-            )));
-        }
-        // Widen f16 -> f32 once. Flat index (s*card + code)*sub + j.
-        let mut codebooks = vec![0f32; cb_values];
-        for (i, cbv) in codebooks.iter_mut().enumerate() {
-            let off = cb_start + i * 2;
-            let bits = u16::from_le_bytes(payload[off..off + 2].try_into().unwrap());
-            *cbv = f16::from_bits(bits).to_f32();
-        }
-
-        let idx_count = rows * nchunk * h.s as usize;
-        let indices = unpack_bits(&payload[cb_end..], idx_count, h.bits as u32)?
-            .into_iter()
-            .map(|v| v as u16)
-            .collect();
-
-        Ok(PqTensor {
-            header: h,
-            codebooks,
-            indices,
-        })
-    }
-
-    pub fn rows(&self) -> usize {
-        self.header.rows as usize
-    }
-
-    pub fn cols(&self) -> usize {
-        self.header.cols as usize
-    }
-
-    /// `y = W @ x`, accumulating in f32 strictly left-to-right so the
-    /// result is bit-identical to [`pq_matvec`] on the same payload.
-    pub fn matvec(&self, x: &[f32]) -> Result<Vec<f32>> {
-        let h = &self.header;
-        if x.len() != h.cols as usize {
-            return Err(Error::Gravity(format!(
-                "pq matvec: x.len() {} != cols {}",
-                x.len(),
-                h.cols
-            )));
-        }
-        let d = h.d as usize;
-        let s = h.s as usize;
-        let sub = h.sub as usize;
-        let card = h.card as usize;
-        let rows = h.rows as usize;
-        let nchunk = h.nchunk as usize;
-
-        // xc[c][j] = x[c*D + j] (rotate==0, checked at decode, so no
-        // rotation applied).
-        // y[r] = sum_s sum_c sum_j codebook[s][index(r,c,s)][j] * xc[c][s*sub+j]
-        let mut y = vec![0f32; rows];
-        for sub_idx in 0..s {
-            let cb_base = sub_idx * card * sub;
-            let x_off = sub_idx * sub;
-            for r in 0..rows {
-                for c in 0..nchunk {
-                    let flat = (r * nchunk + c) * s + sub_idx;
-                    let code = self.indices[flat] as usize;
-                    let cb_row = cb_base + code * sub;
-                    let x_base = c * d + x_off;
-                    for j in 0..sub {
-                        y[r] += self.codebooks[cb_row + j] * x[x_base + j];
-                    }
-                }
-            }
-        }
-        Ok(y)
-    }
-
-    /// Numeric Parity V2.1 authority for this compact matrix.
-    ///
-    /// Codebook values are stored as f16 and therefore widen exactly to
-    /// f32/f64. Activations are f32 and promote exactly to f64. The products
-    /// and the left-to-right sum are then evaluated in f64, so neither the
-    /// host f32 reduction nor any Metal reduction order is treated as the
-    /// oracle.
-    pub fn matvec_f64_authority(&self, x: &[f32]) -> Result<Vec<f64>> {
-        let h = &self.header;
-        if x.len() != h.cols as usize {
-            return Err(Error::Gravity(format!(
-                "pq f64 authority: x.len() {} != cols {}",
-                x.len(),
-                h.cols
-            )));
-        }
-        let d = h.d as usize;
-        let s = h.s as usize;
-        let sub = h.sub as usize;
-        let card = h.card as usize;
-        let rows = h.rows as usize;
-        let nchunk = h.nchunk as usize;
-        let mut y = vec![0.0f64; rows];
-        for sub_idx in 0..s {
-            let cb_base = sub_idx * card * sub;
-            let x_off = sub_idx * sub;
-            for r in 0..rows {
-                for c in 0..nchunk {
-                    let flat = (r * nchunk + c) * s + sub_idx;
-                    let code = self.indices[flat] as usize;
-                    let cb_row = cb_base + code * sub;
-                    let x_base = c * d + x_off;
-                    for j in 0..sub {
-                        y[r] += (self.codebooks[cb_row + j] as f64) * (x[x_base + j] as f64);
-                    }
-                }
-            }
-        }
-        Ok(y)
-    }
-
-    /// Decode a single row of the encoded matrix — `cols` values. Used for
-    /// embedding lookup, where materializing the whole `[vocab, hidden]`
-    /// matrix to read one row would be absurd. Mirrors
-    /// `gravity_llama_reference.py::GravityWeights.row`.
-    pub fn row(&self, index: usize) -> Result<Vec<f32>> {
-        let h = &self.header;
-        let rows = h.rows as usize;
-        if index >= rows {
-            return Err(Error::Gravity(format!(
-                "pq row: index {index} out of range for {rows} rows"
-            )));
-        }
-        let d = h.d as usize;
-        let s = h.s as usize;
-        let sub = h.sub as usize;
-        let card = h.card as usize;
-        let nchunk = h.nchunk as usize;
-
-        let mut out = vec![0f32; nchunk * d];
-        for c in 0..nchunk {
-            for sub_idx in 0..s {
-                let flat = (index * nchunk + c) * s + sub_idx;
-                let code = self.indices[flat] as usize;
-                let cb_row = sub_idx * card * sub + code * sub;
-                let dst = c * d + sub_idx * sub;
-                out[dst..dst + sub].copy_from_slice(&self.codebooks[cb_row..cb_row + sub]);
-            }
-        }
-        Ok(out)
-    }
-}
-
-/// CPU matvec over a `gravity-pq` payload: `y = W @ x` where `W` is the
-/// `[rows, cols]` matrix the payload encodes. `x.len()` must equal
-/// `cols`; returns `rows` values. Mirrors `gravity_forge.py::pq_execute`,
-/// accumulating in f32.
-pub fn pq_matvec(payload: &[u8], x: &[f32]) -> Result<Vec<f32>> {
-    PqTensor::from_payload(payload)?.matvec(x)
-}
-
-/// FP64 authority for a compact `gravity-pq` matvec under Numeric Parity
-/// V2.1. See [`PqTensor::matvec_f64_authority`].
-pub fn pq_matvec_f64_authority(payload: &[u8], x: &[f32]) -> Result<Vec<f64>> {
-    PqTensor::from_payload(payload)?.matvec_f64_authority(x)
-}
-
-// ---------------------------------------------------------------------
-// `activation-aware.f16` tensor payload codec.
-// ---------------------------------------------------------------------
-
-const ACTIVATION_AWARE_MAGIC: &[u8; 8] = b"GLM52AAP";
-const ACTIVATION_AWARE_HEADER_LEN: usize = 64;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ActivationAwareSide {
-    Input,
-    Output,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ActivationAwareHeader {
-    pub rows: u32,
-    pub cols: u32,
-    pub rank: u32,
-    pub basis_layer: u16,
-    pub side: ActivationAwareSide,
-    pub has_basis: bool,
-}
-
-pub fn parse_activation_aware_header(payload: &[u8]) -> Result<ActivationAwareHeader> {
-    if payload.len() < ACTIVATION_AWARE_HEADER_LEN {
-        return Err(Error::Gravity(format!(
-            "activation-aware payload too short: {} bytes, need {ACTIVATION_AWARE_HEADER_LEN}",
-            payload.len()
-        )));
-    }
-    if &payload[..8] != ACTIVATION_AWARE_MAGIC {
-        return Err(Error::Gravity(format!(
-            "bad activation-aware magic {:?}, expected {ACTIVATION_AWARE_MAGIC:?}",
-            &payload[..8]
-        )));
-    }
-    let rows = u32::from_le_bytes(payload[8..12].try_into().unwrap());
-    let cols = u32::from_le_bytes(payload[12..16].try_into().unwrap());
-    let rank = u32::from_le_bytes(payload[16..20].try_into().unwrap());
-    let basis_layer = u16::from_le_bytes(payload[20..22].try_into().unwrap());
-    let side_code = u16::from_le_bytes(payload[22..24].try_into().unwrap());
-    let side = match side_code {
-        1 => ActivationAwareSide::Input,
-        2 => ActivationAwareSide::Output,
-        other => {
-            return Err(Error::Gravity(format!(
-                "activation-aware payload has unsupported side code {other}"
-            )))
-        }
-    };
-    let has_basis = match payload[24] {
-        0 => false,
-        1 => true,
-        other => {
-            return Err(Error::Gravity(format!(
-                "activation-aware has_basis byte {other} is not 0/1"
-            )))
-        }
-    };
-    if rows == 0 || cols == 0 || rank == 0 {
-        return Err(Error::Gravity(format!(
-            "activation-aware geometry must be nonzero, got rows={rows}, cols={cols}, rank={rank}"
-        )));
-    }
-    let side_width = match side {
-        ActivationAwareSide::Input => cols,
-        ActivationAwareSide::Output => rows,
-    };
-    if rank > side_width {
-        return Err(Error::Gravity(format!(
-            "activation-aware rank {rank} exceeds basis width {side_width}"
-        )));
-    }
-    Ok(ActivationAwareHeader {
-        rows,
-        cols,
-        rank,
-        basis_layer,
-        side,
-        has_basis,
-    })
-}
-
-pub fn activation_aware_sections(payload: &[u8]) -> Result<(ActivationAwareHeader, &[u8], &[u8])> {
-    let header = parse_activation_aware_header(payload)?;
-    if !header.has_basis {
-        return Err(Error::Gravity(
-            "activation-aware runtime payload has no attached basis".into(),
-        ));
-    }
-    let rows = header.rows as usize;
-    let cols = header.cols as usize;
-    let rank = header.rank as usize;
-    let coefficient_values = match header.side {
-        ActivationAwareSide::Input => rows.checked_mul(rank),
-        ActivationAwareSide::Output => rank.checked_mul(cols),
-    }
-    .ok_or_else(|| Error::Gravity("activation-aware coefficient size overflow".into()))?;
-    let basis_values = match header.side {
-        ActivationAwareSide::Input => cols.checked_mul(rank),
-        ActivationAwareSide::Output => rows.checked_mul(rank),
-    }
-    .ok_or_else(|| Error::Gravity("activation-aware basis size overflow".into()))?;
-    let coefficient_end = ACTIVATION_AWARE_HEADER_LEN
-        .checked_add(coefficient_values.saturating_mul(2))
-        .ok_or_else(|| Error::Gravity("activation-aware payload size overflow".into()))?;
-    let expected = coefficient_end
-        .checked_add(basis_values.saturating_mul(2))
-        .ok_or_else(|| Error::Gravity("activation-aware payload size overflow".into()))?;
-    if payload.len() != expected {
-        return Err(Error::Gravity(format!(
-            "activation-aware payload {} bytes != exact expected {expected}",
-            payload.len()
-        )));
-    }
-    Ok((
-        header,
-        &payload[ACTIVATION_AWARE_HEADER_LEN..coefficient_end],
-        &payload[coefficient_end..],
-    ))
-}
-
-/// One activation-aware tensor decoded into f32 factors. The runtime executes
-/// the two factors directly and never materializes the dense matrix.
-pub struct ActivationAwareTensor {
-    pub header: ActivationAwareHeader,
-    coefficients: Vec<f32>,
-    basis: Vec<f32>,
-}
-
-impl ActivationAwareTensor {
-    pub fn from_payload(payload: &[u8]) -> Result<Self> {
-        let (header, coefficient_bytes, basis_bytes) = activation_aware_sections(payload)?;
-        let coefficients = coefficient_bytes
-            .chunks_exact(2)
-            .map(|c| f16::from_bits(u16::from_le_bytes([c[0], c[1]])).to_f32())
-            .collect();
-        let basis = basis_bytes
-            .chunks_exact(2)
-            .map(|c| f16::from_bits(u16::from_le_bytes([c[0], c[1]])).to_f32())
-            .collect();
-        Ok(Self {
-            header,
-            coefficients,
-            basis,
-        })
-    }
-
-    pub fn matvec(&self, x: &[f32]) -> Result<Vec<f32>> {
-        let rows = self.header.rows as usize;
-        let cols = self.header.cols as usize;
-        let rank = self.header.rank as usize;
-        if x.len() != cols {
-            return Err(Error::Gravity(format!(
-                "activation-aware matvec input {} != cols {cols}",
-                x.len()
-            )));
-        }
-        let mut latent = vec![0.0f32; rank];
-        let mut out = vec![0.0f32; rows];
-        match self.header.side {
-            ActivationAwareSide::Input => {
-                for (col, &value) in x.iter().enumerate() {
-                    let basis_row = &self.basis[col * rank..(col + 1) * rank];
-                    for k in 0..rank {
-                        latent[k] += basis_row[k] * value;
-                    }
-                }
-                for (row, target) in out.iter_mut().enumerate() {
-                    let coefficient_row = &self.coefficients[row * rank..(row + 1) * rank];
-                    *target = coefficient_row
-                        .iter()
-                        .zip(&latent)
-                        .map(|(a, b)| a * b)
-                        .sum();
-                }
-            }
-            ActivationAwareSide::Output => {
-                for (k, target) in latent.iter_mut().enumerate() {
-                    let coefficient_row = &self.coefficients[k * cols..(k + 1) * cols];
-                    *target = coefficient_row.iter().zip(x).map(|(a, b)| a * b).sum();
-                }
-                for (row, target) in out.iter_mut().enumerate() {
-                    let basis_row = &self.basis[row * rank..(row + 1) * rank];
-                    *target = basis_row.iter().zip(&latent).map(|(a, b)| a * b).sum();
-                }
-            }
-        }
-        Ok(out)
-    }
-
-    pub fn row(&self, index: usize) -> Result<Vec<f32>> {
-        let rows = self.header.rows as usize;
-        let cols = self.header.cols as usize;
-        let rank = self.header.rank as usize;
-        if index >= rows {
-            return Err(Error::Gravity(format!(
-                "activation-aware row {index} out of range {rows}"
-            )));
-        }
-        let mut out = vec![0.0f32; cols];
-        match self.header.side {
-            ActivationAwareSide::Input => {
-                let coefficient_row = &self.coefficients[index * rank..(index + 1) * rank];
-                for (col, target) in out.iter_mut().enumerate() {
-                    let basis_row = &self.basis[col * rank..(col + 1) * rank];
-                    *target = coefficient_row
-                        .iter()
-                        .zip(basis_row)
-                        .map(|(a, b)| a * b)
-                        .sum();
-                }
-            }
-            ActivationAwareSide::Output => {
-                let basis_row = &self.basis[index * rank..(index + 1) * rank];
-                for col in 0..cols {
-                    for (k, &basis_value) in basis_row.iter().enumerate() {
-                        out[col] += basis_value * self.coefficients[k * cols + col];
-                    }
-                }
-            }
-        }
-        Ok(out)
-    }
-}
-
-// ---------------------------------------------------------------------
-// Architecture-independent weight access.
-// ---------------------------------------------------------------------
-
-/// One tensor as a forward pass consumes it.
+use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::path::{Path, PathBuf};
 pub enum Tensor {
     Pq(PqTensor),
     ActivationAware(ActivationAwareTensor),
     Dense(Vec<f32>),
 }
-
-/// Widen a `native.<dtype>` payload to f32. An unknown dtype is an error
-/// rather than a reinterpretation of the bytes as something plausible.
-pub fn widen_native(codec: &str, blob: &[u8]) -> Result<Vec<f32>> {
-    let dtype = codec.split_once('.').map(|(_, d)| d).unwrap_or("");
-    let (unit, name) = match dtype {
-        "bf16" | "f16" => (2usize, dtype),
-        "f32" => (4usize, dtype),
-        other => {
-            return Err(Error::Gravity(format!(
-                "unsupported native tensor dtype {other:?} (codec {codec:?})"
-            )))
-        }
-    };
-    if blob.len() % unit != 0 {
-        return Err(Error::Gravity(format!(
-            "native.{name} payload length {} is not a multiple of {unit}",
-            blob.len()
-        )));
-    }
-    Ok(match dtype {
-        "bf16" => blob
-            .chunks_exact(2)
-            .map(|c| f32::from_bits((u16::from_le_bytes([c[0], c[1]]) as u32) << 16))
-            .collect(),
-        "f16" => blob
-            .chunks_exact(2)
-            .map(|c| f16::from_bits(u16::from_le_bytes([c[0], c[1]])).to_f32())
-            .collect(),
-        _ => blob
-            .chunks_exact(4)
-            .map(|c| f32::from_le_bytes(c.try_into().unwrap()))
-            .collect(),
-    })
-}
-
-pub(crate) fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
+pub(super) fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
     if x.is_empty() || w.len() % x.len() != 0 {
         return Err(Error::Gravity(format!(
-            "tensor {name:?}: {} values is not a whole number of {}-wide rows",
+            "tensor {name:?}: {} values not {}-wide rows",
             w.len(),
             x.len()
         )));
@@ -1376,49 +28,35 @@ pub(crate) fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>>
         .map(|row| row.iter().zip(x).map(|(a, b)| a * b).sum())
         .collect())
 }
-
-/// Host oracle for device `gemv_native_bf16_seq`: widen little-endian bf16
-/// the same way as [`widen_native`], then left-to-right f32 Σ per row via
-/// [`matvec_dense`]. Public so parity tests (and the GPU module) share one
-/// definition.
-pub fn matvec_bf16_host(weight_le: &[u8], cols: usize, x: &[f32]) -> Result<Vec<f32>> {
+fn bf16_host_geometry(weight_le: &[u8], cols: usize, x: &[f32]) -> Result<()> {
     if x.len() != cols {
-        return Err(Error::Gravity(format!(
-            "matvec_bf16_host: x.len() {} != cols {cols}",
-            x.len()
-        )));
+        return Err(Error::Gravity(format!("bf16 host x {} != {cols}", x.len())));
     }
     if cols == 0 || weight_le.len() % (cols * 2) != 0 {
         return Err(Error::Gravity(format!(
-            "matvec_bf16_host: payload {} B is not a whole number of {cols}-wide bf16 rows",
+            "bf16 host: payload {} B not {cols}-wide bf16 rows",
             weight_le.len()
         )));
     }
+    Ok(())
+}
+pub fn matvec_bf16_host(weight_le: &[u8], cols: usize, x: &[f32]) -> Result<Vec<f32>> {
+    bf16_host_geometry(weight_le, cols, x)?;
     let w = widen_native("native.bf16", weight_le)?;
     matvec_dense(&w, x, "lm_head.weight")
 }
-
-/// Additive, default-off accumulation candidates for native-BF16 GEMV.
-///
-/// `Sequential` is the existing left-to-right f32 contract. The other
-/// variants are exposed only to parity tests and explicit microbenchmarks;
-/// no runtime selection consults this enum.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeBf16Accumulation {
     Sequential,
     Neumaier,
-    /// Neumaier summation plus the residual of every rounded f32 product,
-    /// recovered with an explicit fused multiply-add.
     NeumaierCompensatedProduct,
 }
-
 impl NativeBf16Accumulation {
     pub const ALL: [Self; 3] = [
         Self::Sequential,
         Self::Neumaier,
         Self::NeumaierCompensatedProduct,
     ];
-
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Sequential => "sequential",
@@ -1426,7 +64,6 @@ impl NativeBf16Accumulation {
             Self::NeumaierCompensatedProduct => "neumaier_compensated_product",
         }
     }
-
     #[cfg(target_os = "macos")]
     pub const fn metal_kernel(self) -> &'static str {
         match self {
@@ -1436,10 +73,6 @@ impl NativeBf16Accumulation {
         }
     }
 }
-
-/// Matching f32 host comparator for the additive native-BF16 accumulation
-/// candidates. Bounds and authority remain external: this function changes
-/// arithmetic only, never parity policy.
 pub fn matvec_bf16_host_accumulation(
     weight_le: &[u8],
     cols: usize,
@@ -1449,20 +82,7 @@ pub fn matvec_bf16_host_accumulation(
     if accumulation == NativeBf16Accumulation::Sequential {
         return matvec_bf16_host(weight_le, cols, x);
     }
-    if x.len() != cols {
-        return Err(Error::Gravity(format!(
-            "matvec_bf16_host_accumulation: x.len() {} != cols {cols}",
-            x.len()
-        )));
-    }
-    if cols == 0 || weight_le.len() % (cols * 2) != 0 {
-        return Err(Error::Gravity(format!(
-            "matvec_bf16_host_accumulation: payload {} B is not a whole number of \
-             {cols}-wide bf16 rows",
-            weight_le.len()
-        )));
-    }
-
+    bf16_host_geometry(weight_le, cols, x)?;
     let weights = widen_native("native.bf16", weight_le)?;
     Ok(weights
         .chunks_exact(cols)
@@ -1493,7 +113,6 @@ pub fn matvec_bf16_host_accumulation(
         })
         .collect())
 }
-
 fn row_dense(w: &[f32], index: usize, cols: usize, name: &str) -> Result<Vec<f32>> {
     let start = index * cols;
     if start + cols > w.len() {
@@ -1504,17 +123,380 @@ fn row_dense(w: &[f32], index: usize, cols: usize, name: &str) -> Result<Vec<f32
     Ok(w[start..start + cols].to_vec())
 }
 
-/// Default byte budget for the Lazy-path native dense/row decoded memo.
-///
-/// The campaign carries a few hundred `native.*` tensors (norms, biases,
-/// router corrections) — about 0.1% of flagship weights. 256 MiB is a
-/// generous ceiling for those widened f32 vectors while still bounding
-/// residency the way the GPU weight cache does.
+// Activation-aware pack shard reader. Sole product consumer is LazyShard below;
+// type and methods are module-private to gravity. Public AAP codec stays in artifact::aap.
+const AAP_SCHEMA: &str = "hawking.glm52.activation_aware_pack.v1";
+const AAP_MAX_INDEX_BYTES: u64 = 256 * 1024 * 1024;
+const AAP_PASS_MAGIC: &[u8; 8] = b"GLM52PT0";
+const AAP_BASIS_MAGIC: &[u8; 8] = b"GLM52BAS";
+const AAP_HEADER_LEN: usize = 64;
+// Local layout helpers for this private reader only. Same semantics as artifact
+// macro_rules (sibling module cannot see those without #[macro_use] / widening).
+// Macro form preserves official function count (fn helpers would +3).
+macro_rules! aap_checked_end {
+    ($offset:expr, $bytes:expr, $limit:expr, $label:expr) => {{
+        let offset: u64 = $offset;
+        let bytes: u64 = $bytes;
+        let limit: u64 = $limit;
+        let end = offset
+            .checked_add(bytes)
+            .ok_or_else(|| Error::Gravity(format!("{}: ovf", $label)))?;
+        if end > limit {
+            return Err(Error::Gravity(format!("{}: past {limit}", $label)));
+        }
+        end
+    }};
+}
+macro_rules! aap_section_end {
+    ($base:expr, $count:expr, $unit:expr, $label:expr) => {{
+        let base: usize = $base;
+        let count: usize = $count;
+        let unit: usize = $unit;
+        let add = count
+            .checked_mul(unit)
+            .ok_or_else(|| Error::Gravity(format!("{}: size ovf", $label)))?;
+        base.checked_add(add)
+            .ok_or_else(|| Error::Gravity(format!("{}: end ovf", $label)))?
+    }};
+}
+macro_rules! aap_require_magic {
+    ($b:expr, $magic:expr, $label:expr) => {{
+        let b: &[u8] = $b;
+        let magic: &[u8] = $magic;
+        if b.len() < magic.len() || &b[..magic.len()] != magic {
+            Err(Error::Gravity(format!(
+                "bad {} magic {:?}, expected {magic:?}",
+                $label,
+                b.get(..magic.len()).unwrap_or(&[])
+            )))
+        } else {
+            Ok(())
+        }
+    }};
+}
+#[derive(Debug, Clone, Deserialize)]
+struct AapBasisDescriptor {
+    basis_layer: u16,
+    rank: u32,
+    offset: u64,
+    bytes: u64,
+}
+#[derive(Debug, Clone, Deserialize)]
+struct AapTensorDescriptor {
+    name: String,
+    disposition: String,
+    #[serde(default)]
+    dtype: Option<String>,
+    offset: u64,
+    bytes: u64,
+    shape: Vec<u64>,
+}
+#[derive(Deserialize)]
+struct AapIndex {
+    schema: String,
+    bases: Vec<AapBasisDescriptor>,
+    tensors: Vec<AapTensorDescriptor>,
+}
+struct ActivationAwareShard {
+    mmap: Mmap,
+    body_offset: u64,
+    tensors: HashMap<String, AapTensorDescriptor>,
+    bases: HashMap<u16, AapBasisDescriptor>,
+    source_dtypes: HashMap<String, String>,
+}
+impl ActivationAwareShard {
+    fn open(
+        path: &Path,
+        source_dtypes: &HashMap<String, String>,
+        expected_sha256: Option<&str>,
+        verify_hash: bool,
+    ) -> Result<Self> {
+        let file = File::open(path)?;
+        // Safety: same read-only/no-truncation contract as GravityShard.
+        let mmap = unsafe { Mmap::map(&file)? };
+        if verify_hash {
+            let expected = expected_sha256
+                .ok_or_else(|| Error::Gravity(format!("{}: aap no shard sha", path.display())))?;
+            let observed = format!("{:x}", Sha256::digest(&mmap[..]));
+            if observed != expected {
+                return Err(Error::Gravity(format!(
+                    "{}: aap sha want {expected}, got {observed}",
+                    path.display()
+                )));
+            }
+        }
+        let source_dtypes = source_dtypes.clone();
+        if mmap.len() < 8 {
+            return Err(Error::Gravity("aap shard too short".into()));
+        }
+        let index_len = u64::from_le_bytes(mmap[0..8].try_into().unwrap());
+        if index_len == 0 || index_len > AAP_MAX_INDEX_BYTES {
+            return Err(Error::Gravity(format!("aap invalid index_len {index_len}")));
+        }
+        let body_offset = aap_checked_end!(8, index_len, mmap.len() as u64, "aap-index");
+        let index: AapIndex = serde_json::from_slice(&mmap[8..body_offset as usize])
+            .map_err(|error| Error::Gravity(format!("aap index parse: {error}")))?;
+        if index.schema != AAP_SCHEMA {
+            return Err(Error::Gravity(format!(
+                "aap schema {:?}, expected {AAP_SCHEMA:?}",
+                index.schema
+            )));
+        }
+        let body_bytes = mmap.len() as u64 - body_offset;
+        let mut spans: Vec<(u64, u64)> = Vec::new();
+        let mut bases = HashMap::with_capacity(index.bases.len());
+        let mut tensors = HashMap::with_capacity(index.tensors.len());
+        for basis in index.bases {
+            let end = aap_checked_end!(basis.offset, basis.bytes, body_bytes, "aap-basis");
+            if basis.bytes < AAP_HEADER_LEN as u64 {
+                return Err(Error::Gravity(format!(
+                    "basis span short {}",
+                    basis.basis_layer
+                )));
+            }
+            let off = basis.offset;
+            if bases.insert(basis.basis_layer, basis).is_some() {
+                return Err(Error::Gravity("dup basis".into()));
+            }
+            spans.push((off, end));
+        }
+        for tensor in index.tensors {
+            let end = aap_checked_end!(tensor.offset, tensor.bytes, body_bytes, "aap-tensor");
+            if tensor.bytes < AAP_HEADER_LEN as u64 {
+                return Err(Error::Gravity(format!("aap span short {:?}", tensor.name)));
+            }
+            if tensor.shape.is_empty() || tensor.shape.len() > 2 {
+                return Err(Error::Gravity(format!(
+                    "aap shape {:?} {:?}",
+                    tensor.name, tensor.shape
+                )));
+            }
+            let off = tensor.offset;
+            if tensors.insert(tensor.name.clone(), tensor).is_some() {
+                return Err(Error::Gravity("dup aap tensor".into()));
+            }
+            spans.push((off, end));
+        }
+        spans.sort_by_key(|span| span.0);
+        if spans.first().map(|s| s.0) != Some(0) {
+            return Err(Error::Gravity("aap body not at 0".into()));
+        }
+        for pair in spans.windows(2) {
+            if pair[0].1 != pair[1].0 {
+                return Err(Error::Gravity(format!(
+                    "aap payloads not contiguous ({} != {})",
+                    pair[0].1, pair[1].0
+                )));
+            }
+        }
+        if spans.last().map(|s| s.1) != Some(body_bytes) {
+            return Err(Error::Gravity(format!(
+                "aap body ends {}, phys ends {body_bytes}",
+                spans.last().map(|s| s.1).unwrap_or(0)
+            )));
+        }
+        Ok(Self {
+            mmap,
+            body_offset,
+            tensors,
+            bases,
+            source_dtypes,
+        })
+    }
+    fn descriptor(&self, name: &str) -> Result<&AapTensorDescriptor> {
+        self.tensors
+            .get(name)
+            .ok_or_else(|| Error::Gravity(format!("no aap tensor {name:?}")))
+    }
+    fn span(&self, offset: u64, bytes: u64, label: &str) -> Result<&[u8]> {
+        let start = self
+            .body_offset
+            .checked_add(offset)
+            .ok_or_else(|| Error::Gravity(format!("{label}: offset overflow")))?;
+        let end = aap_checked_end!(start, bytes, self.mmap.len() as u64, label);
+        Ok(&self.mmap[start as usize..end as usize])
+    }
+    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
+        let descriptor = self.descriptor(name)?;
+        let codec = match descriptor.disposition.as_str() {
+            "activation_aware" => "activation-aware.f16".to_string(),
+            "pass_through" => {
+                let source_dtype = descriptor
+                    .dtype
+                    .as_deref()
+                    .or_else(|| self.source_dtypes.get(name).map(String::as_str))
+                    .ok_or_else(|| Error::Gravity(format!("aap pass {name:?} no dtype")))?;
+                match source_dtype {
+                    "BF16" | "BFLOAT16" => "native.bf16".to_string(),
+                    "F16" | "FLOAT16" => "native.f16".to_string(),
+                    "F32" | "FLOAT32" => "native.f32".to_string(),
+                    other => {
+                        return Err(Error::Gravity(format!(
+                            "activation-aware tensor {name:?} bad dtype {other:?}"
+                        )))
+                    }
+                }
+            }
+            other => {
+                return Err(Error::Gravity(format!(
+                    "activation-aware tensor {name:?} bad disposition {other:?}"
+                )))
+            }
+        };
+        Ok((codec, descriptor.shape.clone()))
+    }
+    fn read_tensor(&self, name: &str) -> Result<Vec<u8>> {
+        let descriptor = self.descriptor(name)?;
+        let payload = self.span(descriptor.offset, descriptor.bytes, name)?;
+        match descriptor.disposition.as_str() {
+            "pass_through" => {
+                aap_require_magic!(payload, AAP_PASS_MAGIC, "aap-pass")?;
+                let ndim = u32::from_le_bytes(payload[8..12].try_into().unwrap()) as usize;
+                let rows = u32::from_le_bytes(payload[12..16].try_into().unwrap()) as u64;
+                let cols = u32::from_le_bytes(payload[16..20].try_into().unwrap()) as u64;
+                if ndim != descriptor.shape.len()
+                    || descriptor.shape.first().copied().unwrap_or(0) != rows
+                    || (ndim > 1 && descriptor.shape.get(1).copied().unwrap_or(0) != cols)
+                {
+                    return Err(Error::Gravity(format!(
+                        "aap pass {name:?} shape mismatch {:?}",
+                        descriptor.shape
+                    )));
+                }
+                let (codec, _) = self.codec_and_shape(name)?;
+                let unit = if codec == "native.f32" { 4 } else { 2 };
+                let elements = descriptor.shape.iter().try_fold(1u64, |acc, &value| {
+                    acc.checked_mul(value)
+                        .ok_or_else(|| Error::Gravity(format!("{name}: element count overflow")))
+                })?;
+                let expected = elements
+                    .checked_mul(unit)
+                    .ok_or_else(|| Error::Gravity(format!("{name}: byte count overflow")))?;
+                let raw = &payload[AAP_HEADER_LEN..];
+                if raw.len() as u64 != expected {
+                    return Err(Error::Gravity(format!(
+                        "aap pass {name:?} raw bytes {} != {expected}",
+                        raw.len()
+                    )));
+                }
+                Ok(raw.to_vec())
+            }
+            "activation_aware" => {
+                let header = parse_activation_aware_header(payload)?;
+                if descriptor.shape != vec![header.rows as u64, header.cols as u64] {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} shape [{},{}] != {:?}",
+                        header.rows, header.cols, descriptor.shape
+                    )));
+                }
+                if header.has_basis {
+                    return Ok(payload.to_vec());
+                }
+                let coefficient_values = match header.side {
+                    ActivationAwareSide::Input => {
+                        (header.rows as usize).checked_mul(header.rank as usize)
+                    }
+                    ActivationAwareSide::Output => {
+                        (header.rank as usize).checked_mul(header.cols as usize)
+                    }
+                }
+                .ok_or_else(|| Error::Gravity(format!("{name}: coefficient size overflow")))?;
+                let expected_coeff_bytes =
+                    aap_section_end!(AAP_HEADER_LEN, coefficient_values, 2, name);
+                if payload.len() != expected_coeff_bytes {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} coeff bytes {} != {expected_coeff_bytes}",
+                        payload.len()
+                    )));
+                }
+                let basis_descriptor = self.bases.get(&header.basis_layer).ok_or_else(|| {
+                    Error::Gravity(format!(
+                        "activation-aware tensor {name:?} missing basis {}",
+                        header.basis_layer
+                    ))
+                })?;
+                let basis_payload = self.span(
+                    basis_descriptor.offset,
+                    basis_descriptor.bytes,
+                    &format!("basis:{}", header.basis_layer),
+                )?;
+                aap_require_magic!(basis_payload, AAP_BASIS_MAGIC, "aap-basis")?;
+                let hidden = u32::from_le_bytes(basis_payload[8..12].try_into().unwrap()) as usize;
+                let basis_rank =
+                    u32::from_le_bytes(basis_payload[12..16].try_into().unwrap()) as usize;
+                let expected_hidden = match header.side {
+                    ActivationAwareSide::Input => header.cols as usize,
+                    ActivationAwareSide::Output => header.rows as usize,
+                };
+                if hidden != expected_hidden
+                    || basis_rank != basis_descriptor.rank as usize
+                    || basis_rank < header.rank as usize
+                {
+                    return Err(Error::Gravity(format!(
+                    "activation-aware tensor {name:?} basis geom h={hidden}, rank={basis_rank}; want h={expected_hidden}, rank>={}", header.rank )));
+                }
+                let expected_basis_bytes =
+                    aap_section_end!(AAP_HEADER_LEN, hidden * basis_rank, 2, name);
+                if basis_payload.len() != expected_basis_bytes {
+                    return Err(Error::Gravity(format!(
+                    "activation-aware basis layer {} has {} bytes, expected {expected_basis_bytes}", header.basis_layer, basis_payload.len() )));
+                }
+                let rank = header.rank as usize;
+                let mut runtime_payload = Vec::with_capacity(
+                    payload.len() + hidden.saturating_mul(rank).saturating_mul(2),
+                );
+                runtime_payload.extend_from_slice(payload);
+                runtime_payload[24] = 1;
+                let basis_values = &basis_payload[AAP_HEADER_LEN..];
+                if rank == basis_rank {
+                    runtime_payload.extend_from_slice(basis_values);
+                } else {
+                    for row in 0..hidden {
+                        let start = row * basis_rank * 2;
+                        runtime_payload.extend_from_slice(&basis_values[start..start + rank * 2]);
+                    }
+                }
+                Ok(runtime_payload)
+            }
+            other => Err(Error::Gravity(format!(
+                "activation-aware tensor {name:?} bad disposition {other:?}"
+            ))),
+        }
+    }
+}
+enum LazyShard {
+    Gravity(GravityShard),
+    ActivationAware(ActivationAwareShard),
+}
+impl LazyShard {
+    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
+        match self {
+            LazyShard::Gravity(shard) => {
+                let descriptor = shard
+                    .descriptor(name)
+                    .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?;
+                Ok((descriptor.codec.clone(), descriptor.shape.clone()))
+            }
+            LazyShard::ActivationAware(shard) => shard.codec_and_shape(name),
+        }
+    }
+    fn read_tensor(&self, name: &str, verify_hash: bool) -> Result<Vec<u8>> {
+        match self {
+            LazyShard::Gravity(shard) => shard.read_tensor(name, verify_hash),
+            LazyShard::ActivationAware(shard) => shard.read_tensor(name),
+        }
+    }
+    fn read_tensor_prefix_unverified(&self, name: &str, bytes: usize) -> Result<Vec<u8>> {
+        match self {
+            LazyShard::Gravity(shard) => shard.read_tensor_for_prefix(name, bytes),
+            LazyShard::ActivationAware(_) => Err(Error::Gravity(format!(
+                "tensor {name}: gravity-pq prefix requested from activation-aware shard"
+            ))),
+        }
+    }
+}
 pub const DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES: u64 = 256 * 1024 * 1024;
-
-/// Snapshot of the Lazy-path native dense/row memo. Surfaced so a long run
-/// has an explicit residency number rather than an unbounded HashMap.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct NativeDenseMemoStats {
     pub budget_bytes: u64,
     pub resident_bytes: u64,
@@ -1522,38 +504,17 @@ pub struct NativeDenseMemoStats {
     pub entries: usize,
     pub hits: u64,
     pub misses: u64,
-    /// Times a payload SHA-256 was actually computed on the dense/row path.
-    /// Integrity still requires **at least one** check per tensor per process
-    /// when `verify_hash` is on; this counter proves repeats are not free.
     pub verifications: u64,
-    /// Distinct tensors that have been integrity-checked (or admitted after
-    /// a checked load) on the dense/row path.
     pub verified_tensors: usize,
     pub evictions: u64,
 }
-
 struct MemoEntry {
     value: Vec<f32>,
     bytes: u64,
     last_tick: u64,
 }
-
-/// Byte-budgeted memo of decoded `native.*` vectors plus a one-shot
-/// verification record for tensors too large to keep decoded (e.g. an
-/// embedding table reached via [`GravityWeights::row`]).
-///
-/// Decode+hash of the same handful of norm/bias tensors used to dominate
-/// warm decode when hashing was on: 78 layers × several tensors × every
-/// token re-read, re-widened, and re-hashed the same bytes. This memo keeps
-/// the widened `Vec<f32>` after the first access so subsequent `dense` /
-/// `row` calls are a clone from RAM. Large tensors skip the decoded cache
-/// (holding a full embedding table would defeat the budget) but still mark
-/// verification done so SHA-256 runs at most once per process.
 struct NativeDenseMemo {
     decoded: HashMap<String, MemoEntry>,
-    /// Names whose payload has been integrity-checked (or loaded under
-    /// `verify_hash == false`). Large row() targets land here without a
-    /// decoded entry.
     verified: HashSet<String>,
     budget_bytes: u64,
     resident_bytes: u64,
@@ -1564,7 +525,6 @@ struct NativeDenseMemo {
     verifications: u64,
     evictions: u64,
 }
-
 impl NativeDenseMemo {
     fn new(budget_bytes: u64) -> Self {
         Self {
@@ -1580,7 +540,6 @@ impl NativeDenseMemo {
             evictions: 0,
         }
     }
-
     fn stats(&self) -> NativeDenseMemoStats {
         NativeDenseMemoStats {
             budget_bytes: self.budget_bytes,
@@ -1594,16 +553,12 @@ impl NativeDenseMemo {
             evictions: self.evictions,
         }
     }
-
     fn is_verified(&self, name: &str) -> bool {
         self.verified.contains(name)
     }
-
     fn has_decoded(&self, name: &str) -> bool {
         self.decoded.contains_key(name)
     }
-
-    /// Memo hit: clone the decoded vector and refresh LRU. `None` on miss.
     fn take_decoded(&mut self, name: &str) -> Option<Vec<f32>> {
         if let Some(e) = self.decoded.get_mut(name) {
             self.clock = self.clock.saturating_add(1);
@@ -1614,25 +569,16 @@ impl NativeDenseMemo {
             None
         }
     }
-
     fn note_miss(&mut self) {
         self.misses = self.misses.saturating_add(1);
     }
-
     fn record_verification(&mut self, name: &str) {
         self.verified.insert(name.to_string());
         self.verifications = self.verifications.saturating_add(1);
     }
-
-    /// Remember that `name` is safe to re-read without hashing (either we
-    /// just verified it, or `verify_hash` is off so integrity was waived).
     fn mark_verified_without_hash(&mut self, name: &str) {
         self.verified.insert(name.to_string());
     }
-
-    /// Admit a decoded native vector under the byte budget. Oversized
-    /// tensors (or a full cache that cannot free room) skip residency but
-    /// remain in `verified` so hashing is still one-shot.
     fn admit_decoded(&mut self, name: &str, value: Vec<f32>) {
         if self.decoded.contains_key(name) {
             self.clock = self.clock.saturating_add(1);
@@ -1665,7 +611,6 @@ impl NativeDenseMemo {
             self.high_water_bytes = self.resident_bytes;
         }
     }
-
     fn evict_one(&mut self) -> bool {
         let victim = self
             .decoded
@@ -1684,36 +629,8 @@ impl NativeDenseMemo {
         }
     }
 }
-
-/// Where a [`GravityWeights`] actually gets its bytes.
 enum Source {
-    /// Every tensor of a single shard, decoded once at open. Right for an
-    /// artifact small enough that "decode everything up front" is cheap —
-    /// the Llama and tiny-GLM fixtures are tens to hundreds of MB.
     Eager(HashMap<String, Tensor>),
-    /// Every tensor's owning shard *filename* known; no shard opened and no
-    /// payload touched until a tensor from it is actually asked for.
-    ///
-    /// Right for a flagship-scale MoE artifact: only 8 of 256 experts
-    /// activate per layer, so eagerly decoding all of them would both do
-    /// ~32x the necessary work and — worse — exceed physical memory, since a
-    /// `PqTensor`'s u16-widened indices run close to 2x the packed size.
-    /// Opening all 282 shards up front would be comparatively cheap (mmap is
-    /// virtual address space, not resident pages) but still unnecessary for
-    /// a short run that never touches most of them, so shards open lazily
-    /// into `open_shards` on first use and stay there for the model's
-    /// lifetime.
-    ///
-    /// `native.*` tensors reached via [`GravityWeights::dense`] / [`row`]
-    /// are memoized after first decode (byte-budgeted); integrity hashing
-    /// still runs at least once per tensor when `verify_hash` is on, but
-    /// not on every subsequent access. Packed `matvec` payloads remain
-    /// decode-on-call (or GPU-cached by the adapter).
-    ///
-    /// `Mutex` rather than `RefCell`: an `Engine` implementor must be
-    /// `Send + Sync` (the GPU weight cache wraps a `GravityWeights` for its
-    /// `dense`/`row` delegation), and an uncontended lock on a
-    /// single-threaded CPU forward costs nothing worth avoiding.
     Lazy {
         shard_dir: PathBuf,
         tensor_shard: HashMap<String, String>,
@@ -1725,26 +642,62 @@ enum Source {
         dense_memo: std::sync::Mutex<NativeDenseMemo>,
     },
 }
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum LazyFormat {
     Gravity,
     ActivationAware,
 }
-
-/// Every tensor of a `.gravity` model, addressed by name.
-///
-/// Architecture-independent on purpose: the Llama and GLM adapters differ in
-/// what they compute, not in how they reach a weight, and a second loader
-/// would be a second place for a codec or a hash check to be forgotten.
+fn json_str_map(v: &serde_json::Value, key: &str) -> HashMap<String, String> {
+    v.get(key)
+        .and_then(|value| value.as_object())
+        .map(|object| {
+            object
+                .iter()
+                .filter_map(|(n, v)| Some((n.clone(), v.as_str()?.to_string())))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+fn lazy_source(
+    shard_dir: PathBuf,
+    tensor_shard: HashMap<String, String>,
+    verify_hash: bool,
+    format: LazyFormat,
+    source_dtypes: HashMap<String, String>,
+    shard_sha256: HashMap<String, String>,
+) -> Source {
+    Source::Lazy {
+        shard_dir,
+        tensor_shard,
+        open_shards: std::sync::Mutex::new(HashMap::new()),
+        verify_hash,
+        format,
+        source_dtypes,
+        shard_sha256,
+        dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
+            DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
+        )),
+    }
+}
+fn decode_tensor(codec: &str, blob: &[u8], name: &str) -> Result<Tensor> {
+    if codec == "gravity-pq" {
+        Ok(Tensor::Pq(PqTensor::from_payload(blob)?))
+    } else if codec == "activation-aware.f16" {
+        Ok(Tensor::ActivationAware(
+            ActivationAwareTensor::from_payload(blob)?,
+        ))
+    } else if codec.starts_with("native.") {
+        Ok(Tensor::Dense(widen_native(codec, blob)?))
+    } else {
+        Err(Error::Gravity(format!(
+            "tensor {name}: unsupported codec {codec:?}"
+        )))
+    }
+}
 pub struct GravityWeights {
     source: Source,
-    /// The shard header minus `tensors` — architecture, compression,
-    /// integrity, tokenizer, as the writer left them. Identical across every
-    /// shard of one model by construction, so shard 0's copy speaks for all.
     pub header: serde_json::Value,
 }
-
 impl GravityWeights {
     pub fn open(path: &Path, verify_hash: bool) -> Result<GravityWeights> {
         let shard = GravityShard::open(path)?;
@@ -1757,119 +710,57 @@ impl GravityWeights {
                 .codec
                 .clone();
             let blob = shard.read_tensor(name, verify_hash)?;
-            let t = if codec == "gravity-pq" {
-                Tensor::Pq(PqTensor::from_payload(&blob)?)
-            } else if codec == "activation-aware.f16" {
-                Tensor::ActivationAware(ActivationAwareTensor::from_payload(&blob)?)
-            } else if codec.starts_with("native.") {
-                Tensor::Dense(widen_native(&codec, &blob)?)
-            } else {
-                return Err(Error::Gravity(format!(
-                    "tensor {name}: unsupported codec {codec:?}"
-                )));
-            };
-            tensors.insert(name.clone(), t);
+            tensors.insert(name.clone(), decode_tensor(&codec, &blob, name)?);
         }
         Ok(GravityWeights {
             source: Source::Eager(tensors),
             header: shard.extra,
         })
     }
-
-    /// Open a multi-shard model in `dir`, indexing which shard owns which
-    /// tensor without opening any shard or decoding any payload yet. See
-    /// [`Source::Lazy`] for why this stays lazy.
-    ///
-    /// Prefers exactly one assembled model index: `model.gravity.index.json`
-    /// or `model.activation_aware.index.json`.
-    /// written once when it graded this exact directory's coverage complete
-    /// against the official tensor count. That manifest carries the
-    /// synthesized full architecture (twenty fields) rather than the five a
-    /// single shard's own header holds, and reading one JSON file beats
-    /// opening all 282 shards just to learn what they contain. Falls back to
-    /// scanning shard headers directly for a `model-*.gravity` directory that
-    /// was never assembled — self-sufficient, just slower to open.
     pub fn open_dir(dir: &Path, verify_hash: bool) -> Result<GravityWeights> {
-        let gravity_index_path = dir.join("model.gravity.index.json");
-        let activation_index_path = dir.join("model.activation_aware.index.json");
-        if gravity_index_path.is_file() && activation_index_path.is_file() {
+        let g_idx = dir.join("model.gravity.index.json");
+        let a_idx = dir.join("model.activation_aware.index.json");
+        if g_idx.is_file() && a_idx.is_file() {
             return Err(Error::Gravity(format!(
-                "{}: both {} and {} exist; artifact type is ambiguous",
-                dir.display(),
-                gravity_index_path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy(),
-                activation_index_path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
+                "{}: both gravity and activation-aware indexes present",
+                dir.display()
             )));
         }
-        let index_choice = if gravity_index_path.is_file() {
-            Some((gravity_index_path, LazyFormat::Gravity))
-        } else if activation_index_path.is_file() {
-            Some((activation_index_path, LazyFormat::ActivationAware))
+        let index_choice = if g_idx.is_file() {
+            Some((g_idx, LazyFormat::Gravity))
+        } else if a_idx.is_file() {
+            Some((a_idx, LazyFormat::ActivationAware))
         } else {
             None
         };
         if let Some((index_path, format)) = index_choice {
-            let manifest: serde_json::Value = serde_json::from_slice(
-                &std::fs::read(&index_path)
-                    .map_err(|e| Error::Gravity(format!("{}: {e}", index_path.display())))?,
-            )
-            .map_err(|e| Error::Gravity(format!("{}: {e}", index_path.display())))?;
-            let tensor_shard: HashMap<String, String> = manifest
-                .get("weight_map")
-                .and_then(|v| v.as_object())
-                .ok_or_else(|| Error::Gravity(format!("{}: no weight_map", index_path.display())))?
-                .iter()
-                .filter_map(|(k, v)| Some((k.clone(), v.as_str()?.to_string())))
-                .collect();
+            let bytes = std::fs::read(&index_path)
+                .map_err(|e| Error::Gravity(format!("{}: {e}", index_path.display())))?;
+            let manifest: serde_json::Value = serde_json::from_slice(&bytes)
+                .map_err(|e| Error::Gravity(format!("{}: {e}", index_path.display())))?;
+            let tensor_shard = json_str_map(&manifest, "weight_map");
             if tensor_shard.is_empty() {
                 return Err(Error::Gravity(format!(
                     "{}: weight_map is empty",
                     index_path.display()
                 )));
             }
-            let source_dtypes: HashMap<String, String> = manifest
-                .get("tensor_dtypes")
-                .and_then(|value| value.as_object())
-                .map(|object| {
-                    object
-                        .iter()
-                        .filter_map(|(name, value)| {
-                            Some((name.clone(), value.as_str()?.to_string()))
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-            let shard_sha256: HashMap<String, String> = manifest
-                .get("shard_sha256")
-                .and_then(|value| value.as_object())
-                .map(|object| {
-                    object
-                        .iter()
-                        .filter_map(|(name, value)| {
-                            Some((name.clone(), value.as_str()?.to_string()))
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
+            let source_dtypes = json_str_map(&manifest, "tensor_dtypes");
+            let shard_sha256 = json_str_map(&manifest, "shard_sha256");
             if format == LazyFormat::ActivationAware {
                 let schema = manifest
                     .get("schema")
-                    .and_then(|value| value.as_str())
+                    .and_then(|v| v.as_str())
                     .unwrap_or("");
                 if schema != "hawking.activation_aware.model_index.v1" {
                     return Err(Error::Gravity(format!(
-                        "{}: activation-aware model index schema {schema:?} is unsupported",
+                        "{}: unsupported aap index schema {schema:?}",
                         index_path.display()
                     )));
                 }
                 if source_dtypes.len() != tensor_shard.len() {
                     return Err(Error::Gravity(format!(
-                        "{}: tensor_dtypes has {} entries for {} weights",
+                        "{}: tensor_dtypes {} != weights {}",
                         index_path.display(),
                         source_dtypes.len(),
                         tensor_shard.len()
@@ -1877,7 +768,7 @@ impl GravityWeights {
                 }
                 if verify_hash && shard_sha256.is_empty() {
                     return Err(Error::Gravity(format!(
-                        "{}: verified activation-aware open requires shard_sha256",
+                        "{}: verified aap open needs shard_sha256",
                         index_path.display()
                     )));
                 }
@@ -1889,23 +780,18 @@ impl GravityWeights {
                     Error::Gravity(format!("{}: no architecture block", index_path.display()))
                 })?;
             return Ok(GravityWeights {
-                source: Source::Lazy {
-                    shard_dir: dir.to_path_buf(),
+                source: lazy_source(
+                    dir.to_path_buf(),
                     tensor_shard,
-                    open_shards: std::sync::Mutex::new(HashMap::new()),
                     verify_hash,
                     format,
                     source_dtypes,
                     shard_sha256,
-                    dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
-                        DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
-                    )),
-                },
+                ),
                 header,
             });
         }
-
-        let mut names: Vec<std::ffi::OsString> = std::fs::read_dir(dir)
+        let mut names: Vec<_> = std::fs::read_dir(dir)
             .map_err(|e| Error::Gravity(format!("{}: {e}", dir.display())))?
             .filter_map(|e| e.ok())
             .map(|e| e.file_name())
@@ -1917,7 +803,7 @@ impl GravityWeights {
         names.sort();
         if names.is_empty() {
             return Err(Error::Gravity(format!(
-                "{}: no model.gravity.index.json and no model-*.gravity shards found",
+                "{}: no gravity index or model-*.gravity shards",
                 dir.display()
             )));
         }
@@ -1926,81 +812,47 @@ impl GravityWeights {
         for name in &names {
             let filename = name.to_string_lossy().into_owned();
             let shard = GravityShard::open(&dir.join(name))?;
-            if header.is_none() {
-                header = Some(shard.extra.clone());
-            }
+            header.get_or_insert_with(|| shard.extra.clone());
             for tname in shard.tensor_names() {
                 tensor_shard.insert(tname.to_string(), filename.clone());
             }
         }
         Ok(GravityWeights {
-            source: Source::Lazy {
-                shard_dir: dir.to_path_buf(),
+            source: lazy_source(
+                dir.to_path_buf(),
                 tensor_shard,
-                open_shards: std::sync::Mutex::new(HashMap::new()),
                 verify_hash,
-                format: LazyFormat::Gravity,
-                source_dtypes: HashMap::new(),
-                shard_sha256: HashMap::new(),
-                dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
-                    DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
-                )),
-            },
+                LazyFormat::Gravity,
+                HashMap::new(),
+                HashMap::new(),
+            ),
             header: header.expect("names is non-empty"),
         })
     }
-
     pub fn contains(&self, name: &str) -> bool {
         match &self.source {
             Source::Eager(t) => t.contains_key(name),
             Source::Lazy { tensor_shard, .. } => tensor_shard.contains_key(name),
         }
     }
-
-    /// Every tensor name this model declares. Eager mode only — used to
-    /// enumerate a fixture's tensors for testing; the flagship (Lazy) is
-    /// walked by the forward pass name-by-name, never enumerated wholesale.
     pub fn tensor_names(&self) -> Vec<String> {
         match &self.source {
             Source::Eager(t) => t.keys().cloned().collect(),
             Source::Lazy { tensor_shard, .. } => tensor_shard.keys().cloned().collect(),
         }
     }
-
-    /// Residency of the Lazy-path native dense/row memo. Eager mode returns
-    /// a zeroed snapshot (everything was decoded at open; there is no memo).
     pub fn dense_memo_stats(&self) -> NativeDenseMemoStats {
         match &self.source {
-            Source::Eager(_) => NativeDenseMemoStats {
-                budget_bytes: 0,
-                resident_bytes: 0,
-                high_water_bytes: 0,
-                entries: 0,
-                hits: 0,
-                misses: 0,
-                verifications: 0,
-                verified_tensors: 0,
-                evictions: 0,
-            },
+            Source::Eager(_) => NativeDenseMemoStats::default(),
             Source::Lazy { dense_memo, .. } => {
                 dense_memo.lock().expect("gravity dense-memo mutex").stats()
             }
         }
     }
-
-    /// Raw, undecoded payload bytes plus codec string — what a GPU cache
-    /// wants to upload verbatim, as opposed to [`dense`]/[`matvec`]/[`row`]
-    /// which decode for CPU execution. Lazy mode only: the flagship is the
-    /// only artifact large enough to need a GPU-resident cache in the first
-    /// place, and Eager mode never retains raw bytes past decode.
     pub fn raw_payload(&self, name: &str) -> Result<(String, Vec<u8>)> {
         let (codec, blob, _shape) = self.raw_payload_with_shape(name)?;
         Ok((codec, blob))
     }
-
-    /// Like [`raw_payload`], but also returns the descriptor shape so a
-    /// device-resident dense path (e.g. `lm_head.weight` as `native.bf16`)
-    /// can size the GEMV without decoding.
     pub fn raw_payload_with_shape(&self, name: &str) -> Result<(String, Vec<u8>, Vec<u64>)> {
         match &self.source {
             Source::Eager(_) => Err(Error::Gravity(
@@ -2033,15 +885,6 @@ impl GravityWeights {
             ),
         }
     }
-
-    /// Read just a `gravity-pq` tensor's fixed header plus descriptor shape.
-    ///
-    /// Lazy mode copies 64 payload bytes and does not hash the remaining
-    /// payload. This is an admission-only view: callers can reject an
-    /// incompatible artifact before allocating device/session state, while
-    /// the later ordinary payload load still performs the configured full
-    /// SHA-256 verification before execution. Eager mode returns the header
-    /// already decoded during [`open`](Self::open).
     pub fn pq_header_prefix_unverified_with_shape(
         &self,
         name: &str,
@@ -2086,20 +929,11 @@ impl GravityWeights {
                         codec
                     )));
                 }
-                let prefix = shard.read_tensor_prefix_unverified(name, PQ_HEADER_LEN)?;
+                let prefix = shard.read_tensor_prefix_unverified(name, 64)?;
                 Ok((parse_pq_header(&prefix)?, shape))
             }),
         }
     }
-
-    /// Open `name`'s owning shard if it is not already open, then run `f`
-    /// against it. The shard is inserted into `open_shards` before `f` runs
-    /// and stays there — a shard opened for one tensor is likely to be asked
-    /// for a sibling tensor later in the same forward pass (an artifact's
-    /// tensors are grouped by source shard, and a layer's projections
-    /// typically land together), so keeping it open trades a little
-    /// resident memory (mmap bookkeeping, not tensor bytes) for not
-    /// re-opening the same file repeatedly.
     fn with_lazy_shard<T>(
         shard_dir: &Path,
         tensor_shard: &HashMap<String, String>,
@@ -2142,16 +976,6 @@ impl GravityWeights {
             .get(filename)
             .expect("just opened or already present"))
     }
-
-    /// A natively-carried 1D tensor: norm weights, biases, router
-    /// corrections. Packing these is refused upstream, so finding one packed
-    /// here means the artifact disagrees with the runtime about what it is.
-    /// Owned rather than borrowed so the same signature covers both a
-    /// pre-decoded eager tensor and one decoded fresh on this call.
-    ///
-    /// Lazy mode memoizes the widened vector after the first access (under
-    /// a byte budget). Integrity hashing still runs on the first load when
-    /// `verify_hash` is on, then is skipped for the rest of the process.
     pub fn dense(&self, name: &str) -> Result<Vec<f32>> {
         use crate::cost_ledger::{self, Bucket};
         cost_ledger::record_dense_call();
@@ -2203,7 +1027,7 @@ impl GravityWeights {
                         let (codec, _) = shard.codec_and_shape(name)?;
                         if !codec.starts_with("native.") {
                             return Err(Error::Gravity(format!(
-                                "tensor {name:?} is packed; expected a natively-carried dense tensor"
+                                "tensor {name:?} is packed; expected native dense"
                             )));
                         }
                         let blob = shard.read_tensor(name, need_verify)?;
@@ -2221,7 +1045,6 @@ impl GravityWeights {
                     } else if !*verify_hash {
                         memo.mark_verified_without_hash(name);
                     }
-                    // Re-check: another thread may have admitted since our miss.
                     if let Some(cached) = memo.take_decoded(name) {
                         return Ok(cached);
                     }
@@ -2231,8 +1054,6 @@ impl GravityWeights {
             }
         }
     }
-
-    /// `y = W @ x` for a 2D weight, whichever codec carries it.
     pub fn matvec(&self, name: &str, x: &[f32]) -> Result<Vec<f32>> {
         use crate::cost_ledger::{self, Bucket};
         cost_ledger::record_matvec_call();
@@ -2264,50 +1085,25 @@ impl GravityWeights {
                 |shard| {
                     let (codec, _) = shard.codec_and_shape(name)?;
                     let blob = shard.read_tensor(name, *verify_hash)?;
-                    if codec == "gravity-pq" {
-                        let t = {
-                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                            PqTensor::from_payload(&blob)?
-                        };
-                        // Exact payload extent (descriptor.bytes); not a page, not
-                        // a whole shard. mmap may still fault full pages into RSS
-                        // — that shows up in page_faults_*, not here.
-                        cost_ledger::record_active_bytes_for(name, blob.len() as u64);
-                        t.matvec(x)
-                    } else if codec == "activation-aware.f16" {
-                        let tensor = {
-                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                            ActivationAwareTensor::from_payload(&blob)?
-                        };
-                        cost_ledger::record_active_bytes_for(name, blob.len() as u64);
-                        tensor.matvec(x)
-                    } else if codec.starts_with("native.") {
-                        let w = {
-                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                            widen_native(&codec, &blob)?
-                        };
-                        cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
-                        matvec_dense(&w, x, name)
-                    } else {
-                        Err(Error::Gravity(format!(
-                            "tensor {name}: unsupported codec {codec:?}"
-                        )))
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    match decode_tensor(&codec, &blob, name)? {
+                        Tensor::Pq(t) => {
+                            cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                            t.matvec(x)
+                        }
+                        Tensor::ActivationAware(t) => {
+                            cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                            t.matvec(x)
+                        }
+                        Tensor::Dense(w) => {
+                            cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
+                            matvec_dense(&w, x, name)
+                        }
                     }
                 },
             ),
         }
     }
-
-    /// One row of a 2D weight — the embedding-lookup path. `cols` is needed
-    /// only for the dense case, where the payload carries no shape.
-    ///
-    /// Lazy `native.*` rows share the dense memo when the full tensor fits
-    /// the budget (same decoded vector `dense` would keep). Oversized
-    /// tensors — embedding tables — only memoize verification: the full
-    /// table is not retained, but SHA-256 still runs at most once per
-    /// process. Packed (`gravity-pq`) rows verify once the same way, then
-    /// re-read without re-hashing; row-level decoded caching would be wrong
-    /// for a vocab-scale table.
     pub fn row(&self, name: &str, index_: usize, cols: usize) -> Result<Vec<f32>> {
         use crate::cost_ledger::{self, Bucket};
         cost_ledger::record_row_call();
@@ -2362,9 +1158,6 @@ impl GravityWeights {
                     }
                 }
                 if codec == "gravity-pq" {
-                    // Packed embeddings: verify-once only. Caching every row
-                    // of a vocab-scale table would blow the budget; caching
-                    // the whole decoded matrix is worse.
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     pq_row(&blob, index_)
                 } else if codec == "activation-aware.f16" {
@@ -2380,9 +1173,6 @@ impl GravityWeights {
                         let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
                         if !memo.has_decoded(name) {
                             memo.note_miss();
-                            // Small native matrices share the dense memo;
-                            // oversize (embedding-scale) tensors skip residency
-                            // but stay in `verified` via admit_decoded.
                             memo.admit_decoded(name, w);
                         }
                     }
@@ -2396,32 +1186,15 @@ impl GravityWeights {
         }
     }
 }
-
-/// Explicit Metal kernel candidates for `gravity-pq`.
-///
-/// [`Generic`](Self::Generic) is the existing production kernel and remains
-/// the default used by [`pq_matvec_metal`]. The other variants are additive
-/// and must be named by a benchmark or caller; no environment variable or
-/// model path silently opts into them.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PqMetalKernelVariant {
-    /// Existing packed-bit extractor and one SIMD group per row.
     Generic,
-    /// `bits=8` direct `codes[flat]` lookup; scalar FMA order within a lane.
     Bits8Direct,
-    /// Direct byte lookup plus four independent `float4` accumulators.
     Bits8Vec4,
-    /// Direct byte lookup plus an f32 double-single accumulator/reduction.
-    ///
-    /// This is an unpromoted numeric candidate. It has no throughput claim
-    /// and is selected only through the explicit variant/autotune APIs.
     Bits8DoubleSingle,
-    /// 2D row × four chunk slices, then ordered slice reduction.
     Bits8Vec4Split4,
-    /// 2D row × eight chunk slices, then ordered slice reduction.
     Bits8Vec4Split8,
 }
-
 impl PqMetalKernelVariant {
     pub const ALL: [Self; 6] = [
         Self::Generic,
@@ -2431,7 +1204,6 @@ impl PqMetalKernelVariant {
         Self::Bits8Vec4Split4,
         Self::Bits8Vec4Split8,
     ];
-
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Generic => "generic",
@@ -2442,7 +1214,6 @@ impl PqMetalKernelVariant {
             Self::Bits8Vec4Split8 => "bits8-2d-split8",
         }
     }
-
     pub const fn kernel_name(self) -> &'static str {
         match self {
             Self::Generic => "gravity_pq_matvec",
@@ -2452,7 +1223,6 @@ impl PqMetalKernelVariant {
             Self::Bits8Vec4Split4 | Self::Bits8Vec4Split8 => "gravity_pq_matvec_bits8_2d",
         }
     }
-
     pub const fn split_count(self) -> Option<u32> {
         match self {
             Self::Bits8Vec4Split4 => Some(4),
@@ -2460,7 +1230,6 @@ impl PqMetalKernelVariant {
             _ => None,
         }
     }
-
     pub const fn dispatches_per_matvec(self) -> usize {
         if self.split_count().is_some() {
             2
@@ -2468,34 +1237,30 @@ impl PqMetalKernelVariant {
             1
         }
     }
-
-    /// Whether this candidate can interpret the tensor without changing
-    /// artifact semantics. Vector candidates require aligned 4-wide sections;
-    /// direct-byte candidates require exactly one byte per index.
     pub fn supports(self, h: &PqHeader) -> bool {
         match self {
             Self::Generic => true,
-            Self::Bits8Direct | Self::Bits8DoubleSingle => h.bits == 8,
-            Self::Bits8Vec4 | Self::Bits8Vec4Split4 | Self::Bits8Vec4Split8 => {
+            Self::Bits8Direct => h.bits == 8,
+            Self::Bits8Vec4 | Self::Bits8DoubleSingle => h.bits == 8 && h.sub % 4 == 0,
+            Self::Bits8Vec4Split4 | Self::Bits8Vec4Split8 => {
                 h.bits == 8 && h.d % 4 == 0 && h.sub % 4 == 0
             }
         }
     }
-
     pub fn validate(self, h: &PqHeader) -> Result<()> {
         if self.supports(h) {
-            return Ok(());
+            Ok(())
+        } else {
+            Err(Error::Gravity(format!(
+                "PQ kernel {} rejects D={} S={} sub={} card={} bits={}",
+                self.as_str(),
+                h.d,
+                h.s,
+                h.sub,
+                h.card,
+                h.bits
+            )))
         }
-        Err(Error::Gravity(format!(
-            "PQ kernel {} does not support D={}, S={}, sub={}, card={}, bits={}; \
-             byte variants require bits=8 and vector variants also require D/sub multiples of 4",
-            self.as_str(),
-            h.d,
-            h.s,
-            h.sub,
-            h.card,
-            h.bits
-        )))
     }
 }
 
@@ -2504,40 +1269,29 @@ impl std::fmt::Display for PqMetalKernelVariant {
         f.write_str(self.as_str())
     }
 }
-
 impl std::str::FromStr for PqMetalKernelVariant {
     type Err = String;
-
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let normalized = s.trim().to_ascii_lowercase();
+        let n = s.trim().to_ascii_lowercase();
         Self::ALL
             .into_iter()
-            .find(|v| v.as_str() == normalized)
+            .find(|v| v.as_str() == n)
             .ok_or_else(|| {
                 format!(
-                    "unknown PQ kernel variant {s:?}; expected {}",
-                    Self::ALL
-                        .iter()
-                        .map(|v| v.as_str())
-                        .collect::<Vec<_>>()
-                        .join(",")
+                    "unknown PQ kernel variant {s:?}; expected {:?}",
+                    Self::ALL.map(|v| v.as_str())
                 )
             })
     }
 }
-
-/// Summary of repeated synchronized matvec timings.
 #[cfg(target_os = "macos")]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct PqMetalTimingSummary {
     pub min_us: f64,
     pub median_us: f64,
     pub p95_us: f64,
     pub mean_us: f64,
 }
-
-/// One bounded candidate measurement. `gpu` is populated when the process
-/// starts with `HAWKING_TCB_TRACE=gpu_prod` on a counter-capable device.
 #[cfg(target_os = "macos")]
 #[derive(Debug, Clone)]
 pub struct PqMetalBenchmark {
@@ -2547,10 +1301,6 @@ pub struct PqMetalBenchmark {
     pub wall: PqMetalTimingSummary,
     pub gpu: Option<PqMetalTimingSummary>,
 }
-
-/// Metal `GravityPQParams` mirror (`shaders/gravity_pq.metal`): eight
-/// `uint`s in declaration order, 32 bytes total, `#[repr(C)]` so a raw
-/// pointer cast is a valid `set_bytes` payload.
 #[cfg(target_os = "macos")]
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
@@ -2564,7 +1314,6 @@ struct GravityPqParams {
     nchunk: u32,
     bits: u32,
 }
-
 #[cfg(target_os = "macos")]
 impl From<PqHeader> for GravityPqParams {
     fn from(h: PqHeader) -> Self {
@@ -2580,10 +1329,6 @@ impl From<PqHeader> for GravityPqParams {
         }
     }
 }
-
-/// A compact PQ matrix uploaded once for parity and kernel-autotune runs.
-/// Weight/code buffers stay resident across candidates and iterations, so
-/// timings cover dispatch + execution rather than artifact upload.
 #[cfg(target_os = "macos")]
 pub struct PqMetalMatrix {
     header: PqHeader,
@@ -2591,7 +1336,6 @@ pub struct PqMetalMatrix {
     codebooks: metal::Buffer,
     codes: metal::Buffer,
 }
-
 #[cfg(target_os = "macos")]
 impl PqMetalMatrix {
     pub fn from_payload(ctx: &crate::metal::MetalContext, payload: &[u8]) -> Result<Self> {
@@ -2602,8 +1346,6 @@ impl PqMetalMatrix {
             ));
         }
         let (cb, packed_codes) = pq_sections(payload)?;
-        // The generic kernel reads a four-byte MSB window. Keep its established
-        // tail-padding contract even though direct-byte variants do not need it.
         let mut codes_padded = Vec::with_capacity(packed_codes.len() + 4);
         codes_padded.extend_from_slice(packed_codes);
         codes_padded.extend_from_slice(&[0u8; 4]);
@@ -2614,11 +1356,9 @@ impl PqMetalMatrix {
             codes: ctx.new_buffer_with_bytes_checked(&codes_padded)?,
         })
     }
-
     pub const fn header(&self) -> PqHeader {
         self.header
     }
-
     fn prepare(
         &self,
         ctx: &crate::metal::MetalContext,
@@ -2631,7 +1371,6 @@ impl PqMetalMatrix {
         }
         Ok(())
     }
-
     fn encode(
         &self,
         tcb: &mut crate::metal::TokenCommandBuffer<'_>,
@@ -2642,11 +1381,17 @@ impl PqMetalMatrix {
     ) -> Result<()> {
         const ROW_TG: u32 = 256;
         let params = self.params;
+        let set_params = |enc: &metal::ComputeCommandEncoderRef, idx: u64| {
+            enc.set_bytes(
+                idx,
+                std::mem::size_of::<GravityPqParams>() as u64,
+                &params as *const GravityPqParams as *const _,
+            );
+        };
         if let Some(splits) = variant.split_count() {
             let scratch = partials.ok_or_else(|| {
                 Error::Gravity(format!("PQ kernel {variant} requires a partials buffer"))
             })?;
-            // One 32-thread SIMD group per (row, chunk-slice) pair.
             tcb.dispatch_threads(
                 variant.kernel_name(),
                 (params.rows * 32, splits, 1),
@@ -2656,11 +1401,7 @@ impl PqMetalMatrix {
                     enc.set_buffer(1, Some(&self.codes), 0);
                     enc.set_buffer(2, Some(x), 0);
                     enc.set_buffer(3, Some(scratch), 0);
-                    enc.set_bytes(
-                        4,
-                        std::mem::size_of::<GravityPqParams>() as u64,
-                        &params as *const GravityPqParams as *const _,
-                    );
+                    set_params(enc, 4);
                     enc.set_bytes(5, 4, &splits as *const u32 as *const _);
                 },
             )?;
@@ -2671,16 +1412,11 @@ impl PqMetalMatrix {
                 |enc| {
                     enc.set_buffer(0, Some(scratch), 0);
                     enc.set_buffer(1, Some(y), 0);
-                    enc.set_bytes(
-                        2,
-                        std::mem::size_of::<GravityPqParams>() as u64,
-                        &params as *const GravityPqParams as *const _,
-                    );
+                    set_params(enc, 2);
                     enc.set_bytes(3, 4, &splits as *const u32 as *const _);
                 },
             )
         } else {
-            // Existing mapping: one SIMD group per row, 8 groups/TG.
             let n_tg = params.rows.div_ceil(8);
             tcb.dispatch_threads(
                 variant.kernel_name(),
@@ -2691,16 +1427,11 @@ impl PqMetalMatrix {
                     enc.set_buffer(1, Some(&self.codes), 0);
                     enc.set_buffer(2, Some(x), 0);
                     enc.set_buffer(3, Some(y), 0);
-                    enc.set_bytes(
-                        4,
-                        std::mem::size_of::<GravityPqParams>() as u64,
-                        &params as *const GravityPqParams as *const _,
-                    );
+                    set_params(enc, 4);
                 },
             )
         }
     }
-
     fn activation_buffers(
         &self,
         ctx: &crate::metal::MetalContext,
@@ -2728,8 +1459,6 @@ impl PqMetalMatrix {
             .transpose()?;
         Ok((x_buf, y_buf, partials))
     }
-
-    /// Run one explicit candidate and read back its result.
     pub fn matvec(
         &self,
         ctx: &crate::metal::MetalContext,
@@ -2743,10 +1472,6 @@ impl PqMetalMatrix {
         let ptr = y_buf.contents() as *const f32;
         Ok(unsafe { std::slice::from_raw_parts(ptr, self.header.rows as usize) }.to_vec())
     }
-
-    /// Benchmark a candidate with resident weight, activation, output, and
-    /// scratch buffers. Every sample is one synchronized matvec command
-    /// buffer; a 2D candidate includes its ordered reduction dispatch.
     pub fn benchmark(
         &self,
         ctx: &crate::metal::MetalContext,
@@ -2756,7 +1481,6 @@ impl PqMetalMatrix {
         iterations: usize,
     ) -> Result<PqMetalBenchmark> {
         use std::time::Instant;
-
         if iterations == 0 {
             return Err(Error::Gravity(
                 "PQ Metal benchmark requires at least one iteration".into(),
@@ -2773,7 +1497,6 @@ impl PqMetalMatrix {
             run_once()?;
         }
         let _ = ctx.drain_trace();
-
         let mut wall_us = Vec::with_capacity(iterations);
         let mut gpu_us = Vec::with_capacity(iterations);
         for _ in 0..iterations {
@@ -2786,33 +1509,29 @@ impl PqMetalMatrix {
                 gpu_us.push(gpu.into_iter().sum::<u64>() as f64);
             }
         }
+        let summarize = |samples: &[f64]| {
+            let mut sorted = samples.to_vec();
+            sorted.sort_by(f64::total_cmp);
+            let percentile = |p: f64| {
+                let i = ((sorted.len() - 1) as f64 * p).round() as usize;
+                sorted[i.min(sorted.len() - 1)]
+            };
+            PqMetalTimingSummary {
+                min_us: sorted[0],
+                median_us: percentile(0.50),
+                p95_us: percentile(0.95),
+                mean_us: sorted.iter().sum::<f64>() / sorted.len() as f64,
+            }
+        };
         Ok(PqMetalBenchmark {
             variant,
             warmup,
             iterations,
-            wall: summarize_timings(&wall_us),
-            gpu: (gpu_us.len() == iterations).then(|| summarize_timings(&gpu_us)),
+            wall: summarize(&wall_us),
+            gpu: (gpu_us.len() == iterations).then(|| summarize(&gpu_us)),
         })
     }
 }
-
-#[cfg(target_os = "macos")]
-fn summarize_timings(samples: &[f64]) -> PqMetalTimingSummary {
-    let mut sorted = samples.to_vec();
-    sorted.sort_by(f64::total_cmp);
-    let percentile = |p: f64| {
-        let i = ((sorted.len() - 1) as f64 * p).round() as usize;
-        sorted[i.min(sorted.len() - 1)]
-    };
-    PqMetalTimingSummary {
-        min_us: sorted[0],
-        median_us: percentile(0.50),
-        p95_us: percentile(0.95),
-        mean_us: sorted.iter().sum::<f64>() / sorted.len() as f64,
-    }
-}
-
-/// GPU counterpart of [`pq_matvec`] using an explicit additive candidate.
 #[cfg(target_os = "macos")]
 pub fn pq_matvec_metal_with_variant(
     ctx: &crate::metal::MetalContext,
@@ -2822,11 +1541,6 @@ pub fn pq_matvec_metal_with_variant(
 ) -> Result<Vec<f32>> {
     PqMetalMatrix::from_payload(ctx, payload)?.matvec(ctx, variant, x)
 }
-
-/// GPU counterpart of [`pq_matvec`]. This remains pinned to
-/// [`PqMetalKernelVariant::Generic`], preserving the established production
-/// kernel and launch exactly; autotune results require an explicit later
-/// promotion before they can affect the default.
 #[cfg(target_os = "macos")]
 pub fn pq_matvec_metal(
     ctx: &crate::metal::MetalContext,
@@ -2835,321 +1549,225 @@ pub fn pq_matvec_metal(
 ) -> Result<Vec<f32>> {
     pq_matvec_metal_with_variant(ctx, payload, x, PqMetalKernelVariant::Generic)
 }
-
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
     use super::*;
-    use std::io::Write;
-    #[test]
-    fn unpack_bits_matches_hand_packed_7bit_values() {
-        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01]; let got = unpack_bits(&packed, 8, 7).expect("unpack");
-        assert_eq!(got, vec![0, 1, 126, 127, 64, 3, 2, 1]);
-    }
-    #[test]
-    fn index_at_matches_sequential_unpack() {
-        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01]; let seq = unpack_bits(&packed, 8, 7).expect("unpack");
-        for (i, &want) in seq.iter().enumerate() {
-            assert_eq!(index_at(&packed, i, 7), want, "index {i}");
+    use crate::artifact::{parse_activation_aware_header, ActivationAwareTensor};
+    use half::f16;
+    use sha2::{Digest, Sha256};
+    const PQ_MAGIC: &[u8; 8] = b"GLM52CPK";
+    const AAP_SCHEMA: &str = "hawking.glm52.activation_aware_pack.v1";
+    const AAP_PASS: &[u8; 8] = b"GLM52PT0";
+    const AAP_BASIS: &[u8; 8] = b"GLM52BAS";
+    const AAP_MAGIC: &[u8; 8] = b"GLM52AAP";
+    const HDR: usize = 64;
+    fn aap_payload(rows: u32, cols: u32, rank: u32, side: u16, coef: &[f32], basis: Option<&[f32]>) -> Vec<u8> {
+        let mut p = Vec::from(AAP_MAGIC.as_slice());
+        p.extend_from_slice(&rows.to_le_bytes());
+        p.extend_from_slice(&cols.to_le_bytes());
+        p.extend_from_slice(&rank.to_le_bytes());
+        p.extend_from_slice(&7u16.to_le_bytes());
+        p.extend_from_slice(&side.to_le_bytes());
+        p.push(u8::from(basis.is_some()));
+        p.resize(HDR, 0);
+        p.extend(coef.iter().flat_map(|&x| f16::from_f32(x).to_bits().to_le_bytes()));
+        if let Some(b) = basis {
+            p.extend(b.iter().flat_map(|&x| f16::from_f32(x).to_bits().to_le_bytes()));
         }
+        p
     }
-    #[test]
-    fn unpack_bits_rejects_short_stream() {
-        let packed: [u8; 6] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1];
-        assert!(unpack_bits(&packed, 8, 7).is_err());
-    }
-    fn activation_payload(rows: u32, cols: u32, rank: u32, side_code: u16, coefficients: &[f32], basis: Option<&[f32]>) -> Vec<u8> {
-        let mut payload = Vec::new(); payload.extend_from_slice(ACTIVATION_AWARE_MAGIC); payload.extend_from_slice(&rows.to_le_bytes());
-        payload.extend_from_slice(&cols.to_le_bytes()); payload.extend_from_slice(&rank.to_le_bytes());
-        payload.extend_from_slice(&7u16.to_le_bytes()); payload.extend_from_slice(&side_code.to_le_bytes());
-        payload.push(u8::from(basis.is_some())); payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
-        for &value in coefficients {
-            payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
-        }
-        if let Some(values) = basis {
-            for &value in values {
-                payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
-            }
-        }
-        payload
-    }
-    #[test]
-    fn activation_aware_factorized_input_and_output_match_dense_authority() {
-        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; let input_left = [2.0, -1.0, 0.5, 3.0];
-        let input = ActivationAwareTensor::from_payload(&activation_payload(2, 3, 2, 1, &input_left, Some(&basis))).expect("input-side payload");
-        let x_input = [0.25, 2.0, -1.0]; let got_input = input.matvec(&x_input).expect("input matvec");
-        let want_input = [2.0 * 0.25 + -2.0 + -1.25, 0.5 * 0.25 + 6.0 + 0.5];
-        assert_eq!(got_input, want_input);
-        assert_eq!(input.row(1).unwrap(), vec![0.5, 3.0, -0.5]); let output_left = [1.0, 2.0, -0.5, 4.0];
-        let output = ActivationAwareTensor::from_payload(&activation_payload(3, 2, 2, 2, &output_left, Some(&basis))).expect("output-side payload");
-        let x_output = [1.5, -0.75]; let got_output = output.matvec(&x_output).expect("output matvec");
-        let want_output = [0.0, -3.75, 0.9375];
-        assert_eq!(got_output, want_output);
-        assert_eq!(output.row(2).unwrap(), vec![0.625, 0.0]);
-    }
-    fn write_activation_aware_lazy_fixture(dir: &Path) -> (&'static str, &'static str) {
-        let weight_name = "model.layers.0.input.weight"; let norm_name = "model.layers.0.norm.weight";
-        let shard_name = "model-00001-of-00001.aap"; let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; let mut basis_payload = Vec::new();
-        basis_payload.extend_from_slice(AAP_BASIS_MAGIC); basis_payload.extend_from_slice(&3u32.to_le_bytes());
-        basis_payload.extend_from_slice(&2u32.to_le_bytes()); basis_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
-        for &value in &basis {
-            basis_payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
-        }
-        let weight_payload = activation_payload(2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], None); let mut norm_payload = Vec::new();
-        norm_payload.extend_from_slice(AAP_PASS_MAGIC); norm_payload.extend_from_slice(&1u32.to_le_bytes());
-        norm_payload.extend_from_slice(&3u32.to_le_bytes()); norm_payload.extend_from_slice(&0u32.to_le_bytes());
-        norm_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
-        for value in [1.5f32, -2.0, 0.25] {
-            let bf16 = (value.to_bits() >> 16) as u16; norm_payload.extend_from_slice(&bf16.to_le_bytes());
-        }
-        let weight_offset = basis_payload.len() as u64; let norm_offset = weight_offset + weight_payload.len() as u64;
-        let index = serde_json::json!({
-            "schema": AAP_SCHEMA,
-            "shard": "model-00001-of-00001.safetensors",
-            "shared_bases": true,
-            "bases": [{
-                "basis_layer": 7,
-                "rank": 2,
-                "offset": 0,
-                "bytes": basis_payload.len(),
-            }],
-            "tensors": [{
-                "name": weight_name,
-                "disposition": "activation_aware",
-                "offset": weight_offset,
-                "bytes": weight_payload.len(),
-                "shape": [2, 3],
-            }, {
-                "name": norm_name,
-                "disposition": "pass_through",
-                "offset": norm_offset,
-                "bytes": norm_payload.len(),
-                "shape": [3],
-            }],
-        });
-        let index_bytes = serde_json::to_vec(&index).unwrap(); let mut shard_bytes = Vec::new();
-        shard_bytes.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes()); shard_bytes.extend_from_slice(&index_bytes);
-        shard_bytes.extend_from_slice(&basis_payload); shard_bytes.extend_from_slice(&weight_payload);
-        shard_bytes.extend_from_slice(&norm_payload); std::fs::write(dir.join(shard_name), &shard_bytes).unwrap();
-        let mut digest = Sha256::new(); digest.update(&shard_bytes);
-        let shard_hash: String = digest
-            .finalize()
-            .iter().map(|byte| format!("{byte:02x}")) .collect();
-        let manifest = serde_json::json!({
-            "schema": "hawking.activation_aware.model_index.v1",
-            "architecture": {"hidden_size": 3},
-            "weight_map": {
-                (weight_name): shard_name,
-                (norm_name): shard_name,
-            },
-            "tensor_dtypes": {
-                (weight_name): "BF16",
-                (norm_name): "BF16",
-            },
-            "shard_sha256": {(shard_name): shard_hash},
-        });
-        std::fs::write(dir.join("model.activation_aware.index.json"), serde_json::to_vec(&manifest).unwrap()).unwrap();
-        (weight_name, norm_name)
-    }
-    #[test]
-    fn activation_aware_open_dir_attaches_shared_basis_and_decodes_pass_through() {
-        let dir = tempfile::tempdir().expect("tempdir"); let (weight_name, norm_name) = write_activation_aware_lazy_fixture(dir.path());
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("verified open_dir");
-        assert_eq!(
-            weights.matvec(weight_name, &[0.25, 2.0, -1.0]).unwrap(),
-            vec![-2.75, 6.625]
-        );
-        assert_eq!(
-            weights.row(weight_name, 1, 3).unwrap(),
-            vec![0.5, 3.0, -0.5]
-        );
-        assert_eq!(weights.dense(norm_name).unwrap(), vec![1.5, -2.0, 0.25]);
-        let (codec, payload, shape) = weights
-            .raw_payload_with_shape(weight_name).expect("raw activation-aware payload");
-        assert_eq!(codec, "activation-aware.f16");
-        assert_eq!(shape, vec![2, 3]); let header = parse_activation_aware_header(&payload).unwrap();
-        assert!(header.has_basis, "shared basis was not attached");
-    }
-    fn write_lazy_native_fixture(dir: &Path, tensors: &[(&str, &[f32])]) -> std::path::PathBuf {
-        let mut body = Vec::new(); let mut descs = Vec::new();
-        for &(name, vals) in tensors {
-            let mut blob = Vec::with_capacity(vals.len() * 4);
-            for &v in vals {
-                blob.extend_from_slice(&v.to_le_bytes());
-            }
-            let mut h = Sha256::new(); h.update(&blob);
-            let hex: String = h.finalize().iter().map(|b| format!("{b:02x}")).collect();
-            descs.push(serde_json::json!({
-                "name": name,
-                "codec": "native.f32",
-                "offset": body.len() as u64,
-                "bytes": blob.len() as u64,
-                "sha256": hex,
-                "shape": [vals.len() as u64],
-                "elements": vals.len() as u64,
-            }));
+    fn write_gravity(dir: &Path, model: &str, codec: &str, tensors: Vec<(String, Vec<u8>, serde_json::Value)>) -> PathBuf {
+        use sha2::{Digest, Sha256};
+        let mut body = Vec::new();
+        let mut descs = Vec::new();
+        for (name, blob, mut extra) in tensors {
+            let hex = extra
+                .get("sha256")
+                .and_then(|v| v.as_str())
+                .map(str::to_string)
+                .unwrap_or_else(|| format!("{:x}", Sha256::digest(&blob)));
+            let o = extra.as_object_mut().unwrap();
+            o.insert("name".into(), name.into());
+            o.insert("codec".into(), codec.into());
+            o.insert("offset".into(), (body.len() as u64).into());
+            o.insert("bytes".into(), (blob.len() as u64).into());
+            o.insert("sha256".into(), hex.into());
+            descs.push(extra);
             body.extend_from_slice(&blob);
         }
         let header = serde_json::json!({
-            "schema": "hawking.gravity.shard_header.v1",
-            "format_version": 1,
-            "model": {"name": "dense-memo-fixture"},
-            "architecture": {},
-            "tokenizer": {},
-            "compression": {"codec": "native"},
-            "shard": {"index": 1, "count": 1},
-            "integrity": {"tensor_count": descs.len()},
-            "tensors": descs,
+            "schema": "hawking.gravity.shard_header.v1", "format_version": 1,
+            "model": {"name": model}, "architecture": {}, "tokenizer": {},
+            "compression": {"codec": codec}, "shard": {"index": 1, "count": 1},
+            "integrity": {"tensor_count": descs.len()}, "tensors": descs,
         });
-        let header_bytes = serde_json::to_vec(&header).expect("header json"); let path = dir.join("model-00001-of-00001.gravity");
-        let mut f = File::create(&path).expect("create shard"); f.write_all(MAGIC).unwrap(); f.write_all(&1u32.to_le_bytes()).unwrap();
-        f.write_all(&(header_bytes.len() as u64).to_le_bytes()).unwrap(); f.write_all(&header_bytes).unwrap(); f.write_all(&body).unwrap();
+        let hb = serde_json::to_vec(&header).unwrap();
+        let path = dir.join("model-00001-of-00001.gravity");
+        let mut out = Vec::with_capacity(20 + hb.len() + body.len());
+        out.extend_from_slice(&[b'G', b'R', b'A', b'V', b'I', b'T', b'Y', 0]);
+        out.extend_from_slice(&1u32.to_le_bytes());
+        out.extend_from_slice(&(hb.len() as u64).to_le_bytes());
+        out.extend_from_slice(&hb);
+        out.extend_from_slice(&body);
+        std::fs::write(&path, out).unwrap();
         path
     }
-    fn write_lazy_unverified_pq_header_fixture(dir: &Path, name: &str) {
-        let mut payload = Vec::with_capacity(PQ_HEADER_LEN); payload.extend_from_slice(PQ_MAGIC);
-        payload.extend_from_slice(&32u16.to_le_bytes()); payload.extend_from_slice(&1u16.to_le_bytes());
-        payload.extend_from_slice(&32u16.to_le_bytes()); payload.extend_from_slice(&256u16.to_le_bytes());
-        payload.extend_from_slice(&2u32.to_le_bytes()); payload.extend_from_slice(&32u32.to_le_bytes());
-        payload.extend_from_slice(&1u32.to_le_bytes()); payload.extend_from_slice(&7u32.to_le_bytes());
-        payload.extend_from_slice(&8u16.to_le_bytes()); payload.push(0); payload.push(1); payload.resize(PQ_HEADER_LEN, 0);
-        let header = serde_json::json!({
-            "schema": "hawking.gravity.shard_header.v1",
-            "format_version": 1,
-            "model": {"name": "pq-header-prefix-fixture"},
-            "architecture": {},
-            "tokenizer": {},
-            "compression": {"codec": "gravity-pq"},
-            "shard": {"index": 1, "count": 1},
-            "integrity": {"tensor_count": 1},
-            "tensors": [{
-                "name": name,
-                "codec": "gravity-pq",
-                "offset": 0,
-                "bytes": payload.len() as u64,
-                "sha256": "00".repeat(32),
-                "shape": [2, 32],
-                "elements": 64,
-            }],
+    fn write_native(dir: &Path, tensors: &[(&str, &[f32])]) -> PathBuf {
+        let tensors = tensors.iter().map(|&(n, v)| {
+            let blob = v.iter().flat_map(|x| x.to_le_bytes()).collect();
+            (n.to_string(), blob, serde_json::json!({"shape": [v.len() as u64], "elements": v.len() as u64}))
+        }).collect();
+        write_gravity(dir, "dense-memo-fixture", "native.f32", tensors)
+    }
+    #[test]
+    fn activation_aware_factorized_input_and_output_match_dense_authority() {
+        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+        let input = ActivationAwareTensor::from_payload(&aap_payload(
+            2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], Some(&basis))).unwrap();
+        assert_eq!(input.matvec(&[0.25, 2.0, -1.0]).unwrap(),
+                   [2.0 * 0.25 + -2.0 + -1.25, 0.5 * 0.25 + 6.0 + 0.5]);
+        assert_eq!(input.row(1).unwrap(), vec![0.5, 3.0, -0.5]);
+        let output = ActivationAwareTensor::from_payload(&aap_payload(
+            3, 2, 2, 2, &[1.0, 2.0, -0.5, 4.0], Some(&basis))).unwrap();
+        assert_eq!(output.matvec(&[1.5, -0.75]).unwrap(), [0.0, -3.75, 0.9375]);
+        assert_eq!(output.row(2).unwrap(), vec![0.625, 0.0]);
+    }
+    #[test]
+    fn activation_aware_open_dir_attaches_shared_basis_and_decodes_pass_through() {
+        let dir = tempfile::tempdir().unwrap();
+        let (wname, nname, sname) = (
+            "model.layers.0.input.weight", "model.layers.0.norm.weight", "model-00001-of-00001.aap");
+        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+        let mut bp = Vec::from(AAP_BASIS.as_slice());
+        bp.extend_from_slice(&3u32.to_le_bytes());
+        bp.extend_from_slice(&2u32.to_le_bytes());
+        bp.resize(HDR, 0);
+        bp.extend(basis.iter().flat_map(|&x| f16::from_f32(x).to_bits().to_le_bytes()));
+        let wp = aap_payload(2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], None);
+        let mut np = Vec::from(AAP_PASS.as_slice());
+        np.extend_from_slice(&1u32.to_le_bytes());
+        np.extend_from_slice(&3u32.to_le_bytes());
+        np.extend_from_slice(&0u32.to_le_bytes());
+        np.resize(HDR, 0);
+        for v in [1.5f32, -2.0, 0.25] {
+            np.extend_from_slice(&((v.to_bits() >> 16) as u16).to_le_bytes());
+        }
+        let woff = bp.len() as u64;
+        let noff = woff + wp.len() as u64;
+        let index = serde_json::json!({
+            "schema": AAP_SCHEMA, "shard": "model-00001-of-00001.safetensors", "shared_bases": true,
+            "bases": [{"basis_layer": 7, "rank": 2, "offset": 0, "bytes": bp.len()}],
+            "tensors": [
+                {"name": wname, "disposition": "activation_aware", "offset": woff, "bytes": wp.len(), "shape": [2, 3]},
+                {"name": nname, "disposition": "pass_through", "offset": noff, "bytes": np.len(), "shape": [3]},
+            ],
         });
-        let header_bytes = serde_json::to_vec(&header).expect("header json"); let path = dir.join("model-00001-of-00001.gravity");
-        let mut f = File::create(path).expect("create PQ prefix shard"); f.write_all(MAGIC).unwrap();
-        f.write_all(&1u32.to_le_bytes()).unwrap(); f.write_all(&(header_bytes.len() as u64).to_le_bytes()).unwrap();
-        f.write_all(&header_bytes).unwrap(); f.write_all(&payload).unwrap();
+        let ib = serde_json::to_vec(&index).unwrap();
+        let mut sb = Vec::new();
+        sb.extend_from_slice(&(ib.len() as u64).to_le_bytes());
+        sb.extend_from_slice(&ib);
+        sb.extend_from_slice(&bp);
+        sb.extend_from_slice(&wp);
+        sb.extend_from_slice(&np);
+        std::fs::write(dir.path().join(sname), &sb).unwrap();
+        let sh = format!("{:x}", Sha256::digest(&sb));
+        let manifest = serde_json::json!({
+            "schema": "hawking.activation_aware.model_index.v1", "architecture": {"hidden_size": 3},
+            "weight_map": {(wname): sname, (nname): sname},
+            "tensor_dtypes": {(wname): "BF16", (nname): "BF16"},
+            "shard_sha256": {(sname): sh},
+        });
+        std::fs::write(dir.path().join("model.activation_aware.index.json"),
+                       serde_json::to_vec(&manifest).unwrap()).unwrap();
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        assert_eq!(weights.matvec(wname, &[0.25, 2.0, -1.0]).unwrap(), vec![-2.75, 6.625]);
+        assert_eq!(weights.row(wname, 1, 3).unwrap(), vec![0.5, 3.0, -0.5]);
+        assert_eq!(weights.dense(nname).unwrap(), vec![1.5, -2.0, 0.25]);
+        let (codec, payload, shape) = weights.raw_payload_with_shape(wname).unwrap();
+        assert_eq!((codec.as_str(), shape), ("activation-aware.f16", vec![2, 3]));
+        assert!(parse_activation_aware_header(&payload).unwrap().has_basis);
     }
     #[test]
     fn pq_admission_header_prefix_does_not_claim_full_payload_verification() {
-        let dir = tempfile::tempdir().expect("tempdir"); let name = "model.layers.0.self_attn.kv_b_proj.weight";
-        write_lazy_unverified_pq_header_fixture(dir.path(), name);
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
-        let (header, shape) = weights
-            .pq_header_prefix_unverified_with_shape(name).expect("header-only admission");
-        assert_eq!(
-            header,
-            PqHeader {
-                d: 32,
-                s: 1,
-                sub: 32,
-                card: 256,
-                rows: 2,
-                cols: 32,
-                nchunk: 1,
-                seed: 7,
-                bits: 8,
-                rotate: 0,
-                n_codebooks: 1,
-            }
-        );
+        let dir = tempfile::tempdir().unwrap();
+        let name = "model.layers.0.self_attn.kv_b_proj.weight";
+        let mut payload = vec![0u8; 64];
+        payload[..8].copy_from_slice(PQ_MAGIC);
+        payload[8..10].copy_from_slice(&32u16.to_le_bytes());
+        payload[10..12].copy_from_slice(&1u16.to_le_bytes());
+        payload[12..14].copy_from_slice(&32u16.to_le_bytes());
+        payload[14..16].copy_from_slice(&256u16.to_le_bytes());
+        payload[16..20].copy_from_slice(&2u32.to_le_bytes());
+        payload[20..24].copy_from_slice(&32u32.to_le_bytes());
+        payload[24..28].copy_from_slice(&1u32.to_le_bytes());
+        payload[28..32].copy_from_slice(&7u32.to_le_bytes());
+        payload[32..34].copy_from_slice(&8u16.to_le_bytes());
+        payload[35] = 1;
+        write_gravity(dir.path(), "pq-header-prefix-fixture", "gravity-pq", vec![(
+            name.to_string(), payload,
+            serde_json::json!({"shape": [2, 32], "elements": 64, "sha256": "00".repeat(32)}),
+        )]);
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        let (header, shape) = weights.pq_header_prefix_unverified_with_shape(name).unwrap();
+        assert_eq!(header, PqHeader {
+            d: 32, s: 1, sub: 32, card: 256, rows: 2, cols: 32, nchunk: 1, seed: 7,
+            bits: 8, rotate: 0, n_codebooks: 1,
+        });
         assert_eq!(shape, vec![2, 32]);
-        let err = weights
-            .raw_payload_with_shape(name) .expect_err("ordinary payload load must still enforce full SHA-256");
-        assert!(err.to_string().contains("sha256 mismatch"), "full load did not preserve verification: {err}");
+        let err = weights.raw_payload_with_shape(name).expect_err("must enforce SHA-256");
+        assert!(err.to_string().contains("sha256 mismatch"), "{err}");
     }
     #[test]
-    fn dense_memo_verifies_once_across_many_calls() {
-        let dir = tempfile::tempdir().expect("tempdir"); let vals: Vec<f32> = (0..64).map(|i| (i as f32) * 0.125 - 1.0).collect();
-        write_lazy_native_fixture(dir.path(), &[("norm.weight", &vals)]);
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
-        let first = weights.dense("norm.weight").expect("dense #1");
-        assert_eq!(first, vals); let after_first = weights.dense_memo_stats();
-        assert_eq!(after_first.verifications, 1, "first dense must verify");
-        assert_eq!(after_first.misses, 1);
-        assert_eq!(after_first.hits, 0);
-        assert_eq!(after_first.entries, 1);
-        assert_eq!(after_first.resident_bytes, 64 * 4);
-        assert!(after_first.budget_bytes >= after_first.resident_bytes);
-        for _ in 0..50 {
-            let again = weights.dense("norm.weight").expect("dense repeat");
-            assert_eq!(again, vals);
-        }
-        let stats = weights.dense_memo_stats();
-        assert_eq!(
-            stats.verifications, 1,
-            "subsequent dense calls must not re-verify"
-        );
-        assert_eq!(stats.misses, 1);
-        assert_eq!(stats.hits, 50);
-        assert_eq!(stats.entries, 1);
-        assert_eq!(stats.verified_tensors, 1);
-    }
-    #[test]
-    fn dense_memo_returns_bit_identical_values() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        let vals = vec![
-            0.0f32,
-            -0.0,
-            1.0,
-            -1.0,
-            f32::from_bits(0x0000_0001),
-            f32::MIN,
-            f32::MAX,
-            std::f32::consts::PI,
-        ];
-        write_lazy_native_fixture(dir.path(), &[("a.weight", &vals), ("b.bias", &[0.5, -0.25, 2.0])]);
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir"); let a0 = weights.dense("a.weight").expect("a cold");
-        let b0 = weights.dense("b.bias").expect("b cold"); let a1 = weights.dense("a.weight").expect("a warm");
-        let b1 = weights.dense("b.bias").expect("b warm");
-        assert_eq!(a0, vals);
-        assert_eq!(a1, a0);
+    fn dense_memo_verify_once_identity_row_and_oversized() {
+        let dir = tempfile::tempdir().unwrap();
+        let vals: Vec<f32> = (0..64).map(|i| (i as f32) * 0.125 - 1.0).collect();
+        write_native(dir.path(), &[("norm.weight", &vals)]);
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        assert_eq!(weights.dense("norm.weight").unwrap(), vals);
+        let s = weights.dense_memo_stats();
+        assert_eq!((s.verifications, s.misses, s.hits, s.entries), (1, 1, 0, 1));
+        assert_eq!(s.resident_bytes, 64 * 4);
+        assert!(s.budget_bytes >= s.resident_bytes);
+        for _ in 0..50 { assert_eq!(weights.dense("norm.weight").unwrap(), vals); }
+        let s = weights.dense_memo_stats();
+        assert_eq!((s.verifications, s.misses, s.hits, s.entries, s.verified_tensors), (1, 1, 50, 1, 1));
+        let dir = tempfile::tempdir().unwrap();
+        let edge = vec![0.0f32, -0.0, 1.0, -1.0, f32::from_bits(1), f32::MIN, f32::MAX, std::f32::consts::PI];
+        write_native(dir.path(), &[("a.weight", &edge), ("b.bias", &[0.5, -0.25, 2.0])]);
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        let a0 = weights.dense("a.weight").unwrap();
+        let b0 = weights.dense("b.bias").unwrap();
+        let a1 = weights.dense("a.weight").unwrap();
+        let b1 = weights.dense("b.bias").unwrap();
+        assert_eq!(&a0, &edge);
+        assert_eq!(&a1, &a0);
         assert_eq!(b0, vec![0.5, -0.25, 2.0]);
-        assert_eq!(b1, b0);
+        assert_eq!(&b1, &b0);
         for (i, (&x, &y)) in a0.iter().zip(a1.iter()).enumerate() {
             assert_eq!(x.to_bits(), y.to_bits(), "a.weight[{i}] bits");
         }
-        let stats = weights.dense_memo_stats();
-        assert_eq!(stats.verifications, 2);
-        assert_eq!(stats.hits, 2);
-        assert_eq!(stats.misses, 2);
-        assert_eq!(stats.entries, 2);
-    }
-    #[test]
-    fn dense_memo_row_hits_same_decoded_entry() {
-        let dir = tempfile::tempdir().expect("tempdir"); let matrix: Vec<f32> = (0..12).map(|i| i as f32).collect();
-        write_lazy_native_fixture(dir.path(), &[("embed.weight", &matrix)]);
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
-        let row1 = weights.row("embed.weight", 1, 4).expect("row cold");
-        assert_eq!(row1, vec![4.0, 5.0, 6.0, 7.0]); let stats_after_row = weights.dense_memo_stats();
-        assert_eq!(stats_after_row.verifications, 1);
-        assert_eq!(stats_after_row.entries, 1); let full = weights.dense("embed.weight").expect("dense after row");
-        assert_eq!(full, matrix); let stats = weights.dense_memo_stats();
-        assert_eq!(stats.verifications, 1, "row already verified");
-        assert_eq!(stats.hits, 1);
-    }
-    #[test]
-    fn dense_memo_oversized_tensor_skips_residency_but_verifies_once() {
-        let dir = tempfile::tempdir().expect("tempdir"); let vals: Vec<f32> = (0..8).map(|i| i as f32).collect();
-        write_lazy_native_fixture(dir.path(), &[("big.weight", &vals)]); let mut memo = NativeDenseMemo::new(16);
-        memo.record_verification("big.weight"); memo.admit_decoded("big.weight", vals.clone());
-        assert!(!memo.has_decoded("big.weight"));
-        assert!(memo.is_verified("big.weight"));
-        assert_eq!(memo.stats().entries, 0);
-        assert_eq!(memo.stats().verifications, 1);
-        assert_eq!(memo.stats().verified_tensors, 1); let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
-        for _ in 0..5 {
-            assert_eq!(weights.dense("big.weight").expect("dense"), vals);
-        }
-        let stats = weights.dense_memo_stats();
-        assert_eq!(stats.verifications, 1);
-        assert_eq!(stats.hits, 4);
-        assert_eq!(stats.misses, 1);
+        let s = weights.dense_memo_stats();
+        assert_eq!((s.verifications, s.hits, s.misses, s.entries), (2, 2, 2, 2));
+        let dir = tempfile::tempdir().unwrap();
+        let matrix: Vec<f32> = (0..12).map(|i| i as f32).collect();
+        write_native(dir.path(), &[("embed.weight", &matrix)]);
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        assert_eq!(weights.row("embed.weight", 1, 4).unwrap(), vec![4.0, 5.0, 6.0, 7.0]);
+        assert_eq!(weights.dense_memo_stats().verifications, 1);
+        assert_eq!(weights.dense("embed.weight").unwrap(), matrix);
+        assert_eq!(weights.dense_memo_stats().hits, 1);
+        let dir = tempfile::tempdir().unwrap();
+        let big: Vec<f32> = (0..8).map(|i| i as f32).collect();
+        write_native(dir.path(), &[("big.weight", &big)]);
+        let mut memo = NativeDenseMemo::new(16);
+        memo.record_verification("big.weight");
+        memo.admit_decoded("big.weight", big.clone());
+        assert!(!memo.has_decoded("big.weight") && memo.is_verified("big.weight"));
+        assert_eq!((memo.stats().entries, memo.stats().verifications, memo.stats().verified_tensors), (0, 1, 1));
+        let weights = GravityWeights::open_dir(dir.path(), true).unwrap();
+        for _ in 0..5 { assert_eq!(weights.dense("big.weight").unwrap(), big); }
+        let s = weights.dense_memo_stats();
+        assert_eq!((s.verifications, s.hits, s.misses), (1, 4, 1));
     }
 }

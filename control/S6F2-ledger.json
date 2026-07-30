@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.s6f2.ledger.v1",
+  "revision": 6,
+  "base_commit": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+  "f2_accounted": 1279,
+  "f2_old_cases": 1279,
+  "f2_active_delta": -1161,
+  "f2_rewritten_py": -1328,
+  "f2_report_md": 167,
+  "combined_active_loc": {
+    "before": 437285,
+    "after": 438912,
+    "delta": 1627
+  },
+  "f1_apparatus_loc": 2788,
+  "floor": -3400,
+  "floor_met": false,
+  "verdict": "BLOCKED",
+  "irreducible_collection_nodeids": 1348,
+  "irreducible_sealed_ids": 1279
+}

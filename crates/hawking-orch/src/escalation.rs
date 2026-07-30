@@ -339,7 +339,6 @@ mod tests {
         ModelArchitecture, ModelDescriptor, ProviderCaps, RolePurpose, SamplerProfile,
     };
     use std::collections::BTreeMap;
-
     fn make_role(name: &str, id: RoleId, escalates_to: Option<RoleId>) -> ModelRole {
         ModelRole {
             id,
@@ -361,7 +360,6 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     fn base_request() -> InferenceRequest {
         InferenceRequest {
             task_kind: "classify".into(),
@@ -374,7 +372,6 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     #[tokio::test]
     async fn confident_cheap_role_does_not_escalate() {
         let draft_id = RoleId::new();
@@ -382,8 +379,6 @@ mod tests {
         let registry = Arc::new(RoleRegistry::default());
         registry.register(make_role("draft", draft_id.clone(), Some(hero_id.clone())));
         registry.register(make_role("hero", hero_id.clone(), None));
-
-        // Every sample is "yes" → unanimous → high confidence → no escalation.
         let client = Arc::new(ScriptedInferenceClient::new(vec![
             "yes".into(),
             "yes".into(),
@@ -411,7 +406,6 @@ mod tests {
         assert_eq!(outcome.final_role_id, draft_id);
         assert_eq!(outcome.output, "yes");
     }
-
     #[tokio::test]
     async fn disagreement_escalates_to_hero() {
         let draft_id = RoleId::new();
@@ -419,9 +413,6 @@ mod tests {
         let registry = Arc::new(RoleRegistry::default());
         registry.register(make_role("draft", draft_id.clone(), Some(hero_id.clone())));
         registry.register(make_role("hero", hero_id.clone(), None));
-
-        // Draft phase: 3 disagreeing samples → escalate.
-        // Hero phase: 3 agreeing samples → accept.
         let client = Arc::new(ScriptedInferenceClient::new(vec![
             "yes".into(),
             "no".into(),
@@ -460,12 +451,8 @@ mod tests {
         assert!(outcome.escalated());
         assert_eq!(outcome.final_role_id, hero_id);
         assert_eq!(outcome.trail.len(), 2);
-        assert!(matches!(
-            outcome.trail[0].escalated,
-            Some(EscalationReason::VoteDisagreement { .. })
-        ));
+ assert!(matches!( outcome.trail[0].escalated, Some(EscalationReason::VoteDisagreement { .. }) ));
     }
-
     #[tokio::test]
     async fn top_role_cannot_escalate_even_if_uncertain() {
         let hero_id = RoleId::new();
@@ -494,7 +481,6 @@ mod tests {
             },
         };
         let outcome = cascade.execute(&decision, &base_request()).await.unwrap();
-        // No escalation target → accept the best we have.
         assert!(!outcome.escalated());
         assert_eq!(outcome.final_role_id, hero_id);
         assert_eq!(outcome.trail.len(), 1);

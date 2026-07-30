@@ -200,7 +200,6 @@ mod tests {
     use crate::ingest::structured_doc_from_text;
     use crate::ingest::{SourceQuality, SourceType};
     use hide_core::types::Provenance;
-
     fn ingest(graph: &PetKnowledgeGraph, id: &str, title: &str, body: &str) {
         let doc = structured_doc_from_text(
             SourceType::PdfLocal,
@@ -213,26 +212,21 @@ mod tests {
         );
         graph.ingest_doc(&doc);
     }
-
     #[test]
     fn map_clusters_papers_and_finds_gaps() {
         let graph = PetKnowledgeGraph::new();
-        // Two papers sharing nothing (different claim text) → two clusters.
         ingest(&graph, "a", "A", "alpha distinct statement one");
         ingest(&graph, "b", "B", "beta distinct statement two");
         let map = build_literature_map(&graph, "topic");
         assert_eq!(map.papers.len(), 2);
         assert_eq!(map.clusters.len(), 2);
     }
-
     #[test]
     fn shared_concept_merges_into_one_cluster() {
         use crate::kg::{
             ConfidenceTier, EdgeKind, KnowledgeEdge, KnowledgeGraph, KnowledgeNode, NodeKind,
         };
         let graph = PetKnowledgeGraph::new();
-        // Two papers whose claim text differs (→ distinct claims, per §4.2.1),
-        // but which both MENTION the same Concept node → one cluster.
         ingest(&graph, "a", "A", "alpha statement about attention");
         ingest(&graph, "b", "B", "beta statement about attention");
         let papers = graph.nodes_by_kind(NodeKind::Paper);

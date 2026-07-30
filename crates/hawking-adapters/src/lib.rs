@@ -22,8 +22,8 @@
 //!
 //! ## Layout
 //!
-//! One module per family under [`families`]; [`registry`] indexes them.
-//! [`generate`] emits docs, JSON schemas (adapters/artifacts/profiles/runtime
+//! Family rows live in the counted table in [`families`]; [`registry`] indexes
+//! them. [`generate`] emits docs, JSON schemas (adapters/artifacts/profiles/runtime
 //! capabilities/events/Fabric/tool effects), CLI surface + shell completion,
 //! SDK types, HIDE capability declarations, Fabric declarations, schema
 //! migrations, and the root JSON deliverables — same deterministic golden-file
@@ -39,7 +39,7 @@ pub mod support_level;
 
 pub use abi::{
     required_evidence_kind, AbiField, AbiListField, ContextLimits, Evidence, EvidenceKind,
-    FamilyAbi, FamilyAdapter, FamilyDescriptor, ProviderAvailability, ABI_FIELD_NAMES,
+    FamilyAbi, FamilyDescriptor, ProviderAvailability, ABI_FIELD_NAMES,
 };
 pub use export::{
     adapter_abi_json, adapter_registry_document, adapter_registry_json, capability_matrix_json,

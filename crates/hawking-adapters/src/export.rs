@@ -129,7 +129,7 @@ pub fn adapter_abi_document() -> Value {
         "canonical_home": {
             "crate": "crates/hawking-adapters",
             "registry": "crates/hawking-adapters/src/registry.rs",
-            "family_modules": "crates/hawking-adapters/src/families/",
+            "family_modules": "crates/hawking-adapters/src/families.rs",
             "codegen": "hawking-adapters-codegen (same golden/drift pattern as hide-sdk-codegen; not a second codegen system)"
         }
     })
@@ -587,7 +587,7 @@ pub fn migration_map_document() -> Value {
                 "role_was": "live .gravity execute for llama + glm_moe_dsa",
                 "canonical_for": ["execution_gravity"],
                 "not_canonical_for": ["support_level", "full_abi_metadata"],
-                "migration": "Remains execution path. GLM/llama gravity ABI + grade live under families/glm.rs and families/llama.rs."
+                "migration": "Remains execution path. GLM/llama gravity ABI + grade live under families.rs rows glm / llama."
             },
             {
                 "old_authority": "seed-c ArchAdapter",

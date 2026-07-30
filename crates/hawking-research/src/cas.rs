@@ -141,12 +141,10 @@ mod tests {
     use super::*;
     use hide_core::persistence::{DynBlobStore, InMemoryBlobStore};
     use std::sync::Arc;
-
     #[test]
     fn normalization_collapses_whitespace() {
         assert_eq!(normalize_text("  a\n\t b  c \n"), "a b c");
     }
-
     #[test]
     fn content_ids_are_idempotent_and_normalization_stable() {
         let a = content_id("chunk", "paged   attention\n improves reuse");
@@ -154,20 +152,17 @@ mod tests {
         assert_eq!(a, b);
         assert!(a.starts_with("chunk:"));
     }
-
     #[test]
     fn composite_id_is_order_sensitive() {
         let a = composite_id("claim", &["text", "paper1"]);
         let b = composite_id("claim", &["paper1", "text"]);
         assert_ne!(a, b);
     }
-
     #[test]
     fn pin_and_verify_roundtrips_and_detects_tamper() {
         let cas: DynBlobStore = Arc::new(InMemoryBlobStore::default());
         let (blob, hash) = pin_evidence(&cas, b"73% accuracy".to_vec(), None).unwrap();
         assert!(verify_evidence(&cas, &blob, &hash).unwrap().is_intact());
-        // A wrong expected hash is reported as tampering, not a silent pass.
         match verify_evidence(&cas, &blob, "deadbeef").unwrap() {
             EvidenceCheck::Tampered { .. } => {}
             other => panic!("expected tamper, got {other:?}"),

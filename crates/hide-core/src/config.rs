@@ -156,17 +156,14 @@ pub struct ConfigLayer {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn config_roundtrips_as_json() {
         let dir = std::env::temp_dir().join(format!("hide_config_{}", crate::ids::now_ms()));
         let path = dir.join(".hide").join("config.json");
         let mut config = HideConfig::for_workspace(&dir);
         config.runtime.base_url = "http://127.0.0.1:9999".to_string();
-
         config.save_json(&path).unwrap();
         let loaded = HideConfig::load_json(&path).unwrap();
-
         assert_eq!(loaded.workspace_root, dir);
         assert_eq!(loaded.runtime.base_url, "http://127.0.0.1:9999");
         let _ = std::fs::remove_dir_all(path.parent().unwrap().parent().unwrap());

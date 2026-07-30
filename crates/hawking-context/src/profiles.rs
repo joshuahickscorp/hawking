@@ -406,82 +406,30 @@ impl ContextProfile {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn presets_resolve_and_differ() {
         let tight = ContextProfile::tight(8192);
         let unbounded = ContextProfile::unbounded(8192);
         assert_eq!(tight.eviction, EvictionChoice::Lossless);
-        assert!(matches!(
-            unbounded.eviction,
-            EvictionChoice::StreamingLlm { sinks: 4, .. }
-        ));
+ assert!(matches!( unbounded.eviction, EvictionChoice::StreamingLlm { sinks: 4, .. } ));
         assert!(ContextProfile::preset("long", 8192).is_some());
         assert!(ContextProfile::preset("nope", 8192).is_none());
     }
-
     #[test]
     fn debug_and_refactor_profiles_populate_band_by_kind() {
         let debug = ContextProfile::debug(8192);
-        // The debug profile boosts diagnostics above 1.0 and lifts recency.
-        assert!(
-            debug
-                .source_weights
-                .band_by_kind
-                .get("Diagnostics")
-                .copied()
-                .unwrap()
-                > 1.0
-        );
-        assert!(
-            debug
-                .source_weights
-                .band_by_kind
-                .get("ToolOutput")
-                .copied()
-                .unwrap()
-                > 1.0
-        );
+ assert!( debug .source_weights .band_by_kind .get("Diagnostics") .copied() .unwrap() > 1.0 );
+ assert!( debug .source_weights .band_by_kind .get("ToolOutput") .copied() .unwrap() > 1.0 );
         assert!(debug.source_weights.w_recency >= 1.0);
-        // A kind with no entry still defaults to 1.0 at the call site (absent).
         assert!(!debug.source_weights.band_by_kind.contains_key("Code"));
-
         let refactor = ContextProfile::refactor(8192);
-        // The refactor profile boosts symbols/code and de-emphasizes tool output.
-        assert!(
-            refactor
-                .source_weights
-                .band_by_kind
-                .get("Symbol")
-                .copied()
-                .unwrap()
-                > 1.0
-        );
-        assert!(
-            refactor
-                .source_weights
-                .band_by_kind
-                .get("Code")
-                .copied()
-                .unwrap()
-                > 1.0
-        );
-        assert!(
-            refactor
-                .source_weights
-                .band_by_kind
-                .get("ToolOutput")
-                .copied()
-                .unwrap()
-                < 1.0
-        );
+ assert!( refactor .source_weights .band_by_kind .get("Symbol") .copied() .unwrap() > 1.0 );
+ assert!( refactor .source_weights .band_by_kind .get("Code") .copied() .unwrap() > 1.0 );
+ assert!( refactor .source_weights .band_by_kind .get("ToolOutput") .copied() .unwrap() < 1.0 );
         assert!(refactor.source_weights.w_relevance > 1.0);
-
-        // Reserved names resolve via preset().
         assert!(ContextProfile::preset("debug", 8192).is_some());
         assert!(ContextProfile::preset("refactor", 8192).is_some());
     }
-
     #[test]
     fn yarn_temp_follows_formula() {
         if let PositionPolicy::Yarn { scale, attn_temp } = PositionPolicy::yarn(4.0) {

@@ -762,7 +762,6 @@ pub struct StoreGeneration {
 mod tests {
     use super::*;
     use crate::parse::parse_source;
-
     fn seed(store: &SqliteStore, path: &str, src: &str, gen: u64) {
         let out = parse_source(path, src);
         let chunks = crate::parse::chunk_file(path, src);
@@ -780,21 +779,17 @@ mod tests {
             )
             .unwrap();
     }
-
     #[test]
     fn definitions_and_references_roundtrip() {
         let store = SqliteStore::open_in_memory().unwrap();
         let src = "pub fn helper() {}\npub fn caller() { helper(); }\n";
         seed(&store, "src/m.rs", src, 1);
-
         let defs = store.definitions("helper").unwrap();
         assert_eq!(defs.len(), 1, "one definition of helper");
         assert_eq!(defs[0].role, "definition");
-
         let refs = store.references("helper").unwrap();
         assert!(!refs.is_empty(), "references(helper) must be non-empty");
     }
-
     #[test]
     fn fts_lexical_search_finds_body() {
         let store = SqliteStore::open_in_memory().unwrap();
@@ -804,7 +799,6 @@ mod tests {
         assert!(hits.iter().any(|h| h.path == "a.rs"));
         assert!(!hits.iter().any(|h| h.path == "b.rs"));
     }
-
     #[test]
     fn reverse_edges_are_a_seek() {
         let store = SqliteStore::open_in_memory().unwrap();
@@ -817,7 +811,6 @@ mod tests {
         let callees = store.out_edges("caller", EdgeKind::Calls).unwrap();
         assert_eq!(callees[0].0, "callee");
     }
-
     #[test]
     fn vectors_store_and_load() {
         let store = SqliteStore::open_in_memory().unwrap();
@@ -831,7 +824,6 @@ mod tests {
         assert_eq!(vecs.len(), 1);
         assert_eq!(vecs[0].vector, vec![0.1, 0.2, 0.3]);
     }
-
     #[test]
     fn generation_commit_and_recovery() {
         let store = SqliteStore::open_in_memory().unwrap();
@@ -841,7 +833,6 @@ mod tests {
         assert_eq!(store.last_committed_generation().unwrap(), 1);
         assert_eq!(store.recover().unwrap(), 1);
     }
-
     #[test]
     fn remove_file_clears_rows() {
         let store = SqliteStore::open_in_memory().unwrap();

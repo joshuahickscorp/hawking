@@ -340,8 +340,6 @@ pub fn store_and_publish(
 mod tests {
     use super::*;
     use hide_kernel::plan::schema::{Acceptance, Plan, PlanStep, PlanStatus, StepKind};
-
-    /// A two-step plan: a read-only investigate step and an effectful edit step.
     fn sample_plan() -> Plan {
         let mut investigate = PlanStep::new(
             "look at the failing test",
@@ -363,7 +361,6 @@ mod tests {
             budget: Default::default(),
         }
     }
-
     #[test]
     fn from_kernel_maps_real_steps_with_declared_fields() {
         let plan = sample_plan();
@@ -375,33 +372,22 @@ mod tests {
         assert_eq!(inv.related_files, vec!["notes.md".to_string()]);
         assert_eq!(inv.owner_agent, "root");
         assert_eq!(inv.status, "pending");
-        // A read-only step is NOT write-blocked, even under suggest-only.
         assert!(!inv.write_blocked);
         let edit = &record.steps[1];
         assert_eq!(edit.acceptance, "build passes");
         assert_eq!(edit.effects, vec!["write_fs".to_string()]);
-        // The effectful step IS gated under suggest-only.
         assert!(edit.write_blocked);
     }
-
     #[test]
     fn write_block_holds_in_suggest_only_and_read_only_but_not_full_auto() {
         let plan = sample_plan();
         for autonomy in [Autonomy::SuggestOnly, Autonomy::ReadOnly] {
             let record = PlanRecord::from_kernel(&plan, autonomy);
-            assert_eq!(
-                record.write_blocked_steps().len(),
-                1,
-                "the one effectful step must stay gated under {autonomy:?}"
-            );
+            assert_eq!(record.write_blocked_steps().len(), 1);
         }
         let full = PlanRecord::from_kernel(&plan, Autonomy::FullAuto);
-        assert!(
-            full.write_blocked_steps().is_empty(),
-            "full-auto gates nothing"
-        );
+ assert!( full.write_blocked_steps().is_empty(), "full-auto gates nothing" );
     }
-
     #[test]
     fn approve_does_not_clear_the_write_block() {
         let plan = sample_plan();
@@ -410,30 +396,24 @@ mod tests {
         assert!(record.approve(None));
         assert!(record.approved);
         assert!(record.steps.iter().all(|s| s.approved));
-        // Planning approval must NOT grant write authority under a bounded autonomy.
         let edit = record.steps.iter().find(|s| s.id == edit_id).unwrap();
         assert!(edit.write_blocked, "approve_plan must not clear the effect gate");
     }
-
     #[test]
     fn edit_and_reorder_mutate_the_record() {
         let plan = sample_plan();
         let mut record = PlanRecord::from_kernel(&plan, Autonomy::SuggestOnly);
         let a = record.steps[0].id.clone();
         let b = record.steps[1].id.clone();
-
         assert!(record.edit_step(&a, "look harder"));
         assert_eq!(record.steps[0].text, "look harder");
         assert!(!record.edit_step("missing", "x"));
-
         assert!(record.reorder(&[b.clone(), a.clone()]));
         assert_eq!(record.steps[0].id, b);
         assert_eq!(record.steps[1].id, a);
-        // A non-permutation is rejected.
         assert!(!record.reorder(&[a.clone()]));
         assert!(!record.reorder(&[a.clone(), "ghost".to_string()]));
     }
-
     #[test]
     fn skip_step_records_reason_and_ungates() {
         let plan = sample_plan();
@@ -445,22 +425,18 @@ mod tests {
         assert_eq!(edit.blocker.as_deref(), Some("not needed"));
         assert!(!edit.write_blocked);
     }
-
     #[test]
     fn repair_failed_step_appends_a_dependent_repair_step() {
         let plan = sample_plan();
         let mut record = PlanRecord::from_kernel(&plan, Autonomy::SuggestOnly);
         let edit_id = record.steps[1].id.clone();
-        // Not failing yet -> no repair.
         assert!(record.repair_failed_step(&edit_id).is_none());
-        // Mark it failed, then repair.
         record.steps[1].verification = "failed".to_string();
         let repair_id = record.repair_failed_step(&edit_id).expect("repair step created");
         let repair = record.steps.iter().find(|s| s.id == repair_id).unwrap();
         assert_eq!(repair.dependencies, vec![edit_id.clone()]);
         assert_eq!(repair.acceptance, "build passes");
         assert!(repair.write_blocked, "the repair step writes, so it is gated too");
-        // Idempotent: a second call does not duplicate.
         let again = record.repair_failed_step(&edit_id).unwrap();
         assert_eq!(again, repair_id);
         assert_eq!(record.steps.iter().filter(|s| s.id == repair_id).count(), 1);

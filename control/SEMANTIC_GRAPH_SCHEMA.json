@@ -1,0 +1,104 @@
+{
+  "schema": "hawking.semantic_graph.v1",
+  "authority": "controller",
+  "note": "Frozen contract between the extractor lane (G1) and the analysis/viewer lane (G2). Neither lane may change it; both must emit/consume exactly this.",
+
+  "files": {
+    "HAWKING_SEMANTIC_GRAPH.jsonl": "one JSON object per line; each line is a node or an edge, discriminated by the `kind` field ('node'|'edge')",
+    "HAWKING_SEMANTIC_GRAPH.gexf": "Gephi-compatible GEXF 1.3 of the file-level projection with all node attributes",
+    "HAWKING_SEMANTIC_GRAPH.dot": "Graphviz DOT of the crate/package-level projection, deterministic node ordering",
+    "HAWKING_CLUSTER_MAP.json": "community/SCC/dominator output",
+    "HAWKING_RECOMPOSITION_CANDIDATES.json": "ranked reduction queue",
+    "HAWKING_BEHAVIOUR_TO_CODE_MAP.json": "behaviour contract id -> reachable code set"
+  },
+
+  "node": {
+    "kind": "node",
+    "id": "stable string id, see id_rules",
+    "type": "one of node_types",
+    "name": "short display name",
+    "path": "repo-relative path or null",
+    "lang": "rust|python|typescript|metal|shell|lean|markdown|toml|none",
+    "span": [ "start_line", "end_line" ],
+    "attrs": {
+      "loc": "int physical lines owned by this node",
+      "fan_in": "int",
+      "fan_out": "int",
+      "betweenness": "float, filled by G2, 0.0 from extractor",
+      "runtime_hot": "bool|null - true if seen in a runtime trace or bench hot path",
+      "compile_cost_ms": "float|null",
+      "binary_bytes": "int|null",
+      "test_covered": "bool",
+      "change_freq_90d": "int commits touching this file in the last 90 days",
+      "change_freq_all": "int commits touching this file ever",
+      "complexity": "int approximate cyclomatic complexity",
+      "side_effects": ["fs","net","proc","env","clock","rand","gpu","none"],
+      "security_sensitive": "bool - touches permission, capability, credential, path allowlist, hash verification",
+      "public": "bool - exported/public symbol",
+      "generated": "bool",
+      "vendored": "bool",
+      "test": "bool",
+      "subsystem": "hawking|hide|laboratory|shared|vendor"
+    }
+  },
+
+  "node_types": [
+    "repository", "crate", "directory", "file", "type", "function",
+    "cli_command", "event", "schema", "tool", "operator", "adapter",
+    "test", "artifact", "state", "feature_flag", "behaviour"
+  ],
+
+  "edge": {
+    "kind": "edge",
+    "id": "src|type|dst",
+    "src": "node id",
+    "dst": "node id",
+    "type": "one of edge_types",
+    "attrs": {
+      "weight": "float, default 1.0",
+      "count": "int occurrences",
+      "evidence": "how this edge was derived: cargo|ast|treesitter|regex|git|test|trace|registry",
+      "confidence": "float 0..1 - 1.0 for cargo/ast, lower for regex/heuristic"
+    }
+  },
+
+  "edge_types": [
+    "contains", "imports", "calls", "constructs", "implements",
+    "reads_state", "writes_state", "serializes", "deserializes",
+    "emits", "consumes", "tests", "generates", "duplicates",
+    "co_changes", "runtime_calls", "feature_gates",
+    "provides_capability", "depends_on_behaviour"
+  ],
+
+  "id_rules": {
+    "repository": "repo",
+    "crate": "crate:<cargo package name>  OR  pkg:<python top-level package path>  OR  pkg:<npm name>",
+    "directory": "dir:<repo-relative path, no trailing slash>",
+    "file": "file:<repo-relative path>",
+    "type": "type:<file path>#<TypeName>",
+    "function": "fn:<file path>#<qualified name>",
+    "cli_command": "cli:<binary> <subcommand path>",
+    "event": "event:<canonical event name>",
+    "schema": "schema:<schema id string>",
+    "tool": "tool:<tool name>",
+    "operator": "op:<operator name>",
+    "adapter": "adapter:<family>/<name>",
+    "test": "test:<file path>#<test name>",
+    "artifact": "artifact:<artifact kind>",
+    "state": "state:<store>/<key or table>",
+    "feature_flag": "flag:<name>",
+    "behaviour": "behaviour:<BC id from REBUILD_BEHAVIOUR_CONSTITUTION.json>"
+  },
+
+  "determinism": {
+    "ordering": "JSONL must be sorted by (kind desc so all nodes precede all edges, then type, then id). DOT and GEXF must emit nodes in sorted id order.",
+    "no_timestamps": "no wall-clock timestamps inside the graph files; the commit sha is the version",
+    "reproducible": "running the extractor twice on the same commit must produce byte-identical output"
+  },
+
+  "counting_policy": {
+    "loc": "physical lines, matching tools/loc/hawking_loc.py inclusion rules",
+    "exclusions": "vendored/ and generated files are extracted but flagged vendored/generated=true and excluded from reduction candidate scoring",
+    "must_agree": "sum of file-node loc for non-vendored non-generated files must equal the hawking_loc.py combined_active_monorepo_LOC within 0.5%"
+  }
+}

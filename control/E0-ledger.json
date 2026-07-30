@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.rebuild.e0_ledger.v1",
+  "slice": "E0",
+  "title": "Declarative adapter-family authority",
+  "base_commit": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+  "measurement": {
+    "combined_active_before": 437285,
+    "combined_active_after": 437004,
+    "delta": -281,
+    "generated_loc_before": 0,
+    "generated_loc_after": 0,
+    "adapter_crate_before": 4709,
+    "adapter_crate_after_without_report": 4423
+  },
+  "ledger": {
+    "eliminated": 0,
+    "rewritten": 286,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "added_apparatus": 5
+  },
+  "reconciles": {
+    "formula": "-(eliminated + rewritten) + generated + relocated + facade + added_apparatus",
+    "value": -281,
+    "ok": true
+  },
+  "topology": {
+    "directories_all": {
+      "before": 138,
+      "after": 137
+    },
+    "directories_leaf": {
+      "before": 110,
+      "after": 109
+    },
+    "source_files": {
+      "before": 1209,
+      "after": 1199
+    },
+    "rust_crates": {
+      "before": 20,
+      "after": 20
+    },
+    "public_symbols": {
+      "before": 9549,
+      "after": 9538
+    },
+    "functions": {
+      "before": 14691,
+      "after": 14677
+    },
+    "files_over_1500_lines": {
+      "before": 26,
+      "after": 26
+    },
+    "tiny_forwarders": {
+      "before": 13,
+      "after": 13
+    }
+  },
+  "gates": {
+    "adapter_tests": "25 passed, 0 failed",
+    "blackbox": "86 passed, 0 failed, 0 skipped",
+    "generation": "0 generated source, 0 reclassified active",
+    "format": "families.rs rustfmt --check pass",
+    "parity": "all semantic exports byte-identical; only canonical path metadata changed"
+  }
+}

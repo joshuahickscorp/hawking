@@ -203,7 +203,6 @@ mod tests {
     use hide_core::ids::with_deterministic_ids;
     use hide_protocol::ids::ItemId;
     use hide_protocol::item::{AgentMessage, Item, ItemKind, ReasoningSummary};
-
     #[test]
     fn agent_message_and_reasoning_map_correctly() {
         with_deterministic_ids(30, || {
@@ -218,7 +217,6 @@ mod tests {
             let c = item_to_canonical(ses.clone(), &msg);
             assert_eq!(c.category, Category::Text);
             assert_eq!(c.seq(), 3);
-
             let r = Item::new(
                 ItemId::from("itm_2"),
                 4,

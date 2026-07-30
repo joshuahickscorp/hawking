@@ -2,7 +2,7 @@
   "canonical_home": {
     "codegen": "hawking-adapters-codegen (same golden/drift pattern as hide-sdk-codegen; not a second codegen system)",
     "crate": "crates/hawking-adapters",
-    "family_modules": "crates/hawking-adapters/src/families/",
+    "family_modules": "crates/hawking-adapters/src/families.rs",
     "registry": "crates/hawking-adapters/src/registry.rs"
   },
   "fields": [

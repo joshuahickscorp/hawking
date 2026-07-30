@@ -157,7 +157,7 @@ impl TargetVerification {
     /// target id is promoted; stop at the first mismatch. Returns the verified
     /// prefix and the target's correction token at the divergence (if any).
     ///
-    /// This is the structural accept rule used by Event Horizon / ExactShared.
+    /// This is the structural accept rule used by user-draft / ExactShared.
     pub fn promote_matching_prefix(
         &self,
         drafts: &[DraftTokenId],
@@ -221,21 +221,16 @@ pub fn draft_ids(ids: &[u32]) -> Vec<DraftTokenId> {
 mod tests {
     use super::*;
     use crate::durable::{DurableRecord, DurableTokenSink, InMemoryDurableSink};
-
     #[test]
     fn draft_and_verified_are_distinct_and_only_promote_matches() {
         let gate = TargetVerification::gate();
         let draft = DraftTokenId::id(7);
-        // Mismatch keeps the draft unverified.
         assert!(gate.try_promote(draft, 8).is_err());
-        // Match promotes.
         let v = gate.try_promote(DraftTokenId::id(7), 7).unwrap();
         assert_eq!(v.get(), 7);
-        // Target-direct emit is verified without a draft.
         let corr = gate.emit_target(99u32);
         assert_eq!(corr.get(), 99);
     }
-
     #[test]
     fn promote_matching_prefix_stops_at_first_mismatch() {
         let gate = TargetVerification::gate();
@@ -245,26 +240,15 @@ mod tests {
         assert_eq!(r.accepted_raw(), vec![1, 2]);
         assert_eq!(r.correction.map(|c| c.get()), Some(9));
     }
-
-    /// Invariant: a `Draft` cannot be passed to a durable sink — the sink
-    /// signature accepts only `Verified`. This test exercises the only legal
-    /// path (promote, then sink) and documents the compile-time gate.
-    ///
-    /// ```ignore
-    /// // This must NOT compile (type error: expected Verified, found Draft):
-    /// sink.emit_canonical_event(DraftTokenId::id(1));
-    /// ```
     #[test]
     fn draft_cannot_reach_durable_sink_without_verification() {
         let gate = TargetVerification::gate();
         let mut sink = InMemoryDurableSink::default();
         let draft = DraftTokenId::id(42);
-        // Promote is required.
         let verified = gate.try_promote(draft, 42).expect("target agrees");
         sink.emit_canonical_event(verified)
             .expect("verified may enter the event stream");
         assert_eq!(sink.events(), &[DurableRecord::CanonicalEvent { token_id: 42 }]);
-        // Rejected draft: no path into the sink.
         let rejected = DraftTokenId::id(7);
         assert!(gate.try_promote(rejected, 8).is_err());
         assert_eq!(sink.events().len(), 1, "rejected draft must leave no durable trace");

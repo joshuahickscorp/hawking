@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.brt5.ledger.v1",
+  "rung": "B-RT5",
+  "title": "hawking-seed-c parallel runtime product release (BC-BRIDGE-012)",
+  "base": "43456bc8701c5bec083b70321c7a19d7689cf5a9",
+  "product_decision": "BC-BRIDGE-012 RELEASED \u2014 peripheral isolation binary absent",
+  "owned_paths": [
+    "crates/hawking-seed-c/**",
+    "Cargo.toml (workspace members + default-members seed-c only)",
+    "Cargo.lock (hawking-seed-c package only)",
+    "REBUILD_BEHAVIOUR_CONSTITUTION.json::BC-BRIDGE-012",
+    "control/CAPABILITY_MANIFEST.json (append hawking-seed-c released)",
+    "control/TEST_CASE_MANIFEST.json (append 98+CASE.bb retired_subject)",
+    "control/BRT5-*",
+    "HAWKING_*_INVENTORY.json (regen)",
+    "minimal live-claim purge / historical labels"
+  ],
+  "old_active_loc_product_authority": 8936,
+  "new_active_loc_product_authority": 0,
+  "buckets": {
+    "eliminated": -8936,
+    "rewritten": -4,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "apparatus": 84
+  },
+  "monorepo": {
+    "base_active_loc": 408673,
+    "candidate_active_loc_expected_after_commit": 399817,
+    "delta_expected": -8856,
+    "note": "pre-track working-tree measure was 399733 (apparatus untracked); after add BRT5-report.md markdown apparatus counts"
+  },
+  "f1_identities": {
+    "count": 98,
+    "disposition": "retired_subject",
+    "blackbox_case": "CASE.bb.BC-BRIDGE-012",
+    "fingerprint_sha256_16": "73cf6802c365698e",
+    "receipt": "control/BRT5-f1-identity-receipt.json"
+  },
+  "note": "Post-BRT3 projection onto 43456bc8; preserves BRT3 EAGLE release + E4a command authority; semantic merge only."
+}

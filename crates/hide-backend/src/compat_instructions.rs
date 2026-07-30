@@ -24,8 +24,8 @@ use std::path::Path;
 use futures::future::BoxFuture;
 use hawking_context::compiler::{CompileInput, ContextCandidate, ContextSource};
 use hawking_context::manifest::{ContextSourceKind, PinState};
-use hide_compat::layout::Layout;
-use hide_compat::CompatConfig;
+use crate::compat::layout::Layout;
+use crate::compat::CompatConfig;
 use hide_core::error::Result;
 use hide_core::types::{Provenance, TrustLevel};
 
@@ -168,8 +168,8 @@ fn resolve_from_config(config: &CompatConfig) -> ResolvedInstructions {
     ResolvedInstructions { text, files }
 }
 
-fn memory_kind_label(kind: hide_compat::claude_md::MemoryKind) -> &'static str {
-    use hide_compat::claude_md::MemoryKind::*;
+fn memory_kind_label(kind: crate::compat::claude_md::MemoryKind) -> &'static str {
+    use crate::compat::claude_md::MemoryKind::*;
     match kind {
         UserGlobal => "user-global",
         Project => "project",
@@ -233,7 +233,6 @@ mod tests {
     use hawking_context::profiles::ContextProfile;
     use hide_core::ids::{now_ms, ModelId};
     use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
-
     fn model(ctx: usize) -> ModelDescriptor {
         ModelDescriptor {
             id: ModelId::new(),
@@ -244,17 +243,12 @@ mod tests {
             footprint_mb: 1,
         }
     }
-
-    /// A throwaway temp repo with a `.git` marker + whatever instruction files a
-    /// test writes, and a private `home` that holds no `~/.claude` tree (so only
-    /// repo-local files load). Returns the repo root; the caller writes files.
     fn temp_repo(tag: &str) -> std::path::PathBuf {
         let root = std::env::temp_dir().join(format!("hide_compat_instr_{tag}_{}", now_ms()));
         std::fs::create_dir_all(root.join(".git")).unwrap();
         std::fs::create_dir_all(root.join(".hide")).unwrap();
         root
     }
-
     #[test]
     fn resolves_root_claude_md_into_ordered_text_with_receipt() {
         let root = temp_repo("root");
@@ -263,27 +257,12 @@ mod tests {
             "# House rules\nRULE_ALPHA_TOKEN: always run cargo test before commit.\n",
         )
         .unwrap();
-
         let resolved = resolve_repo_instructions_for_root(&root);
         assert!(!resolved.is_empty(), "root CLAUDE.md must resolve");
-        // The distinctive token from the CLAUDE.md rode into the resolved text.
-        assert!(
-            resolved.text.contains("RULE_ALPHA_TOKEN"),
-            "resolved text must carry the CLAUDE.md rule, got: {}",
-            resolved.text
-        );
-        // The receipt names the file that loaded.
-        assert!(
-            resolved
-                .files
-                .iter()
-                .any(|f| f.path.ends_with("CLAUDE.md") && f.kind == "project"),
-            "receipt must list the project CLAUDE.md, got: {:?}",
-            resolved.files
-        );
+        assert!(resolved.text.contains("RULE_ALPHA_TOKEN"));
+        assert!(resolved .files .iter() .any(|f| f.path.ends_with("CLAUDE.md") && f.kind == "project"));
         let _ = std::fs::remove_dir_all(root);
     }
-
     #[tokio::test]
     async fn instruction_token_rides_into_compiled_context_pack() {
         let root = temp_repo("compiled");
@@ -293,7 +272,6 @@ mod tests {
         )
         .unwrap();
         let resolved = resolve_repo_instructions_for_root(&root);
-
         let mut compiler = ContextCompiler::new();
         compiler.add_source(resolved.as_source());
         let compiled = compiler
@@ -304,15 +282,7 @@ mod tests {
             })
             .await
             .unwrap();
-
-        // The pinned instruction span rides into the compiled prompt...
-        assert!(
-            compiled.prompt.contains("COMPILED_RULE_TOKEN"),
-            "instruction must ride into the compiled prompt, got: {}",
-            compiled.prompt
-        );
-        // ...and the retained span's provenance IS the context receipt (it names
-        // the loaded file in `derived_from`).
+        assert!(compiled.prompt.contains("COMPILED_RULE_TOKEN"));
         let span = compiled
             .manifest
             .retained
@@ -320,21 +290,11 @@ mod tests {
             .find(|s| s.provenance.source == "compat_instructions")
             .expect("compat instruction span retained");
         assert_eq!(span.source, ContextSourceKind::System);
-        assert!(
-            span.provenance.derived_from.iter().any(|p| p.ends_with("CLAUDE.md")),
-            "receipt (derived_from) must list the loaded file, got: {:?}",
-            span.provenance.derived_from
-        );
+        assert!(span.provenance.derived_from.iter().any(|p| p.ends_with("CLAUDE.md")));
         let _ = std::fs::remove_dir_all(root);
     }
-
     #[test]
     fn precedence_more_specific_instruction_is_read_last() {
-        // Root CLAUDE.md (project) + a nested CLAUDE.md one directory deeper. With
-        // cwd deeper than repo_root, the nested file is a launch-injected Project
-        // entry read AFTER the root one (root first, more-specific last), so it
-        // wins under read-last-wins. Also add an un-scoped rule, which loads at
-        // launch AFTER all memory.
         let root = temp_repo("prec");
         let sub = root.join("service");
         std::fs::create_dir_all(&sub).unwrap();
@@ -354,12 +314,9 @@ mod tests {
             "RULE_LAYER_TOKEN: prefer explicit error handling.\n",
         )
         .unwrap();
-
-        // cwd = sub (deeper than repo_root = root), private home (no user tree).
         let no_home = root.join(".hide").join("compat-no-user-home");
         let layout = Layout::new(&root, &sub, &no_home);
         let resolved = resolve_repo_instructions(&layout);
-
         let root_at = resolved
             .text
             .find("ROOT_LAYER_TOKEN")
@@ -372,23 +329,11 @@ mod tests {
             .text
             .find("RULE_LAYER_TOKEN")
             .expect("rule layer present");
-        // More-specific (nested) is read AFTER the root layer -> wins last.
-        assert!(
-            root_at < nested_at,
-            "the more-specific nested instruction must be read last (win); text: {}",
-            resolved.text
-        );
-        // Un-scoped rules load at launch AFTER all memory.
-        assert!(
-            nested_at < rule_at,
-            "un-scoped rules load after memory; text: {}",
-            resolved.text
-        );
-        // All three files are on the receipt.
+        assert!(root_at < nested_at);
+ assert!( nested_at < rule_at, "un-scoped rules load after memory; text: {}", resolved.text );
         assert_eq!(resolved.files.len(), 3, "receipt: {:?}", resolved.files);
         let _ = std::fs::remove_dir_all(root);
     }
-
     #[test]
     fn un_migrated_repo_resolves_empty() {
         let root = temp_repo("empty");

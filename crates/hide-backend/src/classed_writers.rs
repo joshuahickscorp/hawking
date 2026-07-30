@@ -24,7 +24,7 @@ use hawking_context::{
 use hide_core::event::{Event, EventLog, NewEvent};
 use hide_core::tool::{ToolCall, ToolResult, ToolStatus};
 use hide_core::Result;
-use hide_verify::{VerificationReceipt, VerificationTier};
+use hide_kernel::verify_plane::{VerificationReceipt, VerificationTier};
 use std::sync::Arc;
 
 /// Hard cap on episodic rows per session. Without this, a long session that
@@ -599,13 +599,11 @@ mod tests {
     use hide_core::ids::{SessionId, ToolCallId};
     use hide_core::tool::{ToolCall, ToolError, ToolResult, ToolStatus};
     use hide_core::types::EffectSet;
-    use hide_verify::{source_hash, Verdict, VerificationReceipt, VerificationTier};
+    use hide_kernel::verify_plane::{source_hash, Verdict, VerificationReceipt, VerificationTier};
     use serde_json::json;
-
     fn mem() -> ClassedMemorySystem {
         ClassedMemorySystem::open_in_memory("ws-writers").unwrap()
     }
-
     #[test]
     fn procedural_success_writes_record_failure_does_not() {
         let sys = mem();
@@ -618,83 +616,44 @@ mod tests {
             Some(json!({ "stdout": "test result: ok" })),
             EffectSet::default(),
         );
-        assert!(write_procedural_from_receipt(
-            &sys,
-            &call,
-            &ok,
-            "sess-1",
-            Some("run-1"),
-        ));
+ assert!(write_procedural_from_receipt( &sys, &call, &ok, "sess-1", Some("run-1"), ));
         let rows = sys.list_class(MemoryClass::Procedural).unwrap();
         assert_eq!(rows.len(), 1);
         assert!(rows[0].text.contains("cargo test"));
         assert_eq!(rows[0].provenance.writer, "tool_receipt");
         assert_eq!(rows[0].provenance.run_id.as_deref(), Some("run-1"));
-        // Distillation rule: cargo test success → semantic_project toolchain fact.
         let proj = sys.list_class(MemoryClass::SemanticProject).unwrap();
-        assert!(
-            proj.iter().any(|r| r.text.contains("cargo test")),
-            "successful cargo test must distill a project toolchain fact"
-        );
-        // Producer isolation: procedural path must not mint protected classes.
+        assert!(proj.iter().any(|r| r.text.contains("cargo test")));
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Verification).unwrap(), 0);
-
         let fail_call = ToolCall::new("shell.run", json!({ "argv": ["false"] }));
         let mut fail = ToolResult::ok(fail_call.call_id.clone(), None, EffectSet::default());
         fail.status = ToolStatus::ToolError;
         fail.ok = false;
         fail.error = Some(ToolError::new("EXEC_FAILED", "exit 1", false));
         let proj_before = sys.count(MemoryClass::SemanticProject).unwrap();
-        assert!(!write_procedural_from_receipt(
-            &sys,
-            &fail_call,
-            &fail,
-            "sess-1",
-            Some("run-2"),
-        ));
-        assert_eq!(
-            sys.list_class(MemoryClass::Procedural).unwrap().len(),
-            1,
-            "failed receipt must not add a procedural recipe"
-        );
-        assert_eq!(
-            sys.count(MemoryClass::SemanticProject).unwrap(),
-            proj_before,
-            "failed receipt must not distill semantic_project facts"
-        );
+ assert!(!write_procedural_from_receipt( &sys, &fail_call, &fail, "sess-1", Some("run-2"), ));
+        assert_eq!(sys.list_class(MemoryClass::Procedural).unwrap().len(), 1);
+        assert_eq!(sys.count(MemoryClass::SemanticProject).unwrap(), proj_before);
     }
-
     #[test]
     fn nonzero_exit_does_not_write_procedural() {
         let sys = mem();
         let call = ToolCall::new("shell.run", json!({ "argv": ["cargo", "test"] }));
         let mut result = ToolResult::ok(call.call_id.clone(), None, EffectSet::default());
-        // ok:true with nonzero exit is data, not a tool failure — still not a recipe.
         result.exit_code = Some(1);
-        assert!(!write_procedural_from_receipt(
-            &sys, &call, &result, "s", None
-        ));
+ assert!(!write_procedural_from_receipt( &sys, &call, &result, "s", None ));
         assert_eq!(sys.count(MemoryClass::Procedural).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::SemanticProject).unwrap(), 0);
     }
-
     #[test]
     fn working_cleared_at_turn_end() {
         let sys = mem();
         write_working_at_turn_start(&sys, "turn-1", "sess", Some("run-1"), "scratch me");
         assert_eq!(sys.count(MemoryClass::Working).unwrap(), 1);
         end_working_turn(&sys, "turn-1");
-        assert_eq!(
-            sys.count(MemoryClass::Working).unwrap(),
-            0,
-            "working must die at the retention boundary"
-        );
+        assert_eq!(sys.count(MemoryClass::Working).unwrap(), 0);
     }
-
-    /// Normal scope exit: `WorkingTurnGuard` Drop clears the row.
-    /// Production `run_turn_core` / `run_turn_kernel` both construct via
-    /// [`WorkingTurnGuard::begin`]; this unit test is the shared lifetime proof.
     #[test]
     fn working_guard_clears_on_normal_scope_exit() {
         let sys = Arc::new(mem());
@@ -709,14 +668,8 @@ mod tests {
             assert_eq!(guard.turn_id(), "turn-ok");
             assert_eq!(sys.count(MemoryClass::Working).unwrap(), 1);
         }
-        assert_eq!(
-            sys.count(MemoryClass::Working).unwrap(),
-            0,
-            "guard Drop must clear working on normal scope exit"
-        );
+        assert_eq!(sys.count(MemoryClass::Working).unwrap(), 0);
     }
-
-    /// Early `Err` after seeding: row still clears (the production defect path).
     #[test]
     fn working_guard_clears_on_early_err() {
         let sys = Arc::new(mem());
@@ -727,14 +680,8 @@ mod tests {
             Err("injected early failure after seed")
         })();
         assert!(result.is_err());
-        assert_eq!(
-            sys.count(MemoryClass::Working).unwrap(),
-            0,
-            "guard Drop must clear working after early Err"
-        );
+        assert_eq!(sys.count(MemoryClass::Working).unwrap(), 0);
     }
-
-    /// Panic unwind after seeding: row still clears when unwind is supported.
     #[test]
     fn working_guard_clears_on_panic_unwind() {
         let sys = Arc::new(mem());
@@ -745,13 +692,8 @@ mod tests {
             panic!("forced unwind after seed");
         }));
         assert!(result.is_err(), "panic must propagate");
-        assert_eq!(
-            sys.count(MemoryClass::Working).unwrap(),
-            0,
-            "guard Drop must clear working on panic unwind"
-        );
+        assert_eq!(sys.count(MemoryClass::Working).unwrap(), 0);
     }
-
     #[test]
     fn episodic_session_cap_prunes_oldest() {
         let sys = mem();
@@ -770,20 +712,15 @@ mod tests {
             .into_iter()
             .filter(|r| r.session_id.as_deref() == Some("sess-cap"))
             .collect();
-        // Hard bound holds. Which rows drop depends on ULID ordering within a
-        // millisecond; the production contract is the cap, not a wall-clock order.
         assert_eq!(sess.len(), 3);
-        // Under the cap, a second prune is a no-op.
         assert_eq!(sys.prune_episodic_session("sess-cap", 3).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Episodic).unwrap(), 3);
     }
-
     #[tokio::test]
     async fn episodic_mirror_writes_on_submit_turn_tool_and_verdict() {
         let sys = Arc::new(mem());
         let log = EpisodicEventMirror::wrap(Arc::new(InMemoryEventLog::new()), sys.clone());
         let session = SessionId::new();
-
         log.append(NewEvent::user_intent(
             session.clone(),
             hide_core::event::UserIntentEvent {
@@ -793,7 +730,6 @@ mod tests {
         ))
         .await
         .unwrap();
-        // Kind is rewritten by the command router; mirror the production kind.
         let mut submit = NewEvent::user_intent(
             session.clone(),
             hide_core::event::UserIntentEvent {
@@ -803,7 +739,6 @@ mod tests {
         );
         submit.kind = "user.intent.submit_turn".into();
         log.append(submit).await.unwrap();
-
         let call_id = ToolCallId::new();
         log.append(NewEvent::tool_call(
             session.clone(),
@@ -829,7 +764,6 @@ mod tests {
         ))
         .await
         .unwrap();
-
         log.append(NewEvent::system(
             session.clone(),
             "verify.result",
@@ -840,8 +774,6 @@ mod tests {
         ))
         .await
         .unwrap();
-
-        // Non-episodic kind must not land a record.
         let before = sys.count(MemoryClass::Episodic).unwrap();
         log.append(NewEvent::system(
             session.clone(),
@@ -851,14 +783,8 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(sys.count(MemoryClass::Episodic).unwrap(), before);
-
         let episodes = sys.list_class(MemoryClass::Episodic).unwrap();
-        assert!(
-            episodes
-                .iter()
-                .any(|r| r.text.contains("unique-episode-marker-xyz")),
-            "submit_turn must produce an episodic record with real text: {episodes:?}"
-        );
+        assert!(episodes .iter() .any(|r| r.text.contains("unique-episode-marker-xyz")));
         assert!(episodes.iter().any(|r| r.text.contains("tool.call")));
         assert!(episodes.iter().any(|r| r.text.contains("tool.result")));
         assert!(episodes.iter().any(|r| r.text.contains("verify.result")));
@@ -867,14 +793,12 @@ mod tests {
             assert_eq!(r.session_id.as_deref(), Some(session.as_str()));
             assert!(!r.provenance.evidence.is_empty());
             assert!(r.provenance.written_at_ms > 0);
-            // Episodic producer must not write other classes.
             assert_eq!(r.class, MemoryClass::Episodic);
         }
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Verification).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Procedural).unwrap(), 0);
     }
-
     #[test]
     fn verification_write_from_receipt_and_user_explicit() {
         let sys = mem();
@@ -895,19 +819,15 @@ mod tests {
         assert_eq!(v[0].provenance.writer, "verifier");
         assert_eq!(v[0].evidence_tier.as_deref(), Some("proven"));
         assert_eq!(v[0].provenance.run_id.as_deref(), Some("run-v"));
-        // Verifier path must not mint user/procedural.
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Procedural).unwrap(), 0);
-
         write_user_explicit(&sys, "prefer terse answers", "settings", "user");
         let u = sys.list_class(MemoryClass::User).unwrap();
         assert_eq!(u.len(), 1);
         assert_eq!(u[0].provenance.writer, "user_intent");
         assert!(u[0].workspace_id.is_none());
-        // User path must not mint verification.
         assert_eq!(sys.count(MemoryClass::Verification).unwrap(), 1);
     }
-
     #[test]
     fn project_explicit_write() {
         let sys = mem();
@@ -925,7 +845,6 @@ mod tests {
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::Verification).unwrap(), 0);
     }
-
     #[tokio::test]
     async fn round_trip_write_then_compile_retrieves() {
         use hawking_context::compiler::{CompileInput, ContextCompiler};
@@ -934,7 +853,6 @@ mod tests {
         use hawking_context::ClassBudgets;
         use hide_core::ids::ModelId;
         use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
-
         let sys = Arc::new(mem());
         let log = EpisodicEventMirror::wrap(Arc::new(InMemoryEventLog::new()), sys.clone());
         let session = SessionId::new();
@@ -947,22 +865,13 @@ mod tests {
         );
         submit.kind = "user.intent.submit_turn".into();
         log.append(submit).await.unwrap();
-
-        // Also seed a procedural recipe that compile should surface.
         let call = ToolCall::new("shell.run", json!({ "argv": ["cargo", "test"] }));
         let ok = ToolResult::ok(
             call.call_id.clone(),
             Some(json!({ "stdout": "ok" })),
             EffectSet::default(),
         );
-        assert!(write_procedural_from_receipt(
-            &sys,
-            &call,
-            &ok,
-            session.as_str(),
-            None,
-        ));
-
+ assert!(write_procedural_from_receipt( &sys, &call, &ok, session.as_str(), None, ));
         let budgets = ClassBudgets::default_small();
         let mut compiler = ContextCompiler::new();
         compiler.add_source(
@@ -984,26 +893,13 @@ mod tests {
             })
             .await
             .unwrap();
-
-        assert!(
-            compiled.prompt.contains("roundtrip-marker-alpha-omega"),
-            "compile must retrieve the episodic record written by the previous event; prompt={}",
-            compiled.prompt
-        );
-        // Procedural recipe or distilled project fact must also be retrievable.
+        assert!(compiled.prompt.contains("roundtrip-marker-alpha-omega"));
         let ret = sys.last_retrieval().expect("retrieve_for_compile ran");
         let epi = ret.slice(MemoryClass::Episodic).unwrap();
         assert!(!epi.hits.is_empty(), "episodic slice must have hits");
         let proc = ret.slice(MemoryClass::Procedural).unwrap();
         assert!(!proc.hits.is_empty(), "procedural slice must have hits");
-        // Provenance survives the write→compile path.
-        assert!(epi
-            .hits
-            .iter()
-            .any(|h| h.provenance.writer == "event_stream"));
-        assert!(proc
-            .hits
-            .iter()
-            .any(|h| h.provenance.writer == "tool_receipt"));
+ assert!(epi .hits .iter() .any(|h| h.provenance.writer == "event_stream"));
+ assert!(proc .hits .iter() .any(|h| h.provenance.writer == "tool_receipt"));
     }
 }

@@ -350,7 +350,6 @@ pub fn you_events_export() -> Value {
 mod tests {
     use super::*;
     use hide_core::ids::with_deterministic_ids;
-
     #[test]
     fn seventeen_you_events() {
         assert_eq!(YOU_EVENTS.len(), 17);
@@ -360,27 +359,13 @@ mod tests {
             assert!(!s.carries.is_empty());
         }
     }
-
     #[test]
     fn proposed_defaults_provisional_committed_verified() {
-        assert_eq!(
-            YouEvent::MemoryProposed.spec().default_verification,
-            ContentVerification::Provisional
-        );
-        assert_eq!(
-            YouEvent::MemoryCommitted.spec().default_verification,
-            ContentVerification::TargetVerified
-        );
-        assert_eq!(
-            YouEvent::ConnectorWriteProposed.spec().default_verification,
-            ContentVerification::Provisional
-        );
-        assert_eq!(
-            YouEvent::AgentResult.spec().default_verification,
-            ContentVerification::Provisional
-        );
+        assert_eq!(YouEvent::MemoryProposed.spec().default_verification, ContentVerification::Provisional);
+        assert_eq!(YouEvent::MemoryCommitted.spec().default_verification, ContentVerification::TargetVerified);
+        assert_eq!(YouEvent::ConnectorWriteProposed.spec().default_verification, ContentVerification::Provisional);
+ assert_eq!( YouEvent::AgentResult.spec().default_verification, ContentVerification::Provisional );
     }
-
     #[test]
     fn envelope_carries_surface_and_verification() {
         with_deterministic_ids(42, || {

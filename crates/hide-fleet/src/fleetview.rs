@@ -184,7 +184,6 @@ mod tests {
     use hide_core::event::{EventLog, InMemoryEventLog, NewEvent};
     use hide_core::ids::SessionId;
     use serde_json::json;
-
     #[tokio::test]
     async fn fleet_view_projects_run_rows_and_counters() {
         let log = InMemoryEventLog::new();
@@ -217,7 +216,6 @@ mod tests {
         ))
         .await
         .unwrap();
-
         let events = log.scan(None, None, None).await.unwrap();
         let view = FleetView::project(&events);
         assert_eq!(view.rows.len(), 1);
@@ -228,7 +226,6 @@ mod tests {
         assert_eq!(row.run_id.as_deref(), Some("run_x"));
         assert_eq!(view.done, 1);
     }
-
     #[tokio::test]
     async fn breaker_event_surfaces_a_banner() {
         let log = InMemoryEventLog::new();
@@ -242,10 +239,6 @@ mod tests {
         .unwrap();
         let events = log.scan(None, None, None).await.unwrap();
         let view = FleetView::project(&events);
-        assert!(view
-            .breaker_banner
-            .as_deref()
-            .unwrap()
-            .contains("spawn rate"));
+ assert!(view .breaker_banner .as_deref() .unwrap() .contains("spawn rate"));
     }
 }

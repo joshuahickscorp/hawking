@@ -4,8 +4,8 @@
 //! acceptance is low: every rejected draft token costs a wasted slot in the
 //! batched verify forward (`forward_tokens_verify`), so a stretch of misses
 //! makes spec slower than plain greedy decode (see `docs/dead_levers.md`:
-//! EAGLE-3 net-negative tau=0.877; the free n-gram draft tau~1.43 only wins when
-//! the user's stream is actually predictable). This [`SpecGovernor`] is a
+//! trained-head research was net-negative; the free n-gram draft tau~1.43 only
+//! wins when the user's stream is actually predictable). This [`SpecGovernor`] is a
 //! self-contained state machine that watches the live accept/reject stream and
 //! flips a single `enabled` bit so spec can never hurt more than a small,
 //! bounded amount before it is shut off -- and re-arms itself once acceptance
@@ -238,13 +238,11 @@ impl SpecGovernor {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn feed(gov: &mut SpecGovernor, outcomes: &[bool]) {
         for &o in outcomes {
             gov.step(o);
         }
     }
-
     #[test]
     fn starts_enabled_with_optimistic_rate() {
         let gov = SpecGovernor::new(20, 0.35);
@@ -252,23 +250,18 @@ mod tests {
         assert_eq!(gov.accept_rate(), 1.0);
         assert_eq!(gov.observed(), 0);
     }
-
     #[test]
     fn rolling_window_is_bounded_and_rate_tracks() {
         let mut gov = SpecGovernor::new(4, 0.35);
         feed(&mut gov, &[true, true, true, true]);
         assert!((gov.accept_rate() - 1.0).abs() < 1e-6);
         assert_eq!(gov.observed(), 4);
-        // Push 4 more rejects: the window holds only the last 4 (all false).
         feed(&mut gov, &[false, false, false, false]);
         assert_eq!(gov.observed(), 4, "window must not grow past its size");
         assert!((gov.accept_rate() - 0.0).abs() < 1e-6);
     }
-
     #[test]
     fn consecutive_rejection_streak_disables_fast() {
-        // Even with a wide window, 5 straight misses must bail (the small bound
-        // on how much spec is allowed to hurt) without waiting for the rate.
         let mut gov = SpecGovernor::new(50, 0.35);
         assert!(gov.step(false)); // 1 miss, still enabled
         assert!(gov.step(false)); // 2
@@ -277,7 +270,6 @@ mod tests {
         assert!(!gov.step(false), "5th consecutive miss disables");
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
     }
-
     #[test]
     fn disabled_tick_does_not_poison_acceptance_window() {
         let mut gov = SpecGovernor::with_thresholds(4, 0.50, 0.50, 2, 2);
@@ -287,83 +279,41 @@ mod tests {
         assert!(!gov.step(false));
         let rate = gov.accept_rate();
         let observed = gov.observed();
-
         assert!(!gov.tick_disabled());
         assert!(!gov.tick_disabled());
         assert_eq!(gov.accept_rate(), rate);
         assert_eq!(gov.observed(), observed);
-
-        // Dwell expiry alone is not evidence. A real shadow accept can re-arm.
         assert!(!gov.is_enabled());
         assert!(gov.step(true));
     }
-
     #[test]
     fn rate_floor_disables_even_without_a_clean_streak() {
-        // No 5-in-a-row streak (an accept breaks it every few steps), but the
-        // rolling rate sits at/below the floor once the window fills -> disable.
-        // window=8, disable_below=0.35: pattern accept-once-every-4 -> rate 0.25.
         let mut gov = SpecGovernor::with_thresholds(8, 0.50, 0.35, 5, 8);
-        // 8 cycles at 2/8 = 0.25 acceptance, max run of misses = 3 (< 5).
         feed(
             &mut gov,
             &[true, false, false, false, true, false, false, false],
         );
-        assert!(
-            gov.consecutive_rejections() < 5,
-            "must not be a streak bail"
-        );
-        assert!(
-            !gov.is_enabled(),
-            "low rolling rate must disable via the floor"
-        );
+ assert!( gov.consecutive_rejections() < 5, "must not be a streak bail" );
+ assert!( !gov.is_enabled(), "low rolling rate must disable via the floor" );
     }
-
     #[test]
     fn full_enable_disable_reenable_cycle() {
-        // The headline transition the governor exists for.
-        // window=4, disable_below=0.35, enable_above=0.45, cooldown=4.
         let mut gov = SpecGovernor::with_thresholds(4, 0.45, 0.35, 5, 4);
-
-        // (1) ENABLE: starts on, a healthy accept streak keeps it on.
         assert!(gov.is_enabled());
         feed(&mut gov, &[true, true, true, true]);
         assert!(gov.is_enabled(), "high acceptance stays enabled");
         assert!((gov.accept_rate() - 1.0).abs() < 1e-6);
-
-        // (2) DISABLE: a run of misses (>= max_consecutive=5) trips the bail.
         feed(&mut gov, &[false, false, false, false, false]);
         assert!(!gov.is_enabled(), "miss streak disabled spec");
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
-
-        // (3) HYSTERESIS HOLD: a single recovering accept must NOT re-enable --
-        // the cooldown dwell is still counting and the band is not yet cleared.
-        assert!(
-            !gov.step(true),
-            "one lucky accept must not flap spec back on"
-        );
+ assert!( !gov.step(true), "one lucky accept must not flap spec back on" );
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
-
-        // (4) RE-ENABLE: sustained accepts clear both the cooldown dwell AND
-        // push the rolling rate into the enable band (>= 0.45). The window is
-        // 4; after enough accepts it reads [t,t,t,t] = 1.0 >= 0.45 and the
-        // dwell has elapsed -> back to Enabled.
         feed(&mut gov, &[true, true, true, true]);
-        assert!(
-            gov.is_enabled(),
-            "sustained recovery re-enables spec (rate {} state {:?})",
-            gov.accept_rate(),
-            gov.state()
-        );
+        assert!(gov.is_enabled());
     }
-
     #[test]
     fn dead_band_does_not_flap() {
-        // A rate parked strictly between disable_below and enable_above leaves
-        // the current state untouched in BOTH directions.
-        // band: disable_below=0.30, enable_above=0.60.
         let mut gov = SpecGovernor::with_thresholds(10, 0.60, 0.30, 5, 10);
-        // Drive rate to ~0.5 (in the dead-band) without a 5-miss streak.
         feed(
             &mut gov,
             &[
@@ -371,37 +321,21 @@ mod tests {
             ],
         );
         assert!((gov.accept_rate() - 0.5).abs() < 1e-6);
-        // 0.5 is below enable_above(0.6) and above disable_below(0.3): an
-        // enabled governor stays enabled (no disable trigger fired).
-        assert!(
-            gov.is_enabled(),
-            "dead-band rate must not disable from Enabled"
-        );
-
-        // Now force into cooldown via a streak, then hold the rate in the band:
-        // it must NOT re-enable while the rate is below enable_above.
+ assert!( gov.is_enabled(), "dead-band rate must not disable from Enabled" );
         feed(&mut gov, &[false, false, false, false, false]);
         assert!(!gov.is_enabled());
-        // Long alternating run: cooldown elapses but rate ~0.5 < 0.6.
         feed(
             &mut gov,
             &[
                 true, false, true, false, true, false, true, false, true, false,
             ],
         );
-        assert!(
-            !gov.is_enabled(),
-            "dead-band rate must not re-enable from Cooldown (rate {})",
-            gov.accept_rate()
-        );
+        assert!(!gov.is_enabled());
     }
-
     #[test]
     fn constructor_keeps_bands_separated_and_window_sane() {
-        // Degenerate inputs are clamped, never panic.
         let g = SpecGovernor::with_thresholds(0, 0.2, 0.8, 0, 0);
         assert!(g.is_enabled());
-        // window clamped to >=1, so one step fills it.
         let mut g = g;
         g.step(true);
         assert_eq!(g.observed(), 1);

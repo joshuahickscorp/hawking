@@ -10,11 +10,11 @@
 //! * [`HostProgramHandles`] is the host's implementation of the runtime's
 //!   read-only [`HostHandles`] trait. Each granted handle is backed by a REAL
 //!   read path:
-//!   - `search.text`      -> `hide_tools::search::SearchTextTool`
-//!   - `file.read`        -> `hide_tools::fs::FsReadTool` (bounded by an output cap)
+//!   - `search.text`      -> `hide_kernel::tooling::search::SearchTextTool`
+//!   - `file.read`        -> `hide_kernel::tooling::fs::FsReadTool` (bounded by an output cap)
 //!   - `index.references` -> the backend `code_index` (`InMemoryCodeIndex`)
-//!   - `git.diff`         -> `hide_tools::git::GitDiffTool`
-//!   - `git.log`          -> `hide_tools::git::GitLogTool`
+//!   - `git.diff`         -> `hide_kernel::tooling::git::GitDiffTool`
+//!   - `git.log`          -> `hide_kernel::tooling::git::GitLogTool`
 //!   Every other read handle (`search.symbol`, `diagnostic.list`,
 //!   `test.result.read`, `artifact.read`, `mcp.readonly`) returns an honest
 //!   DEFERRED error rather than a faked result, and is not granted by default.
@@ -52,13 +52,13 @@ use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::event::NewEvent;
 use hide_core::ids::SessionId;
 use hide_core::tool::{Tool, ToolCtx, ToolResult};
-use hide_program_runtime::{
+use hide_kernel::program_runtime::{
     map_of, run, Citation, Expr, HandleError, HandleGrants, HandleName, HostHandles, Limits,
     Program, RunOutput, RuntimeError, Usage, Value, WriteProposal, CITATIONS_KEY,
 };
-use hide_tools::fs::FsReadTool;
-use hide_tools::git::{GitDiffTool, GitLogTool};
-use hide_tools::search::SearchTextTool;
+use hide_kernel::tooling::fs::FsReadTool;
+use hide_kernel::tooling::git::{GitDiffTool, GitLogTool};
+use hide_kernel::tooling::search::SearchTextTool;
 use crate::services::DynCodeIndex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -92,7 +92,7 @@ impl ProgramRunResult {
 
 /// Everything that can go wrong running a program through the backend. The
 /// runtime's typed failures (a granted-handle denial, a schema mismatch, a
-/// resource-limit breach carrying its [`hide_program_runtime::LimitKind`]) are
+/// resource-limit breach carrying its [`hide_kernel::program_runtime::LimitKind`]) are
 /// preserved as-is in [`ProgramRunError::Runtime`] so a caller can match on them.
 #[derive(Debug, thiserror::Error)]
 pub enum ProgramRunError {
@@ -561,10 +561,9 @@ mod tests {
     use crate::services::BackendServices;
     use hide_core::config::HideConfig;
     use hide_core::ids::now_ms;
-    use hide_program_runtime::{BinOp, Lambda, LimitKind, Operator, Order};
+    use hide_kernel::program_runtime::{BinOp, Lambda, LimitKind, Operator, Order};
     use std::path::Path;
     use std::sync::atomic::{AtomicU64, Ordering};
-
     fn unique(tag: &str) -> PathBuf {
         static N: AtomicU64 = AtomicU64::new(0);
         std::env::temp_dir().join(format!(
@@ -574,8 +573,6 @@ mod tests {
             N.fetch_add(1, Ordering::SeqCst)
         ))
     }
-
-    /// A host over a fresh temp workspace with a `work/` subtree of seeded files.
     fn seeded_host(tag: &str) -> (BackendHost, PathBuf) {
         let dir = unique(tag);
         let work = dir.join("work");
@@ -595,19 +592,12 @@ mod tests {
         let host = BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap();
         (host, work)
     }
-
     fn source_of(program: &Program) -> String {
         serde_json::to_string(program).expect("program serializes")
     }
-
-    // A program that coordinates TWO read tools once: full-text search + a file
-    // read. It filters the hits to `.rs`, projects them while preserving each
-    // hit's citation, ranks by path, and also reads one file's content -- all in a
-    // single structured result.
     fn coordinate_program(work: &Path) -> Program {
         let work_str = work.to_string_lossy().to_string();
         let alpha_str = work.join("alpha.rs").to_string_lossy().to_string();
-
         let search = Expr::handle(
             HandleName::SearchText,
             Expr::map_lit([
@@ -652,16 +642,12 @@ mod tests {
         let root = Expr::map_lit([("matches", ranked), ("alpha", alpha_content)]);
         Program::new(root)
     }
-
     #[tokio::test]
     async fn program_coordinates_read_tools_deterministically_with_citations() {
         let (host, work) = seeded_host("coord");
         let session = host.services.session();
         let source = source_of(&coordinate_program(&work));
-
-        // Subscribe before running so we catch the live program_run UiEvent.
         let mut ui_rx = host.subscribe_ui();
-
         let first = host
             .run_program(session.clone(), &source, json!(null))
             .await
@@ -670,13 +656,8 @@ mod tests {
             .run_program(session.clone(), &source, json!(null))
             .await
             .expect("program runs again");
-
-        // Deterministic: byte-identical structured output + citations across runs.
         assert_eq!(first.output, second.output);
         assert_eq!(first.citations, second.citations);
-
-        // Structured result: two `.rs` hits, ranked by path (alpha before beta),
-        // the `.txt` filtered out; plus the coordinated file read.
         let matches = first
             .output
             .get_path(&["matches".into()])
@@ -693,41 +674,27 @@ mod tests {
             .unwrap();
         assert!(first_path.ends_with("alpha.rs"), "ranked by path: {first_path}");
         assert!(second_path.ends_with("beta.rs"), "ranked by path: {second_path}");
-
-        // Citations survived filter + projection + rank on every row.
         for row in matches {
             let cites = row.citations();
             assert_eq!(cites.len(), 1, "each ranked row keeps its search citation");
             assert_eq!(cites[0].source, "search.text");
         }
-        // The coordinated file read landed in the same structured result.
         let alpha = first
             .output
             .get_path(&["alpha".into()])
             .and_then(Value::as_str)
             .expect("alpha content is a string");
         assert_eq!(alpha, "pub fn compute_needle() -> i32 { 1 }\n");
-
-        // Top-level preserved citations: the two search.text hits, deduped.
         assert_eq!(first.citations.len(), 2, "two distinct search.text citations");
         assert!(first.citations.iter().all(|c| c.source == "search.text"));
-
-        // No mutation was prepared.
         assert!(first.write_proposals.is_empty());
-
-        // Durable `program.run` event persisted.
         let events = host
             .services
             .event_log
             .scan(Some(session.clone()), None, None)
             .await
             .unwrap();
-        assert!(
-            events.iter().filter(|e| e.kind == "program.run").count() >= 2,
-            "two runs persist two program.run events"
-        );
-
-        // Live `program_run` UiEvent surfaced on the push bus.
+        assert!(events.iter().filter(|e| e.kind == "program.run").count() >= 2);
         let ui = ui_rx.recv().await.expect("a program_run UiEvent");
         match ui.kind {
             UiEventKind::Custom(v) => {
@@ -737,16 +704,10 @@ mod tests {
             other => panic!("expected a Custom program_run UiEvent, got {other:?}"),
         }
     }
-
     #[tokio::test]
     async fn forbidden_capabilities_cannot_be_expressed_or_reached() {
         let (host, _work) = seeded_host("forbidden");
         let session = host.services.session();
-
-        // A write/exec/network handle simply cannot be NAMED: `HandleName` only
-        // deserializes the ten read handles, so a program that tries to build a
-        // filesystem write (or a shell exec) fails to parse -- there is no such
-        // handle to reach.
         for forbidden in ["fs.write", "shell.exec", "net.fetch"] {
             let evil = format!(
                 r#"{{"root":{{"expr":"handle","name":"{forbidden}","args":{{"expr":"lit","value":null}}}},"seed":0,"clock_start_ms":0}}"#
@@ -755,32 +716,21 @@ mod tests {
                 .run_program(session.clone(), &evil, json!(null))
                 .await
                 .expect_err("a forbidden capability must not parse");
-            assert!(
-                matches!(err, ProgramRunError::Parse(_)),
-                "{forbidden} should be unnameable, got {err:?}"
-            );
+            assert!(matches!(err, ProgramRunError::Parse(_)));
         }
-
-        // A real read handle that is NOT granted by default is denied at the grant
-        // plane with a typed error -- the host, not the program, decides grants.
         let ungranted = Program::new(Expr::handle(HandleName::McpReadonly, Expr::lit("x")));
         let err = host
             .run_program(session.clone(), &source_of(&ungranted), json!(null))
             .await
             .expect_err("an ungranted read handle must be denied");
-        assert!(
-            matches!(err, ProgramRunError::Runtime(RuntimeError::HandleNotGranted(_))),
-            "expected HandleNotGranted, got {err:?}"
-        );
+        assert!(matches!(err, ProgramRunError::Runtime(RuntimeError::HandleNotGranted(_))));
     }
-
     #[tokio::test]
     async fn write_proposal_is_returned_but_never_executed() {
         let (host, work) = seeded_host("proposal");
         let session = host.services.session();
         let target = work.join("SHOULD_NOT_BE_WRITTEN.txt");
         let target_str = target.to_string_lossy().to_string();
-
         let proposal = Expr::propose_write(Expr::map_lit([
             ("kind", Expr::lit("edit")),
             ("summary", Expr::lit("rename compute_needle across the crate")),
@@ -793,32 +743,22 @@ mod tests {
             ),
         ]));
         let program = Program::new(Expr::map_lit([("staged", proposal)]));
-
         let result = host
             .run_program(session, &source_of(&program), json!(null))
             .await
             .expect("program runs");
-
-        // The proposal is returned...
         assert_eq!(result.write_proposals.len(), 1);
         let wp = &result.write_proposals[0];
-        assert_eq!(wp.kind, hide_program_runtime::WriteKind::Edit);
+        assert_eq!(wp.kind, hide_kernel::program_runtime::WriteKind::Edit);
         assert_eq!(wp.summary, "rename compute_needle across the crate");
-        assert_eq!(
-            wp.payload.get_path(&["path".into()]).and_then(Value::as_str),
-            Some(target_str.as_str())
-        );
-        // ...and NOTHING was written: the mutation never left the sandbox.
+        assert_eq!(wp.payload.get_path(&["path".into()]).and_then(Value::as_str), Some(target_str.as_str()));
         assert!(!target.exists(), "the proposed write must not touch disk");
     }
-
     #[tokio::test]
     async fn limit_breaches_trip_typed_errors() {
         let (host, work) = seeded_host("limits");
         let session = host.services.session();
         let alpha_str = work.join("alpha.rs").to_string_lossy().to_string();
-
-        // tool-call breach: a single granted read under a zero tool-call budget.
         let read = Program::new(Expr::handle(
             HandleName::FileRead,
             Expr::map_lit([("path", Expr::lit(alpha_str.as_str()))]),
@@ -831,18 +771,7 @@ mod tests {
             .run_program_with_limits(session.clone(), &source_of(&read), json!(null), limits)
             .await
             .expect_err("tool-call budget exhausted");
-        assert!(
-            matches!(
-                err,
-                ProgramRunError::Runtime(RuntimeError::LimitExceeded {
-                    kind: LimitKind::ToolCall,
-                    ..
-                })
-            ),
-            "expected a ToolCall limit breach, got {err:?}"
-        );
-
-        // instruction breach: a one-instruction budget.
+        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::ToolCall, .. }) ));
         let trivial = Program::new(Expr::map_lit([
             ("a", Expr::lit(1i64)),
             ("b", Expr::lit(2i64)),
@@ -855,18 +784,7 @@ mod tests {
             .run_program_with_limits(session.clone(), &source_of(&trivial), json!(null), limits)
             .await
             .expect_err("instruction budget exhausted");
-        assert!(
-            matches!(
-                err,
-                ProgramRunError::Runtime(RuntimeError::LimitExceeded {
-                    kind: LimitKind::Instruction,
-                    ..
-                })
-            ),
-            "expected an Instruction limit breach, got {err:?}"
-        );
-
-        // output breach: a one-byte output budget cannot hold the returned value.
+        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::Instruction, .. }) ));
         let big = Program::new(Expr::lit("a result larger than one byte"));
         let limits = Limits {
             output_bytes: 1,
@@ -876,26 +794,13 @@ mod tests {
             .run_program_with_limits(session, &source_of(&big), json!(null), limits)
             .await
             .expect_err("output budget exhausted");
-        assert!(
-            matches!(
-                err,
-                ProgramRunError::Runtime(RuntimeError::LimitExceeded {
-                    kind: LimitKind::OutputBytes,
-                    ..
-                })
-            ),
-            "expected an OutputBytes limit breach, got {err:?}"
-        );
+        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::OutputBytes, .. }) ));
     }
-
     #[tokio::test]
     async fn git_log_handle_bridges_a_real_async_process_tool() {
-        // Proves the async->sync bridge drives a `tokio::process`-backed read tool:
-        // seed a real git repo, then have a program call the git.log handle and
         // return its stdout.
         let (host, work) = seeded_host("gitlog");
         let session = host.services.session();
-
         let git = |args: &[&str]| {
             std::process::Command::new("git")
                 .args(args)
@@ -910,9 +815,6 @@ mod tests {
         let _ = git(&["config", "user.name", "t"]);
         let _ = git(&["add", "-A"]);
         let _ = git(&["commit", "-qm", "seed_commit_marker"]);
-
-        // git.log with cwd defaulted to the workspace root would point at `dir`,
-        // not `work`; pin the repo explicitly.
         let work_str = work.to_string_lossy().to_string();
         let program = Program::new(Expr::field(
             Expr::handle(
@@ -921,15 +823,11 @@ mod tests {
             ),
             ["stdout"],
         ));
-
         let result = host
             .run_program(session, &source_of(&program), json!(null))
             .await
             .expect("git.log program runs");
         let stdout = result.output.as_str().unwrap_or("");
-        assert!(
-            stdout.contains("seed_commit_marker"),
-            "git.log stdout should contain the commit: {stdout:?}"
-        );
+        assert!(stdout.contains("seed_commit_marker"));
     }
 }

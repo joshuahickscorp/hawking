@@ -1,6 +1,3 @@
-//! Registry honesty: every family's support level is backed by named evidence
-//! of the kind the grade names. A level asserted without that evidence fails.
-
 use hawking_adapters::abi::{
     AbiField, AbiListField, ContextLimits, Evidence, EvidenceKind, FamilyAbi, ProviderAvailability,
 };
@@ -8,7 +5,6 @@ use hawking_adapters::evidence::{validate_family_evidence, workspace_root};
 use hawking_adapters::registry::builtin_registry;
 use hawking_adapters::support_level::SupportLevel;
 use hawking_adapters::FamilyDescriptor;
-
 fn empty_abi() -> FamilyAbi {
     FamilyAbi {
         source_config_classes: AbiListField::null("test"),
@@ -32,21 +28,18 @@ fn empty_abi() -> FamilyAbi {
         source_precision_classes: AbiListField::null("test"),
     }
 }
-
 #[test]
 fn every_family_evidence_present() {
     let r = builtin_registry();
     r.validate_all_evidence()
         .unwrap_or_else(|errs| panic!("evidence failures:\n{}", errs.join("\n")));
 }
-
 #[test]
 fn every_family_abi_fields_complete() {
     let r = builtin_registry();
     r.validate_all_abi()
         .unwrap_or_else(|errs| panic!("ABI incomplete:\n{}", errs.join("\n")));
 }
-
 #[test]
 fn level_without_evidence_fails() {
     let root = workspace_root();
@@ -63,16 +56,11 @@ fn level_without_evidence_fails() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &bogus).unwrap_err();
-    assert!(
-        err.contains("requires at least one named evidence"),
-        "got: {err}"
-    );
+ assert!( err.contains("requires at least one named evidence"), "got: {err}" );
 }
-
 #[test]
 fn level_with_wrong_evidence_kind_fails() {
     let root = workspace_root();
-    // SMALL_REAL_CHECKPOINT requires SmallCheckpointRun, not Description.
     static EV: &[Evidence] = &[Evidence {
         path: "Cargo.toml",
         claim: "exists but wrong kind",
@@ -91,12 +79,8 @@ fn level_with_wrong_evidence_kind_fails() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
-    assert!(
-        err.contains("requires evidence kind") && err.contains("small_checkpoint_run"),
-        "got: {err}"
-    );
+    assert!(err.contains("requires evidence kind") && err.contains("small_checkpoint_run"));
 }
-
 #[test]
 fn source_header_grade_requires_source_header_kind() {
     let root = workspace_root();
@@ -118,12 +102,8 @@ fn source_header_grade_requires_source_header_kind() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
-    assert!(
-        err.contains("source_header"),
-        "got: {err}"
-    );
+ assert!( err.contains("source_header"), "got: {err}" );
 }
-
 #[test]
 fn real_tensor_decode_grade_requires_matching_kind() {
     let root = workspace_root();
@@ -145,12 +125,8 @@ fn real_tensor_decode_grade_requires_matching_kind() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
-    assert!(
-        err.contains("real_tensor_decode"),
-        "got: {err}"
-    );
+ assert!( err.contains("real_tensor_decode"), "got: {err}" );
 }
-
 #[test]
 fn production_always_fails() {
     let root = workspace_root();
@@ -174,7 +150,6 @@ fn production_always_fails() {
     let err = validate_family_evidence(&root, &prod).unwrap_err();
     assert!(err.contains("PRODUCTION"), "got: {err}");
 }
-
 #[test]
 fn missing_evidence_path_fails() {
     let root = workspace_root();
@@ -198,12 +173,10 @@ fn missing_evidence_path_fails() {
     let err = validate_family_evidence(&root, &d).unwrap_err();
     assert!(err.contains("does not exist"), "got: {err}");
 }
-
 #[test]
 fn incomplete_abi_field_fails() {
     let root = workspace_root();
     let mut abi = empty_abi();
-    // Break completeness: value and reason both None.
     abi.tokenizer = AbiField {
         value: None,
         null_reason: None,
@@ -221,12 +194,8 @@ fn incomplete_abi_field_fails() {
         abi,
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
-    assert!(
-        err.contains("tokenizer") || err.contains("ABI field"),
-        "got: {err}"
-    );
+ assert!( err.contains("tokenizer") || err.contains("ABI field"), "got: {err}" );
 }
-
 #[test]
 fn no_family_is_production_in_builtin() {
     let r = builtin_registry();

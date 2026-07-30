@@ -519,7 +519,6 @@ mod tests {
     use super::*;
     use hide_core::event::{InMemoryEventLog, NewEvent};
     use hide_core::ids::SessionId;
-
     fn ctx(log: DynEventLog) -> RemoteContext {
         RemoteContext {
             log,
@@ -529,16 +528,13 @@ mod tests {
             grant: Some("cap-test".to_string()),
         }
     }
-
     #[test]
     fn auth_denies_non_loopback_without_token() {
         let policy = RemoteAuthPolicy::default();
         let lan: SocketAddr = "192.168.1.5:9000".parse().unwrap();
         assert!(!policy.authorize(&lan, None));
         let loop_addr: SocketAddr = "127.0.0.1:9000".parse().unwrap();
-        // Loopback + SSH-tunnel trusted without a token by default.
         assert!(policy.authorize(&loop_addr, None));
-        // LAN with a valid paired token is allowed only if loopback_only is off.
         let mut lan_policy = RemoteAuthPolicy {
             loopback_only: false,
             accepted_tokens: vec!["good".to_string()],
@@ -549,12 +545,10 @@ mod tests {
         lan_policy.accepted_tokens.clear();
         assert!(!lan_policy.authorize(&lan, Some("good")));
     }
-
     #[tokio::test]
     async fn session_new_then_intent_acks_with_seq() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         let ctx = ctx(log);
-        // open
         let (resp, _) = dispatch(
             &ctx,
             JsonRpcRequest {
@@ -569,7 +563,6 @@ mod tests {
             .as_str()
             .unwrap()
             .to_string();
-        // intent
         let intent = Intent::SubmitTurn {
             session_id: SessionId::from(session.as_str()),
             text: "add JWT refresh".to_string(),
@@ -587,12 +580,10 @@ mod tests {
         .await;
         assert_eq!(resp.result.unwrap()["accepted"], true);
     }
-
     #[tokio::test]
     async fn session_resume_replays_from_seq() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         let ctx = ctx(log.clone());
-        // Open a session, then append 3 events to its session id.
         let (resp, _) = dispatch(
             &ctx,
             JsonRpcRequest {
@@ -617,7 +608,6 @@ mod tests {
             .await
             .unwrap();
         }
-        // Resume from seq 1 → replays seqs 2,3 (after_seq is exclusive).
         let (resp, backlog) = dispatch(
             &ctx,
             JsonRpcRequest {
@@ -632,7 +622,6 @@ mod tests {
         assert_eq!(backlog.len(), 2);
         assert!(backlog.iter().all(|e| e.seq > 1));
     }
-
     #[tokio::test]
     async fn unknown_method_is_method_not_found() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -649,12 +638,10 @@ mod tests {
         .await;
         assert_eq!(resp.error.unwrap().code, ERR_METHOD_NOT_FOUND);
     }
-
     #[tokio::test]
     async fn end_to_end_websocket_handshake_intent_and_resume() {
         use futures::{SinkExt, StreamExt};
         use tokio_tungstenite::tungstenite::Message;
-
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         let sessions = Arc::new(SessionRegistry::new());
         let sink = Arc::new(RecordingSink::default());
@@ -666,11 +653,8 @@ mod tests {
         )
         .await
         .unwrap();
-
         let url = format!("ws://{}", handle.local_addr);
         let (mut ws, _) = tokio_tungstenite::connect_async(&url).await.unwrap();
-
-        // session/new
         ws.send(Message::Text(
             json!({ "jsonrpc": "2.0", "id": 1, "method": "session/new", "params": {} }).to_string(),
         ))
@@ -679,8 +663,6 @@ mod tests {
         let reply = ws.next().await.unwrap().unwrap();
         let v: Value = serde_json::from_str(reply.to_text().unwrap()).unwrap();
         let session = v["result"]["session"].as_str().unwrap().to_string();
-
-        // hide/intent
         let intent = Intent::SubmitTurn {
             session_id: SessionId::from(session.as_str()),
             text: "do it".to_string(),
@@ -697,8 +679,6 @@ mod tests {
         let v: Value = serde_json::from_str(reply.to_text().unwrap()).unwrap();
         assert_eq!(v["result"]["accepted"], true);
         assert_eq!(sink.received.lock().len(), 1);
-
-        // Append an event to the session, then resume → server streams it back.
         let sid = sessions.get(&session).unwrap().session_id;
         log.append(NewEvent::system(sid, "agent.phase", json!({ "x": 1 })))
             .await
@@ -710,15 +690,12 @@ mod tests {
         ))
         .await
         .unwrap();
-        // First the resume result...
         let reply = ws.next().await.unwrap().unwrap();
         let v: Value = serde_json::from_str(reply.to_text().unwrap()).unwrap();
         assert!(v["result"]["replayed_n"].as_u64().unwrap() >= 1);
-        // ...then a hide/event notification carrying the replayed event.
         let note = ws.next().await.unwrap().unwrap();
         let v: Value = serde_json::from_str(note.to_text().unwrap()).unwrap();
         assert_eq!(v["method"], "hide/event");
-
         handle.shutdown();
     }
 }

@@ -370,7 +370,6 @@ fn extract_embedding(value: &Value) -> Option<Vec<f32>> {
 mod tests {
     use super::*;
     use std::collections::BTreeMap;
-
     fn empty_stats() -> GenerationStats {
         GenerationStats {
             input_tokens: 0,
@@ -378,7 +377,6 @@ mod tests {
             decode_tokens_per_second: None,
         }
     }
-
     #[test]
     fn native_event_emits_token() {
         let mut stats = empty_stats();
@@ -390,7 +388,6 @@ mod tests {
             _ => panic!("expected token"),
         }
     }
-
     #[test]
     fn native_event_folds_stats_and_done() {
         let mut stats = empty_stats();
@@ -401,12 +398,8 @@ mod tests {
         assert_eq!(stats.input_tokens, 5);
         assert_eq!(stats.output_tokens, 9);
         assert_eq!(stats.decode_tokens_per_second, Some(42.5));
-        assert!(matches!(
-            parse_native_sse_event("[DONE]", &mut stats),
-            SseStep::Done(_)
-        ));
+ assert!(matches!( parse_native_sse_event("[DONE]", &mut stats), SseStep::Done(_) ));
     }
-
     #[test]
     fn openai_delta_emits_content() {
         let mut stats = empty_stats();
@@ -417,24 +410,18 @@ mod tests {
         }
         assert_eq!(stats.output_tokens, 1);
     }
-
     #[test]
     fn openai_finish_reason_closes() {
         let mut stats = empty_stats();
         let frame = "{\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}";
-        assert!(matches!(
-            parse_openai_sse_event(frame, &mut stats),
-            SseStep::Done(_)
-        ));
+ assert!(matches!( parse_openai_sse_event(frame, &mut stats), SseStep::Done(_) ));
     }
-
     #[test]
     fn embedding_extracted_from_openai_shape() {
         let v: Value =
             serde_json::from_str("{\"data\":[{\"embedding\":[0.1,0.2,0.3],\"index\":0}]}").unwrap();
         assert_eq!(extract_embedding(&v), Some(vec![0.1, 0.2, 0.3]));
     }
-
     #[test]
     fn chat_body_uses_messages_or_prompt() {
         let req = InferenceRequest {
@@ -451,7 +438,6 @@ mod tests {
         assert_eq!(body["messages"][0]["content"], "hello");
         assert_eq!(body["stream"], true);
     }
-
     #[test]
     fn native_body_carries_sampler() {
         let mut req = InferenceRequest {

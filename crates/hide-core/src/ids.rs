@@ -112,27 +112,18 @@ pub fn now_micros() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn ulid_ids_are_sortable_and_unique() {
-        // Distinctness and prefix hold for the random path.
         let a = EventId::new();
         let b = EventId::new();
         assert_ne!(a, b);
         assert!(a.as_str().starts_with("evt_"));
-        // Lexicographic sortability is a property of TIME-ORDERED ulids. Two random ulids
-        // minted in the same millisecond carry random relative order, so assert sortability
-        // on the deterministic monotonic source instead (otherwise the test is flaky).
         with_deterministic_ids(0, || {
             let x = EventId::new();
             let y = EventId::new();
-            assert!(
-                y.as_str() > x.as_str(),
-                "a later id sorts after an earlier id"
-            );
+ assert!( y.as_str() > x.as_str(), "a later id sorts after an earlier id" );
         });
     }
-
     #[test]
     fn deterministic_ids_are_monotonic_and_reproducible() {
         let first =
@@ -141,10 +132,7 @@ mod tests {
             with_deterministic_ids(0, || (0..4).map(|_| EventId::new().0).collect::<Vec<_>>());
         assert_eq!(first, second, "same seed yields identical id sequence");
         for pair in first.windows(2) {
-            assert!(
-                pair[1] > pair[0],
-                "deterministic ids are strictly increasing"
-            );
+ assert!( pair[1] > pair[0], "deterministic ids are strictly increasing" );
         }
     }
 }

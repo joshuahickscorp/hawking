@@ -1,4 +1,4 @@
-//! Event Horizon Phase 7 — cross-tokenizer proposer scaffold (GATED, DISABLED).
+//! Cross-tokenizer proposer scaffold (GATED, DISABLED).
 //! requires_text_bridge()=true → enable_neural_slot refuses without GO.
 //! Default: NO-GO (0.58-0.70× slowdown on Apple Silicon, ref 2604.16368).
 
@@ -107,12 +107,10 @@ mod tests {
     use super::*;
     use crate::proposal::Telemetry;
     use crate::router::{ProposalRouter, ProposerId};
-
     #[test]
     fn map_learns_a_span() {
         let mut p = CrossTokenizerProposer::new();
         p.learn_span(42, vec![100, 101, 102]);
-
         let tokens = vec![42u32];
         let ctx = Ctx {
             tokens: &tokens,
@@ -121,7 +119,6 @@ mod tests {
         };
         let budget = Budget::line(2);
         let tel = Telemetry::default();
-
         match p.propose(&ctx, budget, &tel) {
             Proposal::TokenLine(v) => {
                 assert_eq!(v, vec![100, 101], "should return first k=2 mapped tokens");
@@ -129,14 +126,10 @@ mod tests {
             _ => panic!("expected TokenLine"),
         }
     }
-
     #[test]
     fn warm_builds_span_map_from_consecutive_pairs() {
         let mut p = CrossTokenizerProposer::new();
         p.warm(&[1, 2, 3, 4]);
-
-        // warm([1,2,3,4]) → pairs (1→2), (2→3), (3→4)
-        // propose ctx=[2], k=1 → first dst of 2 = 3
         let tokens = vec![2u32];
         let ctx = Ctx {
             tokens: &tokens,
@@ -145,7 +138,6 @@ mod tests {
         };
         let budget = Budget::line(1);
         let tel = Telemetry::default();
-
         match p.propose(&ctx, budget, &tel) {
             Proposal::TokenLine(v) => {
                 assert_eq!(v, vec![3], "warm pair 2→3 should be first dst");
@@ -153,12 +145,10 @@ mod tests {
             _ => panic!("expected TokenLine"),
         }
     }
-
     #[test]
     fn unknown_src_proposes_nothing() {
         let mut p = CrossTokenizerProposer::new();
         p.learn_span(1, vec![10, 11]);
-
         let tokens = vec![99u32]; // not in map
         let ctx = Ctx {
             tokens: &tokens,
@@ -167,7 +157,6 @@ mod tests {
         };
         let budget = Budget::line(4);
         let tel = Telemetry::default();
-
         match p.propose(&ctx, budget, &tel) {
             Proposal::TokenLine(v) => {
                 assert!(v.is_empty(), "unknown src must produce empty draft");
@@ -175,7 +164,6 @@ mod tests {
             _ => panic!("expected TokenLine"),
         }
     }
-
     #[test]
     fn enable_neural_slot_refuses_text_bridge_without_go() {
         let mut router = ProposalRouter::new(16, 0.35, 1.0);
@@ -187,9 +175,6 @@ mod tests {
             true,  // requires_text_bridge
             "NO-GO",
         );
-        assert!(
-            result.is_err(),
-            "text-bridge slot must be refused when oracle verdict is not GO"
-        );
+ assert!( result.is_err(), "text-bridge slot must be refused when oracle verdict is not GO" );
     }
 }

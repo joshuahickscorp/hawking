@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.300k.independent_review.v1",
+  "reviewing": "H1's claim that the 44 remaining tools/condense modules are irreducible",
+  "why": "The campaign requires one builder and one independent reviewer for every high-risk consolidation. H1 took the tree from 111,424 to 44,991 and declared the remainder irreducible without review. Every other subsystem floor in this arc had adversarial pressure behind it; this one was a builder's self-assessment.",
+  "builder_verdict_upheld": false,
+  "margin": {
+    "loc_reviewed": 44991,
+    "reducible_found": 402,
+    "fraction": 0.009,
+    "reviewer_floor": 44690
+  },
+  "findings": [
+    {"module": "activation_aware_format.py", "loc": 218, "verdict": "ORPHANED",
+     "controller_check": "0 Python importers; only referenced from two engine retirement receipts. Rust owns the runtime reader.",
+     "action": "DELETED"},
+    {"module": "glm52_grounding_auth.py", "loc": 184, "verdict": "REVIEWER SAID REDUNDANT",
+     "controller_check": "3 Python importers including its own test and test_glm52_gravity_cli.py. Not orphaned; a merge, not a deletion.",
+     "action": "NOT TAKEN — 184 lines does not justify a merge across three live importers during a campaign whose remaining gap is 130,000."}
+  ],
+  "near_twins_resolved": [
+    {"pair": "glm52_activation_aware_pack.py / _v2.py", "relationship": "VARIANT, not duplicate"},
+    {"pair": "glm52_xet_autotune.py / glm52_xet_live.py", "relationship": "VARIANT"},
+    {"pair": "gravity_metal.py / gravity_metal_lab_b.py", "relationship": "VARIANT"}
+  ],
+  "significance": "An adversarial reviewer instructed explicitly to find where the builder stopped found 0.9%. The v1/v2 pair that looked like the obvious duplication is a genuine variant. The tools/condense floor is now reviewer-verified rather than self-reported, which was the last methodological gap in the arc's floor evidence.",
+  "loc_after": 430284
+}

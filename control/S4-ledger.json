@@ -1,0 +1,129 @@
+{
+  "schema": "hawking.rebuild.s4_ledger.v1",
+  "slice": "S4",
+  "title": "Schema authority, protocol surface, and the three lenses",
+  "revision": 2,
+  "at": "2026-07-29",
+  "branch": "grok/s4-surface-20260729-133330",
+  "base_commit": "7d17720d3806ad2dcdf72085ffd609f7264c5dd2",
+  "scope_paths": [
+    "crates/hide-protocol",
+    "crates/hide-fleet",
+    "crates/hide-acp",
+    "crates/hide-serve",
+    "app"
+  ],
+  "measurement": {
+    "authority": "tools/loc/hawking_loc.py language set + tools/loc/hawking_generation_audit.py reclassification",
+    "before_scope_loc": 35853,
+    "after_scope_loc": 34384,
+    "delta": -1469,
+    "target_scope_loc": 24500,
+    "gap_to_target": 9884,
+    "before_note": "Includes 2,350 LOC of unearned generated TypeScript/Markdown that hawking_generation_audit reclassifies as active at the base commit (no earned registry).",
+    "after_note": "generated_credit=0. No excluded generated source remains in scope. Former source goldens live under counted paths (goldens/, app/src/wire_types.ts, catalog_sync.test.ts). Command value authority is the counted Rust table in command.rs.",
+    "by_crate_before": {
+      "hide-protocol": 5097,
+      "hide-fleet": 8266,
+      "hide-acp": 3382,
+      "hide-serve": 803,
+      "app": 15955,
+      "unearned_generated_reclassified": 2350
+    },
+    "by_crate_after": {
+      "hide-protocol": 5746,
+      "hide-fleet": 8266,
+      "hide-acp": 3382,
+      "hide-serve": 803,
+      "app": 16187,
+      "earned_generated_excluded": 0
+    },
+    "combined_active_monorepo_loc_after_working_tree": 435269,
+    "hide_subsystem_after_working_tree": 97896
+  },
+  "topology": {
+    "files_over_1500_lines_before": 27,
+    "files_over_1500_lines_after": 27,
+    "campaign_start_files_over_1500": 26,
+    "tiny_forwarders_after": 13,
+    "note": "No regression in files_over_1500 from this slice. commands.d.ts is types-only (~110 lines) under counted goldens/."
+  },
+  "ledger": {
+    "eliminated": 0,
+    "rewritten": 1469,
+    "rewritten_detail": {
+      "old_scope_loc_with_unearned_reclass": 35853,
+      "new_scope_loc": 34384,
+      "delta": -1469,
+      "credit": 1469,
+      "parts": {
+        "commands_dts_types_only": {
+          "file": "crates/hide-protocol/goldens/commands.d.ts",
+          "old_loc_at_base_generated": 1764,
+          "new_loc_counted": 110,
+          "delta": -1654,
+          "why": "commands.d.ts no longer embeds the full catalog array; FE loads command_catalog.json. File is counted active (not exclusion)."
+        },
+        "command_rs_remains_typed_table": {
+          "file": "crates/hide-protocol/src/command.rs",
+          "loc": 1353,
+          "why": "57-command value authority restored as compile-time-checked Rust base()+overrides table. data/command_catalog.json deleted (was uncounted language relocation)."
+        },
+        "shell_modules_restored_for_build": {
+          "files": [
+            "app/src/shell/glass.ts",
+            "app/src/shell/ErrorBoundary.tsx",
+            "app/src/shell/Radiate.tsx",
+            "app/src/shell/Mark.tsx"
+          ],
+          "loc_added": 155,
+          "why": "Deleted by prior recompose but still imported; required for tsc green and three-lens render path."
+        },
+        "frontend_import_rewires": {
+          "delta_approx": 0,
+          "why": "Flattened surfaces/* path fixes and vitest mock path alignment; behaviour-preserving."
+        },
+        "counted_source_goldens_moved_not_excluded": {
+          "paths": [
+            "app/src/wire_types.ts",
+            "app/src/catalog_sync.test.ts",
+            "crates/hide-protocol/goldens/protocol.d.ts",
+            "crates/hide-protocol/goldens/commands.d.ts"
+          ],
+          "relocated_credit": 0,
+          "why": "Moved out of generated/ so hawking_loc counts them; moving earns zero credit."
+        }
+      }
+    },
+    "generated": 0,
+    "generated_detail": {
+      "credit": 0,
+      "meaning": "No source file is excluded as earned generated. control/GENERATED_REGISTRY.json entries is empty. Remaining generated/ outputs are non-source JSON (and shell completions outside LANGS) that were never active source LOC.",
+      "amplification_ok": "n/a — no earned source exclusions",
+      "one_writer": {
+        "command_catalog_json": "crates/hide-protocol/src/bin/hide-sdk-codegen.rs (sole writer of protocol + app mirrors)",
+        "app_wire_types": "app/scripts/gen_wire.mjs via gen_app_generated.mjs (convenience only; output counted)"
+      }
+    },
+    "relocated": 0,
+    "facade": 0
+  },
+  "reconciles": {
+    "formula": "eliminated + rewritten_credit + generated_credit + relocated + facade == -delta (scope with unearned reclass at base)",
+    "values": "0 + 1469 + 0 + 0 + 0 == 1469 == -(-1469)",
+    "ok": true
+  },
+  "gates": {
+    "logical_tests": "3792 -> 3792 (+0)",
+    "capabilities": "no loss",
+    "blackbox_only_runnable": "86/86 pass, 0 fail, baseline_runnable=86",
+    "cargo_test_scope": "hide-protocol hide-fleet hide-acp hide-serve all passed (0 failed)",
+    "cargo_test_hawking_adapters": "drift + registry_evidence all passed",
+    "generation_audit": "0 tracked generated source files; 0 unearned; gate pass",
+    "frontend_tsc": "npx tsc --noEmit exit 0",
+    "frontend_vitest": "391 passed / 0 failed (16 files)",
+    "git_diff_check": "clean on S4 text changes (goldens regenerated without trailing-space JSDoc lines)"
+  },
+  "target_reached": false,
+  "stop_reason": "Measured scope 34,384 is still 9,884 above the 24,500 target after honest re-expression (generated_credit=0, no uncounted command JSON). Remaining mass is behaviour-bearing: hide-fleet, hide-acp, hide-serve, protocol remainder, and the YOU/CHAT/IDE app."
+}

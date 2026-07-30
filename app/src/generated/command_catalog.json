@@ -1561,5 +1561,96 @@
     "undo_strategy": "none",
     "receipt_kind": null,
     "telemetry": null
+  },
+  {
+    "id": "switch_surface",
+    "title": "Switch surface",
+    "description": "Change the active lens (YOU, CHAT, or IDE) on the shared session. Does not mint a new session or move capability.",
+    "category": "surface",
+    "primary_surface": "you",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Shift+U",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": "surface.you",
+    "backend_binding": {
+      "kind": "custom",
+      "target": "switch_surface"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "surface.switch"
+  },
+  {
+    "id": "handoff_create",
+    "title": "Create handoff",
+    "description": "Seal a typed claim-only capsule from the active surface to another. Never transports authority.",
+    "category": "handoff",
+    "primary_surface": "you",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "handoff_create"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "handoff.create"
+  },
+  {
+    "id": "handoff_receive",
+    "title": "Receive handoff",
+    "description": "Open a sealed capsule into its target lens on the same session. Receiver capability is unchanged.",
+    "category": "handoff",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "handoff_receive"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "handoff.receive"
   }
 ]

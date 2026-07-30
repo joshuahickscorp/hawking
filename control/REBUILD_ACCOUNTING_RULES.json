@@ -1,0 +1,114 @@
+{
+  "schema": "hawking.rebuild.accounting_rules.v1",
+  "authority": "controller",
+  "at": "2026-07-29",
+  "purpose": "The 250k campaign permits techniques the prior arcs did not: clean-room rewrite, code generation, compile-time specialization, test replacement, language reassignment. Each of those is also a way to make the number move without making the system smaller. These rules say exactly which is which, so a rung is either honestly earned or it does not close.",
+  "measurement_authority": {
+    "loc": "tools/loc/hawking_loc.py",
+    "topology": "tools/loc/hawking_topology.py",
+    "inventory": "tools/loc/hawking_inventory.py --gate A B",
+    "frozen": true,
+    "note": "These three are frozen for the duration. No lane may edit them. A change to how the number is computed is a change to the campaign, and only the controller may make one -- in a commit that does nothing else and reports the delta on the unchanged tree."
+  },
+  "generation_rules": {
+    "why": "Section 7.2 and 7.3 of the campaign explicitly permit replacing repetitive code with a spec plus a generator, and permit compile-time specialization where a runtime abstraction would cost performance. Section 'AGGRESSIVE RULES' equally forbids generated-blob gaming. These conditions separate them.",
+    "admissible_only_if": [
+      "the generator and the spec are both tracked, active, and COUNTED in the LOC authority",
+      "the generated output is reproducible: re-running the generator on the same spec produces byte-identical output, checked in CI",
+      "every generated file is registered in control/GENERATED_REGISTRY.json with its generator command and spec path",
+      "the spec is human-reviewable and expresses intent, not the output verbatim -- a spec that is a line-for-line transliteration of its output is the output",
+      "amplification factor (generated_loc / (spec_loc + generator_loc)) is >= 4.0; below that the generation buys nothing and the output must be counted as active"
+    ],
+    "enforcement": "tools/loc/hawking_generation_audit.py re-runs every registered generator and diffs. Any generated file that is unregistered, unreproducible, or below the amplification floor is RECLASSIFIED AS ACTIVE and added back to the LOC total for that rung.",
+    "vendored_libraries": "vendoring a third-party library to move lines out of the count is relocation, credit zero. The vendor/ bucket may not grow during this campaign; growth is added back."
+  },
+  "test_rules": {
+    "permitted": "Test implementations are not protected. Suites may be deleted, merged, rewritten as property/state-machine/table-driven/golden/fuzz tests, or generated from the Behaviour Constitution.",
+    "required": "Every behaviour in REBUILD_BEHAVIOUR_CONSTITUTION.json that was covered before a rung must still be covered after it. Coverage is measured by the black-box matrix, not by test-function count.",
+    "the_anti_gaming_rule": "A check that SKIPS is not a check that PASSES. tools/verify/blackbox.py must exit non-zero when a check that was runnable at the previous rung becomes unrunnable. This repo has previously graded itself green on integration tests that finished in 0.00s reporting 'no model on disk'.",
+    "generated_tests": "Tests generated from the constitution are admissible and count under generation_rules like any other generated source."
+  },
+  "topology_rules": {
+    "no_monoliths": "The file targets are pressure, not permission. A rung does not close if files_over_1500_lines rises above the campaign start value (26), or if any single file exceeds 2,000 lines without a named reason recorded in the rung receipt.",
+    "no_forwarder_farms": "tiny_forwarders and single_file_directories are both reported by the topology tool and both must trend down. A directory reduction achieved by leaving forwarding stubs behind is not a reduction.",
+    "no_mechanical_chunking": "Splitting one file into name_0.rs name_1.rs name_2.rs is not decomposition and does not count as modularisation; nor does concatenating modules into one file count as merging. Module boundaries must follow the semantic criteria in campaign section 7.1 (shared state, lifecycle, error policy, tests, change history, callers).",
+    "diff_gate": "hawking_topology.py --diff fails when ANY dimension regresses. A rung may not be claimed by trading structure for lines or lines for structure."
+  },
+  "hide_split_rule": {
+    "permitted_when": "only after the deepest combined pre-split checkpoint is sealed",
+    "credit": 0,
+    "constraint": "Hawking + HIDE + shared contracts after the split may not exceed the combined total before it."
+  },
+  "capability_equivalence_for_spec_driven_designs": {
+    "the_conflict": "tools/loc/hawking_inventory.py measures capability as entrypoints -- Python `__main__` blocks, argparse surfaces, Rust binaries, shell scripts. Campaign section 7.2 asks for the opposite shape: replace repetitive controllers with typed specs run by one engine. A spec-driven laboratory therefore fails the capability gate BY CONSTRUCTION, because 77 modules with `__main__` become 77 rows in a spec table and one engine, and the counter sees 76 capabilities disappear.",
+    "the_wrong_fixes": [
+      "generating a thin `__main__` shim per spec -- that is 77 files of pass-through wrapper, forbidden by section 7.4 and pointless",
+      "editing tools/loc/hawking_inventory.py -- it is frozen measurement authority, and a campaign that adjusts its own scale mid-descent has measured nothing",
+      "waiving the capability gate for the laboratory -- the gate exists because a prior arc deleted a live 220-line entrypoint and reported capability preserved"
+    ],
+    "the_rule": "An entrypoint may be replaced by a spec IF AND ONLY IF the spec is invocable and the invocation is proven, not asserted. Concretely: every retired entrypoint must appear in control/CAPABILITY_MANIFEST.json with the exact command that now invokes it, and tools/verify/capability_manifest.py must RUN each command in a dry-run or --help mode and report exit status per entry. An entry that cannot be invoked is a lost capability regardless of what the spec table says.",
+    "gating": "The inventory --gate `caps` half will still show the drop; that is expected and is not overridden. The rung receipt must carry BOTH: the raw inventory delta, and the capability manifest result showing every retired entrypoint invocable. A rung closes only if the manifest accounts for every one of them. Unaccounted entrypoints are lost capability, full stop.",
+    "same_rule_for_tests": "A test file replaced by a table-driven case does not lose its assertions if the table is enumerated and each row runs. The count in hawking_inventory.py may legitimately fall when N hand-written test functions become one parametrised sweep -- but only when the sweep's cardinality is recorded and it actually executes N cases. A rung that shows assertions falling must name, per lost assertion, either the row that now covers it or the deleted subject it went with."
+  },
+  "rung_receipt": {
+    "required_fields": [
+      "rung",
+      "commit",
+      "loc_before",
+      "loc_after",
+      "topology_before",
+      "topology_after",
+      "ledger_eliminated",
+      "ledger_rewritten",
+      "ledger_generated",
+      "ledger_relocated",
+      "ledger_facade",
+      "reconciles",
+      "behaviour_coverage_before",
+      "behaviour_coverage_after",
+      "blackbox_runnable_before",
+      "blackbox_runnable_after",
+      "performance_deltas",
+      "migration_result",
+      "security_result",
+      "rollback_tag",
+      "old_paths_deleted",
+      "facade_loc_remaining"
+    ],
+    "cannot_close_with": [
+      "facade_loc_remaining > 0",
+      "a duplicated old/new authority for the same behaviour",
+      "any blackbox check that regressed from runnable to unrunnable",
+      "any topology dimension regressed",
+      "any performance metric regressed more than 2% without a recorded trade receipt"
+    ]
+  },
+  "floor_rules": {
+    "the_430k_number": "not citable. It was measured under protections this campaign revokes.",
+    "the_prior_at_floor_refusals": {
+      "status": "VOID under this campaign, all six",
+      "why": "Every one of them was a refusal grounded in something this campaign explicitly declassifies: 'public crate API' (APIs are not protected), 'self-tested product schemas' (test implementation and schemas are not protected), 'protected despite zero host references' (code with no observable contract is a deletion candidate by campaign section 4), 'cfg(test) underpins the lib test surface' (tests may be rewritten), 'host-selected A/B permutation lattice' (a tuning search space is not an observable behaviour unless the Behaviour Constitution names one), 'seed-c isolation is load-bearing because its manifest forbids a dependency' (crate boundaries are not protected).",
+      "consequence": "396,468 lines previously sealed as at-floor are in scope. A refusal must now be re-argued against the Behaviour Constitution alone."
+    },
+    "declaring_a_new_floor_requires_all_of": [
+      "the semantic graph is complete",
+      "both the graph-cluster architecture and the vertical-slice architecture are implemented",
+      "the six-core architecture is operational",
+      "all old frameworks are removed",
+      "250,000 is attempted by actual code, not by estimate",
+      "a second independent clean-room architecture attempts the failed rung",
+      "the first precise observable behaviour or performance contract that fails is named",
+      "repair is attempted and its result recorded",
+      "the last green checkpoint is restored and reverified"
+    ]
+  },
+  "the_six_ledgers": {
+    "note": "Every rung must account for its delta across all six. They must reconcile: -(eliminated + rewritten) + generated + relocated + facade + added_apparatus == total LOC delta. The campaign document names five; the sixth was added by the controller after tools/campaign/ledger_rollup.py reported a +14,410 residual with no slot to put it in.",
+    "eliminated": "code deleted whose behaviour is no longer provided by anything. Requires: the behaviour it provided is either absent from the Behaviour Constitution, or explicitly released by a recorded product decision.",
+    "rewritten": "a behaviour that survives, re-expressed in fewer lines. The honest credit is (old_loc - new_loc), not old_loc. Both numbers must be named.",
+    "generated": "source produced by a generator from a spec. See generation_rules.",
+    "relocated": "code that moved. Credit is ZERO. This includes moving to another repo, another branch, a pack, an archive, a submodule, vendor/, or a sibling product.",
+    "facade": "compatibility shims, adapters and forwarders introduced to let old and new coexist. Counts as ADDED LOC and must reach zero before a rung closes.",
+    "added_apparatus": "instruments and records the campaign itself adds -- the semantic graph, the gates, the rung receipts, the campaign's own markdown. Belongs to no slice, so without a slot it surfaces as an unexplained residual and quietly flatters the reduction. Counts as ADDED LOC. It is NOT a facade: a facade is a compatibility shim that must reach zero before a rung closes, and apparatus is not that. It must still come out of the same budget, and its disposition at the endpoint must be stated."
+  }
+}

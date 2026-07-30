@@ -760,16 +760,12 @@ mod tests {
     use crate::resources::{FixedResourceProbe, ResourceSnapshot, ThermalState};
     use crate::scheduler::ResourceEnvelope;
     use hide_core::event::InMemoryEventLog;
-
     fn manager_with(launcher: Arc<dyn RunLauncher>, max_model: u32) -> FleetManager {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         let envelope = ResourceEnvelope {
             max_model_runs: max_model,
             ram_headroom_mb_min: 256,
             max_cpu_runs: 8,
-            // Tests drive ticks synchronously (microseconds apart), not at the ~1 Hz
-            // production cadence, so the spawn-rate EWMA would trip the breaker and
-            // stall admission. Lift the ceiling for deterministic scheduling tests.
             max_spawns_per_min: 1_000_000.0,
             ..Default::default()
         };
@@ -794,23 +790,19 @@ mod tests {
         FleetManager::new(log, FleetGovernor::new(envelope), probe, launcher, config)
             .with_fake_worktrees()
     }
-
     #[tokio::test]
     async fn schedule_tick_admits_and_completes_a_run() {
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 2);
         let job = AgentJob::new("do the thing", PriorityClass::Normal);
         let id = job.id.clone();
         mgr.enqueue(job).await.unwrap();
-
         let (plan, _launched) = mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
         assert_eq!(plan.admit, vec![id.clone()]);
-        // The run reports back; fold it.
         mgr.await_completions(1).await.unwrap();
         let folded = mgr.queue().get(&id).unwrap();
         assert_eq!(folded.status, JobStatus::Done);
         assert!(folded.run_id.is_some());
     }
-
     #[tokio::test]
     async fn emits_a5_events_through_the_lifecycle() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -843,12 +835,10 @@ mod tests {
             },
         )
         .with_fake_worktrees();
-
         let job = AgentJob::new("emit events", PriorityClass::Normal);
         mgr.enqueue(job).await.unwrap();
         mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
         mgr.await_completions(1).await.unwrap();
-
         let kinds: Vec<String> = log
             .scan(None, None, None)
             .await
@@ -864,17 +854,12 @@ mod tests {
             "job.completed",
             "workspace.released",
         ] {
-            assert!(
-                kinds.iter().any(|k| k == expected),
-                "missing event {expected}; got {kinds:?}"
-            );
+ assert!( kinds.iter().any(|k| k == expected), "missing event {expected}; got {kinds:?}" );
         }
         let _ = std::fs::remove_dir_all(&dir);
     }
-
     #[tokio::test]
     async fn model_pool_ceiling_bounds_concurrent_admissions() {
-        // max_model_runs = 1: enqueue 2 jobs; only one is admitted per tick.
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 1);
         for i in 0..2 {
             mgr.enqueue(AgentJob::new(format!("job {i}"), PriorityClass::Normal))
@@ -885,48 +870,25 @@ mod tests {
         assert_eq!(plan.admit.len(), 1, "model pool ceiling = 1");
         assert_eq!(plan.deferred.len(), 1);
     }
-
     #[tokio::test]
     async fn ports_round_trip_to_baseline_after_a_run_completes() {
-        // Finding #1: a completed run must return its leased ports to the pool.
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 2);
-        // Baseline: nothing leased.
         assert_eq!(mgr.worktrees().ports_leased_count(), 0);
         assert_eq!(mgr.occupancy().ports_leased, 0);
-
         let job = AgentJob::new("lease then release", PriorityClass::Normal);
         let id = job.id.clone();
         mgr.enqueue(job).await.unwrap();
-
         mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
-        // The run is live and holds `ports_per_run` ports (allocator truth).
-        assert_eq!(
-            mgr.worktrees().ports_leased_count(),
-            mgr.config.ports_per_run as usize,
-            "ports leased while the run is live"
-        );
-        assert_eq!(
-            mgr.occupancy().ports_leased,
-            mgr.config.ports_per_run as u32
-        );
-
-        // Fold the completion → release_run must return the ports.
+        assert_eq!(mgr.worktrees().ports_leased_count(), mgr.config.ports_per_run as usize);
+ assert_eq!( mgr.occupancy().ports_leased, mgr.config.ports_per_run as u32 );
         mgr.await_completions(1).await.unwrap();
         assert_eq!(mgr.queue().get(&id).unwrap().status, JobStatus::Done);
-        assert_eq!(
-            mgr.worktrees().ports_leased_count(),
-            0,
-            "ports returned to the pool — no leak after completion"
-        );
+        assert_eq!(mgr.worktrees().ports_leased_count(), 0);
         assert_eq!(mgr.occupancy().ports_leased, 0);
         assert_eq!(mgr.occupancy().worktrees, 0, "no live leases remain");
     }
-
     #[tokio::test]
     async fn ports_do_not_leak_under_sustained_scheduling() {
-        // Finding #1 under load: many sequential runs through a tiny pool must not
-        // exhaust it. With max_ports_leased ceilings unchanged, a leak would make
-        // later admissions fail; instead every cycle round-trips to baseline.
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 1);
         for i in 0..12 {
             let job = AgentJob::new(format!("run {i}"), PriorityClass::Normal);
@@ -934,23 +896,12 @@ mod tests {
             mgr.enqueue(job).await.unwrap();
             mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
             mgr.await_completions(1).await.unwrap();
-            assert_eq!(
-                mgr.queue().get(&id).unwrap().status,
-                JobStatus::Done,
-                "cycle {i} admitted + completed (pool not exhausted)"
-            );
-            assert_eq!(
-                mgr.worktrees().ports_leased_count(),
-                0,
-                "cycle {i}: pool back to baseline"
-            );
+            assert_eq!(mgr.queue().get(&id).unwrap().status, JobStatus::Done);
+ assert_eq!( mgr.worktrees().ports_leased_count(), 0, "cycle {i}: pool back to baseline" );
         }
     }
-
     #[tokio::test]
     async fn occupancy_reflects_allocator_truth_not_an_estimate() {
-        // Finding #2: occupancy.ports_leased / worktrees come from the allocator,
-        // so they exactly track real leases through the lifecycle.
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 2);
         for i in 0..2 {
             mgr.enqueue(AgentJob::new(format!("job {i}"), PriorityClass::Normal))
@@ -958,26 +909,18 @@ mod tests {
                 .unwrap();
         }
         mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
-
         let occ = mgr.occupancy();
-        // Two live model runs each hold ports_per_run ports → allocator truth.
         assert_eq!(occ.ports_leased, 2 * mgr.config.ports_per_run as u32);
-        assert_eq!(
-            occ.ports_leased,
-            mgr.worktrees().ports_leased_count() as u32
-        );
+ assert_eq!( occ.ports_leased, mgr.worktrees().ports_leased_count() as u32 );
         assert_eq!(occ.worktrees, 2);
         assert_eq!(occ.worktrees, mgr.worktrees().live_worktree_count() as u32);
-
         mgr.await_completions(2).await.unwrap();
         let occ = mgr.occupancy();
         assert_eq!(occ.ports_leased, 0);
         assert_eq!(occ.worktrees, 0);
     }
-
     #[tokio::test]
     async fn cpu_only_jobs_run_wider_than_model_pool() {
-        // max_model_runs = 1 but max_cpu_runs = 8: 3 CpuOnly shards all admit.
         let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 1);
         for i in 0..3 {
             let job = AgentJob::new(format!("shard {i}"), PriorityClass::Normal)
@@ -987,9 +930,6 @@ mod tests {
         let (plan, _launched) = mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
         assert_eq!(plan.admit.len(), 3, "cpu pool admits all three shards");
     }
-
-    /// Live entry: a multi-job fan-out driven through `run_to_quiescence` must
-    /// converge via the merge funnel (not by calling `integrate` directly).
     #[tokio::test]
     async fn fanout_converges_through_merge_funnel() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -1023,15 +963,12 @@ mod tests {
             },
         )
         .with_fake_worktrees();
-
         for i in 0..3 {
             let mut job = AgentJob::new(format!("part {i}"), PriorityClass::Normal);
             job.spec.pattern = Some("map_reduce".into());
             mgr.enqueue(job).await.unwrap();
         }
-
         mgr.run_to_quiescence(4, 8).await.unwrap();
-
         let events = log.scan(None, None, None).await.unwrap();
         let merge = events
             .iter()
@@ -1041,8 +978,6 @@ mod tests {
         assert_eq!(adopted.len(), 3, "all Done fan-out parts are adopted");
         let _ = std::fs::remove_dir_all(dir);
     }
-
-    /// Tournament pattern converges through TournamentSelector (merge.selected).
     #[tokio::test]
     async fn tournament_converges_through_selector() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -1076,14 +1011,12 @@ mod tests {
             },
         )
         .with_fake_worktrees();
-
         for i in 0..2 {
             let mut job = AgentJob::new(format!("attempt {i}"), PriorityClass::Normal);
             job.spec.pattern = Some("tournament".into());
             mgr.enqueue(job).await.unwrap();
         }
         mgr.run_to_quiescence(4, 8).await.unwrap();
-
         let events = log.scan(None, None, None).await.unwrap();
         let sel = events
             .iter()

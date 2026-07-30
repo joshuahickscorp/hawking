@@ -207,7 +207,6 @@ impl RunJournal {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn jsonl_checkpoints_filter_and_resume() {
         let dir = std::env::temp_dir().join(format!("hawking_ckpt_{}", hide_core::ids::now_ms()));
@@ -229,20 +228,14 @@ mod tests {
             content_hash: Some("h1".into()),
         })
         .unwrap();
-
-        // A different run's event must not bleed in.
         let mut other = RunJournal::new(RunId::from("run_b"), ledger.clone());
         other
             .record(CheckpointKind::State {
                 state: "Read".into(),
             })
             .unwrap();
-
         assert_eq!(ledger.events_for("run_a").unwrap().len(), 3);
-        assert_eq!(
-            ledger.last_state("run_a").unwrap().as_deref(),
-            Some("Fetch")
-        );
+ assert_eq!( ledger.last_state("run_a").unwrap().as_deref(), Some("Fetch") );
         assert!(ledger.fetched_hashes("run_a").unwrap().contains("h1"));
         let _ = std::fs::remove_dir_all(dir);
     }

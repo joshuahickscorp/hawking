@@ -218,7 +218,6 @@ mod tests {
     use hide_core::persistence::InMemoryBlobStore;
     use hide_core::types::Provenance;
     use std::sync::Arc;
-
     fn claim(id: &str, doc: &str, text: &str) -> Claim {
         Claim {
             id: id.to_string(),
@@ -235,7 +234,6 @@ mod tests {
             confidence: ConfidenceTier::Extracted,
         }
     }
-
     #[test]
     fn corroboration_requires_independent_origins() {
         let target = claim(
@@ -243,7 +241,6 @@ mod tests {
             "docA",
             "paged attention reduces kv cache memory waste",
         );
-        // Two peers from the SAME doc → only one independent origin.
         let peers = vec![
             target.clone(),
             claim(
@@ -255,8 +252,6 @@ mod tests {
         let v = AdversarialVerifier::verify(&target, &peers);
         assert_eq!(v.independent_sources, 0); // same origin as target excluded
         assert_eq!(v.status, ClaimStatus::SingleSource);
-
-        // Add a genuinely independent doc.
         let mut peers2 = peers;
         peers2.push(claim(
             "c2",
@@ -266,7 +261,6 @@ mod tests {
         let v2 = AdversarialVerifier::verify(&target, &peers2);
         assert_eq!(v2.independent_sources, 1);
     }
-
     #[test]
     fn antonym_pair_triggers_refutation() {
         let target = claim("c0", "docA", "the method improves throughput substantially");
@@ -279,19 +273,16 @@ mod tests {
         assert_eq!(v.status, ClaimStatus::Refuted);
         assert_eq!(v.refuting_sources, 1);
     }
-
     #[test]
     fn citation_recheck_detects_tamper() {
         let cas: DynBlobStore = Arc::new(InMemoryBlobStore::default());
         let bytes = b"reports 73% accuracy".to_vec();
         let (blob, hash) = cas::pin_evidence(&cas, bytes, None).unwrap();
-
         let mut good = claim("c0", "docA", "reports 73% accuracy on the benchmark");
         good.provenance.evidence_blob = Some(blob.clone());
         good.provenance.content_hash = Some(hash);
         let v = AdversarialVerifier::verify_with_cas(&good, &[], &cas).unwrap();
         assert_eq!(v.citation_check, CitationCheck::Intact);
-
         let mut bad = good.clone();
         bad.provenance.content_hash = Some("deadbeef".to_string());
         let vb = AdversarialVerifier::verify_with_cas(&bad, &[], &cas).unwrap();

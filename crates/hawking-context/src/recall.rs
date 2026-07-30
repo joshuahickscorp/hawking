@@ -126,14 +126,12 @@ pub fn decide_rollback(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn probe(id: &str, needle: &str) -> RecallProbe {
         RecallProbe {
             id: id.into(),
             needle: needle.into(),
         }
     }
-
     #[test]
     fn recall_counts_surviving_needles() {
         let probes = vec![
@@ -141,22 +139,18 @@ mod tests {
             probe("d1", "drop permit past retry"),
             probe("c1", "never block on the semaphore"),
         ];
-        // A summary that keeps two of three facts.
         let post = "Edited GUARD.RS to drop permit past retry; see notes.";
         let r = recall_at_k(&probes, post);
         assert!((r - 2.0 / 3.0).abs() < 1e-6, "got {r}");
     }
-
     #[test]
     fn empty_probes_is_full_recall() {
         assert_eq!(recall_at_k(&[], "anything"), 1.0);
     }
-
     #[test]
     fn needles_skip_trivia_and_dedupe() {
         let src = "fn acquire() {\n        drop(permit); // release the slot back to the pool\n}\n        drop(permit); // release the slot back to the pool\n";
         let n = needles_from(src, 8);
-        // The lone `}` / short lines are skipped; the duplicate content line is kept once.
         assert_eq!(n.len(), 2, "deduped + trivia-filtered: {n:?}");
         assert!(n.iter().any(|p| p.needle.contains("release the slot")));
         assert!(n.iter().all(|p| p.needle != "}"));

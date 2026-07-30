@@ -1,5 +1,4 @@
-//! Event Horizon Phase 8 — contextual-bandit router policy.
-//! UCB1 arm selection over router proposer slots.
+//! Contextual-bandit router policy (UCB1 arm selection over proposer slots).
 //! Additive: plan_bandit() is an alternate alongside the existing plan().
 //!
 //! Deliberately imports nothing from router.rs or governor.rs to avoid
@@ -134,7 +133,6 @@ impl BanditPolicy {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn make_policy(n: usize) -> BanditPolicy {
         let mut p = BanditPolicy::new();
         for _ in 0..n {
@@ -142,101 +140,57 @@ mod tests {
         }
         p
     }
-
-    /// Test 1: after warmup, high-reward arm wins.
-    ///
-    /// Arm 0 consistently rewarded 0.9, arm 1 rewarded 0.1.
-    /// After enough pulls to shrink the exploration bonus, arm 0 must win.
     #[test]
     fn high_reward_arm_wins_after_warmup() {
         let mut p = make_policy(2);
-
-        // Warm up both arms with many pulls to collapse the exploration bonus.
         for _ in 0..100 {
             p.update(0, 0.9);
             p.update(1, 0.1);
         }
-
         let candidates = vec![(0, 0.9), (1, 0.1)];
         let chosen = p.pick_ucb1(&candidates).expect("must return Some");
-        assert_eq!(
-            chosen, 0,
-            "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup"
-        );
+ assert_eq!( chosen, 0, "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup" );
     }
-
-    /// Test 2: a cold arm gets explored due to its large UCB bonus.
-    ///
-    /// Arm 0 has many pulls with moderate reward; arm 1 has zero pulls.
-    /// The cold arm's exploration bonus must dominate and it gets picked.
     #[test]
     fn cold_arm_gets_explored() {
         let mut p = make_policy(2);
-
-        // Warm arm 0 only.
         for _ in 0..50 {
             p.update(0, 0.7);
         }
-        // Arm 1 is cold (zero pulls).
-
         let candidates = vec![(0, 0.7), (1, 0.0)];
         let chosen = p.pick_ucb1(&candidates).expect("must return Some");
         assert_eq!(chosen, 1, "cold arm 1 should be explored over warmed arm 0");
     }
-
-    /// Test 3: empty candidate list returns None.
     #[test]
     fn empty_candidates_returns_none() {
         let p = make_policy(3);
         assert_eq!(p.pick_ucb1(&[]), None);
     }
-
-    /// Test 4: a single candidate is always chosen regardless of its stats.
     #[test]
     fn single_candidate_always_chosen() {
         let mut p = make_policy(1);
-        // Cold arm.
         assert_eq!(p.pick_ucb1(&[(0, 0.0)]), Some(0));
-        // Arm with pulls.
         p.update(0, 0.5);
         assert_eq!(p.pick_ucb1(&[(0, 0.5)]), Some(0));
     }
-
-    /// Test 5: mu() is 0.0 on a cold arm and correct after update.
     #[test]
     fn mu_is_zero_cold_and_correct_after_update() {
         let mut p = make_policy(2);
-
-        // Cold: both arms return 0.0.
         assert_eq!(p.mu(0), 0.0, "cold arm mu must be 0.0");
         assert_eq!(p.mu(1), 0.0, "cold arm mu must be 0.0");
-
-        // Out-of-bounds also 0.0.
         assert_eq!(p.mu(99), 0.0);
-
-        // After two updates: mu should equal the mean.
         p.update(0, 0.8);
         p.update(0, 0.4);
         let expected = (0.8 + 0.4) / 2.0;
         let got = p.mu(0);
-        assert!(
-            (got - expected).abs() < 1e-12,
-            "mu(0) = {got} expected {expected}"
-        );
-
-        // Arm 1 untouched.
+ assert!( (got - expected).abs() < 1e-12, "mu(0) = {got} expected {expected}" );
         assert_eq!(p.mu(1), 0.0);
     }
-
-    /// Bonus: out-of-bounds slot_idx in candidates returns None (safety gate).
     #[test]
     fn out_of_bounds_slot_returns_none() {
         let p = make_policy(2);
-        // slot_idx=5 is beyond the 2-arm policy.
         assert_eq!(p.pick_ucb1(&[(5, 0.5)]), None);
     }
-
-    /// Bonus: total pull counter increments and both arms' pulls accumulate.
     #[test]
     fn total_and_arm_pulls_tracked() {
         let mut p = make_policy(2);

@@ -281,7 +281,6 @@ fn mean_compaction_recall(events: &[CompactionEvent]) -> Option<f32> {
 mod tests {
     use super::*;
     use crate::manifest::{ContextManifest, SpanSignals};
-
     fn span(redundancy: f32, compacted: bool, tokens: usize) -> ContextSpan {
         use crate::manifest::{CompactedFrom, ContextSourceKind, PinState};
         use hide_core::types::Provenance;
@@ -315,7 +314,6 @@ mod tests {
             blob_ref: None,
         }
     }
-
     #[test]
     fn clean_when_empty() {
         let m = ContextManifest::new(4096);
@@ -323,7 +321,6 @@ mod tests {
         assert_eq!(r.severity, RotSeverity::Clean);
         assert!(!r.should_refresh);
     }
-
     #[test]
     fn critical_occupancy_forces_refresh() {
         let m = ContextManifest::new(4096);
@@ -332,7 +329,6 @@ mod tests {
         assert!(r.should_refresh);
         assert!(r.explanations.iter().any(|e| e.contains("occupancy")));
     }
-
     #[test]
     fn redundant_pack_is_degraded() {
         let mut m = ContextManifest::new(4096);
@@ -341,7 +337,6 @@ mod tests {
         assert!(r.severity >= RotSeverity::Degraded);
         assert!(r.signals.iter().any(|s| s.code.starts_with("redundant")));
     }
-
     #[test]
     fn soft_recall_is_critical() {
         let m = ContextManifest::new(4096);

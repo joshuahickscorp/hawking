@@ -178,7 +178,6 @@ mod tests {
     use hide_core::runtime::{
         ModelArchitecture, ModelDescriptor, ProviderCaps, RolePurpose, SamplerProfile,
     };
-
     fn role_with_lora(lora: bool) -> ModelRole {
         ModelRole {
             id: RoleId::new(),
@@ -203,7 +202,6 @@ mod tests {
             metadata: BTreeMap::new(),
         }
     }
-
     fn registry() -> AdapterRegistry {
         let mut r = AdapterRegistry::new();
         r.register(AdapterDescriptor {
@@ -226,14 +224,12 @@ mod tests {
         });
         r
     }
-
     #[test]
     fn no_lora_cap_means_empty_selection() {
         let r = registry();
         let sel = r.select(&role_with_lora(false), "edit_code", Some("rust"));
         assert!(sel.is_empty());
     }
-
     #[test]
     fn rust_edit_selects_language_and_personal() {
         let mut r = registry();
@@ -243,7 +239,6 @@ mod tests {
         assert_eq!(ids, vec!["rust", "personal"]);
         assert_eq!(sel.adapters[1].scale, 0.5);
     }
-
     #[test]
     fn task_adapter_takes_the_slot() {
         let r = registry();
@@ -251,7 +246,6 @@ mod tests {
         let ids: Vec<&str> = sel.adapters.iter().map(|a| a.id.as_str()).collect();
         assert_eq!(ids, vec!["commit-msg"]);
     }
-
     #[test]
     fn extension_mapping() {
         assert_eq!(language_for_extension("rs"), Some("rust"));

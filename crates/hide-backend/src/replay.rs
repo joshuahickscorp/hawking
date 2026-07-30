@@ -652,7 +652,6 @@ mod tests {
     };
     use hide_core::ids::{RunId, SessionId, ToolCallId};
     use hide_core::persistence::{InMemoryProjectionStore, ProjectionStore};
-
     #[tokio::test]
     async fn replay_rebuilds_and_persists_session_projection() {
         let events = Arc::new(InMemoryEventLog::new());
@@ -669,14 +668,9 @@ mod tests {
             ))
             .await
             .unwrap();
-
         let replay = BackendReplayService::new(events, projections.clone());
         let projection = replay.rebuild_session(session.clone()).await.unwrap();
-
-        assert!(projection
-            .transcript
-            .iter()
-            .any(|line| line.contains("building plan")));
+ assert!(projection .transcript .iter() .any(|line| line.contains("building plan")));
         assert!(
             projections.latest_projection(&session).unwrap().unwrap().1["transcript"]
                 .as_array()
@@ -685,7 +679,6 @@ mod tests {
                 == 1
         );
     }
-
     #[tokio::test]
     async fn replay_maps_tool_results_to_ui_events() {
         let events = Arc::new(InMemoryEventLog::new());
@@ -705,10 +698,8 @@ mod tests {
             ))
             .await
             .unwrap();
-
         let replay = BackendReplayService::new(events, projections);
         let ui_events = replay.ui_events(Some(session), None, None).await.unwrap();
-
         assert_eq!(ui_events.len(), 1);
         assert!(matches!(
             &ui_events[0].kind,
@@ -716,10 +707,6 @@ mod tests {
                 if id == call_id.as_str() && message == "done"
         ));
     }
-
-    /// The timeline addresses a boundary with the id a step CARRIES, so that id has to be the kind
-    /// `seq_of_event` resolves. It used to be handed a `ToolCallId`, which resolves to `NotFound`,
-    /// which is why `fork_session` and `checkpoint_create` always failed on a live host.
     #[tokio::test]
     async fn tool_progress_carries_the_event_id_the_boundary_resolver_accepts() {
         let events = Arc::new(InMemoryEventLog::new());
@@ -739,7 +726,6 @@ mod tests {
             ))
             .await
             .unwrap();
-
         let replay = BackendReplayService::new(events, projections);
         let ui = replay
             .ui_events(Some(session.clone()), None, None)
@@ -749,20 +735,12 @@ mod tests {
             panic!("expected tool progress");
         };
         let event_id = event_id.as_deref().expect("a recorded step carries its event id");
-        assert_eq!(
-            replay
-                .seq_of_event(session.clone(), &hide_core::ids::EventId::from(event_id))
-                .await
-                .unwrap(),
-            ui[0].seq
-        );
-        // The tool call id is NOT resolvable, which is the defect this guards.
+        assert_eq!(replay .seq_of_event(session.clone(), &hide_core::ids::EventId::from(event_id)) .await .unwrap(), ui[0].seq);
         assert!(replay
             .seq_of_event(session, &hide_core::ids::EventId::from(call_id.as_str()))
             .await
             .is_err());
     }
-
     async fn seed_three_phases(events: &Arc<InMemoryEventLog>, session: &SessionId) -> RunId {
         let run = RunId::new();
         for phase in ["plan", "act", "verify"] {
@@ -780,7 +758,6 @@ mod tests {
         }
         run
     }
-
     #[tokio::test]
     async fn scrub_to_event_rebuilds_prefix_only() {
         let events = Arc::new(InMemoryEventLog::new());
@@ -788,18 +765,13 @@ mod tests {
         let session = SessionId::new();
         seed_three_phases(&events, &session).await;
         let replay = BackendReplayService::new(events.clone(), projections);
-
-        // Full rebuild sees all three phase lines.
         let full = replay.rebuild_session(session.clone()).await.unwrap();
         assert_eq!(full.transcript.len(), 3);
-
-        // Scrub to seq 2 sees only the first two.
         let scrubbed = replay.scrub_to_event(session.clone(), 2).await.unwrap();
         assert_eq!(scrubbed.transcript.len(), 2);
         assert!(scrubbed.transcript.iter().any(|l| l.contains("act")));
         assert!(!scrubbed.transcript.iter().any(|l| l.contains("verify")));
     }
-
     #[tokio::test]
     async fn fork_session_branches_a_new_lineage_from_prefix() {
         let events = Arc::new(InMemoryEventLog::new());
@@ -807,36 +779,25 @@ mod tests {
         let session = SessionId::new();
         seed_three_phases(&events, &session).await;
         let replay = BackendReplayService::new(events.clone(), projections);
-
-        // Fork at seq 2: the new session carries the first two events only.
         let (forked_id, forked) = replay.fork_session(session.clone(), 2).await.unwrap();
         assert_ne!(forked_id, session);
         assert_eq!(forked.transcript.len(), 2);
-
-        // The original session is untouched (still 3 events).
         let original = events
             .scan(Some(session.clone()), None, None)
             .await
             .unwrap();
         assert_eq!(original.len(), 3);
-        // The fork is a separate lineage of 2 events under the new session id.
         let branch = events.scan(Some(forked_id), None, None).await.unwrap();
         assert_eq!(branch.len(), 2);
     }
-
     #[tokio::test]
     async fn fork_is_independent_appending_to_fork_does_not_touch_source() {
-        // Pin the core fork guarantee: after a fork, appending to the fork's
-        // lineage never appears in the source (and vice versa). The source stays
-        // exactly as it was; the fork carries the prefix + its own new event.
         let events = Arc::new(InMemoryEventLog::new());
         let projections = Arc::new(InMemoryProjectionStore::default());
         let session = SessionId::new();
         seed_three_phases(&events, &session).await;
         let replay = BackendReplayService::new(events.clone(), projections);
-
         let (forked_id, _) = replay.fork_session(session.clone(), 2).await.unwrap();
-        // Append a NEW event to the fork only.
         events
             .append(NewEvent::system(
                 forked_id.clone(),
@@ -845,31 +806,19 @@ mod tests {
             ))
             .await
             .unwrap();
-
-        // Source is untouched: still exactly its 3 original events, none carrying
-        // the fork-only note.
         let source = events.scan(Some(session), None, None).await.unwrap();
         assert_eq!(source.len(), 3, "source is unchanged by a fork append");
-        assert!(
-            !source.iter().any(|e| e.kind == "agent.message"),
-            "the fork-only append must not leak into the source"
-        );
-        // Fork now has the 2 prefix events + its own append = 3, independent.
+        assert!(!source.iter().any(|e| e.kind == "agent.message"));
         let fork = events.scan(Some(forked_id), None, None).await.unwrap();
         assert_eq!(fork.len(), 3, "the fork carries prefix + its own append");
         assert!(fork.iter().any(|e| e.kind == "agent.message"));
     }
-
-    /// Seed two sessions with distinct tokens (ZZALPHA / ZZBETA) across item
-    /// kinds (submit_turn, agent.message, tool.result). Returns `(session_a,
-    /// session_b, appended_events)` so tests can assert exact event ids.
     async fn seed_search_corpus(
         events: &Arc<InMemoryEventLog>,
     ) -> (SessionId, SessionId, Vec<Event>) {
         let a = SessionId::new();
         let b = SessionId::new();
         let mut appended = Vec::new();
-        // Session A: user + assistant + tool, all carrying ZZALPHA.
         appended.push(
             events
                 .append(NewEvent::system(
@@ -908,7 +857,6 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        // Session B: user + tool, all carrying ZZBETA.
         appended.push(
             events
                 .append(NewEvent::system(
@@ -939,57 +887,34 @@ mod tests {
         );
         (a, b, appended)
     }
-
     #[tokio::test]
     async fn search_literal_finds_only_matching_items_with_session_event_snippet() {
         let events = Arc::new(InMemoryEventLog::new());
         let projections = Arc::new(InMemoryProjectionStore::default());
         let (a, _b, seeded) = seed_search_corpus(&events).await;
         let replay = BackendReplayService::new(events, projections);
-
         let hits = replay
             .search_transcript(&TranscriptQuery::literal("ZZALPHA"))
             .await
             .unwrap();
-        // Exactly the three session-A items carry ZZALPHA; no session-B item does.
         assert_eq!(hits.len(), 3, "only the ZZALPHA items match");
-        assert!(
-            hits.iter().all(|h| h.session_id == a),
-            "every hit is in session A"
-        );
-        // Deterministic order: ascending by seq (the log's total order).
-        assert!(
-            hits.windows(2).all(|w| w[0].seq < w[1].seq),
-            "hits ranked by ascending seq"
-        );
-        // Each hit carries the right event id + kind + a snippet with the token.
+ assert!( hits.iter().all(|h| h.session_id == a), "every hit is in session A" );
+ assert!( hits.windows(2).all(|w| w[0].seq < w[1].seq), "hits ranked by ascending seq" );
         let seeded_a: Vec<&Event> = seeded.iter().filter(|e| e.session_id == a).collect();
         for (hit, ev) in hits.iter().zip(seeded_a.iter()) {
             assert_eq!(hit.event_id, ev.id, "hit carries the source event id");
             assert_eq!(hit.kind, ev.kind);
-            assert!(
-                hit.snippet.contains("ZZALPHA"),
-                "snippet quotes the match: {}",
-                hit.snippet
-            );
+ assert!( hit.snippet.contains("ZZALPHA"), "snippet quotes the match: {}", hit.snippet );
         }
-        // Roles are surfaced (user / assistant / tool across the three items).
         let roles: Vec<Option<&str>> = hits.iter().map(|h| h.role.as_deref()).collect();
-        assert_eq!(
-            roles,
-            vec![Some("user"), Some("assistant"), Some("tool")],
-            "each item's role is surfaced in seq order"
-        );
+        assert_eq!(roles, vec![Some("user"), Some("assistant"), Some("tool")]);
     }
-
     #[tokio::test]
     async fn search_kind_and_session_filters_narrow_and_scope() {
         let events = Arc::new(InMemoryEventLog::new());
         let projections = Arc::new(InMemoryProjectionStore::default());
         let (a, b, _seeded) = seed_search_corpus(&events).await;
         let replay = BackendReplayService::new(events, projections);
-
-        // Kind filter narrows: ZZALPHA + tool.result -> just the one tool result.
         let tool_hits = replay
             .search_transcript(&TranscriptQuery::literal("ZZALPHA").with_kind("tool.result"))
             .await
@@ -997,22 +922,17 @@ mod tests {
         assert_eq!(tool_hits.len(), 1, "kind filter narrows to the tool result");
         assert_eq!(tool_hits[0].kind, "tool.result");
         assert_eq!(tool_hits[0].role.as_deref(), Some("tool"));
-
-        // Session filter scopes: ZZBETA lives only in session B.
         let b_hits = replay
             .search_transcript(&TranscriptQuery::literal("ZZBETA").in_session(b.clone()))
             .await
             .unwrap();
         assert_eq!(b_hits.len(), 2, "both ZZBETA items are in session B");
         assert!(b_hits.iter().all(|h| h.session_id == b));
-        // ZZBETA scoped to session A finds nothing (scope is a hard boundary).
         let none = replay
             .search_transcript(&TranscriptQuery::literal("ZZBETA").in_session(a))
             .await
             .unwrap();
         assert!(none.is_empty(), "ZZBETA is absent from session A");
-
-        // Role filter: only user items across all sessions (one per session).
         let user_hits = replay
             .search_transcript(&TranscriptQuery {
                 role: Some("user".to_string()),
@@ -1023,28 +943,19 @@ mod tests {
         assert_eq!(user_hits.len(), 2, "one user item per session");
         assert!(user_hits.iter().all(|h| h.role.as_deref() == Some("user")));
     }
-
     #[tokio::test]
     async fn search_empty_query_with_kind_filter_and_bound_are_deterministic() {
         let events = Arc::new(InMemoryEventLog::new());
         let projections = Arc::new(InMemoryProjectionStore::default());
         let (_a, _b, _seeded) = seed_search_corpus(&events).await;
         let replay = BackendReplayService::new(events, projections);
-
-        // Empty query + kind filter still works: every tool.result item (both
-        // sessions), no substring required.
         let all_tools = replay
             .search_transcript(&TranscriptQuery::default().with_kind("tool.result"))
             .await
             .unwrap();
         assert_eq!(all_tools.len(), 2, "empty query returns all tool results");
         assert!(all_tools.iter().all(|h| h.kind == "tool.result"));
-        assert!(
-            all_tools.iter().all(|h| !h.snippet.is_empty()),
-            "an empty-query hit still carries a leading snippet"
-        );
-
-        // Bounded: a broad token ('ZZ' matches every seeded item) capped at 1.
+        assert!(all_tools.iter().all(|h| !h.snippet.is_empty()));
         let bounded = replay
             .search_transcript(&TranscriptQuery {
                 text: "ZZ".to_string(),
@@ -1054,19 +965,12 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(bounded.len(), 1, "limit bounds the result set");
-
-        // Deterministic: the same query twice yields identical results.
         let q = TranscriptQuery::literal("ZZ");
         let first = replay.search_transcript(&q).await.unwrap();
         let second = replay.search_transcript(&q).await.unwrap();
         assert_eq!(first, second, "search is deterministic across runs");
         assert_eq!(first.len(), 5, "'ZZ' matches all five seeded items");
     }
-
-    /// The catch-up GET runs on every connect, so a replayed approval request must arrive in the
-    /// SAME shape the live bus publishes: undotted `kind`, run_id/step_id at the top level. The
-    /// regression this locks: the dotted `approval.requested` fell through to the generic Custom
-    /// arm, the frontend router matched nothing, and a paused turn stayed invisible after a drop.
     #[tokio::test]
     async fn replayed_approval_request_matches_the_live_shape() {
         let events = Arc::new(InMemoryEventLog::new());

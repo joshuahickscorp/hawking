@@ -69,12 +69,10 @@ pub(crate) fn extract_after(s: &str, marker: &str) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn extract_after_handles_assignment() {
         assert_eq!(extract_after("foo = 42.5 bar", "foo"), Some(42.5));
     }
-
     #[test]
     fn extract_after_handles_paren() {
         let s = "eval time = 1234.5 ms / 256 runs (123.45 tokens per second)";
@@ -83,7 +81,6 @@ mod tests {
             Some(123.45)
         );
     }
-
     #[test]
     fn extract_after_returns_none_for_missing() {
         assert_eq!(extract_after("nothing here", "missing"), None);

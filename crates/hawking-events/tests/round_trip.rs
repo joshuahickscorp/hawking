@@ -1,11 +1,8 @@
-//! Round-trip + adapter-identity tests for the canonical event model.
-
 use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::ids::{with_deterministic_ids, SessionId};
 use hide_protocol::ids::{ItemId, ToolCallId, ToolId};
 use hide_protocol::item::{Item, ItemKind, ToolCall, ToolResult};
 use serde_json::json;
-
 use hawking_events::adapters::{
     item_to_canonical, seed_event_to_canonical, stream_event_to_canonical, ui_event_to_canonical,
     SeedFsmEvent, StreamEventView,
@@ -14,7 +11,6 @@ use hawking_events::{
     all_categories, kind_for_category, CanonicalEvent, Category, ContentVerification, NewCanonical,
     Subsystem, COMPETING_MODELS,
 };
-
 #[test]
 fn round_trip_every_category() {
     with_deterministic_ids(100, || {
@@ -37,7 +33,6 @@ fn round_trip_every_category() {
             assert!(!c.id().as_str().is_empty());
             assert_eq!(c.subsystem, Subsystem::Bridge);
             assert_eq!(c.verification, ContentVerification::TargetVerified);
-
             let again = c.round_trip_json().expect("serde round-trip");
             assert_eq!(again.category, *cat);
             assert_eq!(again.kind(), c.kind());
@@ -48,7 +43,6 @@ fn round_trip_every_category() {
         assert_eq!(all_categories().len(), 24);
     });
 }
-
 #[test]
 fn seventeen_you_events_round_trip_on_same_bus() {
     use hawking_events::{ProducingSurface, YOU_EVENTS};
@@ -70,28 +64,20 @@ fn seventeen_you_events_round_trip_on_same_bus() {
             assert!(!c.id().as_str().is_empty());
             assert_eq!(c.seq(), (i as u64) + 1);
             assert_eq!(c.session_id(), &ses);
-
             let again = c.round_trip_json().expect("serde round-trip");
             assert_eq!(again.kind(), spec.kind);
             assert_eq!(again.surface, ProducingSurface::You);
             assert_eq!(again.verification, spec.default_verification);
-            // Provisional events must remain visibly provisional after round-trip.
             if spec.default_verification == ContentVerification::Provisional {
                 assert_eq!(again.verification, ContentVerification::Provisional);
             }
         }
     });
 }
-
 #[test]
 fn deprecated_adapters_produce_identical_canonical_events() {
-    // "Identical" means: same category, kind, payload body (modulo envelope),
-    // and same seq/session when the source carries them. Two paths that describe
-    // the same logical tool-call must not disagree on the canonical kind.
     with_deterministic_ids(200, || {
         let ses = SessionId::from("ses_adapt");
-
-        // Path A: UiEvent tool progress
         let ui = UiEvent {
             seq: 11,
             session_id: Some(ses.clone()),
@@ -102,8 +88,6 @@ fn deprecated_adapters_produce_identical_canonical_events() {
             },
         };
         let from_ui = ui_event_to_canonical(&ui, ses.clone());
-
-        // Path B: protocol Item tool call with same call_id
         let item = Item::new(
             ItemId::from("itm_tc"),
             11,
@@ -114,15 +98,12 @@ fn deprecated_adapters_produce_identical_canonical_events() {
             }),
         );
         let from_item = item_to_canonical(ses.clone(), &item);
-
         assert_eq!(from_ui.category, Category::Tools);
         assert_eq!(from_item.category, Category::Tools);
         assert_eq!(from_ui.kind(), "tool.call");
         assert_eq!(from_item.kind(), "tool.call");
         assert_eq!(from_ui.seq(), from_item.seq());
         assert_eq!(from_ui.session_id(), from_item.session_id());
-
-        // Stream token vs a text UiEvent: both → model.token under Text
         let stream = stream_event_to_canonical(
             ses.clone(),
             12,
@@ -146,8 +127,6 @@ fn deprecated_adapters_produce_identical_canonical_events() {
         assert_eq!(stream.category, ui_tok.category);
         assert_eq!(stream.kind(), ui_tok.kind());
         assert_eq!(stream.event.payload["text"], ui_tok.event.payload["text"]);
-
-        // Seed FSM adapter is deterministic for the same transition.
         let a = seed_event_to_canonical(ses.clone(), 1, "idle", SeedFsmEvent::Prepare, "prepared");
         let b = seed_event_to_canonical(ses, 1, "idle", SeedFsmEvent::Prepare, "prepared");
         assert_eq!(a.kind(), b.kind());
@@ -155,7 +134,6 @@ fn deprecated_adapters_produce_identical_canonical_events() {
         assert_eq!(a.category, b.category);
     });
 }
-
 #[test]
 fn tool_result_item_is_observation_class() {
     with_deterministic_ids(300, || {
@@ -174,17 +152,10 @@ fn tool_result_item_is_observation_class() {
         assert!(c.event.is_observation());
     });
 }
-
 #[test]
 fn six_competing_models_enumerated() {
     assert_eq!(COMPETING_MODELS.len(), 6);
-    assert_eq!(
-        COMPETING_MODELS
-            .iter()
-            .filter(|m| m.name.contains("Event") || m.name.contains("Item") || m.name.contains("ledger"))
-            .count(),
-        6
-    );
+    assert_eq!(COMPETING_MODELS .iter() .filter(|m| m.name.contains("Event") || m.name.contains("Item") || m.name.contains("ledger")) .count(), 6);
     let canonical = COMPETING_MODELS
         .iter()
         .filter(|m| matches!(m.status, hawking_events::MigrationStatus::Canonical))

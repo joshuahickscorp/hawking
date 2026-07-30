@@ -74,7 +74,6 @@ impl InterruptHub {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn abort_supersedes_pending_pause() {
         let hub = InterruptHub::default();
@@ -83,7 +82,6 @@ mod tests {
         hub.signal(run.clone(), Interrupt::Abort);
         assert!(matches!(hub.take(&run), Some(Interrupt::Abort)));
     }
-
     #[test]
     fn pause_does_not_downgrade_an_abort() {
         let hub = InterruptHub::default();
@@ -92,7 +90,6 @@ mod tests {
         hub.signal(run.clone(), Interrupt::Pause);
         assert!(matches!(hub.take(&run), Some(Interrupt::Abort)));
     }
-
     #[test]
     fn resume_clears_a_buffered_pause() {
         let hub = InterruptHub::default();
@@ -101,7 +98,6 @@ mod tests {
         hub.clear(&run);
         assert!(hub.take(&run).is_none());
     }
-
     #[tokio::test]
     async fn drain_into_kernel_forwards_the_signal() {
         use hide_core::event::InMemoryEventLog;
@@ -113,7 +109,6 @@ mod tests {
         hub.signal(run.clone(), Interrupt::Abort);
         let forwarded = hub.drain_into_kernel(&run, &kernel);
         assert!(matches!(forwarded, Some(Interrupt::Abort)));
-        // Mailbox is now empty.
         assert!(!hub.is_pending(&run));
     }
 }

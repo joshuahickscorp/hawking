@@ -124,17 +124,14 @@ mod tests {
     use super::*;
     use hawking_core::{EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent};
     use std::path::Path;
-
     struct FakeEngine {
         calls: Vec<(Vec<u32>, Vec<usize>)>,
     }
-
     impl FakeEngine {
         fn new() -> Self {
             Self { calls: Vec::new() }
         }
     }
-
     impl Engine for FakeEngine {
         fn load(_weights: &Path, _config: EngineConfig) -> hawking_core::Result<Self>
         where
@@ -142,7 +139,6 @@ mod tests {
         {
             Ok(Self::new())
         }
-
         fn generate(
             &mut self,
             _req: GenerateRequest,
@@ -153,23 +149,18 @@ mod tests {
                 ..Default::default()
             })
         }
-
         fn model_id(&self) -> &str {
             "fake"
         }
-
         fn encode_prompt_for_batch(&self, prompt: &str) -> hawking_core::Result<Vec<u32>> {
             Ok(prompt.bytes().map(u32::from).collect())
         }
-
         fn decode_token_for_batch(&self, token: u32) -> hawking_core::Result<String> {
             Ok(format!("<{token}>"))
         }
-
         fn eos_id_for_batch(&self) -> Option<u32> {
             Some(2)
         }
-
         fn forward_tokens_for_test(
             &mut self,
             tokens: &[u32],
@@ -177,7 +168,6 @@ mod tests {
         ) -> hawking_core::Result<Vec<Vec<f32>>> {
             self.forward_tokens_batched(tokens, positions)
         }
-
         fn forward_tokens_batched(
             &mut self,
             tokens: &[u32],
@@ -194,7 +184,6 @@ mod tests {
                 .collect())
         }
     }
-
     fn req(max_new_tokens: usize) -> GenerateRequest {
         GenerateRequest {
             prompt: "x".into(),
@@ -209,7 +198,6 @@ mod tests {
             json_mode: false,
         }
     }
-
     #[test]
     fn decode_ready_once_batches_tokens_and_applies_outputs() {
         let mut driver = BatchDriver::new(4);
@@ -219,11 +207,9 @@ mod tests {
             assert!(driver.scheduler.mark_prefill_complete(slot_id));
         }
         let mut engine = FakeEngine::new();
-
         let out = driver
             .decode_ready_once(&mut engine, 4)
             .expect("decode once");
-
         assert_eq!(engine.calls, vec![(vec![10, 20], vec![1, 1])]);
         assert_eq!(
             out,
@@ -243,12 +229,8 @@ mod tests {
             ]
         );
         assert_eq!(driver.scheduler.slots[0].last_token, Some(1));
-        assert_eq!(
-            driver.scheduler.slots[1].state,
-            crate::batch::SlotState::Finishing
-        );
+ assert_eq!( driver.scheduler.slots[1].state, crate::batch::SlotState::Finishing );
     }
-
     #[test]
     fn decode_ready_once_no_ready_slots_is_noop() {
         let mut driver = BatchDriver::new(2);
@@ -259,7 +241,6 @@ mod tests {
         assert!(out.is_empty());
         assert!(engine.calls.is_empty());
     }
-
     #[test]
     fn admit_tokenizes_prompt_through_engine() {
         let mut driver = BatchDriver::new(1);
@@ -268,12 +249,8 @@ mod tests {
             .admit(&engine, req(3))
             .expect("admit result")
             .expect("slot id");
-
         assert_eq!(slot_id, 0);
         assert_eq!(driver.scheduler.slots[0].prompt_ids, vec![b'x' as u32]);
-        assert_eq!(
-            driver.scheduler.slots[0].state,
-            crate::batch::SlotState::Prefilling
-        );
+ assert_eq!( driver.scheduler.slots[0].state, crate::batch::SlotState::Prefilling );
     }
 }

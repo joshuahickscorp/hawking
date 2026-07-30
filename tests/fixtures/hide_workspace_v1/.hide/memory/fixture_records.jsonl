@@ -1,0 +1,2 @@
+{"id": "mem_write_001", "class": "episodic", "status": "active", "text": "User prefers concise answers in YOU lens.", "created_ms": 1720000000400, "session_id": "01HSESSIONYOU00000000000000", "operation": "write"}
+{"id": "mem_forget_001", "class": "episodic", "status": "forgotten", "text": "Transient scratch thought to be forgotten.", "created_ms": 1720000000410, "forgotten_ms": 1720000000420, "session_id": "01HSESSIONYOU00000000000000", "operation": "forget", "forgotten": true}

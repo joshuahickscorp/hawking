@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.recomposition.programme_verdict.v1",
+  "programme": "3 — runtime semantic graph",
+  "question": "Jaccard below 0.11 proved the model families are not text copies. It did not prove they need separate full executors. Can one LayerOp IR express a dense transformer and a recurrent state model?",
+  "verdict": "GRAPH_REJECTED",
+  "measured": {
+    "ir_cost_loc": 2250,
+    "executor_loc_deleted": 480,
+    "net_loc": 1770,
+    "functions_before": 154,
+    "functions_after": 170,
+    "predicted_perf_delta_pct": 1,
+    "waits_per_token": "unchanged",
+    "command_buffers_per_token": "unchanged, and must remain 1",
+    "bit_exact_argmax": "not_provable"
+  },
+  "why_rejected": "It is the exact failure the campaign document names: indirection added without executor code deleted. The IR costs 2,250 lines to delete 480, functions rise from 154 to 170, and bit-exactness on argmax and top-k cannot be proven through the lowering. A graph that grows the tree and cannot guarantee the discrete decisions is not a condensation, whatever it does to conceptual tidiness.",
+  "first_precise_behaviour_contract": "Dual sequence-mixer with dual state layout under identity-lowering: WKV-7's fixed per-head S state and token-shift cannot share one executable LayerOp core with a transformer's growing KV cache plus RoPE plus MHA while remaining bit-exact on argmax and top-k, holding one command buffer per token, and being net-negative in LOC.",
+  "irreducible_operators": {
+    "qwen_dense": [
+      {"op": "MhaDecode + KvAppend + Rope", "why": "growing KV cache, GQA, RoPE and QKV bias are not expressible as a WKV recurrence"},
+      {"op": "QuantGemvMatrix", "why": "61 kernel calls across 19 Q4_K variants in the greedy TCB path, bit-identity bound"},
+      {"op": "SwiGluPair + AddRmsNormFused", "why": "fusion boundaries already tuned for single-command-buffer encode"}
+    ],
+    "rwkv7": [
+      {"op": "Wkv7Decode", "why": "per-head fixed S[hs,hs] recurrence, O(1) state, no KV, no RoPE"},
+      {"op": "TokenShiftLerp", "why": "previous-token shift state is not a KV slot; fresh-flag semantics differ"},
+      {"op": "ChannelMix ReluSq + LoRA", "why": "MLP and time-mix substructure do not match the SwiGLU transformer shape"}
+    ]
+  },
+  "significance": "This settles the question both architecture scouts independently flagged as their first blocker, and it settles it against unification. The families are not merely different in source text -- they are different in state layout and sequence mixing, which is a semantic difference the previous jaccard measurement could not see and this analysis can. Programme 3 is closed.",
+  "lane_behaviour": "Correct. It was instructed to reject its own design if the graph added indirection without deleting executors, and it did exactly that rather than reporting a conceptual win."
+}

@@ -454,13 +454,13 @@ describe("keyboard and palette parity", () => {
   });
 
   it("binds the chord the chat menus advertise for a side chat", () => {
-    expect(read("surfaces/chat/actions.ts")).toContain('shortcut: "Mod+Shift+N"');
+    expect(read("surfaces/chat_actions.ts")).toContain('shortcut: "Mod+Shift+N"');
     expect(boundShortcuts().find((b) => b.id === "create_side_chat")?.shortcut).toBe("Mod+Shift+N");
   });
 
   it("handles Mod+/ in the composer the courtyard tells the user to steer from", () => {
-    expect(read("surfaces/home/Home.tsx")).toContain("Steer this run from the composer with Mod+/");
-    expect(read("surfaces/home/HomeComposer.tsx")).toContain('e.key === "/" && (e.metaKey || e.ctrlKey)');
+    expect(read("surfaces/home_Home.tsx")).toContain("Steer this run from the composer with Mod+/");
+    expect(read("surfaces/home_HomeComposer.tsx")).toContain('e.key === "/" && (e.metaKey || e.ctrlKey)');
   });
 
   it("gives the five conversation side panels a palette path", () => {
@@ -494,7 +494,7 @@ describe("keyboard and palette parity", () => {
     const app = read("App.tsx");
     expect(app).toContain('SHELL_COMMANDS.filter((c) => hasConversation || !c.id.startsWith("panel."))');
     expect(app).toContain("useStore(hasSessionActivity)");
-    expect(read("surfaces/home/Home.tsx")).toContain("useStore(hasSessionActivity)");
+    expect(read("surfaces/home_Home.tsx")).toContain("useStore(hasSessionActivity)");
     const base = useStore.getState();
     expect(hasSessionActivity({ ...base, messages: [], tools: [] })).toBe(false);
     expect(
@@ -507,7 +507,7 @@ describe("keyboard and palette parity", () => {
     for (const id of ["toggle.chat", "toggle.float", "toggle.panel", "toggle.sidebar"])
       expect(app).toMatch(new RegExp(`"${id}": inCode\\(`));
     expect(read("shell/Toolbar.tsx")).toContain('title={`Settings${chord("open.settings")}`}');
-    expect(read("surfaces/home/Home.tsx")).toContain("title={`Settings${settingsChord()}`}");
+    expect(read("surfaces/home_Home.tsx")).toContain("title={`Settings${settingsChord()}`}");
   });
 
   it("renders the Settings keyboard map from the catalog, with no second hand-written table", () => {
@@ -544,7 +544,8 @@ describe("held acks are never read as done", () => {
     for (const file of files) {
       const src = readFileSync(file, "utf8");
       const dispatches = heldCapable.filter((id) => src.includes(`"${id}"`));
-      if (!dispatches.length || /\/(wire|store|ipc)\.ts$/.test(file)) continue;
+      // wire_types.ts is pure Intent/UiEvent type projection (no dispatch UI).
+      if (!dispatches.length || /\/(wire|wire_types|store|ipc)\.ts$/.test(file)) continue;
       checked++;
       expect(READS_STATE.test(src), `${file} dispatches ${dispatches.join(", ")} without reading the held state`).toBe(
         true,
@@ -554,7 +555,7 @@ describe("held acks are never read as done", () => {
   });
 
   it("does not flip diff hunks or print done on a hold", () => {
-    const e = read("surfaces/ide/Editor.tsx");
+    const e = read("surfaces/ide_Editor.tsx");
     expect(e.indexOf('state === "held"')).toBeLessThan(e.indexOf("${spec.label}: done"));
     expect(e).toContain("heldNote(spec.label)");
   });

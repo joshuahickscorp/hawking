@@ -121,7 +121,6 @@ pub fn stream_event_to_canonical(
 mod tests {
     use super::*;
     use hide_core::ids::with_deterministic_ids;
-
     #[test]
     fn token_and_done_project_to_distinct_categories() {
         with_deterministic_ids(10, || {
@@ -138,7 +137,6 @@ mod tests {
             assert_eq!(tok.category, Category::Text);
             assert_eq!(tok.kind(), "model.token");
             assert_eq!(tok.event.payload["text"], "hi");
-
             let done = stream_event_to_canonical(
                 ses,
                 2,

@@ -227,51 +227,35 @@ fn map_refuse(e: hawking_speculate::durable::DurableSinkError) -> HideError {
 mod tests {
     use super::*;
     use hawking_speculate::{DraftTokenId, DualKv, TargetVerification};
-
     #[test]
     fn host_sinks_accept_verified_only_path() {
         let gate = TargetVerification::gate();
         let mut sinks = HostDurableSinks::fixture(SessionId::from("sess-spec-safe"));
         let draft = DraftTokenId::id(5);
         let verified = gate.try_promote(draft, 5).expect("match");
-        // All five sinks.
         DurableTokenSink::emit_canonical_event(&mut sinks, verified).unwrap();
         DurableTokenSink::write_memory(&mut sinks, verified).unwrap();
         DurableTokenSink::dispatch_tool(&mut sinks, verified).unwrap();
         DurableTokenSink::edit_file(&mut sinks, verified).unwrap();
         DurableTokenSink::final_output(&mut sinks, verified).unwrap();
         assert_eq!(sinks.recorded().len(), 5);
-        // Rejected draft never recorded.
         assert!(gate.try_promote(DraftTokenId::id(1), 2).is_err());
         assert_eq!(sinks.recorded().len(), 5);
     }
-
     #[test]
     fn host_honours_every_suspension_boundary() {
         for point in HostDurableSinks::policy() {
             let permit = HostDurableSinks::on_boundary(point.boundary);
             match point.action {
                 SuspensionAction::Suspend | SuspensionAction::FlushThenContinue => {
-                    assert!(
-                        !permit.may_propose(),
-                        "{:?} must suspend proposal",
-                        point.boundary
-                    );
+ assert!( !permit.may_propose(), "{:?} must suspend proposal", point.boundary );
                 }
                 SuspensionAction::Constrain => {
-                    assert!(
-                        matches!(
-                            permit,
-                            SpeculationPermit::Constrained { boundary } if boundary == point.boundary
-                        ),
-                        "{:?} must constrain",
-                        point.boundary
-                    );
+                    assert!(matches!( permit, SpeculationPermit::Constrained { boundary } if boundary == point.boundary ));
                 }
             }
         }
     }
-
     #[test]
     fn dual_kv_rollback_via_host_gate_keeps_committed() {
         let gate = HostDurableSinks::target_gate();
@@ -280,7 +264,6 @@ mod tests {
         dual.speculate(&[9, 8]);
         dual.rollback();
         assert_eq!(dual.committed().fingerprint(), &fp);
-        // Only verified tokens reach sinks after rebase.
         let mut sinks = HostDurableSinks::fixture(SessionId::from("s"));
         dual.rebase(&[gate.emit_target(3u32)]);
         for &id in dual.committed().token_ids() {

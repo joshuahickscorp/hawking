@@ -328,33 +328,23 @@ mod tests {
     use hide_core::types::Decision;
     use http_body_util::BodyExt;
     use tower::ServiceExt; // oneshot
-
     fn host_for_test() -> Arc<BackendHost> {
-        // Unique per call: cargo runs tests in parallel, and a now_ms()-only name collides
-        // when two tests start in the same millisecond, sharing a host and leaking events.
         use std::sync::atomic::{AtomicU64, Ordering};
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let uniq = COUNTER.fetch_add(1, Ordering::Relaxed);
         let dir = std::env::temp_dir().join(format!("hide_serve_{}_{}", now_ms(), uniq));
         let mut config = HideConfig::for_workspace(&dir);
-        // Allow shell so the RunCommand intent round-trips end to end.
         config.security.shell_default = Decision::Allow;
         let host = BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap();
         Arc::new(host)
     }
-
     #[test]
     fn router_builds() {
-        // The router constructs over a real host without panicking — the
-        // load-bearing "it wires" smoke test.
         let _router = router(host_for_test());
     }
-
     #[tokio::test]
     async fn intent_round_trips_through_the_handler() {
         let app = router(host_for_test());
-        // A valid RunCommand intent flows FE -> POST /v1/hide/intent ->
-        // host.handle_intent -> IntentAck, accepted.
         let body = serde_json::to_vec(&Intent::RunCommand {
             argv: vec!["printf".to_string(), "hide".to_string()],
             cwd: None,
@@ -376,10 +366,8 @@ mod tests {
         let ack: IntentAck = serde_json::from_slice(&bytes).unwrap();
         assert!(ack.accepted, "valid RunCommand must be accepted");
     }
-
     #[tokio::test]
     async fn cors_allows_the_app_origin_and_blocks_foreign_sites() {
-        // The Tauri webview origin is granted CORS: the header is echoed back.
         let resp = router(host_for_test())
             .oneshot(
                 Request::builder()
@@ -391,16 +379,7 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(
-            resp.headers()
-                .get("access-control-allow-origin")
-                .and_then(|v| v.to_str().ok()),
-            Some("tauri://localhost"),
-            "the app origin is allowed to read responses"
-        );
-
-        // An arbitrary website gets NO CORS grant, so the browser blocks it from reading the
-        // response. This is the drive-by RCE surface (any page POSTing to 127.0.0.1:8744), closed.
+        assert_eq!(resp.headers() .get("access-control-allow-origin") .and_then(|v| v.to_str().ok()), Some("tauri://localhost"));
         let resp = router(host_for_test())
             .oneshot(
                 Request::builder()
@@ -412,17 +391,11 @@ mod tests {
             )
             .await
             .unwrap();
-        assert!(
-            resp.headers().get("access-control-allow-origin").is_none(),
-            "a foreign origin must not receive a CORS grant"
-        );
+        assert!(resp.headers().get("access-control-allow-origin").is_none());
     }
-
     #[tokio::test]
     async fn empty_intent_is_rejected_as_200_body() {
         let app = router(host_for_test());
-        // An empty-argv RunCommand is rejected by the host: accepted:false with
-        // an HTTP 200 (a rejected ack is a body, not a transport error).
         let body = serde_json::to_vec(&Intent::RunCommand {
             argv: vec![],
             cwd: None,
@@ -445,11 +418,6 @@ mod tests {
         assert!(!ack.accepted, "empty RunCommand must be rejected");
         assert!(ack.message.is_some(), "rejection must carry a reason");
     }
-
-    /// The connector route is a READ channel. Every mutating or workspace-escaping arm is refused
-    /// here and has to arrive as an Intent, where the permission engine and the gate are. The last
-    /// three rows are the ones the old blocklist missed: the code index mutation, the absolute-path
-    /// read that walks straight past the `fs` confinement, and the compile that upserts memory.
     #[tokio::test]
     async fn connector_route_refuses_the_durable_write_methods() {
         for (id, method) in [
@@ -473,19 +441,12 @@ mod tests {
                 )
                 .await
                 .unwrap();
-            assert_eq!(
-                resp.status(),
-                StatusCode::FORBIDDEN,
-                "{id}.{method} must not be reachable from the app transport"
-            );
+            assert_eq!(resp.status(), StatusCode::FORBIDDEN);
         }
     }
-
     #[tokio::test]
     async fn connector_route_dispatches() {
         let app = router(host_for_test());
-        // The runtime connector lists model roles; the route forwards
-        // {id, method, params} to host.call_connector and returns the Value.
         let body = serde_json::to_vec(&json!({
             "id": "runtime",
             "method": "roles.list",
@@ -506,20 +467,11 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert!(
-            value["roles"]
-                .as_array()
-                .map(|a| !a.is_empty())
-                .unwrap_or(false),
-            "runtime.roles.list must return a non-empty roles array"
-        );
+        assert!(value["roles"] .as_array() .map(|a| !a.is_empty()) .unwrap_or(false));
     }
-
     #[tokio::test]
     async fn unknown_connector_surfaces_an_error() {
         let app = router(host_for_test());
-        // An allowlisted READ method, so the 400 comes from the unknown connector id and not from
-        // the read gate (which answers 403 and would mask this).
         let body = serde_json::to_vec(&json!({
             "id": "does_not_exist",
             "method": "health",
@@ -537,15 +489,11 @@ mod tests {
             )
             .await
             .unwrap();
-        // A failure is surfaced, not swallowed.
         assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
     }
-
     #[tokio::test]
     async fn events_plain_get_returns_a_json_array() {
         let app = router(host_for_test());
-        // The plain GET (no upgrade header) is the catch-up: it returns a JSON
-        // array (empty on a fresh host), NOT a WS upgrade.
         let resp = app
             .oneshot(
                 Request::builder()
@@ -561,22 +509,10 @@ mod tests {
         let events: Vec<UiEvent> = serde_json::from_slice(&bytes).unwrap();
         assert!(events.is_empty(), "fresh host has no buffered events");
     }
-
-    /// THE RELOAD. A browser reload has exactly two ways in: the catch-up GET and the connect-time
-    /// connector read. Everything the shell needs to come back has to arrive on one of them, so this
-    /// drives the setup over `/v1/hide/intent` and asserts ONLY over those two client routes - no
-    /// host method is called to read a property the client has to be able to read for itself.
-    ///
-    /// Covers three defects that shared one shape (live-bus-only state): a replayed session showed
-    /// no transcript, a sealed checkpoint's id was lost so seven history verbs died, and a write
-    /// lease stayed in force while its indicator vanished.
     #[tokio::test]
     async fn a_reload_recovers_the_transcript_the_checkpoint_and_the_write_lease() {
         let host = host_for_test();
         let session = host.services.session();
-
-        // The user's line. No model is served here (the preview host has none either), so the turn
-        // itself cannot run - but the intent is durable, and that is what a reopened session renders.
         let body = serde_json::to_vec(&Intent::SubmitTurn {
             session_id: session.clone(),
             text: "render me after a reload".to_string(),
@@ -595,8 +531,6 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
-
-        // A checkpoint, over the same intent route the palette and the timeline use.
         let body = serde_json::to_vec(&json!({
             "type": "custom",
             "data": {
@@ -617,9 +551,6 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
-
-        // A lease in force. Granting it is setup (the grant path has its own coverage); what is
-        // under test is whether a client that was not connected when it was granted can SEE it.
         hide_backend::tools::install_write_lease(hide_backend::tools::WriteLease {
             lease_id: "gr_reload".to_string(),
             repo_id: "repo_reload".to_string(),
@@ -628,8 +559,6 @@ mod tests {
             scopes: vec![std::path::PathBuf::from("/tmp/hide-reload-scope")],
             granted_ms: now_ms(),
         });
-
-        // The intent handlers spawn, so give them a tick to land in the durable log.
         for _ in 0..50 {
             if !host
                 .services
@@ -645,8 +574,6 @@ mod tests {
                 break;
             }
         }
-
-        // ROUTE 1: the catch-up a fresh tab makes, from seq 0, scoped to the session it renders.
         let resp = router(host.clone())
             .oneshot(
                 Request::builder()
@@ -680,8 +607,6 @@ mod tests {
                 && d["record"]["checkpoint_id"].as_str().is_some_and(|id| id.starts_with("ckpt_"))),
             "the catch-up must carry the sealed checkpoint id: {customs:?}"
         );
-
-        // ROUTE 2: the connect-time read (store.ts connectStore). The lease comes back on it.
         let body = serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
         let resp = router(host.clone())
             .oneshot(
@@ -699,10 +624,7 @@ mod tests {
         let digest: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(digest["status"]["write_lease"]["active"], json!(true));
         assert_eq!(digest["status"]["write_lease"]["lease_id"], json!("gr_reload"));
-        // and the same read never invents a model on a host that has none.
         assert_eq!(digest["home"]["digest"]["favorite_model"], json!("unknown"));
-
-        // Revoked, and the next fresh client sees it cleared rather than a lease nobody holds.
         hide_backend::tools::revoke_write_lease("test");
         let body = serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
         let resp = router(host.clone())
@@ -720,14 +642,10 @@ mod tests {
         let digest: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(digest["status"]["write_lease"]["active"], json!(false));
     }
-
     #[tokio::test]
     async fn rpc_route_dispatches_a_method_envelope() {
         let host = host_for_test();
         let session = host.services.session();
-
-        // A goal/set Method envelope flows FE -> POST /v1/hide/rpc -> host.rpc ->
-        // a typed RpcResult (status "ok").
         let body = serde_json::to_vec(&json!({
             "id": "req_1",
             "method": "goal/set",
@@ -754,9 +672,6 @@ mod tests {
         let value: Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(value["status"], json!("ok"), "goal/set is a typed Ok result");
         assert_eq!(value["method"], json!("goal/set"));
-
-        // A recognized-but-deferred method returns a typed NotImplemented, still
-        // a 200 body (not a transport error) and never a panic.
         let body = serde_json::to_vec(&json!({
             "id": "req_2",
             "method": "artifact/get",
@@ -777,13 +692,8 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert_eq!(
-            value["status"],
-            json!("not_implemented"),
-            "a deferred method is typed, not a 500"
-        );
+ assert_eq!( value["status"], json!("not_implemented"), "a deferred method is typed, not a 500" );
     }
-
     #[tokio::test]
     async fn initialize_route_records_capabilities_on_the_host() {
         let host = host_for_test();
@@ -814,20 +724,8 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert!(
-            value["user_agent"]
-                .as_str()
-                .is_some_and(|s| s.starts_with("hide-backend/")),
-            "server-info reply names the backend: {value:?}"
-        );
-        assert!(
-            host.connections().experimental_api("conn-serve-1"),
-            "POST /v1/hide/initialize must populate ConnectionRegistry"
-        );
-        assert!(
-            host.connections()
-                .is_notification_suppressed("conn-serve-1", "runtime/status"),
-            "opt-out methods must be stored for the connection"
-        );
+        assert!(value["user_agent"] .as_str() .is_some_and(|s| s.starts_with("hide-backend/")));
+        assert!(host.connections().experimental_api("conn-serve-1"));
+        assert!(host.connections() .is_notification_suppressed("conn-serve-1", "runtime/status"));
     }
 }

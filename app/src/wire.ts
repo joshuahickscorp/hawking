@@ -2,8 +2,8 @@
   wire.ts: FE contract over hide-core wire types.
 
   Structural types (Intent, IntentAck, UiEvent, BlobRef, ids, RuntimeState) are
-  generated from crates/hide-core by app/src/generated/gen_wire.mjs into
-  wire_types.generated.ts. Regenerate with `node app/src/generated/gen_wire.mjs`.
+  generated from crates/hide-core by app/scripts/gen_app_generated.mjs into
+  wire_types.ts. Regenerate with `node app/scripts/gen_app_generated.mjs`.
 
   CUSTOM_NAMES stays here: crates/hide-protocol reads this file and asserts a
   byte-order mirror against WIRE_CUSTOM_NAMES. PROJECTION_NAMES, ack helpers,
@@ -19,7 +19,7 @@ export type {
   IntentAck,
   UiEvent,
   RuntimeState,
-} from "./generated/wire_types.generated";
+} from "./wire_types";
 
 import type {
   BlobRef,
@@ -29,7 +29,7 @@ import type {
   RunId,
   SessionId,
   UiEventKind as GenUiEventKind,
-} from "./generated/wire_types.generated";
+} from "./wire_types";
 
 /** Ack outcome. Surfaces must not treat `accepted && held` as finished. */
 export type AckState = "accepted" | "held" | "refused";
@@ -91,6 +91,9 @@ export const CUSTOM_NAMES = [
   "stop_process",
   "capture_process_artifact",
   "export_review_receipt",
+  "switch_surface",
+  "handoff_create",
+  "handoff_receive",
 ] as const;
 export type CustomName = (typeof CUSTOM_NAMES)[number];
 
@@ -132,7 +135,7 @@ export type UiEventKind =
   | { type: "token_batch"; data: { stream_id: string; text: string } }
   | {
       type: "runtime_status";
-      data: { status: import("./generated/wire_types.generated").RuntimeState; detail: string | null };
+      data: { status: import("./wire_types").RuntimeState; detail: string | null };
     }
   | { type: "tool_progress"; data: { call_id: string; message: string; event_id?: string | null } }
   | { type: "security_gate"; data: { gate: string; message: string } }
@@ -140,7 +143,7 @@ export type UiEventKind =
   | { type: "custom"; data: unknown };
 
 // Keep GenUiEventKind referenced so drift in the generator still typechecks against use.
-type _AssertKind = GenUiEventKind;
+export type _AssertKind = GenUiEventKind;
 
 export const intent = {
   submitTurn: (session_id: SessionId, text: string, attachments: BlobRef[] = []): Intent => ({

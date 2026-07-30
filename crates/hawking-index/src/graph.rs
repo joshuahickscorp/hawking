@@ -377,7 +377,6 @@ pub fn estimate_tokens(text: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn graph_with_calls() -> CodeGraph {
         let mut g = CodeGraph::new();
         g.add_definition(
@@ -398,12 +397,10 @@ mod tests {
             "src/a.rs",
             "fn caller_one()",
         );
-        // many things call core_engine → it should rank high
         g.add_edge("mod::caller_one", "mod::core_engine", EdgeKind::Calls, 1.0);
         g.add_edge("mod::helper_fn", "mod::core_engine", EdgeKind::Calls, 1.0);
         g
     }
-
     #[test]
     fn pagerank_ranks_popular_callee_higher() {
         let g = graph_with_calls();
@@ -412,7 +409,6 @@ mod tests {
         let caller = ranks["mod::caller_one"];
         assert!(engine > caller, "popular callee should outrank its callers");
     }
-
     #[test]
     fn repo_map_renders_elided_tree_within_budget() {
         let g = graph_with_calls();
@@ -426,7 +422,6 @@ mod tests {
         assert!(rm.estimated_tokens <= 200);
         assert!(!rm.symbols.is_empty());
     }
-
     #[test]
     fn neighbors_filtered_by_edge_kind() {
         let mut g = CodeGraph::new();
@@ -437,7 +432,6 @@ mod tests {
         let imports = g.neighbors_by_kind("a", EdgeKind::Imports);
         assert_eq!(imports, vec!["c".to_string()]);
     }
-
     #[test]
     fn import_cycles_detected() {
         let mut g = CodeGraph::new();

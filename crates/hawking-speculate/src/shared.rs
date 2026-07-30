@@ -102,7 +102,6 @@ fn argmax(xs: &[f32]) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn verify_ids_accepts_full_prefix() {
         let drafts = [3, 5, 8];
@@ -112,12 +111,10 @@ mod tests {
             Ok(drafts[i])
         })
         .expect("verify ids");
-
         assert_eq!(result.accepted_count, 3);
         assert_eq!(result.first_divergent_token, None);
         assert_eq!(calls, 3);
     }
-
     #[test]
     fn verify_ids_stops_at_first_mismatch() {
         let drafts = [3, 5, 8, 13];
@@ -128,7 +125,6 @@ mod tests {
             Ok(verifier[i])
         })
         .expect("verify ids");
-
         assert_eq!(result.accepted_count, 1);
         assert_eq!(result.first_divergent_token, Some(99));
         assert_eq!(calls, 2);

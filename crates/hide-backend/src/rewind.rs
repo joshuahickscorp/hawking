@@ -20,7 +20,7 @@
 //!   Apache-2.0). Only the boundary rule (count the inherited prefix, mark the
 //!   next ordinal as the child's first own record) is reproduced from the depth
 //!   map; no donor code is copied.
-//! * The invalidated-receipt scoping reuses `hide_verify::paths_intersect`, the
+//! * The invalidated-receipt scoping reuses `hide_kernel::verify_plane::paths_intersect`, the
 //!   same containment-aware primitive `run_static_analysis` uses.
 
 use hide_core::event::Event;
@@ -287,7 +287,7 @@ pub fn receipt_scopes(events: &[Event], after_seq: u64) -> Vec<ReceiptScope> {
 }
 
 /// The receipts a code rewind INVALIDATES: those whose file scope intersects a
-/// reverted file, using `hide_verify::paths_intersect` (the same containment-aware
+/// reverted file, using `hide_kernel::verify_plane::paths_intersect` (the same containment-aware
 /// primitive `run_static_analysis` reconciles authority with, so a directory scope
 /// intersects a file it contains).
 pub fn invalidated_receipts(reverted_files: &[String], receipts: &[ReceiptScope]) -> Vec<EventId> {
@@ -296,7 +296,7 @@ pub fn invalidated_receipts(reverted_files: &[String], receipts: &[ReceiptScope]
         .filter(|r| {
             r.scope
                 .iter()
-                .any(|s| reverted_files.iter().any(|f| hide_verify::paths_intersect(s, f)))
+                .any(|s| reverted_files.iter().any(|f| hide_kernel::verify_plane::paths_intersect(s, f)))
         })
         .map(|r| r.event_id.clone())
         .collect()
@@ -459,15 +459,10 @@ mod tests {
     use super::*;
     use hide_core::event::{Event, NewEvent};
     use serde_json::json;
-
-    /// Build a sequenced `Event` from a `NewEvent`-shaped kind + payload for the
-    /// pure-function tests (the log assigns seq/id in production; here we set them
-    /// directly so classification/fold logic can be exercised without a store).
     fn ev(seq: u64, kind: &str, payload: serde_json::Value) -> Event {
         let session = SessionId::from("s-test");
         Event::new(seq, NewEvent::system(session, kind, payload))
     }
-
     fn diff_ev(seq: u64, file: &str, after: &str) -> Event {
         ev(
             seq,
@@ -475,11 +470,8 @@ mod tests {
             json!({ "hunks": [ { "file": file, "after": after } ] }),
         )
     }
-
     #[test]
     fn post_boundary_hunks_addresses_only_the_hunks_after_the_boundary() {
-        // A real `diff.proposed` carries the whole cumulative proposal, so the hunk
-        // the event ADDED is its last one.
         let cumulative = |seq: u64, n: usize| {
             let hunks: Vec<_> = (0..=n)
                 .map(|i| json!({ "hunk_id": format!("d1-h{i}"), "file": "a.rs", "after": "x" }))
@@ -487,19 +479,9 @@ mod tests {
             ev(seq, "diff.proposed", json!({ "diff_id": "d1", "hunks": hunks }))
         };
         let events = vec![cumulative(1, 0), cumulative(2, 1), cumulative(3, 2)];
-        assert_eq!(
-            post_boundary_hunks(&events, 1),
-            vec![
-                ("d1".to_string(), "d1-h1".to_string()),
-                ("d1".to_string(), "d1-h2".to_string())
-            ],
-            "only the hunks recorded after the boundary are addressed"
-        );
-        // A minimal fixture with no hunk identity addresses nothing (nothing to
-        // revert on disk rather than a wrong guess).
+        assert_eq!(post_boundary_hunks(&events, 1), vec![ ("d1".to_string(), "d1-h1".to_string()), ("d1".to_string(), "d1-h2".to_string()) ]);
         assert!(post_boundary_hunks(&[diff_ev(2, "a.rs", "v")], 1).is_empty());
     }
-
     #[test]
     fn classify_maps_kinds_to_domains() {
         assert_eq!(classify("agent.message"), EventDomain::Conversation);
@@ -510,10 +492,8 @@ mod tests {
         assert_eq!(classify("verify.result"), EventDomain::Other);
         assert_eq!(classify("plan.updated"), EventDomain::Other);
     }
-
     #[test]
     fn rewind_targets_drop_the_right_post_boundary_domain() {
-        // seq 1 (conv) + 2 (code) are the prefix; 3 (conv) + 4 (code) are after.
         let events = vec![
             ev(1, "agent.message", json!({ "text": "one" })),
             diff_ev(2, "a.rs", "base"),
@@ -521,23 +501,16 @@ mod tests {
             diff_ev(4, "a.rs", "changed"),
         ];
         let boundary = 2;
-
-        // Code rewind: keep prefix + post-boundary conversation, drop post code.
         let code = rewind_child_events(&events, boundary, RewindTarget::Code);
         let code_seqs: Vec<u64> = code.iter().map(|e| e.seq).collect();
         assert_eq!(code_seqs, vec![1, 2, 3], "post-boundary code (4) is reverted");
-
-        // Conversation rewind: keep prefix + post-boundary code, drop post conv.
         let conv = rewind_child_events(&events, boundary, RewindTarget::Conversation);
         let conv_seqs: Vec<u64> = conv.iter().map(|e| e.seq).collect();
         assert_eq!(conv_seqs, vec![1, 2, 4], "post-boundary conversation (3) is reverted");
-
-        // Both: fold back to the boundary, nothing after survives.
         let both = rewind_child_events(&events, boundary, RewindTarget::Both);
         let both_seqs: Vec<u64> = both.iter().map(|e| e.seq).collect();
         assert_eq!(both_seqs, vec![1, 2]);
     }
-
     #[test]
     fn code_state_folds_last_write_and_diff_reports_changes() {
         let events = vec![
@@ -550,19 +523,12 @@ mod tests {
         assert_eq!(at_boundary.len(), 1, "only a.rs exists at seq 1");
         assert_eq!(at_tail.len(), 2, "a.rs + b.rs at the tail");
         assert_ne!(at_boundary["a.rs"], at_tail["a.rs"], "a.rs changed (v1 -> v2)");
-
         let changes = diff_code_states(&at_boundary, &at_tail);
-        // b.rs added, a.rs modified.
         assert_eq!(changes.len(), 2);
-        assert!(changes
-            .iter()
-            .any(|c| c.file == "b.rs" && c.status == ChangeStatus::Added));
-        assert!(changes
-            .iter()
-            .any(|c| c.file == "a.rs" && c.status == ChangeStatus::Modified));
+ assert!(changes .iter() .any(|c| c.file == "b.rs" && c.status == ChangeStatus::Added));
+ assert!(changes .iter() .any(|c| c.file == "a.rs" && c.status == ChangeStatus::Modified));
         assert_eq!(changed_files(&at_boundary, &at_tail), vec!["a.rs", "b.rs"]);
     }
-
     #[test]
     fn invalidated_receipts_scope_by_path_intersection() {
         let reverted = vec!["src/a.rs".to_string()];
@@ -585,14 +551,11 @@ mod tests {
         assert!(out.contains(&EventId::from("r-dir")), "dir scope contains the file");
         assert!(!out.contains(&EventId::from("r-b")), "unrelated file is untouched");
     }
-
     #[test]
     fn fork_point_ordinal_boundary_splits_inherited_from_own() {
-        // A child with a marker, 2 inherited events, then 1 own event.
         let parent = SessionId::from("parent");
         let fp = ForkPoint::new(parent.clone(), 2, 5);
         assert_eq!(fp.start_ordinal, 3, "own history starts after the 2 inherited");
-
         let child = vec![
             ev(1, FORK_POINT_KIND, serde_json::to_value(&fp).unwrap()),
             ev(2, "agent.message", json!({ "text": "inherited-1" })),
@@ -603,19 +566,13 @@ mod tests {
         assert_eq!(got, Some(fp));
         assert_eq!(inherited.len(), 2);
         assert_eq!(own.len(), 1);
-        assert_eq!(
-            own[0].payload.get("text").and_then(|t| t.as_str()),
-            Some("own-1")
-        );
-
-        // Without a marker, everything is the session's own history.
+ assert_eq!( own[0].payload.get("text").and_then(|t| t.as_str()), Some("own-1") );
         let no_marker = vec![ev(1, "agent.message", json!({ "text": "x" }))];
         let (none, inh, all_own) = split_inherited_own(&no_marker);
         assert!(none.is_none());
         assert!(inh.is_empty());
         assert_eq!(all_own.len(), 1);
     }
-
     #[test]
     fn coverage_digest_is_deterministic_and_tamper_evident() {
         let cov = CheckpointCoverage {

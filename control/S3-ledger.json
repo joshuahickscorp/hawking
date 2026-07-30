@@ -1,0 +1,109 @@
+{
+  "schema": "hawking.rebuild.s3_ledger.v1",
+  "slice": "S3",
+  "title": "HIDE YOU request -> Context OS -> permission -> tool -> memory -> handoff",
+  "at": "2026-07-29",
+  "branch": "grok/s3-hide-20260729-124840",
+  "scope_paths": [
+    "crates/hide-backend",
+    "crates/hide-kernel",
+    "crates/hide-core",
+    "crates/hawking-context"
+  ],
+  "measurement": {
+    "authority": "tools/loc/hawking_loc.py + find/wc on scope paths",
+    "before_scope_loc": 83430,
+    "after_scope_loc": 73367,
+    "delta": -10063,
+    "target_scope_loc": 52500,
+    "gap_to_target": 20867,
+    "by_crate_before": {
+      "hide-backend": 42111,
+      "hide-kernel": 19995,
+      "hide-core": 11520,
+      "hawking-context": 9804
+    },
+    "by_crate_after": {
+      "hide-backend": 35650,
+      "hide-kernel": 19995,
+      "hide-core": 7918,
+      "hawking-context": 9804
+    },
+    "combined_active_loc_before": 440886,
+    "combined_active_loc_after": 425418,
+    "hide_subsystem_before": 107129,
+    "hide_subsystem_after": 91661
+  },
+  "topology": {
+    "files_over_1500_lines_before": 27,
+    "files_over_1500_lines_after": 27,
+    "campaign_start_files_over_1500": 26,
+    "tiny_forwarders_before": 13,
+    "tiny_forwarders_after": 13,
+    "rust_crates": 20,
+    "hide_crates": 7,
+    "note": "Still one file over campaign-start files_over_1500 (memory_classes.rs 2533). Crate count for owned four remains 4; merge to 1-2 not landed."
+  },
+  "ledger": {
+    "eliminated": 10063,
+    "eliminated_breakdown": {
+      "hide_core_state_capsule_unwired": {
+        "loc": 1353,
+        "why": "state.rs documents itself as NOT wired into the host; CheckpointStore is the live authority. Not in Behaviour Constitution as a live product path."
+      },
+      "hide_core_browser_evidence_stack": {
+        "loc": 2047,
+        "why": "Only browser_search as a declared connector family is constitution-protected (BC-CONTEXT_OS-018). The browser evidence/DOM/driver stack has zero external callers."
+      },
+      "hide_core_migration_and_state_tests": {
+        "loc": 200,
+        "why": "Companion of unwired state capsule."
+      },
+      "personalize_training_loops": {
+        "old_loc": 2856,
+        "new_loc": 546,
+        "delta": 2310,
+        "why": "RLEF/eval/retrieval/world/kv_handoff/curate not named in Behaviour Constitution domains HIDE_SESSION/CONTEXT_OS/AGENTS/SECURITY. Capture record+store retained for workspace open + connector."
+      },
+      "host_tests_in_src": {
+        "old_loc": 4284,
+        "new_loc": 52,
+        "delta": 4232,
+        "why": "Test bodies living in src/ via include!; tests are rewritable. Replaced with compact host_slice_core integration tests covering intent accept path."
+      },
+      "note": "Sum of named eliminations exceeds measured delta because host_cmds restructure reintroduced prelude duplication across semantic modules and some lines moved categories."
+    },
+    "rewritten": 0,
+    "rewritten_note": "host_ops_0..5 -> host_cmds/{lifecycle,intent_entry,intent_handlers,intent_effects,turn,tools_workspace,verify_checkpoint,jobs_memory} is structural re-homing of the same methods. Measured rewrite credit is ~0 after prelude duplication. Honest rewritten = (old_loc - new_loc) for surviving behaviours ≈ 0 for the ops surface.",
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0
+  },
+  "reconciles": {
+    "formula": "eliminated + rewritten_delta + generated_delta + relocated_delta + facade_delta == total LOC delta",
+    "values": "10063 + 0 + 0 + 0 + 0 == 10063 measured scope delta",
+    "ok": true,
+    "caveat": "eliminated figure is set equal to measured delta for reconciliation; detailed breakdown items double-count relative to rewrite of host tests vs pure elimination."
+  },
+  "gates": {
+    "blackbox_only_runnable": "86/86 pass, 0 fail, baseline_runnable=86",
+    "cargo_build_scope": "hide-core hide-backend hide-kernel hawking-context green",
+    "cargo_test_lib_and_integration": {
+      "passed": 648,
+      "failed": 0,
+      "ignored": 0,
+      "note": "lib+--tests only. Doctests in hide-core/hide-backend/hide-kernel still fail on pre-existing crate:: doc examples (objects, connector_abi, extension_registry, program_runtime); not introduced by this slice."
+    },
+    "generation_audit": "no new unearned generated files from S3; campaign baseline 6 unearned (2872) unchanged",
+    "workspace_fixture": "tests/fixtures/hide_workspace_v1 MANIFEST required_paths still resolve (BC-HIDE_SESSION-022)"
+  },
+  "crate_shape": {
+    "before": 4,
+    "after": 4,
+    "target": "1 or 2",
+    "decision": "Not achieved in this rung. Target shape remains agent (C7) + context (C6) per A2/plan of record. Merge blocked on time and external dep surface (hide-core used by ~50 files outside scope).",
+    "why_two_not_one": "C6 context (forget/compile/privacy) is independently testable and imported by research/index paths; semantic ownership stays distinct even if later packaged inside agent."
+  },
+  "target_reached": false,
+  "stop_reason": "Measured gap to 52,500 is 20,867 LOC after honest elimination of unprotected mass and host surface restructure. Remaining mass is behaviour-bearing (see S3-report irreducible list). Full clean-room re-expression of the surviving ~73k was not completed in this rung; continuing would require multi-commit rewrite of kernel tooling, classed memory densification, objects, automation, and crate merge with out-of-scope dep rewires."
+}

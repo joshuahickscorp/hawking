@@ -1,0 +1,205 @@
+{
+  "by_area": {
+    "HAWKING_CONTINUUM_NEXT_COMMAND.sh": 1,
+    "HAWKING_FINAL_ASCENT_NEXT_COMMAND.sh": 1,
+    "HAWKING_LIGHT_ONLY_NEXT_COMMAND.sh": 1,
+    "HAWKING_PARALLEL_NEXT_COMMAND.sh": 1,
+    "app": 72,
+    "crates": 683,
+    "docs": 1,
+    "odyssey": 1,
+    "ramanujan": 40,
+    "run_7b_frontier.sh": 1,
+    "tools": 425
+  },
+  "commit": "be1e25e241408534acd420bdbc5fa1728fa13b3f",
+  "detail": {
+    "files_over_1500_lines": [
+      {
+        "file": "crates/hawking-core/src/gravity_glm_resident.rs",
+        "lines": 13035
+      },
+      {
+        "file": "crates/hide-backend/src/host.rs",
+        "lines": 12163
+      },
+      {
+        "file": "crates/hawking-core/src/kernels/mod.rs",
+        "lines": 11649
+      },
+      {
+        "file": "crates/hawking-core/src/model/qwen_dense.rs",
+        "lines": 10218
+      },
+      {
+        "file": "crates/hawking-core/shaders/quant.metal",
+        "lines": 5621
+      },
+      {
+        "file": "tools/condense/glm52_state.py",
+        "lines": 5548
+      },
+      {
+        "file": "crates/hawking-core/src/model/deepseek_v2.rs",
+        "lines": 4337
+      },
+      {
+        "file": "crates/hawking/src/main.rs",
+        "lines": 4321
+      },
+      {
+        "file": "crates/hawking-core/src/gravity_glm.rs",
+        "lines": 3584
+      },
+      {
+        "file": "crates/hawking-core/src/model/rwkv7.rs",
+        "lines": 3454
+      },
+      {
+        "file": "crates/hawking-core/src/metal/mod.rs",
+        "lines": 3156
+      },
+      {
+        "file": "crates/hawking-core/src/gravity.rs",
+        "lines": 3155
+      },
+      {
+        "file": "crates/hawking-core/src/cost_ledger.rs",
+        "lines": 2666
+      },
+      {
+        "file": "crates/hawking-context/src/memory_classes.rs",
+        "lines": 2533
+      },
+      {
+        "file": "tools/condense/glm52_activation_aware_pack_v2.py",
+        "lines": 2509
+      },
+      {
+        "file": "tools/condense/glm52_corpus.py",
+        "lines": 2506
+      },
+      {
+        "file": "tools/condense/glm52_xet_live.py",
+        "lines": 2453
+      },
+      {
+        "file": "tools/condense/glm52_activation_aware_pack.py",
+        "lines": 2400
+      },
+      {
+        "file": "crates/hide-backend/src/services.rs",
+        "lines": 2008
+      },
+      {
+        "file": "tools/condense/glm52_terminal_proofs.py",
+        "lines": 1915
+      },
+      {
+        "file": "tools/condense/glm52_xet_autotune.py",
+        "lines": 1907
+      },
+      {
+        "file": "tools/condense/glm52_telegram.py",
+        "lines": 1890
+      },
+      {
+        "file": "tools/condense/gravity_metal_lab_b.py",
+        "lines": 1880
+      },
+      {
+        "file": "tools/condense/tests/test_glm52_state.py",
+        "lines": 1823
+      },
+      {
+        "file": "crates/hawking-core/shaders/gravity_pq.metal",
+        "lines": 1790
+      },
+      {
+        "file": "crates/hawking-core/src/tq_gpu.rs",
+        "lines": 1781
+      },
+      {
+        "file": "crates/hide-sdk/goldens/commands.d.ts",
+        "lines": 1764
+      },
+      {
+        "file": "tools/condense/glm52_contract.py",
+        "lines": 1662
+      },
+      {
+        "file": "tools/campaign/final_ascent_status.py",
+        "lines": 1651
+      },
+      {
+        "file": "crates/hide-core/src/automation.rs",
+        "lines": 1613
+      }
+    ],
+    "single_file_directories": [
+      "app/src-tauri",
+      "app/src-tauri/src",
+      "app/src/surfaces/fleet",
+      "crates/hawking-adapters/src/bin",
+      "crates/hawking-bench/src",
+      "crates/hawking-core",
+      "crates/hawking-core/tests/common",
+      "crates/hawking-events/tests",
+      "crates/hawking/tests",
+      "crates/hide-acp/src/bin",
+      "crates/hide-compat/tests",
+      "crates/hide-connectors/examples",
+      "crates/hide-connectors/tests",
+      "crates/hide-extension-registry/tests",
+      "crates/hide-fleet/src/bin",
+      "crates/hide-kernel/src/skills",
+      "crates/hide-kernel/src/subagent",
+      "crates/hide-kernel/tests",
+      "crates/hide-objects/tests",
+      "crates/hide-program-runtime/tests",
+      "crates/hide-sdk/src/bin",
+      "crates/hide-verify/tests",
+      "crates/hide-you/tests",
+      "docs/hide-impl/preview",
+      "odyssey/training",
+      "ramanujan/container/scripts",
+      "tools",
+      "tools/awq_bake/src",
+      "tools/bench/lib",
+      "tools/bench/workloads",
+      "tools/q4k_fast/src",
+      "tools/strand/scripts/packaging/windows",
+      "tools/tq_bake/src",
+      "tools/tq_bake/tests"
+    ],
+    "tiny_forwarders": [
+      "crates/hawking-events/src/adapters/mod.rs",
+      "crates/hide-connectors/src/impls/mod.rs",
+      "ramanujan/data/__init__.py",
+      "tools/condense/engine/__main__.py",
+      "tools/condense/tests/_glm52_fakes.py",
+      "tools/condense/tests/test_retired_tg.py",
+      "tools/foundry/lab_harness/__main__.py",
+      "tools/strand/scripts/strand_eval/__init__.py",
+      "tools/strand/scripts/strand_eval/cli.py",
+      "tools/strand/scripts/strand_eval/core.py",
+      "tools/strand/scripts/strand_eval/ledger.py",
+      "tools/strand/scripts/strand_eval/qat_shim.py",
+      "tools/strand/tools/gguf/convert_hf_to_gguf.py"
+    ]
+  },
+  "directories_all": 179,
+  "directories_leaf": 138,
+  "files_over_1500_lines": 30,
+  "functions": 14587,
+  "hide_crates": 20,
+  "hide_directories": 59,
+  "hide_files": 349,
+  "public_symbols": 9412,
+  "rev": "WORKING_TREE",
+  "rust_crates": 33,
+  "schema": "hawking.topology.v1",
+  "single_file_directories": 34,
+  "source_files": 1227,
+  "tiny_forwarders": 13
+}

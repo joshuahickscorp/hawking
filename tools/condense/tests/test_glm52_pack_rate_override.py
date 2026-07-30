@@ -5,6 +5,11 @@ nothing else -- a coalition decision that leaked onto an uninvolved expert would
 silently rewrite Claim A's byte-matching without anyone asking it to.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 import sys
@@ -13,12 +18,9 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_pack as pack  # noqa: E402
-import gravity_format  # noqa: E402
-
+from lab.operators import glm52_pack as pack  # noqa: E402
+from tools.condense import artifact_client as gravity_format  # noqa: E402
 
 def _shard_with_experts(tmp_path: pathlib.Path, n: int = 4):
     """`n` identically-shaped routed-expert tensors, one per (layer 0, expert i)."""
@@ -41,11 +43,9 @@ def _shard_with_experts(tmp_path: pathlib.Path, n: int = 4):
         offset += raw.nbytes
     return shard, rows
 
-
 def _descriptors_by_expert(gravity_path: pathlib.Path) -> dict[int, dict]:
     header = gravity_format.read_header(gravity_path)
     return {entry["expert"]: entry for entry in header["tensors"]}
-
 
 def test_no_override_is_byte_identical_to_the_existing_packer(tmp_path):
     shard, rows = _shard_with_experts(tmp_path)
@@ -67,7 +67,6 @@ def test_no_override_is_byte_identical_to_the_existing_packer(tmp_path):
         got = (tmp_path / other / name).read_bytes()
         assert got == baseline, f"rate_override={other!r} changed packed bytes with no override entries"
 
-
 def test_telemetry_is_a_side_channel_and_does_not_change_artifact_bytes(tmp_path):
     shard, rows = _shard_with_experts(tmp_path, n=1)
     pack.pack_shard(shard, rows, tmp_path / "warmup", seed=0)
@@ -88,16 +87,8 @@ def test_telemetry_is_a_side_channel_and_does_not_change_artifact_bytes(tmp_path
     assert telemetry["tensors_per_second"] > 0
     assert telemetry["weights_per_second"] > 0
 
-
 def test_ladder_sampling_does_not_change_any_tensor_payload(tmp_path):
-    """Surveying fewer rungs must move only the survey record, never the artifact.
-
-    The schedule change that made PASS3 fit each tensor's own target rung instead of
-    all three is worth 3.88x, and is only admissible because the rungs share no state:
-    every ladder rung seeds its own k-means generator, so a rung that is not fitted
-    cannot perturb the one that is.  This pins that.  Exhaustive survey (N=1) against
-    target-only (N huge) must produce identical payload bytes for every tensor.
-    """
+    """Surveying fewer rungs must move only the survey record, never the artifact. The schedule change that"""
     shard, rows = _shard_with_experts(tmp_path, n=8)
     override = {f"model.layers.0.mlp.experts.{i}.gate_proj.weight": "R4" for i in range(8)}
     pack.pack_shard(shard, rows, tmp_path / "warmup", seed=0, rate_override=override)
@@ -128,7 +119,6 @@ def test_ladder_sampling_does_not_change_any_tensor_payload(tmp_path):
         surveyed[label] = header["compression"]["ladder_survey"]["tensors_fully_surveyed"]
     assert surveyed["exhaustive"] == 8 and surveyed["sampled"] == 1, surveyed
 
-
 def test_native_override_protects_exactly_the_named_expert(tmp_path):
     shard, rows = _shard_with_experts(tmp_path, n=4)
     out = tmp_path / "compact"
@@ -144,7 +134,6 @@ def test_native_override_protects_exactly_the_named_expert(tmp_path):
         assert by_expert[expert]["codec"] == "gravity-pq", \
             f"expert {expert} was not overridden and must pack exactly as before"
         assert by_expert[expert]["rung"] == pack.PRODUCTION_RUNG
-
 
 def test_rung_override_picks_a_different_rung_for_exactly_that_expert(tmp_path):
     shard, rows = _shard_with_experts(tmp_path, n=4)
@@ -163,7 +152,6 @@ def test_rung_override_picks_a_different_rung_for_exactly_that_expert(tmp_path):
     ladder_by_rung = {r["rung"]: r for r in by_expert[1]["ladder"]}
     assert ladder_by_rung["R2"]["admitted"]
 
-
 def test_override_key_absent_from_this_shard_is_silently_irrelevant(tmp_path):
     """A coalition manifest is whole-model; a shard only ever sees its own tensors.
     An override naming a (layer, expert) this shard does not carry must not error --
@@ -178,7 +166,6 @@ def test_override_key_absent_from_this_shard_is_silently_irrelevant(tmp_path):
     by_expert = _descriptors_by_expert(out / "model-00001-of-00282.gravity")
     assert by_expert[0]["codec"].startswith("native.")
     assert by_expert[1]["codec"] == "gravity-pq"
-
 
 def test_exact_tensor_name_takes_precedence_over_expert_fallback(tmp_path):
     """PASS2 freezes per-tensor decisions.  A name-level decision must therefore

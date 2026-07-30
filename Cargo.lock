@@ -1194,19 +1194,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hawking-seed-c"
-version = "0.2.2"
-dependencies = [
- "half",
- "memmap2",
- "metal 0.29.0",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "hawking-serve"
 version = "0.2.2"
 dependencies = [
@@ -1229,12 +1216,6 @@ dependencies = [
 name = "hawking-speculate"
 version = "0.2.2"
 dependencies = [
- "half",
- "memmap2",
- "rand 0.8.6",
- "rand_pcg 0.3.1",
- "serde",
- "serde_json",
  "sha2",
  "thiserror 2.0.18",
 ]
@@ -1262,6 +1243,7 @@ dependencies = [
 name = "hide-backend"
 version = "0.2.2"
 dependencies = [
+ "anyhow",
  "async-trait",
  "blake3",
  "futures",
@@ -1271,62 +1253,24 @@ dependencies = [
  "hawking-orch",
  "hawking-research",
  "hawking-speculate",
- "hide-compat",
  "hide-core",
- "hide-extension-registry",
  "hide-fleet",
  "hide-kernel",
- "hide-personalize",
- "hide-program-runtime",
  "hide-protocol",
- "hide-security",
- "hide-tools",
- "hide-verify",
- "hide-you",
  "libc",
  "parking_lot",
+ "rand 0.8.6",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
  "strand-quant",
+ "tempfile",
  "thiserror 2.0.18",
  "tokio",
-]
-
-[[package]]
-name = "hide-browser"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "schemars",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "hide-compat"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "globset",
- "regex",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.18",
+ "tree-sitter",
+ "ulid",
  "walkdir",
-]
-
-[[package]]
-name = "hide-connectors"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1336,25 +1280,15 @@ dependencies = [
  "blake3",
  "futures",
  "parking_lot",
+ "schemars",
  "serde",
  "serde_json",
  "sha2",
+ "tempfile",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
  "ulid",
-]
-
-[[package]]
-name = "hide-extension-registry"
-version = "0.2.2"
-dependencies = [
- "hide-core",
- "hide-tools",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1383,101 +1317,46 @@ dependencies = [
 name = "hide-kernel"
 version = "0.2.2"
 dependencies = [
+ "aes-gcm",
+ "anyhow",
+ "axum",
  "blake3",
  "futures",
+ "globset",
  "hawking-context",
  "hawking-index",
  "hawking-orch",
  "hide-core",
- "hide-tools",
- "parking_lot",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "hide-objects"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "parking_lot",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.18",
- "ulid",
-]
-
-[[package]]
-name = "hide-personalize"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "hawking-index",
- "hide-core",
- "hide-security",
+ "ignore",
+ "keyring",
+ "libc",
  "parking_lot",
  "rand 0.8.6",
  "regex",
+ "reqwest",
  "serde",
  "serde_json",
+ "similar",
  "tempfile",
- "tokio",
- "tree-sitter",
-]
-
-[[package]]
-name = "hide-program-runtime"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
  "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+ "walkdir",
 ]
 
 [[package]]
 name = "hide-protocol"
 version = "0.2.2"
 dependencies = [
- "hide-core",
- "schemars",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "hide-sdk"
-version = "0.2.2"
-dependencies = [
  "anyhow",
  "async-trait",
- "hide-protocol",
- "schemars",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
-name = "hide-security"
-version = "0.2.2"
-dependencies = [
- "aes-gcm",
- "blake3",
  "hide-core",
- "keyring",
- "rand 0.8.6",
- "regex",
+ "schemars",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]
@@ -1497,65 +1376,6 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "hide-state"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "sha2",
- "tempfile",
- "thiserror 2.0.18",
- "ulid",
-]
-
-[[package]]
-name = "hide-tools"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "axum",
- "blake3",
- "futures",
- "globset",
- "hide-core",
- "hide-security",
- "ignore",
- "libc",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "similar",
- "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
-name = "hide-verify"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "regex",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.18",
- "walkdir",
-]
-
-[[package]]
-name = "hide-you"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "ulid",
 ]
 
 [[package]]
@@ -2969,6 +2789,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
  "digest",
+ "sha2-asm",
+]
+
+[[package]]
+name = "sha2-asm"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b845214d6175804686b2bd482bcffe96651bb2d1200742b712003504a2dac1ab"
+dependencies = [
+ "cc",
 ]
 
 [[package]]

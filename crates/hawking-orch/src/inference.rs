@@ -172,7 +172,6 @@ impl InferenceClient for ScriptedInferenceClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[tokio::test]
     async fn stub_embeddings_are_deterministic_and_normalized() {
         let client = StubInferenceClient::new("hello");
@@ -182,7 +181,6 @@ mod tests {
         let norm: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
         assert!((norm - 1.0).abs() < 1e-5 || norm == 0.0);
     }
-
     #[tokio::test]
     async fn scripted_client_advances_per_call() {
         let client = ScriptedInferenceClient::new(vec!["first".to_string(), "second".to_string()]);

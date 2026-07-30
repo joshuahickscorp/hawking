@@ -179,7 +179,6 @@ pub fn uievent_to_notification(event: &UiEvent) -> Notification {
 mod tests {
     use super::*;
     use hide_core::ids::BlobId;
-
     fn sample_submit_turn() -> Intent {
         Intent::SubmitTurn {
             session_id: CoreSessionId::from("ses_demo"),
@@ -192,7 +191,6 @@ mod tests {
             }],
         }
     }
-
     #[test]
     fn submit_turn_maps_to_user_message_item() {
         let intent = sample_submit_turn();
@@ -208,7 +206,6 @@ mod tests {
             other => panic!("expected user_message item, got {other:?}"),
         }
     }
-
     #[test]
     fn submit_turn_round_trips_through_the_bridge() {
         let intent = sample_submit_turn();
@@ -216,7 +213,6 @@ mod tests {
         let back = turn_to_intent(&mapped).expect("user turn maps back to an intent");
         assert_eq!(back, intent, "intent survives the round trip losslessly");
     }
-
     #[test]
     fn non_submit_intents_do_not_map_to_a_turn() {
         let intent = Intent::PauseRun {
@@ -225,7 +221,6 @@ mod tests {
         assert!(intent_to_turn(&intent).is_none());
         assert_eq!(intent_method(&intent), Method::TurnPause);
     }
-
     #[test]
     fn uievents_elevate_to_notifications() {
         let ev = UiEvent {

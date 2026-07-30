@@ -80,15 +80,11 @@ pub fn read_tq_context(path: &Path) -> Option<TqContextInfo> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn multiplier_tracks_compression_and_is_capped() {
-        // ~3 bpw (typical Q4-ish trellis) => ~5.3x, within the cap.
         assert!((bpw_to_multiplier(3.0) - 16.0 / 3.0).abs() < 1e-4);
-        // Very aggressive 1 bpw would be 16x => capped to MAX_MULTIPLIER.
         assert_eq!(bpw_to_multiplier(1.0), MAX_MULTIPLIER);
     }
-
     #[test]
     fn no_claim_on_degenerate_or_uncompressed() {
         assert_eq!(bpw_to_multiplier(16.0), 1.0, "fp16 => no expansion");
@@ -96,7 +92,6 @@ mod tests {
         assert_eq!(bpw_to_multiplier(f32::NAN), 1.0, "non-finite => no claim");
         assert_eq!(bpw_to_multiplier(-2.0), 1.0, "negative => no claim");
     }
-
     #[test]
     fn missing_file_makes_no_claim() {
         assert_eq!(read_tq_context(Path::new("/no/such/file.tq")), None);

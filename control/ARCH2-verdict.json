@@ -1,0 +1,19 @@
+{
+  "schema": "hawking.300k.architecture_attempt.v1",
+  "architecture": "ARCH2 — generate the surfaces instead of condensing them (campaign programs C4 + C5)",
+  "question_asked": "How much of this code should be written by hand at all?",
+  "distinct_from_attempt_1": "Attempt 1 asked what could be removed from existing code and hit floors. This asked whether whole families of handwritten code could be replaced by output from a single reviewed authority -- a different mechanism, not a different effort level.",
+  "verdict": "ARCHITECTURE_CANNOT_DELIVER",
+  "measurement": {
+    "mirror_surface_lines": 98,
+    "target_lines": 25000,
+    "fraction_of_target": 0.0039,
+    "handwritten_eliminated": 0,
+    "generator_loc": 0,
+    "net_active_delta": 0,
+    "changes_made": "none"
+  },
+  "why": "The handwritten mirror surface across the owned paths is roughly 98 lines. The C4/C5 generative machinery already exists in crates/hawking-adapters and hide-sdk, and has already replaced the large command, protocol, adapter, CLI-surface and SDK mirrors. What remains in those paths is sole-authority definition, actual behaviour, or the dual event surfaces marked must_not_delete until the Bridge lane. A new generator cannot eliminate 25,000 lines that are not handwritten restatements of anything.",
+  "significance": "This is the campaign's second structural mechanism and it is refuted on measurement rather than on effort. The repository has already absorbed the generative architecture; there is no second helping of it available.",
+  "lane_behaviour": "Correct. It measured the mirror surface before building anything and stopped when the number came back at 0.39% of target, rather than constructing a generator that would have saved nothing and cost lines."
+}

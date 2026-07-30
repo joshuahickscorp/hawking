@@ -296,7 +296,6 @@ mod tests {
     use hide_core::ids::SessionId;
     use hide_core::persistence::InMemoryProjectionStore;
     use std::sync::Arc;
-
     async fn submit(log: &DynEventLog, sid: &str, text: &str) {
         let mut ev = NewEvent::user_intent(
             SessionId::from(sid.to_string()),
@@ -308,7 +307,6 @@ mod tests {
         ev.kind = "user.intent.submit_turn".to_string();
         log.append(ev).await.unwrap();
     }
-
     #[tokio::test]
     async fn folds_sessions_messages_and_titles() {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
@@ -316,50 +314,33 @@ mod tests {
         submit(&log, "ses_a", "fix the pool guard").await;
         submit(&log, "ses_a", "add a regression test").await;
         submit(&log, "ses_b", "port the tokenizer").await;
-
         let (home, sessions) = compute_home_and_sessions(&log, &store, Path::new("/tmp/hawking"))
             .await
             .unwrap();
-
-        assert_eq!(
-            home["digest"]["sessions"],
-            json!(2),
-            "two distinct sessions"
-        );
+ assert_eq!( home["digest"]["sessions"], json!(2), "two distinct sessions" );
         assert_eq!(home["digest"]["messages"], json!(3), "three submit_turns");
-        // Token total is never claimed (not persisted to the log).
-        assert!(
-            home["digest"].get("tokens").is_none(),
-            "tokens omitted, not faked"
-        );
+ assert!( home["digest"].get("tokens").is_none(), "tokens omitted, not faked" );
         assert_eq!(home["digest"]["heatmap_cols"], json!(HEATMAP_WEEKS));
         assert_eq!(home["workspace"]["repo"], json!("hawking"));
-
         let items = sessions["items"].as_array().unwrap();
         assert_eq!(items.len(), 2);
         let titles: Vec<&str> = items.iter().map(|i| i["title"].as_str().unwrap()).collect();
         assert!(titles.contains(&"fix the pool guard"));
         assert!(titles.contains(&"port the tokenizer"));
-        // ses_a has two turns.
         let a = items.iter().find(|i| i["id"] == json!("ses_a")).unwrap();
         assert_eq!(a["turns"], json!(2));
     }
-
     #[test]
     fn streaks_are_day_tolerant_and_find_the_longest_run() {
-        // days 10,11,12 (a run of 3), gap, then 20 (today).
         let days: BTreeSet<u64> = [10u64, 11, 12, 20].into_iter().collect();
         let (current, longest) = streaks(&days, 20);
         assert_eq!(longest, 3);
         assert_eq!(current, 1, "today alone is a current streak of 1");
-        // today quiet but yesterday active -> current continues from yesterday.
         let (current2, _) = streaks(&days, 21);
         assert_eq!(current2, 1);
-        // two quiet days -> no current streak.
         let (current3, _) = streaks(&days, 22);
         assert_eq!(current3, 0);
     }
-
     #[test]
     fn heatmap_is_a_full_grid_ending_today() {
         let today = 20_000u64; // a realistic unix-day number (well past the 126-day window)

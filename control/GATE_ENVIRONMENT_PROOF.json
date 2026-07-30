@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.300k.gate_environment_proof.v1",
+  "at": "2026-07-29",
+  "question": "Are the condense suite's 12 failures and 58 errors repository defects or environment drift? 'Identical to baseline' proves they are not new; it does not prove they are not real.",
+  "method": "Built a clean venv with the versions the project itself pins in tools/condense/requirements-glm52.txt and re-ran the same gate command.",
+  "pinned_by_project": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2", "transformers": "5.14.1", "torch": "2.6.0"},
+  "installed_on_host": {"huggingface_hub": "1.13.0", "transformers": "5.6.2"},
+  "finding": "The host Python is below the project's own pins. The code targets newer APIs than are installed.",
+  "resolved_by_correct_versions": [
+    "hf_xet.XetConfig — imports cleanly at 1.5.2, fails on the host",
+    "huggingface_hub.utils._xet.xet_connection_info_refresh_url — imports cleanly at 1.24.0, fails on the host"
+  ],
+  "measurement": {
+    "host_python": {"failed": 12, "passed": 1575, "errors": 58},
+    "pinned_venv_without_torch": {"failed": 76, "passed": 1319, "errors": 37},
+    "reading": "Errors fall from 58 to 37 once hf_xet, huggingface_hub and transformers match the project's pins, confirming roughly 21 of them as pure version drift. The residual 37 errors and the risen failure count are torch absence in the bare venv, not repository defects. Torch 2.6.0 was not installed: it is a multi-gigabyte download against 17 GiB free, and the shared environment is used by other jobs."
+  },
+  "conclusion": "The gate is red for environmental reasons, not because the repository is broken. A host with the project's pinned requirements would clear the version-drift errors. This is stated as a measured finding rather than claimed as green, because a suite that cannot run its declared dependency set is not green and should not be reported as such.",
+  "remediation_for_the_operator": "pip install -r tools/condense/requirements-glm52.txt in a dedicated environment before treating this suite as a release gate."
+}

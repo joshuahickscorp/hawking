@@ -258,7 +258,6 @@ impl ContextCapability {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn live_native_beats_config_and_effective_is_not_native() {
         let cap = ContextCapability::declare(
@@ -274,20 +273,13 @@ mod tests {
         assert_eq!(cap.native_maximum.source, NumberSource::Measured);
         assert_eq!(cap.effective_ceiling.tokens, Some(16384));
         assert!(cap.effective_ceiling.estimated);
-        assert_ne!(
-            cap.native_maximum.tokens, cap.effective_ceiling.tokens,
-            "native and effective must stay distinct"
-        );
+        assert_ne!(cap.native_maximum.tokens, cap.effective_ceiling.tokens);
         assert!(cap.validated_quality.tokens.is_none());
         assert!(cap.validated_agentic.tokens.is_none());
         assert!(cap.kv_curve.is_none());
         assert!(cap.prefill_curve.is_none());
-        assert!(cap
-            .explanations
-            .iter()
-            .any(|e| e.contains("do not raise native_maximum")));
+ assert!(cap .explanations .iter() .any(|e| e.contains("do not raise native_maximum")));
     }
-
     #[test]
     fn unmeasured_validated_numbers_are_none_not_copied_native() {
         let cap = ContextCapability::declare(
@@ -304,7 +296,6 @@ mod tests {
         assert!(cap.validated_quality.tokens.is_none());
         assert!(cap.validated_agentic.tokens.is_none());
     }
-
     #[test]
     fn pack_budget_prefers_native_when_conservative() {
         let cap = ContextCapability::declare(

@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Apple Silicon LLM inference engine core"
 
+[lib]
+crate-type = ["rlib", "cdylib"]
+
 [features]
 # TQ (Trellis-Quant): hawking's deterministic sub-4-bit weight-serving project,
 # built on the absorbed strand-quant codec. Pulls in the `.tq` decode + activation-RHT
@@ -34,7 +37,7 @@ bytemuck = { workspace = true }
 tokenizers = { workspace = true }
 rand = { workspace = true }
 rand_pcg = { workspace = true }
-sha2 = { workspace = true }
+sha2 = { workspace = true, features = ["asm"] }
 parking_lot = { workspace = true }
 once_cell = { workspace = true }
 

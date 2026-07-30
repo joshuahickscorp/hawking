@@ -478,7 +478,6 @@ impl CompactionEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn span_id_is_content_addressed_and_stable() {
         let a = span_content_id(&ContextSourceKind::Code, "t", "body");

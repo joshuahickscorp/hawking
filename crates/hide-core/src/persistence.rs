@@ -383,7 +383,6 @@ fn sanitize_component(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn file_blob_store_roundtrips_content_addressed_bytes() {
         let dir = std::env::temp_dir().join(format!("hide_blob_{}", crate::ids::now_ms()));
@@ -397,7 +396,6 @@ mod tests {
         assert_eq!(blob.hash, same.hash);
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn file_projection_store_returns_latest_projection() {
         let dir = std::env::temp_dir().join(format!("hide_projection_{}", crate::ids::now_ms()));
@@ -414,7 +412,6 @@ mod tests {
         assert_eq!(latest.1["phase"], "done");
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn file_key_value_store_roundtrips_json_values() {
         let dir = std::env::temp_dir().join(format!("hide_kv_{}", crate::ids::now_ms()));

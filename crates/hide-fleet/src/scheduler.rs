@@ -384,14 +384,12 @@ pub async fn probe_snapshot(
 mod tests {
     use super::*;
     use crate::resources::ThermalState;
-
     fn model_req(mem: u64) -> ResourceRequest {
         ResourceRequest {
             memory_mb: mem,
             ..ResourceRequest::default()
         }
     }
-
     fn snapshot(free_mb: u64, slots: u32, active: u32, thermal: ThermalState) -> ResourceSnapshot {
         ResourceSnapshot {
             free_memory_mb: free_mb,
@@ -405,7 +403,6 @@ mod tests {
             idle: true,
         }
     }
-
     #[test]
     fn admits_when_ram_and_slots_available() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
@@ -417,7 +414,6 @@ mod tests {
         let occ = PoolOccupancy::default();
         assert!(gov.can_admit(&model_req(1024), &occ).allowed());
     }
-
     #[test]
     fn defers_when_ram_below_floor() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
@@ -425,13 +421,11 @@ mod tests {
             ..Default::default()
         });
         gov.refresh(snapshot(4500, 4, 0, ThermalState::Nominal));
-        // 4500 free, need 1024 + 4000 floor = 5024 → defer.
         assert!(matches!(
             gov.can_admit(&model_req(1024), &PoolOccupancy::default()),
             Admission::Defer { .. }
         ));
     }
-
     #[test]
     fn two_pools_have_independent_ceilings() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
@@ -441,17 +435,14 @@ mod tests {
             ..Default::default()
         });
         gov.refresh(snapshot(16000, 1, 0, ThermalState::Nominal));
-        // Model pool full at 1...
         let occ = PoolOccupancy {
             model_runs: 1,
             ..Default::default()
         };
         assert!(!gov.can_admit(&model_req(512), &occ).allowed());
-        // ...but a CpuOnly job still admits (separate pool).
         let cpu = ResourceRequest::cpu_only(512);
         assert!(gov.can_admit(&cpu, &occ).allowed());
     }
-
     #[test]
     fn thermal_drop_shrinks_model_ceiling() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
@@ -459,35 +450,30 @@ mod tests {
             thermal_throttle_pct: 0.25,
             ..Default::default()
         });
-        // dec_tps dropped 40 → 28 = 30% drop ≥ 25% throttle → halve 4 → 2.
         let mut snap = snapshot(32000, 4, 0, ThermalState::Fair);
         snap.dec_tps_now = 28.0;
         snap.dec_tps_baseline = 40.0;
         gov.refresh(snap);
         assert_eq!(gov.effective_model_ceiling(), 2);
     }
-
     #[test]
     fn spawn_rate_trips_the_breaker() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
             max_spawns_per_min: 10.0,
             ..Default::default()
         });
-        // 5 spawns 100 ms apart → 600/min instantaneous → EWMA climbs past 10.
         let mut t = 1_000_000u64;
         for _ in 0..6 {
             gov.note_spawn(t);
             t += 100;
         }
         assert!(gov.breaker().tripped);
-        // A tripped breaker refuses admission.
         gov.refresh(snapshot(32000, 4, 0, ThermalState::Nominal));
         assert!(matches!(
             gov.can_admit(&model_req(512), &PoolOccupancy::default()),
             Admission::No { .. }
         ));
     }
-
     #[test]
     fn plan_tick_preempts_for_interactive_then_admits() {
         let mut gov = FleetGovernor::new(ResourceEnvelope {
@@ -508,7 +494,6 @@ mod tests {
         }];
         let plan = FleetScheduler::plan_tick(&gov, &ready, occ, true, Some("batch_victim"));
         assert_eq!(plan.preempt, vec!["batch_victim".to_string()]);
-        // After preemption frees the slot, the interactive job is admitted.
         assert_eq!(plan.admit, vec!["interactive".to_string()]);
     }
 }

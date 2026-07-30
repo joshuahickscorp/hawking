@@ -1,0 +1,1669 @@
+{
+  "campaigns": {
+    "deepseek_v4": {
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "deepseek_v4",
+      "family": "deepseek_v4",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "controllers_restored_as_live": [],
+        "retired_controllers": [
+          "deepseek_v4_adapter",
+          "hawking_contraction_pilot"
+        ],
+        "retired_controllers_deleted": [
+          "deepseek_v4_adapter",
+          "hawking_contraction_pilot"
+        ]
+      },
+      "notes": "must_not_delete: DEEPSEEK_V4 contraction pilot receipts. Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "seal",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "DEEPSEEK_V4_FLASH_CONTRACTION_VERDICT.json",
+      "reopen": [
+        {
+          "description": "Reopen only with a new cascade decision that supersedes the sealed pilot",
+          "evidence": [
+            "DEEPSEEK_V4_FLASH_CASCADE_DECISION.json",
+            "DEEPSEEK_V4_FLASH_CONTRACTION_PILOT.json"
+          ],
+          "id": "new_cascade_decision",
+          "predicate": "deepseek_cascade_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/deepseek_v4.json --work-dir reports/condense/engine/deepseek_v4",
+      "resource_class": "heavy",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "sealed_negative",
+      "steps": [
+        {
+          "description": "Source admission receipt present",
+          "handler": "record",
+          "id": "precheck.admission",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Contraction pilot measurement",
+          "handler": "record",
+          "id": "measure.contraction",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Contraction verdict seal",
+          "handler": "seal.receipt",
+          "id": "seal.verdict",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Publish sealed verdict paths",
+          "handler": "report.summary",
+          "id": "report.verdict",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "DeepSeek V4 flash contraction pilot"
+    },
+    "eco": {
+      "authorization_fences": [],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "eco",
+      "family": "eco",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "lane": "H1",
+        "retired_controllers_deleted": [
+          "eco_activation",
+          "eco_admission",
+          "eco_cli",
+          "eco_import",
+          "eco_passport",
+          "eco_pipeline",
+          "eco_planner",
+          "eco_status"
+        ]
+      },
+      "notes": "eco_* controllers retired into engine lifecycle. eco_common library remains for external importers.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "",
+      "reopen": [
+        {
+          "description": "Reopen only when sealed science law for this family is superseded",
+          "evidence": [],
+          "id": "new_evidence",
+          "predicate": "eco_law_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/eco.json --work-dir reports/condense/engine/eco",
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Authorization fences stay closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Record historical measure surface",
+          "handler": "record",
+          "id": "measure.record",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Record allocation policy",
+          "handler": "record",
+          "id": "allocate.record",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Pack step (optional)",
+          "handler": "record",
+          "id": "pack.record",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Seal campaign receipt",
+          "handler": "seal.receipt",
+          "id": "seal.receipt",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Lease / heartbeat",
+          "handler": "record",
+          "id": "monitor.heartbeat",
+          "optional": true,
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Campaign summary",
+          "handler": "report.summary",
+          "id": "report.summary",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "ECO admission / planner campaign shell"
+    },
+    "final_ascent_status": {
+      "authorization_fences": [
+        "ODYSSEY_LAUNCH_AUTHORIZED"
+      ],
+      "campaign_id": "final_ascent_status",
+      "family": "campaign",
+      "notes": "C-HIST-R1 product-released tools/campaign/final_ascent_status.py. This lab row is a hollow historical spec, not an invocable replacement.",
+      "phases": [
+        "precheck",
+        "measure",
+        "report"
+      ],
+      "reproduction": null,
+      "resource_class": "light-readonly",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "released_historical_non_invocable",
+      "steps": [
+        {
+          "description": "Authorization fences closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Derive campaign status from sealed receipts",
+          "handler": "record",
+          "id": "measure.status",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Emit status document",
+          "handler": "report.summary",
+          "id": "report.status",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Final ascent status control plane"
+    },
+    "foundry_lab": {
+      "authorization_fences": [],
+      "campaign_id": "foundry_lab",
+      "family": "foundry",
+      "notes": "Replaces tools/foundry/lab_harness process surface.",
+      "phases": [
+        "precheck",
+        "measure",
+        "pack",
+        "verify",
+        "seal",
+        "report"
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/foundry_lab.json --work-dir reports/lab/foundry_lab",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "live",
+      "steps": [
+        {
+          "handler": "precheck.fences",
+          "id": "precheck",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "handler": "record",
+          "id": "measure",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "handler": "record",
+          "id": "pack",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "handler": "verify.gates",
+          "id": "verify",
+          "params": {},
+          "phase": "verify"
+        },
+        {
+          "handler": "seal.receipt",
+          "id": "seal",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "handler": "report.summary",
+          "id": "report",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Foundry lab harness (unified into lab engine)"
+    },
+    "glm52": {
+      "authorization_fences": [
+        "ODYSSEY_LAUNCH_AUTHORIZED",
+        "RAMANUJAN_RESEARCH_AUTHORIZED",
+        "HIDE_KERNEL_TURN"
+      ],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "glm52",
+      "checkpoint_name": "glm52.checkpoint.json",
+      "family": "glm52",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "lease_name": "glm52.controller.lease",
+      "metadata": {
+        "controllers_restored_as_live": [
+          "glm52_activation_aware_pack",
+          "glm52_activation_aware_pack_v2",
+          "glm52_functional_gauntlet",
+          "glm52_moe_student",
+          "glm52_shard_probe",
+          "glm52_terminal_proofs",
+          "glm52_xet_live"
+        ],
+        "live_modules": [
+          "glm52_parity",
+          "glm52_contract",
+          "glm52_source_fetch",
+          "glm52_teacher_capture",
+          "glm52_xet_autotune",
+          "glm52_common",
+          "glm52_state"
+        ],
+        "resource_limits": {
+          "max_concurrent_workers": 1,
+          "min_free_disk_bytes": 0
+        },
+        "retired_controllers": [
+          "glm52_activation_aware_assemble",
+          "glm52_activation_aware_source",
+          "glm52_allocation_probe",
+          "glm52_basis_pilot",
+          "glm52_campaign_contract",
+          "glm52_capability_gate",
+          "glm52_compact_mla_fixture",
+          "glm52_composition_gate",
+          "glm52_concurrency_autotune",
+          "glm52_external_baselines",
+          "glm52_flagship_oracle",
+          "glm52_flagship_screening",
+          "glm52_functional_auction",
+          "glm52_functional_cascade",
+          "glm52_functional_controller",
+          "glm52_functional_gauntlet",
+          "glm52_functional_integration",
+          "glm52_functional_roofline",
+          "glm52_functional_student",
+          "glm52_generation_a_seal",
+          "glm52_gravity_fixture",
+          "glm52_gravity_source",
+          "glm52_long_context_gate",
+          "glm52_lowrank",
+          "glm52_maturity",
+          "glm52_metric_correction",
+          "glm52_moe_student",
+          "glm52_moe_student_fit",
+          "glm52_notifications",
+          "glm52_pilot",
+          "glm52_pilot_fetch",
+          "glm52_pilot_seal",
+          "glm52_pilot_source_release",
+          "glm52_precheck",
+          "glm52_protect_head_embed",
+          "glm52_rate_ladder",
+          "glm52_readiness_gate",
+          "glm52_rehydrate_window",
+          "glm52_resource_policy",
+          "glm52_rollback_seal",
+          "glm52_route_population_census",
+          "glm52_runtime_parity_gate",
+          "glm52_runtime_speed_gate",
+          "glm52_schedule_freeze",
+          "glm52_shard_probe",
+          "glm52_source_release",
+          "glm52_teacher_rechain",
+          "glm52_window_execution",
+          "glm52_window_plan",
+          "glm52_worker",
+          "glm52_xet_live_driver",
+          "glm52_xet_window_fetch"
+        ],
+        "retired_controllers_deleted": [
+          "_bench_fetch_workers",
+          "_bench_fetch_workers_nodisk",
+          "glm52_activation_aware_assemble",
+          "glm52_activation_aware_source",
+          "glm52_allocation_probe",
+          "glm52_basis_pilot",
+          "glm52_campaign_contract",
+          "glm52_capability_gate",
+          "glm52_compact_mla_fixture",
+          "glm52_composition_gate",
+          "glm52_concurrency_autotune",
+          "glm52_external_baselines",
+          "glm52_flagship_oracle",
+          "glm52_flagship_screening",
+          "glm52_functional_auction",
+          "glm52_functional_cascade",
+          "glm52_functional_controller",
+          "glm52_functional_integration",
+          "glm52_functional_roofline",
+          "glm52_functional_student",
+          "glm52_generation_a_seal",
+          "glm52_gravity_fixture",
+          "glm52_gravity_source",
+          "glm52_long_context_gate",
+          "glm52_lowrank",
+          "glm52_maturity",
+          "glm52_metric_correction",
+          "glm52_moe_student_fit",
+          "glm52_notifications",
+          "glm52_pilot",
+          "glm52_pilot_fetch",
+          "glm52_pilot_seal",
+          "glm52_pilot_source_release",
+          "glm52_precheck",
+          "glm52_protect_head_embed",
+          "glm52_rate_ladder",
+          "glm52_readiness_gate",
+          "glm52_rehydrate_window",
+          "glm52_resource_policy",
+          "glm52_rollback_seal",
+          "glm52_route_population_census",
+          "glm52_runtime_parity_gate",
+          "glm52_runtime_speed_gate",
+          "glm52_schedule_freeze",
+          "glm52_source_release",
+          "glm52_teacher_rechain",
+          "glm52_window_execution",
+          "glm52_window_plan",
+          "glm52_worker",
+          "glm52_xet_live_driver",
+          "glm52_xet_window_fetch"
+        ]
+      },
+      "notes": "Live contract readers remain at glm52_parity/contract/source_fetch/teacher_capture/xet_autotune. resolve_artifact in glm52_common is the single path authority. Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "GLM52_BASIS_PILOT_RECEIPT.json",
+      "reopen": [
+        {
+          "description": "Reopen only if a new sealed parity surface invalidates FUNCTIONAL_PARTIAL_ONLY",
+          "evidence": [
+            "GLM52_CORRECTED_SCIENTIFIC_LAW.json",
+            "GLM52_FLAGSHIP_ADAPTER_PARITY.json"
+          ],
+          "id": "new_parity_surface",
+          "predicate": "sealed_parity_surface_changed"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/glm52.json --work-dir reports/condense/engine/glm52",
+      "resource_class": "heavy",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "live",
+      "steps": [
+        {
+          "description": "Authorization fences stay closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Load glm52_contract / expected campaign contract",
+          "handler": "precheck.contract",
+          "id": "precheck.contract",
+          "params": {
+            "allow_missing": true,
+            "module": "glm52_contract"
+          },
+          "phase": "precheck"
+        },
+        {
+          "description": "Parity and teacher capture surfaces",
+          "handler": "measure.parity",
+          "id": "measure.parity",
+          "params": {
+            "allow_missing": true,
+            "modules": [
+              "glm52_parity",
+              "glm52_teacher_capture"
+            ]
+          },
+          "phase": "measure"
+        },
+        {
+          "description": "Window plan / resource reserve policy",
+          "handler": "record",
+          "id": "allocate.windows",
+          "params": {
+            "policy": "GLM52_RESOURCE_RESERVE_POLICY.json"
+          },
+          "phase": "allocate"
+        },
+        {
+          "description": "Streaming pack via glm52_pack / activation-aware paths",
+          "handler": "record",
+          "id": "pack.stream",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Seal campaign artifacts through glm52_common.seal",
+          "handler": "seal.receipt",
+          "id": "seal.artifacts",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Controller heartbeat and lease freshness",
+          "handler": "record",
+          "id": "monitor.heartbeat",
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Canonical campaign status message",
+          "handler": "report.summary",
+          "id": "report.status",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "GLM-5.2 Gravity streaming campaign"
+    },
+    "gptoss": {
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "gptoss",
+      "family": "gptoss",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "lease_name": "frontier_g4.lease",
+      "metadata": {
+        "controllers_restored_as_live": [
+          "gptoss_block",
+          "gptoss_moe_runtime",
+          "gptoss_real_forward",
+          "gptoss_subbit_packer"
+        ],
+        "retired_controllers": [
+          "doctor_campaign_supervisor",
+          "doctor_v5_telegram_rung_notifier",
+          "gptoss_gravity_run",
+          "gravity_frontier_g4_controller",
+          "source_release_readiness",
+          "vulture_harvest"
+        ],
+        "retired_controllers_deleted": [
+          "doctor_campaign_supervisor",
+          "doctor_v5_telegram_rung_notifier",
+          "gptoss_gravity_run",
+          "source_release_readiness",
+          "vulture_harvest"
+        ]
+      },
+      "notes": "gravity_frontier_g4_controller retired; engine owns lease/checkpoint/resume. Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "reports/condense/general_frontier/G4/",
+      "reopen": [
+        {
+          "description": "Reopen when pq_doctor_lowrank / protected_islands rows are admitted",
+          "evidence": [],
+          "id": "stronger_pack_family",
+          "predicate": "g3_winner_family_ready"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/gptoss.json --work-dir reports/condense/engine/gptoss",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "RealForward coherence precheck",
+          "handler": "record",
+          "id": "precheck.real_forward",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Sealed holdout PPL / KL / argmax agreement",
+          "handler": "record",
+          "id": "measure.holdout",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Sub-bit RVQ pack at rate ladder",
+          "handler": "record",
+          "id": "pack.subbit",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "G4 real-forward gate seal",
+          "handler": "seal.receipt",
+          "id": "seal.g4",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Singleton lease and heartbeat",
+          "handler": "record",
+          "id": "monitor.lease",
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "G4 state report",
+          "handler": "report.summary",
+          "id": "report.g4",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "GPT-OSS-120B gravity / sub-bit / real-forward campaign"
+    },
+    "gravity_frontier": {
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "gravity_frontier",
+      "family": "gravity_frontier",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "lease_name": "doctor_campaign.lease",
+      "metadata": {
+        "controllers_restored_as_live": [
+          "doctor_campaign_supervisor",
+          "doctor_v5_gptoss_mxfp4",
+          "doctor_v5_telegram_rung_notifier",
+          "gravity_bench_lab",
+          "gravity_flop_ledger",
+          "gravity_functional_codec",
+          "gravity_kernel_select",
+          "gravity_metal",
+          "gravity_metal_lab_b",
+          "gravity_moe_layer",
+          "gravity_real_fixtures"
+        ],
+        "retired_controllers": [
+          "doctor_campaign_supervisor",
+          "emergency_detached_campaign",
+          "gravity_execution_adapter",
+          "gravity_forge_run",
+          "gravity_frontier_correction_wave",
+          "gravity_frontier_g4_controller",
+          "gravity_global_allocator",
+          "gravity_llama_reference",
+          "gravity_metal_lab_a",
+          "overnight_supervisor",
+          "seal_120b_conclusion",
+          "storage_stripdown_controller"
+        ],
+        "retired_controllers_deleted": [
+          "codebase_census",
+          "condense_reachability",
+          "corpus_integrity",
+          "decode_parity_harness",
+          "doctor_byte_auction",
+          "doctor_causal_harness",
+          "doctor_gen3",
+          "doctor_treatment_abi",
+          "emergency_detached_campaign",
+          "forge_actaware_experiment",
+          "forge_controller_integration",
+          "forge_f2_fixture",
+          "forge_giant_adapters",
+          "forge_pre_run_readiness",
+          "gravity_attention",
+          "gravity_breakthrough_baseline",
+          "gravity_container_freeze",
+          "gravity_decode",
+          "gravity_execution_adapter",
+          "gravity_forge_run",
+          "gravity_frontier_correction_wave",
+          "gravity_frontier_g4_controller",
+          "gravity_functional_metal",
+          "gravity_global_allocator",
+          "gravity_lab_lease",
+          "gravity_llama_reference",
+          "gravity_metal_lab_a",
+          "gravity_pq_fixture",
+          "gravity_profiler_acceptance",
+          "gravity_runtime",
+          "gravity_scale_correction",
+          "hawking_compat",
+          "hawking_contraction_pilot",
+          "hawking_tps_budget",
+          "mech_fidelity_c",
+          "mech_fidelity_d",
+          "overnight_supervisor",
+          "resident_first_ladder",
+          "safetensors_to_gravity",
+          "seal_120b_conclusion",
+          "storage_stripdown",
+          "storage_stripdown_controller",
+          "succ_eta",
+          "test_activation_aware_roundtrip"
+        ]
+      },
+      "notes": "Controllers doctor_campaign_supervisor, gravity_frontier_g4_controller, seal_120b_conclusion deleted (git history + engine spec). Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "reports/condense/general_frontier/",
+      "reopen": [
+        {
+          "description": "Reopen doctor only if Outcome B boundary evidence is superseded",
+          "evidence": [
+            "DOCTOR_NEGATIVE_TRANSFER_ATLAS.json"
+          ],
+          "id": "outcome_b_boundary",
+          "predicate": "doctor_boundary_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/gravity_frontier.json --work-dir reports/condense/engine/gravity_frontier",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Lab lease / contention gate precheck",
+          "handler": "record",
+          "id": "precheck.lab",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "G0-G3 proxy fidelity measurements",
+          "handler": "record",
+          "id": "measure.proxy",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Bounded expert cache allocation",
+          "handler": "record",
+          "id": "allocate.cache",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Sub-bit pack rows",
+          "handler": "record",
+          "id": "pack.subbit",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Doctor conclusion seal (one-use marker)",
+          "handler": "seal.receipt",
+          "id": "seal.doctor",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Doctor campaign supervisor tick",
+          "handler": "record",
+          "id": "monitor.supervisor",
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Frontier state report",
+          "handler": "report.summary",
+          "id": "report.frontier",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Gravity General Frontier (G0-G4) and doctor campaign"
+    },
+    "kimi_k26": {
+      "authorization_fences": [],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "kimi_k26",
+      "checkpoint_name": "kimi_k26.checkpoint.json",
+      "family": "kimi_k26",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "lease_name": "kimi_k26.lease",
+      "metadata": {
+        "controllers_restored_as_live": [],
+        "retired_controllers": [
+          "kimi_k26_download_supervisor",
+          "kimi_k26_phase2_recovery",
+          "kimi_k26_phase2_release",
+          "kimi_k26_release_cycle",
+          "kimi_k26_stale_download_cleanup"
+        ],
+        "retired_controllers_deleted": [
+          "kimi_k26_download_supervisor",
+          "kimi_k26_phase2_recovery",
+          "kimi_k26_phase2_release",
+          "kimi_k26_release_cycle",
+          "kimi_k26_stale_download_cleanup"
+        ]
+      },
+      "notes": "Kimi K2.6 sealed DOES-NOT-FIT. Controllers deleted (lane H1); specification, fixture, receipt pointer, reproduction and reopen retained. Sealing invariants live in engine.seal_integrity.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "reports/condense/kimi_k26/",
+      "reopen": [
+        {
+          "description": "Reopen only on a new frozen corpus revision with sealed science law update",
+          "evidence": [
+            "KIMI_K26 scientific law + long-run + gravity finals"
+          ],
+          "id": "corpus_revision",
+          "predicate": "kimi_corpus_revision_changed"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/kimi_k26.json --work-dir reports/condense/engine/kimi_k26",
+      "resource_class": "network",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Bind frozen corpus blobs; read-only preflight",
+          "handler": "record",
+          "id": "precheck.blobs",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Verify historical blob seals before export",
+          "handler": "record",
+          "id": "measure.integrity",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Private export sandbox for generate",
+          "handler": "record",
+          "id": "allocate.sandbox",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Exact capsule generate with crash-safe atomic publish",
+          "handler": "record",
+          "id": "pack.capsule",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Phase-2 release seal",
+          "handler": "seal.receipt",
+          "id": "seal.release",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Download supervisor heartbeat / stale cleanup",
+          "handler": "record",
+          "id": "monitor.download",
+          "optional": true,
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Release cycle report",
+          "handler": "report.summary",
+          "id": "report.cycle",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Kimi K2.6 download / phase-2 recovery / release cycle"
+    },
+    "light_governor": {
+      "campaign_id": "light_governor",
+      "family": "campaign",
+      "metadata": {
+        "resource_limits": {
+          "min_free_disk_bytes": 0
+        }
+      },
+      "phases": [
+        "precheck",
+        "measure",
+        "report"
+      ],
+      "reproduction": null,
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "released_historical_non_invocable",
+      "steps": [
+        {
+          "description": "Sample free disk and apply light limits",
+          "handler": "record",
+          "id": "precheck.resources",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Relief requires sustained green",
+          "handler": "record",
+          "id": "measure.relief",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "handler": "report.summary",
+          "id": "report",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Light-only resource governor campaign",
+      "notes": "C-HIST-R1 product-released tools/campaign/light_governor.py. This lab row is a hollow historical spec, not an invocable replacement."
+    },
+    "mechanics": {
+      "authorization_fences": [],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "mechanics",
+      "family": "mechanics",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "lane": "H1",
+        "retired_controllers_deleted": [
+          "mech_measure",
+          "mech_run_all"
+        ]
+      },
+      "notes": "mech_run_all orchestrator retired; mech_measure library may remain elsewhere if live. Measurement math retained only if irreducible.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "",
+      "reopen": [
+        {
+          "description": "Reopen only when sealed science law for this family is superseded",
+          "evidence": [],
+          "id": "new_evidence",
+          "predicate": "mechanics_law_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/mechanics.json --work-dir reports/condense/engine/mechanics",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Authorization fences stay closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Record historical measure surface",
+          "handler": "record",
+          "id": "measure.record",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Record allocation policy",
+          "handler": "record",
+          "id": "allocate.record",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Pack step (optional)",
+          "handler": "record",
+          "id": "pack.record",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Seal campaign receipt",
+          "handler": "seal.receipt",
+          "id": "seal.receipt",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Lease / heartbeat",
+          "handler": "record",
+          "id": "monitor.heartbeat",
+          "optional": true,
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Campaign summary",
+          "handler": "report.summary",
+          "id": "report.summary",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Mechanics/Thermodynamics tournament orchestrator"
+    },
+    "odyssey_package": {
+      "campaign_id": "odyssey_package",
+      "family": "odyssey",
+      "phases": [
+        "precheck",
+        "verify",
+        "seal",
+        "report"
+      ],
+      "reproduction": null,
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "released_historical_non_invocable",
+      "steps": [
+        {
+          "handler": "record",
+          "id": "precheck.package",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "handler": "verify.gates",
+          "id": "verify.gates",
+          "params": {
+            "gate_results": {
+              "package_complete": true
+            }
+          },
+          "phase": "verify"
+        },
+        {
+          "handler": "seal.receipt",
+          "id": "seal",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "handler": "report.summary",
+          "id": "report",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Odyssey package seal",
+      "verification_gates": [
+        "package_complete"
+      ],
+      "notes": "C-HIST-R1 product-released tools/campaign/odyssey_package.py. This lab row is a hollow historical spec, not an invocable replacement."
+    },
+    "odyssey_t0": {
+      "authorization_fences": [
+        "ODYSSEY_LAUNCH_AUTHORIZED"
+      ],
+      "campaign_id": "odyssey_t0",
+      "family": "odyssey",
+      "phases": [
+        "precheck",
+        "measure",
+        "verify",
+        "seal",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [
+          "capability"
+        ],
+        "require_verdict": "PASS"
+      },
+      "reproduction": "python3.12 -m lab lab/specs/odyssey_t0.json --work-dir reports/lab/odyssey_t0",
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "live",
+      "steps": [
+        {
+          "description": "Capability gate before any training",
+          "handler": "gate.substrate",
+          "id": "precheck.capability",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "handler": "record",
+          "id": "measure.dry",
+          "optional": true,
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "handler": "verify.gates",
+          "id": "verify",
+          "params": {},
+          "phase": "verify"
+        },
+        {
+          "handler": "seal.receipt",
+          "id": "seal",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "handler": "report.summary",
+          "id": "report",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Odyssey T0 executable dry path",
+      "verification_gates": [
+        "capability"
+      ]
+    },
+    "prometheus_math": {
+      "campaign_id": "prometheus_math",
+      "family": "prometheus",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "report"
+      ],
+      "receipt": "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json",
+      "reproduction": "python3.12 -m lab lab/specs/prometheus_math.json --work-dir reports/lab/prometheus_math",
+      "resource_class": "heavy",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "historical",
+      "steps": [
+        {
+          "handler": "record",
+          "id": "precheck",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Pass 1 cartography",
+          "handler": "record",
+          "id": "measure.cartography",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Pass 2 allocation",
+          "handler": "record",
+          "id": "allocate",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Pass 3 pack",
+          "handler": "record",
+          "id": "pack",
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "handler": "seal.receipt",
+          "id": "seal",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "handler": "report.summary",
+          "id": "report",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Prometheus math cartography / allocation / pack"
+    },
+    "qwen": {
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "qwen",
+      "family": "qwen",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "controllers_restored_as_live": [],
+        "retired_controllers": [
+          "qwen35_moe_adapter",
+          "qwen3_moe_adapter",
+          "qwen_adaptive_k",
+          "qwen_bpw_budget",
+          "qwen_correction_wave",
+          "qwen_download_worker",
+          "qwen_function_aware_codec",
+          "qwen_real_forward",
+          "qwen_structural_plan",
+          "qwen_subhalfbit_search"
+        ],
+        "retired_controllers_deleted": [
+          "qwen35_moe_adapter",
+          "qwen3_moe_adapter",
+          "qwen_adaptive_k",
+          "qwen_bpw_budget",
+          "qwen_correction_wave",
+          "qwen_download_worker",
+          "qwen_function_aware_codec",
+          "qwen_real_forward",
+          "qwen_structural_plan",
+          "qwen_subhalfbit_search"
+        ]
+      },
+      "notes": "Adapters remain importable for algorithmic tests; campaign controller shell retired. Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "",
+      "reopen": [
+        {
+          "description": "Reopen when a new parent weight revision is admitted",
+          "evidence": [],
+          "id": "new_parent_weights",
+          "predicate": "qwen_parent_revision_changed"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/qwen.json --work-dir reports/condense/engine/qwen",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "MoE adapter geometry precheck",
+          "handler": "record",
+          "id": "precheck.adapter",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "BPW budget and correction wave",
+          "handler": "record",
+          "id": "measure.bpw",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Rate ladder / adaptive-k allocation",
+          "handler": "record",
+          "id": "allocate.rate",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Function-aware codec pack",
+          "handler": "record",
+          "id": "pack.codec",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Real-forward seal",
+          "handler": "seal.receipt",
+          "id": "seal.forward",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Campaign summary",
+          "handler": "report.summary",
+          "id": "report.summary",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Qwen MoE structural / correction / real-forward campaign"
+    },
+    "second_light": {
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "second_light",
+      "family": "second_light",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "controllers_restored_as_live": [],
+        "retired_controllers": [
+          "gravity_pq_fixture"
+        ],
+        "retired_controllers_deleted": [
+          "gravity_pq_fixture"
+        ]
+      },
+      "notes": "Algorithmic PQ helpers may remain as libraries; campaign shell is the engine. Lane F1 removed archive bodies; reproduction/reopen live on this spec.",
+      "phases": [
+        "precheck",
+        "measure",
+        "pack",
+        "seal",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "reports/condense/second_light/",
+      "reopen": [
+        {
+          "description": "Reopen when a new island strategy is admitted beyond the sealed set",
+          "evidence": [],
+          "id": "new_island_strategy",
+          "predicate": "island_strategy_extended"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/second_light.json --work-dir reports/condense/engine/second_light",
+      "resource_class": "gpu-lab",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "PQ fixture geometry",
+          "handler": "record",
+          "id": "precheck.pq_fixture",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "PQ lifecycle roundtrip / dense match",
+          "handler": "record",
+          "id": "measure.roundtrip",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Protected island selection and BPW billing",
+          "handler": "record",
+          "id": "pack.islands",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "PQ campaign seal",
+          "handler": "seal.receipt",
+          "id": "seal.pq",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "PQ report",
+          "handler": "report.summary",
+          "id": "report.pq",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Second Light PQ / protected-islands campaign"
+    },
+    "succession": {
+      "authorization_fences": [],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "succession",
+      "family": "succession",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "lane": "H1",
+        "retired_controllers_deleted": [
+          "succ_admission",
+          "succ_audit",
+          "succ_calibrate",
+          "succ_cli",
+          "succ_engine",
+          "succ_events",
+          "succ_frontier",
+          "succ_gc",
+          "succ_gravity",
+          "succ_gravity_policy",
+          "succ_gravity_receipts",
+          "succ_harvest",
+          "succ_press",
+          "succ_queue",
+          "succ_retire",
+          "succ_state",
+          "succ_telegram",
+          "succ_transition",
+          "succ_twin",
+          "succ_watch",
+          "succ_watchdog"
+        ]
+      },
+      "notes": "succ_* controllers retired into engine lifecycle. Keep receipts in reports/ and git history.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "",
+      "reopen": [
+        {
+          "description": "Reopen only when sealed science law for this family is superseded",
+          "evidence": [],
+          "id": "new_evidence",
+          "predicate": "succession_law_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/succession.json --work-dir reports/condense/engine/succession",
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Authorization fences stay closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Record historical measure surface",
+          "handler": "record",
+          "id": "measure.record",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Record allocation policy",
+          "handler": "record",
+          "id": "allocate.record",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Pack step (optional)",
+          "handler": "record",
+          "id": "pack.record",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Seal campaign receipt",
+          "handler": "seal.receipt",
+          "id": "seal.receipt",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Lease / heartbeat",
+          "handler": "record",
+          "id": "monitor.heartbeat",
+          "optional": true,
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Campaign summary",
+          "handler": "report.summary",
+          "id": "report.summary",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "Succession (succ_*) campaign shell"
+    },
+    "tg": {
+      "authorization_fences": [],
+      "burial": {
+        "retain_artifacts": true,
+        "retain_receipts": true,
+        "status_value": "buried"
+      },
+      "campaign_id": "tg",
+      "family": "tg",
+      "fixture": "engine/fixtures/retirement_receipts.json",
+      "metadata": {
+        "lane": "H1",
+        "retired_controllers_deleted": [
+          "tg_active_byte_budget",
+          "tg_k11_reconcile",
+          "tg_k11_synthetic_schedule"
+        ]
+      },
+      "notes": "tg_* shells retired into engine lifecycle.",
+      "phases": [
+        "precheck",
+        "measure",
+        "allocate",
+        "pack",
+        "seal",
+        "monitor",
+        "report"
+      ],
+      "promotion": {
+        "allow_synthetic_as_real": false,
+        "author_may_admit": false,
+        "require_gates": [],
+        "require_verdict": "PASS"
+      },
+      "receipt": "",
+      "reopen": [
+        {
+          "description": "Reopen only when sealed science law for this family is superseded",
+          "evidence": [],
+          "id": "new_evidence",
+          "predicate": "tg_law_superseded"
+        }
+      ],
+      "reproduction": "python3.12 -m lab lab/specs/tg.json --work-dir reports/condense/engine/tg",
+      "resource_class": "light",
+      "schema": "hawking.lab.experiment_spec.v1",
+      "status": "retired",
+      "steps": [
+        {
+          "description": "Authorization fences stay closed",
+          "handler": "precheck.fences",
+          "id": "precheck.fences",
+          "params": {},
+          "phase": "precheck"
+        },
+        {
+          "description": "Record historical measure surface",
+          "handler": "record",
+          "id": "measure.record",
+          "params": {},
+          "phase": "measure"
+        },
+        {
+          "description": "Record allocation policy",
+          "handler": "record",
+          "id": "allocate.record",
+          "params": {},
+          "phase": "allocate"
+        },
+        {
+          "description": "Pack step (optional)",
+          "handler": "record",
+          "id": "pack.record",
+          "optional": true,
+          "params": {},
+          "phase": "pack"
+        },
+        {
+          "description": "Seal campaign receipt",
+          "handler": "seal.receipt",
+          "id": "seal.receipt",
+          "params": {},
+          "phase": "seal"
+        },
+        {
+          "description": "Lease / heartbeat",
+          "handler": "record",
+          "id": "monitor.heartbeat",
+          "optional": true,
+          "params": {},
+          "phase": "monitor"
+        },
+        {
+          "description": "Campaign summary",
+          "handler": "report.summary",
+          "id": "report.summary",
+          "params": {},
+          "phase": "report"
+        }
+      ],
+      "title": "TG K11 budget / reconcile shell"
+    }
+  },
+  "schema": "hawking.lab.campaign_catalog.v1"
+}

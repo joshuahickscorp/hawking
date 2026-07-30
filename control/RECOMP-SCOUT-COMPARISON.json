@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.recomposition.track_selection.v1",
+  "at": "2026-07-29",
+  "baseline": 430284,
+  "track_S": {
+    "mechanism": "semantic recompilation — freeze behaviour, build canonical cores, facade, migrate, delete internals and facades",
+    "projected_loc": 405200,
+    "projected_dirs": 158, "projected_files": 1160, "projected_crates": 24,
+    "facade_peak_loc": 1640,
+    "reaches_350k": false, "reaches_300k": false,
+    "measured_cores": {"campaign_authority": 4400, "model_families": 13750},
+    "estimated_cores": {"session_authority": 12000, "bridge_fabric": 18500},
+    "blocking_contracts": [
+      "Model-family unification forbidden until a shared LayerOp IR proves bit-exact argmax/top-k and <=2% decode p50 on both families",
+      "~27,500 LOC of live pack/parity/gravity science is not repeated architecture",
+      "Dual event models are must_not_delete until the Bridge lane"
+    ]
+  },
+  "track_V": {
+    "mechanism": "minimal vertical slices — build the smallest complete path, measure what the current tree carries that a slice would never need",
+    "verdict": "slices_rebuild_most_of_it",
+    "slice_loc": 84000,
+    "expansion_for_full_capability_matrix": 310000,
+    "projected_loc": 394000,
+    "residue_identified": 346000,
+    "reaches_350k": false, "reaches_300k": false,
+    "slices": [
+      {"path": "artifact->runtime->serve->HIDE turn", "minimal": 72000, "basis": "estimated", "current": 228172, "residue": 156000},
+      {"path": "campaign spec->experiment->receipt->resume", "minimal": 2800, "basis": "MEASURED", "current": 95766, "residue": 93000},
+      {"path": "YOU event->context->tool->permission->memory", "minimal": 8500, "basis": "estimated", "current": 36203, "residue": 27700},
+      {"path": "model registry->adapter->Bridge->Fabric", "minimal": 3500, "basis": "MEASURED", "current": 21430, "residue": 17900}
+    ],
+    "blocking_contract": "Model families are distinct executors at jaccard < 0.11, plus ~129k of laboratory sealed science and the HIDE product floor. The expansion to cover the full capability matrix consumes the residue."
+  },
+  "convergence": {
+    "both_reach_neither_target": true,
+    "projections_within_11200_of_each_other": true,
+    "shared_first_blocking_contract": "Model families require separate executors until a LayerOp IR proves bit-exactness and performance parity. Both tracks name it independently.",
+    "significance": "Two architectures designed from opposite directions -- one shrinking existing subsystems, one building minimal paths from capability -- land 11,200 apart. That agreement is evidence about the shape of the problem, not about either designer."
+  },
+  "selection": {
+    "primary": "V",
+    "why": "Its projection is lower (394,000 against 405,200), it clears the 400k rung where Track S does not, and its two measured slices are the sharpest concrete leads in either design: the campaign path measures 2,800 minimal against 95,766 current, and the adapter/Bridge path 3,500 against 21,430.",
+    "second_attempt_preserved": "S",
+    "caveat": "V's own verdict is slices_rebuild_most_of_it. Its 310,000-line expansion is what makes the projection realistic rather than aspirational, and it is the number a prototype must test."
+  },
+  "next": "Prototype the campaign slice, which is the highest-leverage MEASURED claim in either track: 2,800 lines against 95,766. If a slice that small carries the capability, the laboratory collapses. If it cannot, the reason is the first precise behaviour contract this arc is required to find."
+}

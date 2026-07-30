@@ -1,0 +1,9 @@
+{
+  "id": "refuse_001",
+  "session_id": "01HSESSIONYOU00000000000000",
+  "tool": "shell.exec",
+  "command": "rm -rf /",
+  "decision": "deny",
+  "ts_ms": 1720000000310,
+  "reason": "destructive shell refused by permission engine"
+}

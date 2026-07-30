@@ -22,36 +22,27 @@ pub fn argmax_f32(xs: &[f32]) -> u32 {
     best as u32
 }
 
-// Speculative decoding: n-gram draft, EAGLE5 trained head, and shared-expert draft paths.
+// Speculative decoding: user-draft n-gram and shared-expert (ExactShared) paths.
 // The shared-expert path uses DeepSeek-V2/V3's 2 always-active experts as a free draft,
 // then runs routed experts as verification. Agreed tokens accepted; mismatches roll back.
+// Former EAGLE5 / Event Horizon research modules are product-released (BC-ACCEL-009 / B-RT3).
 
 pub mod cross_tokenizer;
 /// Durable sinks that accept only target-verified tokens (speculation safety).
 pub mod durable;
-pub mod eagle5;
-pub mod eagle5_forward;
-pub mod eagle_proposer;
 pub mod governor;
 /// Dual committed/provisional KV with rollback + rebase (speculation safety).
 pub mod kv_dual;
 /// Separated BASE_TRUE_TPS / ACCELERATED_ACCEPTED_TPS scoreboards.
 pub mod metrics_sep;
-pub mod parallel_draft;
 pub mod policy;
 pub mod proposal;
-pub mod replay_oracle;
-pub mod retrieval;
 pub mod router;
-pub mod safetensors_io;
 pub mod shared;
 /// Enumerable speculation suspension policy (one list, one place).
 pub mod suspension;
-pub mod suffix_array;
-pub mod suffix_automaton;
 /// Type-level Draft / Verified boundary (speculation safety).
 pub mod token_boundary;
-pub mod tree;
 pub mod user_ngram;
 pub mod verifier;
 

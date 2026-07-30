@@ -163,7 +163,6 @@ impl Default for UiEventBus {
 mod tests {
     use super::*;
     use hide_core::ids::SessionId;
-
     #[tokio::test]
     async fn publish_delivers_to_subscriber() {
         let bus = UiEventBus::new(16);
@@ -179,7 +178,6 @@ mod tests {
         let got = rx.recv().await.unwrap();
         assert!(matches!(got.kind, UiEventKind::RuntimeStatus { .. }));
     }
-
     #[tokio::test]
     async fn same_stream_tokens_coalesce_into_one_batch() {
         let bus = UiEventBus::new(16);
@@ -188,7 +186,6 @@ mod tests {
         bus.publish_token(1, sess.clone(), "s1", "Hel");
         bus.publish_token(2, sess.clone(), "s1", "lo ");
         bus.publish_token(3, sess.clone(), "s1", "world");
-        // Nothing emitted yet (still accumulating). Flush forces one batch.
         bus.flush(sess.clone());
         let got = rx.recv().await.unwrap();
         match got.kind {
@@ -200,14 +197,12 @@ mod tests {
         }
         assert_eq!(got.seq, 3);
     }
-
     #[tokio::test]
     async fn switching_streams_flushes_the_previous_batch() {
         let bus = UiEventBus::new(16);
         let mut rx = bus.subscribe();
         let sess = Some(SessionId::new());
         bus.publish_token(1, sess.clone(), "s1", "abc");
-        // Switching to s2 flushes s1's "abc".
         bus.publish_token(2, sess.clone(), "s2", "x");
         let first = rx.recv().await.unwrap();
         match first.kind {
@@ -218,7 +213,6 @@ mod tests {
             other => panic!("expected s1 flush, got {other:?}"),
         }
     }
-
     #[tokio::test]
     async fn stream_switch_flushes_with_its_own_session() {
         let bus = UiEventBus::new(16);
@@ -226,13 +220,8 @@ mod tests {
         let sess_a = Some(SessionId::new());
         let sess_b = Some(SessionId::new());
         assert_ne!(sess_a, sess_b);
-
-        // Session A streams a token, then session B's token arrives on a
-        // different stream — flushing A's batch on the boundary. The flushed
-        // batch must carry A's session, NOT B's (the incoming token's session).
         bus.publish_token(1, sess_a.clone(), "s-a", "alpha");
         bus.publish_token(2, sess_b.clone(), "s-b", "beta");
-
         let flushed = rx.recv().await.unwrap();
         match &flushed.kind {
             UiEventKind::TokenBatch { stream_id, text } => {
@@ -241,12 +230,7 @@ mod tests {
             }
             other => panic!("expected s-a flush, got {other:?}"),
         }
-        assert_eq!(
-            flushed.session_id, sess_a,
-            "boundary-flushed batch must keep ITS OWN (session A), not the incoming session B"
-        );
-
-        // Now flush the still-pending B batch; it must carry session B.
+        assert_eq!(flushed.session_id, sess_a);
         bus.flush(None);
         let flushed_b = rx.recv().await.unwrap();
         match &flushed_b.kind {
@@ -258,7 +242,6 @@ mod tests {
         }
         assert_eq!(flushed_b.session_id, sess_b);
     }
-
     #[tokio::test]
     async fn capacity_bound_lags_a_slow_subscriber() {
         let bus = UiEventBus::new(2);
@@ -273,7 +256,6 @@ mod tests {
                 },
             });
         }
-        // The slow reader sees a Lagged signal, not unbounded growth.
         let err = rx.recv().await.unwrap_err();
         assert!(matches!(err, broadcast::error::RecvError::Lagged(_)));
     }

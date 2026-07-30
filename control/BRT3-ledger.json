@@ -1,0 +1,333 @@
+{
+  "schema": "hawking.rebuild.ledger.v1",
+  "rung": "B-RT3",
+  "revision": 4,
+  "title": "EAGLE5 / Event Horizon research release \u2014 restore user-owned blackbox matrix",
+  "base": "eada2080e0110a60a28292907490252246bee009",
+  "base_active_loc": 436895,
+  "candidate_active_loc": 431355,
+  "delta_active_loc": -5540,
+  "product_decision": {
+    "ids": [
+      "BC-ACCEL-009",
+      "BC-GENERATION-017"
+    ],
+    "statement": "Release EAGLE5/EH runtime+CLI as peripheral product-released surface with no invocable inputs/outputs/side effects/fallback; BC-GENERATION-017 satisfied by single historical comment only; user-draft remains acceleration authority; training tools pending Core C / C-HIST-R1. Rev4 restores REBUILD_BLACKBOX_TEST_MATRIX.json byte-for-byte to base (user-owned dirty path; forbidden to rebuild lanes)."
+  },
+  "rev4_repairs": {
+    "matrix_restored_to_base": "REBUILD_BLACKBOX_TEST_MATRIX.json",
+    "matrix_sha256": "680088865f075419cac61665c2e9209db7d48dc0db825b7d3f84cbcf15e9ec46",
+    "matrix_in_projection": false,
+    "bc_accel_009_side_effects": [],
+    "bc_accel_009_gate": "constitution reproduction (direct, not via blackbox matrix)",
+    "evidence_validation": "capability_manifest.evidence_is_meaningful rejects empty str/list/object and fake invocation"
+  },
+  "eliminated": {
+    "production_modules": {
+      "crates/hawking-speculate/src/eagle5.rs": 1036,
+      "crates/hawking-speculate/src/eagle5_forward.rs": 493,
+      "crates/hawking-speculate/src/eagle_proposer.rs": 175,
+      "crates/hawking-speculate/src/retrieval.rs": 239,
+      "crates/hawking-speculate/src/suffix_array.rs": 172,
+      "crates/hawking-speculate/src/suffix_automaton.rs": 395,
+      "crates/hawking-speculate/src/replay_oracle.rs": 342,
+      "crates/hawking-speculate/src/tree.rs": 315,
+      "crates/hawking-speculate/src/parallel_draft.rs": 169,
+      "crates/hawking-speculate/src/safetensors_io.rs": 231
+    },
+    "production_total": 3567,
+    "subject_tests": {
+      "crates/hawking-core/tests/qwen_eagle5_speculate.rs": 193,
+      "crates/hawking-core/tests/eagle5_forward_parity.rs": 182,
+      "crates/hawking-core/tests/eagle5_spec_parity.rs": 102,
+      "crates/hawking-core/tests/eagle5_trained_head_load.rs": 41,
+      "crates/hawking-core/tests/event_horizon_parity_prop.rs": 162,
+      "crates/hawking/tests/spec_oracle_cli.rs": 60
+    },
+    "subject_test_total": 740,
+    "subject_deleted_identities_in_surviving_files": [
+      "crates/hawking-core/tests/user_draft_parity_e2e.rs::event_horizon_bit_identical_default",
+      "crates/hawking-core/tests/user_draft_parity_e2e.rs::event_horizon_bit_identical_fast_pruned_q4k"
+    ]
+  },
+  "rewritten": {
+    "note": "Physical-line residual on surviving counted source after EAGLE5/EH consumer closure + rev3 contract closure + rev4 evidence hardening. Comment-only rewrites are not claimed as product-elimination credit. Cargo.toml/Cargo.lock/JSON not in LOC language set. REBUILD_BLACKBOX_TEST_MATRIX.json is NOT modified (restored to base).",
+    "files": {
+      "crates/hawking-speculate/src/lib.rs": {
+        "old": 70,
+        "new": 61,
+        "delta": -9
+      },
+      "crates/hawking-speculate/src/proposal.rs": {
+        "old": 150,
+        "new": 150,
+        "delta": 0
+      },
+      "crates/hawking-speculate/src/user_ngram.rs": {
+        "old": 316,
+        "new": 315,
+        "delta": -1
+      },
+      "crates/hawking-speculate/src/router.rs": {
+        "old": 504,
+        "new": 492,
+        "delta": -12
+      },
+      "crates/hawking-speculate/src/governor.rs": {
+        "old": 352,
+        "new": 352,
+        "delta": 0
+      },
+      "crates/hawking-speculate/src/verifier.rs": {
+        "old": 245,
+        "new": 245,
+        "delta": 0
+      },
+      "crates/hawking-speculate/src/policy.rs": {
+        "old": 206,
+        "new": 205,
+        "delta": -1
+      },
+      "crates/hawking-speculate/src/cross_tokenizer.rs": {
+        "old": 180,
+        "new": 180,
+        "delta": 0
+      },
+      "crates/hawking-speculate/src/token_boundary.rs": {
+        "old": 256,
+        "new": 256,
+        "delta": 0
+      },
+      "crates/hawking-core/src/engine.rs": {
+        "old": 697,
+        "new": 679,
+        "delta": -18
+      },
+      "crates/hawking-core/src/model/qwen_dense.rs": {
+        "old": 10218,
+        "new": 9161,
+        "delta": -1057
+      },
+      "crates/hawking-core/src/model/deepseek_v2.rs": {
+        "old": 4337,
+        "new": 4070,
+        "delta": -267
+      },
+      "crates/hawking/src/main.rs": {
+        "old": 4321,
+        "new": 4118,
+        "delta": -203
+      },
+      "crates/hawking-core/tests/user_draft_parity_e2e.rs": {
+        "old": 192,
+        "new": 150,
+        "delta": -42
+      },
+      "docs/env_flags.md": {
+        "old": 57,
+        "new": 60,
+        "delta": 3
+      },
+      "tools/verify/capability_manifest.py": {
+        "old": 166,
+        "new": 303,
+        "delta": 137
+      }
+    },
+    "total_delta": -1470,
+    "uncounted_mechanical": {
+      "crates/hawking-speculate/Cargo.toml": {
+        "old": 19,
+        "new": 13,
+        "delta": -6,
+        "note": "not in LOC language set"
+      },
+      "Cargo.lock": {
+        "note": "mechanical: removed unused hawking-speculate dependency entries only"
+      },
+      "REBUILD_BEHAVIOUR_CONSTITUTION.json": {
+        "note": "JSON not in LOC language set; BC-ACCEL-009 released peripheral; side_effects=[]"
+      },
+      "REBUILD_BLACKBOX_TEST_MATRIX.json": {
+        "note": "RESTORED byte-for-byte to base eada2080; NOT in projection; user-owned dirty path"
+      },
+      "control/CAPABILITY_MANIFEST.json": {
+        "note": "JSON not in LOC language set; released row for runtime:eagle5_event_horizon"
+      },
+      "control/BRT3-ledger.json": {
+        "note": "JSON not in LOC language set"
+      },
+      "control/BRT3-f1-identity-receipt.json": {
+        "note": "JSON not in LOC language set"
+      }
+    }
+  },
+  "generated": 0,
+  "relocated": 0,
+  "facade": 0,
+  "added_apparatus": {
+    "note": "Markdown counts; JSON receipts do not (.json not in LOC language set).",
+    "paths": [
+      "control/BRT3-report.md",
+      "control/BRT3-ledger.json",
+      "control/BRT3-f1-identity-receipt.json",
+      "/private/tmp/HAWKING_COREB_BRT3_ACCEL_RELEASE_REV4_20260729.md"
+    ],
+    "markdown_loc": 237,
+    "json_uncounted": [
+      "control/BRT3-ledger.json",
+      "control/BRT3-f1-identity-receipt.json"
+    ],
+    "external_uncounted": [
+      "/private/tmp/HAWKING_COREB_BRT3_ACCEL_RELEASE_REV4_20260729.md"
+    ]
+  },
+  "reconcile": {
+    "eliminated_production": -3567,
+    "eliminated_subject_tests": -740,
+    "rewritten": -1470,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "added_apparatus": 237,
+    "sum": -5540,
+    "measured_delta": -5540,
+    "reconciles": true
+  },
+  "production_release_loc": 3567,
+  "subject_test_loc": 740,
+  "f1_projection": {
+    "status": "READY_FOR_INDEPENDENT_REVIEW_PENDING_F1_AND_COREC_R1_PROJECTION",
+    "identity_count": 14,
+    "fingerprint_algorithm": "sha256(newline_joined_identity_strings_document_order + trailing_newline)[:16]",
+    "fingerprint_sha256_16": "68b942ec05678825",
+    "receipt": "control/BRT3-f1-identity-receipt.json",
+    "disposition": "subject_deleted",
+    "product_decision": "BC-ACCEL-009 release",
+    "replacement": null
+  },
+  "corec_r1_dependency": {
+    "exact": "tools/training/** (capability inventory still lists tools/training/eagle5_quantize.py, eagle5_tau_eval.py, eagle5_train.py, eh_eagle_tau_sweep.py); Core C recovery R1 / C-HIST-R1 owns tools/training/** release",
+    "entrypoints_still_present": [
+      "tools/training/eagle5_quantize.py",
+      "tools/training/eagle5_tau_eval.py",
+      "tools/training/eagle5_train.py",
+      "tools/training/eh_eagle_tau_sweep.py"
+    ],
+    "not_called_absent": true,
+    "training_not_edited": true
+  },
+  "bc_accel_009": {
+    "criticality": "peripheral",
+    "status": "product-released",
+    "inputs": "none",
+    "observable_outputs": "none",
+    "side_effects": [],
+    "failure_behaviour": "n/a \u2014 path not invocable; no deterministic mock head fallback",
+    "verification_status": "verified_by_run",
+    "direct_reproduction": "PASS (constitution field; not via blackbox matrix)",
+    "blackbox_matrix_entry": "baseline research-path not runnable (restored base matrix)",
+    "capability_manifest_row": "runtime:eagle5_event_horizon disposition=released"
+  },
+  "user_dirty_path_diff": "none",
+  "preserved": {
+    "user_draft_modules": [
+      "user_ngram",
+      "kv_dual",
+      "metrics_sep",
+      "governor",
+      "suspension",
+      "token_boundary",
+      "durable",
+      "verifier",
+      "policy",
+      "router",
+      "proposal",
+      "shared",
+      "cross_tokenizer"
+    ],
+    "user_draft_parity_e2e_retained": [
+      "user_draft_is_bit_identical",
+      "user_draft_bit_identical_fast_pruned_q4k",
+      "user_draft_bit_identical_full_fast_env",
+      "user_draft_propose_first_bit_identical_default",
+      "user_draft_propose_first_bit_identical_pruned_q4k",
+      "user_draft_propose_first_lossless_long"
+    ],
+    "behaviours": [
+      "BC-ACCEL-001",
+      "BC-ACCEL-002",
+      "BC-ACCEL-003",
+      "BC-ACCEL-011",
+      "BC-SECURITY-001",
+      "BC-SECURITY-015",
+      "BC-GENERATION-017 historical comment only"
+    ]
+  },
+  "gates": {
+    "cargo_check_hawking_speculate_core_hawking": "PASS exit=0",
+    "hawking_speculate_lib_tests": "56/56 PASS exit=0",
+    "user_draft_parity_e2e_compile": "PASS exit=0",
+    "e3_user_draft_gate_rule_compile": "PASS exit=0",
+    "constitution_bc_accel_009_release": "PASS exit=0 (side_effects=[])",
+    "live_reference_closure": "PASS exit=0",
+    "blackbox": "pass=86 fail=0 skip=124 exit=0 (committed baseline restored)",
+    "capability_manifest_selfcheck": "PASS exit=0 (empty evidence + fake invocation negatives)",
+    "generation_audit": "PASS exit=0",
+    "topology_diff": "all improved or held exit=0",
+    "inventory_gate": "exit=1 tests -66 accounted caps OK pending F1",
+    "capability_manifest_gate": "exit=0 1 invocable 1 released 0 unaccounted",
+    "formatting_only_diff": 0,
+    "git_diff_check": "clean exit=0",
+    "runtime_eagle_references": 0,
+    "user_dirty_path_diff": "none"
+  },
+  "topology": {
+    "directories_all": {
+      "base": 137,
+      "candidate": 137,
+      "delta": 0
+    },
+    "directories_leaf": {
+      "base": 109,
+      "candidate": 109,
+      "delta": 0
+    },
+    "source_files": {
+      "base": 1197,
+      "candidate": 1182,
+      "delta": -15
+    },
+    "public_symbols": {
+      "base": 9531,
+      "candidate": 9465,
+      "delta": -66
+    },
+    "functions": {
+      "base": 14675,
+      "candidate": 14476,
+      "delta": -199
+    },
+    "files_over_1500_lines": {
+      "base": 26,
+      "candidate": 26,
+      "delta": 0
+    },
+    "tiny_forwarders": {
+      "base": 13,
+      "candidate": 13,
+      "delta": 0
+    },
+    "single_file_directories": {
+      "base": 24,
+      "candidate": 24,
+      "delta": 0
+    }
+  },
+  "performance": {
+    "claim": null,
+    "note": "default-off net-negative research release; paired TPS not risk-connected; default hot path not reworked"
+  },
+  "verdict": "READY_FOR_INDEPENDENT_REVIEW_PENDING_F1_AND_COREC_R1_PROJECTION",
+  "commit": "NONE"
+}

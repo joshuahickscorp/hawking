@@ -3183,7 +3183,12 @@ mod gpu_bounds {
 mod tests {
     use super::*;
     use std::collections::HashSet;
+    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     fn assert_flag_defaults_off(env: &str, enabled: fn() -> bool) {
+        let _env_guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let prev = std::env::var_os(env); std::env::remove_var(env);
         assert!(!enabled());
         match prev {
@@ -3210,6 +3215,9 @@ mod tests {
     }
     #[test]
     fn gpu_compact_attention_icb_flag_defaults_off_and_requires_parents() {
+        let _env_guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let prior_compact = std::env::var_os(GPU_COMPACT_MLA_ENV); let prior_dsa = std::env::var_os(GPU_DEVICE_DSA_ENV);
         let prior_icb = std::env::var_os(GPU_COMPACT_ATTENTION_ICB_ENV); std::env::remove_var(GPU_COMPACT_MLA_ENV);
         std::env::remove_var(GPU_DEVICE_DSA_ENV); std::env::remove_var(GPU_COMPACT_ATTENTION_ICB_ENV);
@@ -3250,6 +3258,9 @@ mod tests {
     }
     #[test]
     fn gpu_expert_wave_concurrent_flag_defaults_off_and_requires_wave() {
+        let _env_guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV); let prev_concurrent = std::env::var_os(GPU_EXPERT_WAVE_CONCURRENT_ENV);
         std::env::remove_var(GPU_EXPERT_WAVE_ENV); std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV);
         assert!(!gpu_expert_wave_concurrent_enabled()); std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, "1");
@@ -3266,6 +3277,9 @@ mod tests {
     }
     #[test]
     fn gpu_expert_table_hit_flag_defaults_off_and_requires_parents() {
+        let _env_guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV); let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
         let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV); std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
         std::env::remove_var(GPU_EXPERT_WAVE_ENV); std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
@@ -3288,6 +3302,9 @@ mod tests {
     }
     #[test]
     fn gpu_expert_table_icb_flag_defaults_off_and_requires_table_hit() {
+        let _env_guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV); let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
         let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV); let prev_icb = std::env::var_os(GPU_EXPERT_TABLE_ICB_ENV);
         std::env::remove_var(GPU_DEVICE_ROUTER_ENV); std::env::remove_var(GPU_EXPERT_WAVE_ENV);

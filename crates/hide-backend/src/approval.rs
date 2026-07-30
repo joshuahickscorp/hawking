@@ -92,7 +92,6 @@ impl ApprovalHub {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn decide_then_take_returns_the_decision_and_clears() {
         let hub = ApprovalHub::default();
@@ -100,15 +99,10 @@ mod tests {
         let step = StepId::new();
         hub.decide(run.clone(), Some(step.clone()), ApprovalDecision::Approve);
         assert!(hub.is_pending(&run));
-        assert_eq!(
-            hub.take(&run),
-            Some((Some(step), ApprovalDecision::Approve))
-        );
-        // Mailbox is now empty (single-use).
+ assert_eq!( hub.take(&run), Some((Some(step), ApprovalDecision::Approve)) );
         assert!(!hub.is_pending(&run));
         assert!(hub.take(&run).is_none());
     }
-
     #[test]
     fn last_write_wins_per_run() {
         let hub = ApprovalHub::default();
@@ -117,7 +111,6 @@ mod tests {
         hub.decide(run.clone(), None, ApprovalDecision::Deny);
         assert_eq!(hub.take(&run), Some((None, ApprovalDecision::Deny)));
     }
-
     #[test]
     fn decisions_are_per_run_isolated() {
         let hub = ApprovalHub::default();
@@ -128,7 +121,6 @@ mod tests {
         assert!(hub.take(&b).is_none());
         assert_eq!(hub.take(&a), Some((None, ApprovalDecision::Approve)));
     }
-
     #[test]
     fn clear_drops_a_buffered_decision() {
         let hub = ApprovalHub::default();

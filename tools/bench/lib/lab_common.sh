@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Shared laboratory shell helpers for bench/training scripts.
-# Prefer `python3.12 -m lab_harness run <spec>` for orchestration.
+# Prefer `python3.12 -m lab.bench_harness run <spec>` for orchestration.
 set -euo pipefail
 
 lab_stamp() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }

@@ -657,7 +657,6 @@ fn hex_val(byte: u8) -> Result<u8> {
 mod tests {
     use super::*;
     use crate::ids::now_ms;
-
     #[tokio::test]
     async fn in_memory_log_assigns_ordered_sequences() {
         let log = InMemoryEventLog::new();
@@ -682,7 +681,6 @@ mod tests {
         assert_eq!(second.seq, 2);
         assert_eq!(log.scan(Some(session), None, None).await.unwrap().len(), 2);
     }
-
     #[tokio::test]
     async fn jsonl_log_persists_and_reopens_with_chain_hashes() {
         let dir = std::env::temp_dir().join(format!("hide_event_log_{}", now_ms()));
@@ -708,7 +706,6 @@ mod tests {
         assert!(first.chain_hash.is_some());
         assert!(second.chain_hash.is_some());
         assert_ne!(first.chain_hash, second.chain_hash);
-
         let reopened = JsonlEventLog::open(&path).unwrap();
         let loaded = reopened
             .scan(Some(session.clone()), None, None)
@@ -722,12 +719,8 @@ mod tests {
         assert_eq!(third.seq, 3);
         let _ = std::fs::remove_dir_all(dir);
     }
-
     #[test]
     fn blake3_chain_detects_tampering() {
-        // Build a two-event chain, then tamper with the first event's payload
-        // and assert its recomputed blake3 hash no longer matches the embedded
-        // one (integrity / tamper detection, ch.01 §4.8).
         let session = SessionId::new();
         let mut first = Event::new(
             1,
@@ -735,31 +728,20 @@ mod tests {
         );
         let h1 = compute_chain_hash(&[0u8; 32], &first).unwrap();
         first.chain_hash = Some(hex_lower(&h1));
-
         let second = Event::new(
             2,
             NewEvent::system(session, "b", serde_json::json!({ "n": 2 })),
         );
         let h2 = compute_chain_hash(&h1, &second).unwrap();
-
-        // Untampered: recomputation matches the embedded hash.
         let recomputed = compute_chain_hash(&[0u8; 32], &first).unwrap();
-        assert_eq!(
-            first.chain_hash.as_deref(),
-            Some(hex_lower(&recomputed).as_str())
-        );
-
-        // Tamper with the payload → recomputed hash diverges, so the embedded
-        // hash (and every downstream hash) no longer verifies.
+ assert_eq!( first.chain_hash.as_deref(), Some(hex_lower(&recomputed).as_str()) );
         let mut tampered = first.clone();
         tampered.payload = serde_json::json!({ "n": 999 });
         let after = compute_chain_hash(&[0u8; 32], &tampered).unwrap();
         assert_ne!(h1, after, "tampering changes the chain hash");
-        // The follow-on hash, recomputed from the tampered prefix, also breaks.
         let h2_after = compute_chain_hash(&after, &second).unwrap();
         assert_ne!(h2, h2_after, "tamper propagates down the chain");
     }
-
     #[test]
     fn typed_constructor_round_trips_through_value_payload() {
         let session = SessionId::new();
@@ -781,11 +763,8 @@ mod tests {
         assert_eq!(view.call_id, call_id);
         assert_eq!(view.tool_name, "fs.read");
     }
-
     #[test]
     fn unknown_ext_fields_survive_serde_round_trip() {
-        // An event serialized by a newer/foreign producer carrying an unknown
-        // top-level field must round-trip it (T10 forward-compat).
         let session = SessionId::new();
         let event = Event::new(
             7,
@@ -794,15 +773,9 @@ mod tests {
         let mut as_json = serde_json::to_value(&event).unwrap();
         as_json["unknown_future_field"] = serde_json::json!({ "nested": true });
         let restored: Event = serde_json::from_value(as_json).unwrap();
-        assert_eq!(
-            restored.ext.get("unknown_future_field"),
-            Some(&serde_json::json!({ "nested": true })),
-            "unknown field captured in ext"
-        );
-        // And it must serialize back out (ext flattened) without loss.
+        assert_eq!(restored.ext.get("unknown_future_field"), Some(&serde_json::json!({ "nested": true })));
         let reserialized = serde_json::to_value(&restored).unwrap();
         assert_eq!(reserialized["unknown_future_field"]["nested"], true);
-        // The known open payload also survives (under the named `payload` field).
         assert_eq!(reserialized["payload"]["a"], 1);
     }
 }

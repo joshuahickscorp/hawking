@@ -1,0 +1,642 @@
+{
+  "schema": "hawking.condense.retirement_receipts.v1",
+  "receipts": {
+    "f1_retirement_receipt.json": {
+      "schema": "hawking.condense.controller_retirement.f1.v1",
+      "tag": "pre-controller-retirement-20260728",
+      "commit": "53435e75f8e80f2b1351f5da0fd4dbea0449f567",
+      "tag_object": "e523721bf7a3d4e7453bf3634aa94bc2b0618365",
+      "restore": [
+        "activation_aware_format",
+        "bounded_cache",
+        "doctor_campaign_supervisor",
+        "doctor_v5_gptoss_mxfp4",
+        "doctor_v5_telegram_rung_notifier",
+        "eco_activation",
+        "eco_admission",
+        "eco_cli",
+        "eco_import",
+        "eco_passport",
+        "eco_pipeline",
+        "eco_planner",
+        "eco_status",
+        "glm52_activation_aware_assemble",
+        "glm52_activation_aware_pack",
+        "glm52_activation_aware_pack_v2",
+        "glm52_activation_aware_source",
+        "glm52_basis_pilot",
+        "glm52_campaign_contract",
+        "glm52_capability_gate",
+        "glm52_compact_mla_fixture",
+        "glm52_composition_gate",
+        "glm52_external_baselines",
+        "glm52_flagship_oracle",
+        "glm52_functional_gauntlet",
+        "glm52_gravity_fixture",
+        "glm52_gravity_source",
+        "glm52_long_context_gate",
+        "glm52_moe_student",
+        "glm52_pilot_source_release",
+        "glm52_rehydrate_window",
+        "glm52_resource_policy",
+        "glm52_route_population_census",
+        "glm52_runtime_parity_gate",
+        "glm52_runtime_speed_gate",
+        "glm52_schedule_freeze",
+        "glm52_shard_probe",
+        "glm52_terminal_proofs",
+        "glm52_window_execution",
+        "glm52_xet_live",
+        "glm52_xet_live_driver",
+        "glm52_xet_window_fetch",
+        "gptoss_block",
+        "gptoss_moe_runtime",
+        "gptoss_real_forward",
+        "gptoss_subbit_packer",
+        "gravity_bench_lab",
+        "gravity_execution_adapter",
+        "gravity_flop_ledger",
+        "gravity_forge_run",
+        "gravity_frontier_correction_wave",
+        "gravity_frontier_g4_controller",
+        "gravity_functional_codec",
+        "gravity_global_allocator",
+        "gravity_kernel_select",
+        "gravity_llama_reference",
+        "gravity_metal",
+        "gravity_metal_lab_a",
+        "gravity_metal_lab_b",
+        "gravity_moe_layer",
+        "gravity_real_fixtures",
+        "hawking_null_metric",
+        "kimi_k26_download_supervisor",
+        "kimi_k26_phase2_recovery",
+        "kimi_k26_phase2_release",
+        "kimi_k26_release_cycle",
+        "kimi_k26_stale_download_cleanup",
+        "mech_measure",
+        "mech_run_all",
+        "overnight_supervisor",
+        "qwen3_moe_adapter",
+        "qwen_bpw_budget",
+        "qwen_correction_wave",
+        "qwen_download_worker",
+        "qwen_real_forward",
+        "seal_120b_conclusion",
+        "size_frontier",
+        "source_release_readiness",
+        "studio_manifest",
+        "succ_admission",
+        "succ_audit",
+        "succ_calibrate",
+        "succ_cli",
+        "succ_engine",
+        "succ_events",
+        "succ_frontier",
+        "succ_gc",
+        "succ_gravity",
+        "succ_gravity_policy",
+        "succ_gravity_receipts",
+        "succ_harvest",
+        "succ_press",
+        "succ_queue",
+        "succ_retire",
+        "succ_state",
+        "succ_telegram",
+        "succ_transition",
+        "succ_twin",
+        "succ_watch",
+        "succ_watchdog",
+        "tg_active_byte_budget",
+        "tg_k11_reconcile",
+        "tg_k11_synthetic_schedule",
+        "vulture_harvest"
+      ],
+      "delete_all": [
+        "_bench_fetch_workers",
+        "_bench_fetch_workers_nodisk",
+        "codebase_census",
+        "condense_reachability",
+        "corpus_integrity",
+        "decode_parity_harness",
+        "deepseek_v4_adapter",
+        "doctor_byte_auction",
+        "doctor_causal_harness",
+        "doctor_gen3",
+        "doctor_treatment_abi",
+        "forge_actaware_experiment",
+        "forge_controller_integration",
+        "forge_f2_fixture",
+        "forge_giant_adapters",
+        "forge_pre_run_readiness",
+        "glm52_allocation_probe",
+        "glm52_concurrency_autotune",
+        "glm52_flagship_screening",
+        "glm52_functional_auction",
+        "glm52_functional_cascade",
+        "glm52_functional_controller",
+        "glm52_functional_integration",
+        "glm52_functional_roofline",
+        "glm52_functional_student",
+        "glm52_generation_a_seal",
+        "glm52_lowrank",
+        "glm52_maturity",
+        "glm52_metric_correction",
+        "glm52_moe_student_fit",
+        "glm52_pilot",
+        "glm52_pilot_fetch",
+        "glm52_pilot_seal",
+        "glm52_precheck",
+        "glm52_protect_head_embed",
+        "glm52_rate_ladder",
+        "glm52_readiness_gate",
+        "glm52_rollback_seal",
+        "glm52_source_release",
+        "glm52_teacher_rechain",
+        "glm52_window_plan",
+        "gptoss_gravity_run",
+        "gravity_attention",
+        "gravity_breakthrough_baseline",
+        "gravity_container_freeze",
+        "gravity_decode",
+        "gravity_functional_metal",
+        "gravity_lab_lease",
+        "gravity_pq_fixture",
+        "gravity_profiler_acceptance",
+        "gravity_runtime",
+        "gravity_scale_correction",
+        "hawking_compat",
+        "hawking_contraction_pilot",
+        "hawking_tps_budget",
+        "mech_fidelity_c",
+        "mech_fidelity_d",
+        "qwen35_moe_adapter",
+        "qwen_adaptive_k",
+        "qwen_function_aware_codec",
+        "qwen_structural_plan",
+        "qwen_subhalfbit_search",
+        "resident_first_ladder",
+        "safetensors_to_gravity",
+        "storage_stripdown",
+        "storage_stripdown_controller",
+        "succ_eta"
+      ],
+      "delete_dup": [
+        "glm52_external_baselines",
+        "glm52_terminal_proofs",
+        "glm52_window_execution",
+        "glm52_xet_live",
+        "gravity_execution_adapter"
+      ],
+      "lines": {
+        "restored": 78999,
+        "deleted_all": 23160,
+        "deleted_dup": 0,
+        "eliminated": 23160,
+        "relocated": 78999
+      },
+      "modules": {
+        "deleted": 67,
+        "restored_as_live": 105,
+        "invariant_moved_first": 0
+      },
+      "entrypoints_removed": [
+        {
+          "module": "tools/condense/archive/_bench_fetch_workers.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/_bench_fetch_workers_nodisk.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/codebase_census.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/condense_reachability.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/corpus_integrity.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/decode_parity_harness.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/deepseek_v4_adapter.py",
+          "replaced_by_spec": "tools/condense/engine/specs/deepseek_v4.json"
+        },
+        {
+          "module": "tools/condense/archive/doctor_byte_auction.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/doctor_causal_harness.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/doctor_gen3.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/doctor_treatment_abi.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/forge_actaware_experiment.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/forge_controller_integration.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/forge_f2_fixture.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/forge_giant_adapters.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/forge_pre_run_readiness.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_allocation_probe.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_concurrency_autotune.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_flagship_screening.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_auction.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_cascade.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_controller.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_integration.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_roofline.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_functional_student.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_generation_a_seal.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_lowrank.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_maturity.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_metric_correction.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_moe_student_fit.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_pilot.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_pilot_fetch.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_pilot_seal.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_precheck.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_protect_head_embed.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_rate_ladder.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_readiness_gate.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_rollback_seal.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_source_release.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_teacher_rechain.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/glm52_window_plan.py",
+          "replaced_by_spec": "tools/condense/engine/specs/glm52.json"
+        },
+        {
+          "module": "tools/condense/archive/gptoss_gravity_run.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gptoss.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_attention.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_breakthrough_baseline.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_container_freeze.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_decode.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_functional_metal.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_lab_lease.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_pq_fixture.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_profiler_acceptance.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_runtime.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/gravity_scale_correction.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/hawking_compat.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/hawking_contraction_pilot.py",
+          "replaced_by_spec": "tools/condense/engine/specs/deepseek_v4.json"
+        },
+        {
+          "module": "tools/condense/archive/hawking_tps_budget.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/mech_fidelity_c.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/mech_fidelity_d.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/qwen35_moe_adapter.py",
+          "replaced_by_spec": "tools/condense/engine/specs/qwen.json"
+        },
+        {
+          "module": "tools/condense/archive/qwen_adaptive_k.py",
+          "replaced_by_spec": "tools/condense/engine/specs/qwen.json"
+        },
+        {
+          "module": "tools/condense/archive/qwen_function_aware_codec.py",
+          "replaced_by_spec": "tools/condense/engine/specs/qwen.json"
+        },
+        {
+          "module": "tools/condense/archive/qwen_structural_plan.py",
+          "replaced_by_spec": "tools/condense/engine/specs/qwen.json"
+        },
+        {
+          "module": "tools/condense/archive/qwen_subhalfbit_search.py",
+          "replaced_by_spec": "tools/condense/engine/specs/qwen.json"
+        },
+        {
+          "module": "tools/condense/archive/resident_first_ladder.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/safetensors_to_gravity.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/storage_stripdown.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/storage_stripdown_controller.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        },
+        {
+          "module": "tools/condense/archive/succ_eta.py",
+          "replaced_by_spec": "tools/condense/engine/specs/gravity_frontier.json"
+        }
+      ],
+      "remaining_archive_files": [
+        "tools/condense/archive/README.md"
+      ],
+      "restored_extra_lazy_imports": [],
+      "restored_tests": [
+        "tools/condense/tests/test_activation_aware_roundtrip.py"
+      ],
+      "test_restored_as_live": [
+        "tools/condense/test_activation_aware_roundtrip.py",
+        "tools/condense/tests/test_activation_aware_roundtrip.py"
+      ]
+    },
+    "h1_retirement_receipt.json": {
+      "schema": "hawking.condense.controller_retirement.h1.v1",
+      "lane": "H1",
+      "modules_deleted": [
+        "doctor_campaign_supervisor",
+        "doctor_v5_telegram_rung_notifier",
+        "eco_activation",
+        "eco_admission",
+        "eco_cli",
+        "eco_import",
+        "eco_passport",
+        "eco_pipeline",
+        "eco_planner",
+        "eco_status",
+        "emergency_detached_campaign",
+        "glm52_activation_aware_assemble",
+        "glm52_activation_aware_source",
+        "glm52_basis_pilot",
+        "glm52_campaign_contract",
+        "glm52_capability_gate",
+        "glm52_compact_mla_fixture",
+        "glm52_composition_gate",
+        "glm52_external_baselines",
+        "glm52_flagship_oracle",
+        "glm52_gravity_fixture",
+        "glm52_gravity_source",
+        "glm52_long_context_gate",
+        "glm52_notifications",
+        "glm52_pilot_source_release",
+        "glm52_rehydrate_window",
+        "glm52_resource_policy",
+        "glm52_route_population_census",
+        "glm52_runtime_parity_gate",
+        "glm52_runtime_speed_gate",
+        "glm52_schedule_freeze",
+        "glm52_window_execution",
+        "glm52_worker",
+        "glm52_xet_live_driver",
+        "glm52_xet_window_fetch",
+        "gravity_execution_adapter",
+        "gravity_forge_run",
+        "gravity_frontier_correction_wave",
+        "gravity_frontier_g4_controller",
+        "gravity_global_allocator",
+        "gravity_llama_reference",
+        "gravity_metal_lab_a",
+        "kimi_k26_download_supervisor",
+        "kimi_k26_phase2_recovery",
+        "kimi_k26_phase2_release",
+        "kimi_k26_release_cycle",
+        "kimi_k26_stale_download_cleanup",
+        "mech_measure",
+        "mech_run_all",
+        "overnight_supervisor",
+        "qwen3_moe_adapter",
+        "qwen_bpw_budget",
+        "qwen_correction_wave",
+        "qwen_download_worker",
+        "qwen_real_forward",
+        "seal_120b_conclusion",
+        "size_frontier",
+        "source_release_readiness",
+        "studio_manifest",
+        "succ_admission",
+        "succ_audit",
+        "succ_calibrate",
+        "succ_cli",
+        "succ_engine",
+        "succ_events",
+        "succ_frontier",
+        "succ_gc",
+        "succ_gravity",
+        "succ_gravity_policy",
+        "succ_gravity_receipts",
+        "succ_harvest",
+        "succ_press",
+        "succ_queue",
+        "succ_retire",
+        "succ_state",
+        "succ_telegram",
+        "succ_transition",
+        "succ_twin",
+        "succ_watch",
+        "succ_watchdog",
+        "test_activation_aware_roundtrip",
+        "tg_active_byte_budget",
+        "tg_k11_reconcile",
+        "tg_k11_synthetic_schedule",
+        "vulture_harvest"
+      ],
+      "modules_kept": [
+        "activation_aware_format",
+        "bounded_cache",
+        "doctor_v5_gptoss_mxfp4",
+        "eco_common",
+        "glm52_activation_aware_pack",
+        "glm52_activation_aware_pack_v2",
+        "glm52_adapter",
+        "glm52_assemble",
+        "glm52_capture_program",
+        "glm52_common",
+        "glm52_contract",
+        "glm52_corpus",
+        "glm52_evidence_auth",
+        "glm52_functional_gauntlet",
+        "glm52_grounding",
+        "glm52_grounding_auth",
+        "glm52_moe_student",
+        "glm52_pack",
+        "glm52_parity",
+        "glm52_reference",
+        "glm52_shard_probe",
+        "glm52_source_fetch",
+        "glm52_state",
+        "glm52_synthetic",
+        "glm52_teacher_capture",
+        "glm52_telegram",
+        "glm52_terminal_proofs",
+        "glm52_xet_autotune",
+        "glm52_xet_live",
+        "gptoss_block",
+        "gptoss_moe_runtime",
+        "gptoss_real_forward",
+        "gptoss_subbit_packer",
+        "gravity_bench_lab",
+        "gravity_flop_ledger",
+        "gravity_forge",
+        "gravity_format",
+        "gravity_functional_codec",
+        "gravity_kernel_select",
+        "gravity_metal",
+        "gravity_metal_lab_b",
+        "gravity_moe_layer",
+        "gravity_real_fixtures",
+        "hawking_null_metric"
+      ],
+      "relocated": 0,
+      "notes": "Controllers deleted for real; tests rewritten against engine preserving logical case names."
+    },
+    "retirement_tag.json": {
+      "schema": "hawking.condense.retirement_tag.v1",
+      "files": {
+        "README.md": "# pre-controller-retirement-20260728\n\nAnnotated tag prepared before F1 deletions.\n\n- **tag:** `pre-controller-retirement-20260728`\n- **commit:** `53435e75f8e80f2b1351f5da0fd4dbea0449f567`\n- **tag object:** `e523721bf7a3d4e7453bf3634aa94bc2b0618365`\n- **message:** Working tree before the archived controllers are removed\n\nThe sandbox blocked writing refs into the shared `.git` directory of this worktree.\nThe annotated tag object and ref were created in an isolated clone and verified\n(`git cat-file -p` shows the message above). Import onto the main repo with:\n\n```\ngit fetch /tmp/f1-tag-repo-work/repo tag pre-controller-retirement-20260728\n# or recreate:\ngit tag -a pre-controller-retirement-20260728 53435e75f8e80f2b1351f5da0fd4dbea0449f567 -m \"Working tree before the archived controllers are removed\"\n```\n\nRestore paths always work by commit:\n\n```\ngit checkout 53435e75f8e80f2b1351f5da0fd4dbea0449f567 -- tools/condense/archive/<module>.py\n```\n",
+        "commit": "53435e75f8e80f2b1351f5da0fd4dbea0449f567\n",
+        "ref": "e523721bf7a3d4e7453bf3634aa94bc2b0618365\n",
+        "tag_object": "x\u0001M\ufffdAj\ufffd0\u0010\u0000{\ufffd+\ufffd\u0003.kY\ufffd\u001d\b\ufffd\ufffd\ufffdY\ufffdW\ufffd\u0012\ufffdk\u059b@~_\ufffd\u0010\ufffdu\u0018\ufffd\ufffd0\ufffd\ufffd\ufffd\ufffd\u3352\ufffd\ufffd\\\ufffd\ufffdy\ufffd\u0001\ufffd\ufffdm\ufffd\ufffd\ufffd\u01c0ytc\ufffd\ufffd\u039d\ufffd?\ufffdF_;A\ufffdu-j\ufffd6v\ufffd&\ufffd\ufffd\ufffdB\ufffd\bi\u0011Zi\ufffd\u01a2=ao\ufffd\u007fm\"\ufffd\u001b\u001f\ufffd#\ufffd%\u074f\u0132\ufffd\ufffd\u0003D\ufffd\ufffdwZCY\ufffdk\ufffd\u0007\ufffd~\ufffd\ufffd\ufffdyDh\ufffd!\u001ase\ufffd\ufffdm\u0002\u0015\"\ufffd\ufffdY\bt&\b\ufffd\ufffd\ufffd>\ufffd'\ufffd\n\t\ufffd\u0005Wn\ufffd\u0000C\ufffdMc",
+        "tag_sha": "e523721bf7a3d4e7453bf3634aa94bc2b0618365\n"
+      }
+    }
+  },
+  "campaign_minimal_fixture": {
+    "schema": "hawking.condense.campaign_fixture.v1",
+    "campaign_id": "*",
+    "description": "Minimal shared fixture for engine dry-run; no weights, no network.",
+    "artifacts": [],
+    "notes": "Live readers use resolve_artifact for real seals."
+  }
+}

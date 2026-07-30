@@ -694,7 +694,6 @@ pub fn regression_vs_baseline(candidate: &HaloReport, baseline: &HaloReport) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn sample_tasks() -> Vec<HaloTask> {
         vec![
             HaloTask {
@@ -850,7 +849,6 @@ mod tests {
             },
         ]
     }
-
     #[test]
     fn tool_json_scores_strict_object() {
         let tasks = sample_tasks();
@@ -866,7 +864,6 @@ mod tests {
         );
         assert!(!bad);
     }
-
     #[test]
     fn needle_prompt_is_deterministic() {
         let tasks = sample_tasks();
@@ -876,22 +873,16 @@ mod tests {
         assert_eq!(a, b);
         assert!(a.contains("SECRET_PASSCODE=ABC"));
     }
-
     #[test]
     fn degenerate_repetition_detects_loops() {
-        assert!(has_degenerate_repetition(
-            "settle settle settle settle settle settle settle settle",
-            8
-        ));
+ assert!(has_degenerate_repetition( "settle settle settle settle settle settle settle settle", 8 ));
         assert!(!has_degenerate_repetition("a b c d e f g h", 8));
     }
-
     #[test]
     fn extract_code_handles_fence() {
         let c = extract_code("here\n```python\ndef f():\n  return 1\n```\n");
         assert!(c.contains("def f()"));
     }
-
     #[test]
     fn aggregate_and_tournament_are_deterministic() {
         let tasks = sample_tasks();
@@ -906,7 +897,6 @@ mod tests {
         );
         completions.insert("t6".to_string(), "ABC".to_string());
         completions.insert("t7".to_string(), "391".to_string());
-
         let scores: Vec<TaskScore> = tasks
             .iter()
             .map(|t| {
@@ -918,7 +908,6 @@ mod tests {
                 score_task_completion(t, completions.get(&t.id).unwrap(), exec)
             })
             .collect();
-
         let r1 = aggregate_scores(
             &tasks,
             &scores,
@@ -944,20 +933,16 @@ mod tests {
         assert_eq!(r1, r2);
         assert!(matches!(r1.aggregate, AggregateScore::Measured { .. }));
         assert!(r1.disqualifications.is_empty());
-
         let mut worse = r1.clone();
         if let AggregateScore::Measured { score, .. } = &mut worse.aggregate {
             *score -= 0.5;
         }
         assert_eq!(compare_reports(&r1, &worse), -1);
         assert_eq!(compare_reports(&worse, &r1), 1);
-
-        // Tie-break on sha when scores equal
         let mut other = r1.clone();
         other.artifact_sha256 = "bbb".into();
         assert_eq!(compare_reports(&r1, &other), -1);
     }
-
     #[test]
     fn hidden_fallback_disqualifies() {
         let tasks = sample_tasks();
@@ -982,12 +967,8 @@ mod tests {
             &comps,
             vec![],
         );
-        assert!(r
-            .disqualifications
-            .iter()
-            .any(|d| d.code == "HIDDEN_FALLBACK"));
+ assert!(r .disqualifications .iter() .any(|d| d.code == "HIDDEN_FALLBACK"));
     }
-
     #[test]
     fn regression_blocks_t7_on_aggregate_drop() {
         let tasks = sample_tasks();
@@ -1021,7 +1002,6 @@ mod tests {
         assert!(v.aggregate_regression);
         assert!(v.blocks_t7_winner);
     }
-
     #[test]
     fn load_corpus_parses_repo_fixture_shape() {
         let line = r#"{"id":"x","dimension":"coding","oracle":"execution","prompt":"p","lang":"python","entry":"f","test":"assert True","max_new_tokens":32}"#;
@@ -1029,7 +1009,6 @@ mod tests {
         assert_eq!(tasks.len(), 1);
         assert!(matches!(tasks[0].oracle, Oracle::Execution));
     }
-
     #[test]
     fn accept_any_of_works() {
         let t = HaloTask {

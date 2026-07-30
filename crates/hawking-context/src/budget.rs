@@ -200,7 +200,6 @@ pub fn estimate_tokens(text: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn heuristic_counter_uses_chars_over_four() {
         let c = TokenCounter::heuristic();
@@ -209,7 +208,6 @@ mod tests {
         assert_eq!(c.count("abcdefgh"), 2);
         assert_eq!(c.count(""), 0);
     }
-
     #[test]
     fn reservations_carve_before_fill() {
         let b = TokenBudget {
@@ -220,18 +218,12 @@ mod tests {
         assert_eq!(b.available_input(), 800);
         assert_eq!(b.reserve_pct(0.25), 200);
     }
-
-    /// Property: when `HIDE_TOKENIZER` points at a real `tokenizer.json`,
-    /// `discover_from_env` returns an accurate counter whose counts differ from
-    /// the chars/4 heuristic on non-trivial text (tokenizer-true budgeting).
     #[test]
     fn discover_from_env_loads_hide_tokenizer_when_set() {
         let path = std::env::var("HIDE_TOKENIZER_TEST_PATH")
             .ok()
             .filter(|p| std::path::Path::new(p).is_file())
             .or_else(|| {
-                // Prefer a well-known local HF cache path when present so the
-                // property is exercised without requiring the env var.
                 let known = [
                     "/Users/scammermike/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer.json",
                     "/Users/scammermike/.cache/huggingface/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer.json",
@@ -246,13 +238,11 @@ mod tests {
             eprintln!("discover_from_env_loads_hide_tokenizer_when_set: SKIP — no tokenizer.json");
             return;
         };
-        // Isolate from ambient HIDE_MODEL_WEIGHTS so only HIDE_TOKENIZER drives discovery.
         let prev_tok = std::env::var("HIDE_TOKENIZER").ok();
         let prev_w = std::env::var("HIDE_MODEL_WEIGHTS").ok();
         std::env::set_var("HIDE_TOKENIZER", &path);
         std::env::remove_var("HIDE_MODEL_WEIGHTS");
         let counter = TokenCounter::discover_from_env();
-        // Restore ambient env.
         match prev_tok {
             Some(v) => std::env::set_var("HIDE_TOKENIZER", v),
             None => std::env::remove_var("HIDE_TOKENIZER"),
@@ -262,22 +252,14 @@ mod tests {
             None => std::env::remove_var("HIDE_MODEL_WEIGHTS"),
         }
         let counter = counter.expect("HIDE_TOKENIZER must load a real counter");
-        assert!(
-            counter.is_accurate(),
-            "discovered counter must be tokenizer-true"
-        );
-        // Tokenizer-true count is an integer length of encodings, not chars/4.
+ assert!( counter.is_accurate(), "discovered counter must be tokenizer-true" );
         let sample = "fn main() { println!(\"hello tokenizer-true budgeting\"); }";
         let true_n = counter.count(sample);
         let heuristic_n = estimate_tokens(sample);
         assert!(true_n > 0, "tokenizer must count at least one token");
-        // On this sample the BPE count is not identical to chars/4 for MiniLM /
-        // most HF tokenizers — if a future tokenizer happens to match, still
-        // require accuracy flag as the load-bearing property.
         let _ = (true_n, heuristic_n);
         assert!(counter.is_accurate());
     }
-
     #[test]
     fn discover_from_env_returns_none_when_unset() {
         let prev_tok = std::env::var("HIDE_TOKENIZER").ok();
@@ -293,13 +275,7 @@ mod tests {
             Some(v) => std::env::set_var("HIDE_MODEL_WEIGHTS", v),
             None => std::env::remove_var("HIDE_MODEL_WEIGHTS"),
         }
-        // Only assert when ambient discovery had nothing either — if the restore
-        // re-enabled a path, that is fine; the clear-env case must be None.
-        // We checked under cleared env before restore.
         let _ = found;
-        // Re-clear briefly to assert the property under isolation is None.
-        // (Already cleared above before restore; capture was under clear.)
-        // Use from_file miss instead:
         assert!(TokenCounter::from_file("/nonexistent/tokenizer.json").is_err());
     }
 }

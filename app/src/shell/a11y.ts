@@ -8,7 +8,7 @@
      to whatever was focused before the dialog opened.
 */
 import { useEffect, useRef } from "react";
-import type { FileNode } from "../surfaces/ide/types";
+import type { FileNode } from "../surfaces/ide_types";
 
 // Selector for the elements a Tab cycle should visit inside a trapped container.
 export const FOCUSABLE_SELECTOR =

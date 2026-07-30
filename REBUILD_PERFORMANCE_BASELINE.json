@@ -1,0 +1,201 @@
+{
+  "schema": "hawking.rebuild.performance_baseline.v1",
+  "commit": "a2790a1bdfd45e1b249e61c6ebf8e9b9717f1dff",
+  "gate": "no >2% regression on measured metrics under same conditions unless explicitly waived",
+  "metrics": [
+    {
+      "metric": "BASE_TRUE_TPS.warm_t40_t79",
+      "value": 0.3961,
+      "unit": "tok/s",
+      "conditions": "GLM-5.2-H0.98-Math-Preserve.gravity; context 4; 80 decode tokens; 32 GiB cache; verify_hash=true; unaccelerated batch-1",
+      "source_file": "HAWKING_BASE_TRUE_TPS.json",
+      "measured_at": "2026-07-26T15:35:00Z",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct = (new-old)/old * 100; fail if |delta|>2 for regression gate on same artifact+workload"
+    },
+    {
+      "metric": "BASE_TRUE_TPS.cold_t0_t11",
+      "value": 0.2942,
+      "unit": "tok/s",
+      "conditions": "same as warm BASE_TRUE_TPS receipt",
+      "source_file": "HAWKING_BASE_TRUE_TPS.json",
+      "measured_at": "2026-07-26T15:35:00Z",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct vs recorded; fail if regression >2%"
+    },
+    {
+      "metric": "BASE_TRUE_TPS.no_hash_ceiling.warm",
+      "value": 0.4074,
+      "unit": "tok/s",
+      "conditions": "same artifact without hash verify ceiling comparison",
+      "source_file": "HAWKING_BASE_TRUE_TPS.json",
+      "measured_at": "2026-07-26T15:35:00Z",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "gravity_glm.base_true_decode_tps.ctx4",
+      "value": 0.14872440141865914,
+      "unit": "tok/s",
+      "conditions": "GLM Math-Preserve; context_tokens=4; decode_tokens=12; GPU cache budget 32GiB",
+      "source_file": "GLM52_MATH_PRESERVE_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct vs recorded median; fail if >2% regression under same conditions"
+    },
+    {
+      "metric": "gravity_glm.base_true_decode_tps.ctx128",
+      "value": 0.15061880984743498,
+      "unit": "tok/s",
+      "conditions": "GLM Math-Preserve; context_tokens=128; decode_tokens=12",
+      "source_file": "GLM52_MATH_PRESERVE_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "gravity_dense.base_true_decode_tps.ctx128",
+      "value": 105.81331123387055,
+      "unit": "tok/s",
+      "conditions": "llama32-1b-R0.v2.gravity; decode_tokens=16; dispatches_per_token=210",
+      "source_file": "HAWKING_GRAVITY_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "gravity_dense.base_true_decode_tps.ctx512",
+      "value": 68.75320704168458,
+      "unit": "tok/s",
+      "conditions": "llama32-1b gravity dense; ctx 512",
+      "source_file": "HAWKING_GRAVITY_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "gravity_dense.base_true_decode_tps.ctx2048",
+      "value": 29.201520948077896,
+      "unit": "tok/s",
+      "conditions": "llama32-1b gravity dense; ctx 2048",
+      "source_file": "HAWKING_GRAVITY_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "gravity_dense.base_true_decode_tps.ctx8192",
+      "value": 13.337330364526952,
+      "unit": "tok/s",
+      "conditions": "llama32-1b gravity dense; ctx 8192",
+      "source_file": "HAWKING_GRAVITY_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct; fail if >2% regression"
+    },
+    {
+      "metric": "readme.clean_room.decode_tps.qwen25_3b_q4km",
+      "value": 31,
+      "unit": "tok/s",
+      "conditions": "M3 Pro 18GB clean-room; Qwen2.5-3B-Q4_K_M; about/approximate headline",
+      "source_file": "README.md",
+      "measured_at": "undated_doc",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct vs ~31; allow soft band because doc says 'about'; campaign gate still uses 2% on hard receipts"
+    },
+    {
+      "metric": "env_flags.campaign.qwen25_3b.warm_baseline_about",
+      "value": 40,
+      "unit": "tok/s",
+      "conditions": "docs/env_flags.md campaign 2026-06-21 warm 5-trial median class baseline ~40 tps bit-identical path",
+      "source_file": "docs/env_flags.md",
+      "measured_at": "2026-06-21",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "relative_delta_pct on same machine/suite; fail if >2% regression for locked bit-identical path when remeasured under same protocol"
+    },
+    {
+      "metric": "env_flags.profile_fast.warm_delta",
+      "value": 5,
+      "unit": "percent",
+      "conditions": "fast profile ~+3\u20137% warm noisy vs default on Qwen2.5-3B campaign",
+      "source_file": "docs/env_flags.md",
+      "measured_at": "2026-06-21",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "compare median warm tok/s; noisy \u2014 not a hard public win alone"
+    },
+    {
+      "metric": "BASE_TRUE_TPS.resident_bytes",
+      "value": 21029025180,
+      "unit": "bytes",
+      "conditions": "GLM Math-Preserve memoization integrity run; evictions=0",
+      "source_file": "HAWKING_BASE_TRUE_TPS.json",
+      "measured_at": "2026-07-26T15:35:00Z",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "absolute equality or <=2% growth without documented residency change"
+    },
+    {
+      "metric": "campaign.regression_threshold",
+      "value": 2.0,
+      "unit": "percent",
+      "conditions": "R2-verdict and campaign rule: p95 regression above 2% rejects",
+      "source_file": "control/R2-verdict.json",
+      "measured_at": "campaign",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "fail if p95 or primary metric regresses more than 2%"
+    },
+    {
+      "metric": "gravity_glm.gpu_cache.high_water_bytes",
+      "value": 22024117128,
+      "unit": "bytes",
+      "conditions": "GLM52_MATH_PRESERVE_BASE_TPS gpu_weight_cache high_water",
+      "source_file": "GLM52_MATH_PRESERVE_BASE_TPS.json",
+      "measured_at": "unknown_in_file",
+      "is_measured_or_estimated": "measured",
+      "comparison_method": "report-only unless residency regression claimed"
+    },
+    {
+      "metric": "storage.hard_floor",
+      "value": 150,
+      "unit": "GB",
+      "conditions": "preserve 150 GB free hard floor before storage decisions",
+      "source_file": "BASELINES.md",
+      "measured_at": "doc",
+      "is_measured_or_estimated": "estimated",
+      "comparison_method": "policy constraint not a speed metric"
+    },
+    {
+      "metric": "storage.scratch_reserve",
+      "value": 64,
+      "unit": "GB",
+      "conditions": "processing scratch reserve",
+      "source_file": "BASELINES.md",
+      "measured_at": "doc",
+      "is_measured_or_estimated": "estimated",
+      "comparison_method": "policy constraint"
+    },
+    {
+      "metric": "storage.hf_xet_cache_reserve",
+      "value": 32,
+      "unit": "GB",
+      "conditions": "HF/Xet transient cache reserve",
+      "source_file": "BASELINES.md",
+      "measured_at": "doc",
+      "is_measured_or_estimated": "estimated",
+      "comparison_method": "policy constraint"
+    },
+    {
+      "metric": "admission.process_budget",
+      "value": 78,
+      "unit": "GiB",
+      "conditions": "GPT/Codex protected tenant: 78 GiB process admission budget on 96 GB machine",
+      "source_file": "BASELINES.md",
+      "measured_at": "doc",
+      "is_measured_or_estimated": "estimated",
+      "comparison_method": "policy constraint for measurement admission"
+    }
+  ],
+  "notes": [
+    "Values harvested from existing receipts/docs only; this lane does not re-benchmark.",
+    "Approximate README numbers are marked and must not override hard receipt metrics when both exist."
+  ]
+}

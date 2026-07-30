@@ -240,7 +240,6 @@ mod tests {
     use hide_core::event::{EventLog, InMemoryEventLog, NewEvent};
     use hide_core::ids::SessionId;
     use serde_json::json;
-
     fn snap(idle: bool, ac: bool, thermal: ThermalState) -> ResourceSnapshot {
         ResourceSnapshot {
             free_memory_mb: 16_000,
@@ -254,7 +253,6 @@ mod tests {
             idle,
         }
     }
-
     #[test]
     fn gate_blocks_on_battery_and_active_session() {
         let sched = BatchSchedule::default();
@@ -267,14 +265,12 @@ mod tests {
             _ => panic!("expected blocked"),
         }
     }
-
     #[test]
     fn gate_ready_when_idle_and_plugged_in() {
         let sched = BatchSchedule::default();
         let g = evaluate_gate(&sched, now_ms(), &snap(true, true, ThermalState::Nominal));
         assert!(g.is_ready());
     }
-
     #[test]
     fn gate_respects_thermal_ok() {
         let sched = BatchSchedule {
@@ -286,12 +282,10 @@ mod tests {
         let ready = evaluate_gate(&sched, now_ms(), &snap(true, true, ThermalState::Fair));
         assert!(ready.is_ready());
     }
-
     #[tokio::test]
     async fn wake_report_is_a_projection_of_batch_events() {
         let log = InMemoryEventLog::new();
         let session = SessionId::new();
-        // Two member jobs: one done, one failed.
         for (job_id, status) in [("job_a", "done"), ("job_b", "failed")] {
             log.append(NewEvent::system(
                 session.clone(),
@@ -315,7 +309,6 @@ mod tests {
         ))
         .await
         .unwrap();
-
         let batch = BatchJob::new(
             vec!["job_a".to_string(), "job_b".to_string()],
             BatchSchedule::default(),
