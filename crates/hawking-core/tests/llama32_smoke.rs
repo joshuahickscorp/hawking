@@ -60,9 +60,17 @@ fn smoke_for(size_tag: &str, label: &str, expect_arch: &str) {
     let ids = run_greedy(&weights, expect_arch);
     let ids2 = run_greedy(&weights, expect_arch);
     assert_eq!(ids, ids2, "{label}: greedy temp=0 output not deterministic");
+    // Pin the *input* alongside the output. Without this the baseline cannot
+    // tell a code regression from a different GGUF build: the finder accepts
+    // any models/*<size_tag>*.gguf, and two publishers' Q4_K_M of the same
+    // model produce different tokens for reasons that are nobody's bug.
+    let bytes = std::fs::metadata(&weights).map(|m| m.len()).unwrap_or(0);
+    let mut h = Sha256::new();
+    h.update(std::fs::read(&weights).expect("read weights"));
+    let weights_sha = format!("{:x}", h.finalize());
     check_or_pin_hash(
         Path::new("tests/golden/_llama32_token_baseline.hashes"),
-        label,
+        &format!("{label}/in:{}:{}", &weights_sha[..16], bytes),
         &hash16_tokens(&ids),
     );
 }
