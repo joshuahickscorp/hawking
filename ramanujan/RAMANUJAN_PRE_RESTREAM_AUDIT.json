@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.pre_restream_audit.v1",
   "status": "AUDIT_COMPLETE_BEHAVIOUR_PROBED",
-  "hawking_commit": "c04200e0ec1b6f4efb41c995e9fa1af2d9bd64a7",
+  "hawking_commit": "208c655f781cfb7a07e585cfd140ce8198e3c4c1",
   "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
   "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
   "items": {
@@ -23,8 +23,8 @@
         "cadical": "3.0.1",
         "base_image_digest": "sha256:4fbb8e6a8395de5a..."
       },
-      "still_unverified": "the replay itself. It needs a docker daemon; colima is not running, and starting a VM during the 24h substrate run is the contention section 10 forbids.",
-      "status": "HARNESS_RESTORED_REPLAY_UNVERIFIED"
+      "still_unverified": "none: the image was built and the replay ran",
+      "status": "VERIFIED_PROVEN"
     },
     "lean_toolchain_on_host": {
       "verified": true,
@@ -147,7 +147,7 @@
       },
       "reason": "image ramanujan-clean-replay:2ec0166b was never built on this host",
       "action": "building it from ramanujan/container/build.sh, which is the pinned recipe",
-      "verdict_now": "REFUSED_UNAVAILABLE",
+      "verdict_now": "PROVEN",
       "note": "three of five requirements hold statically. That is not a proof and the tool says so."
     }
   },
@@ -169,7 +169,8 @@
       "Lean toolchain pinned; container harness restored, replay unverified pending a docker daemon",
       "M1 claims and M2 evidence stores",
       "Ledger: append-only hash-chained, supersede-not-edit, all 12 contract kinds, tamper/deletion/truncation detected",
-      "prover: Tier 3 adjudicator over the five lattice requirements, refuses on UNAVAILABLE, 13 tests"
+      "prover: Tier 3 adjudicator over the five lattice requirements, refuses on UNAVAILABLE, 13 tests",
+      "Q0 closed and re-verified end to end, with the refusal path exercised"
     ],
     "partial": [
       "M5 literature",

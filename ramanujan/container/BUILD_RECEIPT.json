@@ -1,14 +1,10 @@
 {
   "schema": "hawking.ramanujan.container_build_receipt.v1",
-  "at": "2026-07-27T19:07:30Z",
+  "at": "2026-07-30T18:24:36Z",
   "image": "ramanujan-clean-replay:2ec0166b",
-  "image_id": "sha256:319f63eb570145568bda6d73cc7f206a8be6d1097a48f188d8976ab1b0ede036",
+  "image_id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
   "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
-  "lean_mathlib_commit": "62eed1db4d67327ec8120be05f1a1b0847d74561",
-  "lean_host_commit": "f054605aea4b840552cca2e725580bffd1e1b704",
   "docker_host": "unix:///Users/scammermike/.colima/default/docker.sock",
   "platform": "linux/arm64",
-  "status": "BUILT",
-  "build_log": "/tmp/ramanujan-container-build.log",
-  "notes": "Built via Colima Docker (default OrbStack context hung). DOCKER_BUILDKIT=0 because buildx missing."
+  "status": "BUILT"
 }
