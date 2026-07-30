@@ -24,7 +24,12 @@
     "bytes": 29547716448,
     "seconds": 132.0,
     "mbit_s": 1790.2,
-    "measured": true
+    "measured": true,
+    "reproducibility": {
+      "run1_s": 132.0,
+      "run2_s": 132.2,
+      "spread_pct": 0.15
+    }
   },
   "transformations": [
     {
@@ -50,14 +55,37 @@
       "peak_rss_bytes": 7883784192,
       "out_bytes": 12124684128,
       "parallel_speedup": 12.68
+    },
+    {
+      "target": "Q4_K_M",
+      "variant": "imatrix",
+      "tool": "llama-quantize",
+      "imatrix": "Qwen2.5-14B-Instruct.imatrix",
+      "threads": 20,
+      "nice": 5,
+      "wall_s": 59.58,
+      "user_s": 1028.93,
+      "sys_s": 9.53,
+      "peak_rss_bytes": 7907770368,
+      "out_bytes": 8988110944,
+      "parallel_speedup": 17.27
+    },
+    {
+      "target": "Q6_K",
+      "variant": "imatrix",
+      "tool": "llama-quantize",
+      "imatrix": "Qwen2.5-14B-Instruct.imatrix",
+      "threads": 20,
+      "nice": 5,
+      "wall_s": 25.79,
+      "user_s": 359.02,
+      "sys_s": 7.56,
+      "peak_rss_bytes": 7905378304,
+      "out_bytes": 12124684384,
+      "parallel_speedup": 13.92
     }
   ],
   "artifacts": {
-    "f16": {
-      "path": "models/Qwen2.5-14B-Instruct-f16.gguf",
-      "bytes": 29547716448,
-      "sha256": "0811262438ff013dd1421b7b4c6cbd526f0a392a5deec0f7ba7ba6722f49d83b"
-    },
     "Q6_K": {
       "path": "models/Qwen2.5-14B-Instruct-Q6_K.gguf",
       "bytes": 12124684128,
@@ -67,10 +95,36 @@
       "path": "models/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
       "bytes": 8988110688,
       "sha256": "0cf0487827c1c41207bbe65b65f609bd9e035e9a78b6a6586b66189b5d32fe6d"
+    },
+    "Q4_K_M_imat": {
+      "path": "models/Qwen2.5-14B-Instruct-Q4_K_M-imat.gguf",
+      "bytes": 8988110944,
+      "sha256": "ee99e1ed0f42b36948f3877917f4712165b9c2eac7f394d73bb6b383357aa078"
+    },
+    "Q6_K_imat": {
+      "path": "models/Qwen2.5-14B-Instruct-Q6_K-imat.gguf",
+      "bytes": 12124684384,
+      "sha256": "e3173563cedd02ccbf2c45e3a1b7c0980b3cb53c3c9d11c49f54eeeadb269da6"
     }
   },
   "claims_not_made": [
     "no decode or TG rung is claimed here; the GPU is contended",
     "llama-quantize is the external baseline, not the Gravity/Condense foundry"
-  ]
+  ],
+  "imatrix_finding": {
+    "question": "is fetching the pre-quant parent and quantizing locally the right call",
+    "answer": "yes for speed, but only with the published imatrix",
+    "plain_vs_imatrix_Q4_K_M": {
+      "plain_bytes": 8988110688,
+      "imatrix_bytes": 8988110944,
+      "size_delta_bytes": 256,
+      "size_delta_pct": 2.8e-06,
+      "wall_s_plain": 51.81,
+      "wall_s_imatrix": 59.58,
+      "wall_cost_pct": 15.0,
+      "content_identical": false
+    },
+    "consequence": "identical bytes per token, therefore identical decode speed and identical TG rung; the only difference is which weights hold precision, so a quality curve measured on a plain quant understates Q4",
+    "rule": "quantize locally so the transformation wall clock exists, but always pass --imatrix"
+  }
 }
