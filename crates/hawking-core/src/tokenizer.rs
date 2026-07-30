@@ -982,6 +982,7 @@ mod tests {
         .unwrap();
         let tokenizer = Tokenizer {
             inner,
+            add_bos: false,
             bos_id: Some(1),
             eos_id: Some(2),
             pad_id: None,
