@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.bos_defect.v1",
+  "status": "ROOT_CAUSE_FOUND_AND_FIXED",
+  "hawking_commit": "c6692c46b683befcb54fd712d6bcaf67132eb669",
+  "defect": "the BPE tokenizer path dropped the BOS token",
+  "mechanism": "tokenizer.ggml.add_bos_token is parsed at tokenizer.rs:190 and passed only to LlamaSpmTokenizer. The BPE path delegates to the tokenizers crate, and a GGUF-converted BPE tokenizer carries no post-processor, so nothing prepended BOS.",
+  "why_it_looked_like_three_problems": "Qwen2.5 declares add_bos_token false and was unaffected, so the one bug presented as 'two adapter families are broken and one works'",
+  "evidence_before": {
+    "llama": "[791, 6864, 315, 9822, 374]",
+    "deepseek": "[549, 6077, 280, 7239, 317]",
+    "llama_cpp_llama": "[128000, 791, 6864, 315, 9822, 374]",
+    "llama_cpp_deepseek": "[100000, 549, ...]"
+  },
+  "evidence_after": {
+    "llama": "[128000, 791, 6864, 315, 9822, 374]",
+    "deepseek": "[100000, 549, 6077, 280, 7239, 317]",
+    "qwen": "[785, 6722, 315, 9625, 374] \u2014 still no BOS, which is correct for Qwen",
+    "match": "all three now agree with llama.cpp exactly"
+  },
+  "k0_truth": {
+    "llama": {
+      "before": "' a good thing to do the same as the same as the'",
+      "after": "' Paris, the largest city in which is located in'",
+      "verdict": "PASS"
+    },
+    "deepseek": {
+      "before": "' is is is is is is is'",
+      "after": "'!!!!!!!!!!'",
+      "verdict": "STILL FAIL, different signature, so BOS was necessary but not sufficient here"
+    },
+    "qwen": {
+      "after": "' Paris. A. True B. False'",
+      "verdict": "unchanged PASS"
+    }
+  },
+  "what_this_does_not_fix": {
+    "llama_speed": {
+      "before_ms": 275.7,
+      "after_ms": 262.7,
+      "llama_cpp_ms": 2.95,
+      "gap_x": 89.1,
+      "reading": "correctness and speed were two separate defects. llama.rs is 648 lines with 24 Metal references against qwen_dense's 9161 and 465, and the BOS fix does not touch that."
+    },
+    "deepseek_correctness": "a second defect remains, now showing as repeated '!' rather than repeated ' is'"
+  },
+  "guard": "the golden gate was updated deliberately, and it caught this change first: same input sha, output moved ee12bbd4 -> a000b6f0. That is the input-pinning fix working."
+}

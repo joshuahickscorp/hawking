@@ -16,6 +16,13 @@ use tokenizers::Tokenizer as HfTokenizer;
 
 pub struct Tokenizer {
     inner: HfTokenizer,
+    /// `tokenizer.ggml.add_bos_token`. The SPM path takes this as a constructor
+    /// argument, but the BPE path delegates to the `tokenizers` crate, and a
+    /// GGUF-converted BPE tokenizer carries no post-processor, so nothing would
+    /// prepend BOS. Llama-3 and DeepSeek both declare it true and are trained
+    /// with it at position 0; without it the first forward sees a distribution
+    /// the model never saw in training.
+    add_bos: bool,
     bos_id: Option<u32>,
     eos_id: Option<u32>,
     pad_id: Option<u32>,
@@ -128,6 +135,9 @@ impl Tokenizer {
             build_special_sets(&id_ordered_vocab(&inner), None, None, None, None);
         Ok(Self {
             inner,
+            // A standalone tokenizer.json carries its own post-processor, so
+            // whatever BOS policy it declares is already applied by the encoder.
+            add_bos: false,
             bos_id: None,
             eos_id: None,
             pad_id: None,
@@ -206,6 +216,7 @@ impl Tokenizer {
 
         Ok(Self {
             inner,
+            add_bos,
             bos_id,
             eos_id,
             pad_id,
@@ -228,7 +239,18 @@ impl Tokenizer {
             .inner
             .encode(text, add_special_tokens)
             .map_err(|e| Error::Model(format!("encode: {e}")))?;
-        Ok(enc.get_ids().to_vec())
+        let mut ids = enc.get_ids().to_vec();
+        // Prepend BOS when the GGUF asks for it and the inner encoder did not
+        // already do so. The guard matters: some tokenizer.json files do carry
+        // a post-processor, and a doubled BOS is its own corruption.
+        if add_special_tokens && self.add_bos {
+            if let Some(bos) = self.bos_id {
+                if ids.first() != Some(&bos) {
+                    ids.insert(0, bos);
+                }
+            }
+        }
+        Ok(ids)
     }
 
     pub fn decode(&self, ids: &[u32], skip_special: bool) -> Result<String> {
