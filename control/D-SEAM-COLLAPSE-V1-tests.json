@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.rebuild.rung_tests.v1",
+  "rung": "D-SEAM-COLLAPSE-V1",
+  "base": "bd3c04fc6a2c92f92ea5d64a0c5707a52e8bedce",
+  "candidate_rev": "bbd454e7ff05675b61cd5269277894b9fba58654",
+  "results": [
+    {
+      "command": "cargo test -p hide-backend --no-fail-fast",
+      "result": "pass",
+      "detail": "15 test result lines; all 0 failed. Aggregate 438 unit/integration/doc tests passed. Isolated CARGO_HOME=/tmp/d-seam-post-ax-cargo; no CARGO_TARGET_DIR (nested fixture cargo tests fail under shared TARGET_DIR)."
+    },
+    {
+      "command": "cargo test -p hide-core -p hide-kernel -p hide-protocol -p hide-fleet -p hide-acp -p hide-serve -p hawking-context --no-fail-fast",
+      "result": "pass",
+      "detail": "TOTAL passed=542 failed=0 across result lines"
+    },
+    {
+      "command": "cargo check --workspace",
+      "result": "pass"
+    },
+    {
+      "command": "python3.12 tools/verify/case_extract.py --check control/ASSERTION_LEDGER.json",
+      "result": "pass",
+      "detail": "ASSERTION LEDGER CHECK PASS total=4623 sealed_at_commit=ea33af24ea34"
+    },
+    {
+      "command": "python3.12 tools/verify/blackbox.py --only-runnable --matrix <committed HEAD:REBUILD_BLACKBOX_TEST_MATRIX.json>",
+      "result": "pass",
+      "detail": "pass=86 fail=0 skip=0 (baseline_runnable=86)"
+    },
+    {
+      "command": "python3.12 tools/loc/hawking_generation_audit.py --gate",
+      "result": "pass",
+      "detail": "generated source files: 0; reclassified active: 0"
+    },
+    {
+      "command": "cargo test -p hide-backend --test live_model_turn",
+      "result": "pass",
+      "detail": "1 passed; live GGUF path not exercised when weights absent (honest skip inside test if applicable)"
+    },
+    {
+      "command": "cargo test -p hide-backend focused: replay|checkpoint|handoff|lenses|policy|permission|memory|connector|lease|speculation|submit_turn|side_chat|write_lease",
+      "result": "pass",
+      "detail": "All 13 filters matched and 0 failed (replay 12, checkpoint 10, handoff 7, lenses 10, policy 16, permission 5, memory 17, connector 16, lease 14, speculation 3, submit_turn 8, side_chat 7, write_lease 3)."
+    }
+  ],
+  "performance": {
+    "hide_submit_turn_latency": "UNAVAILABLE \u2014 not claimed PASS",
+    "hide_interaction_metrics": "UNAVAILABLE \u2014 risk-disconnected / not measured"
+  },
+  "migration": {
+    "MIG-013": "held by non-touch",
+    "MIG-014": "held by non-touch",
+    "MIG-015": "no schema change; .hide/ formats untouched",
+    "MIG-025": "held by non-touch; migrations items=26"
+  },
+  "f1": {
+    "sealed_total": 4623,
+    "touched_product_paths": "hide-backend only; no test identity deleted",
+    "manifest_rewrite": "not required \u2014 no F1 case identity removed",
+    "bijection": "preserve; dual-turn product branch had no exclusive F1 identities in TEST_CASE_MANIFEST"
+  }
+}

@@ -161,7 +161,7 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
         );
         return;
     };
-    std::env::remove_var("HIDE_KERNEL_TURN");
+    // Product SubmitTurn is sole run_turn_core; HIDE_KERNEL_TURN is not read.
     let bind = ephemeral_bind().await;
     let dir = unique_dir("hide_live_model_turn");
     let _env = LiveEnvGuard::apply(&[

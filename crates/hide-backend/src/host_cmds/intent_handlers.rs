@@ -96,9 +96,9 @@ impl BackendHost {
     }
 
     /// Seed (or replace) the session's durable plan record from a live kernel
-    /// plan and publish the `plan` projection. Used by the live-turn emitter's
-    /// twin path and by tests; the FSM emitter in [`run_turn_kernel`] uses the
-    /// same [`crate::plan_domain::store_and_publish`] seam.
+    /// plan and publish the `plan` projection. Used by plan intents and tests;
+    /// fleet/agent kernels share the same [`crate::plan_domain::store_and_publish`]
+    /// seam (product SubmitTurn is sole [`run_turn_core`]).
     pub(crate) async fn handle_plan_intent(&self, name: &str, payload: &Value) -> Result<()> {
         let missing = |field: &str| {
             hide_core::error::HideError::Message(format!("{name}: missing '{field}'"))
@@ -838,88 +838,47 @@ impl BackendHost {
             Some(base_url) => {
                 // Register the run with the interrupt hub so control intents can
                 // reach it (the generation task polls it cooperatively).
+                // Sole product SubmitTurn path: always `generate_submit_turn` →
+                // `run_turn_core`. The incomplete HIDE_KERNEL_TURN dual branch is
+                // gone; AgentKernel remains for fleet/tooling via build_turn_kernel.
                 let ui_bus = self.ui_bus.clone();
                 let role_registry = self.services.role_registry.clone();
                 let event_log = self.services.event_log.clone();
-                let key_value_store = self.services.key_value_store.clone();
                 let code_index = self.services.code_index.clone();
                 let memory = self.services.memory_store.clone();
                 let classed_memory = self.services.classed_memory.clone();
                 let interrupts = self.interrupts.clone();
-                let approvals = self.approvals.clone();
                 let run = run_id.clone();
                 let repo_instructions = self.services.repo_instructions.clone();
-                if kernel_turn_enabled() {
-                    // Increment 2: route the turn through the REAL kernel loop so
-                    // it can plan, use tools (permission-gated), and verify with
-                    // deterministic oracles. The kernel is built here (sync) via
-                    // `build_turn_kernel` and moved into the spawned driver.
-                    let kernel =
-                        self.build_turn_kernel(base_url.clone(), session_id.clone(), run.clone());
-                    tokio::spawn(async move {
-                        if let Err(e) = run_turn_kernel(
-                            kernel,
-                            event_log,
-                            key_value_store,
-                            role_registry,
-                            code_index,
-                            memory,
-                            classed_memory,
-                            ui_bus.clone(),
-                            interrupts,
-                            approvals,
-                            run,
-                            session_id.clone(),
-                            base_url,
-                            prompt,
-                            DEFAULT_KERNEL_TURN_MAX_STEPS,
-                            repo_instructions,
-                        )
-                        .await
-                        {
-                            ui_bus.publish(UiEvent {
-                                seq: 0,
-                                session_id: Some(session_id),
-                                kind: UiEventKind::Error {
-                                    code: "generation".to_string(),
-                                    message: e.to_string(),
-                                },
-                            });
-                        }
-                    });
-                } else {
-                    // Single-shot fallback (no tools): the model-offline-safe path,
-                    // pinnable via `HIDE_KERNEL_TURN=0` for tests / degraded serves.
-                    tokio::spawn(async move {
-                        if let Err(e) = generate_submit_turn(
-                            event_log,
-                            role_registry,
-                            code_index,
-                            memory,
-                            classed_memory,
-                            ui_bus.clone(),
-                            interrupts,
-                            run,
-                            session_id.clone(),
-                            base_url,
-                            prompt,
-                            repo_instructions,
-                        )
-                        .await
-                        {
-                            // Surface the failure on the same typed Wire-B channel;
-                            // never swallow it.
-                            ui_bus.publish(UiEvent {
-                                seq: 0,
-                                session_id: Some(session_id),
-                                kind: UiEventKind::Error {
-                                    code: "generation".to_string(),
-                                    message: e.to_string(),
-                                },
-                            });
-                        }
-                    });
-                }
+                tokio::spawn(async move {
+                    if let Err(e) = generate_submit_turn(
+                        event_log,
+                        role_registry,
+                        code_index,
+                        memory,
+                        classed_memory,
+                        ui_bus.clone(),
+                        interrupts,
+                        run,
+                        session_id.clone(),
+                        base_url,
+                        prompt,
+                        repo_instructions,
+                    )
+                    .await
+                    {
+                        // Surface the failure on the same typed Wire-B channel;
+                        // never swallow it.
+                        ui_bus.publish(UiEvent {
+                            seq: 0,
+                            session_id: Some(session_id),
+                            kind: UiEventKind::Error {
+                                code: "generation".to_string(),
+                                message: e.to_string(),
+                            },
+                        });
+                    }
+                });
             }
             None => {
                 // No model online: surface "model offline" as a real UiEvent.

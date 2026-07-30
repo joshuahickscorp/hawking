@@ -75,7 +75,7 @@ pub fn end_working_turn(classed: &ClassedMemorySystem, turn_id: &str) {
 /// and panic unwind — not only the success path.
 ///
 /// No disarm: the guard always clears on scope exit. Production
-/// `run_turn_core` / `run_turn_kernel` bind one guard after seeding and never
+/// `run_turn_core` (sole product SubmitTurn) binds one guard after seeding and never
 /// double-clear with a manual [`end_working_turn`].
 pub struct WorkingTurnGuard {
     classed: Arc<ClassedMemorySystem>,

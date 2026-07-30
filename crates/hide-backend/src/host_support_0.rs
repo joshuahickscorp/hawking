@@ -1009,25 +1009,11 @@ pub(crate) async fn generate_submit_turn(
     Ok(buf)
 }
 
-/// Whether a live `SubmitTurn` routes through the real kernel loop (Increment 2)
-/// or the single-shot [`run_turn_core`] fallback. Defaults OFF: the single-shot
-/// path is complete-as-shipped (streams tokens, derives the budget, feeds
-/// compiled context, rebuilds history in and out, persists the assistant turn).
-/// Opt into the kernel turn (plan + tools + deterministic oracles) with
-/// `HIDE_KERNEL_TURN=1` (also `on`/`true`/`yes`). The kernel path stays opt-in
-/// until its approval round-trip (effectful-step resume) and answer surfacing
-/// land, so nothing ships as a facade (Bible law 18).
-pub(crate) fn kernel_turn_enabled() -> bool {
-    matches!(
-        std::env::var("HIDE_KERNEL_TURN").ok().as_deref(),
-        Some("1") | Some("on") | Some("true") | Some("yes")
-    )
-}
-
-/// The bounded autonomy a turn-kernel runs under. Defaults to the SAFE bounded
-/// level ([`Autonomy::SuggestOnly`]): an effectful step pauses for approval
-/// rather than running an unsandboxed shell unattended (never `FullAuto` by
-/// default). `HIDE_KERNEL_AUTONOMY=full_auto` (or `read_only`) overrides it.
+/// Bounded autonomy for fleet/agent kernels built by the host (`build_turn_kernel`,
+/// fleet launchers). Defaults to [`Autonomy::SuggestOnly`] so effectful steps
+/// pause for approval rather than running unsandboxed. `HIDE_KERNEL_AUTONOMY=
+/// full_auto` (or `read_only`) overrides it. Product `SubmitTurn` uses
+/// [`run_turn_core`] only and does not consult this.
 pub(crate) fn turn_kernel_autonomy() -> Autonomy {
     match std::env::var("HIDE_KERNEL_AUTONOMY").ok().as_deref() {
         Some("full_auto") | Some("full") => Autonomy::FullAuto,
@@ -1035,8 +1021,3 @@ pub(crate) fn turn_kernel_autonomy() -> Autonomy {
         _ => Autonomy::SuggestOnly,
     }
 }
-
-/// Step ceiling for a kernel-driven turn. Above the Governor's own `max_steps`
-/// cap (default 80) so a runaway aborts *structurally* (K8) into a terminal
-/// `Aborted` rather than the driver loop merely running out of iterations.
-pub(crate) const DEFAULT_KERNEL_TURN_MAX_STEPS: usize = 128;
