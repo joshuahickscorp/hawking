@@ -133,6 +133,19 @@ IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
     _m("storage_modes", NA, "foundry.storage", "Storage mode contracts.", sci=True),
     _m("acquisition", OP, "foundry.acquisition", "Acquisition proposals.", sci=True),
     _m("quality_contract", EV, "foundry.quality", "Quality contract gates.", sci=True),
+    # Family facades: two lines each, `from lab.operators.<real> import *`.
+    # They carry no logic, but they are named in lab/operators/__all__, so
+    # `from lab.operators import pack` is a declared surface and they cannot
+    # simply be deleted. Classified so the Track V contract covers every
+    # module in the package rather than every module that happens to be real.
+    _m("acquire", UC, "", "Family facade over acquisition."),
+    _m("auth", UC, "", "Family facade over the evidence/grounding auth modules."),
+    _m("evaluate", UC, "", "Family facade over the eval rules."),
+    _m("forge", UC, "", "Family facade over gravity_forge."),
+    _m("gravity_exec", UC, "", "Family facade over the gravity execution modules."),
+    _m("gravity_math", UC, "", "Family facade over the gravity numeric modules."),
+    _m("notify", UC, "", "Family facade over glm52_telegram."),
+    _m("pack", UC, "", "Family facade over glm52_pack."),
 )
 
 class OperatorRegistry:

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_FLOOR
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
-from tools.condense.glm52_common import Glm52Error, canonical, seal, utc_now, verify_sealed
+from lab.operators.glm52_common import Glm52Error, canonical, seal, utc_now, verify_sealed
 
 FILE_OBSERVATION_SCHEMA = 'hawking.glm52.grounded_file_observation.v1'
 ABSENCE_OBSERVATION_SCHEMA = 'hawking.glm52.grounded_absence_observation.v1'

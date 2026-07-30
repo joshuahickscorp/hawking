@@ -8,11 +8,22 @@ Honesty contract:
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import subprocess
 import tempfile
 import textwrap
+
+
+def _stable_tag(text: str) -> str:
+    """Short id suffix that survives a new process.
+
+    The previous form was `hash(tac) & 0xFFFF`, and str.__hash__ is salted per
+    interpreter unless PYTHONHASHSEED is pinned. Measured 2026-07-30: 30 of 86
+    D7 records changed id between two runs over the identical pinned Mathlib.
+    """
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:4]
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable
@@ -277,6 +288,12 @@ example {signature} :=
             return None
         if not err.strip():
             return None
+        # The error text is part of the hashed body, and lean prints the
+        # absolute path of the file it was given. That path contains a fresh
+        # mkdtemp suffix on every run, so leaving it in makes D4 impossible to
+        # reproduce: measured 2026-07-30, all 800 records regenerated with
+        # different content hashes purely because of this string.
+        err = err.replace(str(src_path), "Broken.lean").replace(td, "<tmp>")
         err_lines = [ln for ln in err.splitlines() if ln.strip()][:40]
         error = "\n".join(err_lines)
         return {
@@ -990,7 +1007,7 @@ def extract_d7(*, limit: int = 300) -> list[dict[str, Any]]:
         )
         for fr, tac, to in dag.edges:
             item = {
-                "id": f"d7:search:extra{gi}:{fr[:8]}:{hash(tac) & 0xFFFF:x}",
+                "id": f"d7:search:extra{gi}:{fr[:8]}:{_stable_tag(tac)}",
                 "source_id": "D7",
                 "split": "train",
                 "problem": prob["id"],

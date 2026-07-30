@@ -246,7 +246,11 @@ class ExperimentSpec:
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> 'ExperimentSpec':
         return validate_spec(raw)
-_ALLOWED_STATUS = frozenset({'live', 'retired', 'sealed_negative', 'fixture_only', 'historical', 'buried'})
+# 'released_historical_non_invocable' was written into lab/campaigns.json by
+# 8b0c5405 and never added here, so three campaign specs have failed to load
+# since 2026-07-29. The test that names them could not collect -- the same
+# commit family broke its imports -- so nothing reported it.
+_ALLOWED_STATUS = frozenset({'live', 'retired', 'sealed_negative', 'fixture_only', 'historical', 'buried', 'released_historical_non_invocable'})
 _ACCEPTED_SCHEMAS = frozenset({SCHEMA, 'hawking.condense.experiment_spec.v1', 'hawking.lab.experiment.v1'})
 
 def validate_spec(raw: Mapping[str, Any]) -> ExperimentSpec:

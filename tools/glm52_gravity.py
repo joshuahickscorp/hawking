@@ -24,15 +24,15 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping, Sequence
 
 
-_CONDENSE = Path(__file__).resolve().parent / "condense"
-if str(_CONDENSE) not in sys.path:
-    sys.path.insert(0, str(_CONDENSE))
-
-import glm52_state as state  # noqa: E402
-import glm52_evidence_auth as evidence_module  # noqa: E402
-import glm52_grounding_auth as grounding_module  # noqa: E402
-import glm52_telegram as telegram_module  # noqa: E402
-from glm52_common import (  # noqa: E402
+# These modules moved from tools/condense to lab/operators when the process
+# engine was cut over to lab authority. The sys.path shim that used to make
+# `import glm52_state` work now points at a directory holding two files, so
+# this CLI has raised ModuleNotFoundError at import since the move.
+from lab.operators import glm52_evidence_auth as evidence_module
+from lab.operators import glm52_grounding_auth as grounding_module
+from lab.operators import glm52_state as state
+from lab.operators import glm52_telegram as telegram_module
+from lab.operators.glm52_common import (
     Glm52Error,
     atomic_json,
     atomic_text,

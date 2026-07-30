@@ -10,15 +10,31 @@ from lab.operators.glm52_common import resolve_artifact
 from lab.operators.glm52_common import seal
 from lab.operators.glm52_common import sha256_file
 from lab.operators.glm52_common import verify_sealed
-from lab.operators.glm52_state import CHECKPOINT_SCHEMA
-from lab.operators.glm52_state import EXPECTED_CONTRACT_SCHEMA
-from lab.operators.glm52_state import GENESIS_HASH
-from lab.operators.glm52_state import TELEGRAM_RECEIPT_SCHEMA
-from lab.operators.glm52_state import TERMINAL_EVIDENCE_SCHEMA
-from lab.operators.glm52_state import TRANSITION_EVENT_KINDS
-from lab.operators.glm52_state import TRANSITION_INTENT_SCHEMA
-from lab.operators.glm52_state import StateError
-from lab.operators.glm52_state import validate_transition_intent
+# glm52_state imports glm52_xet_live, which imports this module, so importing
+# glm52_state here at module scope closes a three-way cycle: whichever of the
+# three is imported first, one of them sees a half-built module and raises
+# ImportError. Nothing below needs these names until call time, so a module
+# __getattr__ defers the edge to first use and the cycle never closes during
+# import.
+_STATE_NAMES = (
+    'CHECKPOINT_SCHEMA',
+    'EXPECTED_CONTRACT_SCHEMA',
+    'GENESIS_HASH',
+    'TELEGRAM_RECEIPT_SCHEMA',
+    'TERMINAL_EVIDENCE_SCHEMA',
+    'TRANSITION_EVENT_KINDS',
+    'TRANSITION_INTENT_SCHEMA',
+    'StateError',
+    'validate_transition_intent',
+)
+
+
+def __getattr__(name: str):
+    if name in _STATE_NAMES:
+        from lab.operators import glm52_state
+
+        return getattr(glm52_state, name)
+    raise AttributeError(name)
 import argparse
 import hashlib
 import importlib.metadata

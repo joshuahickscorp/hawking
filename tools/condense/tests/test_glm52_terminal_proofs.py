@@ -377,7 +377,7 @@ def test_mutated_sealed_instrument_or_pin_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Mutating sealed instrument fields or validator pin constants fails closed."""
-    from tools.condense.glm52_common import seal as _seal
+    from lab.operators.glm52_common import seal as _seal
 
     # Wrong pin constant vs sealed receipt.
     broken = dict(proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256)
