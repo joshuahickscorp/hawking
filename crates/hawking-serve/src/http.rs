@@ -195,16 +195,16 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// Honest Bridge capability table (see [`crate::surface`]).
+/// Honest Bridge capability table (see [`hawking_adapters::bridge_surface`]).
 async fn hawking_surface() -> Json<serde_json::Value> {
-    Json(crate::surface::bridge_surface_document())
+    Json(hawking_adapters::bridge_surface_document())
 }
 
 /// OpenAI Responses API — not implemented. Returns 501, never a fake body.
 async fn not_implemented_responses() -> Response {
     (
         StatusCode::NOT_IMPLEMENTED,
-        Json(crate::surface::not_implemented_body("POST /v1/responses")),
+        Json(hawking_adapters::not_implemented_body("POST /v1/responses")),
     )
         .into_response()
 }
@@ -213,7 +213,7 @@ async fn not_implemented_responses() -> Response {
 async fn not_implemented_anthropic_messages() -> Response {
     (
         StatusCode::NOT_IMPLEMENTED,
-        Json(crate::surface::not_implemented_body("POST /v1/messages")),
+        Json(hawking_adapters::not_implemented_body("POST /v1/messages")),
     )
         .into_response()
 }

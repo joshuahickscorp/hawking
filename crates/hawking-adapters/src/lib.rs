@@ -29,10 +29,12 @@
 //! migrations, and the root JSON deliverables — same deterministic golden-file
 //! pattern as `hide-sdk-codegen`. Do not add a second codegen system.
 
+pub mod bridge_surface;
 pub mod abi;
 pub mod evidence;
 pub mod export;
 pub mod families;
+#[cfg(feature = "events")]
 pub mod generate;
 pub mod registry;
 pub mod support_level;
@@ -41,13 +43,15 @@ pub use abi::{
     required_evidence_kind, AbiField, AbiListField, ContextLimits, Evidence, EvidenceKind,
     FamilyAbi, FamilyDescriptor, ProviderAvailability, ABI_FIELD_NAMES,
 };
+pub use bridge_surface::{
+    bridge_surface_document, bridge_surface_json, not_implemented_body, EndpointStatus,
+};
 pub use export::{
     adapter_abi_json, adapter_registry_document, adapter_registry_json, capability_matrix_json,
     migration_map_json, test_matrix_json,
 };
-pub use generate::{
-    bridge_surface_json, generate_all, repo_root_artifacts, write_all, GeneratedArtifact,
-};
+#[cfg(feature = "events")]
+pub use generate::{generate_all, repo_root_artifacts, write_all, GeneratedArtifact};
 pub use registry::{builtin_registry, FamilyRegistry};
 pub use support_level::SupportLevel;
 

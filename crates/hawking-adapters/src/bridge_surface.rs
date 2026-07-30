@@ -1,4 +1,4 @@
-//! Honest Bridge surface capability declaration.
+//! Sole physical Bridge-surface authority (package-contained in hawking-adapters).
 //!
 //! A route that returns a plausible-looking canned response is strictly worse
 //! than a 501. Unimplemented OpenAI Responses / Anthropic Messages endpoints

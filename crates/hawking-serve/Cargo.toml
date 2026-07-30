@@ -17,6 +17,9 @@ tq = ["hawking-core/tq"]
 
 [dependencies]
 hawking-core = { path = "../hawking-core" }
+# Bridge-only: sole surface authority lives in hawking-adapters. default-features=false
+# keeps HIDE/event mass out of the product serve binary (events feature is optional).
+hawking-adapters = { path = "../hawking-adapters", version = "0.2.2", default-features = false }
 anyhow = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }

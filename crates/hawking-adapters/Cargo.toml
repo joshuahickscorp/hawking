@@ -6,17 +6,28 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "One model-family adapter ABI + honest support-level registry. Generates ABI/schema/CLI surface/completion/SDK types/events/Fabric/tool-effect artifacts and versioned schema migrations from the sole FamilyRegistry. No family is PRODUCTION today."
+description = "One model-family adapter ABI + honest support-level registry. Generates ABI/schema/CLI surface/completion/SDK types/events/Fabric/tool-effect artifacts and versioned schema migrations from the sole FamilyRegistry. No family is PRODUCTION today. Owns the sole package-contained Bridge surface authority."
+
+[features]
+# Default product surface: family registry + codegen that needs the events authority.
+# `hawking-serve` depends with `default-features = false` to consume only the pure
+# Bridge surface table without linking HIDE/event runtime mass.
+default = ["events"]
+events = ["dep:hawking-events"]
 
 [[bin]]
 name = "hawking-adapters-codegen"
 path = "src/bin/hawking-adapters-codegen.rs"
+required-features = ["events"]
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
-hawking-events = { path = "../hawking-events" }
+# Version is truthful workspace package version (0.2.2). Path kept for monorepo builds;
+# required so `cargo package` accepts the manifest. Optional so Bridge-only consumers
+# do not pull hide-core/hide-protocol.
+hawking-events = { path = "../hawking-events", version = "0.2.2", optional = true }
 
 [dev-dependencies]

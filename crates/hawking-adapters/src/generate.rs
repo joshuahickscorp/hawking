@@ -8,6 +8,7 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::bridge_surface::{bridge_surface_document, bridge_surface_json};
 use crate::export::{
     adapter_abi_json, adapter_registry_json, capability_matrix_json, migration_map_json,
     test_matrix_json,
@@ -1210,116 +1211,9 @@ fn schema_migrations_json() -> String {
     }))
 }
 
-// ---------------------------------------------------------------------------
-// Bridge surface (lockstep with hawking_serve::surface)
-// ---------------------------------------------------------------------------
-
 fn bridge_endpoints_json() -> Vec<serde_json::Value> {
     bridge_surface_document()["endpoints"]
         .as_array()
         .cloned()
         .unwrap_or_default()
-}
-
-fn bridge_surface_document() -> serde_json::Value {
-    serde_json::json!({
-        "schema": "hawking.bridge.surface.v1",
-        "endpoints": [
-            {
-                "endpoint": "POST /v1/chat/completions",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> chat_completions",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "POST /v1/completions",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> completions",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "GET /v1/models",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> list_models",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "GET /healthz",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> healthz",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "GET /metrics",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> metrics",
-                "tests": []
-            },
-            {
-                "endpoint": "POST /v1/embeddings",
-                "status": "partial",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> embeddings",
-                "tests": []
-            },
-            {
-                "endpoint": "POST /v1/hawking/tokens",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_tokens",
-                "tests": ["crates/hawking-serve/tests/hawking_native_endpoint.rs"]
-            },
-            {
-                "endpoint": "POST /v1/hawking/generate",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_generate",
-                "tests": ["crates/hawking-serve/tests/hawking_native_endpoint.rs"]
-            },
-            {
-                "endpoint": "GET /v1/hawking/context",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_context",
-                "tests": []
-            },
-            {
-                "endpoint": "GET /v1/hawking/surface",
-                "status": "live",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_surface",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "POST /v1/responses",
-                "status": "not_implemented",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_responses",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "POST /v1/messages",
-                "status": "not_implemented",
-                "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_anthropic_messages",
-                "tests": ["crates/hawking-serve/tests/http_integration.rs"]
-            },
-            {
-                "endpoint": "MCP",
-                "status": "partial",
-                "entry_path": "crates/hide-backend (register_mcp_servers_at_boot on hide tree)",
-                "tests": []
-            },
-            {
-                "endpoint": "ACP",
-                "status": "partial",
-                "entry_path": "crates/hide-acp (DeferredTurnHandler / capability negotiate)",
-                "tests": []
-            },
-            {
-                "endpoint": "SDK Transport -> hide-serve",
-                "status": "not_implemented",
-                "entry_path": "crates/hide-sdk/src/client.rs (MockTransport only; real transport deferred)",
-                "tests": ["crates/hide-sdk/tests/client.rs"]
-            }
-        ]
-    })
-}
-
-/// Keep in lockstep with `hawking_serve::surface::bridge_surface_json`.
-pub fn bridge_surface_json() -> String {
-    pretty(bridge_surface_document())
 }

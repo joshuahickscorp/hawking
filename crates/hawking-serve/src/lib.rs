@@ -7,12 +7,11 @@ pub mod batch;
 pub mod glm_chat;
 pub mod http;
 pub mod spec_gov;
-pub mod surface;
 pub mod system_kv_bank;
 pub mod tool_calls;
 
 pub use batch::scheduler::BatchPolicy;
-pub use surface::{bridge_surface_document, bridge_surface_json, EndpointStatus};
+pub use hawking_adapters::{bridge_surface_document, bridge_surface_json, EndpointStatus};
 pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
 
 use anyhow::Result;
