@@ -134,6 +134,14 @@ pub struct DeepSeekV2 {
     pub mla_k_pe_gpu: Vec<PinnedBuffer>,
     /// Set to true after the first Wedge C layer to indicate GPU KV is live.
     pub mla_kv_gpu_synced: bool,
+    /// Dispatches encoded in the most recently committed Wedge C forward.
+    ///
+    /// Only qwen_dense populated this, so `dispatches_per_forward` read 0 for
+    /// every other engine and a reader could take that for "Metal was never
+    /// reached". It misled me exactly that way on 2026-07-29, on a file with
+    /// 136 Metal call sites. An unset counter and a real zero must not print
+    /// the same.
+    pub last_dispatch_count: usize,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
 
@@ -965,6 +973,7 @@ impl Engine for DeepSeekV2 {
             mla_c_kv_gpu,
             mla_k_pe_gpu,
             mla_kv_gpu_synced: false,
+            last_dispatch_count: 0,
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
@@ -1070,6 +1079,7 @@ impl Engine for DeepSeekV2 {
             }
         }
         stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        stats.dispatches_per_forward = self.last_dispatch_count;
         if prefill_aborted {
             sink(StreamEvent::Done {
                 reason: StopReason::Aborted,
@@ -1330,6 +1340,10 @@ impl Engine for DeepSeekV2 {
 
     fn reset_kv_for_test(&mut self) {
         self.reset_kv_state();
+    }
+
+    fn last_forward_dispatch_count(&self) -> usize {
+        self.last_dispatch_count
     }
 
     fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
@@ -2676,6 +2690,7 @@ impl DeepSeekV2 {
                 let mut folded_greedy_token: Option<u32> = None;
 
                 let t0 = std::time::Instant::now();
+                let mut dispatches = 0usize;
                 {
                     let ctx = self.metal_ctx.as_ref().unwrap();
                     let arena = self.decode_arena.as_ref().unwrap();
@@ -2977,6 +2992,7 @@ impl DeepSeekV2 {
 
                     // Single commit: all 27 layers + final-norm + (opt) LM head + argmax.
                     if let Some(tcb) = global_tcb.take() {
+                        dispatches = tcb.dispatch_count;
                         tcb.commit_and_wait()?;
                     }
 
@@ -3012,6 +3028,7 @@ impl DeepSeekV2 {
                     }
                 }
                 total_us += t0.elapsed().as_micros() as u64;
+                self.last_dispatch_count = dispatches;
 
                 self.kv.seq_len += 1;
                 self.mla_kv_gpu_synced = true;
