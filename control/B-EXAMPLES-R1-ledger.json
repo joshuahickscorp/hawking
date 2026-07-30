@@ -1,0 +1,95 @@
+{
+  "schema": "hawking.b_examples_r1.ledger.v1",
+  "release": "B-EXAMPLES-R1",
+  "base": "0cd9cca1ca6a7900e1be66f60d507fa750601ae7",
+  "parent_tree": "08f5032e436b1c329743819bf9171d64a4b38324",
+  "purpose": "Honest examples-only residue; product-release seven non-protected hawking-core examples while retaining measured TPS recipes. Fresh reproject on post-D-SEAM ACCEPT parent; zero D-SEAM re-credit.",
+  "retained_protected": [
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_tps.rs",
+      "loc": 391,
+      "sha256": "3f82b576a9df336c80e68410828350639fb2611b01c2b5e70b3a9dfbd2b5c2b8"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_tps.rs",
+      "loc": 145,
+      "sha256": "132a0de86e039f49806b740166a6ab3804f545d9a402764af7e856fdd8f1b413"
+    }
+  ],
+  "eliminated": [
+    {
+      "path": "crates/hawking-core/examples/gravity_generate.rs",
+      "loc": 137,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_attribution.rs",
+      "loc": 150,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_cost_ledger.rs",
+      "loc": 699,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_expert_wave_concurrent.rs",
+      "loc": 988,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_flagship.rs",
+      "loc": 174,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_native_bf16_accumulation.rs",
+      "loc": 644,
+      "bucket": "eliminated"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_pq_autotune.rs",
+      "loc": 694,
+      "bucket": "eliminated"
+    }
+  ],
+  "eliminated_loc_total": 3486,
+  "six_buckets": {
+    "eliminated": 3486,
+    "rewritten": 0,
+    "generated": 0,
+    "relocated": 0,
+    "facade": 0,
+    "added_active_apparatus": 0,
+    "net": -3486
+  },
+  "f1_retired_subjects": [
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_glm_expert_wave_concurrent::default_run_is_bounded_and_accounted",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_glm_expert_wave_concurrent::summary_reports_variability_and_interpolated_percentiles",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_native_bf16_accumulation::default_run_is_bounded",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_native_bf16_accumulation::timing_summary_reports_variability",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::all_fail_report_keeps_scores_and_uses_null_winner",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::exact_geometry_sweep_requires_explicit_manual_acknowledgement",
+    "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::selection_picks_fastest_parity_green_candidate"
+  ],
+  "reference_closure": {
+    "hard_ci_build_blackbox_perf_capability_consumers": 0,
+    "note": "All external refs classified soft/historical/comment; protected TPS still hard-consumed by tools/verify/perfgate.py"
+  },
+  "credit_fences": {
+    "D_SEAM_CREDIT": 0,
+    "S5_CREDIT": 0,
+    "BKDRY_CREDIT": 0,
+    "R3_CREDIT": 0,
+    "A_EVID_CREDIT": 0,
+    "AX_EVID_CREDIT": 0,
+    "CSCI_CREDIT": 0,
+    "CAUX_CREDIT": 0,
+    "PACKING": 0,
+    "FACADE": 0,
+    "RELOC": 0,
+    "GENERATED": 0,
+    "PERFORMANCE_CREDIT": 0
+  },
+  "note": "JSON ledger and TEST_CASE_MANIFEST edits are non-LANGS paths (.json) and add zero active LOC under hawking_loc authority. Nets reported vs base 0cd9cca1 only; D-SEAM -571 already in parent and not re-earned."
+}

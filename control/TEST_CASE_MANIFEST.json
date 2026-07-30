@@ -21340,6 +21340,69 @@
       "executor": {
         "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
       }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_glm_expert_wave_concurrent::default_run_is_bounded_and_accounted",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_glm_expert_wave_concurrent.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_glm_expert_wave_concurrent::summary_reports_variability_and_interpolated_percentiles",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_glm_expert_wave_concurrent.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_native_bf16_accumulation::default_run_is_bounded",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_native_bf16_accumulation.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_native_bf16_accumulation::timing_summary_reports_variability",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_native_bf16_accumulation.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::all_fail_report_keeps_scores_and_uses_null_winner",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_pq_autotune.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::exact_geometry_sweep_requires_explicit_manual_acknowledgement",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_pq_autotune.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_examples_gravity_pq_autotune::selection_picks_fastest_parity_green_candidate",
+      "disposition": "retired_subject",
+      "product_decision": "B-EXAMPLES-R1 release of non-protected hawking-core examples",
+      "deleted_subject": "crates/hawking-core/examples/gravity_pq_autotune.rs",
+      "replacement": null,
+      "product_release": "B-EXAMPLES-R1",
+      "note": "example-local unit test retired with product-released example; F1 identity remains sealed in ASSERTION_LEDGER"
     }
   ]
 }
