@@ -1,0 +1,354 @@
+{
+  "schema": "hawking.corea.a_evid_r1.ledger.v1",
+  "rung": "A-EVID-R1",
+  "base": "0250cdb2ba035303da723e2a2eb41edcaf1fc45e",
+  "owned_old_files": 75,
+  "owned_old_active_loc": 17198,
+  "release_path_count": 55,
+  "release_active_loc": 13563,
+  "retain_path_count": 20,
+  "retain_paths": [
+    "KIMI_K26_GRAVITY_FINAL.md",
+    "KIMI_K26_NEXT_PARENT_TRANSFER.md",
+    "docs/dead_levers.md",
+    "BASELINES.md",
+    "ACCELERATION_ARCHAEOLOGY.md",
+    "HAWKING_250K_GRAPH_FINDINGS.md",
+    "README.md",
+    "docs/serve.md",
+    "docs/gravity/GRAVITY_CONTAINER_SPEC.md",
+    "ARCHITECTURE.md",
+    "docs/BENCHMARKS.md",
+    "FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    "docs/env_flags.md",
+    "MODELS.md",
+    "docs/kernels.md",
+    "GLM52_V2_PROGRAM_FEASIBILITY.md",
+    "GLM52_CORPUS_INTEGRITY.md",
+    "GLM52_STREAMING_SCHEDULE.md",
+    "GLM52_REFERENCE_PARITY.md",
+    "GLM52_XET_AUTOTUNE_PLAN.md"
+  ],
+  "apparatus": [
+    "docs/EVIDENCE_INDEX.md"
+  ],
+  "families": {
+    "archive_indexes": {
+      "paths": [
+        {
+          "path": "docs/ARCHIVE_INDEX.md",
+          "loc": 328
+        },
+        {
+          "path": "docs/ARCHIVE_INDEX_2.md",
+          "loc": 1360
+        }
+      ],
+      "loc": 1688,
+      "successor": "git history at pre-rung commit; this index",
+      "reason": "historical archive catalogs; no product/gate/BB/MIG reader"
+    },
+    "hide_bible_historical": {
+      "paths": [
+        {
+          "path": "docs/hide-bible/DESIGN_DOCTRINE.md",
+          "loc": 559
+        },
+        {
+          "path": "docs/hide-bible/HIDE_PLAN.md",
+          "loc": 1077
+        },
+        {
+          "path": "docs/hide-bible/README.md",
+          "loc": 24
+        },
+        {
+          "path": "docs/hide-bible/SCAFFOLD_AUDIT.md",
+          "loc": 448
+        },
+        {
+          "path": "docs/hide-bible/SCAFFOLD_STATUS.md",
+          "loc": 56
+        }
+      ],
+      "loc": 2164,
+      "successor": "HIDE product code under crates/hide-* and app/; HIDE_ARCHAEOLOGY*.json inventory where present",
+      "reason": "superseded HIDE narrative bible; product does not open paths"
+    },
+    "hide_impl_consolidation_narrative": {
+      "paths": [
+        {
+          "path": "docs/hide-impl/consolidation/HIDE_BACKEND_WITHOUT_SURFACE_REPORT.md",
+          "loc": 210
+        },
+        {
+          "path": "docs/hide-impl/consolidation/HIDE_COMMAND_REGISTRY_SPEC.md",
+          "loc": 324
+        },
+        {
+          "path": "docs/hide-impl/consolidation/HIDE_CONSOLIDATION_DECISIONS.md",
+          "loc": 278
+        },
+        {
+          "path": "docs/hide-impl/consolidation/HIDE_DONOR_PORT_LEDGER.md",
+          "loc": 192
+        }
+      ],
+      "loc": 1004,
+      "successor": "hide-protocol command registry + backend host commands; source doc-comments cite former sections",
+      "reason": "consolidation narrative; only doc-comment citations remain"
+    },
+    "plans_comment_only": {
+      "paths": [
+        {
+          "path": "docs/plans/CONDENSER_ECOSYSTEM_FRONTIER.md",
+          "loc": 1899
+        },
+        {
+          "path": "docs/plans/PROMETHEUS_LEG_PLAN.md",
+          "loc": 690
+        },
+        {
+          "path": "docs/plans/agentic_tool_system_2026_07_11.md",
+          "loc": 506
+        },
+        {
+          "path": "docs/plans/condense_frontier_2026_06_22.md",
+          "loc": 277
+        },
+        {
+          "path": "docs/plans/condense_master_plan_2026_06_22.md",
+          "loc": 262
+        },
+        {
+          "path": "docs/plans/eh_verify_kernel_losslessness_2026_06_21.md",
+          "loc": 69
+        },
+        {
+          "path": "docs/plans/hide_release_autoupdate.md",
+          "loc": 80
+        },
+        {
+          "path": "docs/plans/native_tq_serving_impl.md",
+          "loc": 57
+        }
+      ],
+      "loc": 3840,
+      "successor": "module doc-comments in crates/tools; cliff_watchdog soft cat 2>/dev/null corpus only",
+      "reason": "historical plan prose; no hard runtime open; soft bench corpus only"
+    },
+    "campaign_status_narrative": {
+      "paths": [
+        {
+          "path": "HAWKING_250K_ARCHITECTURE_DECISION.md",
+          "loc": 202
+        },
+        {
+          "path": "HAWKING_250K_STATUS.md",
+          "loc": 348
+        },
+        {
+          "path": "HAWKING_300K_DECISION_REQUIRED.md",
+          "loc": 96
+        },
+        {
+          "path": "HAWKING_ASCENSION_CLOSED.md",
+          "loc": 96
+        },
+        {
+          "path": "HAWKING_FINAL_ASCENT_CONTINUATION_GOAL.md",
+          "loc": 59
+        },
+        {
+          "path": "HAWKING_RECOMPOSITION_HANDOFF.md",
+          "loc": 143
+        },
+        {
+          "path": "HAWKING_RESUME_CHECKPOINT.md",
+          "loc": 149
+        },
+        {
+          "path": "HAWKING_VNEXT_ARCHITECTURE_A1.md",
+          "loc": 240
+        },
+        {
+          "path": "HAWKING_VNEXT_ARCHITECTURE_A2.md",
+          "loc": 633
+        },
+        {
+          "path": "HISTORY_PUBLICATION_PACKET.md",
+          "loc": 106
+        },
+        {
+          "path": "ODYSSEY_PROMOTION_GATE.md",
+          "loc": 99
+        },
+        {
+          "path": "REBUILD_PERFORMANCE_BASELINE_RECONCILIATION.md",
+          "loc": 70
+        },
+        {
+          "path": "docs/HISTORY_REWRITE_20260728.md",
+          "loc": 60
+        }
+      ],
+      "loc": 2301,
+      "successor": "control/rungs/* checkpoint JSON; HAWKING_250K_GRAPH_FINDINGS.md; sealed campaign JSON twins where present",
+      "reason": "campaign status/handoff narrative superseded by control/rungs and graph findings"
+    },
+    "hide_archaeology_md_json_twins": {
+      "paths": [
+        {
+          "path": "HIDE_ARCHAEOLOGY.md",
+          "loc": 370
+        },
+        {
+          "path": "HIDE_ARCHAEOLOGY_V2.md",
+          "loc": 290
+        }
+      ],
+      "loc": 660,
+      "successor": "HIDE_ARCHAEOLOGY.json and HIDE_ARCHAEOLOGY_V2.json",
+      "reason": "markdown twin of retained archaeology JSON"
+    },
+    "kimi_nonsealed_status": {
+      "paths": [
+        {
+          "path": "KIMI_K26_DEVICE_CLEANSE_FINAL.md",
+          "loc": 36
+        },
+        {
+          "path": "KIMI_K26_FINAL_CHAPTER_STATUS.md",
+          "loc": 30
+        },
+        {
+          "path": "KIMI_K26_LONG_RUN_FINAL.md",
+          "loc": 218
+        },
+        {
+          "path": "KIMI_K26_LONG_RUN_REGION_CLOSURE.md",
+          "loc": 30
+        },
+        {
+          "path": "KIMI_K26_LONG_RUN_STATUS.md",
+          "loc": 38
+        }
+      ],
+      "loc": 352,
+      "successor": "sibling KIMI_*.json finals; sealed KIMI_K26_GRAVITY_FINAL.md + KIMI_K26_NEXT_PARENT_TRANSFER.md retained",
+      "reason": "non-sealed KIMI status MD; sealed pair retained byte-identical"
+    },
+    "glm52_md_json_twins_non_writer": {
+      "paths": [
+        {
+          "path": "GLM52_BASIS_PILOT_RECEIPT.md",
+          "loc": 183
+        },
+        {
+          "path": "GLM52_CORRECTED_SCIENTIFIC_LAW.md",
+          "loc": 184
+        },
+        {
+          "path": "GLM52_FUNCTIONAL_DECISION.md",
+          "loc": 83
+        },
+        {
+          "path": "GLM52_HANDOFF_PRECHECK.md",
+          "loc": 24
+        },
+        {
+          "path": "GLM52_ROUTE_POPULATION_CENSUS.md",
+          "loc": 77
+        },
+        {
+          "path": "GRAVITY_COMPLETENESS_AUDIT_GLM52_PRE.md",
+          "loc": 40
+        }
+      ],
+      "loc": 591,
+      "successor": "sibling GLM52_*.json / GRAVITY_*_PRE.json receipts (Core C dual-written MD retained separately)",
+      "reason": "non-writer MD with JSON twin; dual-written Core C MD retained"
+    },
+    "stretch_user_docs": {
+      "paths": [
+        {
+          "path": "CHANGELOG.md",
+          "loc": 224
+        },
+        {
+          "path": "NUMERIC_PARITY_V2_1.md",
+          "loc": 152
+        },
+        {
+          "path": "GRAVITY_FUNCTIONAL_CODEC_SPEC.md",
+          "loc": 144
+        },
+        {
+          "path": "HAWKING_MODEL_FEEL_PARITY_CONTRACT.md",
+          "loc": 70
+        },
+        {
+          "path": "docs/SPEED.md",
+          "loc": 93
+        },
+        {
+          "path": "docs/autotune.md",
+          "loc": 81
+        },
+        {
+          "path": "docs/profile.md",
+          "loc": 74
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "loc": 57
+        },
+        {
+          "path": "FAILURES.md",
+          "loc": 41
+        },
+        {
+          "path": "GRAVITY_EXTERNAL_BASELINE_MATRIX.md",
+          "loc": 27
+        }
+      ],
+      "loc": 963,
+      "successor": "git log + README/ARCHITECTURE; crates/hawking-core/src/numeric_parity.rs; docs/gravity/GRAVITY_CONTAINER_SPEC.md + gravity_functional_codec.py; REBUILD_PERFORMANCE_BASELINE_MEASURED.json; GRAVITY_EXTERNAL_BASELINE_MATRIX.json",
+      "reason": "user/process/ops prose with code/JSON/git successors; not BB/MIG/sealed"
+    }
+  },
+  "kimi_digests": {
+    "KIMI_K26_GRAVITY_FINAL.md": "04370b55d1073923877989874cbf336869c949cd4892dbe3e1a845c5e2fc0752",
+    "KIMI_K26_NEXT_PARENT_TRANSFER.md": "8c34b679524327e4a3ff61bc82fe7d451f62c42f3d200e7aafe0423a10a01a34"
+  },
+  "six_buckets_intent": {
+    "eliminated": 13563,
+    "rewritten": 0,
+    "generated": 0,
+    "relocated": 0,
+    "compatibility_facade": 0,
+    "added_apparatus": 148
+  },
+  "reference_class": {
+    "product_hard_open": [],
+    "soft_corpus": [
+      "tools/bench/specs/cliff_watchdog.json -> docs/plans/condense_master_plan_2026_06_22.md, docs/plans/native_tq_serving_impl.md"
+    ],
+    "doc_comment_only": "app surfaces + hide/hawking crates plan/consolidation path strings",
+    "historical_json_inventory": "HAWKING_*_STATUS/LANE/CANDIDATES and sealed receipts may still name released paths"
+  },
+  "parent": "0250cdb2ba035303da723e2a2eb41edcaf1fc45e",
+  "design_input": "cd8f825f5d326ba9350aa7d874e4d9e9691d376a",
+  "parent_active_loc": 399352,
+  "parent_tree": "a5a7a4d4ef3ba224e1ed69cbf3c6416108110848",
+  "parent_topology": {
+    "directories_all": 126,
+    "directories_leaf": 99,
+    "source_files": 1020,
+    "rust_crates": 19,
+    "public_symbols": 8156,
+    "functions": 12588,
+    "files_over_1500_lines": 25,
+    "tiny_forwarders": 11
+  }
+}
