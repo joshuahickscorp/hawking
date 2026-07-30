@@ -1,0 +1,93 @@
+{
+  "schema": "hawking.c_aux_lab_r1_cons.ledger.v1",
+  "rung": "C-AUX-LAB-R1-CONS",
+  "title": "C-AUX-LAB-R1-CONS pure-elimination ledger (post-A-EVID exact parent)",
+  "at": "2026-07-30T05:02:13.118201+00:00",
+  "one_commit_parent": "eb4e5b07ed41b23b2a5db90684a6d9179a312649",
+  "parent_tree": "6e19a25bad9acf6ea3a141d496a216468b870a19",
+  "parent_active_loc": 385937,
+  "kind": "pure_elimination",
+  "product_decision": "C-AUX-LAB-R1-CONS research release; constitution-absent; vendor/strand-quant retained; CI bench harness+required specs retained; Odyssey operator keep-set retained; prometheus retained; S5/R3/A-EVID/C-SCI/B-KDRY authorities untouched",
+  "delete": {
+    "active_files": 159,
+    "active_loc": 19795,
+    "A0_odyssey_apparatus": {
+      "files": 11,
+      "loc": 2343,
+      "paths": [
+        "tools/odyssey/apparatus.py",
+        "tools/odyssey/checkpoints.py",
+        "tools/odyssey/objectives.py",
+        "tools/odyssey/qat.py",
+        "tools/odyssey/receipts.py",
+        "tools/odyssey/rollback_exec.py",
+        "tools/odyssey/scheduler.py",
+        "tools/odyssey/test_odyssey_apparatus.py",
+        "tools/odyssey/toy_model.py",
+        "tools/odyssey/trainer.py",
+        "tools/odyssey/trajectory.py"
+      ]
+    },
+    "A1_tools_strand": {
+      "active_files": 70,
+      "active_loc": 7504,
+      "tracked_total": 115
+    },
+    "A2_bench_research": {
+      "active_files": 78,
+      "active_loc": 9948,
+      "tracked_delete": 148
+    }
+  },
+  "keep": {
+    "bench_harness_active": {
+      "files": 13,
+      "loc": 392
+    },
+    "bench_required_specs": 9,
+    "bench_engines_workloads_lib": "KEEP",
+    "odyssey_operator": {
+      "files": 23,
+      "loc": 4515
+    },
+    "vendor_strand_quant": "KEEP (BC-BRIDGE-008)",
+    "prometheus": "KEEP",
+    "foundry_lab_harness": "KEEP (C-SCI reserve)"
+  },
+  "entrypoints": {
+    "python_ifmain": 48,
+    "shell": 80
+  },
+  "f1": {
+    "subject_deleted_maps": 45,
+    "apparatus": 21,
+    "strand": 24,
+    "bench": 0,
+    "odyssey_keep_live": 43
+  },
+  "cap": {
+    "parent_entries": 59,
+    "appended_released_tree_rows": 3,
+    "replaced_cons": 0
+  },
+  "credit_fences": {
+    "S5_CREDIT": 0,
+    "R3_CREDIT": 0,
+    "AEVID_CREDIT": 0,
+    "BKDRY_CREDIT": 0,
+    "CSCI_CREDIT": 0
+  },
+  "authorities_preserved": [
+    "control/ASSERTION_LEDGER.json",
+    "REBUILD_BEHAVIOUR_CONSTITUTION.json",
+    "REBUILD_BLACKBOX_TEST_MATRIX.json",
+    "REBUILD_DATA_MIGRATION_CONTRACT.json",
+    "docs/EVIDENCE_INDEX.md",
+    "control/A-EVID-R1-ledger.json",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "control/S5-ledger.json",
+    "S5 CAP gravity_format\u2192artifact_client replaced row"
+  ],
+  "tcm": "IMMUTABLE_FENCE preferred; receipt-only (no retired_subject projection)",
+  "note": "Builder apparatus only. Does not land. Independent review required."
+}
