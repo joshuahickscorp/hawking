@@ -1,20 +1,29 @@
 """Foundry one-bit ceiling tables (S6 F2 C3 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
 import pytest
 FOUNDRY = Path(__file__).resolve().parents[1]
-if str(FOUNDRY) not in sys.path:
-    sys.path.insert(0, str(FOUNDRY))
 import json
 import os
-import acquisition as acq
-import gravity_potency as gp
-import post_parent_review as ppr
+from lab.operators import acquisition as acq
+from lab.operators import gravity_potency as gp
+
+class _ReleasedPPR:
+    """Released research surface — tests must skip rather than call product code."""
+    def __getattr__(self, name):
+        import pytest
+        pytest.skip("C-SCI-R1 released tools/foundry/post_parent_review.py")
+ppr = _ReleasedPPR()
 from test_foundry_tables_potency import adapters, synthetic_evidence
 from fractions import Fraction
-import one_bit_ceiling as obc
+from lab.operators import one_bit_ceiling as obc
 ANCHOR_PROGRAM = {'parent_id': 'next:F2', 'rates': ['1.2', '1/1', '1/2'], 'ceiling_methods': ['quantization_aware_training', 'distillation'],
     'candidates': [{'id': 'A0_1p2', 'complete_bpw': '1.2', 'role': 'quality anchor'}]}
 

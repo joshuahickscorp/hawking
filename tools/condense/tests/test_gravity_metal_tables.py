@@ -1,15 +1,20 @@
 """Gravity Metal pure-logic (S6 F2 C2 densified)."""
 from __future__ import annotations
 import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
+import sys
 from pathlib import Path
 import pytest
 HERE = Path(__file__).resolve().parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import numpy as np
-import gravity_forge as forge
-import gravity_metal as gm
-import gravity_metal_lab_b as b
+from lab.operators import gravity_forge as forge
+from lab.operators import gravity_metal as gm
+from lab.operators import gravity_metal_lab_b as b
 
 def _codes(rows: int, cols: int, *, D: int=8, k: int=128, seed: int=0) -> dict:
     """A real packed artifact's codes stash, so the shapes are the production ones."""

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Acceptance tests for the sealed GLM-5.2 twin/reference parity run."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -10,11 +15,9 @@ import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_parity as parity  # noqa: E402
-from glm52_common import canonical, verify_sealed  # noqa: E402
+from lab.operators import glm52_parity as parity  # noqa: E402
+from lab.operators.glm52_common import canonical, verify_sealed  # noqa: E402
 
 @pytest.fixture(scope="module")
 def fresh_run() -> tuple[dict, dict]:

@@ -5,6 +5,11 @@ every load path.  The old decode paid 145x the payload in uint64 temporaries; th
 pin both halves of the fix -- the answer must not move, and the cost must stay bounded.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import os
 import sys
@@ -14,10 +19,8 @@ import numpy as np
 import pytest
 
 _HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 
-import glm52_pack as pack  # noqa: E402
+from lab.operators import glm52_pack as pack  # noqa: E402
 
 # Real R0 geometry: gate/up [2048,6144] at D=8 is rows*nchunk = 2048*768 indices at 7 bits.
 R0_COUNT = 2048 * 768
@@ -95,7 +98,7 @@ def test_no_uint64_grid_allocated():
 
 def test_deserialize_round_trip_on_a_real_pq_artifact():
     """End to end: the indices a packed tensor decodes to are the ones it was packed with."""
-    import gravity_forge as forge
+    from lab.operators import gravity_forge as forge
 
     rng = np.random.default_rng(0)
     weights = rng.standard_normal((256, 128)).astype(np.float32)

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline tests for the strict GLM-5.2 adapter and deterministic twin."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import os
@@ -14,11 +19,9 @@ import pytest
 HERE = Path(__file__).resolve().parent
 CONDENSE = HERE.parent
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_adapter as A  # noqa: E402
-import glm52_synthetic as S  # noqa: E402
+from lab.operators import glm52_adapter as A  # noqa: E402
+from lab.operators import glm52_synthetic as S  # noqa: E402
 
 def _official_config() -> dict:
     config = json.loads(json.dumps(dict(A.OFFICIAL_CONFIG_CONTRACT)))

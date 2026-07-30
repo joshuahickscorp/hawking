@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Pins Generation B corrections and revision-1 route-population uncertainty:"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -12,11 +17,9 @@ import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_activation_aware_pack as aap  # noqa: E402
-import glm52_activation_aware_pack_v2 as v2  # noqa: E402
+from lab.operators import glm52_activation_aware_pack as aap  # noqa: E402
+from lab.operators import glm52_activation_aware_pack_v2 as v2  # noqa: E402
 
 _needs_headers = pytest.mark.skipif(
     not v2.SOURCE_HEADERS.exists(),

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """The Tier-0 defect that invalidated Generation B's predecessor was an accounting split:"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 
@@ -10,11 +15,9 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_pack as pack  # noqa: E402
-import artifact_client as gravity_format  # noqa: E402
+from lab.operators import glm52_pack as pack  # noqa: E402
+from tools.condense import artifact_client as gravity_format  # noqa: E402
 
 def _bf16(values: np.ndarray) -> bytes:
     return (values.view(np.uint32) >> np.uint32(16)).astype(np.uint16).tobytes()

@@ -1,20 +1,23 @@
 """Foundry lifecycle/harness/subbit tables (S6 F2 C3 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
 import pytest
 FOUNDRY = Path(__file__).resolve().parents[1]
-if str(FOUNDRY) not in sys.path:
-    sys.path.insert(0, str(FOUNDRY))
-import quality_contract as qc
-import storage_modes as sm
+from lab.operators import quality_contract as qc
+from lab.operators import storage_modes as sm
 import json
-from lab_harness import HARNESS_VERSION, MeasurementRecorder, ReceiptWriter, ReportRenderer, load_spec, validate_spec
-from lab_harness.runner import Runner
-from lab_harness.spec import SPEC_SCHEMA, ExperimentSpec
+from lab.bench_harness import HARNESS_VERSION, MeasurementRecorder, ReceiptWriter, ReportRenderer, load_spec, validate_spec
+from lab.bench_harness.runner import Runner
+from lab.bench_harness.spec import SPEC_SCHEMA, ExperimentSpec
 from fractions import Fraction
-import subbit_closure as sc
+from lab.operators import subbit_closure as sc
 GB = 10 ** 9
 
 def _capability_evidence(**over):

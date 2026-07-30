@@ -1,5 +1,10 @@
 """GLM52 contract+evidence offline (S6 F2 C4 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
@@ -9,16 +14,14 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import json
 from collections import Counter
-import glm52_contract as contract
-from glm52_common import Glm52Error, canonical, seal, sha256_file, verify_sealed
+from lab.operators import glm52_contract as contract
+from lab.operators.glm52_common import Glm52Error, canonical, seal, sha256_file, verify_sealed
 import base64
 import subprocess
-import glm52_evidence_auth as evidence
+from lab.operators import glm52_evidence_auth as evidence
 from tools.condense.tests._glm52_fakes import FakeKeychain
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
 def _read(name: str) -> dict:
     value = json.loads((REPO_ROOT / name).read_text(encoding='utf-8'))

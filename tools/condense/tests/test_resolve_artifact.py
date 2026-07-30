@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Tests for the single campaign artifact search path."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import os
 import sys
@@ -10,10 +15,8 @@ import pytest
 
 CONDENSE = Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-from glm52_common import (  # noqa: E402
+from lab.operators.glm52_common import (  # noqa: E402
     Glm52Error,
     resolve_artifact,
 )

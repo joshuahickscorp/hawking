@@ -1,12 +1,12 @@
-"""Hawking laboratory — Core C experiment engine.
+"""Hawking laboratory — Core C experiment engine + science operators.
 
-Process lifecycle for campaigns: experiment specs, run/resume, receipts, and
-governance. Live science bodies remain under tools/condense/; this package is
-the engine only and does not ship a second science implementation.
+Process lifecycle for campaigns and the single operator registry. Science
+bodies live under lab/operators/; tools/condense retains only the S5 client
+and the launchd-anchored source-fetch CLI.
 """
 from __future__ import annotations
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 AUTHORITY = "lab"
 SCHEMA = "hawking.lab.core.v1"
 

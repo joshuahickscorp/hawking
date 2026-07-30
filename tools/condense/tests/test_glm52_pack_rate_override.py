@@ -5,6 +5,11 @@ nothing else -- a coalition decision that leaked onto an uninvolved expert would
 silently rewrite Claim A's byte-matching without anyone asking it to.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 import sys
@@ -13,11 +18,9 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_pack as pack  # noqa: E402
-import artifact_client as gravity_format  # noqa: E402
+from lab.operators import glm52_pack as pack  # noqa: E402
+from tools.condense import artifact_client as gravity_format  # noqa: E402
 
 def _shard_with_experts(tmp_path: pathlib.Path, n: int = 4):
     """`n` identically-shaped routed-expert tensors, one per (layer 0, expert i)."""

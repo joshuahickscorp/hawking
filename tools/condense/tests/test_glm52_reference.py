@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Primitive and state tests for the inspectable GLM-5.2 reference forward."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import pathlib
 import sys
@@ -9,10 +14,8 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_reference as ref  # noqa: E402
+from lab.operators import glm52_reference as ref  # noqa: E402
 
 def _tiny_config(*, layers: int, mlp_types: list[str], indexer_types: list[str]):
     from transformers import GlmMoeDsaConfig

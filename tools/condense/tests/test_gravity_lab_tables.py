@@ -1,5 +1,10 @@
 """Gravity lab/forge/PQ pure-logic (S6 F2 C2 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
@@ -11,13 +16,11 @@ import json
 import math
 import os
 from dataclasses import replace
-import gravity_bench_lab as bl
+from lab.operators import gravity_bench_lab as bl
 import numpy as np
-import gravity_forge as gf
-import gravity_forge as forge
+from lab.operators import gravity_forge as gf
+from lab.operators import gravity_forge as forge
 _HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 
 def _spec(**over):
     base = dict(rows=64, cols=128, batch=1, input_seed=7, input_dtype='float32', output_dtype='float32', warmup=1, reps=5, sync_boundary='none_cpu_wall_clock',
@@ -311,8 +314,6 @@ def test_activation_aware_reduces_output_error_when_activations_concentrate():
     assert aa.config.get('act_scaled') is True
     assert aa.physical_bytes >= wa.physical_bytes
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 GLM52_EMBED_WEIGHTS = 951582720
 GLM52_EMBED_SUBVECTORS_AT_DIM8 = GLM52_EMBED_WEIGHTS // 8
 

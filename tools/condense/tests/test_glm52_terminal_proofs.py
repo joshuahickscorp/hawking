@@ -1,4 +1,9 @@
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import copy
 import hashlib
@@ -11,8 +16,8 @@ from typing import Any
 
 import pytest
 
-from tools.condense.glm52_common import seal
-from tools.condense import glm52_terminal_proofs as proofs
+from lab.operators.glm52_common import seal
+from lab.operators import glm52_terminal_proofs as proofs
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 

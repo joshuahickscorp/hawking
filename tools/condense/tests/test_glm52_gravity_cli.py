@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Adversarial offline tests for the GLM-5.2 phone/operator CLI."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import base64
 import hashlib
@@ -17,11 +22,11 @@ for directory in (TOOLS, CONDENSE):
         sys.path.insert(0, str(directory))
 
 import glm52_gravity as cli  # noqa: E402
-import glm52_evidence_auth as gea  # noqa: E402
-import glm52_grounding_auth as gga  # noqa: E402
-import glm52_state as gs  # noqa: E402
-import glm52_telegram as gt  # noqa: E402
-from glm52_common import (  # noqa: E402
+from lab.operators import glm52_evidence_auth as gea  # noqa: E402
+from lab.operators import glm52_grounding_auth as gga  # noqa: E402
+from lab.operators import glm52_state as gs  # noqa: E402
+from lab.operators import glm52_telegram as gt  # noqa: E402
+from lab.operators.glm52_common import (  # noqa: E402
     atomic_json,
     canonical,
     read_sealed_json,

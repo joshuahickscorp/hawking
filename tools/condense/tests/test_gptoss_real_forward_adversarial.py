@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """This is the Part II/2 adversarial suite for the G4 instrument. It is deliberately split into two"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import os
@@ -16,9 +21,9 @@ if _COND not in sys.path:
     sys.path.insert(0, _COND)
 _REPO = Path(_COND).resolve().parents[1]                       # tools/condense -> tools -> repo root
 
-import gptoss_real_forward as rf          # noqa: E402  (apply_gate, block_n_attention, RealForward, ALPHA, LIMIT)
-import gptoss_moe_runtime as rt           # noqa: E402  (ProvenanceReader, _swiglu split-half reference)
-import eco_common                         # noqa: E402  (EcoError)
+from lab.operators import gptoss_real_forward as rf          # noqa: E402  (apply_gate, block_n_attention, RealForward, ALPHA, LIMIT)
+from lab.operators import gptoss_moe_runtime as rt           # noqa: E402  (ProvenanceReader, _swiglu split-half reference)
+from lab.operators import eco_common                         # noqa: E402  (EcoError)
 
 TOKENIZER_PATH = _REPO / "models" / "gpt-oss-120b" / "tokenizer.json"
 MANIFEST_PATH = _REPO / "reports" / "condense" / "subbit_frontier" / "GRAVITY_120B_PROVENANCE.json"

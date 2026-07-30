@@ -10,6 +10,11 @@ label. Only rows that share (family, kind, name) carry an explicit class-qualifi
 from the old shell files.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 from pathlib import Path
 

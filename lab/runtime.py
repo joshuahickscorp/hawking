@@ -123,6 +123,10 @@ class ExperimentRuntime:
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.operators = operators or load_default_registry()
+        if not handlers:
+            from lab.science_registry import build_operator_handlers
+            for key, handler in build_operator_handlers().items():
+                self.handlers.setdefault(key, handler)
         self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}
         for key, handler in self.operators.handlers.items():
             self.handlers.setdefault(key, handler)
@@ -351,20 +355,46 @@ CampaignRuntime = ExperimentRuntime
 
 def main(argv: list[str] | None=None) -> int:
     import argparse
-    parser = argparse.ArgumentParser(description='lab — experiment engine')
+    from lab.science_registry import build_operator_handlers
+    parser = argparse.ArgumentParser(description='lab — experiment engine + science operators')
     parser.add_argument('spec', type=Path, nargs='?', default=None)
     parser.add_argument('--work-dir', type=Path, default=None)
     parser.add_argument('--status', action='store_true')
     parser.add_argument('--json', action='store_true')
     parser.add_argument('--no-lease', action='store_true')
     parser.add_argument('--classify', action='store_true')
+    parser.add_argument('--list-ops', action='store_true', help='List operator handler keys')
+    parser.add_argument('--dry-run', action='store_true', help='Dry-run campaign (no lease)')
     parser.add_argument(
         '--read-historical',
         type=Path,
         default=None,
         help='Normalize a historical receipt/ledger path and print JSON',
     )
+    parser.add_argument('op_args', nargs='*', default=[], help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
+    # `python3.12 -m lab op <handler>` / `list-ops`
+    if args.spec is not None and str(args.spec) == 'list-ops':
+        args.list_ops = True
+        args.spec = None
+    if args.spec is not None and str(args.spec) == 'op':
+        if not args.op_args:
+            parser.error('lab op requires a handler key')
+        key = args.op_args[0]
+        registry = load_default_registry(handlers=build_operator_handlers())
+        handler = registry.resolve_handler(key)
+        if handler is None:
+            # fail closed
+            print(json.dumps({'ok': False, 'error': f'missing handler: {key}'}))
+            return 2
+        result = handler(params={})
+        print(json.dumps(result, indent=2, sort_keys=True, default=str))
+        return 0 if result.get('ok', True) is not False else 1
+    if args.list_ops:
+        registry = load_default_registry(handlers=build_operator_handlers())
+        keys = sorted({k for r in registry.records for k in r.handler_keys} | set(registry.handlers))
+        print(json.dumps({'handlers': keys, 'count': len(keys)}, indent=2))
+        return 0
     if args.read_historical is not None:
         from lab.receipts import read_any_receipt, read_jsonl_ledger
         path = args.read_historical
@@ -375,7 +405,7 @@ def main(argv: list[str] | None=None) -> int:
         print(json.dumps(payload, indent=2, sort_keys=True, default=str))
         return 0
     if args.classify:
-        registry = load_default_registry()
+        registry = load_default_registry(handlers=build_operator_handlers())
         print(
             json.dumps(
                 {
@@ -388,11 +418,20 @@ def main(argv: list[str] | None=None) -> int:
         )
         return 0
     if args.spec is None:
-        parser.error('spec path is required unless --classify / --read-historical')
+        parser.error('spec path is required unless --classify / --list-ops / op / --read-historical')
     spec = load_spec(args.spec)
     work_dir = args.work_dir or Path('reports/lab') / spec.campaign_id
-    with ExperimentRuntime(spec, work_dir=work_dir, acquire_lease=not args.no_lease) as runtime:
-        payload = runtime.status() if args.status else runtime.run().to_dict()
+    handlers = build_operator_handlers()
+    with ExperimentRuntime(
+        spec,
+        work_dir=work_dir,
+        handlers=handlers,
+        acquire_lease=not args.no_lease and not args.dry_run,
+    ) as runtime:
+        if args.dry_run:
+            payload = {'status': 'DRY_RUN', 'campaign_id': spec.campaign_id, 'steps': [s.id for s in spec.steps]}
+        else:
+            payload = runtime.status() if args.status else runtime.run().to_dict()
     print(json.dumps(payload, indent=2, sort_keys=True))
     if isinstance(payload, dict) and payload.get('status') == 'FAULT':
         return 1

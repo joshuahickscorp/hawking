@@ -5,6 +5,11 @@ geometries, and the whole-model ledger is checked against the sealed .gravity sh
 live campaign already wrote.  That shard is opened READ-ONLY and never written.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import math
 import os
@@ -13,11 +18,9 @@ import sys
 import pytest
 
 _HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 
-import gravity_flop_ledger as fl  # noqa: E402
-import artifact_client as gravity_format  # noqa: E402
+from lab.operators import gravity_flop_ledger as fl  # noqa: E402
+from tools.condense import artifact_client as gravity_format  # noqa: E402
 
 SHARD = fl.DEFAULT_SHARD
 _needs_shard = pytest.mark.skipif(not SHARD.exists(),

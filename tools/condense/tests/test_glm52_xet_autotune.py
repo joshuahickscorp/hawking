@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Adversarial offline tests for the GLM-5.2 Xet autotune planner."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import copy
 import json
@@ -13,12 +18,10 @@ import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_xet_autotune as autotune  # noqa: E402
-import glm52_state as state  # noqa: E402
-from glm52_common import Glm52Error, atomic_json, seal, verify_sealed  # noqa: E402
+from lab.operators import glm52_xet_autotune as autotune  # noqa: E402
+from lab.operators import glm52_state as state  # noqa: E402
+from lab.operators.glm52_common import Glm52Error, atomic_json, seal, verify_sealed  # noqa: E402
 
 @pytest.fixture(scope="module")
 def runtime_receipt() -> dict:

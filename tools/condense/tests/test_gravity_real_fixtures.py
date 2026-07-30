@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """The load-bearing risk is not a wrong number, it is a write into a live campaign's output"""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import os
 import pathlib
@@ -11,13 +16,11 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_pack  # noqa: E402
-import gravity_forge as forge  # noqa: E402
-import artifact_client as gravity_format  # noqa: E402
-import gravity_real_fixtures as fx  # noqa: E402
+from lab.operators import glm52_pack  # noqa: E402
+from lab.operators import gravity_forge as forge  # noqa: E402
+from tools.condense import artifact_client as gravity_format  # noqa: E402
+from lab.operators import gravity_real_fixtures as fx  # noqa: E402
 
 OLD = 4 * 3600
 

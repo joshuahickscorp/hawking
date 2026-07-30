@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Offline security tests for the GLM-5.2 Telegram module."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import base64
 import concurrent.futures
@@ -14,12 +19,10 @@ from typing import Any, Mapping
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_telegram as gt  # noqa: E402
-import glm52_state as gs  # noqa: E402
-from glm52_common import canonical, seal  # noqa: E402
+from lab.operators import glm52_telegram as gt  # noqa: E402
+from lab.operators import glm52_state as gs  # noqa: E402
+from lab.operators.glm52_common import canonical, seal  # noqa: E402
 
 TOKEN = "123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcd"
 CHAT_ID = "123456789"

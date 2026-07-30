@@ -183,7 +183,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
     mok, mwhy = metal_ok(bin_path) if bin_path else (False, "no binary")
     llama, glm = llama_gravity(), glm_math_preserve()
     gtps, gglm = find_example("gravity_tps"), find_example("gravity_glm_tps")
-    fmt, pack = REPO / "tools/condense/artifact_client.py", REPO / "tools/condense/glm52_pack.py"
+    fmt, pack = REPO / "tools/condense/artifact_client.py", REPO / "lab/operators/glm52_pack.py"
     rows: list[dict[str, Any]] = []
 
     def add(name: str, fam: str, st: str, reason: str, **kw: Any) -> None:
@@ -251,7 +251,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
         if fmt.is_file() else f"missing {fmt}", unit="s")
     add("transform.pack_indices_bytes_per_s", "transform",
         "measurable" if pack.is_file() else "unavailable",
-        "fixture-scale glm52_pack pack/unpack indices (no 1.4TB source)" if pack.is_file()
+        "fixture-scale lab.operators.glm52_pack pack/unpack indices (no 1.4TB source)" if pack.is_file()
         else f"missing {pack}", unit="bytes/s", higher_is_better=True)
     add("transform.shard_write_verify_bytes_per_s", "transform",
         "measurable" if fmt.is_file() else "unavailable",
@@ -460,7 +460,7 @@ import json, sys, time
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
 import numpy as np
-from glm52_pack import pack_indices, unpack_indices
+from lab.operators.glm52_pack import pack_indices, unpack_indices
 rng = np.random.default_rng(0)
 vals = rng.integers(0, 16, size=2_000_000, dtype=np.uint64)
 t0 = time.perf_counter()
@@ -475,7 +475,7 @@ _SHARD_SCRIPT = r"""
 import json, sys, time, tempfile
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
-import artifact_client as gf
+from tools.condense import artifact_client as gf
 payloads = []
 for i in range(32):
     body = bytes((i * 17 + j) % 256 for j in range(4096))
@@ -498,7 +498,7 @@ print(json.dumps({"bytes_per_s": total / elapsed, "tensors_per_s": 32 * 20 / ela
 """
 
 def cap_transform(n: int) -> list[dict[str, Any]]:
-    py, fmt, pack = sys.executable, REPO / "tools/condense/artifact_client.py", REPO / "tools/condense/glm52_pack.py"
+    py, fmt, pack = sys.executable, REPO / "tools/condense/artifact_client.py", REPO / "lab/operators/glm52_pack.py"
     condense = str(REPO / "tools/condense")
     out: list[dict[str, Any]] = []
     if fmt.is_file():

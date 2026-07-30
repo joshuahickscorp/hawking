@@ -1,17 +1,22 @@
 """Gravity kernel selection + MoE pure-logic (S6 F2 C2 densified)."""
 from __future__ import annotations
 import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
+import sys
 from pathlib import Path
 import pytest
 HERE = Path(__file__).resolve().parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
-import gravity_kernel_select as ks
+from lab.operators import gravity_kernel_select as ks
 import numpy as np
-import gravity_forge as forge
-import gravity_metal_lab_b as labb
-import gravity_moe_layer as gml
-import gravity_real_fixtures as grf
+from lab.operators import gravity_forge as forge
+from lab.operators import gravity_metal_lab_b as labb
+from lab.operators import gravity_moe_layer as gml
+from lab.operators import gravity_real_fixtures as grf
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 R0 = {'S': 1, 'rotate': False, 'k': 128, 'D': 8, 'rows': 2048, 'cols': 6144, 'nchunk': 768, 'index_bits_on_disk': 7, 'rung': 'R0'}
 KERNELS = sorted(ks.KERNELS)

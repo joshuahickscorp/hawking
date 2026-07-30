@@ -1,0 +1,23 @@
+{
+  "a_evid_credit": 0,
+  "artifact_client": "tools/condense/artifact_client.py",
+  "bench_successor": "lab.bench_harness",
+  "c_aux_credit": 0,
+  "operator_package": "lab/operators",
+  "parent": "cbfff8f33ec397510810ec2840e437e043d8f445",
+  "process_authority": "python3.12 -m lab",
+  "releases": [
+    "tools/condense/doctor_v5_gptoss_mxfp4.py",
+    "tools/condense/gptoss_real_forward.py",
+    "tools/condense/gptoss_moe_runtime.py",
+    "tools/condense/gptoss_block.py",
+    "tools/condense/eco_common.py",
+    "tools/foundry/seal_f1_qwen3_235b.py",
+    "tools/foundry/post_parent_review.py",
+    "tree:tools/foundry/lab_harness/**"
+  ],
+  "rung": "C-SCI-R1",
+  "s5_credit": 0,
+  "schema": "hawking.csci.ledger.v1",
+  "source_fetch_cli": "tools/condense/glm52_source_fetch.py"
+}

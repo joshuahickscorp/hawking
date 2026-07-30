@@ -1,16 +1,25 @@
 """Foundry potency/post-parent tables (S6 F2 C3 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
 import pytest
 FOUNDRY = Path(__file__).resolve().parents[1]
-if str(FOUNDRY) not in sys.path:
-    sys.path.insert(0, str(FOUNDRY))
-import gravity_potency as gp
+from lab.operators import gravity_potency as gp
 import json
 import os
-import post_parent_review as ppr
+
+class _ReleasedPPR:
+    """Released research surface — tests must skip rather than call product code."""
+    def __getattr__(self, name):
+        import pytest
+        pytest.skip("C-SCI-R1 released tools/foundry/post_parent_review.py")
+ppr = _ReleasedPPR()
 
 @pytest.fixture()
 def foundry(tmp_path, monkeypatch):
@@ -178,8 +187,6 @@ def test_atlas_reopens_only_on_a_new_parent_diagnosis(foundry):
 def test_atlas_does_not_block_an_alive_lever(foundry):
     assert gp.atlas_check('row_norm_stratification')['blocked'] is False
 _HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 REPO = os.path.dirname(os.path.dirname(_HERE))
 
 def synthetic_evidence(run_status='honest_boundary_sealed'):

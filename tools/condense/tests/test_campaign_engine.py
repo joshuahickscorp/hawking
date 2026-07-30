@@ -458,9 +458,7 @@ def test_glm52_state_is_named_unclassified_residual_controller() -> None:
     assert "lease" in rec.why.lower() or "controller" in rec.why.lower()
     import sys
 
-    if str(CONDENSE) not in sys.path:
-        sys.path.insert(0, str(CONDENSE))
-    from lab.lease import SingletonLease as EngineLease
+        from lab.lease import SingletonLease as EngineLease
     from glm52_state import SingletonLease as StateLease  # noqa: E402
 
     assert issubclass(StateLease, EngineLease)
@@ -471,9 +469,7 @@ def test_engine_lease_is_toctou_hardened() -> None:
     import inspect
     import sys
 
-    if str(CONDENSE) not in sys.path:
-        sys.path.insert(0, str(CONDENSE))
-    from lab import lease as lease_mod
+        from lab import lease as lease_mod
     from glm52_state import SingletonLease as StateLease  # noqa: E402
 
     src = inspect.getsource(lease_mod.SingletonLease.acquire)

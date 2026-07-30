@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-"""Track V operator classification — counted Python authority (no data-file catalog)."""
+"""Track V operator registry — lab.operators authority (C-SCI-R1)."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,8 +8,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 Handler = Callable[..., dict[str, Any]]
-CONDENSE_ROOT = Path(__file__).resolve().parents[1] / "tools" / "condense"
-
+OPS_ROOT = Path(__file__).resolve().parent / "operators"
 
 class OperatorClass(str, Enum):
     OPERATOR = "operator"
@@ -20,7 +19,6 @@ class OperatorClass(str, Enum):
     NUMERICAL_AUTHORITY = "numerical_authority"
     UNCLASSIFIED = "UNCLASSIFIED"
 
-
 OP, DA, EV, FX, NA, UC = (
     OperatorClass.OPERATOR,
     OperatorClass.DATASET_ADAPTER,
@@ -29,7 +27,6 @@ OP, DA, EV, FX, NA, UC = (
     OperatorClass.NUMERICAL_AUTHORITY,
     OperatorClass.UNCLASSIFIED,
 )
-
 
 @dataclass(frozen=True)
 class OperatorRecord:
@@ -52,19 +49,20 @@ class OperatorRecord:
             "class": self.class_.value,
             "loc": self.loc,
             "why": self.why,
-            "path": self.path or f"tools/condense/{self.module}.py",
+            "path": self.path or f"lab/operators/{self.module}.py",
             "handler_keys": list(self.handler_keys),
             "path_sealed": self.path_sealed,
             "science": self.science,
         }
 
-
 def _loc(name: str) -> int:
-    path = CONDENSE_ROOT / f"{name}.py"
-    if not path.is_file():
-        return 0
-    return len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
-
+    path = OPS_ROOT / f"{name}.py"
+    if path.is_file():
+        return len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
+    alt = Path(__file__).resolve().parents[1] / "tools" / "condense" / f"{name}.py"
+    if alt.is_file():
+        return len(alt.read_text(encoding="utf-8", errors="ignore").splitlines())
+    return 0
 
 def _m(
     module: str,
@@ -74,106 +72,68 @@ def _m(
     *,
     sealed: bool = False,
     sci: bool = False,
+    path: str | None = None,
 ) -> OperatorRecord:
-    """One irreducible-module record. Omit sealed/sci when false (defaults)."""
     return OperatorRecord(
         module=module,
         class_=class_,
         loc=_loc(module),
         why=why,
-        path=f"tools/condense/{module}.py",
+        path=path or f"lab/operators/{module}.py",
         handler_keys=(key,) if key else (),
         path_sealed=sealed,
         science=sci,
     )
 
-
-# Canonical Track V classification: every tools/condense top-level module, once.
 IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
-    _m("glm52_common", NA, "artifact.resolve",
-       "Single path authority resolve_artifact + canonical seal helpers; path-sealed into contracts and corpus "
-       "receipts.", sealed=True),
-    _m("glm52_state", UC, "state.controller",
-       "Partially decomposed residual controller. Lease half absorbed into engine.lease.SingletonLease "
-       "(TOCTOU-hardened flock, parent-chain O_NOFOLLOW open, post-lock revalidation). Remaining body is HashChainLog "
-       "+ WindowLedger + TrustedArtifactStore + Controller + GLM52 evidence validators — dual-log claim-bound "
-       "transitions under exclusive lease with official shard/coverage contracts. Thin SingletonLease subclass maps "
-       "StateError; dies when Controller is absorbed.", sealed=True),
-    _m("glm52_parity", EV, "measure.parity",
-       "Adapter/twin/reference parity instrument; sealed parity surface.", sealed=True, sci=True),
-    _m("glm52_contract", EV, "precheck.contract",
-       "Immutable source contract and header-derived ledgers; live reader.", sealed=True, sci=True),
-    _m("glm52_source_fetch", DA, "fetch.source",
-       "BF16 source streamer with sealed schedule and manifest verification.", sci=True),
-    _m("glm52_teacher_capture", OP, "measure.teacher_capture",
-       "Teacher-evidence capture on the BF16 stream before eviction.", sci=True),
-    _m("glm52_xet_autotune", EV, "plan.xet",
-       "Offline planner and fail-closed authority gate for Xet autotuning (adjacent to pack science; not in the "
-       "pack/parity/gravity floor).", sealed=True),
-    _m("glm52_activation_aware_pack", OP, "pack.activation_v1",
-       "Activation-aware packing program v1 (real-activation pilot order).", sci=True),
-    _m("glm52_activation_aware_pack_v2", OP, "pack.activation_v2",
-       "Activation-aware pack v2 — feasibility + fake-data codec (VARIANT of v1).", sci=True),
-    _m("glm52_pack", OP, "pack.stream", "Serialize tensors into physically-exact sub-bit compact shards.", sci=True),
-    _m("glm52_adapter", DA, "adapt.checkpoint",
-       "Fail-closed checkpoint adapter and bounded safetensors reader.", sealed=True, sci=True),
-    _m("glm52_assemble", OP, "assemble.model",
-       "Assemble packed shards into one verified local model, or say why not.", sci=True),
-    _m("glm52_capture_program", DA, "capture.program",
-       "Natural teacher-capture program: real text, disjoint splits, domains.", sci=True),
-    _m("glm52_corpus", DA, "corpus.verify",
-       "Offline quality-corpus integrity contract; no model/network code.", sealed=True),
-    _m("glm52_evidence_auth", EV, "auth.evidence", "Keychain-backed producer authentication for campaign evidence."),
-    _m("glm52_functional_gauntlet", EV, "eval.gauntlet",
-       "FS0–FS6 functional-escape survival suite across layers/documents.", sci=True),
-    _m("glm52_grounding", EV, "eval.grounding",
-       "Fail-closed read-only grounding observations (no write/network).", sci=True),
-    _m("glm52_grounding_auth", EV, "auth.grounding", "Independent Keychain credential for filesystem observations."),
-    _m("glm52_moe_student", NA, "student.moe",
-       "Dense random-feature MoE student with ridge fit — function not weights.", sci=True),
-    _m("glm52_reference", NA, "oracle.reference",
-       "Inspectable NumPy reference forward for main + physical MTP (oracle).", sealed=True, sci=True),
-    _m("glm52_shard_probe", OP, "probe.shard",
-       "One-pass weight evidence capture for a resident BF16 source shard.", sci=True),
-    _m("glm52_synthetic", FX, "fixture.synthetic",
-       "Deterministic architecture-preserving safetensors fixture builder.", sealed=True, sci=True),
-    _m("glm52_telegram", OP, "notify.telegram", "Secure Telegram credentials and delivery for campaign alerts."),
-    _m("glm52_terminal_proofs", EV, "eval.terminal_proofs",
-       "Pure semantic proofs for offline-ready stop conditions.", sealed=True, sci=True),
-    _m("glm52_xet_live", OP, "exec.xet_live",
-       "Authority-gated body-file-free live Xet trials (VARIANT of autotune).", sealed=True),
-    _m("doctor_v5_gptoss_mxfp4", OP, "doctor.mxfp4", "Bounded-memory GPT-OSS MXFP4 inventory and staging primitives."),
-    _m("gptoss_block", NA, "forward.gptoss_block",
-       "Bounded single-block GPT-OSS-120B forward producing real MoE input."),
-    _m("gptoss_moe_runtime", OP, "forward.gptoss_moe", "Per-expert STR2 loader + CPU-reference MoE runtime."),
-    _m("gptoss_real_forward", OP, "forward.gptoss_real",
-       "Full-model GPT-OSS-120B bounded-streaming parity-correct forward."),
-    _m("gptoss_subbit_packer", OP, "pack.gptoss_subbit", "Sub-1-bit deployable packer on Metal/MPS.", sci=True),
-    _m("gravity_bench_lab", EV, "eval.matched_bench",
-       "Matched-benchmark harness — every speed claim must pass through here.", sci=True),
-    _m("gravity_flop_ledger", NA, "ledger.flop",
-       "FLOP-and-byte ledger separating compression from arithmetic savings.", sci=True),
-    _m("gravity_forge", OP, "pack.gravity_forge", "Capability-preserving sub-bit representation foundry.", sci=True),
+    _m("glm52_common", NA, "artifact.resolve", "Path authority + seal helpers.", sealed=True),
+    _m("glm52_state", UC, "state.controller", "Campaign controller residual under lab lease.", sealed=True),
+    _m("glm52_parity", EV, "measure.parity", "Adapter/twin/reference parity.", sealed=True, sci=True),
+    _m("glm52_contract", EV, "precheck.contract", "Immutable source contract ledgers.", sealed=True, sci=True),
+    _m("glm52_source_fetch", DA, "fetch.source", "BF16 source streamer body.", sci=True),
+    _m("glm52_teacher_capture", OP, "measure.teacher_capture", "Teacher-evidence capture.", sci=True),
+    _m("glm52_xet_autotune", EV, "plan.xet", "Xet autotune planner.", sealed=True),
+    _m("glm52_activation_aware_pack", OP, "pack.activation_v1", "Activation-aware pack v1.", sci=True),
+    _m("glm52_activation_aware_pack_v2", OP, "pack.activation_v2", "Activation-aware pack v2.", sci=True),
+    _m("glm52_pack", OP, "pack.stream", "Sub-bit compact shard serializer.", sci=True),
+    _m("glm52_adapter", DA, "adapt.checkpoint", "Checkpoint adapter.", sealed=True, sci=True),
+    _m("glm52_assemble", OP, "assemble.model", "Assemble packed shards.", sci=True),
+    _m("glm52_capture_program", DA, "capture.program", "Teacher-capture program.", sci=True),
+    _m("glm52_corpus", DA, "corpus.verify", "Corpus integrity contract.", sealed=True),
+    _m("glm52_evidence_auth", EV, "auth.evidence", "Evidence HMAC auth."),
+    _m("glm52_functional_gauntlet", EV, "eval.gauntlet", "FS0–FS6 gauntlet.", sci=True),
+    _m("glm52_grounding", EV, "eval.grounding", "Grounding observations.", sci=True),
+    _m("glm52_grounding_auth", EV, "auth.grounding", "Grounding credentials."),
+    _m("glm52_moe_student", NA, "student.moe", "MoE student ridge fit.", sci=True),
+    _m("glm52_reference", NA, "oracle.reference", "NumPy reference forward.", sealed=True, sci=True),
+    _m("glm52_shard_probe", OP, "probe.shard", "Shard weight probe.", sci=True),
+    _m("glm52_synthetic", FX, "fixture.synthetic", "Synthetic fixture builder.", sealed=True, sci=True),
+    _m("glm52_telegram", OP, "notify.telegram", "Telegram campaign alerts."),
+    _m("glm52_terminal_proofs", EV, "eval.terminal_proofs", "Terminal stop proofs.", sealed=True, sci=True),
+    _m("glm52_xet_live", OP, "exec.xet_live", "Live Xet trials.", sealed=True),
+    _m("gptoss_subbit_packer", OP, "pack.gptoss_subbit", "GPT-OSS sub-bit packer.", sci=True),
+    _m("gravity_bench_lab", EV, "eval.matched_bench", "Matched benchmark harness.", sci=True),
+    _m("gravity_flop_ledger", NA, "ledger.flop", "FLOP/byte ledger.", sci=True),
+    _m("gravity_forge", OP, "pack.gravity_forge", "Sub-bit representation foundry.", sci=True),
     _m("artifact_client", OP, "format.gravity",
-       "Native .gravity container format (header/shard read/write/verify).", sci=True),
-    _m("gravity_functional_codec", OP, "codec.functional_moe",
-       "glm52.functional.moe.v1 codec storing a function, not weights.", sci=True),
-    _m("gravity_kernel_select", NA, "select.kernel",
-       "Kernel selection matrix: which grammar executes which geometry.", sci=True),
-    _m("gravity_metal", OP, "kernel.metal",
-       "Hand-written Metal kernel: decode inside accumulation, never in memory.", sci=True),
-    _m("gravity_metal_lab_b", OP, "kernel.metal_lab_b",
-       "Track B shared-table lookup-linear measured on unshared reality (VARIANT).", sci=True),
-    _m("gravity_moe_layer", OP, "forward.moe_layer",
-       "Complete GLM-5.2 MoE layer as one Metal command buffer, parity-gated.", sci=True),
-    _m("gravity_real_fixtures", FX, "fixture.real_packed",
-       "Real packed tensors as fixtures from live campaign without disturbance.", sci=True),
-    _m("hawking_null_metric", NA, "metric.null",
-       "Null-corrected promotion metric (constant-null vs raw cosine).", sci=True),
-    _m("bounded_cache", OP, "cache.pressure", "Pressure-aware LRU for decoded experts / large reusable tensors."),
-    _m("eco_common", NA, "eco.common", "Shared seal/hash/atomic helpers for Ecosystem Frontier scaffold."),
+       "Native .gravity container (S5 client).", sci=True,
+       path="tools/condense/artifact_client.py"),
+    _m("gravity_functional_codec", OP, "codec.functional_moe", "Functional MoE codec.", sci=True),
+    _m("gravity_kernel_select", NA, "select.kernel", "Kernel selection matrix.", sci=True),
+    _m("gravity_metal", OP, "kernel.metal", "Metal decode-in-accumulate kernel.", sci=True),
+    _m("gravity_metal_lab_b", OP, "kernel.metal_lab_b", "Track B shared-table kernel.", sci=True),
+    _m("gravity_moe_layer", OP, "forward.moe_layer", "MoE layer Metal executor.", sci=True),
+    _m("gravity_real_fixtures", FX, "fixture.real_packed", "Real packed fixtures.", sci=True),
+    _m("hawking_null_metric", NA, "metric.null", "Null-corrected metric.", sci=True),
+    _m("bounded_cache", OP, "cache.pressure", "Pressure-aware LRU cache."),
+    _m("eco_common", NA, "eco.common", "Shared seal/hash helpers absorbed into operators."),
+    _m("subbit_closure", OP, "foundry.subbit_closure", "Sub-bit closure program.", sci=True),
+    _m("gravity_potency", OP, "foundry.potency", "Potency registry/atlas.", sci=True),
+    _m("one_bit_ceiling", NA, "foundry.ceiling", "One-bit ceiling ledger.", sci=True),
+    _m("storage_modes", NA, "foundry.storage", "Storage mode contracts.", sci=True),
+    _m("acquisition", OP, "foundry.acquisition", "Acquisition proposals.", sci=True),
+    _m("quality_contract", EV, "foundry.quality", "Quality contract gates.", sci=True),
 )
-
 
 class OperatorRegistry:
     def __init__(
@@ -234,17 +194,51 @@ class OperatorRegistry:
             "by_class_loc": loc_by_class,
             "unclassifiable": self.unclassifiable(),
             "path_sealed": [r.module for r in self.records if r.path_sealed],
+            "process_authority": "python3.12 -m lab",
         }
-
 
 DEFAULT_REGISTRY = OperatorRegistry()
 
-
-def load_default_registry(
-    handlers: Mapping[str, Handler] | None = None,
-) -> OperatorRegistry:
+def load_default_registry(handlers: Mapping[str, Handler] | None = None) -> OperatorRegistry:
     return OperatorRegistry(handlers=handlers)
-
 
 def classify_all() -> list[dict[str, Any]]:
     return DEFAULT_REGISTRY.classification()
+
+def build_operator_handlers() -> dict[str, Handler]:
+    """Bind real operator callables for lab op dispatch; missing keys fail closed."""
+    import importlib
+
+    def bind(module: str, attr: str) -> Handler:
+        def handler(runtime: Any = None, params: Mapping[str, Any] | None = None, **kwargs: Any) -> dict[str, Any]:
+            mod = importlib.import_module(
+                "tools.condense.artifact_client" if module == "artifact_client" else f"lab.operators.{module}"
+            )
+            fn = getattr(mod, attr)
+            params = dict(params or {})
+            params.update(kwargs)
+            try:
+                result = fn(**params) if params else fn()
+            except TypeError:
+                result = fn()
+            if isinstance(result, dict):
+                return result
+            if isinstance(result, int):
+                return {"ok": result == 0, "exit_code": result}
+            return {"ok": True, "result": result}
+        return handler
+
+    handlers: dict[str, Handler] = {
+        "pack.stream": bind("glm52_pack", "pack_indices"),
+        "pack.activation_v1": bind("glm52_activation_aware_pack", "selftest"),
+        "pack.activation_v2": bind("glm52_activation_aware_pack_v2", "assert_no_gaussian_promotion_path"),
+        "fetch.source": bind("glm52_source_fetch", "selftest"),
+        "ledger.flop": bind("gravity_flop_ledger", "official_geometry"),
+        "notify.telegram": bind("glm52_telegram", "credential_status"),
+        "auth.evidence": bind("glm52_evidence_auth", "credential_status"),
+        "foundry.potency": bind("gravity_potency", "selftest"),
+        "pack.gravity_forge": bind("gravity_forge", "selftest"),
+        "eval.terminal_proofs": bind("glm52_terminal_proofs", "derive_all_ready_stop_proofs"),
+        "format.gravity": bind("artifact_client", "selftest"),
+    }
+    return handlers

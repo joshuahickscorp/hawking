@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.12
 """Teacher-capture invariants: the gate that stands between a BF16 body and rm."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 
 import json
 import pathlib
@@ -10,12 +15,10 @@ import numpy as np
 import pytest
 
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 
-import glm52_synthetic as synthetic  # noqa: E402
-import glm52_teacher_capture as tc  # noqa: E402
-from glm52_adapter import CORE  # noqa: E402
+from lab.operators import glm52_synthetic as synthetic  # noqa: E402
+from lab.operators import glm52_teacher_capture as tc  # noqa: E402
+from lab.operators.glm52_adapter import CORE  # noqa: E402
 
 def _organ_id(spec) -> str:
     if spec.section != CORE:

@@ -1,5 +1,10 @@
 """GLM52 grounding suite offline (S6 F2 C4 densified)."""
 from __future__ import annotations
+import sys
+from pathlib import Path as _Path_repo
+_REPO = _Path_repo(__file__).resolve().parents[3]
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
 import pathlib
 import sys
 from pathlib import Path
@@ -10,8 +15,8 @@ if str(HERE) not in sys.path:
 import hashlib
 import inspect
 import os
-from tools.condense.glm52_common import seal
-from tools.condense.glm52_grounding import (
+from lab.operators.glm52_common import seal
+from lab.operators.glm52_grounding import (
     ABSENCE_OBSERVATION_SCHEMA,
     FILE_OBSERVATION_SCHEMA,
     RESOURCE_SAMPLE_SCHEMA,
@@ -29,10 +34,10 @@ from tools.condense.glm52_grounding import (
     verify_authenticated_observation
 )
 import base64
-import glm52_grounding_auth as auth
-import glm52_state as state
+from lab.operators import glm52_grounding_auth as auth
+from lab.operators import glm52_state as state
 from tools.condense.tests._glm52_fakes import FakeKeychain
-from tools.condense import glm52_grounding as grounding
+from lab.operators import glm52_grounding as grounding
 AUTH = ProducerAuthenticator(b'grounding-test-producer-key-32-bytes-minimum!!')
 OTHER_AUTH = ProducerAuthenticator(b'another-grounding-producer-key-32-bytes!!')
 FIXED_TIME = '2026-07-21T15:16:17.123456Z'
@@ -325,8 +330,6 @@ def test_public_resource_api_samples_live_os_facts(tmp_path: Path) -> None:
     assert receipt['sampled_at'] != FIXED_TIME
     verify_authenticated_observation(receipt, AUTH, max_age_seconds=5)
 CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-if str(CONDENSE) not in sys.path:
-    sys.path.insert(0, str(CONDENSE))
 KEY = bytes(range(32))
 
 def test_configures_idempotently_and_loads_redacted_authenticator() -> None:
