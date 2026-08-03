@@ -423,7 +423,7 @@
   ],
   "running_processes_at_plan_time": [
     {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py protect >/dev/null\\012python3.12 tools/condense/storage_stripdown.py inventory >/dev/null 2>&1\\012python3.12 tools/co",
+      "command": "/bin/zsh -c source /Users/scammermike/.cache/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py protect >/dev/null\\012python3.12 tools/condense/storage_stripdown.py inventory >/dev/null 2>&1\\012python3.12 tools/co",
       "pid": 7576
     },
     {

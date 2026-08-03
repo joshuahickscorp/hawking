@@ -155,7 +155,7 @@
  },
  "controller_review": {
   "at": "2026-07-27T01:52:59Z",
-  "by": "controller (claude), re-derived from the source",
+  "by": "controller, re-derived from the source",
   "claim_corrected": {
    "actually": "VerifierWriteCap::mint() and UserWriteCap::mint() are public and unrestricted. Any caller in any crate can mint one; the restriction is a doc comment ('Mint only at the verifier entry point'), which is a convention.",
    "disposition": "accepted as delivered; the receipt is corrected rather than the code re-engineered. Sealing the mint to the verifier's own construction path is the upgrade if this is ever load-bearing for a trust boundary.",

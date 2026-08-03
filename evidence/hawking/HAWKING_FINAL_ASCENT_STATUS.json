@@ -243,7 +243,7 @@
         "BASE_TRUE_TPS measured on a capable provider",
         "acceleration provider receipt"
       ],
-      "owner": "codex+controller",
+      "owner": "delegate+controller",
       "pid": null,
       "promotion_gate": "real provider capable; TPS measured not estimated; no kernel turn flip",
       "resource_class": "medium-gpu",

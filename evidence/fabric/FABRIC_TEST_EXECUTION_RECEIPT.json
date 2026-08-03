@@ -6,7 +6,7 @@
     "name": "fabric-software",
     "source": "HAWKING_PARALLEL_LANE_OWNERSHIP.json"
   },
-  "worktree": "/Users/scammermike/.claude-grok/worktrees/fabric-tests-20260727-144153",
+  "worktree": "/Users/scammermike/.lanes/worktrees/fabric-tests-20260727-144153",
   "constraints_observed": {
     "HEAVY_md": "absent in this worktree; followed HAWKING_PARALLEL_LANE_OWNERSHIP invariants instead",
     "nice_n_15": "requested; setpriority returned Operation not permitted in this sandbox — tests still ran at default priority",

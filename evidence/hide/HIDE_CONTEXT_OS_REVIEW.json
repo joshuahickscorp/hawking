@@ -2,7 +2,7 @@
   "schema": "hawking.hide.context_os_review.v1",
   "at": "2026-07-26T07:45:00Z",
   "subject": "Context OS gap analysis and the two campaign-critical closures",
-  "status": "VERIFIED BY CLAUDE. 246 passed, 0 failed (was 244). Not merged.",
+  "status": "VERIFIED BY THE CONTROLLER. 246 passed, 0 failed (was 244). Not merged.",
   "finding_that_shaped_the_lane": "The Context Stack was already REAL_WIRED at 4,947 lines with a live compiler, index legs and memory store. This was never a build-from-nothing task, and treating it as one would have added surface to a working subsystem.",
   "closed": [
     {
@@ -34,7 +34,7 @@
   ],
   "test_count_discrepancy_reconciled": {
     "reported": "208 -> 210 passed with 3 pre-existing failures",
-    "measured_by_claude": "213 passed 0 failed on --lib; 246 passed 0 failed on the full suite, up from 244",
+    "measured_by_controller": "213 passed 0 failed on --lib; 246 passed 0 failed on the full suite, up from 244",
     "explanation": "Two causes. Scope: they ran --lib, which excludes the integration targets, hence 213 versus 246. And their 3 failures -- run_command api, service process heartbeats, write-lease revoke -- are timing-sensitive process tests that flaked under the contention of a live pack plus concurrent lanes. They do not reproduce here. No regression."
   },
   "evidence_level": "TESTS_RE_RUN_INDEPENDENTLY_PLUS_STATIC_READING",

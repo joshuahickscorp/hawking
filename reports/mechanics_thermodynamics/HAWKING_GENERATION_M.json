@@ -1,6 +1,6 @@
 {
   "base_generation_f": "e0857398 (frozen)",
-  "branch": "codex/hawking-mechanics-thermodynamics",
+  "branch": "lane/hawking-mechanics-thermodynamics",
   "closeout": {
     "energy": "UNAVAILABLE",
     "fidelity_c_d": "COMPLETE (no missing-D forbidden exit)",

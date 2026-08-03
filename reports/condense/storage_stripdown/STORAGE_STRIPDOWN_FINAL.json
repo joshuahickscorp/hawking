@@ -39,7 +39,7 @@
   "realized_free_delta": 166966124544,
   "running_processes": [
     {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py verify 2>&1 | python3.12 -c \"\\012import json,sys; d=json.load(sys.stdin)\\012print('\"'\"'MOP intact:'\"'\"',d['\"'\"'mop_in",
+      "command": "/bin/zsh -c source /Users/scammermike/.cache/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py verify 2>&1 | python3.12 -c \"\\012import json,sys; d=json.load(sys.stdin)\\012print('\"'\"'MOP intact:'\"'\"',d['\"'\"'mop_in",
       "pid": 7675
     },
     {

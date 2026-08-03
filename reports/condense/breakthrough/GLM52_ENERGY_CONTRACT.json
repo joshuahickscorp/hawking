@@ -170,9 +170,9 @@
     "retention_period": "life of the campaign branch; logs are inputs to any energy claim and a claim without its log is void",
     "location": "reports/condense/breakthrough/energy_raw/<run_id>.jsonl (NOT YET CREATED -- no benchmark run has been energy-logged)",
     "probe_samples_captured_this_session": {
-      "window_a": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon20.jsonl (20 samples, 500 ms requested)",
-      "window_b": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon40.jsonl (40 samples, 1000 ms requested)",
-      "channel_dump": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon_debug.txt (767 lines)",
+      "window_a": "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon20.jsonl (20 samples, 500 ms requested)",
+      "window_b": "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon40.jsonl (40 samples, 1000 ms requested)",
+      "channel_dump": "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon_debug.txt (767 lines)",
       "caveat": "These are scratchpad paths and are NOT durable. They are the evidence for this contract's numbers, not campaign artifacts. Any energy claim must re-capture into energy_raw/."
     }
   },

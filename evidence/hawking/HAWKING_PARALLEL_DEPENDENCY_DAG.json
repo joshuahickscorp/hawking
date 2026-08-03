@@ -3,7 +3,7 @@
   "at": "2026-07-27T01:35:00Z",
   "law": "No lane waits idly for another lane unless its next operation directly consumes that lane's immutable output. An edge below is a real data dependency, not a preference.",
   "nodes": {
-    "TG": "Temporal Gravity (Codex, external)",
+    "TG": "Temporal Gravity (delegated, external)",
     "L01": "hide-archaeology-v2",
     "L02": "hide-memory-six",
     "L03": "odyssey-t0",
@@ -104,7 +104,7 @@
       {
         "at": "L10",
         "wall": "ODYSSEY_LAUNCH_AUTHORIZED is false and only the controller may flip it, after G1-G4 of ODYSSEY_PROMOTION_GATE.md",
-        "status": "G1 MET (substrate sealed, verified live). G2 open: BASE_TRUE_TPS 0.3961 measured but the dominant decode cost is still being attributed inside the Codex TG lane. G3 open. G4 open pending L01/L02/L08."
+        "status": "G1 MET (substrate sealed, verified live). G2 open: BASE_TRUE_TPS 0.3961 measured but the dominant decode cost is still being attributed inside the delegated TG lane. G3 open. G4 open pending L01/L02/L08."
       },
       {
         "at": "L15",

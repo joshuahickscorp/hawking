@@ -5,10 +5,10 @@
   "verdict": "CONFIRMED on correctness and cost; three contract changes found, none producing a wrong value in 1..16 bits",
   "method": "Independent reference derived from pack_indices' contract only (whole payload as one big-endian integer; field i = (big >> (total - (i+1)*bits)) & mask). Compared REF vs verbatim-pre-fix OLD vs NEW.",
   "harness_paths": [
-    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/artifact_check.py",
-    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/break_it.py",
-    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/mem_check.py",
-    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/ref_check.py"
+    "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/artifact_check.py",
+    "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/break_it.py",
+    "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/mem_check.py",
+    "/private/tmp/session-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/ref_check.py"
   ],
   "python": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python, numpy 2.2.6",
   "totals": {

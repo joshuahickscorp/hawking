@@ -1,6 +1,6 @@
 {
   "b0_b1_m1_finding": "M1 lookup-linear 2.5-3.3x faster than Generation-F compact (CPU) at ZERO quality cost (M1==B1 ~1e-7, CPU/Metal parity ~1e-7); Metal mixed; dense-BLAS faster but INADMISSIBLE (dense-shadow law). Quality negative ~0.5bpw (inherited from Gravity). Energy UNAVAILABLE, timing MoP-caveated.",
-  "branch": "codex/hawking-mechanics-thermodynamics",
+  "branch": "lane/hawking-mechanics-thermodynamics",
   "champions": {
     "base": "M2 shared-table",
     "mlp1": "M6 residual_additive (0.654)",

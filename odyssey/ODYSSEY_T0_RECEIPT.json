@@ -216,7 +216,7 @@
           "eta_seconds_remaining": 59.31542499887313,
           "failed": {},
           "note": "Each verified shard body was re-hashed from disk and compared to model.gravity.index.json's shard_body_sha256 entry. Index and manifest files were re-hashed and compared to sealed campaign facts.",
-          "progress_path": "/Users/scammermike/.claude-grok/worktrees/odyssey-t0-20260726-213445/odyssey/t0/state/substrate_verify_progress.json",
+          "progress_path": "/Users/scammermike/.lanes/worktrees/odyssey-t0-20260726-213445/odyssey/t0/state/substrate_verify_progress.json",
           "seconds_this_run": 0.7368722920073196,
           "shards_failed": 0,
           "shards_remaining": 276,

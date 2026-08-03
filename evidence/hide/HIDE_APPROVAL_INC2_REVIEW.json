@@ -10,13 +10,13 @@
     "branch": "grok/hide-approval-inc2-20260725-233330",
     "diff": "2 files, +262/-7"
   },
-  "status": "VERIFIED BY CLAUDE. Tests re-run independently. Not merged pending one finding.",
+  "status": "VERIFIED BY THE CONTROLLER. Tests re-run independently. Not merged pending one finding.",
   "the_trap_was_avoided": {
     "hazard": "Clearing pending_approval is what APPROVAL means -- do_paused sees None and resumes into Act. A denial implemented as a clear would run the effect the user just refused.",
     "outcome": "Avoided. host.rs:6510 routes approve to approve_pending_effect; host.rs:6513 routes deny to deny_pending_effect.",
     "and_it_is_pinned": "deny_effect_live_intent_skips_effect_and_does_not_hang asserts !target.exists() -- a real file that the effectful step would have written -- plus StepStatus::Skipped, a terminal phase (does not hang), and an approval.resolved(deny) event. Its comment names the bug class it kills."
   },
-  "tests_re_run_independently_by_claude": {
+  "tests_re_run_independently_by_controller": {
     "command": "cargo test -p hide-backend",
     "result": "240 passed, 0 failed",
     "named_acceptance_tests_confirmed_to_actually_run": [

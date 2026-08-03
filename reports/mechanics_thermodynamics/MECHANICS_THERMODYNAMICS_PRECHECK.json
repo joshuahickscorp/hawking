@@ -8,7 +8,7 @@
     "ram_gb": 96.0,
     "torch": "2.6.0"
   },
-  "branch": "codex/hawking-mechanics-thermodynamics",
+  "branch": "lane/hawking-mechanics-thermodynamics",
   "g2_status": "COMPLETE (10/10 sealed, 0 over-budget, lease released, pid 41651 dead)",
   "g2_winner": "pq_protected_islands g2_004 hidden_cos 0.984 combine_div 0.553 layer_bpw 3.25",
   "generated_at": "2026-07-19T04:35:48Z",

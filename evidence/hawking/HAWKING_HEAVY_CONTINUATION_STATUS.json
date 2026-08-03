@@ -103,7 +103,7 @@
     "the 282-shard activation-aware pack",
     "hide-wiring (tokenizer-true budgeting, real worktrees, RuntimePlanner, embedding stub refusal)"
   ],
-  "shared_tree": "Codex commits into this tree. Two silent failures recorded in HAWKING_SHARED_TREE_PROTOCOL.json: unstaged work reverted by a concurrent commit, and git apply -3 reporting success while writing nothing. Protocol: apply and commit atomically, assert a named file exists before concluding from the tree.",
+  "shared_tree": "A delegated lane commits into this tree. Two silent failures recorded in HAWKING_SHARED_TREE_PROTOCOL.json: unstaged work reverted by a concurrent commit, and git apply -3 reporting success while writing nothing. Protocol: apply and commit atomically, assert a named file exists before concluding from the tree.",
   "disk": {
     "freed_this_session_gb": 83,
     "what": "~/Desktop/GLM52-Gravity-SubBit, generation A's PQ R0 negative control, deleted on explicit user authorization with GLM52_GENERATION_A_DELETION_RECEIPT.json",

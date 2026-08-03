@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.handoff_contract.v1",
   "at": "2026-07-27T01:50:00Z",
-  "owner": "controller (claude)",
+  "owner": "controller",
   "status": "PREPARED_NOT_EXECUTED",
   "lane": "L09",
   "purpose": "Define the Hawking/Ramanujan split before it is executed, so the split is a mechanical step rather than a design decision taken while tired at the end of a long campaign.",
@@ -68,7 +68,7 @@
     ]
   },
   "contracts_ramanujan_consumes_from_hawking": [
-    {"contract": "runtime ABI", "status": "IN_PROGRESS", "owner_lane": "L18 + Codex TG", "note": "Ramanujan needs to RUN the Director, so it needs the servable path L18 is building, not only the codec"},
+    {"contract": "runtime ABI", "status": "IN_PROGRESS", "owner_lane": "L18 + delegated TG", "note": "Ramanujan needs to RUN the Director, so it needs the servable path L18 is building, not only the codec"},
     {"contract": "Bridge / canonical events", "status": "IN_PROGRESS", "owner_lane": "L05"},
     {"contract": "adapter ABI and registry", "status": "IN_PROGRESS", "owner_lane": "L05"},
     {"contract": "Fabric placement declarations", "status": "IN_PROGRESS", "owner_lane": "L04"},

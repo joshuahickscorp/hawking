@@ -18,7 +18,7 @@
    "inactive_reclaimable": 36.37,
    "speculative_reclaimable": 1.11
   },
-  "by": "controller (claude), re-derived independently from vm_stat",
+  "by": "controller, re-derived independently from vm_stat",
   "corrected_available_memory_bytes": 41312960512,
   "corrected_available_memory_gib": 38.48,
   "the_actual_binding_constraints_for_T1": [

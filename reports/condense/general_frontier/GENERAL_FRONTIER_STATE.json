@@ -26,17 +26,17 @@
     "accepted_handoff": true,
     "expected": "e2609f94",
     "geometry_search_result_commit": "e2609f9452bcc9c97cfa960d6ef362567a048727",
-    "note": "e2609f94 is the accepted handoff anchor (HEAD=origin/main at handoff, verified ancestor of the working branch). The Gate-F generation branch codex/general-frontier-gate-f was created + committed + pushed by the active /goal loop; HEAD f648d6be is a direct child of e2609f94. Do NOT merge packs/CLI scaffolds into the run-critical frontier. Later valid work must not be reset.",
+    "note": "e2609f94 is the accepted handoff anchor (HEAD=origin/main at handoff, verified ancestor of the working branch). The Gate-F generation branch lane/general-frontier-gate-f was created + committed + pushed by the active /goal loop; HEAD f648d6be is a direct child of e2609f94. Do NOT merge packs/CLI scaffolds into the run-critical frontier. Later valid work must not be reset.",
     "pre_frontier_analysis": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
     "preserved_scaffolds": [
-      "codex/packs-absorption-scaffold",
-      "codex/cli-consolidation-scaffold"
+      "lane/packs-absorption-scaffold",
+      "lane/cli-consolidation-scaffold"
     ],
     "second_light_baseline": "b465588384cf9cf7107f3144df1d6bf558bf3581",
     "second_light_tag": "hawking-second-light-baseline",
     "verified_is_head_and_origin_main": true,
     "verified_main": "e2609f9452bcc9c97cfa960d6ef362567a048727",
-    "working_branch": "codex/general-frontier-gate-f",
+    "working_branch": "lane/general-frontier-gate-f",
     "working_branch_head": "f648d6be11051792833172155da84c8504a6c598",
     "working_branch_head_subject": "General Frontier: Gate-F transition scaffold (precheck, parents, Atlas, G0/G1, CUDA plan)",
     "working_branch_parent_is_handoff": true
@@ -173,7 +173,7 @@
   },
   "live_controller": {
     "authoritative_general_frontier_controller": null,
-    "gate_f_branch": "codex/general-frontier-gate-f",
+    "gate_f_branch": "lane/general-frontier-gate-f",
     "gate_f_branch_created": true,
     "generation": null,
     "lease": null,
@@ -231,7 +231,7 @@
     }
   },
   "next_exact_edits": [
-    "create Gate-F branch [DONE - codex/general-frontier-gate-f committed f648d6be, child of e2609f94, pushed] then complete Generation-0 binding: still PENDING = frozen Gate-F quality contract lock + exact Forge/Doctor/Metal provider commits + IMMUTABLE byte-stable Gate-F program hash",
+    "create Gate-F branch [DONE - lane/general-frontier-gate-f committed f648d6be, child of e2609f94, pushed] then complete Generation-0 binding: still PENDING = frozen Gate-F quality contract lock + exact Forge/Doctor/Metal provider commits + IMMUTABLE byte-stable Gate-F program hash",
     "G0 reproduction [DONE - SEALED G0 PASS]: 32-trial result reproduced deterministically from frozen commit; identity/budget/functional-metric checks green; winners confirmed",
     "G1 larger expert reproduction [IN PROGRESS - gravity_frontier_g1.py pid 28670]: all 128 layer-0 experts, both mlp1 and mlp2 classes, larger bounded slices or complete rows, real activation probes, calibration/validation separation, CPU and Metal scientific parity",
     "adopt a stable generation identity for the Gate-F program (hash program CONTENT excluding generated_at timestamp; the current program_sha256 is not byte-stable across regenerations)",
