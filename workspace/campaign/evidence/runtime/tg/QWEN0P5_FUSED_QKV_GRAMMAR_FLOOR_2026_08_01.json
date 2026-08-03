@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.tg.qwen_fused_qkv_grammar_floor.v1",
+  "status": "RETIRED_SAFE_FALLBACK_NO_TG_PROMOTION",
+  "at": "2026-08-01T19:58:00-04:00",
+  "scope": "Same sealed Qwen2.5-0.5B Q4_K_M source-preserving Gravity artifact, 5-token exact prefix and 128-token greedy continuation on Apple M3 Ultra. This is a representation-selection floor, not a CLEAN capability or TG receipt.",
+  "source": {
+    "path": "models/tg-active/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"
+  },
+  "artifact": {
+    "path": "models/tg-active/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+    "sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59"
+  },
+  "candidate": {
+    "request": "HAWKING_GRAVITY_FUSED_QKV=1",
+    "implementation": "Fused raw Q4_K/Q4_K/(Q4_K|Q6_K) QKV + RoPE + KV append now carries nullable Qwen projection biases and split-half RoPE, while retaining decomposed fallback.",
+    "numeric_parity_v21": {
+      "pass": true,
+      "cpu_relative_l2": 2.561e-6,
+      "gpu_relative_l2": 1.61e-6,
+      "gpu_dispatches": 1930,
+      "cpu_reference_fallback_total": 0,
+      "continuation": "exact greedy/top-5"
+    }
+  },
+  "physical_selection": {
+    "prefill_fused_qkv_dispatches": 0,
+    "decode_fused_qkv_dispatches": 0,
+    "reason": "The source QKV quant grammar is outside the direct fused kernel's admitted Q4_K/Q4_K/(Q4_K|Q6_K) grammar. Safe fallback executed; no requested-only fusion is claimed."
+  },
+  "source_qkv_grammar": {
+    "layers": 24,
+    "q_projection": { "ggml_type": "Q5_0", "count": 24 },
+    "k_projection": { "ggml_type": "Q5_0", "count": 24 },
+    "v_projection": [
+      { "ggml_type": "Q5_0", "count": 12 },
+      { "ggml_type": "Q8_0", "count": 12 }
+    ]
+  },
+  "128_token_comparison": {
+    "baseline_receipt_sha256": "8c6f3665e7ef89fab32a752c6a95ec8ef836eae62f85ee3f04eaf094d6e32993",
+    "candidate_receipt_sha256": "615d32e71f7337edc8771b2ba46caa477f6a900a8eea2ec9a8dc744f95c19825",
+    "continuation_sha256_equal": true,
+    "baseline_tps": 145.6370460503942,
+    "candidate_tps": 145.05949882231005,
+    "baseline_p99_ms": 8.44175,
+    "candidate_p99_ms": 8.601917,
+    "verdict": "RETIRED: no physical fused dispatch and no wall or p99 gain."
+  },
+  "next_representation_change": "Implement a parity-gated raw Q5_0/Q5_0/(Q5_0|Q8_0) fused QKV/RoPE/KV grammar, or select a source artifact whose QKV tensors are all directly admitted by the existing raw Q4_K fused grammar."
+}

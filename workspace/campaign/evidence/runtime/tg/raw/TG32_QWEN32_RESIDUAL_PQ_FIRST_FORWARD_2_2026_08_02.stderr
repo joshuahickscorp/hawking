@@ -1,0 +1,7 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+[token] id=30743 text=" ____"
+[token] id=624 text=".\n"
+
+[stats] reason=max_tokens prompt=5 completion=2 prefill_ms=3637.3 decode_ms=676.1 dec_tps=1.48 dispatches_per_fwd=1026 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":1,"completion_tokens":2,"cpu_reference_fallback_count":0,"dec_tps":1.4790778900698314,"decode_command_buffers_total":1,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":1026,"decode_ms":676.096916,"decode_token_ms":[675.7077919999999],"device_id":"Apple M3 Ultra","dispatches_per_forward":1026,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":5,"prefill_metal_dispatches_total":5130,"prefill_ms":3637.300959,"profile_id":null,"prompt_tokens":5,"readback_bytes":0,"token_only_path_used":false}

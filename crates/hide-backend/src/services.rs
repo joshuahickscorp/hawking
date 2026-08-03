@@ -166,6 +166,7 @@ pub type DynMemoryStore = Arc<dyn MemoryStore>;
 pub struct BackendServices {
     pub config: HideConfig,
     pub event_log: DynEventLog,
+    pub(crate) verified_token_events: Arc<crate::classed_writers::VerifiedTokenEventLog>,
     /// Spine B: structured long-term memory (file-facts, decisions, test results,
     /// constraints, failed approaches) — the persistent Project Brain. Sqlite on
     /// disk via `open()`, RAM via `new()`/`with_stores()`.
@@ -219,6 +220,17 @@ pub(crate) fn discover_token_counter() -> TokenCounter {
 }
 
 impl BackendServices {
+    /// Mint a host sink bound to the product's opaque verified-token ingress.
+    pub fn verified_token_sinks(
+        &self,
+        session_id: hide_core::ids::SessionId,
+    ) -> crate::speculation_safety::HostDurableSinks {
+        crate::speculation_safety::HostDurableSinks::with_token_authority(
+            session_id,
+            self.verified_token_events.clone(),
+        )
+    }
+
     pub fn new(config: HideConfig, event_log: DynEventLog) -> Self {
         let memory = Arc::new(InMemoryCodeIndex::default());
         let workspace_id = config.workspace_root.display().to_string();
@@ -227,11 +239,15 @@ impl BackendServices {
         );
         // Mirror episodic memory off the durable event stream so any event a
         // client can read also lands in the classed store.
-        let event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                event_log,
+                classed_memory.clone(),
+            );
         Self {
             config,
             event_log,
+            verified_token_events,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
             classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
@@ -266,11 +282,15 @@ impl BackendServices {
         let classed_memory: DynClassedMemory = Arc::new(
             ClassedMemorySystem::open_in_memory(workspace_id).expect("in-memory classed memory"),
         );
-        let event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                event_log,
+                classed_memory.clone(),
+            );
         Self {
             config,
             event_log,
+            verified_token_events,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
             classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
@@ -371,8 +391,13 @@ impl BackendServices {
         );
         services.memory_store = memory_store;
         services.classed_memory = classed_memory.clone();
-        services.event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(raw_event_log, classed_memory);
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                raw_event_log,
+                classed_memory,
+            );
+        services.event_log = event_log;
+        services.verified_token_events = verified_token_events;
         services.repo_instructions = Arc::new(repo_instructions);
 
         // W4: bind the real SqliteCodeIndex at workspace open. A failed open or

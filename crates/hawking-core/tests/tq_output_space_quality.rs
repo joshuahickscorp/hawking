@@ -43,8 +43,8 @@ fn channel_scales(c: usize, outlier: bool, seed: u64) -> Vec<f32> {
         .collect()
 }
 fn real_w4a8_scales(c: usize, seed: u64) -> Vec<f32> {
-    let path =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("reports/w4a8_activation_dist.csv");
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../workspace/campaign/records/reports/w4a8_activation_dist.csv");
     let txt = std::fs::read_to_string(&path).unwrap_or_default();
     let mut rms: Vec<f32> = Vec::new();
     for line in txt.lines() {

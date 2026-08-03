@@ -1,0 +1,19 @@
+   Compiling hawking-core v0.2.2 (/Users/scammermike/Downloads/hawking/crates/hawking-core)
+warning: associated function `debug_slice` is never used
+   --> crates/hawking-core/src/model/mixtral.rs:955:8
+    |
+885 | impl MixtralEngine {
+    | ------------------ associated function in this implementation
+...
+955 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {
+    |        ^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `hawking-core` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.01s
+     Running tests/qwen_source_gravity_live.rs (target/debug/deps/qwen_source_gravity_live-f56ed1b3907116c2)
+error: test failed, to rerun pass `-p hawking-core --test qwen_source_gravity_live`
+
+Caused by:
+  process didn't exit successfully: `/Users/scammermike/Downloads/hawking/target/debug/deps/qwen_source_gravity_live-f56ed1b3907116c2 --nocapture` (signal: 15, SIGTERM: termination signal)

@@ -255,8 +255,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.attention_or_state",
           "present": true
@@ -265,8 +264,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.chat_template",
           "present": false
@@ -275,8 +273,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.providers.cpu",
           "present": false
@@ -285,8 +282,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.providers.cuda",
           "present": false
@@ -295,8 +291,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.topology",
           "present": true
@@ -305,8 +300,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "descriptor.executes",
           "present": false
@@ -315,8 +309,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.fabric_partition_boundaries",
           "present": false
@@ -325,8 +318,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -335,8 +327,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": true
@@ -345,8 +336,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -355,8 +345,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.providers.metal",
           "present": false
@@ -365,8 +354,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.topology",
           "present": false
@@ -375,8 +363,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "no family is PRODUCTION today",
           "present": false
@@ -385,8 +372,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -395,8 +381,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -405,8 +390,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "descriptor.serve_registered",
           "present": false
@@ -415,8 +399,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -425,8 +408,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -435,8 +417,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -445,8 +426,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/gemma2_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/gemma2_smoke.rs"
           ],
           "note": "abi.tokenizer",
           "present": true
@@ -462,7 +442,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.attention_or_state",
@@ -473,7 +453,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.chat_template",
@@ -484,7 +464,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.providers.cpu",
@@ -495,7 +475,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.providers.cuda",
@@ -506,7 +486,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.topology",
@@ -517,7 +497,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "descriptor.executes",
@@ -528,7 +508,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.fabric_partition_boundaries",
@@ -539,7 +519,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "support_level ladder",
@@ -550,7 +530,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -561,7 +541,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -572,7 +552,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.providers.metal",
@@ -583,7 +563,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.topology",
@@ -594,7 +574,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "no family is PRODUCTION today",
@@ -605,7 +585,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "support_level ladder",
@@ -616,7 +596,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.artifact_codecs",
@@ -627,7 +607,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "descriptor.serve_registered",
@@ -638,7 +618,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "support_level ladder",
@@ -649,7 +629,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "support_level ladder",
@@ -660,7 +640,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "support_level ladder",
@@ -671,7 +651,7 @@
           "evidence_paths": [
             "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
             "crates/hawking-core/src/model/gravity_engine.rs",
-            "crates/hawking-core/tests/gravity_engine_registry.rs",
+            "crates/hawking-core/tests/gravity_artifact_suite.rs",
             "crates/hawking-core/tests/gravity_glm_forward.rs"
           ],
           "note": "abi.tokenizer",
@@ -1287,8 +1267,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.attention_or_state",
           "present": true
@@ -1299,8 +1278,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.chat_template",
           "present": false
@@ -1311,8 +1289,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.providers.cpu",
           "present": true
@@ -1323,8 +1300,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.providers.cuda",
           "present": false
@@ -1335,8 +1311,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.topology",
           "present": true
@@ -1347,8 +1322,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "descriptor.executes",
           "present": true
@@ -1359,8 +1333,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.fabric_partition_boundaries",
           "present": false
@@ -1371,8 +1344,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1383,8 +1355,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.artifact_codecs",
           "present": true
@@ -1395,8 +1366,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1407,8 +1377,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.providers.metal",
           "present": true
@@ -1419,8 +1388,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.topology",
           "present": true
@@ -1431,8 +1399,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "no family is PRODUCTION today",
           "present": false
@@ -1443,8 +1410,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1455,8 +1421,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1467,8 +1432,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "descriptor.serve_registered",
           "present": true
@@ -1479,8 +1443,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1491,8 +1454,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "support_level ladder",
           "present": true
@@ -1503,8 +1465,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1515,8 +1476,7 @@
             "crates/hawking-core/src/model/mod.rs",
             "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
-            "packs/hawking-adapters-extra.json",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "packs/hawking-adapters-extra.json"
           ],
           "note": "abi.tokenizer",
           "present": true
@@ -1531,8 +1491,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.attention_or_state",
           "present": true
@@ -1541,8 +1500,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.chat_template",
           "present": false
@@ -1551,8 +1509,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.providers.cpu",
           "present": false
@@ -1561,8 +1518,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.providers.cuda",
           "present": false
@@ -1571,8 +1527,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.topology",
           "present": true
@@ -1581,8 +1536,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "descriptor.executes",
           "present": false
@@ -1591,8 +1545,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.fabric_partition_boundaries",
           "present": false
@@ -1601,8 +1554,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1611,8 +1563,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": true
@@ -1621,8 +1572,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1631,8 +1581,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.providers.metal",
           "present": false
@@ -1641,8 +1590,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.topology",
           "present": false
@@ -1651,8 +1599,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "no family is PRODUCTION today",
           "present": false
@@ -1661,8 +1608,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1671,8 +1617,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": false
@@ -1681,8 +1626,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "descriptor.serve_registered",
           "present": false
@@ -1691,8 +1635,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1701,8 +1644,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1711,8 +1653,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "support_level ladder",
           "present": false
@@ -1721,8 +1662,7 @@
           "backing_grade": "DECLARED",
           "evidence_paths": [
             "packs/hawking-adapters-extra.json",
-            "crates/hawking-core/tests/phi3_smoke.rs",
-            "crates/hawking-seed-c/src/providers/adapters.rs"
+            "crates/hawking-core/tests/phi3_smoke.rs"
           ],
           "note": "abi.tokenizer",
           "present": true

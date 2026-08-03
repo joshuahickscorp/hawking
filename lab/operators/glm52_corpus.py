@@ -8,6 +8,7 @@ from lab.operators.glm52_common import read_sealed_json
 from lab.operators.glm52_common import seal
 from lab.operators.glm52_common import sha256_file
 from lab.operators.glm52_common import verify_sealed
+from lab.layout import evidence_dir
 import argparse
 import copy
 import hashlib
@@ -22,14 +23,15 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 REPO_ROOT = Path(__file__).resolve().parents[2]
+GLM52_EVIDENCE = evidence_dir('glm52')
 MODEL_REPOSITORY = 'zai-org/GLM-5.2'
 REVISION = 'b4734de4facf877f85769a911abafc5283eab3d9'
 TOKENIZER_SHA256 = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d'
 TOKENIZER_BYTES = 20217442
 TOKENIZER_VOCAB_SIZE = 154856
 DEFAULT_TOKENIZER_PATH = Path.home() / '.cache' / 'huggingface' / 'hub' / 'models--zai-org--GLM-5.2' / 'snapshots' / REVISION / 'tokenizer.json'
-OUTPUT_JSON = REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_CORPUS_INTEGRITY.json'
-OUTPUT_MARKDOWN = REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_CORPUS_INTEGRITY.md'
+OUTPUT_JSON = GLM52_EVIDENCE / 'GLM52_CORPUS_INTEGRITY.json'
+OUTPUT_MARKDOWN = GLM52_EVIDENCE / 'GLM52_CORPUS_INTEGRITY.md'
 SCHEMA = 'hawking.glm52.corpus_integrity.v2'
 GENERATOR_ID = 'hawking-glm52-part-ix-v2'
 GENERATOR_SEED = 'glm52-bf16-xet-gravity/corpus/v2/2026-07-21'

@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.tg.same_model_candidate_rejection.v1",
+  "status": "REJECTED_BELOW_COMPLETE_TOKEN_WALL_AND_TAIL_GATES",
+  "at_utc": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "fused-router-gemv-softmax-topk-v1",
+    "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTER_PREREGISTRATION_2026_08_02.json",
+    "opt_in": "HAWKING_DS_FUSED_ROUTER=1",
+    "shader_hash": "f40175626dcf50dfd629c206",
+    "kernel": "gemv_f32_moe_topk",
+    "dispatches_per_forward": 461,
+    "mechanical_effect": "one router GEMV plus top-k launch replaced by one 256-thread launch per MoE layer",
+    "fallback": 0,
+    "device": "Apple M3 Ultra"
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "source_window_observed_prefix": [8913, 13, 185, 185],
+    "max_new_tokens": 32,
+    "temperature": 0,
+    "complete_token_run": true
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-fused-router-control-2026-08-02.json",
+    "shader_hash": "f40175626dcf50dfd629c206",
+    "tps": 41.0814565045265,
+    "decode_ms": 778.94025,
+    "p50_ms": 24.293792,
+    "p95_ms": 24.684,
+    "p99_ms": 24.744709,
+    "dispatches_per_forward": 487,
+    "metal_dispatches_total": 15584,
+    "cpu_reference_fallback_count": 0,
+    "prefill_ms": 283.4125
+  },
+  "candidate_measurement": {
+    "tps": 34.198533978314124,
+    "decode_ms": 935.712625,
+    "p50_ms": 29.21275,
+    "p95_ms": 29.451125,
+    "p99_ms": 29.514167,
+    "min_ms": 28.670041,
+    "max_ms": 29.514167,
+    "dispatches_per_forward": 461,
+    "metal_dispatches_total": 14752,
+    "cpu_reference_fallback_count": 0,
+    "prefill_ms": 339.857041,
+    "delta_tps_percent": -16.754329354057806,
+    "delta_decode_wall_percent": 20.126367202105676,
+    "delta_p95_percent": 19.312611408199643,
+    "delta_p99_percent": 19.274657867263656
+  },
+  "decision": {
+    "promote": false,
+    "deepest_stable_rung": "TG32",
+    "first_failing_rung": "TG20",
+    "binding_finding": "The single fused launch serialized eight 32-lane SIMD-group passes across the 64 experts; the old 64-workgroup GEMV exploited far more expert-level parallelism.",
+    "reopen_condition": "Only a materially different router design that preserves expert-level parallelism and proves full-vector V2.1 parity may reopen this boundary.",
+    "capability_claim": "No new capability or TG claim; promoted control remains unchanged."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "storage_before_eviction": {
+    "free_bytes": 364852273152,
+    "protected_floor_bytes": 200005889556,
+    "model_lane": "models/tg-active/deepseek-v2-lite-2026-08-02-fused-router"
+  },
+  "seal_sha256": "10c43cf486df3594aba4c3df7586c8f18ba51fc86daa804fa7b2496d40acfb49"
+}

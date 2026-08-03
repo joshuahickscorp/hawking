@@ -432,7 +432,7 @@ pub fn test_matrix_document() -> Value {
         // Evidence paths that look like tests
         for e in d.evidence {
             let is_test = e.path.contains("/tests/") || e.path.ends_with("_test.py");
-            let exists = root.join(e.path).exists();
+            let exists = crate::evidence::resolve_logical_path(&root, e.path).exists();
             tests.push(json!({
                 "path": e.path,
                 "role": "evidence",
@@ -454,7 +454,7 @@ pub fn test_matrix_document() -> Value {
             if already {
                 continue;
             }
-            let exists = root.join(desired.path).exists();
+            let exists = crate::evidence::resolve_logical_path(&root, desired.path).exists();
             tests.push(json!({
                 "path": desired.path,
                 "role": "desired",

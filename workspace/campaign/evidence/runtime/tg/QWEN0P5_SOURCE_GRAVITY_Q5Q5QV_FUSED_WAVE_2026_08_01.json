@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_artifact_fused_projection_wave.v1",
+  "status": "PASS_NUMERIC_AND_COMPLETE_TOKEN_SPEEDUP_NON_PROMOTIONAL",
+  "at": "2026-08-01T20:14:00-04:00",
+  "scope": "Same Qwen2.5-0.5B-Instruct Q4_K_M source and source-preserving Gravity artifact, exact 5-token prefix, 128 greedy complete decode tokens, Apple M3 Ultra. This is bounded-fixture evidence and explicitly not a CLEAN capability or production TG promotion.",
+  "source": {
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "architecture": "qwen2",
+    "qkv_grammar": "Q5_0/Q5_0/(Q5_0|Q8_0) with native f32 Q/K/V biases and split-half RoPE"
+  },
+  "artifact": {
+    "sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59",
+    "representation": "source-preserving packed Gravity; no dense weight reconstruction"
+  },
+  "change": {
+    "kernel": "gravity_raw_q5q5qv_rope_append",
+    "work": "Fuses Q5_0 Q/K and Q5_0-or-Q8_0 V projection, source biases, table-driven source RoPE, and direct K/V cache append in one dispatch per layer.",
+    "fallback": "The kernel is selected only for exactly admitted source grammar; all other quant mixes retain the previous fused-Q4 or decomposed path."
+  },
+  "numeric_parity_v21": {
+    "independent_authority": "full FP64 transformer reading source-packed GGML bytes",
+    "cpu_pass": true,
+    "gpu_pass": true,
+    "gpu_relative_l2": 1.61e-6,
+    "gpu_kl": 1.438e-12,
+    "greedy_and_top5_exact": true,
+    "gpu_prefill_dispatches": 1090,
+    "cpu_reference_fallback_total": 0,
+    "log_sha256": "9ec729da8561599b2ca469207641fa142a1c4bb92fe290eb1d9ad097dfab3cb5"
+  },
+  "isolated_metal_contract": {
+    "test": "cargo test -p hawking-core --test gravity_raw32_metal_parity --quiet",
+    "result": "3 passed",
+    "coverage": "Source-packed Q5_0 Q/K plus Q8_0 V, native bias vectors, split-half RoPE table, direct KV append and one physical dispatch."
+  },
+  "complete_token_128": {
+    "baseline_receipt_sha256": "8c6f3665e7ef89fab32a752c6a95ec8ef836eae62f85ee3f04eaf094d6e32993",
+    "fused_receipt_sha256": "79284f98f67d43b7566e9e1ac948956f565319fa98db6643401c1a0f9c60464b",
+    "greedy_continuation_sha256_equal": true,
+    "baseline": {
+      "tps": 145.6370460503942,
+      "p50_ms": 7.155458,
+      "p95_ms": 8.214834,
+      "p99_ms": 8.44175,
+      "dispatches": 49408,
+      "command_buffers": 128
+    },
+    "fused": {
+      "tps": 166.1629585864153,
+      "p50_ms": 6.364958,
+      "p95_ms": 7.273166,
+      "p99_ms": 7.636083,
+      "dispatches": 27904,
+      "physical_fused_qkv_dispatches": 3072,
+      "command_buffers": 128,
+      "cpu_reference_fallback_total": 0
+    },
+    "delta": {
+      "tps_percent": 14.093881393967989,
+      "p99_percent": -9.5438386590458,
+      "dispatches_percent": -43.52226720647773
+    }
+  },
+  "promotion_boundary": {
+    "source_reference_tps": null,
+    "gravity_base_true_tps": 166.1629585864153,
+    "accelerated_accepted_tps": null,
+    "clean_lease": "NOT_ATTESTED",
+    "capability_gate": "NOT_RUN",
+    "named_tg_rung": null,
+    "why_not_promoted": "A bounded fixture cannot substitute for a CLEAN capability-matched same-model campaign, even though 128-token rate and p99 are within the TG8 numeric thresholds."
+  },
+  "next_step": "Run the same raw-Q5/Q8 fusion grammar against an admitted large Qwen source after user-authorized Trash purge proves free-byte recovery and large-model admission."
+}

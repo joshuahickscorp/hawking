@@ -1,0 +1,77 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_MATERIALIZATION",
+  "at_utc": "2026-08-02",
+  "source": {
+    "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "lfs_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "xet_hash": "0aa43c812562a739239fed16ea0d74f997fe0841c524848093d2717c808b8ba5",
+    "license": "apache-2.0",
+    "official_base": "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "stream_api": "XetSession.new_download_stream_group.download_stream",
+    "range_bytes": 67108864,
+    "range_sha256": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+    "public_headers": true,
+    "auth_values_serialized": false,
+    "chunk_cache_bytes": 0
+  },
+  "trials": [
+    {"mode":"standard","requested_concurrency":1,"sealed_gb_per_hour_decimal":68.84128195905194,"elapsed_seconds":3.509404582902789,"cpu_user_seconds":0.137152,"cpu_system_seconds":0.140539,"free_disk_delta_bytes":-77824,"retries":0},
+    {"mode":"standard","requested_concurrency":2,"sealed_gb_per_hour_decimal":139.68263656412122,"elapsed_seconds":1.7295772498473525,"cpu_user_seconds":0.114858,"cpu_system_seconds":0.097378,"free_disk_delta_bytes":-20480,"retries":0},
+    {"mode":"standard","requested_concurrency":4,"sealed_gb_per_hour_decimal":166.16424686018198,"elapsed_seconds":1.4539343749638647,"cpu_user_seconds":0.117449,"cpu_system_seconds":0.098933,"free_disk_delta_bytes":163840,"retries":0},
+    {"mode":"standard","requested_concurrency":8,"sealed_gb_per_hour_decimal":179.3565704540004,"elapsed_seconds":1.3469922500662506,"cpu_user_seconds":0.12169,"cpu_system_seconds":0.10334,"free_disk_delta_bytes":-12288,"retries":0},
+    {"mode":"high_performance","requested_concurrency":1,"sealed_gb_per_hour_decimal":126.38163371380865,"elapsed_seconds":1.9116061669774354,"cpu_user_seconds":0.123679,"cpu_system_seconds":0.11401,"free_disk_delta_bytes":-16384,"retries":0},
+    {"mode":"high_performance","requested_concurrency":2,"sealed_gb_per_hour_decimal":101.01766102293384,"elapsed_seconds":2.3915809171739966,"cpu_user_seconds":0.155637,"cpu_system_seconds":0.177653,"free_disk_delta_bytes":-20480,"retries":0},
+    {"mode":"high_performance","requested_concurrency":4,"sealed_gb_per_hour_decimal":284.00671584244037,"elapsed_seconds":0.8506556251086295,"cpu_user_seconds":0.125043,"cpu_system_seconds":0.099274,"free_disk_delta_bytes":-4096,"retries":0},
+    {"mode":"high_performance","requested_concurrency":8,"sealed_gb_per_hour_decimal":88.93852826655068,"elapsed_seconds":2.7163920418825,"cpu_user_seconds":0.164253,"cpu_system_seconds":0.204708,"free_disk_delta_bytes":172032,"retries":0}
+  ],
+  "resume_trial": {
+    "mode": "high_performance",
+    "requested_concurrency": 4,
+    "range_start": 0,
+    "range_end": 67108864,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "d177aec4ccec676e7c09333a0227057241bdc772e16aa51858785719aae33068",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "40476ff0e79d66d66f0fbf1454051132fb9bf49e3dd722a58d57579486bc40bd",
+    "resume_complete": true,
+    "resume_elapsed_seconds": 2.0426801659632474,
+    "resume_sealed_gb_per_hour_decimal": 103.48801791019274,
+    "retries": 0
+  },
+  "selection": {
+    "mode": "high_performance",
+    "requested_concurrency": 4,
+    "reason": "fastest stable representative range in this live matrix; exact whole-file SHA remains mandatory",
+    "bounded_range_only": true
+  },
+  "unified_admission": {
+    "current_free_bytes_before_body": 381287768064,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 181281878508,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_admission_bytes": 55359122848,
+    "projected_free_after_admission": 325928645216,
+    "active_model_count": 0,
+    "verdict": "PASS_PENDING_BODY_TRANSFER"
+  },
+  "claim_boundary": "Transfer benchmark and byte admission do not claim source load, capability, TPS, TG rung, CLEAN lease, or owner authorization.",
+  "body_materialized": false,
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

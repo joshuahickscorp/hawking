@@ -5,14 +5,24 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 from lab.checkpoint import CheckpointStore
 from lab.engine_support import ResourceGovernor, ResourceLimits
+from lab.layout import REPORTS_ROOT, resolve_workspace_path
 from lab.lease import LeaseError, SingletonLease
 from lab.engine_support import Scheduler
 from lab.engine_support import IllegalTransition, Phase, StateMachine
 from lab.rules import GovernanceLedger, apply_governance
 from lab.spec import CampaignPhase, ExperimentSpec, load_spec
 from lab.science_registry import OperatorRegistry, load_default_registry
-from lab.receipts import Receipt, ReceiptAuthority
+from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError
 Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]
+
+
+def _existing_workspace_path(path: str | Path) -> Path:
+    """Bridge a historic root-relative record to the live workspace if present."""
+    candidate = Path(path)
+    if candidate.is_absolute():
+        return candidate
+    resolved = resolve_workspace_path(candidate)
+    return resolved if resolved.exists() else candidate
 
 @dataclass
 class RunResult:
@@ -58,14 +68,64 @@ def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, A
     return {'fences_closed': closed}
 
 def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:
-    return {'sealed': True, **dict(params)}
+    step_id = runtime.active_step_id or 'seal'
+    receipt = Receipt(
+        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',
+        verdict=str(params.get('verdict') or 'SEALED'),
+        status='sealed',
+        phase=runtime.machine.phase.value,
+        inputs={'campaign_id': runtime.spec.campaign_id},
+        method={'handler': 'seal.receipt', 'step_id': step_id},
+        measurement=dict(params.get('measurement') or {}),
+        summary={k: v for k, v in dict(params).items() if k != 'measurement'},
+        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),
+    )
+    path = runtime.receipts.write(receipt)
+    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')
+    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}
 
 def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:
-    results = dict(params.get('gate_results') or {})
-    for gate in runtime.spec.verification_gates:
-        results.setdefault(gate, True)
-    runtime.gate_results.update(results)
-    return {'gates': dict(runtime.gate_results)}
+    required = tuple(runtime.spec.verification_gates)
+    supplied = params.get('gate_evidence') or params.get('evidence')
+    # Historical records preserve their declared state, but are never a source
+    # of a fresh live promotion.  Every live result must point at sealed input.
+    if supplied is None:
+        legacy = dict(params.get('gate_results') or {})
+        if runtime.spec.status == 'released_historical_non_invocable' and legacy:
+            if set(legacy) != set(required):
+                raise RuntimeError('historical gate declaration must name exactly the required gates')
+            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})
+            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}
+        if required:
+            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')
+        return {'gates': dict(runtime.gate_results)}
+    if not isinstance(supplied, Mapping):
+        raise RuntimeError('gate_evidence must be an object keyed by gate id')
+    unknown = set(supplied) - set(required)
+    missing = set(required) - set(supplied)
+    if unknown or missing:
+        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')
+    for gate in required:
+        candidate = supplied[gate]
+        if isinstance(candidate, Mapping):
+            # A sealed inline record is persisted before it is read back; this
+            # prevents an ephemeral object from becoming promotion authority.
+            gate_path = runtime.receipts.write_gate_evidence(candidate)
+        elif isinstance(candidate, str):
+            gate_path = _existing_workspace_path(candidate)
+            if not gate_path.is_absolute():
+                gate_path = runtime.work_dir / gate_path
+        else:
+            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')
+        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)
+        runtime.gate_evidence[gate] = evidence
+        runtime.gate_results[gate] = evidence.result == 'PASS'
+        if evidence.result != 'PASS':
+            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')
+    return {
+        'gates': dict(runtime.gate_results),
+        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},
+    }
 
 def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:
     return apply_governance(
@@ -73,6 +133,7 @@ def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> 
         ledger=runtime.ledger,
         verdict=str(params.get('verdict') or 'PASS'),
         gate_results=runtime.gate_results,
+        gate_evidence=runtime.gate_evidence,
         author=str(params.get('author') or ''),
         admitter=str(params.get('admitter') or 'engine'),
         measurement_kind=str(params.get('measurement_kind') or 'real'),
@@ -80,12 +141,19 @@ def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> 
     )
 
 def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:
-    arts = [Path(p) for p in params.get('artifacts') or []]
-    recs = [Path(p) for p in params.get('receipts') or []]
+    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]
+    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]
     for p in arts + recs:
-        p.parent.mkdir(parents=True, exist_ok=True)
         if not p.exists():
-            p.write_text('{}\n', encoding='utf-8')
+            raise RuntimeError(f'burial retention path is missing: {p}')
+    for p in recs:
+        try:
+            # Receipt.from_dict verifies the common seal, so this accepts both
+            # normal experiment receipts and GateEvidence envelopes while
+            # rejecting an arbitrary JSON file that merely looks like one.
+            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))
+        except (OSError, ValueError, SealIntegrityError) as exc:
+            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc
     return apply_governance(
         runtime.spec,
         ledger=runtime.ledger,
@@ -150,6 +218,8 @@ class ExperimentRuntime:
         self.machine = StateMachine.for_spec(spec)
         self.scheduler = Scheduler(spec)
         self.gate_results: dict[str, bool] = {}
+        self.gate_evidence: dict[str, GateEvidence] = {}
+        self.active_step_id: str | None = None
         self._lease_held = False
 
     def _sync_scheduler(self) -> None:
@@ -222,7 +292,11 @@ class ExperimentRuntime:
         }
         if name not in light:
             self.governor.require()
-        result = handler(self, step.params)
+        self.active_step_id = step_id
+        try:
+            result = handler(self, step.params)
+        finally:
+            self.active_step_id = None
         self.machine.mark_step(step_id)
         self.scheduler.mark_done(step_id, detail=result)
         self.checkpoints.record('step_done', {'step_id': step_id, 'handler': name, 'result': result})
@@ -336,6 +410,7 @@ class ExperimentRuntime:
             'receipt': self.spec.receipt,
             'reopen': [r.to_dict() for r in self.spec.reopen],
             'gates': dict(self.gate_results),
+            'gate_evidence': {gate: evidence.to_dict() for gate, evidence in self.gate_evidence.items()},
         }
 
 def run_experiment(
@@ -420,7 +495,7 @@ def main(argv: list[str] | None=None) -> int:
     if args.spec is None:
         parser.error('spec path is required unless --classify / --list-ops / op / --read-historical')
     spec = load_spec(args.spec)
-    work_dir = args.work_dir or Path('reports/lab') / spec.campaign_id
+    work_dir = args.work_dir or REPORTS_ROOT / 'lab' / spec.campaign_id
     handlers = build_operator_handlers()
     with ExperimentRuntime(
         spec,

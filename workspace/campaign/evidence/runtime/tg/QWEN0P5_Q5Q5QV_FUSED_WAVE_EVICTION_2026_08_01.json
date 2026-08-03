@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.tg.bounded_model_eviction.v1",
+  "status": "EVICTED_TO_MACOS_TRASH_PENDING_USER_AUTHORIZED_PERMANENT_PURGE",
+  "at": "2026-08-01T20:17:00-04:00",
+  "trigger_receipt": "evidence/tg/QWEN0P5_SOURCE_GRAVITY_Q5Q5QV_FUSED_WAVE_2026_08_01.json",
+  "model_lane": "models/tg-active",
+  "model_lane_empty_after_move": true,
+  "source_sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+  "artifact_sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59",
+  "directory_kib_before_move": 778184,
+  "destination": "/Users/scammermike/.Trash/qwen0p5-v21",
+  "free_kib_after_move": 365850832,
+  "free_byte_recovery_proven": false,
+  "reason": "The exact directory is recoverable in macOS Trash. Permanent deletion needs explicit confirmation at action time; no model-lane admission may treat a Trash move as reclaimed capacity."
+}

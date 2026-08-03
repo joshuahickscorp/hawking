@@ -4,7 +4,9 @@ const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 8;
 fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
     let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    let profile_path = PathBuf::from(
+        "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
+    );
     let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = hawking_core::EngineConfig {
         kernel_profile: Some(profile),

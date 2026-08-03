@@ -141,4 +141,5 @@ mod tests {
         };
         assert_eq!(s.sample(&mut logits, &p), 1);
     }
+
 }

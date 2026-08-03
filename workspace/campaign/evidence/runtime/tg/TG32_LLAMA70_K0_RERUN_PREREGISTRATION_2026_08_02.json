@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_LLAMA70_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "llama70-direct-q4k-k0-rerun-v1",
+    "kind": "same_model_source_reference_floor_rerun",
+    "hypothesis": "Re-admitting the exact immutable Llama-3.3-70B Q4_K_M source after the storage reset will re-establish a clean current Hawking floor and verify that the resident Metal path remains physically dispatching with no CPU fallback; no speed promotion is claimed by this control rerun.",
+    "representation_change": "none; direct source-compatible Q4_K_M K0 path",
+    "scope": "same Llama-3.3-70B source, exact tokenizer/prompt, Apple M3 Ultra, complete-token decode",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "role": "floor_measurement_only",
+      "complete_tokens": ">=8",
+      "first_forward_must_complete": true,
+      "metal_dispatches": ">0",
+      "fallback_count": 0,
+      "exact_prompt_ids": true,
+      "continuation_hash": "record_only",
+      "tg_claim": "forbidden unless >=31.25 TPS and capability gates pass"
+    }
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1",
+    "license": "llama-3.3-community-license",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70_FRESH_2026_08_02.json",
+    "transfer_selection": "standard fixed concurrency 8; three-repeat median 531.502046252765 GB/h; high-performance c4 median 351.1398787469662 GB/h"
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 357224464384,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 69431053280,
+    "planned_headroom_above_floor_after_body": 87787521548,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "benchmark_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_TRACE_TOKENS": "1",
+    "HAWKING_LLAMA_LOAD_TIMING": "1",
+    "HAWKING_LLAMA_FIRST_DISPATCH_TRACE": "1",
+    "HAWKING_LLAMA_Q4K_PREDEC": "0",
+    "HAWKING_LLAMA_Q5K": "0",
+    "HAWKING_LLAMA_GEOMETRY": "strict"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

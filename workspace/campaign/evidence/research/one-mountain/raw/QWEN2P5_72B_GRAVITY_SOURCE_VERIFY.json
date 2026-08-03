@@ -1,0 +1,17 @@
+{
+  "bad_tensors": [],
+  "body_bytes": 47409725440,
+  "body_sha256_ok": true,
+  "claimed_complete_bpw": 5.216581041092952,
+  "claimed_packed_bpw": 5.21579338294681,
+  "complete_rate_self_consistent": true,
+  "format_version": 1,
+  "observed_complete_bpw": 5.216581041092952,
+  "observed_packed_bpw": 5.21579338294681,
+  "ok": true,
+  "packed_rate_self_consistent": true,
+  "path": "models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gravity",
+  "rate_self_consistent": true,
+  "tensors": 963,
+  "tensors_without_payload": []
+}

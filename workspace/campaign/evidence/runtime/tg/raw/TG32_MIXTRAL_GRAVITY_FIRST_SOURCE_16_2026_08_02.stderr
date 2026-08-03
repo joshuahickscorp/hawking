@@ -1,0 +1,22 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+[mixtral] metal_ctx: true, weights_mmap_buf: true, embed_buf: true, decode_arena: true
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+[token] id=264 text=" a"
+[token] id=2990 text=" city"
+[token] id=369 text=" that"
+[token] id=349 text=" is"
+[token] id=2651 text=" known"
+[token] id=354 text=" for"
+[token] id=871 text=" its"
+[token] id=8844 text=" fashion"
+[token] id=28725 text=","
+[token] id=1524 text=" art"
+[token] id=28725 text=","
+[token] id=5135 text=" gas"
+[token] id=434 text="tr"
+[token] id=15631 text="onomy"
+[token] id=28725 text=","
+[token] id=295 text=" h"
+
+[stats] reason=max_tokens prompt=6 completion=16 prefill_ms=1343.2 decode_ms=1148.8 dec_tps=13.06 dispatches_per_fwd=675 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":15,"completion_tokens":16,"cpu_reference_fallback_count":0,"dec_tps":13.05752077288336,"decode_command_buffers_total":1455,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":10125,"decode_ms":1148.76325,"decode_token_ms":[75.563125,72.11916599999999,74.253917,76.357208,79.738625,74.187333,76.99466600000001,79.302792,75.993042,77.869625,75.204,74.34329100000001,81.61904200000001,75.46837500000001,75.43229099999999],"device_id":"Apple M3 Ultra","dispatches_per_forward":675,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":582,"prefill_metal_dispatches_total":4050,"prefill_ms":1343.171583,"profile_id":null,"prompt_tokens":6,"readback_bytes":0,"token_only_path_used":false}

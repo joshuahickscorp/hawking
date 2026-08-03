@@ -1,0 +1,4 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+
+[hawking] Ctrl-C -- aborting at next token boundary; press again to force-exit

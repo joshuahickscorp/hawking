@@ -1,0 +1,128 @@
+{
+  "id": "mlx-community/Qwen2.5-72B-Instruct-4bit",
+  "sha": "36a74b07390031bb18c9f12fb7c06699bc6273c4",
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1030,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 867,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00008.safetensors",
+      "size": 5365567669,
+      "lfs": {
+        "sha256": "bb2d1b4a13922b9cf8f678cf4038fe0029a8e82b6a3f62f0ddd2ef465aa7bfcd",
+        "size": 5365567669,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00008.safetensors",
+      "size": 5294878254,
+      "lfs": {
+        "sha256": "2f3d8ec00ac84f8b0974c8f8bd0ffaf52eea03389bce8c9b7dbfe1fbced8dc69",
+        "size": 5294878254,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00008.safetensors",
+      "size": 5346171097,
+      "lfs": {
+        "sha256": "a7298c0f9bd50bae89b88e0f756c2cea72153708a5c7c7e180167fcdfc4fb776",
+        "size": 5346171097,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00008.safetensors",
+      "size": 5294845297,
+      "lfs": {
+        "sha256": "a451751db86b2bca11b11fcb75e7f334c292a14b11b1c3ef7b73030112c8d617",
+        "size": 5294845297,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00008.safetensors",
+      "size": 5294878217,
+      "lfs": {
+        "sha256": "9944e778df5d838cf5b6db7efbfaed20a950147ab7301348e47f507c9e1a5ff1",
+        "size": 5294878217,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00008.safetensors",
+      "size": 5294878204,
+      "lfs": {
+        "sha256": "7c2f81a0fe416672d1402c32ce6c5bab7839ebf928a187c69752f0e5b830e826",
+        "size": 5294878204,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00008.safetensors",
+      "size": 5346171091,
+      "lfs": {
+        "sha256": "18e695fb046211557b6488763f0199f46f0e7fb043b174334090532ae09f3425",
+        "size": 5346171091,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00008.safetensors",
+      "size": 3663161100,
+      "lfs": {
+        "sha256": "9ca0704db10d4933fbed678e9546594ce5851a5b605014c5972d3eeda28cb885",
+        "size": 3663161100,
+        "pointerSize": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 178697,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7031673,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7308,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schema": "hawking.ramanujan.scaleup_receipt.v1",
+  "at": "2026-07-27T18:57:56Z",
+  "command_run": "python3.12 -m ramanujan.data.generate --limit 5000 --d4-limit 800 --decl-limit 20000 --workers 6 --all-mathlib",
+  "matrix_command": "python3.12 -m ramanujan.gen_data_matrix",
+  "bounds": {
+    "limit": 5000,
+    "d4_limit": 800,
+    "decl_limit": 20000,
+    "workers": 6,
+    "all_mathlib": true,
+    "reduced_bound": false,
+    "note": "full scale-up command as specified; finished under 40 min"
+  },
+  "wall_clock": {
+    "start": "2026-07-27T18:45:39Z",
+    "end": "2026-07-27T18:56:08Z",
+    "seconds": 629,
+    "human": "10m 29s"
+  },
+  "resource_policy": {
+    "requested_nice": 15,
+    "nice_applied": false,
+    "nice_error": "Operation not permitted (sandbox)",
+    "workers_used": 6,
+    "max_workers_cap": 6,
+    "touched_mop": false,
+    "fetched_model_shards": false
+  },
+  "counts_before": {
+    "D1": 400,
+    "D2": 400,
+    "D3": 400,
+    "D4": 60,
+    "D6": 302,
+    "D7": 86,
+    "total": 1648
+  },
+  "counts_after": {
+    "D1": 5000,
+    "D2": 5000,
+    "D3": 5000,
+    "D4": 800,
+    "D6": 302,
+    "D7": 86,
+    "total": 16188
+  },
+  "d4": {
+    "yield": 800,
+    "d4_limit": 800,
+    "hit_limit": true,
+    "padded": false,
+    "method": "perturb_valid_proof_capture_real_lean_error",
+    "all_real_lean_errors": true,
+    "unique_content_hashes": 800,
+    "prior_bounded_yield": 60,
+    "note": "Yield is the number of real lake-env-lean failures captured; hit --d4-limit so reported yield equals the cap (not padded above real successes)."
+  },
+  "contamination": {
+    "total_input": 16188,
+    "total_admitted": 16188,
+    "total_rejected": 0,
+    "n_eval_items_indexed": 33,
+    "support_halo_seal_ok": true,
+    "natural_rejections_on_corpora": 0,
+    "negative_control": {
+      "description": "sealed support-halo item (tl02_bpw) presented as training text",
+      "rejected": true,
+      "reason": "exact_match",
+      "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+      "eval_id": "tl02_bpw",
+      "jaccard": 1.0,
+      "result": "PASS"
+    },
+    "clean_control_formal_math_admitted": true,
+    "barrier_bites": true,
+    "honesty": "Natural corpus had 0 rejections (formal Mathlib text does not overlap support-halo/hidden/public-eval). Barrier bite is proven by the sealed support-halo negative control returning exact_match, not by corpus rejections alone."
+  },
+  "fences": {
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "teacher_from_math_preserve": false,
+    "D5_D8_D9": "PENDING (licensing)"
+  },
+  "pipeline_fixes_for_scaleup": [
+    "cache mathlib_commit/lean_version in ramanujan.data.common (stamp_item path)",
+    "D4 early-stop once limit successful pairs collected (no pad; cancel pending futures)"
+  ],
+  "artifacts": {
+    "generation_receipt": "ramanujan/data/corpora/GENERATION_RECEIPT.json",
+    "contamination_receipt": "ramanujan/data/corpora/CONTAMINATION_RECEIPT.json",
+    "data_source_matrix": "ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json"
+  },
+  "_HEAVY_md": "missing at worktree root; bound by task rules + LIGHT_ONLY policy (workers<=6, no MOP, no model shards)"
+}

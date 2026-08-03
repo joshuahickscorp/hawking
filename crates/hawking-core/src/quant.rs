@@ -192,6 +192,7 @@ pub fn quantize_q8_0(src: &[f32], dst: &mut [u8]) -> Result<()> {
 }
 
 pub const Q4_K_BLOCK_BYTES: usize = 144;
+pub const Q5_K_BLOCK_BYTES: usize = 176;
 pub const Q6_K_BLOCK_BYTES: usize = 210;
 
 pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
@@ -282,6 +283,96 @@ pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
                     qs[byte_idx] = (qs[byte_idx] & 0x0F) | ((nib & 0xF) << 4);
                 } else {
                     qs[byte_idx] = (qs[byte_idx] & 0xF0) | (nib & 0xF);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Deterministic affine Q5_K packer matching the GGML 176-byte block layout.
+/// This is the five-bit analogue of [`quantize_q4_k`]: each 32-value
+/// sub-block has a six-bit scale/min pair, while the 5-bit quant is split
+/// between the shared low-nibble array and bit `sub` of `qh[column]`.
+pub fn quantize_q5_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
+    if src.len() % Q_K != 0 {
+        return Err(Error::Kernel(
+            "q5_K quantize: src len not multiple of 256".into(),
+        ));
+    }
+    let nb = src.len() / Q_K;
+    let need = nb * Q5_K_BLOCK_BYTES;
+    if dst.len() < need {
+        return Err(Error::Kernel(format!(
+            "q5_K quantize: dst {}B need {}B",
+            dst.len(),
+            need
+        )));
+    }
+    for b in 0..nb {
+        let block = &src[b * Q_K..(b + 1) * Q_K];
+        let off = b * Q5_K_BLOCK_BYTES;
+        dst[off + 16..off + Q5_K_BLOCK_BYTES].fill(0);
+        let mut sub_scale = [0.0f32; 8];
+        let mut sub_min = [0.0f32; 8];
+        for s in 0..8 {
+            let vals = &block[s * 32..(s + 1) * 32];
+            let mut mn = f32::INFINITY;
+            let mut mx = f32::NEG_INFINITY;
+            for &v in vals {
+                mn = mn.min(v);
+                mx = mx.max(v);
+            }
+            mn = mn.min(0.0);
+            mx = mx.max(0.0);
+            if (mx - mn).abs() < 1e-30 {
+                sub_min[s] = -mn;
+            } else {
+                sub_scale[s] = (mx - mn) / 31.0;
+                sub_min[s] = -mn;
+            }
+        }
+        let max_scale = sub_scale.iter().copied().fold(0.0f32, f32::max);
+        let max_min = sub_min.iter().copied().fold(0.0f32, f32::max);
+        let d = if max_scale > 0.0 {
+            max_scale / 63.0
+        } else {
+            0.0
+        };
+        let dmin = if max_min > 0.0 { max_min / 63.0 } else { 0.0 };
+        let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
+        let inv_dmin = if dmin > 0.0 { 1.0 / dmin } else { 0.0 };
+        let mut sc_u6 = [0u8; 8];
+        let mut mn_u6 = [0u8; 8];
+        for s in 0..8 {
+            sc_u6[s] = (sub_scale[s] * inv_d).round().clamp(0.0, 63.0) as u8;
+            mn_u6[s] = (sub_min[s] * inv_dmin).round().clamp(0.0, 63.0) as u8;
+        }
+        dst[off..off + 2].copy_from_slice(&f16::from_f32(d).to_bits().to_le_bytes());
+        dst[off + 2..off + 4].copy_from_slice(&f16::from_f32(dmin).to_bits().to_le_bytes());
+        encode_q_k_scale_min(&sc_u6, &mn_u6, &mut dst[off + 4..off + 16]);
+        let (qh, qs) = dst[off + 16..off + Q5_K_BLOCK_BYTES].split_at_mut(32);
+        for s in 0..8 {
+            let eff_scale = d * sc_u6[s] as f32;
+            let eff_min = dmin * mn_u6[s] as f32;
+            let inv_eff = if eff_scale > 0.0 {
+                1.0 / eff_scale
+            } else {
+                0.0
+            };
+            let pair = s / 2;
+            let upper = (s % 2) == 1;
+            let qbase = pair * 32;
+            for i in 0..32 {
+                let x = block[s * 32 + i];
+                let q = ((x + eff_min) * inv_eff).round().clamp(0.0, 31.0) as u8;
+                if (q & 0x10) != 0 {
+                    qh[i] |= 1 << s;
+                }
+                if upper {
+                    qs[qbase + i] = (qs[qbase + i] & 0x0f) | ((q & 0x0f) << 4);
+                } else {
+                    qs[qbase + i] = (qs[qbase + i] & 0xf0) | (q & 0x0f);
                 }
             }
         }
@@ -555,6 +646,235 @@ fn dequant_q4_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
                 dst[sub * 32 + i] = s * nib as f32 - m;
             }
         }
+    }
+    Ok(())
+}
+
+/// Q8_K activation block used by ggml's K-quant matvec kernels.
+///
+/// This is deliberately an execution-side transient, never an artifact
+/// format. Its arithmetic and packing follow the upstream Q8_K reference so
+/// the CPU Llama K0 path can compare like-for-like with llama.cpp's Q4_K ×
+/// Q8_K graph instead of multiplying f32-dequantized weights by an
+/// unquantized activation.
+#[derive(Clone)]
+struct Q8KActivationBlock {
+    d: f32,
+    qs: [i8; Q_K],
+    bsums: [i16; Q_K / 16],
+}
+
+#[inline]
+fn ggml_nearest_int(value: f32) -> i32 {
+    // Bit-exact port of ggml-quants.c's nearest_int, which rounds according
+    // to the f32-mantissa trick rather than Rust's ties-away round.
+    ((value + 12_582_912.0).to_bits() & 0x007f_ffff) as i32 - 0x0040_0000
+}
+
+fn quantize_q8_k_activation(x: &[f32]) -> Result<Vec<Q8KActivationBlock>> {
+    if x.len() % Q_K != 0 {
+        return Err(Error::Kernel(format!(
+            "q8_k activation: len {} is not a multiple of {Q_K}",
+            x.len()
+        )));
+    }
+    let mut blocks = Vec::with_capacity(x.len() / Q_K);
+    for input in x.chunks_exact(Q_K) {
+        let mut max = 0.0f32;
+        let mut amax = 0.0f32;
+        for &value in input {
+            let abs = value.abs();
+            if abs > amax {
+                amax = abs;
+                max = value;
+            }
+        }
+        let mut block = Q8KActivationBlock {
+            d: 0.0,
+            qs: [0; Q_K],
+            bsums: [0; Q_K / 16],
+        };
+        if amax != 0.0 {
+            let inverse_scale = -127.0 / max;
+            for (index, &value) in input.iter().enumerate() {
+                let quantized = ggml_nearest_int(inverse_scale * value).min(127);
+                block.qs[index] = quantized as i8;
+            }
+            for (index, sum) in block.bsums.iter_mut().enumerate() {
+                *sum = block.qs[index * 16..index * 16 + 16]
+                    .iter()
+                    .map(|&value| value as i16)
+                    .sum();
+            }
+            block.d = 1.0 / inverse_scale;
+        }
+        blocks.push(block);
+    }
+    Ok(blocks)
+}
+
+/// Execute Q4_K weights against llama.cpp-compatible Q8_K activations.
+///
+/// This is the scalar reference form of ggml's Q4_K-Q8_K vector dot. It
+/// purposefully keeps the same scale/min correction and f32 accumulation
+/// hierarchy. It is an authority path for K0 diagnosis, not a throughput
+/// kernel; Metal must earn its own no-fallback parity receipt.
+pub fn gemv_q4_k_q8k(
+    bytes: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
+    if cols % Q_K != 0 || x.len() != cols || out.len() != rows {
+        return Err(Error::Kernel(format!(
+            "gemv_q4_k_q8k shape mismatch: rows={rows} cols={cols} x={} out={}",
+            x.len(),
+            out.len()
+        )));
+    }
+    let blocks_per_row = cols / Q_K;
+    let expected_bytes = rows
+        .checked_mul(blocks_per_row)
+        .and_then(|blocks| blocks.checked_mul(Q4_K_BLOCK_BYTES))
+        .ok_or_else(|| Error::Kernel("gemv_q4_k_q8k byte count overflow".into()))?;
+    if bytes.len() != expected_bytes {
+        return Err(Error::Kernel(format!(
+            "gemv_q4_k_q8k: have {}B need {expected_bytes}B",
+            bytes.len()
+        )));
+    }
+    let q8 = quantize_q8_k_activation(x)?;
+    for row in 0..rows {
+        // Match the Apple/NEON Q4_K × Q8_K authority reduction used by the
+        // local llama.cpp reference. It reduces the two 32-element streams
+        // of each 64-element quarter to i32, applies the super-block float
+        // scale immediately, then advances to the next K block. The generic
+        // ggml implementation instead accumulates eight f32 lanes across
+        // blocks; both are algebraically equivalent, but they drift at the
+        // element level over a full Llama residual stack.
+        let mut sum = 0.0f32;
+        for block_index in 0..blocks_per_row {
+            let offset = (row * blocks_per_row + block_index) * Q4_K_BLOCK_BYTES;
+            let block = &bytes[offset..offset + Q4_K_BLOCK_BYTES];
+            let d = f16::from_bits(u16::from_le_bytes(block[0..2].try_into().unwrap())).to_f32();
+            let dmin = f16::from_bits(u16::from_le_bytes(block[2..4].try_into().unwrap())).to_f32();
+            let mut scales = [0u8; 8];
+            let mut mins = [0u8; 8];
+            decode_q_k_scale_min(&block[4..16], &mut scales, &mut mins);
+            let activations = &q8[block_index];
+            let mut min_dot = 0i32;
+            for group in 0..Q_K / 16 {
+                min_dot += activations.bsums[group] as i32 * mins[group / 2] as i32;
+            }
+            let mut low_sum = 0i32;
+            let mut high_sum = 0i32;
+            for quarter in 0..Q_K / 64 {
+                let qbase = 16 + quarter * 32;
+                let mut low_dot = 0i32;
+                let mut high_dot = 0i32;
+                for element in 0..32 {
+                    let packed = block[qbase + element];
+                    low_dot +=
+                        (packed & 0x0f) as i32 * activations.qs[quarter * 64 + element] as i32;
+                    high_dot +=
+                        (packed >> 4) as i32 * activations.qs[quarter * 64 + 32 + element] as i32;
+                }
+                low_sum += low_dot * scales[quarter * 2] as i32;
+                high_sum += high_dot * scales[quarter * 2 + 1] as i32;
+            }
+            // Keep these as distinct round-to-f32 updates: this is the
+            // validated non-fused authority order for the installed ggml.
+            sum -= (dmin * activations.d) * min_dot as f32;
+            sum += (d * activations.d) * (low_sum + high_sum) as f32;
+        }
+        out[row] = sum;
+    }
+    Ok(())
+}
+
+/// Execute Q6_K weights against llama.cpp-compatible Q8_K activations.
+///
+/// Scalar authority form of ggml's Q6_K-Q8_K vector dot. This is a K0
+/// diagnostic path, never a production throughput kernel.
+pub fn gemv_q6_k_q8k(
+    bytes: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
+    if cols % Q_K != 0 || x.len() != cols || out.len() != rows {
+        return Err(Error::Kernel(format!(
+            "gemv_q6_k_q8k shape mismatch: rows={rows} cols={cols} x={} out={}",
+            x.len(),
+            out.len()
+        )));
+    }
+    let blocks_per_row = cols / Q_K;
+    let expected_bytes = rows
+        .checked_mul(blocks_per_row)
+        .and_then(|blocks| blocks.checked_mul(Q6_K_BLOCK_BYTES))
+        .ok_or_else(|| Error::Kernel("gemv_q6_k_q8k byte count overflow".into()))?;
+    if bytes.len() != expected_bytes {
+        return Err(Error::Kernel(format!(
+            "gemv_q6_k_q8k: have {}B need {expected_bytes}B",
+            bytes.len()
+        )));
+    }
+    let q8 = quantize_q8_k_activation(x)?;
+    for row in 0..rows {
+        // The installed ggml v0.13.1 library is built without the ARM I8MM
+        // kernel.  Its Q6_K implementation therefore uses the generic
+        // eight-lane f32 accumulation below, not the algebraically-equivalent
+        // NEON single-sum reduction.  The ordering is numerically observable
+        // through Llama's residual stream, so preserve it exactly here.
+        let mut lane_sums = [0.0f32; 8];
+        for block_index in 0..blocks_per_row {
+            let offset = (row * blocks_per_row + block_index) * Q6_K_BLOCK_BYTES;
+            let block = &bytes[offset..offset + Q6_K_BLOCK_BYTES];
+            let d =
+                f16::from_bits(u16::from_le_bytes(block[208..210].try_into().unwrap())).to_f32();
+            let activations = &q8[block_index];
+            let mut unpacked = [0i8; Q_K];
+            for half in 0..2 {
+                let ql = &block[half * 64..half * 64 + 64];
+                let qh = &block[128 + half * 32..128 + half * 32 + 32];
+                let base = half * 128;
+                for column in 0..32 {
+                    let high = qh[column];
+                    unpacked[base + column] =
+                        ((ql[column] & 0x0f) | (((high >> 0) & 0x03) << 4)) as i8 - 32;
+                    unpacked[base + 32 + column] =
+                        ((ql[32 + column] & 0x0f) | (((high >> 2) & 0x03) << 4)) as i8 - 32;
+                    unpacked[base + 64 + column] =
+                        ((ql[column] >> 4) | (((high >> 4) & 0x03) << 4)) as i8 - 32;
+                    unpacked[base + 96 + column] =
+                        ((ql[32 + column] >> 4) | (((high >> 6) & 0x03) << 4)) as i8 - 32;
+                }
+            }
+            let mut lane_int_sums = [0i32; 8];
+            for group in 0..Q_K / 16 {
+                let scale = block[192 + group] as i8 as i32;
+                let base = group * 16;
+                for half in 0..2 {
+                    for lane in 0..8 {
+                        let index = base + half * 8 + lane;
+                        let product = activations.qs[index] as i32 * unpacked[index] as i32;
+                        lane_int_sums[lane] += scale * product;
+                    }
+                }
+            }
+            let scale = d * activations.d;
+            for lane in 0..8 {
+                lane_sums[lane] += scale * lane_int_sums[lane] as f32;
+            }
+        }
+        let mut sum = 0.0f32;
+        for lane_sum in lane_sums {
+            sum += lane_sum;
+        }
+        out[row] = sum;
     }
     Ok(())
 }
@@ -866,5 +1186,126 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn q4_k_q8k_gemv_preserves_an_exact_constant_dot() {
+        let mut weights = vec![0u8; Q4_K_BLOCK_BYTES];
+        weights[0..2].copy_from_slice(&f16::from_f32(1.0).to_bits().to_le_bytes());
+        for index in 0..4 {
+            weights[4 + index] = 1; // low sub-block scales
+            weights[12 + index] = 1; // high sub-block scale low bits
+        }
+        for value in &mut weights[16..] {
+            *value = 0x11;
+        }
+        let mut out = [0.0f32; 1];
+        gemv_q4_k_q8k(&weights, 1, Q_K, &[1.0; Q_K], &mut out).unwrap();
+        assert_eq!(out[0], Q_K as f32);
+    }
+
+    #[test]
+    fn q5_k_packer_round_trips_and_improves_over_q4_k_on_same_source() {
+        let source: Vec<f32> = (0..Q_K)
+            .map(|i| {
+                let x = i as f32;
+                (x * 0.137).sin() * 0.83 + (x * 0.071).cos() * 0.19 - 0.07
+            })
+            .collect();
+        let mut q4 = vec![0u8; Q4_K_BLOCK_BYTES];
+        let mut q5 = vec![0u8; Q5_K_BLOCK_BYTES];
+        quantize_q4_k(&source, &mut q4).unwrap();
+        quantize_q5_k(&source, &mut q5).unwrap();
+        let mut d4 = vec![0.0f32; Q_K];
+        let mut d5 = vec![0.0f32; Q_K];
+        dequant_q4_k(&q4, &mut d4).unwrap();
+        dequant_q5_k(&q5, &mut d5).unwrap();
+        assert!(d5.iter().all(|v| v.is_finite()));
+        let mse4 = source
+            .iter()
+            .zip(&d4)
+            .map(|(&a, &b)| (a - b).powi(2))
+            .sum::<f32>()
+            / Q_K as f32;
+        let mse5 = source
+            .iter()
+            .zip(&d5)
+            .map(|(&a, &b)| (a - b).powi(2))
+            .sum::<f32>()
+            / Q_K as f32;
+        assert!(mse5 < mse4, "Q5_K mse={mse5} must beat Q4_K mse={mse4}");
+    }
+
+    #[test]
+    fn q4_k_q8k_gemv_matches_f32_dequant_with_the_same_q8_activation() {
+        let mut weights = vec![0u8; Q4_K_BLOCK_BYTES];
+        weights[0..2].copy_from_slice(&f16::from_f32(0.125).to_bits().to_le_bytes());
+        weights[2..4].copy_from_slice(&f16::from_f32(0.0625).to_bits().to_le_bytes());
+        for (index, value) in weights[4..16].iter_mut().enumerate() {
+            *value = ((index * 19 + 7) & 0xff) as u8;
+        }
+        for (index, value) in weights[16..].iter_mut().enumerate() {
+            *value = ((index * 73 + 11) & 0xff) as u8;
+        }
+        let x: Vec<f32> = (0..Q_K)
+            .map(|index| ((index as i32 % 41 - 20) as f32) * 0.03125)
+            .collect();
+        let q8 = quantize_q8_k_activation(&x).unwrap();
+        let reconstructed_x: Vec<f32> = q8[0]
+            .qs
+            .iter()
+            .map(|&value| q8[0].d * value as f32)
+            .collect();
+        let mut dequantized = vec![0.0f32; Q_K];
+        dequant_q4_k(&weights, &mut dequantized).unwrap();
+        let expected: f32 = dequantized
+            .iter()
+            .zip(reconstructed_x.iter())
+            .map(|(&weight, &activation)| weight * activation)
+            .sum();
+        let mut actual = [0.0f32; 1];
+        gemv_q4_k_q8k(&weights, 1, Q_K, &x, &mut actual).unwrap();
+        assert!(
+            (actual[0] - expected).abs() < 1e-4,
+            "q4_k/q8_k dot mismatch: got {} expected {}",
+            actual[0],
+            expected
+        );
+    }
+
+    #[test]
+    fn q6_k_q8k_gemv_matches_f32_dequant_with_the_same_q8_activation() {
+        let mut weights = vec![0u8; Q6_K_BLOCK_BYTES];
+        for (index, value) in weights[..192].iter_mut().enumerate() {
+            *value = ((index * 47 + 29) & 0xff) as u8;
+        }
+        for (index, value) in weights[192..208].iter_mut().enumerate() {
+            *value = ((index * 11 + 3) as i8) as u8;
+        }
+        weights[208..210].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+        let x: Vec<f32> = (0..Q_K)
+            .map(|index| ((index as i32 % 37 - 18) as f32) * 0.046875)
+            .collect();
+        let q8 = quantize_q8_k_activation(&x).unwrap();
+        let reconstructed_x: Vec<f32> = q8[0]
+            .qs
+            .iter()
+            .map(|&value| q8[0].d * value as f32)
+            .collect();
+        let mut dequantized = vec![0.0f32; Q_K];
+        dequant_q6_k(&weights, &mut dequantized).unwrap();
+        let expected: f32 = dequantized
+            .iter()
+            .zip(reconstructed_x.iter())
+            .map(|(&weight, &activation)| weight * activation)
+            .sum();
+        let mut actual = [0.0f32; 1];
+        gemv_q6_k_q8k(&weights, 1, Q_K, &x, &mut actual).unwrap();
+        assert!(
+            (actual[0] - expected).abs() < 1e-4,
+            "q6_k/q8_k dot mismatch: got {} expected {}",
+            actual[0],
+            expected
+        );
     }
 }

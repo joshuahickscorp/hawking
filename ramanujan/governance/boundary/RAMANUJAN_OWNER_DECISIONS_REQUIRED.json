@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.ramanujan.owner_decisions_required.v1",
+  "status": "OWNER_PACKET_COMPLETE_APPROVALS_PENDING",
+  "purpose": "Owner-review packet for the three non-parent sources. This document is not an external intake, authority receipt, approval, authorization, launch command, or evidence of completion.",
+  "bound_authority": {
+    "path": "ramanujan/data/freeze_memberships.py",
+    "sha256": "0d143b7b00cd2d6e1719e71d139ca9f42c76084a0e37f68dda65cf43306d3e05",
+    "required_intake_schema": "hawking.ramanujan.external_source_owner_intake.v1",
+    "required_public_receipt_schema": "hawking.ramanujan.external_source_freeze_receipt.v1",
+    "template_command": ".venv/glm52/bin/python -m ramanujan.data.freeze_memberships --print-external-template",
+    "freeze_command": ".venv/glm52/bin/python -m ramanujan.data.freeze_memberships --external-intake '<owner-filled-sealed-intake.json>' --external-receipt '<public-freeze-receipt.json>'"
+  },
+  "global_owner_inputs": {
+    "owner_authority_receipt": {
+      "required": true,
+      "fields": ["path", "sha256"],
+      "rule": "The owner-filled intake must bind an existing authority receipt by exact byte SHA-256."
+    },
+    "source_and_license_binding": {
+      "required_for_each": ["D5", "D8", "D9"],
+      "fields": ["immutable version", "source path", "source byte SHA-256", "license SPDX identifier", "license text path", "license text byte SHA-256"],
+      "rule": "Hashes are raw-file SHA-256 values checked by the authority; a URL, prose license claim, or parameter count is not a substitute."
+    },
+    "role_separation": {
+      "required_for_each": ["D5", "D8", "D9"],
+      "roles": ["owner", "membership sealer", "independent adjudicator"],
+      "rule": "All three roles must be non-empty and distinct. D9 additionally needs a generator actor distinct from all three."
+    },
+    "non_authorizing_boundary": {
+      "candidate_launch_started": false,
+      "research_authorization": false,
+      "candidate_launch_authorization": false,
+      "rule": "Freezing inputs preserves these false values. A source freeze is not independent adjudication, a candidate run, or a restream approval."
+    }
+  },
+  "decisions": [
+    {
+      "id": "D5",
+      "status": "PENDING_OWNER_SOURCE_LICENSE_SELECTION",
+      "owner_must_supply": [
+        "immutable source version",
+        "source byte SHA-256",
+        "license SPDX identifier and license-text byte SHA-256",
+        "owner, membership-sealer, and independent-adjudicator identities",
+        "hash-sealed executable independent adjudicator"
+      ],
+      "leakage_and_membership_rule": "D5 is checked as a training candidate against sealed Odyssey evaluation material. The authority rejects any exact or near match under the configured Odyssey barrier; no passing result may be asserted before that mechanical check completes.",
+      "reopen_condition": "All required intake fields are filled in an owner-signed sealed intake, every referenced byte is present and hash-matches, and the authority emits a sealed public freeze receipt containing D5."
+    },
+    {
+      "id": "D8",
+      "status": "PENDING_OWNER_SOURCE_LICENSE_AND_HIDDEN_MEMBERSHIP_SELECTION",
+      "owner_must_supply": [
+        "immutable source version",
+        "source byte SHA-256",
+        "license SPDX identifier and license-text byte SHA-256",
+        "owner, membership-sealer, and independent-adjudicator identities",
+        "hash-sealed executable independent adjudicator",
+        "the private hidden-membership source, stored owner-only with filesystem mode 0600"
+      ],
+      "hidden_membership_and_privacy_rule": "Every private D8 item must be labelled hidden, held_out, or eval. Raw D8 paths and item IDs must stay outside the repository and public receipt. The public receipt may expose only the canonical membership commitment, source locator hash, counts, and no-leak result; it must report D8_hidden_item_ids as null and D8_commitment_only as true.",
+      "leakage_rule": "The authority checks every current D1-D7 training item against the hidden membership for exact and configured Jaccard overlap. Any hit reopens D8 and refuses the freeze.",
+      "variant_generator": "Forbidden for D8; hidden membership cannot be replaced by generated variants.",
+      "reopen_condition": "The private source is mode 0600, labels and byte hashes pass, all D1-D7 no-leak comparisons pass, and the public receipt contains no D8 raw path or item identifier."
+    },
+    {
+      "id": "D9",
+      "status": "PENDING_OWNER_SOURCE_LICENSE_AND_VARIANT_GENERATOR_SELECTION",
+      "owner_must_supply": [
+        "immutable source version",
+        "source byte SHA-256",
+        "license SPDX identifier and license-text byte SHA-256",
+        "owner, membership-sealer, and independent-adjudicator identities",
+        "hash-sealed executable independent adjudicator",
+        "a fourth, independent generator actor",
+        "generator executable byte SHA-256",
+        "64-lowercase-hex generator seed commitment"
+      ],
+      "generator_and_privacy_rule": "The freeze binds the generator executable hash and seed commitment but does not execute it. D9 is not training-visible at freeze time; no candidate or counterexample result may be inferred from the receipt. Do not place raw private intake paths, source items, or seed material in the repository or public receipt.",
+      "reopen_condition": "All source/license/role/generator inputs are sealed and hash-verified, the generator actor is distinct from owner, sealer, and adjudicator, and the authority emits a public receipt with executed_by_freeze false."
+    }
+  ],
+  "separate_prelaunch_inputs": [
+    {
+      "id": "OWNER_PARENT_RESTREAM_AUTHORIZATION",
+      "required_input": "HAWKING_PARENT_RESTREAM_AUTHORIZED=YES",
+      "not_granted_here": true
+    },
+    {
+      "id": "PINNED_OWNER_ED25519_TRUST_ANCHOR_AND_SINGLE_USE_AUTHORIZATION",
+      "required_input": "Install a 32-byte Ed25519 owner public key as a root-owned, non-symlinked file below root-owned non-group/world-writable /Library/Application Support/Hawking at /Library/Application Support/Hawking/owner_ed25519_public_key (the key may be mode 0600 root or 0644 root), then supply HAWKING_OWNER_GREEN_LIGHT_AUTHORIZATION signed by its private key.",
+      "signed_payload_must_bind": ["schedule seal", "policy seal", "D5/D8/D9 public freeze receipt seal", "full canonical production-lease receipt SHA-256", "production lease id", "hardware identity", "physical operator executable SHA-256", "operator receipt-attestation public-key SHA-256", "range executor executable SHA-256", "issue/expiry", "single-use nonce"],
+      "not_granted_here": true
+    },
+    {
+      "id": "CLEAN_LIVE_GPU_LEASE",
+      "required_input": "HAWKING_CLEAN_GPU_LEASE_ID=<clean-live-lease-id>",
+      "not_granted_here": true
+    },
+    {
+      "id": "OWNER_APPROVED_TESTED_PHYSICAL_GLM52_WINDOW_OPERATOR",
+      "required_input": "HAWKING_GLM52_WINDOW_OPERATOR=/absolute/path/to/executable",
+      "rule": "The path must be executable and separately approved and tested for the framed range protocol. Its approval receipt must bind both the executable SHA-256 and a 32-byte Ed25519 key used to attest every terminal window receipt; this packet does not test or approve it."
+    }
+  ],
+  "current_receipt_bindings": {
+    "audit_refresh": "ramanujan/RAMANUJAN_PRE_RESTREAM_AUDIT_REFRESH_2026_08_01.json#afa15e00bb768d168cf024f97d6473214b5881692e1330fee4f18d7b290db29b",
+    "final_parent_plan": "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json#9cf78dc272fce40101c48d851b75f7082d0065f311623db980e81407fc2e8b88",
+    "Q1_D4_D7_membership": "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json#36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+    "physical_operator_owner_proposal": "ramanujan/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json#5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e",
+    "qwen_fixture_representation_receipt": "evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json#b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a",
+    "inclusive_topology_exit": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json#3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989",
+    "fail_closed_launcher_sha256": "9a58d88f7e866d03f14d413ea21cfc2e8b0ebe7985609e97b04b9dab9320d8a4"
+  },
+  "next_safe_action": "Print the authority template, fill and independently review the private owner intake outside the repository, then invoke the freeze command. Supply its resulting public receipt to HAWKING_EXTERNAL_SOURCE_FREEZE_RECEIPT only after it is sealed and independently checked.",
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY",
+  "seal_sha256": "f821ef7900d2a885dcabb1081c81de714ab86abfa0fe867ecbfe693043fe8a55"
+}

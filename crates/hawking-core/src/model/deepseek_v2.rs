@@ -18,6 +18,55 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+/// Compact, hash-bound readback for the bounded DeepSeek Metal stage probe.
+/// The probe intentionally records hashes plus a small finite prefix rather
+/// than dumping whole tensors, so a single token remains cheap to inspect and
+/// the exact first divergent boundary can still be identified against the CPU
+/// stage trace. This helper is only compiled for the resident Metal path.
+#[cfg(target_os = "macos")]
+fn deepseek_stage_f32(label: &str, ptr: *const f32, len: usize) -> serde_json::Value {
+    use sha2::{Digest, Sha256};
+
+    let bytes = unsafe { std::slice::from_raw_parts(ptr.cast::<u8>(), len * std::mem::size_of::<f32>()) };
+    let first: Vec<serde_json::Value> = unsafe { std::slice::from_raw_parts(ptr, len) }
+        .iter()
+        .take(8)
+        .map(|value| {
+            if value.is_finite() {
+                serde_json::json!(value)
+            } else {
+                serde_json::Value::Null
+            }
+        })
+        .collect();
+    serde_json::json!({
+        "label": label,
+        "len": len,
+        "bytes": bytes.len(),
+        "sha256": format!("{:x}", Sha256::digest(bytes)),
+        "first8": first,
+    })
+}
+
+#[cfg(target_os = "macos")]
+fn deepseek_stage_u32(label: &str, ptr: *const u32, len: usize) -> serde_json::Value {
+    let values = unsafe { std::slice::from_raw_parts(ptr, len) };
+    serde_json::json!({
+        "label": label,
+        "len": len,
+        "bytes": len * std::mem::size_of::<u32>(),
+        "values": values,
+    })
+}
+
+#[cfg(target_os = "macos")]
+fn deepseek_interleaved_rope_enabled() -> bool {
+    // The source-compatible adjacent-pair/concatenated-half grammar is now
+    // the default. The legacy split-half in-place path remains available only
+    // as an explicit negative control for same-model before/after receipts.
+    !crate::env_on("HAWKING_DS_LEGACY_SPLIT_ROPE")
+}
+
 #[derive(Debug, Clone)]
 pub struct DeepSeekConfig {
     pub n_layers: usize,
@@ -312,9 +361,9 @@ impl FfnMoeSetup {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
             "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
-            // v2t_gu / v2t_gu_serial / v2t_gu_v2 fuse gate+up into one kernel;
+            // v2t_gu / v2t_gu_serial / v2t_gu_v2 / v2t_gu_v3 fuse gate+up into one kernel;
             // single-matrix GEMVs (down) use v2t
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -337,7 +386,7 @@ impl FfnMoeSetup {
     ) -> &'static str {
         match self.routed_down_dtype {
             GgmlType::Q8_0 => match q4k_schedule {
-                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => {
+                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
                     "moe_batched_gemm_q8_0_indexed_v2t"
                 }
                 _ => "moe_batched_gemm_q8_0_indexed",
@@ -666,19 +715,16 @@ impl Engine for DeepSeekV2 {
         let sampler = Sampler::new(0);
 
         // Metal context: built once per model, owned for the model's
-        // lifetime. Errors here (no GPU, shader compile failure) are
-        // soft -- `None` falls back to CPU kernels in every dispatcher.
+        // lifetime. Untraced loads may fall back to CPU; traced evidence runs
+        // fail closed so shader/device failures cannot be reported as valid
+        // zero-dispatch measurements.
         //
         // Phase 3.3 portability/reach: `force_cpu` (config or
         // HAWKING_FORCE_CPU=1) loads with NO Metal context, forcing the
         // pure-Rust CPU reference path. This is the same state the engine is
         // in off-macOS (no Metal) and is how the CPU "backend" is exercised
         // for the CPU-vs-Metal parity cross-check. Mirrors qwen_dense.rs.
-        let metal_ctx = if config.force_cpu || crate::env_on("HAWKING_FORCE_CPU") {
-            None
-        } else {
-            MetalContext::new_with_trace(config.trace_dispatch).ok()
-        };
+        let metal_ctx = crate::engine::init_optional_metal(&config)?;
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -1066,6 +1112,8 @@ impl Engine for DeepSeekV2 {
         self.mla_kv_gpu_synced = false;
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
+        let mut prefill_metal_dispatches_total = 0usize;
+        let mut prefill_command_buffers_total = 0usize;
         for (i, &t) in prompt_ids.iter().enumerate() {
             if abort_set(&req) {
                 prefill_aborted = true;
@@ -1073,6 +1121,11 @@ impl Engine for DeepSeekV2 {
             }
             let step_start = Instant::now();
             let _ = self.forward_token(t, i)?;
+            if self.last_dispatch_count > 0 {
+                prefill_metal_dispatches_total = prefill_metal_dispatches_total
+                    .saturating_add(self.last_dispatch_count);
+                prefill_command_buffers_total = prefill_command_buffers_total.saturating_add(1);
+            }
             if stall_active && step_start.elapsed() > stall_limit {
                 prefill_aborted = true;
                 break;
@@ -1094,6 +1147,11 @@ impl Engine for DeepSeekV2 {
         let mut produced = 0usize;
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
+        let mut decode_metal_dispatches_total = 0usize;
+        let mut completed_decode_forwards = 0usize;
+        let mut decode_command_buffers_total = 0usize;
+        let mut decode_cpu_reference_fallback_total = 0usize;
+        let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
 
         if self.speculate_mode == crate::SpeculateMode::ExactShared {
             // Speculative decode: draft with shared-only model, verify with full model.
@@ -1253,10 +1311,21 @@ impl Engine for DeepSeekV2 {
                     let sampled = self.sampler.sample(&mut logits, &req.sampling);
                     self.id_to_original(sampled)
                 };
+                completed_decode_forwards = completed_decode_forwards.saturating_add(1);
+                if self.last_dispatch_count > 0 {
+                    decode_metal_dispatches_total = decode_metal_dispatches_total
+                        .saturating_add(self.last_dispatch_count);
+                    decode_command_buffers_total = decode_command_buffers_total.saturating_add(1);
+                } else {
+                    decode_cpu_reference_fallback_total =
+                        decode_cpu_reference_fallback_total.saturating_add(1);
+                }
+                let complete_forward_ms = step_start.elapsed().as_secs_f64() * 1000.0;
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break;
                 }
+                decode_token_ms.push(complete_forward_ms);
                 self.sampler.record(next_id);
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 sink(StreamEvent::Token { id: next_id, text });
@@ -1270,6 +1339,22 @@ impl Engine for DeepSeekV2 {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        stats.decode_token_ms = decode_token_ms;
+        stats.metal_dispatches = self.last_dispatch_count;
+        stats.dispatches_per_forward = self.last_dispatch_count;
+        stats.prefill_metal_dispatches_total = prefill_metal_dispatches_total;
+        stats.prefill_command_buffers_total = prefill_command_buffers_total;
+        stats.decode_metal_dispatches_total = decode_metal_dispatches_total;
+        stats.completed_decode_forwards = completed_decode_forwards;
+        stats.decode_command_buffers_total = decode_command_buffers_total;
+        stats.decode_cpu_reference_fallback_total = decode_cpu_reference_fallback_total;
+        stats.cpu_reference_fallback_count = decode_cpu_reference_fallback_total;
+        stats.lm_head_path = if self.lm_head_buf.is_some() {
+            "metal-argmax-token-only"
+        } else {
+            "cpu-reference"
+        }
+        .to_string();
         stats.dispatch_samples = self
             .metal_ctx
             .as_ref()
@@ -1592,7 +1677,7 @@ impl DeepSeekV2 {
             let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
             let scale = 1.0f32 / (head_dim_q as f32).sqrt();
 
-            self.encode_attention_phase1_into_tcb(&mut tcb, li, pos, Some(token), seq_slot)?;
+            self.encode_attention_phase1_into_tcb(&mut tcb, li, pos, Some(token), seq_slot, false)?;
             self.encode_attention_phase2_tcb(&mut tcb, li, pos)?;
             crate::kernels::mla_decode_and_o_proj_arena_tcb(
                 &mut tcb,
@@ -1956,7 +2041,7 @@ impl DeepSeekV2 {
                 // doesn't have a matching kernel name. Map all v2t_* schedules
                 // to the v2 standalone kernel so we never silently regress to
                 // the slow scalar `gemv_q4_k_m` here.
-                if matches!(schedule, "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_serial") {
+                if matches!(schedule, "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_serial") {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
                             ctx,
@@ -2266,6 +2351,7 @@ impl DeepSeekV2 {
                         pos,
                         Some(token),
                         seq_slot,
+                        false,
                     )?;
                     // Phase 2: q_b_proj + rope_q.
                     self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
@@ -2373,6 +2459,7 @@ impl DeepSeekV2 {
                             &arena.moe_shared_up_out_buf,
                             &arena.moe_shared_act_buf,
                             &arena.moe_shared_out_buf,
+                            None,
                         )?;
                     } else {
                         let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
@@ -2642,6 +2729,11 @@ impl DeepSeekV2 {
                 let kv_lora_rank = self.config.kv_lora_rank;
                 let qk_rope_head_dim = self.config.qk_rope_head_dim;
                 let decode_timing = std::env::var("HAWKING_DECODE_TIMING").is_ok();
+                // A stage probe deliberately forces the already-supported
+                // per-layer commit path. That creates a safe observation point
+                // after every encoder completion without changing the default
+                // one-command-buffer production path.
+                let stage_trace_active = crate::env_on("HAWKING_DS_STAGE_TRACE");
                 let mut total_us = 0u64;
 
                 // One-time sync: copy CPU KV into GPU-resident buffers on first Wedge C run.
@@ -2675,8 +2767,10 @@ impl DeepSeekV2 {
                 // GPU shared-only draft, verifier can use the single-TCB fast path.
                 let use_gpu_shared_draft = self.speculate_mode == crate::SpeculateMode::ExactShared
                     && self.shared_only_gpu_argmax_available();
-                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
-                    || use_gpu_shared_draft;
+                let use_single_tcb = !stage_trace_active
+                    && (self.speculate_mode != crate::SpeculateMode::ExactShared
+                        || use_gpu_shared_draft);
+                let mut stage_records: Vec<serde_json::Value> = Vec::new();
 
                 // Phase 5B.1: fold final-norm + LM head + argmax into the global TCB when the
                 // greedy-GPU path is available. Eliminates Wedge M C-1 mini-TCB and the separate
@@ -2712,6 +2806,11 @@ impl DeepSeekV2 {
                         .as_ref()
                         .map(|p| p.selected.shared_down_schedule.as_str())
                         .unwrap_or("basic");
+                    let attn_block_schedule = self
+                        .kernel_profile
+                        .as_ref()
+                        .map(|p| p.selected.attn_block_schedule.as_str())
+                        .unwrap_or("mla");
 
                     // Create the command buffer before the loop when using single-TCB.
                     let mut global_tcb = if use_single_tcb {
@@ -2719,9 +2818,21 @@ impl DeepSeekV2 {
                     } else {
                         None
                     };
+                    // Opt-in K5/K6 route-residual fusion carries the previous
+                    // MoE result directly in x_buf. The default remains false,
+                    // preserving the ordinary ffn_out -> next-layer add path.
+                    let fuse_route_residual = crate::env_on("HAWKING_DS_FUSED_ROUTE_RESIDUAL")
+                        && use_single_tcb
+                        && !stage_trace_active;
+                    let mut ffn_residual_in_x = false;
 
                     for li in 0..n_layers {
                         crate::metal::set_current_layer(Some(li as u32));
+                        let layer_start_us = if stage_trace_active {
+                            t0.elapsed().as_micros() as u64
+                        } else {
+                            0
+                        };
 
                         let moe_setup = self.ffn_moe_check(li)?;
 
@@ -2738,6 +2849,8 @@ impl DeepSeekV2 {
                         let head_dim_q =
                             self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+                        let residual_already_fused = ffn_residual_in_x;
+                        let fuse_this_moe = fuse_route_residual && moe_setup.is_some();
 
                         // Encode all kernels for this layer into the active TCB.
                         let encode_layer =
@@ -2749,26 +2862,50 @@ impl DeepSeekV2 {
                                     pos,
                                     Some(token),
                                     seq_slot,
+                                    residual_already_fused,
                                 )?;
                                 // Phase 2: q_b_proj + rope_q
                                 self.encode_attention_phase2_tcb(tcb, li, pos)?;
-                                // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
-                                crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                                    tcb,
-                                    arena,
-                                    kv_b_proj_buf,
-                                    o_proj_buf,
-                                    &self.mla_c_kv_gpu[li],
-                                    &self.mla_k_pe_gpu[li],
-                                    self.config.n_heads,
-                                    self.config.qk_nope_head_dim,
-                                    self.config.qk_rope_head_dim,
-                                    self.config.v_head_dim,
-                                    self.config.kv_lora_rank,
-                                    seq_len,
-                                    scale,
-                                    h,
-                                )?;
+                                // Phase 3: decode reads GPU KV (seq_len entries,
+                                // including the new one).  The explicit flash
+                                // profile lever swaps only this attention grammar;
+                                // all other waves and the resident buffers remain
+                                // identical to the promoted control.
+                                if attn_block_schedule == "flash" {
+                                    crate::kernels::flash_attn_decode_and_o_proj_arena_tcb(
+                                        tcb,
+                                        arena,
+                                        kv_b_proj_buf,
+                                        o_proj_buf,
+                                        &self.mla_c_kv_gpu[li],
+                                        &self.mla_k_pe_gpu[li],
+                                        self.config.n_heads,
+                                        self.config.qk_nope_head_dim,
+                                        self.config.qk_rope_head_dim,
+                                        self.config.v_head_dim,
+                                        self.config.kv_lora_rank,
+                                        seq_len,
+                                        scale,
+                                        h,
+                                    )?;
+                                } else {
+                                    crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                                        tcb,
+                                        arena,
+                                        kv_b_proj_buf,
+                                        o_proj_buf,
+                                        &self.mla_c_kv_gpu[li],
+                                        &self.mla_k_pe_gpu[li],
+                                        self.config.n_heads,
+                                        self.config.qk_nope_head_dim,
+                                        self.config.qk_rope_head_dim,
+                                        self.config.v_head_dim,
+                                        self.config.kv_lora_rank,
+                                        seq_len,
+                                        scale,
+                                        h,
+                                    )?;
+                                }
                                 crate::kernels::add_inplace_metal_tcb(
                                     tcb,
                                     &arena.x_buf,
@@ -2853,6 +2990,11 @@ impl DeepSeekV2 {
                                     &arena.moe_shared_up_out_buf,
                                     &arena.moe_shared_act_buf,
                                     &arena.moe_shared_out_buf,
+                                    if fuse_this_moe {
+                                        Some(&arena.x_buf)
+                                    } else {
+                                        None
+                                    },
                                 )?;
                                     Ok(true)
                                 } else {
@@ -2868,7 +3010,130 @@ impl DeepSeekV2 {
                             // Per-layer fallback (ExactShared spec-decode path).
                             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                             dense_handled = encode_layer(&mut tcb)?;
+                            let encode_end_us = if stage_trace_active {
+                                t0.elapsed().as_micros() as u64
+                            } else {
+                                0
+                            };
+                            let commit_start_us = if stage_trace_active {
+                                t0.elapsed().as_micros() as u64
+                            } else {
+                                0
+                            };
                             tcb.commit_and_wait()?;
+                            let commit_end_us = if stage_trace_active {
+                                t0.elapsed().as_micros() as u64
+                            } else {
+                                0
+                            };
+
+                            if stage_trace_active {
+                                let q_len = self.config.n_heads
+                                    * (self.config.qk_nope_head_dim
+                                        + self.config.qk_rope_head_dim);
+                                let kv_a_len = self.config.kv_lora_rank
+                                    + self.config.qk_rope_head_dim;
+                                let attn_out_len = self.config.n_heads * self.config.v_head_dim;
+                                let q_ptr = arena.q.contents() as *const f32;
+                                let kv_a_ptr = arena.kv_a_out_buf.contents() as *const f32;
+                                let c_kv_ptr = arena.c_kv_normed_buf.contents() as *const f32;
+                                let k_pe_ptr = (self.mla_k_pe_gpu[li].contents()
+                                    as *const f32)
+                                    .wrapping_add(seq_slot * qk_rope_head_dim);
+                                let attn_out_ptr = arena.attn_out.contents() as *const f32;
+                                let out_ptr = arena.out.contents() as *const f32;
+                                let x_norm_ptr = arena.x_norm_buf.contents() as *const f32;
+                                let ffn_out_ptr = arena.ffn_out_buf.contents() as *const f32;
+                                let x_ptr = arena.x_buf.contents() as *const f32;
+                                let moe_logits_ptr = arena.moe_logits_buf.contents() as *const f32;
+                                let route_ids_ptr = arena.moe_route_ids_buf.contents() as *const u32;
+                                let route_weights_ptr =
+                                    arena.moe_route_weights_buf.contents() as *const f32;
+                                stage_records.push(serde_json::json!({
+                                    "schema": "hawking.deepseek.metal_stage_trace.v1",
+                                    "token": token,
+                                    "position": pos,
+                                    "layer": li,
+                                    "seq_slot": seq_slot,
+                                    "seq_len": seq_len,
+                                    "dense_ffn_handled": dense_handled,
+                                    "timing_us": {
+                                        "layer_start": layer_start_us,
+                                        "encode_end": encode_end_us,
+                                        "commit_start": commit_start_us,
+                                        "commit_end": commit_end_us,
+                                    },
+                                    "buffers": {
+                                        "q": deepseek_stage_f32("q", q_ptr, q_len),
+                                        "kv_a": deepseek_stage_f32("kv_a", kv_a_ptr, kv_a_len),
+                                        "c_kv": deepseek_stage_f32(
+                                            "c_kv",
+                                            c_kv_ptr,
+                                            self.config.kv_lora_rank,
+                                        ),
+                                        "k_pe": deepseek_stage_f32(
+                                            "k_pe",
+                                            k_pe_ptr,
+                                            qk_rope_head_dim,
+                                        ),
+                                        // `arena.attn_out` is the per-head MLA
+                                        // context (n_heads * v_head_dim).  The
+                                        // following o-projection writes the
+                                        // hidden-width attention output into
+                                        // `arena.out`.  Keep these boundaries
+                                        // distinct: an earlier probe aliased
+                                        // both labels to attn_out, making the
+                                        // stage oracle report a false
+                                        // attention/output match.
+                                        "context": deepseek_stage_f32(
+                                            "context",
+                                            attn_out_ptr,
+                                            attn_out_len,
+                                        ),
+                                        "attn_out": deepseek_stage_f32(
+                                            "attn_out",
+                                            out_ptr,
+                                            h,
+                                        ),
+                                        "out": deepseek_stage_f32("out", out_ptr, h),
+                                        "ffn_norm": deepseek_stage_f32(
+                                            "ffn_norm",
+                                            x_norm_ptr,
+                                            h,
+                                        ),
+                                        "router_logits": deepseek_stage_f32(
+                                            "router_logits",
+                                            moe_logits_ptr,
+                                            self.config.n_routed_experts,
+                                        ),
+                                        "routes": deepseek_stage_u32(
+                                            "routes",
+                                            route_ids_ptr,
+                                            self.config.top_k_routed,
+                                        ),
+                                        "route_weights": deepseek_stage_f32(
+                                            "route_weights",
+                                            route_weights_ptr,
+                                            self.config.top_k_routed,
+                                        ),
+                                        "ffn_out": deepseek_stage_f32(
+                                            "ffn_out",
+                                            ffn_out_ptr,
+                                            h,
+                                        ),
+                                        // The residual add of this layer's FFN is
+                                        // intentionally deferred to the next
+                                        // layer's prologue (or the final-norm
+                                        // epilogue), so x_buf is the exact
+                                        // after-attention boundary here.
+                                        "after_attention": deepseek_stage_f32(
+                                            "after_attention",
+                                            x_ptr,
+                                            h,
+                                        ),
+                                    },
+                                }));
+                            }
 
                             // Keep CPU KV mirrors in sync after each layer commit.
                             let off_c = seq_slot * kv_lora_rank;
@@ -2890,6 +3155,7 @@ impl DeepSeekV2 {
                         }
 
                         let ffn_handled = moe_setup.is_some() || dense_handled;
+                        ffn_residual_in_x = fuse_this_moe && ffn_handled;
                         if !ffn_handled {
                             // CPU fallback FFN: only reachable when dense weights are not
                             // yet pinned. Commit current state to GPU, handle on CPU, then
@@ -2913,7 +3179,7 @@ impl DeepSeekV2 {
                     // into global_tcb so the single commit covers the full forward pass.
                     if let Some(ref mut tcb) = global_tcb {
                         let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
-                        if n_layers > 0 {
+                        if n_layers > 0 && !ffn_residual_in_x {
                             crate::kernels::add_inplace_metal_tcb(
                                 tcb,
                                 &arena.x_buf,
@@ -3025,6 +3291,31 @@ impl DeepSeekV2 {
                                 }
                             }
                         }
+                    }
+                }
+                if stage_trace_active {
+                    if let Ok(path) = std::env::var("HAWKING_DS_STAGE_TRACE_PATH") {
+                        use std::io::Write;
+                        let mut file = std::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&path)
+                            .map_err(|err| {
+                                Error::Model(format!(
+                                    "DeepSeek stage trace open failed for {path}: {err}"
+                                ))
+                            })?;
+                        for record in &stage_records {
+                            let line = serde_json::to_string(record).map_err(|err| {
+                                Error::Model(format!("DeepSeek stage trace encode failed: {err}"))
+                            })?;
+                            writeln!(file, "{line}").map_err(|err| {
+                                Error::Model(format!("DeepSeek stage trace write failed: {err}"))
+                            })?;
+                        }
+                        file.sync_all().map_err(|err| {
+                            Error::Model(format!("DeepSeek stage trace fsync failed: {err}"))
+                        })?;
                     }
                 }
                 total_us += t0.elapsed().as_micros() as u64;
@@ -3285,16 +3576,34 @@ impl DeepSeekV2 {
             &arena.q_lora_normed_buf,
             &arena.q,
         )?;
-        crate::kernels::rope_q_f32_inplace_tcb(
-            tcb,
-            &arena.q,
-            n_heads,
-            head_dim_q,
-            qk_nope_head_dim,
-            qk_rope_head_dim,
-            pos as u32,
-            rope_theta,
-        )
+        if deepseek_interleaved_rope_enabled() {
+            let q_bytes = (n_heads * head_dim_q * std::mem::size_of::<f32>()) as u64;
+            tcb.copy_buffer_bytes(&arena.q, 0, &arena.rope_tmp_buf, 0, q_bytes)?;
+            crate::kernels::rope_q_interleaved_concat_tcb(
+                tcb,
+                &arena.q,
+                &arena.rope_tmp_buf,
+                n_heads,
+                head_dim_q,
+                qk_nope_head_dim,
+                qk_rope_head_dim,
+                pos as u32,
+                rope_theta,
+            )?;
+            tcb.copy_buffer_bytes(&arena.rope_tmp_buf, 0, &arena.q, 0, q_bytes)?;
+        } else {
+            crate::kernels::rope_q_f32_inplace_tcb(
+                tcb,
+                &arena.q,
+                n_heads,
+                head_dim_q,
+                qk_nope_head_dim,
+                qk_rope_head_dim,
+                pos as u32,
+                rope_theta,
+            )?;
+        }
+        Ok(())
     }
 
     /// Encode Phase 1 attention kernels (embed/add_inplace + q_a/kv_a + norms + rope_kv)
@@ -3309,6 +3618,7 @@ impl DeepSeekV2 {
         pos: usize,
         pre_phase_token: Option<u32>,
         seq_slot: usize,
+        skip_ffn_residual: bool,
     ) -> Result<()> {
         let kv_a_dim = self.config.kv_lora_rank + self.config.qk_rope_head_dim;
         let q_lora = self.config.q_lora_rank.max(1);
@@ -3359,6 +3669,30 @@ impl DeepSeekV2 {
                                      rows: usize,
                                      cols: usize|
          -> Result<()> {
+            // Diagnostic decomposition for the direct-q/kv path.  It keeps
+            // the exact same f16 weights and device buffers but separates
+            // RMSNorm from GEMV, allowing a capability probe to distinguish a
+            // fused binding/math defect from the downstream MLA/MoE graph.
+            // The default remains the fused path; this opt-in is never a
+            // performance promotion by itself.
+            if crate::env_on("HAWKING_DS_DISABLE_FUSED_RMSNORM_GEMV") {
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    tcb,
+                    x,
+                    attn_norm_buf,
+                    eps,
+                    cols,
+                    &arena.x_norm_buf,
+                )?;
+                return crate::kernels::gemv_f16_metal_buf_tcb(
+                    tcb,
+                    w,
+                    rows,
+                    cols,
+                    &arena.x_norm_buf,
+                    out,
+                );
+            }
             if use_v2t_rmsnorm_attn && rows % 8 == 0 && cols % 32 == 0 {
                 crate::kernels::rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
                     tcb,
@@ -3388,10 +3722,15 @@ impl DeepSeekV2 {
             if li == 0 {
                 let embed_buf = self.embed_buf.as_ref().unwrap();
                 crate::kernels::embed_lookup_metal_f32_tcb(tcb, embed_buf, tok, h, &arena.x_buf)?;
-            } else {
+            } else if !skip_ffn_residual {
                 crate::kernels::add_inplace_metal_tcb(tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
             }
         }
+        // The Q (or Q-A) and KV-A projections read the same residual but
+        // write disjoint outputs.  Keep the default ordered graph exact;
+        // the opt-in concurrent encoder is a bounded roofline experiment
+        // and is disabled automatically by diagnostic GPU timestamp modes.
+        let concurrent_qkv = crate::env_on("HAWKING_DS_CONCURRENT_QKV");
         if q_lora_path {
             let q_a_proj_buf =
                 self.layers[li].pinned.q_a_proj.as_ref().ok_or_else(|| {
@@ -3401,6 +3740,9 @@ impl DeepSeekV2 {
                 self.layers[li].pinned.q_a_norm.as_ref().ok_or_else(|| {
                     Error::Model(format!("p1_into_tcb: l{li} q_a_norm not pinned"))
                 })?;
+            if concurrent_qkv {
+                tcb.begin_concurrent_group()?;
+            }
             dispatch_rmsnorm_attn(
                 tcb,
                 q_a_proj_buf,
@@ -3409,6 +3751,17 @@ impl DeepSeekV2 {
                 q_lora,
                 h,
             )?;
+            dispatch_rmsnorm_attn(
+                tcb,
+                kv_a_proj_buf,
+                &arena.x_buf,
+                &arena.kv_a_out_buf,
+                kv_a_dim,
+                h,
+            )?;
+            if concurrent_qkv {
+                tcb.end_concurrent_group()?;
+            }
             crate::kernels::rmsnorm_metal_buf_tcb(
                 tcb,
                 &arena.q_lora_buf,
@@ -3424,6 +3777,9 @@ impl DeepSeekV2 {
                 .as_ref()
                 .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_proj not pinned")))?;
             // v2.1.0-T2.13: q_proj pinned as f16; use f16w rmsnorm kernel.
+            if concurrent_qkv {
+                tcb.begin_concurrent_group()?;
+            }
             dispatch_rmsnorm_attn(
                 tcb,
                 q_proj_buf,
@@ -3432,15 +3788,18 @@ impl DeepSeekV2 {
                 n_heads * head_dim_q,
                 h,
             )?;
+            dispatch_rmsnorm_attn(
+                tcb,
+                kv_a_proj_buf,
+                &arena.x_buf,
+                &arena.kv_a_out_buf,
+                kv_a_dim,
+                h,
+            )?;
+            if concurrent_qkv {
+                tcb.end_concurrent_group()?;
+            }
         }
-        dispatch_rmsnorm_attn(
-            tcb,
-            kv_a_proj_buf,
-            &arena.x_buf,
-            &arena.kv_a_out_buf,
-            kv_a_dim,
-            h,
-        )?;
         crate::kernels::rmsnorm_metal_buf_tcb(
             tcb,
             &arena.kv_a_out_buf,
@@ -3449,25 +3808,58 @@ impl DeepSeekV2 {
             kv_lora_rank,
             &arena.c_kv_normed_buf,
         )?;
-        crate::kernels::rope_slice_f32_inplace_tcb(
-            tcb,
-            &arena.kv_a_out_buf,
-            kv_lora_rank,
-            qk_rope_head_dim,
-            pos as u32,
-            rope_theta,
-        )?;
-        if !q_lora_path {
-            crate::kernels::rope_q_f32_inplace_tcb(
+        if deepseek_interleaved_rope_enabled() {
+            let kv_a_bytes = (kv_a_dim * std::mem::size_of::<f32>()) as u64;
+            tcb.copy_buffer_bytes(&arena.kv_a_out_buf, 0, &arena.rope_tmp_buf, 0, kv_a_bytes)?;
+            crate::kernels::rope_slice_interleaved_concat_tcb(
                 tcb,
-                &arena.q,
-                n_heads,
-                head_dim_q,
-                qk_nope_head_dim,
+                &arena.kv_a_out_buf,
+                &arena.rope_tmp_buf,
+                kv_lora_rank,
+                kv_lora_rank,
                 qk_rope_head_dim,
                 pos as u32,
                 rope_theta,
             )?;
+            tcb.copy_buffer_bytes(&arena.rope_tmp_buf, 0, &arena.kv_a_out_buf, 0, kv_a_bytes)?;
+        } else {
+            crate::kernels::rope_slice_f32_inplace_tcb(
+                tcb,
+                &arena.kv_a_out_buf,
+                kv_lora_rank,
+                qk_rope_head_dim,
+                pos as u32,
+                rope_theta,
+            )?;
+        }
+        if !q_lora_path {
+            if deepseek_interleaved_rope_enabled() {
+                let q_bytes = (n_heads * head_dim_q * std::mem::size_of::<f32>()) as u64;
+                tcb.copy_buffer_bytes(&arena.q, 0, &arena.rope_tmp_buf, 0, q_bytes)?;
+                crate::kernels::rope_q_interleaved_concat_tcb(
+                    tcb,
+                    &arena.q,
+                    &arena.rope_tmp_buf,
+                    n_heads,
+                    head_dim_q,
+                    qk_nope_head_dim,
+                    qk_rope_head_dim,
+                    pos as u32,
+                    rope_theta,
+                )?;
+                tcb.copy_buffer_bytes(&arena.rope_tmp_buf, 0, &arena.q, 0, q_bytes)?;
+            } else {
+                crate::kernels::rope_q_f32_inplace_tcb(
+                    tcb,
+                    &arena.q,
+                    n_heads,
+                    head_dim_q,
+                    qk_nope_head_dim,
+                    qk_rope_head_dim,
+                    pos as u32,
+                    rope_theta,
+                )?;
+            }
         }
         crate::kernels::kv_append_f32_tcb(
             tcb,
@@ -3801,6 +4193,19 @@ impl DeepSeekV2 {
                     .as_ref()
                     .map(|p| p.selected.attn_block_schedule.as_str())
                     .unwrap_or("mla");
+                if crate::env_on("HAWKING_DS_SCHEDULE_TRACE") {
+                    static SCHEDULE_TRACE_ONCE: std::sync::Once = std::sync::Once::new();
+                    SCHEDULE_TRACE_ONCE.call_once(|| {
+                        let profile_id = self
+                            .kernel_profile
+                            .as_ref()
+                            .map(|p| p.profile_id.as_str())
+                            .unwrap_or("none");
+                        eprintln!(
+                            "[deepseek] attention schedule profile={profile_id} selected={attn_schedule} layer_cb={layer_cb}"
+                        );
+                    });
+                }
                 if attn_schedule == "flash" {
                     let mut attn_out = vec![0.0f32; n_heads * cfg.v_head_dim];
                     crate::kernels::flash_attn_decode_metal(

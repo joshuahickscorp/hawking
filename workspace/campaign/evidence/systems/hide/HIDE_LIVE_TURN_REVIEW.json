@@ -1,0 +1,159 @@
+{
+  "schema": "hawking.hide.live_turn_review.v1",
+  "at": "2026-08-01T00:00:00Z",
+  "subject": "The live model turn loop -- Odyssey promotion gate G4's central requirement",
+  "status": "REVALIDATED_EXECUTED_NATIVE_MODEL_PATH; FUNCTIONAL_PASS_WITH_PREFILL_ROOFLINE_OPEN",
+  "why_this_gate_mattered": "Everything HIDE had wired before this was upstream of the thing that actually produces tokens. The archaeology found HIDE_MODEL_WEIGHTS required for any generation, so the turn loop had never been exercised end to end against a served model. G4 states outright that a stub provider returning canned text fails the gate -- the entire archaeology exists because things looked wired and were not.",
+  "live_path_claimed": "SubmitTurn intent -> context compile -> RuntimeSupervisor/HttpModelProvider -> canonical SSE model events -> streamed TokenBatch -> persisted agent.message -> next turn rebuild_history sees it",
+  "why_the_claim_is_credible_before_i_re_run_it": [
+    "The test is a real integration test (crates/hide-backend/tests/live_model_turn.rs, 524 lines) that stands up a serve process and drives the live intent path, not a unit test on an inner function.",
+    "It runs against a real Llama GGUF discovered from the HF cache or HIDE_MODEL_WEIGHTS -- there is no canned provider in the path.",
+    "It asserts the round trip completes AND that the next turn's rebuild_history sees the persisted message, which a stub could not fake without also faking persistence.",
+    "Runtime ~148s, consistent with real generation rather than a mock."
+  ],
+  "honest_caveats": [
+    "This is a bounded Qwen-0.5B functional integration run, not a large-model TG or production-GPU certification.",
+    "The run did not collect a CLEAN lease or artifact-bound GPU timestamp receipt, so it cannot certify production performance.",
+    "The test skips cleanly when no weights are present or HIDE_LIVE_MODEL_TURN=0. A passing CI run alone is insufficient; the executed command and non-empty live output below are the authority for this revalidation."
+  ],
+  "test_counts": {"before": "246 of 246 (controller-measured, clean env)", "after_reported": "248 total, 246 passed, 2 pre-existing process/shell env flakes", "note": "The 2 flakes are run_command and service_process timing tests already established as non-reproducing in the controller's environment."},
+  "HIDE_KERNEL_TURN": "Untouched. Merging a live loop does not pass its promotion gate.",
+  "g4_standing": "The real native-provider session/history path executed and passed. Product performance and CLEAN GPU certification remain separate open gates.",
+  "evidence_level": "EXECUTED_REAL_MODEL_FUNCTIONAL_RECEIPT_NOT_PERFORMANCE_CERTIFICATION",
+  "controller_revalidation_2026_08_01": {
+    "command": "HIDE_LIVE_MODEL_TURN=1 HIDE_MODEL_WEIGHTS=<verified temporary Qwen2.5-0.5B Q4_K_M> HIDE_HAWKING_BIN=<target/debug/hawking> HIDE_MAX_OUTPUT_TOKENS=2 cargo test -p hide-backend --test live_model_turn -- --nocapture",
+    "source": {
+      "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+      "license": "apache-2.0",
+      "bytes": 397808192,
+      "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"
+    },
+    "result": "PASS",
+    "executed_not_skipped": true,
+    "elapsed_seconds": 178.0,
+    "assertions": [
+      "RuntimeSupervisor reached Ready",
+      "two SubmitTurn requests were accepted",
+      "non-empty TokenBatch streamed",
+      "first assistant message persisted",
+      "second turn rebuilt durable history",
+      "four user/assistant history entries were observed"
+    ],
+    "roofline": "The functional path is green; serial long-context Qwen prefill caused a 178-second two-turn run and requires K7 prefill work before interaction-feel promotion.",
+    "eviction": {
+      "active_lane_path": "models/tg-active/hide-qwen05",
+      "active_lane_absent_after_eviction": true,
+      "trash_item_identity": "file:///Users/scammermike/.Trash/hide-qwen05/",
+      "trash_item_purged": true,
+      "unrelated_trash_items_preserved": [
+        "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+      ],
+      "free_blocks_before": 376811912,
+      "free_blocks_after": 377203180,
+      "free_bytes_before": 385855397888,
+      "free_bytes_after": 386256056320,
+      "recovered_bytes": 400658432,
+      "recovery_verdict": "PASS"
+    }
+  },
+  "prefix_reuse_revalidation_2026_08_01": {
+    "command": "HIDE_LIVE_MODEL_TURN=1 HIDE_MODEL_WEIGHTS=<verified temporary Qwen2.5-0.5B Q4_K_M> HIDE_HAWKING_BIN=<target/debug/hawking> HIDE_MAX_OUTPUT_TOKENS=2 cargo test -p hide-backend --test live_model_turn -- --nocapture",
+    "source": {
+      "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+      "license": "apache-2.0",
+      "bytes": 397808192,
+      "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"
+    },
+    "transfer": {
+      "official_path": "Hugging Face hf download with HF_XET_HIGH_PERFORMANCE=1 and HF_XET_NUM_CONCURRENT_RANGE_GETS=4",
+      "revision_immutable": true,
+      "source_hash_verified": true,
+      "xet_cache_bytes_after_transfer": 0
+    },
+    "result": "PASS",
+    "executed_not_skipped": true,
+    "elapsed_seconds": 135.19,
+    "assertions": [
+      "RuntimeSupervisor reached Ready",
+      "two SubmitTurn requests were accepted",
+      "non-empty TokenBatch streamed",
+      "first assistant message persisted",
+      "second turn rebuilt durable history",
+      "four user/assistant history entries were observed",
+      "hawking_prefix_reuse_total was at least one after the second real turn"
+    ],
+    "classification": "EXECUTED_REAL_MODEL_FUNCTIONAL_AND_PREFIX_REUSE_RECEIPT_NOT_A_TG_OR_PRODUCTION_PERFORMANCE_CERTIFICATION",
+    "eviction": {
+      "active_lane_path": "models/tg-active/hide-qwen05",
+      "active_lane_absent_after_eviction": true,
+      "trash_item_identity": "file:///Users/scammermike/.Trash/hide-qwen05/",
+      "trash_item_purged": true,
+      "xet_cache_purged": true,
+      "free_bytes_before": 385707143168,
+      "free_bytes_after": 386107731968,
+      "recovered_bytes": 400588800,
+      "recovery_verdict": "PASS"
+    },
+    "open_roofline": "This validates lossless prefix routing and functional HIDE history only. Serial Qwen prefill and its interaction p99 remain K7 work; it is neither a large-model TG result nor a CLEAN production-GPU result."
+  },
+  "continuation_parity_repair_revalidation_2026_08_01": {
+    "purpose": "Revalidate HIDE prefix reuse after replacing the unsafe CPU/dense-KV bridge with direct multisequence-resident tail prefill.",
+    "source": {
+      "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+      "license": "apache-2.0",
+      "bytes": 397808192,
+      "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"
+    },
+    "executed_tests": [
+      "cargo test -p hawking-core --test prefill_slot_into_multiseq_parity copied_prefix_kv_matches_source_slot_before_any_resumed_tail -- --ignored --nocapture",
+      "cargo test -p hawking-core --test prefill_slot_into_multiseq_parity copied_prefix_then_exact_tail_matches_cold_continuation -- --ignored --nocapture",
+      "cargo test -p hawking-core --test prefill_slot_into_multiseq_parity prefill_slot0_multiseq_matches_solo -- --ignored --nocapture",
+      "HIDE_LIVE_MODEL_TURN=1 HIDE_MODEL_WEIGHTS=<verified temporary Qwen2.5-0.5B Q4_K_M> HIDE_HAWKING_BIN=<target/debug/hawking> HIDE_MAX_OUTPUT_TOKENS=2 cargo test -p hide-backend --test live_model_turn -- --nocapture"
+    ],
+    "result": "PASS",
+    "elapsed_seconds_live_hide": 137.39,
+    "assertions": [
+      "direct copied K/V prefix matches the source slot before resumed tail prefill",
+      "copied-prefix plus exact unseen tail yields the same continuation as cold prefill",
+      "slot-zero multisequence prefill matches solo continuation",
+      "two HIDE turns streamed and persisted durable history",
+      "hawking_prefix_reuse_total was observed after the second real turn"
+    ],
+    "classification": "EXECUTED_REAL_MODEL_FUNCTIONAL_AND_PREFIX_RESUME_PARITY_RECEIPT_NOT_A_TG_OR_PRODUCTION_PERFORMANCE_CERTIFICATION",
+    "eviction": {
+      "active_lane_path": "models/tg-active/qwen-prefix-parity",
+      "active_lane_absent_after_eviction": true,
+      "trash_item_identity": "file:///Users/scammermike/.Trash/qwen-prefix-parity/",
+      "trash_item_purged": true,
+      "source_sha256_rechecked_in_trash_before_purge": true,
+      "temporary_hf_and_xet_caches_purged": true,
+      "free_bytes_before": 385128251392,
+      "free_bytes_after": 385522925568,
+      "recovered_bytes": 394674176,
+      "recovery_verdict": "PASS"
+    },
+    "retired_candidate": {
+      "change": "Use forward_multiseq_greedy_tokens for every resumed-tail token instead of full-logit multisequence forward.",
+      "parity": "The exact copied-prefix/tail and slot-zero continuation tests passed (11.62 s and 9.76 s respectively).",
+      "complete_interaction_result": "RETIRED",
+      "failure": "The real HIDE two-turn test remained CPU-busy past 218 seconds, above its prior 137.39-second full-path completion. Its controlled test processes were terminated; no speed or TG claim was made.",
+      "reopen_condition": "Profile and change the greedy head's complete command graph/allocation behavior, then rerun parity and a bounded live HIDE path that emits a controller-observed wall/p99 result. An arena-owned B×vocab scratch experiment retained direct-copy and continuation parity but was retired unpromoted because the detached live runner did not yield a trustworthy final measurement."
+    },
+    "post_retired_candidate_eviction": {
+      "active_lane_path": "models/tg-active/qwen-prefix-parity",
+      "active_lane_absent_after_eviction": true,
+      "trash_item_identity": "file:///Users/scammermike/.Trash/qwen-prefix-parity/",
+      "trash_item_purged": true,
+      "source_sha256_rechecked_before_purge": true,
+      "temporary_hf_and_xet_caches_purged": true,
+      "free_bytes_before": 385017077760,
+      "free_bytes_after": 385414832128,
+      "recovered_bytes": 397754368,
+      "recovery_verdict": "PASS"
+    },
+    "open_roofline": "The resident resume path is now parity-checked. It processes the unseen tail directly in the destination multisequence arena; K7 parallel/paged prefill and interaction p99 remain open. This receipt does not claim a large-model TG rung or a CLEAN production-GPU result."
+  }
+}

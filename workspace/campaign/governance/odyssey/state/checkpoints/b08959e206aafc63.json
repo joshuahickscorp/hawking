@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+  "checkpoint_id": "b08959e206aafc636947c2a1e9d8776570157abba9c2cddd4e02d668138afcfd",
+  "data_manifest_hash": "31106532410be5e47143149a86714f0a7b2b4b03114eb0925647c4eb6559130c",
+  "eval_result_hash": "none",
+  "objective_hash": "c30f7efa6e2b3e2e641fb26083a818714741dfeaff5b6e9fa7819119d264403e",
+  "parent_sha256": "genesis",
+  "profile_hash": "7cc4e8fca9197df705812e25ab60c2a302ff02cc4f34f61fcf2b2215a9652fa7",
+  "schema": "hawking.odyssey.checkpoint.runtime.v1",
+  "sovereignty_manifest_hash": "9946746b997b2befb491bf2d1d7d5975e511c65e0d3f75350d03421a97953518",
+  "stage": "T0",
+  "step": 0,
+  "wall_clock": "2026-08-03T03:04:01Z"
+}

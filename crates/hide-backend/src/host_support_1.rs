@@ -105,6 +105,7 @@ pub(crate) async fn run_turn_core(
     use hawking_context::sources::{ClassedMemoryContextSource, CodeIndexContextSource};
     use hawking_context::{ClassBudgets, ContextCompiler, InMemoryMemoryStore, MemoryKind};
     use hawking_orch::router::SimpleRouter;
+    use hawking_speculate::TargetVerification;
     use hide_core::runtime::{InferenceMessage, InferenceRequest, StreamChunk};
     use hide_core::types::Provenance;
     use hide_kernel::runtime_client::KernelRuntimeClient;
@@ -297,6 +298,11 @@ pub(crate) async fn run_turn_core(
     let stream_id = status_event.seq.to_string();
 
     let mut buf = String::new();
+    // This path is the target runtime itself, not a speculative draft source.
+    // Keep its completion authority opaque until the one durable assistant
+    // history event is constructed below; raw chunk JSON never writes history.
+    let target_gate = TargetVerification::gate();
+    let mut target_completion_ordinal = 0u32;
     {
         let bus = ui_bus.clone();
         let sess = session_id.clone();
@@ -307,6 +313,12 @@ pub(crate) async fn run_turn_core(
             match chunk {
                 StreamChunk::Token { text, .. } => {
                     buf.push_str(&text);
+                    target_completion_ordinal =
+                        target_completion_ordinal.checked_add(1).ok_or_else(|| {
+                            hide_core::error::HideError::PolicyDenied(
+                                "target completion exceeded verified-token ordinal range".into(),
+                            )
+                        })?;
                     bus.publish_token(seq, Some(sess.clone()), &sid, &text);
                     // Throttled per-step occupancy (every 32 tokens), partial patch
                     // - only when the live ceiling was snapshotted (live path).
@@ -345,6 +357,10 @@ pub(crate) async fn run_turn_core(
                             message,
                         },
                     });
+                    return Err(hide_core::error::HideError::PolicyDenied(
+                        "target runtime emitted an error chunk; refusing to persist a partial completion"
+                            .into(),
+                    ));
                 }
             }
             Ok(())
@@ -352,13 +368,15 @@ pub(crate) async fn run_turn_core(
         runtime.generate(request, &mut sink).await?;
     }
 
-    // (S2) Persist the assistant turn so the NEXT turn's `rebuild_history` sees it.
-    event_log
-        .append(NewEvent::system(
+    // (S2) Persist the assistant turn through the sole target-verified output
+    // authority so the NEXT turn's `rebuild_history` cannot consume a raw or
+    // provisional model completion.
+    crate::classed_writers::VerifiedTokenEventLog::authority(event_log.clone())
+        .append_target_verified_assistant(
             session_id.clone(),
-            "agent.message",
-            json!({ "role": "assistant", "text": buf }),
-        ))
+            target_gate.emit_target(target_completion_ordinal),
+            &buf,
+        )
         .await?;
 
     // Working memory must not outlive the turn — `_working_guard` Drop clears it.
@@ -464,4 +482,141 @@ pub(crate) fn declare_turn_capability(
         // Compiler degrade ladder with recall-gated rollback (Spine B).
         CompactionMode::DegradeWithRecallGate,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use futures::future::BoxFuture;
+    use hawking_events::{CanonicalEvent, ContentVerification};
+    use hawking_orch::inference::{InferenceClient, StubInferenceClient};
+    use hide_core::config::HideConfig;
+    use hide_core::event::InMemoryEventLog;
+    use hide_core::runtime::{GenerationStats, InferenceRequest, StreamChunk, TokenSink};
+
+    struct ErrorAfterPartialInference;
+
+    impl InferenceClient for ErrorAfterPartialInference {
+        fn generate<'a>(
+            &'a self,
+            _request: InferenceRequest,
+            sink: TokenSink<'a>,
+        ) -> BoxFuture<'a, Result<GenerationStats>> {
+            Box::pin(async move {
+                sink(StreamChunk::Token {
+                    token_id: None,
+                    text: "partial".to_string(),
+                })?;
+                sink(StreamChunk::Error {
+                    message: "transport failed".to_string(),
+                })?;
+                Ok(GenerationStats {
+                    input_tokens: 0,
+                    output_tokens: 1,
+                    decode_tokens_per_second: None,
+                })
+            })
+        }
+
+        fn embed<'a>(&'a self, _text: &'a str) -> BoxFuture<'a, Result<Vec<f32>>> {
+            Box::pin(async move { Ok(Vec::new()) })
+        }
+    }
+
+    #[tokio::test]
+    async fn direct_target_turn_persists_only_target_verified_assistant_history() {
+        let root = std::env::temp_dir().join(format!(
+            "hawking_hide_direct_target_turn_{}_{}",
+            hide_core::ids::now_ms(),
+            std::process::id()
+        ));
+        let raw = Arc::new(InMemoryEventLog::new());
+        let services = BackendServices::new(HideConfig::for_workspace(root), raw);
+        let session = services.session();
+
+        let outcome = run_turn_core(
+            Arc::new(StubInferenceClient::new("target response")),
+            services.event_log.clone(),
+            services.role_registry.clone(),
+            services.code_index.clone(),
+            services.memory_store.clone(),
+            services.classed_memory.clone(),
+            Arc::new(UiEventBus::new(4)),
+            session.clone(),
+            "user request".to_string(),
+            None,
+            Some("offline-direct-target-test".to_string()),
+            services.repo_instructions.clone(),
+        )
+        .await
+        .expect("direct target turn");
+        assert_eq!(outcome.completion, "target response");
+
+        let events = services
+            .event_log
+            .scan(Some(session.clone()), None, None)
+            .await
+            .expect("scan durable event log");
+        let assistant = events
+            .iter()
+            .find(|event| event.kind == "agent.message")
+            .expect("one durable assistant history event");
+        let canonical =
+            CanonicalEvent::from_sequenced(assistant.clone()).expect("canonical assistant event");
+        assert_eq!(canonical.verification, ContentVerification::TargetVerified);
+        assert_eq!(assistant.payload["stream_id"], "target_direct");
+        assert_eq!(assistant.payload["completion_id"], 1);
+        assert_eq!(assistant.payload["role"], "assistant");
+        assert_eq!(assistant.payload["text"], "target response");
+        assert_eq!(assistant.payload["verified"], true);
+
+        let history = rebuild_history(&services.event_log, &session)
+            .await
+            .expect("rebuild verified history");
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].role, "assistant");
+        assert_eq!(history[0].content, "target response");
+    }
+
+    #[tokio::test]
+    async fn error_after_partial_target_output_never_enters_durable_history() {
+        let root = std::env::temp_dir().join(format!(
+            "hawking_hide_partial_target_turn_{}_{}",
+            hide_core::ids::now_ms(),
+            std::process::id()
+        ));
+        let raw = Arc::new(InMemoryEventLog::new());
+        let services = BackendServices::new(HideConfig::for_workspace(root), raw);
+        let session = services.session();
+
+        let result = run_turn_core(
+            Arc::new(ErrorAfterPartialInference),
+            services.event_log.clone(),
+            services.role_registry.clone(),
+            services.code_index.clone(),
+            services.memory_store.clone(),
+            services.classed_memory.clone(),
+            Arc::new(UiEventBus::new(4)),
+            session.clone(),
+            "user request".to_string(),
+            None,
+            Some("offline-partial-target-test".to_string()),
+            services.repo_instructions.clone(),
+        )
+        .await;
+        assert!(result.is_err(), "error chunk must fail the target turn");
+        let events = services
+            .event_log
+            .scan(Some(session.clone()), None, None)
+            .await
+            .expect("scan durable event log");
+        assert!(events.iter().all(|event| event.kind != "agent.message"));
+        assert!(
+            rebuild_history(&services.event_log, &session)
+                .await
+                .expect("rebuild history")
+                .is_empty(),
+            "no partial target text may become next-turn context"
+        );
+    }
 }

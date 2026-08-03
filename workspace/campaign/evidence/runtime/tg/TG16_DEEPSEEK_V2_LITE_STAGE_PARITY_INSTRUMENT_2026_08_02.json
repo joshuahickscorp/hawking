@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.tg.deepseek_stage_parity_instrument.v1",
+  "status": "READY_FOR_RESIDENT_METAL_STAGE_COMPARISON",
+  "implementation": {
+    "api": "GravityDeepSeek::forward_with_stage_trace",
+    "file": "crates/hawking-core/src/gravity_deepseek.rs",
+    "captures_per_token": ["input", "attn_norm", "q", "kv_a", "c_kv", "k_pe", "context", "attn_out", "after_attention", "ffn_norm", "router_logits", "routes", "ffn_out", "output", "final_norm", "logits"],
+    "trace_is_opt_in": true,
+    "serving_path_changed": false
+  },
+  "fixture_validation": {
+    "test": "tiny_gravity_stage_trace_covers_mla_moe_boundaries",
+    "result": "PASS",
+    "layers": 2,
+    "dense_layer": 0,
+    "moe_layer": 1,
+    "route_count": 1,
+    "router_logit_count": 2,
+    "finite_outputs": true,
+    "full_logits_match_trace_logits": true,
+    "all_deepseek_unit_tests": 11
+  },
+  "native_boundary": "The next Metal fixture should emit the same named vectors after each layer and compare them to this CPU trace. No native Metal capability or TG rung is promoted until the first mismatch is localized and corrected.",
+  "verification": ["cargo check -p hawking-core -p hawking", "cargo test -p hawking-core gravity_deepseek --lib -- --nocapture", "cargo test -p hawking-core --test v1g_rmsnorm_gemv_fusion_parity -- --nocapture"],
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false}
+}

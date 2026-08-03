@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_GRAVITY_WAVE",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen32-gravity-native-fused-qkv-predec-2026-08-02",
+  "hypothesis": "On the parity-proven source-preserving Gravity artifact, fusing Q/K/V plus RoPE/KV append and predecoding Q4_K scales can reduce command topology and repeated scale work without changing source bytes or token decisions.",
+  "representation_change": "source-preserving Gravity raw Q4_K -> same artifact with HAWKING_GRAVITY_FUSED_QKV=1 and HAWKING_GRAVITY_Q4_PREDEC=1",
+  "source": {
+    "model": "Qwen2.5-32B-Instruct-Q4_K_M",
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "artifact": "models/tg-active/qwen32-gravity-first-2026-08-02/qwen32-source.gravity",
+    "artifact_source_bound": true,
+    "artifact_body_sha256": "aa2d667eb3155b3690643bedcc4ece32358911ad03845986d4c70abb4c783d0d",
+    "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "control": {
+    "id": "qwen32-gravity-source-preserving-v1",
+    "environment": {
+      "HAWKING_REQUIRE_METAL": "1",
+      "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED": "1",
+      "HAWKING_GRAVITY_FUSED_QKV": "0",
+      "HAWKING_GRAVITY_Q4_PREDEC": "0",
+      "profile": "exact"
+    },
+    "clean_decode_tps": 22.29238130003595,
+    "complete_tokens": 16,
+    "p50_ms": 45.019791,
+    "p95_ms": 46.0327418,
+    "p99_ms": 46.05271476,
+    "continuation_sha256": "0f6bf857b52d9c9c3c97c06d7af21086eb869e09d3b07c1e043892d9bd4216d7",
+    "dispatches_per_forward": 1026,
+    "fallback": 0
+  },
+  "candidate": {
+    "environment_delta": "HAWKING_GRAVITY_FUSED_QKV=1; HAWKING_GRAVITY_Q4_PREDEC=1",
+    "same_prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 16,
+    "temperature": 0
+  },
+  "promotion_gate": {
+    "same_model_before_after": true,
+    "exact_continuation_hash": "must_match_control",
+    "complete_tokens": ">=16",
+    "wall_tps_improvement_percent": ">=3",
+    "p95_regression_percent": "<=2",
+    "p99_regression_percent": "<=2",
+    "metal_dispatches": ">0",
+    "cpu_reference_fallback": 0,
+    "target_named_rung": "TG32",
+    "target_tps": 31.25
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

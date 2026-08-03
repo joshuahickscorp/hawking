@@ -1,0 +1,140 @@
+{
+  "schema": "hawking.tg.large_family_k0_roofline_terminal.v1",
+  "status": "K0_PASS_EXACT_TOKENS_METAL_NO_FALLBACK_TG32_FLOOR_SEALED",
+  "at": "2026-08-01T06:57:27Z",
+  "family": "llama",
+  "rung": "TG32",
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "path": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1",
+    "sha256_verified_by": "hawking verify --expected-sha256 using fcntl(F_NOCACHE)",
+    "parameter_class": {
+      "total_parameters": "70B",
+      "active_parameters": "70B",
+      "architecture": "dense"
+    },
+    "tensor_dtype_counts": {
+      "F32": 162,
+      "Q4_K": 441,
+      "Q5_K": 40,
+      "Q6_K": 81
+    },
+    "q5_k_tensor_class": "40 value-projection tensors; exactly matched the original CPU fallback count"
+  },
+  "bindings": {
+    "source_admission_receipt": "evidence/tg/TG32_LLAMA70_SOURCE_ADMISSION.json",
+    "source_admission_seal_sha256": "3726011ed44ca6ace6c273636369d370ed1b24e782d0fbad2d765b9fed83c008",
+    "xet_scoreboard_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+    "xet_scoreboard_seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_LLAMA70.json",
+    "resume_seal_sha256": "32cfa0696bda0699b6afe845085ee4342292bf8d6886261d08b5895d291203ef",
+    "metal_repair_receipt": "evidence/tg/TG_METAL_PREFLIGHT_CORRECTION.json",
+    "metal_repair_seal_sha256": "a094dd3ac172cbf8bd84a53cd49851093ed29fe73ff03514ebc1c0ede4599b35"
+  },
+  "representation_change": {
+    "before": "Q5_K tensors dequantized and multiplied by the CPU reference path",
+    "after": "direct 176-byte-block packed Q5_K Metal GEMV, one authority thread per output row",
+    "artifact_bytes_added": 0,
+    "fallbacks_removed_per_forward": 40,
+    "prefill_before_ms": 31884.983291,
+    "prefill_after_ms": 2415.60225,
+    "prefill_speedup": 13.199594953802102,
+    "kernel_oracle": "bitwise PASS against raw Q5_K CPU dequant plus GEMV",
+    "full_metal_registry_compile_and_dispatch": "PASS",
+    "cargo_check_hawking_core": "PASS",
+    "code": [
+      {"path": "crates/hawking-core/shaders/quant.metal", "sha256": "9cc834be1a09982a125a7be299fe3700192621f6825807f38e918b0398896191"},
+      {"path": "crates/hawking-core/src/metal/mod.rs", "sha256": "4d099678e65265b2b612a5c61f1676049531b2e4926be1070b05bf4c334eccba"},
+      {"path": "crates/hawking-core/src/kernels/mod.rs", "sha256": "6f15ccac6925d0366dad6a20c68a664562e8dd075b71aab9930dd1acc239d817"},
+      {"path": "crates/hawking-core/src/model/llama.rs", "sha256": "4b7f4d26358db1c4639317bc84c59ff3271ccaa5c55671dcc3d47ac9597a85fa"}
+    ]
+  },
+  "hawking_k0": {
+    "command_profile": "exact",
+    "prompt": "2+2=",
+    "prompt_tokens": 5,
+    "max_new_tokens": 4,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "environment": {"HAWKING_REQUIRE_METAL": "1"},
+    "tokens": [20, 25, 2650, 311],
+    "text": "5: How to",
+    "device_id": "Apple M3 Ultra",
+    "cpu_reference_fallback_count": 0,
+    "decode_cpu_reference_fallback_total": 0,
+    "dispatches_per_forward": 1043,
+    "decode_metal_dispatches_total": 3129,
+    "prefill_ms": 2154.278375,
+    "decode_token_ms": [0.93875, 344.949708, 337.35325, 336.560917],
+    "reported_decode_ms_mean": 1019.807833,
+    "reported_dec_tps_including_first_sampling_only_token": 3.92230758635485,
+    "v21_contract": {
+      "exact_tokens": "PASS",
+      "device_identity": "PASS",
+      "dispatches_greater_than_zero": "PASS",
+      "fallback_equal_zero": "PASS",
+      "result": "PASS"
+    }
+  },
+  "llama_cpp_authority": {
+    "implementation": "llama.cpp build 9430-d48a56eff",
+    "surface": "llama-server /completion raw prompt",
+    "normalized_prompt": "<|begin_of_text|>2+2=",
+    "tokens": [20, 25, 2650, 311],
+    "text": "5: How to",
+    "exact_token_match": true,
+    "prompt_ms": 387.741,
+    "prompt_tps": 12.8952058203801,
+    "predicted_ms": 231.462,
+    "predicted_tps": 17.28145440720291,
+    "timing_authority": "REFERENCE_ONLY_NOT_PROMOTABLE_AGAINST_HAWKING_DIRTY_HOST_RUN"
+  },
+  "same_model_roofline": {
+    "classification": "K0_CAPABILITY_PASS_COMMAND_DEPTH_AND_STATE_MOVEMENT_FLOOR",
+    "measured_forward_token_ms": [344.949708, 337.35325, 336.560917],
+    "median_forward_token_ms": 337.35325,
+    "median_forward_tps": 2.964252148527709,
+    "tg32_target_tps": 31.25,
+    "factor_below_tg32": 10.542290787288976,
+    "deepest_rung": null,
+    "tg_claim": "NONE",
+    "floor_sealed": true,
+    "bottleneck_evidence": {
+      "dispatches_per_forward": 1043,
+      "fallbacks_per_forward": 0,
+      "interpretation": "format coverage is complete for this source; command depth, host-device state boundaries and non-resident KV/activations dominate"
+    }
+  },
+  "resource_evidence": {
+    "free_bytes_after_authority_unload": 365823672320,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 165817782764,
+    "swap_used_mebibytes": 1851.0,
+    "external_cpu_contention": [
+      "PID 85168 Python approximately 100% CPU",
+      "PID 84010 Python approximately 100% CPU",
+      "Spotlight indexing and an unrelated Go control test active"
+    ],
+    "clean_benchmark": false,
+    "promotion_allowed": false
+  },
+  "rotation": {
+    "distinct_failures": [
+      "original K0 had 40 CPU fallbacks from unsupported packed Q5_K tensors",
+      "fallback-free exact-token retry remained below TG32 at approximately 2.96 real forward TPS"
+    ],
+    "rotation_allowed": true,
+    "exact_next_representation_change": "extend the resident strict-b9430 runtime graph to accept direct packed Q5_K V projections, keep activations/KV/head/sampling device-resident, and collapse 1043 dispatches per forward toward <=8, <=3, then one graph"
+  },
+  "eviction_required": {
+    "source_artifact_only": true,
+    "source_path": "models/tg-active/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "staging_root": "models/tg-active",
+    "next_receipt": "evidence/tg/TG32_LLAMA70_TERMINAL_EVICTION.json"
+  },
+  "seal_sha256": "0ec1f2ace9f09e431b677bb950d3641bb1a41f67dee3bc8bf246016214760105"
+}

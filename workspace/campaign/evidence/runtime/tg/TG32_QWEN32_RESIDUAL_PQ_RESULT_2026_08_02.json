@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.tg.same_model_gravity_candidate_result.v1",
+  "status": "REJECTED_CAPABILITY_FIRST_FORWARD",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct",
+  "family": "qwen2_dense",
+  "representation": {
+    "id": "qwen32-residual-pq-d8-s4-c128-r4096-v1",
+    "codec": "llama.residual-pq.v1",
+    "geometry": {
+      "dimension": 8,
+      "stages": 4,
+      "cardinality": 128,
+      "bits_per_index": 7,
+      "fit_iterations": 1,
+      "reservoir_rows": 4096
+    },
+    "source_quantization": "Q4_K_M dequantized for residual fit",
+    "lossy_fit": true,
+    "dense_reconstruction_default": false,
+    "artifact_bytes": 14341898368,
+    "complete_bpw": 3.50188072105199,
+    "packed_bpw": 3.500907176398224,
+    "mapped_tensors": 771,
+    "fit_pressure": "approximately 18 minutes wall on Apple M3 Ultra; one-pass payload accumulation before atomic seal"
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e"
+  },
+  "runtime": {
+    "device": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 2,
+    "temperature": 0,
+    "environment": {
+      "HAWKING_REQUIRE_METAL": "1",
+      "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED": "1",
+      "profile": "exact"
+    },
+    "generated_token_ids": [30743, 624],
+    "expected_control_prefix": [12095, 13],
+    "complete_tokens": 2,
+    "tps": 1.4790778900698314,
+    "prefill_ms": 3637.300959,
+    "decode_ms": 676.096916,
+    "dispatches_per_forward": 1026,
+    "metal_dispatches": 5130,
+    "cpu_reference_fallback_count": 0,
+    "first_forward_completed": true,
+    "raw_stderr": "evidence/tg/raw/TG32_QWEN32_RESIDUAL_PQ_FIRST_FORWARD_2_2026_08_02.stderr",
+    "raw_stdout": "evidence/tg/raw/TG32_QWEN32_RESIDUAL_PQ_FIRST_FORWARD_2_2026_08_02.stdout"
+  },
+  "capability": {
+    "numeric_parity_v2_1": "FAIL_FIRST_TOKEN",
+    "continuation_hash": null,
+    "route_and_trajectory": "NOT_ADMITTED",
+    "named_tg_rung": null,
+    "rejection_reason": "compact residual-PQ weight error changes the first greedy decision; faster or smaller bytes cannot override whole-model capability"
+  },
+  "retirement": {
+    "action": "delete_after_receipt_and_verify_exact_trash_recovery",
+    "reopen_condition": "activation-aware or layer-protected codebooks with a measured first-token parity contract; do not increase stages/cardinality blindly"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

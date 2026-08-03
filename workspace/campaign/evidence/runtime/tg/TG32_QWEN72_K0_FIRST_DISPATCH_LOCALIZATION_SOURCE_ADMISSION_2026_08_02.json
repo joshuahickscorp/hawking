@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "SOURCE_ADMITTED_BEFORE_FIRST_DISPATCH_LOCALIZATION",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-72B-Instruct",
+  "family": "Qwen dense",
+  "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+  "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+  "license": "qwen",
+  "source_bytes": 47415715488,
+  "source_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+  "xet_file_hash": "596abc840bcb94285f1bcc49f762c5e76a6ffbaf4135dcc7d1d0fde963c5aa8b",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_FRESH_2026_08_02.json",
+  "transfer_selection": {
+    "mode": "standard",
+    "requested_fixed_download_concurrency": 8,
+    "stable_median_gb_per_hour_decimal": 534.822905425228,
+    "range_hashes_identical": true,
+    "resume_complete": true,
+    "client_visible_retries": 0
+  },
+  "admission": {
+    "lane": "models/tg-active/qwen72-k0-localization-2026-08-02",
+    "source_path": "models/tg-active/qwen72-k0-localization-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "free_bytes_before_body": 357204684800,
+    "free_bytes_after_body": 309766410240,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_body": 109760520684,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "source_hash_verified": true,
+    "source_size_verified": true
+  },
+  "fixture_gate": {
+    "receipt": "evidence/tg/QWEN0P5_K0_FIRST_DISPATCH_BOUNDED_PROBE_2026_08_01.json",
+    "first_dispatch_pass": true,
+    "scope": "bounded fixture only"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

@@ -1,6 +1,7 @@
 """Recomposed science module glm52_capture_program (C-SCI-R1)."""
 from __future__ import annotations
 from lab.operators import glm52_corpus as corpus
+from lab.layout import REPORTS_ROOT
 import hashlib
 import json
 import os
@@ -11,7 +12,7 @@ from pathlib import Path
 import numpy as np
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-REPORTS = REPO / 'reports/condense/glm52_generation_b'
+REPORTS = REPORTS_ROOT / 'condense/glm52_generation_b'
 SPLIT_PARTITIONS = {'teacher_fit': 'representation fit', 'teacher_router': 'router/indexer calibration', 'teacher_doctor': 'Doctor training', 'teacher_cv': 'cross-validation', 'teacher_score': 'score', 'teacher_holdout': 'held-out', 'teacher_replication': 'replication', 'teacher_protected': 'protected-domain holdout', 'teacher_longctx': 'long-context holdout'}
 MAX_SEQUENCE = int(os.environ.get('GLM52_CAPTURE_SEQUENCE', '256'))
 MAX_RECORDS = int(os.environ.get('GLM52_CAPTURE_RECORDS', '16'))

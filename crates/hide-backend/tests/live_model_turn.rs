@@ -2,6 +2,8 @@ use hide_backend::BackendHost;
 use hide_core::api::{Intent, UiEventKind};
 use hide_core::ids::now_ms;
 use hide_core::runtime::RuntimeSupervisorState;
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -131,6 +133,24 @@ async fn ephemeral_bind() -> String {
     drop(listener);
     addr.to_string()
 }
+fn metric_value(bind: &str, metric: &str) -> u64 {
+    let mut stream = TcpStream::connect(bind).expect("connect Hawking metrics");
+    stream
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .expect("metrics read timeout");
+    stream
+        .write_all(b"GET /metrics HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .expect("request Hawking metrics");
+    let mut response = String::new();
+    stream.read_to_string(&mut response).expect("read Hawking metrics");
+    response
+        .split("\r\n\r\n")
+        .nth(1)
+        .and_then(|body| body.lines().find(|line| line.starts_with(metric)))
+        .and_then(|line| line.split_whitespace().nth(1))
+        .and_then(|value| value.parse().ok())
+        .expect("metric must be present and numeric")
+}
 struct LiveEnvGuard {
     keys: Vec<String>,
 }
@@ -172,12 +192,16 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
     // Product SubmitTurn is sole run_turn_core; HIDE_KERNEL_TURN is not read.
     let bind = ephemeral_bind().await;
     let dir = unique_dir("hide_live_model_turn");
+    let max_output_tokens = std::env::var("HIDE_MAX_OUTPUT_TOKENS")
+        .ok()
+        .filter(|value| value.parse::<usize>().is_ok_and(|n| n > 0))
+        .unwrap_or_else(|| "24".to_string());
     let _env = LiveEnvGuard::apply(&[
         ("HIDE_MODEL_WEIGHTS", weights.display().to_string()),
         ("HIDE_HAWKING_BIN", hawking_bin.display().to_string()),
         ("HIDE_MODEL_ADDR", bind.clone()),
         ("HIDE_MODEL_BOOT_TIMEOUT_SECS", "600".to_string()),
-        ("HIDE_MAX_OUTPUT_TOKENS", "24".to_string()),
+        ("HIDE_MAX_OUTPUT_TOKENS", max_output_tokens),
     ]);
     eprintln!(
         "live_model_turn: weights={} hawking={} addr={}",
@@ -391,6 +415,10 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
             .filter(|(r, _)| r == "assistant")
             .count()
             >= 2
+    );
+    assert!(
+        metric_value(&bind, "hawking_prefix_reuse_total") >= 1,
+        "the second real HIDE turn must reuse an exact materialized KV prefix"
     );
     eprintln!(
         "live_model_turn: OK — streamed_len={} assistant_1_len={} history_msgs={}",

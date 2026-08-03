@@ -21,6 +21,15 @@ from graph_model import (
 )
 
 
+_CONTROL_ROOTS = ("control/", "workspace/campaign/governance/control/")
+_VENDOR_ROOTS = ("vendor/", "workspace/vendor/")
+_ENV_FLAGS_REL = "workspace/docs/reference/env_flags.md"
+_RUNTIME_HOT_DOCS = (
+    "workspace/docs/reference/BENCHMARKS.md",
+    "workspace/docs/reference/kernels.md",
+)
+
+
 def lang_for_path(rel: str) -> str:
     return lang_for(rel)
 from scanner import CodeScanner
@@ -610,14 +619,14 @@ def extract_registries(repo: Path, g: Graph, indexes: dict[str, Any]) -> None:
                     "event", eid, ev, path=rel, lang="rust", public=True,
                 ))
 
-    # Schemas: hide-protocol + "schema": "..." in tracked json under root and control/
+    # Schemas: hide-protocol + "schema": "..." in tracked JSON under root and control.
     for rel in _git_ls(repo, ["*.json"]):
-        if not (rel.startswith("control/") or "/" not in rel or rel.startswith("crates/hide-protocol/")
+        if not (rel.startswith(_CONTROL_ROOTS) or "/" not in rel or rel.startswith("crates/hide-protocol/")
                 or rel.startswith("crates/hawking-adapters/generated/")):
             # root-level json + control + protocol
-            if "/" in rel and not rel.startswith("control/") and not rel.startswith("crates/"):
+            if "/" in rel and not rel.startswith(_CONTROL_ROOTS) and not rel.startswith("crates/"):
                 continue
-        if rel.startswith("vendor/") or "/node_modules/" in rel:
+        if rel.startswith(_VENDOR_ROOTS) or "/node_modules/" in rel:
             continue
         p = repo / rel
         if not p.exists() or p.stat().st_size > 5_000_000:
@@ -787,8 +796,8 @@ def extract_registries(repo: Path, g: Graph, indexes: dict[str, Any]) -> None:
         except json.JSONDecodeError:
             pass
 
-    # Feature flags from docs/env_flags.md + env::var / os.environ
-    env_doc = repo / "docs/env_flags.md"
+    # Feature flags from the workspace docs + env::var / os.environ.
+    env_doc = repo / _ENV_FLAGS_REL
     if env_doc.exists():
         text = env_doc.read_text(errors="ignore")
         for m in re.finditer(r"\b(HAWKING_[A-Z0-9_]+)\b", text):
@@ -797,12 +806,12 @@ def extract_registries(repo: Path, g: Graph, indexes: dict[str, Any]) -> None:
             if fid not in g.nodes:
                 g.add_node(make_node(
                     "feature_flag", fid, name,
-                    path="docs/env_flags.md", lang="markdown", public=True,
+                    path=_ENV_FLAGS_REL, lang="markdown", public=True,
                 ))
 
     # Scan source for env reads (sample via git ls-files limited)
     for rel in _git_ls(repo, ["*.rs", "*.py"]):
-        if rel.startswith("vendor/"):
+        if rel.startswith(_VENDOR_ROOTS):
             continue
         p = repo / rel
         if not p.exists() or p.stat().st_size > 2_000_000:
@@ -976,7 +985,7 @@ def mark_runtime_hot(repo: Path, g: Graph, indexes: dict[str, Any]) -> None:
         "start", "stop", "open", "close", "read", "write", "call", "run",
     })
     hot_names: set[str] = set()
-    for rel in ("docs/BENCHMARKS.md", "docs/kernels.md"):
+    for rel in _RUNTIME_HOT_DOCS:
         p = repo / rel
         if p.exists():
             text = p.read_text(errors="ignore")

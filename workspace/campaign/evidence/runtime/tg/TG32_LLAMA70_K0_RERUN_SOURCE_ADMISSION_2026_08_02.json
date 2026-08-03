@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "SOURCE_ADMITTED_BEFORE_RUNTIME_SWEEP",
+  "at_utc": "2026-08-02",
+  "model": "Llama-3.3-70B-Instruct",
+  "family": "llama dense",
+  "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+  "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+  "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+  "license": "llama-3.3-community-license",
+  "source_bytes": 42520398816,
+  "source_sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+  "xet_file_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70_FRESH_2026_08_02.json",
+  "transfer_selection": {
+    "mode": "standard",
+    "requested_fixed_download_concurrency": 8,
+    "stable_median_gb_per_hour_decimal": 531.502046252765,
+    "range_hashes_identical": true,
+    "resume_complete": true,
+    "client_visible_retries": 0
+  },
+  "admission": {
+    "lane": "models/tg-active/llama70-k0-rerun-2026-08-02",
+    "source_path": "models/tg-active/llama70-k0-rerun-2026-08-02/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "free_bytes_before_body": 357224464384,
+    "free_bytes_after_body": 314693550080,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_body": 114687660524,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "source_hash_verified": true,
+    "source_size_verified": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

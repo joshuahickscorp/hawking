@@ -26,7 +26,7 @@
 #   TOK=96             max-new-tokens for tps runs
 #   QTOK=80            max-new-tokens for quality runs
 #   BASELINE=<path>    override the baseline JSON
-#   OUT=<dir>          report dir (default reports/regression/<stamp>)
+#   OUT=<dir>          report dir (default workspace/campaign/records/reports/regression/<stamp>)
 set -u
 
 REPO="${REPO:-$HOME/Downloads/hawking}"
@@ -39,7 +39,7 @@ TRIALS="${TRIALS:-3}"
 export TOK="${TOK:-96}"
 QTOK="${QTOK:-80}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="${OUT:-reports/regression/$STAMP}"
+OUT="${OUT:-workspace/campaign/records/reports/regression/$STAMP}"
 mkdir -p "$OUT"
 REPORT="$OUT/summary.md"
 

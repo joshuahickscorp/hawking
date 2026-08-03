@@ -41,12 +41,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-CONDENSE = REPO / "tools/condense"
-for _p in (HERE, CONDENSE):
-    if str(_p) not in sys.path:
-        sys.path.insert(0, str(_p))
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 
-from glm52_common import resolve_artifact  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
 STATE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus"
@@ -57,9 +55,10 @@ LEDGER = STATE_DIR / "PASS1_LEDGER.jsonl"
 PROGRESS = STATE_DIR / "progress.json"
 LOCK = STATE_DIR / "pass1.lock"
 
-MANIFEST = REPO / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json"
-SCHEDULE = REPO / "evidence" / "glm52" / "GLM52_STREAMING_SCHEDULE.json"
-GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
+GLM52_EVIDENCE = evidence_dir("glm52")
+MANIFEST = GLM52_EVIDENCE / "GLM52_OFFICIAL_MANIFEST.json"
+SCHEDULE = GLM52_EVIDENCE / "GLM52_STREAMING_SCHEDULE.json"
+GRAPH = GLM52_EVIDENCE / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
 
 # hf_xet cache/scratch stays inside this state root, same reasoning as the original
 # fetcher: MOP owns ~/.cache/huggingface and it is hard-protected.
@@ -176,7 +175,7 @@ def _protected_after(schedule: dict, index: int) -> set[str]:
 def run(*, max_windows: int | None = None) -> int:
     import fcntl
 
-    import glm52_teacher_capture as teacher
+    from lab.operators import glm52_teacher_capture as teacher
 
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     SOURCE_ROOT.mkdir(parents=True, exist_ok=True)
@@ -260,7 +259,7 @@ def run(*, max_windows: int | None = None) -> int:
 
 
 def status() -> dict:
-    import glm52_teacher_capture as teacher
+    from lab.operators import glm52_teacher_capture as teacher
 
     return {
         "progress": _read_json(PROGRESS) if PROGRESS.exists() else None,
@@ -277,8 +276,8 @@ def status() -> dict:
 
 def selftest() -> dict:
     """No network, no source, no writes: the schedule/graph/config plumbing only."""
-    import glm52_capture_program as program
-    import glm52_teacher_capture as teacher
+    from lab.operators import glm52_capture_program as program
+    from lab.operators import glm52_teacher_capture as teacher
 
     schedule = _read_json(SCHEDULE)
     graph = _read_json(GRAPH)

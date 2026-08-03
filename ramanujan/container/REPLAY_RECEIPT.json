@@ -1,6 +1,6 @@
 {
   "schema": "hawking.ramanujan.clean_proof_replay_receipt.v1",
-  "at": "2026-07-30T18:25:11Z",
+  "at": "2026-08-01T19:10:32Z",
   "status": "REPLAY_OK",
   "exit_code": 0,
   "image": "ramanujan-clean-replay:2ec0166b",

@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.tg.same_model_k3_preregistration.v1",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-residency-k3-2026-08-02",
+  "hypothesis": "Installing one MTLResidencySet for the already-proven native Q5_0/Q8_0/Q6_K weights and persistent decode arena will reduce page churn in the 964-dispatch/token graph and improve complete-token wall time without changing weights, kernels, tokenizer, prompt, or decisions.",
+  "bounded_change": "set HAWKING_QWEN_RESIDENCY=1; all other exact-profile native-path flags remain fixed",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+    "tps": 2.8601858696685474,
+    "p99_ms": 351.5381608,
+    "dispatches_per_forward": 964,
+    "fallback_count": 0,
+    "complete_tokens": 16
+  },
+  "protocol": {
+    "profile": "exact",
+    "prompt": "2+2=",
+    "prompt_tokens": 4,
+    "max_new_tokens": 16,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "fallback_required": 0,
+    "same_model_output_hash_required": true,
+    "wall_promotion_gate_percent": 3.0,
+    "rung_target": "TG32",
+    "rung_target_tps": 31.25
+  },
+  "admission": {
+    "preflight_free_bytes": 308676714496,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 108670824940,
+    "model_bytes": 47415715488,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 74326369952,
+    "active_model_count": 0
+  },
+  "owner_fences_false": true,
+  "reopen_condition": "Retire on any output hash mismatch, fallback, residency error, p99 regression, or less than 3 percent clean wall win."
+}

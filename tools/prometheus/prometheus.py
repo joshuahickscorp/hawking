@@ -33,7 +33,14 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-PROFILE_DIR = REPO / "profiles" / "prometheus"
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+
+from lab.layout import PROFILES_ROOT, evidence_dir, resolve_workspace_path  # noqa: E402
+
+
+GLM52_EVIDENCE = evidence_dir("glm52")
+PROFILE_DIR = PROFILES_ROOT / "prometheus"
 
 # Canonical, model-general category vocabulary (superset of the container spec's
 # tensor `category` enum). Profiles are keyed on these, never on model-specific
@@ -86,6 +93,7 @@ class Group:
 def load_ledger_graph(path: Path) -> list[Group]:
     """Read primary_categories from a hawking logical-weight ledger. Byte-exact:
     every element/byte count was read from the immutable shard headers."""
+    path = resolve_workspace_path(path)
     d = json.loads(Path(path).read_text())
     prim = d.get("primary_categories")
     if not prim:
@@ -117,7 +125,9 @@ def load_ledger_graph(path: Path) -> list[Group]:
 # ---------------------------------------------------------------------------
 
 def load_profile(name: str) -> dict:
-    p = Path(name)
+    p = resolve_workspace_path(name)
+    if not p.exists():
+        p = Path(name)
     if not p.exists():
         p = PROFILE_DIR / f"{name}.json"
     if not p.exists():
@@ -386,7 +396,7 @@ def run_pipeline(ledger: Path, profile_name: str, coalition_fraction: float,
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Prometheus allocation pipeline (L1 spine)")
-    ap.add_argument("--ledger", default=str(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
+    ap.add_argument("--ledger", default=str(GLM52_EVIDENCE / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
     ap.add_argument("--profile", default="math-v1")
     ap.add_argument("--coalition-fraction", type=float, default=0.05)
     ap.add_argument("--coalition-protect-bpw", type=float, default=4.0)

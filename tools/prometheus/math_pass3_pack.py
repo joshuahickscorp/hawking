@@ -27,16 +27,16 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-CONDENSE = REPO / "tools/condense"
-for _p in (HERE, CONDENSE):
-    if str(_p) not in sys.path:
-        sys.path.insert(0, str(_p))
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 
-from glm52_common import resolve_artifact  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
-MANIFEST = resolve_artifact("PROMETHEUS_MATH_ALLOCATION_MANIFEST.json")
-GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
-OFFICIAL_MANIFEST = REPO / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json"
+GLM52_EVIDENCE = evidence_dir("glm52")
+PROMETHEUS_EVIDENCE = evidence_dir("prometheus")
+MANIFEST = PROMETHEUS_EVIDENCE / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
+GRAPH = GLM52_EVIDENCE / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+OFFICIAL_MANIFEST = GLM52_EVIDENCE / "GLM52_OFFICIAL_MANIFEST.json"
 
 STATE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus/pass3"
@@ -52,7 +52,7 @@ COMPACT = Path(
     "GLM-5.2-H0.98-Math-Preserve.gravity"
 )
 GENERAL = COMPACT.parent / "General-R0"
-RECEIPT = REPO / "evidence" / "glm52" / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
+RECEIPT = GLM52_EVIDENCE / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
 
 os.environ.setdefault("HF_HOME", str(STATE_DIR / "hf_home"))
 os.environ.setdefault("HF_HUB_CACHE", str(STATE_DIR / "hf_cache"))
@@ -205,7 +205,7 @@ PACK_THREADS_PER_WORKER = int(
 
 def _worker_init() -> None:
     """Give each spawned worker an independent, bounded CPU compute pool."""
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
     import torch
 
     torch.set_num_threads(PACK_THREADS_PER_WORKER)
@@ -215,7 +215,7 @@ def _worker_init() -> None:
 
 def _worker_probe() -> tuple[int, str]:
     """Pickleable spawn-path probe used by selftest."""
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
     import torch
 
     return torch.get_num_threads(), str(pack.forge._device())
@@ -226,7 +226,7 @@ def _pack_one(name: str, rows: list[dict], override: dict) -> dict:
 
     Workers receive the same immutable manifest and keep all fit state process-local.
     """
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
     import torch
 
     # Defensive for direct invocation in tests; ProcessPool runs _worker_init first.
@@ -468,8 +468,8 @@ def _tree_bytes(root: Path) -> int:
 
 def _actual_byte_ledger(manifest: dict) -> tuple[dict, dict]:
     """Itemize every actual packaged byte into the binding one-bit ledger."""
-    import glm52_pack as pack
-    import artifact_client as gravity
+    from lab.operators import glm52_pack as pack
+    from tools.condense import artifact_client as gravity
 
     found: set[str] = set()
     decision_mismatches: list[dict] = []
@@ -575,10 +575,7 @@ def _actual_byte_ledger(manifest: dict) -> tuple[dict, dict]:
             f"complete byte ledger itemizes {itemized_bytes}, package has {package_bytes}"
         )
 
-    foundry = REPO / "tools/foundry"
-    if str(foundry) not in sys.path:
-        sys.path.insert(0, str(foundry))
-    from one_bit_ceiling import CompleteByteLedger, assert_complete_bpw_le_one
+    from lab.operators.one_bit_ceiling import CompleteByteLedger, assert_complete_bpw_le_one
 
     ledger = CompleteByteLedger(
         **{name: value * 8 for name, value in components.items()},
@@ -610,8 +607,8 @@ def _actual_byte_ledger(manifest: dict) -> tuple[dict, dict]:
 def finalize(manifest: dict | None = None) -> dict:
     """Turn the packed shard set into the verified standalone Odyssey substrate."""
     import hashlib
-    import glm52_assemble as assembler
-    import artifact_client as gravity
+    from lab.operators import glm52_assemble as assembler
+    from tools.condense import artifact_client as gravity
 
     if manifest is None:
         ready, manifest, reason = manifest_ready()

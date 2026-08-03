@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "SOURCE_ADMITTED_BEFORE_RUNTIME_SWEEP",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct",
+  "family": "Qwen dense",
+  "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+  "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+  "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+  "license": "apache-2.0",
+  "source_bytes": 19851336576,
+  "source_sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+  "xet_file_hash": "c933aa99b1a3e41ac7ceb16c6794caedbc41e6b40774085b387c1f081ea243cd",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json",
+  "transfer_selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 2,
+    "stable_median_gb_per_hour_decimal": 106.586106472637,
+    "range_hashes_identical": true,
+    "client_visible_retries": 0
+  },
+  "admission": {
+    "lane": "models/tg-active/qwen32-q4k-predec-2026-08-02",
+    "source_path": "models/tg-active/qwen32-q4k-predec-2026-08-02/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "free_bytes_before_body": 354833444864,
+    "free_bytes_after_body": 335000363008,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_body": 134994473452,
+    "model_lane_envelope_bytes": 110000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "source_hash_verified": true,
+    "source_size_verified": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

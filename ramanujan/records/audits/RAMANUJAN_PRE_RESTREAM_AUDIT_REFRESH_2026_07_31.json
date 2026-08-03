@@ -1,0 +1,124 @@
+{
+  "schema": "hawking.ramanujan.pre_restream_audit_refresh.v1",
+  "status": "NOT_RESTREAM_READY",
+  "at": "2026-07-31",
+  "supersedes_for_current_decisions": [
+    "ramanujan/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+    "ramanujan/RAMANUJAN_RESTREAM_PLAN.json",
+    "evidence/tg/TG_ENDPOINT_ASSESSMENT.json"
+  ],
+  "implemented_this_pass": {
+    "receipt_authority": "Live promotion requires a sealed GateEvidence envelope linked to a sealed source receipt, exact gate identity, and distinct builder/challenger/verifier roles. An unsealed boolean or an unlinked direct-governance object can no longer promote through either the runtime or governance entrypoint.",
+    "adapter_registry": "Removed stale Mistral/Gemma/Phi evidence entries and repaired the GLM evidence path; generated registry artifacts were regenerated.",
+    "ramanujan_contracts": "Q0-Q6 contracts now exist at ramanujan/RAMANUJAN_Q0_Q6_CONTRACTS.json. Q0 and the offline Q1 D4/D7 replay are proven; Q2 and Q3 remain explicitly pending owner input; Q4-Q6 are non-production controller scaffolds and grant neither research authorization nor capability approval.",
+    "formalizer_and_repair": "ramanujan/controllers.py provides proposal-only controllers. They require roles and immutable claim bindings, append a repair-attempt record, and cannot promote, overwrite a source claim, or flip launch authority.",
+    "odyssey_import": "The deleted condense codec import in tools/odyssey/runtime_authority.py now resolves to lab.operators.gravity_functional_codec."
+    ,"storage_and_rotation": "Receipt-aware cleanup leaves Qwen2.5-14B as the sole live model payload; 24,952,829,031 bytes of old source/scratch payloads are in recoverable macOS Trash, while receipt-bound artifacts and proof trees remain. The live model/artifact/proof ledger is 57,520,898,007 bytes (82,473,727,038 bytes including recoverable quarantine, still below the 90,000,000,000-byte envelope)."
+    ,"offline_orchestration": "gravity_range_scheduler.py and condense_controller.py now provide non-authoritative 64-KiB range accounting, exact-once streamed-window peak accounting, scratch/carry/prefetch charges, one-active/parallel admission, N-1/N/N+1 work stealing, and one-heavy-lease transitions."
+  },
+  "verified_cpu_results": [
+    {
+      "command": "python3.12 -m pytest -q tools/condense/tests/test_campaign_engine.py",
+      "result": "97 passed"
+    },
+    {
+      "command": "python3.12 -m pytest -q ramanujan/test_ramanujan.py ramanujan/test_prover.py ramanujan/test_roles_economics.py ramanujan/test_search.py ramanujan/test_cognition.py ramanujan/test_governance_invariants.py ramanujan/test_you_research.py ramanujan/data/test_data.py ramanujan/data/test_freeze.py",
+      "result": "150 passed"
+    },
+    {
+      "command": "cargo test -p hawking-adapters --tests",
+      "result": "25 passed"
+    },
+    {
+      "command": "cargo test -p hawking-core cost_ledger --lib",
+      "result": "19 passed"
+    },
+    {
+      "command": "python3.12 -m pytest -q tools/condense/tests/test_tg_ladder.py tools/condense/tests/test_glm52_state.py",
+      "result": "43 passed"
+    },
+    {
+      "command": "python3.12 -m pytest -q tools/condense/tests/test_glm52_terminal_proofs.py",
+      "result": "28 passed"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_xet_autotune.py",
+      "result": "62 passed; pinned hf_xet 1.5.2/huggingface_hub 1.24.0"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_xet_live.py",
+      "result": "27 passed; pinned live executor surface"
+    },
+    {
+      "command": "python3.12 -m pytest -q tools/odyssey/test_odyssey_data.py tools/odyssey/test_odyssey_t0.py tools/odyssey/test_rate_binding.py",
+      "result": "41 passed; 2 expected refusal assertions (1/282 substrate bodies present; one-shard verification FAIL)"
+    },
+    {
+      "command": "python3.12 -m pytest -q tools/condense/tests/test_campaign_engine.py tools/condense/tests/test_glm52_terminal_proofs.py tools/condense/tests/test_tg_ladder.py tools/condense/tests/test_glm52_state.py",
+      "result": "168 passed"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_xet_autotune.py tools/condense/tests/test_glm52_xet_live.py",
+      "result": "89 passed; pinned hf_xet 1.5.2/huggingface_hub 1.24.0"
+    },
+    {
+      "command": "python3.12 -m pytest -q tools/condense/tests/test_campaign_engine.py tools/condense/tests/test_glm52_terminal_proofs.py tools/condense/tests/test_tg_ladder.py tools/condense/tests/test_glm52_state.py tools/condense/tests/test_condense_controller.py tools/condense/tests/test_gravity_range_scheduler.py",
+      "result": "180 passed; offline scheduler/controller and protected receipt suites"
+    }
+  ],
+  "live_receipt_state": {
+    "tg_audit": "evidence/tg/TG_LIVE_RECEIPT_AUDIT_2026_07_31.json",
+    "result": "Four family artifacts exist, but none has a promoted TG rung or K0/V2.1-grade full-logit evidence. TG8 was attempted and is false for Llama, Mistral and Qwen; DeepSeek has no resident Metal backend."
+  },
+  "non_parent_remaining": [
+    {
+      "id": "Q1_D4_D7",
+      "status": "PROVEN_OFFLINE",
+      "blocker": null,
+      "exact_cpu_sequence": [
+        "nice -n 15 python3.12 -m ramanujan.data.generate --limit 5000 --d4-limit 800 --decl-limit 20000 --workers 6 --all-mathlib",
+        "nice -n 15 python3.12 -m ramanujan.data.freeze_memberships",
+        "python3.12 -m pytest -q ramanujan/data/test_data.py ramanujan/data/test_freeze.py"
+      ],
+      "receipts": [
+        "ramanujan/data/corpora/GENERATION_RECEIPT.json",
+        "ramanujan/data/corpora/FREEZE_RECEIPT.json",
+        "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json"
+      ],
+      "verified_result": "Generation at the expected Mathlib commit completed with D1=5000, D2=5000, D3=5000, D4=800, D6=302, D7=86; contamination admitted=16188 and rejected=0. Membership freeze PASS and data/freeze tests 17 passed. Research authorization remains false."
+    },
+    {
+      "id": "Q2_D8",
+      "status": "PENDING_OWNER_INPUT",
+      "blocker": "The owner-approved, licensed D8 source and hidden-membership procedure are not selected."
+    },
+    {
+      "id": "Q3_D9",
+      "status": "PENDING_OWNER_INPUT",
+      "blocker": "The owner-approved, licensed D9 source and variant generator are not selected."
+    },
+    {
+      "id": "Odyssey_T0_full_replay",
+      "status": "REFUSED_BY_STATE",
+      "blocker": "Only 1 of 282 expected substrate shards is available. The static verifier correctly refuses an evicted/incomplete substrate rather than minting a pass from old progress."
+    },
+    {
+      "id": "Odyssey_capability",
+      "status": "REFUSED",
+      "blocker": "Math-Preserve and General-R0 are capability REFUSED; unlisted artifact hashes are UNVERIFIED and treated as refused. Research and launch authorization remain false."
+    }
+  ],
+  "restream_constraints": {
+    "storage": "The current GLM schedule peaks at 134336513960 resident bytes and the current reserve policy admits 225426172293 raw-window bytes. The sealed full-shard interval lower bound is 96808385288 bytes even before one-shard prefetch. All exceed the requested 90-GB incremental envelope.",
+    "storage_lower_bound_receipt": "evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
+    "clean_lease": "A clean heavy GPU lease was not available. No new GPU timing was collected or promoted.",
+    "source_controller": "The controller and teacher capture now accept an alternate sealed schedule path, so a newly measured <=90-GB schedule can supersede the historical one without overwriting it.",
+    "range_streaming_candidate": "plan_windowed_candidate() accounts exact-once half-open intervals across streamed windows and gates the peak resident window plus carry/prefetch/artifact/metadata charges; it is a non-authoritative candidate until live allocation and capability evidence exist.",
+    "range_streaming_receipt": "evidence/glm52/GLM52_STREAMING_WINDOWED_CANDIDATE_90GB.json replays an 81-window, 59,585-interval offline candidate. Its former 42,734,911,488-byte figure omitted retained per-window artifacts; the corrected retention model peaks at 208,071,098,368 bytes and is BLOCKED. It does not replace the required sealed live schedule.",
+    "xet_plan": "The no-body Xet plan was deterministically rebuilt and resealed against the current lab/operators graph at evidence/glm52/GLM52_XET_AUTOTUNE_PLAN.json (seal cda1b7e83e3bcc132c9d144b469c3ea31ee5511977549e836340c9f5e52b4b70). It remains an offline plan and does not authorize live body acquisition.",
+    "rotation_storage": "evidence/tg/TG_STORAGE_CLEANUP_2026_07_31.json records the active Qwen selection, exact recoverable quarantine, receipt-linked preservation set, and the rule that parallel models require a measured combined <=90000000000-byte allocation.",
+    "topology": "The LOC authority reports 359896 active monorepo LOC in the working tree versus 349079 at HEAD (+10817), with 936 tracked active files in both snapshots. The requested <=entry code/topology condition is therefore not proven and remains a release blocker."
+  },
+  "next_artifact": "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json",
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY"
+}

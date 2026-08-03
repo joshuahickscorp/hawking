@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "ADMITTED_EXACT_SOURCE_BODY_FOR_ONE_BOUNDDED_SAME_MODEL_WAVE",
+  "at_utc": "2026-08-02",
+  "model": {
+    "name": "Llama-3.3-70B-Instruct-Q4_K_M",
+    "family": "llama3_dense",
+    "total_parameters": "70B",
+    "active_parameters": "70B",
+    "architecture": "dense"
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "path": "models/tg-active/llama70-v3-dual-2026-08-02/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "license": "Llama 3.3 Community License",
+    "sha256_verified": true,
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+    "transfer_selection": "high_performance requested fixed concurrency 4; effective adaptive 16/4/124",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_LLAMA70.json"
+  },
+  "admission": {
+    "current_free_bytes_before_source": 362527989760,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_artifact_scratch_bytes": 107589375936,
+    "planned_headroom_above_floor_bytes": 54932724268,
+    "model_lane_envelope_decimal_bytes": 110000000000,
+    "one_full_model_body_active": true,
+    "second_full_model_body_active": false
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

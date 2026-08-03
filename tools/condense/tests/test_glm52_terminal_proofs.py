@@ -18,6 +18,7 @@ import pytest
 
 from lab.operators.glm52_common import seal
 from lab.operators import glm52_terminal_proofs as proofs
+from lab.layout import EVIDENCE_ROOT, evidence_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -37,9 +38,22 @@ def current_proofs() -> dict[str, dict[str, Any]]:
 def _copy_bound_inputs(
     tmp_path: Path, proof: dict[str, Any]
 ) -> Path:
+    def resolve_source(relative: str) -> Path:
+        direct = REPO_ROOT / relative
+        if direct.is_file():
+            return direct
+        basename = Path(relative).name
+        evidence_matches = sorted(EVIDENCE_ROOT.glob(f"*/*/{basename}"))
+        if evidence_matches:
+            return evidence_matches[0]
+        live_operator = REPO_ROOT / "lab" / "operators" / basename
+        if live_operator.is_file():
+            return live_operator
+        raise FileNotFoundError(f"bound input is not present: {relative}")
+
     for group in ("artifact_bindings", "document_bindings"):
         for relative in proof[group]:
-            source = REPO_ROOT / relative
+            source = resolve_source(relative)
             target = tmp_path / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
@@ -314,7 +328,7 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
         == proofs.EXTERNAL_BASELINE_COMMON_SHA256
     )
     binding = json.loads(
-        (REPO_ROOT / "evidence" / "gravity" / "GRAVITY_EXTERNAL_BASELINE_MATRIX.json").read_text()
+        (evidence_dir("gravity") / "GRAVITY_EXTERNAL_BASELINE_MATRIX.json").read_text()
     )["instrument_binding"]
     assert binding["generator"] == proofs.EXTERNAL_BASELINE_PRODUCER_PATH
     assert binding["generator_sha256"] == proofs.EXTERNAL_BASELINE_PRODUCER_SHA256
@@ -323,10 +337,10 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
     assert binding["timestamp_free_deterministic_rebuild"] is True
 
     # Adapter + reference parity: production set at INSTRUMENT_PRODUCTION_COMMIT.
-    twin = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_ADAPTER_TWIN.json").read_text())
+    twin = json.loads((evidence_dir("glm52") / "GLM52_ADAPTER_TWIN.json").read_text())
     sealed = twin["instrument_binding"]["local_source_sha256"]
     assert sealed == proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256
-    parity = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_REFERENCE_PARITY.json").read_text())
+    parity = json.loads((evidence_dir("glm52") / "GLM52_REFERENCE_PARITY.json").read_text())
     assert parity["instrument_binding"]["local_source_sha256"] == sealed
     for path, digest in proofs.ADAPTER_INSTRUMENT_LOCAL_SOURCE_SHA256.items():
         assert (
@@ -334,7 +348,7 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
         ), path
 
     # Corpus builder + tools instruments; tokenizers_import_module is sealed-only.
-    corpus = json.loads((REPO_ROOT / "evidence" / "glm52" / "GLM52_CORPUS_INTEGRITY.json").read_text())
+    corpus = json.loads((evidence_dir("glm52") / "GLM52_CORPUS_INTEGRITY.json").read_text())
     builder = corpus["deterministic_builder"]
     assert builder["builder_path"] == proofs.CORPUS_BUILDER_PATH
     assert builder["builder_sha256"] == proofs.CORPUS_BUILDER_SHA256
@@ -355,14 +369,21 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
         == proofs.CORPUS_TOKENIZERS_IMPORT_MODULE_SHA256
     )
 
-    # Live common drift + missing requirements must not fail frozen stop proofs.
-    live_common = REPO_ROOT / proofs.EXTERNAL_BASELINE_COMMON_PATH
+    # Live common drift is allowed, while the current pinned requirements lock
+    # remains present and content-addressed.
+    # The sealed receipt intentionally names the historical external path.
+    # The current recomposed implementation lives under lab/operators.
+    live_common = REPO_ROOT / "lab" / "operators" / "glm52_common.py"
     assert live_common.is_file()
     assert (
         hashlib.sha256(live_common.read_bytes()).hexdigest()
         != proofs.EXTERNAL_BASELINE_COMMON_SHA256
     )
-    assert not (REPO_ROOT / "tools/condense/requirements-glm52.txt").is_file()
+    requirements = REPO_ROOT / "tools/condense/requirements-glm52.txt"
+    assert requirements.is_file()
+    assert hashlib.sha256(requirements.read_bytes()).hexdigest() == (
+        "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835"
+    )
     for condition in (
         "adapter_twin_green",
         "corpus_integrity_green",

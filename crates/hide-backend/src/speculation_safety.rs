@@ -22,10 +22,11 @@ use hawking_speculate::{
     SuspensionBoundary, TargetVerification, VerifiedTokenId, SUSPENSION_POLICY,
 };
 use hide_core::error::{HideError, Result};
-use hide_core::event::NewEvent;
-use hide_core::ids::SessionId;
-use hide_core::persistence::DynEventLog;
-use serde_json::json;
+use hide_core::ids::{EventId, RunId, SessionId};
+use hide_core::tool::ToolCall;
+use std::sync::Arc;
+
+use crate::classed_writers::VerifiedTokenEventLog;
 
 /// Host durable sinks: each method requires a [`VerifiedTokenId`].
 ///
@@ -37,7 +38,7 @@ pub struct HostDurableSinks {
     pub session_id: SessionId,
     /// Optional live event log. When `None`, records stay in `recorded` only
     /// (fixture / unit-test mode — not production I/O).
-    event_log: Option<DynEventLog>,
+    event_log: Option<Arc<VerifiedTokenEventLog>>,
     /// In-process ledger of durable actions (always populated; tests assert on it).
     recorded: Vec<HostDurableRecord>,
     /// Accumulated final output text from verified tokens (detokenized by caller).
@@ -54,6 +55,58 @@ pub enum HostDurableRecord {
     FinalOutput { token_id: u32 },
 }
 
+/// One-use causal authority for an effect proposed by a model token.
+///
+/// The constructor is private: production code can obtain this only after the
+/// canonical target-verified event was appended to the product event log. It
+/// is intentionally consumed by the dispatch-context helper, making a tool or
+/// edit event addressable from the exact verified token that caused it.
+pub struct VerifiedEffectPermit {
+    session_id: SessionId,
+    run_id: Option<RunId>,
+    token_id: u32,
+    canonical_event_id: EventId,
+    tool_call_digest: blake3::Hash,
+}
+
+impl VerifiedEffectPermit {
+    /// Consume this permit only for the exact session, run, and normalized
+    /// tool call it was minted for.  A target-verified token is evidence for
+    /// its own parsed action, not a reusable delegation capability.
+    pub(crate) fn consume_for(
+        self,
+        session_id: &SessionId,
+        run_id: &Option<RunId>,
+        call: &ToolCall,
+    ) -> Result<(u32, EventId)> {
+        if &self.session_id != session_id {
+            return Err(HideError::PolicyDenied(
+                "verified model-effect permit belongs to a different session".into(),
+            ));
+        }
+        if &self.run_id != run_id {
+            return Err(HideError::PolicyDenied(
+                "verified model-effect permit belongs to a different run".into(),
+            ));
+        }
+        if self.tool_call_digest != tool_call_digest(call) {
+            return Err(HideError::PolicyDenied(
+                "verified model-effect permit does not match this exact tool call".into(),
+            ));
+        }
+        Ok((self.token_id, self.canonical_event_id))
+    }
+}
+
+/// Digest the complete canonical tool-call envelope before it is dispatched.
+/// A serde failure is impossible for [`ToolCall`] today, but a refusal is
+/// safer than turning a future non-serializable field into an unbound effect.
+fn tool_call_digest(call: &ToolCall) -> blake3::Hash {
+    let bytes = serde_json::to_vec(call)
+        .expect("ToolCall is a durable serde contract and must serialize before dispatch");
+    blake3::hash(&bytes)
+}
+
 impl HostDurableSinks {
     /// Fixture mode: no event log, pure in-memory ledger.
     pub fn fixture(session_id: SessionId) -> Self {
@@ -66,7 +119,22 @@ impl HostDurableSinks {
     }
 
     /// Live mode: appends a `token` system event for each canonical emission.
-    pub fn with_event_log(session_id: SessionId, event_log: DynEventLog) -> Self {
+    pub fn with_event_log(
+        session_id: SessionId,
+        event_log: hide_core::persistence::DynEventLog,
+    ) -> Self {
+        Self {
+            session_id,
+            event_log: Some(VerifiedTokenEventLog::authority(event_log)),
+            recorded: Vec::new(),
+            final_text: String::new(),
+        }
+    }
+
+    pub(crate) fn with_token_authority(
+        session_id: SessionId,
+        event_log: Arc<VerifiedTokenEventLog>,
+    ) -> Self {
         Self {
             session_id,
             event_log: Some(event_log),
@@ -93,23 +161,42 @@ impl HostDurableSinks {
     /// Signature: **Verified only**.
     pub async fn emit_canonical_event(&mut self, token: VerifiedTokenId) -> Result<()> {
         let token_id = token.get();
+        if let Some(log) = &self.event_log {
+            log.append_target_verified(self.session_id.clone(), token, "")
+                .await?;
+        }
         self.recorded
             .push(HostDurableRecord::CanonicalEvent { token_id });
-        if let Some(log) = &self.event_log {
-            log.append(NewEvent::system(
-                self.session_id.clone(),
-                "token",
-                json!({
-                    "stream_id": "speculation_safe",
-                    "token_id": token_id,
-                    "text": "",
-                    "finish_reason": null,
-                    "verified": true,
-                }),
-            ))
-            .await?;
-        }
         Ok(())
+    }
+
+    /// Durably publish a verified token and mint the causal authority needed
+    /// for one model-origin effect. Fixture sinks cannot mint an effect permit:
+    /// they have no durable event id to bind as the tool/edit cause.
+    pub async fn authorize_verified_tool_effect(
+        &mut self,
+        token: VerifiedTokenId,
+        run_id: Option<RunId>,
+        call: &ToolCall,
+    ) -> Result<VerifiedEffectPermit> {
+        let token_id = token.get();
+        let log = self.event_log.as_ref().ok_or_else(|| {
+            HideError::PolicyDenied(
+                "fixture token sink cannot authorize a live model-origin effect".into(),
+            )
+        })?;
+        let event = log
+            .append_target_verified(self.session_id.clone(), token, "")
+            .await?;
+        self.recorded
+            .push(HostDurableRecord::CanonicalEvent { token_id });
+        Ok(VerifiedEffectPermit {
+            session_id: self.session_id.clone(),
+            run_id,
+            token_id,
+            canonical_event_id: event.id,
+            tool_call_digest: tool_call_digest(call),
+        })
     }
 
     /// Durable memory write — Verified only.
@@ -169,6 +256,12 @@ impl DurableTokenSink for HostDurableSinks {
         token: VerifiedTokenId,
     ) -> hawking_speculate::durable::DurableResult<()> {
         let token_id = token.get();
+        if self.event_log.is_some() {
+            return Err(hawking_speculate::durable::DurableSinkError::Refused(
+                "live canonical token append is async; sync adapter cannot acknowledge durability"
+                    .into(),
+            ));
+        }
         self.recorded
             .push(HostDurableRecord::CanonicalEvent { token_id });
         // Async event-log append is not available on the sync trait; live
@@ -241,6 +334,21 @@ mod tests {
         assert_eq!(sinks.recorded().len(), 5);
         assert!(gate.try_promote(DraftTokenId::id(1), 2).is_err());
         assert_eq!(sinks.recorded().len(), 5);
+    }
+
+    #[tokio::test]
+    async fn fixture_sink_cannot_mint_a_live_effect_permit() {
+        let gate = TargetVerification::gate();
+        let mut sinks = HostDurableSinks::fixture(SessionId::from("fixture-effect"));
+        let verified = gate.emit_target(7);
+        assert!(sinks
+            .authorize_verified_tool_effect(
+                verified,
+                None,
+                &hide_core::tool::ToolCall::new("fs.read", serde_json::json!({"path": "x"})),
+            )
+            .await
+            .is_err());
     }
     #[test]
     fn host_honours_every_suspension_boundary() {

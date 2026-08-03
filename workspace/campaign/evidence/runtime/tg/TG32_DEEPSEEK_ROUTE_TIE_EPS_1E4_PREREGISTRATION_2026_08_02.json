@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "deterministic-route-tie-epsilon-1e4-v2",
+    "kind": "same_model_router_tie_policy_parameter_bisect",
+    "hypothesis": "A 1e-3 tie window changes a genuine route set at layer 1; reducing the window to 1e-4 should retain the source route set while resolving the measured layer-24 near-tie order mismatch.",
+    "mechanism": "Use the already repaired masked best-of-K grammar with HAWKING_DS_ROUTE_TIE_EPS=0.0001 on both CPU authority and Metal; no source, kernel geometry or route count change.",
+    "scope": "same exact DeepSeek Q4_K_M source, profile, prompt and 32 complete tokens; parameter-only bisect after the 1e-3 candidate was rejected; no promotion without route-set preservation, full continuation parity and CLEAN wall gates",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_window_ids_exact": true,
+      "route_set_unchanged_vs_zero_epsilon": true,
+      "layer24_route_order_repaired": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2"
+    }
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "candidate_zero_epsilon_tps": 40.741397955131944,
+    "candidate_zero_epsilon_dispatches_per_forward": 487,
+    "source_window_ids": [8913, 13, 185, 185]
+  },
+  "fixed_prompt": {
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

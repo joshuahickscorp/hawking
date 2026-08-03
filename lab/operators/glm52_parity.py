@@ -16,6 +16,7 @@ from lab.operators.glm52_common import read_sealed_json
 from lab.operators.glm52_common import resolve_artifact
 from lab.operators.glm52_common import seal
 from lab.operators.glm52_common import sha256_file
+from lab.layout import evidence_dir
 from lab.operators.glm52_reference import ReferenceCache
 from lab.operators.glm52_reference import indexer_topk
 from lab.operators.glm52_reference import main_forward
@@ -33,6 +34,7 @@ from pathlib import Path
 from typing import Any
 import numpy as np
 'Run and seal the GLM-5.2 adapter/twin/reference parity instrument.'
+GLM52_EVIDENCE = evidence_dir('glm52')
 THRESHOLDS = {'hf_main_vs_numpy_reference': {'maximum_absolute_logit_error': 0.003, 'relative_frobenius_logit_error': 0.0005, 'minimum_logit_cosine': 0.999999, 'minimum_top1_agreement': 1.0}, 'cpu_vs_metal': {'maximum_absolute_logit_error': 0.003, 'relative_frobenius_logit_error': 0.0005, 'minimum_logit_cosine': 0.999999, 'minimum_top1_agreement': 1.0}, 'prefill_vs_tokenwise': {'maximum_absolute_logit_error': 1e-05, 'relative_frobenius_logit_error': 1e-05, 'minimum_top1_agreement': 1.0}, 'index_scores': {'maximum_absolute_error': 1e-05, 'relative_frobenius_error': 0.01, 'minimum_cosine': 0.9999, 'tie_absolute_tolerance': 1e-07}, 'per_layer_hidden_outputs': {'maximum_absolute_logit_error': 0.0015, 'relative_frobenius_logit_error': 0.0006, 'minimum_logit_cosine': 0.999999, 'minimum_top1_agreement': 1.0}}
 
 def _metrics(reference: np.ndarray, candidate: np.ndarray) -> dict[str, Any]:
@@ -51,7 +53,7 @@ def _passes(metrics: dict[str, Any], limits: dict[str, float]) -> bool:
 
 def _official_schema_sweep() -> dict[str, Any]:
     graph = read_sealed_json(resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json'))
-    manifest = read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json')
+    manifest = read_sealed_json(GLM52_EVIDENCE / 'GLM52_OFFICIAL_MANIFEST.json')
     config_path = Path(manifest['one_copy']['snapshot_view']) / 'config.json'
     config = json.loads(config_path.read_text(encoding='utf-8'))
     geometry = validate_config(config, profile=PROFILE_OFFICIAL)
@@ -244,7 +246,7 @@ def _run() -> tuple[dict[str, Any], dict[str, Any]]:
     schema = _official_schema_sweep()
     if schema['status'] != 'PASS':
         raise RuntimeError('official adapter schema sweep failed')
-    manifest = read_sealed_json(REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json')
+    manifest = read_sealed_json(GLM52_EVIDENCE / 'GLM52_OFFICIAL_MANIFEST.json')
     tokenizer_assembly = load_official_tokenizer_assembly(Path(manifest['one_copy']['snapshot_view']))
     tokenizer_chat_receipt = tokenizer_assembly.assemble_chat(({'role': 'system', 'content': 'You are exact.'}, {'role': 'user', 'content': 'Return 2+2.'}))
     tokenizer_tool_receipt = tokenizer_assembly.assemble_chat(({'role': 'user', 'content': 'Use lookup for x.'}, {'role': 'assistant', 'content': None, 'reasoning_content': 'The declared lookup tool is required.', 'tool_calls': [{'type': 'function', 'function': {'name': 'lookup', 'arguments': {'x': 4}}}]}, {'role': 'tool', 'content': '{"result":16}'}), tools=({'type': 'function', 'function': {'name': 'lookup', 'description': 'Return the square of x.', 'parameters': {'type': 'object', 'properties': {'x': {'type': 'integer'}}, 'required': ['x']}}},), enable_thinking=False)

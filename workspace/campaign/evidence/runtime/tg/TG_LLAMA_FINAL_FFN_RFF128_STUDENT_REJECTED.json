@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.tg.student_probe_rejection.v1",
+  "status": "REJECTED_OFFLINE_CAPABILITY_GATE",
+  "parent_capture": "TG_LLAMA_FINAL_FFN_R32_STUDENT_REJECTED.json teacher dataset: 22028 source-authoritative final-layer pairs, 17392 fit and 4636 heldout",
+  "student": {
+    "format": "llama.rff_silu_hidden_student.v1",
+    "family": "fixed_gaussian_rff_silu",
+    "seed": 17,
+    "width": 128,
+    "fit_normalized_rmse": 0.5597944091382183,
+    "heldout_normalized_rmse": 0.5841040555614603,
+    "promotion_limit_heldout_normalized_rmse": 0.1,
+    "physical": {
+      "stored_parameters": 1056896,
+      "prospective_fp16_artifact_bytes": 2113792,
+      "executed_macs_per_token": 1048576,
+      "sequential_matvecs_per_token": 2,
+      "activation": "silu"
+    }
+  },
+  "cause": "A fixed random nonlinear feature basis does not learn the source FFN transformation; its held-out error is worse than the lower-cost linear rank-32 probe.",
+  "reopen_condition": "Only a trained nonlinear basis or multi-block student with a predeclared architecture may reopen this axis. It must beat the same 0.10 held-out gate before generated-token, runtime-parity, or TPS testing.",
+  "tps_claim": null
+}

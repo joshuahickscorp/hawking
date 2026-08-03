@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.eviction_receipt.v2",
+  "status": "SOURCE_AND_LANE_EVICTED_TRASH_PURGE_ATTEMPTED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-72B-Instruct-Q4_K_M",
+  "source_path": "models/tg-active/qwen72-k0-localization-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+  "source_bytes": 47415715488,
+  "source_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+  "artifact_paths": [],
+  "eviction": {
+    "free_bytes_before": 308298534912,
+    "free_bytes_after_immediate": 308298452992,
+    "free_bytes_after_sync": 308650745856,
+    "free_bytes_after_recheck": 308681879552,
+    "measured_recovery_after_recheck": 383344640,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 108675989996
+  },
+  "filesystem_proof": {
+    "active_model_lane_empty": true,
+    "active_model_lane": "models/tg-active",
+    "exact_trash_target": "qwen72-k0-localization-2026-08-02",
+    "trash_listing_after_purge": "empty",
+    "source_path_absent": true,
+    "qwen72_named_cache_copy_found": false,
+    "finder_purge": "target was already unlinked by /usr/bin/trash; Finder exact-item call returned -1728",
+    "df_volume": "/dev/disk3s5",
+    "note": "APFS available-byte accounting did not immediately return the full logical source size; the lane, Trash and named cache are empty and a post-sync recheck is recorded. Recompute before the next admission."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

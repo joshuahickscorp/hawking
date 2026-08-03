@@ -7,6 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Mapping
 
+from lab.layout import resolve_workspace_path
 from lab.spec import CampaignPhase, ExperimentSpec, StepSpec
 
 @dataclass(frozen=True)
@@ -77,6 +78,10 @@ class ResourceGovernor:
             failures.append(f'free_inodes {sample.free_inodes} < min {self.limits.min_free_inodes}')
         if self.limits.require_path:
             req = Path(self.limits.require_path)
+            if not req.is_absolute():
+                workspace_req = resolve_workspace_path(req)
+                if workspace_req.exists():
+                    req = workspace_req
             if not req.exists():
                 failures.append(f'require_path missing: {req}')
         return failures

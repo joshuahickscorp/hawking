@@ -866,15 +866,18 @@ mod tests {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("..")
             .join("..")
+            .join("workspace")
+            .join("campaign")
+            .join("config")
             .join("profiles");
         let files = [
-            "qwen3b-instruct-q4k.m3pro18.json",
-            "qwen15b-instruct-q4k.m3pro18.json",
-            "qwen05b-instruct-q4k.m3pro18.json",
-            "deepseek-v2-lite-q4.m3pro18.json",
+            ("qwen", "qwen3b-instruct-q4k.m3pro18.json"),
+            ("qwen", "qwen15b-instruct-q4k.m3pro18.json"),
+            ("qwen", "qwen05b-instruct-q4k.m3pro18.json"),
+            ("deepseek-v2-lite/baseline", "deepseek-v2-lite-q4.m3pro18.json"),
         ];
-        for f in files {
-            let path = root.join(f);
+        for (family, f) in files {
+            let path = root.join(family).join(f);
             let p = KernelProfile::load(&path)
                 .unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
             assert_eq!(

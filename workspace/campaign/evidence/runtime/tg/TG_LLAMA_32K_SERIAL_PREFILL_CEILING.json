@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.tg.prefill_ceiling.v1",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+  "context_tokens": 32768,
+  "prefix_tokens": 32704,
+  "protocol": "exact resident source-FATTN; greedy; planned 64 warmup plus 512 measured; trace enabled",
+  "result": "REJECTED_EARLY",
+  "observed_wall_time_before_abort_seconds": 480,
+  "observed_completion_tokens": 0,
+  "cause": "Serial decode-style prefill did not reach generation after eight minutes at a real 32K prefix. This is a prefill topology ceiling, not a decode-TPS measurement.",
+  "required_next_wave": "Dedicated packed GEMM/prefill attention path with exact-token parity; do not repeat serial-prefill 32K as a production benchmark.",
+  "default_changed": false
+}

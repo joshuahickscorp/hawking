@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_METADATA_AND_CACHE_PURGED_BYTES_RECOVERED",
+  "at": "2026-08-01T07:21:42Z",
+  "family": "gpt_oss",
+  "terminal_receipt": "evidence/tg/TG32_GPTOSS120_ADAPTER_FLOOR_TERMINAL.json",
+  "terminal_seal_sha256": "fc592485ca47203fbfde50a836cd3aa3cc2ccddb1055bb696798785e0c55f176",
+  "removed": [
+    {
+      "path": "models/gpt-oss-120b/original/*.safetensors",
+      "files": 7,
+      "bytes": 65248869800,
+      "integrity": "all exact pinned shard SHA-256 values verified before execution and eviction"
+    },
+    {
+      "path": "models/gpt-oss-120b",
+      "files_total": 45,
+      "classification": "source shards, tokenizer/config/index metadata, and source-local Hugging Face cache-control/lock files"
+    }
+  ],
+  "trash": {
+    "exact_item": "/Users/scammermike/.Trash/tg-active-gptoss120",
+    "other_trash_items_touched": false,
+    "exact_item_permanently_purged": true,
+    "purge_mechanism": "find exact path -depth -delete",
+    "postcondition": "exact Trash path absent"
+  },
+  "filesystem": {
+    "free_before_bytes": 342326509568,
+    "free_after_samples_bytes": [407628345344,407628345344,407628345344],
+    "free_after_bytes": 407628345344,
+    "recovered_bytes": 65301835776,
+    "model_shard_bytes": 65248869800,
+    "recovery_above_model_shards_bytes": 52965976,
+    "recovery_note": "the excess over shard bytes is the admitted tokenizer/config/index and source-local cache metadata",
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 207622455788
+  },
+  "postconditions": {
+    "models_file_count": 0,
+    "source_root_absent": true,
+    "source_shards_absent": true,
+    "source_cache_absent": true,
+    "exact_trash_item_absent": true
+  },
+  "cold_upload": {
+    "performed": false,
+    "reason": "optional; no remote destination or upload authority supplied"
+  },
+  "seal_sha256": "269080def21f57143e8177a1ebe10ddb233250e2d014a7db2571c2229414dbdc"
+}

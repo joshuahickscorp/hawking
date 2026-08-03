@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -21,10 +22,53 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-MATRIX_PATH = ROOT / "evidence" / "rebuild" / "REBUILD_BLACKBOX_TEST_MATRIX.json"
-CONSTITUTION_PATH = ROOT / "evidence" / "rebuild" / "REBUILD_BEHAVIOUR_CONSTITUTION.json"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import evidence_dir, resolve_workspace_path
+
+MATRIX_PATH = evidence_dir("rebuild") / "REBUILD_BLACKBOX_TEST_MATRIX.json"
+CONSTITUTION_PATH = evidence_dir("rebuild") / "REBUILD_BEHAVIOUR_CONSTITUTION.json"
 BASELINE_RUNNABLE_PATH = ROOT / "tools" / "verify" / "blackbox_runnable_baseline.json"
 DEFAULT_TIMEOUT_S = 60
+
+# The matrix is sealed evidence: its commands keep the paths that were true
+# when the matrix was recorded.  Translate only recognized workspace roots at
+# execution time, retaining the exact recorded command in reports.
+_LOGICAL_PATH_RE = re.compile(
+    r"(?<![A-Za-z0-9_.-])"
+    r"(?P<path>(?:adapters|control|evidence|packs|profiles|prompts|receipts|reports|tests|vendor)/"
+    r"[A-Za-z0-9_./-]+)"
+)
+_LAYOUT_PATH_ROOTS = frozenset(
+    {
+        "adapters",
+        "control",
+        "evidence",
+        "packs",
+        "profiles",
+        "prompts",
+        "receipts",
+        "reports",
+        "tests",
+        "vendor",
+        "workspace",
+    }
+)
+
+
+def resolve_command_paths(command: str) -> str:
+    """Map sealed, historical command paths to live files without mutating evidence."""
+    return _LOGICAL_PATH_RE.sub(
+        lambda match: str(resolve_workspace_path(match.group("path"))), command
+    )
+
+
+def resolve_layout_arg(path: Path) -> Path:
+    """Accept a historical layout path for CLI input while keeping other paths literal."""
+    if path.is_absolute() or not path.parts or path.parts[0] not in _LAYOUT_PATH_ROOTS:
+        return path
+    return resolve_workspace_path(path)
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -114,8 +158,12 @@ def evaluate_check(check: dict[str, Any]) -> dict[str, Any]:
         result["reason"] = "anti-gaming: runnable check has empty command"
         return result
 
+    resolved_command = resolve_command_paths(command)
+    if resolved_command != command:
+        result["resolved_command"] = resolved_command
+
     t0 = time.monotonic()
-    rc, stdout, stderr = shell_ok(command)
+    rc, stdout, stderr = shell_ok(resolved_command)
     result["seconds"] = round(time.monotonic() - t0, 3)
     result["exit_code"] = rc
     result["stdout_tail"] = stdout[-500:]
@@ -212,6 +260,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Per-check timeout seconds (default 60)",
     )
     args = parser.parse_args(argv)
+    args.matrix = resolve_layout_arg(args.matrix)
 
     if not args.matrix.is_file():
         print(f"error: matrix not found: {args.matrix}", file=sys.stderr)

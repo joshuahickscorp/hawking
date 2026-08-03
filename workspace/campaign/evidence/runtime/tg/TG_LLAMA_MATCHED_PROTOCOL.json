@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.tg.llama_matched_protocol.v2",
+  "model_source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "contexts": [2048, 8192, 32768],
+  "context_definition": "KV length immediately before the first measured sample",
+  "warmup_tokens": 64,
+  "measured_tokens": 512,
+  "trials": 5,
+  "batch_size": 1,
+  "sampling": {"greedy": true, "temperature": 0, "top_k": 0, "top_p": 1, "seed": 42},
+  "boundary": "in-state autoregressive decode plus token-ID-to-text-piece conversion",
+  "receipt_root": "evidence/tg/matched-v2",
+  "status": "NONCERTIFYING_UNTIL_CURRENT_CONTEXT_K0_AND_RESOURCE_COUNTERS_COMPLETE",
+  "v2_2k_ratio": 0.985840678377614,
+  "v2_8k_ratio": 0.9511245900381086,
+  "v2_8k_p99_ratio": 1.0645412262156448
+}

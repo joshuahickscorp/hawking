@@ -1,0 +1,89 @@
+{
+  "schema": "hawking.tg.same_model_schedule_rejection.v1",
+  "status": "RETIRED_BELOW_PREREGISTERED_WALL_WIN",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "unfused-attn-rmsnorm-gemv",
+    "configuration": "HAWKING_DS_DISABLE_FUSED_RMSNORM_GEMV=1",
+    "mechanism": "Separate attention RMSNorm and Q/KV f16 GEMV dispatches; retain promoted v2t_gu_v2 MoE waves, interleaved-concat RoPE, resident MLA, one TCB and token-only head.",
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-2026-08-02.json",
+    "runtime_sha256": "093a77f8202ba7f0a78ee3d1b68e83a8aed163d227b255b85574995994c80667"
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "device_id": "Apple M3 Ultra"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "completion_tokens": 32,
+    "temperature": 0,
+    "control_ids": [8913, 13, 185, 185, 11145, 207, 16, 25, 67870, 254, 2512, 1435, 3637, 13, 185, 549, 2512, 317, 8740, 327, 254, 6077, 3787, 280, 7239, 13, 185, 185, 11145, 207, 17, 25],
+    "candidate_ids": [8913, 13, 185, 185, 11145, 207, 16, 25, 67870, 254, 2512, 1435, 3637, 13, 185, 549, 2512, 317, 8740, 327, 254, 6077, 3787, 280, 7239, 13, 185, 185, 11145, 207, 17, 25],
+    "ids_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "fallback": 0,
+    "complete_tokens_each_run": 32
+  },
+  "control": {
+    "decode_tps": 40.83979378456626,
+    "decode_ms": 783.5495,
+    "p50_ms": 24.4105415,
+    "p95_ms": 24.74584565,
+    "p99_ms": 24.87788273,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "prefill_ms": 278.17325,
+    "prefill_metal_dispatches_total": 2910
+  },
+  "candidate_metrics": {
+    "decode_tps": 41.376389902921126,
+    "decode_ms": 773.387917,
+    "p50_ms": 24.062334,
+    "p95_ms": 24.4983148,
+    "p99_ms": 24.54274425,
+    "dispatches_per_forward": 541,
+    "decode_metal_dispatches_total": 17312,
+    "prefill_ms": 268.036333,
+    "prefill_metal_dispatches_total": 3234
+  },
+  "capability_probe": {
+    "prompt": "The largest planet in our solar system is",
+    "source_reference_prefix": " Jupiter. It is\\n\\n",
+    "candidate_ids": [39048, 13, 39048, 317, 245, 5817, 16310, 11],
+    "first_token_matches": true,
+    "second_token_matches": false,
+    "verdict": "No broader G3 capability gain; the prior unrelated-prompt divergence remains."
+  },
+  "delta": {
+    "decode_tps_percent": 1.315,
+    "decode_ms_percent": -1.298,
+    "p50_percent": -1.426,
+    "p95_percent": -1.001,
+    "p99_percent": -1.347,
+    "dispatches_per_forward_percent": 11.088,
+    "dispatches_total_percent": 11.091,
+    "complete_token_wall_win": false,
+    "promotion_threshold_percent": 3.0,
+    "capability_window": "32-token continuation exact; unrelated Jupiter probe still diverges at token two"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED",
+    "rung_promotion": "NO"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "verdict": "RETIRE_UNFUSED_ATTENTION_GEMV; exact 32-token source-window parity and zero fallback are preserved, but the 1.315 percent complete-token improvement is below the preregistered 3 percent gate, costs 11.1 percent more dispatches, and does not repair broader capability.",
+  "reopen_condition": "Only revisit with a materially different resident attention grammar that both restores unrelated-prompt parity and clears the complete-token wall threshold.",
+  "seal_sha256": "8aac888c783dfc24fcca7e9cb4416f8cb3005b98ffc8a774b572c1a6bc822c0f"
+}

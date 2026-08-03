@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "EVICTED_SOURCE_ARTIFACT_CACHE_AND_EXACT_TRASH_ITEM_PURGED",
+  "at_utc": "2026-08-02",
+  "model": "Llama-3.3-70B-Instruct-Q4_K_M",
+  "source_path": "models/tg-active/llama70-k0-rerun-2026-08-02/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+  "source_bytes": 42520398816,
+  "source_sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+  "result_receipt": "evidence/tg/TG32_LLAMA70_K0_RERUN_RESULT_2026_08_02.json",
+  "source_admission": "evidence/tg/TG32_LLAMA70_K0_RERUN_SOURCE_ADMISSION_2026_08_02.json",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70_FRESH_2026_08_02.json",
+  "eviction": {
+    "trash_command": "/usr/bin/trash models/tg-active/llama70-k0-rerun-2026-08-02",
+    "exact_trash_item": "llama70-k0-rerun-2026-08-02",
+    "exact_trash_item_purge": "Finder delete of exact named Trash item; unrelated Trash items retained",
+    "source_exists_after": false,
+    "model_lane_contents_after": [],
+    "cache_cleanup": "no Llama70 Q4 body/cache retained in hawking model lane"
+  },
+  "storage": {
+    "free_bytes_before_eviction": 314689241088,
+    "free_bytes_after_eviction": 357207158784,
+    "free_bytes_recovered": 42517917696,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_eviction": 157201269228,
+    "model_lane_envelope_bytes": 110000000000
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

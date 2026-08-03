@@ -11,11 +11,12 @@
 //!
 //! # What this is NOT
 //! It stores ZERO KV bytes. It is a `hash(prefix) -> source_slot` routing
-//! hint. The hit is ALWAYS re-verified downstream by the bit-identical
-//! `Engine::copy_kv_prefix_to_slot` + `prefill_slot_from_pos` path, so a
-//! (vanishingly unlikely) hash false-positive cannot corrupt output: a stale
-//! `source_slot` simply fails the copy and the serve loop falls back to a
-//! cold prefill from position 0. This keeps the lever **greedy-lossless (E)**.
+//! hint. The hit is re-verified downstream by the bit-identical
+//! `Engine::copy_kv_prefix_to_slot` + `prefill_slot_from_pos` path.  A buffer
+//! copy alone cannot detect a stale source slot, however, so the serve loop
+//! invalidates every entry for a slot *before* it begins a cold prefill and
+//! records entries only after a successful prefill. This keeps the lever
+//! **greedy-lossless (E)** rather than treating stale device bytes as valid KV.
 //!
 //! The detached, slot-independent KV-block store (so reuse survives even when
 //! NO slot currently holds the bytes) is the deferred half of 5.2 — it lands
@@ -168,6 +169,41 @@ impl SystemPromptKvBank {
         Some(*entry)
     }
 
+    /// Find the longest strict leading prefix of `tokens` currently banked.
+    ///
+    /// The caller records a small bounded set of useful anchors (rather than
+    /// every token boundary); this makes an extended chat turn reuse the
+    /// largest exact prefix available, much like a paged-KV cache, without
+    /// turning this routing index into an unbounded per-token map.
+    pub fn lookup_longest(&mut self, tokens: &[u32]) -> Option<BankEntry> {
+        let upper = tokens.len().saturating_sub(1);
+        if upper < self.cfg.min_prefix_tokens {
+            self.stats.lookups += 1;
+            return None;
+        }
+        let candidate = self
+            .entries
+            .iter()
+            .filter(|(_, entry)| {
+                entry.prefix_len >= self.cfg.min_prefix_tokens && entry.prefix_len <= upper
+            })
+            .filter(|(key, entry)| Self::hash_prefix(tokens, entry.prefix_len) == **key)
+            .max_by_key(|(_, entry)| entry.prefix_len)
+            .map(|(_, entry)| *entry);
+        self.stats.lookups += 1;
+        let mut entry = candidate?;
+        self.clock += 1;
+        entry.last_tick = self.clock;
+        entry.hits += 1;
+        self.stats.hits += 1;
+        let key = Self::hash_prefix(tokens, entry.prefix_len);
+        if let Some(stored) = self.entries.get_mut(&key) {
+            stored.last_tick = entry.last_tick;
+            stored.hits = entry.hits;
+        }
+        Some(entry)
+    }
+
     /// Bank (or refresh) that `source_slot` holds copyable KV for the leading
     /// `prefix_len` tokens of `tokens`. Runs LRU eviction to `max_entries`.
     pub fn record(&mut self, tokens: &[u32], prefix_len: usize, source_slot: u32) -> RecordOutcome {
@@ -245,5 +281,37 @@ impl SystemPromptKvBank {
         let mut s = self.stats;
         s.entries = self.entries.len();
         s
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{BankConfig, SystemPromptKvBank};
+
+    #[test]
+    fn longest_match_prefers_the_largest_exact_anchor() {
+        let mut bank = SystemPromptKvBank::with_config(BankConfig {
+            min_prefix_tokens: 2,
+            max_entries: 8,
+        });
+        let first = [11, 12, 13, 14, 15, 16];
+        bank.record(&first, 2, 3);
+        bank.record(&first, 4, 4);
+        let extended = [11, 12, 13, 14, 15, 16, 17];
+        let hit = bank.lookup_longest(&extended).expect("four-token anchor");
+        assert_eq!(hit.prefix_len, 4);
+        assert_eq!(hit.source_slot, 4);
+    }
+
+    #[test]
+    fn forget_slot_prevents_stale_buffer_routing() {
+        let mut bank = SystemPromptKvBank::with_config(BankConfig {
+            min_prefix_tokens: 2,
+            max_entries: 8,
+        });
+        let ids = [1, 2, 3, 4];
+        bank.record(&ids, 3, 7);
+        assert_eq!(bank.forget_slot(7), 1);
+        assert!(bank.lookup_longest(&ids).is_none());
     }
 }

@@ -100,38 +100,45 @@ impl LiveThread {
     }
 
     /// Make the buffered items durable and readable: append every pending item to
-    /// the event log, in order, and clear the buffer. Returns how many items were
-    /// written. Does NOT materialize lazy derived state (that is `persist`).
+    /// the event log, in order, and clear each item only after its append
+    /// succeeds. Returns how many items were written. A failed append leaves the
+    /// failed item and its suffix pending for an ordered retry. Does NOT
+    /// materialize lazy derived state (that is `persist`).
     pub async fn flush(&mut self) -> Result<usize> {
-        let drained: Vec<NewEvent> = std::mem::take(&mut self.pending);
-        let count = drained.len();
-        for event in drained {
+        let mut count = 0;
+        while let Some(event) = self.pending.first().cloned() {
             self.log.append(event).await?;
+            self.pending.remove(0);
+            count += 1;
         }
         Ok(count)
     }
 
-    /// Materialize lazy derived state (write a durable [`THREAD_PERSISTED_KIND`]
-    /// marker) and THEN flush the buffered items. This is the one verb that makes
-    /// the thread's derived state durable; `flush` alone does not. Returns the
-    /// number of buffered items flushed (the marker is not counted).
+    /// Flush all buffered items, then materialize lazy derived state with a
+    /// durable [`THREAD_PERSISTED_KIND`] marker. The marker is deliberately last:
+    /// any reader that sees it is guaranteed to see every event it covers. This
+    /// is the one verb that makes the thread's derived state durable; `flush`
+    /// alone does not. Returns the number of buffered items flushed (the marker
+    /// is not counted).
     pub async fn persist(&mut self) -> Result<usize> {
         if self.closed {
             return Err(hide_core::error::HideError::Message(
                 "live thread: persist after the writer was closed".to_string(),
             ));
         }
-        // Materialize the lazy derived state as a durable marker BEFORE flushing
-        // the items, so a reader that sees the marker also sees the items.
+        let flushed = self.flush().await?;
+        // A failed marker write leaves `lazy_dirty` set, so retrying `persist`
+        // seals the same already-durable event boundary rather than claiming a
+        // false successful persistence.
         self.log
             .append(NewEvent::system(
                 self.session.clone(),
                 THREAD_PERSISTED_KIND,
-                json!({ "pending_items": self.pending.len() }),
+                json!({ "flushed_items": flushed }),
             ))
             .await?;
         self.lazy_dirty = false;
-        self.flush().await
+        Ok(flushed)
     }
 
     /// Flush the buffered items, then close the writer. After shutdown no further
@@ -208,8 +215,42 @@ impl Drop for LiveThreadInitGuard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hide_core::event::{Event, InMemoryEventLog};
-    use std::sync::Arc;
+    use futures::future::BoxFuture;
+    use hide_core::event::{Event, EventLog, InMemoryEventLog};
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+
+    struct FailsOneAppend {
+        inner: Arc<InMemoryEventLog>,
+        fail_call: usize,
+        calls: AtomicUsize,
+    }
+
+    impl EventLog for FailsOneAppend {
+        fn append<'a>(&'a self, event: NewEvent) -> BoxFuture<'a, Result<Event>> {
+            Box::pin(async move {
+                let call = self.calls.fetch_add(1, Ordering::SeqCst);
+                if call == self.fail_call {
+                    return Err(hide_core::error::HideError::Message(
+                        "injected append failure".to_string(),
+                    ));
+                }
+                self.inner.append(event).await
+            })
+        }
+
+        fn scan<'a>(
+            &'a self,
+            session_id: Option<SessionId>,
+            after_seq: Option<u64>,
+            limit: Option<usize>,
+        ) -> BoxFuture<'a, Result<Vec<Event>>> {
+            self.inner.scan(session_id, after_seq, limit)
+        }
+    }
+
     fn log_and_session() -> (DynEventLog, SessionId) {
         let log: DynEventLog = Arc::new(InMemoryEventLog::new());
         (log, SessionId::new())
@@ -317,5 +358,64 @@ mod tests {
         assert_eq!(thread.pending_len(), 1);
         thread.flush().await.unwrap();
         assert_eq!(kinds(&log, &session).await, vec!["kept.item"]);
+    }
+
+    #[tokio::test]
+    async fn flush_keeps_the_failed_event_and_suffix_for_ordered_retry() {
+        let inner = Arc::new(InMemoryEventLog::new());
+        let log: DynEventLog = Arc::new(FailsOneAppend {
+            inner: inner.clone(),
+            fail_call: 1,
+            calls: AtomicUsize::new(0),
+        });
+        let session = SessionId::new();
+        let mut thread = LiveThread::open(session.clone(), log.clone());
+        thread
+            .append_item(NewEvent::system(session.clone(), "item.a", json!({})))
+            .unwrap();
+        thread
+            .append_item(NewEvent::system(session.clone(), "item.b", json!({})))
+            .unwrap();
+        assert!(thread.flush().await.is_err());
+        assert_eq!(thread.pending_len(), 1, "the failed item remains retryable");
+        assert_eq!(kinds(&log, &session).await, vec!["item.a"]);
+        assert_eq!(thread.flush().await.unwrap(), 1);
+        assert_eq!(thread.pending_len(), 0);
+        assert_eq!(kinds(&log, &session).await, vec!["item.a", "item.b"]);
+    }
+
+    #[tokio::test]
+    async fn persist_never_precedes_its_events_and_marker_failure_is_retryable() {
+        let inner = Arc::new(InMemoryEventLog::new());
+        let log: DynEventLog = Arc::new(FailsOneAppend {
+            inner,
+            fail_call: 1,
+            calls: AtomicUsize::new(0),
+        });
+        let session = SessionId::new();
+        let mut thread = LiveThread::open(session.clone(), log.clone());
+        thread
+            .append_item(NewEvent::system(session.clone(), "item.a", json!({})))
+            .unwrap();
+        assert!(
+            thread.persist().await.is_err(),
+            "marker append fails after item append"
+        );
+        assert_eq!(
+            thread.pending_len(),
+            0,
+            "item is durable before the marker attempt"
+        );
+        assert_eq!(kinds(&log, &session).await, vec!["item.a"]);
+        assert_eq!(
+            thread.persist().await.unwrap(),
+            0,
+            "retry seals the existing boundary"
+        );
+        assert_eq!(
+            kinds(&log, &session).await,
+            vec!["item.a", THREAD_PERSISTED_KIND],
+            "a persisted marker never appears ahead of the event it covers"
+        );
     }
 }

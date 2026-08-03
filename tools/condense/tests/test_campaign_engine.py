@@ -371,6 +371,111 @@ def test_runtime_fence_precheck(tmp_path: Path) -> None:
     assert result.status == "PASS"
 
 
+def _sealed_gate(tmp_path: Path, gate_id: str = "g1") -> Path:
+    """Build the minimum real authority chain used by a live verification gate."""
+    from lab.receipts import GateEvidence
+
+    authority = ReceiptAuthority(tmp_path / "receipts")
+    source = authority.write(
+        Receipt(
+            campaign_id="gate-source",
+            verdict="PASS",
+            status="measured",
+            phase="verify",
+            reproduction="fixture-only",
+        )
+    )
+    source_doc = authority.read("gate-source")
+    evidence = GateEvidence(
+        gate_id=gate_id,
+        result="PASS",
+        receipt_path=str(source),
+        receipt_sha256=source_doc["seal_sha256"],
+        family="fixture",
+        model="fixture-model",
+        measurement_mode="cpu-test",
+        builder="builder",
+        challenger="challenger",
+        verifier="verifier",
+        source_sha256="a" * 64,
+    )
+    return authority.write_gate_evidence(evidence)
+
+
+def test_live_gate_refuses_an_unsealed_boolean(tmp_path: Path) -> None:
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "gate_no_boolean",
+            "phases": ["precheck"],
+            "steps": [
+                {
+                    "id": "verify",
+                    "phase": "precheck",
+                    "handler": "verify.gates",
+                    "params": {"gate_results": {"g1": True}},
+                }
+            ],
+            "verification_gates": ["g1"],
+            "reproduction": "true",
+        }
+    )
+    result = run_campaign(spec, work_dir=tmp_path, acquire_lease=True)
+    assert result.status == "FAULT"
+    assert "sealed gate_evidence" in result.detail["errors"][0]
+
+
+def test_live_gate_rechecks_the_sealed_receipt_binding(tmp_path: Path) -> None:
+    evidence = _sealed_gate(tmp_path)
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "gate_evidence",
+            "phases": ["precheck"],
+            "steps": [
+                {
+                    "id": "verify",
+                    "phase": "precheck",
+                    "handler": "verify.gates",
+                    "params": {"gate_evidence": {"g1": str(evidence)}},
+                }
+            ],
+            "verification_gates": ["g1"],
+            "reproduction": "true",
+        }
+    )
+    result = run_campaign(spec, work_dir=tmp_path, acquire_lease=True)
+    assert result.status == "PASS", result.to_dict()
+
+
+def test_live_gate_rejects_a_tampered_linked_receipt(tmp_path: Path) -> None:
+    evidence = _sealed_gate(tmp_path)
+    source = next((tmp_path / "receipts").glob("gate-source.receipt.json"))
+    raw = json.loads(source.read_text())
+    raw["verdict"] = "MUTATED"
+    source.write_text(json.dumps(raw), encoding="utf-8")
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "gate_tamper",
+            "phases": ["precheck"],
+            "steps": [
+                {
+                    "id": "verify",
+                    "phase": "precheck",
+                    "handler": "verify.gates",
+                    "params": {"gate_evidence": {"g1": str(evidence)}},
+                }
+            ],
+            "verification_gates": ["g1"],
+            "reproduction": "true",
+        }
+    )
+    result = run_campaign(spec, work_dir=tmp_path, acquire_lease=True)
+    assert result.status == "FAULT"
+    assert "seal mismatch" in result.detail["errors"][0]
+
+
 def test_runtime_fault_on_handler_error(tmp_path: Path) -> None:
     def boom(runtime, params):
         raise RuntimeError("injected")
@@ -626,3 +731,94 @@ def test_governance_refuses_unmet_promotion(tmp_path: Path) -> None:
             admitter="b",
             action="promote",
         )
+
+
+def test_governance_refuses_a_passing_boolean_without_evidence(tmp_path: Path) -> None:
+    """A caller cannot bypass verify.gates by calling governance directly."""
+    from lab.rules import GovernanceError, GovernanceLedger, apply_governance
+
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "gov_missing_evidence",
+            "phases": ["report"],
+            "steps": [{"id": "r", "phase": "report", "handler": "report.summary"}],
+            "reproduction": "true",
+            "promotion": {"require_verdict": "PASS", "require_gates": ["g1"]},
+        }
+    )
+    with pytest.raises(GovernanceError, match="sealed evidence"):
+        apply_governance(
+            spec,
+            ledger=GovernanceLedger(tmp_path / "gov.jsonl"),
+            verdict="PASS",
+            gate_results={"g1": True},
+            author="builder",
+            admitter="admitter",
+            action="promote",
+        )
+
+
+def test_governance_refuses_unlinked_gate_evidence(tmp_path: Path) -> None:
+    """Direct governance must recheck the receipt bound by GateEvidence."""
+    from lab.receipts import GateEvidence
+    from lab.rules import GovernanceError, GovernanceLedger, apply_governance
+
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "gov_unlinked_evidence",
+            "phases": ["report"],
+            "steps": [{"id": "r", "phase": "report", "handler": "report.summary"}],
+            "reproduction": "true",
+            "promotion": {"require_verdict": "PASS", "require_gates": ["g1"]},
+        }
+    )
+    evidence = GateEvidence(
+        gate_id="g1",
+        result="PASS",
+        receipt_path=str(tmp_path / "missing.receipt.json"),
+        receipt_sha256="a" * 64,
+        family="fixture",
+        model="fixture-model",
+        measurement_mode="cpu-test",
+        builder="builder",
+        challenger="challenger",
+        verifier="verifier",
+    )
+    with pytest.raises(GovernanceError, match="receipt binding"):
+        apply_governance(
+            spec,
+            ledger=GovernanceLedger(tmp_path / "gov.jsonl"),
+            verdict="PASS",
+            gate_results={"g1": True},
+            gate_evidence={"g1": evidence},
+            author="builder",
+            admitter="admitter",
+            action="promote",
+        )
+
+
+def test_burial_refuses_an_unsealed_retained_receipt(tmp_path: Path) -> None:
+    receipt = tmp_path / "unsealed.json"
+    receipt.write_text("{}", encoding="utf-8")
+    spec = load_spec(
+        {
+            "schema": SCHEMA,
+            "campaign_id": "bury_unsealed",
+            "phases": ["report"],
+            "steps": [
+                {
+                    "id": "bury",
+                    "phase": "report",
+                    "handler": "bury",
+                    "params": {"receipts": [str(receipt)]},
+                }
+            ],
+            "reproduction": "true",
+            "burial": {"retain_receipts": True},
+        }
+    )
+    result = run_campaign(spec, work_dir=tmp_path / "work", acquire_lease=True)
+    assert result.status == "FAULT"
+    assert "not sealed" in result.detail["errors"][0]

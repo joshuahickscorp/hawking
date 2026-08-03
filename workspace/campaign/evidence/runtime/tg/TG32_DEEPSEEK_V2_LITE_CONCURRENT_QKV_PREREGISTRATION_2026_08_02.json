@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "concurrent-qkv-rmsnorm-gemv",
+    "hypothesis": "Q and KV attention projections read the same residual and write disjoint outputs; a concurrent Metal encoder may overlap their execution and lower complete-token wall time without changing math.",
+    "mechanism": "HAWKING_DS_CONCURRENT_QKV=1 wraps the two independent rmsnorm+f16-GEMV dispatches in TokenCommandBuffer::begin_concurrent_group/end_concurrent_group.",
+    "scope": "same DeepSeek source/artifact/profile; no quantization, tokenizer, RoPE, MoE route, MLA, or head changes",
+    "required_safety": ["same source-window token IDs", "complete 32-token sample", "CPU fallback 0", "device Apple M3 Ultra", "no concurrent group around dependent writes"]
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "decode_tps": 41.06909043843913,
+    "mean_token_ms": 24.2670156875,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487
+  },
+  "promotion_gate": {
+    "minimum_complete_token_wall_win_percent": 3.0,
+    "capability": "first four source decisions must remain [8913,13,185,185]",
+    "reject_if": ["any token changes in the admitted source window", "fallback > 0", "p99 regression > 2%", "output or buffer race", "no wall win"]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

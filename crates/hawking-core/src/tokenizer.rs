@@ -197,11 +197,21 @@ impl Tokenizer {
             .metadata
             .get("tokenizer.ggml.unknown_token_id")
             .and_then(|v| v.as_u32());
+        // llama.cpp's `llama-bpe` vocabulary defaults to BOS even when an
+        // older GGUF omits `tokenizer.ggml.add_bos_token`.  Llama-3 and
+        // current Mistral GGUFs use that spelling; treating an absent key as
+        // universally false silently shifts every RoPE/KV position by one.
+        // Keep the explicit field authoritative so Qwen's declared false
+        // remains false.
+        let tokenizer_pre = gguf
+            .metadata
+            .get("tokenizer.ggml.pre")
+            .and_then(|v| v.as_str());
         let add_bos = gguf
             .metadata
             .get("tokenizer.ggml.add_bos_token")
             .and_then(|v| v.as_bool())
-            .unwrap_or(false);
+            .unwrap_or_else(|| default_add_bos_for_pre(tokenizer_pre));
         let add_eos = gguf
             .metadata
             .get("tokenizer.ggml.add_eos_token")
@@ -347,6 +357,10 @@ impl Tokenizer {
         }
         Ok(raw.replace('▁', " "))
     }
+}
+
+fn default_add_bos_for_pre(tokenizer_pre: Option<&str>) -> bool {
+    matches!(tokenizer_pre, Some("llama-bpe"))
 }
 
 #[derive(Clone)]
@@ -921,6 +935,18 @@ fn build_tokenizer(
             "tokenizer.ggml.model = {other:?} not supported by gguf-fallback path; \
              ship tokenizer.json alongside the gguf"
         ))),
+    }
+}
+
+#[cfg(test)]
+mod tokenizer_defaults_tests {
+    use super::default_add_bos_for_pre;
+
+    #[test]
+    fn llama_bpe_uses_llama_cpp_bos_default_when_flag_is_absent() {
+        assert!(default_add_bos_for_pre(Some("llama-bpe")));
+        assert!(!default_add_bos_for_pre(Some("qwen2")));
+        assert!(!default_add_bos_for_pre(None));
     }
 }
 

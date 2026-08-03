@@ -1,0 +1,8 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+[token] id=20 text="5"
+[token] id=25 text=":"
+[token] id=2650 text=" How"
+[token] id=311 text=" to"
+
+[stats] reason=max_tokens prompt=5 completion=4 prefill_ms=2830.2 decode_ms=1461.1 dec_tps=2.74 dispatches_per_fwd=1043 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":0,"completion_tokens":4,"cpu_reference_fallback_count":0,"dec_tps":2.73770275255479,"decode_command_buffers_total":0,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":3129,"decode_ms":1461.079,"decode_token_ms":[487.996041,485.59754100000004,487.481084],"device_id":"Apple M3 Ultra","dispatches_per_forward":1043,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":0,"prefill_metal_dispatches_total":0,"prefill_ms":2830.1950420000003,"profile_id":null,"prompt_tokens":5,"readback_bytes":0,"token_only_path_used":false}

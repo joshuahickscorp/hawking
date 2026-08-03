@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_EXACT_TARGET_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "campaign": "fused_qkv_plus_f16_kv_rejection",
+  "source_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+  "source_bytes": 8988110976,
+  "artifact_sha256": "436bef785dab6686331a29cc7803ca54adcbd2b118c5873c66e51dc5efa73283",
+  "artifact_bytes": 8982325254,
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "tokenizer_bytes": 7031645,
+  "lane": "/Users/scammermike/Downloads/hawking/models/tg-active/qwen14-fused-qkv-f16kv-2026-08-02",
+  "logical_bytes_in_lane": 17977485347,
+  "allocated_bytes_before_move": 17994285056,
+  "free_bytes_before_move": 345453207552,
+  "free_bytes_after_move": 345453019136,
+  "free_bytes_after_exact_trash_purge": 363447537664,
+  "observed_free_byte_recovery": 17994330112,
+  "protected_floor_bytes": 200005889556,
+  "model_lane_contents_after": [],
+  "unrelated_trash_item_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip",
+  "commands": {
+    "move_exact_target": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/qwen14-fused-qkv-f16kv-2026-08-02",
+    "purge_exact_trash_name": "osascript -e 'tell application \"Finder\" to delete every item of trash whose name is \"qwen14-fused-qkv-f16kv-2026-08-02\"'"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

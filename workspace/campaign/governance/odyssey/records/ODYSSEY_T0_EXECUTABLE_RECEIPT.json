@@ -1,0 +1,30 @@
+{
+  "at": "2026-07-29T17:32:55Z",
+  "entry_points": {
+    "full": "tools/odyssey/t0_run.py:run",
+    "gated_runner": "odyssey/training/run.py (refuses while fence is false)",
+    "unit": "tools/odyssey/apparatus.py:exercise_t0_unit"
+  },
+  "fixture_label": "FIXTURE: pure-numpy toy MLP; not a real student; never trained anything real",
+  "launch_authorized": false,
+  "note": "Executable T0 unit path (static substrate checks + data classification + runtime authority + known-failure registry). Does not flip the fence. Full 282-shard hash sweep remains available via tools/odyssey/t0_run.py --full-substrate.",
+  "schema": "hawking.odyssey.t0_executable_receipt.v1",
+  "status": "PASS",
+  "t0_unit": {
+    "callable": true,
+    "data_status": "PASS",
+    "entry": "tools/odyssey/t0_run.py:run_unit",
+    "known_failures_status": "PASS",
+    "note": "Unit path exercises T0 subunits without a full 282-shard hash sweep.",
+    "pass": true,
+    "runtime_status": "PASS",
+    "static_ok": true,
+    "status": "PASS",
+    "summary": {
+      "data": "PASS",
+      "known_failures": "PASS",
+      "runtime": "PASS",
+      "substrate_static": "PASS"
+    }
+  }
+}

@@ -73,8 +73,7 @@
       ],
       "evidence_paths": [
         "packs/hawking-adapters-extra.json",
-        "crates/hawking-core/tests/gemma2_smoke.rs",
-        "crates/hawking-seed-c/src/providers/adapters.rs"
+        "crates/hawking-core/tests/gemma2_smoke.rs"
       ],
       "executes": false,
       "family": "gemma",
@@ -115,7 +114,7 @@
       "evidence_paths": [
         "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
         "crates/hawking-core/src/model/gravity_engine.rs",
-        "crates/hawking-core/tests/gravity_engine_registry.rs",
+        "crates/hawking-core/tests/gravity_artifact_suite.rs",
         "crates/hawking-core/tests/gravity_glm_forward.rs"
       ],
       "executes": true,
@@ -278,8 +277,7 @@
         "crates/hawking-core/src/model/mod.rs",
         "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
         "crates/hawking-core/tests/llama32_smoke.rs",
-        "packs/hawking-adapters-extra.json",
-        "crates/hawking-seed-c/src/providers/adapters.rs"
+        "packs/hawking-adapters-extra.json"
       ],
       "executes": true,
       "family": "mistral_mixtral",
@@ -317,8 +315,7 @@
       ],
       "evidence_paths": [
         "packs/hawking-adapters-extra.json",
-        "crates/hawking-core/tests/phi3_smoke.rs",
-        "crates/hawking-seed-c/src/providers/adapters.rs"
+        "crates/hawking-core/tests/phi3_smoke.rs"
       ],
       "executes": false,
       "family": "phi",

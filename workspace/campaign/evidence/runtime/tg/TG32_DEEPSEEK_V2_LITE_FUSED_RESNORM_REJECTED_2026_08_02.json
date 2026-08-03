@@ -1,0 +1,59 @@
+{
+  "schema": "hawking.tg.same_model_candidate_retirement.v1",
+  "status": "RETIRED_WALL_LATENCY_NO_WIN",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "fused-add-rmsnorm-after-v2t-guv2",
+    "hypothesis": "Fusing residual add and FFN RMSNorm removes one activation read/write per layer and lowers complete-token latency.",
+    "configuration": "HAWKING_FUSED_ADD_RMSNORM=1",
+    "base_profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json"
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "bytes": 10364416320
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "completion_tokens": 32,
+    "temperature": 0,
+    "device_id": "Apple M3 Ultra",
+    "cpu_reference_fallback_count": 0,
+    "first_four_ids": [8913, 13, 185, 185],
+    "extended_capability_scope": "same four-token source window; divergence after token four remains unchanged"
+  },
+  "before": {
+    "decode_tps": 41.06909043843913,
+    "decode_ms": 779.174792,
+    "mean_token_ms": 24.2670156875,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487
+  },
+  "after": {
+    "decode_tps": 41.06353266363417,
+    "decode_ms": 779.28025,
+    "mean_token_ms": 24.2724218125,
+    "p50_ms": 24.283708,
+    "p95_ms": 24.5766314,
+    "p99_ms": 24.73083177,
+    "dispatches_per_forward": 487
+  },
+  "delta": {
+    "tps_percent": -0.01354,
+    "mean_token_ms_percent": 0.02227,
+    "dispatch_delta": 0,
+    "verdict": "no wall-time win; retire"
+  },
+  "measurement_command": "HAWKING_FUSED_ADD_RMSNORM=1 HAWKING_TRACE_DISPATCH=1 target/debug/hawking generate --weights /Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 32 --temperature 0 --kernel-profile profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json --trace-tokens --trace-dispatch",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "reopen_condition": "Revisit only with a single-pass fused residual/norm kernel that is proven to remove a physical dispatch or memory round-trip; this environment toggle is retired."
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_AND_RECOVERED",
+  "candidate": "qwen14-pair8r-v1",
+  "rejection_receipt": "evidence/tg/TG32_QWEN14_PAIR8R_REJECTED_2026_08_02.json",
+  "lane": "models/tg-active/qwen14-pair8r-2026-08-02",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "body_bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "storage": {
+    "free_before_admission": 374701793280,
+    "protected_floor_bytes": 200005889556,
+    "free_after_move_to_trash": 365563555840,
+    "free_after_exact_purge": 374551638016,
+    "recovered_free_bytes": 8988082176,
+    "observed_recovery_minus_body_bytes": -28800,
+    "model_lane_empty": true,
+    "active_model_files": 0,
+    "exact_trash_target": "qwen14-pair8r-2026-08-02",
+    "exact_trash_target_purged": true,
+    "unrelated_trash_preserved": ["SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "e1bf900893d0717da7e26cd670768d1843e9c900a535cb558b17afd78c699d8c"
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_EXACT_TRASH_TARGET_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "candidate_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTER_REJECTED_2026_08_02.json",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "file_bytes": 10364416320
+  },
+  "lane": {
+    "path": "models/tg-active/deepseek-v2-lite-2026-08-02-fused-router",
+    "allocated_bytes_before_move": 10339557376,
+    "allocated_bytes_recovered": 10339557376,
+    "body_and_artifact_count_after": 0
+  },
+  "storage": {
+    "free_bytes_before_move": 364852273152,
+    "free_bytes_after_exact_purge": 375191830528,
+    "observed_recovery_bytes": 10339557376,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_contents": [],
+    "residual_above_floor_bytes": 175185940972
+  },
+  "trash": {
+    "exact_target": "deepseek-v2-lite-2026-08-02-fused-router",
+    "target_count_before_purge": 1,
+    "target_present_after_purge": false,
+    "unrelated_item_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "a143f15cdf01c16361ac2d4f45a9273e8a41d611efa95b00c1dcd75a5cca3451"
+}

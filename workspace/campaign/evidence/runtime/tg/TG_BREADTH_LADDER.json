@@ -1,0 +1,209 @@
+{
+  "schema": "hawking.tg.breadth_ladder.v1",
+  "status": "PLANNED_STORAGE_FIRST",
+  "purpose": "Advance from the existing Qwen 14B TG40 baseline toward TG1 with a substantial parent at every rung. Rotate across Qwen, Mistral, Llama, and DeepSeek so an apparent speedup cannot be mistaken for a single-adapter overfit.",
+  "rung_latency_ms": {
+    "TG20": 20,
+    "TG10": 10,
+    "TG5": 5,
+    "TG4": 4,
+    "TG3": 3,
+    "TG2": 2,
+    "TG1": 1
+  },
+  "storage_contract": {
+    "max_active_parent_gib": 24,
+    "max_retained_gravity_artifact_gib": 4,
+    "minimum_free_disk_after_acquisition_gib": 200,
+    "source_lifecycle": "Only one source/quantized parent may be materialized at a time. Seal the immutable source record, adapter and tuning receipts, and Gravity result before evicting the parent. Never retain a second parent merely to compare rungs.",
+    "eviction_rule": "The parent becomes evictable only after GRAVITY_ORACLE and RUNG_MEASUREMENT are terminal (PASS, FAIL, or BLOCKED) and the receipt identifies its exact source bytes. An adapter failure is a terminal result, not a reason to keep the parent indefinitely."
+  },
+  "campaign_law": {
+    "correctness_before_latency": "No TG rung may be claimed from an adapter that fails RAW_PARENT_FORWARD, STATE_ADVANCE, or GRAVITY_ORACLE.",
+    "tuning_before_kernel_work": "Each admitted parent gets an exact-layout autotune profile and a recorded tuning matrix before any new decode-kernel investigation. A missing adapter control is recorded as an adapter gap, not silently treated as a kernel problem.",
+    "breadth": "The seven rungs rotate qwen -> mistral -> llama -> deepseek -> qwen -> mistral -> llama. Reusing a family is permitted only after all four families have appeared; each model identity is distinct except the final Llama rehydration, which is explicitly a second, lower-rung representation experiment.",
+    "gravity_boundary": "Gravity is a separate executable representation. A raw-GGUF result may establish an adapter/profile baseline, but it cannot establish a Gravity rung without a complete-BPW receipt and an artifact-oracle forward."
+  },
+  "rungs": [
+    {
+      "rung": "TG20",
+      "model": "Qwen2.5-14B-Instruct",
+      "family": "qwen",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 10,
+      "gravity_artifact_budget_gib": 2,
+      "local_candidate": "models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "source_status": "REACQUIRE_AFTER_2026_07_30_EVICTION",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/qwen_dense.rs",
+        "gravity_engine": "MISSING — build a Qwen Gravity adapter before Gravity execution",
+        "available_tunables": [
+          "KernelVariant.gemm_q4_k_schedule",
+          "KernelVariant.gemm_q4_k_schedule_per_shape",
+          "KernelVariant.lm_head_schedule",
+          "KernelVariant.command_buffering",
+          "KernelVariant.gpu_buffer_reuse",
+          "RuntimeLevers.vocab_prune",
+          "RuntimeLevers.lm_head_path",
+          "RuntimeLevers.ffn_down_q4k",
+          "RuntimeLevers.scale_dtype",
+          "RuntimeLevers.kv_dtype"
+        ],
+        "missing_tunables": []
+      }
+    },
+    {
+      "rung": "TG10",
+      "model": "Mistral-Nemo-Instruct-2407",
+      "family": "mistral",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 9,
+      "gravity_artifact_budget_gib": 2,
+      "local_candidate": "models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+      "source_status": "NOT_ACQUIRED",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/llama.rs via general.architecture=mistral",
+        "gravity_engine": "MISSING — build a Mistral header/tensor-map adapter before Gravity execution",
+        "available_tunables": [],
+        "missing_tunables": [
+          "projection schedule selection",
+          "persistent decode arena",
+          "dispatch accounting",
+          "family-specific autotune matrix"
+        ]
+      }
+    },
+    {
+      "rung": "TG5",
+      "model": "Meta-Llama-3.1-8B-Instruct",
+      "family": "llama",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 6,
+      "gravity_artifact_budget_gib": 1,
+      "local_candidate": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "source_status": "NOT_ACQUIRED",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/llama.rs",
+        "gravity_engine": "crates/hawking-core/src/gravity_llama.rs (Llama-only); new parent artifact still required",
+        "available_tunables": [],
+        "missing_tunables": [
+          "projection schedule selection",
+          "persistent decode arena",
+          "dispatch accounting",
+          "family-specific autotune matrix"
+        ]
+      }
+    },
+    {
+      "rung": "TG4",
+      "model": "DeepSeek-V2-Lite-Chat",
+      "family": "deepseek",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 12,
+      "gravity_artifact_budget_gib": 2,
+      "local_candidate": "models/tg-active/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+      "source_status": "RESIDENT_BUT_K0_FAILS",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/deepseek_v2.rs",
+        "gravity_engine": "MISSING — DeepSeek MLA/MoE Gravity adapter required",
+        "available_tunables": [
+          "KernelVariant.mla_schedule",
+          "KernelVariant.gemm_q4_k_schedule",
+          "KernelVariant.routed_down_schedule",
+          "KernelVariant.shared_down_schedule",
+          "KernelVariant.rmsnorm_attn_schedule",
+          "KernelVariant.command_buffering",
+          "KernelVariant.gpu_buffer_reuse"
+        ],
+        "missing_tunables": [
+          "state-advance correctness gate tied to the exact profile"
+        ]
+      }
+    },
+    {
+      "rung": "TG3",
+      "model": "Qwen2.5-32B-Instruct",
+      "family": "qwen",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 22,
+      "gravity_artifact_budget_gib": 4,
+      "local_candidate": "models/tg-active/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+      "source_status": "NOT_ACQUIRED",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/qwen_dense.rs",
+        "gravity_engine": "MISSING — build a Qwen Gravity adapter before Gravity execution",
+        "available_tunables": [
+          "KernelVariant.gemm_q4_k_schedule",
+          "KernelVariant.gemm_q4_k_schedule_per_shape",
+          "KernelVariant.lm_head_schedule",
+          "KernelVariant.command_buffering",
+          "KernelVariant.gpu_buffer_reuse",
+          "RuntimeLevers.vocab_prune",
+          "RuntimeLevers.lm_head_path",
+          "RuntimeLevers.ffn_down_q4k",
+          "RuntimeLevers.scale_dtype",
+          "RuntimeLevers.kv_dtype"
+        ],
+        "missing_tunables": []
+      }
+    },
+    {
+      "rung": "TG2",
+      "model": "Mistral-Small-3.1-24B-Instruct-2503",
+      "family": "mistral",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 18,
+      "gravity_artifact_budget_gib": 3,
+      "local_candidate": "models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+      "source_status": "NOT_ACQUIRED",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/llama.rs via general.architecture=mistral",
+        "gravity_engine": "MISSING — build a Mistral header/tensor-map adapter before Gravity execution",
+        "available_tunables": [],
+        "missing_tunables": [
+          "projection schedule selection",
+          "persistent decode arena",
+          "dispatch accounting",
+          "family-specific autotune matrix"
+        ]
+      }
+    },
+    {
+      "rung": "TG1",
+      "model": "Meta-Llama-3.1-8B-Instruct (rehydrated)",
+      "family": "llama",
+      "quant": "Q4_K_M",
+      "source_budget_gib": 6,
+      "gravity_artifact_budget_gib": 1,
+      "local_candidate": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "source_status": "REACQUIRE_ONLY_AFTER_TG5_EVICTION",
+      "adapter": {
+        "raw_engine": "crates/hawking-core/src/model/llama.rs",
+        "gravity_engine": "crates/hawking-core/src/gravity_llama.rs (Llama-only); rehydrate the source only for the lower-representation experiment",
+        "available_tunables": [],
+        "missing_tunables": [
+          "projection schedule selection",
+          "persistent decode arena",
+          "dispatch accounting",
+          "family-specific autotune matrix"
+        ]
+      }
+    }
+  ],
+  "required_gates": [
+    "SOURCE_SEALED",
+    "RAW_PARENT_FORWARD",
+    "STATE_ADVANCE",
+    "ADAPTER_ACCOUNTING",
+    "AUTOTUNE_PROFILE",
+    "GRAVITY_ADAPTER",
+    "GRAVITY_ORACLE",
+    "RUNG_MEASUREMENT",
+    "EVICTION_RECEIPT"
+  ],
+  "known_starting_facts": {
+    "TG40": "Qwen2.5-14B Q4_K_M was measured at TG40 and failed TG20 under contention; see evidence/tg/TG_MODEL_SCOREBOARD.json.",
+    "llama": "The resident 1B Llama carrier is not a TG5 substitute. It is useful only to make the Llama adapter and its missing accounting/tuning surface fail visibly before an 8B parent is acquired.",
+    "deepseek": "The resident DeepSeek-V2-Lite carrier repeats after the first token, so it cannot receive a TG4 latency claim until RAW_PARENT_FORWARD and STATE_ADVANCE both pass."
+  }
+}

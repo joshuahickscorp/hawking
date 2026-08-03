@@ -1,6 +1,7 @@
 """Recomposed science module glm52_activation_aware_pack_v2 (C-SCI-R1)."""
 from __future__ import annotations
 from lab.operators import glm52_activation_aware_pack as aap
+from lab.layout import REPORTS_ROOT, evidence_dir
 import sys as _sys_a1
 from pathlib import Path as _Path_a1
 import argparse
@@ -34,12 +35,12 @@ ORIGINAL_WEIGHT_COUNT = aap.ORIGINAL_WEIGHT_COUNT
 SOURCE_PAYLOAD_BYTES = 1506659919872
 EXPECTED_TENSOR_COUNT = 59585
 TARGET_BPW = Fraction(49, 50)
-SOURCE_HEADERS = REPO / 'reports/condense/glm52_generation_b/GLM52_SOURCE_SHARD_HEADERS.json'
-PILOT_RECEIPT = REPO / 'evidence' / 'glm52' / 'GLM52_BASIS_PILOT_RECEIPT.json'
-CONTROLLER_RESEAL = REPO / 'evidence' / 'glm52' / 'GLM52_BASIS_PILOT_CONTROLLER_RESEAL.json'
-GEN_B_VERDICT = REPO / 'evidence' / 'glm52' / 'GLM52_GENERATION_B_CAPABILITY_VERDICT.json'
-DEFAULT_FEASIBILITY_JSON = REPO / 'evidence' / 'glm52' / 'GLM52_V2_PROGRAM_FEASIBILITY.json'
-DEFAULT_FEASIBILITY_MD = REPO / 'evidence' / 'glm52' / 'GLM52_V2_PROGRAM_FEASIBILITY.md'
+SOURCE_HEADERS = REPORTS_ROOT / 'condense/glm52_generation_b/GLM52_SOURCE_SHARD_HEADERS.json'
+PILOT_RECEIPT = evidence_dir('glm52') / 'GLM52_BASIS_PILOT_RECEIPT.json'
+CONTROLLER_RESEAL = evidence_dir('glm52') / 'GLM52_BASIS_PILOT_CONTROLLER_RESEAL.json'
+GEN_B_VERDICT = evidence_dir('glm52') / 'GLM52_GENERATION_B_CAPABILITY_VERDICT.json'
+DEFAULT_FEASIBILITY_JSON = evidence_dir('glm52') / 'GLM52_V2_PROGRAM_FEASIBILITY.json'
+DEFAULT_FEASIBILITY_MD = evidence_dir('glm52') / 'GLM52_V2_PROGRAM_FEASIBILITY.md'
 MIN_ROUTE_ROWS = 32
 SAFETY_FENCES: dict[str, bool] = {'RAMANUJAN_RESEARCH_AUTHORIZED': False, 'HIDE_KERNEL_TURN': False, 'ODYSSEY_LAUNCH_AUTHORIZED': False, 'full_parent_traversal_started': False, 'full_traversal_authorized': False, 'capable_artifact_claimed': False, 'MOP_touched': False}
 ROUTED_RANK_LOWER_BOUND = 64

@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.ramanujan.final_parent_restream_plan.v3",
+  "status": "STRUCTURALLY_READY_OWNER_AND_LIVE_GATES_PENDING_NOT_INVOKED",
+  "at": "2026-08-01",
+  "supersedes_for_execution": [
+    "ramanujan/RAMANUJAN_RESTREAM_PLAN.json",
+    "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json:v2"
+  ],
+  "parent": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
+    "weight_shards": 282,
+    "full_parent_source_download_forbidden": true
+  },
+  "closed_preconditions": {
+    "historical_full_shard_path": {
+      "status": "REJECTED",
+      "receipt": "evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
+      "peak_resident_bytes": 96808385288
+    },
+    "range_schedule": {
+      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+      "windows": 81,
+      "ranges": 59585,
+      "exact_once_source_payload_bytes": 1506659919872,
+      "peak_incremental_bytes": 58885799936,
+      "envelope_bytes": 90000000000,
+      "rollback_scratch_reserve_bytes": 17179869184,
+      "status": "PASS_OFFLINE_LIVE_ALLOCATION_REQUIRED"
+    },
+    "resource_policy": {
+      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+      "active_model_limit": 1,
+      "protected_filesystem_floor_bytes": 200005889556,
+      "recompute_free_bytes_before_every_window": true
+    },
+    "range_executor": {
+      "path": "tools/condense/glm52_range_stream_executor.py",
+      "source_mode": "official hf_xet ordered tensor ranges; no full-shard destination API",
+      "resume_unit": "operator-Ed25519-attested organ-window terminal receipt chained to predecessor, launch nonce, lease and executable",
+      "predecessor_gate": "remote SHA-256 verified then exact source/artifact/temp/cache/Trash eviction and free-byte recovery",
+      "authorization_carry": "root-owned /Library owner trust anchor -> signed single-use authorization bound to the complete production-lease receipt -> atomic CLAIMED -> STARTED state with its sealed CLAIMED predecessor; every start/resume revalidates the signature and lease at current time, so caller-created STARTED receipts and historical-time replay refuse",
+      "live_floor_checks": "fresh window admission plus before/during/after every streamed range and before handoff; range setup and every child-stdin write share a hard per-range deadline",
+      "bounded_child_output": "stdout and stderr are continuously drained into capped in-memory collectors; no unbounded TemporaryFile growth",
+      "focused_tests": "41 current authorization/range identity, framed-operator, schedule, floor, stalled-Xet-setup and back-pressured-child-pipe tests; fixture evidence remains non-production"
+    },
+    "physical_operator_proposal": {
+      "path": "ramanujan/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json",
+      "seal_sha256": "5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e",
+      "fixture_lifecycle_green": true,
+      "production_authority": false,
+      "owner_approval_pending": true
+    },
+    "non_parent_data_intake": {
+      "status": "MECHANICALLY_READY_PENDING_OWNER_VALUES",
+      "template_command": ".venv/glm52/bin/python -m ramanujan.data.freeze_memberships --print-external-template",
+      "sources_pending": ["D5", "D8", "D9"],
+      "six_present_local_sources_current_byte_and_content_hashes_verified": true
+    },
+    "code_topology_exit": {
+      "receipt": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+      "seal_sha256": "3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989",
+      "non_ignored_untracked_source_included": true,
+      "all_binding_dimensions_at_or_below_entry": true
+    },
+    "pre_restream_audit": {
+      "receipt": "ramanujan/RAMANUJAN_PRE_RESTREAM_AUDIT_REFRESH_2026_08_01.json",
+      "seal_sha256": "afa15e00bb768d168cf024f97d6473214b5881692e1330fee4f18d7b290db29b",
+      "verification": "24 focused restream tests; 200 Ramanujan/Odyssey tests plus 3 adversarial subtests"
+    }
+  },
+  "remaining_preconditions": [
+    "Owner-approved licensed D5 source.",
+    "Owner-approved licensed D8 source stored owner-only, plus hidden-membership selection.",
+    "Owner-approved licensed D9 source, sealed independent variant generator and seed commitment.",
+    "Owner approval of a production physical GLM-5.2 window operator conforming to the green fixture lifecycle and owner proposal; fixture evidence cannot approve or authorize production.",
+    "Explicit HAWKING_PARENT_RESTREAM_AUTHORIZED=YES from the run owner.",
+    "A root-owned, non-symlinked Ed25519 public key at /Library/Application Support/Hawking/owner_ed25519_public_key and a fresh single-use owner signature binding schedule, policy, source freeze, the complete production-lease receipt, hardware, physical operator, operator receipt key and range executor.",
+    "A clean heavy GPU lease identity.",
+    "Fresh live Xet allocation/resource measurements tied to the sealed schedule; prior offline planning cannot substitute.",
+    "Live K0/capability evidence on the resulting artifact with device identity, dispatch>0 and fallback=0; restream success alone is not capability approval.",
+    "Independent builder/challenger/Claude verification with CLEAN benchmark labeling."
+  ],
+  "execution_order": [
+    "Verify schedule, policy, pinned runtime, owner authorization, clean lease and physical window-operator executable before any body byte.",
+    "Before every window, sample free bytes and admit only if free_bytes - resident_incremental_bytes >= 200005889556.",
+    "Require N-1 remote-hash and exact-eviction receipt; stream only N's official tensor ranges; allow only bounded N+1 prefetch.",
+    "Probe, capture teacher evidence and one-pass pack N under one heavy lease.",
+    "Cold upload and verify the remote SHA-256, then delete exact source/artifact/temp/cache paths, purge exact Trash items and measure recovered free bytes.",
+    "Resume from the next unreceipted organ window; never retain multiple model/artifact families.",
+    "After all windows, run source/reference and Gravity capability scoreboards separately with same-model before/after evidence."
+  ],
+  "exact_next_command": "HAWKING_PARENT_RESTREAM_AUTHORIZED=YES HAWKING_CLEAN_GPU_LEASE_ID='<clean-live-lease-id>' HAWKING_PRODUCTION_GPU_LEASE_RECEIPT='/absolute/path/to/live-production-lease-receipt.json' HAWKING_GLM52_WINDOW_OPERATOR='/absolute/path/to/owner-approved-production-window-operator' HAWKING_GLM52_OPERATOR_APPROVAL_RECEIPT='/absolute/path/to/operator-approval-and-receipt-key.json' HAWKING_OWNER_GREEN_LIGHT_AUTHORIZATION='/absolute/path/to/single-use-owner-ed25519-authorization.json' HAWKING_EXTERNAL_SOURCE_FREEZE_RECEIPT='/absolute/path/to/authority-sealed-public-D5-D8-D9-receipt.json' bash /Users/scammermike/Downloads/hawking/ramanujan/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+  "no_shortcut": [
+    "Do not invoke tools/condense/glm52_source_fetch.py; it uses whole-shard hf_hub_download.",
+    "Do not reuse the historical 134-GB schedule or the blocked 208-GB retained-artifact candidate.",
+    "Do not treat owner authorization, schedule validation, source traversal or an integrity receipt as a capability verdict.",
+    "Do not expose D8 item ids or source paths to the training-visible surface."
+  ],
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY",
+  "seal_sha256": "9cf78dc272fce40101c48d851b75f7082d0065f311623db980e81407fc2e8b88"
+}

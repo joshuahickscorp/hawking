@@ -21,7 +21,8 @@
 //! needed — the capture is a pure side-observer.
 //!
 //! Output: a compact JSON written to `$HAWKING_ATTN_CAPTURE_OUT`
-//! (default `reports/bench/attn_capture.json`) on [`flush`], holding the
+//! (default `workspace/campaign/records/reports/bench/attn_capture.json`) on
+//! [`flush`], holding the
 //! per-layer concentration curve aggregated over all captured query
 //! positions. The offline reader `tools/bench/oracle_attn_mass.py` turns it
 //! into the GO/NO-GO verdict.
@@ -204,7 +205,8 @@ pub fn record_layer(layer: usize, n_layers: usize, head_weights: &[&[f32]]) {
 pub fn record_layer(_layer: usize, _n_layers: usize, _head_weights: &[&[f32]]) {}
 
 /// Write the accumulated per-layer concentration curve to
-/// `$HAWKING_ATTN_CAPTURE_OUT` (default `reports/bench/attn_capture.json`).
+/// `$HAWKING_ATTN_CAPTURE_OUT` (default
+/// `workspace/campaign/records/reports/bench/attn_capture.json`).
 /// Safe to call when capture never ran (writes an empty `layers: []`).
 #[cfg(target_os = "macos")]
 pub fn flush() {
@@ -216,7 +218,9 @@ pub fn flush() {
         Err(_) => return,
     };
     let out_path = std::env::var("HAWKING_ATTN_CAPTURE_OUT")
-        .unwrap_or_else(|_| "reports/bench/attn_capture.json".to_string());
+        .unwrap_or_else(|_| {
+            "workspace/campaign/records/reports/bench/attn_capture.json".to_string()
+        });
 
     let mut s = String::new();
     s.push_str("{\n");

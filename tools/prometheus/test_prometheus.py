@@ -9,11 +9,18 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+PROMETHEUS_DIR = Path(__file__).resolve().parent
+REPO = PROMETHEUS_DIR.parents[1]
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+if str(PROMETHEUS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROMETHEUS_DIR))
+
+from lab.layout import evidence_dir  # noqa: E402
+
 import prometheus as P  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-LEDGER = REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
+LEDGER = evidence_dir("glm52") / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
 GLM_DENOMINATOR = 753329940480  # sealed logical_weight_denominator
 
 

@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.tg.same_model_q5q8_geometry_result.v1",
+  "status": "RETIRED_PREFORWARD_COMPLETION_BLOCKER",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-llama-cpp-geometry-k2-2026-08-02",
+  "preregistration": "evidence/tg/TG32_QWEN72_LLAMA_CPP_GEOMETRY_PREREGISTRATION_2026_08_02.json",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "change": {
+    "env": "HAWKING_QWEN_LLAMA_CPP_GEOMETRY=1",
+    "llama_cpp_tag": "b9430",
+    "q5_0_geometry": {"simdgroups": 2, "rows_per_simdgroup": 4, "threads_per_threadgroup": 64},
+    "q8_0_geometry": {"simdgroups": 4, "rows_per_simdgroup": 2, "threads_per_threadgroup": 128}
+  },
+  "clean_probe": {
+    "command": "target/release/hawking generate --profile exact --weights <exact-source> --prompt '2+2=' --max-new-tokens 16 --max-seq-len 64 --temperature 0 --top-k 1 --top-p 1",
+    "outcome": "stopped after crossing 5 minutes without first-token completion; no TPS or rung claim",
+    "stdout_bytes": 0,
+    "stderr_last_state": "HAWKING_TCB_TRACE=unset; process acknowledged Ctrl-C at a token boundary",
+    "claim_allowed": false
+  },
+  "traced_first_dispatch": {
+    "command": "same source, max-new-tokens=1, HAWKING_QWEN_LOAD_TIMING=1 HAWKING_QWEN_FIRST_DISPATCH_TRACE=1 HAWKING_TRACE_DISPATCH=1",
+    "load_stages_passed": [
+      "weights_path_admission",
+      "gguf_open_mmap",
+      "metadata_parse",
+      "tokenizer",
+      "tensor_directory_quant_admission_layout_conversion",
+      "host_kv_allocation",
+      "metal_device_discovery",
+      "load_complete",
+      "representation_admission",
+      "device_and_buffer_binding",
+      "arena_allocation_and_prefill_bridge",
+      "command_buffer_creation",
+      "graph_encode_first_encoder_and_dispatches"
+    ],
+    "load_complete_ms": 22482.43,
+    "graph_encode_ms": 8.943,
+    "peak_resident_bytes": 44263047168,
+    "binding_stage": "first_command_commit_and_completion",
+    "outcome": "terminated after no completion receipt; physical GPU completion/TPS unproven",
+    "claim_allowed": false
+  },
+  "roofline": {
+    "binding": "cold 72B source admission plus first-command completion under host swap; this candidate does not establish a kernel wallline",
+    "next_representation_change": "convert the next admitted >=32B Qwen source to executable Gravity before runtime sweep, using the repaired conventional decode seed and stage parity gates",
+    "reopen_condition": "reopen only with a bounded fixture completion followed by a clean 16-token same-model Gravity run"
+  },
+  "eviction": {
+    "archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_LLAMA_CPP_GEOMETRY_2026_08_02.tar.gz",
+    "archive_sha256": "63f57aea943201195fb899f325bac75e0c3b817817018aebc4caae74cf492d23",
+    "body_path": "models/tg-active/qwen72-llama-cpp-geometry-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "free_before_body": 384037371904,
+    "free_after_body_admission": 336548581376,
+    "free_after_exact_trash_purge": 381866143744,
+    "model_lane_empty": true,
+    "exact_trash_item_purged": true
+  },
+  "owner_fences_false": true
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "qwen2_dense",
+  "candidate": {
+    "id": "qwen14-pair8r-v1",
+    "kind": "same_model_native_packed_ffn_kv_geometry",
+    "hypothesis": "The 8-row paired Q4 predecoded geometry, with 64 rows per threadgroup and eight FMA chains, will improve occupancy for both gate/up and K/V waves on the exact Qwen-14B Q4_K_M decode path.",
+    "mechanism": "Enable HAWKING_QWEN_PAIR_8R=1; the existing native packed pair kernel is selected for gate/up and K/V while tokenizer, weights, Q4 arithmetic, KV state and prompt remain unchanged.",
+    "scope": "same exact Qwen2.5-14B-Instruct Q4_K_M body, same immutable revision, same M3 Ultra, same complete-token prompt and profile",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32"
+    },
+    "reject_conditions": [
+      "any token-ID change",
+      "fallback > 0",
+      "pair-8r path inactive or geometry guard failure",
+      "no complete-token wall win >= 3 percent",
+      "p95 or p99 regression > 2 percent",
+      "Q/K/V, FFN or KV-state parity failure"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "control": {
+    "profile": "default fast-minus-f16-scales",
+    "measured_tps": 29.405859209340772,
+    "decode_ms": 1088.2185,
+    "p50_ms": 33.984625,
+    "p95_ms": 34.59555435,
+    "p99_ms": 34.662179210000005,
+    "dispatches_per_forward": 436,
+    "metal_dispatches_total": 13952,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "source_window_generated_prefix": [12095, 624, 32, 13]
+  },
+  "runtime": {
+    "opt_in": "HAWKING_QWEN_PAIR_8R=1",
+    "implementation": "native gemv_q4_k_v4_predec_pair_8r for gate/up and K/V",
+    "geometry": "64 rows per threadgroup, eight FMA chains, 16 accumulators for gate/up",
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "7724dc557daa1f3b369e648886dc367fc98ae65d786ccf454f6d1041296af2ae"
+}

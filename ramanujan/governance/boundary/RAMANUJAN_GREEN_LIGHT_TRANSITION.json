@@ -1,0 +1,71 @@
+{
+  "details": {
+    "authorization": {
+      "D5_D8_D9_public_receipt_green": false,
+      "green": false,
+      "owner_signature_error": null,
+      "owner_signature_green": false,
+      "parent_authorized": false,
+      "receipt_error": null
+    },
+    "final_preflight": {
+      "green": false,
+      "runtime_pins_verified": true,
+      "source_hashes_verified": true
+    },
+    "operator": {
+      "green": false,
+      "mechanism_green": false,
+      "reason": "operator approval receipt is absent"
+    },
+    "production_lease": {
+      "green": false,
+      "mechanism_green": false,
+      "reason": "production lease receipt is absent"
+    },
+    "storage": {
+      "free_bytes": 320015249408,
+      "green": false,
+      "model_lane_file_count": 5,
+      "protected_floor_bytes": 200005889556,
+      "required_incremental_bytes": 58885799936,
+      "residual_after_incremental_bytes": 61123559916
+    }
+  },
+  "exact_next_action": "STORAGE_GREEN",
+  "fixture_only": false,
+  "input_commitment_sha256": "135d14c016ae38185005e01d00a72b7453062f10c877998d505ce439cf8bc471",
+  "launch_binding": {
+    "external_source_receipt_seal_sha256": null,
+    "hardware_identity": null,
+    "operator_executable_sha256": null,
+    "operator_receipt_public_key_sha256": null,
+    "owner_authorization_nonce_sha256": null,
+    "owner_authorization_signature_sha256": null,
+    "owner_public_key_sha256": null,
+    "production_lease_id": null,
+    "production_lease_receipt_sha256": null,
+    "range_executor_executable_sha256": "a817ff3fba6e0be0f6df5472c9b4c3f92702f340a4b3c3789729946aafdc5d42"
+  },
+  "missing_gates": [
+    "STORAGE_GREEN",
+    "OWNER_D5_APPROVAL",
+    "OWNER_D8_APPROVAL",
+    "OWNER_D9_APPROVAL",
+    "OWNER_PARENT_RESTREAM_AUTHORIZATION",
+    "OWNER_SIGNED_GREEN_LIGHT_AUTHORIZATION",
+    "PRODUCTION_CLEAN_GPU_LEASE_IDENTITY",
+    "OWNER_APPROVAL_OF_PRODUCTION_PHYSICAL_GLM52_WINDOW_OPERATOR"
+  ],
+  "policy_seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+  "previous_transition_seal_sha256": "a22b79594e2416f35a53e33438fd6572198af3815964eec8cc2c29e55e6b866d",
+  "production_authority": false,
+  "restream_started": false,
+  "satisfied_gates": [
+    "OWNER_GATE_READY"
+  ],
+  "schedule_seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+  "schema": "hawking.ramanujan.green_light_transition.v1",
+  "seal_sha256": "2b27267854c45788d87bc61d6a7ee3a59d3f05537b8aa389d5eb7719cdc2246c",
+  "status": "OWNER_GATE_READY"
+}

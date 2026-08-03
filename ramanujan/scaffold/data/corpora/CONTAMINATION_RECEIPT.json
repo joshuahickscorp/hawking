@@ -1,0 +1,72 @@
+{
+  "schema": "hawking.ramanujan.contamination_receipt.v1",
+  "at": "2026-08-01T04:58:21Z",
+  "barrier": {
+    "schema": "hawking.odyssey.contamination_barrier.v1",
+    "rules": [
+      "training items are compared on extract_comparison_text (prompt/text/messages)",
+      "exact match: sha256(normalize_text(text)) equals any eval item hash \u2192 REJECT",
+      "near-duplicate: character shingles size=5, Jaccard \u2265 0.25 vs any eval item \u2192 REJECT",
+      "evaluation sources: support-halo (sealed), T0 hidden memberships, public selection",
+      "a naming convention is not a barrier; this index is mechanical",
+      "support-halo corpus and seal files are read-only; mutation is a contract violation"
+    ],
+    "jaccard_threshold_train_vs_eval": 0.25,
+    "shingle_size": 5,
+    "sources_loaded": [
+      "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+      "odyssey/evaluation/hidden/hidden_items.jsonl",
+      "odyssey/t0/public_eval/selection_items.jsonl"
+    ],
+    "n_eval_items_indexed": 33,
+    "support_halo_corpus_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+    "support_halo_seal_ok": true,
+    "hidden_commitment_ok": true,
+    "expected_support_halo_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67"
+  },
+  "summary": {
+    "total_input": 16188,
+    "total_admitted": 16188,
+    "total_rejected": 0,
+    "all_admitted": true
+  },
+  "per_source": {
+    "D1": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d1_proof_traces.jsonl",
+      "n_input": 5000,
+      "n_admitted": 5000,
+      "n_rejected": 0
+    },
+    "D2": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d2_state_transitions.jsonl",
+      "n_input": 5000,
+      "n_admitted": 5000,
+      "n_rejected": 0
+    },
+    "D3": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d3_premise_pairs.jsonl",
+      "n_input": 5000,
+      "n_admitted": 5000,
+      "n_rejected": 0
+    },
+    "D4": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d4_repair_pairs.jsonl",
+      "n_input": 800,
+      "n_admitted": 800,
+      "n_rejected": 0
+    },
+    "D6": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d6_counterexamples.jsonl",
+      "n_input": 302,
+      "n_admitted": 302,
+      "n_rejected": 0
+    },
+    "D7": {
+      "path": "/Users/scammermike/Downloads/hawking/ramanujan/data/corpora/d7_tool_use_traces.jsonl",
+      "n_input": 86,
+      "n_admitted": 86,
+      "n_rejected": 0
+    }
+  },
+  "rejections": []
+}

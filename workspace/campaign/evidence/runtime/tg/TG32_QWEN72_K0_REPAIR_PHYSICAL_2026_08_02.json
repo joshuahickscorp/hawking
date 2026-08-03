@@ -1,0 +1,115 @@
+{
+  "schema": "hawking.tg.qwen72_k0_repair_physical.v1",
+  "status": "K0_PHYSICAL_METAL_FIRST_TOKEN_NO_TG_RUNG",
+  "at_utc": "2026-08-02T09:29:35Z",
+  "family": "qwen",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "xet_file_hash": "596abc840bcb94285f1bcc49f762c5e76a6ffbaf4135dcc7d1d0fde963c5aa8b",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REHYDRATE_2026_08_02.json"
+  },
+  "representation": {
+    "path": "direct_source_gguf_q4_k_m_exact_profile",
+    "profile": "exact",
+    "ffn_down_source_dtype": "Q8_0",
+    "ffn_down_q4k_requant": false,
+    "q4k_predecode": false,
+    "geometry_repair": "reject_requant_when_logical_intermediate_width_mod_256_nonzero",
+    "repair_source": "crates/hawking-core/src/model/qwen_dense.rs"
+  },
+  "previous_failure": {
+    "receipt": "evidence/tg/TG32_QWEN72_K0_TERMINAL.json",
+    "failure_stage": "pre_forward_uninstrumented_load_timeout",
+    "newly_localized_kernel_failure": "gemm_q4_k_v4_predec_swiglu: cols % 256 != 0; got cols=29568",
+    "root_cause": "flattened element count was divisible by 256 while the logical ffn_down row width was not; Q4_K block boundaries could cross rows"
+  },
+  "load_stages": {
+    "weights_path_admission": {"elapsed_us": 0, "status": "BEGIN", "source_file_bytes": 47415715488, "fallback": 0},
+    "gguf_open_mmap": {"elapsed_us": 43296, "bytes_read": 0, "resident_bytes": 40763392, "fallback": 0, "restart_safe": true},
+    "metadata_parse": {"elapsed_us": 126, "resident_bytes": 40927232, "fallback": 0, "restart_safe": true},
+    "tokenizer": {"elapsed_us": 362038, "resident_bytes": 100614144, "fallback": 0, "restart_safe": true},
+    "tensor_directory_quant_admission_layout_conversion": {"api": "tensor_ref+dequant_f16+dequant_f32", "elapsed_us": 32673008, "resident_bytes": 6828523520, "peak_resident_bytes": 11789090816, "fallback": 0, "restart_safe": true},
+    "host_kv_allocation": {"elapsed_us": 173, "bytes_written": 41943040, "fallback": 0, "restart_safe": true},
+    "metal_device_discovery": {"elapsed_us": 32775, "fallback": 0, "restart_safe": true},
+    "metal_pinning_lm_head_vocab_warmup": {"elapsed_us": 263138520, "resident_bytes": 9844555776, "peak_resident_bytes": 47597535232, "fallback": 0, "restart_safe": true},
+    "load_complete": {"elapsed_us": 296250560, "fallback": 0, "restart_safe": true}
+  },
+  "first_dispatch": {
+    "device_identity": "Apple M3 Ultra",
+    "prompt": "2+2=",
+    "prompt_token_ids": [17, 10, 17, 28],
+    "prompt_token_count": 4,
+    "tokenizer_command": "target/debug/hawking tokenize --weights <exact-gguf> --prompt '2+2=' --json",
+    "representation_admission_elapsed_us": 57,
+    "device_and_buffer_binding_elapsed_us": 59,
+    "arena_allocation_and_prefill_bridge_elapsed_us": 289,
+    "command_buffer_creation_elapsed_us": 198,
+    "graph_encode_first_encoder_and_dispatches_elapsed_us": 8451,
+    "first_command_commit_and_completion_elapsed_us": 73381934,
+    "first_token_readback_elapsed_us": 452,
+    "dispatches": 964,
+    "command_buffers": 1,
+    "waits": 1,
+    "fallback": 0,
+    "generated_token_ids": [19],
+    "generated_text": "4",
+    "continuation_token_ids_sha256": "691f362eb14915823efa2d8ac4afde3c22b30cedf95389e4d6c70ae8db9636a3"
+  },
+  "complete_token_profiler": {
+    "reason": "max_tokens",
+    "completion_tokens": 1,
+    "prefill_ms": 92415.063042,
+    "decode_ms": 1182.149,
+    "decode_token_ms": [1177.789],
+    "p50_complete_token_latency_ms": 1177.789,
+    "p95_complete_token_latency_ms": 1177.789,
+    "p99_complete_token_latency_ms": 1177.789,
+    "ttft_ms": 92415.063042,
+    "source_reference_tps": null,
+    "gravity_base_true_tps": 0.8459170544491431,
+    "accelerated_accepted_tps": null,
+    "prefill_tps": 0.043283173,
+    "dispatches_per_forward": 964,
+    "decode_metal_dispatches_total": 964,
+    "decode_command_buffers_total": 1,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "lm_head_path": "raw-q6k",
+    "token_only_path_used": false
+  },
+  "capability_gates": {
+    "G0_bytes_tensor_coverage_hash_provenance": "PASS",
+    "G1_cpu_oracle_runtime_parity": "NOT_FULLY_ADMITTED",
+    "G2_math_prompt": "OBSERVED_2_PLUS_2_EQUALS_4_ONLY",
+    "G3_coherent_generation": "NOT_RUN",
+    "G4_route_trajectory": "NOT_RUN",
+    "G5_to_G9": "NOT_RUN",
+    "numeric_parity_v2_1": "NOT_FULLY_ADMITTED",
+    "product_capable": false
+  },
+  "ladder": {
+    "deepest_stable_rung": null,
+    "tg_claim": "NONE",
+    "tg32_threshold_tps": 31.25,
+    "reason": "0.845917 TPS is a complete-token physical floor but is not a TG32 promotion and capability gates remain incomplete",
+    "source_reference_classification": "SOURCE_VIABLE_TEXT_SMOKE_ONLY_NO_TPS_ORACLE"
+  },
+  "roofline": {
+    "binding_load_stage": "metal_pinning_lm_head_vocab_warmup",
+    "binding_decode_cost": "964 Metal dispatches and 1.182 s complete-token decode",
+    "next_representation_change": "row-safe native packed Q8/Q4 down execution or device-resident streaming pinning; no flatten-across-row requant",
+    "promotion_allowed": false
+  },
+  "claim_boundary": "This receipt proves a repaired, real-device Qwen72 K0 first dispatch and one complete token. It does not claim TG32, source TPS, full capability, Gravity promotion, production GPU certification, or any owner-gated work.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "fb8d0841ba6fe650e25eabe3b97e36dc4004879fb80286d9f35e1dd37ecaade4"
+}

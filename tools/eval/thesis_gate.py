@@ -179,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         "total_generation_s": round(total_s, 1),
         "results": results,
     }
-    out = a.out or ROOT / f"reports/eval/thesis_gate_{label}.json"
+    out = a.out or ROOT / f"workspace/campaign/records/reports/eval/thesis_gate_{label}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(doc, indent=2) + "\n")
     print(f"\n  pass@1 {doc['pass_at_1']} ({passes}/{n})  wilson95 {doc['wilson95']}  -> {out}")

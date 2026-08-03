@@ -1,0 +1,115 @@
+{
+  "schema": "hawking.tg.large_family_k0_terminal.v1",
+  "status": "TERMINAL_ADAPTER_PREFILL_ABORT_NO_TG_RUNG",
+  "family": "qwen",
+  "rung": "TG32",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "sha256_verified_by": "hawking verify --expected-sha256",
+    "architecture": "qwen2",
+    "layers": 80,
+    "tensors": 963,
+    "parameter_class": {
+      "total_parameters": "72B",
+      "active_parameters": "72B",
+      "architecture": "dense"
+    }
+  },
+  "admission": {
+    "unified_preflight_free_bytes": 417369665536,
+    "protected_filesystem_floor_bytes": 200005889556,
+    "model_lane_ceiling_bytes": 102000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "incremental_lane_bytes": 74259261088,
+    "active_model_count_before_acquisition": 0,
+    "result": "ADMITTED"
+  },
+  "transfer": {
+    "runtime": {
+      "huggingface_hub": "1.24.0",
+      "hf_xet": "1.5.2",
+      "cli": ".venv/glm52/bin/hf"
+    },
+    "selected_profile": "high_performance",
+    "environment": {
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+      "HF_HUB_DISABLE_TELEMETRY": "1",
+      "HF_XET_HIGH_PERFORMANCE": "1",
+      "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0"
+    },
+    "bounded_matrix_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD.json",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT.json",
+    "body_complete": true,
+    "source_sha256_pass": true
+  },
+  "source_reference": {
+    "engine": "llama.cpp llama-cli",
+    "version": "9430-d48a56eff",
+    "prompt": "2+2=",
+    "generation_limit": 1,
+    "temperature": 0,
+    "observed_completion_text": "2",
+    "classification": "SOURCE_VIABLE_TEXT_SMOKE_ONLY",
+    "not_a_tps_measurement": true,
+    "not_a_token_id_or_logit_oracle": true
+  },
+  "hawking_k0": {
+    "command_profile": "exact",
+    "prompt": "2+2=",
+    "max_new_tokens": 1,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "trace_dispatch": true,
+    "trace_tokens": true,
+    "q4k_predecode": "disabled for bounded first probe",
+    "observed": {
+      "reason": "aborted",
+      "prompt_tokens": 4,
+      "completion_tokens": 0,
+      "prefill_ms": 1071264.127458,
+      "decode_ms": 0.0,
+      "dec_tps": 0.0,
+      "device_id": null,
+      "dispatches_per_forward": 0,
+      "decode_metal_dispatches_total": 0,
+      "cpu_reference_fallback_count": 0,
+      "decode_cpu_reference_fallback_total": 0,
+      "token_only_path_used": false
+    },
+    "v21_contract": {
+      "exact_tokens": "NOT_OBTAINED",
+      "device_identity": "NOT_OBTAINED",
+      "dispatches_greater_than_zero": false,
+      "fallback_equal_zero": "OBSERVED_BUT_NONAUTHORITATIVE_WITHOUT_A_FORWARD",
+      "result": "FAIL"
+    },
+    "terminal_reason": "The exact raw adapter consumed 1,071,264.127458 ms in prefill/load, then aborted before its first forward. No token, logits, device identity, or dispatching evidence exists, so K0 and every later TG/Gravity gate fail closed."
+  },
+  "clean_room": {
+    "status": "CONTENDED_DIAGNOSTIC_ONLY",
+    "observed_external_workloads": [
+      "two non-campaign Python processes consuming approximately one CPU core each",
+      "a substrate longitudinal supervisor"
+    ],
+    "promotion_allowed": false
+  },
+  "promotion": {
+    "deepest_rung": null,
+    "tg_claim": "NONE",
+    "gravity_claim": "NONE",
+    "adapter_result": "FAIL_BEFORE_K0_FORWARD",
+    "next_representation_change": "Replace load-side whole-body preparation with an explicitly profiled, persistent direct-Q4/Q6 packed execution path that produces a bounded K0 forward with Metal dispatch accounting before any TG benchmark."
+  },
+  "eviction_required": {
+    "source_artifact_only": true,
+    "retained_gravity_artifact": false,
+    "source_path": "models/tg-active/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "staging_root": "models/tg-active",
+    "next_receipt": "evidence/tg/TG32_QWEN72_TERMINAL_EVICTION.json"
+  },
+  "seal_sha256": "de0d67517b9ec2a0083e7a99c304733b6f0c99bf47dfcda860ef5d7f4776bbd5"
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "hawking.tg.same_model_representation_rejection.v1",
+  "seal_sha256": "ed23e76fd91ac9cc88cf5d5a5e6343bec97135b86b94145e00a43ec92b9ef3c9",
+  "status": "RETIRED_NO_COMPLETE_TOKEN_WALL_WIN",
+  "at": "2026-08-02",
+  "family": "qwen2.5_72b_dense",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "test": {
+    "prompt": "2+2=",
+    "prompt_token_ids": [17, 10, 17, 28],
+    "max_new_tokens": 8,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "capability_scope": "first-dispatch and load-stage diagnostic only; no complete-token capability approval",
+    "command": "HAWKING_REQUIRE_METAL=1 HAWKING_QWEN_LOAD_TIMING=1 HAWKING_QWEN_FIRST_DISPATCH_TRACE=1 HAWKING_TRACE_DISPATCH=1 HAWKING_TRACE_TOKENS=1 HAWKING_QWEN_FFN_DOWN_Q4K=0 HAWKING_QWEN_VOCAB_PRUNE=0 HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_Q4K_PREDEC=1 HAWKING_QWEN_F16_KV=0 target/debug/hawking generate --weights models/tg-active/qwen72-2026-08-02-fast/Qwen2.5-72B-Instruct-Q4_K_M.gguf --prompt '2+2=' --max-new-tokens 8 --max-seq-len 64 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 180000"
+  },
+  "representation": {
+    "id": "qwen72_q4k_predec_lmhead_q8_down_f32kv",
+    "change": "Enable Q4K predecoded sidecars and Q4K LM-head while retaining exact Q8_0/f16 down-projection for the 29568-wide non-row-aligned Qwen72 FFN; disable vocab pruning and f16 KV",
+    "q4k_predecode": true,
+    "q4k_lm_head": true,
+    "qwen_ffn_down_q4k": false,
+    "vocab_prune": false,
+    "f16_kv": false,
+    "f16_scales": false
+  },
+  "load_stages": {
+    "tensor_directory_quant_admission_layout_conversion_us": 32775992,
+    "metal_pinning_lm_head_vocab_prune_warmup_us": 291145560,
+    "q4k_predec_representation_us": 91980580,
+    "total_load_us": 416312160,
+    "peak_resident_bytes": 51151044608,
+    "fallback": 0,
+    "all_required_stages_observed": true
+  },
+  "first_dispatch": {
+    "representation_admission_us": 21,
+    "device_and_buffer_binding_us": 21,
+    "arena_allocation_and_prefill_bridge_us": 240,
+    "command_buffer_creation_us": 138,
+    "graph_encode_first_encoder_and_dispatches_us": 9389,
+    "first_command_commit_and_completion_us": 171453172,
+    "first_token_readback_us": 1669,
+    "dispatches": 844,
+    "command_buffers": 1,
+    "waits": 1,
+    "cpu_reference_fallback_count": 0,
+    "physical_device": "Apple M3 Ultra",
+    "status": "PHYSICAL_FIRST_FORWARD_PASS"
+  },
+  "complete_token_profiler": {
+    "prefill_ms": 371398.118334,
+    "decode_ms": 0.0,
+    "decode_tps": 0.0,
+    "completion_tokens": 0,
+    "decode_token_ms": [],
+    "reason": "aborted",
+    "prefill_command_buffers": 2,
+    "prefill_metal_dispatches": 1688,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra"
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN72_K0_REPAIR_PHYSICAL_2026_08_02.json",
+    "representation": "qwen72_exact_q8_down_no_predecode_no_q4k_head_f32kv",
+    "complete_tokens": 1,
+    "first_token_id": 19,
+    "decode_tps": 0.8459170544491431,
+    "first_command_commit_and_completion_us": 73381934,
+    "dispatches": 964,
+    "cpu_reference_fallback_count": 0
+  },
+  "delta": {
+    "dispatches_percent": -12.448132780082988,
+    "first_command_completion_percent": 133.633,
+    "complete_token_wall_win": false,
+    "capability_match": false,
+    "reason": "candidate aborted before a committed completion token and made the first GPU command 2.336x slower despite fewer dispatches"
+  },
+  "ladder": {
+    "deepest_honest_rung": null,
+    "first_failing_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "eviction": {
+    "source_body_evicted": true,
+    "exact_trash_item": "/Users/scammermike/.Trash/qwen72-2026-08-02-fast",
+    "exact_trash_item_purged": true,
+    "model_lane_empty": true,
+    "post_purge_free_bytes": 374629228544
+  },
+  "verdict": "RETIRE_QWEN72_PREDECODE_LMHEAD; fewer command dispatches do not compensate for a 371.4-second prefill and zero complete tokens",
+  "reopen_condition": "Only revisit with a materially different row-safe executable representation that reduces physical GPU wall time and proves complete-token parity; do not re-enable this sidecar combination as a default"
+}

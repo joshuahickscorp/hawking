@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-cross-layer-shared-recurrent-residual-block",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "teacher_dataset": {
+    "path": "/tmp/hawking-llama-crossblock-l0-l31-pty-20260731/l0-l31-pairs.npz",
+    "sha256": "b3b886f4653e8c034b106dc36cbe5fc355ba174999363bd3033ce4afa51585d6",
+    "input_surface": "layer.0.layer_out",
+    "target_surface": "layer.31.layer_out",
+    "rows": 10680,
+    "fit_rows": 8410,
+    "heldout_rows": 2270,
+    "trace_chunks": 43
+  },
+  "gate": {"max_heldout_normalized_rmse": 0.1},
+  "measurements": [
+    {
+      "width": 512,
+      "shared_steps": 4,
+      "epochs": 8,
+      "fit_normalized_rmse": 0.5888680038583508,
+      "heldout_normalized_rmse": 0.6050998104651686,
+      "prospective_fp16_artifact_bytes": 8414210,
+      "unique_active_fp16_bytes_per_token": 8414210,
+      "executed_macs_per_token": 16777216,
+      "sequential_matvecs_per_token": 8
+    },
+    {
+      "width": 2048,
+      "shared_steps": 4,
+      "epochs": 8,
+      "fit_normalized_rmse": 0.5818845417506666,
+      "heldout_normalized_rmse": 0.5984666678723819,
+      "prospective_fp16_artifact_bytes": 33583106,
+      "unique_active_fp16_bytes_per_token": 33583106,
+      "executed_macs_per_token": 67108864,
+      "sequential_matvecs_per_token": 8
+    },
+    {
+      "width": 512,
+      "shared_steps": 4,
+      "step_rank": 32,
+      "epochs": 8,
+      "fit_normalized_rmse": 0.5658341634205049,
+      "heldout_normalized_rmse": 0.5831061369362741,
+      "prospective_fp16_artifact_bytes": 10511362,
+      "unique_active_fp16_bytes_per_token": 10511362,
+      "executed_macs_per_token": 17825792,
+      "sequential_matvecs_per_token": 16
+    }
+  ],
+  "verdict": "rejected",
+  "reason": "A single shared residual SiLU block cannot approximate the 31-layer source transformation: widening 4x barely changes heldout error, and rank-32 step adapters only improve heldout error to 0.583 while doubling sequential matvec depth. All points fail the predeclared capability gate by roughly 6x.",
+  "runtime_status": "No artifact was emitted; no generated-token, quality, parity, or TPS claim is permitted.",
+  "reopen_condition": "Use per-step adapters, attention/state-aware inputs, or a source-structured block decomposition with an independent heldout generated-token gate; do not widen this shared block alone.",
+  "tps_claim": null
+}

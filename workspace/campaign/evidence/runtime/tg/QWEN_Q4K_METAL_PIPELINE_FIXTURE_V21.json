@@ -1,0 +1,234 @@
+{
+  "direct_stage_trace": [
+    {
+      "api": "GgufFile::open",
+      "bytes": 1248,
+      "elapsed_us": 125,
+      "stage": "parse"
+    },
+    {
+      "api": "GgufFile::tensor+tensor_bytes",
+      "bytes": 1152,
+      "elapsed_us": 2,
+      "stage": "tensor_map"
+    },
+    {
+      "api": "GgufFile::open+tensor+tensor_bytes(Q5_K)",
+      "bytes": 1504,
+      "elapsed_us": 28,
+      "stage": "q5_parse+tensor_map"
+    },
+    {
+      "api": "quant::dequant_into(Q4_K)",
+      "bytes": 1152,
+      "elapsed_us": 42,
+      "stage": "quant_decode"
+    },
+    {
+      "api": "GravityShard::open+read_tensor(sha256)+GravityWeights::open+matvec",
+      "bytes": 1624,
+      "elapsed_us": 343,
+      "stage": "gravity_parse_execute"
+    },
+    {
+      "api": "MetalContext::new_buffer_with_bytes/new_buffer",
+      "bytes": 2212,
+      "elapsed_us": 41,
+      "stage": "buffers",
+      "structural_buffers": 4,
+      "structural_bytes": 2212
+    },
+    {
+      "api": "MetalContext::pipeline(Q4_K+Q5_K)+pipeline(sample_argmax_f32)",
+      "bytes": 0,
+      "elapsed_us": 28885,
+      "stage": "pipeline"
+    },
+    {
+      "api": "gemv_q4_k_m_v2_pinned_tcb+sample_argmax_f32_tcb",
+      "bytes": 2212,
+      "dispatches": 2,
+      "elapsed_us": 329,
+      "stage": "encode"
+    },
+    {
+      "api": "TokenCommandBuffer::commit_and_wait",
+      "bytes": 0,
+      "command_buffers": 1,
+      "elapsed_us": 6567,
+      "stage": "submit_wait",
+      "waits": 1
+    },
+    {
+      "api": "MTLBuffer::contents(read logits+token)",
+      "bytes": 36,
+      "elapsed_us": 2,
+      "stage": "completion"
+    },
+    {
+      "api": "device_argmax_vs_fp64_argmax",
+      "bytes": 4,
+      "elapsed_us": 0,
+      "stage": "token",
+      "token": 7
+    }
+  ],
+  "first_failing_rung": "NOT_APPLICABLE_FIXTURE_SCOPE",
+  "fixture_artifacts": {
+    "codec": "Q4_K / ggml.q4_k",
+    "cols": 256,
+    "gguf": {
+      "physical_bytes": 1248,
+      "sha256": "57d85ffce36116b86a065233f9b793e82d2fa8ef910291f24ea271d1ece42c10"
+    },
+    "gravity": {
+      "codec": "ggml.q4_k",
+      "physical_bytes": 1624,
+      "sha256": "19b2b13a3f41353ab3c1196da68b09910427e6cb3f6ef48afc1812a41bfb5bfd",
+      "verification": "GravityShard::read_tensor(verify_hash=true) plus GravityWeights::open(verify_hash=true) and GravityWeights::matvec"
+    },
+    "packed_payload_bytes": 1152,
+    "packed_payload_sha256": "f74baac8d9ec940451c49bd6843cb4f15902d9c063dc6f5d9f78bbc88d7f617b",
+    "q5_gguf": {
+      "active_payload_bytes": 1408,
+      "physical_bytes": 1504,
+      "sha256": "82e42f7c5b7029a939eb1c3f347ce5e2dcda76a170506090d765c42dc732128e",
+      "packed_payload_sha256": "fbdb6e991fe8eba9f96d7599dcfdb12c58edbd2377d234b51e086841c841a535"
+    },
+    "rows": 8,
+    "tensor_name": "blk.0.ffn_gate.weight",
+    "transient": true
+  },
+  "instrumentation_repair": {
+    "fix": "crates/hawking-core/src/metal/mod.rs increments stats.commits behind trace_dispatch for normal, cost-ledger, split-diagnostic, and split-blit TokenCommandBuffer command-buffer commits.",
+    "problem": "TokenCommandBuffer::commit_and_wait performed physical commits but did not increment MetalContext structural commit counters, so a watchdog/fixture receipt could report zero commits while waits had happened.",
+    "proof": "The 16-token normal-mode direct and Gravity fixture profiles each observed waits=16 and commits=16; the separate HAWKING_TCB_TRACE=gpu SplitCbGpu diagnostic observed 48 commits for 16 tokens (two per-dispatch command buffers plus one final command buffer/token). Zero hot buffers/bytes were observed inside the measured token loops."
+  },
+  "recorded_at": "2026-08-01T00:00:00-04:00",
+  "same_fixture_representation_matrix": {
+    "continuation_semantics": "Repeat-token hash only, not a transformer continuation: the fixture has no state to advance.",
+    "deepest_tg_rung": null,
+    "direct_gguf_q4_k": {
+      "active_payload_bytes": 1152,
+      "capability": "single raw-Q4_K matvec plus device argmax",
+      "commits": 16,
+      "dispatches": 32,
+      "dispatches_per_token": 2,
+      "hot_buffers_created": 0,
+      "hot_bytes_allocated": 0,
+      "ops_per_token": 4104,
+      "p50_us": 229,
+      "p95_us": 516,
+      "p99_us": 516,
+      "physical_bytes": 1248,
+      "waits": 16
+    },
+    "direct_gguf_q5_k": {
+      "active_payload_bytes": 1408,
+      "capability": "same deterministic source tensor packed as Q5_K, native persistent Metal matvec plus device argmax",
+      "commits": 16,
+      "dispatches": 32,
+      "dispatches_per_token": 2,
+      "executed_fp_ops_per_token": 4104,
+      "executed_integer_bit_ops_per_token": "UNSEALED_STATIC_COUNT",
+      "hot_buffers_created": 0,
+      "hot_bytes_allocated": 0,
+      "p50_us": 263,
+      "p95_us": 300,
+      "p99_us": 300,
+      "physical_bytes": 1504,
+      "waits": 16
+    },
+    "executable_gravity_raw_ggml_q4_k": {
+      "active_payload_bytes": 1152,
+      "capability": "verified executable Gravity raw-Q4_K matvec plus the same device argmax",
+      "commits": 16,
+      "dispatches": 32,
+      "dispatches_per_token": 2,
+      "hot_buffers_created": 0,
+      "hot_bytes_allocated": 0,
+      "ops_per_token": 4104,
+      "p50_us": 226,
+      "p95_us": 430,
+      "p99_us": 430,
+      "physical_bytes": 1624,
+      "waits": 16
+    },
+    "native_reduced_qwen_gravity": "NOT_MATERIALIZED; TG20_QWEN_SOURCE_QUANT_GRAVITY is source-preserving and not a native reduced same-model representation.",
+    "next_gate": "Acquire a sealed full Qwen parent only after byte admission; run these proven Q4_K/Q5_K packed grammars plus a complete native reduced Gravity artifact through the full K0/V2.1/capability/TG harness.",
+    "repeat_token_count": 16,
+    "repeat_token_hash_sha256": "435d64dc32ba71c995f30ec2f46283847c82ed3b487559c9826cf4e6d33f9bc2"
+  },
+  "schema": "hawking.tg.qwen_direct_q4k_metal_fixture.v1",
+  "scope": {
+    "negative": "This is a single-matvec representation fixture. It has no tokenizer, embedding, RoPE, KV state, attention, MLP graph, LM head, or semantic transformer continuation. It is not a Qwen parent K0, TG rung, or full-model Gravity promotion.",
+    "positive": "A deterministic 8x256 Q4_K tensor crosses GGUF parse, packed-byte mapping, Q4_K decode, Metal buffer binding, pipeline creation, two-command device execution, device argmax, completion readback, and independent FP64 V2.1 scoring on Apple M3 Ultra."
+  },
+  "seal_sha256": "b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a",
+  "sealed_72b_boundary_no_rerun": {
+    "enclosing_stage_and_api": "Engine::generate prefill loop (HAWKING_QWEN_BATCH_PREFILL=0) -> QwenDense::forward_token_greedy_tcb -> first-use DenseDecodeArena::new plus packed direct Metal command buffer -> TokenCommandBuffer::commit_and_wait",
+    "exact_bytes_boundary": "The receipt has the exact GGUF source body bytes. It did not serialize per-buffer active bytes, command-buffer timing, or a completed-forward dispatch trace; those values are deliberately recorded as unavailable rather than inferred from source size or code geometry.",
+    "exact_observed_elapsed_ms": 116201.248542,
+    "localization_strength": "The receipt proves the enclosing first packed Metal forward exceeded the 60-second watchdog and caused severe swap. It does not distinguish allocation, encode, GPU execution, or command-buffer wait within that 116201.248542 ms enclosing interval. A live rerun with the repaired stage counters is required to make that finer attribution.",
+    "observed": {
+      "completion_tokens": 0,
+      "cpu_reference_fallback_count": 0,
+      "decode_cpu_reference_fallback_total": 0,
+      "device": "Apple M3 Ultra",
+      "prompt_tokens": 4,
+      "serialized_decode_metal_dispatches_total": 0,
+      "serialized_dispatches_per_forward": 0,
+      "swap_after_exit_mib": 2259.06,
+      "swap_before_mib": 1600.25,
+      "swap_during_first_forward_mib": 15157.69
+    },
+    "receipt": "evidence/tg/TG32_QWEN72_K0_REPROBE_TERMINAL.json",
+    "source": {
+      "bytes": 47415715488,
+      "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+    },
+    "status": "TERMINAL_METAL_PREFILL_SWAP_FLOOR_NO_TG_RUNG; no live 72B rerun and no TG claim in this receipt."
+  },
+  "status": "CLEAN_FIXTURE_PASS_NO_MODEL_TG_CLAIM",
+  "test": {
+    "command": "cargo test -p hawking-core --test qwen_q4k_metal_pipeline_fixture -- --nocapture",
+    "device": "Apple M3 Ultra",
+    "result": "PASS",
+    "source": "crates/hawking-core/tests/qwen_q4k_metal_pipeline_fixture.rs",
+    "source_sha256": "1f08664b437e91c0259bd27e507d28d3aa768bd2a4653547f09dd3da01745a4c",
+    "trace_mode": "HAWKING_TCB_TRACE unset (Off); explicit TokenCommandBuffer dispatch count is used"
+  },
+  "v21": {
+    "authority": "independent FP64 decoders directly from the packed GGML Q4_K and Q5_K byte layouts plus FP64 matvec; neither authority calls Hawking dequantization",
+    "bounds": "Bounds::logits()",
+    "device_f32": {
+      "argmax": 7,
+      "cosine": 1.0,
+      "kl": 9.367e-16,
+      "max_meaningful_rel": 5.743e-08,
+      "pass": true,
+      "relative_l2": 2.548e-08,
+      "top_k_exact": true
+    },
+    "q5_device_f32": {
+      "argmax": 7,
+      "cosine": 1.0,
+      "kl": 1.351e-13,
+      "max_meaningful_rel": 4.403e-07,
+      "pass": true,
+      "relative_l2": 2.353e-07,
+      "top_k_exact": true
+    },
+    "direct_service_cpu_reference_fallback_count": 0,
+    "host_f32": {
+      "argmax": 7,
+      "cosine": 1.0,
+      "kl": 1.958e-13,
+      "max_meaningful_rel": 3.874e-07,
+      "pass": true,
+      "relative_l2": 2.144e-07,
+      "top_k_exact": true
+    },
+    "important_scope_note": "The FP64 authority runs after device completion and is not a serving fallback. This counter covers only the fixture's direct service lane."
+  }
+}

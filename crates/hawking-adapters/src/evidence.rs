@@ -86,12 +86,7 @@ pub fn validate_family_evidence(
 }
 
 fn check_evidence_path(root: &Path, family: &str, ev: &Evidence) -> Result<(), String> {
-    let p = PathBuf::from(ev.path);
-    let full = if p.is_absolute() {
-        p
-    } else {
-        root.join(ev.path)
-    };
+    let full = resolve_logical_path(root, ev.path);
     if full.exists() {
         return Ok(());
     }
@@ -106,6 +101,83 @@ fn check_evidence_path(root: &Path, family: &str, ev: &Evidence) -> Result<(), S
         "family {family}: evidence path {} does not exist (claim: {})",
         ev.path, ev.claim
     ))
+}
+
+/// Resolve a historically recorded root-relative path to the compact physical
+/// workspace.  Registry descriptors retain their original path strings so
+/// sealed/generated provenance remains stable; only live file lookup moves.
+pub fn resolve_logical_path(root: &Path, value: &str) -> PathBuf {
+    let path = PathBuf::from(value);
+    if path.is_absolute() || value.starts_with("workspace/") {
+        return if path.is_absolute() { path } else { root.join(path) };
+    }
+
+    let mut parts = value.split('/').filter(|part| !part.is_empty());
+    let Some(head) = parts.next() else {
+        return root.to_path_buf();
+    };
+    let tail: Vec<&str> = parts.collect();
+    let workspace = root.join("workspace");
+    let campaign = workspace.join("campaign");
+    let config = campaign.join("config");
+    let governance = campaign.join("governance");
+    let mut base = match head {
+        "adapters" => config.join("adapters"),
+        "build" => workspace.join("ops/build"),
+        "deploy" => workspace.join("ops/deploy"),
+        "odyssey" => governance.join("odyssey"),
+        "packs" => config.join("packs"),
+        "preregistrations" => config.join("preregistrations"),
+        "profiles" => config.join("profiles"),
+        "prompts" => config.join("prompts"),
+        "receipts" => governance.join("receipts"),
+        "reports" => campaign.join("records/reports"),
+        "tests" => workspace.join("quality/tests"),
+        "vendor" => workspace.join("vendor"),
+        "evidence" => {
+            let Some(campaign_name) = tail.first().copied() else {
+                return campaign.join("evidence");
+            };
+            let area = match campaign_name {
+                "deepseek-v4" | "glm52" | "kimi-k26" | "qwen235b" => "models",
+                "acceleration" | "gravity" | "rebuild" | "tg" => "runtime",
+                "fabric" | "hawking" | "hide" | "ramanujan" => "systems",
+                "doctor" | "one-mountain" | "overread" | "prometheus" => "research",
+                _ => return root.join(value),
+            };
+            let mut evidence = campaign.join("evidence").join(area).join(campaign_name);
+            for part in tail.iter().skip(1) {
+                evidence.push(part);
+            }
+            return evidence;
+        }
+        "control" => match tail.first().copied() {
+            Some("catalog") | Some("ledgers") | Some("receipts") | Some("rungs") | Some("verdicts") => {
+                governance.join("control")
+            }
+            Some(name) if name.ends_with("-ledger.json") => governance.join("control/ledgers"),
+            Some(name) if name.ends_with("-verdict.json") => governance.join("control/verdicts"),
+            Some(name) if name.contains("receipt") || name.contains("identity") => {
+                governance.join("control/receipts")
+            }
+            Some(
+                "ASSERTION_LEDGER.json"
+                | "CAPABILITY_MANIFEST.json"
+                | "GATE_ENVIRONMENT_PROOF.json"
+                | "GENERATED_REGISTRY.json"
+                | "REBUILD_ACCOUNTING_RULES.json"
+                | "SEMANTIC_GRAPH_SCHEMA.json"
+                | "SUBSYSTEM_FLOORS.json"
+                | "TEST_CASE_MANIFEST.json",
+            ) => governance.join("control/catalog/manifests"),
+            _ => governance.join("control/catalog"),
+        },
+        _ => return root.join(value),
+    };
+    for part in tail {
+        base.push(part);
+    }
+    base
 }
 
 /// Workspace root: walk up from CARGO_MANIFEST_DIR to the dir that contains

@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.tg.adapter_oracle.v1",
+  "status": "TERMINAL_FOR_THIS_RUNG",
+  "rung": "TG1",
+  "model": "Meta-Llama-3.1-8B-Instruct (rehydrated)",
+  "family": "llama",
+  "source": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "bytes": 4920739232,
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "rehydration_receipt": "evidence/tg/TG1_LLAMA_REHYDRATION_RECEIPT.json",
+    "external_parent_oracle": "evidence/tg/TG5_LLAMA_ADAPTER_ORACLE.json"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "new_tokens": 1,
+    "temperature": 0,
+    "hawking_command": "hawking generate --weights models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 1 --max-seq-len 32 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 30000"
+  },
+  "external_parent": {
+    "reused_same_sha_oracle": "TG5's independent llama-completion run emits first token ' Paris'.",
+    "verdict": "PASS"
+  },
+  "hawking": {
+    "first_token_id": 279,
+    "first_token_text": " the",
+    "prompt_tokens": 5,
+    "device_id": null,
+    "dispatches_per_forward": 0,
+    "decode_tokens_per_second": 0.7110451473579846,
+    "verdict": "FAIL"
+  },
+  "gate_results": {
+    "RAW_PARENT_FORWARD": "PASS",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "FAIL",
+    "AUTOTUNE_PROFILE": "BLOCKED",
+    "GRAVITY_ADAPTER": "BLOCKED",
+    "GRAVITY_ORACLE": "BLOCKED",
+    "RUNG_MEASUREMENT": "BLOCKED"
+  },
+  "decision": {
+    "lower_rung_outcome": "Rehydrating the exact source changes nothing: K0 is still wrong and the adapter has no hardware accounting. TG1 cannot receive a latency or Gravity claim.",
+    "next_step": "Evict this final active parent. Repair work should use the now-complete cross-family receipts, not retain models on disk."
+  }
+}

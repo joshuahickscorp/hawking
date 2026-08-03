@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.llama_candidate_rejection.v1",
+  "candidate": "llama-resident-b9430-fused-gate-up",
+  "status": "rejected_from_strict_matched_lane",
+  "source": {
+    "model": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "context_tokens_at_start": 1984,
+    "sampler": "greedy temperature=0 top_k=0 top_p=1 seed=42",
+    "warmup_tokens": 32,
+    "measured_tokens": 128
+  },
+  "comparison": {
+    "shared_environment": [
+      "HAWKING_LLAMA_RESIDENT_B9430=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN=1",
+      "HAWKING_LLAMA_RESIDENT_SERIAL_ENCODER=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_QKV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_FUSED_RESIDUAL_NORM=1"
+    ],
+    "candidate_env": "HAWKING_LLAMA_RESIDENT_B9430_FUSED_GATE_UP=1",
+    "control_env": "fused gate/up unset",
+    "candidate": {"decode_tps": 92.08249970704637, "dispatches_per_forward": 386, "first_generated_token": 304},
+    "control": {"decode_tps": 92.04240386355181, "dispatches_per_forward": 418, "first_generated_token": 29531},
+    "independent_llama_cpp_oracle_first_generated_token": 29531
+  },
+  "cause": "candidate diverges at the first generated token despite a similar short-run throughput value; dispatch reduction cannot compensate for failed same-model correctness",
+  "current_binary_revalidation": {
+    "date": "2026-07-31",
+    "protocol": "same 1984-token prefix, strict resident flags, 64 generated diagnostic tokens after the 64-token measurement warmup",
+    "candidate_first_generated_token": 304,
+    "oracle_first_generated_token": 29531,
+    "candidate_decode_tps": 89.9284629194428,
+    "candidate_dispatches_per_forward": 386,
+    "cpu_reference_fallback_count": 0,
+    "verdict": "still rejected; it does not regain eligibility from later resident-path changes"
+  },
+  "reopen_condition": "P8/full-logit plus 2K/8K/32K exact greedy continuation receipts against the current llama.cpp oracle, before it is enabled in tools/llama_matched_decode.py"
+}

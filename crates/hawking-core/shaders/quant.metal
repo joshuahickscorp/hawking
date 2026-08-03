@@ -56,6 +56,47 @@ static inline float q3_k_value(device const uchar* w_q3, uint64_t bo, uint c)
     return d * (float)scale * (float)q;
 }
 
+// Source-native Q4_K embedding lookup.  Unlike the historical f16 embedding
+// table, this reads the selected source row from the GGUF mmap and expands it
+// directly to f32.  Keeping the quant block grammar here is essential: Q4_K
+// embeddings are not fp16 source tensors, and an eager f16 round-trip can
+// change a later greedy decision.
+kernel void embed_lookup_q4_k_m(
+    device const uchar* model [[buffer(0)]],
+    device       float* out   [[buffer(1)]],
+    constant     uint& hidden [[buffer(2)]],
+    constant     uint& token  [[buffer(3)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    uint block = id >> 8;
+    uint c = id & 255u;
+    uint blocks_per_row = hidden >> 8;
+    uint64_t bo = ((uint64_t)token * (uint64_t)blocks_per_row + (uint64_t)block) * 144ul;
+
+    ushort d_bits    = (ushort)model[bo]     | ((ushort)model[bo + 1ul] << 8);
+    ushort dmin_bits = (ushort)model[bo + 2ul] | ((ushort)model[bo + 3ul] << 8);
+    float d = (float)as_type<half>(d_bits);
+    float dmin = (float)as_type<half>(dmin_bits);
+
+    uint sub = c >> 5;
+    uchar s_byte, m_byte;
+    if (sub < 4u) {
+        s_byte = model[bo + 4ul + (uint64_t)sub] & 0x3Fu;
+        m_byte = model[bo + 8ul + (uint64_t)sub] & 0x3Fu;
+    } else {
+        uint j = sub - 4u;
+        s_byte = (model[bo + 12ul + (uint64_t)j] & 0x0Fu)
+               | ((model[bo + 4ul + (uint64_t)j] >> 6) << 4);
+        m_byte = (model[bo + 12ul + (uint64_t)j] >> 4)
+               | ((model[bo + 8ul + (uint64_t)j] >> 6) << 4);
+    }
+    uint pair = sub >> 1;
+    uchar q = model[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)(c & 31u)];
+    uint nib = (sub & 1u) != 0u ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+    out[id] = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+}
+
 // One thread = one Q8_0 block (32 elems). Cheap; called per-tensor at
 // most once when materializing reference fp16 weights.
 kernel void dequant_q8_0(
@@ -142,6 +183,403 @@ kernel void gemm_q4_k_m_fused(
     }
 
     if (tid == 0u) y[gid] = shmem[0];
+}
+
+// Numeric Parity V2.1 authority path for Llama K0. One GPU thread computes
+// one output row in the identical raw Q4_K dequant-and-accumulate order used
+// by the frozen CPU reference: block, then sub-block, then element. It is a
+// correctness kernel, not a throughput geometry; the parallel kernel above
+// remains the performance candidate to promote only after this receipt holds.
+kernel void gemm_q4_k_m_serial_authority(
+    device const uchar* w_q4 [[buffer(0)]],
+    device const float* x    [[buffer(1)]],
+    device       float* y    [[buffer(2)]],
+    constant     uint& rows  [[buffer(3)]],
+    constant     uint& cols  [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    if (gid >= rows) return;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)gid * (uint64_t)blocks_per_row * 144ul;
+    float sum = 0.0f;
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+        ushort d_bits = (ushort)w_q4[bo] | ((ushort)w_q4[bo + 1ul] << 8u);
+        ushort dmin_bits = (ushort)w_q4[bo + 2ul] | ((ushort)w_q4[bo + 3ul] << 8u);
+        float d = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+        for (uint sub = 0u; sub < 8u; ++sub) {
+            uchar s_byte;
+            uchar m_byte;
+            if (sub < 4u) {
+                s_byte = w_q4[bo + 4ul + (uint64_t)sub] & 0x3Fu;
+                m_byte = w_q4[bo + 8ul + (uint64_t)sub] & 0x3Fu;
+            } else {
+                uint j = sub - 4u;
+                s_byte = (w_q4[bo + 12ul + (uint64_t)j] & 0x0Fu)
+                       | ((w_q4[bo + 4ul + (uint64_t)j] >> 6u) << 4u);
+                m_byte = (w_q4[bo + 12ul + (uint64_t)j] >> 4u)
+                       | ((w_q4[bo + 8ul + (uint64_t)j] >> 6u) << 4u);
+            }
+            float scale = d * (float)s_byte;
+            float minv = dmin * (float)m_byte;
+            uint pair = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            for (uint i = 0u; i < 32u; ++i) {
+                uchar packed = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nibble = upper ? ((uint)(packed >> 4u) & 0x0Fu) : ((uint)packed & 0x0Fu);
+                float weight = scale * (float)nibble - minv;
+                sum += weight * x[(uint64_t)b * 256ul + (uint64_t)sub * 32ul + (uint64_t)i];
+            }
+        }
+    }
+    y[gid] = sum;
+}
+
+// Packed Q5_K authority GEMV. One GPU thread owns one output row and follows
+// `quant::dequant_q5_k` followed by the CPU reference GEMV in the same
+// block/sub-block/element order. This closes the mixed-Q4_K_M Llama models'
+// Q5_K value-projection gap without materializing an f16/f32 shadow tensor.
+// It is deliberately a correctness geometry; a llama.cpp-style simdgroup
+// specialization can replace it only after a same-model parity receipt.
+kernel void gemm_q5_k_serial_authority(
+    device const uchar* w_q5 [[buffer(0)]],
+    device const float* x    [[buffer(1)]],
+    device       float* y    [[buffer(2)]],
+    constant     uint& rows  [[buffer(3)]],
+    constant     uint& cols  [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    if (gid >= rows) return;
+
+    const uint blocks_per_row = cols / 256u;
+    const uint64_t row_byte_off = (uint64_t)gid * (uint64_t)blocks_per_row * 176ul;
+    float sum = 0.0f;
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        const uint64_t bo = row_byte_off + (uint64_t)b * 176ul;
+        const ushort d_bits = (ushort)w_q5[bo] | ((ushort)w_q5[bo + 1ul] << 8u);
+        const ushort dmin_bits = (ushort)w_q5[bo + 2ul] | ((ushort)w_q5[bo + 3ul] << 8u);
+        const float d = (float)as_type<half>(d_bits);
+        const float dmin = (float)as_type<half>(dmin_bits);
+
+        for (uint sub = 0u; sub < 8u; ++sub) {
+            uchar scale;
+            uchar min_scale;
+            if (sub < 4u) {
+                scale = w_q5[bo + 4ul + (uint64_t)sub] & 0x3Fu;
+                min_scale = w_q5[bo + 8ul + (uint64_t)sub] & 0x3Fu;
+            } else {
+                const uint j = sub - 4u;
+                scale = (w_q5[bo + 12ul + (uint64_t)j] & 0x0Fu)
+                      | ((w_q5[bo + 4ul + (uint64_t)j] >> 6u) << 4u);
+                min_scale = (w_q5[bo + 12ul + (uint64_t)j] >> 4u)
+                          | ((w_q5[bo + 8ul + (uint64_t)j] >> 6u) << 4u);
+            }
+            const float s = d * (float)scale;
+            const float m = dmin * (float)min_scale;
+            const uint pair = sub >> 1u;
+            const bool upper = (sub & 1u) != 0u;
+            for (uint i = 0u; i < 32u; ++i) {
+                const uchar packed = w_q5[bo + 48ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                const uint nibble = upper ? ((uint)(packed >> 4u) & 0x0Fu)
+                                          : ((uint)packed & 0x0Fu);
+                const uint high = ((uint)w_q5[bo + 16ul + (uint64_t)i] >> sub) & 0x01u;
+                const float weight = s * (float)(nibble | (high << 4u)) - m;
+                sum += weight * x[(uint64_t)b * 256ul + (uint64_t)sub * 32ul + (uint64_t)i];
+            }
+        }
+    }
+    y[gid] = sum;
+}
+
+// Faithful specialization of llama.cpp b9430's single-token
+// `kernel_mul_mv_q4_K_f32` grammar.  A 64-thread workgroup owns four rows:
+// two simdgroups and two rows per simdgroup.  Its packed-ushort decode, four
+// activation sums, per-lane accumulation order, and simd reduction deliberately
+// mirror the frozen reference; this is a K0 authority path, not a tuned kernel.
+kernel void gemm_q4_k_m_llama_b9430(
+    device const uchar* w_q4 [[buffer(0)]],
+    device const float* x    [[buffer(1)]],
+    device       float* y    [[buffer(2)]],
+    constant     uint& rows  [[buffer(3)]],
+    constant     uint& cols  [[buffer(4)]],
+    uint tg                  [[threadgroup_position_in_grid]],
+    ushort lane              [[thread_index_in_simdgroup]],
+    ushort simdgroup         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr ushort kmask1 = 0x3f3f;
+    constexpr ushort kmask2 = 0x0f0f;
+    constexpr ushort kmask3 = 0xc0c0;
+
+    constexpr uint simdgroups_per_tg = 2u;
+    constexpr uint rows_per_simdgroup = 2u;
+    const uint first_row = (tg * simdgroups_per_tg + (uint)simdgroup) * rows_per_simdgroup;
+    if (first_row >= rows) return;
+
+    const ushort ix = lane / 8u;
+    const ushort it = lane % 8u;
+    const ushort iq = it / 4u;
+    const ushort ir = it % 4u;
+    const uint blocks_per_row = cols / 256u;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * 144ul;
+
+    float yl[16];
+    float yh[16];
+    float sumf[2] = {0.0f, 0.0f};
+    device const float* y4 = x + (uint)ix * 256u + 64u * (uint)iq + 8u * (uint)ir;
+
+    for (uint ib = (uint)ix; ib < blocks_per_row; ib += 4u) {
+        float4 sumy = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (short i = 0; i < 8; ++i) {
+            yl[i + 0] = y4[i + 0];   sumy[0] += yl[i + 0];
+            yl[i + 8] = y4[i + 32];  sumy[1] += yl[i + 8];
+            yh[i + 0] = y4[i + 128]; sumy[2] += yh[i + 0];
+            yh[i + 8] = y4[i + 160]; sumy[3] += yh[i + 8];
+        }
+
+        for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+            const uint64_t bo = (uint64_t)(first_row + row) * row_bytes + (uint64_t)ib * 144ul;
+            device const ushort* sc = (device const ushort*)(w_q4 + bo + 4ul) + iq;
+            device const ushort* q1 = (device const ushort*)(w_q4 + bo + 16ul)
+                                     + 16u * iq + 4u * ir;
+            device const half* dh = (device const half*)(w_q4 + bo);
+
+            ushort sc16[4];
+            thread const uchar* sc8 = (thread const uchar*)sc16;
+            sc16[0] = sc[0] & kmask1;
+            sc16[1] = sc[2] & kmask1;
+            sc16[2] = ((sc[4] >> 0) & kmask2) | ((sc[0] & kmask3) >> 2);
+            sc16[3] = ((sc[4] >> 4) & kmask2) | ((sc[2] & kmask3) >> 2);
+
+            device const ushort* q2 = q1 + 32u;
+            float4 acc1 = {0.0f, 0.0f, 0.0f, 0.0f};
+            float4 acc2 = {0.0f, 0.0f, 0.0f, 0.0f};
+            for (short i = 0; i < 4; ++i) {
+                acc1[0] += yl[2 * i + 0] * (q1[i] & 0x000F);
+                acc1[1] += yl[2 * i + 1] * (q1[i] & 0x0F00);
+                acc1[2] += yl[2 * i + 8] * (q1[i] & 0x00F0);
+                acc1[3] += yl[2 * i + 9] * (q1[i] & 0xF000);
+                acc2[0] += yh[2 * i + 0] * (q2[i] & 0x000F);
+                acc2[1] += yh[2 * i + 1] * (q2[i] & 0x0F00);
+                acc2[2] += yh[2 * i + 8] * (q2[i] & 0x00F0);
+                acc2[3] += yh[2 * i + 9] * (q2[i] & 0xF000);
+            }
+
+            sumf[row] += (float)dh[0] * ((acc1[0] + 1.0f / 256.0f * acc1[1]) * sc8[0]
+                                       + (acc1[2] + 1.0f / 256.0f * acc1[3]) * sc8[1] * 1.0f / 16.0f
+                                       + (acc2[0] + 1.0f / 256.0f * acc2[1]) * sc8[4]
+                                       + (acc2[2] + 1.0f / 256.0f * acc2[3]) * sc8[5] * 1.0f / 16.0f)
+                       - (float)dh[1] * (sumy[0] * sc8[2] + sumy[1] * sc8[3]
+                                       + sumy[2] * sc8[6] + sumy[3] * sc8[7]);
+        }
+        y4 += 4u * 256u;
+    }
+
+    for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+        float sum_all = simd_sum(sumf[row]);
+        if (lane == 0u) y[first_row + row] = sum_all;
+    }
+}
+
+// Batch-grid companion to the frozen b9430 Q4_K decode grammar.  Each
+// batch plane executes exactly the source per-lane arithmetic above; the only
+// difference is a 2D grid and B-strided activation/output bases.  It is used
+// by Llama packed prefill so the integration graph does not silently switch
+// to the generic Q4 GEMM grammar.
+kernel void gemm_q4_k_m_llama_b9430_batched(
+    device const uchar* w_q4 [[buffer(0)]],
+    device const float* x    [[buffer(1)]],
+    device       float* y    [[buffer(2)]],
+    constant     uint& rows  [[buffer(3)]],
+    constant     uint& cols  [[buffer(4)]],
+    uint3 tg_id              [[threadgroup_position_in_grid]],
+    ushort lane              [[thread_index_in_simdgroup]],
+    ushort simdgroup         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr ushort kmask1 = 0x3f3f;
+    constexpr ushort kmask2 = 0x0f0f;
+    constexpr ushort kmask3 = 0xc0c0;
+    constexpr uint simdgroups_per_tg = 2u;
+    constexpr uint rows_per_simdgroup = 2u;
+    const uint first_row = (tg_id.x * simdgroups_per_tg + (uint)simdgroup) * rows_per_simdgroup;
+    if (first_row >= rows) return;
+    const uint batch_id = tg_id.y;
+    const ushort ix = lane / 8u;
+    const ushort it = lane % 8u;
+    const ushort iq = it / 4u;
+    const ushort ir = it % 4u;
+    const uint blocks_per_row = cols / 256u;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * 144ul;
+    float yl[16];
+    float yh[16];
+    float sumf[2] = {0.0f, 0.0f};
+    device const float* y4 = x + (uint64_t)batch_id * cols + (uint)ix * 256u + 64u * (uint)iq + 8u * (uint)ir;
+    for (uint ib = (uint)ix; ib < blocks_per_row; ib += 4u) {
+        float4 sumy = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (short i = 0; i < 8; ++i) {
+            yl[i + 0] = y4[i + 0];   sumy[0] += yl[i + 0];
+            yl[i + 8] = y4[i + 32];  sumy[1] += yl[i + 8];
+            yh[i + 0] = y4[i + 128]; sumy[2] += yh[i + 0];
+            yh[i + 8] = y4[i + 160]; sumy[3] += yh[i + 8];
+        }
+        for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+            const uint64_t bo = (uint64_t)(first_row + row) * row_bytes + (uint64_t)ib * 144ul;
+            device const ushort* sc = (device const ushort*)(w_q4 + bo + 4ul) + iq;
+            device const ushort* q1 = (device const ushort*)(w_q4 + bo + 16ul) + 16u * iq + 4u * ir;
+            device const half* dh = (device const half*)(w_q4 + bo);
+            ushort sc16[4];
+            thread const uchar* sc8 = (thread const uchar*)sc16;
+            sc16[0] = sc[0] & kmask1;
+            sc16[1] = sc[2] & kmask1;
+            sc16[2] = ((sc[4] >> 0) & kmask2) | ((sc[0] & kmask3) >> 2);
+            sc16[3] = ((sc[4] >> 4) & kmask2) | ((sc[2] & kmask3) >> 2);
+            device const ushort* q2 = q1 + 32u;
+            float4 acc1 = {0.0f, 0.0f, 0.0f, 0.0f};
+            float4 acc2 = {0.0f, 0.0f, 0.0f, 0.0f};
+            for (short i = 0; i < 4; ++i) {
+                acc1[0] += yl[2 * i + 0] * (q1[i] & 0x000F);
+                acc1[1] += yl[2 * i + 1] * (q1[i] & 0x0F00);
+                acc1[2] += yl[2 * i + 8] * (q1[i] & 0x00F0);
+                acc1[3] += yl[2 * i + 9] * (q1[i] & 0xF000);
+                acc2[0] += yh[2 * i + 0] * (q2[i] & 0x000F);
+                acc2[1] += yh[2 * i + 1] * (q2[i] & 0x0F00);
+                acc2[2] += yh[2 * i + 8] * (q2[i] & 0x00F0);
+                acc2[3] += yh[2 * i + 9] * (q2[i] & 0xF000);
+            }
+            sumf[row] += (float)dh[0] * ((acc1[0] + 1.0f / 256.0f * acc1[1]) * sc8[0]
+                                       + (acc1[2] + 1.0f / 256.0f * acc1[3]) * sc8[1] * 1.0f / 16.0f
+                                       + (acc2[0] + 1.0f / 256.0f * acc2[1]) * sc8[4]
+                                       + (acc2[2] + 1.0f / 256.0f * acc2[3]) * sc8[5] * 1.0f / 16.0f)
+                       - (float)dh[1] * (sumy[0] * sc8[2] + sumy[1] * sc8[3]
+                                       + sumy[2] * sc8[6] + sumy[3] * sc8[7]);
+        }
+        y4 += 4u * 256u;
+    }
+    for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+        const float sum_all = simd_sum(sumf[row]);
+        if (lane == 0u) y[(uint64_t)batch_id * rows + first_row + row] = sum_all;
+    }
+}
+
+// Source-arithmetic gate/up pair for the Llama FFN. Each matrix preserves the
+// exact b9430 per-lane accumulation and SIMD reduction above; the fusion only
+// reuses the shared activation gathers inside one dispatch.
+kernel void gemm_q4_k_m_llama_b9430_pair(
+    device const uchar* w_gate [[buffer(0)]],
+    device const uchar* w_up   [[buffer(1)]],
+    device const float* x      [[buffer(2)]],
+    device       float* y_gate [[buffer(3)]],
+    device       float* y_up   [[buffer(4)]],
+    constant     uint& rows    [[buffer(5)]],
+    constant     uint& cols    [[buffer(6)]],
+    uint tg                    [[threadgroup_position_in_grid]],
+    ushort lane                [[thread_index_in_simdgroup]],
+    ushort simdgroup           [[simdgroup_index_in_threadgroup]])
+{
+    constexpr ushort kmask1 = 0x3f3f;
+    constexpr ushort kmask2 = 0x0f0f;
+    constexpr ushort kmask3 = 0xc0c0;
+    constexpr uint simdgroups_per_tg = 2u;
+    constexpr uint rows_per_simdgroup = 2u;
+    const uint first_row = (tg * simdgroups_per_tg + (uint)simdgroup) * rows_per_simdgroup;
+    if (first_row >= rows) return;
+
+    const ushort ix = lane / 8u;
+    const ushort it = lane % 8u;
+    const ushort iq = it / 4u;
+    const ushort ir = it % 4u;
+    const uint blocks_per_row = cols / 256u;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * 144ul;
+
+    float yl[16];
+    float yh[16];
+    float sum_gate[2] = {0.0f, 0.0f};
+    float sum_up[2] = {0.0f, 0.0f};
+    device const float* y4 = x + (uint)ix * 256u + 64u * (uint)iq + 8u * (uint)ir;
+
+    for (uint ib = (uint)ix; ib < blocks_per_row; ib += 4u) {
+        float4 sumy = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (short i = 0; i < 8; ++i) {
+            yl[i + 0] = y4[i + 0];   sumy[0] += yl[i + 0];
+            yl[i + 8] = y4[i + 32];  sumy[1] += yl[i + 8];
+            yh[i + 0] = y4[i + 128]; sumy[2] += yh[i + 0];
+            yh[i + 8] = y4[i + 160]; sumy[3] += yh[i + 8];
+        }
+
+        for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+            const uint64_t bo_gate = (uint64_t)(first_row + row) * row_bytes + (uint64_t)ib * 144ul;
+            device const ushort* sc_gate = (device const ushort*)(w_gate + bo_gate + 4ul) + iq;
+            device const ushort* q1_gate = (device const ushort*)(w_gate + bo_gate + 16ul)
+                                          + 16u * iq + 4u * ir;
+            device const half* dh_gate = (device const half*)(w_gate + bo_gate);
+            ushort sc16_gate[4];
+            thread const uchar* sc8_gate = (thread const uchar*)sc16_gate;
+            sc16_gate[0] = sc_gate[0] & kmask1;
+            sc16_gate[1] = sc_gate[2] & kmask1;
+            sc16_gate[2] = ((sc_gate[4] >> 0) & kmask2) | ((sc_gate[0] & kmask3) >> 2);
+            sc16_gate[3] = ((sc_gate[4] >> 4) & kmask2) | ((sc_gate[2] & kmask3) >> 2);
+            device const ushort* q2_gate = q1_gate + 32u;
+            float4 acc1_gate = {0.0f, 0.0f, 0.0f, 0.0f};
+            float4 acc2_gate = {0.0f, 0.0f, 0.0f, 0.0f};
+            for (short i = 0; i < 4; ++i) {
+                acc1_gate[0] += yl[2 * i + 0] * (q1_gate[i] & 0x000F);
+                acc1_gate[1] += yl[2 * i + 1] * (q1_gate[i] & 0x0F00);
+                acc1_gate[2] += yl[2 * i + 8] * (q1_gate[i] & 0x00F0);
+                acc1_gate[3] += yl[2 * i + 9] * (q1_gate[i] & 0xF000);
+                acc2_gate[0] += yh[2 * i + 0] * (q2_gate[i] & 0x000F);
+                acc2_gate[1] += yh[2 * i + 1] * (q2_gate[i] & 0x0F00);
+                acc2_gate[2] += yh[2 * i + 8] * (q2_gate[i] & 0x00F0);
+                acc2_gate[3] += yh[2 * i + 9] * (q2_gate[i] & 0xF000);
+            }
+            sum_gate[row] += (float)dh_gate[0] * ((acc1_gate[0] + 1.0f / 256.0f * acc1_gate[1]) * sc8_gate[0]
+                                                + (acc1_gate[2] + 1.0f / 256.0f * acc1_gate[3]) * sc8_gate[1] * 1.0f / 16.0f
+                                                + (acc2_gate[0] + 1.0f / 256.0f * acc2_gate[1]) * sc8_gate[4]
+                                                + (acc2_gate[2] + 1.0f / 256.0f * acc2_gate[3]) * sc8_gate[5] * 1.0f / 16.0f)
+                             - (float)dh_gate[1] * (sumy[0] * sc8_gate[2] + sumy[1] * sc8_gate[3]
+                                                + sumy[2] * sc8_gate[6] + sumy[3] * sc8_gate[7]);
+            const uint64_t bo_up = (uint64_t)(first_row + row) * row_bytes + (uint64_t)ib * 144ul;
+            device const ushort* sc_up = (device const ushort*)(w_up + bo_up + 4ul) + iq;
+            device const ushort* q1_up = (device const ushort*)(w_up + bo_up + 16ul)
+                                        + 16u * iq + 4u * ir;
+            device const half* dh_up = (device const half*)(w_up + bo_up);
+            ushort sc16_up[4];
+            thread const uchar* sc8_up = (thread const uchar*)sc16_up;
+            sc16_up[0] = sc_up[0] & kmask1;
+            sc16_up[1] = sc_up[2] & kmask1;
+            sc16_up[2] = ((sc_up[4] >> 0) & kmask2) | ((sc_up[0] & kmask3) >> 2);
+            sc16_up[3] = ((sc_up[4] >> 4) & kmask2) | ((sc_up[2] & kmask3) >> 2);
+            device const ushort* q2_up = q1_up + 32u;
+            float4 acc1_up = {0.0f, 0.0f, 0.0f, 0.0f};
+            float4 acc2_up = {0.0f, 0.0f, 0.0f, 0.0f};
+            for (short i = 0; i < 4; ++i) {
+                acc1_up[0] += yl[2 * i + 0] * (q1_up[i] & 0x000F);
+                acc1_up[1] += yl[2 * i + 1] * (q1_up[i] & 0x0F00);
+                acc1_up[2] += yl[2 * i + 8] * (q1_up[i] & 0x00F0);
+                acc1_up[3] += yl[2 * i + 9] * (q1_up[i] & 0xF000);
+                acc2_up[0] += yh[2 * i + 0] * (q2_up[i] & 0x000F);
+                acc2_up[1] += yh[2 * i + 1] * (q2_up[i] & 0x0F00);
+                acc2_up[2] += yh[2 * i + 8] * (q2_up[i] & 0x00F0);
+                acc2_up[3] += yh[2 * i + 9] * (q2_up[i] & 0xF000);
+            }
+            sum_up[row] += (float)dh_up[0] * ((acc1_up[0] + 1.0f / 256.0f * acc1_up[1]) * sc8_up[0]
+                                            + (acc1_up[2] + 1.0f / 256.0f * acc1_up[3]) * sc8_up[1] * 1.0f / 16.0f
+                                            + (acc2_up[0] + 1.0f / 256.0f * acc2_up[1]) * sc8_up[4]
+                                            + (acc2_up[2] + 1.0f / 256.0f * acc2_up[3]) * sc8_up[5] * 1.0f / 16.0f)
+                           - (float)dh_up[1] * (sumy[0] * sc8_up[2] + sumy[1] * sc8_up[3]
+                                            + sumy[2] * sc8_up[6] + sumy[3] * sc8_up[7]);
+        }
+        y4 += 4u * 256u;
+    }
+
+    for (ushort row = 0; row < 2u && first_row + row < rows; ++row) {
+        const float gate_total = simd_sum(sum_gate[row]);
+        const float up_total = simd_sum(sum_up[row]);
+        if (lane == 0u) {
+            y_gate[first_row + row] = gate_total;
+            y_up[first_row + row] = up_total;
+        }
+    }
 }
 
 // ── gemm_q4_k_m_fused_simd ───────────────────────────────────────────────────
@@ -2596,6 +3034,349 @@ kernel void gemm_q6_k_fused_v2(
     }
 }
 
+// Llama K0 authority specialization of ggml v0.13.1 / llama.cpp b9430's
+// `kernel_mul_mv_q6_K_f32_nsg=2_ne12=1_r2=1_r3=1`. The reference assigns
+// two rows to each of two simdgroups and interleaves the 256-value blocks
+// across even/odd lanes. This is a parity kernel, not a throughput candidate.
+kernel void gemm_q6_k_llama_b9430(
+    device const uchar* w_q6 [[buffer(0)]],
+    device const float* x    [[buffer(1)]],
+    device       float* y    [[buffer(2)]],
+    constant uint& rows      [[buffer(3)]],
+    constant uint& cols      [[buffer(4)]],
+    uint group               [[threadgroup_position_in_grid]],
+    ushort lane              [[thread_index_in_simdgroup]],
+    ushort simdgroup         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint NSG = 2u;
+    constexpr uint ROWS_PER_SIMDGROUP = 2u;
+    constexpr uint BLOCK_BYTES = 210u;
+    constexpr uchar kmask1 = 0x03u;
+    constexpr uchar kmask2 = 0x0Cu;
+    constexpr uchar kmask3 = 0x30u;
+    constexpr uchar kmask4 = 0xC0u;
+
+    const uint blocks_per_row = cols / 256u;
+    const uint first_row = (group * NSG + (uint)simdgroup) * ROWS_PER_SIMDGROUP;
+    if (first_row >= rows) return;
+
+    float sumf[ROWS_PER_SIMDGROUP] = {0.0f, 0.0f};
+    float yl[16];
+    const ushort tid = lane / 2u;
+    const ushort ix = lane % 2u;
+    const ushort ip = tid / 8u;
+    const ushort il = tid % 8u;
+    const ushort l0 = 4u * il;
+    const ushort is = 8u * ip + l0 / 16u;
+    const ushort y_offset = 128u * ip + l0;
+    const ushort q_offset_l = 64u * ip + l0;
+    const ushort q_offset_h = 32u * ip + l0;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * BLOCK_BYTES;
+
+    for (uint block = (uint)ix; block < blocks_per_row; block += 2u) {
+        const uint64_t block_offset = (uint64_t)block * BLOCK_BYTES;
+        device const float* xb = x + (uint64_t)block * 256ul + y_offset;
+        for (ushort l = 0; l < 4u; ++l) {
+            yl[4u*l + 0u] = xb[l +  0u];
+            yl[4u*l + 1u] = xb[l + 32u];
+            yl[4u*l + 2u] = xb[l + 64u];
+            yl[4u*l + 3u] = xb[l + 96u];
+        }
+
+        device const uchar* q1 = w_q6 + (uint64_t)first_row * row_bytes + block_offset + q_offset_l;
+        device const uchar* q2 = q1 + 32u;
+        device const uchar* qh = w_q6 + (uint64_t)first_row * row_bytes + block_offset + 128u + q_offset_h;
+        device const char* sc = (device const char*)(w_q6 + (uint64_t)first_row * row_bytes + block_offset + 192u + is);
+        device const half* dh = (device const half*)(w_q6 + (uint64_t)first_row * row_bytes + block_offset + 208u);
+
+        for (uint row = 0; row < ROWS_PER_SIMDGROUP && first_row + row < rows; ++row) {
+            float4 sums = float4(0.0f);
+            for (ushort l = 0; l < 4u; ++l) {
+                sums[0] += yl[4u*l + 0u] * ((int)((q1[l] & 0x0Fu) | ((qh[l] & kmask1) << 4u)) - 32);
+                sums[1] += yl[4u*l + 1u] * ((int)((q2[l] & 0x0Fu) | ((qh[l] & kmask2) << 2u)) - 32);
+                sums[2] += yl[4u*l + 2u] * ((int)((q1[l] >> 4u)    | ((qh[l] & kmask3) << 0u)) - 32);
+                sums[3] += yl[4u*l + 3u] * ((int)((q2[l] >> 4u)    | ((qh[l] & kmask4) >> 2u)) - 32);
+            }
+            sumf[row] += (float)dh[0] * (sums[0] * (float)sc[0] + sums[1] * (float)sc[2]
+                                       + sums[2] * (float)sc[4] + sums[3] * (float)sc[6]);
+            q1 += row_bytes;
+            q2 += row_bytes;
+            qh += row_bytes;
+            sc += row_bytes;
+            dh = (device const half*)((device const uchar*)dh + row_bytes);
+        }
+    }
+
+    for (uint row = 0; row < ROWS_PER_SIMDGROUP && first_row + row < rows; ++row) {
+        const float total = simd_sum(sumf[row]);
+        if (lane == 0u) y[first_row + row] = total;
+    }
+}
+
+// ── Direct b9430 Q/K/V + RoPE + KV append ───────────────────────────────────
+// This is a topology-only fusion of the strict source arithmetic above.  The
+// Q4/Q6 dot helpers intentionally retain the b9430 lane assignment and
+// accumulation order; unlike the predecoded QKV candidate they add no scale
+// table traffic and therefore do not widen the resident model image.
+
+struct ArgbufB9430Qkv {
+    uint q_rows;
+    uint kv_rows;
+    uint cols;
+    uint n_q_heads;
+    uint n_k_heads;
+    uint head_dim;
+    uint pos;
+    uint kv_off;
+    uint interleaved;
+};
+
+static inline float q4k_b9430_dot_row(
+    device const uchar* w_q4,
+    device const float* x,
+    uint row,
+    uint cols,
+    ushort lane)
+{
+    constexpr ushort kmask1 = 0x3f3f;
+    constexpr ushort kmask2 = 0x0f0f;
+    constexpr ushort kmask3 = 0xc0c0;
+    const ushort ix = lane / 8u;
+    const ushort it = lane % 8u;
+    const ushort iq = it / 4u;
+    const ushort ir = it % 4u;
+    const uint blocks_per_row = cols / 256u;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * 144ul;
+    float yl[16];
+    float yh[16];
+    float sumf = 0.0f;
+    device const float* y4 = x + (uint)ix * 256u + 64u * (uint)iq + 8u * (uint)ir;
+
+    for (uint ib = (uint)ix; ib < blocks_per_row; ib += 4u) {
+        float4 sumy = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (short i = 0; i < 8; ++i) {
+            yl[i + 0] = y4[i + 0];   sumy[0] += yl[i + 0];
+            yl[i + 8] = y4[i + 32];  sumy[1] += yl[i + 8];
+            yh[i + 0] = y4[i + 128]; sumy[2] += yh[i + 0];
+            yh[i + 8] = y4[i + 160]; sumy[3] += yh[i + 8];
+        }
+        const uint64_t bo = (uint64_t)row * row_bytes + (uint64_t)ib * 144ul;
+        device const ushort* sc = (device const ushort*)(w_q4 + bo + 4ul) + iq;
+        device const ushort* q1 = (device const ushort*)(w_q4 + bo + 16ul)
+                                 + 16u * iq + 4u * ir;
+        device const half* dh = (device const half*)(w_q4 + bo);
+        ushort sc16[4];
+        thread const uchar* sc8 = (thread const uchar*)sc16;
+        sc16[0] = sc[0] & kmask1;
+        sc16[1] = sc[2] & kmask1;
+        sc16[2] = ((sc[4] >> 0) & kmask2) | ((sc[0] & kmask3) >> 2);
+        sc16[3] = ((sc[4] >> 4) & kmask2) | ((sc[2] & kmask3) >> 2);
+        device const ushort* q2 = q1 + 32u;
+        float4 acc1 = {0.0f, 0.0f, 0.0f, 0.0f};
+        float4 acc2 = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (short i = 0; i < 4; ++i) {
+            acc1[0] += yl[2 * i + 0] * (q1[i] & 0x000F);
+            acc1[1] += yl[2 * i + 1] * (q1[i] & 0x0F00);
+            acc1[2] += yl[2 * i + 8] * (q1[i] & 0x00F0);
+            acc1[3] += yl[2 * i + 9] * (q1[i] & 0xF000);
+            acc2[0] += yh[2 * i + 0] * (q2[i] & 0x000F);
+            acc2[1] += yh[2 * i + 1] * (q2[i] & 0x0F00);
+            acc2[2] += yh[2 * i + 8] * (q2[i] & 0x00F0);
+            acc2[3] += yh[2 * i + 9] * (q2[i] & 0xF000);
+        }
+        sumf += (float)dh[0] * ((acc1[0] + 1.0f / 256.0f * acc1[1]) * sc8[0]
+                              + (acc1[2] + 1.0f / 256.0f * acc1[3]) * sc8[1] * 1.0f / 16.0f
+                              + (acc2[0] + 1.0f / 256.0f * acc2[1]) * sc8[4]
+                              + (acc2[2] + 1.0f / 256.0f * acc2[3]) * sc8[5] * 1.0f / 16.0f)
+               - (float)dh[1] * (sumy[0] * sc8[2] + sumy[1] * sc8[3]
+                               + sumy[2] * sc8[6] + sumy[3] * sc8[7]);
+        y4 += 4u * 256u;
+    }
+    return simd_sum(sumf);
+}
+
+static inline float q6k_b9430_dot_row(
+    device const uchar* w_q6,
+    device const float* x,
+    uint row,
+    uint cols,
+    ushort lane)
+{
+    constexpr uchar kmask1 = 0x03u;
+    constexpr uchar kmask2 = 0x0Cu;
+    constexpr uchar kmask3 = 0x30u;
+    constexpr uchar kmask4 = 0xC0u;
+    const uint blocks_per_row = cols / 256u;
+    const ushort tid = lane / 2u;
+    const ushort ix = lane % 2u;
+    const ushort ip = tid / 8u;
+    const ushort il = tid % 8u;
+    const ushort l0 = 4u * il;
+    const ushort is = 8u * ip + l0 / 16u;
+    const ushort y_offset = 128u * ip + l0;
+    const ushort q_offset_l = 64u * ip + l0;
+    const ushort q_offset_h = 32u * ip + l0;
+    const uint64_t row_bytes = (uint64_t)blocks_per_row * 210ul;
+    float yl[16];
+    float sumf = 0.0f;
+    for (uint block = (uint)ix; block < blocks_per_row; block += 2u) {
+        const uint64_t block_offset = (uint64_t)block * 210ul;
+        device const float* xb = x + (uint64_t)block * 256ul + y_offset;
+        for (ushort l = 0; l < 4u; ++l) {
+            yl[4u*l + 0u] = xb[l +  0u];
+            yl[4u*l + 1u] = xb[l + 32u];
+            yl[4u*l + 2u] = xb[l + 64u];
+            yl[4u*l + 3u] = xb[l + 96u];
+        }
+        device const uchar* row_base = w_q6 + (uint64_t)row * row_bytes + block_offset;
+        device const uchar* q1 = row_base + q_offset_l;
+        device const uchar* q2 = q1 + 32u;
+        device const uchar* qh = row_base + 128u + q_offset_h;
+        device const char* sc = (device const char*)(row_base + 192u + is);
+        device const half* dh = (device const half*)(row_base + 208u);
+        float4 sums = float4(0.0f);
+        for (ushort l = 0; l < 4u; ++l) {
+            sums[0] += yl[4u*l + 0u] * ((int)((q1[l] & 0x0Fu) | ((qh[l] & kmask1) << 4u)) - 32);
+            sums[1] += yl[4u*l + 1u] * ((int)((q2[l] & 0x0Fu) | ((qh[l] & kmask2) << 2u)) - 32);
+            sums[2] += yl[4u*l + 2u] * ((int)((q1[l] >> 4u)    | ((qh[l] & kmask3) << 0u)) - 32);
+            sums[3] += yl[4u*l + 3u] * ((int)((q2[l] >> 4u)    | ((qh[l] & kmask4) >> 2u)) - 32);
+        }
+        sumf += (float)dh[0] * (sums[0] * (float)sc[0] + sums[1] * (float)sc[2]
+                               + sums[2] * (float)sc[4] + sums[3] * (float)sc[6]);
+    }
+    return simd_sum(sumf);
+}
+
+static inline uint b9430_rope_row0(uint pair_idx, constant ArgbufB9430Qkv& args)
+{
+    const uint pairs_per_head = args.head_dim / 2u;
+    const uint head = pair_idx / pairs_per_head;
+    const uint pair = pair_idx - head * pairs_per_head;
+    return head * args.head_dim + (args.interleaved != 0u ? pair * 2u : pair);
+}
+
+static inline uint b9430_rope_row1(uint row0, constant ArgbufB9430Qkv& args)
+{
+    return row0 + (args.interleaved != 0u ? 1u : args.head_dim / 2u);
+}
+
+static inline void b9430_write_rope(
+    device float* dst,
+    device const float* rope,
+    uint row0,
+    uint row1,
+    uint pair,
+    float v0,
+    float v1,
+    constant ArgbufB9430Qkv& args)
+{
+    const uint half_dim = args.head_dim / 2u;
+    const float c = rope[pair];
+    const float s = rope[half_dim + pair];
+    dst[row0] = v0 * c - v1 * s;
+    dst[row1] = v0 * s + v1 * c;
+}
+
+// All-Q4 source variant. Q/K/V use the strict Q4 authority arithmetic.
+kernel void gemm_q4k_b9430_qkv_rope_append(
+    device const uchar* wq [[buffer(0)]],
+    device const uchar* wk [[buffer(1)]],
+    device const uchar* wv [[buffer(2)]],
+    device const float* x [[buffer(3)]],
+    device float* q_out [[buffer(4)]],
+    device float* k_cache [[buffer(5)]],
+    device float* v_cache [[buffer(6)]],
+    device const float* rope [[buffer(7)]],
+    constant ArgbufB9430Qkv& args [[buffer(8)]],
+    uint gid [[threadgroup_position_in_grid]],
+    ushort lane [[thread_index_in_simdgroup]],
+    ushort simdgroup [[simdgroup_index_in_threadgroup]])
+{
+    const uint q_pairs = args.q_rows / 2u;
+    const uint kv_pairs = args.kv_rows / 2u;
+    const uint q_tg = (q_pairs + 1u) / 2u;
+    const uint k_tg = (kv_pairs + 1u) / 2u;
+    const uint v_tg = (args.kv_rows + 3u) / 4u;
+    if (gid < q_tg) {
+        const uint pair_idx = gid * 2u + (uint)simdgroup;
+        if (pair_idx >= q_pairs) return;
+        const uint row0 = b9430_rope_row0(pair_idx, args);
+        const uint row1 = b9430_rope_row1(row0, args);
+        const float p0 = q4k_b9430_dot_row(wq, x, row0, args.cols, lane);
+        const float p1 = q4k_b9430_dot_row(wq, x, row1, args.cols, lane);
+        if (lane == 0) b9430_write_rope(q_out, rope, row0, row1, pair_idx % (args.head_dim / 2u), p0, p1, args);
+    } else if (gid < q_tg + k_tg) {
+        const uint local = gid - q_tg;
+        const uint pair_idx = local * 2u + (uint)simdgroup;
+        if (pair_idx >= kv_pairs) return;
+        const uint row0 = b9430_rope_row0(pair_idx, args);
+        const uint row1 = b9430_rope_row1(row0, args);
+        const float p0 = q4k_b9430_dot_row(wk, x, row0, args.cols, lane);
+        const float p1 = q4k_b9430_dot_row(wk, x, row1, args.cols, lane);
+        if (lane == 0) b9430_write_rope(k_cache + args.kv_off, rope, row0, row1, pair_idx % (args.head_dim / 2u), p0, p1, args);
+    } else {
+        const uint local = gid - q_tg - k_tg;
+        const uint row0 = local * 4u + (uint)simdgroup * 2u;
+        if (row0 >= args.kv_rows) return;
+        const float p0 = q4k_b9430_dot_row(wv, x, row0, args.cols, lane);
+        const float p1 = row0 + 1u < args.kv_rows ? q4k_b9430_dot_row(wv, x, row0 + 1u, args.cols, lane) : 0.0f;
+        if (lane == 0) {
+            v_cache[args.kv_off + row0] = p0;
+            if (row0 + 1u < args.kv_rows) v_cache[args.kv_off + row0 + 1u] = p1;
+        }
+    }
+}
+
+// Mixed source variant for layers whose V projection is Q6_K.
+kernel void gemm_q4k_b9430_q4k_q6k_qkv_rope_append(
+    device const uchar* wq [[buffer(0)]],
+    device const uchar* wk [[buffer(1)]],
+    device const uchar* wv [[buffer(2)]],
+    device const float* x [[buffer(3)]],
+    device float* q_out [[buffer(4)]],
+    device float* k_cache [[buffer(5)]],
+    device float* v_cache [[buffer(6)]],
+    device const float* rope [[buffer(7)]],
+    constant ArgbufB9430Qkv& args [[buffer(8)]],
+    uint gid [[threadgroup_position_in_grid]],
+    ushort lane [[thread_index_in_simdgroup]],
+    ushort simdgroup [[simdgroup_index_in_threadgroup]])
+{
+    const uint q_pairs = args.q_rows / 2u;
+    const uint kv_pairs = args.kv_rows / 2u;
+    const uint q_tg = (q_pairs + 1u) / 2u;
+    const uint k_tg = (kv_pairs + 1u) / 2u;
+    const uint v_tg = (args.kv_rows + 3u) / 4u;
+    if (gid < q_tg) {
+        const uint pair_idx = gid * 2u + (uint)simdgroup;
+        if (pair_idx >= q_pairs) return;
+        const uint row0 = b9430_rope_row0(pair_idx, args);
+        const uint row1 = b9430_rope_row1(row0, args);
+        const float p0 = q4k_b9430_dot_row(wq, x, row0, args.cols, lane);
+        const float p1 = q4k_b9430_dot_row(wq, x, row1, args.cols, lane);
+        if (lane == 0) b9430_write_rope(q_out, rope, row0, row1, pair_idx % (args.head_dim / 2u), p0, p1, args);
+    } else if (gid < q_tg + k_tg) {
+        const uint local = gid - q_tg;
+        const uint pair_idx = local * 2u + (uint)simdgroup;
+        if (pair_idx >= kv_pairs) return;
+        const uint row0 = b9430_rope_row0(pair_idx, args);
+        const uint row1 = b9430_rope_row1(row0, args);
+        const float p0 = q4k_b9430_dot_row(wk, x, row0, args.cols, lane);
+        const float p1 = q4k_b9430_dot_row(wk, x, row1, args.cols, lane);
+        if (lane == 0) b9430_write_rope(k_cache + args.kv_off, rope, row0, row1, pair_idx % (args.head_dim / 2u), p0, p1, args);
+    } else {
+        const uint local = gid - q_tg - k_tg;
+        const uint row0 = local * 4u + (uint)simdgroup * 2u;
+        if (row0 >= args.kv_rows) return;
+        const float p0 = q6k_b9430_dot_row(wv, x, row0, args.cols, lane);
+        const float p1 = row0 + 1u < args.kv_rows ? q6k_b9430_dot_row(wv, x, row0 + 1u, args.cols, lane) : 0.0f;
+        if (lane == 0) {
+            v_cache[args.kv_off + row0] = p0;
+            if (row0 + 1u < args.kv_rows) v_cache[args.kv_off + row0 + 1u] = p1;
+        }
+    }
+}
+
 // ── gemm_q4_k_v4_predec ──────────────────────────────────────────────────────
 // Q4_K decode GEMV with pre-decoded sub-block scales.
 //
@@ -4700,6 +5481,7 @@ struct ArgbufQkvRopeAppend {
     uint  has_k_bias;
     uint  has_v_bias;
     float base;
+    uint  interleaved;
 };
 
 static inline float q4k_predec_dot_row(
@@ -4824,7 +5606,15 @@ static inline uint rope_neox_row0(uint pair_idx, constant ArgbufQkvRopeAppend& a
     uint pairs_per_head = args.head_dim / 2u;
     uint head = pair_idx / pairs_per_head;
     uint pair = pair_idx - head * pairs_per_head;
-    return head * args.head_dim + pair;
+    // GGUF rope_type=0 (Llama/Mistral) pairs adjacent coordinates; the
+    // historical Qwen Gravity path pairs the two split halves.  Keep the
+    // pair index itself unchanged so both layouts use the same frequency.
+    return head * args.head_dim + (args.interleaved != 0u ? pair * 2u : pair);
+}
+
+static inline uint rope_neox_row1(uint row0, constant ArgbufQkvRopeAppend& args)
+{
+    return row0 + (args.interleaved != 0u ? 1u : args.head_dim / 2u);
 }
 
 static inline void write_rope_pair(
@@ -4838,12 +5628,13 @@ static inline void write_rope_pair(
     float v1,
     constant ArgbufQkvRopeAppend& args)
 {
+    uint actual_row1 = args.interleaved != 0u ? row0 + 1u : row1;
     float x0 = v0 + (has_bias != 0u ? bias[row0] : 0.0f);
-    float x1 = v1 + (has_bias != 0u ? bias[row1] : 0.0f);
+    float x1 = v1 + (has_bias != 0u ? bias[actual_row1] : 0.0f);
     float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
     float c = cos(theta), s = sin(theta);
     dst[row0] = x0 * c - x1 * s;
-    dst[row1] = x0 * s + x1 * c;
+    dst[actual_row1] = x0 * s + x1 * c;
 }
 
 kernel void gemm_q4k_predec_qkv_rope_append(
@@ -4875,7 +5666,7 @@ kernel void gemm_q4k_predec_qkv_rope_append(
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row(wq, q_sc, x, row1, args.cols, simd_lane);
@@ -4886,7 +5677,7 @@ kernel void gemm_q4k_predec_qkv_rope_append(
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row(wk, k_sc, x, row1, args.cols, simd_lane);
@@ -4947,9 +5738,9 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r(
         uint pair0 = quad_idx * 2u;
         uint pair1 = pair0 + 1u;
         uint row0 = rope_neox_row0(pair0, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint row2 = rope_neox_row0(pair1, args);
-        uint row3 = row2 + args.head_dim / 2u;
+        uint row3 = rope_neox_row1(row2, args);
         uint pidx0 = rope_neox_pair(pair0, args);
         uint pidx1 = rope_neox_pair(pair1, args);
         float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
@@ -4967,9 +5758,9 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r(
         uint pair0 = quad_idx * 2u;
         uint pair1 = pair0 + 1u;
         uint row0 = rope_neox_row0(pair0, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint row2 = rope_neox_row0(pair1, args);
-        uint row3 = row2 + args.head_dim / 2u;
+        uint row3 = rope_neox_row1(row2, args);
         uint pidx0 = rope_neox_pair(pair0, args);
         uint pidx1 = rope_neox_pair(pair1, args);
         float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
@@ -5029,7 +5820,7 @@ kernel void gemm_q4k_predec_qkv_rope_append_f16s(
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row1, args.cols, simd_lane);
@@ -5040,7 +5831,7 @@ kernel void gemm_q4k_predec_qkv_rope_append_f16s(
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row1, args.cols, simd_lane);
@@ -5095,9 +5886,9 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r_f16s(
         uint pair0 = quad_idx * 2u;
         uint pair1 = pair0 + 1u;
         uint row0 = rope_neox_row0(pair0, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint row2 = rope_neox_row0(pair1, args);
-        uint row3 = row2 + args.head_dim / 2u;
+        uint row3 = rope_neox_row1(row2, args);
         uint pidx0 = rope_neox_pair(pair0, args);
         uint pidx1 = rope_neox_pair(pair1, args);
         float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0, args.cols, simd_lane);
@@ -5114,9 +5905,9 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r_f16s(
         uint pair0 = quad_idx * 2u;
         uint pair1 = pair0 + 1u;
         uint row0 = rope_neox_row0(pair0, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint row2 = rope_neox_row0(pair1, args);
-        uint row3 = row2 + args.head_dim / 2u;
+        uint row3 = rope_neox_row1(row2, args);
         uint pidx0 = rope_neox_pair(pair0, args);
         uint pidx1 = rope_neox_pair(pair1, args);
         float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0, args.cols, simd_lane);
@@ -5170,7 +5961,7 @@ kernel void gemm_q4k_q4k_q6k_rope_append(
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row(wq, q_sc, x, row1, args.cols, simd_lane);
@@ -5181,7 +5972,7 @@ kernel void gemm_q4k_q4k_q6k_rope_append(
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
         uint row0 = rope_neox_row0(pair_idx, args);
-        uint row1 = row0 + args.head_dim / 2u;
+        uint row1 = rope_neox_row1(row0, args);
         uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
         float p1 = q4k_predec_dot_row(wk, k_sc, x, row1, args.cols, simd_lane);

@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.tg.fusion_candidate.v1",
+  "status": "REJECTED_WALL_AND_TAIL_REGRESSION",
+  "at": "2026-08-01T21:00:00-04:00",
+  "candidate": "Exact source Q6_K SwiGLU/down fusion in 12 of 24 layers, on top of Q5 QKV and Q5 gate/up fusion.",
+  "v21": {
+    "result": "PASS",
+    "gpu_relative_l2": 1.566e-6,
+    "gpu_kl": 6.612e-13,
+    "greedy_and_top5_exact": true,
+    "cpu_reference_fallback_total": 0
+  },
+  "complete_token_128": {
+    "continuation_sha256_equal": true,
+    "baseline": { "tps": 173.76849123120894, "p99_ms": 7.444458, "dispatches": 24832 },
+    "candidate": { "tps": 169.90738860624046, "p99_ms": 7.466083, "dispatches": 23296, "physical_q6_swiglu_down_dispatches": 1536 },
+    "tps_delta_percent": -2.2219808652369943,
+    "p99_delta_percent": 0.2904845456848548
+  },
+  "decision": "Retired. The experimental Gravity runtime wiring was removed; the pre-existing kernel remains available to other independently gated runtimes.",
+  "reopen_condition": "A materially different source-native down projection fusion must improve complete-token wall time and p99, not only dispatch count."
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.llama_gravity_residual_pq_slice_probe.v1",
+  "status": "F1_PROXY_ONLY_NOT_AN_ARTIFACT_OR_TPS_CLAIM",
+  "source": {
+    "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "tensor": "blk.0.ffn_gate.weight",
+    "source_dtype": "Q4_K",
+    "shape": [14336, 4096],
+    "sample_rows": 512,
+    "sample_source_bytes": 1179648
+  },
+  "finite_decode_gate": "passed; the source reader uses the GGUF aligned data-base plus the tensor-local offset",
+  "single_stage_pq": {
+    "geometry": {"stages": 1, "D": 8, "cardinality": 128, "fit_iterations": 4},
+    "whole_bpw": 0.883056640625,
+    "payload_bytes": 231488,
+    "source_to_payload_byte_reduction": 5.095935858446226,
+    "relative_weight_error": 0.63185,
+    "random_activation_relative_output_error": 0.6457662582397461,
+    "verdict": "rejected_for_capability; byte reduction alone is not useful"
+  },
+  "residual_pq": {
+    "grammar": "four additive codebook stages over the same D=8 source chunk; this is not expressible by the current single-stage gravity-pq runtime",
+    "fit_iterations": 4,
+    "results": [
+      {
+        "stages": 2,
+        "whole_bpw": 1.765869140625,
+        "source_to_payload_byte_reduction": 2.5483201990875157,
+        "relative_weight_error": 0.4049740135669708,
+        "random_activation_relative_output_error": 0.42026543617248535
+      },
+      {
+        "stages": 3,
+        "whole_bpw": 2.648681640625,
+        "source_to_payload_byte_reduction": 1.698958429348327,
+        "relative_weight_error": 0.2675751745700836,
+        "captured_layer0_ffn_norm_relative_output_error": 0.2024131715297699
+      },
+      {
+        "stages": 4,
+        "whole_bpw": 3.531494140625,
+        "source_to_payload_byte_reduction": 1.2742481852748013,
+        "relative_weight_error": 0.18256284296512604,
+        "captured_layer0_ffn_norm_relative_output_error": 0.14719295501708984
+      }
+    ]
+  },
+  "activation_gate": {
+    "surface": "layer.0.ffn_norm",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "position": 5,
+    "vector_width": 4096,
+    "capture_note": "The capture disables the resident lane and is used only as an activation sample. It is not a decode-TPS measurement."
+  },
+  "byte_roofline_implication": {
+    "all_projection_bytes_if_all_q4k_q6k_weights_use_3_531494140625_bpw": 3312832160,
+    "all_projection_gib_if_all_q4k_q6k_weights_use_3_531494140625_bpw": 3.085315376520157,
+    "tg5_200_tps_max_active_weight_bytes_at_736e9_Bps": 3680000000,
+    "interpretation": "This representation fits the TG5 necessary active-byte budget before non-weight traffic. It does not prove output quality, decode speed, or that its four-stage decode has acceptable operation cost."
+  },
+  "next_required_work": "Implement an explicitly versioned residual-PQ codec and Metal kernel, pack a complete artifact only after tensor-coverage and quality gates are defined, then run artifact-specific continuation/logit and complete-token measurements."
+}

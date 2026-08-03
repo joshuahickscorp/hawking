@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_QWEN72_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen72-direct-q4k-first-dispatch-localization-v2",
+    "kind": "large_family_first_dispatch_stage_localization",
+    "hypothesis": "The prior Qwen72 failure occurred before any forward, but the bounded Qwen0.5B fixture now proves the general loader/Metal path can dispatch. A fresh Qwen72 run with independent stage receipts will identify the exact load, representation, buffer, encoder, commit or completion boundary; no timeout-only outcome is admissible.",
+    "representation_change": "none for the baseline; direct source-compatible Q4_K_M path with all optional Qwen fast paths disabled",
+    "scope": "same Qwen2.5-72B Q4_K_M source and revision, exact prompt, Apple M3 Ultra, one complete-token K0 probe",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "role": "first_dispatch_localization_and_k0_floor",
+      "complete_tokens": ">=1",
+      "first_forward_must_complete": true,
+      "metal_dispatches": ">0",
+      "fallback_count": 0,
+      "stage_receipts": "all listed stages independently timestamped; no unexplained stage >2% of load/prefill",
+      "tg_claim": "forbidden unless a later clean complete-token sweep reaches >=31.25 TPS"
+    }
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "xet_hash": "596abc840bcb94285f1bcc49f762c5e76a6ffbaf4135dcc7d1d0fde963c5aa8b",
+    "license": "qwen",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_FRESH_2026_08_02.json",
+    "transfer_selection": "standard fixed concurrency 8; three-repeat median 534.822905425228 GB/h"
+  },
+  "fixture_authority": "evidence/tg/QWEN0P5_K0_FIRST_DISPATCH_BOUNDED_PROBE_2026_08_01.json",
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 357204684800,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 74326369952,
+    "planned_headroom_above_floor_after_body": 82872425292,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "benchmark_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_TRACE_TOKENS": "1",
+    "HAWKING_QWEN_LOAD_TIMING": "1",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_Q4K_PREDEC": "0",
+    "HAWKING_QWEN_Q4K_LMHEAD": "0",
+    "HAWKING_QWEN_LMHEAD_PREDEC": "0",
+    "HAWKING_QWEN_BATCH_PREFILL": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0",
+    "HAWKING_QWEN_VOCAB_PRUNE": "0"
+  },
+  "stage_contract": [
+    "repository resolution",
+    "GGUF open",
+    "metadata parse",
+    "tensor directory construction",
+    "mmap/read policy",
+    "quant tensor admission",
+    "tensor layout conversion",
+    "Metal device discovery",
+    "buffer sizing",
+    "buffer allocation",
+    "weight upload",
+    "shader compilation",
+    "pipeline state creation",
+    "argument binding",
+    "command buffer creation",
+    "first encoder creation",
+    "first dispatch encode",
+    "first command commit",
+    "first GPU timestamp",
+    "first completion",
+    "first token"
+  ],
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

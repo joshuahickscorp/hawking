@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_SAME_MODEL_REHYDRATION",
+  "at_utc": "2026-08-02",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "lfs_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "xet_hash": "690a98312794892b21bac38cb839cc92bfbf347be806920858555dd18ff0aabf",
+    "range_bytes": 67108864,
+    "range_sha256": "78c1b05ea9f4634cc2c3aeb949893465f6edfcb156acfc88a138c1d2eda14ce3",
+    "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2"}
+  },
+  "trials": [
+    {"mode":"standard","requested_concurrency":1,"sealed_gb_per_hour_decimal":61.114747275924785,"elapsed_seconds":3.953086958033964,"cpu_user_seconds":0.148875,"cpu_system_seconds":0.208237,"free_disk_delta_bytes":49152,"retries":0},
+    {"mode":"standard","requested_concurrency":2,"sealed_gb_per_hour_decimal":132.7124492938091,"elapsed_seconds":1.8204163338523358,"cpu_user_seconds":0.089131,"cpu_system_seconds":0.079677,"free_disk_delta_bytes":-8192,"retries":0},
+    {"mode":"standard","requested_concurrency":4,"sealed_gb_per_hour_decimal":71.82009161338343,"elapsed_seconds":3.3638485411647707,"cpu_user_seconds":0.175144,"cpu_system_seconds":0.242084,"free_disk_delta_bytes":86016,"retries":0},
+    {"mode":"standard","requested_concurrency":8,"sealed_gb_per_hour_decimal":86.4788090369535,"elapsed_seconds":2.793654458131641,"cpu_user_seconds":0.140403,"cpu_system_seconds":0.186085,"free_disk_delta_bytes":-69632,"retries":0},
+    {"mode":"high_performance","requested_concurrency":1,"sealed_gb_per_hour_decimal":96.13882274178003,"elapsed_seconds":2.51294849999249,"cpu_user_seconds":0.134288,"cpu_system_seconds":0.165722,"free_disk_delta_bytes":-8192,"retries":0},
+    {"mode":"high_performance","requested_concurrency":2,"sealed_gb_per_hour_decimal":160.85697185522295,"elapsed_seconds":1.501905124867335,"cpu_user_seconds":0.0724,"cpu_system_seconds":0.067712,"free_disk_delta_bytes":0,"retries":0},
+    {"mode":"high_performance","requested_concurrency":4,"sealed_gb_per_hour_decimal":69.9071543337509,"elapsed_seconds":3.4558967920020223,"cpu_user_seconds":0.156004,"cpu_system_seconds":0.224476,"free_disk_delta_bytes":-32768,"retries":0},
+    {"mode":"high_performance","requested_concurrency":8,"sealed_gb_per_hour_decimal":71.61912834045596,"elapsed_seconds":3.3732875001151115,"cpu_user_seconds":0.147838,"cpu_system_seconds":0.208924,"free_disk_delta_bytes":-28672,"retries":0}
+  ],
+  "resume_trial": {
+    "mode": "high_performance",
+    "requested_concurrency": 2,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "09e2cc4436eb3d5c61775682f559c78e3318869d34348969e7357b78c9c1f0d7",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "cc7cca51d3988e30b74bface44539306e055e3cf0e6c85dfcc1b3584cad2828f",
+    "resume_complete": true,
+    "resume_elapsed_seconds": 1.9303060409147292,
+    "resume_sealed_gb_per_hour_decimal": 109.5126457252476,
+    "retries": 0
+  },
+  "selection": {"mode":"high_performance","requested_concurrency":2,"reason":"fastest stable live representative range","bounded_range_only":true},
+  "unified_admission": {
+    "active_model_count": 0,
+    "current_free_bytes_before_body": 381214097408,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 181208207852,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_admission_bytes": 10475196416,
+    "projected_free_after_admission": 370738900992,
+    "verdict": "PASS_PENDING_BODY_TRANSFER"
+  },
+  "claim_boundary": "This is a transfer and byte-admission receipt only; it does not alter capability, TG, production lease, or owner gates.",
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED":false,"RAMANUJAN_RESEARCH_AUTHORIZED":false,"ODYSSEY_LAUNCH_AUTHORIZED":false,"production_gpu_lease":"OWNER_CONTROLLED_UNCLAIMED"}
+}

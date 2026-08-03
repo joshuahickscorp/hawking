@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.tg.adapter_oracle.v1",
+  "status": "TERMINAL_FOR_THIS_RUNG",
+  "rung": "TG20",
+  "model": "Qwen2.5-14B-Instruct",
+  "family": "qwen",
+  "source": {
+    "path": "models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "receipt": "evidence/tg/TG20_QWEN_SOURCE_RECEIPT.json"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "new_tokens": 8,
+    "temperature": 0,
+    "external_command": "llama-completion -m models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf -p 'The capital of France is' -n 8 -ngl all --temp 0 --no-warmup -no-cnv --color off",
+    "hawking_command": "hawking generate --profile exact --weights models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 8 --max-seq-len 32 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 30000"
+  },
+  "external_parent": {
+    "engine": "llama-completion",
+    "completion_text": " Paris. The capital of Spain is Madrid",
+    "first_token_text": " Paris",
+    "verdict": "PASS"
+  },
+  "hawking_exact": {
+    "engine": "hawking generate --profile exact",
+    "completion_token_ids": [12095, 13, 12095, 374, 279, 6722, 323, 1429],
+    "completion_text": " Paris. Paris is the capital and most\\n",
+    "matching_prefix_tokens": 2,
+    "first_divergent_token": 3,
+    "device_id": "Apple M3 Ultra",
+    "dispatches_per_forward": 339,
+    "decode_tokens_per_second": 26.583567144667562,
+    "verdict": "FAIL"
+  },
+  "gate_results": {
+    "RAW_PARENT_FORWARD": "PASS",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "PASS",
+    "AUTOTUNE_PROFILE": "BLOCKED",
+    "GRAVITY_ADAPTER": "BLOCKED",
+    "GRAVITY_ORACLE": "BLOCKED",
+    "RUNG_MEASUREMENT": "BLOCKED"
+  },
+  "decision": {
+    "do_not_autotune": "A multi-token state-advance mismatch is a correctness failure. Kernel and runtime tuning would only make an unqualified adapter faster.",
+    "do_not_pack_gravity": "The repository's executable Gravity forward is Llama-only (crates/hawking-core/src/gravity_llama.rs); moreover Qwen's raw state is not correct enough to be a pack target.",
+    "next_step": "Seal an eviction receipt and remove this sole active parent. A future Qwen repair must rehydrate this exact SHA-256 under a fresh state file and begin from the third-token divergence."
+  }
+}

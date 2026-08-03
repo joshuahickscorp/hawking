@@ -1,0 +1,148 @@
+{
+  "schema": "hawking.tg.same_model_representation_result.v2",
+  "status": "REJECTED_F16_KV_NO_MEANINGFUL_WALL_WIN",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_F16_KV_PREREGISTRATION_2026_08_02.json",
+  "preregistration_sha256": "a2bc1522563705b3a5962cc0dc37866d1f636d877b0314e9489bc5907292f516",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "sha256_verified": true
+  },
+  "artifact": {
+    "filename": "qwen14-f16kv.gravity",
+    "bytes": 8982325263,
+    "payload_bytes": 8982142976,
+    "sha256": "f6582bf5fab5cb5bb535e28e23fc58e0bfac253f0dfbf541957a8733d62669eb",
+    "mapped_tensors": 579,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py"
+  },
+  "tokenizer": {
+    "repository": "Qwen/Qwen2.5-14B-Instruct",
+    "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+    "filename": "tokenizer.json",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 32,
+    "completed_decode_forwards_each_run": 31,
+    "runs_each_side": 2,
+    "clean_sequential_gpu": true,
+    "fallback_required": 0,
+    "continuation_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "hash_algorithm": "sha256(compact_json(token_ids))"
+  },
+  "control": {
+    "env": "HAWKING_REQUIRE_METAL=1",
+    "runs": [
+      {
+        "tps": 41.14939782940219,
+        "decode_ms": 753.352458,
+        "prefill_ms": 169.24383300000002,
+        "p50_ms": 24.16875,
+        "p95_ms": 25.415084,
+        "p99_ms": 25.479208,
+        "dispatches_per_forward": 770,
+        "command_buffers_per_forward": 1,
+        "metal_dispatches_total": 23870,
+        "fallback_count": 0
+      },
+      {
+        "tps": 41.16042295160047,
+        "decode_ms": 753.150667,
+        "prefill_ms": 165.567459,
+        "p50_ms": 24.328917,
+        "p95_ms": 25.500666,
+        "p99_ms": 25.763584,
+        "dispatches_per_forward": 770,
+        "command_buffers_per_forward": 1,
+        "metal_dispatches_total": 23870,
+        "fallback_count": 0
+      }
+    ],
+    "median": {
+      "tps": 41.15491039050133,
+      "decode_ms": 753.2515625,
+      "prefill_ms": 167.405646,
+      "p50_ms": 24.2488335,
+      "p95_ms": 25.457875,
+      "p99_ms": 25.621396
+    }
+  },
+  "candidate": {
+    "env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_F16_KV=1",
+    "representation": "source-preserving Q4_K weights + persistent F16 KV images + F16-KV flash attention",
+    "runs": [
+      {
+        "tps": 41.306163075535274,
+        "decode_ms": 750.493333,
+        "prefill_ms": 218.905625,
+        "p50_ms": 24.331333,
+        "p95_ms": 25.1365,
+        "p99_ms": 25.212,
+        "dispatches_per_forward": 818,
+        "command_buffers_per_forward": 1,
+        "metal_dispatches_total": 25358,
+        "fallback_count": 0
+      },
+      {
+        "tps": 41.38567473424503,
+        "decode_ms": 749.051458,
+        "prefill_ms": 170.442084,
+        "p50_ms": 24.154917,
+        "p95_ms": 25.082125,
+        "p99_ms": 25.0915,
+        "dispatches_per_forward": 818,
+        "command_buffers_per_forward": 1,
+        "metal_dispatches_total": 25358,
+        "fallback_count": 0
+      }
+    ],
+    "median": {
+      "tps": 41.345918904890155,
+      "decode_ms": 749.7723955,
+      "prefill_ms": 194.6738545,
+      "p50_ms": 24.243125,
+      "p95_ms": 25.1093125,
+      "p99_ms": 25.15175
+    }
+  },
+  "deltas": {
+    "tps_percent": 0.46408729009265054,
+    "decode_wall_percent": -0.4626225598044504,
+    "prefill_percent": 16.18803103962724,
+    "p50_percent": -0.023541607374819967,
+    "p95_percent": -1.369253865712033,
+    "p99_percent": -1.8332945090167143,
+    "dispatches_per_forward_delta": 48,
+    "command_buffers_per_forward_delta": 0,
+    "same_model": true,
+    "same_prompt_ids": true,
+    "complete_token_protocol_equal": true,
+    "token_id_sequence_match": true,
+    "continuation_hash_match": true,
+    "cpu_reference_fallback_delta": 0
+  },
+  "rung": {
+    "target": "TG32",
+    "target_tps": 31.25,
+    "candidate_median_tps": 41.345918904890155,
+    "deepest_stable_rung": "TG32",
+    "first_failing_lower_latency_rung": "TG20",
+    "scope": "same-model source-window runtime only; no capability expansion"
+  },
+  "verdict": "RETIRED: physical F16-KV flash dispatches and exact continuation parity are proven, but TPS gain is below the 3 percent promotion gate, prefill regresses, and dispatches increase. Prior Qwen14 executable Gravity TG32 narrow floor remains unchanged.",
+  "reopen_condition": "A Qwen-specific F16-KV grammar must reduce complete-token wall by at least 3 percent without adding dispatches or prefill cost and must retain full Numeric Parity V2.1 and capability gates."
+}

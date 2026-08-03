@@ -1,4 +1,5 @@
 #![cfg(target_os = "macos")]
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::TokenCommandBuffer;
 use rand::Rng;
@@ -22,6 +23,90 @@ fn cpu_rmsnorm_gemv_f32(
     let mut out = vec![0.0f32; rows];
     kernels::gemv_f32(w, rows, cols, &x_norm, &mut out);
     out
+}
+
+fn cpu_rmsnorm_gemv_f16w(
+    w: &[f16],
+    x: &[f32],
+    weight: &[f32],
+    eps: f32,
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
+    let mut x_norm = vec![0.0f32; cols];
+    kernels::rmsnorm(x, weight, eps, &mut x_norm);
+    let mut out = vec![0.0f32; rows];
+    for row in 0..rows {
+        let w_row = &w[row * cols..(row + 1) * cols];
+        out[row] = w_row
+            .iter()
+            .zip(&x_norm)
+            .map(|(wi, xi)| wi.to_f32() * xi)
+            .sum();
+    }
+    out
+}
+
+fn assert_f16w_fusion_matches_cpu(v2t: bool) {
+    let ctx = ctx();
+    // DeepSeek-V2-Lite direct q_proj geometry and kv_a geometry both satisfy
+    // the v2t constraints (rows % 8 == 0, cols % 32 == 0).
+    let rows = if v2t { 3072usize } else { 576usize };
+    let cols = 2048usize;
+    let eps = 1e-6f32;
+    let w_f32 = fixed_f32(rows * cols, if v2t { 0xD551_0001 } else { 0xD551_0002 });
+    let w_f16: Vec<f16> = w_f32.iter().map(|&v| f16::from_f32(v)).collect();
+    let x = fixed_f32(cols, 0xD551_0003);
+    let weight = fixed_f32_positive(cols, 0xD551_0004);
+    let cpu_out = cpu_rmsnorm_gemv_f16w(&w_f16, &x, &weight, eps, rows, cols);
+    let w_buf = new_f16_buf(ctx, &w_f16);
+    let x_buf = new_f32_buf(ctx, &x);
+    let weight_buf = new_f32_buf(ctx, &weight);
+    let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    if v2t {
+        kernels::rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
+            &mut tcb,
+            &w_buf,
+            &x_buf,
+            &weight_buf,
+            eps,
+            &out_buf,
+            rows,
+            cols,
+        )
+        .expect("rmsnorm_gemv_f16w_attn_pinned_v2t_tcb");
+    } else {
+        kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
+            &mut tcb,
+            &w_buf,
+            &x_buf,
+            &weight_buf,
+            eps,
+            &out_buf,
+            rows,
+            cols,
+        )
+        .expect("rmsnorm_gemv_f16w_attn_pinned_tcb");
+    }
+    tcb.commit_and_wait().expect("commit");
+    let gpu_out = read_f32_buf(&out_buf, rows);
+    let diff = max_abs_diff(&cpu_out, &gpu_out);
+    assert!(
+        diff < 2e-3,
+        "f16w rmsnorm-gemv ({}) rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 2e-3",
+        if v2t { "v2t" } else { "basic" }
+    );
+}
+
+#[test]
+fn wedge_g_f16w_rmsnorm_gemv_direct_q_proj_matches_cpu() {
+    assert_f16w_fusion_matches_cpu(false);
+}
+
+#[test]
+fn wedge_g_f16w_rmsnorm_gemv_v2t_direct_q_proj_matches_cpu() {
+    assert_f16w_fusion_matches_cpu(true);
 }
 #[test]
 fn wedge_g_rmsnorm_gemv_f32_attn_pinned_tcb_matches_cpu() {

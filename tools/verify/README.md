@@ -8,21 +8,29 @@ product behaviour change, zero test deletion.
 
 ```bash
 python3.12 tools/verify/case_extract.py --json
-python3.12 tools/verify/case_extract.py --write control/ASSERTION_LEDGER.json
-python3.12 tools/verify/case_extract.py --write control/ASSERTION_LEDGER.json --rev HEAD
-python3.12 tools/verify/case_extract.py --check control/ASSERTION_LEDGER.json
+python3.12 tools/verify/case_extract.py --write \
+  workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json
+python3.12 tools/verify/case_extract.py --write \
+  workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json --rev HEAD
+python3.12 tools/verify/case_extract.py --check \
+  workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json
 
 python3.12 tools/verify/test_case_manifest.py --seal-check \
-  control/ASSERTION_LEDGER.json control/TEST_CASE_MANIFEST.json
-python3.12 tools/verify/test_case_manifest.py --enumerate control/TEST_CASE_MANIFEST.json
-python3.12 tools/verify/test_case_manifest.py --dry-run control/TEST_CASE_MANIFEST.json
+  workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json \
+  workspace/campaign/governance/control/catalog/manifests/TEST_CASE_MANIFEST.json
+python3.12 tools/verify/test_case_manifest.py --enumerate \
+  workspace/campaign/governance/control/catalog/manifests/TEST_CASE_MANIFEST.json
+python3.12 tools/verify/test_case_manifest.py --dry-run \
+  workspace/campaign/governance/control/catalog/manifests/TEST_CASE_MANIFEST.json
 python3.12 tools/verify/test_case_manifest.py --gate \
-  --before control/ASSERTION_LEDGER.json --after control/TEST_CASE_MANIFEST.json
+  --before workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json \
+  --after workspace/campaign/governance/control/catalog/manifests/TEST_CASE_MANIFEST.json
 ```
 
 - Extraction reads exact git tree/blob objects (`git ls-tree` / `git show`) at a revision — no worktree checkout.
 - `--write` / `--json` default to `HEAD` (or `--rev`). The ledger records `sealed_at_commit`.
 - `--check LEDGER` re-extracts at the ledger's `sealed_at_commit` (or an explicit identical `--rev`), not current HEAD. A later unrelated commit must leave a prior sealed ledger green.
+- Commands use the live compact paths. Sealed metadata can retain its historical `control/...` path; readers resolve that identity to the live file without rewriting it.
 - Vitest identities: repository path + lexical `describe` chain + literal title; content digest only for same-chain title collisions; identical duplicates collision-fail (never `#L{line}`).
 - Fingerprints bind the full Rust test item (attr+signature+body) and the full Vitest call (including body/`expect`).
 - `--seal-check` may pass with an empty F1 scaffold when the ledger hash and phase/status are valid.
@@ -48,7 +56,8 @@ Instrument that decides the rebuild hard gate:
 
 ```bash
 python3.12 tools/verify/perfgate.py --list
-python3.12 tools/verify/perfgate.py --capture --out evidence/rebuild/REBUILD_PERFORMANCE_BASELINE_MEASURED.json
+python3.12 tools/verify/perfgate.py --capture --out \
+  workspace/campaign/evidence/runtime/rebuild/REBUILD_PERFORMANCE_BASELINE_MEASURED.json
 python3.12 tools/verify/perfgate.py --compare A.json B.json --gate 2.0
 python3.12 tools/verify/perfgate.py --paired --a-cmd '…' --b-cmd '…' --n 9
 ```

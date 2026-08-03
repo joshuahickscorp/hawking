@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_QWEN72_V4_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen72-direct-q4k-lmhead-v4",
+    "kind": "same_model_source_q4k_lmhead_representation",
+    "hypothesis": "Serving the Qwen72 output head in native Q4_K source bytes, without Q4K predecode, will reduce the f32 vocabulary pinning and unified-memory/swap pressure that blocked the prior first-forward path while preserving source continuation.",
+    "representation_change": "raw source Q6_K/f32 output head -> source-compatible Q4_K output-head admission; predecode remains off",
+    "scope": "same immutable Qwen2.5-72B-Instruct Q4_K_M source, same prompt, same Apple M3 Ultra, same exact tokenizer",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "complete_token_wall_tps_improvement_percent": ">=3 versus same-run direct-source control",
+      "p99_regression_percent": "<=0",
+      "exact_continuation_hash": "must_match_control and source when available",
+      "fallback_count": 0,
+      "metal_dispatches": ">0",
+      "first_forward_must_complete": true
+    }
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REHYDRATE_2026_08_02.json",
+    "transfer_selection": "standard fixed concurrency 8; existing official bounded range matrix and exact hashes remain valid under unchanged huggingface_hub 1.24.0/hf_xet 1.5.2 conditions"
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 358377455616,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 69964293792,
+    "planned_headroom_above_floor_after_body": 88407272268,
+    "model_lane_envelope_bytes": 110000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "candidate_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_Q4K_PREDEC": "0",
+    "HAWKING_QWEN_Q4K_LMHEAD": "1",
+    "HAWKING_QWEN_LMHEAD_PREDEC": "0",
+    "HAWKING_QWEN_BATCH_PREFILL": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1",
+    "HAWKING_TRACE_DISPATCH": "1"
+  },
+  "control": {
+    "representation": "direct_source_q4k_lmhead_off_q8_down",
+    "prior_receipt": "evidence/tg/TG32_QWEN72_K0_REPAIR_PHYSICAL_2026_08_02.json",
+    "complete_tokens": 1,
+    "tps": 0.8459170544491431,
+    "dispatches_per_forward": 964,
+    "fallback_count": 0,
+    "prompt_token_ids": [17, 10, 17, 28]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

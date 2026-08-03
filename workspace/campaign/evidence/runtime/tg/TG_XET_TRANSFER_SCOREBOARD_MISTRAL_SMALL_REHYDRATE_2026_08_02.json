@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_SAME_MODEL_MISTRAL_REHYDRATION",
+  "at_utc": "2026-08-02",
+  "classification": "CLEAN_BOUNDED_OFFICIAL_HUB_XET_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repository": "bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF",
+    "revision": "f73dfd9e812922fb503a993e3fa5671424f486d3",
+    "filename": "mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "lfs_sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "range_bytes": 67108864,
+    "range_sha256": "46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426",
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "authenticated": false,
+    "transport": "official Hub resolve URL redirected to the official Xet bridge; 206 byte ranges fetched in memory"
+  },
+  "matrix": [
+    {"mode":"standard","requested_concurrency":1,"elapsed_seconds":3.3726831250824034,"sealed_gb_per_hour_decimal":71.63196228050546,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.177213,"disk_bytes_written":0,"retries":0},
+    {"mode":"standard","requested_concurrency":2,"elapsed_seconds":2.0743355830200016,"sealed_gb_per_hour_decimal":116.4671292232615,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.244833,"disk_bytes_written":0,"retries":0},
+    {"mode":"standard","requested_concurrency":4,"elapsed_seconds":1.4389178750570863,"sealed_gb_per_hour_decimal":167.89833150861045,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.97389,"disk_bytes_written":0,"retries":0},
+    {"mode":"standard","requested_concurrency":8,"elapsed_seconds":1.4528724579140544,"sealed_gb_per_hour_decimal":166.285697745873,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":4.969558,"disk_bytes_written":0,"retries":0},
+    {"mode":"high_performance","requested_concurrency":1,"elapsed_seconds":2.3213275000452995,"sealed_gb_per_hour_decimal":104.0748926617573,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.154331,"disk_bytes_written":0,"retries":0},
+    {"mode":"high_performance","requested_concurrency":2,"elapsed_seconds":1.5760560841299593,"sealed_gb_per_hour_decimal":153.28890439414,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.206504,"disk_bytes_written":0,"retries":0},
+    {"mode":"high_performance","requested_concurrency":4,"elapsed_seconds":1.4432332089636475,"sealed_gb_per_hour_decimal":167.39630774813003,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":0.701869,"disk_bytes_written":0,"retries":0},
+    {"mode":"high_performance","requested_concurrency":8,"elapsed_seconds":2.1504879591520876,"sealed_gb_per_hour_decimal":112.3428333424647,"range_sha256":"46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426","cpu_seconds":6.769431,"disk_bytes_written":0,"retries":0}
+  ],
+  "stability_repeats": {
+    "standard_c2_gb_per_hour_decimal": [175.96971644176693,106.09424763242177,147.6118833380991],
+    "standard_c2_median_gb_per_hour_decimal": 147.6118833380991,
+    "high_performance_c8_gb_per_hour_decimal": [135.49833153244296,99.21513400863022,163.89648700443172],
+    "high_performance_c8_median_gb_per_hour_decimal": 135.49833153244296,
+    "all_range_hashes_identical": true
+  },
+  "resume_trial": {
+    "mode": "high_performance",
+    "requested_concurrency": 2,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "d5ff1a7a998366679398fdc75d9ea1a180f7ed0c2d54aebe783d8722f06a5ed5",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "80514ce6dd22831cea442395c3ca3e953d8c5b972de09df78631eadf23e62bbe",
+    "resume_complete": true,
+    "reconstructed_range_sha256": "46bc096ed0fb9f2c6277d90ff683c3c428df94e3412ccf269c2921de4d362426",
+    "retries": 0,
+    "disk_bytes_written": 0
+  },
+  "selection": {
+    "mode": "high_performance",
+    "requested_concurrency": 8,
+    "stable_median_sealed_gb_per_hour_decimal": 135.49833153244296,
+    "reason": "high-performance c8 is the fastest repeat median among the two preregistered stable profiles; every reconstructed range hash agrees",
+    "bounded_range_only": true
+  },
+  "unified_admission": {
+    "active_model_count": 0,
+    "current_free_bytes_before_body": 364717867008,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 164711977452,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_admission_bytes": 55570707207,
+    "projected_free_after_source_artifact_and_scratch": 309147159801,
+    "verdict": "PASS_PENDING_BODY_TRANSFER"
+  },
+  "claim_boundary": "This is an official bounded range-transfer and byte-admission receipt only; it does not alter Mistral capability, TG, production lease, or owner gates.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

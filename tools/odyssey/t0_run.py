@@ -15,7 +15,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tools.odyssey._paths import FENCE, ODYSSEY, ROOT
+from tools.odyssey._paths import FENCE, RECORDS_DIR, ROOT
 from tools.odyssey import (
     contracts,
     data_verify,
@@ -27,7 +27,7 @@ from tools.odyssey import (
 )
 
 SCHEMA = "hawking.odyssey.t0.v1"
-RECEIPT = ODYSSEY / "ODYSSEY_T0_RECEIPT.json"
+RECEIPT = RECORDS_DIR / "ODYSSEY_T0_RECEIPT.json"
 
 
 def _fence_still_false() -> bool:
@@ -111,10 +111,10 @@ def run(*, max_shards: int = 8, max_bytes: int | None = 512 * 1024 * 1024) -> di
     closure = contracts.closure_report()
     feas = feasibility.estimate()
 
-    (ODYSSEY / "ODYSSEY_CONTRACT_CLOSURE.json").write_text(
+    (RECORDS_DIR / "ODYSSEY_CONTRACT_CLOSURE.json").write_text(
         json.dumps(closure, indent=2, sort_keys=True, default=str) + "\n"
     )
-    (ODYSSEY / "ODYSSEY_FEASIBILITY.json").write_text(
+    (RECORDS_DIR / "ODYSSEY_FEASIBILITY.json").write_text(
         json.dumps(feas, indent=2, sort_keys=True) + "\n"
     )
 

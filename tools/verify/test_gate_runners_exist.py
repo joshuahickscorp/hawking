@@ -25,7 +25,8 @@ ROOT = Path(__file__).resolve().parents[2]
 # path -> why its absence would invalidate a receipt
 LOAD_BEARING = {
     "tools/eval/thesis_gate.py":
-        "produces reports/eval/thesis_gate_*.json; without it the 7B, 14B and 32B "
+        "produces workspace/campaign/records/reports/eval/thesis_gate_*.json; "
+        "without it the 7B, 14B and 32B "
         "quality numbers stop being reproducible or comparable",
     "tools/verify/blackbox.py":
         "runs the behaviour-constitution matrix; the BC-* pass counts come from here",

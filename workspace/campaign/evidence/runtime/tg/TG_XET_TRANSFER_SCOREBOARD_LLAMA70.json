@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v1",
+  "status": "PASS_BOUNDED_RANGE_MATRIX_NO_BODY_PERSISTED",
+  "at": "2026-08-01T06:03:00Z",
+  "classification": "CONTENDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "path": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "file_bytes": 42520398816,
+    "file_sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_file_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "authenticated": false,
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "chunk_cache_bytes": 0,
+    "retry_max_attempts": 5
+  },
+  "range": {
+    "start": 0,
+    "end": 67108864,
+    "bytes": 67108864,
+    "sha256": "7b5e158fad734cce10fbacf1ea33d8b54045e86e163dfb452b2418d3493a194c",
+    "in_memory_only": true,
+    "application_body_file_writes": 0
+  },
+  "trials": [
+    {"mode":"standard","requested_fixed_download_concurrency":1,"effective":{"initial":1,"minimum":1,"maximum":1},"elapsed_seconds":13.873027209,"cpu_user_seconds":0.130183,"cpu_system_seconds":0.159881,"free_disk_delta_bytes":1413120,"client_visible_retries":0,"sealed_gb_per_hour_decimal":17.41450562738531},
+    {"mode":"standard","requested_fixed_download_concurrency":2,"effective":{"initial":2,"minimum":2,"maximum":2},"elapsed_seconds":7.544427708,"cpu_user_seconds":0.123871,"cpu_system_seconds":0.15532,"free_disk_delta_bytes":-3543040,"client_visible_retries":0,"sealed_gb_per_hour_decimal":32.02256284380849},
+    {"mode":"standard","requested_fixed_download_concurrency":4,"effective":{"initial":4,"minimum":4,"maximum":4},"elapsed_seconds":4.901181875,"cpu_user_seconds":0.142416,"cpu_system_seconds":0.181432,"free_disk_delta_bytes":-2723840,"client_visible_retries":0,"sealed_gb_per_hour_decimal":49.29258218967849},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"effective":{"initial":8,"minimum":8,"maximum":8},"elapsed_seconds":2.485803167,"cpu_user_seconds":0.108448,"cpu_system_seconds":0.131046,"free_disk_delta_bytes":-11423744,"client_visible_retries":0,"sealed_gb_per_hour_decimal":97.18867270233872},
+    {"mode":"high_performance","requested_fixed_download_concurrency":1,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":4.056859458,"cpu_user_seconds":0.105778,"cpu_system_seconds":0.127574,"free_disk_delta_bytes":7233536,"client_visible_retries":0,"sealed_gb_per_hour_decimal":59.55146164198228},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":2.380467208,"cpu_user_seconds":0.107346,"cpu_system_seconds":0.122193,"free_disk_delta_bytes":-11083776,"client_visible_retries":0,"sealed_gb_per_hour_decimal":101.48928310715047},
+    {"mode":"high_performance","requested_fixed_download_concurrency":4,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":0.937153375,"cpu_user_seconds":0.064469,"cpu_system_seconds":0.044636,"free_disk_delta_bytes":9781248,"client_visible_retries":0,"sealed_gb_per_hour_decimal":257.79335255555156},
+    {"mode":"high_performance","requested_fixed_download_concurrency":8,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":3.436443041,"cpu_user_seconds":0.083876,"cpu_system_seconds":0.075124,"free_disk_delta_bytes":-1282048,"client_visible_retries":0,"sealed_gb_per_hour_decimal":70.30289968946994}
+  ],
+  "selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 4,
+    "effective_download_concurrency": {"initial":16,"minimum":4,"maximum":124},
+    "matrix_peak_sealed_gb_per_hour_decimal": 257.79335255555156,
+    "stability_samples_sealed_gb_per_hour_decimal": [277.9587073681946,111.8021349745316,70.24356009827756],
+    "median_sealed_gb_per_hour_decimal": 111.8021349745316,
+    "selection_reason": "highest matrix result and exact repeated range hashes; high-performance adaptive concurrency overrides the requested fixed value"
+  },
+  "integrity": {
+    "all_matrix_and_stability_range_hashes_identical": true,
+    "application_body_file_writes_total": 0,
+    "client_visible_retries_total": 0,
+    "free_disk_delta_is_not_model_body_evidence": true
+  },
+  "claim_boundary": [
+    "bounded 64-MiB source ranges only",
+    "external CPU workloads make rates diagnostic rather than promotional",
+    "does not prove full-model throughput or admit body bytes",
+    "fresh byte admission is required immediately before materialization"
+  ],
+  "seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0"
+}

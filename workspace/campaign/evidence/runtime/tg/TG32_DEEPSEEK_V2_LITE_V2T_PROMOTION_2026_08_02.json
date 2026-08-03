@@ -1,0 +1,87 @@
+{
+  "schema": "hawking.tg.same_model_schedule_promotion.v1",
+  "status": "MEASURED_TG32_CLASS_NOT_PRODUCTION_CERTIFIED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "source_authority": {
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "llama_cpp_first_four_ids": [8913, 13, 185, 185],
+    "hawking_v2t_first_four_ids": [8913, 13, 185, 185],
+    "hawking_v2t_first_four_text": " Paris.\\n\\n",
+    "capability_scope": "four-token source-matched window only; extended generation and broader G3-G9 parity remain open"
+  },
+  "same_model_candidates": [
+    {
+      "id": "legacy-split-half-rope",
+      "profile_id": "kp-dd459d9edd1b014528cabda0",
+      "first_four_ids": [244, 244, 244, 244],
+      "decode_tps": 34.023068542082854,
+      "verdict": "rejected_capability"
+    },
+    {
+      "id": "interleaved-concat-rope-basic",
+      "profile_id": "kp-ab924fa5924b5250ce526f66",
+      "first_four_ids": [8913, 13, 185, 185],
+      "decode_tps_4": 34.541270341569984,
+      "decode_tps_32": 34.131914938374315,
+      "p50_ms_32": 29.2,
+      "p95_ms_32": 29.5,
+      "p99_ms_32": 29.5,
+      "verdict": "capability_window_pass"
+    },
+    {
+      "id": "interleaved-concat-rope-v2t",
+      "profile_id": "candidate-deepseek-rope-v2t-2026-08-02",
+      "shader_hash": "1e4d0614bddbbf77202b9914",
+      "schedule": {
+        "rmsnorm_attn_schedule": "v2t",
+        "routed_down_schedule": "v2t",
+        "shared_down_schedule": "v2t"
+      },
+      "device": "Apple M3 Ultra",
+      "dispatches_per_forward": 591,
+      "cpu_reference_fallback": 0,
+      "first_four_ids": [8913, 13, 185, 185],
+      "decode_tps_4": 35.372131403046644,
+      "decode_tps_32": 35.20824092889242,
+      "decode_ms_32": 908.878125,
+      "prefill_ms_32": 296.70075,
+      "complete_token_latency_ms_32": {"p50": 28.3, "p95": 28.645, "p99": 28.769, "min": 27.8, "max": 28.8},
+      "decode_metal_dispatches_total": 18912,
+      "decode_command_buffers_total": 32,
+      "prefill_metal_dispatches_total": 3534,
+      "verdict": "promote_same_model_schedule; no capability loss in the admitted source window"
+    }
+  ],
+  "ladder": {
+    "measured_class": "TG32",
+    "target_tps": 31.25,
+    "measured_tps": 35.20824092889242,
+    "margin": 3.95824092889242,
+    "certification": "not CLEAN/production-certified because the owner-controlled production GPU lease identity remains absent"
+  },
+  "stage_and_representation": {
+    "rope_repair_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_INTERLEAVED_ROPE_REPAIR_2026_08_02.json",
+    "metal_stage_trace": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_TRACE_V2_2026_08_02.jsonl",
+    "cpu_oracle_stage_trace": "/tmp/hawking-deepseek-cpu-stage-2026-08-02.json",
+    "executable_gravity": "source-preserving CPU `.gravity` path is exact for the four-token source window; native resident `.gravity` stage execution remains the next fixture task"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "reopen_condition": "Run a CLEAN lease-bound 32-token sweep plus G3-G9 unrelated/adversarial prompts; only then attempt TG20. Do not infer TG20 from this schedule win."
+}

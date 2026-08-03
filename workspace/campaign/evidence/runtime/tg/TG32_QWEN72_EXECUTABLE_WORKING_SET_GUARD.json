@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.tg.executable_working_set_guard_receipt.v1",
+  "status": "SEALED_DIRECT_72B_ROUTE_DENIED_BOUNDED_GRAVITY_WINDOW_CONTRACT_ADMITTED",
+  "sampled_at": "2026-08-01",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "binding_blocker_receipt": {
+    "path": "evidence/tg/TG32_QWEN72_2026_08_01_RESIDENCY_BLOCKER.json",
+    "seal_sha256": "7c122430a584ba0a6872ac4224471835b15a94fa95265ee19215f060b41c4906"
+  },
+  "controller": {
+    "path": "tools/tg_ladder.py",
+    "sha256": "1f8774e25942f3f685f0b0bfd7c7011d286bd20e36ed2c8be9a1c00cd307f6d5",
+    "admission_schema": "hawking.tg.executable_working_set_admission.v1",
+    "direct_mode": "direct_full_source",
+    "window_mode": "dependency_complete_window"
+  },
+  "fresh_guarded_samples": {
+    "direct_full_source": {
+      "resident_weight_bytes": 47415715488,
+      "resident_kv_bytes": 1073741824,
+      "resident_activation_bytes": 1073741824,
+      "runtime_scratch_bytes": 2147483648,
+      "resident_budget_bytes": 32000000000,
+      "status": "DENIED",
+      "reason": "charged executable working set exceeds the freshly measured resident budget"
+    },
+    "dependency_complete_window": {
+      "resident_weight_bytes": 8000000000,
+      "resident_kv_bytes": 1073741824,
+      "resident_activation_bytes": 1073741824,
+      "runtime_scratch_bytes": 2147483648,
+      "bounded_next_range_bytes": 67108864,
+      "resident_budget_bytes": 32000000000,
+      "required_resident_bytes": 12362076160,
+      "dependency_complete_window": true,
+      "status": "ADMITTED"
+    }
+  },
+  "verification": {
+    "command": "PYTHONPATH=. .venv/glm52/bin/python -m pytest tools/condense/tests/test_tg_ladder.py -q",
+    "result": "12 passed",
+    "claims": [
+      "The prior direct 72B source route cannot be retried through this guard without charging its whole source body against a fresh executable resident budget.",
+      "A dependency-complete window is a planning contract only; it does not prove a Qwen-72B forward, GPU dispatch, parity, capability, or TG rung."
+    ]
+  },
+  "reopen_condition": "Materialize only a hash-bound executable Gravity artifact whose current dependency-complete window passes this fresh guard, then prove the bounded fixture stages and a physical full-model forward separately.",
+  "tg_claim": "NONE",
+  "capability_claim": "NONE",
+  "owner_gate_changes": "NONE",
+  "seal_sha256": "8ebb03fda36456e696ba4949f16fe792380bc6eec09f0f98439d1a3cf331f775"
+}

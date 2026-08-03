@@ -238,11 +238,6 @@
             "claim": "smoke test remains but load_engine rejects unknown gemma2 arch without pack",
             "kind": "description",
             "path": "crates/hawking-core/tests/gemma2_smoke.rs"
-          },
-          {
-            "claim": "seed-c ArchAdapter::gemma2 is declarative plan-only",
-            "kind": "description",
-            "path": "crates/hawking-seed-c/src/providers/adapters.rs"
           }
         ],
         "positional_encoding": {
@@ -307,11 +302,6 @@
           "claim": "smoke test remains but load_engine rejects unknown gemma2 arch without pack",
           "kind": "description",
           "path": "crates/hawking-core/tests/gemma2_smoke.rs"
-        },
-        {
-          "claim": "seed-c ArchAdapter::gemma2 is declarative plan-only",
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs"
         }
       ],
       "executes": false,
@@ -375,9 +365,9 @@
             "path": "crates/hawking-core/src/model/gravity_engine.rs"
           },
           {
-            "claim": "registry path for .gravity artifacts",
+            "claim": "committed .gravity artifact registry and integrity suite",
             "kind": "description",
-            "path": "crates/hawking-core/tests/gravity_engine_registry.rs"
+            "path": "crates/hawking-core/tests/gravity_artifact_suite.rs"
           },
           {
             "claim": "unconditional: real .gravity container decoded, complete token executed, matches numpy oracle reading the same container (3 passed, 0.04s)",
@@ -450,9 +440,9 @@
           "path": "crates/hawking-core/src/model/gravity_engine.rs"
         },
         {
-          "claim": "registry path for .gravity artifacts",
+          "claim": "committed .gravity artifact registry and integrity suite",
           "kind": "description",
-          "path": "crates/hawking-core/tests/gravity_engine_registry.rs"
+          "path": "crates/hawking-core/tests/gravity_artifact_suite.rs"
         },
         {
           "claim": "unconditional: real .gravity container decoded, complete token executed, matches numpy oracle reading the same container (3 passed, 0.04s)",
@@ -929,11 +919,6 @@
             "claim": "mixtral extracted off-tree to adapters-extra pack",
             "kind": "description",
             "path": "packs/hawking-adapters-extra.json"
-          },
-          {
-            "claim": "seed-c ArchAdapter::mixtral is declarative plan-only (does not execute)",
-            "kind": "description",
-            "path": "crates/hawking-seed-c/src/providers/adapters.rs"
           }
         ],
         "positional_encoding": {
@@ -1012,11 +997,6 @@
           "claim": "mixtral extracted off-tree to adapters-extra pack",
           "kind": "description",
           "path": "packs/hawking-adapters-extra.json"
-        },
-        {
-          "claim": "seed-c ArchAdapter::mixtral is declarative plan-only (does not execute)",
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs"
         }
       ],
       "executes": true,
@@ -1078,11 +1058,6 @@
             "claim": "smoke test remains; arch not in shipping load_engine",
             "kind": "description",
             "path": "crates/hawking-core/tests/phi3_smoke.rs"
-          },
-          {
-            "claim": "seed-c ArchAdapter::phi3 is declarative plan-only",
-            "kind": "description",
-            "path": "crates/hawking-seed-c/src/providers/adapters.rs"
           }
         ],
         "positional_encoding": {
@@ -1147,11 +1122,6 @@
           "claim": "smoke test remains; arch not in shipping load_engine",
           "kind": "description",
           "path": "crates/hawking-core/tests/phi3_smoke.rs"
-        },
-        {
-          "claim": "seed-c ArchAdapter::phi3 is declarative plan-only",
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs"
         }
       ],
       "executes": false,

@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.ramanujan.glm52_window_operator_owner_proposal.v1",
+  "status": "TECHNICALLY_GREEN_FIXTURE_ONLY_PENDING_OWNER_APPROVAL",
+  "generated_at": "2026-08-01T13:40:02Z",
+  "scope": {
+    "positive": "Owner-reviewable implementation and dry-run evidence for the bounded framed-range lifecycle, cold handoff abstraction, atomic resume, rollback and fixture heavy lease.",
+    "negative": "This proposal is not operator approval, parent-restream authorization, a production lease, an official Xet body transfer, GLM capability evidence or permission to retain parent bytes."
+  },
+  "sealed_parent_bindings": {
+    "schedule": {
+      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+      "peak_incremental_bytes": 58885799936,
+      "window_count": 81,
+      "range_count": 59585
+    },
+    "policy": {
+      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+      "envelope_bytes": 90000000000,
+      "protected_filesystem_floor_bytes": 200005889556
+    }
+  },
+  "implementation": {
+    "official_range_executor": {
+      "path": "lab/operators/glm52_range_stream_executor.py",
+      "sha256": "52985d205e2c0a6011539074b8b75e95a91e0919b0589f1a6af92ea649e8ca7a",
+      "entrypoint_sha256": "a817ff3fba6e0be0f6df5472c9b4c3f92702f340a4b3c3789729946aafdc5d42",
+      "guard_sha256": "4b43292a78ca69ae5ae7621552c2674224adfb88076ea3d66259e3659781741f",
+      "role": "owner-gated official hf_xet ordered-range producer and Ed25519-attested restart authority"
+    },
+    "fixture_physical_operator": {
+      "path": "lab/operators/glm52_framed_window_operator.py",
+      "sha256": "0200b293ece70de62492eae18df1b475ce616ef8ffd1be21b7593573bce6f83a",
+      "cli": "tools/condense/glm52_framed_window_operator.py",
+      "cli_sha256": "cc012e7f987d6963432dc67d950000ebf69787bb17e2061c5aa8127994196116",
+      "fixture_only": true,
+      "production_authority": false
+    },
+    "lease_authority": {
+      "path": "lab/lease.py",
+      "sha256": "13e7a78be623ca7a1aeeec8c5ec70dc7b9ff75c6ffc7f0be57a1450a1a4cffac",
+      "single_existing_authority_reused": true,
+      "fixture_production_authority": false
+    }
+  },
+  "green_fixture_contract": [
+    "exact bounded WINDOW -> ordered RANGE -> END_WINDOW parsing",
+    "per-range SHA-256 and cumulative 64-KiB-rounded source accounting before staging",
+    "complete component sum equals declared incremental bytes and never exceeds 90,000,000,000 bytes",
+    "live free-byte minus exact incremental byte admission remains above the single protected floor",
+    "fresh floor checks run before, during and after each streamed range and before handoff; child stdout/stderr collectors are bounded",
+    "a fixed OS Ed25519 owner trust anchor carries a signed single-use launch claim atomically into executor STARTED state",
+    "every resumable window receipt is Ed25519-attested and binds launch nonce, lease identity, operator executable and predecessor receipt",
+    "deterministic one-pass fixture processing and verified cold-store SHA-256",
+    "immediate source-range eviction, local artifact eviction and no fixture cache or Trash creation",
+    "atomic terminal receipt resume and partial-staging recovery",
+    "rollback after range, pack, handoff and terminal-receipt failure",
+    "exclusive fixture lease, heartbeat freshness, unlocked-stale-record recovery marker, contention labels and foreign-process refusal"
+  ],
+  "controller_verification": {
+    "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_framed_window_operator.py tools/condense/tests/test_glm52_range_stream_executor.py tools/condense/tests/test_glm52_restream_contract.py tools/condense/tests/test_restream_guard.py tools/condense/tests/test_gravity_range_scheduler.py tools/condense/tests/test_condense_controller.py tools/condense/tests/test_campaign_engine.py",
+    "result": "19 current authorization/range tests pass; broader fixture/operator/controller/lease suite remains required after any owner-approved executable is supplied",
+    "adversarial_challenge": "Independent challenge forged a substitute FINAL_PREFLIGHT and unkeyed resume receipt and identified unbounded child logs/mid-window floor drift. The current mechanism rejects both forgeries, caps output, and resamples the floor at each range boundary.",
+    "classification": "CLEAN_FIXTURE_ONLY"
+  },
+  "owner_review_questions": [
+    "Approve or reject the exact production operator executable by byte SHA-256.",
+    "Approve the operator's 32-byte Ed25519 receipt-attestation public key and retain its private key outside the repository.",
+    "Approve the real remote cold-storage backend, namespace, credentials boundary and remote hash API.",
+    "Approve the production GPU lease identity and foreign-process policy.",
+    "Confirm that the production operator replaces the fixture pack with probe, teacher capture and executable one-pass Gravity packing without weakening any receipt field.",
+    "Confirm rollback retention and remote-object deletion policy for every injected failure stage."
+  ],
+  "reopen_conditions": [
+    "Any implementation or dependency byte changes after approval.",
+    "Any unaccounted source, artifact, metadata, cache, Trash or rollback byte.",
+    "Any missing remote SHA-256 verification or predecessor terminal receipt.",
+    "Any production run under a fixture lease, contended label or foreign process.",
+    "Any attempt to execute before D5/D8/D9, parent authorization, production lease and operator approval gates pass."
+  ],
+  "owner_approval": "PENDING_NOT_SELF_GRANTED",
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY",
+  "seal_sha256": "5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e"
+}

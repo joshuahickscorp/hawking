@@ -6,6 +6,7 @@ pub mod cache;
 pub mod cost_ledger;
 pub mod gguf;
 pub mod gravity;
+pub mod gravity_deepseek;
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;

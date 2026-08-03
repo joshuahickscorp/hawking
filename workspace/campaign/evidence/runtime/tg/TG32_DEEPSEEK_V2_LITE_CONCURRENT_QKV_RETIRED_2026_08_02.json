@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.tg.same_model_candidate_retirement.v1",
+  "status": "RETIRED_BELOW_PREREGISTERED_WALL_WIN",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "concurrent-qkv-rmsnorm-gemv",
+    "configuration": "HAWKING_DS_CONCURRENT_QKV=1",
+    "runtime_source_sha256": "bf804df30612bcc633a212b0a007db5c70bf8783f7f29f9c0c0dcdeaaba316d8",
+    "mechanism": "Metal concurrent encoder around Q/Q-A and KV-A projections only; dependent RMSNorm, RoPE, MLA, MoE, and output stages remain ordered."
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "bytes": 10364416320
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "completion_tokens": 32,
+    "temperature": 0,
+    "device_id": "Apple M3 Ultra",
+    "fallback": 0,
+    "control_first_four_ids": [8913, 13, 185, 185],
+    "candidate_first_four_ids": [8913, 13, 185, 185]
+  },
+  "replicates": {
+    "control_tps": [41.11770557158608, 41.23161408240009, 41.10984373602406],
+    "candidate_tps": [42.29864258936989, 41.82385328715065, 41.889360707812386],
+    "control_median_tps": 41.11770557158608,
+    "candidate_median_tps": 41.889360707812386,
+    "median_improvement_percent": 1.877,
+    "promotion_threshold_percent": 3.0,
+    "control_p99_ms": [24.72141573, 24.59906604, 24.85158546],
+    "candidate_p99_ms": [24.46086677, 24.29654704],
+    "dispatches_per_forward": 487,
+    "candidate_cpu_reference_fallback_count": 0,
+    "complete_tokens_each_run": 32
+  },
+  "verdict": "Retire as a promoted TG change: parity passes and p99 trends better, but the median wall win is 1.88 percent versus the preregistered 3 percent threshold. Keep the guarded semantic-core lever for future hardware/clean-room retest; default remains ordered.",
+  "reopen_condition": "Re-run on a CLEAN owner-controlled lease or with a materially different concurrent kernel that removes a measured MLA/projection bottleneck; do not claim a rung from this fixture."
+}

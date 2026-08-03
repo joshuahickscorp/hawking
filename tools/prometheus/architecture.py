@@ -35,12 +35,17 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from lab.layout import PROFILES_ROOT, evidence_dir, resolve_workspace_path  # noqa: E402
+
 import prometheus as spine  # noqa: E402
 
-PROFILE_DIR = REPO / "profiles/prometheus"
+GLM52_EVIDENCE = evidence_dir("glm52")
+PROFILE_DIR = PROFILES_ROOT / "prometheus"
 
 # Revision 3 §5.1: a QAT or prequantized source contaminates Claim A, because
 # Prometheus would be allocating on top of an unknown prior allocation.
@@ -128,7 +133,7 @@ def source_verifier(contract_path: Path, ledger_path: Path) -> Stage:
         "shared_experts": expected.get("n_shared_experts"),
     }
     checks["S0.3_decoder_bit_exactness"] = {
-        "oracle": "tools/condense/glm52_reference.py",
+        "oracle": "lab/operators/glm52_reference.py",
         "runtime": "crates/hawking-core/src/gravity_glm.rs",
         "status": "MEASURED_ON_FIXTURE",
         "note": "adapter agrees with the numpy oracle on a tiny model with flagship "
@@ -477,6 +482,11 @@ EQUAL_BUDGET_ARMS = ["uniform-v1", "general-v1", "math-v1", "random-v1"]
 
 def run(ledger_path: Path, contract_path: Path, coalition_fraction: float,
         coalition_protect_bpw: float, seed: int) -> dict:
+    # Historic receipts and runbooks still name root-level campaign paths.  Read
+    # them through the layout bridge rather than requiring consumers to rewrite
+    # sealed metadata after a workspace move.
+    ledger_path = resolve_workspace_path(ledger_path)
+    contract_path = resolve_workspace_path(contract_path)
     src = source_verifier(contract_path, ledger_path)
     graph = common_model_graph(ledger_path)
     priors = family_prior_loader("glm")
@@ -535,8 +545,8 @@ def selftest() -> None:
     assert s.as_dict()["gate"] == "M10"
     assert "value" in Stage.measured("y", 1).as_dict()
 
-    result = run(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json",
-                 REPO / "evidence" / "glm52" / "GLM52_ARCHITECTURE_CONTRACT.json", 0.05, 4.0, 20260724)
+    result = run(GLM52_EVIDENCE / "GLM52_LOGICAL_WEIGHT_LEDGER.json",
+                 GLM52_EVIDENCE / "GLM52_ARCHITECTURE_CONTRACT.json", 0.05, 4.0, 20260724)
     assert result["components_present"] >= 14, result["components_present"]
     assert result["claim_a"]["status"] == "NOT_SEALED"
 
@@ -559,8 +569,8 @@ def selftest() -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Prometheus architecture (Revision 3 §7)")
-    ap.add_argument("--ledger", default=str(REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
-    ap.add_argument("--contract", default=str(REPO / "evidence" / "glm52" / "GLM52_ARCHITECTURE_CONTRACT.json"))
+    ap.add_argument("--ledger", default=str(GLM52_EVIDENCE / "GLM52_LOGICAL_WEIGHT_LEDGER.json"))
+    ap.add_argument("--contract", default=str(GLM52_EVIDENCE / "GLM52_ARCHITECTURE_CONTRACT.json"))
     ap.add_argument("--coalition-fraction", type=float, default=0.05)
     ap.add_argument("--coalition-protect-bpw", type=float, default=4.0)
     ap.add_argument("--seed", type=int, default=20260724)

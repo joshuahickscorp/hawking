@@ -344,11 +344,18 @@ fn shader_registers_direct_double_single_vector_and_deterministic_reductions() {
         !double_single_kernel.contains("simd_sum("),
         "double-single candidate must use its explicit compensated tree"
     );
-    assert!(SHADER_GRAVITY_PQ.contains("partials[row * splits + split] = acc"));
-    assert!(SHADER_GRAVITY_PQ.contains("for (uint split = 0u; split < splits; ++split)"));
+    let two_dimensional_kernels = SHADER_GRAVITY_PQ
+        .split("kernel void gravity_pq_matvec_bits8_2d")
+        .nth(1)
+        .expect("2D matvec kernel body")
+        .split("// ---------------------------------------------------------------------------\n// The elementwise ops")
+        .next()
+        .expect("2D matvec/reduce kernel terminator");
+    assert!(two_dimensional_kernels.contains("partials[row * splits + split] = acc"));
+    assert!(two_dimensional_kernels.contains("for (uint split = 0u; split < splits; ++split)"));
     assert!(
-        !SHADER_GRAVITY_PQ.contains("atomic_fetch_add"),
-        "2D reduction must not use nondeterministic atomics"
+        !two_dimensional_kernels.contains("atomic_fetch_add"),
+        "2D reduction must not use nondeterministic atomics",
     );
 }
 #[test]

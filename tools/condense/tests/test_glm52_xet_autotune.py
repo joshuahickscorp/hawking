@@ -22,6 +22,7 @@ REPO_ROOT = CONDENSE.parents[1]
 from lab.operators import glm52_xet_autotune as autotune  # noqa: E402
 from lab.operators import glm52_state as state  # noqa: E402
 from lab.operators.glm52_common import Glm52Error, atomic_json, seal, verify_sealed  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
 @pytest.fixture(scope="module")
 def runtime_receipt() -> dict:
@@ -107,7 +108,7 @@ def test_plan_binds_exact_resource_policy_and_rejects_substitution(plan: dict) -
 
 def test_committed_plan_is_rebuilt_against_current_sealed_inputs() -> None:
     committed = json.loads(
-        (REPO_ROOT / "evidence" / "glm52" / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
+        (evidence_dir("glm52") / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
     )
     verified = autotune.verify_plan(committed, root=REPO_ROOT, rebuild=True)
     assert verified["seal_sha256"] == committed["seal_sha256"]
@@ -121,6 +122,10 @@ def test_plan_binds_generator_common_requirements_and_runtime_probe(plan: dict) 
     }
     for row in binding["files"]:
         path = REPO_ROOT / row["path"]
+        if not path.is_file():
+            path = REPO_ROOT / "lab" / "operators" / pathlib.Path(row["path"]).name
+        if not path.is_file():
+            path = REPO_ROOT / row["path"]
         assert row["sha256"] == autotune.sha256_file(path)
     program_hash = autotune.hashlib.sha256(
         autotune._runtime_probe_program().encode("utf-8")
@@ -128,7 +133,7 @@ def test_plan_binds_generator_common_requirements_and_runtime_probe(plan: dict) 
     assert binding["runtime_probe_program_sha256"] == program_hash
 
 def test_planning_surface_contains_no_download_primitive() -> None:
-    source = (CONDENSE / "glm52_xet_autotune.py").read_text(encoding="utf-8")
+    source = pathlib.Path(autotune.__file__).read_text(encoding="utf-8")
     forbidden = (
         "hf_hub_download",
         "snapshot_download",

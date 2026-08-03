@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.tg.qwen_source_gravity_parity_repair.v1",
+  "status": "PASS_SAME_ARTIFACT_CPU_GPU_FULL_LOGIT_DISCRETE_PARITY_V21_AUTHORITY_STILL_MISSING",
+  "at": "2026-08-01T22:45:00Z",
+  "scope": "bounded 0.5B Qwen Q5_0 source-preserving Gravity repair; no large-family completion, source-parent capability, CLEAN throughput, or named-TG promotion",
+  "source": {
+    "repository": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "architecture": "qwen2",
+    "bounded_fixture": true
+  },
+  "artifact": {
+    "bytes": 391949878,
+    "sha256": "242bf2a4c6cc4864cce057520308261372a7f1ed1af5ce503247ccb5d6a03990",
+    "representation": "direct packed ggml.q4_k / ggml.q5_0 / ggml.q6_k / ggml.q8_0 plus native tensors",
+    "mapped_tensors": 290,
+    "payload_bytes": 391859712,
+    "lossy_fit": false,
+    "complete_bpw": 6.345485358574433,
+    "packed_bpw": 6.341769212909218
+  },
+  "localized_defect": {
+    "stage": "direct packed ggml.q5_0 Metal matvec",
+    "affected_source_tensors": ["model.layers.*.self_attn.q_proj.weight", "model.layers.*.self_attn.k_proj.weight"],
+    "root_cause": "the shader selected Q5_0 low/high nibbles from the absolute row column (`c < 16`) rather than the column within each 32-element GGML block (`(c & 31) < 16`); every block after block zero decoded the wrong nibble",
+    "repair": "compute `in_block = c & 31` before Q5_0 nibble selection; preserve source bytes and direct in-kernel unpack",
+    "prior_observation": "layer-0 Q/K projection surfaces diverged while Q8_0 V was aligned; prior GPU greedy token was 99321 instead of CPU 220",
+    "post_repair_observation": "layer traces remain within small f32 reduction drift through the first 11 layers and the complete full-logit discrete result matches"
+  },
+  "kernel_unit_gates": {
+    "gravity_raw_q5_0_stays_packed_and_matches_cpu": "PASS on Apple M3 Ultra; one Metal dispatch",
+    "gravity_raw_q8_0_stays_packed_and_matches_cpu": "PASS on Apple M3 Ultra; one Metal dispatch",
+    "hot_path_dense_reconstruction": false
+  },
+  "complete_prompt_gate": {
+    "prompt": "2 + 2 =",
+    "exact_token_ids": [17, 488, 220, 17, 284],
+    "vocabulary_logits": 151936,
+    "cpu_direct_artifact": {"greedy_token": 220, "elapsed_ms": 61627, "finite_logits": true, "metal_dispatches": 0},
+    "gpu_direct_artifact": {
+      "device_id": "Apple M3 Ultra",
+      "greedy_token": 220,
+      "top5": [220, 1124, 481, 856, 264],
+      "full_logit_max_abs_vs_cpu_f32": 0.00004148483276,
+      "full_logit_relative_l2_vs_cpu_f32": 0.0000027822903,
+      "metal_dispatches": 1930,
+      "command_buffers": 5,
+      "cpu_reference_fallback_total": 0,
+      "same_artifact_greedy_exact": true,
+      "same_artifact_top5_exact": true
+    }
+  },
+  "promotion_boundary": {
+    "numeric_parity_v21": "NOT_CLAIMED: V2.1 requires both CPU and device f32 outputs to be scored against an independent FP64 end-to-end authority; CPU f32-to-GPU f32 agreement is insufficient by contract",
+    "capability": "NOT_PRODUCT_CAPABILITY_EVIDENCE",
+    "tail_latency": "NOT_MEASURED",
+    "source_reference_tps": null,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "named_tg_rung": null,
+    "promotion_allowed": false,
+    "next_required_gate": "independent FP64 complete-forward reference, then V2.1 full-logit scoring and CLEAN multi-token same-model tail/capability benchmark"
+  }
+}

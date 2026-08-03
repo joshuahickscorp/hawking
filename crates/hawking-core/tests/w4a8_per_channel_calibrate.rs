@@ -22,7 +22,9 @@ const PROMPTS: &[&str] = &[
 ];
 const STEPS_PER_PROMPT: usize = 20;
 fn report_path() -> PathBuf {
-    PathBuf::from("../../reports/w4a8_lmhead_calibration_2026_05_26.json")
+    PathBuf::from(
+        "../../workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json",
+    )
 }
 #[test]
 #[ignore]

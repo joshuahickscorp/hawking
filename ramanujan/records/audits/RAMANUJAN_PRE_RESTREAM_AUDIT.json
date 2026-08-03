@@ -1,0 +1,263 @@
+{
+  "schema": "hawking.ramanujan.pre_restream_audit.v3",
+  "status": "RAMANUJAN_OWNER_GATE_READY_NOT_RESTREAM_READY",
+  "sampled_at": "2026-08-01T13:45:38Z",
+  "scope": "Technical pre-owner closure only. This audit does not approve D5/D8/D9, authorize the parent restream, mint a production lease or approve a production physical operator.",
+  "authoritative_receipts": {
+    "historical_refresh": {
+      "path": "ramanujan/RAMANUJAN_PRE_RESTREAM_AUDIT_REFRESH_2026_08_01.json",
+      "seal_sha256": "afa15e00bb768d168cf024f97d6473214b5881692e1330fee4f18d7b290db29b"
+    },
+    "final_parent_plan": {
+      "path": "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json",
+      "seal_sha256": "9cf78dc272fce40101c48d851b75f7082d0065f311623db980e81407fc2e8b88"
+    },
+    "owner_decisions": {
+      "path": "ramanujan/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json",
+      "seal_sha256": "f821ef7900d2a885dcabb1081c81de714ab86abfa0fe867ecbfe693043fe8a55"
+    },
+    "physical_operator_proposal": {
+      "path": "ramanujan/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json",
+      "seal_sha256": "5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e"
+    },
+    "qwen_fixture": {
+      "path": "evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json",
+      "seal_sha256": "b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a"
+    },
+    "qwen_current_transfer": {
+      "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_2026_08_01_1635.json",
+      "seal_sha256": "b09242881922cfa40ccc3508917834fff7f9c90de7f5bc566e198db1d8eb9bb2",
+      "scope": "bounded official 64 MiB transfer/resume probe only; no model body admitted"
+    },
+    "metal_icb_replay_substrate": {
+      "path": "evidence/tg/TG_METAL_ICB_REPLAY_SUBSTRATE_2026_08_01.json",
+      "seal_sha256": "6e1d66085efe93d297e5af53337eeaf268ca9cc68792259526c45949eab58f9a",
+      "scope": "fixed-address fixture graph mechanics only; no whole-model TG promotion"
+    },
+    "topology_exit": {
+      "path": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+      "seal_sha256": "3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989"
+    }
+  },
+  "unified_storage": {
+    "sample_free_bytes": 413792628736,
+    "protected_filesystem_floor_bytes": 200005889556,
+    "sample_residual_above_floor_bytes": 213786739180,
+    "model_lane_files_resident": 0,
+    "one_floor_only": true,
+    "admission_law": "Immediately before every window or model, recompute free bytes and require free_bytes - exact_incremental_bytes >= 200005889556; this sample is not a future admission receipt."
+  },
+  "qwen_first_dispatch_closure": {
+    "source_72b": {
+      "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+      "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+      "bytes": 47415715488,
+      "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+      "llama_cpp_text_smoke": "PASS",
+      "initial_hawking_terminal_seal_sha256": "de0d67517b9ec2a0083e7a99c304733b6f0c99bf47dfcda860ef5d7f4776bbd5",
+      "initial_elapsed_ms": 1071264.127458,
+      "initial_dispatches": 0,
+      "initial_tokens": 0
+    },
+    "same_source_reprobe": {
+      "terminal_seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c",
+      "enclosing_stage": "Engine::generate prefill -> QwenDense::forward_token_greedy_tcb -> first-use DenseDecodeArena plus packed Metal TCB -> TokenCommandBuffer::commit_and_wait",
+      "elapsed_ms": 116201.248542,
+      "source_bytes": 47415715488,
+      "device": "Apple M3 Ultra",
+      "swap_before_mib": 1600.25,
+      "swap_during_first_forward_mib": 15157.69,
+      "swap_after_exit_mib": 2259.06,
+      "result": "TERMINAL_METAL_PREFILL_SWAP_FLOOR_NO_TG_RUNG",
+      "evidence_boundary": "The historical run did not serialize per-buffer allocation, nested encode/GPU/wait timing or a completed dispatch trace. Those values remain unavailable; no rerun or finer syscall claim was invented."
+    },
+    "fixture_repair": {
+      "status": "CLEAN_FIXTURE_PASS_NO_MODEL_TG_CLAIM",
+      "device": "Apple M3 Ultra",
+      "pipeline": ["parse", "tensor_map", "quant_decode", "buffers", "pipeline", "encode", "submit_wait", "completion", "token"],
+      "direct_q4_dispatches_per_token": 2,
+      "gravity_q4_dispatches_per_token": 2,
+      "fallback_count": 0,
+      "host_v21": "PASS_INDEPENDENT_FP64_AUTHORITY",
+      "device_v21": "PASS_INDEPENDENT_FP64_AUTHORITY",
+      "repeat_16_token_hash_sha256": "435d64dc32ba71c995f30ec2f46283847c82ed3b487559c9826cf4e6d33f9bc2",
+      "instrumentation_repair": "TokenCommandBuffer commit paths now increment trace-gated structural commit accounting; 16 waits equal 16 commits in both representations."
+    },
+    "same_fixture_representation_matrix": {
+      "direct_gguf_q4_k": {
+        "physical_bytes": 1248,
+        "active_payload_bytes": 1152,
+        "ops_per_token": 4104,
+        "dispatches_per_token": 2,
+        "waits": 16,
+        "commits": 16,
+        "p50_us": 229,
+        "p95_us": 516,
+        "p99_us": 516,
+        "hot_allocated_bytes": 0
+      },
+      "executable_gravity_raw_q4_k": {
+        "physical_bytes": 1624,
+        "active_payload_bytes": 1152,
+        "ops_per_token": 4104,
+        "dispatches_per_token": 2,
+        "waits": 16,
+        "commits": 16,
+        "p50_us": 226,
+        "p95_us": 430,
+        "p99_us": 430,
+        "hot_allocated_bytes": 0
+      },
+      "direct_gguf_q5_k": {
+        "physical_bytes": 1504,
+        "active_payload_bytes": 1408,
+        "executed_fp_ops_per_token": 4104,
+        "executed_integer_bit_ops_per_token": "UNSEALED_STATIC_COUNT",
+        "dispatches_per_token": 2,
+        "waits": 16,
+        "commits": 16,
+        "p50_us": 263,
+        "p95_us": 300,
+        "p99_us": 300,
+        "hot_allocated_bytes": 0,
+        "authority": "independent packed-byte GGML Q5_K FP64 decoder plus FP64 matvec"
+      },
+      "native_reduced_full_qwen_gravity": "NOT_MATERIALIZED_NO_SOURCE_PRESENT",
+      "deepest_tg_rung": null,
+      "first_failing_rung": "NOT_APPLICABLE_FIXTURE_SCOPE"
+    }
+  },
+  "large_family_gauntlet": {
+    "families": [
+      {
+        "family": "Qwen2.5-72B",
+        "result": "TWO_DISTINCT_FAILURES_AND_EXACT_REPRESENTATION_FLOOR_SEALED",
+        "terminal_seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c",
+        "eviction_seal_sha256": "c08c83014abf6afc821a62c848749da13443f5a0fca873d7a311bbc850b666e2",
+        "xet_seal_sha256": "a6e5d8f98b884ade0a5de4a6df23ce11494592afe5b4e3daae7f471a14d02c13"
+      },
+      {
+        "family": "Llama-3.3-70B",
+        "result": "K0_EXACT_TOKENS_METAL_DISPATCH_1043_ZERO_FALLBACK_FLOOR_SEALED",
+        "measured_decode_tps": 2.964,
+        "deepest_rung": null,
+        "first_failing_rung": "TG32",
+        "terminal_seal_sha256": "0ec1f2ace9f09e431b677bb950d3641bb1a41f67dee3bc8bf246016214760105",
+        "eviction_seal_sha256": "452a6f1f003b24947f287daab84addc6e9ccd565298eac7943e3f60c2481c517",
+        "xet_seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0"
+      },
+      {
+        "family": "GPT-OSS-120B",
+        "total_parameters": "117B",
+        "active_parameters": "5.1B",
+        "result": "EXACT_SOURCE_MXFP4_BOUNDED_EXPERT_WAVE_PASS_CONTAINER_RUNTIME_FLOOR_SEALED",
+        "terminal_seal_sha256": "fc592485ca47203fbfde50a836cd3aa3cc2ccddb1055bb696798785e0c55f176",
+        "eviction_seal_sha256": "269080def21f57143e8177a1ebe10ddb233250e2d014a7db2571c2229414dbdc",
+        "xet_seal_sha256": "c5b559bc9d49b23f3b890e6783a7e1f35716dfdc7c35fe6db3e383d9dc5f06dc"
+      }
+    ],
+    "sequential_lifecycle_and_recovery": "PASS_BY_SEALED_SOURCE_ADMISSION_TERMINAL_AND_EXACT_EVICTION_RECEIPTS",
+    "model_lane_empty_after_rotation": true
+  },
+  "restream_machinery": {
+    "schedule": {
+      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+      "windows": 81,
+      "ranges": 59585,
+      "logical_source_payload_bytes": 1506659919872,
+      "peak_incremental_bytes": 58885799936
+    },
+    "policy": {
+      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+      "envelope_bytes": 90000000000,
+      "rollback_scratch_reserve_bytes": 17179869184
+    },
+    "green_technical_contract": [
+      "exact ordered frame parsing and restart-safe executor with current-time authorization revalidation, sealed CLAIMED predecessor, and a shared range deadline covering Xet setup plus child-stdin backpressure",
+      "fetch/verify/process/seal/evict lifecycle",
+      "remote cold-storage interface and verified handoff hash",
+      "atomic terminal receipts and resume",
+      "complete component and cumulative range accounting under 90 GB",
+      "live unified-floor admission before bodies",
+      "failure injection and rollback after range, pack, handoff and receipt publication",
+      "synthetic and small-real fixture dry-runs with no parent body retained"
+    ],
+    "fixture_operator": "GREEN_PENDING_OWNER_PRODUCTION_APPROVAL",
+    "production_authority": false
+  },
+  "gpu_lease": {
+    "authority": "lab/lease.py",
+    "authority_sha256": "32556d06c4b39b0131f4bcd9df559371c1cb9550f30a91ed088e444af5ae96cc",
+    "fixture_contract": ["exclusive lock", "sealed heartbeat", "freshness refusal", "unlocked stale-record recovery marker", "CLEAN/CONTENDED/INVALID labels", "foreign-process refusal"],
+    "fixture_tests": "PASS",
+    "fixture_can_certify_production": false
+  },
+  "owner_packet": {
+    "status": "COMPLETE_APPROVALS_PENDING",
+    "decisions_receipt": "ramanujan/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json#230943b6e830928168495b5c4a6d2d1e74b6e45fce22b93d2a2a575a5688142b",
+    "operator_proposal": "ramanujan/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json#5bef0cd1c585372a8faaed4334b60278777a2c3c6a22f30ca21636695108c266",
+    "launcher": "ramanujan/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+    "launcher_sha256": "2da45642633cd03fb8bcc1ef3b5f1865242fc93aa8dfa9a5c87b2db16225bfc0",
+    "launcher_behavior": "Exit 78 before admission and print every absent D5, D8, D9, parent authorization, production lease and physical operator input together."
+  },
+  "code_topology": {
+    "status": "PASS_ALL_BINDING_DIMENSIONS_AT_OR_BELOW_ENTRY_WITH_NON_IGNORED_UNTRACKED_SOURCE",
+    "entry_active_loc": 430284,
+    "exit_active_loc": 376064,
+    "entry_source_files": 1227,
+    "exit_source_files": 950,
+    "entry_directories": 179,
+    "exit_directories": 121,
+    "entry_public_symbols": 9412,
+    "exit_public_symbols": 8253,
+    "entry_functions": 14587,
+    "exit_functions": 12946
+  },
+  "verification": [
+    {
+      "role": "qwen_builder_plus_controller_challenge",
+      "command": "cargo test -p hawking-core --test qwen_q4k_metal_pipeline_fixture -- --nocapture",
+      "result": "1 passed on Apple M3 Ultra"
+    },
+    {
+      "role": "operator_lease_builder_plus_controller_adversarial_challenge",
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_framed_window_operator.py tools/condense/tests/test_glm52_range_stream_executor.py tools/condense/tests/test_glm52_restream_contract.py tools/condense/tests/test_restream_guard.py tools/condense/tests/test_gravity_range_scheduler.py tools/condense/tests/test_condense_controller.py tools/condense/tests/test_campaign_engine.py",
+      "result": "136 passed"
+    },
+    {
+      "role": "current_time_replay_and_fixture_floor_regression",
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_range_stream_executor.py tools/condense/tests/test_glm52_framed_window_operator.py tools/condense/tests/test_glm52_restream_contract.py tools/condense/tests/test_restream_guard.py",
+      "result": "41 passed (including stalled Xet setup and child-pipe backpressure deadline injections)"
+    },
+    {
+      "role": "metal_graph_builder_controller_challenge",
+      "command": "cargo test -p hawking-core metal::imp::replayable_compute_graph_tests::replayable_icb_reuses_addresses_and_one_submit --lib -- --ignored --exact; cargo test -p hawking-core metal::imp::replayable_compute_graph_tests::replayable_icb_group_orders_cross_graph_dependencies --lib -- --exact; cargo test -p hawking-core metal::imp::replayable_compute_graph_tests::replayable_icb_fifteen_command_fusion_encode_benchmark --lib -- --ignored --exact",
+      "result": "3 passed on Apple M3 Ultra; graph substrate is not a whole-model TG claim"
+    },
+    {
+      "role": "non_parent_and_owner_packet",
+      "command": ".venv/glm52/bin/python -m pytest -q ramanujan/test_ramanujan.py ramanujan/test_prover.py ramanujan/test_roles_economics.py ramanujan/test_search.py ramanujan/test_cognition.py ramanujan/test_governance_invariants.py ramanujan/test_you_research.py ramanujan/data/test_data.py ramanujan/data/test_freeze.py tools/odyssey/test_odyssey_data.py tools/odyssey/test_odyssey_t0.py tools/odyssey/test_rate_binding.py",
+      "result": "200 passed plus 3 adversarial subtests"
+    }
+  ],
+  "remaining_owner_or_production_inputs_only": [
+    "OWNER_D5_SOURCE_LICENSE_SELECTION",
+    "OWNER_D8_SOURCE_LICENSE_AND_HIDDEN_MEMBERSHIP_SELECTION",
+    "OWNER_D9_SOURCE_LICENSE_AND_VARIANT_GENERATOR_SELECTION",
+    "OWNER_PARENT_RESTREAM_AUTHORIZATION",
+    "PRODUCTION_CLEAN_GPU_LEASE_IDENTITY",
+    "OWNER_APPROVAL_OF_PRODUCTION_PHYSICAL_GLM52_WINDOW_OPERATOR"
+  ],
+  "post_authorization_outputs_not_preclaimed": [
+    "fresh live Xet/allocation receipt",
+    "per-window production remote-hash/eviction/recovery receipts",
+    "terminal parent restream receipt",
+    "source/reference and Gravity K0/capability receipts"
+  ],
+  "exact_next_command_after_owner_inputs_exist": "HAWKING_PARENT_RESTREAM_AUTHORIZED=YES HAWKING_CLEAN_GPU_LEASE_ID='<production-clean-lease-id>' HAWKING_PRODUCTION_GPU_LEASE_RECEIPT='/absolute/path/to/live-production-lease-receipt.json' HAWKING_GLM52_WINDOW_OPERATOR='/absolute/path/to/owner-approved-production-window-operator' HAWKING_GLM52_OPERATOR_APPROVAL_RECEIPT='/absolute/path/to/operator-approval-and-receipt-key.json' HAWKING_OWNER_GREEN_LIGHT_AUTHORIZATION='/absolute/path/to/single-use-owner-ed25519-authorization.json' HAWKING_EXTERNAL_SOURCE_FREEZE_RECEIPT='/absolute/path/to/authority-sealed-public-D5-D8-D9-receipt.json' bash /Users/scammermike/Downloads/hawking/ramanujan/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+  "forbidden_endpoint": "RAMANUJAN_RESTREAM_READY_NOT_CLAIMED",
+  "endpoint": "RAMANUJAN_OWNER_GATE_READY",
+  "seal_sha256": "5c8ab52235341d747d40d37d3c8031ddadfe3f86141a51171df95fff1ee34e10"
+}

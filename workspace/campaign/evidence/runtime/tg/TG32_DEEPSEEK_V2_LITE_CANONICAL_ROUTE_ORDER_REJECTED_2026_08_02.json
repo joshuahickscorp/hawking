@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.tg.same_model_candidate_result.v1",
+  "status": "REJECTED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate_id": "canonical-route-order-by-expert-id-v1",
+  "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_CANONICAL_ROUTE_ORDER_PREREGISTRATION_2026_08_02.json",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "code_binding": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-canonical-route-2026-08-02.json",
+    "profile_sha256": "9a1f505d871b956140992a3a3090ef6f27b3d505d03c88c69f53cd41ef2517b3",
+    "shader_source_sha256": "a8f8df573e740ca52939e7fd4c377a6cb2f86bcf250110793f54b54dbe718f22",
+    "gravity_deepseek_sha256": "6a90a4e4463f47354e251f8b5d015e4288aa837addeca098cc0269a6aaecb89b",
+    "native_deepseek_sha256": "607bc7217523146d84b86bfc3dd564dd560c0bf95eaca2a9d91b744d79162a21",
+    "kernel_registry_sha256": "2ffd2e8d0e03754349b0a165b23b9e4358ed226a00215e145c9d502f9142728b",
+    "unit_tests": "cargo test -p hawking-core --lib: 280 passed; 0 failed; 6 ignored"
+  },
+  "runtime": {
+    "device": "Apple M3 Ultra",
+    "fallback": 0,
+    "prompt": "The capital of France is",
+    "completion_tokens": 32,
+    "source_window_ids": [8913, 13, 185, 185],
+    "control_ids_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "candidate_ids_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "exact_token_match": true,
+    "metal_dispatches": 15584,
+    "dispatches_per_forward": 487,
+    "decode_command_buffers": 32,
+    "prefill_metal_dispatches": 2910
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-r3-2026-08-02.json",
+    "decode_tps": 41.06909043843913,
+    "decode_ms": 779.174792,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate": {
+    "decode_tps": 41.02045651325071,
+    "decode_ms": 780.098583,
+    "p50_ms": 24.3361665,
+    "p95_ms": 24.59711715,
+    "p99_ms": 24.75206081,
+    "prefill_ms": 327.317583,
+    "device_id": "Apple M3 Ultra",
+    "cpu_reference_fallback_count": 0,
+    "complete_token_profiler": true,
+    "token_latencies_ms": [24.295125, 23.986125, 23.775917, 23.904333, 24.459875, 23.904667, 24.248125, 24.025625, 24.342542, 23.957459, 24.287875, 24.415833, 24.200167, 24.209416, 24.41325, 24.546417, 24.294, 24.445917, 24.455917, 24.375125, 24.279083, 24.433834, 24.659084, 24.306084, 24.264375, 24.435917, 24.379042, 24.424417, 24.329791, 24.793833, 24.426959, 24.382167],
+    "unrelated_prompt": {
+      "prompt": "The largest planet in our solar system is",
+      "ids": [39048, 13, 39048, 317, 245, 5817, 16310, 11],
+      "text": " Jupiter. Jupiter is a gas giant,",
+      "decode_tps": 41.182610128090786,
+      "fallback": 0,
+      "dispatches_per_forward": 487
+    }
+  },
+  "delta_candidate_minus_control": {
+    "decode_tps_percent": -0.118466,
+    "decode_wall_percent": 0.118466,
+    "p50_percent": 0.331873,
+    "p95_percent": -0.937139,
+    "p99_percent": -0.824465
+  },
+  "decision": {
+    "promoted": false,
+    "reason": "The canonical route order preserved the exact 32-token source window, real Metal execution and zero fallback, but did not reach the preregistered 3 percent wall win (41.020 TPS versus 41.069 TPS control).",
+    "roofline_effect": "No new rung; DeepSeek remains TG32 at 41.06909043843913 TPS and TG20 is not reached.",
+    "reopen_condition": "Only retry route-order work with a full-vector Numeric Parity V2.1 result or a materially different accumulation/topology mechanism; do not keep this sort as a promoted speed path."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "seal_sha256": "baa9b32b7e61892dc03c876511e5d43ab41abeab154d4167169ba48ad54d6c40"
+}

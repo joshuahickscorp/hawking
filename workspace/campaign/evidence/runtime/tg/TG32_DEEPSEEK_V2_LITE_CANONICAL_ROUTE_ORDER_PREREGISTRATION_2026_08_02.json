@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "canonical-route-order-by-expert-id-v1",
+    "kind": "same_model_route_accumulation_order",
+    "hypothesis": "Sorting the already-selected routed experts by expert ID on both the CPU authority and Metal path will make near-tied route accumulation deterministic across reduction order without changing the selected expert set or route weights.",
+    "mechanism": "Retain score-based top-k selection and weights; reorder the six selected (expert_id, weight) pairs by ascending expert ID before routed expert execution and weighted accumulation on both paths.",
+    "scope": "same exact DeepSeek Q4_K_M source and promoted v2t_gu_v2 control; no quantization, tokenizer, prompt, vocabulary, context, expert selection, or model-family change",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_window_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "route_set_unchanged": true
+    }
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-r3-2026-08-02.json",
+    "measured_tps": 41.06909043843913,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "source_window_ids": [8913, 13, 185, 185]
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "d44a709917b14ad5a7542fadf9f68a5af068415a224e2854d8b81004d266b296"
+}

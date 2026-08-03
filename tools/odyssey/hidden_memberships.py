@@ -19,13 +19,13 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-from tools.odyssey._paths import HIDDEN_DIR, ODYSSEY, PUBLIC_EVAL_DIR, ROOT
+from tools.odyssey._paths import HIDDEN_DIR, PUBLIC_EVAL_DIR, ROOT, TRAINING_DIR
 
 SCHEMA = "hawking.odyssey.hidden_memberships.v1"
 HIDDEN_ITEMS = HIDDEN_DIR / "hidden_items.jsonl"
 COMMITMENT = HIDDEN_DIR / "HIDDEN_MEMBERSHIP_COMMITMENT.json"
 PUBLIC_SELECTION = PUBLIC_EVAL_DIR / "selection_items.jsonl"
-TRAINING_VISIBLE = ODYSSEY / "training" / "TRAINING_VISIBLE_EVAL.json"
+TRAINING_VISIBLE = TRAINING_DIR / "TRAINING_VISIBLE_EVAL.json"
 
 # Seed hidden items for T0 (synthetic held-out probes; not training data).
 _SEED_HIDDEN = [

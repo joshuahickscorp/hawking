@@ -37,6 +37,8 @@
 
 use serde::Serialize;
 
+use crate::gguf::GgmlType;
+
 /// Schema id for V2.1 receipts and logs.
 pub const SCHEMA: &str = "hawking.numeric_parity.v2_1";
 
@@ -618,6 +620,197 @@ pub fn matvec_dense_f64_authority(
     Ok(out)
 }
 
+/// Independent FP64 matvec authority for the raw GGML quant grammars carried
+/// by source-preserving Gravity artifacts.  Values are reconstructed directly
+/// from their integer codes and f16 scales in f64; it does not call Hawking's
+/// f32 dequantizer and then re-promote its rounded values.
+///
+/// The current executable Qwen source grammar uses Q4_K, Q5_0, Q6_K and
+/// Q8_0. A caller must pass one full row-major matrix payload and a f64
+/// activation.
+pub fn matvec_ggml_quant_f64_authority(
+    dtype: GgmlType,
+    weights: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f64],
+) -> Result<Vec<f64>, String> {
+    if x.len() != cols || rows == 0 || cols == 0 {
+        return Err(format!(
+            "quant f64 matvec geometry rows={rows} cols={cols} x={}",
+            x.len()
+        ));
+    }
+    let (block_elems, block_bytes) = match dtype {
+        GgmlType::Q4_K => (256usize, 144usize),
+        GgmlType::Q5_0 => (32usize, 22usize),
+        GgmlType::Q8_0 => (32usize, 34usize),
+        GgmlType::Q6_K => (256usize, 210usize),
+        other => {
+            return Err(format!(
+                "quant f64 authority has no codec grammar for {other:?}"
+            ))
+        }
+    };
+    if cols % block_elems != 0 {
+        return Err(format!(
+            "quant f64 {dtype:?}: cols {cols} is not a multiple of {block_elems}"
+        ));
+    }
+    let row_bytes = (cols / block_elems)
+        .checked_mul(block_bytes)
+        .ok_or_else(|| "quant f64 row byte-size overflow".to_string())?;
+    if weights.len() != rows.saturating_mul(row_bytes) {
+        return Err(format!(
+            "quant f64 {dtype:?}: payload {} B != {} rows × {row_bytes} B",
+            weights.len(),
+            rows
+        ));
+    }
+    let f16_at = |bytes: &[u8]| -> f64 {
+        half::f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32() as f64
+    };
+    let mut out = vec![0.0f64; rows];
+    for row in 0..rows {
+        let bytes = &weights[row * row_bytes..(row + 1) * row_bytes];
+        let mut acc = 0.0f64;
+        match dtype {
+            GgmlType::Q4_K => {
+                for block in 0..cols / 256 {
+                    let payload = &bytes[block * 144..block * 144 + 144];
+                    let d = f16_at(&payload[..2]);
+                    let dmin = f16_at(&payload[2..4]);
+                    let scales = &payload[4..16];
+                    let quants = &payload[16..144];
+                    let mut scale = [0u8; 8];
+                    let mut minimum = [0u8; 8];
+                    for group in 0..4 {
+                        scale[group] = scales[group] & 0x3f;
+                        minimum[group] = scales[4 + group] & 0x3f;
+                    }
+                    for group in 0..4 {
+                        scale[4 + group] = (scales[8 + group] & 0x0f) | ((scales[group] >> 6) << 4);
+                        minimum[4 + group] =
+                            (scales[8 + group] >> 4) | ((scales[4 + group] >> 6) << 4);
+                    }
+                    for sub in 0..8 {
+                        let sub_scale = d * scale[sub] as f64;
+                        let sub_minimum = dmin * minimum[sub] as f64;
+                        let pair = sub / 2;
+                        let high_nibble = sub % 2 == 1;
+                        for lane in 0..32 {
+                            let packed = quants[pair * 32 + lane];
+                            let code = if high_nibble {
+                                (packed >> 4) & 0x0f
+                            } else {
+                                packed & 0x0f
+                            };
+                            let index = block * 256 + sub * 32 + lane;
+                            acc += (sub_scale * code as f64 - sub_minimum) * x[index];
+                        }
+                    }
+                }
+            }
+            GgmlType::Q5_0 => {
+                for block in 0..cols / 32 {
+                    let payload = &bytes[block * 22..block * 22 + 22];
+                    let d = f16_at(&payload[..2]);
+                    let high = u32::from_le_bytes(payload[2..6].try_into().unwrap());
+                    for i in 0..32 {
+                        let packed = payload[6 + (i & 15)];
+                        let low = if i < 16 { packed & 0x0f } else { packed >> 4 };
+                        let q = (low | ((((high >> i) & 1) as u8) << 4)) as i32 - 16;
+                        acc += d * q as f64 * x[block * 32 + i];
+                    }
+                }
+            }
+            GgmlType::Q8_0 => {
+                for block in 0..cols / 32 {
+                    let payload = &bytes[block * 34..block * 34 + 34];
+                    let d = f16_at(&payload[..2]);
+                    for i in 0..32 {
+                        acc += d * (payload[2 + i] as i8) as f64 * x[block * 32 + i];
+                    }
+                }
+            }
+            GgmlType::Q6_K => {
+                for block in 0..cols / 256 {
+                    let payload = &bytes[block * 210..block * 210 + 210];
+                    let d = f16_at(&payload[208..210]);
+                    for half in 0..2 {
+                        let ql = &payload[half * 64..half * 64 + 64];
+                        let qh = &payload[128 + half * 32..128 + half * 32 + 32];
+                        let scales = &payload[192 + half * 8..192 + half * 8 + 8];
+                        let base = block * 256 + half * 128;
+                        for lane in 0..32 {
+                            let hi = qh[lane];
+                            let values = [
+                                ((ql[lane] & 0x0f) | ((hi & 0x03) << 4)) as i32 - 32,
+                                ((ql[32 + lane] & 0x0f) | (((hi >> 2) & 0x03) << 4)) as i32 - 32,
+                                ((ql[lane] >> 4) | (((hi >> 4) & 0x03) << 4)) as i32 - 32,
+                                ((ql[32 + lane] >> 4) | (((hi >> 6) & 0x03) << 4)) as i32 - 32,
+                            ];
+                            let scale_index = lane / 16;
+                            for (part, value) in values.into_iter().enumerate() {
+                                let scale = scales[scale_index + part * 2] as i8 as f64;
+                                acc += d * scale * value as f64 * x[base + lane + part * 32];
+                            }
+                        }
+                    }
+                }
+            }
+            _ => unreachable!("codec was admitted above"),
+        }
+        out[row] = acc;
+    }
+    Ok(out)
+}
+
+/// Decode one Q8_0 source row directly into f64. This deliberately exists
+/// alongside the streaming matvec authority: token embedding lookup must not
+/// obtain its source values by running Hawking's f32 decoder and widening the
+/// result. Q8_0 is the raw embedding grammar admitted by the bounded Qwen
+/// source-preserving lane; other raw embedding grammars fail closed here until
+/// their exact source decoder is implemented.
+pub fn row_ggml_quant_f64_authority(
+    dtype: GgmlType,
+    weights: &[u8],
+    rows: usize,
+    cols: usize,
+    row: usize,
+) -> Result<Vec<f64>, String> {
+    if dtype != GgmlType::Q8_0 {
+        return Err(format!(
+            "quant f64 row authority has no embedding grammar for {dtype:?}"
+        ));
+    }
+    if row >= rows || cols == 0 || cols % 32 != 0 {
+        return Err(format!(
+            "quant f64 Q8_0 row geometry rows={rows} cols={cols} row={row}"
+        ));
+    }
+    let row_bytes = (cols / 32)
+        .checked_mul(34)
+        .ok_or_else(|| "quant f64 Q8_0 row byte-size overflow".to_string())?;
+    if weights.len() != rows.saturating_mul(row_bytes) {
+        return Err(format!(
+            "quant f64 Q8_0 row payload {} B != {} rows × {row_bytes} B",
+            weights.len(),
+            rows
+        ));
+    }
+    let source = &weights[row * row_bytes..(row + 1) * row_bytes];
+    let mut out = vec![0.0; cols];
+    for block in 0..cols / 32 {
+        let payload = &source[block * 34..block * 34 + 34];
+        let d = half::f16::from_bits(u16::from_le_bytes([payload[0], payload[1]])).to_f32() as f64;
+        for lane in 0..32 {
+            out[block * 32 + lane] = d * (payload[2 + lane] as i8) as f64;
+        }
+    }
+    Ok(out)
+}
+
 /// RMSNorm in f64: `x * rsqrt(mean(x²) + eps) * weight`.
 pub fn rmsnorm_f64(x: &[f64], weight: &[f64], eps: f64) -> Result<Vec<f64>, String> {
     if x.len() != weight.len() {
@@ -1003,6 +1196,73 @@ mod tests {
         let y = matvec_bf16_f64_authority(&bits, 2, &[3.0, 4.0]).unwrap();
         assert_eq!(y.len(), 1);
         assert!((y[0] - 11.0).abs() < 1e-12, "y={}", y[0]);
+    }
+    #[test]
+    fn raw_q4_k_f64_authority_decodes_scale_min_and_nibble_pairs() {
+        let mut q4 = vec![0u8; 144];
+        q4[..2].copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+        q4[2..4].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        // First 32-value sub-block: scale=2, min=3. All source codes are 1.
+        q4[4] = 2;
+        q4[8] = 3;
+        q4[16..48].fill(0x01);
+        let got = matvec_ggml_quant_f64_authority(GgmlType::Q4_K, &q4, 1, 256, &vec![1.0; 256])
+            .expect("Q4_K f64 authority");
+        // 32 × (0.5 × 2 × 1 - 0.25 × 3); all other sub-blocks are zero.
+        assert!((got[0] - 8.0).abs() < 1e-12, "got={}", got[0]);
+    }
+    #[test]
+    fn raw_q5_0_f64_authority_uses_each_block_local_nibble() {
+        let mut weights = vec![0u8; 44]; // one 64-column row, two blocks
+        for block in 0..2 {
+            let off = block * 22;
+            weights[off..off + 2]
+                .copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+            // element 0 = +1 (low nibble=17); element 16 = -1 (high nibble=15).
+            weights[off + 2..off + 6].copy_from_slice(&(1u32 << 0).to_le_bytes());
+            weights[off + 6] = 0xf1;
+        }
+        let x = vec![1.0f64; 64];
+        let got = matvec_ggml_quant_f64_authority(GgmlType::Q5_0, &weights, 1, 64, &x)
+            .expect("Q5_0 f64 authority");
+        // Every other source code is zero => -16; two explicit values replace
+        // those baseline codes in each block.
+        let expected = 0.5 * ((1.0 - 1.0) + 30.0 * -16.0) * 2.0;
+        assert!(
+            (got[0] - expected).abs() < 1e-12,
+            "got={} expected={expected}",
+            got[0]
+        );
+    }
+    #[test]
+    fn raw_q8_0_and_q6_k_f64_authority_decode_source_scalars() {
+        let mut q8 = vec![0u8; 34];
+        q8[..2].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        q8[2..].fill(4u8);
+        let q8_out = matvec_ggml_quant_f64_authority(GgmlType::Q8_0, &q8, 1, 32, &vec![1.0; 32])
+            .expect("Q8_0 f64 authority");
+        assert!((q8_out[0] - 32.0).abs() < 1e-12);
+
+        let mut q6 = vec![0u8; 210];
+        q6[..128].fill(1); // q = 1 - 32 = -31 in each of the four lanes.
+        q6[192..208].fill(1); // all per-16 scales = 1
+        q6[208..210].copy_from_slice(&half::f16::from_f32(1.0).to_bits().to_le_bytes());
+        let q6_out = matvec_ggml_quant_f64_authority(GgmlType::Q6_K, &q6, 1, 256, &vec![1.0; 256])
+            .expect("Q6_K f64 authority");
+        // ql low nibbles are one, high nibbles are zero: two of the four
+        // 32-wide streams decode to -31 and two to -32 per 128 half.
+        assert!((q6_out[0] + 8064.0).abs() < 1e-12);
+    }
+    #[test]
+    fn raw_q8_0_f64_row_authority_reads_only_the_requested_source_row() {
+        let mut q8 = vec![0u8; 68];
+        q8[..2].copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+        q8[2..34].fill(2);
+        q8[34..36].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        q8[36..68].fill(4);
+        let got = row_ggml_quant_f64_authority(GgmlType::Q8_0, &q8, 2, 32, 1)
+            .expect("Q8_0 f64 row authority");
+        assert_eq!(got, vec![1.0; 32]);
     }
     #[test]
     fn pair_scores_both_backends() {

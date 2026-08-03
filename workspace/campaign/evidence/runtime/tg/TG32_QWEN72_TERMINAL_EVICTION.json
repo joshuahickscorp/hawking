@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v2",
+  "status": "EVICTED_AND_TRASH_PURGED_NO_TG_RUNG",
+  "rung": "TG32",
+  "family": "qwen",
+  "terminal_receipt": {
+    "path": "evidence/tg/TG32_QWEN72_K0_TERMINAL.json",
+    "seal_sha256": "de0d67517b9ec2a0083e7a99c304733b6f0c99bf47dfcda860ef5d7f4776bbd5",
+    "terminal_gate": "K0_V2_1",
+    "result": "FAIL_BEFORE_FORWARD"
+  },
+  "source": {
+    "path": "models/tg-active/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "artifact_created": false,
+    "cold_upload": "NOT_REQUESTED; no Gravity artifact qualified for retention"
+  },
+  "exact_eviction_scope": {
+    "staging_root": "models/tg-active",
+    "staging_bytes_before_eviction": 47415721502,
+    "validated_source_bytes_before_eviction": 47415715488,
+    "contained_only_the_failed_Qwen_source_and_its_download_metadata_cache": true,
+    "workspace_staging_absent_after_move": true,
+    "exact_trash_item_name": "tg-active",
+    "exact_trash_item_purged": true,
+    "other_trash_items_touched": false
+  },
+  "free_byte_recovery": {
+    "free_before_eviction": 367987208192,
+    "free_after_move_to_trash": 367992172544,
+    "free_after_exact_trash_purge": 415430791168,
+    "observed_recovery_from_before_bytes": 47443582976,
+    "recovery_boundary": "The before/after filesystem samples include normal background activity. They prove that no model staging body remains and show recovery exceeding the recorded staging bytes; they do not assign the small difference to the model operation."
+  },
+  "postcondition": {
+    "active_model_count": 0,
+    "model_bytes_under_models": 0,
+    "source_body_retained": false,
+    "temporary_download_cache_retained": false,
+    "promotion": "NONE",
+    "next_family_requires_fresh_unified_byte_admission": true
+  },
+  "seal_sha256": "425a882b8928000d866a5af4036de9c937cfb5c326798430107558627568014a"
+}

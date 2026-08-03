@@ -60,12 +60,12 @@ fn first_available_model() -> Option<(PathBuf, PathBuf, &'static str)> {
     const CANDIDATES: &[(&str, &str, &str)] = &[
         (
             "../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
-            "../../profiles/qwen3b-instruct-q4k.m3pro18.json",
+            "../../workspace/campaign/config/profiles/qwen/qwen3b-instruct-q4k.m3pro18.json",
             "qwen3b-q4k-greedy64",
         ),
         (
             "../../models/deepseek-v2-lite-q4.gguf",
-            "../../profiles/deepseek-v2-lite-q4.m3pro18.json",
+            "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
             "deepseek-v2-lite-q4-greedy64",
         ),
     ];

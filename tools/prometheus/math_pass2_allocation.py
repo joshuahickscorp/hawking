@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.12
 """Math-Preserve PASS 2: one whole-model byte and structure auction.
 
-Resolves the thing `profiles/prometheus/math-v1.json` has stood stubbed for since
+Resolves the thing `workspace/campaign/config/profiles/prometheus/math-v1.json` has stood stubbed for since
 it was written -- "GATED: until the causal probe (P3/P4) runs, all routed experts
 are T1. When cartography lands, the math coalition subset promotes ... at matched
 bytes" -- by reading every capsule PASS 1 sealed and ranking each sparse layer's
@@ -40,18 +40,18 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-CONDENSE = REPO / "tools/condense"
-for _p in (HERE, CONDENSE):
-    if str(_p) not in sys.path:
-        sys.path.insert(0, str(_p))
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 
-from glm52_common import resolve_artifact  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
 CAPSULE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus/capsules"
 )
-GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
-LEDGER = REPO / "evidence" / "glm52" / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
+GLM52_EVIDENCE = evidence_dir("glm52")
+PROMETHEUS_EVIDENCE = evidence_dir("prometheus")
+GRAPH = GLM52_EVIDENCE / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+LEDGER = GLM52_EVIDENCE / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
 
 # Same convention `architecture.py`'s equal-budget solver already uses for the
 # coalition's size, so PASS 2's membership and PASS 1/M09's existing byte machinery
@@ -83,7 +83,7 @@ def sparse_layers_declared() -> list[int]:
     """Every layer the source's own config says is MoE, from the dependency graph's
     architecture-adjacent evidence -- independent of what PASS 1 has captured so
     far, so "how much is left" is answerable without trusting PASS 1's own count."""
-    import glm52_teacher_capture as teacher
+    from lab.operators import glm52_teacher_capture as teacher
 
     config = teacher.official_config()
     return [i for i, kind in enumerate(config["mlp_layer_types"]) if kind == "sparse"]
@@ -175,7 +175,7 @@ def _pq_payload_bytes(row: dict, rung_name: str) -> int:
     and is cross-checked in selftest; PASS 3 later replaces prediction with actual
     file bytes before sealing the artifact.
     """
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
 
     rung = next((r for r in pack.LADDER if r["rung"] == rung_name), None)
     if rung is None:
@@ -201,7 +201,7 @@ def _decision_bytes(row: dict, decision: str) -> int:
 
 
 def _base_tensor_decision(row: dict, coalition: set[tuple[int, int]]) -> tuple[str, str]:
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
 
     if row["dtype"] != "BF16":
         return "native", "NON_BF16_CONTROL"
@@ -498,7 +498,7 @@ def selftest() -> None:
     # The allocation predictor is the packer's exact ByteLedger arithmetic, not
     # nominal rung labels.  Check it on a shape that exercises both index and
     # codebook terms.
-    import glm52_pack as pack
+    from lab.operators import glm52_pack as pack
     row = {
         "shape": [32, 6144], "payload_bytes": 32 * 6144 * 2,
     }
@@ -523,7 +523,7 @@ def main(argv: list[str]) -> int:
         return 0
     if command == "freeze":
         out = Path(argv[argv.index("--out") + 1]) if "--out" in argv \
-            else REPO / "evidence" / "prometheus" / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
+            else PROMETHEUS_EVIDENCE / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
         freeze(out)
         return 0
     if command == "selftest":

@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from lab.layout import EVIDENCE_ROOT
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HAWKING_ARTIFACT_ROOT_ENV = 'HAWKING_ARTIFACT_ROOT'
 DEFAULT_HAWKING_ARTIFACT_ROOT = Path.home() / 'Downloads' / 'hawking-evidence'
@@ -28,8 +30,8 @@ def resolve_artifact(name: str) -> Path:
 
     Search order:
 
-    1. Repository root (pre-``evidence/`` layout; kept so a stray copy still wins)
-    2. ``evidence/<campaign>/`` in the repository, campaign dirs in sorted order
+    1. Repository root (pre-workspace layout; kept so a stray copy still wins)
+    2. ``workspace/campaign/evidence/<area>/<campaign>/`` in sorted order
     3. ``$HAWKING_ARTIFACT_ROOT`` (default ``~/Downloads/hawking-evidence``)
 
     Raises ``Glm52Error`` naming the artifact and the exact ``git checkout``
@@ -38,7 +40,7 @@ def resolve_artifact(name: str) -> Path:
     if not isinstance(name, str) or not name or name != Path(name).name:
         raise Glm52Error(f'resolve_artifact expects a basename, got {name!r}')
     external = hawking_artifact_root()
-    candidates = (REPO_ROOT / name, *sorted((REPO_ROOT / 'evidence').glob(f'*/{name}')), external / name)
+    candidates = (REPO_ROOT / name, *sorted(EVIDENCE_ROOT.glob(f'*/*/{name}')), external / name)
     for candidate in candidates:
         try:
             if candidate.is_file():

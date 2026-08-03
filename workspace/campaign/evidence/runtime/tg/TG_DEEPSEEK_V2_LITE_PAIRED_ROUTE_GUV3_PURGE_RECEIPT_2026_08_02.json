@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.model_eviction_purge_receipt.v1",
+  "status": "PURGED_AND_RECOVERY_PROVEN",
+  "at": "2026-08-02",
+  "experiment": "paired-route-activation-preload-guv3",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "paths": {
+    "active_dir": "/Users/scammermike/Downloads/hawking/models/tg-active/deepseek-v2-lite-2026-08-02-guv3",
+    "trash_dir": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02-guv3",
+    "active_absent": true,
+    "trash_absent_after_purge": true
+  },
+  "accounting": {
+    "free_before_admission_bytes": 376364015616,
+    "free_before_eviction_bytes": 365745647616,
+    "free_after_purge_bytes": 376065097728,
+    "protected_floor_bytes": 200005889556,
+    "observed_recovery_bytes": 10319450112,
+    "active_dir_allocated_estimate_bytes": 10364436480,
+    "source_body_bytes": 10364416320,
+    "residual_above_floor_after_purge_bytes": 176059208172
+  },
+  "verification": {
+    "source_hash_verified_before_run": true,
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f",
+    "device": "Apple M3 Ultra",
+    "cpu_reference_fallback": 0,
+    "model_lane_empty": true,
+    "owner_fences_false": true
+  },
+  "claim_boundary": "Candidate was rejected on same-model wall and tail gates; this receipt proves only exact source/cache eviction, Trash purge and floor-preserving byte recovery.",
+  "seal_sha256": "c26ad8c1d3589bd6ae1fd60e8637288f4e24367b5ff7f430751079408aa0e655"
+}

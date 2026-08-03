@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED_PENDING_MATERIALIZATION",
+  "at": "2026-08-02T06:57:02Z",
+  "family": "mistral",
+  "attempt": "native_source_packed_runtime_after_generic_adapter_first_dispatch_failure",
+  "preregistered_hypothesis": "The repaired resident direct source-packed Metal runtime can create a real first dispatch for the exact 24B Mistral Q4_K_M source without the earlier generic-adapter pre-token stall. This is a first-dispatch repair experiment, not a rung claim.",
+  "source": {
+    "official_release": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "official_release_license": "Apache-2.0",
+    "quant_repository": "bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF",
+    "revision": "f73dfd9e812922fb503a993e3fa5671424f486d3",
+    "filename": "mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "expected_bytes": 14333910496,
+    "expected_sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0"
+  },
+  "transfer": {
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "selected_path": "official Hub/Xet high-performance; bounded transfer scoreboard from 2026-08-01 remains applicable because the runtime and configured transfer profile are unchanged.",
+    "environment": {"HF_HUB_DISABLE_IMPLICIT_TOKEN": "1", "HF_HUB_DISABLE_TELEMETRY": "1", "HF_XET_HIGH_PERFORMANCE": "1", "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0"},
+    "dry_run": "PASS: Hub reported exactly one 14.3G file at the pinned revision."
+  },
+  "unified_admission": {
+    "free_bytes": 364255232000,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 164249342444,
+    "model_lane_ceiling_bytes": 102000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "model_bytes": 14333910496,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 41244564960,
+    "free_after_admission_bytes": 323010667040,
+    "active_model_count": 0,
+    "verdict": "PASS"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false
+  },
+  "promotion_boundary": "No named TG rung, capability approval, production lease, or parent-restream claim is implied by this admission."
+}

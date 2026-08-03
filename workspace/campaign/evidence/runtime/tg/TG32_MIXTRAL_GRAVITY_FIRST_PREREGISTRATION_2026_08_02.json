@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.gravity_first_preregistration.v1",
+  "status": "SEALED_BEFORE_PROMOTION_DECISION",
+  "at_utc": "2026-08-02",
+  "model": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+  "representation": "source-preserving executable Gravity shard with embedded GGUF metadata and expert-split raw quant payloads",
+  "control": "same source GGUF through MixtralEngine",
+  "candidate": "same MixtralEngine over Gravity mmap; no dense reconstruction",
+  "hypothesis": "Gravity container and direct indexed payloads preserve exact continuation; any speed claim requires a clean same-model decode-wall improvement and p99 non-regression.",
+  "promotion_floor": {
+    "same_model": true,
+    "complete_tokens": 32,
+    "numeric_parity_v2_1": "exact continuation hash and prompt IDs",
+    "metal_dispatches_gt_zero": true,
+    "cpu_reference_fallback": 0,
+    "speed_requirement": "median decode wall improvement >= 3 percent with no p99 regression",
+    "named_rung_requirement": "31.25 TPS for TG32; no rung from a source-compatible floor"
+  },
+  "prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "max_new_tokens": 32,
+    "temperature": 0,
+    "top_k": 1,
+    "top_p": 1,
+    "max_seq_len": 64,
+    "conventional_decode_seed": true
+  },
+  "environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_MIXTRAL_CONVENTIONAL_DECODE_SEED": "1",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE": "0",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB": "0",
+    "device": "Apple M3 Ultra"
+  },
+  "raw_logs": {
+    "source": "evidence/tg/raw/TG32_MIXTRAL_GRAVITY_FIRST_SOURCE_R*_32_2026_08_02.stderr",
+    "candidate": "evidence/tg/raw/TG32_MIXTRAL_GRAVITY_FIRST_CANDIDATE_R*_32_2026_08_02.stderr",
+    "candidate_combine": "evidence/tg/raw/TG32_MIXTRAL_GRAVITY_FIRST_COMBINE_R*_32_2026_08_02.stderr"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

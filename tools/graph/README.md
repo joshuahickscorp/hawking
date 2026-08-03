@@ -1,11 +1,12 @@
 # G2 — Semantic graph analysis, recomposition ranking, viewer
 
-Consumes the frozen contract `control/SEMANTIC_GRAPH_SCHEMA.json`.
+Consumes the frozen contract
+`workspace/campaign/governance/control/catalog/manifests/SEMANTIC_GRAPH_SCHEMA.json`.
 Does **not** own extraction (`hawking_graph.py` is G1).
 
 ## Pipeline
 
-Every output below lands in `build/graph/` by default, which is gitignored:
+Every output below lands in `workspace/ops/build/graph/` by default, which is gitignored:
 all of it is deterministic and rebuilt from source in about 40s. Nothing here
 is evidence, so nothing here belongs in `evidence/`.
 
@@ -18,19 +19,19 @@ python3.12 tools/graph/behaviour_map.py
 
 # 2) Eight analyses + ranked candidates
 python3.12 tools/graph/hawking_analyze.py \
-  --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
+  --graph workspace/ops/build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
   --betweenness-k 64
 
 # 3) Offline interactive viewer (single HTML, no network)
 python3.12 tools/graph/viewer/build_viewer.py \
-  --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
-  --cluster-map build/graph/HAWKING_CLUSTER_MAP.json \
-  --candidates build/graph/HAWKING_RECOMPOSITION_CANDIDATES.json
+  --graph workspace/ops/build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
+  --cluster-map workspace/ops/build/graph/HAWKING_CLUSTER_MAP.json \
+  --candidates workspace/ops/build/graph/HAWKING_RECOMPOSITION_CANDIDATES.json
 
 # 4) Deterministic crate-level Graphviz checkpoint
 python3.12 tools/graph/render_dot.py \
-  --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
-  --cluster-map build/graph/HAWKING_CLUSTER_MAP.json \
+  --graph workspace/ops/build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \
+  --cluster-map workspace/ops/build/graph/HAWKING_CLUSTER_MAP.json \
   --out tools/graph/HAWKING_CRATE_GRAPH.dot
 ```
 
@@ -46,7 +47,7 @@ python3.12 tools/graph/fixture.py \
 
 ## Outputs
 
-All under `build/graph/` unless noted.
+All under `workspace/ops/build/graph/` unless noted.
 
 | File | Role |
 |------|------|

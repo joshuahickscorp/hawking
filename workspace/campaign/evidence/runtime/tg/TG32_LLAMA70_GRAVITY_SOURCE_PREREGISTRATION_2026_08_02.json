@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "family": "llama3_dense",
+  "candidate": {
+    "id": "llama70-source-preserving-gravity-q4-v1",
+    "kind": "same_model_executable_gravity_source_quant",
+    "hypothesis": "A source-preserving executable Gravity container that dispatches the admitted Q4_K/Q5_K/Q6_K tensors directly can remove GGUF interpretation and unsupported-host boundaries while preserving the exact Llama-3.3-70B continuation.",
+    "mechanism": "Pack the exact immutable GGUF tensor bytes into Gravity descriptors, execute direct packed kernels on Apple M3 Ultra Metal, and compare complete-token wall latency against the sealed resident source-fused B9430/Q5-value control.",
+    "scope": "same exact Llama-3.3-70B-Instruct Q4_K_M body, immutable revision, source SHA, prompt IDs, device and clean sequential protocol",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "continuation_hash_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32"
+    },
+    "reject_conditions": [
+      "any source continuation mismatch",
+      "fallback > 0 or non-Metal dispatch",
+      "artifact hash or tensor coverage mismatch",
+      "no complete-token wall win >=3 percent",
+      "p95 or p99 regression >2 percent",
+      "zero-token, partial-forward, fixture or contended timing"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1",
+    "license": "Llama 3.3 Community License"
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_LLAMA70_REHYDRATED_FLOOR_2026_08_02.json",
+    "profile": "resident_b9430_fused_graph_q5_value_repair",
+    "tps": 11.64468166294944,
+    "first_failing_rung": "TG32",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "source_generated_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+    "fallback": 0,
+    "device": "Apple M3 Ultra"
+  },
+  "admission": {
+    "free_bytes_before": 367633321984,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_before": 167627432428,
+    "model_lane_envelope_bytes": 90000000000,
+    "source_plus_artifact_expected_bytes": "<=85050000000",
+    "scratch_rollback_reserve_bytes": 5000000000,
+    "model_lane_must_be_empty_before": true,
+    "download_mode": "official huggingface_hub 1.24.0 + hf_xet 1.5.2; reuse sealed Llama70 high-performance representative matrix",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "reopen_condition": "If rejected, retain the measured Gravity roofline and rotate only after the artifact is evicted; reopen requires a materially different graph or representation, not a flag-only retry."
+}

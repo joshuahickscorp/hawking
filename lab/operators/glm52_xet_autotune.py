@@ -10,6 +10,7 @@ from lab.operators.glm52_common import resolve_artifact
 from lab.operators.glm52_common import seal
 from lab.operators.glm52_common import sha256_file
 from lab.operators.glm52_common import verify_sealed
+from lab.layout import evidence_dir
 # glm52_state imports glm52_xet_live, which imports this module, so importing
 # glm52_state here at module scope closes a three-way cycle: whichever of the
 # three is imported first, one of them sees a half-built module and raises
@@ -138,7 +139,17 @@ def _runtime_probe_program() -> str:
 
 def toolchain_binding() -> dict[str, Any]:
     """Bind plans to the exact planner, shared helpers, lock, and probe instrument."""
-    files = (('planner_generator', HERE / 'glm52_xet_autotune.py', 'tools/condense/glm52_xet_autotune.py'), ('shared_common', HERE / 'glm52_common.py', 'tools/condense/glm52_common.py'), ('controller_state', HERE / 'glm52_state.py', 'tools/condense/glm52_state.py'), ('live_executor', HERE / 'glm52_xet_live.py', 'tools/condense/glm52_xet_live.py'), ('requirements_lock', HERE / 'requirements-glm52.txt', 'tools/condense/requirements-glm52.txt'))
+    files = (
+        ('planner_generator', HERE / 'glm52_xet_autotune.py', 'tools/condense/glm52_xet_autotune.py'),
+        ('shared_common', HERE / 'glm52_common.py', 'tools/condense/glm52_common.py'),
+        ('controller_state', HERE / 'glm52_state.py', 'tools/condense/glm52_state.py'),
+        ('live_executor', HERE / 'glm52_xet_live.py', 'tools/condense/glm52_xet_live.py'),
+        # The lock remains a shared Condense contract after the Python
+        # operators moved under lab/operators; preserve its historical
+        # logical path in receipts while reading the live file at the repo
+        # root.
+        ('requirements_lock', REPO_ROOT / 'tools' / 'condense' / 'requirements-glm52.txt', 'tools/condense/requirements-glm52.txt'),
+    )
     rows: list[dict[str, str]] = []
     for role, path, relative in files:
         if not path.is_file():
@@ -394,6 +405,11 @@ def reconcile_schedule(schedule: Mapping[str, Any]) -> dict[str, Any]:
     return {'status': 'PASS_PRELIMINARY_SCHEDULE_ONLY', 'schedule_seal_sha256': schedule.get('seal_sha256'), 'window_count': len(windows), 'source_shards_exactly_once': len(fetched), 'planned_refetches': 0, 'maximum_new_fetch_shards': max_new, 'maximum_resident_shards_one_window': max_resident, 'maximum_actual_adjacent_active_prefetch_union': adjacent_union, 'conservative_active_prefetch_upper_bound': schedule.get('maximum_simultaneous_shards_active_plus_prefetch_upper_bound'), 'required_file_settings_tested': list(REQUIRED_FILE_SETTINGS), 'largest_useful_tested_file_setting': MAX_TESTED_FILE_SETTING, 'preliminary_schedule_maximum_caller_dispatch': PRELIMINARY_SCHEDULE_MAX_DISPATCH, 'diagnostic_file_settings_not_selectable': [], 'freeze_boundary': 'requires measured GLM52_XET_AUTOTUNE; no freeze is claimed by this plan'}
 
 def build_plan(root: Path=REPO_ROOT, *, range_bytes: int=RANGE_BYTES, network_cap_bytes: int=NETWORK_CAP_BYTES, runtime: Mapping[str, Any] | None=None) -> dict[str, Any]:
+    from lab.operators import glm52_state
+
+    TRANSITION_INTENT_SCHEMA = glm52_state.TRANSITION_INTENT_SCHEMA
+    CHECKPOINT_SCHEMA = glm52_state.CHECKPOINT_SCHEMA
+    TELEGRAM_RECEIPT_SCHEMA = glm52_state.TELEGRAM_RECEIPT_SCHEMA
     inputs = load_and_validate_inputs(root)
     _require_int(network_cap_bytes, 'network_cap_bytes', minimum=1)
     if network_cap_bytes > NETWORK_CAP_BYTES:
@@ -685,6 +701,14 @@ def _require_independent_authority_check(callback: Any, *args: Any, label: str, 
         raise Glm52Error(f'independent {label} verification refused authority')
 
 def _validate_prepared_autotune_intent(raw: Any, *, plan_seal: str, expected_contract_sha256: str) -> dict[str, Any]:
+    from lab.operators import glm52_state
+
+    StateError = glm52_state.StateError
+    validate_transition_intent = glm52_state.validate_transition_intent
+    TRANSITION_EVENT_KINDS = glm52_state.TRANSITION_EVENT_KINDS
+    GENESIS_HASH = glm52_state.GENESIS_HASH
+    TERMINAL_EVIDENCE_SCHEMA = glm52_state.TERMINAL_EVIDENCE_SCHEMA
+    TRANSITION_INTENT_SCHEMA = glm52_state.TRANSITION_INTENT_SCHEMA
     if not isinstance(raw, Mapping):
         raise Glm52Error('Xet authority lacks the prepared AUTOTUNE_XET intent')
     try:
@@ -717,6 +741,9 @@ def _validate_prepared_autotune_intent(raw: Any, *, plan_seal: str, expected_con
     return intent
 
 def _validate_bot_api_receipt_v3(raw: Any, *, transition_intent: Mapping[str, Any]) -> dict[str, Any]:
+    from lab.operators import glm52_state
+
+    TELEGRAM_RECEIPT_SCHEMA = glm52_state.TELEGRAM_RECEIPT_SCHEMA
     if not isinstance(raw, Mapping):
         raise Glm52Error('Xet authority lacks the Telegram Bot API delivery receipt')
     receipt = dict(raw)
@@ -730,6 +757,9 @@ def _validate_bot_api_receipt_v3(raw: Any, *, transition_intent: Mapping[str, An
     return receipt
 
 def _validate_committed_checkpoint_ref(raw: Any, *, transition_intent: Mapping[str, Any], telegram_receipt: Mapping[str, Any], expected_contract_sha256: str) -> dict[str, Any]:
+    from lab.operators import glm52_state
+
+    CHECKPOINT_SCHEMA = glm52_state.CHECKPOINT_SCHEMA
     if not isinstance(raw, Mapping):
         raise Glm52Error('Xet authority lacks a committed controller checkpoint reference')
     checkpoint = dict(raw)
@@ -797,6 +827,9 @@ def _command_verify(args: argparse.Namespace) -> int:
     return 0
 
 def _command_run(args: argparse.Namespace) -> int:
+    from lab.operators import glm52_state
+
+    EXPECTED_CONTRACT_SCHEMA = glm52_state.EXPECTED_CONTRACT_SCHEMA
     if os.environ.get('HAWKING_GLM52_XET_EXECUTE') != '1':
         raise Glm52Error('live Xet run refused: HAWKING_GLM52_XET_EXECUTE=1 is required')
     if args.authority is None:
@@ -821,18 +854,32 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument('--root', type=Path, default=REPO_ROOT)
     plan.add_argument('--range-bytes', type=int, default=RANGE_BYTES)
     plan.add_argument('--network-cap-bytes', type=int, default=NETWORK_CAP_BYTES)
-    plan.add_argument('--output', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
-    plan.add_argument('--markdown-output', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.md')
+    plan.add_argument('--output', type=Path, default=evidence_dir('glm52') / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    plan.add_argument('--markdown-output', type=Path, default=evidence_dir('glm52') / 'GLM52_XET_AUTOTUNE_PLAN.md')
     plan.set_defaults(handler=_command_plan)
     verify = subparsers.add_parser('verify', help='offline deterministic plan verification')
     verify.add_argument('--root', type=Path, default=REPO_ROOT)
-    verify.add_argument('--plan', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    verify.add_argument('--plan', type=Path, default=evidence_dir('glm52') / 'GLM52_XET_AUTOTUNE_PLAN.json')
     verify.add_argument('--offline', action='store_true', required=True)
     verify.set_defaults(handler=_command_verify)
     run = subparsers.add_parser('run', help='validate the offline authority boundary; never execute live trials')
     run.add_argument('--root', type=Path, default=REPO_ROOT)
-    run.add_argument('--plan', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_XET_AUTOTUNE_PLAN.json')
-    run.add_argument('--expected-contract', type=Path, default=REPO_ROOT / 'evidence' / 'glm52' / 'GLM52_EXPECTED_CAMPAIGN_CONTRACT.json')
+    run.add_argument('--plan', type=Path, default=evidence_dir('glm52') / 'GLM52_XET_AUTOTUNE_PLAN.json')
+    run.add_argument('--expected-contract', type=Path, default=evidence_dir('glm52') / 'GLM52_EXPECTED_CAMPAIGN_CONTRACT.json')
     run.add_argument('--authority', type=Path)
     run.set_defaults(handler=_command_run)
     return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the offline planner CLI with a fail-closed refusal boundary."""
+    args = build_parser().parse_args(argv)
+    try:
+        return int(args.handler(args))
+    except Glm52Error as exc:
+        print(f'GLM52_XET_AUTOTUNE_REFUSED: {exc}', file=sys.stderr)
+        return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

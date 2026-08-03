@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.tg.same_model_geometry_rejection.v1",
+  "status": "RETIRED_BELOW_COMPLETE_TOKEN_WALL_THRESHOLD",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "test": {
+    "prompt": "The capital of France is",
+    "max_new_tokens": 32,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "complete_tokens": 32,
+    "first_four_ids": [8913, 13, 185, 185],
+    "capability_scope": "narrow source-window parity only; not a product-capability approval"
+  },
+  "control": {
+    "command": "HAWKING_REQUIRE_METAL=1 HAWKING_TRACE_DISPATCH=1 target/debug/hawking generate --weights models/tg-active/deepseek-v2-lite-2026-08-02/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 32 --max-seq-len 64 --temperature 0 --kernel-profile profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json --trace-tokens --trace-dispatch --max-stall-ms 30000",
+    "output_path": "/tmp/ds-guv2-rehydrate-baseline-2026-08-02.txt",
+    "output_sha256": "e345c9765e7da1306eea7ffffca7294d1e355962780a6bdef13d9f429eb42594",
+    "decode_tps": 41.028185562149446,
+    "decode_ms": 779.951625,
+    "p50_ms": 24.2952505,
+    "p95_ms": 24.76522865,
+    "p99_ms": 24.82581323,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "cpu_reference_fallback_count": 0,
+    "prefill_ms": 315.593333
+  },
+  "candidate": {
+    "env": {"HAWKING_DS_MLA_TG128": "1"},
+    "change": "same shader and representation with an explicit 128-thread MLA decode threadgroup",
+    "output_path": "/tmp/ds-guv2-tg128-candidate-2026-08-02.txt",
+    "output_sha256": "7003342c7b37dbb7a7c10d81fceba70f356ae3ad64af5f85df0401e98c1c89f8",
+    "decode_tps": 37.191389525274566,
+    "decode_ms": 860.414209,
+    "p50_ms": 26.798917,
+    "p95_ms": 27.22063735,
+    "p99_ms": 27.26427777,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "cpu_reference_fallback_count": 0,
+    "prefill_ms": 303.284209
+  },
+  "delta": {
+    "decode_tps_percent": -9.351610324231629,
+    "decode_ms_percent": 10.316,
+    "p99_percent": 9.824,
+    "dispatch_topology_percent": 0.0,
+    "output_match": true,
+    "capability_change": "none"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED",
+    "promoted_control_tps": 41.06909043843913
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "verdict": "RETIRE_TG128; the candidate is physically dispatched and parity-clean for the measured window but is 9.3516 percent slower with unchanged command topology and no capability gain",
+  "reopen_condition": "Only revisit with a materially different representation or architecture change, not another threadgroup-width variant."
+}

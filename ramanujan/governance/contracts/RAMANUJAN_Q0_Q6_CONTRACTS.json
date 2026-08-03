@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.ramanujan.qualification_contracts.v1",
+  "status": "ACTIVE_NON_PRODUCTION_BASELINE",
+  "authority": "RAMANUJAN_RESEARCH_AUTHORIZED remains false; these contracts never grant launch authority or a capability verdict.",
+  "receipt_bindings": {
+    "ramanujan/RAMANUJAN_Q0_CLOSURE.json": "272e1be43c9fa9ca56ce2904ca6f7ed6f3a001cd660b8dcc6555f5544614df5e",
+    "ramanujan/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json": "b9c281e4faaa6baea497ee4731c13f09606c64f6bceaec56251fe9433a962f48",
+    "ramanujan/data/corpora/FREEZE_RECEIPT.json": "b6f3d7cf15744e7a1c26c618f85f1ea68ff44bbe4053c09527f8efa5d1b1e410",
+    "ramanujan/data/corpora/GENERATION_RECEIPT.json": "f2687b4115efa55f867fac4de5664eb5b5aec9e21476b553f62b30edd8ee27c3",
+    "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+    "ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json": "a20fe359b41dc3b02c1799ad49b853b55d724b9bf74e73dfaeae6ca34d50867e",
+    "odyssey/verifiers/VERIFICATION_LATTICE.json": "27f47b6e31399cfd0cb071ea442def1e7190d97e0cce3c543265ecb4cad2882c",
+    "ramanujan/prover.py": "04f2c69a20a724d0ce79eae04843b20a39e003a4024ffaf567813386958ace0f",
+    "ramanujan/ledger.py": "86da229cb6bac3b54b2a19c83666ac8abe213ef84066387e736b472954f8fa3b"
+  },
+  "global_laws": [
+    "Each qualifying result is bound to immutable inputs and a sealed receipt.",
+    "A generator may not grade or promote its own output.",
+    "An unavailable verifier is a refusal, never a partial pass.",
+    "Frozen evaluation material is never used to fit the candidate under test."
+  ],
+  "contracts": [
+    {
+      "id": "Q0",
+      "name": "offline reproducibility",
+      "purpose": "Reproduce a pinned Lean capsule in a network-disabled container.",
+      "required_evidence": ["pinned toolchain", "no sorry", "no undeclared axioms", "container replay digest"],
+      "admission": "All four are MET by the independent prover; no host-only substitute.",
+      "status": "PROVEN",
+      "receipt": "ramanujan/RAMANUJAN_Q0_CLOSURE.json"
+    },
+    {
+      "id": "Q1",
+      "name": "frozen split integrity",
+      "purpose": "Show that a train/dev/test membership is deterministic, provenance-bound and isolated from held-out evaluation.",
+      "required_evidence": ["content membership digest", "source license and revision", "contamination barrier result", "independent re-derivation"],
+      "admission": "All required fields match a sealed split manifest; any non-deterministic member or evaluation leak REFUSES the run.",
+      "status": "PROVEN_OFFLINE",
+      "receipt": "ramanujan/data/corpora/FREEZE_RECEIPT.json",
+      "supporting_receipts": [
+        "ramanujan/data/corpora/GENERATION_RECEIPT.json",
+        "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json"
+      ]
+    },
+    {
+      "id": "Q2",
+      "name": "independent rediscovery",
+      "purpose": "Measure rediscovery of results withheld before the candidate receives its task inputs.",
+      "required_evidence": ["owner-approved D8 source/license", "sealed hidden membership before candidate launch", "independent answer adjudication", "no-leak audit"],
+      "admission": "Only an independently sealed D8 set and an independent adjudicator may issue a result; an absent D8 set is PENDING, not zero credit.",
+      "status": "DEFINED_PENDING_OWNER_D8_SELECTION",
+      "receipt": "ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json"
+    },
+    {
+      "id": "Q3",
+      "name": "frontier-variant reach",
+      "purpose": "Measure progress on licensed variants of open problems without representing a proxy as resolution of the source problem.",
+      "required_evidence": ["owner-approved D9 source/license", "sealed variant generator", "counterexample search log", "independent adjudication"],
+      "admission": "A result names the exact variant and verifier outcome; it never promotes an open problem from proxy performance.",
+      "status": "DEFINED_PENDING_OWNER_D9_SELECTION",
+      "receipt": "ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json"
+    },
+    {
+      "id": "Q4",
+      "name": "formalization fidelity",
+      "purpose": "Establish that a Lean formalization states the intended informal claim.",
+      "required_evidence": ["informal claim binding", "Lean statement", "independent fidelity assessment", "append-only ledger entry"],
+      "admission": "The formalizer cannot assess its own output; lack of independent fidelity assessment leaves the claim below Tier 2.",
+      "status": "DEFINED_CONTROLLER_SCAFFOLD_READY",
+      "receipt": "odyssey/verifiers/VERIFICATION_LATTICE.json"
+    },
+    {
+      "id": "Q5",
+      "name": "proof verification",
+      "purpose": "Establish that a formalized claim compiles under the pinned Lean/Mathlib environment.",
+      "required_evidence": ["Lean compile", "no sorry", "no undeclared axioms", "pinned Mathlib", "clean container replay"],
+      "admission": "All five Tier-3 requirements are required. Compiler feedback may generate repair proposals but cannot be a proof verdict.",
+      "status": "DEFINED_CONTROLLER_SCAFFOLD_READY",
+      "receipt": "ramanujan/prover.py"
+    },
+    {
+      "id": "Q6",
+      "name": "governed research execution",
+      "purpose": "Ensure a qualified result passes through the seven stores, Ledger, Tribunal, limits and artifact capability fence without bypass.",
+      "required_evidence": ["hash-chained Ledger", "seven-store record", "independent Tribunal action", "limit consultation", "artifact capability verdict"],
+      "admission": "The current launch and capability fences remain authoritative. A Q6 pass cannot set either fence or authorize training.",
+      "status": "DEFINED_CONTROLLER_SCAFFOLD_READY",
+      "receipt": "ramanujan/ledger.py"
+    }
+  ],
+  "seal_sha256": "e47963b3ae8ca13f44e8267d5db7a0cb5667c19b717980de7bf83705442cde72"
+}

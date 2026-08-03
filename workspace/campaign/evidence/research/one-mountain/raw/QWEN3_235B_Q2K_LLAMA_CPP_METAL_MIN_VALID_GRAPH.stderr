@@ -1,0 +1,24 @@
+0.14.113.182 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.113.186 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.147 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.156 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.159 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.160 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.169 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.169 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.170 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.170 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.170 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.170 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.171 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.171 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.171 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.148.171 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+0.14.148.172 E ggml_metal_graph_compute: backend is in error state from a previous command buffer failure - recreate the backend to recover
+0.14.148.173 E graph_compute: ggml_backend_sched_graph_compute_async failed with error -1
+0.14.148.173 E process_ubatch: failed to compute graph, compute status: -1
+0.14.148.178 E llama_decode: failed to decode, ret = -3
+0.14.148.180 E srv  update_slots: Compute error. i = 0, n_batch = 8, ret = -3
+0.14.148.180 E srv    send_error: task id = 0, error: Compute error.
+0.14.150.017 E ggml_metal_synchronize: error: command buffer 0 failed with status 5
+0.14.150.021 E error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)

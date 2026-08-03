@@ -1,0 +1,153 @@
+{
+  "schema": "hawking.tg.large_family_terminal_floor.v1",
+  "status": "SEALED_COMPLETE_TOKEN_ACCOUNTING_FLOOR_NO_TG_RUNG",
+  "family": "llama",
+  "model": {
+    "name": "Llama-3.3-70B-Instruct-Q4_K_M",
+    "source": {
+      "repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+      "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+      "path": "models/tg-active/llama70/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "bytes": 42520398816,
+      "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+      "license": "Llama 3.3 Community License"
+    },
+    "transfer": {
+      "mode": "official Hugging Face Xet high-performance",
+      "requested_workers": 4,
+      "chunk_cache_bytes": 0,
+      "source_specific_scoreboard": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+      "download_result": "complete_exact_size_and_sha256"
+    }
+  },
+  "protocol": {
+    "prompt_utf8": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "greedy": true,
+    "temperature": 0,
+    "completion_tokens": 8,
+    "device": "Apple M3 Ultra"
+  },
+  "source_reference": {
+    "implementation": "llama.cpp b9430 sequential API oracle",
+    "warmup_tokens": 1,
+    "full_completion_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+    "measured_token_ids_after_warmup": [3363, 430, 374, 32366, 291, 304, 3925],
+    "decode_tps_after_warmup": 14.332591365791021,
+    "decode_token_ms_after_warmup": [69.640917, 70.128667, 69.427666, 69.908542, 69.900125, 69.573958, 69.8175]
+  },
+  "hawking_representations": {
+    "baseline_exact": {
+      "completion_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+      "matches_source_reference": true,
+      "decode_tps": 2.723790646928647,
+      "decode_token_ms": [0.997583, 418.205916, 397.8615, 423.552375, 427.879458, 416.917333, 425.454166, 426.204],
+      "metal_dispatches_total": 7301,
+      "reported_dispatches_per_forward": 1043,
+      "completed_decode_forwards": 0,
+      "decode_command_buffers_total": 0,
+      "cpu_reference_fallback_count": 0,
+      "verdict": "REJECTED_ACCOUNTING"
+    },
+    "resident_b9430_fused_graph": {
+      "configuration": [
+        "HAWKING_LLAMA_RESIDENT_B9430=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN=1",
+        "HAWKING_LLAMA_RESIDENT_SERIAL_ENCODER=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV_ROPE=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_QKV_ROPE=1",
+        "HAWKING_LLAMA_RESIDENT_FUSED_RESIDUAL_NORM=1"
+      ],
+      "completion_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+      "matches_source_reference": true,
+      "decode_tps": 2.8182725456769515,
+      "decode_token_ms": [0.916375, 386.612375, 386.325792, 391.07475, 401.40075, 426.16975, 421.110875, 424.997],
+      "metal_dispatches_total": 7301,
+      "reported_dispatches_per_forward": 1043,
+      "completed_decode_forwards": 0,
+      "decode_command_buffers_total": 0,
+      "cpu_reference_fallback_count": 0,
+      "verdict": "REJECTED_ACCOUNTING"
+    },
+    "resident_b9430_q5_value_repair": {
+      "configuration": [
+        "HAWKING_LLAMA_RESIDENT_B9430=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN=1",
+        "HAWKING_LLAMA_RESIDENT_SERIAL_ENCODER=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV_ROPE=1",
+        "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_QKV_ROPE=1",
+        "HAWKING_LLAMA_RESIDENT_FUSED_RESIDUAL_NORM=1"
+      ],
+      "repair": "Admitted packed Q5_K value projections into the resident command-buffer graph. Layer 10 previously caused a silent graph rejection and hybrid fallback.",
+      "completion_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+      "matches_source_reference": true,
+      "decode_tps_complete_forward_only": 11.665123468041205,
+      "decode_ms_complete_forward_only": 600.079375,
+      "decode_token_ms_complete_forward_only": [86.288042, 85.599125, 85.78075, 85.807208, 85.098333, 85.885416, 85.606125],
+      "p50_ms": 85.78075,
+      "p95_ms": 86.1672542,
+      "p99_ms": 86.26388444,
+      "metal_dispatches_total": 6734,
+      "reported_dispatches_per_forward": 962,
+      "completed_decode_forwards": 7,
+      "decode_command_buffers_total": 7,
+      "cpu_reference_fallback_count": 0,
+      "device_id": "Apple M3 Ultra",
+      "gpu_timestamp_authority": false,
+      "clean_lease_authority": false,
+      "verdict": "PHYSICALLY_RESIDENT_AND_SOURCE_MATCHED_NOT_CLEAN_PROMOTABLE"
+    }
+  },
+  "roofline": {
+    "deepest_honest_rung": "NONE",
+    "first_failing_rung": "TG32",
+    "binding_failure": "The Q5_K value-projection repair now proves seven source-matched resident decode forwards, seven physical command buffers, 6,734 dispatches, and zero CPU fallback, but its 11.67 complete-forward TPS is below TG32. The run also lacks GPU-timestamp and CLEAN production-lease authority, so it cannot promote.",
+    "next_architecture_change": "Add GPU timestamp authority and a CLEAN lease to the resident receipt, then replace the serial Q5_K value GEMV and reduce the 962 dispatches/token before retrying TG32."
+  },
+  "promotion_gates": {
+    "same_model_source_match": true,
+    "complete_token_accounting": true,
+    "clean_lease": false,
+    "g0_g9_capability": false,
+    "tg32": false,
+    "tg1": false
+  },
+  "rotation": {
+    "condition": "B",
+    "result": "baseline and resident-b9430 graph are distinct execution architectures and both seal the same accounting/TG floor",
+    "eviction_required_before_next_family": true
+  },
+  "eviction": {
+    "active_lane_path": "models/tg-active/llama70",
+    "active_lane_absent_after_eviction": true,
+    "trash_item_identity": "file:///Users/scammermike/.Trash/llama70/",
+    "trash_item_purged": true,
+    "unrelated_trash_items_preserved": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ],
+    "free_bytes_before": 344818626560,
+    "free_bytes_after": 387347595264,
+    "recovered_bytes": 42528968704,
+    "source_lane_bytes_before": 42520398816,
+    "recovery_verdict": "PASS"
+  },
+  "rehydration_accounting_repair_eviction": {
+    "active_lane_path": "models/tg-active/llama70-rehydrate",
+    "source_sha256_reverified_before_run": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "source_lane_bytes_before": 42520398816,
+    "active_lane_absent_after_eviction": true,
+    "trash_item_identity": "file:///Users/scammermike/.Trash/llama70-rehydrate/",
+    "trash_item_purged": true,
+    "unrelated_trash_items_preserved": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ],
+    "free_blocks_before": 335627032,
+    "free_blocks_after": 377150796,
+    "free_bytes_before": 343682080768,
+    "free_bytes_after": 386202415104,
+    "recovered_bytes": 42520334336,
+    "recovery_verdict": "PASS"
+  }
+}

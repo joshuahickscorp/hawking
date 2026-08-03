@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.tg.same_model_candidate_result.v2",
+  "status": "REJECTED_ROUTE_TIE_POLICY_CAPABILITY_OR_WALL_GATE",
+  "family": "deepseek_v2_lite_moe_mla",
+  "preregistrations": [
+    "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_PREREGISTRATION_2026_08_02.json",
+    "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_1E4_PREREGISTRATION_2026_08_02.json",
+    "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_1E5_PREREGISTRATION_2026_08_02.json"
+  ],
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "artifact": {
+    "filename": "deepseek-route-tie.gravity",
+    "bytes": 10362253454,
+    "payload_bytes": 10360420352,
+    "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+    "mapped_tensors": 5291,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "verification": "PASS"
+  },
+  "runtime_change": {
+    "files": [
+      "crates/hawking-core/src/moe.rs",
+      "crates/hawking-core/src/gravity_deepseek.rs",
+      "crates/hawking-core/src/kernels/mod.rs",
+      "crates/hawking-core/shaders/common.metal",
+      "crates/hawking-core/shaders/moe.metal"
+    ],
+    "default_behavior": "unchanged; HAWKING_DS_ROUTE_TIE_EPS absent resolves to zero",
+    "selector": "masked sequential best-of-K on CPU and Metal; avoids non-transitive epsilon sort comparator",
+    "focused_test": "route_tie_epsilon_prefers_lower_expert_id_without_changing_clear_winner PASS",
+    "build": "cargo build --release -p hawking -p hawking-core --example gravity_deepseek_stage_probe PASS"
+  },
+  "fixed_prompt": {
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "text": "The capital of France is",
+    "temperature": 0,
+    "complete_tokens": 32,
+    "device": "Apple M3 Ultra",
+    "fallback": 0
+  },
+  "clean_ab": {
+    "control": {
+      "epsilon": 0.0,
+      "tps": 40.741397955131944,
+      "decode_ms": 785.441875,
+      "p50_ms": 24.4922085,
+      "p95_ms": 24.813914800000003,
+      "p99_ms": 24.95255346,
+      "dispatches_per_forward": 487,
+      "command_buffers_per_token": 1,
+      "fallback": 0,
+      "continuation_hash": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352"
+    },
+    "candidate": {
+      "epsilon": 0.001,
+      "tps": 40.87142564359304,
+      "decode_ms": 782.943083,
+      "p50_ms": 24.430292,
+      "p95_ms": 24.716095900000003,
+      "p99_ms": 24.86420271,
+      "dispatches_per_forward": 487,
+      "command_buffers_per_token": 1,
+      "fallback": 0,
+      "continuation_hash": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352"
+    },
+    "tps_delta_percent": 0.3191537232087427,
+    "p50_delta_percent": -0.252800803978126,
+    "p95_delta_percent": -0.3942098648617942,
+    "p99_delta_percent": -0.3540749853181535,
+    "source_window_ids_exact": true,
+    "wall_promotion_gate_percent": 3.0
+  },
+  "stage_oracle": {
+    "mode": "diagnostic_only; stage trace forces per-layer commits and reports fallback=1/dispatches=0",
+    "zero_epsilon": {
+      "native_vs_cpu_route_mismatches": 1,
+      "route_set_mismatches": 0,
+      "first_mismatch": {"position": 5, "layer": 24, "native": [60, 4, 15, 48, 28, 55], "cpu": [60, 15, 4, 48, 28, 55]}
+    },
+    "epsilon_bisect": [
+      {"epsilon": 0.001, "native_vs_same_epsilon_cpu_mismatches": 0, "cpu_route_sets_changed_vs_zero": 42, "verdict": "REJECT_CAPABILITY"},
+      {"epsilon": 0.0001, "native_vs_same_epsilon_cpu_mismatches": 15, "cpu_route_sets_changed_vs_zero": 7, "verdict": "REJECT_CAPABILITY"},
+      {"epsilon": 0.00001, "native_vs_same_epsilon_cpu_mismatches": 2, "cpu_route_sets_changed_vs_zero": 0, "native_vs_zero_epsilon_cpu_mismatches": 4, "verdict": "REJECT_UNREPAIRED_DIAGNOSTIC_MISMATCH"}
+    ],
+    "source_authority": "CPU GravityDeepSeek stage trace over the exact source-preserving artifact"
+  },
+  "decision": {
+    "promote": false,
+    "deepest_honest_rung": "TG32",
+    "first_failing_lower_rung": "TG20",
+    "current_promoted_deepseek_floor_tps": 41.06909043843913,
+    "finding": "The route-order diagnostic localized a real one-boundary ordering drift, but every epsilon large enough to alter it either changed selected expert sets or left additional boundary mismatches; the clean 1e-3 run improved wall only 0.319 percent, below the 3 percent gate.",
+    "reopen_condition": "Use full-vector Numeric Parity V2.1 and a route policy derived from exact source logits or a materially different executable MLA/MoE representation; do not widen this epsilon policy."
+  },
+  "eviction_required": {
+    "lane": "models/tg-active/deepseek-route-tie-2026-08-02",
+    "source_and_artifact_delete": true,
+    "exact_trash_target": "deepseek-route-tie-2026-08-02",
+    "purge_exact_item_after_receipt": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  }
+}

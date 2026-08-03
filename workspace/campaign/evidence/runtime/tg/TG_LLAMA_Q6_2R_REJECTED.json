@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-source-q6-2r-workgroup",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_revision": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "protocol": {
+    "context_tokens": 2048,
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "baseline": "source Q6_K b9430, 64 threads / 4 rows per threadgroup",
+    "candidate": "source-order Q6_K b9430, 32 threads / 2 rows per threadgroup"
+  },
+  "correctness": {
+    "exact_greedy_token_trace_against_source_baseline": true,
+    "cpu_reference_fallback_count": 0,
+    "dispatches_per_forward": 386
+  },
+  "measurements": {
+    "candidate_decode_tps": 81.12330852094763,
+    "candidate_decode_ms": 1577.844917,
+    "comparison_baseline_tps_range": [92.42312405739831, 94.90]
+  },
+  "verdict": "rejected",
+  "reason": "Doubling Q6_K threadgroup count to one source simdgroup per group retains token exactness but is substantially slower. Together with the 8R rejection, the original 64-thread/4-row source grouping is the only winning tested packing.",
+  "runtime_status": "Requires both HAWKING_LLAMA_RESIDENT_B9430_Q6_2R=1 and HAWKING_LLAMA_RESIDENT_B9430_Q6_2R_UNSAFE_DIAGNOSTIC=1; never selected by the default lane.",
+  "reopen_condition": "Only revisit Q6 after an arithmetic or memory-traffic change, not another grouping-only variant."
+}

@@ -20,6 +20,11 @@ SCHEMA = "hawking.rebuild.perfgate.v1"
 DEFAULT_N = 8  # 1 warm-up discarded + 7 kept
 HEAVY_CPU_PCT = 400.0
 REPO = Path(__file__).resolve().parents[2]
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+
+from lab.layout import OPS_ROOT, evidence_dir
+
 HOME = Path.home()
 APP_HAWK = HOME / "Library/Application Support/Hawking"
 MAIN_TARGET = Path("/Users/scammermike/Downloads/hawking/target")
@@ -103,7 +108,7 @@ def find_example(name: str) -> Path | None:
 def find_gguf() -> Path | None:
     if os.environ.get("HAWKING_GGUF") and Path(os.environ["HAWKING_GGUF"]).is_file():
         return Path(os.environ["HAWKING_GGUF"])
-    for root in (REPO / "models", Path("/Users/scammermike/Downloads/hawking/models")):
+    for root in (OPS_ROOT / "local" / "models", REPO / "models"):
         if root.is_dir():
             for p in sorted(root.rglob("*.gguf")):
                 if p.is_file() and p.stat().st_size > 1_000_000:
@@ -207,7 +212,8 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
         add("startup.doctor_s", "startup",
             "measurable" if gguf else "unavailable",
             f"doctor --weights {gguf}" if gguf else
-            "no GGUF (doctor needs GGUF magic); looked models/**/*.gguf and $HAWKING_GGUF", unit="s")
+            "no GGUF (doctor needs GGUF magic); looked workspace/ops/local/models/**/*.gguf "
+            "and $HAWKING_GGUF", unit="s")
     else:
         for nm in ("build.binary_size_bytes", "startup.help_s", "startup.version_s", "startup.doctor_s"):
             add(nm, "build" if nm.startswith("build") else "startup", "unavailable", "no hawking binary")
@@ -239,7 +245,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
                 higher_is_better=True)
         else:
             add("accelerated_tps.profile_fast_decode_tps", "accelerated_tps", "unavailable",
-                "no GGUF for accelerated path; models/**/*.gguf or $HAWKING_GGUF")
+                "no GGUF for accelerated path; workspace/ops/local/models/**/*.gguf or $HAWKING_GGUF")
         add("kernel.bench_q4k_shapes_median_us", "kernel", "measurable",
             "bench-q4k-shapes --iters 50 (no model)", unit="us")
 
@@ -343,7 +349,8 @@ def cap_startup(n: int) -> list[dict[str, Any]]:
     gguf = find_gguf()
     if not gguf:
         out.append(metric("startup.doctor_s", "startup", "unavailable",
-                          "no GGUF for doctor; models/**/*.gguf or $HAWKING_GGUF"))
+                          "no GGUF for doctor; workspace/ops/local/models/**/*.gguf "
+                          "or $HAWKING_GGUF"))
     else:
         def doc() -> tuple[float, dict[str, Any]]:
             rc, o, e, wall = run([str(b), "doctor", "--weights", str(gguf), "--json"], timeout=120)
@@ -425,7 +432,7 @@ def cap_accelerated(n: int) -> list[dict[str, Any]]:
                        f"Metal required; {mwhy}. Refusing synthetic proxy.")]
     if not gguf:
         return [metric("accelerated_tps.profile_fast_decode_tps", "accelerated_tps", "unavailable",
-                       "no GGUF; models/**/*.gguf or $HAWKING_GGUF")]
+                       "no GGUF; workspace/ops/local/models/**/*.gguf or $HAWKING_GGUF")]
     if not b:
         return [metric("accelerated_tps.profile_fast_decode_tps", "accelerated_tps", "unavailable",
                        "no hawking binary")]
@@ -757,7 +764,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.n < 8:
             print(f"warning: protocol prefers n>=8 (1 warm-up + 7 kept); got {args.n}", file=sys.stderr)
         doc = do_capture(args.n, args.include_cold, args.include_glm_tps)
-        out = args.out or (REPO / "evidence" / "rebuild" / "REBUILD_PERFORMANCE_BASELINE_MEASURED.json")
+        out = args.out or (evidence_dir("rebuild") / "REBUILD_PERFORMANCE_BASELINE_MEASURED.json")
         out.write_text(json.dumps(doc, indent=2) + "\n")
         print(f"wrote {out}")
         print(json.dumps(doc["summary"], indent=2))

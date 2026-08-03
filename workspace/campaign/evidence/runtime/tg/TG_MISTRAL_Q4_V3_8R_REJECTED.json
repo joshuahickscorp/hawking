@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.tg.mistral_q4_v3_8r_candidate.v1",
+  "status": "REJECTED_SPEED_NON_PROMOTED",
+  "claim": "NO_TG_RUNG",
+  "model": "Mistral-Nemo-Instruct-2407-Q4_K_M",
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity",
+    "sha256": "f0795fc20396dd10a94af3a4e98629faa13eedd5fc894ac2eaeb0a663dac11b9",
+    "payload_bytes": 7469322240,
+    "source_preserving": true
+  },
+  "candidate": {
+    "flag": "HAWKING_GRAVITY_Q4_V3=1",
+    "kernel": "gemm_q4_k_m_v3_8r",
+    "geometry": "256 threads, 8 rows per threadgroup",
+    "matched_greedy_ids": [6993, 1046, 6993, 1395, 1278, 12347, 5970, 1294],
+    "matched_equal": true,
+    "decode_tps_context32": 19.161889882971007,
+    "decode_ms_per_token_median": 52.155833,
+    "dispatches_per_token": 522.0,
+    "receipt": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity-tps-q4v3.json"
+  },
+  "baseline": {
+    "decode_tps_context32": 57.65983938130992,
+    "decode_ms_per_token_median": 17.341833,
+    "dispatches_per_token": 522.0,
+    "receipt": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity-tps-baseline-current.json"
+  },
+  "speed_delta": {
+    "decode_tps_ratio_candidate_over_baseline": 0.3323776074973033,
+    "decode_tps_change_percent": -66.76223925026967,
+    "dispatch_reduction_percent": 0.0
+  },
+  "verdict": "Exact continuation survives, but this geometry is 3.01x slower and does not reduce dispatch count in the complete token graph. Retire it; the strict b9430 kernel remains default."
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_SAME_MODEL_REHYDRATION",
+  "at_utc": "2026-08-02T09:29:35Z",
+  "classification": "CLEAN_BOUNDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "lfs_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "xet_file_hash": "596abc840bcb94285f1bcc49f762c5e76a6ffbaf4135dcc7d1d0fde963c5aa8b",
+    "metadata_commit_hash": "d43fd973131bce821f41e2df3c78c6fe15c5627a"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "authenticated": false,
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "chunk_cache_bytes": 0,
+    "range_api": "XetSession.new_download_stream_group.download_stream",
+    "endpoint_binding": "HUB_DEFAULT_ENDPOINT",
+    "retry_max_attempts": 5
+  },
+  "range": {
+    "start": 0,
+    "end": 67108864,
+    "bytes": 67108864,
+    "sha256": "baa1bcb7e094b6384b086449146834af6c3a9bcb6ee5b09807c9317fcbb4a98a",
+    "in_memory_only": true,
+    "application_body_file_writes": 0,
+    "all_trial_hashes_identical": true
+  },
+  "trials": [
+    {"mode":"standard","requested_fixed_download_concurrency":1,"elapsed_seconds":3.684720874996856,"cpu_user_seconds":0.139992,"cpu_system_seconds":0.141824,"max_rss_bytes":201719808,"free_disk_delta_bytes":-16384,"retries":0,"sealed_gb_per_hour_decimal":65.56586471429975},
+    {"mode":"standard","requested_fixed_download_concurrency":2,"elapsed_seconds":2.6744042919017375,"cpu_user_seconds":0.13539,"cpu_system_seconds":0.131808,"max_rss_bytes":199229440,"free_disk_delta_bytes":-28672,"retries":0,"sealed_gb_per_hour_decimal":90.33484994454852},
+    {"mode":"standard","requested_fixed_download_concurrency":4,"elapsed_seconds":3.4190899580717087,"cpu_user_seconds":0.168593,"cpu_system_seconds":0.200613,"max_rss_bytes":199360512,"free_disk_delta_bytes":102400,"retries":0,"sealed_gb_per_hour_decimal":70.65971160824694},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"elapsed_seconds":1.673504457809031,"cpu_user_seconds":0.10321,"cpu_system_seconds":0.074686,"max_rss_bytes":200441856,"free_disk_delta_bytes":-20480,"retries":0,"sealed_gb_per_hour_decimal":144.36287233814394},
+    {"mode":"high_performance","requested_fixed_download_concurrency":1,"elapsed_seconds":1.300319666042924,"cpu_user_seconds":0.092767,"cpu_system_seconds":0.060778,"max_rss_bytes":197476352,"free_disk_delta_bytes":-1490944,"retries":0,"sealed_gb_per_hour_decimal":185.79424483765746},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"elapsed_seconds":1.362719708122313,"cpu_user_seconds":0.114189,"cpu_system_seconds":0.10374,"max_rss_bytes":210436096,"free_disk_delta_bytes":-8192,"retries":0,"sealed_gb_per_hour_decimal":177.28657548578988},
+    {"mode":"high_performance","requested_fixed_download_concurrency":4,"elapsed_seconds":2.9900679169222713,"cpu_user_seconds":0.137118,"cpu_system_seconds":0.144672,"max_rss_bytes":195969024,"free_disk_delta_bytes":-1105920,"retries":0,"sealed_gb_per_hour_decimal":80.79813472888426},
+    {"mode":"high_performance","requested_fixed_download_concurrency":8,"elapsed_seconds":1.9535135838668793,"cpu_user_seconds":0.128253,"cpu_system_seconds":0.125902,"max_rss_bytes":204062720,"free_disk_delta_bytes":200704,"retries":0,"sealed_gb_per_hour_decimal":123.67045327720797}
+  ],
+  "stability_repeats": {
+    "samples_per_profile": 3,
+    "standard_c8_gb_per_hour_decimal": [126.72191270503245,137.06093012763125,140.69644424007083],
+    "standard_c8_median_gb_per_hour_decimal": 137.06093012763125,
+    "high_performance_c1_gb_per_hour_decimal": [75.92174107865486,90.75255742993626,106.56587042108664],
+    "high_performance_c1_median_gb_per_hour_decimal": 90.75255742993626,
+    "high_performance_c2_gb_per_hour_decimal": [122.91077076250814,92.67574862096649,74.09646511336275],
+    "high_performance_c2_median_gb_per_hour_decimal": 92.67574862096649,
+    "all_repeated_range_hashes_identical": true
+  },
+  "resume_trial": {
+    "mode": "standard",
+    "requested_fixed_download_concurrency": 8,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "1ba21b1fb756f8b4be709b571d6790d20683bb9d98738a3d124201eb9b72a495",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "8260f7d79a9ad90b8fd5d009a1e5c4919daf3d756a74fbffa123bffdfe6bd13a",
+    "resume_complete": true,
+    "reconstructed_range_sha256": "baa1bcb7e094b6384b086449146834af6c3a9bcb6ee5b09807c9317fcbb4a98a",
+    "prefix_elapsed_seconds": 0.5481065839994699,
+    "resume_elapsed_seconds": 1.4064177910331637,
+    "retries": 0,
+    "body_file_writes": 0
+  },
+  "selection": {
+    "mode": "standard",
+    "requested_fixed_download_concurrency": 8,
+    "stable_median_sealed_gb_per_hour_decimal": 137.06093012763125,
+    "reason": "three-repeat median beats tested high-performance profiles; all exact range hashes stable",
+    "bounded_range_only": true
+  },
+  "integrity": {
+    "all_matrix_and_stability_range_hashes_identical": true,
+    "application_body_file_writes_total": 0,
+    "client_visible_retries_total": 0,
+    "free_disk_delta_is_not_model_body_evidence": true
+  },
+  "claim_boundary": "This is a transfer and byte-admission prerequisite only; it does not alter capability, TG, production lease, or owner gates.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "3c2a54e00f124a6e1391e6de5e106e7ec2d0c92e18bd0cb19dca425c29dc280e"
+}

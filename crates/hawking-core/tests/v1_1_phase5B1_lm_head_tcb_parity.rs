@@ -11,7 +11,9 @@ fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn hawking_core::En
     let mut cfg = EngineConfig::default();
     cfg.speculate = speculate_mode != SpeculateMode::Off;
     cfg.speculate_mode = speculate_mode;
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    let profile_path = PathBuf::from(
+        "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
+    );
     if profile_path.exists() {
         if let Ok(profile) = hawking_core::profile::KernelProfile::load(&profile_path) {
             cfg.kernel_profile = Some(profile);

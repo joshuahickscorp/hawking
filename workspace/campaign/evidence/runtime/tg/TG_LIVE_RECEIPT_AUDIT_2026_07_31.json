@@ -1,0 +1,140 @@
+{
+  "schema": "hawking.tg.live_receipt_audit.v1",
+  "status": "CORRECTIVE_AUDIT_NOT_A_PROMOTION",
+  "at": "2026-07-31",
+  "purpose": "Reconcile the live family receipts, source references, on-disk artifacts, and storage constraint before another rotating-model wave. This record does not create a TG claim or promote a grammar.",
+  "scope": {
+    "model_cap": "one real family at a time; planned active family limit is approximately 14B",
+    "storage_limit": "90 GB incremental",
+    "benchmark_law": "source/reference and Gravity scoreboards remain separate; a same-model before/after gate is required for promotion",
+    "gpu_law": "no new GPU timing is admitted without a clean lease"
+  },
+  "source_reference_scoreboard": [
+    {
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/TG_LLAMA_98TPS_BASELINE.json",
+      "receipt_sha256": "17cfe61276814edc66034852e6d31cb269baa60779c9dd67153f6360d4ae639f",
+      "tps": 98.67882401342438,
+      "protocol": "512-token short-context greedy continuation; exact continuation and P8 logits",
+      "admission": "SOURCE_REFERENCE_ONLY_NOT_A_GRAVITY_PROMOTION"
+    },
+    {
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/matched-v2/llama_cpp_ctx2048.json",
+      "tps": 93.00324508096176,
+      "protocol": "1,984-token matched source reference",
+      "correction": "The 91.686382 TPS datum belongs to evidence/tg/matched-v2/hawking_ctx2048.json. It is incorrectly labeled llama.cpp/source-reference in the source-quant Gravity receipt and TG_MODEL_SCOREBOARD.json. The nearby 73.03 TPS expectation has no matching sealed live receipt in the reviewed set."
+    }
+  ],
+  "non_gravity_runtime_scoreboard": [
+    {
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "implementation": "Hawking matched runtime",
+      "receipt": "evidence/tg/matched-v2/hawking_ctx2048.json",
+      "tps": 91.68638222193484,
+      "protocol": "same 1,984-token matched protocol as the 93.003245 TPS llama.cpp source reference",
+      "admission": "UNPROMOTED_RUNTIME_MEASUREMENT; not a source-reference score and not a Gravity score"
+    }
+  ],
+  "gravity_scoreboard": [
+    {
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/TG5_LLAMA_SOURCE_QUANT_GRAVITY.json",
+      "receipt_sha256": "ff31b114c1e9278ac2f9404a10c9b5a564c4352e06463de668a0df2e7cd1e2ca",
+      "tps": 67.86156029632174,
+      "context_tokens": 128,
+      "continuation_gate": "16 greedy token IDs equal",
+      "tg8_125_tps": false,
+      "admission": "NO_TG_RUNG"
+    },
+    {
+      "family": "mistral",
+      "model": "Mistral-Nemo-Instruct-2407-Q4_K_M",
+      "receipt": "evidence/tg/TG10_MISTRAL_SOURCE_QUANT_GRAVITY.json",
+      "receipt_sha256": "0bfd6ed0f1e3f088d2d65e26a772636f3b7efd808474db7fa677862f34f2b307",
+      "tps": 55.99120484555166,
+      "context_tokens": 32,
+      "continuation_gate": "8 greedy token IDs equal",
+      "tg8_125_tps": false,
+      "admission": "NO_TG_RUNG"
+    },
+    {
+      "family": "qwen",
+      "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/TG20_QWEN_SOURCE_QUANT_GRAVITY.json",
+      "receipt_sha256": "de6770c5222d3e457567193af24ecfa0eec30a41d71a49fdaa99c1796239dcd9",
+      "tps": 47.28938263628211,
+      "context_tokens": 8,
+      "continuation_gate": "8 greedy token IDs equal",
+      "tg8_125_tps": false,
+      "admission": "NO_TG_RUNG"
+    },
+    {
+      "family": "deepseek",
+      "model": "DeepSeek-V2-Lite-Chat-Q4_K_M",
+      "receipt": "evidence/tg/TG4_DEEPSEEK_SOURCE_QUANT_GRAVITY.json",
+      "receipt_sha256": "001e6e341e3788250accd1a9fb075fa16e1a588b4cb01a7a3ef8ae589793ea1e",
+      "tps": null,
+      "continuation_gate": "4 CPU greedy token IDs equal",
+      "metal_backend": "NOT_IMPLEMENTED",
+      "admission": "CPU_ORACLE_ONLY_NO_TG_RUNG"
+    }
+  ],
+  "transfer_matrix": {
+    "llama": "source K-quant decode and raw packed artifact; full-logit V2.1 gate remains missing",
+    "mistral": "interleaved RoPE/GQA geometry and raw K-quant artifact; full-logit V2.1 gate remains missing",
+    "qwen": "split-half RoPE, native bias and f16-KV contract; full-logit V2.1 gate remains missing",
+    "deepseek": "CPU MLA/MoE/router oracle only; resident Metal grammar has not transferred",
+    "promoted_kernel_grammars": []
+  },
+  "storage_observation": {
+    "observation_role": "PRE_CLEANUP_BASELINE",
+    "observed_2026_07_31": {
+      "tg_artifacts_path": "/tmp/hawking-tg-artifacts",
+      "tg_artifacts_coarse_size": "43G",
+      "tg_artifacts_file_bytes": 46366029289,
+      "models_path": "models",
+      "models_coarse_size": "30G",
+      "models_file_bytes": 31850349544,
+      "combined_file_bytes": 78216378833
+    },
+    "finding": "The known holdings were 78,216,378,833 decimal bytes (~78.2 GB) before unknown shared/cache overhead. This baseline did not establish the requested incremental 90-GB envelope. The subsequent receipt-aware source/scratch quarantine is recorded separately in TG_STORAGE_CLEANUP_2026_07_31.json; receipt-bound Gravity artifacts remain in place because no verified remote handoff was found."
+  },
+  "storage_cleanup": {
+    "receipt": "evidence/tg/TG_STORAGE_CLEANUP_2026_07_31.json",
+    "active_model": "models/tg-breadth/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "active_family_count": 1,
+    "remaining_large_model_payloads": 1,
+    "active_model_artifact_proof_ledger_bytes": 57520898007,
+    "active_model_artifact_proof_ledger_gib": 53.57051082607359,
+    "quarantined_recoverable_bytes": 24952829031,
+    "workspace_plus_recoverable_quarantine_bytes": 82473727038,
+    "workspace_plus_recoverable_quarantine_under_90gb": true,
+    "physical_space_reclaimed": false,
+    "parallel_rule": "A second model is admitted only after a live range/allocation measurement proves the combined model, artifact, bounded-next metadata/ranges, and scratch stay <= 90000000000 bytes under one heavy GPU lease.",
+    "receipt_and_adapter_evidence_preserved": true
+  },
+  "supersession": {
+    "stale_record": "evidence/tg/TG_ENDPOINT_ASSESSMENT.json",
+    "corrected_facts": [
+      "The source-preserving .gravity artifacts cited above are present beneath /tmp/hawking-tg-artifacts; the assertion that all .gravity artifacts were deleted is false for this live state.",
+      "No reviewed source-preserving Gravity receipt claims a TG rung; every TG8 gate is false.",
+      "Short greedy token equality is not K0/V2.1 full-logit parity and cannot promote a transferable grammar."
+    ]
+  },
+  "next_rotation_gate": {
+    "family": "qwen",
+    "reason": "bounded 14B primary instrument with a source-identified artifact and explicit native-bias/f16-KV adapter contract",
+    "required_before_gpu_wave": [
+      "a clean GPU lease with device identity and dispatch>0/fallback=0",
+      "one active model and one artifact within a measured 90-GB incremental ledger",
+      "K0/V2.1 source oracle plus same-model before/after measurement",
+      "sealed builder, challenger and independent verifier evidence"
+    ]
+  },
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY"
+}

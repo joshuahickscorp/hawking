@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.tg.same_model_runtime_repair_preregistration.v1",
+  "status": "PREREGISTERED_CAPABILITY_REPAIR",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "hypothesis": "Qwen TCB prefill already computes the greedy next-token decision for the final prompt token, but the plain decode loop discards it and re-feeds that final prompt token at prompt_len. This inserts one extra KV position and explains the third-token divergence against the conventional Gravity generate loop despite matched layer surfaces. An opt-in conventional seed that emits the final prefill decision and feeds the emitted token at prompt_len should restore same-model continuation parity.",
+  "change": {
+    "id": "qwen14-conventional-decode-seed-v1",
+    "env": "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "scope": "plain greedy temperature-zero TCB decode only; speculation, JSON, sampling, CPU fallback and default behavior remain unchanged",
+    "mechanism": "retain the last prompt prefill greedy ID, emit it as completion token 1, then start the first decode forward with that emitted token at position prompt_len",
+    "speed_claim_allowed": false,
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "prompt_token_ids_exact": true,
+      "generated_token_id_sequence_match": true,
+      "cpu_reference_fallback_count": 0,
+      "metal_dispatches": ">0",
+      "same_model_before_after": true,
+      "capability_parity_required_before_any_tps_claim": true
+    }
+  },
+  "control": {
+    "artifact": "source-compatible Qwen2.5-14B-Instruct-Q4_K_M GGUF",
+    "source_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "current_exact_prefix": [12095, 13, 12095, 374],
+    "current_fast_prefix": [12095, 624, 32, 13],
+    "gravity_conventional_prefix": [12095, 13, 576, 6722],
+    "current_binding_failure": "plain Qwen decode seed/position bookkeeping; not a layer-0 packed-kernel mismatch"
+  },
+  "reopen_condition": "Promote the repair only if the complete 32-token source continuation is stable, hash-bound, and a same-model Gravity run matches it; otherwise retire and restore the default path.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "8be12db328f6c26cef5522df34395c69c9bd32ce3912f2b4f07afcc4298afa12"
+}

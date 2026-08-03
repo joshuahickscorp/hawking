@@ -26,7 +26,7 @@ REPO="${REPO:-$HOME/Downloads/hawking}"
 cd "$REPO" || exit 2
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="${OUT:-reports/overnight/$STAMP}"
+OUT="${OUT:-workspace/campaign/records/reports/overnight/$STAMP}"
 mkdir -p "$OUT"
 
 COMMAND_LOG="$OUT/commands.log"

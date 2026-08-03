@@ -1,0 +1,25 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+QWEN_LOAD_STAGE stage=weights_path_admission api=QwenDense::load monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 source_file_bytes=Some(47415715488) bytes_read=None bytes_written=None resident_bytes=Some(34717696) peak_resident_bytes=Some(40501248) fallback=0 restart_safe=true status=BEGIN
+QWEN_LOAD_STAGE stage=gguf_open_mmap api=GgufFile::open monotonic_start_us=0 monotonic_end_us=42184 elapsed_us=42184 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(40828928) peak_resident_bytes=Some(40828928) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=metadata_parse api=QwenConfig::from_gguf monotonic_start_us=42184 monotonic_end_us=42337 elapsed_us=152 bytes_read=None bytes_written=None resident_bytes=Some(41074688) peak_resident_bytes=Some(41074688) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=tokenizer api=Tokenizer::from_file_or_gguf monotonic_start_us=42337 monotonic_end_us=386571 elapsed_us=344234 bytes_read=None bytes_written=None resident_bytes=Some(101793792) peak_resident_bytes=Some(101793792) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=tensor_directory_quant_admission_layout_conversion api=tensor_ref+dequant_f16+dequant_f32 monotonic_start_us=386571 monotonic_end_us=33171080 elapsed_us=32784509 bytes_read=None bytes_written=None resident_bytes=Some(6829670400) peak_resident_bytes=Some(11790303232) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=host_kv_allocation api=KvCache::new monotonic_start_us=33171080 monotonic_end_us=33171261 elapsed_us=180 bytes_read=Some(0) bytes_written=Some(41943040) resident_bytes=Some(6829883392) peak_resident_bytes=Some(11790303232) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=metal_device_discovery api=init_optional_metal monotonic_start_us=33171261 monotonic_end_us=33190957 elapsed_us=19695 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(6844235776) peak_resident_bytes=Some(11790303232) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=load_complete api=QwenDense::load monotonic_start_us=33190957 monotonic_end_us=295559444 elapsed_us=262368487 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(35281633280) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+[hawking] qwen_dense load timing:
+  gguf_open+config                              42.41 ms
+  tokenizer                                    344.30 ms
+  weight_extract+layers+kv                   32784.65 ms
+  metal_ctx_init                                19.71 ms
+  metal_pinning+lm_head+vocab_prune+warmup  262368.39 ms
+  TOTAL                                     295559.58 ms
+QWEN_FIRST_DISPATCH_STAGE stage=entry api=QwenDense::forward_token_greedy_tcb monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 bytes_read=0 bytes_written=0 resident_bytes=Some(35271360512) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=BEGIN
+QWEN_FIRST_DISPATCH_STAGE stage=representation_admission api=ensure_tq_cache+Q4K_predecode_guard+Q4K_FAST/AWQ_sidecars monotonic_start_us=0 monotonic_end_us=85 elapsed_us=85 bytes_read=None bytes_written=None resident_bytes=Some(35271360512) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=device_and_buffer_binding api=MetalContext+weights_mmap_buf+embed_buf+final_norm_buf+lm_head_buf monotonic_start_us=85 monotonic_end_us=155 elapsed_us=70 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(35271376896) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=arena_allocation_and_prefill_bridge api=DenseDecodeArena::new+request_residency+KV_bridge+optional_KV/W4A8_scratch monotonic_start_us=155 monotonic_end_us=435 elapsed_us=279 bytes_read=Some(0) bytes_written=Some(47587876) resident_bytes=Some(35271409664) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+QWEN_FIRST_DISPATCH_STAGE stage=command_buffer_creation api=TokenCommandBuffer::new/MTLCommandQueue::commandBuffer monotonic_start_us=435 monotonic_end_us=626 elapsed_us=191 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(35271589888) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=graph_encode_first_encoder_and_dispatches api=TokenCommandBuffer::dispatch_threads/MTLComputeCommandEncoder monotonic_start_us=626 monotonic_end_us=9614 elapsed_us=8988 bytes_read=None bytes_written=Some(0) resident_bytes=Some(35268034560) peak_resident_bytes=Some(41855664128) fallback=0 restart_safe=true status=PASS
+
+[hawking] Ctrl-C -- aborting at next token boundary; press again to force-exit

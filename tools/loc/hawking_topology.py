@@ -25,6 +25,7 @@ from pathlib import Path
 
 SCHEMA = "hawking.topology.v1"
 REPO = Path(__file__).resolve().parents[2]
+VENDORED_ROOTS = ("vendor/", "workspace/vendor/")
 
 CODE_EXT = {".rs", ".py", ".ts", ".tsx", ".js", ".jsx", ".metal", ".lean", ".sh"}
 
@@ -42,7 +43,7 @@ def git(*a: str) -> str:
 
 
 def is_active(p: str) -> bool:
-    return not p.startswith("vendor/") and "/generated/" not in p
+    return not p.startswith(VENDORED_ROOTS) and "/generated/" not in p
 
 
 def read(rev: str | None, path: str) -> str:
@@ -57,9 +58,13 @@ def read(rev: str | None, path: str) -> str:
     return r.stdout if r.returncode == 0 else ""
 
 
-def measure(rev: str | None) -> dict:
+def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
     listing = git("ls-files") if rev is None else git("ls-tree", "-r", "--name-only", rev)
     files = listing.splitlines()
+    if include_untracked:
+        if rev is not None:
+            raise ValueError("include_untracked is only defined for the working tree")
+        files = sorted(set(files) | set(git("ls-files", "--others", "--exclude-standard").splitlines()))
     src = [p for p in files if Path(p).suffix in CODE_EXT and is_active(p)]
 
     leaf_dirs = {str(Path(p).parent) for p in src}
@@ -102,6 +107,7 @@ def measure(rev: str | None) -> dict:
 
     return {
         "schema": SCHEMA,
+        "include_untracked_active_source": include_untracked,
         "rev": rev or "WORKING_TREE",
         "commit": git("rev-parse", rev or "HEAD").strip(),
         "directories_all": len(all_dirs),
@@ -151,12 +157,13 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--out", default=None)
     ap.add_argument("--diff", nargs=2, metavar=("BASE", "NEW"))
+    ap.add_argument("--include-untracked", action="store_true")
     args = ap.parse_args()
 
     if args.diff:
         return diff(Path(args.diff[0]), Path(args.diff[1]))
 
-    r = measure(args.rev)
+    r = measure(args.rev, include_untracked=args.include_untracked)
     if args.out:
         Path(args.out).write_text(json.dumps(r, indent=2, sort_keys=True) + "\n")
     if args.json:

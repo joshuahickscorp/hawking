@@ -15,8 +15,6 @@ import time
 import numpy as np
 import pytest
 
-CONDENSE = pathlib.Path(__file__).resolve().parents[1]
-
 from lab.operators import glm52_pack  # noqa: E402
 from lab.operators import gravity_forge as forge  # noqa: E402
 from tools.condense import artifact_client as gravity_format  # noqa: E402
@@ -116,7 +114,7 @@ def test_module_never_writes_to_the_artifact_directory():
     import io
     import tokenize
 
-    source = (CONDENSE / "gravity_real_fixtures.py").read_text().split("def selftest", 1)[0]
+    source = pathlib.Path(fx.__file__).read_text().split("def selftest", 1)[0]
     code = " ".join(
         token.string for token in tokenize.generate_tokens(io.StringIO(source).readline)
         if token.type not in (tokenize.STRING, tokenize.COMMENT))

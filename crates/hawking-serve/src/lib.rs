@@ -15,6 +15,7 @@ pub use hawking_adapters::{bridge_surface_document, bridge_surface_json, Endpoin
 pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
 
 use anyhow::Result;
+use serde_json::Value;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -22,11 +23,13 @@ use std::sync::Arc;
 
 /// Runtime profile controlling quality/throughput trade-offs.
 ///
-/// `Default` — bit-identical conservative path; no env var changes.
+/// `Default` — conservative path; no env var changes. Source parity still
+///              requires a current model-specific independent-oracle receipt.
 /// `Fast`    — validated fast-path (vocab-prune + Q4K LM-head + predec + f16-scales).
 /// `Race`    — same as Fast; explicitly signals "maximum throughput, quality trade-offs OK".
 /// `Efficient` — same as Fast plus sets HAWKING_ENERGY_EFFICIENT=1 for energy-aware batching.
-/// `Exact`   — clears any quality-trade vars; forces bit-identical output.
+/// `Exact`   — clears profile-level quality-trade vars. Source parity still
+///              requires a current model-specific independent-oracle receipt.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RuntimeProfile {
     Default,
@@ -104,7 +107,7 @@ impl RuntimeProfile {
     /// Policy: which profile an UNSET `--profile` resolves to on the CLI front
     /// door. The ONE place the "fast is the default" decision lives. The library
     /// default (`RuntimeProfile::Default`) is deliberately NOT changed — embedders
-    /// and serve integration tests keep the conservative bit-identical default;
+    /// and serve integration tests keep the conservative default;
     /// only the CLI `generate`/`bench` front door flips.
     pub fn default_when_unset() -> Self {
         Self::Fast
@@ -172,11 +175,9 @@ impl RuntimeProfile {
     /// at startup so every profile "prints its active levers" (Track 2.2 gate).
     pub fn contract(&self) -> String {
         match self {
-            Self::Default => {
-                "profile=default: locked bit-identical default decode \
-                (predec + pair + gate/up-fuse, all bit-identical). quality: exact. J/tok: baseline."
-                    .to_string()
-            }
+            Self::Default => "profile=default: conservative decode with no profile-level quality \
+                trade. source parity: requires a current model-specific oracle receipt. J/tok: baseline."
+                .to_string(),
             Self::Fast => "profile=fast: vocab-prune-32k + Q4K LM-head + Q4K FFN-down + predec \
                 + f16-scales. quality: mild trade (f16 scale rounding, rare-token prune). \
                 J/tok: lower than default (fewer bytes/token)."
@@ -187,9 +188,9 @@ impl RuntimeProfile {
             Self::Efficient => "profile=efficient: fast bundle + f16 KV + energy-efficient gather \
                 window. quality: same mild trade as fast. goal: MIN J/tok under a t/s floor."
                 .to_string(),
-            Self::Exact => "profile=exact: bit-identical conservative path. Forces OFF f16-scales \
-                / Q4K-FFN-down / vocab-prune. quality: EXACT (greedy bit-identical to default). \
-                J/tok: baseline."
+            Self::Exact => "profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down \
+                / vocab-prune. profile-level quality trades: off. source parity: requires a current \
+                model-specific oracle receipt. J/tok: baseline."
                 .to_string(),
         }
     }
@@ -359,6 +360,11 @@ pub struct ServeOptions {
     pub weights: PathBuf,
     pub addr: SocketAddr,
     pub max_batch_size: usize,
+    /// Upper bound on *new* prompt tokens scheduled together in one prefill
+    /// wave. `None` retains the former unbounded-by-token behavior. A request
+    /// larger than the cap advances in exact KV-preserving chunks; chunk turns
+    /// rotate among eligible slots so progress does not starve shorter peers.
+    pub max_prefill_tokens: Option<usize>,
     pub speculate: Option<String>,
     pub verify_window: usize,
     pub kernel_profile: Option<PathBuf>,
@@ -405,6 +411,7 @@ impl Default for ServeOptions {
             // addr, but the binary's own default must be safe too.
             addr: "127.0.0.1:8080".parse().unwrap(),
             max_batch_size: 1,
+            max_prefill_tokens: None,
             speculate: None,
             verify_window: 4,
             kernel_profile: None,
@@ -427,6 +434,92 @@ impl Default for ServeOptions {
 
 fn hawking_serve_system_kv_bank_default() -> system_kv_bank::SystemPromptKvBank {
     system_kv_bank::SystemPromptKvBank::new()
+}
+
+/// Receipt emitted by `tools/glm_fast_intake.py` after a fast custom-format
+/// artifact has passed source-bound parity and its real decode contract.  GLM
+/// is exceptionally easy to *load* in a slow host-state configuration; that
+/// is not sufficient to expose it to Hide just because it has an HTTP port.
+const GLM_FAST_INTAKE_RECEIPT_ENV: &str = "HAWKING_GLM_FAST_INTAKE_RECEIPT";
+
+fn require_gate_pass(gates: &serde_json::Map<String, Value>, name: &str) -> Result<()> {
+    let status = gates
+        .get(name)
+        .and_then(|gate| gate.get("status"))
+        .and_then(Value::as_str);
+    if status == Some("PASS") {
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!(
+            "GLM fast intake receipt has no PASS {name} gate (got {status:?})"
+        ))
+    }
+}
+
+fn validate_glm_fast_intake_doc(receipt: &Value, expected_index_sha256: &str) -> Result<()> {
+    if receipt.get("schema").and_then(Value::as_str) != Some("hawking.glm52.fast_intake.v1") {
+        return Err(anyhow::anyhow!(
+            "GLM fast intake receipt has an unexpected schema"
+        ));
+    }
+    if receipt.get("status").and_then(Value::as_str) != Some("PASS") {
+        return Err(anyhow::anyhow!(
+            "GLM fast intake receipt is not PASS; a slow or unbound artifact cannot be served"
+        ));
+    }
+    let gates = receipt
+        .get("gates")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow::anyhow!("GLM fast intake receipt has no gates object"))?;
+    // Require the independently meaningful leaves as well as the aggregate.
+    // This makes a future bug in the aggregate calculation fail closed.
+    for gate in [
+        "TARGET_CONTRACT",
+        "ARTIFACT_ASSEMBLY",
+        "ORACLE_PARITY",
+        "GPU_FAST_DECODE",
+        "DECODE_PERFORMANCE",
+        "HIDE_HANDOFF",
+    ] {
+        require_gate_pass(gates, gate)?;
+    }
+    let actual_index = gates
+        .get("ARTIFACT_ASSEMBLY")
+        .and_then(|gate| gate.get("index_sha256"))
+        .and_then(Value::as_str);
+    if actual_index != Some(expected_index_sha256) {
+        return Err(anyhow::anyhow!(
+            "GLM fast intake receipt index does not match the loaded artifact: receipt={actual_index:?} loaded={expected_index_sha256}"
+        ));
+    }
+    Ok(())
+}
+
+fn require_glm_fast_intake(expected_index_sha256: Option<&str>) -> Result<()> {
+    let expected_index_sha256 = expected_index_sha256.ok_or_else(|| {
+        anyhow::anyhow!(
+            "glm_moe_dsa fast serve requires an indexed custom artifact; refusing an unbound single-shard path"
+        )
+    })?;
+    let path = std::env::var_os(GLM_FAST_INTAKE_RECEIPT_ENV).ok_or_else(|| {
+        anyhow::anyhow!(
+            "glm_moe_dsa serve is speed-gated; set {GLM_FAST_INTAKE_RECEIPT_ENV} to a PASS receipt from tools/glm_fast_intake.py"
+        )
+    })?;
+    let path = PathBuf::from(path);
+    let bytes = std::fs::read(&path).map_err(|error| {
+        anyhow::anyhow!(
+            "cannot read GLM fast intake receipt {}: {error}",
+            path.display()
+        )
+    })?;
+    let receipt: Value = serde_json::from_slice(&bytes).map_err(|error| {
+        anyhow::anyhow!(
+            "invalid GLM fast intake receipt {}: {error}",
+            path.display()
+        )
+    })?;
+    validate_glm_fast_intake_doc(&receipt, expected_index_sha256)
 }
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
@@ -459,6 +552,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         };
         (profile, energy, policy)
     };
+    let max_prefill_tokens = opts.max_prefill_tokens.unwrap_or(usize::MAX);
 
     // ── Serve-mode optimisation defaults ─────────────────────────────────────
     // These are the same knobs that `hawking generate --kernel-profile` uses.
@@ -548,6 +642,13 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     let model_id = engine.model_id().to_string();
     let model_arch = engine.model_arch().to_string();
     let max_batch = opts.max_batch_size;
+
+    // Hide reaches GLM through this server.  Refuse the historic host-state
+    // lane here, at the process boundary, before an HTTP client can mistake a
+    // 0.x TPS reply for a runnable Ramanujan model.
+    if model_arch == "glm_moe_dsa" {
+        require_glm_fast_intake(engine.artifact_index_sha256())?;
+    }
 
     // Gravity base-runtime capability surface. Detected from the loaded engine
     // (index sha256 + chat template), never guessed. When present we raise the
@@ -703,91 +804,71 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // byte-for-byte identical for Default/GreedyFirst. The policy was
                 // installed at startup (`d.scheduler.policy = effective_batch_policy`),
                 // so no extra binding is captured here.
-                let mut prefilling: Vec<u32> = state2
+                let mut prefill_chunks = state2
                     .driver
                     .lock()
                     .scheduler
-                    .prefill_slots_prefix_grouped(max_batch);
-                if effective_energy.should_gather(prefilling.len(), max_batch) {
+                    .prefill_chunks_token_budgeted(max_batch, max_prefill_tokens);
+                if effective_energy.should_gather(prefill_chunks.len(), max_batch) {
                     std::thread::sleep(std::time::Duration::from_millis(gather_window_ms));
-                    prefilling = state2
+                    prefill_chunks = state2
                         .driver
                         .lock()
                         .scheduler
-                        .prefill_slots_prefix_grouped(max_batch);
+                        .prefill_chunks_token_budgeted(max_batch, max_prefill_tokens);
                 }
-                if !prefilling.is_empty() {
-                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling
+                if !prefill_chunks.is_empty() {
+                    // Chunking is exact prompt continuation, not speculative
+                    // generation: each engine call receives the original token
+                    // prefix through `end`, starts at the durable slot cursor,
+                    // and produces no externally-visible token until `complete`.
+                    let slots_data: Vec<(usize, Vec<u32>, usize, usize, bool)> = prefill_chunks
                         .iter()
-                        .filter_map(|&id| {
+                        .filter_map(|chunk| {
                             let ids = state2
                                 .driver
                                 .lock()
                                 .scheduler
                                 .slots
                                 .iter()
-                                .find(|s| s.id == id)
+                                .find(|s| s.id == chunk.slot_id)
                                 .map(|s| s.prompt_ids.clone())
                                 .unwrap_or_default();
-                            if ids.is_empty() {
+                            if ids.is_empty() || chunk.start >= chunk.end || chunk.end > ids.len() {
                                 None
                             } else {
-                                Some((id as usize, ids))
+                                Some((
+                                    chunk.slot_id as usize,
+                                    ids,
+                                    chunk.start,
+                                    chunk.end,
+                                    chunk.complete,
+                                ))
                             }
                         })
                         .collect();
-                    let slot_refs: Vec<(usize, &[u32])> = slots_data
+                    let slot_refs: Vec<(usize, &[u32], usize)> = slots_data
                         .iter()
-                        .map(|(s, ids)| (*s, ids.as_slice()))
-                        .collect();
-                    // Snapshot prefix_skip for every slot in this batch before
-                    // touching any slot state, so we can partition without holding
-                    // both the driver and engine locks simultaneously.
-                    let skip_map: Vec<(usize, usize)> = slot_refs
-                        .iter()
-                        .map(|(slot_id, _)| {
-                            let skip = state2
-                                .driver
-                                .lock()
-                                .scheduler
-                                .slots
-                                .iter()
-                                .find(|s| s.id == *slot_id as u32)
-                                .map(|s| s.prefix_skip)
-                                .unwrap_or(0);
-                            (*slot_id, skip)
-                        })
+                        .map(|(s, ids, start, end, _)| (*s, &ids[..*end], *start))
                         .collect();
 
-                    // Reset all non-zero prefix_skip values upfront so retries
-                    // don't re-skip regardless of which path runs below.
-                    for &(slot_id, skip) in &skip_map {
-                        if skip > 0 {
-                            if let Some(s) = state2
-                                .driver
-                                .lock()
-                                .scheduler
-                                .slots
-                                .iter_mut()
-                                .find(|s| s.id == slot_id as u32)
-                            {
-                                s.prefix_skip = 0;
-                            }
+                    // A bank entry is valid only while its source slot has
+                    // not begun a cold overwrite. Device-buffer copies do
+                    // not carry provenance, so invalidate before writing KV,
+                    // then re-record only after a successful prefill.
+                    for &(slot_id, _, start) in &slot_refs {
+                        if start == 0 {
+                            state2.system_kv_bank.lock().forget_slot(slot_id as u32);
                         }
                     }
 
                     let prefill_result = {
                         let mut engine = state2.engine.lock();
                         if slot_refs.len() == 1 {
-                            let (slot_id, prompt_ids) = slot_refs[0];
-                            let skip = skip_map
-                                .iter()
-                                .find(|(id, _)| *id == slot_id)
-                                .map(|(_, s)| *s)
-                                .unwrap_or(0);
-                            if skip > 0 {
+                            let (slot_id, prompt_ids, start) = slot_refs[0];
+                            if start > 0 {
                                 engine
-                                    .prefill_slot_from_pos(slot_id, prompt_ids, skip)
+                                    .prefill_slot_from_pos(slot_id, prompt_ids, start)
                                     .map(|ft| vec![(slot_id, ft)])
                             } else {
                                 engine
@@ -795,19 +876,14 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                     .map(|ft| vec![(slot_id, ft)])
                             }
                         } else {
-                            // Track 5.2: partition into slots that have a prefix_skip
-                            // (handle individually with prefill_slot_from_pos) and those
-                            // that don't (run in parallel).
+                            // Resumed chunks must preserve their absolute positions
+                            // in their slot KV region, so run those individually.
+                            // Fresh chunks can retain the parallel prefill path.
                             let with_skip: Vec<(usize, &[u32], usize)> = slot_refs
                                 .iter()
-                                .filter_map(|(slot_id, prompt_ids)| {
-                                    let skip = skip_map
-                                        .iter()
-                                        .find(|(id, _)| id == slot_id)
-                                        .map(|(_, s)| *s)
-                                        .unwrap_or(0);
-                                    if skip > 0 {
-                                        Some((*slot_id, *prompt_ids, skip))
+                                .filter_map(|(slot_id, prompt_ids, start)| {
+                                    if *start > 0 {
+                                        Some((*slot_id, *prompt_ids, *start))
                                     } else {
                                         None
                                     }
@@ -815,15 +891,8 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                 .collect();
                             let without_skip: Vec<(usize, &[u32])> = slot_refs
                                 .iter()
-                                .filter(|(slot_id, _)| {
-                                    skip_map
-                                        .iter()
-                                        .find(|(id, _)| id == slot_id)
-                                        .map(|(_, s)| *s)
-                                        .unwrap_or(0)
-                                        == 0
-                                })
-                                .map(|(slot_id, prompt_ids)| (*slot_id, *prompt_ids))
+                                .filter(|(_, _, start)| *start == 0)
+                                .map(|(slot_id, prompt_ids, _)| (*slot_id, *prompt_ids))
                                 .collect();
 
                             // Sequentially prefill the skip slots, collecting each
@@ -854,6 +923,37 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                     };
                     match prefill_result {
                         Ok(firsts) => {
+                            // A cursor is durable only after the engine call
+                            // succeeds. Incomplete chunks stay Prefilling and
+                            // cannot seed decode, enter the prefix bank, or
+                            // emit an unverified token.
+                            let mut committed_final_slots = Vec::new();
+                            for &(slot_id, _, _, end, complete) in &slots_data {
+                                let committed = state2
+                                    .driver
+                                    .lock()
+                                    .scheduler
+                                    .commit_prefill_chunk(slot_id as u32, end);
+                                if !committed {
+                                    tracing::error!(slot_id, end, "prefill chunk commit rejected");
+                                } else if complete {
+                                    committed_final_slots.push(slot_id);
+                                }
+                            }
+
+                            // Only the final prompt chunk becomes a reusable
+                            // prefix source. Keeping partial KV out of the bank
+                            // prevents a later request from treating a prefix
+                            // in flight as complete state.
+                            for &(slot_id, ref prompt_ids, _, _, _) in &slots_data {
+                                if !committed_final_slots.contains(&slot_id) {
+                                    continue;
+                                }
+                                let mut bank = state2.system_kv_bank.lock();
+                                for prefix_len in http::bank_prefix_anchors(prompt_ids) {
+                                    bank.record(prompt_ids, prefix_len, slot_id as u32);
+                                }
+                            }
                             // Mark each prefilled slot ready, then SEED it with the
                             // first generated token (from the prefill's last-position
                             // logits) and stream that token immediately. The decode
@@ -862,6 +962,12 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             // path, which produced a spurious leading word.
                             let eos = { state2.engine.lock().eos_id_for_batch() };
                             for (slot_id, first_token) in firsts {
+                                let complete = slots_data.iter().any(|(id, _, _, _, _)| {
+                                    *id == slot_id && committed_final_slots.contains(id)
+                                });
+                                if !complete {
+                                    continue;
+                                }
                                 let sid = slot_id as u32;
                                 let decoded = {
                                     let mut driver = state2.driver.lock();
@@ -900,7 +1006,8 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                 err = %e,
                                 "prefill_slots_parallel failed; falling back to single-stream generate"
                             );
-                            for &slot_id in &prefilling {
+                            for chunk in &prefill_chunks {
+                                let slot_id = chunk.slot_id;
                                 let req = state2
                                     .driver
                                     .lock()
@@ -988,102 +1095,11 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             // Drain one waiter into the newly-freed slot.
                             let waiter = state2.wait_queue.lock().pop_front();
                             if let Some((waiter_req, waiter_tx, _chat)) = waiter {
-                                let new_slot = {
-                                    let engine = state2.engine.lock();
-                                    let mut driver = state2.driver.lock();
-                                    driver.admit(&**engine, waiter_req).ok().flatten()
-                                };
+                                let new_slot = http::admit_with_prefix_reuse(&state2, waiter_req)
+                                    .ok()
+                                    .flatten();
                                 if let Some(sid) = new_slot {
                                     state2.requests_admitted.fetch_add(1, Ordering::Relaxed);
-                                    // Track 5.2: prefix-reuse detection. After admission the
-                                    // new slot is already in the prefix_index; search for a
-                                    // different slot whose KV we can copy into this one.
-                                    {
-                                        let prompt_ids = state2
-                                            .driver
-                                            .lock()
-                                            .scheduler
-                                            .slots
-                                            .iter()
-                                            .find(|s| s.id == sid)
-                                            .map(|s| s.prompt_ids.clone())
-                                            .unwrap_or_default();
-                                        if !prompt_ids.is_empty() {
-                                            let banked_len = http::banked_len_for(&prompt_ids);
-                                            // 1) Live-slot match (Track 5.1): a DIFFERENT active slot.
-                                            let mut src: Option<(u32, usize)> = state2
-                                                .driver
-                                                .lock()
-                                                .scheduler
-                                                .prefix_index
-                                                .find_prefix_match_excluding(&prompt_ids, 8, sid);
-                                            // 2) On a live MISS, consult the cross-request bank
-                                            //    (Track 5.2): a slot that previously held this fixed
-                                            //    system prefix even though it has since freed. Pure
-                                            //    CPU lookup; the bank stores no KV.
-                                            if src.is_none() {
-                                                if let Some(entry) = state2
-                                                    .system_kv_bank
-                                                    .lock()
-                                                    .lookup(&prompt_ids, banked_len)
-                                                {
-                                                    if entry.source_slot != sid {
-                                                        src = Some((
-                                                            entry.source_slot,
-                                                            entry.prefix_len,
-                                                        ));
-                                                    }
-                                                }
-                                            }
-                                            if let Some((src_slot, shared_len)) = src {
-                                                tracing::debug!(
-                                                    "[prefix-reuse] request matched slot {} at prefix_len={}",
-                                                    src_slot, shared_len
-                                                );
-                                                let copy_result =
-                                                    state2.engine.lock().copy_kv_prefix_to_slot(
-                                                        src_slot as usize,
-                                                        sid as usize,
-                                                        shared_len,
-                                                    );
-                                                if copy_result.is_ok() {
-                                                    {
-                                                        let mut driver = state2.driver.lock();
-                                                        driver.lane_stats.prefix_reuse_count += 1;
-                                                        // prefix_skip so prefill can call
-                                                        // prefill_slot_from_pos instead of full prefill.
-                                                        if let Some(slot) = driver
-                                                            .scheduler
-                                                            .slots
-                                                            .iter_mut()
-                                                            .find(|s| s.id == sid)
-                                                        {
-                                                            slot.prefix_skip = shared_len;
-                                                        }
-                                                    }
-                                                    // Bank that THIS slot now holds copyable KV for the
-                                                    // fixed leading span, so the NEXT serial turn (after
-                                                    // this slot frees) still finds a source.
-                                                    state2.system_kv_bank.lock().record(
-                                                        &prompt_ids,
-                                                        banked_len,
-                                                        sid,
-                                                    );
-                                                }
-                                                // copy Err (e.g. Unimplemented / stale banked slot):
-                                                // silently skip — normal prefill proceeds from pos 0.
-                                            } else {
-                                                // No source yet, but this freshly-prefilled slot will
-                                                // hold the span shortly — bank it so a later serial turn
-                                                // can reuse it. (record() rejects sub-min spans itself.)
-                                                state2.system_kv_bank.lock().record(
-                                                    &prompt_ids,
-                                                    banked_len,
-                                                    sid,
-                                                );
-                                            }
-                                        }
-                                    }
                                     state2.slot_senders.lock().insert(sid, waiter_tx);
                                 }
                                 // If admit fails (should not — slot was just freed),
@@ -1212,5 +1228,54 @@ mod profile_lever_tests {
             );
         }
         assert!(has(&bundle, force_off[0]));
+    }
+}
+
+#[cfg(test)]
+mod glm_fast_intake_tests {
+    use super::validate_glm_fast_intake_doc;
+    use serde_json::json;
+
+    fn receipt(index: &str) -> serde_json::Value {
+        let mut gates = serde_json::Map::new();
+        for name in [
+            "TARGET_CONTRACT",
+            "ORACLE_PARITY",
+            "GPU_FAST_DECODE",
+            "DECODE_PERFORMANCE",
+            "HIDE_HANDOFF",
+        ] {
+            gates.insert(name.into(), json!({"status": "PASS"}));
+        }
+        gates.insert(
+            "ARTIFACT_ASSEMBLY".into(),
+            json!({"status": "PASS", "index_sha256": index}),
+        );
+        json!({
+            "schema": "hawking.glm52.fast_intake.v1",
+            "status": "PASS",
+            "gates": gates,
+        })
+    }
+
+    #[test]
+    fn exact_pass_receipt_is_bound_to_the_loaded_index() {
+        assert!(validate_glm_fast_intake_doc(&receipt("abc"), "abc").is_ok());
+    }
+
+    #[test]
+    fn index_mismatch_cannot_serve_a_repacked_glm() {
+        let error = validate_glm_fast_intake_doc(&receipt("old"), "new")
+            .expect_err("a receipt for another artifact must be refused");
+        assert!(error.to_string().contains("does not match"));
+    }
+
+    #[test]
+    fn aggregate_pass_cannot_hide_a_missing_speed_leaf() {
+        let mut value = receipt("abc");
+        value["gates"]["GPU_FAST_DECODE"]["status"] = json!("BLOCKED");
+        let error = validate_glm_fast_intake_doc(&value, "abc")
+            .expect_err("missing fast proof must be refused");
+        assert!(error.to_string().contains("GPU_FAST_DECODE"));
     }
 }

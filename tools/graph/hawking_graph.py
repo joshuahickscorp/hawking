@@ -1,15 +1,16 @@
 #!/usr/bin/env python3.12
 """Hawking multi-language semantic graph extractor (G1 instrument).
 
-Obeys control/SEMANTIC_GRAPH_SCHEMA.json exactly — no added/renamed/dropped
-node types, edge types, attribute names, or id formats.
+Obeys workspace/campaign/governance/control/catalog/manifests/
+SEMANTIC_GRAPH_SCHEMA.json exactly — no added/renamed/dropped node types,
+edge types, attribute names, or id formats.
 
 Usage:
     python3.12 tools/graph/hawking_graph.py --emit all
     python3.12 tools/graph/hawking_graph.py --emit jsonl
     python3.12 tools/graph/hawking_graph.py --verify
 
-Output defaults to build/graph/ (gitignored): every artifact here is
+Output defaults to workspace/ops/build/graph/ (gitignored): every artifact here is
 deterministic and rebuilt by --emit all in about 40s.
 
 Dependencies: stdlib + networkx (optional for future G2; not required to emit).
@@ -26,7 +27,8 @@ Side-effect allowlist (node attrs.side_effects):
     none  — default when nothing matches
 See graph_model.SIDE_EFFECT_PATTERNS.
 
-Runtime hotness is STATIC only (docs/BENCHMARKS.md, docs/kernels.md,
+Runtime hotness is STATIC only (workspace/docs/reference/BENCHMARKS.md,
+workspace/docs/reference/kernels.md,
 hawking-bench, Metal kernels, 2-hop from decode/dispatch) — not traced.
 """
 
@@ -188,11 +190,16 @@ def build_graph(repo: Path) -> tuple[Graph, dict[str, Any]]:
                     g.ensure_contains(cid, f"file:{rel}", evidence="cargo")
 
     # Partition sources
-    rust_files = sorted(f for f in file_set if f.endswith(".rs") and not f.startswith("vendor/"))
-    py_files = sorted(f for f in file_set if f.endswith(".py") and not f.startswith("vendor/"))
+    rust_files = sorted(
+        f for f in file_set if f.endswith(".rs") and not classify_path(f)[0]
+    )
+    py_files = sorted(
+        f for f in file_set if f.endswith(".py") and not classify_path(f)[0]
+    )
     ts_files = sorted(
         f for f in file_set
-        if Path(f).suffix in {".ts", ".tsx", ".js", ".jsx"} and not f.startswith("vendor/")
+        if Path(f).suffix in {".ts", ".tsx", ".js", ".jsx"}
+        and not classify_path(f)[0]
     )
     metal_files = sorted(f for f in file_set if f.endswith(".metal"))
 
@@ -429,8 +436,11 @@ def count_report(g: Graph) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Hawking semantic graph extractor (G1)")
     ap.add_argument("--repo", default=str(REPO), help="repository root")
-    ap.add_argument("--out", default=str(REPO / "build" / "graph"),
-                    help="output directory (default: build/graph, gitignored — these are regenerable)")
+    ap.add_argument(
+        "--out",
+        default=str(REPO / "workspace" / "ops" / "build" / "graph"),
+        help="output directory (default: workspace/ops/build/graph, gitignored — regenerable)",
+    )
     ap.add_argument(
         "--emit",
         choices=["all", "jsonl", "gexf", "dot", "behaviour", "none"],

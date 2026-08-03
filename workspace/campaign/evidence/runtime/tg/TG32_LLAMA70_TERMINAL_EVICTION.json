@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_AND_CACHE_PURGED_BYTES_RECOVERED",
+  "at": "2026-08-01T06:59:21Z",
+  "family": "llama",
+  "terminal_receipt": "evidence/tg/TG32_LLAMA70_K0_ROOFLINE_TERMINAL.json",
+  "terminal_seal_sha256": "0ec1f2ace9f09e431b677bb950d3641bb1a41f67dee3bc8bf246016214760105",
+  "removed": [
+    {
+      "path": "models/tg-active/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "bytes": 42520398816,
+      "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664"
+    },
+    {
+      "path": "models/tg-active/.cache/huggingface",
+      "classification": "source-local cache-control, metadata and lock files"
+    }
+  ],
+  "trash": {
+    "exact_item": "/Users/scammermike/.Trash/tg-active-llama70",
+    "other_trash_items_touched": false,
+    "exact_item_permanently_purged": true,
+    "purge_mechanism": "find exact path -depth -delete",
+    "postcondition": "exact Trash path absent"
+  },
+  "filesystem": {
+    "free_before_bytes": 365725450240,
+    "free_after_samples_bytes": [408193658880, 408193507328, 408193449984],
+    "free_after_bytes": 408193449984,
+    "recovered_bytes": 42467999744,
+    "source_bytes": 42520398816,
+    "recovery_delta_vs_source_bytes": -52399072,
+    "recovery_delta_note": "concurrent system writes occurred between APFS samples; positive recovery is within 0.13 percent of exact source bytes",
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 208187560428
+  },
+  "postconditions": {
+    "models_file_count": 0,
+    "source_staging_directory_recreated_empty": true,
+    "source_body_absent": true,
+    "source_cache_absent": true,
+    "exact_trash_item_absent": true
+  },
+  "cold_upload": {
+    "performed": false,
+    "reason": "optional; no remote destination or upload authority supplied"
+  },
+  "seal_sha256": "452a6f1f003b24947f287daab84addc6e9ccd565298eac7943e3f60c2481c517"
+}

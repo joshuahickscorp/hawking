@@ -9,9 +9,9 @@ half ran, never the assertion half.
 
 So this orchestrates the existing tools; it reimplements none of them.
 
-    rung_gate.py --capture --label baseline --out control/rungs/baseline.json
-    rung_gate.py --rung 400k --before control/rungs/baseline.json --out control/rungs/400k.json
-    rung_gate.py --check control/rungs/400k.json
+    rung_gate.py --capture --label baseline --out workspace/campaign/governance/control/rungs/baseline.json
+    rung_gate.py --rung 400k --before workspace/campaign/governance/control/rungs/baseline.json --out workspace/campaign/governance/control/rungs/400k.json
+    rung_gate.py --check workspace/campaign/governance/control/rungs/400k.json
     rung_gate.py --quick
 
 The refusal that matters most: a check that STOPS RUNNING is a regression, not a neutral.
@@ -30,7 +30,12 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RULES = ROOT / "control" / "REBUILD_ACCOUNTING_RULES.json"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import CONTROL_ROOT, evidence_dir, resolve_workspace_path
+
+RULES = CONTROL_ROOT / "catalog/manifests/REBUILD_ACCOUNTING_RULES.json"
 FILES_OVER_1500_START = 26  # campaign start value; a rung may not push it above this
 PERF_GATE_PCT = 2.0
 
@@ -143,7 +148,7 @@ def _parse_topology_text(text: str) -> dict:
 # ------------------------------------------------------------------------------- groups
 
 def group_inventory(before: dict | None) -> list[dict]:
-    snap = ROOT / "control" / "rungs" / "_inventory_current"
+    snap = CONTROL_ROOT / "rungs" / "current" / "_inventory_current"
     rc, out = sh([PY, "tools/loc/hawking_inventory.py", "--snapshot", str(snap)], timeout=1800)
     if rc != 0:
         return [check("inventory_snapshot", "fail", out.strip()[-300:])]
@@ -186,7 +191,7 @@ def group_rust_tests() -> list[dict]:
 
 
 def group_python_tests() -> list[dict]:
-    rc, out = sh([PY, "-m", "pytest", "tools/", "ramanujan/", "odyssey/",
+    rc, out = sh([PY, "-m", "pytest", "tools/", "ramanujan/scaffold/", "workspace/campaign/governance/odyssey/",
                   "-q", "--no-header", "--tb=no", "-p", "no:cacheprovider"], timeout=5400)
     mm = re.search(
         r"(?:(\d+) failed)?(?:, )?(\d+) passed(?:, (\d+) skipped)?"
@@ -267,7 +272,7 @@ def group_rollback(tags: list[str]) -> list[dict]:
 
 
 def group_migration() -> list[dict]:
-    contract = ROOT / "evidence" / "rebuild" / "REBUILD_DATA_MIGRATION_CONTRACT.json"
+    contract = evidence_dir("rebuild") / "REBUILD_DATA_MIGRATION_CONTRACT.json"
     if not contract.exists():
         return [check("migration", "unavailable",
                       "REBUILD_DATA_MIGRATION_CONTRACT.json does not exist yet")]
@@ -277,7 +282,7 @@ def group_migration() -> list[dict]:
         return [check("migration", "fail", f"contract is not valid JSON: {e}")]
     missing = [
         s for e in d.get("entries", [])
-        if (s := e.get("sample_path")) and not (ROOT / s).exists()
+        if (s := e.get("sample_path")) and not resolve_workspace_path(s).exists()
     ]
     return [check("migration", "pass" if not missing else "fail",
                   "all sample files present" if not missing
@@ -374,7 +379,7 @@ def run(args) -> dict:
         "commit": sh(["git", "rev-parse", "HEAD"])[1].strip(),
         "measured": measured,
         "checks": checks,
-        "inventory_snapshot": str(ROOT / "control" / "rungs" / "_inventory_current"),
+        "inventory_snapshot": str(CONTROL_ROOT / "rungs" / "current" / "_inventory_current"),
         "rollback_tag": args.rollback_tag or [],
         "before": args.before,
     }
@@ -390,7 +395,7 @@ def main() -> int:
     ap.add_argument("--rung"); ap.add_argument("--label")
     ap.add_argument("--before", help="previous rung receipt to diff against")
     ap.add_argument("--perf-before", help="previous performance baseline json")
-    ap.add_argument("--ledger", help="control/rungs/<rung>-ledger.json")
+    ap.add_argument("--ledger", help="workspace/campaign/governance/control/rungs/<rung>-ledger.json")
     ap.add_argument("--rollback-tag", action="append")
     ap.add_argument("--out"); ap.add_argument("--capture", action="store_true")
     ap.add_argument("--quick", action="store_true")

@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.glm52.90gb.full_shard_lower_bound.v1",
+  "status": "PROVEN_OFFLINE_LOWER_BOUND_NOT_A_LIVE_ALLOCATION_RECEIPT",
+  "at": "2026-07-31",
+  "constraint_bytes": 90000000000,
+  "inputs": {
+    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
+    "dependency_graph": "evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+    "dependency_graph_seal_sha256": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9",
+    "weight_shards": 282,
+    "source_logical_bytes": 1506667387408
+  },
+  "method": {
+    "description": "For each shard, take the first and last execution-order organ that names it. Under exactly-once full-shard acquisition, the shard must remain resident across that interval. Sum manifest logical bytes for every interval covering each organ.",
+    "refetches": 0,
+    "partial_tensor_ranges": false,
+    "network_or_gpu_execution": false
+  },
+  "result": {
+    "peak_organ": "text_layer_12",
+    "peak_execution_order": 13,
+    "peak_resident_full_shard_bytes": 96808385288,
+    "peak_resident_full_shard_count": 19,
+    "over_90gb_bytes": 6808385288,
+    "one_largest_shard_prefetch_bytes": 102176746832,
+    "prefetch_over_90gb_bytes": 12176746832,
+    "full_shard_strategy_fits_90gb": false
+  },
+  "implication": "A compliant parent restream requires a new sealed range/tensor scheduler with live allocated-byte measurements and a complete incremental storage ledger. Repartitioning the existing 20 full-shard windows is insufficient. This lower bound does not claim that range packing is achievable or grant a capability verdict.",
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY",
+  "seal_sha256": "c43dfb00b21900e99fa18e47181e2e85ce85e378fc38b2ca4d482427d18a863b"
+}

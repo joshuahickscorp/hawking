@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED",
+  "at": "2026-08-01T06:32:48Z",
+  "family": "llama",
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "path": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "declared_base": "meta-llama/Llama-3.3-70B-Instruct",
+    "parameter_class": {"total_parameters":"70B","active_parameters":"70B","architecture":"dense"}
+  },
+  "quant_selection": {
+    "selected": "Q4_K_M single-file",
+    "q5_k_m_bytes": 49949822112,
+    "q6_k_bytes": 57888148672,
+    "reason": "Q5/Q6 are split GGUFs whose retained merge plus largest part and 25-GiB rollback reserve exceed the unified 102-GB lane; the single-file Q4_K_M is directly executable and leaves the full reserve intact"
+  },
+  "unified_admission": {"free_bytes":410986319872,"protected_floor_bytes":200005889556,"residual_above_floor_bytes":210980430316,"model_lane_ceiling_bytes":102000000000,"normal_model_artifact_cap_bytes":82000000000,"model_bytes":42520398816,"scratch_bytes":26843545600,"metadata_and_ranges_bytes":67108864,"incremental_lane_bytes":69431053280,"active_model_count":0,"failures":[]},
+  "transfer": {
+    "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2","cli":".venv/glm52/bin/hf"},
+    "selected_profile":"high_performance",
+    "environment":{"HF_HUB_DISABLE_IMPLICIT_TOKEN":"1","HF_HUB_DISABLE_TELEMETRY":"1","HF_XET_HIGH_PERFORMANCE":"1","HF_XET_CHUNK_CACHE_SIZE_BYTES":"0"},
+    "bounded_matrix_receipt":"evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+    "bounded_matrix_seal_sha256":"17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0",
+    "resume_receipt":"evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_LLAMA70.json",
+    "resume_seal_sha256":"32cfa0696bda0699b6afe845085ee4342292bf8d6886261d08b5895d291203ef"
+  },
+  "preload_representation_change": {"non_caching_exact_verifier":true,"cargo_check_hawking":"PASS","source":"crates/hawking/src/main.rs","source_sha256":"9fa6c2f53309803908b405864aa13e183bd814ef63972c77f0d8319c7ecf902c"},
+  "seal_sha256":"3726011ed44ca6ace6c273636369d370ed1b24e782d0fbad2d765b9fed83c008"
+}

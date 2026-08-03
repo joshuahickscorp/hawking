@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.tg.runtime_hardening_receipt.v1",
+  "status": "FIXTURE_HARDENING_GREEN_OWNER_GATES_FALSE",
+  "at": "2026-08-02",
+  "scope": ["restream executor", "Xet transfer controller", "lease adversarial fixtures", "HIDE YOU/CHAT/IDE fixtures", "generic Ramanujan machinery"],
+  "code_density": {
+    "receipt": "evidence/tg/TG_CODE_TOPOLOGY_CURRENT_2026_08_02.json",
+    "combined_active_monorepo_LOC": 381464,
+    "directories_all": 121,
+    "source_files": 954,
+    "public_symbols": 8296,
+    "functions": 13064,
+    "entry_topology_not_exceeded": true
+  },
+  "tests": {
+    "pinned_runtime": {
+      "python": ".venv/glm52/bin/python",
+      "huggingface_hub": "1.24.0",
+      "hf_xet": "1.5.2",
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_campaign_engine.py tools/condense/tests/test_glm52_state.py tools/condense/tests/test_glm52_xet_live.py",
+      "result": "160 passed"
+    },
+    "restream_and_range": {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_range_stream_executor.py tools/condense/tests/test_glm52_restream_contract.py tools/condense/tests/test_restream_guard.py tools/condense/tests/test_glm52_framed_window_operator.py",
+      "result": "46 passed",
+      "coverage": ["exact framed ranges", "resume", "range mismatch", "source hash mismatch", "partial writes", "disk floor", "stale/duplicate receipts", "fixture lease contention", "heartbeat loss", "clock jump", "record theft"]
+    },
+    "condense_foundry": {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_condense_controller.py tools/condense/tests/test_glm52_pack_atomic.py tools/condense/tests/test_glm52_pack_coverage.py tools/condense/tests/test_glm52_pack_indices.py",
+      "result": "202 passed",
+      "coverage": ["N-1 seal/evict -> N process -> N+1 metadata", "one-pass multi-artifact packing", "byte budget", "work stealing", "restart-safe sealing", "coverage and index parity"]
+    },
+    "ramanujan_fixture": {
+      "command": ".venv/glm52/bin/python -m pytest -q ramanujan/test_*.py",
+      "result": "137 passed",
+      "research_authorized": false
+    },
+    "hide_fixture": {
+      "command": "cargo test -p hide-backend --test live_model_turn --test host_slice_core --test steer_and_dispatch --test search_provenance_trace_f",
+      "result": "59 passed",
+      "live_model_body": "SKIPPED_BY_TEST because model lane is empty",
+      "note": "The skip is a fixture boundary, not a production GPU certification."
+    }
+  },
+  "storage": {
+    "filesystem_free_bytes_observed": 361237897216,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 161232007660,
+    "active_model_lane": "models/tg-active",
+    "active_model_lane_contents": [],
+    "recoverable_trash_target": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02",
+    "recoverable_trash_bytes_observed": 20739526656,
+    "permanent_purge": "PENDING_EXACT_OWNER_CONFIRMATION"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "transition": {
+    "OWNER_GATE_READY": true,
+    "STORAGE_GREEN": true,
+    "AUTHORIZATION_GREEN": false,
+    "PRODUCTION_LEASE_GREEN": false,
+    "OPERATOR_APPROVED": false,
+    "FINAL_PREFLIGHT": false,
+    "RESTREAM_ADMITTED": false,
+    "fail_closed_reason": "Owner authorization, production lease identity, and physical operator approval are absent.",
+    "authoritative_receipt": "ramanujan/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+    "authoritative_receipt_status": "STORAGE_GREEN",
+    "authoritative_receipt_seal_sha256": "fcefdb6307d975f02b43a82bcfc9c80e02b3f8ac07636559967f8c9d85d2a3a2"
+  },
+  "verdict": "Generic machinery is fixture-green and restart/adversarial tests pass; this receipt does not authorize the parent restream, Odyssey, Math-Frozen work, or Ramanujan research."
+}

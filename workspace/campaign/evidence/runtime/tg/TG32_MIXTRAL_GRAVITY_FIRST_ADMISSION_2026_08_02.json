@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.gravity_first_admission.v1",
+  "status": "SOURCE_AND_EXECUTABLE_GRAVITY_ADMITTED",
+  "at_utc": "2026-08-02",
+  "model": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+  "family": "mistral_mixtral_sparse_moe",
+  "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+  "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+  "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+  "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+  "source_bytes": 28448468384,
+  "artifact": {
+    "path": "models/tg-active/mixtral8x7b-gravity-first-2026-08-02/mixtral-source.gravity",
+    "bytes": 28448692526,
+    "file_sha256": "6db456e78623716a5229911066bdc1f04aa6ee2aabb434fd98e474caabe0ee37",
+    "body_bytes": 28447727616,
+    "body_sha256": "ac7f6e914fafb4891b0e94e0a4759f628e8737adfdb3ed8d47c873438583fa0f",
+    "tensor_count": 995,
+    "metadata_fields": 48,
+    "embedded_tokenizer_tokens": 32000,
+    "source_quantization_preserved": true,
+    "lossy_fit": false,
+    "packed_bpw": 4.87221726390947,
+    "complete_bpw": 4.872980987890861,
+    "verification": "PASS"
+  },
+  "geometry": {
+    "layers": 32,
+    "hidden_size": 4096,
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "representation": "fused GGUF expert planes split into indexed per-expert raw-quant Gravity payloads",
+    "dense_reconstruction": false
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.model_eviction_receipt.v1",
+  "status": "SOURCE_ARTIFACT_TOKENIZER_TEMP_AND_EXACT_TRASH_PURGED",
+  "at_utc": "2026-08-02",
+  "source_receipt": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_RESULT_2026_08_02.json",
+  "candidate": "qwen14-gravity-fused-qkv-rope-append-v1",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-fused-qkv.gravity",
+    "bytes": 8982325243,
+    "sha256": "da5bba5b40f6c083e4004070daa937dda55e947bd61d3de46d86b3acbf30be31"
+  },
+  "tokenizer": {
+    "filename": "tokenizer.json",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "eviction": {
+    "active_path": "/Users/scammermike/Downloads/hawking/models/tg-active/qwen14-fused-qkv-2026-08-02",
+    "exact_trash_target": "qwen14-fused-qkv-2026-08-02",
+    "allocated_bytes_before_move": 17977468472,
+    "lane_absent_after_move": true,
+    "move_command": "/usr/bin/trash models/tg-active/qwen14-fused-qkv-2026-08-02",
+    "exact_trash_purge_method": "Finder exact-name delete",
+    "exact_trash_item_purged": true,
+    "source_body_absent": true,
+    "artifact_absent": true,
+    "tokenizer_and_download_cache_absent": true
+  },
+  "storage": {
+    "free_bytes_before_move": 351439171584,
+    "free_bytes_after_move": 351493967872,
+    "free_bytes_after_exact_purge": 369474801664,
+    "observed_recovery_bytes": 18035630080,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_purge": 169468912108,
+    "floor_preserved": true,
+    "background_activity_note": "Filesystem counters include normal background activity; the exact 17,977,468,472-byte lane allocation was removed and the lane is empty."
+  },
+  "postcondition": {
+    "active_model_count": 0,
+    "model_lane_contents": [],
+    "unrelated_trash_archive_preserved": true,
+    "unrelated_trash_archive": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip",
+    "promotion": "NONE",
+    "owner_fences_false": true
+  },
+  "verdict": "QWEN14_FUSED_QKV_WAVE_EVICTED_EXACT_TRASH_PURGED_MODEL_LANE_EMPTY"
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "MODEL_LANE_EMPTY_EXACT_TRASH_PURGED_FREE_RECOVERY_PROVEN",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct-Q4_K_M",
+  "lane": "models/tg-active/qwen32-gravity-first-2026-08-02",
+  "evicted_paths": [
+    "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "qwen32-source.gravity",
+    "qwen32-residual-pq.gravity",
+    "tokenizer/tokenizer.json",
+    ".cache/huggingface"
+  ],
+  "allocated_bytes_before": 39703969525,
+  "free_bytes_before": 342324453376,
+  "trash_target": "qwen32-gravity-first-2026-08-02",
+  "trash_listing_before_purge": ["qwen32-gravity-first-2026-08-02"],
+  "exact_trash_item_purged": true,
+  "free_bytes_after": 382036844544,
+  "observed_recovery_bytes": 39712391168,
+  "lane_empty": true,
+  "trash_empty_after": true,
+  "archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN32_GRAVITY_FIRST_2026_08_02.tar.gz",
+  "archive_sha256": "97d591ba4c33bb460ce86a49d967eeb5a5df391263b8dbacc48765750d2d685b",
+  "protected_floor_bytes": 200005889556,
+  "residual_above_floor_after": 182030954988,
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

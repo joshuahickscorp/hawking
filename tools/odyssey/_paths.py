@@ -1,15 +1,36 @@
 """Shared path constants for the Odyssey T0 and data tools."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ODYSSEY = ROOT / "odyssey"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import (
+    ODYSSEY_DOMAINS_ROOT,
+    ODYSSEY_PROGRAM_ROOT,
+    ODYSSEY_RECORDS_ROOT,
+    ODYSSEY_RESOURCES_ROOT,
+    ODYSSEY_ROOT,
+    ODYSSEY_STATE_ROOT,
+    REPO_ROOT,
+    odyssey_path,
+)
+
+ROOT = REPO_ROOT
+ODYSSEY = ODYSSEY_ROOT
+DOMAINS_DIR = ODYSSEY_DOMAINS_ROOT
+PROGRAM_DIR = ODYSSEY_PROGRAM_ROOT
+RESOURCES_DIR = ODYSSEY_RESOURCES_ROOT
+STATE_DIR = ODYSSEY_STATE_ROOT
+RECORDS_DIR = ODYSSEY_RECORDS_ROOT
 
 # --- T0 reproduction ------------------------------------------------------
-T0_DIR = ODYSSEY / "t0"
+T0_DIR = odyssey_path("t0")
 T0_STATE = T0_DIR / "state"
-CHECKPOINTS = ODYSSEY / "checkpoints"
+CHECKPOINTS = odyssey_path("checkpoints")
 
 # Sealed substrate facts (verified live; do not re-derive).
 MATH_ARTIFACT = Path.home() / (
@@ -24,15 +45,17 @@ EXPECTED_DECISION_COUNT = 59585
 EXPECTED_BPW = 0.9774017488417455
 EXPECTED_BYTES = 92_038_250_160
 
-FENCE = ODYSSEY / "launch" / "ODYSSEY_LAUNCH_AUTHORIZED"
-STOP = ODYSSEY / "launch" / "STOP"
+LAUNCH_DIR = odyssey_path("launch")
+TRAINING_DIR = odyssey_path("training")
+FENCE = LAUNCH_DIR / "ODYSSEY_LAUNCH_AUTHORIZED"
+STOP = LAUNCH_DIR / "STOP"
 
 # --- data membership, inventory, contamination barrier --------------------
-DATA_DIR = ODYSSEY / "data"
-EVAL_DIR = ODYSSEY / "evaluation"
+DATA_DIR = odyssey_path("data")
+EVAL_DIR = odyssey_path("evaluation")
 HIDDEN_DIR = EVAL_DIR / "hidden"
 PUBLIC_EVAL_DIR = T0_DIR / "public_eval"
-TEACHER_DIR = ODYSSEY / "teacher_traces"
+TEACHER_DIR = odyssey_path("teacher_traces")
 FIXTURE_DIR = DATA_DIR / "fixtures" / "ingestion_fixture_v0"
 MEMBERSHIP_DIR = DATA_DIR / "membership"
 

@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_AND_RECOVERED",
+  "candidate": "qwen14-source-quant-executable-gravity-v1",
+  "rejection_receipt": "evidence/tg/TG32_QWEN14_EXECUTABLE_GRAVITY_REJECTED_2026_08_02.json",
+  "lane": "models/tg-active/qwen14-executable-gravity-2026-08-02",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "body_bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-source.gravity",
+    "artifact_bytes": 8982325252,
+    "sha256": "e2bbc738f07fbc33c359e2f1dc1dc07c7182e794cd2954bb1ffa287da2b81adb",
+    "payload_bytes": 8982142976,
+    "mapped_tensors": 579,
+    "source_coverage_skipped_tensors": 0
+  },
+  "tokenizer": {
+    "filename": "tokenizer/tokenizer.json",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "repository": "Qwen/Qwen2.5-14B-Instruct",
+    "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8"
+  },
+  "storage": {
+    "free_before_admission": 375116996608,
+    "protected_floor_bytes": 200005889556,
+    "free_after_move_to_trash": 357019230208,
+    "free_after_exact_purge": 375110160384,
+    "recovered_free_bytes": 18090930176,
+    "tracked_payload_bytes": 17977467873,
+    "observed_recovery_minus_tracked_payload_bytes": 113462303,
+    "post_purge_delta_vs_admission_bytes": -6836224,
+    "model_lane_empty": true,
+    "active_model_files": 0,
+    "exact_trash_target": "qwen14-executable-gravity-2026-08-02",
+    "exact_trash_target_purged": true,
+    "unrelated_trash_preserved": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ]
+  },
+  "verification": {
+    "source_hash_rechecked_before_purge": true,
+    "artifact_hash_rechecked_before_purge": true,
+    "tokenizer_hash_rechecked_before_purge": true,
+    "finder_trash_listing_after_purge": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ],
+    "no_candidate_named_files_found_after_purge": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "7fab0e941d35b987606e0842d2b8924ec327c8e0394a2d77174c5e1b182db9df"
+}

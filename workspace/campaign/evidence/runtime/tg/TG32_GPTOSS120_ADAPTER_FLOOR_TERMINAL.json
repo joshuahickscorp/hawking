@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.tg.large_family_adapter_floor_terminal.v1",
+  "status": "SOURCE_VERIFIED_BOUNDED_EXPERT_WAVE_PASS_K0_RUNTIME_FLOOR_SEALED",
+  "at": "2026-08-01T07:20:11Z",
+  "family": "gpt_oss",
+  "rung": "TG32",
+  "source": {
+    "repository": "openai/gpt-oss-120b",
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "representation": "original MXFP4 safetensors",
+    "bytes": 65248869800,
+    "total_parameters": "117B",
+    "active_parameters": "5.1B",
+    "architecture": "MoE, 36 layers, 128 experts, top-k 4",
+    "all_seven_shard_sizes_and_sha256": "PASS_NON_CACHING_VERIFIER"
+  },
+  "bindings": {
+    "source_admission_receipt": "evidence/tg/TG32_GPTOSS120_SOURCE_ADMISSION.json",
+    "source_admission_seal_sha256": "caf3c82e67f187d565edc66b5b157386335c5a0c8ba56499245d6248e8d6da86",
+    "xet_scoreboard_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_GPTOSS120.json",
+    "xet_scoreboard_seal_sha256": "c5b559bc9d49b23f3b890e6783a7e1f35716dfdc7c35fe6db3e383d9dc5f06dc",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_GPTOSS120.json",
+    "resume_seal_sha256": "7d3251f385da6f0269043ac28def0cb337ef97018fb6b83a11c25a0fa9976023",
+    "foundry_parent_evidence": "tools/foundry/evidence/f0_gpt_oss_120b.json",
+    "foundry_parent_evidence_file_sha256": "fc6bab3eeeb9ced67f12f955fcf78382a0dd0b9af3a6ae268c47ac6151fe9605",
+    "provenance_manifest": "reports/condense/subbit_frontier/GRAVITY_120B_PROVENANCE.json",
+    "provenance_file_sha256": "ae54b72f06fee4101cb5679175c060acad986c4878b0838791f3b5ed0d135148"
+  },
+  "hawking_k0": {
+    "command_profile": "exact",
+    "prompt": "2+2=",
+    "max_new_tokens": 1,
+    "environment": {"HAWKING_REQUIRE_METAL":"1"},
+    "container_probe": "models/gpt-oss-120b/original/model--00001-of-00007.safetensors",
+    "observed_error": "gguf: bad magic 0x00002660, expected 0x46554747",
+    "tokens": [],
+    "device_id": null,
+    "dispatches_per_forward": 0,
+    "cpu_reference_fallback_count": 0,
+    "v21_contract": {
+      "exact_tokens": "NOT_OBTAINED",
+      "device_identity": "FAIL_NO_ENGINE",
+      "dispatches_greater_than_zero": "FAIL",
+      "fallback_equal_zero": "NOT_APPLICABLE_PRE_ENGINE",
+      "result": "FAIL"
+    }
+  },
+  "adapter_strengthening": {
+    "operator": "lab/operators/gptoss_live_probe.py",
+    "operator_sha256": "bb15c02840d72fde49c5fc0efdf71915defc61eb8114b1eec03becfb8e68705e",
+    "test": "lab/tests/test_gptoss_live_probe.py",
+    "test_sha256": "868390ed5677ff1c593877f3c32ca14609ad870ae14cec5bd72664d1b794661e",
+    "pytest": "3 passed in 1.59s",
+    "capabilities": [
+      "manifest-bound exact byte-range reads",
+      "native MXFP4 E2M1/UE8 decode to BF16/f32",
+      "correct interleaved and clamped GPT-OSS gated activation",
+      "real 128-way router and top-4 expert wave",
+      "bounded one-expert-at-a-time source execution"
+    ],
+    "live_probe": {
+      "block": 0,
+      "tensor_count": 543,
+      "router_shape": [128,2880],
+      "selected_experts": [83,86,103,73],
+      "route_weights": [0.25902456045150757,0.24716036021709442,0.2469087541103363,0.2469063252210617],
+      "input_sha256": "c260a9bee178fe6ef0bb27982a622fa41c3e012c65e3d5ccd552d6f32744dc6f",
+      "output_sha256": "717629f67010b3c0529242948c66ac8c95d51b6a0f26df2016f6317be116d971",
+      "output_rms": 0.31465572118759155,
+      "output_finite": true,
+      "builder_wall_seconds": 1.5108750000363216,
+      "challenger_wall_seconds": 1.5033353751059622,
+      "challenger_exact_hash_match": true,
+      "execution": "CPU_REFERENCE"
+    }
+  },
+  "gravity_condense_frontier": {
+    "prior_live_boundary": "uniform and treated sub-bit candidates collapsed on a real forward; no frontier selected",
+    "dominant_failure_organ": "gate/up (mlp1) sensitive; down (mlp2) tolerates more pressure",
+    "routing_calibration": "88 tokens measured; approximately 1000 required",
+    "runtime_bottleneck": "expert re-streaming from source",
+    "confirmed_loop_change": "expert-outer/candidate-inner removed 2.7 hours of re-streaming in F0",
+    "new_live_change": "retired controller logic replaced by one compact operator under lab/operators authority; exact source expert execution is live again",
+    "next_executable_representation": "a first-class .gravity GPT-OSS graph with direct packed MXFP4 Metal expert kernels, device-resident router/KV/activations/head/sampling, and range-scheduled expert waves"
+  },
+  "same_model_floor": {
+    "classification": "ADAPTER_CONTAINER_AND_DEVICE_RUNTIME_FLOOR",
+    "deepest_rung": null,
+    "tg_claim": "NONE",
+    "floor_sealed": true,
+    "distinct_failures": [
+      "shipping Hawking runtime accepts GGUF/.gravity and rejects the native safetensors container before engine creation",
+      "live provenance adapter executes only a bounded CPU expert wave and has no full-model Metal K0 path"
+    ],
+    "rotation_allowed": true
+  },
+  "verification": {
+    "builder_and_challenger": "PASS_EXACT_REPEAT_HASH",
+    "claude_cli_available": false,
+    "claude_verification": "UNAVAILABLE_ON_HOST",
+    "promotion_effect": "none; K0 and CLEAN requirements already fail closed"
+  },
+  "resource_evidence": {
+    "free_bytes": 342283141120,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 142277251564,
+    "swap_used_mebibytes": 1811.0,
+    "external_cpu_contention_present": true,
+    "clean_benchmark": false,
+    "promotion_allowed": false
+  },
+  "eviction_required": {
+    "source_artifact_only": true,
+    "source_path": "models/gpt-oss-120b",
+    "next_receipt": "evidence/tg/TG32_GPTOSS120_TERMINAL_EVICTION.json"
+  },
+  "seal_sha256": "fc592485ca47203fbfde50a836cd3aa3cc2ccddb1055bb696798785e0c55f176"
+}

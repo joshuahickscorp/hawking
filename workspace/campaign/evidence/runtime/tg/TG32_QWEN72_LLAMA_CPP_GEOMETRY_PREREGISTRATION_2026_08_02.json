@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.tg.same_model_q5q8_geometry_preregistration.v1",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-llama-cpp-geometry-k2-2026-08-02",
+  "hypothesis": "The pinned llama.cpp b9430 Metal geometry uses quant-specific SIMD topology instead of Hawking's provisional eight-row 256-thread raw GEMV. Applying the source-compatible Q5_0/Q8_0 launch geometry to the exact Qwen72 source may lower complete-token wall time while preserving the native packed bytes, arithmetic, tokenizer and decisions.",
+  "bounded_change": "Add opt-in HAWKING_QWEN_LLAMA_CPP_GEOMETRY=1 kernels only for Q5_0 and Q8_0 GEMV; Q4_K/Q5_K/Q6_K, graph, prompt, tokenizer, sampling and all other flags remain fixed.",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "llama_cpp_authority": {
+    "tag": "b9430",
+    "commit": "d48a56effbba99944a677938d4beb63a0065ecdf",
+    "geometry": {
+      "q5_0": {"simdgroups": 2, "rows_per_simdgroup": 4, "threads_per_threadgroup": 64},
+      "q8_0": {"simdgroups": 4, "rows_per_simdgroup": 2, "threads_per_threadgroup": 128}
+    },
+    "license": "MIT"
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+    "tps": 2.8601858696685474,
+    "p99_ms": 351.5381608,
+    "dispatches_per_forward": 964,
+    "fallback_count": 0,
+    "complete_tokens": 16,
+    "continuation_sha256": "34ef0c9d0184dc0d5863cf5a4e67cc1c51aa0ad572d1009a9bb5f708eeb7a980"
+  },
+  "protocol": {
+    "profile": "exact",
+    "prompt": "2+2=",
+    "prompt_tokens": 4,
+    "max_new_tokens": 16,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "same_model_output_hash_required": true,
+    "fallback_required": 0,
+    "wall_promotion_gate_percent": 3.0,
+    "rung_target": "TG32",
+    "rung_target_tps": 31.25
+  },
+  "admission": {
+    "preflight_free_bytes": 384037593088,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 184031703532,
+    "model_lane_envelope_bytes": 102000000000,
+    "model_bytes": 47415715488,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 74326369952,
+    "active_model_count": 0
+  },
+  "promotion_gate": {
+    "must_be_clean": true,
+    "must_preserve_complete_token_ids": true,
+    "must_have_real_metal_dispatches": true,
+    "must_have_fallback_zero": true,
+    "wall_win_threshold_percent": 3.0,
+    "must_not_claim_tg32_unless_tps_at_least": 31.25
+  },
+  "owner_fences_false": true,
+  "reopen_condition": "Retire on output hash mismatch, fallback, dispatch loss, p99 regression, or less than 3 percent clean same-model wall win; keep the llama.cpp source-compatible baseline as authority."
+}

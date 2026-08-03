@@ -13,9 +13,11 @@ HERE = Path(__file__).resolve().parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import json
+import hashlib
 from collections import Counter
 from lab.operators import glm52_contract as contract
-from lab.operators.glm52_common import Glm52Error, canonical, seal, sha256_file, verify_sealed
+from lab.operators.glm52_common import Glm52Error, canonical, resolve_artifact, seal, sha256_file, verify_sealed
+from lab.layout import evidence_dir
 import base64
 import subprocess
 from lab.operators import glm52_evidence_auth as evidence
@@ -24,8 +26,63 @@ CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 REPO_ROOT = CONDENSE.parents[1]
 
 def _read(name: str) -> dict:
-    value = json.loads((REPO_ROOT / name).read_text(encoding='utf-8'))
+    # Historical receipts retain their logical evidence paths, while live
+    # evidence lives in the compact workspace taxonomy.
+    candidates = (
+        evidence_dir('glm52') / name,
+        evidence_dir('gravity') / name,
+    )
+    path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if path is None:
+        raise FileNotFoundError(f'authoritative evidence not found for {name}: {candidates}')
+    value = json.loads(path.read_text(encoding='utf-8'))
     return verify_sealed(value, label=name)
+
+
+def _frozen_evidence_sha256(relative_path: str, expected_sha256: str) -> str:
+    """Hash a frozen audit leaf without regrowing its retired report tree.
+
+    The pre-GLM audit intentionally retains a historical score snapshot while
+    current evidence is consolidated under ``workspace/campaign/evidence/``.
+    Prefer the exact checkout path, then a current relocated artifact, and finally the exact
+    historical Git object at that path.  A missing or altered leaf never
+    passes: every branch returns the same SHA-256 comparison target.
+    """
+    path = REPO_ROOT / relative_path
+    if path.is_file():
+        observed = sha256_file(path)
+        if observed == expected_sha256:
+            return observed
+    try:
+        relocated = resolve_artifact(Path(relative_path).name)
+    except Glm52Error:
+        relocated = None
+    if relocated is not None:
+        observed = sha256_file(relocated)
+        if observed == expected_sha256:
+            return observed
+
+    commits = subprocess.run(
+        ['/usr/bin/git', 'log', '--all', '--format=%H', '--', relative_path],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    for commit in commits:
+        payload = subprocess.run(
+            ['/usr/bin/git', 'show', f'{commit}:{relative_path}'],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if payload.returncode == 0:
+            observed = hashlib.sha256(payload.stdout).hexdigest()
+            if observed == expected_sha256:
+                return observed
+    raise FileNotFoundError(
+        f'frozen evidence leaf is absent or hash-divergent in checkout and local Git history: {relative_path}'
+    )
 
 @pytest.fixture(scope='module')
 def artifacts() -> dict[str, dict]:
@@ -122,10 +179,20 @@ def test_admission_records_header_only_and_one_copy(artifacts: dict[str, dict]) 
     assert admission['local_runtime']['complete_requirements_lock_gate'] == 'PASS'
     assert admission['local_runtime']['requirements_lock']['sha256'] == sha256_file(REPO_ROOT / 'tools/condense/requirements-glm52.txt')
     assert admission['local_runtime']['packages'] == contract.package_versions()
-    assert admission['toolchain_binding'] == {'generator': {'path': 'tools/condense/glm52_contract.py',
-        'sha256': sha256_file(REPO_ROOT / 'tools/condense/glm52_contract.py')}, 'shared_common': {'path': 'tools/condense/glm52_common.py',
-        'sha256': sha256_file(REPO_ROOT / 'tools/condense/glm52_common.py')}, 'requirements_lock': {'path': 'tools/condense/requirements-glm52.txt',
-        'sha256': sha256_file(REPO_ROOT / 'tools/condense/requirements-glm52.txt')}}
+    assert admission['toolchain_binding'] == {
+        'generator': {
+            'path': 'lab/operators/glm52_contract.py',
+            'sha256': sha256_file(REPO_ROOT / 'lab/operators/glm52_contract.py'),
+        },
+        'shared_common': {
+            'path': 'lab/operators/glm52_common.py',
+            'sha256': sha256_file(REPO_ROOT / 'lab/operators/glm52_common.py'),
+        },
+        'requirements_lock': {
+            'path': 'tools/condense/requirements-glm52.txt',
+            'sha256': sha256_file(REPO_ROOT / 'tools/condense/requirements-glm52.txt'),
+        },
+    }
     assert manifest['one_copy']['weight_body_copies'] == 0
 
 def test_pre_audit_is_frozen_and_evidence_bound() -> None:
@@ -135,7 +202,7 @@ def test_pre_audit_is_frozen_and_evidence_bound() -> None:
     assert audit['scores']['GLM52_PRE']['maximum'] == 105
     for rows in audit['evidence'].values():
         for row in rows:
-            assert sha256_file(REPO_ROOT / row['path']) == row['sha256']
+            assert _frozen_evidence_sha256(row['path'], row['sha256']) == row['sha256']
 
 def test_external_matrix_separates_nominal_from_canonical_rates() -> None:
     matrix = _read('GRAVITY_EXTERNAL_BASELINE_MATRIX.json')

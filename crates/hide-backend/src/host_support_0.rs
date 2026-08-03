@@ -372,9 +372,8 @@ impl DispatchRecorder {
         self.bound
             .clone()
             .or_else(crate::tools::dispatch_context)
-            .unwrap_or_else(|| crate::tools::DispatchContext {
-                session_id: self.services.session(),
-                run_id: None,
+            .unwrap_or_else(|| {
+                crate::tools::DispatchContext::human_or_system(self.services.session(), None)
             })
     }
 
@@ -414,6 +413,12 @@ impl DispatchRecorder {
             },
         );
         call_new.run_id = ctx.run_id.clone();
+        if let crate::tools::DispatchOrigin::TargetVerifiedModel {
+            canonical_event_id, ..
+        } = &ctx.origin
+        {
+            call_new.cause = Some(canonical_event_id.clone());
+        }
         let call_event_record = self.services.event_log.append(call_new).await?;
         // The tool.result Observation pairs back to the tool.call Action via `cause`
         // (T3 Action/Observation replay pairing).

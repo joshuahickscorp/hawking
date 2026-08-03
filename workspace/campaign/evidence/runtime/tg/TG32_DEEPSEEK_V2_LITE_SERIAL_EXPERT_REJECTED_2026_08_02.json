@@ -1,0 +1,87 @@
+{
+  "schema": "hawking.tg.same_model_schedule_rejection.v1",
+  "seal_sha256": "b842d754221e600137a01015934dd9c57e2050d8229c908d0ed4f7811bd4b6a5",
+  "status": "RETIRED_BELOW_COMPLETE_TOKEN_WALL_THRESHOLD",
+  "at": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "test": {
+    "prompt": "The capital of France is",
+    "prompt_tokens": 6,
+    "max_new_tokens": 32,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "candidate_profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-serial-candidate-2026-08-02.json",
+    "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_SERIAL_EXPERT_PREREGISTRATION_2026_08_02.json",
+    "candidate_output_path": "/tmp/ds-serial-candidate-2026-08-02.txt",
+    "control_output_path": "/tmp/ds-serial-control-2026-08-02.txt",
+    "complete_tokens": 32,
+    "token_id_sequence_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "output_match": true
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "decode_tps": 41.19300296835878,
+    "decode_ms": 776.830959,
+    "p50_ms": 24.13625,
+    "p95_ms": 24.570375,
+    "p99_ms": 24.574125,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "prefill_ms": 261.147334,
+    "cpu_reference_fallback_count": 0,
+    "token_id_sequence_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352"
+  },
+  "candidate": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-serial-candidate-2026-08-02.json",
+    "configuration": "gemm_q4_k_schedule=v2t_gu_serial",
+    "decode_tps": 33.48304351971662,
+    "decode_ms": 955.707625,
+    "p50_ms": 29.745396,
+    "p95_ms": 30.142959,
+    "p99_ms": 30.287917,
+    "dispatches_per_forward": 747,
+    "decode_metal_dispatches_total": 23904,
+    "decode_command_buffers_total": 32,
+    "prefill_ms": 351.776542,
+    "cpu_reference_fallback_count": 0,
+    "token_id_sequence_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352"
+  },
+  "delta": {
+    "decode_tps_percent": -18.716,
+    "decode_ms_percent": 23.058,
+    "p50_percent": 23.154,
+    "p95_percent": 22.68,
+    "p99_percent": 23.13,
+    "dispatches_per_forward_percent": 53.388,
+    "complete_token_wall_win": false,
+    "capability_window": "32-token continuation exact; broader G3-G9 remains open"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED",
+    "promoted_control_tps": 41.06909043843913
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "verdict": "RETIRE_SERIAL_EXPERT_STREAM; complete-token parity is exact but serial routing adds 53.388 percent dispatches and is 18.716 percent slower",
+  "reopen_condition": "Only revisit with a materially different multi-expert tile/packing grammar that reduces physical dispatches and weight traffic; do not enable v2t_gu_serial by default"
+}

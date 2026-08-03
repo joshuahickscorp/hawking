@@ -205,6 +205,7 @@ class PyExtractor(ast.NodeVisitor):
                 for d in node.decorator_list
             )
             or "/tests/" in self.rel
+            or self.rel.startswith("workspace/quality/tests/")
             or Path(self.rel).name.startswith("test_")
         )
         self.g.add_node(make_node(

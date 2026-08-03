@@ -9,6 +9,7 @@ pub mod dispatch;
 pub mod expert_cache;
 pub mod gravity_engine;
 pub mod llama;
+pub mod mixtral;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
@@ -82,10 +83,15 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
 
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
+    let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
     // Track 4.3: read + honor (log) the sidecar mixed-quant tier map, if present.
     let _ = honor_sidecar_tier_map(weights, &gguf);
     drop(gguf); // model loaders re-open via mmap
     match arch.as_str() {
+        "llama" if is_mixtral => {
+            let e = mixtral::MixtralEngine::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         // Llama-family dense arch (Llama-2 / Llama-3.x / Mistral).
         "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => {
             let e = llama::LlamaDense::load(weights, config)?;

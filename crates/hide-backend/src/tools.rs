@@ -1,8 +1,8 @@
 use crate::security::SecurityServices;
+use crate::speculation_safety::VerifiedEffectPermit;
 use hide_core::config::HideConfig;
 use hide_core::permission::{PermissionEngine, PermissionRequest, PermissionVerdict};
-use hide_core::tool::ToolDispatcher;
-use hide_core::tool::ToolRegistry;
+use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult};
 use hide_core::types::{Decision, EffectKind};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
@@ -39,6 +39,63 @@ tokio::task_local! {
 pub struct DispatchContext {
     pub session_id: hide_core::ids::SessionId,
     pub run_id: Option<hide_core::ids::RunId>,
+    pub origin: DispatchOrigin,
+}
+
+/// Causal class for a tool-dispatch span. Model-origin dispatch is denied for
+/// any effect unless a preceding durable target-verified token supplied the
+/// opaque permit below. Human/system dispatch stays distinct: user approval is
+/// represented by the existing permission and gate machinery, not by a model
+/// token.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DispatchOrigin {
+    HumanOrSystem,
+    UnverifiedModel,
+    TargetVerifiedModel {
+        token_id: u32,
+        canonical_event_id: hide_core::ids::EventId,
+    },
+}
+
+impl DispatchContext {
+    pub fn human_or_system(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+    ) -> Self {
+        Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::HumanOrSystem,
+        }
+    }
+
+    pub fn unverified_model(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+    ) -> Self {
+        Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::UnverifiedModel,
+        }
+    }
+
+    fn target_verified_model(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+        permit: VerifiedEffectPermit,
+        call: &ToolCall,
+    ) -> hide_core::Result<Self> {
+        let (token_id, canonical_event_id) = permit.consume_for(&session_id, &run_id, call)?;
+        Ok(Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::TargetVerifiedModel {
+                token_id,
+                canonical_event_id,
+            },
+        })
+    }
 }
 
 /// Attribute every dispatch inside `fut` to this session and run.
@@ -48,8 +105,22 @@ pub async fn with_dispatch_context<T>(
     fut: impl std::future::Future<Output = T>,
 ) -> T {
     DISPATCH_CTX
-        .scope(DispatchContext { session_id, run_id }, fut)
+        .scope(DispatchContext::human_or_system(session_id, run_id), fut)
         .await
+}
+
+/// Run one model-origin tool effect with an opaque permit minted after a
+/// durable target-verified token event. The permit is checked against, and
+/// consumed by, this exact call before the dispatcher can observe it.
+pub async fn dispatch_verified_model_tool_effect(
+    session_id: hide_core::ids::SessionId,
+    run_id: Option<hide_core::ids::RunId>,
+    permit: VerifiedEffectPermit,
+    call: ToolCall,
+    dispatcher: &ToolDispatcher,
+) -> hide_core::Result<ToolResult> {
+    let context = DispatchContext::target_verified_model(session_id, run_id, permit, &call)?;
+    Ok(DISPATCH_CTX.scope(context, dispatcher.dispatch(call)).await?)
 }
 
 /// The attribution in force on this task, if any.
@@ -326,15 +397,24 @@ struct GateReleaseAware<E> {
 
 impl<E: PermissionEngine> PermissionEngine for GateReleaseAware<E> {
     fn evaluate(&self, request: &PermissionRequest) -> PermissionVerdict {
+        let context = self.bound.clone().or_else(dispatch_context);
+        if matches!(
+            context.as_ref().map(|item| &item.origin),
+            Some(DispatchOrigin::UnverifiedModel)
+        ) && (!request.effects.is_empty() || request.risk == hide_core::types::RiskLevel::High)
+        {
+            return PermissionVerdict {
+                decision: Decision::Deny,
+                reason: "effectful model-origin dispatch refused: no durable target-verified token cause"
+                    .to_string(),
+                grant_id: None,
+            };
+        }
         let verdict = self.inner.evaluate(request);
         if verdict.decision != Decision::Ask {
             return verdict;
         }
-        let session = self
-            .bound
-            .clone()
-            .or_else(dispatch_context)
-            .map(|c| c.session_id.as_str().to_string());
+        let session = context.map(|c| c.session_id.as_str().to_string());
         let granted_by = if GATE_RELEASED.try_with(|_| ()).is_ok() {
             "approved at the security gate".to_string()
         } else if let Some(lease) = lease_covering(request, session.as_deref()) {
@@ -402,6 +482,8 @@ pub fn build_task_tool_dispatcher(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::services::BackendServices;
+    use hide_core::event::InMemoryEventLog;
     use hide_core::tool::ToolCall;
     use hide_core::types::Decision;
     use serde_json::json;
@@ -435,6 +517,116 @@ mod tests {
             .unwrap();
         assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "allowed");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn unverified_model_dispatch_is_refused_even_under_an_allow_policy() {
+        let dir = std::env::temp_dir().join(format!(
+            "hide_unverified_model_{}",
+            hide_core::ids::now_ms()
+        ));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let dispatcher = build_task_tool_dispatcher(
+            &config,
+            Arc::new(build_default_tool_registry()),
+            Some(DispatchContext::unverified_model(
+                hide_core::ids::SessionId::from("model-session"),
+                None,
+            )),
+        );
+        let denied = dispatcher
+            .dispatch(ToolCall::new(
+                "fs.write",
+                json!({
+                    "path": dir.join("blocked.txt").to_string_lossy(),
+                    "content": "must not write",
+                    "create_dirs": true,
+                }),
+            ))
+            .await;
+        assert!(denied.is_err());
+        assert!(!dir.join("blocked.txt").exists());
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn target_verified_model_permit_allows_a_causally_bound_effect() {
+        let dir =
+            std::env::temp_dir().join(format!("hide_verified_model_{}", hide_core::ids::now_ms()));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let services = BackendServices::new(config.clone(), Arc::new(InMemoryEventLog::new()));
+        let session = hide_core::ids::SessionId::from("verified-model-session");
+        let mut sinks = services.verified_token_sinks(session.clone());
+        let target = dir.join("allowed.txt");
+        let call = ToolCall::new(
+            "fs.write",
+            json!({
+                "path": target.to_string_lossy(),
+                "content": "target verified",
+                "create_dirs": true,
+            }),
+        );
+        let permit = sinks
+            .authorize_verified_tool_effect(
+                crate::speculation_safety::HostDurableSinks::target_gate().emit_target(9),
+                None,
+                &call,
+            )
+            .await
+            .unwrap();
+        let dispatcher =
+            build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
+        let result = dispatch_verified_model_tool_effect(
+            session,
+            None,
+            permit,
+            call,
+            &dispatcher,
+        )
+        .await
+        .unwrap();
+        assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "target verified");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn verified_model_permit_rejects_a_substituted_call() {
+        let dir = std::env::temp_dir().join(format!(
+            "hide_verified_model_substitution_{}",
+            hide_core::ids::now_ms()
+        ));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let services = BackendServices::new(config.clone(), Arc::new(InMemoryEventLog::new()));
+        let session = hide_core::ids::SessionId::from("verified-model-substitution");
+        let mut sinks = services.verified_token_sinks(session.clone());
+        let admitted = ToolCall::new("fs.read", json!({"path": "safe.txt"}));
+        let permit = sinks
+            .authorize_verified_tool_effect(
+                crate::speculation_safety::HostDurableSinks::target_gate().emit_target(10),
+                None,
+                &admitted,
+            )
+            .await
+            .unwrap();
+        let substituted = ToolCall::new(
+            "fs.write",
+            json!({
+                "path": dir.join("blocked.txt").to_string_lossy(),
+                "content": "substitution must fail",
+                "create_dirs": true,
+            }),
+        );
+        let dispatcher =
+            build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
+        assert!(dispatch_verified_model_tool_effect(session, None, permit, substituted, &dispatcher)
+            .await
+            .is_err());
+        assert!(!dir.join("blocked.txt").exists());
         let _ = std::fs::remove_dir_all(dir);
     }
     fn lease(scopes: Vec<PathBuf>) -> WriteLease {

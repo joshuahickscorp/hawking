@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.model_purge_receipt.v1",
+  "status": "PURGED_EXACT_TRASH_ITEM_FREE_BYTES_RECOVERED",
+  "at": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "paths": {
+    "active_path": "models/tg-active/deepseek-v2-lite-2026-08-02-unfused-attn",
+    "trash_path": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02-unfused-attn",
+    "active_path_exists_after": false,
+    "trash_path_exists_after": false
+  },
+  "allocation": {
+    "active_directory_allocated_bytes_estimate": 10364436480,
+    "free_bytes_before_admission": 376475463680,
+    "free_bytes_after_download": 366005002240,
+    "free_bytes_before_eviction": 366071762944,
+    "free_bytes_after_exact_trash_purge": 376436150272,
+    "observed_recovery_bytes": 10364387328,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_purge": 176430260716,
+    "model_lane_contents_after": []
+  },
+  "integrity": {
+    "source_hash_verified_before_run": true,
+    "candidate_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_UNFUSED_ATTN_GEMV_REJECTED_2026_08_02.json",
+    "exact_trash_item_purged": true,
+    "free_byte_floor_preserved": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "2e2bbf5be5213713628a4f14b044b204b14261b64e6e5e20f43f04743c8de80d"
+}

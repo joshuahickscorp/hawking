@@ -1,8 +1,10 @@
 #!/usr/bin/env python3.12
 """Test-case manifest reconciler skeleton (Core F F1).
 
-Pairs control/ASSERTION_LEDGER.json (immutable seal of prior identities) with
-control/TEST_CASE_MANIFEST.json (live dispositions). F1 ships an empty manifest:
+Pairs workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json
+(immutable seal of prior identities) with
+workspace/campaign/governance/control/catalog/manifests/TEST_CASE_MANIFEST.json
+(live dispositions). F1 ships an empty manifest:
 --seal-check may pass; normal --gate must fail and list every unaccounted ledger id.
 
 Stdlib only. Does not reimplement cargo/pytest/vitest or claim execution receipts
@@ -24,6 +26,11 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import resolve_workspace_path
+
 SCHEMA = "hawking.test_case_manifest.v1"
 LEDGER_SCHEMA = "hawking.assertion_ledger.v1"
 
@@ -63,7 +70,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def resolve(path: str | Path) -> Path:
     p = Path(path)
-    return p if p.is_absolute() else ROOT / p
+    return p if p.is_absolute() else resolve_workspace_path(p)
 
 
 def validate_manifest_schema(man: dict[str, Any]) -> list[str]:

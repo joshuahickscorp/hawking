@@ -30,6 +30,226 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+#[cfg(target_os = "macos")]
+fn qwen_process_memory_bytes() -> (Option<u64>, Option<u64>) {
+    #[repr(C)]
+    struct TimeValue {
+        seconds: i32,
+        microseconds: i32,
+    }
+    #[repr(C)]
+    struct MachTaskBasicInfo {
+        virtual_size: u64,
+        resident_size: u64,
+        resident_size_max: u64,
+        user_time: TimeValue,
+        system_time: TimeValue,
+        policy: i32,
+        suspend_count: i32,
+    }
+    unsafe extern "C" {
+        static mach_task_self_: u32;
+        fn task_info(
+            target_task: u32,
+            flavor: i32,
+            task_info_out: *mut i32,
+            task_info_out_count: *mut u32,
+        ) -> i32;
+    }
+    const MACH_TASK_BASIC_INFO: i32 = 20;
+    let mut info = MachTaskBasicInfo {
+        virtual_size: 0,
+        resident_size: 0,
+        resident_size_max: 0,
+        user_time: TimeValue {
+            seconds: 0,
+            microseconds: 0,
+        },
+        system_time: TimeValue {
+            seconds: 0,
+            microseconds: 0,
+        },
+        policy: 0,
+        suspend_count: 0,
+    };
+    let mut count = (std::mem::size_of::<MachTaskBasicInfo>() / std::mem::size_of::<i32>()) as u32;
+    let status = unsafe {
+        task_info(
+            mach_task_self_,
+            MACH_TASK_BASIC_INFO,
+            (&mut info as *mut MachTaskBasicInfo).cast::<i32>(),
+            &mut count,
+        )
+    };
+    if status == 0 {
+        (Some(info.resident_size), Some(info.resident_size_max))
+    } else {
+        (None, None)
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn qwen_process_memory_bytes() -> (Option<u64>, Option<u64>) {
+    (None, None)
+}
+
+/// Gated, allocation-light localization ledger for the first packed Qwen
+/// forward. `Drop` emits the last completed stage on every early `?`, panic or
+/// watchdog termination that still allows process teardown.
+struct QwenFirstDispatchTrace {
+    enabled: bool,
+    start: Instant,
+    stage_start: Instant,
+    last_completed: &'static str,
+    finished: bool,
+}
+
+impl QwenFirstDispatchTrace {
+    fn new(enabled: bool) -> Self {
+        let now = Instant::now();
+        if enabled {
+            let (resident, peak) = qwen_process_memory_bytes();
+            eprintln!(
+                "QWEN_FIRST_DISPATCH_STAGE stage=entry api=QwenDense::forward_token_greedy_tcb monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 bytes_read=0 bytes_written=0 resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=BEGIN",
+                resident, peak
+            );
+        }
+        Self {
+            enabled,
+            start: now,
+            stage_start: now,
+            last_completed: "entry",
+            finished: false,
+        }
+    }
+
+    fn mark(
+        &mut self,
+        stage: &'static str,
+        api: &'static str,
+        bytes_read: Option<usize>,
+        bytes_written: Option<usize>,
+    ) {
+        if !self.enabled {
+            return;
+        }
+        let now = Instant::now();
+        let (resident, peak) = qwen_process_memory_bytes();
+        eprintln!(
+            "QWEN_FIRST_DISPATCH_STAGE stage={} api={} monotonic_start_us={} monotonic_end_us={} elapsed_us={} bytes_read={:?} bytes_written={:?} resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=PASS",
+            stage,
+            api,
+            self.stage_start.duration_since(self.start).as_micros(),
+            now.duration_since(self.start).as_micros(),
+            now.duration_since(self.stage_start).as_micros(),
+            bytes_read,
+            bytes_written,
+            resident,
+            peak,
+        );
+        self.stage_start = now;
+        self.last_completed = stage;
+    }
+
+    fn finish(&mut self) {
+        self.finished = true;
+    }
+}
+
+impl Drop for QwenFirstDispatchTrace {
+    fn drop(&mut self) {
+        if self.enabled && !self.finished {
+            let (resident, peak) = qwen_process_memory_bytes();
+            eprintln!(
+                "QWEN_FIRST_DISPATCH_ABORT last_completed_stage={} total_elapsed_us={} resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=ABORTED_OR_ERROR",
+                self.last_completed,
+                self.start.elapsed().as_micros(),
+                resident,
+                peak,
+            );
+        }
+    }
+}
+
+/// Restart-safe load-localization ledger.  Unlike the forward trace this
+/// covers the path before the first command encoder exists, so a 72B failure
+/// can be localized to GGUF admission, host allocation, Metal preparation, or
+/// the actual first dispatch instead of being reported as a timeout.
+struct QwenLoadTrace {
+    enabled: bool,
+    start: Instant,
+    stage_start: Instant,
+    last_completed: &'static str,
+    finished: bool,
+}
+
+impl QwenLoadTrace {
+    fn new(enabled: bool, source_file_bytes: Option<u64>) -> Self {
+        let now = Instant::now();
+        if enabled {
+            let (resident, peak) = qwen_process_memory_bytes();
+            eprintln!(
+                "QWEN_LOAD_STAGE stage=weights_path_admission api=QwenDense::load monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 source_file_bytes={:?} bytes_read=None bytes_written=None resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=BEGIN",
+                source_file_bytes, resident, peak
+            );
+        }
+        Self {
+            enabled,
+            start: now,
+            stage_start: now,
+            last_completed: "weights_path_admission",
+            finished: false,
+        }
+    }
+
+    fn mark(
+        &mut self,
+        stage: &'static str,
+        api: &'static str,
+        bytes_read: Option<u64>,
+        bytes_written: Option<u64>,
+    ) {
+        if !self.enabled {
+            return;
+        }
+        let now = Instant::now();
+        let (resident, peak) = qwen_process_memory_bytes();
+        eprintln!(
+            "QWEN_LOAD_STAGE stage={} api={} monotonic_start_us={} monotonic_end_us={} elapsed_us={} bytes_read={:?} bytes_written={:?} resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=PASS",
+            stage,
+            api,
+            self.stage_start.duration_since(self.start).as_micros(),
+            now.duration_since(self.start).as_micros(),
+            now.duration_since(self.stage_start).as_micros(),
+            bytes_read,
+            bytes_written,
+            resident,
+            peak,
+        );
+        self.stage_start = now;
+        self.last_completed = stage;
+    }
+
+    fn finish(&mut self) {
+        self.finished = true;
+    }
+}
+
+impl Drop for QwenLoadTrace {
+    fn drop(&mut self) {
+        if self.enabled && !self.finished {
+            let (resident, peak) = qwen_process_memory_bytes();
+            eprintln!(
+                "QWEN_LOAD_ABORT last_completed_stage={} total_elapsed_us={} resident_bytes={:?} peak_resident_bytes={:?} fallback=0 restart_safe=true status=ABORTED_OR_ERROR",
+                self.last_completed,
+                self.start.elapsed().as_micros(),
+                resident,
+                peak,
+            );
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct QwenConfig {
     pub n_layers: usize,
@@ -43,6 +263,11 @@ pub struct QwenConfig {
     pub rms_norm_eps: f32,
     pub max_seq_len: usize,
 }
+
+/// Current per-slot KV bound of the Metal multisequence serving graph.
+/// Keep context introspection and the actual decoder on this one authority.
+#[cfg(target_os = "macos")]
+const QWEN_METAL_SERVE_CONTEXT_LIMIT: usize = 4096;
 
 impl QwenConfig {
     fn from_gguf(g: &GgufFile) -> Result<Self> {
@@ -129,12 +354,10 @@ pub struct QwenLayerPinned {
     pub q_bias: Option<crate::metal::PinnedBuffer>,
     pub k_bias: Option<crate::metal::PinnedBuffer>,
     pub v_bias: Option<crate::metal::PinnedBuffer>,
-    /// P1f: f16 fallback for non-Q4_K projection weights. Q4_K_M GGUFs
-    /// mix Q4_K (most matrices) with Q6_K (typically k/v projections,
-    /// some FFN-down) for accuracy. Q4_K weights stay in the mmap and
-    /// use `gemv_q4_k_m_v2_pinned_tcb`; Q6_K (or anything non-Q4_K) is
-    /// dequantized to f16 once at load, pinned here, and dispatched
-    /// via `gemv_f16_metal_buf_tcb`.
+    /// P1f: f16 fallback for projection weights without a native packed
+    /// kernel. Q4_K/Q5_0/Q5_K/Q6_K/Q8_0 remain in the mmap and use their
+    /// source-native kernels; only genuinely unsupported formats are
+    /// dequantized once at load and pinned here.
     pub q_proj_f16: Option<crate::metal::PinnedBuffer>,
     pub k_proj_f16: Option<crate::metal::PinnedBuffer>,
     pub v_proj_f16: Option<crate::metal::PinnedBuffer>,
@@ -227,9 +450,20 @@ pub struct QwenDense {
     pub gguf: GgufFile,
 
     pub embed: Vec<f16>,
+    /// Native source address for the embedding table.  The CPU/reference path
+    /// retains `embed`; the resident Metal path uses this when the source is
+    /// Q4_K so it does not turn a packed source tensor into a different f16
+    /// artifact before the first projection.
+    pub embed_raw: TensorRef,
     pub final_norm: Vec<f32>,
     /// `None` ⇒ tied to embed (Qwen2.5-3B-Q4_K_M is tied).
     pub lm_head: Option<Vec<f16>>,
+    /// Original explicit output tensor, when the GGUF has one.  The f16
+    /// materialization above remains the CPU/fallback representation, while
+    /// the resident Metal decode path must be able to read the source-packed
+    /// Q4_K/Q6_K blocks directly.  Losing this identity at load time makes a
+    /// source GGUF silently execute a different output head.
+    pub lm_head_raw: Option<TensorRef>,
     pub layers: Vec<QwenLayer>,
 
     pub kv: KvCache,
@@ -355,7 +589,8 @@ pub struct QwenDense {
     pub(crate) tq_ffn: Option<std::collections::HashMap<usize, TqServe>>,
 
     /// Track E: pinned per-channel f32 scales for the LM_HEAD W4A8 path.
-    /// Loaded once at model init from `reports/w4a8_lmhead_calibration_*.json`
+    /// Loaded once at model init from
+    /// `workspace/campaign/records/reports/w4a8_lmhead_calibration_*.json`
     /// when `HAWKING_QWEN_W4A8_PER_CHANNEL=1`. Pairs with the per-channel
     /// kernel `gemm_q4_k_a8_v3_8r_per_channel` at the LM_HEAD site (when
     /// `HAWKING_QWEN_W4A8=1` AND `HAWKING_QWEN_W4A8_PER_CHANNEL=1`).
@@ -365,7 +600,8 @@ pub struct QwenDense {
     pub(crate) lmhead_per_channel_scales_buf: Option<crate::metal::PinnedBuffer>,
 
     /// AWQ Option B: per-layer activation smoothing vectors. Loaded once
-    /// from `profiles/qwen3b_awq_smoothing.json` when `HAWKING_QWEN_AWQ=1`
+    /// from `workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json`
+    /// when `HAWKING_QWEN_AWQ=1`
     /// (requires `HAWKING_QWEN_W4A8=1` and a baked Q4K_FAST sidecar
     /// produced by `tools/awq_bake/`). Each `Vec` has `n_layers` entries:
     ///   - `awq_smoothing_x_norm[li]`     → length `hidden`, used for the
@@ -770,6 +1006,8 @@ impl Engine for QwenDense {
         // budget when investigation is needed.
         let load_t0 = Instant::now();
         let load_timing_enabled = crate::env_on("HAWKING_QWEN_LOAD_TIMING");
+        let source_bytes = std::fs::metadata(weights).ok().map(|m| m.len());
+        let mut load_trace = QwenLoadTrace::new(load_timing_enabled, source_bytes);
         let mut stage_marks: Vec<(&'static str, std::time::Duration)> = Vec::new();
         let mark = |stage_marks: &mut Vec<_>, name: &'static str, t: &mut Instant| {
             let now = Instant::now();
@@ -779,8 +1017,12 @@ impl Engine for QwenDense {
         let mut t = load_t0;
 
         let gguf = GgufFile::open(weights)?;
+        // `GgufFile::open` owns the read-only mmap; it does not eagerly read
+        // the tensor bodies. Keep that distinction explicit in the receipt.
+        load_trace.mark("gguf_open_mmap", "GgufFile::open", Some(0), Some(0));
         let cfg = QwenConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("qwen2-dense").to_string();
+        load_trace.mark("metadata_parse", "QwenConfig::from_gguf", None, None);
         mark(&mut stage_marks, "gguf_open+config", &mut t);
 
         // Tokenizer: prefer sidecar tokenizer.json, fall back to GGUF.
@@ -793,15 +1035,49 @@ impl Engine for QwenDense {
         } else {
             Tokenizer::from_gguf(&gguf)?
         };
+        load_trace.mark("tokenizer", "Tokenizer::from_file_or_gguf", None, None);
         mark(&mut stage_marks, "tokenizer", &mut t);
+
+        // Initialize Metal before large auxiliary materializations.  A native
+        // Q4_K/Q6_K output head can then remain packed from the GGUF mmap all
+        // the way to the resident decode kernel; eager f16 reconstruction is
+        // both slower and a different representation.
+        let metal_ctx = crate::engine::init_optional_metal(&config)?;
+        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
+        if let Some(profile) = config.kernel_profile.as_ref() {
+            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
+        }
+        let kernel_profile = config.kernel_profile.clone();
+        load_trace.mark(
+            "metal_device_discovery",
+            "init_optional_metal",
+            Some(0),
+            Some(0),
+        );
+        mark(&mut stage_marks, "metal_ctx_init", &mut t);
 
         // Embed table -- typically fp16 in Q4_K_M GGUFs but read whatever
         // dtype the GGUF carries.
+        let embed_raw = tensor_ref(&gguf, "token_embd.weight")?;
         let embed = dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         // Qwen2.5-3B-Q4_K_M ties LM head to embed (no separate
         // output.weight); larger Qwen variants may carry it explicitly.
-        let lm_head = if gguf.tensor("output.weight").is_some() {
+        let lm_head_raw = gguf
+            .tensor("output.weight")
+            .map(|_| tensor_ref(&gguf, "output.weight"))
+            .transpose()?;
+        let native_lm_head = metal_ctx.is_some()
+            && crate::env_opt_out("HAWKING_QWEN_NATIVE_LMHEAD")
+            && lm_head_raw
+                .as_ref()
+                .map(|t| matches!(t.dtype, GgmlType::Q4_K | GgmlType::Q6_K))
+                .unwrap_or(false);
+        // CPU/reference runs keep the historical f16 head.  Resident Metal
+        // runs use `lm_head_raw` directly and avoid a multi-GB f16 pin.
+        let lm_head = if native_lm_head {
+            None
+        } else if lm_head_raw.is_some() {
             Some(dequant_f16(&gguf, "output.weight")?)
         } else {
             None
@@ -845,26 +1121,26 @@ impl Engine for QwenDense {
             });
         }
 
+        load_trace.mark(
+            "tensor_directory_quant_admission_layout_conversion",
+            "tensor_ref+dequant_f16+dequant_f32",
+            None,
+            None,
+        );
+
         let max_seq = config.max_seq_len.min(cfg.max_seq_len);
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
+        let kv_bytes = (kv.keys.iter().map(Vec::len).sum::<usize>()
+            + kv.values.iter().map(Vec::len).sum::<usize>()) as u64
+            * std::mem::size_of::<f32>() as u64;
+        load_trace.mark(
+            "host_kv_allocation",
+            "KvCache::new",
+            Some(0),
+            Some(kv_bytes),
+        );
         mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
-        // Phase 3.3 portability/reach: `force_cpu` (config or HAWKING_FORCE_CPU=1)
-        // loads with NO Metal context, forcing the pure-Rust CPU reference path.
-        // This is the same state the engine is in off-macOS (no Metal) and is how
-        // the CPU "backend" is exercised for the CPU-vs-Metal parity cross-check.
-        let metal_ctx = if config.force_cpu || crate::env_on("HAWKING_FORCE_CPU") {
-            None
-        } else {
-            MetalContext::new_with_trace(config.trace_dispatch).ok()
-        };
-        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
-        if let Some(profile) = config.kernel_profile.as_ref() {
-            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
-        }
-        let kernel_profile = config.kernel_profile.clone();
-        mark(&mut stage_marks, "metal_ctx_init", &mut t);
-
         // P1f: weight pinning -- one big buffer for the whole mmap, plus
         // small per-layer + per-model pinned buffers for norms, biases,
         // embed, lm-head. Q4_K_M projection weights stay quantized in
@@ -901,10 +1177,19 @@ impl Engine for QwenDense {
             // graceful Err instead of crashing on a nil MTLBuffer.
             let eb = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?;
             let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
-            // LM head -- explicit tensor if present, else tied to embed (f16).
+            // LM head -- native Q4_K/Q6_K heads are read directly from the
+            // one no-copy mmap buffer in the forward graph.  The tiny binding
+            // sentinel exists only because the shared arena setup requires an
+            // optional `lm_head_buf` handle even when the raw branch is used;
+            // it is never read by the raw-head kernels.  This avoids pinning a
+            // multi-GB f16 reconstruction for frontier Qwen files.
             let lhb = match lm_head.as_ref() {
                 // P1-E: lm-head is the other large model-driven alloc.
                 Some(w) => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(w))?,
+                None if lm_head_raw
+                    .as_ref()
+                    .map(|t| matches!(t.dtype, GgmlType::Q4_K | GgmlType::Q6_K))
+                    .unwrap_or(false) => ctx.new_buffer_with_bytes_checked(&[0u8])?,
                 None => {
                     ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?
                 }
@@ -959,15 +1244,10 @@ impl Engine for QwenDense {
                     Ok(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&f16_vec)))
                 };
                 // 2026-05-24: only pin the f16 fallback for dtypes that
-                // actually route through the f16 path at runtime. Q4_K
-                // reads bit-packed from `weights_mmap_buf` via
-                // `gemv_q4_k_m_v3_8r_pinned_tcb`; Q6_K reads bit-packed
-                // from the same mmap via `gemv_q6_k_pinned_tcb` (see the
-                // `gemv_proj!` macro in `forward_token_greedy_tcb`). For
-                // a Q4_K_M GGUF every weight here is Q4_K or Q6_K, so
-                // the f16 pin was ~1.7 GiB of resident memory the
-                // engine never read. Other quant formats (Q3_K, Q5_K,
-                // IQ-variants) still need the f16 fallback.
+                // actually route through the f16 path at runtime. Q4_K,
+                // Q5_0, Q6_K and Q8_0 read bit-packed from the mmap. This
+                // keeps a Qwen-72B Q8_0 down projection from materializing
+                // tens of GB of transient f32/f16 state at load.
                 for (t, slot) in [
                     (&layer.q_proj, &mut layer.pinned.q_proj_f16),
                     (&layer.k_proj, &mut layer.pinned.k_proj_f16),
@@ -977,15 +1257,35 @@ impl Engine for QwenDense {
                     (&layer.ffn_up, &mut layer.pinned.ffn_up_f16),
                     (&layer.ffn_down, &mut layer.pinned.ffn_down_f16),
                 ] {
-                    if t.dtype != GgmlType::Q4_K && t.dtype != GgmlType::Q6_K {
+                    if !matches!(
+                        t.dtype,
+                        GgmlType::Q4_K
+                            | GgmlType::Q5_0
+                            | GgmlType::Q5_K
+                            | GgmlType::Q6_K
+                            | GgmlType::Q8_0
+                    )
+                    {
                         *slot = Some(dequant_to_f16_pin(t)?);
                     }
                 }
                 // Optional: requant ffn_down (typically Q6_K) to Q4_K.
                 // Biggest single weight per token; ~31% BW saving on
                 // the Q6_K share at the cost of one extra pinned copy.
+                //
+                // Qwen-72B has an intermediate width of 29,568.  Although
+                // the flattened element count is divisible by 256, that
+                // logical row width is not.  Q4_K rows are independently
+                // blocked and every native Q4_K GEMV assumes
+                // `cols % 256 == 0`; flattening across rows would silently
+                // shift block boundaries and either reject at first forward
+                // or compute the wrong model.  Admit this optimization only
+                // when the logical down-projection columns satisfy the
+                // kernel geometry, otherwise retain the source dtype/f16
+                // fallback path.
                 if crate::env_on("HAWKING_QWEN_FFN_DOWN_Q4K")
                     && layer.ffn_down.dtype != GgmlType::Q4_K
+                    && cfg.intermediate % 256 == 0
                     && layer.ffn_down.n_elems % 256 == 0
                 {
                     let mut f32_tmp = vec![0.0f32; layer.ffn_down.n_elems];
@@ -1189,6 +1489,7 @@ impl Engine for QwenDense {
                 "add_rmsnorm_fused",
                 "sample_argmax_f32",
                 "embed_lookup_f32",
+                "embed_lookup_q4_k_m",
                 "embed_lookup_metal_f32",
                 "memcpy_f32",
                 "moe_batched_silu_mul",
@@ -1243,23 +1544,16 @@ impl Engine for QwenDense {
             &mut t,
         );
 
-        if load_timing_enabled {
-            let total = load_t0.elapsed();
-            eprintln!("[hawking] qwen_dense load timing:");
-            for (name, dt) in &stage_marks {
-                eprintln!("  {:42}{:>9.2} ms", name, dt.as_secs_f64() * 1000.0);
-            }
-            eprintln!("  {:42}{:>9.2} ms", "TOTAL", total.as_secs_f64() * 1000.0);
-        }
-
-        Ok(Self {
+        let mut model = Self {
             config: cfg,
             tokenizer,
             model_id,
             gguf,
             embed,
+            embed_raw,
             final_norm,
             lm_head,
+            lm_head_raw,
             layers,
             kv,
             sampler,
@@ -1308,7 +1602,41 @@ impl Engine for QwenDense {
             last_dispatch_count: 0,
             // Track 3.3: env var is the override; config field is the base.
             concurrent_qkv_config: config.concurrent_qkv,
-        })
+        };
+
+        // K1 / first-dispatch hardening: pre-decoded Q4_K tables are an
+        // optional representation, not hidden first-token work.  For a 72B
+        // Q4 model this cache can be tens of GB and requires a complete scan
+        // of the mapped source.  When explicitly selected, build it here and
+        // account it as load time; when unset, decode directly from packed
+        // Q4_K.  No first forward may discover and build the cache lazily.
+        #[cfg(target_os = "macos")]
+        if crate::env_on("HAWKING_QWEN_Q4K_PREDEC") {
+            model.ensure_q4k_predec_cache()?;
+            if crate::env_on("HAWKING_QWEN_PREDEC_F16SCALES") {
+                model.ensure_q4k_predec_cache_f16()?;
+            }
+            mark(&mut stage_marks, "q4k_predec_representation", &mut t);
+        }
+
+        // Buffer-pinning, shader warm-up and first encoder creation retain
+        // their own precise first-forward stages in `QwenFirstDispatchTrace`.
+        // Do not invent allocation/upload byte counts here: the loader has
+        // mixed no-copy mmap bindings and copied auxiliary buffers, which are
+        // accounted only at the individual allocation APIs.
+        load_trace.mark("load_complete", "QwenDense::load", Some(0), Some(0));
+        load_trace.finish();
+
+        if load_timing_enabled {
+            let total = load_t0.elapsed();
+            eprintln!("[hawking] qwen_dense load timing:");
+            for (name, dt) in &stage_marks {
+                eprintln!("  {:42}{:>9.2} ms", name, dt.as_secs_f64() * 1000.0);
+            }
+            eprintln!("  {:42}{:>9.2} ms", "TOTAL", total.as_secs_f64() * 1000.0);
+        }
+
+        Ok(model)
     }
 
     fn generate(
@@ -1343,6 +1671,17 @@ impl Engine for QwenDense {
         self.kv.reset();
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
+        // Complete-forward accounting is deliberately independent of the
+        // structural trace collector.  A TCB always knows its dispatch count;
+        // otherwise a clean Metal decode can misleadingly serialize a zero
+        // aggregate merely because per-dispatch timing was disabled.
+        let mut prefill_metal_dispatches_total = 0usize;
+        let mut prefill_command_buffers_total = 0usize;
+        // The final TCB prefill forward already computes the greedy decision
+        // for the first completion token.  The historical decode loop
+        // discarded it and re-fed the last prompt token; retain it for the
+        // opt-in conventional-seed repair below.
+        let mut prefill_greedy_next = None::<u32>;
 
         // B1 (2026-05-31) — In-RAM prefix cache (Bible §8 L1.2, the
         // stateful moat). DEFAULT-ON (opt-OUT) behind
@@ -1486,6 +1825,9 @@ impl Engine for QwenDense {
                 let step_start = Instant::now();
                 let end = (i + b_max).min(batch_end);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
+                prefill_metal_dispatches_total =
+                    prefill_metal_dispatches_total.saturating_add(self.last_dispatch_count);
+                prefill_command_buffers_total = prefill_command_buffers_total.saturating_add(1);
                 if stall_active && step_start.elapsed() > stall_limit {
                     prefill_aborted = true;
                     break;
@@ -1494,7 +1836,9 @@ impl Engine for QwenDense {
             }
             if !prefill_aborted {
                 for j in batch_end..prompt_len {
-                    let _ = self.forward_token_greedy_tcb(prompt_ids[j], positions[j])?;
+                    prefill_greedy_next = Some(
+                        self.forward_token_greedy_tcb(prompt_ids[j], positions[j])?,
+                    );
                 }
             }
         } else {
@@ -1505,7 +1849,10 @@ impl Engine for QwenDense {
                 }
                 let step_start = Instant::now();
                 if use_tcb_prefill {
-                    let _ = self.forward_token_greedy_tcb(t, i)?;
+                    prefill_greedy_next = Some(self.forward_token_greedy_tcb(t, i)?);
+                    prefill_metal_dispatches_total =
+                        prefill_metal_dispatches_total.saturating_add(self.last_dispatch_count);
+                    prefill_command_buffers_total = prefill_command_buffers_total.saturating_add(1);
                 } else {
                     let _ = self.forward_token(t, i)?;
                 }
@@ -1574,6 +1921,28 @@ impl Engine for QwenDense {
             }
         }
         if prefill_aborted {
+            // A watchdog abort happens after the over-budget forward returns.
+            // Preserve that completed forward's Metal evidence before the early
+            // return; otherwise a real GPU dispatch is serialized as zero and
+            // is indistinguishable from the old silent CPU fallback failure.
+            stats.dispatch_samples = self
+                .metal_ctx
+                .as_ref()
+                .map(|ctx| ctx.drain_trace())
+                .unwrap_or_default();
+            let (buffers_created, bytes_allocated, commits) = self
+                .metal_ctx
+                .as_ref()
+                .map(|ctx| ctx.drain_stats())
+                .unwrap_or_default();
+            stats.metal_buffers_created = buffers_created;
+            stats.metal_bytes_allocated = bytes_allocated;
+            stats.metal_commits = commits;
+            stats.metal_dispatches = self.last_dispatch_count;
+            stats.dispatches_per_forward = self.last_dispatch_count;
+            stats.prefill_metal_dispatches_total = prefill_metal_dispatches_total;
+            stats.prefill_command_buffers_total = prefill_command_buffers_total;
+            stats.lm_head_path = self.lm_head_path().to_string();
             sink(StreamEvent::Done {
                 reason: StopReason::Aborted,
                 stats: stats.clone(),
@@ -1587,6 +1956,14 @@ impl Engine for QwenDense {
         let mut produced = 0usize;
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
+        let mut decode_metal_dispatches_total = 0usize;
+        let mut completed_decode_forwards = 0usize;
+        let mut decode_command_buffers_total = 0usize;
+        let mut decode_cpu_reference_fallback_total = 0usize;
+        // Preserve an individual complete-forward timing for each emitted token.
+        // Aggregate decode throughput hides tail stalls, and the TG harness must
+        // never infer p50/p95/p99 from a run-wide average.
+        let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
 
         // P1f: full-Metal TCB path, DEFAULT-ON for greedy (temp==0). The GPU
         // sample kernel implements pure argmax, so any non-greedy sampling
@@ -1654,7 +2031,8 @@ impl Engine for QwenDense {
             // the SAME forward is this cycle's true successor. The carried-true
             // invariant (never re-emitted) is what removes the second forward.
             // The win is largest at low acceptance (where the wasted second
-            // forward dominates). See reports/move2_user_draft_diagnosis.md §3-4.
+            // forward dominates). See
+            // workspace/campaign/records/reports/move2_user_draft_diagnosis.md §3-4.
             //
             // LOSSLESS by construction, BIT-IDENTICAL to the bonus-first loop:
             // every emitted token is a verifier (`forward_tokens_verify`) token,
@@ -2119,14 +2497,54 @@ impl Engine for QwenDense {
             let mut json_constraint = req
                 .json_mode
                 .then(|| crate::json_constrain::JsonConstraint::new());
-            for step in 0..req.max_new_tokens {
+            // Capability repair only: when explicitly enabled on the plain
+            // greedy TCB path, emit the last prefill decision and begin the
+            // first decode forward with that emitted token at prompt_len.
+            // Default behavior remains the historical re-feed path until a
+            // sealed same-model continuation receipt promotes this change.
+            let conventional_seed = crate::env_on("HAWKING_QWEN_CONVENTIONAL_DECODE_SEED")
+                && use_tcb_prefill
+                && !req.json_mode
+                && std::env::var_os("HAWKING_QWEN_CAPTURE_FFN_PATH").is_none()
+                && prefill_greedy_next.is_some();
+            let mut last_id = last_id;
+            let mut decode_start_step = 0usize;
+            if conventional_seed {
+                let seeded = prefill_greedy_next.expect("conventional seed checked");
+                if self.tokenizer.is_eog(seeded) {
+                    reason = StopReason::Eos;
+                } else {
+                    let seeded_text = self.tokenizer.decode_one(seeded)?;
+                    self.sampler.record(seeded);
+                    crate::stateful::usage_capture::record_argmax(seeded);
+                    sink(StreamEvent::Token {
+                        id: seeded,
+                        text: seeded_text.clone(),
+                    });
+                    produced += 1;
+                    last_id = seeded;
+                    decode_start_step = 1;
+                    if req.stop.iter().any(|s| !s.is_empty() && seeded_text.contains(s)) {
+                        reason = StopReason::StopString;
+                    }
+                }
+            }
+            for step in decode_start_step..req.max_new_tokens {
+                if !matches!(reason, StopReason::MaxTokens) {
+                    break;
+                }
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
                     break;
                 }
-                let pos = prompt_len + step;
+                let pos = if conventional_seed {
+                    prompt_len + step - 1
+                } else {
+                    prompt_len + step
+                };
                 let step_start = Instant::now();
-                let next_id = if use_tcb && !ffn_capturing && !req.json_mode {
+                let used_tcb_step = use_tcb && !ffn_capturing && !req.json_mode;
+                let next_id = if used_tcb_step {
                     self.forward_token_greedy_tcb(last_id, pos)?
                 } else {
                     let mut logits = self.forward_token(last_id, pos)?;
@@ -2135,10 +2553,21 @@ impl Engine for QwenDense {
                     }
                     self.sampler.sample(&mut logits, &req.sampling)
                 };
+                completed_decode_forwards = completed_decode_forwards.saturating_add(1);
+                if used_tcb_step {
+                    decode_metal_dispatches_total =
+                        decode_metal_dispatches_total.saturating_add(self.last_dispatch_count);
+                    decode_command_buffers_total = decode_command_buffers_total.saturating_add(1);
+                } else {
+                    decode_cpu_reference_fallback_total =
+                        decode_cpu_reference_fallback_total.saturating_add(1);
+                }
+                let complete_forward_ms = step_start.elapsed().as_secs_f64() * 1000.0;
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break;
                 }
+                decode_token_ms.push(complete_forward_ms);
                 self.sampler.record(next_id);
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 let json_done = if let Some(c) = json_constraint.as_mut() {
@@ -2210,6 +2639,7 @@ impl Engine for QwenDense {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        stats.decode_token_ms = decode_token_ms;
         stats.dispatch_samples = self
             .metal_ctx
             .as_ref()
@@ -2226,6 +2656,12 @@ impl Engine for QwenDense {
         // Track 3.1 / 5.1: last-step dispatch count (always valid).
         stats.metal_dispatches = self.last_dispatch_count;
         stats.dispatches_per_forward = self.last_dispatch_count;
+        stats.decode_metal_dispatches_total = decode_metal_dispatches_total;
+        stats.completed_decode_forwards = completed_decode_forwards;
+        stats.decode_command_buffers_total = decode_command_buffers_total;
+        stats.decode_cpu_reference_fallback_total = decode_cpu_reference_fallback_total;
+        stats.prefill_metal_dispatches_total = prefill_metal_dispatches_total;
+        stats.prefill_command_buffers_total = prefill_command_buffers_total;
         // Track 0.2 observability: record the LM-head path taken this run.
         stats.lm_head_path = self.lm_head_path().to_string();
         // L3.1 §2.2 usage_capture: flush the per-run histogram + draft ledger
@@ -2250,6 +2686,22 @@ impl Engine for QwenDense {
     /// `<|>` repetition. Real cause of the `/v1/chat/completions` garbage.
     fn model_arch(&self) -> &str {
         self.gguf.architecture().unwrap_or("qwen2")
+    }
+
+    fn context_length_native(&self) -> Option<usize> {
+        // The v1 Metal multisequence serve graph currently has a hard 4K KV
+        // region per slot. Reporting the GGUF's larger training context here
+        // made HIDE compile a context that the live server could not admit,
+        // turning its first turn into an unbounded serial prefill. This is the
+        // real serving ceiling, not a claim about the model's trained window.
+        #[cfg(target_os = "macos")]
+        {
+            Some(self.config.max_seq_len.min(QWEN_METAL_SERVE_CONTEXT_LIMIT))
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            Some(self.config.max_seq_len)
+        }
     }
 
     fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
@@ -2288,8 +2740,12 @@ impl Engine for QwenDense {
             // arena's max_batch scales with this (2048 keeps B=8 under the RSS
             // sentinel). Requests longer than this error in the stack. `regions`
             // are the STABLE slot ids each batch element's KV lives at.
-            const MULTISEQ_CTX: usize = 4096;
-            return self.forward_tokens_multiseq_logits(tokens, positions, regions, MULTISEQ_CTX);
+            return self.forward_tokens_multiseq_logits(
+                tokens,
+                positions,
+                regions,
+                QWEN_METAL_SERVE_CONTEXT_LIMIT,
+            );
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -2306,8 +2762,12 @@ impl Engine for QwenDense {
     ) -> Result<Vec<u32>> {
         #[cfg(target_os = "macos")]
         {
-            const MULTISEQ_CTX: usize = 4096;
-            return self.forward_tokens_multiseq_greedy(tokens, positions, regions, MULTISEQ_CTX);
+            return self.forward_tokens_multiseq_greedy(
+                tokens,
+                positions,
+                regions,
+                QWEN_METAL_SERVE_CONTEXT_LIMIT,
+            );
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -2504,123 +2964,24 @@ impl Engine for QwenDense {
                 return self.prefill_slot(slot_id, prompt_ids);
             }
 
-            // Extract config values before any mutable borrows.
-            let (n_layers, n_heads, n_kv_heads, head_dim, hidden, intermediate, vocab_size, kv_dim) = {
-                let cfg = &self.config;
-                (
-                    cfg.n_layers,
-                    cfg.n_heads,
-                    cfg.n_kv_heads,
-                    cfg.head_dim,
-                    cfg.hidden,
-                    cfg.intermediate,
-                    cfg.vocab_size,
-                    cfg.n_kv_heads * cfg.head_dim,
-                )
-            };
-            let (multi_layer_stride, multi_max_seq) = {
-                let a = self.multiseq_arena.as_ref().unwrap();
-                (a.max_seq * kv_dim, a.max_seq)
-            };
-            let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
-            let prefix_elems = start_pos * kv_dim;
-            let _ = multi_max_seq;
-
-            // ── Step 1: seed self.kv from multiseq prefix ────────────────────
-            // forward_tokens_batch_tcb has `fresh_arena && p0 > 0` logic that
-            // copies self.kv.keys → dense_arena on the first chunk. By loading
-            // the prefix KV into self.kv first, we get a free warm start.
-            // SAFETY: PinnedBuffer is MTLStorageModeShared — CPU-accessible.
-            unsafe {
-                let src_k =
-                    self.multiseq_arena.as_ref().unwrap().k_cache_buf.contents() as *const f32;
-                let src_v =
-                    self.multiseq_arena.as_ref().unwrap().v_cache_buf.contents() as *const f32;
-                for li in 0..n_layers {
-                    let src_off = li * multi_layer_stride + slot_base;
-                    let dst_k = self.kv.keys[li].as_mut_ptr();
-                    let dst_v = self.kv.values[li].as_mut_ptr();
-                    std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k, prefix_elems);
-                    std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v, prefix_elems);
+            // Keep resumed work in the destination slot's resident KV arena.
+            // A previous CPU/dense-arena bridge was observably non-parity: the
+            // copied prefix itself decoded correctly, but its resumed tail did
+            // not. Processing known tail tokens through the same multisequence
+            // causal graph used for later decode eliminates that representation
+            // crossing. Full logits are deliberately retained here: the
+            // token-only head is used by decode but its tail-prefill variant
+            // exceeded the bounded HIDE interaction run. A representation
+            // change must improve complete wall time, not merely reduce bytes
+            // read back; revisit only with a profiled kernel change.
+            let mut first_token = prompt_ids[prompt_len - 1];
+            for (position, &token) in prompt_ids.iter().enumerate().skip(start_pos) {
+                let logits = self.forward_multiseq_batched(&[token], &[position], &[slot_id])?;
+                if position + 1 == prompt_len {
+                    first_token = crate::kernels::argmax_f32(&logits[0]);
                 }
             }
-
-            // ── Step 2: run forward only on the tail tokens ──────────────────
-            let saved_seq_len = self.kv.seq_len;
-            self.kv.seq_len = start_pos; // p0 > 0 seeds dense_arena on first chunk
-            self.dense_arena = None;
-
-            // Same amortization factor as the other batched-prefill site; see
-            // the comment there. Kept on one env var so a sweep cannot tune
-            // one path and silently leave the other at 8.
-            // K6 landed the tiled GEMM this used to wait on:
-            // gemm_q4_k_m_batched_v3w_mma_n32 carries four accumulators, so the
-            // ceiling is 32. The default stays 8 so the shipped decode path is
-            // unchanged until the wider batch is measured, not merely correct.
-            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 32);
-            let positions: Vec<usize> = (0..prompt_len).collect();
-            let mut i = start_pos;
-            let last_token = loop {
-                let end = (i + b_max).min(prompt_len);
-                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
-                if end == prompt_len {
-                    break prompt_ids[prompt_len - 1];
-                }
-                i = end;
-            };
-            // dense_arena now has complete KV for positions 0..prompt_len.
-
-            // ── Step 3: ensure multiseq_arena + copy dense → slot ────────────
-            if self.multiseq_arena.is_none() {
-                let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
-                    crate::Error::Metal("prefill_slot_from_pos: no metal_ctx".into())
-                })?;
-                self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
-                    ctx,
-                    n_layers,
-                    n_heads,
-                    n_kv_heads,
-                    head_dim,
-                    hidden,
-                    intermediate,
-                    vocab_size,
-                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX,
-                    MAX_MULTISEQ_SLOTS,
-                ));
-            }
-            {
-                let dense_arena = self.dense_arena.as_ref().ok_or_else(|| {
-                    crate::Error::Metal("prefill_slot_from_pos: dense_arena missing".into())
-                })?;
-                let multi_arena = self.multiseq_arena.as_ref().unwrap();
-                let dense_layer_stride = dense_arena.max_seq * kv_dim;
-                let multi_layer_stride = multi_arena.max_seq * kv_dim;
-                let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
-                let copy_elems = prompt_len * kv_dim;
-                unsafe {
-                    let src_k = dense_arena.k_cache_buf.contents() as *const f32;
-                    let src_v = dense_arena.v_cache_buf.contents() as *const f32;
-                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
-                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
-                    for li in 0..n_layers {
-                        let src_off = li * dense_layer_stride;
-                        let dst_off = li * multi_layer_stride + slot_base;
-                        std::ptr::copy_nonoverlapping(
-                            src_k.add(src_off),
-                            dst_k.add(dst_off),
-                            copy_elems,
-                        );
-                        std::ptr::copy_nonoverlapping(
-                            src_v.add(src_off),
-                            dst_v.add(dst_off),
-                            copy_elems,
-                        );
-                    }
-                }
-            }
-            self.kv.seq_len = saved_seq_len;
-            self.dense_arena = None;
-            return Ok(last_token);
+            return Ok(first_token);
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -2801,14 +3162,13 @@ impl QwenDense {
     /// Track 0.2 (observability): which LM-head path the decode loop selects, for
     /// the GenStats `[stats-json]` line. Re-derives the SAME branch from self
     /// fields + env flags (no GPU/forward needed) → callable at decode finalize.
-    /// One of: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16" | "cpu".
+    /// One of: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "raw-q4k" |
+    /// "raw-q6k" | "f16" | "cpu".
     pub(crate) fn lm_head_path(&self) -> &'static str {
         if self.metal_ctx.is_none() {
             return "cpu";
         }
-        let predec_active = std::env::var_os("HAWKING_QWEN_Q4K_PREDEC")
-            .map(|v| v != "0")
-            .unwrap_or(true);
+        let predec_active = crate::env_on("HAWKING_QWEN_Q4K_PREDEC");
         let lmhead_predec_active = predec_active
             && self.lm_head_pruned_predec.is_some()
             && std::env::var_os("HAWKING_QWEN_LMHEAD_PREDEC")
@@ -2822,6 +3182,13 @@ impl QwenDense {
         let pruned_q4k = self.lm_head_pruned_buf.is_some() && self.vocab_pruned_is_q4k;
         let any_q4k = pruned_q4k || self.lm_head_q4k_buf.is_some();
         if !any_q4k {
+            if let Some(raw) = self.lm_head_raw.as_ref() {
+                return match raw.dtype {
+                    GgmlType::Q4_K => "raw-q4k",
+                    GgmlType::Q6_K => "raw-q6k",
+                    _ => "f16",
+                };
+            }
             return "f16";
         }
         if w4a8_active {
@@ -3696,7 +4063,7 @@ impl QwenDense {
     /// JSON schema produced by `tests/w4a8_per_channel_calibrate.rs`:
     ///   { "model": ..., "site": "lm_head_input_post_final_norm",
     ///     "hidden": N, "scales_per_channel": [f32 × N], ... }
-    /// Looks for the calibration file at the canonical path under reports/.
+    /// Looks for the calibration file at the canonical workspace reports path.
     /// Silent no-op if the file is missing — the per-channel path then
     /// falls back to the per-block path at the forward dispatch site.
     #[cfg(target_os = "macos")]
@@ -3710,10 +4077,11 @@ impl QwenDense {
         };
         // Probe candidate paths.
         let candidates = [
-            std::path::PathBuf::from("reports/w4a8_lmhead_calibration_2026_05_26.json"),
             std::path::PathBuf::from(
-                "crates/hawking-core/reports/w4a8_lmhead_calibration_2026_05_26.json",
+                "workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json",
             ),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json"),
         ];
         let json_path = match candidates.iter().find(|p| p.exists()) {
             Some(p) => p,
@@ -3774,7 +4142,8 @@ impl QwenDense {
     }
 
     /// AWQ Option B: load per-layer activation smoothing vectors from
-    /// `profiles/qwen3b_awq_smoothing.json` (schema `awq-smoothing-v1`,
+    /// `workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json`
+    /// (schema `awq-smoothing-v1`,
     /// produced by the offline AWQ pre-pass). Builds 4 per-layer pinned
     /// f32 buffers — one per dispatch site — keyed by layer index. Pairs
     /// with the AWQ-baked Q4K_FAST sidecar (W' = W * s) produced by
@@ -3791,8 +4160,11 @@ impl QwenDense {
             None => return Ok(()),
         };
         let candidates = [
-            std::path::PathBuf::from("profiles/qwen3b_awq_smoothing.json"),
-            std::path::PathBuf::from("crates/hawking-core/profiles/qwen3b_awq_smoothing.json"),
+            std::path::PathBuf::from(
+                "workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json",
+            ),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json"),
         ];
         let json_path = match candidates.iter().find(|p| p.exists()) {
             Some(p) => p,
@@ -3858,7 +4230,8 @@ impl QwenDense {
 
         for li in 0..n_layers {
             // Q/K/V share x_norm — use q_proj's factor (verified equal to
-            // k_proj / v_proj per profiles/qwen3b_awq_smoothing.json).
+            // k_proj / v_proj per
+            // workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json).
             let s_q = extract(&format!("layer_{li}_q_proj"), hidden)?;
             let s_o = extract(&format!("layer_{li}_o_proj"), hidden)?;
             // Gate/Up share ffn_act — use gate_proj's factor.
@@ -3960,6 +4333,10 @@ impl QwenDense {
         use crate::kernels;
         use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
 
+        let mut first_dispatch_trace = QwenFirstDispatchTrace::new(
+            crate::env_on("HAWKING_QWEN_FIRST_DISPATCH_TRACE") && self.last_dispatch_count == 0,
+        );
+
         // TQ per-tensor HYBRID (HAWKING_QWEN_TQ): build the `.tq` side map on the
         // first GPU-decode forward (mutable borrow — must precede the immutable
         // borrows below). Without this the production decode loop never consulted
@@ -3969,17 +4346,10 @@ impl QwenDense {
         #[cfg(feature = "tq")]
         self.ensure_tq_cache()?;
 
-        // Item 1 wire-up: lazy-build the Q4_K pre-decoded scale cache
-        // on first forward. DEFAULT-ON as of 2026-05-26 per
-        // memory/composition_decision_matrix_2026_05_26.md (100% bit-
-        // identical N=100, +34% paired dec_tps). Set
-        // HAWKING_QWEN_Q4K_PREDEC=0 to opt out (e.g. if the ~760 MB
-        // RSS cost of the scale table is unaffordable). The cache is
-        // keyed by Q4_K weight offset (in the GGUF mmap) so each
-        // dispatch site can look it up by tref.offset.
-        let predec_active = std::env::var_os("HAWKING_QWEN_Q4K_PREDEC")
-            .map(|v| v != "0")
-            .unwrap_or(true);
+        // K1: the optional pre-decoded representation is built during load,
+        // never inside the measured first forward.  Unset means native packed
+        // Q4_K execution with no hidden whole-model scan or multi-GB cache.
+        let predec_active = crate::env_on("HAWKING_QWEN_Q4K_PREDEC");
         // A1: route the Q4_K pruned LM head through the pre-decoded-scale
         // GEMV (bit-identical to inline Q4_K). Default-on when predec is
         // active + the predec table was built at load time; opt out with
@@ -3991,7 +4361,9 @@ impl QwenDense {
                 .map(|v| v != "0")
                 .unwrap_or(true);
         if predec_active && self.q4k_predec_cache.is_none() {
-            self.ensure_q4k_predec_cache()?;
+            return Err(Error::Model(
+                "Q4_K predecode representation was selected but not constructed during load".into(),
+            ));
         }
         // A6.5 (2026-05-31): f16-scales predec variant. DEFAULT-OFF — this is a
         // quality trade (f16 scale rounding perturbs logits ~5e-4 relative,
@@ -4007,7 +4379,10 @@ impl QwenDense {
                 .map(|v| v != "0")
                 .unwrap_or(false);
         if predec_f16scales_active && self.q4k_predec_cache_f16.is_none() {
-            self.ensure_q4k_predec_cache_f16()?;
+            return Err(Error::Model(
+                "f16 Q4_K predecode representation was selected but not constructed during load"
+                    .into(),
+            ));
         }
         // Item 3: optional Q4K_FAST sidecar swap. When env is set AND
         // the sidecar exists, every Q4_K projection routes through the
@@ -4120,6 +4495,12 @@ impl QwenDense {
         if awq_active_early && w4a8_active_early && self.awq_smoothing_x_norm.is_none() {
             self.ensure_awq_smoothing_scales()?;
         }
+        first_dispatch_trace.mark(
+            "representation_admission",
+            "ensure_tq_cache+Q4K_predecode_guard+Q4K_FAST/AWQ_sidecars",
+            None,
+            None,
+        );
         // Bind cache references for the macro body. predec takes
         // precedence if both are active (they're mutually exclusive
         // in practice; predec is mathematically equivalent and lower
@@ -4154,6 +4535,12 @@ impl QwenDense {
         } else {
             None
         };
+        // Diagnostic source-authority grammar.  Gravity's Q4_K path and the
+        // llama.cpp-matched Llama path use the conservative b9430 kernel;
+        // retain Qwen's v3 geometry as the normal performance candidate until
+        // a current full-model oracle promotes either one.
+        let canonical_q4 = crate::env_on("HAWKING_QWEN_CANONICAL_Q4");
+        let canonical_q6 = canonical_q4;
         // AWQ smoothing buffer refs (None unless all four loaded). Bind
         // here under the immutable-borrow window so the dispatch sites
         // can index by layer without re-borrowing self.
@@ -4198,6 +4585,12 @@ impl QwenDense {
             .lm_head_buf
             .as_ref()
             .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: lm_head not pinned".into()))?;
+        first_dispatch_trace.mark(
+            "device_and_buffer_binding",
+            "MetalContext+weights_mmap_buf+embed_buf+final_norm_buf+lm_head_buf",
+            Some(0),
+            Some(0),
+        );
 
         let cfg = &self.config;
         let h = cfg.hidden;
@@ -4211,6 +4604,19 @@ impl QwenDense {
         let theta = cfg.rope_theta;
         let vocab = cfg.vocab_size;
         let pos_u32 = pos as u32;
+        // K0 localization only.  Normal decode retains its one-command-buffer
+        // topology; selecting a position creates one diagnostic command buffer
+        // per layer and records bounded scalar surfaces after each completed
+        // layer.  This mirrors the executable-Gravity trace so an oracle
+        // divergence can be localized to the first stateful layer rather than
+        // guessed from the final greedy token.
+        let trace_path =
+            std::env::var_os("HAWKING_QWEN_LAYER_TRACE_PATH").map(std::path::PathBuf::from);
+        let trace_position = std::env::var("HAWKING_QWEN_LAYER_TRACE_POSITION")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok());
+        let trace_enabled = trace_path.is_some() && trace_position == Some(pos);
+        let mut trace_rows = Vec::<serde_json::Value>::new();
 
         if self.kv.seq_len >= self.kv.max_seq {
             return Err(Error::Model(format!(
@@ -4430,7 +4836,7 @@ impl QwenDense {
         // 1/layer × n_layers = 36 dispatches (328→292). Only valid for
         // !use_seam && !f16_kv. Bit-identical (5 shapes verified).
         // DEFAULT-ON; opt-out via HAWKING_QWEN_ROPE_KV_FUSE=0.
-        let rope_kv_fuse = cached_env_bool!("HAWKING_QWEN_ROPE_KV_FUSE", true);
+        let rope_kv_fuse = cached_env_bool!("HAWKING_QWEN_ROPE_KV_FUSE", true) && !trace_enabled;
         // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
         // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
@@ -4451,7 +4857,8 @@ impl QwenDense {
         let w4a8_lmhead = w4a8_active;
         // Track E: per-channel W4A8 at the LM_HEAD site. Default off.
         // When set AND HAWKING_QWEN_W4A8=1 AND the calibration JSON is
-        // present at reports/w4a8_lmhead_calibration_*.json, the LM_HEAD
+        // present at workspace/campaign/records/reports/w4a8_lmhead_calibration_*.json,
+        // the LM_HEAD
         // dispatch swaps to `gemm_q4_k_a8_v3_8r_per_channel` with static
         // pre-computed per-channel scales. Other 6 W4A8 sites stay on the
         // per-block path (no calibration data yet for those sites).
@@ -4503,8 +4910,11 @@ impl QwenDense {
         // Track 3.12/3.13: fuse Q/K bias+RoPE and f32 KV-cache append into
         // the QKV triple dispatch. The seam and f16-KV paths keep their
         // existing explicit post-processing kernels.
-        let qkv_rope_append =
-            crate::env_opt_out("HAWKING_QWEN_QKV_ROPE_APPEND") && !use_seam && !f16_kv && !int4_kv;
+        let qkv_rope_append = crate::env_opt_out("HAWKING_QWEN_QKV_ROPE_APPEND")
+            && !use_seam
+            && !f16_kv
+            && !int4_kv
+            && !trace_enabled;
         // Track C28: 4r variant of qkv_rope_append — Q/K at 4r/simdgroup,
         // V at 2r/simdgroup. Reduces TG count 320→160 for Qwen-3B.
         // Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (checked at runtime).
@@ -4527,6 +4937,17 @@ impl QwenDense {
         if int4_kv {
             self.dense_arena.as_mut().unwrap().ensure_int4_kv(ctx);
         }
+        let arena_bytes = self
+            .dense_arena
+            .as_ref()
+            .map(|arena| arena.allocated_bytes() as usize)
+            .unwrap_or(0);
+        first_dispatch_trace.mark(
+            "arena_allocation_and_prefill_bridge",
+            "DenseDecodeArena::new+request_residency+KV_bridge+optional_KV/W4A8_scratch",
+            if seq_slot > 0 { None } else { Some(0) },
+            Some(arena_bytes),
+        );
         let arena = self.dense_arena.as_ref().unwrap();
         // TQ per-tensor HYBRID arena fusion (HAWKING_QWEN_TQ): bind the FFN/all-
         // linear `.tq` side map (keyed by GGUF source offset) so each linear site
@@ -4563,6 +4984,67 @@ impl QwenDense {
         };
 
         let mut tcb = TokenCommandBuffer::new(ctx);
+        first_dispatch_trace.mark(
+            "command_buffer_creation",
+            "TokenCommandBuffer::new/MTLCommandQueue::commandBuffer",
+            Some(0),
+            Some(0),
+        );
+
+        macro_rules! commit_first_dispatch {
+            () => {{
+                first_dispatch_trace.mark(
+                    "graph_encode_first_encoder_and_dispatches",
+                    "TokenCommandBuffer::dispatch_threads/MTLComputeCommandEncoder",
+                    None,
+                    Some(0),
+                );
+                let dispatches = tcb.dispatch_count();
+                tcb.commit_and_wait()?;
+                // This field is completed-forward evidence.  Never set it
+                // before the command buffer succeeds: a failed commit must
+                // remain retryable under first-dispatch tracing.
+                self.last_dispatch_count = dispatches;
+                first_dispatch_trace.mark(
+                    "first_command_commit_and_completion",
+                    "MTLCommandBuffer::commit+waitUntilCompleted",
+                    Some(0),
+                    Some(0),
+                );
+                if first_dispatch_trace.enabled {
+                    eprintln!(
+                        "QWEN_FIRST_DISPATCH_PHYSICAL device={} dispatches={} command_buffers=1 waits=1 fallback=0",
+                        ctx.device_name(), dispatches
+                    );
+                }
+            }};
+        }
+
+        macro_rules! finish_first_dispatch {
+            ($token:expr) => {{
+                let completed_token = $token;
+                if trace_enabled {
+                    let trace = serde_json::json!({
+                        "schema": "hawking.qwen.tcb_layer_trace.v1",
+                        "position": pos,
+                        "input_token_id": token,
+                        "rows": trace_rows,
+                        "note": "diagnostic per-layer commits; not a throughput path"
+                    });
+                    let bytes = serde_json::to_vec_pretty(&trace)
+                        .map_err(|err| Error::Model(format!("serialize Qwen TCB trace: {err}")))?;
+                    std::fs::write(trace_path.as_ref().expect("trace path checked"), bytes)?;
+                }
+                first_dispatch_trace.mark(
+                    "first_token_readback",
+                    "MTLBuffer::contents(token_u32)",
+                    Some(std::mem::size_of::<u32>()),
+                    Some(0),
+                );
+                first_dispatch_trace.finish();
+                completed_token
+            }};
+        }
 
         let f32_bytes = std::mem::size_of::<f32>();
         let kv_dim_bytes = kv_dim * f32_bytes;
@@ -4577,12 +5059,21 @@ impl QwenDense {
             .as_ref()
             .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
 
+        // A Q4_K embedding table must remain Q4_K through lookup.  The
+        // historical f16 materialization is still retained for CPU and other
+        // formats, but is not source-authoritative for this resident path.
+        // Default-on; the opt-out exists only for A/B localization and cannot
+        // qualify a source-parity receipt.
+        let native_q4_embed = self.embed_raw.dtype == GgmlType::Q4_K
+            && cached_env_bool!("HAWKING_QWEN_NATIVE_Q4_EMBED", true);
+
         // Track B7: fuse embed_lookup + layer0_attn_norm into ONE dispatch.
         // Saves 1 dispatch (292→291). Only valid when hidden ≤ 4096 and w4a8
         // is inactive (w4a8 needs x_buf populated before the quantize step).
         // Default-ON; opt-out via HAWKING_QWEN_EMBED_RMSNORM_FUSE=0.
-        let embed_rmsnorm_fuse =
-            cached_env_bool!("HAWKING_QWEN_EMBED_RMSNORM_FUSE", true) && !w4a8_active;
+        let embed_rmsnorm_fuse = cached_env_bool!("HAWKING_QWEN_EMBED_RMSNORM_FUSE", true)
+            && !w4a8_active
+            && !native_q4_embed;
         if embed_rmsnorm_fuse {
             kernels::embed_lookup_rmsnorm_f32_tcb(
                 &mut tcb,
@@ -4596,7 +5087,19 @@ impl QwenDense {
             )?;
         } else {
             // Separate: x_buf <- embed[token], then x_norm_buf <- rmsnorm(x)
-            kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, token, h, &arena.x_buf)?;
+            if native_q4_embed {
+                kernels::embed_lookup_q4_k_m_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    self.embed_raw.offset,
+                    self.embed_raw.byte_size,
+                    token,
+                    h,
+                    &arena.x_buf,
+                )?;
+            } else {
+                kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, token, h, &arena.x_buf)?;
+            }
             kernels::rmsnorm_metal_buf_tcb(
                 &mut tcb,
                 &arena.x_buf,
@@ -4631,6 +5134,14 @@ impl QwenDense {
 
         for li in 0..cfg.n_layers {
             let layer = &self.layers[li];
+            let mut trace_qkv_raw_sums = (None, None, None, None);
+            // Additional bounded parity surfaces are populated only by the
+            // diagnostic trace.  Keeping them out of the normal graph avoids
+            // turning localization into a hidden throughput path.
+            let mut trace_ffn_input_sum = None;
+            let mut trace_ffn_norm_sum = None;
+            let mut trace_ffn_norm_head = Vec::<f32>::new();
+            let mut trace_attn_out_sum = None;
 
             // TQ per-tensor HYBRID: true when this GGUF offset is served by a
             // GPU-resident `TqGpuReady`. The fused multi-tensor dispatches below
@@ -4804,6 +5315,17 @@ impl QwenDense {
                                     $x,
                                     $out,
                                 )?;
+                            } else if canonical_q4 {
+                                kernels::gemv_q4_k_m_llama_b9430_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
                             } else {
                                 // Winner of the Q4_K variant sweep (2026-05-23):
                                 // v3_8r (TG=256, 8 rows/TG, scale + activation
@@ -4822,7 +5344,57 @@ impl QwenDense {
                             }
                         }
                         GgmlType::Q6_K => {
-                            kernels::gemv_q6_k_pinned_tcb(
+                            if canonical_q6 {
+                                kernels::gemv_q6_k_llama_b9430_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            } else {
+                                kernels::gemv_q6_k_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            }
+                        }
+                        GgmlType::Q5_0 => {
+                            if crate::env_on("HAWKING_QWEN_LLAMA_CPP_GEOMETRY") {
+                                kernels::gemv_q5_0_llama_cpp_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            } else {
+                                kernels::gemv_q5_0_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            }
+                        }
+                        GgmlType::Q5_K => {
+                            kernels::gemv_q5_k_serial_authority_pinned_tcb(
                                 &mut tcb,
                                 mmap_buf,
                                 $tref.offset,
@@ -4833,10 +5405,35 @@ impl QwenDense {
                                 $out,
                             )?;
                         }
+                        GgmlType::Q8_0 => {
+                            if crate::env_on("HAWKING_QWEN_LLAMA_CPP_GEOMETRY") {
+                                kernels::gemv_q8_0_llama_cpp_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            } else {
+                                kernels::gemv_q8_0_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            }
+                        }
                         _ => {
                             let buf_f16 = $pinned_f16.ok_or_else(|| {
                                 Error::Metal(
-                                    "gemv_proj: non-Q4_K/Q6_K dtype and no f16 fallback pinned"
+                                    "gemv_proj: unsupported dtype and no f16 fallback pinned"
                                         .into(),
                                 )
                             })?;
@@ -4880,6 +5477,7 @@ impl QwenDense {
             let qkv_triple = !w4a8_qproj
                 && !qkv_concurrent
                 && !tq_any_qkv
+                && !trace_enabled
                 && layer.q_proj.dtype == GgmlType::Q4_K
                 && layer.k_proj.dtype == GgmlType::Q4_K
                 && layer.v_proj.dtype == GgmlType::Q4_K
@@ -4897,6 +5495,7 @@ impl QwenDense {
             let qkv_mixed_triple = !w4a8_qproj
                 && !qkv_concurrent
                 && !tq_any_qkv
+                && !trace_enabled
                 && layer.q_proj.dtype == GgmlType::Q4_K
                 && layer.k_proj.dtype == GgmlType::Q4_K
                 && layer.v_proj.dtype == GgmlType::Q6_K
@@ -5451,6 +6050,31 @@ impl QwenDense {
                 tcb.end_concurrent_group()?;
             }
 
+            if trace_enabled {
+                // Preserve the raw projection surfaces before any bias/RoPE/KV
+                // mutation.  The normal graph deliberately remains fused; this
+                // two-phase diagnostic distinguishes a token-dependent GEMV or
+                // embedding mismatch from a positional-transform mismatch.
+                tcb.commit_and_wait()?;
+                let sum = |buffer: &crate::metal::PinnedBuffer, count: usize| {
+                    let values = unsafe {
+                        std::slice::from_raw_parts(buffer.contents() as *const f32, count)
+                    };
+                    values.iter().map(|value| *value as f64).sum::<f64>()
+                };
+                trace_qkv_raw_sums = (
+                    Some(sum(&arena.q_buf, q_dim)),
+                    Some(sum(&arena.k_token_buf, kv_dim)),
+                    Some(sum(&arena.v_token_buf, kv_dim)),
+                    // `x_norm_buf` is the exact normalized projection input
+                    // at this boundary.  Capturing it alongside Q/K/V tells
+                    // us whether a divergence begins in embedding/RMSNorm or
+                    // inside the packed projection grammar.
+                    Some(sum(&arena.x_norm_buf, h)),
+                );
+                tcb = TokenCommandBuffer::new(ctx);
+            }
+
             if !qkv_postproc_fused {
                 // ── Biases + RoPE (Q and K) ───────────────────────────────
                 // Track 3.6: fuse Q bias-add + Q RoPE + K bias-add + K RoPE into
@@ -5845,6 +6469,28 @@ impl QwenDense {
                 }
             }
 
+            if trace_enabled {
+                // The post-attention residual and FFN norm are the first
+                // stateful boundary after attention.  Commit this diagnostic
+                // surface before gate/up so a mismatch cannot be hidden by a
+                // later layer's next-norm overwrite.
+                tcb.commit_and_wait()?;
+                let read = |buffer: &crate::metal::PinnedBuffer, count: usize| {
+                    let values = unsafe {
+                        std::slice::from_raw_parts(buffer.contents() as *const f32, count)
+                    };
+                    values.to_vec()
+                };
+                let ffn_input = read(&arena.x_buf, h);
+                let ffn_norm = read(&arena.x_norm_buf, h);
+                let attn_out = read(&arena.attn_out_buf, q_dim);
+                trace_ffn_input_sum = Some(ffn_input.iter().map(|v| *v as f64).sum::<f64>());
+                trace_ffn_norm_sum = Some(ffn_norm.iter().map(|v| *v as f64).sum::<f64>());
+                trace_ffn_norm_head = ffn_norm[..8.min(ffn_norm.len())].to_vec();
+                trace_attn_out_sum = Some(attn_out.iter().map(|v| *v as f64).sum::<f64>());
+                tcb = TokenCommandBuffer::new(ctx);
+            }
+
             // ── FFN gate / up / silu_mul / down ──────────────────────
             // path-to-50 fusion: when enabled and both gate/up are predec
             // Q4_K with cached scale tables, compute both in ONE dispatch
@@ -6105,7 +6751,14 @@ impl QwenDense {
             // (the bitslice kernel has no silu(gate)*up prologue). Force the
             // unfused path: silu_mul → ffn_act_buf, then the TQ ffn_down GEMV
             // below reads ffn_act_buf. No-op when TQ doesn't own ffn_down.
-            let ffn_swiglu_fused = if tq_served(layer.ffn_down.offset) {
+            let ffn_swiglu_fused = if trace_enabled {
+                // The trace must materialize the activation so its SwiGLU
+                // surface is real.  The fused Q6/Q4 down kernels intentionally
+                // leave `ffn_act_buf` stale because they consume gate/up
+                // directly; reading that buffer would create a false parity
+                // failure while the fused down result remains correct.
+                false
+            } else if tq_served(layer.ffn_down.offset) {
                 false
             } else if !w4a8_ffn_down {
                 if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
@@ -6417,6 +7070,56 @@ impl QwenDense {
                                 )?;
                             }
                         }
+                        GgmlType::Q8_0 => {
+                            if crate::env_on("HAWKING_QWEN_LLAMA_CPP_GEOMETRY") {
+                                kernels::gemv_q8_0_llama_cpp_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
+                                )?;
+                            } else {
+                                kernels::gemv_q8_0_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
+                                )?;
+                            }
+                        }
+                        GgmlType::Q5_0 => {
+                            if crate::env_on("HAWKING_QWEN_LLAMA_CPP_GEOMETRY") {
+                                kernels::gemv_q5_0_llama_cpp_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
+                                )?;
+                            } else {
+                                kernels::gemv_q5_0_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
+                                )?;
+                            }
+                        }
                         _ => {
                             let f16b = layer.pinned.ffn_down_f16.as_ref().ok_or_else(|| {
                                 Error::Metal("ffn_down dtype needs f16 fallback".into())
@@ -6495,6 +7198,57 @@ impl QwenDense {
                 )?;
             }
             let _ = kv_dim_bytes;
+            if trace_enabled {
+                // A trace commit deliberately occurs *after* the residual
+                // update, so `x_buf` is the complete layer output and can be
+                // compared directly to Gravity's `layer_out_sum`.  Do not
+                // update `last_dispatch_count` here: only the final completed
+                // token graph is normal-run accounting.
+                tcb.commit_and_wait()?;
+                let sum = |buffer: &crate::metal::PinnedBuffer, offset: usize, count: usize| {
+                    let values = unsafe {
+                        std::slice::from_raw_parts(
+                            (buffer.contents() as *const f32).add(offset),
+                            count,
+                        )
+                    };
+                    values.iter().map(|value| *value as f64).sum::<f64>()
+                };
+                let head = |buffer: &crate::metal::PinnedBuffer, count: usize| {
+                    let values = unsafe {
+                        std::slice::from_raw_parts(buffer.contents() as *const f32, count)
+                    };
+                    values[..8.min(values.len())].to_vec()
+                };
+                let cache_offset = li * max_seq * kv_dim + seq_slot * kv_dim;
+                trace_rows.push(serde_json::json!({
+                    "layer": li,
+                    "qkv_trace_stage": "post_projection_pre_bias",
+                    "q_raw_sum": trace_qkv_raw_sums.0,
+                    "k_raw_sum": trace_qkv_raw_sums.1,
+                    "v_raw_sum": trace_qkv_raw_sums.2,
+                    "attn_norm_sum": trace_qkv_raw_sums.3,
+                    "q_rope_sum": sum(&arena.q_buf, 0, q_dim),
+                    "k_rope_sum": if f16_kv { None } else { Some(sum(&arena.k_cache_buf, cache_offset, kv_dim)) },
+                    "v_sum": if f16_kv { None } else { Some(sum(&arena.v_cache_buf, cache_offset, kv_dim)) },
+                    "attn_out_sum": trace_attn_out_sum,
+                    "ffn_input_sum": trace_ffn_input_sum,
+                    "ffn_norm_sum": trace_ffn_norm_sum,
+                    "ffn_norm_head": trace_ffn_norm_head,
+                    "ffn_gate_sum": sum(&arena.ffn_gate_buf, 0, intermediate),
+                    "ffn_gate_head": head(&arena.ffn_gate_buf, intermediate),
+                    "ffn_up_sum": sum(&arena.ffn_up_buf, 0, intermediate),
+                    "ffn_up_head": head(&arena.ffn_up_buf, intermediate),
+                    "ffn_swiglu_sum": sum(&arena.ffn_act_buf, 0, intermediate),
+                    "ffn_swiglu_head": head(&arena.ffn_act_buf, intermediate),
+                    "ffn_out_sum": sum(&arena.ffn_down_buf, 0, h),
+                    "ffn_out_head": head(&arena.ffn_down_buf, h),
+                    "layer_out_sum": sum(&arena.x_buf, 0, h),
+                    "layer_out_head": head(&arena.x_buf, h),
+                    "next_norm_sum": sum(&arena.x_norm_buf, 0, h),
+                }));
+                tcb = TokenCommandBuffer::new(ctx);
+            }
         }
 
         // ── LM head → argmax (x_norm already holds final_norm output) ─
@@ -6533,11 +7287,10 @@ impl QwenDense {
                         &arena.token_buf,
                         vocab,
                     )?;
-                    self.last_dispatch_count = tcb.dispatch_count;
-                    tcb.commit_and_wait()?;
+                    commit_first_dispatch!();
                     self.kv.seq_len += 1;
                     let token_ptr = arena.token_buf.contents() as *const u32;
-                    return Ok(unsafe { *token_ptr });
+                    return Ok(finish_first_dispatch!(unsafe { *token_ptr }));
                 }
                 let blocks_per_row = h / 256;
                 let row_bytes = blocks_per_row * 144;
@@ -6639,8 +7392,7 @@ impl QwenDense {
             }
             kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, pn)?;
 
-            self.last_dispatch_count = tcb.dispatch_count;
-            tcb.commit_and_wait()?;
+            commit_first_dispatch!();
             self.kv.seq_len += 1;
             let token_ptr = arena.token_buf.contents() as *const u32;
             let pruned_idx = unsafe { *token_ptr };
@@ -6650,7 +7402,7 @@ impl QwenDense {
                 Some(map) => *map.get(pruned_idx as usize).unwrap_or(&pruned_idx),
                 None => pruned_idx,
             };
-            return Ok(token);
+            return Ok(finish_first_dispatch!(token));
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
             if h % 256 != 0 {
                 kernels::gemv_f16_metal_buf_tcb(
@@ -6667,11 +7419,10 @@ impl QwenDense {
                     &arena.token_buf,
                     vocab,
                 )?;
-                self.last_dispatch_count = tcb.dispatch_count;
-                tcb.commit_and_wait()?;
+                commit_first_dispatch!();
                 self.kv.seq_len += 1;
                 let token_ptr = arena.token_buf.contents() as *const u32;
-                return Ok(unsafe { *token_ptr });
+                return Ok(finish_first_dispatch!(unsafe { *token_ptr }));
             }
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
@@ -6712,6 +7463,43 @@ impl QwenDense {
                     &arena.logits_buf,
                 )?;
             }
+        } else if let Some(raw) = self.lm_head_raw.as_ref() {
+            // Preserve the exact on-disk quantization for an explicit output
+            // head.  Qwen-14B Q4_K_M carries a Q6_K head; routing it through
+            // `lm_head_buf` would first round every source value to f16 and can
+            // move a close greedy decision after a few decode steps.  The
+            // normal projection waves already use these kernels, so this adds
+            // no alternate math grammar or hot allocation.
+            match raw.dtype {
+                GgmlType::Q4_K => kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    raw.offset,
+                    raw.byte_size,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?,
+                GgmlType::Q6_K => kernels::gemv_q6_k_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    raw.offset,
+                    raw.byte_size,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?,
+                _ => kernels::gemv_f16_metal_buf_tcb(
+                    &mut tcb,
+                    lm_head_buf,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?,
+            }
         } else {
             kernels::gemv_f16_metal_buf_tcb(
                 &mut tcb,
@@ -6724,8 +7512,7 @@ impl QwenDense {
         }
         kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
 
-        self.last_dispatch_count = tcb.dispatch_count;
-        tcb.commit_and_wait()?;
+        commit_first_dispatch!();
 
         // KV cache pointer bump (CPU mirror), so the CPU fallback path
         // remains consistent for hybrid runs that mix the two.
@@ -6733,7 +7520,7 @@ impl QwenDense {
 
         let token_ptr = arena.token_buf.contents() as *const u32;
         let next = unsafe { *token_ptr };
-        Ok(next)
+        Ok(finish_first_dispatch!(next))
     }
 
     /// Debug accessor — run one greedy forward and return the
@@ -8211,12 +8998,13 @@ impl QwenDense {
             ));
         }
 
-        // Populate pre-decoded scale tables so the B=1 fast path in
-        // forward_tokens_multiseq_stack_tcb can dispatch gemv_q4_k_v4_predec
-        // (~56% peak BW) instead of v3w (~13% peak BW at M=1).
-        // Mirrors the call in forward_token_greedy_tcb; idempotent after first call.
-        if self.q4k_predec_cache.is_none() {
-            self.ensure_q4k_predec_cache()?;
+        // K1: a selected predecode representation must already have passed
+        // load-time admission.  Never allocate or scan the model in this hot
+        // multisequence path.
+        if crate::env_on("HAWKING_QWEN_Q4K_PREDEC") && self.q4k_predec_cache.is_none() {
+            return Err(Error::Model(
+                "Q4_K predecode selected but absent after load-time admission".into(),
+            ));
         }
 
         let arena = self.multiseq_arena.as_ref().unwrap();
@@ -8398,8 +9186,10 @@ impl QwenDense {
                 MAX_MULTISEQ_SLOTS,
             ));
         }
-        if self.q4k_predec_cache.is_none() {
-            self.ensure_q4k_predec_cache()?;
+        if crate::env_on("HAWKING_QWEN_Q4K_PREDEC") && self.q4k_predec_cache.is_none() {
+            return Err(Error::Model(
+                "Q4_K predecode selected but absent after load-time admission".into(),
+            ));
         }
 
         let arena = self.multiseq_arena.as_ref().unwrap();

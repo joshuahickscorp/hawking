@@ -22,6 +22,7 @@ REPO_ROOT = CONDENSE.parents[1]
 
 from lab.operators import glm52_adapter as A  # noqa: E402
 from lab.operators import glm52_synthetic as S  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
 def _official_config() -> dict:
     config = json.loads(json.dumps(dict(A.OFFICIAL_CONFIG_CONTRACT)))
@@ -364,7 +365,7 @@ def test_streaming_window_rejects_partial_global_index_and_bad_carry_algebra(
 
 def test_official_tokenizer_and_chat_template_assemble_offline() -> None:
     manifest = json.loads(
-        (REPO_ROOT / "evidence" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json").read_text(encoding="utf-8")
+        (evidence_dir("glm52") / "GLM52_OFFICIAL_MANIFEST.json").read_text(encoding="utf-8")
     )
     root = Path(manifest["one_copy"]["snapshot_view"])
     assembly = A.load_official_tokenizer_assembly(root)

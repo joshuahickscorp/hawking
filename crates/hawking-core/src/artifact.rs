@@ -186,6 +186,18 @@ mod container {
         pub fn descriptor(&self, name: &str) -> Option<&TensorDescriptor> {
             self.tensors.get(name)
         }
+        /// Absolute byte position of one immutable tensor payload in the
+        /// container.  Callers that execute a dependency-complete range
+        /// window use this to seek directly rather than materializing the
+        /// whole artifact body.
+        pub fn payload_file_offset(&self, name: &str) -> Result<u64> {
+            let descriptor = self
+                .descriptor(name)
+                .ok_or_else(|| Error::Gravity(format!("no tensor {name:?}")))?;
+            self.body_offset
+                .checked_add(descriptor.offset)
+                .ok_or_else(|| Error::Gravity(format!("{name}: off ovf")))
+        }
         fn payload_range(&self, name: &str, len: Option<u64>) -> Result<(usize, usize)> {
             let d = self
                 .descriptor(name)
@@ -308,6 +320,7 @@ mod container {
             "tokenizer": meta_or("tokenizer"),
             "compression": meta_or("compression"),
             "shard": meta_or("shard"),
+            "gguf_metadata": meta_or("gguf_metadata"),
             "integrity": {
                 "body_sha256": hex_encode(body_hasher.finalize().as_slice()),
                 "tensor_count": tensors.len() as u64
@@ -801,6 +814,7 @@ pub use aap::{
 };
 pub use container::{GravityShard, TensorDescriptor};
 pub use pq::{
-    parse_pq_header, pq_matvec, pq_matvec_f64_authority, pq_row, pq_sections, PqHeader, PqTensor,
+    parse_pq_header, parse_residual_pq_header, pq_matvec, pq_matvec_f64_authority, pq_row,
+    pq_sections, residual_pq_sections, PqHeader, PqTensor, ResidualPqHeader, ResidualPqTensor,
 };
 pub use support::widen_native;

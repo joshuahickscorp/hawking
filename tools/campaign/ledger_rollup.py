@@ -2,7 +2,7 @@
 """Roll the per-slice ledgers up into one campaign accounting, and check it reconciles.
 
 The endpoint requires "exact eliminated/rewritten/generated/relocated/facade accounting".
-Each slice writes `control/S<n>-ledger.json`; this sums them and compares the total against
+Each slice writes a record under `workspace/campaign/governance/control/ledgers/`; this sums them and compares the total against
 what the measurement authority actually says changed between two commits. A campaign whose
 slices each reconcile locally can still be wrong globally -- lines get counted twice when a
 later slice deletes what an earlier one rewrote, and instruments the campaign itself adds
@@ -24,6 +24,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import CONTROL_ROOT
+
 # The campaign names five ledgers. A sixth category is genuinely missing from that scheme:
 # the instruments and records the campaign itself adds belong to no slice, and without a slot
 # they surface as an unexplained residual. `added_apparatus` is that slot.
@@ -74,7 +79,12 @@ def generation_reclassified_at(rev: str) -> int:
         p for p in tree.decode("utf-8", "replace").splitlines()
         if is_generated_source(p)
     ]
-    registry_blob = blob_at(rev, "control/GENERATED_REGISTRY.json")
+    registry_blob = blob_at(
+        rev,
+        "workspace/campaign/governance/control/catalog/manifests/GENERATED_REGISTRY.json",
+    )
+    if registry_blob is None:
+        registry_blob = blob_at(rev, "control/GENERATED_REGISTRY.json")
     try:
         registry = json.loads(registry_blob) if registry_blob is not None else {"entries": []}
     except json.JSONDecodeError:
@@ -117,7 +127,7 @@ def loc_at(rev: str) -> int | None:
 
 def slice_ledgers() -> list[dict]:
     out = []
-    for p in sorted((ROOT / "control").glob("S*-ledger.json")):
+    for p in sorted((CONTROL_ROOT / "ledgers").rglob("S*-ledger.json")):
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:

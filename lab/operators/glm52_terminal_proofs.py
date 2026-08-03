@@ -66,7 +66,7 @@ _CLOEXEC = getattr(os, 'O_CLOEXEC', 0)
 
 class TerminalProofError(Glm52Error):
     """Raised when a stop-condition claim is not exactly supported."""
-FROZEN_ARTIFACT_SEALS: dict[str, str] = {'GLM52_HANDOFF_PRECHECK.json': '7d2892d5e5c156d9537d334d7a91ddf023d6f7835bd444a32f71f734f229331e', 'KIMI_K26_GRAVITY_FINAL.json': '63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a', 'KIMI_K26_SOURCE_RELEASE_FOR_GLM52.json': '580c923ef86cfdb2a7aa16d84fa80139f5d49177509958edee87f8792b488ee2', 'KIMI_K26_DEVICE_CLEANSE_FINAL.json': 'b08ce29c12bbc3c2d37bc9f3154013df6316c261599d22843fef4289b48891c9', 'KIMI_K26_CREDENTIAL_REMEDIATION_FOR_GLM52.json': 'fd7fb566795030c1a0a21876c1d1302b780f0c5ac677bd30d9567867be72f2bd', 'reports/condense/kimi_k26/KIMI_K26_OFFICIAL_MANIFEST.json': '22123f6ed9ae2688da383b5de8c671e70071802e6fc1ca0a16df90c607885c60', 'KIMI_K26_GRAVITY_M1_ORACLE_BANDWIDTH.json': '8ff3234bf77ca96bc3bbb6858745fa37ec937e0d4ce5829283480e29e4a52de2', 'KIMI_K26_GRAVITY_M2_CONDITIONAL_GATE.json': 'c1a001c4bedb40ffc0b6a590514259fe7a198aaac402ffb5b691d5010c7881a1', 'KIMI_K26_GRAVITY_RATE_LADDER.json': 'b03e1c75c591f43ba3ba8beeb88c6a21537c673e746e947f8a5e7098f9ee45b8', 'KIMI_K26_GRAVITY_M7_ORACLE_GAP.json': '5f82435a0c655b2384a1bfffb90e3d0106f7aa448d7f9c0e2687bc3adef4434e', 'KIMI_K26_FINAL_BYTE_AUCTION.json': 'd8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719', 'KIMI_K26_DISK_POLICY.json': 'e44219c1f448055c49f27e17bc410d107ff7a45b7bd9d6eab9109a0affe5c4f2', 'KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json': '8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e', 'KIMI_K26_GRAVITY_ONEOFF_CLOSURE.json': '6776748c50fbcdf45a3441144dda55986592530e60e0e39d5307745cb8248ce7', 'KIMI_K26_LONG_RUN_FINAL.json': '9c31d2a22e488d4234f4acad443beb564ab263a32ebee06f01c5ba4e76a18bff', 'GLM52_SOURCE_ADMISSION.json': 'f6d80dcfd32ce77d591958c70771a41ce4ce0c00d167caa6a35a46267c42ddbe', 'GLM52_ARCHITECTURE_CONTRACT.json': 'dd1fea044872734b74572f57b3bd7d4966110d8f9001c115e0d989994189948f', 'GLM52_SHARD_DEPENDENCY_GRAPH.json': 'a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9', 'GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json': 'ca765d5197d25a888ebc1e31ca5d03cae4492235d3470dd6c93c53f98682af89', 'GLM52_OFFICIAL_MANIFEST.json': 'ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791', 'GLM52_LOGICAL_WEIGHT_LEDGER.json': 'd479791a7f3c279f0d1cc56a6203e214e4e2610da04010ba020347603dacb0db', 'GLM52_SOURCE_FORMAT_LEDGER.json': '14d1e124fdbb9286e0122736a2cf3ff857c375a7abf9204043d8b356f29f6d8e', 'GRAVITY_COMPLETENESS_AUDIT_GLM52_PRE.json': 'd298c265b3ecede35fcb3f0809aa004ea2a41bd2c11c1da51b741949e60648bd', 'GRAVITY_EXTERNAL_BASELINE_MATRIX.json': 'c69b5d636944fbbfcdc76c72ce3441e323add538b94a3566b25f251f1ff49206', 'GLM52_ADAPTER_TWIN.json': '8e2f0c5dfbc9647c240373ad207d6572ba6aad85d8fa1d521c9f7f1b93eb11fe', 'GLM52_REFERENCE_PARITY.json': '6b7d9764f8af6d1d795bada3966d7b73807941a092c781d0fca1a9daeb2dafa1', 'GLM52_CORPUS_INTEGRITY.json': '7f5eff81a10c01b231e829d5870d6e8290a745a4bacdf4dfe74c4d0e5080e767'}
+FROZEN_ARTIFACT_SEALS: dict[str, str] = {'GLM52_HANDOFF_PRECHECK.json': '7d2892d5e5c156d9537d334d7a91ddf023d6f7835bd444a32f71f734f229331e', 'KIMI_K26_GRAVITY_FINAL.json': '63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a', 'KIMI_K26_SOURCE_RELEASE_FOR_GLM52.json': '580c923ef86cfdb2a7aa16d84fa80139f5d49177509958edee87f8792b488ee2', 'KIMI_K26_DEVICE_CLEANSE_FINAL.json': 'b08ce29c12bbc3c2d37bc9f3154013df6316c261599d22843fef4289b48891c9', 'KIMI_K26_CREDENTIAL_REMEDIATION_FOR_GLM52.json': 'fd7fb566795030c1a0a21876c1d1302b780f0c5ac677bd30d9567867be72f2bd', 'reports/condense/kimi_k26/KIMI_K26_OFFICIAL_MANIFEST.json': '22123f6ed9ae2688da383b5de8c671e70071802e6fc1ca0a16df90c607885c60', 'KIMI_K26_GRAVITY_M1_ORACLE_BANDWIDTH.json': '8ff3234bf77ca96bc3bbb6858745fa37ec937e0d4ce5829283480e29e4a52de2', 'KIMI_K26_GRAVITY_M2_CONDITIONAL_GATE.json': 'c1a001c4bedb40ffc0b6a590514259fe7a198aaac402ffb5b691d5010c7881a1', 'KIMI_K26_GRAVITY_RATE_LADDER.json': 'b03e1c75c591f43ba3ba8beeb88c6a21537c673e746e947f8a5e7098f9ee45b8', 'KIMI_K26_GRAVITY_M7_ORACLE_GAP.json': '5f82435a0c655b2384a1bfffb90e3d0106f7aa448d7f9c0e2687bc3adef4434e', 'KIMI_K26_FINAL_BYTE_AUCTION.json': 'd8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719', 'KIMI_K26_DISK_POLICY.json': 'e44219c1f448055c49f27e17bc410d107ff7a45b7bd9d6eab9109a0affe5c4f2', 'KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json': '8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e', 'KIMI_K26_GRAVITY_ONEOFF_CLOSURE.json': '6776748c50fbcdf45a3441144dda55986592530e60e0e39d5307745cb8248ce7', 'KIMI_K26_LONG_RUN_FINAL.json': '9c31d2a22e488d4234f4acad443beb564ab263a32ebee06f01c5ba4e76a18bff', 'GLM52_SOURCE_ADMISSION.json': '304d77d6b6c7bc4dadd6e4b4d078e425017864b7718bbc3a5d998f45a1a7f07a', 'GLM52_ARCHITECTURE_CONTRACT.json': 'dd1fea044872734b74572f57b3bd7d4966110d8f9001c115e0d989994189948f', 'GLM52_SHARD_DEPENDENCY_GRAPH.json': 'a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9', 'GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json': 'ca765d5197d25a888ebc1e31ca5d03cae4492235d3470dd6c93c53f98682af89', 'GLM52_OFFICIAL_MANIFEST.json': 'ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791', 'GLM52_LOGICAL_WEIGHT_LEDGER.json': 'd479791a7f3c279f0d1cc56a6203e214e4e2610da04010ba020347603dacb0db', 'GLM52_SOURCE_FORMAT_LEDGER.json': '14d1e124fdbb9286e0122736a2cf3ff857c375a7abf9204043d8b356f29f6d8e', 'GRAVITY_COMPLETENESS_AUDIT_GLM52_PRE.json': 'd298c265b3ecede35fcb3f0809aa004ea2a41bd2c11c1da51b741949e60648bd', 'GRAVITY_EXTERNAL_BASELINE_MATRIX.json': 'c69b5d636944fbbfcdc76c72ce3441e323add538b94a3566b25f251f1ff49206', 'GLM52_ADAPTER_TWIN.json': '8e2f0c5dfbc9647c240373ad207d6572ba6aad85d8fa1d521c9f7f1b93eb11fe', 'GLM52_REFERENCE_PARITY.json': '6b7d9764f8af6d1d795bada3966d7b73807941a092c781d0fca1a9daeb2dafa1', 'GLM52_CORPUS_INTEGRITY.json': '7f5eff81a10c01b231e829d5870d6e8290a745a4bacdf4dfe74c4d0e5080e767'}
 FROZEN_RAW_DOCUMENT_SHA256: dict[str, str] = {'KIMI_K26_GRAVITY_FINAL.md': '04370b55d1073923877989874cbf336869c949cd4892dbe3e1a845c5e2fc0752', 'KIMI_K26_NEXT_PARENT_TRANSFER.md': '8c34b679524327e4a3ff61bc82fe7d451f62c42f3d200e7aafe0423a10a01a34'}
 _KIMI_CHAIN: dict[str, tuple[str, str, str | None]] = {'M1': ('KIMI_K26_GRAVITY_M1_ORACLE_BANDWIDTH.json', 'hawking.kimi_k26.gravity.m1_oracle_bandwidth.v1', 'PASS'), 'M2': ('KIMI_K26_GRAVITY_M2_CONDITIONAL_GATE.json', 'hawking.kimi_k26.gravity.m2_conditional_gate.v1', 'PASS'), 'M5': ('KIMI_K26_GRAVITY_RATE_LADDER.json', 'hawking.kimi_k26.gravity_rate_ladder.v1.artifact', 'PASS'), 'M7': ('KIMI_K26_GRAVITY_M7_ORACLE_GAP.json', 'hawking.kimi_k26.gravity.m7_oracle_gap.v1', 'PARTIAL_WAITING_PREREQUISITE'), 'byte_auction': ('KIMI_K26_FINAL_BYTE_AUCTION.json', 'hawking.kimi_k26.final_byte_auction.v1', 'PASS'), 'disk_policy': ('KIMI_K26_DISK_POLICY.json', 'hawking.kimi_k26.disk_policy.v1', 'PASS'), 'nonlinear_tournament': ('KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json', 'hawking.kimi_k26.gravity_nonlinear.v1.tournament', 'PASS'), 'oneoff_closure': ('KIMI_K26_GRAVITY_ONEOFF_CLOSURE.json', 'hawking.kimi_k26.gravity_oneoff_closure.v1', 'PASS'), 'prior_long_run': ('KIMI_K26_LONG_RUN_FINAL.json', 'hawking.kimi_k26.long_run_final.v1', None)}
 _PRE_AUDIT_AXES: tuple[str, ...] = ('source_authority', 'source_precision', 'logical_weight_accounting', 'physical_artifact_accounting', 'adapter_fidelity', 'teacher_forward_fidelity', 'streaming_completeness', 'resume_recovery', 'data_integrity', 'causal_diagnosis', 'doctor_breadth', 'native_studentization', 'rate_exploration', 'full_model_artifact', 'capability_evaluation', 'direct_runtime', 'metal_execution', 'speed_efficiency', 'resource_utilization', 'scientific_transfer', 'reproducibility')
@@ -237,18 +237,36 @@ class _Reader:
         return tuple(pure.parts)
 
     def _locate(self, relative: str) -> str:
-        """Map a bare basename onto ``evidence/<campaign>/<basename>``.
+        """Map a historical evidence name onto its current sealed location.
 
-        Callers address artifacts by basename, and that same string is the
-        ``FROZEN_ARTIFACT_SEALS`` key and the ``path`` reported in every
-        binding, so it must not change when the file moves. Only the
-        directory walk below sees the real location; each component of it is
-        still opened with ``O_NOFOLLOW``, so this picks a path, it does not
-        relax the check.
+        Callers address artifacts by their historical logical name, and that
+        same string is the ``FROZEN_ARTIFACT_SEALS`` key and the ``path``
+        reported in every binding, so it must not change when the file moves.
+        Some older receipts contain a root-level ``tools/condense`` path or a
+        nested ``reports/condense`` path while the sealed file now lives in a
+        campaign directory under ``evidence``.  Resolve only by exact
+        basename, then let the descriptor walk below enforce the real
+        no-follow and identity checks.  This picks a path; it does not relax
+        the safety checks on that path.
         """
-        if '/' in relative or (self.root / relative).is_file():
+        direct = self.root / relative
+        # Preserve an existing path, including a broken or dangling symlink,
+        # so the no-follow reader below can reject it instead of silently
+        # falling through to a same-basename evidence file.
+        if os.path.lexists(direct):
             return relative
-        found = sorted((self.root / 'evidence').glob(f'*/{relative}'))
+
+        if relative.startswith('reports/'):
+            relocated_report = self.root / 'workspace/campaign/records' / relative
+            if os.path.lexists(relocated_report):
+                return relocated_report.relative_to(self.root).as_posix()
+
+        basename = PurePosixPath(relative).name
+        found = sorted((self.root / 'workspace/campaign/evidence').glob(f'*/*/{basename}'))
+        if not found:
+            # Read-only compatibility for a historical checkout or an isolated
+            # fixture that still uses the former evidence/<campaign> layout.
+            found = sorted((self.root / 'evidence').glob(f'*/{basename}'))
         if not found:
             return relative
         return found[0].relative_to(self.root).as_posix()

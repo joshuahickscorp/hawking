@@ -83,6 +83,60 @@ mod arena_imp {
     }
 
     impl DenseDecodeArena {
+        /// Exact sum of persistent Metal buffer lengths currently owned by
+        /// this arena, including optional KV/quant scratch once admitted.
+        pub fn allocated_bytes(&self) -> u64 {
+            let required = [
+                &self.q_buf,
+                &self.k_token_buf,
+                &self.v_token_buf,
+                &self.k_cache_buf,
+                &self.v_cache_buf,
+                &self.attn_out_buf,
+                &self.x_buf,
+                &self.x_norm_buf,
+                &self.ffn_gate_buf,
+                &self.ffn_up_buf,
+                &self.ffn_act_buf,
+                &self.ffn_down_buf,
+                &self.o_proj_out_buf,
+                &self.logits_buf,
+                &self.token_buf,
+                &self.token_batch_buf,
+                &self.q_buf_batch,
+                &self.k_token_buf_batch,
+                &self.v_token_buf_batch,
+                &self.attn_out_buf_batch,
+                &self.x_buf_batch,
+                &self.x_norm_buf_batch,
+                &self.ffn_gate_buf_batch,
+                &self.ffn_up_buf_batch,
+                &self.ffn_act_buf_batch,
+                &self.ffn_down_buf_batch,
+                &self.o_proj_out_buf_batch,
+            ];
+            let optional = [
+                self.k_cache_f16_buf.as_ref(),
+                self.v_cache_f16_buf.as_ref(),
+                self.k_cache_int4_packed.as_ref(),
+                self.v_cache_int4_packed.as_ref(),
+                self.k_cache_int4_scales.as_ref(),
+                self.v_cache_int4_scales.as_ref(),
+                self.x_norm_int8.as_ref(),
+                self.x_norm_scales.as_ref(),
+                self.attn_out_int8.as_ref(),
+                self.attn_out_scales.as_ref(),
+                self.ffn_act_int8.as_ref(),
+                self.ffn_act_scales.as_ref(),
+            ];
+            required.iter().map(|buffer| buffer.length()).sum::<u64>()
+                + optional
+                    .into_iter()
+                    .flatten()
+                    .map(|buffer| buffer.length())
+                    .sum::<u64>()
+        }
+
         #[allow(clippy::too_many_arguments)]
         pub fn new(
             ctx: &MetalContext,

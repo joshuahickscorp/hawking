@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.tg.model_lane_purge.v2",
+  "status": "PURGED_AND_RECOVERED",
+  "source_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_ORACLE_COMPARISON_RESULT_V2_2026_08_02.json",
+  "lane": "models/tg-active/deepseek-v2-lite-2026-08-02-stage-oracle",
+  "evicted": [
+    {
+      "name": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+      "bytes": 10364416320,
+      "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+    },
+    {
+      "name": "deepseek-v2-lite-q4.gravity",
+      "bytes": 10362253454,
+      "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788"
+    },
+    {
+      "name": "cpu-stage-trace.json",
+      "bytes": 1317460,
+      "sha256": "c0c6c1c89f1e947363629d941686d18e45891d9da202cf8b3bad806735bd9350"
+    },
+    {
+      "name": "native-stage-trace-v2.jsonl",
+      "bytes": 1471208,
+      "sha256": "e2d2d42bc22df59b36af23a1f847ee60f5bc6d5f88c2aaeaeebc02c45244985e"
+    }
+  ],
+  "eviction": {
+    "method": "macOS Finder Trash followed by exact-name permanent purge",
+    "trash_target": "deepseek-v2-lite-2026-08-02-stage-oracle",
+    "exact_trash_target_absent": true,
+    "lane_empty": true,
+    "unrelated_trash_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+  },
+  "storage": {
+    "free_before_move_to_trash": 355163746304,
+    "free_after_trash_move": 355166269440,
+    "free_after_exact_purge": 375911223296,
+    "observed_free_recovery": 20747476992,
+    "protected_floor_bytes": 200005889556,
+    "floor_preserved": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "079e0aca557ad81b38da6d4fe47ff0907e4100b4270518f7f46b2710dbd03d60"
+}

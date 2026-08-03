@@ -21,6 +21,8 @@ use hawking_context::{
     ClassMemoryDraft, ClassedMemorySystem, DynClassedMemory, EpisodicWriteCap, MemoryClass,
     ProceduralWriteCap, ProjectWriteCap, TurnWriteCap, UserWriteCap, VerifierWriteCap,
 };
+use hawking_events::{Category, ContentVerification, NewCanonical, Subsystem};
+use hawking_speculate::VerifiedTokenId;
 use hide_core::event::{Event, EventLog, NewEvent};
 use hide_core::tool::{ToolCall, ToolResult, ToolStatus};
 use hide_core::Result;
@@ -31,6 +33,115 @@ use std::sync::Arc;
 /// never calls [`ClassedMemorySystem::evict_session`] would grow without bound.
 /// Oldest rows (ULID order) are pruned after each episodic write that exceeds it.
 pub const EPISODIC_SESSION_CAP: usize = 2_048;
+
+/// Product-wide durable-log fence for generated token events. Legacy HIDE
+/// events remain readable/writable during canonical migration, but anything
+/// claiming to be a model token must carry the canonical target-verified
+/// envelope and may not explicitly mark itself unverified.
+pub struct VerifiedTokenEventLog {
+    inner: hide_core::persistence::DynEventLog,
+}
+
+impl VerifiedTokenEventLog {
+    pub(crate) fn authority(inner: hide_core::persistence::DynEventLog) -> Arc<Self> {
+        Arc::new(Self { inner })
+    }
+
+    fn validate(event: &NewEvent) -> Result<()> {
+        if !matches!(
+            event.kind.as_str(),
+            "model.token" | "model.token_batch" | "token" | "token_batch"
+        ) {
+            return Ok(());
+        }
+        Err(hide_core::error::HideError::PolicyDenied(
+            "durable model token refused: generic JSON cannot mint target verification".into(),
+        ))
+    }
+
+    /// The sole token append authority.  Callers must present the opaque
+    /// `VerifiedTokenId`; the event body is constructed here and never trusted
+    /// from caller-controlled JSON.
+    pub async fn append_target_verified(
+        &self,
+        session_id: hide_core::ids::SessionId,
+        token: VerifiedTokenId,
+        text: &str,
+    ) -> Result<Event> {
+        self.inner
+            .append(
+                NewCanonical::new(
+                    session_id,
+                    Subsystem::HideBackend,
+                    ContentVerification::TargetVerified,
+                    Category::Text,
+                    serde_json::json!({
+                        "stream_id": "speculation_safe",
+                        "token_id": token.get(),
+                        "text": text,
+                        "finish_reason": null,
+                        "verified": true,
+                    }),
+                )
+                .with_kind("model.token")
+                .into_new_event(),
+            )
+            .await
+    }
+
+    /// Append the canonical assistant completion produced by a direct target
+    /// decode. The opaque verification token makes this distinct from a
+    /// caller-supplied `agent.message`: only this authority constructs the
+    /// target-verified envelope that durable history consumes.
+    pub async fn append_target_verified_assistant(
+        &self,
+        session_id: hide_core::ids::SessionId,
+        completion: VerifiedTokenId,
+        text: &str,
+    ) -> Result<Event> {
+        self.inner
+            .append(
+                NewCanonical::new(
+                    session_id,
+                    Subsystem::HideBackend,
+                    ContentVerification::TargetVerified,
+                    Category::Text,
+                    serde_json::json!({
+                        "stream_id": "target_direct",
+                        "completion_id": completion.get(),
+                        "role": "assistant",
+                        "text": text,
+                        "verified": true,
+                    }),
+                )
+                .with_kind("agent.message")
+                .into_new_event(),
+            )
+            .await
+    }
+}
+
+impl EventLog for VerifiedTokenEventLog {
+    fn append<'a>(&'a self, event: NewEvent) -> BoxFuture<'a, Result<Event>> {
+        Box::pin(async move {
+            Self::validate(&event)?;
+            self.inner.append(event).await
+        })
+    }
+
+    fn scan<'a>(
+        &'a self,
+        session_id: Option<hide_core::ids::SessionId>,
+        after_seq: Option<u64>,
+        limit: Option<usize>,
+    ) -> BoxFuture<'a, Result<Vec<Event>>> {
+        self.inner.scan(session_id, after_seq, limit)
+    }
+
+    fn compact_before<'a>(&'a self, before_seq: u64) -> BoxFuture<'a, Result<usize>> {
+        self.inner.compact_before(before_seq)
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Working — mint: TurnWriteCap::new at turn-core entry; lifetime: WorkingTurnGuard
@@ -261,7 +372,19 @@ impl EpisodicEventMirror {
         inner: hide_core::persistence::DynEventLog,
         classed: DynClassedMemory,
     ) -> hide_core::persistence::DynEventLog {
-        Arc::new(Self::new(inner, classed))
+        Self::wrap_with_token_authority(inner, classed).0
+    }
+
+    pub fn wrap_with_token_authority(
+        inner: hide_core::persistence::DynEventLog,
+        classed: DynClassedMemory,
+    ) -> (
+        hide_core::persistence::DynEventLog,
+        Arc<VerifiedTokenEventLog>,
+    ) {
+        let authority = VerifiedTokenEventLog::authority(inner);
+        let guarded: hide_core::persistence::DynEventLog = authority.clone();
+        (Arc::new(Self::new(guarded, classed)), authority)
     }
 }
 
@@ -590,6 +713,7 @@ pub fn count_class(classed: &ClassedMemorySystem, class: MemoryClass) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hawking_speculate::{DraftTokenId, TargetVerification};
     use hide_core::event::{InMemoryEventLog, ToolCallEvent, ToolResultEvent};
     use hide_core::ids::{SessionId, ToolCallId};
     use hide_core::tool::{ToolCall, ToolError, ToolResult, ToolStatus};
@@ -598,6 +722,77 @@ mod tests {
     use serde_json::json;
     fn mem() -> ClassedMemorySystem {
         ClassedMemorySystem::open_in_memory("ws-writers").unwrap()
+    }
+
+    #[tokio::test]
+    async fn durable_token_fence_rejects_provisional_and_accepts_target_verified() {
+        let raw = Arc::new(InMemoryEventLog::new());
+        let authority = VerifiedTokenEventLog::authority(raw.clone());
+        let log: hide_core::persistence::DynEventLog = authority.clone();
+        let session = SessionId::new();
+        let provisional = NewCanonical::new(
+            session.clone(),
+            Subsystem::Speculate,
+            ContentVerification::Provisional,
+            Category::Text,
+            json!({"token_id": 7, "text": "draft", "verified": false}),
+        )
+        .with_kind("model.token")
+        .into_new_event();
+        assert!(log.append(provisional).await.is_err());
+        assert!(raw
+            .scan(Some(session.clone()), None, None)
+            .await
+            .unwrap()
+            .is_empty());
+
+        let forged_verified_json = NewCanonical::new(
+            session.clone(),
+            Subsystem::Speculate,
+            ContentVerification::TargetVerified,
+            Category::Text,
+            json!({"token_id": 7, "text": "verified", "verified": true}),
+        )
+        .with_kind("model.token")
+        .into_new_event();
+        assert!(log.append(forged_verified_json).await.is_err());
+        let forged_batch = NewEvent::system(
+            session.clone(),
+            "token_batch",
+            serde_json::json!({"verified": true}),
+        );
+        assert!(log.append(forged_batch).await.is_err());
+        let gate = TargetVerification::gate();
+        let verified = gate
+            .try_promote(DraftTokenId::id(7), 7)
+            .expect("matching target token");
+        authority
+            .append_target_verified(session.clone(), verified, "verified")
+            .await
+            .unwrap();
+        assert_eq!(raw.scan(Some(session), None, None).await.unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn assistant_history_is_constructed_with_target_verified_provenance() {
+        let raw = Arc::new(InMemoryEventLog::new());
+        let authority = VerifiedTokenEventLog::authority(raw.clone());
+        let session = SessionId::new();
+        authority
+            .append_target_verified_assistant(
+                session.clone(),
+                TargetVerification::gate().emit_target(42),
+                "verified completion",
+            )
+            .await
+            .unwrap();
+        let events = raw.scan(Some(session), None, None).await.unwrap();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].kind, "agent.message");
+        assert_eq!(events[0].payload["role"], "assistant");
+        assert_eq!(events[0].payload["text"], "verified completion");
+        assert_eq!(events[0].payload["verified"], true);
+        assert_eq!(events[0].payload["completion_id"], 42);
     }
     #[test]
     fn procedural_success_writes_record_failure_does_not() {

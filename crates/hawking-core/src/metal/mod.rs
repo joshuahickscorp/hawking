@@ -842,12 +842,36 @@ mod imp {
             "moe_gather_combine" => "moe_gather_combine",
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
             "moe_route_accumulate" => "moe_route_accumulate",
+            "moe_route_accumulate_add" => "moe_route_accumulate_add",
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels
             "rope_inplace" => "rope_inplace",
+            "rope_norm_llama_b9430" => "rope_norm_llama_b9430",
+            "rope_norm_llama_b9430_cache_kv_f16" => "rope_norm_llama_b9430_cache_kv_f16",
+            "rope_norm_llama_b9430_qkv_cache_f16" => "rope_norm_llama_b9430_qkv_cache_f16",
+            "rmsnorm_llama_b9430" => "rmsnorm_llama_b9430",
+            "add_rmsnorm_llama_b9430" => "add_rmsnorm_llama_b9430",
+            "swiglu_llama_b9430" => "swiglu_llama_b9430",
+            "round_f16_llama_b9430" => "round_f16_llama_b9430",
+            "mha_decode_llama_b9430_short" => "mha_decode_llama_b9430_short",
+            "mha_decode_llama_b9430_fattn_main" => "mha_decode_llama_b9430_fattn_main",
+            "mha_decode_llama_b9430_fattn_reduce" => "mha_decode_llama_b9430_fattn_reduce",
+            "mha_decode_llama_b9430_fattn_prefill_main" => {
+                "mha_decode_llama_b9430_fattn_prefill_main"
+            }
+            "mha_decode_llama_b9430_fattn_prefill_reduce" => {
+                "mha_decode_llama_b9430_fattn_prefill_reduce"
+            }
+            "llama_b9430_cache_append_kv_f16" => "llama_b9430_cache_append_kv_f16",
+            "llama_b9430_cache_append_kv_f16_off" => "llama_b9430_cache_append_kv_f16_off",
             // dequant / gemm variants
             "dequant_q8_0" => "dequant_q8_0",
             "gemm_q4_k_m_fused" => "gemm_q4_k_m_fused",
+            "gemm_q4_k_m_llama_b9430" => "gemm_q4_k_m_llama_b9430",
+            "gemm_q4_k_m_llama_b9430_batched" => "gemm_q4_k_m_llama_b9430_batched",
+            "gemm_q4_k_m_llama_b9430_pair" => "gemm_q4_k_m_llama_b9430_pair",
+            "gemm_q5_k_serial_authority" => "gemm_q5_k_serial_authority",
+            "gemm_q6_k_llama_b9430" => "gemm_q6_k_llama_b9430",
             "gemm_q4_k_m_fused_simd" => "gemm_q4_k_m_fused_simd",
             "gemm_q4_k_m_fused_v2" => "gemm_q4_k_m_fused_v2",
             "gemv_f32_moe" => "gemv_f32_moe",
@@ -864,6 +888,7 @@ mod imp {
             "silu_mul" => "silu_mul",
             // residual / element-wise kernels
             "add_inplace" => "add_inplace",
+            "add_inplace_off" => "add_inplace_off",
             // Phase 7 fp16 kernels
             "rmsnorm_f16" => "rmsnorm_f16",
             "silu_mul_f16" => "silu_mul_f16",
@@ -935,6 +960,10 @@ mod imp {
             "gravity_zero_f32" => "gravity_zero_f32",
             "replayable_compute_graph" => "replayable_compute_graph",
             "gravity_pq_matvec" => "gravity_pq_matvec",
+            "gravity_raw_q5_0_matvec" => "gravity_raw_q5_0_matvec",
+            "gravity_raw_q5_0_pair_matvec" => "gravity_raw_q5_0_pair_matvec",
+            "gravity_raw_q8_0_matvec" => "gravity_raw_q8_0_matvec",
+            "gravity_raw_q5q5qv_rope_append" => "gravity_raw_q5q5qv_rope_append",
             "gravity_pq_matvec_bits8_direct" => "gravity_pq_matvec_bits8_direct",
             "gravity_pq_matvec_bits8_vec4" => "gravity_pq_matvec_bits8_vec4",
             "gravity_pq_matvec_bits8_double_single" => "gravity_pq_matvec_bits8_double_single",
@@ -949,6 +978,7 @@ mod imp {
             // v2t_gu_v2 kernel itself -- biggest attribution miss).
             "moe_batched_gemm_q4_indexed_v2t_gu" => "moe_batched_gemm_q4_indexed_v2t_gu",
             "moe_batched_gemm_q4_indexed_v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t_gu_v2",
+            "moe_batched_gemm_q4_indexed_v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t_gu_v3",
             "moe_batched_gemm_q8_0_indexed_v2t" => "moe_batched_gemm_q8_0_indexed_v2t",
             "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
             "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
@@ -1002,11 +1032,14 @@ mod imp {
             "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
             "rmsnorm_gemv_f16w_attn_pinned_v2t" => "rmsnorm_gemv_f16w_attn_pinned_v2t",
             "rope_q_f32_inplace" => "rope_q_f32_inplace",
+            "rope_q_interleaved_concat" => "rope_q_interleaved_concat",
             "kv_append_vbias_f32" => "kv_append_vbias_f32",
             "rope_qk_f32_b1_bias" => "rope_qk_f32_b1_bias",
             "rope_qk_kv_append_vbias_f32" => "rope_qk_kv_append_vbias_f32",
             "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
+            "rope_slice_interleaved_concat" => "rope_slice_interleaved_concat",
             "embed_lookup_f32" => "embed_lookup_f32",
+            "embed_lookup_q4_k_m" => "embed_lookup_q4_k_m",
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
             // Session F (sketch) -- fused add_inplace + rmsnorm_f32
             "add_rmsnorm_fused" => "add_rmsnorm_fused",
@@ -1038,6 +1071,7 @@ mod imp {
             "add_inplace_broadcast" => "add_inplace_broadcast",
             "memcpy_f32_off" => "memcpy_f32_off",
             "memcpy_f32_to_f16_off" => "memcpy_f32_to_f16_off",
+            "llama_b9430_cache_append_f32_f16" => "llama_b9430_cache_append_f32_f16",
             "add_rmsnorm_fused_batched" => "add_rmsnorm_fused_batched",
             "gemm_q4_k_m_batched_v2" => "gemm_q4_k_m_batched_v2",
             "gemm_q4_k_m_batched_v3" => "gemm_q4_k_m_batched_v3",
@@ -2105,11 +2139,48 @@ mod imp {
             assert_eq!(tcb.dispatch_count(), 2);
             tcb.commit_and_wait().unwrap();
             assert_eq!(read_f32(&output, n as usize), second);
-            assert_eq!(ctx.drain_stats(), (0, 0, 0));
+            // The graph itself allocates no hot buffers; the two complete
+            // replays above each submit exactly one token command buffer.
+            assert_eq!(ctx.drain_stats(), (0, 0, 2));
             assert_eq!(output.gpu_address(), output_address);
             assert_eq!(input.gpu_address(), input_address);
             assert_eq!(n_buffer.gpu_address(), n_address);
         }
+
+        #[test]
+        #[ignore = "requires a Metal device with compute indirect-command-buffer support"]
+        fn replayable_icb_binds_scalar_buffers_for_b9430_rmsnorm() {
+            let ctx = MetalContext::new().unwrap();
+            let x = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[1.0_f32; 8]));
+            let weight = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[1.0_f32; 8]));
+            let out = ctx.new_buffer(8 * std::mem::size_of::<f32>());
+            let hidden = ctx.new_buffer_with_bytes(&8_u32.to_ne_bytes());
+            let eps = ctx.new_buffer_with_bytes(&1e-5_f32.to_ne_bytes());
+            let graph = ReplayableComputeGraph::new(
+                &ctx,
+                vec![ReplayComputeStage::new(
+                    "rmsnorm_llama_b9430",
+                    (1024, 1, 1),
+                    (1024, 1, 1),
+                    vec![
+                        ReplayBufferBinding::read(0, &x, 0),
+                        ReplayBufferBinding::read(1, &weight, 0),
+                        ReplayBufferBinding::write(2, &out, 0),
+                        ReplayBufferBinding::read(3, &hidden, 0),
+                        ReplayBufferBinding::read(4, &eps, 0),
+                    ],
+                )
+                .with_threadgroup_memory_length(0, 32 * std::mem::size_of::<f32>())],
+            )
+            .unwrap();
+            let mut tcb = TokenCommandBuffer::new(&ctx);
+            tcb.execute_replayable_graph(&graph).unwrap();
+            tcb.commit_and_wait().unwrap();
+            let values = read_f32(&out, 8);
+            assert!(values.iter().all(|value| value.is_finite()));
+            assert!(values.iter().all(|value| (*value - 0.999_995).abs() < 1e-5));
+        }
+
         #[test]
         fn replayable_icb_group_orders_cross_graph_dependencies() {
             const N: u32 = 257;
@@ -2517,6 +2588,40 @@ mod imp {
             Ok(())
         }
 
+        /// Open one ordinary (ordered) compute encoder for a sequence of
+        /// dependent dispatches. Unlike [`Self::begin_concurrent_group`], this
+        /// uses Metal's serial dispatch type: write-after-read and
+        /// write-after-write dependencies are preserved by command order. It
+        /// is intended for a fully device-resident token lane that contains no
+        /// intervening blit encoder, and is opt-in at the caller until its
+        /// complete-token parity receipt is green.
+        pub fn begin_serial_group(&mut self) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "begin_serial_group called while a group is already active".into(),
+                ));
+            }
+            if !matches!(self.mode, TcbTraceMode::Off | TcbTraceMode::CpuEncode) {
+                return Ok(());
+            }
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let enc = cmd.new_compute_command_encoder();
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(
+                    command,
+                    "compute_encoder",
+                    "serial_group",
+                ));
+            } else {
+                enc.set_label("serial_group");
+            }
+            self.concurrent_encoder = Some(enc.to_owned());
+            Ok(())
+        }
+
         /// Close the active concurrent group. No-op if none is active.
         pub fn end_concurrent_group(&mut self) -> Result<()> {
             if let Some(enc) = self.concurrent_encoder.take() {
@@ -2914,6 +3019,9 @@ mod imp {
             enc.end_encoding();
             let cpu_us = t0_cpu.elapsed().as_micros() as u64;
             dedicated.commit();
+            if self.ctx.trace_dispatch {
+                self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
             dedicated.wait_until_completed();
             // GPUStartTime / GPUEndTime are not wrapped by metal 0.29 -- go
             // direct via objc msg_send. Both return CFTimeInterval (f64
@@ -2964,6 +3072,9 @@ mod imp {
                 blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
                 blit.end_encoding();
                 dedicated.commit();
+                if self.ctx.trace_dispatch {
+                    self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                }
                 dedicated.wait_until_completed();
                 return Ok(());
             }
@@ -3021,6 +3132,9 @@ mod imp {
 
                     let t_submit = Instant::now();
                     cmd.commit();
+                    if self.ctx.trace_dispatch {
+                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                    }
                     let commit_d = t_submit.elapsed();
                     cost_ledger::add_duration(Bucket::MetalSubmit, commit_d);
                     cost_ledger::record_command_buffer();
@@ -3103,6 +3217,9 @@ mod imp {
                 None
             };
             cmd.commit();
+            if self.ctx.trace_dispatch {
+                self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
             cmd.wait_until_completed();
             match self.mode {
                 TcbTraceMode::Off => {}

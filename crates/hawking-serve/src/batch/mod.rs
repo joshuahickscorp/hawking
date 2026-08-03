@@ -34,6 +34,12 @@ pub struct Slot {
     /// prefill_slot_from_pos(slot_id, prompt_ids, prefix_skip) instead of
     /// prefill_slot(slot_id, prompt_ids) to skip re-computing those positions.
     pub prefix_skip: usize,
+    /// Number of prompt tokens whose KV is materialized in this slot.
+    ///
+    /// This is separate from `prefix_skip`, which is a one-shot imported KV
+    /// prefix. The cursor advances only after a successful bounded prefill
+    /// submission, so partial prompt work can never be published as output.
+    pub prefill_cursor: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,6 +69,7 @@ impl Slot {
             position: 0,
             max_new_tokens: 0,
             prefix_skip: 0,
+            prefill_cursor: 0,
         }
     }
 
@@ -77,6 +84,8 @@ impl Slot {
         self.position = prompt_ids.len();
         self.prompt_ids = prompt_ids;
         self.generated_ids.clear();
+        self.prefix_skip = 0;
+        self.prefill_cursor = 0;
         self.req = Some(req);
         self.state = SlotState::Prefilling;
     }

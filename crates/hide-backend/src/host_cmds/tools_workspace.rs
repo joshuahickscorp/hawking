@@ -204,6 +204,27 @@ impl BackendHost {
             .await
     }
 
+    /// Dispatch one effect proposed by a model only after a durable,
+    /// target-verified token event minted its opaque causal permit. This is
+    /// deliberately separate from [`Self::dispatch_tool`], which is the
+    /// human/system path and continues to use normal permission approvals.
+    pub async fn dispatch_verified_model_tool(
+        &self,
+        session_id: SessionId,
+        run_id: Option<RunId>,
+        permit: crate::speculation_safety::VerifiedEffectPermit,
+        call: ToolCall,
+    ) -> Result<ToolResult> {
+        crate::tools::dispatch_verified_model_tool_effect(
+            session_id,
+            run_id,
+            permit,
+            call,
+            &self.dispatcher,
+        )
+        .await
+    }
+
     /// Schedule a parallel kernel run via `hide_fleet::FleetManager` and drive it
     /// to completion (the now-real fleet path - the previously-dead `hide-fleet`
     /// dep is load-bearing here). The run is enqueued, admitted under the fleet

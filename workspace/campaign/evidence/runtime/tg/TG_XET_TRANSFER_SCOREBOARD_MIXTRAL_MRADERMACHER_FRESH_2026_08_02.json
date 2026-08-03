@@ -1,0 +1,376 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_MIXTRAL_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "classification": "CLEAN_BOUNDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "lfs_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "xet_file_hash": "0aa43c812562a739239fed16ea0d74f997fe0841c524848093d2717c808b8ba5",
+    "license": "apache-2.0",
+    "official_base": "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "authenticated": false,
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "chunk_cache_bytes": 0,
+    "range_api": "XetSession.new_download_stream_group.download_stream",
+    "endpoint_binding": "HUB_DEFAULT_ENDPOINT",
+    "representative_range": {
+      "start": 0,
+      "end": 67108864,
+      "bytes": 67108864,
+      "sha256": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+    }
+  },
+  "trials": [
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 1,
+      "repeat": 1,
+      "elapsed_seconds": 2.4878339171409607,
+      "payload_bytes": 67108864,
+      "sealed_gb_per_hour_decimal": 97.1093402720546,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 1,
+      "repeat": 2,
+      "elapsed_seconds": 3.9657150409184396,
+      "payload_bytes": 67108864,
+      "sealed_gb_per_hour_decimal": 60.920138715778364,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 2,
+      "repeat": 1,
+      "elapsed_seconds": 2.3814415419474244,
+      "payload_bytes": 134217728,
+      "sealed_gb_per_hour_decimal": 202.89552033466097,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 2,
+      "repeat": 2,
+      "elapsed_seconds": 2.330491208937019,
+      "payload_bytes": 134217728,
+      "sealed_gb_per_hour_decimal": 207.33132094516216,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 1,
+      "elapsed_seconds": 3.3831592090427876,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 285.6406045027419,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 2,
+      "elapsed_seconds": 3.214447666890919,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 300.6325632716525,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 3,
+      "elapsed_seconds": 4.032281625084579,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 239.65777479139496,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 1,
+      "elapsed_seconds": 8.34819233394228,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 231.51542344584456,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 2,
+      "elapsed_seconds": 8.802814959082752,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 219.5587766167687,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 3,
+      "elapsed_seconds": 6.29497754201293,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 307.0281458989882,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 1,
+      "repeat": 1,
+      "elapsed_seconds": 1.4494957500137389,
+      "payload_bytes": 67108864,
+      "sealed_gb_per_hour_decimal": 166.6730726169498,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 1,
+      "repeat": 2,
+      "elapsed_seconds": 1.2293924579862505,
+      "payload_bytes": 67108864,
+      "sealed_gb_per_hour_decimal": 196.51325240414153,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 2,
+      "repeat": 1,
+      "elapsed_seconds": 2.256372000090778,
+      "payload_bytes": 134217728,
+      "sealed_gb_per_hour_decimal": 214.14191488839637,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 2,
+      "repeat": 2,
+      "elapsed_seconds": 1.8459123328793794,
+      "payload_bytes": 134217728,
+      "sealed_gb_per_hour_decimal": 261.75881280683416,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 1,
+      "elapsed_seconds": 4.766499290941283,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 202.7415892910293,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 2,
+      "elapsed_seconds": 2.7958555829245597,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 345.64290355410515,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 4,
+      "repeat": 3,
+      "elapsed_seconds": 3.070854667108506,
+      "payload_bytes": 268435456,
+      "sealed_gb_per_hour_decimal": 314.6901258306453,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 1,
+      "elapsed_seconds": 7.658200042089447,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 252.37461447568515,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 2,
+      "elapsed_seconds": 6.729517915984616,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 287.202635809792,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    },
+    {
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 8,
+      "repeat": 3,
+      "elapsed_seconds": 6.289278999902308,
+      "payload_bytes": 536870912,
+      "sealed_gb_per_hour_decimal": 307.3063356276644,
+      "range_sha256s": [
+        "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46"
+      ],
+      "range_sha256_expected": "c4fe2a444d20211d6e4d4b02cdcee3a00b9dabf6ea3ffdfe26fbcd9c76406b46",
+      "body_file_writes": 0,
+      "retries": 0
+    }
+  ],
+  "resume_trial": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 4,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "d177aec4ccec676e7c09333a0227057241bdc772e16aa51858785719aae33068",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "40476ff0e79d66d66f0fbf1454051132fb9bf49e3dd722a58d57579486bc40bd",
+    "resume_complete": true,
+    "resume_elapsed_seconds": 1.6572480408940464,
+    "body_file_writes": 0,
+    "retries": 0
+  },
+  "selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 4,
+    "stable_median_sealed_gb_per_hour_decimal": 314.6901258306453,
+    "medians_gb_per_hour_decimal": {
+      "standard": {
+        "1": 97.1093402720546,
+        "2": 207.33132094516216,
+        "4": 285.6406045027419,
+        "8": 231.51542344584456
+      },
+      "high_performance": {
+        "1": 196.51325240414153,
+        "2": 261.75881280683416,
+        "4": 314.6901258306453,
+        "8": 287.202635809792
+      }
+    },
+    "comparison": "three-repeat high-performance c4 median 314.6901258306453 GB/h is the fastest stable median; standard c4 median is 285.6406045027419 GB/h",
+    "bounded_range_only": true
+  },
+  "integrity": {
+    "all_range_hashes_identical": true,
+    "application_body_file_writes_total": 0,
+    "client_visible_retries_total": 0,
+    "resume_complete": true,
+    "free_disk_delta_is_not_model_body_evidence": true
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 357233774592,
+    "protected_floor_bytes": 200005889556,
+    "source_bytes": 28448468384,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "planned_source_scratch_metadata_bytes": 55359122848,
+    "planned_headroom_above_floor_after_body": 101868762188,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "verdict": "PASS_PENDING_BODY_TRANSFER"
+  },
+  "claim_boundary": "Official bounded Xet range transfer and byte-admission prerequisite only; no model capability, TPS, TG, production lease, or owner gate is inferred.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}
+

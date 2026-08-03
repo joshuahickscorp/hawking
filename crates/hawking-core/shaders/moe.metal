@@ -162,7 +162,14 @@ kernel void moe_topk_gate(
             uint best_idx = 0;
             float best_val = -INFINITY;
             for (uint i = 0; i < args.n_experts; ++i) {
-                if (shmem[i] > best_val) { best_val = shmem[i]; best_idx = i; }
+                bool finite_pair = isfinite(best_val) && isfinite(shmem[i]);
+                bool tied = args.tie_epsilon > 0.0f
+                    && finite_pair
+                    && abs(shmem[i] - best_val) <= args.tie_epsilon;
+                if ((shmem[i] > best_val && !tied) || (tied && i < best_idx)) {
+                    best_val = shmem[i];
+                    best_idx = i;
+                }
             }
             expert_ids[(uint64_t)gid * args.top_k + k] = best_idx;
             weights[(uint64_t)gid * args.top_k + k]    = best_val;
@@ -738,6 +745,121 @@ kernel void moe_batched_gemm_q4_indexed_v2t_gu_v2(
     }
 }
 
+// ── moe_batched_gemm_q4_indexed_v2t_gu_v3 ────────────────────────────────────
+// v2t_gu_v2 with paired routes per threadgroup.  Two routed experts share the
+// cooperative activation preload, so x is fetched from device memory once for
+// both routes instead of once per route.  Each route still owns eight
+// simdgroups (eight output rows), preserving the v2t_gu_v2 arithmetic and
+// output layout.  Odd route counts use the same barrier-safe early return.
+// Grid: (ceil(rows/8)*512, ceil(routes/2), 1)   TG: (512, 1, 1)
+// shmem: cols*4 bytes.
+kernel void moe_batched_gemm_q4_indexed_v2t_gu_v3(
+    device const uchar* w_all         [[buffer(0)]],
+    device const uint*  route_ids     [[buffer(1)]],
+    device const float* x             [[buffer(2)]],
+    device       float* y_act         [[buffer(3)]],  // silu(gate) * up
+    constant     ulong& gate_offset   [[buffer(4)]],
+    constant     ulong& up_offset     [[buffer(5)]],
+    constant     uint&  routes        [[buffer(6)]],
+    constant     uint&  rows          [[buffer(7)]],
+    constant     uint&  cols          [[buffer(8)]],
+    threadgroup  float* x_cache       [[threadgroup(0)]],
+    uint2               tid2          [[thread_position_in_threadgroup]],
+    uint2               tgp           [[threadgroup_position_in_grid]],
+    uint                simd_lane     [[thread_index_in_simdgroup]],
+    uint                simd_id       [[simdgroup_index_in_threadgroup]])
+{
+    uint tid = tid2.x;
+    // One cooperative preload is shared by both routes in this threadgroup.
+    for (uint i = tid; i < cols; i += 512u) x_cache[i] = x[(uint64_t)i];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint route_in_pair = simd_id / 8u;
+    uint row_simd       = simd_id & 7u;
+    uint route           = tgp.y * 2u + route_in_pair;
+    uint base_row        = tgp.x * 8u + row_simd;
+    if (route >= routes || base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 256u;
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 144ul;
+
+    uint64_t gate_row_off = gate_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t up_row_off   = up_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+
+    float gate_partial = 0.0f, up_partial = 0.0f;
+    float total_gate_corr = 0.0f, total_up_corr = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo_g = gate_row_off + (uint64_t)b * 144ul;
+        uint64_t bo_u = up_row_off   + (uint64_t)b * 144ul;
+
+        float dg    = fp16_at(w_all, bo_g);
+        float dming = fp16_at(w_all, bo_g + 2ul);
+        float du    = fp16_at(w_all, bo_u);
+        float dminu = fp16_at(w_all, bo_u + 2ul);
+
+        uchar sg[8], mg[8], su[8], mu[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sg[sub] = w_all[bo_g + 4u + sub]      & 0x3Fu;
+            mg[sub] = w_all[bo_g + 4u + 4u + sub] & 0x3Fu;
+            su[sub] = w_all[bo_u + 4u + sub]      & 0x3Fu;
+            mu[sub] = w_all[bo_u + 4u + 4u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sg[4u+j] = (w_all[bo_g + 4u + 8u + j] & 0x0Fu)
+                     | ((w_all[bo_g + 4u + j]      >> 6u) << 4u);
+            mg[4u+j] = (w_all[bo_g + 4u + 8u + j] >> 4u)
+                     | ((w_all[bo_g + 4u + 4u + j] >> 6u) << 4u);
+            su[4u+j] = (w_all[bo_u + 4u + 8u + j] & 0x0Fu)
+                     | ((w_all[bo_u + 4u + j]      >> 6u) << 4u);
+            mu[4u+j] = (w_all[bo_u + 4u + 8u + j] >> 4u)
+                     | ((w_all[bo_u + 4u + 4u + j] >> 6u) << 4u);
+        }
+
+        float dsg[8], dmg[8], dsu[8], dmu[8];
+        for (uint k = 0; k < 8u; ++k) {
+            dsg[k] = dg    * (float)sg[k];
+            dmg[k] = dming * (float)mg[k];
+            dsu[k] = du    * (float)su[k];
+            dmu[k] = dminu * (float)mu[k];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x_cache[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        float sumy[8];
+        for (uint k = 0; k < 8u; ++k) sumy[k] = simd_sum(xl[k]);
+        for (uint k = 0; k < 8u; ++k) {
+            total_gate_corr += dmg[k] * sumy[k];
+            total_up_corr   += dmu[k] * sumy[k];
+        }
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qg = w_all[bo_g + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uchar qu = w_all[bo_u + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            gate_partial += dsg[k0] * (float)(qg & 0x0Fu) * xl[k0]
+                          + dsg[k1] * (float)(qg >> 4u)   * xl[k1];
+            up_partial   += dsu[k0] * (float)(qu & 0x0Fu) * xl[k0]
+                          + dsu[k1] * (float)(qu >> 4u)   * xl[k1];
+        }
+    }
+
+    float gate_val = simd_sum(gate_partial) - total_gate_corr;
+    float up_val   = simd_sum(up_partial)   - total_up_corr;
+
+    if (simd_lane == 0u) {
+        float silu = gate_val / (1.0f + exp(-gate_val));
+        y_act[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = silu * up_val;
+    }
+}
+
 kernel void moe_batched_gemm_q8_0_indexed(
     device const uchar* w_all     [[buffer(0)]],
     device const uint*  route_ids [[buffer(1)]],
@@ -1152,6 +1274,46 @@ kernel void moe_route_accumulate(
         acc += weights[r] * routed_out[(uint64_t)r * args.hidden + id];
     }
     out[id] = acc;
+}
+
+// K5/K6 diagnostic: combine the routed/shared expert accumulation directly
+// into the residual stream. The result is mathematically identical to
+// `moe_route_accumulate` followed by the next layer's `add_inplace`, but avoids
+// an intermediate hidden-width write/read. The runtime keeps this opt-in so
+// the ordinary source-preserving graph remains byte-for-byte unchanged.
+kernel void moe_route_accumulate_add(
+    device const float* routed_out  [[buffer(0)]],   // (routes, hidden)
+    device const float* weights     [[buffer(1)]],   // (routes)
+    device const float* shared_out  [[buffer(2)]],   // (hidden) when has_shared=1
+    device       float* residual    [[buffer(3)]],   // (hidden), updated in place
+    constant ArgbufRouteAcc& args   [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.hidden) return;
+    float acc = residual[id];
+    if (args.has_shared != 0u) acc += shared_out[id];
+    for (uint r = 0; r < args.routes; ++r) {
+        acc += weights[r] * routed_out[(uint64_t)r * args.hidden + id];
+    }
+    residual[id] = acc;
+}
+
+// Mixtral K6 bounded path: top-2 expert outputs remain in their persistent
+// device buffers and are combined directly into the residual stream.  The
+// scalar route weights are deliberately supplied by the already-authoritative
+// CPU router; this kernel changes only where the weighted sum and residual add
+// execute, not route selection or accumulation order.
+kernel void moe_route_accumulate_two_add(
+    device const float* routed_out0 [[buffer(0)]],
+    device const float* routed_out1 [[buffer(1)]],
+    constant float& weight0         [[buffer(2)]],
+    constant float& weight1         [[buffer(3)]],
+    device       float* residual    [[buffer(4)]],
+    constant uint& hidden           [[buffer(5)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    residual[id] += weight0 * routed_out0[id] + weight1 * routed_out1[id];
 }
 
 // H2.3 — weighted gather of per-(token, expert) outputs back into

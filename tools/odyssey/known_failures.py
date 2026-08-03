@@ -12,6 +12,11 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from lab.layout import find_evidence
 from tools.odyssey._paths import ROOT, T0_DIR
 
 SCHEMA = "hawking.odyssey.t0.known_failures.v1"
@@ -21,10 +26,10 @@ REGISTRY_PATH = T0_DIR / "KNOWN_FAILURES_REGISTRY.json"
 def _load_json(rel: str) -> dict[str, Any] | None:
     # Callers name receipts by basename and that same string is the "source"
     # field of every registry entry, so it stays a basename; only the lookup
-    # follows the artifact into evidence/<campaign>/.
+    # follows the artifact into workspace/campaign/evidence/<area>/<campaign>/.
     path = ROOT / rel
     if not path.is_file():
-        path = next(iter(sorted((ROOT / "evidence").glob(f"*/{rel}"))), path)
+        path = find_evidence(rel) or path
     if not path.is_file():
         return None
     return json.loads(path.read_text())

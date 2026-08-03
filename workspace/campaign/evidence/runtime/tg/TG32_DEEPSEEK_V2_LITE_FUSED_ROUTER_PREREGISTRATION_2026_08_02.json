@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "fused-router-gemv-softmax-topk-v1",
+    "kind": "same_model_router_dispatch_fusion",
+    "hypothesis": "Fusing the fp32 router GEMV with stable softmax/top-k selection removes one dispatch per MoE layer while preserving the complete logits buffer and integer-id tie breaking.",
+    "mechanism": "A 256-thread Metal kernel uses eight SIMD groups to reduce eight expert rows at a time, repeats across the 64 experts, writes logits, then performs the existing stable softmax and strict-greater top-k selection in the same threadgroup.",
+    "scope": "same exact DeepSeek-V2-Lite Q4_K_M source/artifact, tokenizer, prompt, quantization, MLA, RoPE, routed experts and weights; only the opt-in router GEMV/top-k launch boundary changes",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_window_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "route_set_unchanged": true,
+      "unrelated_prompt_capability_probe": true
+    },
+    "reject_conditions": [
+      "any source-window token changes",
+      "route-set or route-weight authority mismatch",
+      "fallback > 0",
+      "shader/profile mismatch",
+      "no complete-token wall win >= 3%",
+      "p95 or p99 regression > 2%",
+      "unexplained logits or stage-trace divergence"
+    ]
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-r3-2026-08-02.json",
+    "shader_hash_before_candidate": "4178883ad381bacf5ff0285f",
+    "measured_tps": 41.06909043843913,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "source_window_ids": [100000, 549, 6077, 280, 7239, 317]
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "runtime": {
+    "opt_in": "HAWKING_DS_FUSED_ROUTER=1",
+    "candidate_shader_hash_after_build": "f40175626dcf50dfd629c206",
+    "candidate_kernel": "gemv_f32_moe_topk",
+    "threadgroup_threads": 256,
+    "simd_groups": 8,
+    "logits_output_preserved": true,
+    "expected_dispatch_reduction_per_moe_layer": 1
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "d85759f1d84cd8eaaea1f43326cc7bb10867c7d4ea0a3255ac5162a72c47ce41"
+}

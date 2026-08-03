@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.tg.adapter_oracle.v1",
+  "status": "TERMINAL_FOR_THIS_RUNG",
+  "rung": "TG2",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503",
+  "family": "mistral",
+  "source": {
+    "path": "models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "receipt": "evidence/tg/TG2_MISTRAL_SMALL_SOURCE_RECEIPT.json"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "new_tokens": 8,
+    "temperature": 0,
+    "external_command": "llama-completion -m models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf -p 'The capital of France is' -n 8 -ngl all --temp 0 --no-warmup -no-cnv --color off",
+    "hawking_command": "hawking generate --weights models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 8 --max-seq-len 32 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 30000"
+  },
+  "external_parent": {
+    "engine": "llama-completion",
+    "observed_completion_prefix": " Paris. It is the most populous",
+    "verdict": "PASS"
+  },
+  "hawking": {
+    "engine": "hawking generate (generic llama/mistral adapter)",
+    "first_token": null,
+    "elapsed_before_termination_seconds": 46,
+    "termination_reason": "No token or stats were emitted after model load. The requested 30-second per-forward guard did not return control during the initial prefill/K0 attempt, so only the exact launched process was terminated.",
+    "device_id": null,
+    "dispatches_per_forward": null,
+    "verdict": "FAIL"
+  },
+  "gate_results": {
+    "RAW_PARENT_FORWARD": "PASS",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "FAIL",
+    "AUTOTUNE_PROFILE": "BLOCKED",
+    "GRAVITY_ADAPTER": "BLOCKED",
+    "GRAVITY_ORACLE": "BLOCKED",
+    "RUNG_MEASUREMENT": "BLOCKED"
+  },
+  "decision": {
+    "do_not_autotune": "An adapter that cannot yield a first K0 token within its own guarded invocation is not an autotune candidate.",
+    "do_not_pack_gravity": "No Mistral Gravity adapter exists; raw state and hardware accounting must work first.",
+    "next_step": "Seal eviction and proceed to the declared lower-rung Llama rehydration. A later Mistral repair must start by making the prefill watchdog cover this no-token condition."
+  }
+}

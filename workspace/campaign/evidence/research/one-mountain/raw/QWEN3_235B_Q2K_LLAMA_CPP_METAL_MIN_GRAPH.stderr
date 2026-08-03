@@ -1,0 +1,12 @@
+/private/tmp/llama.cpp-20260530-6586-extbez/src/llama-context.cpp:1692: GGML_ASSERT(n_tokens_all <= cparams.n_batch) failed
+WARNING: Using native backtrace. Set GGML_BACKTRACE_LLDB for more info.
+WARNING: GGML_BACKTRACE_LLDB may cause native MacOS Terminal.app to crash.
+See: https://github.com/ggml-org/llama.cpp/pull/17869
+0   libggml-base.0.13.1.dylib           0x000000010468d818 ggml_print_backtrace + 276
+1   libggml-base.0.13.1.dylib           0x00000001046cf538 ggml_abort + 156
+2   libllama.0.0.9430.dylib             0x0000000104ccae0c _ZN13llama_context6decodeERK11llama_batch + 4020
+3   libllama.0.0.9430.dylib             0x0000000104cce698 llama_decode + 20
+4   libllama-common.0.0.9430.dylib      0x0000000104fbb5d8 _Z25common_context_can_seq_rmP13llama_context + 116
+5   libllama-cli-impl.dylib             0x00000001047b6718 _ZN19server_context_impl10load_modelER13common_params + 3556
+6   libllama-cli-impl.dylib             0x000000010473a96c _Z9llama_cliiPPc + 388
+7   dyld                                0x0000000182fe7bec start + 6688

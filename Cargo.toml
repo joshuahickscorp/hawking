@@ -92,11 +92,11 @@ default-members = [
 # package (concrete deps, no workspace inheritance) consumed by path dependency where wired -
 # kept OUT of the workspace build so `cargo build --workspace` and all golden hashes are
 # unchanged. Build/test it standalone with
-# `cargo test --manifest-path vendor/strand-quant/Cargo.toml`.
+# `cargo test --manifest-path workspace/vendor/strand-quant/Cargo.toml`.
 # strand-decode-kernel was archived 2026-07-28 (see docs/ARCHIVE_INDEX_2.md): zero reverse
 # dependencies, and its shader had diverged from the hawking-core port it once seeded.
 exclude = [
-    "vendor/strand-quant",
+    "workspace/vendor/strand-quant",
 ]
 
 [workspace.package]

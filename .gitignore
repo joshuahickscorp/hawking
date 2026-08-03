@@ -1,7 +1,7 @@
 # Rust
 /target
 **/target/
-/build/
+/workspace/ops/build/
 /node_modules/
 **/*.rs.bk
 *.pdb
@@ -21,8 +21,8 @@ Cargo.lock.bak
 
 # Manager↔executor file-based bus (internal AI dev pipeline; results ship via
 # normal commits to crates/, docs/, README.md, etc — not these working files)
-/prompts/
-/reports/
+/workspace/campaign/config/prompts/
+/workspace/campaign/records/reports/
 /tools/bus/
 
 # OS
@@ -34,9 +34,9 @@ Thumbs.db
 .env.local
 
 # Weights and large artifacts (never commit)
-weights/
-checkpoints/
-models/
+/workspace/ops/local/weights/
+/workspace/ops/local/checkpoints/
+/workspace/ops/local/models/
 *.safetensors
 *.gguf
 *.bin
@@ -44,8 +44,8 @@ models/
 # Condense working dirs: model weights, calib corpora, measurement artifacts
 # (scratch/ ~18GB of safetensors+sidecars; research/ measurement JSON).
 # Reproducible from source + scripts; never commit.
-scratch/
-research/
+/workspace/ops/local/scratch/
+/workspace/campaign/records/research/
 
 # Generated specialization artifacts: calibration corpus parquet shards,
 # learned-head .npz files, per-tensor quant configs, vocab-prune tables.
@@ -88,12 +88,12 @@ bench_results/v0.3.*/
 # artifacts are ignored by the **/target rule above — do NOT blanket-ignore vendor/.
 # The per-crate Cargo.lock is a standalone-build artifact (these crates are excluded
 # from the workspace + concrete-pinned in their Cargo.toml) — regenerable, not tracked.
-/vendor/strand-quant/Cargo.lock
-/vendor/strand-decode-kernel/Cargo.lock
+/workspace/vendor/strand-quant/Cargo.lock
+/workspace/vendor/strand-decode-kernel/Cargo.lock
 
 # Derived calibration artifacts (regenerable from corpus + GGUF + scripts)
 eagle4/qwen3b_frozen.npz
-profiles/qwen3b_awq_smoothing.json
+workspace/campaign/config/profiles/qwen/qwen3b_awq_smoothing.json
 
 # Eagle5 corrected-pipeline local artifacts (large, regenerable)
 _capture/
@@ -109,29 +109,40 @@ crates/hawking-core/reports/
 /colab/
 
 # Agent operating contract — kept on disk, not shipped
-/AGENT.md
+/workspace/ops/local/AGENT.md
 
 # Local bench-guard process-name config (machine-specific, not shipped)
 /.agent_env
 
 # local Mac Studio go-prompt
-GO.md
+/workspace/docs/guides/GO.md
 
 # Tauri sidecar build output and design masters
 app/src-tauri/binaries/
 *.psd
 
 # AI-session handoff notes (not documentation)
-docs/plans/hide_build_handoff_*.md
+workspace/docs/plans/hide_build_handoff_*.md
 
 # sovereignty spine bytecode
 tools/sovereignty/__pycache__/
 .serena/
 
-# Semantic graph, viewer and topology analyses now live under /build (ignored
+# Semantic graph, viewer and topology analyses now live under /workspace/ops/build (ignored
 # above): all deterministic, ~41s to regenerate with
 # tools/graph/hawking_graph.py --emit all
 
 # Instrument models for the TG gauntlet: fetched, transformed, sealed by
-# receipt, then evicted. Never committed; evidence/tg/ carries their hashes.
-/models/*.gguf
+# receipt, then evicted. Never committed; workspace/campaign/evidence/runtime/tg/ carries their hashes.
+/workspace/ops/local/models/*.gguf
+
+# Keep transient process output out of the compact repository root.
+/workspace/ops/logs/
+
+# pnpm workspace state under the relocated ops tree: regenerated on install,
+# and the root-anchored /node_modules/ rule above does not reach it.
+/workspace/ops/node_modules/
+
+# 52 MB GLM52 shard dependency graph. Regenerable campaign evidence, too large
+# to belong in a public repository; the receipt beside it carries its hash.
+/workspace/campaign/evidence/models/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json

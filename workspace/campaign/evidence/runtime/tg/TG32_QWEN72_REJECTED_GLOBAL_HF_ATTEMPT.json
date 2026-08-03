@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.transfer_attempt_retirement.v1",
+  "status": "REJECTED_RUNTIME_MISMATCH_EVICTED",
+  "source_binding": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "expected_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "rejection": {
+    "reason": "The unqualified shell hf executable reported huggingface_hub 1.13.0, while the sealed TG Xet matrix binds huggingface_hub 1.24.0 with hf_xet 1.5.2.",
+    "body_complete": false,
+    "source_sha256_verified": false,
+    "benchmark_or_tg_claim": "NONE",
+    "eligible_for_resume": false
+  },
+  "storage": {
+    "preflight_free_bytes": 418253352960,
+    "observed_partial_path": "models/tg-active/.cache/huggingface/download/uhoB_rgGDWs-HVQi_EUOeKzDehI=.e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545.incomplete",
+    "observed_partial_bytes": 4351479194,
+    "free_bytes_after_move_to_trash": 413855055872,
+    "free_bytes_after_exact_trash_purge": 418181271552,
+    "observed_recovery_bytes": 4326215680,
+    "recovery_boundary": "The filesystem free-byte samples are not isolated from other local activity. They prove the partial was not retained, but they do not claim byte-for-byte attribution of the small sample difference."
+  },
+  "eviction": {
+    "workspace_staging_absent": true,
+    "exact_trash_item_name": "tg-active",
+    "exact_trash_item_purged": true,
+    "other_trash_items_touched": false
+  },
+  "retry_contract": {
+    "required_cli": ".venv/glm52/bin/hf",
+    "required_versions": {
+      "huggingface_hub": "1.24.0",
+      "hf_xet": "1.5.2"
+    },
+    "fresh_byte_admission_required": true
+  },
+  "seal_sha256": "14aa90f32445c24bac966a25e0e339607322ec1098453ef7dc1903f03ff7f6ee"
+}

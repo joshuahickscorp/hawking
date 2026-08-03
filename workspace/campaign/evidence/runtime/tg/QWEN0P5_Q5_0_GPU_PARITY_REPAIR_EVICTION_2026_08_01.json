@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_ARTIFACT_TOKENIZER_CACHE_AND_DIAGNOSTICS_PURGED_FREE_BYTES_RECOVERED",
+  "at": "2026-08-01T22:55:00Z",
+  "family": "qwen",
+  "scope": "bounded Qwen Q5_0 GPU parity repair; no large-family completion or TG promotion",
+  "terminal_receipt": "evidence/tg/QWEN0P5_Q5_0_GPU_PARITY_REPAIR_2026_08_01.json",
+  "removed": [
+    {"path": "models/qwen0p5-gravity-parity-trace/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf", "bytes": 397808192, "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653", "classification": "official Qwen source body"},
+    {"path": "models/qwen0p5-gravity-parity-trace/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity", "bytes": 391949884, "sha256": "242bf2a4c6cc4864cce057520308261372a7f1ed1af5ce503247ccb5d6a03990", "classification": "source-preserving Gravity artifact"},
+    {"path": "models/qwen0p5-gravity-parity-trace/tokenizer/tokenizer.json", "bytes": 7031645, "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539", "classification": "hash-bound tokenizer"},
+    {"path": "models/qwen0p5-gravity-parity-trace/.cache and .hf-home", "classification": "campaign-local Hub metadata, lock, and Xet diagnostic log"},
+    {"path": "eleven exact /tmp pack, CPU/GPU trace, and full-logit diagnostics", "bytes": 224866, "classification": "bounded campaign diagnostics transcribed into the terminal receipt"}
+  ],
+  "trash": {
+    "exact_items": [
+      "/Users/scammermike/.Trash/qwen0p5-gravity-parity-trace",
+      "/Users/scammermike/.Trash/qwen0p5-parity-trace-pack.json",
+      "/Users/scammermike/.Trash/qwen0p5-cpu-layer-trace.json",
+      "/Users/scammermike/.Trash/qwen0p5-gpu-layer-trace.json",
+      "/Users/scammermike/.Trash/qwen0p5-cpu-layer-trace.log",
+      "/Users/scammermike/.Trash/qwen0p5-cpu-layer-trace-head.json",
+      "/Users/scammermike/.Trash/qwen0p5-cpu-layer-trace-head.log",
+      "/Users/scammermike/.Trash/qwen0p5-gpu-layer-trace-head.json",
+      "/Users/scammermike/.Trash/qwen0p5-gpu-layer-trace-head.log",
+      "/Users/scammermike/.Trash/qwen0p5-gpu-layer-trace-fixed.json",
+      "/Users/scammermike/.Trash/qwen0p5-gpu-layer-trace-fixed.log",
+      "/Users/scammermike/.Trash/qwen0p5-q5fix-cpu-gpu-full-logit.log"
+    ],
+    "other_trash_items_touched": false,
+    "purge_method": "Finder delete applied only to the twelve exact item names",
+    "exact_items_permanently_purged": true,
+    "postcondition": "each exact Trash path was absent after the Finder operation"
+  },
+  "filesystem": {
+    "free_before_bytes": 378608820224,
+    "free_after_bytes": 379400175616,
+    "recovered_bytes": 791355392,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 179394286060,
+    "recovery_interpretation": "source staging and exact Trash items were absent and the immediate free-space pair increased by 791355392 bytes. Concurrent normal filesystem activity makes this a recovery proof rather than a byte-for-byte df accounting claim."
+  },
+  "postconditions": {
+    "source_staging_absent": true,
+    "source_body_absent": true,
+    "artifact_absent": true,
+    "tokenizer_cache_and_diagnostics_absent": true,
+    "model_lane_contents": [],
+    "green_light_status_after_eviction": "STORAGE_GREEN",
+    "current_free_bytes_after_status": 379400171520,
+    "restream_started": false,
+    "owner_controlled_gates_changed": false
+  },
+  "cold_upload": {"performed": false, "reason": "no configured remote destination or owner upload authority"}
+}

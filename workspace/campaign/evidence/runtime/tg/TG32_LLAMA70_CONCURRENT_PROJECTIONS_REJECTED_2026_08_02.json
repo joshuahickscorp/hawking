@@ -1,0 +1,82 @@
+{
+  "schema": "hawking.tg.same_model_candidate_result.v1",
+  "status": "REJECTED_CATASTROPHIC_COMMAND_TOPOLOGY_REGRESSION",
+  "model": "Llama-3.3-70B-Instruct-Q4_K_M",
+  "family": "llama3_dense",
+  "preregistration": "evidence/tg/TG32_LLAMA70_CONCURRENT_PROJECTIONS_PREREGISTRATION_2026_08_02.json",
+  "preregistration_seal_sha256": "29e31614b078a773136f8f135d59e11faf51e998cee98d8beaa346a91e4fdb0c",
+  "candidate": {
+    "id": "llama70-resident-concurrent-projections-v1",
+    "environment_delta": ["HAWKING_LLAMA_RESIDENT_SERIAL_ENCODER=0", "HAWKING_LLAMA_RESIDENT_CONCURRENT=1"],
+    "candidate_tps": 0.15347283973773265,
+    "candidate_decode_ms": 45610.676208,
+    "candidate_prefill_ms": 42339.390541999994,
+    "candidate_p50_ms": 7575.5241670000005,
+    "candidate_p95_ms": 8007.759603700001,
+    "candidate_p99_ms": 8009.93725354,
+    "candidate_min_ms": 4673.402166,
+    "candidate_max_ms": 8010.481666000001,
+    "candidate_dispatches_per_forward": 962,
+    "candidate_metal_dispatches_total": 6734,
+    "candidate_cpu_reference_fallback_count": 0,
+    "candidate_device_id": "Apple M3 Ultra",
+    "candidate_complete_tokens": 8,
+    "candidate_prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "candidate_generated_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925]
+  },
+  "control": {
+    "profile": "resident_b9430_fused_graph_q5_value_repair",
+    "control_tps": 11.594967100506606,
+    "control_decode_ms": 603.710208,
+    "control_prefill_ms": 1032.653584,
+    "control_p50_ms": 86.104,
+    "control_p95_ms": 87.0098786,
+    "control_p99_ms": 87.16820852000001,
+    "control_min_ms": 85.66345799999999,
+    "control_max_ms": 87.207791,
+    "control_dispatches_per_forward": 962,
+    "control_metal_dispatches_total": 6734,
+    "control_cpu_reference_fallback_count": 0,
+    "control_device_id": "Apple M3 Ultra",
+    "control_complete_tokens": 8,
+    "control_prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "control_generated_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925]
+  },
+  "deltas": {
+    "tps_percent": -98.67638399999404,
+    "decode_wall_percent": 7455.061286623135,
+    "p95_percent": 9102.344184260144,
+    "p99_percent": 9090.56869552529,
+    "token_id_sequence_match": true,
+    "prompt_id_sequence_match": true,
+    "cpu_reference_fallback_delta": 0,
+    "metal_dispatch_delta": 0
+  },
+  "verdict": "REJECT_NO_PROMOTION",
+  "reason": "The concurrent projection branch was mechanically active with real Metal dispatches and exact source continuation, but removing the serial encoder exposed severe implicit synchronization/command topology stalls: complete-token TPS fell 98.676 percent and p95/p99 rose by roughly 9,102/9,091 percent. Keep the serial resident graph as the floor; do not retry this toggle unchanged.",
+  "rung": {
+    "target": "TG32",
+    "candidate_tps": 0.15347283973773265,
+    "candidate_meets_target": false,
+    "deepest_stable_rung": null,
+    "first_failing_rung": "TG32"
+  },
+  "reopen_condition": "Only reopen with explicit per-layer concurrent encoder completion fences and a command-buffer audit that proves no implicit waits; a flag-only retry is disallowed.",
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "9b29ca2f55ee13ce963101ffcfb6945fd43638192b6b33feae32e38556eaced7"
+}

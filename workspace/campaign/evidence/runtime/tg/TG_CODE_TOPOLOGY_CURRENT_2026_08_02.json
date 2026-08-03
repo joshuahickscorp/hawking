@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.tg.code_topology_checkpoint.v1",
+  "status": "PASS_AT_OR_BELOW_ENTRY",
+  "sampled_at": "2026-08-02",
+  "authority": {
+    "topology_command": ".venv/glm52/bin/python tools/loc/hawking_topology.py --json --include-untracked",
+    "loc_command": ".venv/glm52/bin/python tools/loc/hawking_loc.py --json --include-untracked"
+  },
+  "current": {
+    "combined_active_monorepo_LOC": 381464,
+    "active_files_LOC_policy": 991,
+    "directories_all": 121,
+    "directories_leaf": 96,
+    "source_files": 954,
+    "public_symbols": 8296,
+    "functions": 13064,
+    "runtime_LOC": 321249
+  },
+  "entry_reference": {
+    "commit": "be1e25e241408534acd420bdbc5fa1728fa13b3f",
+    "combined_active_monorepo_LOC": 430284,
+    "active_files_LOC_policy": 1363,
+    "directories_all": 179,
+    "source_files": 1227,
+    "public_symbols": 9412,
+    "functions": 14587
+  },
+  "delta_current_minus_entry": {
+    "combined_active_monorepo_LOC": -48820,
+    "active_files_LOC_policy": -372,
+    "directories_all": -58,
+    "source_files": -273,
+    "public_symbols": -1116,
+    "functions": -1523
+  },
+  "verdict": "Current runtime/receipt additions did not regrow the semantic topology; all binding dimensions remain below the entry reference."
+}

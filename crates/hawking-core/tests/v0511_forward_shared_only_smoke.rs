@@ -7,7 +7,9 @@ fn forward_token_shared_only_returns_finite_logits() {
         eprintln!("skipping v0511 smoke: no weights at {:?}", weights);
         return;
     }
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    let profile_path = PathBuf::from(
+        "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
+    );
     let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = hawking_core::EngineConfig {
         kernel_profile: Some(profile),

@@ -106,7 +106,9 @@ fn w4a8_activation_distribution() {
             c, max_abs[c], mean_a, rms
         ));
     }
-    let out_path = PathBuf::from("reports/w4a8_activation_dist.csv");
+    let out_path = PathBuf::from(
+        "../../workspace/campaign/records/reports/w4a8_activation_dist.csv",
+    );
     if let Some(parent) = out_path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }

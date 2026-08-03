@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.tg.active_byte_floor.v1",
+  "status": "ANALYTIC_FLOOR_NOT_ACHIEVED_THROUGHPUT",
+  "model": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "file_bytes": 4920739232,
+    "gguf_version": 3,
+    "tensor_count": 292
+  },
+  "method": {
+    "authority": "The GGUF tensor index and the resident exact decode graph.",
+    "included": "Every blk.N {attn_q,attn_k,attn_v,attn_output,ffn_gate,ffn_up,ffn_down}.weight projection and the full output.weight projection.",
+    "excluded": "Embedding row lookup, norms, RoPE, attention/KV state, activation I/O, quant metadata already inside tensor byte ranges, command overhead, and all rereads. Exclusions make this a lower bound on device traffic.",
+    "quant_bytes": {
+      "q4_k_block": {"elements": 256, "bytes": 144},
+      "q6_k_block": {"elements": 256, "bytes": 210}
+    }
+  },
+  "active_weight_bytes_per_token": {
+    "q4_k_layer_projections": 3359637504,
+    "q6_k_layer_projections": 825753600,
+    "all_layer_projections": 4185391104,
+    "full_q6_k_output_head": 430940160,
+    "total_lower_bound": 4616331264,
+    "total_lower_bound_gib": 4.2990639209747314
+  },
+  "measured_current_model": {
+    "context_tokens": 2048,
+    "strict_matched_hawking_tps": 91.68638222193484,
+    "strict_matched_source": "evidence/tg/matched-v2",
+    "minimum_effective_weight_read_gib_per_s": 394.1981716700474,
+    "interpretation": "The value divides only the active-weight lower bound by complete-token time. Real traffic and total latency are higher because the excluded work is nonzero."
+  },
+  "roofline_requirements": {
+    "tg5_200_tps_max_active_weight_bytes_at_736e9_Bps": 3680000000,
+    "tg1_1000_tps_max_active_weight_bytes_at_736e9_Bps": 736000000,
+    "tg5_minimum_byte_reduction_from_this_lower_bound": 0.2028308260869565,
+    "tg1_minimum_byte_reduction_from_this_lower_bound": 0.8405661652173913,
+    "bandwidth_constant": {
+      "bytes_per_second": 736000000000,
+      "source": "lab/operators/gravity_flop_ledger.py measured-machine constant",
+      "scope": "An imported Apple M3 Ultra read-bandwidth ceiling for a necessary-condition calculation, not a current Llama kernel throughput result."
+    }
+  },
+  "conclusion": {
+    "same_model_exact_decode": "A command-topology or geometry-only change cannot remove this unique per-token weight set. It may close the 394 GiB/s effective gap, but the 736 GB/s necessary-condition ceiling is below TG5 even before KV, activation, or synchronization costs.",
+    "tg1_route": "TG1 requires a format-native representation that materially lowers active bytes (and likely executed work) while establishing artifact-specific quality/parity. It cannot be claimed from this GGUF's exact continuation lane.",
+    "next_bounded_work": "Use a Llama Gravity artifact or an equivalent executable format with a declared active-byte ledger and token/logit quality gate; do not promote raw adapter receipts or smaller models as a base-TPS win."
+  }
+}

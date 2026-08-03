@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG10",
+  "model": "Mistral-Nemo-Instruct-2407",
+  "terminal_gate": {
+    "name": "STATE_ADVANCE",
+    "result": "FAIL",
+    "evidence": "evidence/tg/TG10_MISTRAL_ADAPTER_ORACLE.json",
+    "boundary": "The generic Mistral adapter agrees for three completion tokens and diverges at token four; dispatch accounting is also absent."
+  },
+  "source": {
+    "workspace_path": "models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "bytes": 7477208192,
+    "sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46",
+    "source_receipt": "evidence/tg/TG10_MISTRAL_SOURCE_RECEIPT.json"
+  },
+  "eviction": {
+    "command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "workspace_copy_absent_after_command": true,
+    "remaining_active_parent_bytes_under_models_tg_active": 16384,
+    "physical_space_reclaimed": "NOT_YET_PROVEN: macOS Trash is recoverable storage; empty it manually only if the recovery window is no longer wanted."
+  },
+  "rehydration_rule": "Do not retain this parent. A deliberate adapter repair must verify the listed SHA-256 after re-download and begin at the recorded fourth-token mismatch."
+}

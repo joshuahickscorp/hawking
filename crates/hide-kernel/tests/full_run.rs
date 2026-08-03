@@ -294,7 +294,7 @@ async fn effectful_step_without_oracle_is_not_soft_accepted() {
     let _ = std::fs::remove_dir_all(repo);
 }
 #[tokio::test]
-async fn model_step_dispatches_emitted_tool_call() {
+async fn model_step_does_not_auto_dispatch_even_a_read_only_tool_call() {
     let repo = make_repo(true);
     let libpath = repo.join("src/lib.rs");
     let stub_out = format!(
@@ -310,7 +310,7 @@ async fn model_step_dispatches_emitted_tool_call() {
         .unwrap();
     let _ = drive(&kernel, &mut state, 60).await;
     let events = log.scan(None, None, None).await.unwrap();
-    let dispatched = events.iter().any(|e: &Event| {
+    let proposed = events.iter().any(|e: &Event| {
         e.kind == "agent.observation"
             && e.payload
                 .get("tool_calls")
@@ -318,12 +318,17 @@ async fn model_step_dispatches_emitted_tool_call() {
                 .map(|arr| {
                     arr.iter().any(|c| {
                         c.get("tool").and_then(|t| t.as_str()) == Some("fs.read")
-                            && c.get("dispatched").and_then(|d| d.as_bool()) == Some(true)
+                            && c.get("status").and_then(|s| s.as_str()) == Some("proposed")
+                            && c.get("dispatched").and_then(|d| d.as_bool()) == Some(false)
                     })
                 })
                 .unwrap_or(false)
     });
-    assert!(dispatched);
+    assert!(
+        proposed,
+        "raw model tool syntax must remain a proposal until a target-verified, \
+         action-bound host permit authorizes dispatch"
+    );
     let _ = std::fs::remove_dir_all(repo);
 }
 #[tokio::test]

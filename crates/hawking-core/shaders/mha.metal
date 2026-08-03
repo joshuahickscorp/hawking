@@ -31,6 +31,574 @@ struct ArgbufMhaDecode {
     float scale;         // 1 / sqrt(head_dim)
 };
 
+// Pinned Llama b9430 short-context Flash-Attention authority.
+//
+// This is the `kernel_flash_attn_ext_vec_f16_dk128_dv128` reduction shape
+// specialized for one decode query, one 32-lane SIMD group per query head,
+// and a <=32-token cache tile.  The generic MHA path is mathematically the
+// same but keeps Q in f32 and uses a different dot/softmax reduction tree;
+// those tiny differences amplify across a long Llama residual stream.
+//
+// Q enters as f32 and is cast to half4 on device exactly as ggml does. K/V are
+// f16 (the host bridge expands the active cache to 32 entries and zero-fills
+// masked padding). `scores` mirrors the f32 shared softmax vector of the
+// upstream vector kernel.
+kernel void mha_decode_llama_b9430_short(
+    device const float4* q          [[buffer(0)]],
+    device const half4*  k_cache    [[buffer(1)]],
+    device const half4*  v_cache    [[buffer(2)]],
+    device       float4* out        [[buffer(3)]],
+    constant     uint&   seq_len    [[buffer(4)]],
+    constant     uint&   n_heads    [[buffer(5)]],
+    constant     uint&   n_kv_heads [[buffer(6)]],
+    constant     float&  scale      [[buffer(7)]],
+    threadgroup  float*  scores     [[threadgroup(0)]],
+    uint head                         [[threadgroup_position_in_grid]],
+    ushort lane                       [[thread_index_in_simdgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4 = HEAD_DIM / 4u;
+    constexpr uint TILE = 32u;
+    if (head >= n_heads) return;
+
+    const uint group_size = n_heads / n_kv_heads;
+    const uint kv_head = head / group_size;
+    const half4 q4 = (half4)q[head * HEAD4 + lane];
+
+    // `NE=1`, `NL=32`, and `DK4/NL=1` in the b9430 vector specialization.
+    // Every lane supplies one float4 partial for every cached key; simd_sum
+    // reconstructs the 128-dim dot in the reference reduction order.
+    float qk[TILE] = { [0 ... TILE - 1] = 0.0f };
+    for (uint token = 0u; token < TILE; ++token) {
+        float partial = 0.0f;
+        if (token < seq_len) {
+            const half4 k4 = k_cache[(token * n_kv_heads + kv_head) * HEAD4 + lane];
+            partial = dot((float4)k4, (float4)q4);
+        }
+        qk[token] = simd_sum(partial);
+    }
+
+    // Active rows have causal mask 0; the authority's actual attention mask
+    // carries IEEE -infinity for every masked cache slot. Keep that value
+    // rather than a finite sentinel: it is an input to the online-max path.
+    // Keep FMA for the active
+    // score scaling path used by the reference mask specialization.
+    scores[lane] = lane < seq_len ? fma(qk[lane], scale, 0.0f) : -INFINITY;
+    simdgroup_barrier(mem_flags::mem_threadgroup);
+
+    float M = -FLT_MAX/2;
+    const float s = scores[lane];
+    M = simd_max(max(M, s));
+    const float ms = exp((-FLT_MAX/2) - M);
+    const float vs = exp(s - M);
+    const float S = 0.0f*ms + simd_sum(vs);
+    scores[lane] = vs;
+    simdgroup_barrier(mem_flags::mem_threadgroup);
+
+    float4 acc = 0.0f;
+    for (uint token = 0u; token < TILE; ++token) {
+        if (token < seq_len) {
+            const half4 v4 = v_cache[(token * n_kv_heads + kv_head) * HEAD4 + lane];
+            acc = fma(float4(v4), float4(scores[token]), acc);
+        }
+    }
+    out[head * HEAD4 + lane] = acc*(1.0f/S);
+}
+
+// Long-context Llama b9430 FlashAttention, transcribed from the matching
+// ggml-metal vector grammar.  The reference partitions the cache into 32
+// workgroups per query head (one SIMD group in each), writes the online-
+// softmax partials to persistent device scratch, then runs a separate 1024
+// thread reduction.  This is deliberately separate from the compact <=32
+// authority kernel above: it is an opt-in candidate until a complete-token
+// long-context receipt proves it, and cannot alter the known-exact P8 path.
+//
+// The resident K/V arena is (seq, kv_head, 128) half, so its half4 layout is
+// exactly the source kernel's f16 cache layout.  Scratch layout is ggml's:
+// [head][DV4][NWG] float4 values followed by [head][2*NWG] float S/M pairs.
+// `NWG=32`, `C=32`, `NE=4`, `NL=8` are the upstream b9430 f16 dk128/dv128
+// specialization for contexts up through 8K (one SIMD group per workgroup).
+kernel void mha_decode_llama_b9430_fattn_main(
+    device const float4* q          [[buffer(0)]],
+    device const half4*  k_cache    [[buffer(1)]],
+    device const half4*  v_cache    [[buffer(2)]],
+    device       float*  tmp        [[buffer(3)]],
+    constant     uint&   seq_len    [[buffer(4)]],
+    constant     uint&   n_heads    [[buffer(5)]],
+    constant     uint&   n_kv_heads [[buffer(6)]],
+    constant     float&  scale      [[buffer(7)]],
+    threadgroup  half*   shmem_f16  [[threadgroup(0)]],
+    uint workgroup                     [[threadgroup_position_in_grid]],
+    ushort lane                        [[thread_index_in_simdgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4    = HEAD_DIM / 4u;
+    constexpr uint NWG      = 32u;
+    constexpr uint C        = 32u;
+    constexpr uint NE       = 4u;
+    constexpr uint NL       = 8u;
+    constexpr uint SH       = 4u * C;
+    constexpr uint PK       = 128u;
+    constexpr uint PV       = 128u;
+    constexpr uint DV4      = HEAD4;
+
+    const uint head = workgroup / NWG;
+    const uint iwg  = workgroup % NWG;
+    if (head >= n_heads) return;
+
+    // These aliases intentionally overlap exactly as they do in ggml-metal:
+    // score/mask storage is dead before the persistent value accumulator uses
+    // that region.  The host allocates its source formula (1,024 bytes).
+    threadgroup half4*  sq4 = (threadgroup half4*) (shmem_f16);
+    threadgroup float*  ss  = (threadgroup float*) (shmem_f16 + PK);
+    threadgroup float4* ss4 = (threadgroup float4*) (shmem_f16 + PK);
+    threadgroup half*   sm  = (threadgroup half*)  (shmem_f16 + PK + 2u*C);
+    threadgroup float4* so4 = (threadgroup float4*) (shmem_f16 + PK + SH);
+    so4 += lane;
+
+    const uint group_size = n_heads / n_kv_heads;
+    const uint kv_head = head / group_size;
+
+    sq4[lane] = (half4) q[head * HEAD4 + lane];
+    for (uint i = 0u; i < DV4 / NL; ++i) {
+        so4[i * NL] = (float4) 0.0f;
+    }
+    for (uint i = lane; i < SH / 4u; i += 32u) {
+        ss4[i] = (float4) 0.0f;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    float S = 0.0f;
+    float M = -FLT_MAX / 2.0f;
+    const uint tx = lane % NL;
+    const uint ty = lane / NL;
+
+    // Each workgroup owns cache chunks iwg, iwg+NWG, ... .  Missing entries in
+    // the final chunk are masked before the source online-softmax reduction;
+    // our resident allocation has full max-sequence capacity, so zero K/V
+    // loads remain memory-safe without a transient pad buffer.
+    for (uint ic0 = iwg; ; ic0 += NWG) {
+        const uint ic = ic0 * C;
+        if (ic >= seq_len) break;
+
+        const uint mask_token = ic + lane;
+        sm[lane] = mask_token < seq_len ? (half) 0.0h : (half) -INFINITY;
+
+        float mqk[C / NE] = { [0 ... C / NE - 1] = 0.0f };
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            for (uint ii = 0u; ii < HEAD4 / NL; ++ii) {
+                half4 mk = (half4) 0.0h;
+                if (token < seq_len) {
+                    mk = k_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                }
+                mqk[cc] += dot((float4) mk, (float4) sq4[ii * NL + tx]);
+            }
+            mqk[cc] += simd_shuffle_down(mqk[cc], 4);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 2);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 1);
+            mqk[cc] = simd_shuffle(mqk[cc], NL * ty);
+        }
+
+        ss[NE * tx + ty] = fma(mqk[tx], scale, (float) sm[NE * tx + ty]);
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+
+        const float m = M;
+        const float s = ss[lane];
+        M = simd_max(max(M, s));
+        const float ms = exp(m - M);
+        const float vs = exp(s - M);
+        S = S * ms + simd_sum(vs);
+        ss[lane] = vs;
+
+        if (ty == 0u) {
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+                so4[ii * NL] *= ms;
+            }
+        }
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+
+        float4 lo[DV4 / NL];
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) lo[ii] = 0.0f;
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            const float score = ss[NE * cc + ty];
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+                half4 mv = (half4) 0.0h;
+                if (token < seq_len) {
+                    mv = v_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                }
+                lo[ii] += (float4) mv * (float4) score;
+            }
+        }
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 16);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 16);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 16);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 16);
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 8);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 8);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 8);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 8);
+        }
+        if (ty == 0u) {
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+                so4[ii * NL] += lo[ii];
+            }
+        }
+    }
+
+    if (lane == 0u) {
+        ss[0] = S;
+        ss[1] = M;
+    }
+    so4 -= lane;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    device float4* tmp4 = (device float4*) tmp;
+    for (uint i = lane; i < DV4; i += 32u) {
+        tmp4[head * DV4 * NWG + NWG * i + iwg] = so4[i];
+    }
+    if (lane == 0u) {
+        device float* tmp1 = tmp + n_heads * HEAD_DIM * NWG;
+        tmp1[head * (2u * NWG) + 2u * iwg + 0u] = ss[0];
+        tmp1[head * (2u * NWG) + 2u * iwg + 1u] = ss[1];
+    }
+}
+
+// Exact companion reduction for `mha_decode_llama_b9430_fattn_main`.  One
+// 1,024-thread workgroup per query head combines the 32 source workgroups.
+kernel void mha_decode_llama_b9430_fattn_reduce(
+    device const float* tmp     [[buffer(0)]],
+    device       float4* out    [[buffer(1)]],
+    constant     uint& n_heads  [[buffer(2)]],
+    uint head                    [[threadgroup_position_in_grid]],
+    ushort lane                  [[thread_index_in_simdgroup]],
+    ushort simd_group            [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4    = HEAD_DIM / 4u;
+    constexpr uint NWG      = 32u;
+    if (head >= n_heads) return;
+
+    const uint iwg = lane;
+    device const float* ss = tmp + n_heads * HEAD_DIM * NWG;
+    float S = ss[head * (2u * NWG) + 2u * iwg + 0u];
+    const float M = ss[head * (2u * NWG) + 2u * iwg + 1u];
+    const float m = simd_max(M);
+    const float ms = exp(M - m);
+    S = simd_sum(S * ms);
+    S = S == 0.0f ? 0.0f : 1.0f / S;
+
+    device const float4* tmp4 = (device const float4*) tmp + head * HEAD4 * NWG;
+    for (uint i = simd_group; i < HEAD4; i += NWG) {
+        const float4 value = simd_sum(tmp4[i * NWG + iwg] * ms);
+        if (iwg == 0u) out[head * HEAD4 + i] = value * S;
+    }
+}
+
+// Packed-prefill form of the source f16-KV FATTN topology.  A workgroup still
+// owns one (query head, cache partition); the added batch dimension represents
+// contiguous prompt positions and only changes the causal limit and scratch
+// base.  This keeps the online-softmax arithmetic and half-cache layout of
+// the decode authority intact while allowing the surrounding layer graph to
+// amortize Q4 projections across a prompt chunk.
+kernel void mha_decode_llama_b9430_fattn_prefill_main(
+    device const float4* q          [[buffer(0)]],
+    device const half4*  k_cache    [[buffer(1)]],
+    device const half4*  v_cache    [[buffer(2)]],
+    device       float*  tmp        [[buffer(3)]],
+    constant     uint&   n_heads    [[buffer(4)]],
+    constant     uint&   n_kv_heads [[buffer(5)]],
+    constant     float&  scale      [[buffer(6)]],
+    constant     uint&   p0         [[buffer(7)]],
+    threadgroup  half*   shmem_f16  [[threadgroup(0)]],
+    uint workgroup                     [[threadgroup_position_in_grid]],
+    ushort lane                        [[thread_index_in_simdgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4 = HEAD_DIM / 4u;
+    constexpr uint NWG = 32u;
+    constexpr uint C = 32u;
+    constexpr uint NE = 4u;
+    constexpr uint NL = 8u;
+    constexpr uint SH = 4u * C;
+    constexpr uint PK = 128u;
+    constexpr uint DV4 = HEAD4;
+    const uint heads_per_batch = n_heads * NWG;
+    const uint batch_id = workgroup / heads_per_batch;
+    const uint within_batch = workgroup % heads_per_batch;
+    const uint head = within_batch / NWG;
+    const uint iwg = within_batch % NWG;
+    const uint seq_len = p0 + batch_id + 1u;
+
+    threadgroup half4* sq4 = (threadgroup half4*) (shmem_f16);
+    threadgroup float* ss = (threadgroup float*) (shmem_f16 + PK);
+    threadgroup float4* ss4 = (threadgroup float4*) (shmem_f16 + PK);
+    threadgroup half* sm = (threadgroup half*) (shmem_f16 + PK + 2u * C);
+    threadgroup float4* so4 = (threadgroup float4*) (shmem_f16 + PK + SH);
+    so4 += lane;
+    const uint group_size = n_heads / n_kv_heads;
+    const uint kv_head = head / group_size;
+    const uint q_base = (batch_id * n_heads + head) * HEAD4;
+
+    sq4[lane] = (half4) q[q_base + lane];
+    for (uint i = 0u; i < DV4 / NL; ++i) so4[i * NL] = (float4) 0.0f;
+    for (uint i = lane; i < SH / 4u; i += 32u) ss4[i] = (float4) 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    float S = 0.0f;
+    float M = -FLT_MAX / 2.0f;
+    const uint tx = lane % NL;
+    const uint ty = lane / NL;
+    for (uint ic0 = iwg; ; ic0 += NWG) {
+        const uint ic = ic0 * C;
+        if (ic >= seq_len) break;
+        const uint mask_token = ic + lane;
+        sm[lane] = mask_token < seq_len ? (half) 0.0h : (half) -INFINITY;
+        float mqk[C / NE] = { [0 ... C / NE - 1] = 0.0f };
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            for (uint ii = 0u; ii < HEAD4 / NL; ++ii) {
+                half4 mk = (half4) 0.0h;
+                if (token < seq_len) {
+                    mk = k_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                }
+                mqk[cc] += dot((float4) mk, (float4) sq4[ii * NL + tx]);
+            }
+            mqk[cc] += simd_shuffle_down(mqk[cc], 4);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 2);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 1);
+            mqk[cc] = simd_shuffle(mqk[cc], NL * ty);
+        }
+        ss[NE * tx + ty] = fma(mqk[tx], scale, (float) sm[NE * tx + ty]);
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+
+        const float m = M;
+        const float s = ss[lane];
+        M = simd_max(max(M, s));
+        const float ms = exp(m - M);
+        const float vs = exp(s - M);
+        S = S * ms + simd_sum(vs);
+        ss[lane] = vs;
+        if (ty == 0u) {
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) so4[ii * NL] *= ms;
+        }
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+
+        float4 lo[DV4 / NL];
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) lo[ii] = 0.0f;
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            const float score = ss[NE * cc + ty];
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+                half4 mv = (half4) 0.0h;
+                if (token < seq_len) {
+                    mv = v_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                }
+                lo[ii] += (float4) mv * (float4) score;
+            }
+        }
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 16);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 16);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 16);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 16);
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 8);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 8);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 8);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 8);
+        }
+        if (ty == 0u) {
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) so4[ii * NL] += lo[ii];
+        }
+    }
+
+    if (lane == 0u) { ss[0] = S; ss[1] = M; }
+    so4 -= lane;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const uint scratch_batch_stride = n_heads * (HEAD_DIM * NWG + 2u * NWG);
+    device float4* tmp4 = (device float4*) (tmp + batch_id * scratch_batch_stride);
+    for (uint i = lane; i < DV4; i += 32u) {
+        tmp4[head * DV4 * NWG + NWG * i + iwg] = so4[i];
+    }
+    if (lane == 0u) {
+        device float* tmp1 = tmp + batch_id * scratch_batch_stride + n_heads * HEAD_DIM * NWG;
+        tmp1[head * (2u * NWG) + 2u * iwg] = ss[0];
+        tmp1[head * (2u * NWG) + 2u * iwg + 1u] = ss[1];
+    }
+}
+
+kernel void mha_decode_llama_b9430_fattn_prefill_reduce(
+    device const float* tmp     [[buffer(0)]],
+    device       float4* out    [[buffer(1)]],
+    constant     uint& n_heads  [[buffer(2)]],
+    uint workgroup              [[threadgroup_position_in_grid]],
+    ushort lane                 [[thread_index_in_simdgroup]],
+    ushort simd_group           [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4 = HEAD_DIM / 4u;
+    constexpr uint NWG = 32u;
+    const uint batch_id = workgroup / n_heads;
+    const uint head = workgroup % n_heads;
+    const uint iwg = lane;
+    const uint scratch_batch_stride = n_heads * (HEAD_DIM * NWG + 2u * NWG);
+    device const float* batch_tmp = tmp + batch_id * scratch_batch_stride;
+    device const float* ss = batch_tmp + n_heads * HEAD_DIM * NWG;
+    float S = ss[head * (2u * NWG) + 2u * iwg];
+    const float M = ss[head * (2u * NWG) + 2u * iwg + 1u];
+    const float m = simd_max(M);
+    const float ms = exp(M - m);
+    S = simd_sum(S * ms);
+    S = S == 0.0f ? 0.0f : 1.0f / S;
+    device const float4* tmp4 = (device const float4*) batch_tmp + head * HEAD4 * NWG;
+    for (uint i = simd_group; i < HEAD4; i += NWG) {
+        const float4 value = simd_sum(tmp4[i * NWG + iwg] * ms);
+        if (iwg == 0u) out[(batch_id * n_heads + head) * HEAD4 + i] = value * S;
+    }
+}
+
+// Geometry-only candidate for the source FATTN grammar above.  Sixteen cache
+// partitions halve the scratch and reduction fan-out.  The final 512-thread
+// reduction has 16 SIMD groups; lanes 16..31 are neutral padding so its SIMD
+// reductions remain well-defined while the scratch ABI is [head][DV4][16].
+kernel void mha_decode_llama_b9430_fattn_nwg16_main(
+    device const float4* q          [[buffer(0)]],
+    device const half4*  k_cache    [[buffer(1)]],
+    device const half4*  v_cache    [[buffer(2)]],
+    device       float*  tmp        [[buffer(3)]],
+    constant     uint&   seq_len    [[buffer(4)]],
+    constant     uint&   n_heads    [[buffer(5)]],
+    constant     uint&   n_kv_heads [[buffer(6)]],
+    constant     float&  scale      [[buffer(7)]],
+    threadgroup  half*   shmem_f16  [[threadgroup(0)]],
+    uint workgroup                     [[threadgroup_position_in_grid]],
+    ushort lane                        [[thread_index_in_simdgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4 = HEAD_DIM / 4u;
+    constexpr uint NWG = 16u;
+    constexpr uint C = 32u;
+    constexpr uint NE = 4u;
+    constexpr uint NL = 8u;
+    constexpr uint SH = 4u * C;
+    constexpr uint PK = 128u;
+    constexpr uint DV4 = HEAD4;
+    const uint head = workgroup / NWG;
+    const uint iwg = workgroup % NWG;
+    if (head >= n_heads) return;
+
+    threadgroup half4* sq4 = (threadgroup half4*) (shmem_f16);
+    threadgroup float* ss = (threadgroup float*) (shmem_f16 + PK);
+    threadgroup float4* ss4 = (threadgroup float4*) (shmem_f16 + PK);
+    threadgroup half* sm = (threadgroup half*) (shmem_f16 + PK + 2u*C);
+    threadgroup float4* so4 = (threadgroup float4*) (shmem_f16 + PK + SH);
+    so4 += lane;
+    const uint group_size = n_heads / n_kv_heads;
+    const uint kv_head = head / group_size;
+
+    sq4[lane] = (half4) q[head * HEAD4 + lane];
+    for (uint i = 0u; i < DV4 / NL; ++i) so4[i * NL] = (float4) 0.0f;
+    for (uint i = lane; i < SH / 4u; i += 32u) ss4[i] = (float4) 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    float S = 0.0f;
+    float M = -FLT_MAX / 2.0f;
+    const uint tx = lane % NL;
+    const uint ty = lane / NL;
+    for (uint ic0 = iwg; ; ic0 += NWG) {
+        const uint ic = ic0 * C;
+        if (ic >= seq_len) break;
+        const uint mask_token = ic + lane;
+        sm[lane] = mask_token < seq_len ? (half) 0.0h : (half) -INFINITY;
+        float mqk[C / NE] = { [0 ... C / NE - 1] = 0.0f };
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            for (uint ii = 0u; ii < HEAD4 / NL; ++ii) {
+                half4 mk = (half4) 0.0h;
+                if (token < seq_len) mk = k_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                mqk[cc] += dot((float4) mk, (float4) sq4[ii * NL + tx]);
+            }
+            mqk[cc] += simd_shuffle_down(mqk[cc], 4);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 2);
+            mqk[cc] += simd_shuffle_down(mqk[cc], 1);
+            mqk[cc] = simd_shuffle(mqk[cc], NL * ty);
+        }
+        ss[NE * tx + ty] = fma(mqk[tx], scale, (float) sm[NE * tx + ty]);
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+        const float m = M;
+        const float s = ss[lane];
+        M = simd_max(max(M, s));
+        const float ms = exp(m - M);
+        const float vs = exp(s - M);
+        S = S * ms + simd_sum(vs);
+        ss[lane] = vs;
+        if (ty == 0u) for (uint ii = 0u; ii < DV4 / NL; ++ii) so4[ii * NL] *= ms;
+        simdgroup_barrier(mem_flags::mem_threadgroup);
+        float4 lo[DV4 / NL];
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) lo[ii] = 0.0f;
+        for (uint cc = 0u; cc < C / NE; ++cc) {
+            const uint token = ic + NE * cc + ty;
+            const float score = ss[NE * cc + ty];
+            for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+                half4 mv = (half4) 0.0h;
+                if (token < seq_len) mv = v_cache[(token * n_kv_heads + kv_head) * HEAD4 + ii * NL + tx];
+                lo[ii] += (float4) mv * (float4) score;
+            }
+        }
+        for (uint ii = 0u; ii < DV4 / NL; ++ii) {
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 16);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 16);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 16);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 16);
+            lo[ii][0] += simd_shuffle_down(lo[ii][0], 8);
+            lo[ii][1] += simd_shuffle_down(lo[ii][1], 8);
+            lo[ii][2] += simd_shuffle_down(lo[ii][2], 8);
+            lo[ii][3] += simd_shuffle_down(lo[ii][3], 8);
+        }
+        if (ty == 0u) for (uint ii = 0u; ii < DV4 / NL; ++ii) so4[ii * NL] += lo[ii];
+    }
+    if (lane == 0u) { ss[0] = S; ss[1] = M; }
+    so4 -= lane;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    device float4* tmp4 = (device float4*) tmp;
+    for (uint i = lane; i < DV4; i += 32u) tmp4[head * DV4 * NWG + NWG * i + iwg] = so4[i];
+    if (lane == 0u) {
+        device float* tmp1 = tmp + n_heads * HEAD_DIM * NWG;
+        tmp1[head * (2u * NWG) + 2u * iwg] = ss[0];
+        tmp1[head * (2u * NWG) + 2u * iwg + 1u] = ss[1];
+    }
+}
+
+kernel void mha_decode_llama_b9430_fattn_nwg16_reduce(
+    device const float* tmp [[buffer(0)]],
+    device float4* out [[buffer(1)]],
+    constant uint& n_heads [[buffer(2)]],
+    uint head [[threadgroup_position_in_grid]],
+    ushort lane [[thread_index_in_simdgroup]],
+    ushort simd_group [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint HEAD_DIM = 128u;
+    constexpr uint HEAD4 = HEAD_DIM / 4u;
+    constexpr uint NWG = 16u;
+    if (head >= n_heads) return;
+    const uint iwg = lane;
+    device const float* ss = tmp + n_heads * HEAD_DIM * NWG;
+    float S = iwg < NWG ? ss[head * (2u * NWG) + 2u * iwg] : 0.0f;
+    const float M = iwg < NWG ? ss[head * (2u * NWG) + 2u * iwg + 1u] : -INFINITY;
+    const float m = simd_max(M);
+    const float ms = iwg < NWG ? exp(M - m) : 0.0f;
+    S = simd_sum(S * ms);
+    S = S == 0.0f ? 0.0f : 1.0f / S;
+    device const float4* tmp4 = (device const float4*) tmp + head * HEAD4 * NWG;
+    for (uint i = simd_group; i < HEAD4; i += NWG) {
+        const float4 partial = iwg < NWG ? tmp4[i * NWG + iwg] * ms : (float4) 0.0f;
+        const float4 value = simd_sum(partial);
+        if (iwg == 0u) out[head * HEAD4 + i] = value * S;
+    }
+}
+
 kernel void mha_decode_f32(
     constant ArgbufMhaDecode& args   [[buffer(0)]],
     device const float*       q      [[buffer(1)]],

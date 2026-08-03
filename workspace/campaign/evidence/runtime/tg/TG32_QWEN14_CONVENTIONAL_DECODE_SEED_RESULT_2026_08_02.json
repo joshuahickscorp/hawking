@@ -1,0 +1,102 @@
+{
+  "schema": "hawking.tg.same_model_runtime_repair_result.v1",
+  "status": "PARITY_REPAIRED_SPEED_NOT_PROMOTED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_PREREGISTRATION_2026_08_02.json",
+  "preregistration_seal_sha256": "8be12db328f6c26cef5522df34395c69c9bd32ce3912f2b4f07afcc4298afa12",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "format": "source-preserving executable Gravity",
+    "path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/qwen14-stage.gravity",
+    "bytes": 8982325252,
+    "payload_bytes": 8982142976,
+    "sha256": "e2bbc738f07fbc33c359e2f1dc1dc07c7182e794cd2954bb1ffa287da2b81adb",
+    "mapped_tensors": 579,
+    "skipped_source_tensors": 0
+  },
+  "run": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "complete_tokens": 32,
+    "temperature": 0.0,
+    "fallback_count": 0,
+    "native_env": "HAWKING_REQUIRE_METAL=1 HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "gravity_env": "HAWKING_REQUIRE_METAL=1",
+    "native_continuation_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081, 13, 576, 6722, 315, 15344, 374, 21718, 13, 576, 6722, 315, 9856, 374, 19846, 13, 576, 6722, 315, 24427, 374, 45826, 13, 576, 6722],
+    "gravity_continuation_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081, 13, 576, 6722, 315, 15344, 374, 21718, 13, 576, 6722, 315, 9856, 374, 19846, 13, 576, 6722, 315, 24427, 374, 45826, 13, 576, 6722],
+    "continuation_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "ids_equal": true
+  },
+  "native": {
+    "prefill_ms": 447.659709,
+    "decode_ms": 2116.663625,
+    "tps": 14.645690337310917,
+    "p50_ms": 67.634875,
+    "p95_ms": 69.87825,
+    "p99_ms": 72.54252939999999,
+    "min_ms": 67.25675000000001,
+    "max_ms": 73.673542,
+    "completed_decode_forwards": 31,
+    "dispatches_per_forward": 556,
+    "metal_dispatches_total": 17236,
+    "command_buffers_total": 31,
+    "cpu_reference_fallback_count": 0
+  },
+  "gravity": {
+    "prefill_ms": 172.237708,
+    "decode_ms": 834.484208,
+    "tps": 38.3470408345942,
+    "p50_ms": 25.1975,
+    "p95_ms": 26.336962500000002,
+    "p99_ms": 26.60541023,
+    "min_ms": 23.07925,
+    "max_ms": 26.707917,
+    "completed_decode_forwards": 32,
+    "dispatches_per_forward": 770,
+    "metal_dispatches_total": 24640,
+    "command_buffers_total": 32,
+    "cpu_reference_fallback_count": 0
+  },
+  "before_repair": {
+    "native_default_exact_hash": "893f26580dc72c149f59fac0966fedb9976485ccb4301debd5deb8f1b983502d",
+    "gravity_default_exact_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "default_first_divergent_completion_index_zero_based": 2,
+    "failure": "The default Qwen plain decode loop discarded the final prefill greedy decision and re-fed the final prompt token at prompt_len."
+  },
+  "verdict": {
+    "numeric_parity_v21": true,
+    "prompt_ids_exact": true,
+    "complete_token_count_exact": true,
+    "continuation_hash_equal": true,
+    "metal_dispatches_positive": true,
+    "fallback_zero": true,
+    "same_model": true,
+    "tps_promotion": false,
+    "tg_rung": null,
+    "reason": "The opt-in runtime bookkeeping repair restores exact 32-token continuation parity on the source and executable Gravity representation. The measured TPS values are reported for reproducibility only; source and Gravity use different decode-forward accounting and no clean before/after kernel wall gate was preregistered for this repair."
+  },
+  "evidence": {
+    "stage_oracle_result": "evidence/tg/TG32_QWEN14_GRAVITY_STAGE_ORACLE_RESULT_2026_08_02.json",
+    "native_log": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/native_conventional.log",
+    "gravity_log": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/gravity_conventional.log"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "06e4d790a1db9a4ae559fa82cee5791c28a4e3b79a283d626d2a964023685c6e"
+}

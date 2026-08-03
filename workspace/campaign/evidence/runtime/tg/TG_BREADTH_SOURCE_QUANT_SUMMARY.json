@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.tg.breadth_source_quant_summary.v1",
+  "updated_at_utc": "2026-07-31",
+  "claim": "NO_TG_RUNG",
+  "thresholds_tps": {"TG8": 125, "TG5": 200, "TG4": 250, "TG3": 333, "TG2": 500, "TG1": 1000},
+  "bandwidth_constant_bytes_per_second": 736000000000,
+  "active_byte_ceiling_bytes": {"TG2": 1472000000, "TG1": 736000000},
+  "families": [
+    {
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/TG5_LLAMA_SOURCE_QUANT_GRAVITY.json",
+      "artifact_payload_bytes": 4912898048,
+      "resident_decode_tps": {"context128": 67.86156029632174, "context1024": 31.649049012540175},
+      "source_reference_decode_tps_context2048": 91.68638222193484,
+      "matched_decode": "PASS",
+      "tg2_required_payload_reduction": 0.700380511539571,
+      "tg1_required_payload_reduction": 0.8501902557697856
+    },
+    {
+      "family": "mistral",
+      "model": "Mistral-Nemo-Instruct-2407-Q4_K_M",
+      "receipt": "evidence/tg/TG10_MISTRAL_SOURCE_QUANT_GRAVITY.json",
+      "artifact_payload_bytes": 7469322240,
+      "resident_decode_tps": {"context32": 55.99120484555166},
+      "matched_decode": "PASS",
+      "tg2_required_payload_reduction": 0.8029272331943199,
+      "tg1_required_payload_reduction": 0.9014636165971599
+    },
+    {
+      "family": "qwen",
+      "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+      "receipt": "evidence/tg/TG20_QWEN_SOURCE_QUANT_GRAVITY.json",
+      "artifact_payload_bytes": 8982142976,
+      "resident_decode_tps": {"context8": 47.28938263628211},
+      "matched_decode": "PASS",
+      "tg2_required_payload_reduction": 0.8360926801294204,
+      "tg1_required_payload_reduction": 0.9180463400647102
+    },
+    {
+      "family": "deepseek",
+      "model": "DeepSeek-V2-Lite-Chat-Q4_K_M",
+      "receipt": "evidence/tg/TG4_DEEPSEEK_SOURCE_QUANT_GRAVITY.json",
+      "artifact_payload_bytes": 10360420352,
+      "resident_decode_tps": null,
+      "matched_decode": "PASS_CPU",
+      "metal_resident_backend": "NOT_IMPLEMENTED",
+      "tg2_required_payload_reduction": 0.8579208227091055,
+      "tg1_required_payload_reduction": 0.9289604113545528
+    }
+  ],
+  "reduced_candidates": {
+    "llama_residual_pq_s2_c64": {
+      "receipt": "evidence/tg/TG_LLAMA_RESIDUAL_PQ_S2_C64_REJECTED.json",
+      "payload_bytes": 1507166336,
+      "complete_bpw": 1.5014867282185835,
+      "continuation_gate": "FAIL"
+    },
+    "llama_residual_pq_s3_c128": {
+      "receipt": "evidence/tg/TG_LLAMA_RESIDUAL_PQ_S3_C128_REJECTED.json",
+      "payload_bytes": 2637310080,
+      "complete_bpw": 2.6273716369134,
+      "continuation_gate": "FAIL"
+    }
+  },
+  "interpretation": "The four-family source-preserving breadth pass is complete and reproducible, but all current resident measurements are below TG8. TG2 requires active payload at or below 1.472 GB and TG1 at or below 736 MB; dense Q4 source artifacts remain 3.34x to 7.04x above the TG2 ceiling before quality and kernel overhead."
+}

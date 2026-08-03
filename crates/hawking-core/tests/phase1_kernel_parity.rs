@@ -24,6 +24,27 @@ fn test_rmsnorm_matches_cpu() {
     let diff = max_abs_diff(&cpu_out, &metal_out);
     assert!(diff < ATOL, "rmsnorm CPU/Metal diff {diff} >= atol {ATOL}");
 }
+
+#[test]
+fn test_llama_b9430_rmsnorm_matches_cpu() {
+    let hidden = 4096;
+    let x = fixed_input(hidden, 0xA11A_B943);
+    let w = fixed_input(hidden, 0xF32A_B943);
+    let eps = 1e-6_f32;
+    let mut cpu_out = vec![0.0_f32; hidden];
+    kernels::rmsnorm(&x, &w, eps, &mut cpu_out);
+
+    let ctx = ctx().clone();
+    let mut metal_out = vec![0.0_f32; hidden];
+    kernels::rmsnorm_llama_b9430(&ctx, &x, &w, eps, &mut metal_out)
+        .expect("llama b9430 RMSNorm Metal dispatch should succeed");
+
+    let diff = max_abs_diff(&cpu_out, &metal_out);
+    assert!(
+        diff < ATOL,
+        "llama b9430 RMSNorm CPU/Metal diff {diff} >= atol {ATOL}"
+    );
+}
 #[test]
 fn test_gemv_f16_matches_cpu() {
     use half::f16;

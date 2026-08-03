@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.one_mountain.storage_reset.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "intent": "Remove the prior active Hawking model payload while retaining source code and evidence, before the one-mountain selection.",
+  "removed_payload": {
+    "former_directory": "/Users/scammermike/Downloads/hawking/models/tg-active/mixtral8x7b-gravity-first-2026-08-02",
+    "source_copy": "mixtral-source.gravity",
+    "source_copy_bytes": 28448692526,
+    "runtime_copy": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "runtime_copy_bytes": 28448468384,
+    "total_model_payload_bytes": 56897160910,
+    "deletion_method": "The exact verified directory was moved to the local Trash, its contents were enumerated, then that exact Trash item was permanently deleted through Finder.",
+    "result": "No prior active model payload remains in the Hawking active-model lane."
+  },
+  "retained": [
+    "Hawking source code",
+    "Existing evidence and receipts",
+    "Non-model project files"
+  ],
+  "storage_authority": "HAWKING_ONE_MOUNTAIN_STORAGE_AUTHORITY.json"
+}

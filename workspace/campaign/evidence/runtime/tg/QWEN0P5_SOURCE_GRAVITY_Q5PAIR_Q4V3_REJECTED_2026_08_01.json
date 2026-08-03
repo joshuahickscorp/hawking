@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.tg.geometry_candidate.v1",
+  "status": "REJECTED_WALL_AND_TAIL_REGRESSION",
+  "at": "2026-08-01T20:49:00-04:00",
+  "scope": "Same 128 complete-token bounded Qwen artifact, with source Q5 QKV and Q5 gate/up fusion retained.",
+  "candidate": "HAWKING_GRAVITY_Q4_V3=1",
+  "continuation_sha256_equal": true,
+  "baseline": { "tps": 173.76849123120894, "p99_ms": 7.444458 },
+  "candidate_result": { "tps": 170.1641908694187, "p99_ms": 7.514334 },
+  "tps_delta_percent": -2.0741967293682273,
+  "decision": "RETIRED before V2.1 because it regresses complete-token wall throughput and p99. The b9430 source Q4_K geometry remains the admitted path.",
+  "reopen_condition": "A materially different Q4_K geometry must improve both complete-token TPS and tail latency on the same source artifact."
+}

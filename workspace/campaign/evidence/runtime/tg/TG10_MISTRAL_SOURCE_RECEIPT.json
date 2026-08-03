@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.tg.source_receipt.v1",
+  "status": "SEALED",
+  "rung": "TG10",
+  "model": "Mistral-Nemo-Instruct-2407",
+  "family": "mistral",
+  "source": {
+    "repository": "bartowski/Mistral-Nemo-Instruct-2407-GGUF",
+    "revision": "a2dd64a0a76ea1bdb2bb6ab6fa5496b003c7c908",
+    "filename": "Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "path": "models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "bytes": 7477208192,
+    "sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46"
+  },
+  "acquisition": {
+    "method": "hf download bartowski/Mistral-Nemo-Instruct-2407-GGUF Mistral-Nemo-Instruct-2407-Q4_K_M.gguf --local-dir models/tg-active",
+    "preflight": "Hub dry run reported one 7.5G file; the verified artifact occupies 6.96 GiB and satisfies TG10's 9 GiB source budget.",
+    "immutable_revision_source": "models/tg-active/.cache/huggingface/download/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf.metadata",
+    "source_copy_policy": "This is the sole active ladder parent. It must be evicted after a terminal Gravity/measurement receipt before another rung is acquired."
+  },
+  "local_inspection": {
+    "architecture": "llama",
+    "layers": 40,
+    "hidden": 5120,
+    "kv_heads": 8,
+    "context_estimate": 4096,
+    "weights_plus_kv_estimate_bytes": 9154929792,
+    "doctor_command": "hawking doctor --weights models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf"
+  }
+}

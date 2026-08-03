@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v1",
+  "status": "PASS_BOUNDED_RANGE_MATRIX_NO_BODY_PERSISTED",
+  "at": "2026-08-01T06:07:00Z",
+  "classification": "CONTENDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repo": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+    "path": "qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf",
+    "file_bytes": 3986869120,
+    "file_sha256": "3531a90691b5f4edb4fdf488246d72ce0b5d40cacfab1489718a662cec386e43",
+    "xet_file_hash": "d2bf6e805dfba78d0330915f28f2f9afb3b2eee4155ed8e4cd3283b97a6a51f5"
+  },
+  "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2","authenticated":false,"hub_token_mode":"EXPLICIT_TOKEN_FALSE","chunk_cache_bytes":0,"retry_max_attempts":5},
+  "range": {"start":0,"end":67108864,"bytes":67108864,"sha256":"640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168","in_memory_only":true,"application_body_file_writes":0},
+  "trials": [
+    {"mode":"standard","requested_fixed_download_concurrency":1,"effective":{"initial":1,"minimum":1,"maximum":1},"elapsed_seconds":2.10162875,"cpu_user_seconds":0.065518,"cpu_system_seconds":0.050555,"free_disk_delta_bytes":-14569472,"client_visible_retries":0,"sealed_gb_per_hour_decimal":114.95460861010775},
+    {"mode":"standard","requested_fixed_download_concurrency":2,"effective":{"initial":2,"minimum":2,"maximum":2},"elapsed_seconds":0.875193292,"cpu_user_seconds":0.063419,"cpu_system_seconds":0.049613,"free_disk_delta_bytes":13664256,"client_visible_retries":0,"sealed_gb_per_hour_decimal":276.04406090443393},
+    {"mode":"standard","requested_fixed_download_concurrency":4,"effective":{"initial":4,"minimum":4,"maximum":4},"elapsed_seconds":0.988483833,"cpu_user_seconds":0.06583,"cpu_system_seconds":0.047881,"free_disk_delta_bytes":-11329536,"client_visible_retries":0,"sealed_gb_per_hour_decimal":244.40653689477188},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"effective":{"initial":8,"minimum":8,"maximum":8},"elapsed_seconds":0.748539416,"cpu_user_seconds":0.065636,"cpu_system_seconds":0.054841,"free_disk_delta_bytes":11792384,"client_visible_retries":0,"sealed_gb_per_hour_decimal":322.7510872987883},
+    {"mode":"high_performance","requested_fixed_download_concurrency":1,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":0.762317667,"cpu_user_seconds":0.078845,"cpu_system_seconds":0.061386,"free_disk_delta_bytes":-1118208,"client_visible_retries":0,"sealed_gb_per_hour_decimal":316.9176327117708},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":0.691193042,"cpu_user_seconds":0.063824,"cpu_system_seconds":0.048901,"free_disk_delta_bytes":-13746176,"client_visible_retries":0,"sealed_gb_per_hour_decimal":349.52885188332095},
+    {"mode":"high_performance","requested_fixed_download_concurrency":4,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":0.792810667,"cpu_user_seconds":0.065333,"cpu_system_seconds":0.047755,"free_disk_delta_bytes":36864,"client_visible_retries":0,"sealed_gb_per_hour_decimal":304.7283802502118},
+    {"mode":"high_performance","requested_fixed_download_concurrency":8,"effective":{"initial":16,"minimum":4,"maximum":124},"elapsed_seconds":0.83498325,"cpu_user_seconds":0.06433,"cpu_system_seconds":0.052208,"free_disk_delta_bytes":204800,"client_visible_retries":0,"sealed_gb_per_hour_decimal":289.3374332958177}
+  ],
+  "selection": {
+    "mode":"high_performance",
+    "requested_fixed_download_concurrency":2,
+    "effective_download_concurrency":{"initial":16,"minimum":4,"maximum":124},
+    "matrix_peak_sealed_gb_per_hour_decimal":349.52885188332095,
+    "stability_samples_sealed_gb_per_hour_decimal":[337.30058653188803,356.6035774502697,331.197638492733],
+    "median_sealed_gb_per_hour_decimal":337.30058653188803,
+    "selection_reason":"highest matrix result, stable repeated range hashes and a 337.301 GB/hour repeated median"
+  },
+  "integrity": {"all_matrix_and_stability_range_hashes_identical":true,"application_body_file_writes_total":0,"client_visible_retries_total":0,"free_disk_delta_is_not_model_body_evidence":true},
+  "claim_boundary": ["bounded 64-MiB source ranges only","external CPU workloads make rates diagnostic rather than promotional","does not prove full-model throughput or admit body bytes","fresh byte admission is required immediately before materialization"],
+  "seal_sha256": "a6e5d8f98b884ade0a5de4a6df23ce11494592afe5b4e3daae7f471a14d02c13"
+}

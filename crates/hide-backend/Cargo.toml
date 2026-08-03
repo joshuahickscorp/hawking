@@ -50,9 +50,13 @@ hawking-index = { path = "../hawking-index" }
 # Speculation safety: Draft/Verified type boundary + durable sinks that accept
 # only target-verified tokens. Default-off; no speculate path enabled here.
 hawking-speculate = { path = "../hawking-speculate" }
+# Canonical verification envelope used by the product-wide durable-token fence.
+# HIDE still stores hide-core Event bytes; this crate only supplies the single
+# authority for target_verified/provisional stamping and validation.
+hawking-events = { path = "../hawking-events" }
 # Spine A: read the .tq (strand v2) artifact to derive a measured effective-context multiplier.
 # Optional; behind the `tq` feature (default off).
-strand-quant = { path = "../../vendor/strand-quant", optional = true }
+strand-quant = { path = "../../workspace/vendor/strand-quant", optional = true }
 hawking-orch = { path = "../hawking-orch" }
 hawking-research = { path = "../hawking-research" }
 futures = { workspace = true }

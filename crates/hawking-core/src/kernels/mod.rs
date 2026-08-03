@@ -87,8 +87,8 @@ pub fn softmax_inplace(xs: &mut [f32]) {
 
 /// In-place rotary positional embedding for one (head_dim,) vector at
 /// absolute position `pos`, using the standard θᵢ = base^(-2i/dim)
-/// schedule. Llama/Qwen/Gemma GGUF tensors use NEOX pairing: dimension
-/// `i` rotates with dimension `i + head_dim/2`.
+/// schedule with NEOX pairing: dimension `i` rotates with dimension
+/// `i + head_dim/2`.
 pub fn rope_inplace(x: &mut [f32], pos: u32, base: f32) {
     let head_dim = x.len();
     let half = head_dim / 2;
@@ -157,6 +157,67 @@ pub fn rope_inplace_scaled(x: &mut [f32], pos: u32, base: f32, scaling: Option<L
         let x1 = x[i + half];
         x[i] = x0 * cos - x1 * sin;
         x[i + half] = x0 * sin + x1 * cos;
+    }
+}
+
+/// In-place RoPE with standard (adjacent / interleaved) pairing and an
+/// optional exact per-frequency divisor carried in a GGUF
+/// `rope_freqs.weight` tensor. Llama GGUFs report `rope type = 0` (NORM),
+/// whose pair `i` is dimensions `2i, 2i+1`; that is distinct from NEOX's
+/// split-half layout. Recent Llama-3.1 converters encode their long-context
+/// frequency scaling in this tensor rather than as metadata. A factor of
+/// `1.0` is the ordinary RoPE frequency; `8.0` means use one eighth of it.
+///
+/// Tensor factors take precedence over metadata-derived scaling because they
+/// are already the converter's resolved, per-dimension representation.
+pub fn rope_inplace_normal_with_factors(
+    x: &mut [f32],
+    pos: u32,
+    base: f32,
+    scaling: Option<Llama3RopeScaling>,
+    frequency_factors: Option<&[f32]>,
+) {
+    let head_dim = x.len();
+    let half = head_dim / 2;
+    if let Some(factors) = frequency_factors {
+        debug_assert_eq!(factors.len(), half);
+    }
+    let two_pi = std::f32::consts::TAU;
+    for i in 0..half {
+        let freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+        let freq_eff = match frequency_factors {
+            Some(factors) => {
+                let divisor = factors[i];
+                debug_assert!(divisor.is_finite() && divisor > 0.0);
+                freq / divisor
+            }
+            None => match scaling {
+                None => freq,
+                Some(s) => {
+                    let wavelen = two_pi / freq;
+                    let low_wavelen = s.original_max_position_embeddings as f32 / s.low_freq_factor;
+                    let high_wavelen =
+                        s.original_max_position_embeddings as f32 / s.high_freq_factor;
+                    if wavelen < high_wavelen {
+                        freq
+                    } else if wavelen > low_wavelen {
+                        freq / s.factor
+                    } else {
+                        let smooth = (s.original_max_position_embeddings as f32 / wavelen
+                            - s.low_freq_factor)
+                            / (s.high_freq_factor - s.low_freq_factor);
+                        (1.0 - smooth) * (freq / s.factor) + smooth * freq
+                    }
+                }
+            },
+        };
+        let theta = pos as f32 * freq_eff;
+        let (sin, cos) = theta.sin_cos();
+        let offset = i * 2;
+        let x0 = x[offset];
+        let x1 = x[offset + 1];
+        x[offset] = x0 * cos - x1 * sin;
+        x[offset + 1] = x0 * sin + x1 * cos;
     }
 }
 
@@ -319,6 +380,30 @@ mod metal_dispatch {
     };
     use crate::{Error, Result};
     use half::f16;
+    use std::ffi::{c_char, CStr};
+
+    unsafe extern "C" {
+        fn hawking_ggml_fattn_f16_authority(
+            q: *const f32,
+            k_active: *const u16,
+            v_active: *const u16,
+            seq_len: u32,
+            n_heads: u32,
+            n_kv_heads: u32,
+            output: *mut f32,
+            error: *mut c_char,
+            error_len: usize,
+        ) -> i32;
+        fn hawking_ggml_f16_matvec_authority(
+            weights: *const u16,
+            rows: u32,
+            cols: u32,
+            input: *const f32,
+            output: *mut f32,
+            error: *mut c_char,
+            error_len: usize,
+        ) -> i32;
+    }
 
     /// Extension trait that collapses the verbose
     /// `set_bytes(i, size_of::<T>() as u64, &v as *const T as *const _)`
@@ -365,6 +450,54 @@ mod metal_dispatch {
         cols: u32,
     }
 
+    /// Matches `struct ArgbufRmsnorm { uint hidden; float eps; }` in
+    /// `shaders/common.metal`. Keeping these two values in one 8-byte binding
+    /// is required by the fp32 RMSNorm entry point.
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    struct ArgbufRmsnorm {
+        hidden: u32,
+        eps: f32,
+    }
+
+    /// Source-layout prefix for ggml Metal v0.13.1's RoPE argument block.
+    /// The shader consumes it directly, so keep field order and native C
+    /// alignment synchronized with `LlamaB9430RopeArgs` in common.metal.
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    struct LlamaB9430RopeArgs {
+        ne00: i32,
+        ne01: i32,
+        ne02: i32,
+        ne03: i32,
+        nb00: u64,
+        nb01: u64,
+        nb02: u64,
+        nb03: u64,
+        ne0: i32,
+        ne1: i32,
+        ne2: i32,
+        ne3: i32,
+        nb0: u64,
+        nb1: u64,
+        nb2: u64,
+        nb3: u64,
+        n_past: i32,
+        n_dims: i32,
+        n_ctx_orig: i32,
+        freq_base: f32,
+        freq_scale: f32,
+        ext_factor: f32,
+        attn_factor: f32,
+        beta_fast: f32,
+        beta_slow: f32,
+        sect_0: i32,
+        sect_1: i32,
+        sect_2: i32,
+        sect_3: i32,
+        src2: u8,
+    }
+
     /// Matches `ArgbufQkvRopeAppend` in `shaders/quant.metal`.
     #[repr(C)]
     #[derive(Copy, Clone)]
@@ -381,6 +514,9 @@ mod metal_dispatch {
         has_k_bias: u32,
         has_v_bias: u32,
         base: f32,
+        /// GGUF rope_type=0 stores adjacent pairs (Llama/Mistral source
+        /// shards); the historical Qwen path uses NeoX split-half pairs.
+        interleaved: u32,
     }
 
     /// Q4_K_M-weight × fp32-vec → fp32 GEMV, dispatching the
@@ -395,7 +531,250 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_gemv(ctx, "gemm_q4_k_m_fused", w_bytes, rows, cols, x, out)
+        dispatch_q4_k_m_gemv(
+            ctx,
+            "gemm_q4_k_m_fused",
+            w_bytes,
+            rows,
+            cols,
+            x,
+            out,
+            TG_SIZE,
+            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64,
+        )
+    }
+
+    /// GPU-only K0 authority GEMV. Preserves the raw Q4_K dequantization and
+    /// sequential fp32 accumulation order used by the pinned Llama reference.
+    /// It establishes numeric truth; it is never a throughput candidate.
+    pub fn gemv_q4_k_m_serial_authority(
+        ctx: &MetalContext,
+        w_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_gemv(
+            ctx,
+            "gemm_q4_k_m_serial_authority",
+            w_bytes,
+            rows,
+            cols,
+            x,
+            out,
+            1,
+            0,
+        )
+    }
+
+    /// GPU-only specialization of llama.cpp b9430's Q4_K single-token
+    /// matvec grammar. It is the K0 comparison path, so its dispatch geometry
+    /// and packed-ushort arithmetic intentionally match the reference.
+    pub fn gemv_q4_k_m_llama_b9430(
+        ctx: &MetalContext,
+        w_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_gemv_b9430(ctx, w_bytes, rows, cols, x, out)
+    }
+
+    /// Zero-copy form of the strict b9430 Q4_K GEMV. `model_buf` pins the
+    /// model GGUF mmap for the engine lifetime; binding the tensor window by
+    /// offset avoids rebuilding a Metal weight buffer for every projection.
+    pub fn gemv_q4_k_m_llama_b9430_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_gemv_b9430_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
+    /// GPU-only specialization of llama.cpp b9430's Q6_K single-token
+    /// matvec grammar. Its two-simdgroup, two-rows-per-simdgroup layout is
+    /// kept separate from the tuned Q6 kernel so K0 retains reference
+    /// numerical semantics.
+    pub fn gemv_q6_k_llama_b9430(
+        ctx: &MetalContext,
+        w_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q6_k_gemv_b9430(ctx, w_bytes, rows, cols, x, out)
+    }
+
+    /// Zero-copy form of the strict b9430 Q6_K GEMV. See the Q4_K variant
+    /// above for the ownership and lifetime contract.
+    pub fn gemv_q6_k_llama_b9430_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q6_k_gemv_b9430_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
+    /// Zero-copy packed Q5_K authority GEMV. The serial-per-row geometry
+    /// preserves the established CPU dequant/GEMV arithmetic while keeping
+    /// source weights and execution on Metal.
+    pub fn gemv_q5_k_serial_authority_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q5_k_serial_authority_pinned(
+            ctx,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
+    }
+
+    /// Persistent-buffer / token-command-buffer Q5_K authority path.
+    /// This keeps Q5 weights packed and device-resident instead of silently
+    /// expanding the Qwen projection to an f16 shadow at load time.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q5_k_serial_authority_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q5_k_serial_authority";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(176))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = cols * std::mem::size_of::<f32>();
+        let out_bytes = rows * std::mem::size_of::<f32>();
+        if x_buf.length() < x_bytes as u64 || out_buf.length() < out_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb buffer sizes: x={} expected>={x_bytes} out={} expected>={out_bytes}",
+                x_buf.length(), out_buf.length()
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (rows as u32, 1, 1), (1, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, rows as u32);
+            enc.set_u32(4, cols as u32);
+        })
+    }
+
+    /// Offset-capable Q5_K authority dispatch for resident KV-cache writes.
+    /// The source-packed weight window and serial-per-row arithmetic are the
+    /// same as [`gemv_q5_k_serial_authority_pinned_tcb`]; only the activation
+    /// and output bases move inside persistent buffers.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q5_k_serial_authority_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_offset_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q5_k_serial_authority";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_off_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(176))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_off_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let weight_end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb weight offset overflow")))?;
+        if weight_end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_off_tcb weight out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb x-size overflow")))?;
+        let out_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb out-size overflow")))?;
+        let x_end = x_offset_bytes
+            .checked_add(x_bytes)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb x offset overflow")))?;
+        let out_end = out_offset_bytes
+            .checked_add(out_bytes)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_off_tcb out offset overflow")))?;
+        if x_end > x_buf.length() as usize || out_end > out_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_off_tcb buffer bounds: x={x_offset_bytes}+{x_bytes}/{} out={out_offset_bytes}+{out_bytes}/{}",
+                x_buf.length(),
+                out_buf.length()
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (rows as u32, 1, 1), (1, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), x_offset_bytes as u64);
+            enc.set_buffer(2, Some(out_buf), out_offset_bytes as u64);
+            enc.set_u32(3, rows as u32);
+            enc.set_u32(4, cols as u32);
+        })
     }
 
     /// v0.3.0 -- simdgroup_matrix variant of gemv_q4_k_m.  Dispatches
@@ -1385,6 +1764,67 @@ mod metal_dispatch {
             enc.set_buffer(2, Some(out_buf), 0);
             enc.set_u32(3, rows_u32);
             enc.set_u32(4, cols_u32);
+        })
+    }
+
+    /// Offset-output form of [`gemv_q4_k_m_v3_8r_pinned_tcb`]. Used by the
+    /// source-preserving decoder when K/V projections write directly into an
+    /// absolute KV-cache slot.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_8r_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_8r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_off_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let w_end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_off_tcb offset overflow")))?;
+        if w_end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let out_end = out_offset_bytes
+            .checked_add(rows * std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_off_tcb output overflow")))?;
+        if out_end > out_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb output oob: {out_offset_bytes}+{} > {}",
+                rows * std::mem::size_of::<f32>(),
+                out_buf.length()
+            )));
+        }
+        const TG: u32 = 256;
+        let n_tg = (rows as u32).div_ceil(8);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), out_offset_bytes as u64);
+            enc.set_u32(3, rows as u32);
+            enc.set_u32(4, cols as u32);
         })
     }
 
@@ -2980,7 +3420,8 @@ mod metal_dispatch {
 
     /// GPU-side per-CHANNEL int8 quantization. Pairs with the per-channel
     /// W4A8 path: uses STATIC scales pinned from a calibration pass (e.g.
-    /// reports/w4a8_lmhead_calibration_2026_05_26.json on Qwen-3B). Scales
+    /// workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json
+    /// on Qwen-3B). Scales
     /// are an INPUT here (read-only); only the int8 output buffer is written.
     ///
     /// Matches the CPU reference `quantize_to_int8_per_channel`:
@@ -3209,6 +3650,223 @@ mod metal_dispatch {
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Source-native Q8_0 GEMV for dense Qwen paths.  Qwen Q4_K_M frontier
+    /// files commonly retain `ffn_down` as Q8_0; routing it through the old
+    /// f16 fallback forced a full per-layer dequant/pin during load.  The
+    /// Gravity raw-Q8 shader uses the exact GGML 32-value block grammar and
+    /// runs one SIMD group per output row, so the packed mmap remains the
+    /// authority and no dense staging buffer is allocated.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q8_0_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gravity_raw_q8_0_matvec";
+        if cols % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 32 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 32)
+            .and_then(|v| v.checked_mul(34))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        // `gravity_raw_q8_0_matvec` owns one SIMD group per row.  Eight
+        // SIMD groups per 256-thread TG preserve the same launch geometry as
+        // the K-quant dense kernels while keeping the command graph compact.
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Source-native Q5_0 GEMV for the legacy 32-value block tensors that
+    /// appear in mixed Qwen Q4_K_M files.  The raw Gravity shader preserves
+    /// the GGML scale/high-bit layout and avoids the f16 fallback pin.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q5_0_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gravity_raw_q5_0_matvec";
+        if cols % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 32 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 32)
+            .and_then(|v| v.checked_mul(22))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Opt-in llama.cpp b9430-compatible Q8_0 GEMV geometry.  ggml-metal
+    /// uses four SIMD groups that cooperate on two rows with a 32-row-slot
+    /// reduction buffer; this is intentionally separate from the Hawking
+    /// default so a receipt can promote or retire it without ambiguity.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q8_0_llama_cpp_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gravity_raw_q8_0_llama_matvec";
+        if cols % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 32 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 32)
+            .and_then(|v| v.checked_mul(34))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        const TG: u32 = 128;
+        const ROWS_PER_TG: u32 = 2;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, (2 * 32 * std::mem::size_of::<f32>()) as u64);
+        })
+    }
+
+    /// Opt-in llama.cpp b9430-compatible Q5_0 GEMV geometry.  Two SIMD
+    /// groups each own four output rows (64 threads per threadgroup), while
+    /// each lane consumes an eight-value half-block exactly as ggml-metal's
+    /// Q5_0 path does.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q5_0_llama_cpp_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gravity_raw_q5_0_llama_matvec";
+        if cols % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 32 == 0; got cols={cols}"
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 32)
+            .and_then(|v| v.checked_mul(22))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        const TG: u32 = 64;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
             enc.set_buffer(0, Some(model_buf), w_offset as u64);
             enc.set_buffer(1, Some(x_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
@@ -3742,13 +4400,15 @@ mod metal_dispatch {
         tcb: &mut TokenCommandBuffer<'_>,
         kernel: &str,
         rows4: bool,
-        model_buf: &PinnedBuffer,
+        q_model_buf: &PinnedBuffer,
         q_offset: usize,
         q_byte_size: usize,
         q_scales: &PinnedBuffer,
+        k_model_buf: &PinnedBuffer,
         k_offset: usize,
         k_byte_size: usize,
         k_scales: &PinnedBuffer,
+        v_model_buf: &PinnedBuffer,
         v_offset: usize,
         v_byte_size: usize,
         v_scales: &PinnedBuffer,
@@ -3768,6 +4428,7 @@ mod metal_dispatch {
         v_bias_buf: Option<&PinnedBuffer>,
         k_cache: &PinnedBuffer,
         v_cache: &PinnedBuffer,
+        interleaved: bool,
     ) -> Result<()> {
         validate_qkv_rope_append_shape(
             kernel, q_rows, kv_rows, cols, n_q_heads, n_k_heads, head_dim, kv_off,
@@ -3814,6 +4475,7 @@ mod metal_dispatch {
             has_k_bias: k_bias_buf.is_some() as u32,
             has_v_bias: v_bias_buf.is_some() as u32,
             base: rope_base,
+            interleaved: interleaved as u32,
         };
         let q_bias = q_bias_buf.unwrap_or(q_buf);
         let k_bias = k_bias_buf.unwrap_or(q_buf);
@@ -3831,11 +4493,11 @@ mod metal_dispatch {
             q_pair_tg + k_pair_tg + v_tg
         };
         tcb.dispatch_threads(kernel, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
-            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(0, Some(q_model_buf), q_offset as u64);
             enc.set_buffer(1, Some(q_scales), 0);
-            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(2, Some(k_model_buf), k_offset as u64);
             enc.set_buffer(3, Some(k_scales), 0);
-            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(4, Some(v_model_buf), v_offset as u64);
             enc.set_buffer(5, Some(v_scales), 0);
             enc.set_buffer(6, Some(x_buf), 0);
             enc.set_buffer(7, Some(q_buf), 0);
@@ -3895,9 +4557,11 @@ mod metal_dispatch {
             q_offset,
             q_byte_size,
             q_scales,
+            model_buf,
             k_offset,
             k_byte_size,
             k_scales,
+            model_buf,
             v_offset,
             v_byte_size,
             v_scales,
@@ -3917,6 +4581,7 @@ mod metal_dispatch {
             v_bias_buf,
             k_cache,
             v_cache,
+            false,
         )
     }
 
@@ -3962,9 +4627,11 @@ mod metal_dispatch {
             q_offset,
             q_byte_size,
             q_scales,
+            model_buf,
             k_offset,
             k_byte_size,
             k_scales,
+            model_buf,
             v_offset,
             v_byte_size,
             v_scales,
@@ -3984,6 +4651,7 @@ mod metal_dispatch {
             v_bias_buf,
             k_cache,
             v_cache,
+            false,
         )
     }
 
@@ -4029,9 +4697,11 @@ mod metal_dispatch {
             q_offset,
             q_byte_size,
             q_scales,
+            model_buf,
             k_offset,
             k_byte_size,
             k_scales,
+            model_buf,
             v_offset,
             v_byte_size,
             v_scales,
@@ -4051,6 +4721,7 @@ mod metal_dispatch {
             v_bias_buf,
             k_cache,
             v_cache,
+            false,
         )
     }
 
@@ -4095,9 +4766,11 @@ mod metal_dispatch {
             q_offset,
             q_byte_size,
             q_scales,
+            model_buf,
             k_offset,
             k_byte_size,
             k_scales,
+            model_buf,
             v_offset,
             v_byte_size,
             v_scales,
@@ -4117,6 +4790,81 @@ mod metal_dispatch {
             v_bias_buf,
             k_cache,
             v_cache,
+            false,
+        )
+    }
+
+    /// Source-preserving Llama/Mistral variant of the 4r fused Q/K/V path.
+    ///
+    /// Unlike the historical packed-model entry points above, this accepts
+    /// the three raw Q4_K buffers independently.  Gravity keeps source tensors
+    /// in separate allocations, so concatenating them solely to use this
+    /// kernel would add a second resident copy.  `interleaved` selects the
+    /// adjacent-pair RoPE layout carried by the source Llama/Mistral shard;
+    /// false retains the NeoX split-half layout used by Qwen.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_predec_qkv_rope_append_4r_buffers_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_model_buf: &PinnedBuffer,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_model_buf: &PinnedBuffer,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_model_buf: &PinnedBuffer,
+        v_byte_size: usize,
+        v_scales: &PinnedBuffer,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        rope_base: f32,
+        kv_off: usize,
+        x_buf: &PinnedBuffer,
+        q_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+        interleaved: bool,
+    ) -> Result<()> {
+        gemv_q4k_predec_qkv_rope_append_body(
+            tcb,
+            "gemm_q4k_predec_qkv_rope_append_4r",
+            true,
+            q_model_buf,
+            0,
+            q_byte_size,
+            q_scales,
+            k_model_buf,
+            0,
+            k_byte_size,
+            k_scales,
+            v_model_buf,
+            0,
+            v_byte_size,
+            v_scales,
+            q_rows,
+            kv_rows,
+            cols,
+            n_q_heads,
+            n_k_heads,
+            head_dim,
+            pos,
+            rope_base,
+            kv_off,
+            x_buf,
+            q_buf,
+            q_bias_buf,
+            k_bias_buf,
+            v_bias_buf,
+            k_cache,
+            v_cache,
+            interleaved,
         )
     }
 
@@ -4195,6 +4943,7 @@ mod metal_dispatch {
             has_k_bias: k_bias_buf.is_some() as u32,
             has_v_bias: v_bias_buf.is_some() as u32,
             base: rope_base,
+            interleaved: 0,
         };
         let q_bias = q_bias_buf.unwrap_or(q_buf);
         let k_bias = k_bias_buf.unwrap_or(q_buf);
@@ -4210,6 +4959,105 @@ mod metal_dispatch {
             enc.set_buffer(2, Some(model_buf), k_offset as u64);
             enc.set_buffer(3, Some(k_scales), 0);
             enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(x_buf), 0);
+            enc.set_buffer(6, Some(q_buf), 0);
+            enc.set_buffer(7, Some(k_cache), 0);
+            enc.set_buffer(8, Some(v_cache), 0);
+            enc.set_buffer(9, Some(q_bias), 0);
+            enc.set_buffer(10, Some(k_bias), 0);
+            enc.set_buffer(11, Some(v_bias), 0);
+            enc.set_bytes(
+                12,
+                std::mem::size_of::<ArgbufQkvRopeAppend>() as u64,
+                &args as *const ArgbufQkvRopeAppend as *const _,
+            );
+        })
+    }
+
+    /// Separate-buffer source variant of the mixed Q4_K/Q4_K/Q6_K fused
+    /// kernel. Mistral-Nemo carries Q6_K V projections in a subset of layers;
+    /// accepting independent buffers lets every layer use the fused topology
+    /// without creating a concatenated resident copy.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_q4k_q6k_rope_append_buffers_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_model_buf: &PinnedBuffer,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_model_buf: &PinnedBuffer,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_model_buf: &PinnedBuffer,
+        v_byte_size: usize,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        rope_base: f32,
+        kv_off: usize,
+        x_buf: &PinnedBuffer,
+        q_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+        interleaved: bool,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_q4k_q6k_rope_append";
+        validate_qkv_rope_append_shape(
+            KERNEL, q_rows, kv_rows, cols, n_q_heads, n_k_heads, head_dim, kv_off,
+        )?;
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q byte overflow")))?;
+        let k_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k byte overflow")))?;
+        let v_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v byte overflow")))?;
+        if q_byte_size != q_exp || k_byte_size != k_exp || v_byte_size != v_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: source bytes q={q_byte_size}/{q_exp} k={k_byte_size}/{k_exp} v={v_byte_size}/{v_exp}"
+            )));
+        }
+        let args = ArgbufQkvRopeAppend {
+            q_rows: q_rows as u32,
+            kv_rows: kv_rows as u32,
+            cols: cols as u32,
+            n_q_heads: n_q_heads as u32,
+            n_k_heads: n_k_heads as u32,
+            head_dim: head_dim as u32,
+            pos,
+            kv_off: kv_off as u32,
+            has_q_bias: q_bias_buf.is_some() as u32,
+            has_k_bias: k_bias_buf.is_some() as u32,
+            has_v_bias: v_bias_buf.is_some() as u32,
+            base: rope_base,
+            interleaved: interleaved as u32,
+        };
+        let q_bias = q_bias_buf.unwrap_or(q_buf);
+        let k_bias = k_bias_buf.unwrap_or(q_buf);
+        let v_bias = v_bias_buf.unwrap_or(q_buf);
+        const TG: u32 = 256;
+        let q_pair_tg = ((q_rows / 2) as u32).div_ceil(8);
+        let k_pair_tg = ((kv_rows / 2) as u32).div_ceil(8);
+        let v_tg = (kv_rows as u32).div_ceil(8);
+        let total_tg = q_pair_tg + k_pair_tg + v_tg;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(q_model_buf), 0);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(k_model_buf), 0);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(v_model_buf), 0);
             enc.set_buffer(5, Some(x_buf), 0);
             enc.set_buffer(6, Some(q_buf), 0);
             enc.set_buffer(7, Some(k_cache), 0);
@@ -4772,9 +5620,9 @@ mod metal_dispatch {
     // call sites in `model::deepseek_v2` and the parity tests in
     // `tests/phase1_kernel_parity.rs`.
 
-    /// G1.1 -- RMSNorm via the existing `rmsnorm` kernel in
-    /// `shaders/common.metal`. Inputs and outputs are fp32 from the
-    /// caller's view; the kernel works in fp16 internally.
+    /// RMSNorm via the fp32 `rmsnorm_f32` kernel in `shaders/common.metal`.
+    /// Llama's reference path keeps this surface in fp32; do not downcast the
+    /// residual or the learned scale before the reduction.
     ///
     /// Threadgroup size 256 (kernel uses parallel reduction; must be
     /// power of two ≤ 1024).
@@ -4795,39 +5643,1960 @@ mod metal_dispatch {
             )));
         }
 
-        // Host-side f32 → f16 conversion for the kernel's half I/O.
-        // The test path is small (4096 elements); this is dwarfed by
-        // the dispatch overhead. Real model paths will keep weights in
-        // device memory and skip this round-trip.
-        let x_f16: Vec<f16> = x.iter().map(|&v| f16::from_f32(v)).collect();
-        let w_f16: Vec<f16> = weight.iter().map(|&v| f16::from_f32(v)).collect();
-
-        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&x_f16));
-        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&w_f16));
-        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f16>());
-
-        let hidden_u32 = hidden as u32;
-        let eps_f32 = eps;
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(weight));
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        let args = ArgbufRmsnorm {
+            hidden: hidden as u32,
+            eps,
+        };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
-        ctx.dispatch_threads("rmsnorm", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+        ctx.dispatch_threads("rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(&x_buf), 0);
             enc.set_buffer(1, Some(&w_buf), 0);
             enc.set_buffer(2, Some(&out_buf), 0);
-            enc.set_u32(3, hidden_u32);
-            enc.set_f32(4, eps_f32);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRmsnorm>() as u64,
+                &args as *const ArgbufRmsnorm as *const _,
+            );
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })?;
 
-        // Read back from the shared-storage output buffer. f16 → f32
-        // on the host; the parity test compares against the f32 CPU
-        // reference at atol=1e-3 (fp16 quant noise floor).
-        let out_ptr = out_buf.contents() as *const f16;
+        let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, hidden) };
-        for i in 0..hidden {
-            out[i] = out_slice[i].to_f32();
+        out.copy_from_slice(out_slice);
+
+        Ok(())
+    }
+
+    /// Llama K0 RMSNorm authority dispatch. Its float4 lanes and 1024-thread
+    /// reduction tree match the reference Metal `kernel_rms_norm_f32_4` path.
+    pub fn rmsnorm_llama_b9430(
+        ctx: &MetalContext,
+        x: &[f32],
+        weight: &[f32],
+        eps: f32,
+        out: &mut [f32],
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 1024;
+        let hidden = x.len();
+        if hidden == 0 || hidden % 4 != 0 || weight.len() != hidden || out.len() != hidden {
+            return Err(Error::Kernel(format!(
+                "rmsnorm_llama_b9430 shape: x={} weight={} out={}; hidden must be a nonzero multiple of 4",
+                hidden,
+                weight.len(),
+                out.len(),
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let weight_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(weight));
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        ctx.dispatch_threads(
+            "rmsnorm_llama_b9430",
+            (THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&x_buf), 0);
+                enc.set_buffer(1, Some(&weight_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_f32(4, eps);
+                enc.set_threadgroup_memory_length(0, 32 * std::mem::size_of::<f32>() as u64);
+            },
+        )?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Exact Llama b9430 normal-pair RoPE dispatch.
+    ///
+    /// The input contains consecutive `head_dim`-wide heads.  A distinct
+    /// threadgroup owns each head so its pair index has the same shape as
+    /// ggml Metal's NORM RoPE kernel.  This small host bridge is intentionally
+    /// correctness-first: it removes the host libm/Metal-libm discrepancy
+    /// that grows into a multi-token logits mismatch before the KV arena is
+    /// made resident.
+    pub fn rope_norm_llama_b9430(
+        ctx: &MetalContext,
+        x: &mut [f32],
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        frequency_factors: Option<&[f32]>,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 || x.len() % head_dim != 0 {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430 shape: x={} head_dim={head_dim}; head_dim must be nonzero, even, and divide x",
+                x.len(),
+            )));
+        }
+        let pairs = head_dim / 2;
+        if pairs > 1024 {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430 head_dim={head_dim} exceeds 1024-thread authority limit"
+            )));
+        }
+        let factors = match frequency_factors {
+            Some(factors) if factors.len() == pairs => factors.to_vec(),
+            Some(factors) => {
+                return Err(Error::Kernel(format!(
+                    "rope_norm_llama_b9430 factors={} expected={pairs}",
+                    factors.len()
+                )));
+            }
+            None => vec![1.0; pairs],
+        };
+        if factors
+            .iter()
+            .any(|factor| !factor.is_finite() || *factor <= 0.0)
+        {
+            return Err(Error::Kernel(
+                "rope_norm_llama_b9430 factors must be finite and positive".into(),
+            ));
         }
 
+        let heads = x.len() / head_dim;
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(x.len() * std::mem::size_of::<f32>());
+        let factors_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&factors));
+        let positions_buf = ctx.new_buffer_with_bytes(
+            &i32::try_from(pos)
+                .map_err(|_| {
+                    Error::Kernel(format!("rope_norm_llama_b9430 position={pos} exceeds i32"))
+                })?
+                .to_ne_bytes(),
+        );
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * heads as u64,
+            nb03: bytes_per_head * heads as u64,
+            ne0: head_dim as i32,
+            ne1: heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * heads as u64,
+            nb3: bytes_per_head * heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        ctx.dispatch_threads(
+            "rope_norm_llama_b9430",
+            ((heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&positions_buf), 0);
+                enc.set_buffer(3, Some(&factors_buf), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+            },
+        )?;
+        copy_f32_buffer(&out_buf, x);
+        Ok(())
+    }
+
+    /// Exact f32 SwiGLU dispatch for the frozen Llama b9430 authority.
+    pub fn swiglu_llama_b9430(
+        ctx: &MetalContext,
+        gate: &[f32],
+        up: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let n = gate.len();
+        if n == 0 || up.len() != n || out.len() != n {
+            return Err(Error::Kernel(format!(
+                "swiglu_llama_b9430 shape: gate={n} up={} out={}; all must be equal and nonzero",
+                up.len(),
+                out.len(),
+            )));
+        }
+        let gate_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(gate));
+        let up_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(up));
+        let out_buf = ctx.new_buffer(n * std::mem::size_of::<f32>());
+        ctx.dispatch_threads(
+            "swiglu_llama_b9430",
+            (n as u32, 1, 1),
+            (TG_SIZE.min(n as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gate_buf), 0);
+                enc.set_buffer(1, Some(&up_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_u32(3, n as u32);
+            },
+        )?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Executes the independent Q/K/V projections and their ordered Q/K RoPE
+    /// transforms in one command buffer. The arithmetic kernels, raw GGUF
+    /// blocks, and intermediate host-visible vectors are the same strict
+    /// b9430 path as the scalar dispatches; only command-buffer boundaries
+    /// are removed.
+    #[allow(clippy::too_many_arguments)]
+    pub fn llama_b9430_qkv_rope_q4_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_rows: usize,
+        k_offset: usize,
+        k_byte_size: usize,
+        v_offset: usize,
+        v_byte_size: usize,
+        kv_rows: usize,
+        cols: usize,
+        x: &[f32],
+        q_raw: &mut [f32],
+        k_raw: &mut [f32],
+        v_raw: &mut [f32],
+        q_rope: &mut [f32],
+        k_rope: &mut [f32],
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        frequency_factors: Option<&[f32]>,
+    ) -> Result<()> {
+        let kernel_name = "llama_b9430_qkv_rope_q4_pinned";
+        if x.len() != cols
+            || q_raw.len() != q_rows
+            || q_rope.len() != q_rows
+            || k_raw.len() != kv_rows
+            || k_rope.len() != kv_rows
+            || v_raw.len() != kv_rows
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape mismatch: x={} cols={cols} q={}/{} k={}/{} v={}/{}",
+                x.len(),
+                q_raw.len(),
+                q_rope.len(),
+                k_raw.len(),
+                k_rope.len(),
+                v_raw.len(),
+                kv_rows,
+            )));
+        }
+        if head_dim == 0 || head_dim % 2 != 0 || q_rows % head_dim != 0 || kv_rows % head_dim != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} invalid head geometry: q_rows={q_rows} kv_rows={kv_rows} head_dim={head_dim}"
+            )));
+        }
+        let pairs = head_dim / 2;
+        if pairs > 1024 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} head_dim={head_dim} exceeds 1024-thread authority limit"
+            )));
+        }
+        let factors = match frequency_factors {
+            Some(factors) if factors.len() == pairs => factors.to_vec(),
+            Some(factors) => {
+                return Err(Error::Kernel(format!(
+                    "{kernel_name} factors={} expected={pairs}",
+                    factors.len()
+                )));
+            }
+            None => vec![1.0; pairs],
+        };
+        if factors
+            .iter()
+            .any(|factor| !factor.is_finite() || *factor <= 0.0)
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} factors must be finite and positive"
+            )));
+        }
+
+        validate_llama_b9430_q4_window(
+            model_buf,
+            q_offset,
+            q_byte_size,
+            q_rows,
+            cols,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            k_offset,
+            k_byte_size,
+            kv_rows,
+            cols,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            v_offset,
+            v_byte_size,
+            kv_rows,
+            cols,
+            kernel_name,
+        )?;
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let q_raw_buf = ctx.new_buffer(q_rows * std::mem::size_of::<f32>());
+        let k_raw_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let v_raw_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let q_rope_buf = ctx.new_buffer(q_rows * std::mem::size_of::<f32>());
+        let k_rope_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let factors_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&factors));
+        let position = i32::try_from(pos)
+            .map_err(|_| Error::Kernel(format!("{kernel_name} position={pos} exceeds i32")))?;
+        let positions_buf = ctx.new_buffer_with_bytes(&position.to_ne_bytes());
+
+        ctx.dispatch_batch(|batch| {
+            encode_llama_b9430_qkv_rope(
+                batch,
+                model_buf,
+                q_offset,
+                q_rows,
+                k_offset,
+                v_offset,
+                kv_rows,
+                cols,
+                &x_buf,
+                &q_raw_buf,
+                &k_raw_buf,
+                &v_raw_buf,
+                &q_rope_buf,
+                &k_rope_buf,
+                &positions_buf,
+                &factors_buf,
+                head_dim,
+                pos,
+                freq_base,
+            )
+        })?;
+
+        copy_f32_buffer(&q_raw_buf, q_raw);
+        copy_f32_buffer(&k_raw_buf, k_raw);
+        copy_f32_buffer(&v_raw_buf, v_raw);
+        copy_f32_buffer(&q_rope_buf, q_rope);
+        copy_f32_buffer(&k_rope_buf, k_rope);
+        Ok(())
+    }
+
+    /// Executes the gate/up projections, SwiGLU and down projection in one
+    /// command buffer. This retains all strict b9430 kernels and returns the
+    /// host-visible checkpoints needed by the K0 trace surface.
+    #[allow(clippy::too_many_arguments)]
+    pub fn llama_b9430_ffn_q4_q6_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        gate_offset: usize,
+        gate_byte_size: usize,
+        up_offset: usize,
+        up_byte_size: usize,
+        down_offset: usize,
+        down_byte_size: usize,
+        hidden: usize,
+        intermediate: usize,
+        x: &[f32],
+        gate: &mut [f32],
+        up: &mut [f32],
+        act: &mut [f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let kernel_name = "llama_b9430_ffn_q4_q6_pinned";
+        if x.len() != hidden
+            || gate.len() != intermediate
+            || up.len() != intermediate
+            || act.len() != intermediate
+            || out.len() != hidden
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape mismatch: x={} hidden={hidden} gate={} up={} act={} intermediate={intermediate} out={}",
+                x.len(), gate.len(), up.len(), act.len(), out.len(),
+            )));
+        }
+        validate_llama_b9430_q4_window(
+            model_buf,
+            gate_offset,
+            gate_byte_size,
+            intermediate,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            up_offset,
+            up_byte_size,
+            intermediate,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q6_window(
+            model_buf,
+            down_offset,
+            down_byte_size,
+            hidden,
+            intermediate,
+            kernel_name,
+        )?;
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let gate_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let up_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let act_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_llama_b9430_ffn(
+                batch,
+                model_buf,
+                gate_offset,
+                up_offset,
+                down_offset,
+                hidden,
+                intermediate,
+                &x_buf,
+                &gate_buf,
+                &up_buf,
+                &act_buf,
+                &out_buf,
+            )
+        })?;
+        copy_f32_buffer(&gate_buf, gate);
+        copy_f32_buffer(&up_buf, up);
+        copy_f32_buffer(&act_buf, act);
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    fn validate_llama_b9430_q4_window(
+        model_buf: &PinnedBuffer,
+        offset: usize,
+        byte_size: usize,
+        rows: usize,
+        cols: usize,
+        kernel_name: &str,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let expected = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+        if byte_size != expected {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} Q4_K bytes: got {byte_size} expected {expected}"
+            )));
+        }
+        let end = offset
+            .checked_add(byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} offset out of bounds: {offset}+{byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        Ok(())
+    }
+
+    fn validate_llama_b9430_q6_window(
+        model_buf: &PinnedBuffer,
+        offset: usize,
+        byte_size: usize,
+        rows: usize,
+        cols: usize,
+        kernel_name: &str,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let expected = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+        if byte_size != expected {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} Q6_K bytes: got {byte_size} expected {expected}"
+            )));
+        }
+        let end = offset
+            .checked_add(byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} offset out of bounds: {offset}+{byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        Ok(())
+    }
+
+    fn encode_llama_b9430_q4_pinned(
+        batch: &mut CommandBatch<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        batch.dispatch_threads(
+            "gemm_q4_k_m_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    fn encode_llama_b9430_q6_pinned(
+        batch: &mut CommandBatch<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        batch.dispatch_threads(
+            "gemm_q6_k_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn encode_llama_b9430_rope(
+        batch: &mut CommandBatch<'_>,
+        input_buf: &PinnedBuffer,
+        output_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        factors_buf: &PinnedBuffer,
+        heads: usize,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+    ) -> Result<()> {
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * heads as u64,
+            nb03: bytes_per_head * heads as u64,
+            ne0: head_dim as i32,
+            ne1: heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * heads as u64,
+            nb3: bytes_per_head * heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        batch.dispatch_threads(
+            "rope_norm_llama_b9430",
+            ((heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(input_buf), 0);
+                enc.set_buffer(2, Some(positions_buf), 0);
+                enc.set_buffer(3, Some(factors_buf), 0);
+                enc.set_buffer(4, Some(output_buf), 0);
+            },
+        )
+    }
+
+    fn encode_llama_b9430_swiglu(
+        batch: &mut CommandBatch<'_>,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        batch.dispatch_threads(
+            "swiglu_llama_b9430",
+            (n as u32, 1, 1),
+            (TG_SIZE.min(n as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), 0);
+                enc.set_buffer(1, Some(up_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, n as u32);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn encode_llama_b9430_qkv_rope(
+        batch: &mut CommandBatch<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_rows: usize,
+        k_offset: usize,
+        v_offset: usize,
+        kv_rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        q_raw_buf: &PinnedBuffer,
+        k_raw_buf: &PinnedBuffer,
+        v_raw_buf: &PinnedBuffer,
+        q_rope_buf: &PinnedBuffer,
+        k_rope_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        factors_buf: &PinnedBuffer,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+    ) -> Result<()> {
+        encode_llama_b9430_q4_pinned(batch, model_buf, q_offset, q_rows, cols, x_buf, q_raw_buf)?;
+        encode_llama_b9430_q4_pinned(batch, model_buf, k_offset, kv_rows, cols, x_buf, k_raw_buf)?;
+        encode_llama_b9430_q4_pinned(batch, model_buf, v_offset, kv_rows, cols, x_buf, v_raw_buf)?;
+        encode_llama_b9430_rope(
+            batch,
+            q_raw_buf,
+            q_rope_buf,
+            positions_buf,
+            factors_buf,
+            q_rows / head_dim,
+            head_dim,
+            pos,
+            freq_base,
+        )?;
+        encode_llama_b9430_rope(
+            batch,
+            k_raw_buf,
+            k_rope_buf,
+            positions_buf,
+            factors_buf,
+            kv_rows / head_dim,
+            head_dim,
+            pos,
+            freq_base,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn encode_llama_b9430_ffn(
+        batch: &mut CommandBatch<'_>,
+        model_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        down_offset: usize,
+        hidden: usize,
+        intermediate: usize,
+        x_buf: &PinnedBuffer,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        encode_llama_b9430_q4_pinned(
+            batch,
+            model_buf,
+            gate_offset,
+            intermediate,
+            hidden,
+            x_buf,
+            gate_buf,
+        )?;
+        encode_llama_b9430_q4_pinned(
+            batch,
+            model_buf,
+            up_offset,
+            intermediate,
+            hidden,
+            x_buf,
+            up_buf,
+        )?;
+        encode_llama_b9430_swiglu(batch, gate_buf, up_buf, act_buf, intermediate)?;
+        encode_llama_b9430_q6_pinned(
+            batch,
+            model_buf,
+            down_offset,
+            hidden,
+            intermediate,
+            act_buf,
+            out_buf,
+        )
+    }
+
+    fn encode_llama_b9430_rmsnorm(
+        batch: &mut CommandBatch<'_>,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        hidden: usize,
+        eps: f32,
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 1024;
+        batch.dispatch_threads(
+            "rmsnorm_llama_b9430",
+            (THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_f32(4, eps);
+                enc.set_threadgroup_memory_length(0, 32 * std::mem::size_of::<f32>() as u64);
+            },
+        )
+    }
+
+    /// Strict b9430 RMSNorm encoded into an existing token command buffer.
+    pub fn rmsnorm_llama_b9430_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if hidden == 0 || hidden % 4 != 0 {
+            return Err(Error::Kernel(format!(
+                "rmsnorm_llama_b9430_tcb hidden={hidden}; must be a nonzero multiple of 4"
+            )));
+        }
+        const THREADS_PER_THREADGROUP: u32 = 1024;
+        tcb.dispatch_threads(
+            "rmsnorm_llama_b9430",
+            (THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_f32(4, eps);
+                enc.set_threadgroup_memory_length(0, 32 * std::mem::size_of::<f32>() as u64);
+            },
+        )
+    }
+
+    /// Strict b9430 residual-add + RMSNorm fusion for the resident decode
+    /// chain. Its float4 reduction tree matches `rmsnorm_llama_b9430_tcb`.
+    pub fn add_rmsnorm_llama_b9430_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        delta_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if hidden == 0 || hidden % 4 != 0 {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_llama_b9430_tcb hidden={hidden}; must be a nonzero multiple of 4"
+            )));
+        }
+        const THREADS_PER_THREADGROUP: u32 = 1024;
+        tcb.dispatch_threads(
+            "add_rmsnorm_llama_b9430",
+            (THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(delta_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_u32(4, hidden as u32);
+                enc.set_f32(5, eps);
+                enc.set_threadgroup_memory_length(0, 32 * std::mem::size_of::<f32>() as u64);
+            },
+        )
+    }
+
+    /// Strict b9430 Q4_K GEMV encoded into a resident token command buffer.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_llama_b9430_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        validate_llama_b9430_q4_window(
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            "gemm_q4_k_m_llama_b9430_tcb",
+        )?;
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q4_k_m_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    /// Offset-output form of the strict b9430 Q4_K GEMV.  Gravity's resident
+    /// adapter writes K/V projections directly into their absolute cache slot
+    /// instead of dispatching a separate append/copy kernel.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_llama_b9430_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        validate_llama_b9430_q4_window(
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            "gemm_q4_k_m_llama_b9430_off_tcb",
+        )?;
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q4_k_m_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), out_offset_bytes as u64);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    /// Encode one of the bounded llama.cpp-style Q4_K geometry candidates
+    /// into an existing token command buffer.  The arithmetic kernels are
+    /// deliberately opt-in: the strict b9430 grammar remains the default
+    /// authority path, while this helper makes geometry a measured runtime
+    /// choice rather than a compile-time fork.
+    #[allow(clippy::too_many_arguments)]
+    fn gemv_q4_k_m_geometry_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        kernel: &str,
+        threads_per_threadgroup: u32,
+        rows_per_threadgroup: usize,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{kernel}_pinned_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let w_end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb weight offset overflow")))?;
+        if w_end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel}_pinned_tcb offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb activation size overflow")))?;
+        let y_end = out_offset_bytes
+            .checked_add(
+                rows.checked_mul(std::mem::size_of::<f32>())
+                    .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb output size overflow")))?,
+            )
+            .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb output offset overflow")))?;
+        if x_buf.length() < x_bytes as u64 || out_buf.length() < y_end as u64 {
+            return Err(Error::Kernel(format!(
+                "{kernel}_pinned_tcb buffer sizes: x={} expected>={x_bytes} out={} expected>={y_end}",
+                x_buf.length(),
+                out_buf.length()
+            )));
+        }
+        let groups = rows.div_ceil(rows_per_threadgroup) as u32;
+        tcb.dispatch_threads(
+            kernel,
+            (groups * threads_per_threadgroup, 1, 1),
+            (threads_per_threadgroup, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), out_offset_bytes as u64);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    /// 128-thread, two-rows-per-simdgroup candidate.  This mirrors the
+    /// llama.cpp N_R0=2 geometry while preserving the exact b9430 ABI.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_dual_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_v3_dual",
+            128,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            0,
+        )
+    }
+
+    /// 64-thread, four-rows-per-simdgroup candidate with the llama.cpp
+    /// sum-y correction.  It is parity-gated and never selected by default.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_llama_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_v3_llama",
+            64,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            0,
+        )
+    }
+
+    /// 128-thread, four-rows-per-threadgroup simd-matrix candidate.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_simdmat_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_simdmat",
+            128,
+            4,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            0,
+        )
+    }
+
+    /// Offset-output form for direct KV-cache writes.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_dual_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_v3_dual",
+            128,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            out_offset_bytes,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_llama_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_v3_llama",
+            64,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            out_offset_bytes,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_simdmat_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        gemv_q4_k_m_geometry_pinned_tcb(
+            tcb,
+            "gemm_q4_k_m_simdmat",
+            128,
+            4,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x_buf,
+            out_buf,
+            out_offset_bytes,
+        )
+    }
+
+    /// Batch-grid form of the strict b9430 Q4_K source kernel. The source
+    /// arithmetic is unchanged for each batch plane; this only encodes B
+    /// independent activation rows in one dispatch for packed prefill.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_llama_b9430_batched_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        validate_llama_b9430_q4_window(
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            "gemm_q4_k_m_llama_b9430_batched_tcb",
+        )?;
+        if !(1..=8).contains(&batch) {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_llama_b9430_batched_tcb batch must be 1..=8, got {batch}"
+            )));
+        }
+        let x_bytes = batch
+            .checked_mul(cols)
+            .and_then(|n| n.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| {
+                Error::Kernel("gemm_q4_k_m_llama_b9430_batched_tcb x size overflow".into())
+            })?;
+        let y_bytes = batch
+            .checked_mul(rows)
+            .and_then(|n| n.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| {
+                Error::Kernel("gemm_q4_k_m_llama_b9430_batched_tcb y size overflow".into())
+            })?;
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_llama_b9430_batched_tcb batch buffers too small: x={} need={x_bytes}, y={} need={y_bytes}",
+                x_batch_buf.length(), y_batch_buf.length()
+            )));
+        }
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q4_k_m_llama_b9430_batched",
+            (groups * THREADS_PER_THREADGROUP, batch as u32, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_batch_buf), 0);
+                enc.set_buffer(2, Some(y_batch_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    /// Fused source-arithmetic Q4_K gate/up pair for one Llama FFN layer.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_llama_b9430_pair_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_buf: &PinnedBuffer,
+        gate_offset: usize,
+        gate_byte_size: usize,
+        up_buf: &PinnedBuffer,
+        up_offset: usize,
+        up_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        gate_out_buf: &PinnedBuffer,
+        up_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        validate_llama_b9430_q4_window(
+            gate_buf,
+            gate_offset,
+            gate_byte_size,
+            rows,
+            cols,
+            "gemm_q4_k_m_llama_b9430_pair_tcb gate",
+        )?;
+        validate_llama_b9430_q4_window(
+            up_buf,
+            up_offset,
+            up_byte_size,
+            rows,
+            cols,
+            "gemm_q4_k_m_llama_b9430_pair_tcb up",
+        )?;
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q4_k_m_llama_b9430_pair",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), gate_offset as u64);
+                enc.set_buffer(1, Some(up_buf), up_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(gate_out_buf), 0);
+                enc.set_buffer(4, Some(up_out_buf), 0);
+                enc.set_u32(5, rows as u32);
+                enc.set_u32(6, cols as u32);
+            },
+        )
+    }
+
+    /// Strict b9430 Q6_K GEMV encoded into a resident token command buffer.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_llama_b9430_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        validate_llama_b9430_q6_window(
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            "gemm_q6_k_llama_b9430_tcb",
+        )?;
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q6_k_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    /// Offset form of the strict source Q6_K GEMV for a row in the
+    /// batch-major packed-prefill workspace. The Metal kernel and source
+    /// weight window are unchanged; only activation/output bases move.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_llama_b9430_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_offset_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_offset_bytes: usize,
+    ) -> Result<()> {
+        validate_llama_b9430_q6_window(
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            "gemm_q6_k_llama_b9430_off_tcb",
+        )?;
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        tcb.dispatch_threads(
+            "gemm_q6_k_llama_b9430",
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), x_offset_bytes as u64);
+                enc.set_buffer(2, Some(out_buf), out_offset_bytes as u64);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_norm_llama_b9430_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input_buf: &PinnedBuffer,
+        output_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        factors_buf: &PinnedBuffer,
+        heads: usize,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 || head_dim > 2048 {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430_tcb head_dim={head_dim}; must be nonzero and even"
+            )));
+        }
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * heads as u64,
+            nb03: bytes_per_head * heads as u64,
+            ne0: head_dim as i32,
+            ne1: heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * heads as u64,
+            nb3: bytes_per_head * heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        tcb.dispatch_threads(
+            "rope_norm_llama_b9430",
+            ((heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(input_buf), 0);
+                enc.set_buffer(2, Some(positions_buf), 0);
+                enc.set_buffer(3, Some(factors_buf), 0);
+                enc.set_buffer(4, Some(output_buf), 0);
+            },
+        )
+    }
+
+    /// Fuses the source Llama K-RoPE arithmetic with direct f16 K/V cache
+    /// append. This is valid only for the source-FATTN lane, where the f16
+    /// cache image is the sole subsequent consumer of the RoPE'd K vector.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_norm_llama_b9430_cache_kv_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        k_input_buf: &PinnedBuffer,
+        v_input_buf: &PinnedBuffer,
+        k_cache_buf: &PinnedBuffer,
+        v_cache_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        factors_buf: &PinnedBuffer,
+        heads: usize,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        dst_off: usize,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 || head_dim > 2048 {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430_cache_kv_f16_tcb head_dim={head_dim}; must be nonzero and even"
+            )));
+        }
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * heads as u64,
+            nb03: bytes_per_head * heads as u64,
+            ne0: head_dim as i32,
+            ne1: heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * heads as u64,
+            nb3: bytes_per_head * heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        tcb.dispatch_threads(
+            "rope_norm_llama_b9430_cache_kv_f16",
+            ((heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(k_input_buf), 0);
+                enc.set_buffer(2, Some(positions_buf), 0);
+                enc.set_buffer(3, Some(factors_buf), 0);
+                enc.set_buffer(4, Some(v_input_buf), 0);
+                enc.set_buffer(5, Some(k_cache_buf), 0);
+                enc.set_buffer(6, Some(v_cache_buf), 0);
+                enc.set_u32(7, dst_off as u32);
+            },
+        )
+    }
+
+    /// Fuses source Q-RoPE with the K-RoPE and direct f16 K/V cache append
+    /// for grouped-query Llama source-FATTN decode.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_norm_llama_b9430_qkv_cache_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_input_buf: &PinnedBuffer,
+        k_input_buf: &PinnedBuffer,
+        v_input_buf: &PinnedBuffer,
+        q_output_buf: &PinnedBuffer,
+        k_cache_buf: &PinnedBuffer,
+        v_cache_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        factors_buf: &PinnedBuffer,
+        q_heads: usize,
+        kv_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        dst_off: usize,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 || head_dim > 2048 || kv_heads > q_heads {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430_qkv_cache_f16_tcb invalid heads/dim q={q_heads} kv={kv_heads} dim={head_dim}"
+            )));
+        }
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: q_heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * q_heads as u64,
+            nb03: bytes_per_head * q_heads as u64,
+            ne0: head_dim as i32,
+            ne1: q_heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * q_heads as u64,
+            nb3: bytes_per_head * q_heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        tcb.dispatch_threads(
+            "rope_norm_llama_b9430_qkv_cache_f16",
+            ((q_heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(q_input_buf), 0);
+                enc.set_buffer(2, Some(k_input_buf), 0);
+                enc.set_buffer(3, Some(positions_buf), 0);
+                enc.set_buffer(4, Some(factors_buf), 0);
+                enc.set_buffer(5, Some(v_input_buf), 0);
+                enc.set_buffer(6, Some(q_output_buf), 0);
+                enc.set_buffer(7, Some(k_cache_buf), 0);
+                enc.set_buffer(8, Some(v_cache_buf), 0);
+                enc.set_u32(9, dst_off as u32);
+                enc.set_u32(10, kv_heads as u32);
+            },
+        )
+    }
+
+    /// Per-row offset form of the fused source Q/K RoPE plus f16 KV append.
+    /// Packed prefill invokes this once per causal row while Q/K/V projections
+    /// remain batch GEMMs. This preserves the source RoPE factors and f16
+    /// rounding rather than substituting a generic RoPE grammar.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_norm_llama_b9430_qkv_cache_f16_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_input_buf: &PinnedBuffer,
+        q_input_offset_bytes: usize,
+        k_input_buf: &PinnedBuffer,
+        k_input_offset_bytes: usize,
+        v_input_buf: &PinnedBuffer,
+        v_input_offset_bytes: usize,
+        q_output_buf: &PinnedBuffer,
+        q_output_offset_bytes: usize,
+        k_cache_buf: &PinnedBuffer,
+        v_cache_buf: &PinnedBuffer,
+        positions_buf: &PinnedBuffer,
+        positions_offset_bytes: usize,
+        factors_buf: &PinnedBuffer,
+        q_heads: usize,
+        kv_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        dst_off: usize,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 || head_dim > 2048 || kv_heads > q_heads {
+            return Err(Error::Kernel(format!(
+                "rope_norm_llama_b9430_qkv_cache_f16_off_tcb invalid heads/dim q={q_heads} kv={kv_heads} dim={head_dim}"
+            )));
+        }
+        let bytes_per_head = (head_dim * std::mem::size_of::<f32>()) as u64;
+        let args = LlamaB9430RopeArgs {
+            ne00: head_dim as i32,
+            ne01: q_heads as i32,
+            ne02: 1,
+            ne03: 1,
+            nb00: std::mem::size_of::<f32>() as u64,
+            nb01: bytes_per_head,
+            nb02: bytes_per_head * q_heads as u64,
+            nb03: bytes_per_head * q_heads as u64,
+            ne0: head_dim as i32,
+            ne1: q_heads as i32,
+            ne2: 1,
+            ne3: 1,
+            nb0: std::mem::size_of::<f32>() as u64,
+            nb1: bytes_per_head,
+            nb2: bytes_per_head * q_heads as u64,
+            nb3: bytes_per_head * q_heads as u64,
+            n_past: pos as i32,
+            n_dims: head_dim as i32,
+            n_ctx_orig: 131_072,
+            freq_base,
+            freq_scale: 1.0,
+            ext_factor: 0.0,
+            attn_factor: 1.0,
+            beta_fast: 32.0,
+            beta_slow: 1.0,
+            sect_0: 0,
+            sect_1: 0,
+            sect_2: 0,
+            sect_3: 0,
+            src2: 1,
+        };
+        tcb.dispatch_threads(
+            "rope_norm_llama_b9430_qkv_cache_f16",
+            ((q_heads * head_dim) as u32, 1, 1),
+            (head_dim as u32, 1, 1),
+            |enc| {
+                enc.set_bytes(
+                    0,
+                    std::mem::size_of::<LlamaB9430RopeArgs>() as u64,
+                    &args as *const LlamaB9430RopeArgs as *const _,
+                );
+                enc.set_buffer(1, Some(q_input_buf), q_input_offset_bytes as u64);
+                enc.set_buffer(2, Some(k_input_buf), k_input_offset_bytes as u64);
+                enc.set_buffer(3, Some(positions_buf), positions_offset_bytes as u64);
+                enc.set_buffer(4, Some(factors_buf), 0);
+                enc.set_buffer(5, Some(v_input_buf), v_input_offset_bytes as u64);
+                enc.set_buffer(6, Some(q_output_buf), q_output_offset_bytes as u64);
+                enc.set_buffer(7, Some(k_cache_buf), 0);
+                enc.set_buffer(8, Some(v_cache_buf), 0);
+                enc.set_u32(9, dst_off as u32);
+                enc.set_u32(10, kv_heads as u32);
+            },
+        )
+    }
+
+    pub fn round_f16_llama_b9430_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        if n == 0 {
+            return Err(Error::Kernel(
+                "round_f16_llama_b9430_tcb requires nonempty input".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "round_f16_llama_b9430",
+            (n as u32, 1, 1),
+            (TG_SIZE.min(n as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_u32(1, n as u32);
+            },
+        )
+    }
+
+    pub fn swiglu_llama_b9430_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        if n == 0 {
+            return Err(Error::Kernel(
+                "swiglu_llama_b9430_tcb requires nonempty input".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "swiglu_llama_b9430",
+            (n as u32, 1, 1),
+            (TG_SIZE.min(n as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), 0);
+                enc.set_buffer(1, Some(up_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, n as u32);
+            },
+        )
+    }
+
+    /// Batches the strict attention RMSNorm immediately before Q/K/V+RoPE.
+    /// No host boundary exists between these dependent GPU stages; all K0
+    /// checkpoint vectors are materialized only after the single wait.
+    #[allow(clippy::too_many_arguments)]
+    pub fn llama_b9430_rmsnorm_qkv_rope_q4_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        x: &[f32],
+        norm_weight: &[f32],
+        eps: f32,
+        x_norm: &mut [f32],
+        q_offset: usize,
+        q_byte_size: usize,
+        q_rows: usize,
+        k_offset: usize,
+        k_byte_size: usize,
+        v_offset: usize,
+        v_byte_size: usize,
+        kv_rows: usize,
+        q_raw: &mut [f32],
+        k_raw: &mut [f32],
+        v_raw: &mut [f32],
+        q_rope: &mut [f32],
+        k_rope: &mut [f32],
+        head_dim: usize,
+        pos: u32,
+        freq_base: f32,
+        frequency_factors: Option<&[f32]>,
+    ) -> Result<()> {
+        let hidden = x.len();
+        let kernel_name = "llama_b9430_rmsnorm_qkv_rope_q4_pinned";
+        if hidden == 0 || hidden % 4 != 0 || norm_weight.len() != hidden || x_norm.len() != hidden {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} RMSNorm shape: x={hidden} weight={} out={}; hidden must be a nonzero multiple of 4",
+                norm_weight.len(), x_norm.len()
+            )));
+        }
+        if q_raw.len() != q_rows
+            || q_rope.len() != q_rows
+            || k_raw.len() != kv_rows
+            || k_rope.len() != kv_rows
+            || v_raw.len() != kv_rows
+            || head_dim == 0
+            || head_dim % 2 != 0
+            || q_rows % head_dim != 0
+            || kv_rows % head_dim != 0
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} projection or head shape mismatch"
+            )));
+        }
+        let pairs = head_dim / 2;
+        let factors = match frequency_factors {
+            Some(factors) if factors.len() == pairs => factors.to_vec(),
+            Some(factors) => {
+                return Err(Error::Kernel(format!(
+                    "{kernel_name} factors={} expected={pairs}",
+                    factors.len()
+                )))
+            }
+            None => vec![1.0; pairs],
+        };
+        if factors
+            .iter()
+            .any(|factor| !factor.is_finite() || *factor <= 0.0)
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} factors must be finite and positive"
+            )));
+        }
+        validate_llama_b9430_q4_window(
+            model_buf,
+            q_offset,
+            q_byte_size,
+            q_rows,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            k_offset,
+            k_byte_size,
+            kv_rows,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            v_offset,
+            v_byte_size,
+            kv_rows,
+            hidden,
+            kernel_name,
+        )?;
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let weight_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(norm_weight));
+        let x_norm_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        let q_raw_buf = ctx.new_buffer(q_rows * std::mem::size_of::<f32>());
+        let k_raw_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let v_raw_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let q_rope_buf = ctx.new_buffer(q_rows * std::mem::size_of::<f32>());
+        let k_rope_buf = ctx.new_buffer(kv_rows * std::mem::size_of::<f32>());
+        let factors_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&factors));
+        let position = i32::try_from(pos)
+            .map_err(|_| Error::Kernel(format!("{kernel_name} position={pos} exceeds i32")))?;
+        let positions_buf = ctx.new_buffer_with_bytes(&position.to_ne_bytes());
+        ctx.dispatch_batch(|batch| {
+            encode_llama_b9430_rmsnorm(batch, &x_buf, &weight_buf, &x_norm_buf, hidden, eps)?;
+            encode_llama_b9430_qkv_rope(
+                batch,
+                model_buf,
+                q_offset,
+                q_rows,
+                k_offset,
+                v_offset,
+                kv_rows,
+                hidden,
+                &x_norm_buf,
+                &q_raw_buf,
+                &k_raw_buf,
+                &v_raw_buf,
+                &q_rope_buf,
+                &k_rope_buf,
+                &positions_buf,
+                &factors_buf,
+                head_dim,
+                pos,
+                freq_base,
+            )
+        })?;
+        copy_f32_buffer(&x_norm_buf, x_norm);
+        copy_f32_buffer(&q_raw_buf, q_raw);
+        copy_f32_buffer(&k_raw_buf, k_raw);
+        copy_f32_buffer(&v_raw_buf, v_raw);
+        copy_f32_buffer(&q_rope_buf, q_rope);
+        copy_f32_buffer(&k_rope_buf, k_rope);
+        Ok(())
+    }
+
+    /// Batches the strict FFN RMSNorm with its gate/up/SwiGLU/down chain.
+    #[allow(clippy::too_many_arguments)]
+    pub fn llama_b9430_rmsnorm_ffn_q4_q6_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        x: &[f32],
+        norm_weight: &[f32],
+        eps: f32,
+        x_norm: &mut [f32],
+        gate_offset: usize,
+        gate_byte_size: usize,
+        up_offset: usize,
+        up_byte_size: usize,
+        down_offset: usize,
+        down_byte_size: usize,
+        intermediate: usize,
+        gate: &mut [f32],
+        up: &mut [f32],
+        act: &mut [f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let hidden = x.len();
+        let kernel_name = "llama_b9430_rmsnorm_ffn_q4_q6_pinned";
+        if hidden == 0
+            || hidden % 4 != 0
+            || norm_weight.len() != hidden
+            || x_norm.len() != hidden
+            || gate.len() != intermediate
+            || up.len() != intermediate
+            || act.len() != intermediate
+            || out.len() != hidden
+        {
+            return Err(Error::Kernel(format!("{kernel_name} shape mismatch")));
+        }
+        validate_llama_b9430_q4_window(
+            model_buf,
+            gate_offset,
+            gate_byte_size,
+            intermediate,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q4_window(
+            model_buf,
+            up_offset,
+            up_byte_size,
+            intermediate,
+            hidden,
+            kernel_name,
+        )?;
+        validate_llama_b9430_q6_window(
+            model_buf,
+            down_offset,
+            down_byte_size,
+            hidden,
+            intermediate,
+            kernel_name,
+        )?;
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let weight_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(norm_weight));
+        let x_norm_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        let gate_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let up_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let act_buf = ctx.new_buffer(intermediate * std::mem::size_of::<f32>());
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_llama_b9430_rmsnorm(batch, &x_buf, &weight_buf, &x_norm_buf, hidden, eps)?;
+            encode_llama_b9430_ffn(
+                batch,
+                model_buf,
+                gate_offset,
+                up_offset,
+                down_offset,
+                hidden,
+                intermediate,
+                &x_norm_buf,
+                &gate_buf,
+                &up_buf,
+                &act_buf,
+                &out_buf,
+            )
+        })?;
+        copy_f32_buffer(&x_norm_buf, x_norm);
+        copy_f32_buffer(&gate_buf, gate);
+        copy_f32_buffer(&up_buf, up);
+        copy_f32_buffer(&act_buf, act);
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Round an f32 vector through Metal's f16 conversion and return f32.
+    /// This is the Llama K/V-cache authority seam: the reference's SET_ROWS
+    /// stores f16 on device, whereas Hawking's K0 bridge temporarily keeps a
+    /// materialized f32 cache for the next attention dispatch.
+    pub fn round_f16_llama_b9430(ctx: &MetalContext, x: &mut [f32]) -> Result<()> {
+        if x.is_empty() {
+            return Err(Error::Kernel(
+                "round_f16_llama_b9430 requires nonempty input".into(),
+            ));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        ctx.dispatch_threads(
+            "round_f16_llama_b9430",
+            (x.len() as u32, 1, 1),
+            (TG_SIZE.min(x.len() as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&x_buf), 0);
+                enc.set_u32(1, x.len() as u32);
+            },
+        )?;
+        copy_f32_buffer(&x_buf, x);
         Ok(())
     }
 
@@ -6449,6 +9218,8 @@ mod metal_dispatch {
         cols: usize,
         x: &[f32],
         out: &mut [f32],
+        threads_per_threadgroup: u32,
+        threadgroup_memory_bytes: u64,
     ) -> Result<()> {
         if cols % 256 != 0 {
             return Err(Error::Kernel(format!(
@@ -6480,19 +9251,19 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
-
         ctx.dispatch_threads(
             kernel_name,
-            (rows_u32 * TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
+            (rows_u32 * threads_per_threadgroup, 1, 1),
+            (threads_per_threadgroup, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_u32(3, rows_u32);
                 enc.set_u32(4, cols_u32);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
+                if threadgroup_memory_bytes != 0 {
+                    enc.set_threadgroup_memory_length(0, threadgroup_memory_bytes);
+                }
             },
         )?;
 
@@ -6500,6 +9271,220 @@ mod metal_dispatch {
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
         out.copy_from_slice(out_slice);
 
+        Ok(())
+    }
+
+    fn dispatch_q4_k_m_gemv_b9430(
+        ctx: &MetalContext,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let kernel_name = "gemm_q4_k_m_llama_b9430";
+        let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
+        dispatch_q4_k_m_gemv_b9430_pinned(ctx, &w_buf, 0, w_q4_bytes.len(), rows, cols, x, out)
+            .map_err(|err| Error::Kernel(format!("{kernel_name}: {err}")))
+    }
+
+    fn dispatch_q4_k_m_gemv_b9430_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        let kernel_name = "gemm_q4_k_m_llama_b9430";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape: x={} cols={} out={} rows={}",
+                x.len(),
+                cols,
+                out.len(),
+                rows
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        ctx.dispatch_threads(
+            kernel_name,
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    fn dispatch_q6_k_gemv_b9430(
+        ctx: &MetalContext,
+        w_q6_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let kernel_name = "gemm_q6_k_llama_b9430";
+        let w_buf = ctx.new_buffer_with_bytes(w_q6_bytes);
+        dispatch_q6_k_gemv_b9430_pinned(ctx, &w_buf, 0, w_q6_bytes.len(), rows, cols, x, out)
+            .map_err(|err| Error::Kernel(format!("{kernel_name}: {err}")))
+    }
+
+    fn dispatch_q5_k_serial_authority_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const BLOCK_BYTES: usize = 176;
+        let kernel_name = "gemm_q5_k_serial_authority";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape: x={} cols={} out={} rows={}",
+                x.len(),
+                cols,
+                out.len(),
+                rows
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(BLOCK_BYTES))
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        ctx.dispatch_threads(kernel_name, (rows as u32, 1, 1), (1, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_u32(3, rows as u32);
+            enc.set_u32(4, cols as u32);
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    fn dispatch_q6_k_gemv_b9430_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const THREADS_PER_THREADGROUP: u32 = 64;
+        const ROWS_PER_THREADGROUP: usize = 4;
+        const BLOCK_BYTES: usize = 210;
+        let kernel_name = "gemm_q6_k_llama_b9430";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape: x={} cols={} out={} rows={}",
+                x.len(),
+                cols,
+                out.len(),
+                rows
+            )));
+        }
+        let expected_bytes = rows
+            .checked_mul(cols / 256)
+            .and_then(|blocks| blocks.checked_mul(BLOCK_BYTES))
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let groups = rows.div_ceil(ROWS_PER_THREADGROUP) as u32;
+        ctx.dispatch_threads(
+            kernel_name,
+            (groups * THREADS_PER_THREADGROUP, 1, 1),
+            (THREADS_PER_THREADGROUP, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+            },
+        )?;
+        copy_f32_buffer(&out_buf, out);
         Ok(())
     }
 
@@ -6928,6 +9913,35 @@ mod metal_dispatch {
         )
     }
 
+    /// Add a dense bias vector into an offset row of a resident f32 buffer.
+    /// Used by Qwen2's K/V projection biases after the projection writes
+    /// directly into an absolute cache slot.
+    pub fn add_inplace_metal_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a_buf: &PinnedBuffer,
+        b_buf: &PinnedBuffer,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, dst_off as u32);
+        ab.set_u32(2, 0);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "add_inplace_off",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     // ── v0.5.6 buffer-arg dispatcher siblings ─────────────────────────────
     //
     // Each function below is a "buf" sibling of an existing dispatcher.
@@ -7214,7 +10228,7 @@ mod metal_dispatch {
         let qk_nope_u32 = qk_nope_head_dim as u32;
         let qk_rope_u32 = qk_rope_head_dim as u32;
         let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
-        let tg = TG_SIZE.min(total_pairs.max(1));
+        let tg = TG_SIZE.min(total_pairs.max(1) as u32);
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
@@ -7239,6 +10253,59 @@ mod metal_dispatch {
             |enc| {
                 enc.set_buffer(0, Some(q_buf), 0);
                 enc.set_buffer(1, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    /// DeepSeek source-compatible adjacent-pair RoPE. The source Q buffer is
+    /// read without mutation and the rotated concatenated halves are written
+    /// to `dst`; callers copy the completed scratch back only after the
+    /// dispatch, avoiding an in-place read/write race.
+    pub fn rope_q_interleaved_concat_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst: &PinnedBuffer,
+        n_heads: usize,
+        q_head_dim: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        if qk_rope_head_dim % 2 != 0 {
+            return Err(Error::Metal(
+                "DeepSeek interleaved RoPE requires an even rotary width".into(),
+            ));
+        }
+        let total_pairs = n_heads
+            .checked_mul(qk_rope_head_dim / 2)
+            .ok_or_else(|| Error::Metal("DeepSeek RoPE grid overflow".into()))?;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, n_heads as u32);
+        ab.set_u32(1, q_head_dim as u32);
+        ab.set_u32(2, qk_nope_head_dim as u32);
+        ab.set_u32(3, qk_rope_head_dim as u32);
+        ab.set_u32(4, pos);
+        ab.set_f32(5, base);
+        let tg = TG_SIZE.min(total_pairs.max(1) as u32);
+        tcb.dispatch_threads(
+            "rope_q_interleaved_concat",
+            (total_pairs as u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src), 0);
+                enc.set_buffer(1, Some(dst), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
             },
         )
     }
@@ -7317,7 +10384,7 @@ mod metal_dispatch {
         let offset_u32 = offset_f32 as u32;
         let head_dim_u32 = head_dim as u32;
         let half_dim = head_dim_u32 / 2;
-        let tg = TG_SIZE.min(half_dim.max(1));
+        let tg = TG_SIZE.min(half_dim.max(1) as u32);
         tcb.dispatch_threads(
             "rope_slice_f32_inplace",
             (half_dim, 1, 1),
@@ -7328,6 +10395,47 @@ mod metal_dispatch {
                 enc.set_u32(2, head_dim_u32);
                 enc.set_u32(3, pos);
                 enc.set_f32(4, base);
+            },
+        )
+    }
+
+    /// DeepSeek source-compatible adjacent-pair RoPE for one contiguous slice.
+    /// `src_offset` and `dst_offset` are element offsets in their respective
+    /// f32 buffers; the destination must not alias the source while encoded.
+    pub fn rope_slice_interleaved_concat_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst: &PinnedBuffer,
+        src_offset: usize,
+        dst_offset: usize,
+        head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        if head_dim == 0 || head_dim % 2 != 0 {
+            return Err(Error::Metal(
+                "DeepSeek interleaved RoPE slice requires a nonzero even width".into(),
+            ));
+        }
+        let half_dim = head_dim / 2;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
+        )?;
+        ab.set_u32(0, src_offset as u32);
+        ab.set_u32(1, dst_offset as u32);
+        ab.set_u32(2, head_dim as u32);
+        ab.set_u32(3, pos);
+        ab.set_f32(4, base);
+        let tg = TG_SIZE.min(half_dim.max(1) as u32);
+        tcb.dispatch_threads(
+            "rope_slice_interleaved_concat",
+            (half_dim as u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src), 0);
+                enc.set_buffer(1, Some(dst), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
             },
         )
     }
@@ -7440,6 +10548,562 @@ mod metal_dispatch {
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
+    }
+
+    /// One-shot host bridge for the materialized f32 GQA decode kernel.
+    ///
+    /// Llama K0 still owns its K/V cache on the host, so this bridge uploads
+    /// the already f16-rounded f32 cache, dispatches the same materialized
+    /// attention kernel used by the resident path, and copies back the f32
+    /// result. It establishes a zero-reference-fallback correctness path;
+    /// the persistent-cache/TCB form remains the throughput follow-up.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f32_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        k_cache: &[f32],
+        v_cache: &[f32],
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let q_len = n_heads
+            .checked_mul(head_dim)
+            .ok_or_else(|| Error::Metal("mha_decode_f32_metal q size overflow".into()))?;
+        let kv_len = seq_len
+            .checked_mul(n_kv_heads)
+            .and_then(|n| n.checked_mul(head_dim))
+            .ok_or_else(|| Error::Metal("mha_decode_f32_metal KV size overflow".into()))?;
+        if q.len() != q_len
+            || k_cache.len() != kv_len
+            || v_cache.len() != kv_len
+            || out.len() != q_len
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_f32_metal shape: q={} expected={q_len}; k={} v={} expected_kv={kv_len}; out={} expected={q_len}",
+                q.len(), k_cache.len(), v_cache.len(), out.len(),
+            )));
+        }
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let k_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_cache));
+        let v_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(v_cache));
+        let out_buf = ctx.new_buffer(q_len * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        mha_decode_f32_tcb(
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads,
+            n_kv_heads,
+        )?;
+        tcb.commit_and_wait()?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Exact b9430 vector Flash-Attention bridge for a Llama 128-wide head
+    /// and one <=32-token decode tile.
+    ///
+    /// The underlying reference uses f16 K/V cache tensors and casts Q from
+    /// f32 to half4 inside the Metal kernel.  Hawking's K0 cache is currently
+    /// f32 storage containing those exact f16-rounded values, so this bridge
+    /// reconstructs just the 32-entry f16 tile required by the authority
+    /// kernel.  Longer sequences retain the generic device MHA until the
+    /// multi-workgroup reduction extension is installed.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_b9430_short_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        k_cache: &[f32],
+        v_cache: &[f32],
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        const TILE: usize = 32;
+        const HEAD_DIM: usize = 128;
+        if head_dim != HEAD_DIM
+            || seq_len == 0
+            || seq_len > TILE
+            || n_kv_heads == 0
+            || n_heads % n_kv_heads != 0
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_short shape: seq={seq_len} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires 1..={TILE}, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let q_len = n_heads * head_dim;
+        let active_kv_len = seq_len * n_kv_heads * head_dim;
+        if q.len() != q_len
+            || out.len() != q_len
+            || k_cache.len() != active_kv_len
+            || v_cache.len() != active_kv_len
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_short buffers: q={} out={} expected={q_len}; k={} v={} expected={active_kv_len}",
+                q.len(), out.len(), k_cache.len(), v_cache.len(),
+            )));
+        }
+
+        let tile_kv_len = TILE * n_kv_heads * head_dim;
+        let mut k_half = vec![f16::ZERO; tile_kv_len];
+        let mut v_half = vec![f16::ZERO; tile_kv_len];
+        for (dst, src) in k_half.iter_mut().zip(k_cache.iter()) {
+            *dst = f16::from_f32(*src);
+        }
+        for (dst, src) in v_half.iter_mut().zip(v_cache.iter()) {
+            *dst = f16::from_f32(*src);
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let k_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&k_half));
+        let v_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&v_half));
+        let out_buf = ctx.new_buffer(q_len * std::mem::size_of::<f32>());
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        ctx.dispatch_threads(
+            "mha_decode_llama_b9430_short",
+            ((n_heads * TILE) as u32, 1, 1),
+            (TILE as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&k_buf), 0);
+                enc.set_buffer(2, Some(&v_buf), 0);
+                enc.set_buffer(3, Some(&out_buf), 0);
+                enc.set_u32(4, seq_len as u32);
+                enc.set_u32(5, n_heads as u32);
+                enc.set_u32(6, n_kv_heads as u32);
+                enc.set_f32(7, scale);
+                enc.set_threadgroup_memory_length(
+                    0,
+                    TILE as u64 * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Resident-buffer form of the exact <=32-token Llama b9430 attention
+    /// specialization. K/V are already f16 in the resident cache, so no
+    /// transient f32→f16 materialization or host round-trip is required.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_b9430_short_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        v_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        const TILE: usize = 32;
+        const HEAD_DIM: usize = 128;
+        if head_dim != HEAD_DIM
+            || seq_len == 0
+            || seq_len > TILE
+            || n_kv_heads == 0
+            || n_heads % n_kv_heads != 0
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_short_tcb shape: seq={seq_len} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires 1..={TILE}, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_short",
+            ((n_heads * TILE) as u32, 1, 1),
+            (TILE as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(v_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_u32(4, seq_len as u32);
+                enc.set_u32(5, n_heads as u32);
+                enc.set_u32(6, n_kv_heads as u32);
+                enc.set_f32(7, scale);
+                enc.set_threadgroup_memory_length(
+                    0,
+                    TILE as u64 * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )
+    }
+
+    /// Long-context companion to the strict b9430 <=32-token attention
+    /// specialization. This preserves ggml-metal's 32-workgroup f16-KV
+    /// FlashAttention topology (including its second GPU reduction), rather
+    /// than substituting Hawking's one-workgroup materialized or online-softmax
+    /// grammars. It is intentionally caller-gated while long complete-token
+    /// parity is being established.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_b9430_fattn_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        v_buf: &PinnedBuffer,
+        scratch_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        const HEAD_DIM: usize = 128;
+        const NWG: usize = 32;
+        const SIMD: usize = 32;
+        // ((pad(DK,128) + 4*C + 2*pad(DV,128)) * sizeof(float)/2), C=32.
+        const MAIN_TG_BYTES: u64 = 1024;
+        if head_dim != HEAD_DIM
+            || seq_len <= 32
+            || n_kv_heads == 0
+            || n_heads == 0
+            || n_heads % n_kv_heads != 0
+            || n_heads > u32::MAX as usize
+            || n_kv_heads > u32::MAX as usize
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_fattn_tcb shape: seq={seq_len} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires seq>32, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        let grid_threads = n_heads
+            .checked_mul(NWG)
+            .and_then(|n| n.checked_mul(SIMD))
+            .ok_or_else(|| {
+                Error::Metal("mha_decode_llama_b9430_fattn_tcb main grid overflow".into())
+            })?;
+        let main_threads = u32::try_from(grid_threads).map_err(|_| {
+            Error::Metal("mha_decode_llama_b9430_fattn_tcb main grid exceeds u32".into())
+        })?;
+        let n_heads_u32 = n_heads as u32;
+        let n_kv_heads_u32 = n_kv_heads as u32;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_main",
+            (main_threads, 1, 1),
+            (SIMD as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(v_buf), 0);
+                enc.set_buffer(3, Some(scratch_buf), 0);
+                enc.set_u32(4, seq_len as u32);
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, n_kv_heads_u32);
+                enc.set_f32(7, scale);
+                enc.set_threadgroup_memory_length(0, MAIN_TG_BYTES);
+            },
+        )?;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_reduce",
+            // `dispatch_threads` takes a thread grid, not a workgroup grid.
+            // One 1,024-thread reduction group is required for each head.
+            (main_threads, 1, 1),
+            ((NWG * SIMD) as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(scratch_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_u32(2, n_heads_u32);
+            },
+        )?;
+        Ok(())
+    }
+
+    /// Layer-first packed-prefill companion to the source Llama f16-KV
+    /// FlashAttention decode kernel. `q_buf` and `out_buf` are batch-major;
+    /// K/V remain the one causal sequence cache. Batch item `bi` sees exactly
+    /// `p0 + bi + 1` cached tokens, so a contiguous prompt chunk is equivalent
+    /// to forwarding its items one at a time at this attention boundary.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_b9430_fattn_prefill_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        v_buf: &PinnedBuffer,
+        scratch_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        p0: usize,
+        batch: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        const HEAD_DIM: usize = 128;
+        const NWG: usize = 32;
+        const SIMD: usize = 32;
+        const MAIN_TG_BYTES: u64 = 1024;
+        if batch == 0 {
+            return Ok(());
+        }
+        if head_dim != HEAD_DIM
+            || n_kv_heads == 0
+            || n_heads == 0
+            || n_heads % n_kv_heads != 0
+            || n_heads > u32::MAX as usize
+            || n_kv_heads > u32::MAX as usize
+            || p0.checked_add(batch).is_none()
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_fattn_prefill_tcb shape: p0={p0} batch={batch} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires nonempty batch, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        let grid_threads = batch
+            .checked_mul(n_heads)
+            .and_then(|n| n.checked_mul(NWG))
+            .and_then(|n| n.checked_mul(SIMD))
+            .ok_or_else(|| {
+                Error::Metal("mha_decode_llama_b9430_fattn_prefill_tcb main grid overflow".into())
+            })?;
+        let main_threads = u32::try_from(grid_threads).map_err(|_| {
+            Error::Metal("mha_decode_llama_b9430_fattn_prefill_tcb main grid exceeds u32".into())
+        })?;
+        let n_heads_u32 = n_heads as u32;
+        let n_kv_heads_u32 = n_kv_heads as u32;
+        let p0_u32 = u32::try_from(p0).map_err(|_| {
+            Error::Metal("mha_decode_llama_b9430_fattn_prefill_tcb p0 exceeds u32".into())
+        })?;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_prefill_main",
+            (main_threads, 1, 1),
+            (SIMD as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(v_buf), 0);
+                enc.set_buffer(3, Some(scratch_buf), 0);
+                enc.set_u32(4, n_heads_u32);
+                enc.set_u32(5, n_kv_heads_u32);
+                enc.set_f32(6, scale);
+                enc.set_u32(7, p0_u32);
+                enc.set_threadgroup_memory_length(0, MAIN_TG_BYTES);
+            },
+        )?;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_prefill_reduce",
+            (main_threads, 1, 1),
+            ((NWG * SIMD) as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(scratch_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_u32(2, n_heads_u32);
+            },
+        )?;
+        Ok(())
+    }
+
+    /// Experimental 16-way sibling of the source 32-way Llama FlashAttention
+    /// topology.  It deliberately retains the two-pass f16-KV algorithm and
+    /// only changes the number of cache partitions, so it can be evaluated as
+    /// a bounded geometry candidate without changing model representation.
+    ///
+    /// This is not selected by default.  Callers must opt in after a
+    /// same-model exact-token check because a different online-softmax
+    /// partition order can move f32 roundoff even when the computation is
+    /// mathematically equivalent.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_b9430_fattn_nwg16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        v_buf: &PinnedBuffer,
+        scratch_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        const HEAD_DIM: usize = 128;
+        const NWG: usize = 16;
+        const SIMD: usize = 32;
+        const MAIN_TG_BYTES: u64 = 1024;
+        if head_dim != HEAD_DIM
+            || seq_len <= 32
+            || n_kv_heads == 0
+            || n_heads == 0
+            || n_heads % n_kv_heads != 0
+            || n_heads > u32::MAX as usize
+            || n_kv_heads > u32::MAX as usize
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_b9430_fattn_nwg16_tcb shape: seq={seq_len} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires seq>32, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        let grid_threads = n_heads
+            .checked_mul(NWG)
+            .and_then(|n| n.checked_mul(SIMD))
+            .ok_or_else(|| {
+                Error::Metal("mha_decode_llama_b9430_fattn_nwg16_tcb main grid overflow".into())
+            })?;
+        let main_threads = u32::try_from(grid_threads).map_err(|_| {
+            Error::Metal("mha_decode_llama_b9430_fattn_nwg16_tcb main grid exceeds u32".into())
+        })?;
+        let n_heads_u32 = n_heads as u32;
+        let n_kv_heads_u32 = n_kv_heads as u32;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_nwg16_main",
+            (main_threads, 1, 1),
+            (SIMD as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(v_buf), 0);
+                enc.set_buffer(3, Some(scratch_buf), 0);
+                enc.set_u32(4, seq_len as u32);
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, n_kv_heads_u32);
+                enc.set_f32(7, scale);
+                enc.set_threadgroup_memory_length(0, MAIN_TG_BYTES);
+            },
+        )?;
+        tcb.dispatch_threads(
+            "mha_decode_llama_b9430_fattn_nwg16_reduce",
+            (main_threads, 1, 1),
+            ((NWG * SIMD) as u32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(scratch_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_u32(2, n_heads_u32);
+            },
+        )?;
+        Ok(())
+    }
+
+    /// GGML Metal FlashAttention authority adapter for an explicit Llama K0
+    /// diagnostic. This is not a Hawking execution grammar and must never be
+    /// used for a throughput result or a parity promotion; it asks whether the
+    /// installed b9430 primitive alone closes the residual left by Hawking's
+    /// custom reduction.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_llama_ggml_fattn_authority(
+        q: &[f32],
+        k_cache: &[f32],
+        v_cache: &[f32],
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        const HEAD_DIM: usize = 128;
+        const MAX_CACHE: usize = 256;
+        if head_dim != HEAD_DIM
+            || seq_len == 0
+            || seq_len > MAX_CACHE
+            || n_kv_heads == 0
+            || n_heads == 0
+            || n_heads % n_kv_heads != 0
+            || n_heads > u32::MAX as usize
+            || n_kv_heads > u32::MAX as usize
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_ggml_fattn_authority shape: seq={seq_len} head_dim={head_dim} n_heads={n_heads} n_kv_heads={n_kv_heads}; requires 1..={MAX_CACHE}, head_dim={HEAD_DIM}, and GQA divisibility"
+            )));
+        }
+        let q_len = n_heads * head_dim;
+        let active_kv_len = seq_len * n_kv_heads * head_dim;
+        if q.len() != q_len
+            || out.len() != q_len
+            || k_cache.len() != active_kv_len
+            || v_cache.len() != active_kv_len
+        {
+            return Err(Error::Metal(format!(
+                "mha_decode_llama_ggml_fattn_authority buffers: q={} out={} expected={q_len}; k={} v={} expected={active_kv_len}",
+                q.len(), out.len(), k_cache.len(), v_cache.len(),
+            )));
+        }
+        let k_half: Vec<u16> = k_cache
+            .iter()
+            .map(|value| f16::from_f32(*value).to_bits())
+            .collect();
+        let v_half: Vec<u16> = v_cache
+            .iter()
+            .map(|value| f16::from_f32(*value).to_bits())
+            .collect();
+        let mut error = [0 as c_char; 512];
+        let status = unsafe {
+            hawking_ggml_fattn_f16_authority(
+                q.as_ptr(),
+                k_half.as_ptr(),
+                v_half.as_ptr(),
+                seq_len as u32,
+                n_heads as u32,
+                n_kv_heads as u32,
+                out.as_mut_ptr(),
+                error.as_mut_ptr(),
+                error.len(),
+            )
+        };
+        if status == 0 {
+            return Ok(());
+        }
+        let message = unsafe { CStr::from_ptr(error.as_ptr()) }
+            .to_string_lossy()
+            .into_owned();
+        Err(Error::Metal(format!(
+            "GGML FATTN authority adapter failed: {}",
+            if message.is_empty() {
+                "unknown error"
+            } else {
+                &message
+            }
+        )))
+    }
+
+    /// GGML Metal f16 matvec authority adapter for the explicit Llama K0
+    /// diagnostic. It is deliberately non-promotable: the standard Hawking
+    /// LM-head remains the only candidate for normal decode or TPS claims.
+    pub fn gemv_f16_ggml_authority(
+        weights: &[f16],
+        rows: usize,
+        cols: usize,
+        input: &[f32],
+        output: &mut [f32],
+    ) -> Result<()> {
+        if rows == 0
+            || cols == 0
+            || rows > u32::MAX as usize
+            || cols > u32::MAX as usize
+            || weights.len() != rows * cols
+            || input.len() != cols
+            || output.len() != rows
+        {
+            return Err(Error::Metal(format!(
+                "gemv_f16_ggml_authority shape: weights={} rows={rows} cols={cols} input={} output={}",
+                weights.len(), input.len(), output.len(),
+            )));
+        }
+        let mut error = [0 as c_char; 512];
+        let status = unsafe {
+            hawking_ggml_f16_matvec_authority(
+                weights.as_ptr().cast::<u16>(),
+                rows as u32,
+                cols as u32,
+                input.as_ptr(),
+                output.as_mut_ptr(),
+                error.as_mut_ptr(),
+                error.len(),
+            )
+        };
+        if status == 0 {
+            return Ok(());
+        }
+        let message = unsafe { CStr::from_ptr(error.as_ptr()) }
+            .to_string_lossy()
+            .into_owned();
+        Err(Error::Metal(format!(
+            "GGML f16 matvec authority adapter failed: {}",
+            if message.is_empty() {
+                "unknown error"
+            } else {
+                &message
+            }
+        )))
     }
 
     /// Phase 2.3 — encode `mha_decode_flash_f32` (GQA online-softmax flash
@@ -8012,6 +11676,108 @@ mod metal_dispatch {
         )
     }
 
+    /// Append one strict Llama K/V slice to both resident cache images in a
+    /// single ordered compute dispatch. The input has already passed through
+    /// `round_f16_llama_b9430`, so the f32 write is the exact expanded f16
+    /// value used by the generic attention grammar and the f16 write is its
+    /// matching SET_ROWS image. This is the direct (non-ICB) use of the
+    /// existing replay kernel and replaces one blit plus one f32→f16 dispatch.
+    pub fn llama_b9430_cache_append_f32_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst_f32: &PinnedBuffer,
+        dst_f16: &PinnedBuffer,
+        src_off: usize,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, src_off as u32);
+        ab.set_u32(2, dst_off as u32);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "llama_b9430_cache_append_f32_f16",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src), 0);
+                enc.set_buffer(1, Some(dst_f32), 0);
+                enc.set_buffer(2, Some(dst_f16), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    /// Direct K+V f32→f16 append for the Llama source FlashAttention lane.
+    /// It produces the same SET_ROWS cache bits as independently rounding
+    /// both f32 vectors and appending them, without materializing the unused
+    /// f32 cache expansion.
+    pub fn llama_b9430_cache_append_kv_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_k: &PinnedBuffer,
+        src_v: &PinnedBuffer,
+        dst_k: &PinnedBuffer,
+        dst_v: &PinnedBuffer,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, dst_off as u32);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "llama_b9430_cache_append_kv_f16",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src_k), 0);
+                enc.set_buffer(1, Some(src_v), 0);
+                enc.set_buffer(2, Some(dst_k), 0);
+                enc.set_buffer(3, Some(dst_v), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    /// Offset form of [`llama_b9430_cache_append_kv_f16_tcb`].  Gravity's
+    /// source-preserving K/V projections write each f32 row directly into its
+    /// absolute cache slot, so the conversion must read that same slot rather
+    /// than implicitly rereading row zero.
+    pub fn llama_b9430_cache_append_kv_f16_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_k: &PinnedBuffer,
+        src_v: &PinnedBuffer,
+        dst_k: &PinnedBuffer,
+        dst_v: &PinnedBuffer,
+        src_off: usize,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, src_off as u32);
+        ab.set_u32(2, dst_off as u32);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "llama_b9430_cache_append_kv_f16_off",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src_k), 0);
+                enc.set_buffer(1, Some(src_v), 0);
+                enc.set_buffer(2, Some(dst_k), 0);
+                enc.set_buffer(3, Some(dst_v), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// R3 — batched KV scatter-append over B multi-seq slots. ONE dispatch (K+V)
     /// replaces the per-slot `memcpy_f32_off_tcb` loop (2B → 1 per layer). Each
     /// slot bi copies kv_dim K and V elems from src[bi*kv_dim] into its STABLE
@@ -8248,6 +12014,16 @@ mod metal_dispatch {
         scale: f32,
         hidden: usize,
     ) -> Result<()> {
+        // Bounded geometry candidate for short-token decode.  The default
+        // remains TG_SIZE (256); the opt-in 128-thread shape is measured as
+        // a same-model A/B only and is never selected by a profile silently.
+        // MLA's loops use `threads_per_threadgroup`, so the shader remains
+        // source-identical while occupancy/latency can be tested honestly.
+        let mla_tg: u32 = if std::env::var_os("HAWKING_DS_MLA_TG128").is_some() {
+            128
+        } else {
+            TG_SIZE
+        };
         let n_heads_u32 = n_heads as u32;
         let qk_nope_u32 = qk_nope_head_dim as u32;
         let qk_rope_u32 = qk_rope_head_dim as u32;
@@ -8259,8 +12035,8 @@ mod metal_dispatch {
 
         tcb.dispatch_threads(
             "mla_decode_kernel",
-            (n_heads_u32 * TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
+            (n_heads_u32 * mla_tg, 1, 1),
+            (mla_tg, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(&arena.q), 0);
                 enc.set_buffer(1, Some(c_kv), 0);
@@ -8281,6 +12057,81 @@ mod metal_dispatch {
         )?;
         // o_proj pinned as f16; use gemv_f16_simdmat (half w × float x → float y).
         // Cols = n_heads × v_head_dim = 2048 and rows = hidden = 2048 (both % 8 == 0).
+        gemv_f16_simdmat_tcb(
+            tcb,
+            o_proj,
+            hidden,
+            n_heads * v_head_dim,
+            &arena.attn_out,
+            &arena.out,
+        )
+    }
+
+    /// Guarded Flash-MLA variant of [`mla_decode_and_o_proj_arena_tcb`].
+    ///
+    /// The resident decode path normally uses `mla_decode_kernel`, whose
+    /// thread 0 performs the score softmax serially.  This adapter encodes
+    /// the existing tiled online-softmax `flash_attn_decode_kernel` directly
+    /// into the same persistent token command buffer, retaining the exact
+    /// GPU-resident KV and o-projection buffers.  It is selected only by the
+    /// explicit `attn_block_schedule="flash"` profile lever; the default
+    /// schedule remains unchanged until a complete-token A/B proves a win.
+    #[allow(clippy::too_many_arguments)]
+    pub fn flash_attn_decode_and_o_proj_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        c_kv: &PinnedBuffer,
+        k_pe: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        const FLASH_TG: u32 = 128;
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+        let f32_size = std::mem::size_of::<f32>() as u64;
+        let q_nope_proj_bytes = kv_lora_rank as u64 * f32_size;
+        let acc_bytes = kv_lora_rank as u64 * f32_size;
+        let scores_tile_bytes = FLASH_TG as u64 * f32_size;
+        let state_bytes = 8u64 * f32_size;
+
+        tcb.dispatch_threads(
+            "flash_attn_decode_kernel",
+            (n_heads_u32 * FLASH_TG, 1, 1),
+            (FLASH_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&arena.q), 0);
+                enc.set_buffer(1, Some(c_kv), 0);
+                enc.set_buffer(2, Some(k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&arena.attn_out), 0);
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, qk_nope_u32);
+                enc.set_u32(7, qk_rope_u32);
+                enc.set_u32(8, v_head_u32);
+                enc.set_u32(9, kv_lora_u32);
+                enc.set_u32(10, seq_len_u32);
+                enc.set_f32(11, scale);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, acc_bytes);
+                enc.set_threadgroup_memory_length(2, scores_tile_bytes);
+                enc.set_threadgroup_memory_length(3, state_bytes);
+            },
+        )?;
+
+        // Keep the attention projection in the same TCB and the same
+        // persistent output buffer as the default MLA path.
         gemv_f16_simdmat_tcb(
             tcb,
             o_proj,
@@ -8592,6 +12443,57 @@ mod metal_dispatch {
         )
     }
 
+    // v2t_gu_v3: paired-route variant.  A 512-threadgroup dispatch maps eight
+    // simdgroups to each of two routes, sharing the activation preload.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_fused_gu_v3_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64 = up_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = 512u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
+        let route_groups = (routes_u32 + 1) / 2;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q4_indexed_v2t_gu_v3",
+            (n_tg_x * tg_size, route_groups, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(act_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u64>() as u64,
+                    &gate_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u64>() as u64,
+                    &up_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_u32(6, routes_u32);
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     // Serial variant: dispatches one route at a time so each expert's weights
     // (gate+up = ~3MB) are read as a single sequential stream that fits in L2,
     // avoiding the cache-thrashing caused by 6 simultaneous scattered expert streams.
@@ -8676,6 +12578,67 @@ mod metal_dispatch {
         )
     }
 
+    fn encode_route_accumulate_add_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        routed_out: &PinnedBuffer,
+        weights: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        hidden: usize,
+        routes: usize,
+        has_shared: bool,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let routes_u32 = routes as u32;
+        let has_shared_u32 = u32::from(has_shared);
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_u32(1, routes_u32);
+        ab.set_u32(2, has_shared_u32);
+        tcb.dispatch_threads(
+            "moe_route_accumulate_add",
+            (hidden_u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(routed_out), 0);
+                enc.set_buffer(1, Some(weights), 0);
+                enc.set_buffer(2, Some(shared_out), 0);
+                enc.set_buffer(3, Some(residual), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    /// Mixtral K6 bounded top-2 combine: weighted expert outputs and the
+    /// residual update stay device-resident.  Route selection remains the
+    /// source-authoritative CPU decision and the two scalar weights are bound
+    /// exactly as produced by that router.
+    pub fn moe_route_accumulate_two_add_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        routed_out0: &PinnedBuffer,
+        routed_out1: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        weight0: f32,
+        weight1: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        tcb.dispatch_threads(
+            "moe_route_accumulate_two_add",
+            (hidden_u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(routed_out0), 0);
+                enc.set_buffer(1, Some(routed_out1), 0);
+                enc.set_f32(2, weight0);
+                enc.set_f32(3, weight1);
+                enc.set_buffer(4, Some(residual), 0);
+                enc.set_u32(5, hidden_u32);
+            },
+        )
+    }
+
     pub fn moe_topk_gate_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         logits_buf: &PinnedBuffer,
@@ -8689,10 +12652,15 @@ mod metal_dispatch {
         }
         let n_experts_u32 = n_experts as u32;
         let top_k_u32 = top_k as u32;
+        let tie_epsilon = crate::moe::route_tie_epsilon();
         let shmem_bytes = (n_experts as u64) * std::mem::size_of::<f32>() as u64;
-        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
+        )?;
         ab.set_u32(0, n_experts_u32);
         ab.set_u32(1, top_k_u32);
+        ab.set_f32(2, tie_epsilon);
         tcb.dispatch_threads("moe_topk_gate", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(logits_buf), 0);
             enc.set_buffer(1, Some(route_ids_buf), 0);
@@ -8723,11 +12691,25 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
 
-        if q4k_schedule == "v2t_gu_v2" {
+        if q4k_schedule == "v2t_gu_v3" {
+            // One shared route does not benefit from the paired-route geometry.
+            encode_batched_gemv_fused_gu_v2_tcb(
+                tcb,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_act,
+                shared_gate_offset,
+                shared_up_offset,
+                1,
+                shared_mid,
+                hidden,
+            )?;
+        } else if q4k_schedule == "v2t_gu_v2" {
             encode_batched_gemv_fused_gu_v2_tcb(
                 tcb,
                 model_buf,
@@ -8825,6 +12807,7 @@ mod metal_dispatch {
         shared_up_out: &PinnedBuffer,
         shared_act: &PinnedBuffer,
         shared_out: &PinnedBuffer,
+        residual_buf: Option<&PinnedBuffer>,
     ) -> Result<()> {
         if routes == 0 {
             return Err(Error::Kernel(
@@ -8839,10 +12822,11 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
         let use_fused_gu_v2 = q4k_schedule == "v2t_gu_v2";
+        let use_fused_gu_v3 = q4k_schedule == "v2t_gu_v3";
         let use_fused_gu = q4k_schedule == "v2t_gu";
         // Serial: dispatch one expert at a time so each expert's weight slab (~3 MB
         // gate+up) is a single sequential stream. Eliminates 6-stream L2 thrashing.
@@ -8851,6 +12835,19 @@ mod metal_dispatch {
 
         if use_serial_gu {
             encode_batched_gemv_fused_gu_serial_tcb(
+                tcb,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_act,
+                routed_gate_offset,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
+            )?;
+        } else if use_fused_gu_v3 {
+            encode_batched_gemv_fused_gu_v3_tcb(
                 tcb,
                 model_buf,
                 route_ids_buf,
@@ -8957,7 +12954,22 @@ mod metal_dispatch {
         {
             // Shared expert always routes=1, so serial == parallel. Use the
             // appropriate fused_gu variant when any gu schedule is selected.
-            if use_fused_gu_v2 {
+            if use_fused_gu_v3 {
+                // The shared expert has one route; retain the 256-thread
+                // variant so v3's paired-route geometry adds no overhead.
+                encode_batched_gemv_fused_gu_v2_tcb(
+                    tcb,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_act,
+                    gate_off,
+                    up_off,
+                    1,
+                    shared_mid,
+                    hidden,
+                )?;
+            } else if use_fused_gu_v2 {
                 encode_batched_gemv_fused_gu_v2_tcb(
                     tcb,
                     model_buf,
@@ -9024,16 +13036,29 @@ mod metal_dispatch {
             )?;
         }
 
-        encode_route_accumulate_tcb(
-            tcb,
-            routed_out,
-            route_weights_buf,
-            shared_out,
-            out_buf,
-            hidden,
-            routes,
-            has_shared,
-        )
+        if let Some(residual) = residual_buf {
+            encode_route_accumulate_add_tcb(
+                tcb,
+                routed_out,
+                route_weights_buf,
+                shared_out,
+                residual,
+                hidden,
+                routes,
+                has_shared,
+            )
+        } else {
+            encode_route_accumulate_tcb(
+                tcb,
+                routed_out,
+                route_weights_buf,
+                shared_out,
+                out_buf,
+                hidden,
+                routes,
+                has_shared,
+            )
+        }
     }
 
     // ── v1.0.0-D: embed lookup writing f32 residual directly to GPU buffer ──
@@ -9052,6 +13077,50 @@ mod metal_dispatch {
         tcb.dispatch_threads("embed_lookup_f32", (hidden_u32, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(embed_buf), 0);
             enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_u32(2, hidden_u32);
+            enc.set_u32(3, token);
+        })
+    }
+
+    /// Source-native Q4_K embedding lookup from an mmap-backed GGUF buffer.
+    /// This is deliberately separate from `embed_lookup_f32`: the latter
+    /// consumes a materialized f16 table, whereas this preserves the Q4_K
+    /// block grammar through the first normalized projection input.
+    #[allow(clippy::too_many_arguments)]
+    pub fn embed_lookup_q4_k_m_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        tensor_offset: usize,
+        tensor_bytes: usize,
+        token: u32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "embed_lookup_q4_k_m";
+        if hidden == 0 || hidden % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires nonzero hidden divisible by 256; got {hidden}"
+            )));
+        }
+        let row_bytes = (hidden / 256)
+            .checked_mul(144)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} row-byte overflow")))?;
+        if tensor_bytes % row_bytes != 0 || token as usize >= tensor_bytes / row_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} token {token} is outside a {tensor_bytes}-byte Q4_K table with {row_bytes}-byte rows"
+            )));
+        }
+        let end = tensor_offset
+            .checked_add(tensor_bytes)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+        if end > model_buf.length() as usize || out_buf.length() < (hidden * 4) as u64 {
+            return Err(Error::Kernel(format!("{KERNEL} buffer bounds check failed")));
+        }
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(KERNEL, (hidden_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), tensor_offset as u64);
+            enc.set_buffer(1, Some(out_buf), 0);
             enc.set_u32(2, hidden_u32);
             enc.set_u32(3, token);
         })
@@ -10691,6 +14760,223 @@ pub use metal_dispatch::*;
 mod tests {
     use super::*;
     use half::f16;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn q4_k_serial_authority_metal_matches_raw_f32_reference() {
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let (rows, cols) = (3usize, 512usize);
+        let mut weights = vec![0u8; rows * (cols / 256) * 144];
+        for (block, bytes) in weights.chunks_exact_mut(144).enumerate() {
+            bytes[0..2].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+            bytes[2..4].copy_from_slice(&f16::from_f32(0.0078125).to_bits().to_le_bytes());
+            for (i, value) in bytes[4..16].iter_mut().enumerate() {
+                *value = ((block * 29 + i * 17 + 3) & 0xff) as u8;
+            }
+            for (i, value) in bytes[16..].iter_mut().enumerate() {
+                *value = ((block * 71 + i * 43 + 11) & 0xff) as u8;
+            }
+        }
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as i32 * 53 % 509 - 254) as f32) * 0.00390625)
+            .collect();
+        let mut dequantized = vec![0.0f32; rows * cols];
+        crate::quant::dequant_into(crate::gguf::GgmlType::Q4_K, &weights, &mut dequantized)
+            .expect("raw Q4_K dequantization");
+        let mut expected = vec![0.0f32; rows];
+        gemv_f32(&dequantized, rows, cols, &x, &mut expected);
+        let mut actual = vec![0.0f32; rows];
+        gemv_q4_k_m_serial_authority(&ctx, &weights, rows, cols, &x, &mut actual)
+            .expect("serial authority GEMV");
+        for (row, (&actual, &expected)) in actual.iter().zip(expected.iter()).enumerate() {
+            assert_eq!(
+                actual.to_bits(),
+                expected.to_bits(),
+                "row {row}: GPU {actual:?} != CPU {expected:?}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn q5_k_serial_authority_metal_matches_raw_f32_reference() {
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let (rows, cols) = (3usize, 512usize);
+        let mut weights = vec![0u8; rows * (cols / 256) * 176];
+        for (block, bytes) in weights.chunks_exact_mut(176).enumerate() {
+            bytes[0..2].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+            bytes[2..4].copy_from_slice(&f16::from_f32(0.0078125).to_bits().to_le_bytes());
+            for (i, value) in bytes[4..16].iter_mut().enumerate() {
+                *value = ((block * 29 + i * 17 + 3) & 0xff) as u8;
+            }
+            for (i, value) in bytes[16..48].iter_mut().enumerate() {
+                *value = ((block * 47 + i * 31 + 11) & 0xff) as u8;
+            }
+            for (i, value) in bytes[48..].iter_mut().enumerate() {
+                *value = ((block * 71 + i * 43 + 19) & 0xff) as u8;
+            }
+        }
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as i32 * 53 % 509 - 254) as f32) * 0.00390625)
+            .collect();
+        let mut dequantized = vec![0.0f32; rows * cols];
+        crate::quant::dequant_into(crate::gguf::GgmlType::Q5_K, &weights, &mut dequantized)
+            .expect("raw Q5_K dequantization");
+        let mut expected = vec![0.0f32; rows];
+        gemv_f32(&dequantized, rows, cols, &x, &mut expected);
+        let model_buf = ctx.new_buffer_with_bytes(&weights);
+        let mut actual = vec![0.0f32; rows];
+        gemv_q5_k_serial_authority_pinned(
+            &ctx,
+            &model_buf,
+            0,
+            weights.len(),
+            rows,
+            cols,
+            &x,
+            &mut actual,
+        )
+        .expect("serial Q5_K authority GEMV");
+        for (row, (&actual, &expected)) in actual.iter().zip(expected.iter()).enumerate() {
+            assert_eq!(
+                actual.to_bits(),
+                expected.to_bits(),
+                "row {row}: GPU {actual:?} != CPU {expected:?}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn q5_k_serial_authority_persistent_tcb_matches_raw_f32_reference() {
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let (rows, cols) = (3usize, 512usize);
+        let mut weights = vec![0u8; rows * (cols / 256) * 176];
+        for (block, bytes) in weights.chunks_exact_mut(176).enumerate() {
+            bytes[0..2].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+            bytes[2..4].copy_from_slice(&f16::from_f32(0.0078125).to_bits().to_le_bytes());
+            for (i, value) in bytes[4..16].iter_mut().enumerate() {
+                *value = ((block * 29 + i * 17 + 3) & 0xff) as u8;
+            }
+            for (i, value) in bytes[16..48].iter_mut().enumerate() {
+                *value = ((block * 47 + i * 31 + 11) & 0xff) as u8;
+            }
+            for (i, value) in bytes[48..].iter_mut().enumerate() {
+                *value = ((block * 71 + i * 43 + 19) & 0xff) as u8;
+            }
+        }
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as i32 * 53 % 509 - 254) as f32) * 0.00390625)
+            .collect();
+        let mut dequantized = vec![0.0f32; rows * cols];
+        crate::quant::dequant_into(crate::gguf::GgmlType::Q5_K, &weights, &mut dequantized)
+            .expect("raw Q5_K dequantization");
+        let mut expected = vec![0.0f32; rows];
+        gemv_f32(&dequantized, rows, cols, &x, &mut expected);
+
+        let model_buf = ctx.new_buffer_with_bytes(&weights);
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        gemv_q5_k_serial_authority_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            weights.len(),
+            rows,
+            cols,
+            &x_buf,
+            &out_buf,
+        )
+        .expect("persistent Q5_K authority dispatch");
+        assert_eq!(
+            tcb.dispatch_count(),
+            1,
+            "one projection must encode one dispatch"
+        );
+        tcb.commit_and_wait().expect("persistent Q5_K commit");
+        let actual =
+            unsafe { std::slice::from_raw_parts(out_buf.contents() as *const f32, rows).to_vec() };
+        for (row, (&actual, &expected)) in actual.iter().zip(expected.iter()).enumerate() {
+            assert_eq!(
+                actual.to_bits(),
+                expected.to_bits(),
+                "row {row}: persistent GPU {actual:?} != CPU {expected:?}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn q4_k_llama_b9430_metal_matches_raw_f32_reference() {
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let (rows, cols) = (4usize, 1024usize);
+        let mut weights = vec![0u8; rows * (cols / 256) * 144];
+        for (block, bytes) in weights.chunks_exact_mut(144).enumerate() {
+            bytes[0..2].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+            bytes[2..4].copy_from_slice(&f16::from_f32(0.0078125).to_bits().to_le_bytes());
+            for (i, value) in bytes[4..16].iter_mut().enumerate() {
+                *value = ((block * 29 + i * 17 + 3) & 0xff) as u8;
+            }
+            for (i, value) in bytes[16..].iter_mut().enumerate() {
+                *value = ((block * 47 + i * 31 + 11) & 0xff) as u8;
+            }
+        }
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as i32 * 53 % 509 - 254) as f32) * 0.00390625)
+            .collect();
+        let mut dequantized = vec![0.0f32; rows * cols];
+        crate::quant::dequant_into(crate::gguf::GgmlType::Q4_K, &weights, &mut dequantized)
+            .expect("raw Q4_K dequantization");
+        let mut expected = vec![0.0f32; rows];
+        gemv_f32(&dequantized, rows, cols, &x, &mut expected);
+        let mut actual = vec![0.0f32; rows];
+        gemv_q4_k_m_llama_b9430(&ctx, &weights, rows, cols, &x, &mut actual)
+            .expect("b9430 Q4_K GEMV");
+        for (row, (&actual, &expected)) in actual.iter().zip(expected.iter()).enumerate() {
+            let error = (actual - expected).abs();
+            assert!(
+                error <= 0.000_02,
+                "row {row}: GPU {actual:?}, CPU {expected:?}, abs error {error:?}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn q6_k_llama_b9430_metal_matches_raw_f32_reference() {
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let (rows, cols) = (4usize, 1024usize);
+        let mut weights = vec![0u8; rows * (cols / 256) * 210];
+        for (block, bytes) in weights.chunks_exact_mut(210).enumerate() {
+            for (i, value) in bytes[..192].iter_mut().enumerate() {
+                *value = ((block * 37 + i * 19 + 7) & 0xff) as u8;
+            }
+            for (i, value) in bytes[192..208].iter_mut().enumerate() {
+                *value = (((block * 11 + i * 9) % 121) as i8 - 60) as u8;
+            }
+            bytes[208..210].copy_from_slice(&f16::from_f32(0.03125).to_bits().to_le_bytes());
+        }
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as i32 * 53 % 509 - 254) as f32) * 0.00390625)
+            .collect();
+        let mut dequantized = vec![0.0f32; rows * cols];
+        crate::quant::dequant_into(crate::gguf::GgmlType::Q6_K, &weights, &mut dequantized)
+            .expect("raw Q6_K dequantization");
+        let mut expected = vec![0.0f32; rows];
+        gemv_f32(&dequantized, rows, cols, &x, &mut expected);
+        let mut actual = vec![0.0f32; rows];
+        gemv_q6_k_llama_b9430(&ctx, &weights, rows, cols, &x, &mut actual)
+            .expect("b9430 Q6_K GEMV");
+        for (row, (&actual, &expected)) in actual.iter().zip(expected.iter()).enumerate() {
+            let error = (actual - expected).abs();
+            assert!(
+                error <= 0.000_1,
+                "row {row}: GPU {actual:?}, CPU {expected:?}, abs error {error:?}"
+            );
+        }
+    }
+
     #[test]
     fn rmsnorm_unit_weight() {
         let x = [1.0, 2.0, 3.0, 4.0];
@@ -10816,6 +15102,31 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn rope_tensor_factors_override_metadata_scaling_per_pair() {
+        let base = 10_000.0f32;
+        let mut x = vec![0.0f32; 4];
+        x[0] = 1.0;
+        x[2] = 1.0;
+        let factors = [2.0f32, 4.0];
+        rope_inplace_normal_with_factors(
+            &mut x,
+            1,
+            base,
+            Some(Llama3RopeScaling {
+                factor: 8.0,
+                low_freq_factor: 1.0,
+                high_freq_factor: 4.0,
+                original_max_position_embeddings: 8192,
+            }),
+            Some(&factors),
+        );
+        assert!((x[1].atan2(x[0]) - 0.5).abs() < 1e-6);
+        let second_frequency = 1.0 / base.sqrt() / 4.0;
+        assert!((x[3].atan2(x[2]) - second_frequency).abs() < 1e-6);
+    }
+
     #[test]
     fn rope_scaled_llama3_regimes() {
         let head_dim = 64usize;

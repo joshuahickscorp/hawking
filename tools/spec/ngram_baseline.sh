@@ -43,8 +43,8 @@
 #   MIN_FREQ         minimum n-gram frequency to count as a prediction (default: 1)
 #   BIN              dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS          GGUF model file (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
-#   PROFILE          kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
-#   OUT_JSON         write aggregate JSON to this path (default: reports/ngram_oracle.json)
+#   PROFILE          kernel profile JSON (default: workspace/campaign/config/profiles/qwen/qwen3b-instruct-q4k.m3pro18.json)
+#   OUT_JSON         write aggregate JSON to this path (default: workspace/campaign/records/reports/ngram_oracle.json)
 #   OUT_SEQ_DIR      directory to save per-prompt token sequence files (default: none)
 #   PY               python3 binary (default: auto-detect .venv/bin/python or python3)
 #
@@ -62,8 +62,8 @@ N_GRAMS="${N_GRAMS:-2 3 4}"
 MIN_FREQ="${MIN_FREQ:-1}"
 BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
-PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
-OUT_JSON="${OUT_JSON:-reports/ngram_oracle.json}"
+PROFILE="${PROFILE:-workspace/campaign/config/profiles/qwen/qwen3b-instruct-q4k.m3pro18.json}"
+OUT_JSON="${OUT_JSON:-workspace/campaign/records/reports/ngram_oracle.json}"
 OUT_SEQ_DIR="${OUT_SEQ_DIR:-}"
 
 # Python — prefer venv if present

@@ -14,7 +14,9 @@ struct Cli {
     /// Apply a named lever bundle (global; works after the subcommand). Currently
     /// only "fast" = the validated both-metrics fast-path: vocab-prune-32k + Q4K
     /// LM-head + Q4K FFN-down + predec + f16-scales. Opt-in; the default decode
-    /// stays bit-identical. f16-scales / vocab-prune are mild quality trades.
+    /// stays conservative. f16-scales / vocab-prune are mild quality trades.
+    /// A profile label is not source-runtime parity; that requires a current
+    /// model-specific independent-oracle receipt.
     /// Explicitly-set HAWKING_QWEN_* env vars always take precedence.
     #[arg(long, global = true)]
     profile: Option<String>,
@@ -24,7 +26,7 @@ struct Cli {
 
 /// Apply a named lever bundle by setting the corresponding HAWKING_QWEN_* env
 /// vars *only if the user has not already set them* (explicit env always wins).
-/// No `--profile` ⇒ no change ⇒ the default decode stays bit-identical.
+/// No `--profile` ⇒ no change ⇒ the default decode stays conservative.
 ///
 /// Known profiles:
 ///   `fast`      — validated fast-path: vocab-prune-32k + Q4K LM-head + Q4K
@@ -32,8 +34,8 @@ struct Cli {
 ///   `race`      — same as fast; explicitly signals max throughput, quality
 ///                 trade-offs OK.
 ///   `efficient` — same as fast plus HAWKING_ENERGY_EFFICIENT=1.
-///   `exact`     — bit-identical conservative path (no quality trade-offs).
-///   `default`   — no change from the locked bit-identical default.
+///   `exact`     — conservative path (no profile-level quality trade-offs).
+///   `default`   — no profile-level change from the conservative default.
 ///
 /// Explicitly-set HAWKING_QWEN_* env vars always take precedence.
 fn apply_runtime_lever_plan(plan: &hawking_serve::LeverPlan) {
@@ -62,7 +64,7 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         // that failed quality_oracle (e613dde): vocab-prune + Q4K LM-head +
         // Q4K FFN-down + predec, f16-scales OFF (~38–39 t/s, low quality risk).
         // Explicit HAWKING_QWEN_*=0 still wins (set_if_unset); the force-off
-        // is unconditional. Pass --profile exact for the bit-identical path.
+        // is unconditional. Pass --profile exact for the conservative path.
         let rp = hawking_serve::RuntimeProfile::default_when_unset();
         let plan = rp.lever_plan();
         apply_runtime_lever_plan(&plan);
@@ -72,7 +74,7 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         if announce {
             eprintln!(
                 "[hawking] no --profile → default=fast (minus f16-scales, ~38-39 t/s); \
-                 pass --profile exact for bit-identical, --profile fast for full ~42 t/s"
+                 pass --profile exact for conservative levers, --profile fast for full ~42 t/s"
             );
         }
         return;
@@ -82,7 +84,7 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
     // profiles apply. The mapping is the SAME LeverPlan that serve::run uses,
     // so generate/bench and serve never drift (fixes: race/efficient were silent
     // aliases of fast here, and `exact` did not actually force-off the f16-scales
-    // quality lever → non-bit-identical despite its contract).
+    // quality lever → a non-conservative configuration despite its contract).
     let Some(rp) = hawking_serve::RuntimeProfile::from_str(name) else {
         eprintln!(
             "[hawking] warning: unknown --profile '{name}' \
@@ -149,6 +151,11 @@ enum Cmd {
         addr: std::net::SocketAddr,
         #[arg(long, default_value_t = 1)]
         max_batch_size: usize,
+        /// Cap aggregate *new* prompt tokens per prefill wave. Longer prompts
+        /// continue in exact KV-preserving chunks and rotate with peers, which
+        /// bounds TTFT/p99 without starving them.
+        #[arg(long, value_name = "TOKENS")]
+        max_prefill_tokens: Option<usize>,
         #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
         speculate: Option<String>,
         #[arg(long, default_value_t = 4)]
@@ -241,9 +248,14 @@ enum Cmd {
         #[arg(long)]
         weights: PathBuf,
         /// Single prompt. Optional when --prompts-file is given (the file
-        /// then supplies every prompt).
-        #[arg(long, default_value = "")]
-        prompt: String,
+        /// then supplies every prompt). An explicitly empty value is a valid
+        /// BOS-only prompt for model-parity diagnostics.
+        #[arg(long)]
+        prompt: Option<String>,
+        /// Read one prompt as exact UTF-8 bytes. Unlike --prompts-file this
+        /// neither trims lines nor treats newlines as record delimiters.
+        #[arg(long, value_name = "PATH")]
+        prompt_file: Option<PathBuf>,
         #[arg(long, default_value_t = 256)]
         max_new_tokens: usize,
         /// KV-cache capacity in tokens. The cache is ALLOCATED at this size; a
@@ -674,6 +686,7 @@ fn main() -> Result<()> {
             gravity_request_timeout_secs,
             addr,
             max_batch_size,
+            max_prefill_tokens,
             speculate,
             verify_window,
             kernel_profile,
@@ -858,6 +871,7 @@ fn main() -> Result<()> {
                 weights,
                 addr,
                 max_batch_size,
+                max_prefill_tokens,
                 speculate,
                 verify_window,
                 kernel_profile: resolved_kernel_profile,
@@ -877,6 +891,7 @@ fn main() -> Result<()> {
         Cmd::Generate {
             weights,
             prompt,
+            prompt_file,
             max_new_tokens,
             max_seq_len,
             temperature,
@@ -909,6 +924,7 @@ fn main() -> Result<()> {
         } => generate_main(
             weights,
             prompt,
+            prompt_file,
             max_new_tokens,
             max_seq_len,
             temperature,
@@ -2940,7 +2956,8 @@ ffn_down_q4k={ffn_down_q4k} predec={predec} f16_scales={f16_scales}\n\
 #[allow(clippy::too_many_arguments)]
 fn generate_main(
     weights: PathBuf,
-    prompt: String,
+    prompt: Option<String>,
+    prompt_file: Option<PathBuf>,
     max_new_tokens: usize,
     max_seq_len: usize,
     temperature: f32,
@@ -3111,7 +3128,15 @@ fn generate_main(
     // corpus mode — model loaded once, all prompts decoded in sequence) or
     // the single --prompt. Blank lines and leading/trailing whitespace are
     // dropped so a hand-edited prompts file is forgiving.
-    let prompts: Vec<String> = match prompts_file.as_ref() {
+    if prompt_file.is_some() && (prompt.is_some() || prompts_file.is_some()) {
+        return Err(anyhow::anyhow!(
+            "--prompt-file cannot be combined with --prompt or --prompts-file"
+        ));
+    }
+    let prompts: Vec<String> = if let Some(path) = prompt_file.as_ref() {
+        vec![std::fs::read_to_string(path)
+            .map_err(|e| anyhow::anyhow!("read prompt file {}: {e}", path.display()))?]
+    } else { match prompts_file.as_ref() {
         Some(path) => {
             let raw = std::fs::read_to_string(path)
                 .map_err(|e| anyhow::anyhow!("read prompts file {}: {e}", path.display()))?;
@@ -3130,13 +3155,8 @@ fn generate_main(
             eprintln!("[capture] {} prompts from {}", v.len(), path.display());
             v
         }
-        None => {
-            if prompt.is_empty() {
-                return Err(anyhow::anyhow!("provide --prompt or --prompts-file"));
-            }
-            vec![prompt]
-        }
-    };
+        None => vec![prompt.ok_or_else(|| anyhow::anyhow!("provide --prompt, --prompt-file, or --prompts-file"))?],
+    }};
 
     // ── Batched teacher-capture fast path ─────────────────────────────────
     // Routes the whole prompt corpus through the multiseq path (capture_batch
@@ -3201,7 +3221,11 @@ fn generate_main(
             StreamEvent::Done { stats, reason } => {
                 let _ = out.write_all(b"\n");
                 let _ = out.flush();
-                let dec = (stats.completion_tokens as f64) / (stats.decode_ms / 1000.0).max(1e-6);
+                // `GenStats` excludes token zero when it was sampled from
+                // prompt-prefill logits.  Keep the human receipt identical to
+                // the JSON authority; otherwise its displayed TPS overstates
+                // complete-token throughput.
+                let dec = stats.dec_tps();
                 let reason_s = stop_reason_label(&reason);
                 eprintln!(
                     "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
@@ -3732,13 +3756,31 @@ fn verify_main(weights: PathBuf, expected_sha256: Option<String>) -> Result<()> 
     use sha2::{Digest, Sha256};
     use std::io::Read;
 
+    #[cfg(target_os = "macos")]
+    use std::os::fd::AsRawFd;
+
     // Open and read the file in chunks to avoid a single large allocation.
     let mut f = std::fs::File::open(&weights)
         .map_err(|e| anyhow::anyhow!("open {}: {e}", weights.display()))?;
     let file_size = f.metadata()?.len();
 
+    // Exact verification is a streaming pass, not model preparation.  Avoid
+    // making a 40–80 GB source hot in the unified-memory file cache immediately
+    // before Metal maps it; that doubled residency pressure on the Qwen-72B K0
+    // probe and forced unrelated anonymous pages into swap.  F_NOCACHE changes
+    // caching policy only—the bytes and SHA-256 arithmetic are unchanged.
+    #[cfg(target_os = "macos")]
+    unsafe {
+        if libc::fcntl(f.as_raw_fd(), libc::F_NOCACHE, 1) == -1 {
+            eprintln!(
+                "hawking verify: warning: could not enable non-caching reads for {}",
+                weights.display()
+            );
+        }
+    }
+
     let mut hasher = Sha256::new();
-    let mut buf = vec![0u8; 65536];
+    let mut buf = vec![0u8; 1024 * 1024];
     loop {
         let n = f.read(&mut buf)?;
         if n == 0 {

@@ -1,0 +1,12 @@
+{
+  "body_sha256": "d978e6c422abb6d94999a703cdf59f6f7b0b92b4816691913e0dc4d335ea04c1",
+  "lossy_fit": false,
+  "output": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gravity",
+  "output_bytes": 47410029459,
+  "runtime": "GravityLlama direct raw-quant grammar; no capability or performance promotion implied",
+  "schema": "hawking.tg.llama_source_quant_gravity_pack.v1",
+  "source": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-q4km-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+  "status": "WRITTEN_SOURCE_PRESERVING_STREAMED",
+  "tensor_count": 963
+}

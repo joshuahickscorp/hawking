@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.tg.code_topology_current.v1",
+  "status": "WORKING_TREE_BELOW_ENTRY_TOPOLOGY",
+  "at": "2026-08-02",
+  "measurement": {
+    "include_untracked_active_source": true,
+    "combined_active_monorepo_LOC": 381728,
+    "runtime_LOC": 321513,
+    "active_files_LOC_policy": 991,
+    "directories_all": 121,
+    "source_files": 954,
+    "public_symbols": 8299,
+    "functions": 13068,
+    "languages": {"lean": 22, "markdown": 4233, "python": 92155, "rust": 247643, "shader": 18012, "shell": 2510, "typescript": 17005}
+  },
+  "entry_reference": {
+    "combined_active_monorepo_LOC": 430284,
+    "active_files_LOC_policy": 1363,
+    "directories_all": 179,
+    "source_files": 1227,
+    "public_symbols": 9412,
+    "functions": 14587
+  },
+  "delta_vs_entry": {
+    "combined_active_monorepo_LOC": -48556,
+    "active_files_LOC_policy": -372,
+    "directories_all": -58,
+    "source_files": -273,
+    "public_symbols": -1113,
+    "functions": -1519
+  },
+  "large_files_over_1500_lines": 21,
+  "single_file_directories": 23,
+  "tiny_forwarders": 17,
+  "recent_change": "Qwen72 Q4K row-geometry guard localized and repaired the pre-forward failure; exact Qwen72 Metal K0 path sealed at 0.845917 TPS with 964 dispatches and fallback=0; a same-model predecode+LM-head candidate reduced dispatches but stalled at 371.4 s with zero complete tokens and was retired; DeepSeek v2t_gu_serial preserved 32-token parity but fell to 33.483 TPS with 747 dispatches and was retired; guarded route-residual fusion reduced DeepSeek dispatches 487 to 461 but cleared only 0.128 percent with a p99 regression and remains opt-in; source bodies and exact Trash items were purged; DeepSeek MLA TG128 and Mixtral adapter floors remain sealed; no permanent per-model framework added",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

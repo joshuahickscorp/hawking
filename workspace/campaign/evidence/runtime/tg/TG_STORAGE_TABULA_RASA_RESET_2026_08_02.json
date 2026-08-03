@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.tg.storage_tabula_rasa_reset.v1",
+  "status": "PASS_HISTORICAL_RECEIPTS_ARCHIVED_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "policy": {
+    "minimum_model_parameter_class": "32B",
+    "preferred_next_class": "70B",
+    "model_lane_envelope_decimal_bytes": 110000000000,
+    "model_lane_envelope_includes": ["source", "candidate_artifact", "scratch_and_rollback"],
+    "protected_floor_bytes": 200005889556,
+    "owner_fences_unchanged": true
+  },
+  "cleanup": {
+    "model_lane": {
+      "path": "models/tg-active",
+      "contents_after": [],
+      "status": "EMPTY"
+    },
+    "historical_receipts": {
+      "archive": "evidence/tg/archive/TG_HISTORICAL_DIAGNOSTICS_2026_08_02.tar.gz",
+      "archive_sha256": "11f0959ebb0819abcf05bd37667acbe684065c7b51aff5064279b89ac54c2c35",
+      "archive_bytes": 1079777,
+      "original_file_count": 39,
+      "original_logical_bytes": 11365528,
+      "originals_removed_after_archive_verification": true,
+      "archive_integrity": "gzip_test_and_member_count_pass"
+    },
+    "build_cache": {
+      "removed_path": "target/debug",
+      "allocated_bytes_before": 20872241152,
+      "status": "REMOVED_EXACT_DEBUG_CACHE",
+      "target_release_preserved": true
+    }
+  },
+  "storage_after_cleanup": {
+    "current_free_bytes": 362805063680,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 162799174124,
+    "residual_above_floor_gib": 151.61854599043727,
+    "substrate_odyssey_private_generated_bytes": 0,
+    "model_lane_recovery_proof": "directory_empty_and_no_large_model_body_paths"
+  },
+  "next_action": "ADMIT_ONE_EXACT_70B_OR_LARGER_SOURCE_AFTER_BYTE_PREFLIGHT",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

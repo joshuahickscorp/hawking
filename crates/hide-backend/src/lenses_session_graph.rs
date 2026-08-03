@@ -1,6 +1,7 @@
 //! One HIDE session, three surface lenses.
 //!
-//! Doctrine (`evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json`): YOU, CHAT and IDE are three
+//! Doctrine (`workspace/campaign/evidence/systems/hide/HIDE_YOU_SURFACE_AUTHORITY.json`):
+//! YOU, CHAT and IDE are three
 //! **lenses** over one session. They share session identity and must not each
 //! own a copy of memory, objects, connectors, or the event stream. What differs
 //! is default context and default **capability** (non-widening, derived once).

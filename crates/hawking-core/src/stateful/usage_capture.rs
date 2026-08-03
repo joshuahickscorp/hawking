@@ -24,7 +24,8 @@
 //! [`super::attn_capture`].
 //!
 //! Output: a compact JSON written to `$HAWKING_USAGE_CAPTURE_OUT` (default
-//! `reports/bench/usage_capture.json`) on [`flush`], holding the top argmax-id
+//! `workspace/campaign/records/reports/bench/usage_capture.json`) on [`flush`],
+//! holding the top argmax-id
 //! frequencies and the per-context accept/reject ledger aggregated over the
 //! whole run. The offline reader (`tools/bench/oracle_vocab_coverage.py` and
 //! the user-warm-start extension of `oracle_spec_accept.py`) turns it into the
@@ -48,7 +49,8 @@ const DEFAULT_TOP_CTX: usize = 4096;
 
 /// Per-context draft outcome tally. Keyed by the 2-gram context `(prev, cur)`
 /// that preceded a draft proposal (matching the `n=2` the spec oracle uses,
-/// `reports/oracle/spec_accept.json`). The reader divides `accepted` by
+/// `workspace/campaign/records/reports/oracle/spec_accept.json`). The reader
+/// divides `accepted` by
 /// `accepted + rejected` to get the per-context hit-rate and reads `next` to
 /// learn what continuation the context predicts.
 #[cfg(target_os = "macos")]
@@ -160,7 +162,8 @@ pub fn record_draft(ctx: (u32, u32), next: Option<u32>, accepted: usize, rejecte
 pub fn record_draft(_ctx: (u32, u32), _next: Option<u32>, _accepted: usize, _rejected: usize) {}
 
 /// Write the accumulated usage histogram + draft ledger to
-/// `$HAWKING_USAGE_CAPTURE_OUT` (default `reports/bench/usage_capture.json`).
+/// `$HAWKING_USAGE_CAPTURE_OUT` (default
+/// `workspace/campaign/records/reports/bench/usage_capture.json`).
 /// Safe to call when capture never ran (writes empty collections).
 #[cfg(target_os = "macos")]
 pub fn flush() {
@@ -172,7 +175,9 @@ pub fn flush() {
         Err(_) => return,
     };
     let out_path = std::env::var("HAWKING_USAGE_CAPTURE_OUT")
-        .unwrap_or_else(|_| "reports/bench/usage_capture.json".to_string());
+        .unwrap_or_else(|_| {
+            "workspace/campaign/records/reports/bench/usage_capture.json".to_string()
+        });
     let topk = std::env::var("HAWKING_USAGE_CAPTURE_TOPK")
         .ok()
         .and_then(|v| v.parse().ok())

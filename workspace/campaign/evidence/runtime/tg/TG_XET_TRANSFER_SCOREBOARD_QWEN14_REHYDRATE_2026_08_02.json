@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_SAME_MODEL_REHYDRATION",
+  "at_utc": "2026-08-02",
+  "classification": "CLEAN_BOUNDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "lfs_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "xet_hash": "d989c91de35f32c18bdb8bec96a4b9fff2c3e5bca066503c63a5ca54dd537a4b",
+    "range_bytes": 67108864,
+    "range_sha256": "5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c",
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "authenticated": false
+  },
+  "matrix": [
+    {"mode":"standard","requested_concurrency":1,"elapsed_seconds":1.7455883750226349,"sealed_gb_per_hour_decimal":138.4014203215963,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"standard","requested_concurrency":2,"elapsed_seconds":0.9070706670172513,"sealed_gb_per_hour_decimal":266.3429864780373,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"standard","requested_concurrency":4,"elapsed_seconds":1.2167814588174224,"sealed_gb_per_hour_decimal":198.54996034768703,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"standard","requested_concurrency":8,"elapsed_seconds":1.191914041992277,"sealed_gb_per_hour_decimal":202.6923938207663,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"high_performance","requested_concurrency":1,"elapsed_seconds":1.5203417919110507,"sealed_gb_per_hour_decimal":158.9063141494795,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"high_performance","requested_concurrency":2,"elapsed_seconds":1.0981090001296252,"sealed_gb_per_hour_decimal":220.00722184362527,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"high_performance","requested_concurrency":4,"elapsed_seconds":1.3281345840077847,"sealed_gb_per_hour_decimal":181.9031845936661,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0},
+    {"mode":"high_performance","requested_concurrency":8,"elapsed_seconds":0.9012882090173662,"sealed_gb_per_hour_decimal":268.05178186386877,"range_sha256":"5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c","retries":0}
+  ],
+  "stability_repeats": {
+    "samples_per_profile": 3,
+    "standard_c2_gb_per_hour_decimal": [188.01559694602187,203.55709003186843,198.2617137337587],
+    "standard_c2_median_gb_per_hour_decimal": 198.2617137337587,
+    "high_performance_c8_gb_per_hour_decimal": [177.27970763626766,194.6618042608235,191.74617418720385],
+    "high_performance_c8_median_gb_per_hour_decimal": 191.74617418720385,
+    "all_range_hashes_identical": true
+  },
+  "resume_trial": {
+    "mode": "standard",
+    "requested_concurrency": 2,
+    "interrupted_prefix_bytes": 8388608,
+    "interrupted_prefix_sha256": "66707fa5ed7e5d5669ca8b4a5ce45dd044b56c90d05ce1b290fd854571b8fbe3",
+    "resume_start": 8388608,
+    "resume_bytes": 58720256,
+    "resume_sha256": "c74e665b457063f5d179a6c6aca43a4b2a32577e80e63b77a7d5d160cc05b6a0",
+    "resume_complete": true,
+    "reconstructed_range_sha256": "5c9f89137299af5a51bed1a89b4002a32c771e514a6c3ecbb071fe893226b38c",
+    "prefix_elapsed_seconds": 0.4191099579911679,
+    "resume_elapsed_seconds": 2.0466768329497427,
+    "retries": 0
+  },
+  "selection": {
+    "mode": "standard",
+    "requested_concurrency": 2,
+    "stable_median_sealed_gb_per_hour_decimal": 198.2617137337587,
+    "reason": "standard concurrency 2 is the fastest three-repeat median among the stable candidate profiles; every range hash agrees",
+    "bounded_range_only": true
+  },
+  "unified_admission": {
+    "active_model_count": 0,
+    "current_free_bytes_before_body": 375191830528,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 175185940972,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_admission_bytes": 9055219840,
+    "projected_free_after_body_and_scratch": 339360173952,
+    "verdict": "PASS_PENDING_BODY_TRANSFER"
+  },
+  "claim_boundary": "This is a transfer and byte-admission receipt only; it does not alter capability, TG, production lease, or owner gates.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "f9d1675742ee3410991e2ddc70a73a936d801dc53c8ca4e05ec17b0183602fd4"
+}

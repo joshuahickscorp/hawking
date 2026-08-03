@@ -1,9 +1,13 @@
 //! Runtime + Metal PQ; container/PQ/AAP in artifact.
 pub use crate::artifact::{
-    activation_aware_sections, parse_activation_aware_header, parse_pq_header, pq_matvec,
-    pq_matvec_f64_authority, pq_row, pq_sections, widen_native, ActivationAwareHeader,
-    ActivationAwareSide, ActivationAwareTensor, GravityShard, PqHeader, PqTensor, TensorDescriptor,
+    activation_aware_sections, parse_activation_aware_header, parse_pq_header,
+    parse_residual_pq_header, pq_matvec, pq_matvec_f64_authority, pq_row, pq_sections,
+    residual_pq_sections, widen_native, ActivationAwareHeader, ActivationAwareSide,
+    ActivationAwareTensor, GravityShard, PqHeader, PqTensor, ResidualPqHeader, ResidualPqTensor,
+    TensorDescriptor,
 };
+use crate::gguf::GgmlType;
+use crate::quant;
 use crate::{Error, Result};
 use memmap2::Mmap;
 use serde::Deserialize;
@@ -13,8 +17,93 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 pub enum Tensor {
     Pq(PqTensor),
+    ResidualPq(ResidualPqTensor),
     ActivationAware(ActivationAwareTensor),
+    RawQuant(RawQuantTensor),
     Dense(Vec<f32>),
+}
+
+/// Source-preserving GGML K/Q quant payload used by the CPU DeepSeek MLA/MoE
+/// adapter.  The payload stays packed in the artifact; one row is dequantized
+/// into a bounded scratch vector for each correctness-first matvec/row call.
+#[derive(Debug, Clone)]
+pub struct RawQuantTensor {
+    pub dtype: GgmlType,
+    pub rows: usize,
+    pub cols: usize,
+    pub payload: Vec<u8>,
+}
+
+impl RawQuantTensor {
+    fn row_bytes(&self) -> Result<usize> {
+        let (block, bytes) = self.dtype.block_layout();
+        let block = block as usize;
+        let bytes = bytes as usize;
+        if self.cols == 0 || self.cols % block != 0 {
+            return Err(Error::Gravity(format!(
+                "raw {:?}: cols {} is not a multiple of block {}",
+                self.dtype, self.cols, block
+            )));
+        }
+        let row_bytes = (self.cols / block)
+            .checked_mul(bytes)
+            .ok_or_else(|| Error::Gravity("raw quant row byte-size overflow".into()))?;
+        let expected = self
+            .rows
+            .checked_mul(row_bytes)
+            .ok_or_else(|| Error::Gravity("raw quant payload byte-size overflow".into()))?;
+        if self.payload.len() != expected {
+            return Err(Error::Gravity(format!(
+                "raw {:?}: payload {} B != expected {} B for [{}x{}]",
+                self.dtype,
+                self.payload.len(),
+                expected,
+                self.rows,
+                self.cols
+            )));
+        }
+        Ok(row_bytes)
+    }
+
+    pub fn matvec(&self, x: &[f32], name: &str) -> Result<Vec<f32>> {
+        if x.len() != self.cols {
+            return Err(Error::Gravity(format!(
+                "raw tensor {name:?}: x.len() {} != cols {}",
+                x.len(),
+                self.cols
+            )));
+        }
+        let row_bytes = self.row_bytes()?;
+        let mut decoded = vec![0.0f32; self.cols];
+        let mut out = Vec::with_capacity(self.rows);
+        for row in 0..self.rows {
+            let start = row * row_bytes;
+            quant::dequant_into(
+                self.dtype,
+                &self.payload[start..start + row_bytes],
+                &mut decoded,
+            )?;
+            out.push(decoded.iter().zip(x).map(|(w, v)| w * v).sum());
+        }
+        Ok(out)
+    }
+
+    pub fn row(&self, index: usize, name: &str) -> Result<Vec<f32>> {
+        if index >= self.rows {
+            return Err(Error::Gravity(format!(
+                "raw tensor {name:?}: row {index} out of range"
+            )));
+        }
+        let row_bytes = self.row_bytes()?;
+        let mut decoded = vec![0.0f32; self.cols];
+        let start = index * row_bytes;
+        quant::dequant_into(
+            self.dtype,
+            &self.payload[start..start + row_bytes],
+            &mut decoded,
+        )?;
+        Ok(decoded)
+    }
 }
 pub(super) fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
     if x.is_empty() || w.len() % x.len() != 0 {
@@ -679,13 +768,38 @@ fn lazy_source(
         )),
     }
 }
-fn decode_tensor(codec: &str, blob: &[u8], name: &str) -> Result<Tensor> {
+fn raw_quant_dtype(codec: &str) -> Option<GgmlType> {
+    match codec {
+        "ggml.q4_k" => Some(GgmlType::Q4_K),
+        "ggml.q5_0" => Some(GgmlType::Q5_0),
+        "ggml.q5_k" => Some(GgmlType::Q5_K),
+        "ggml.q6_k" => Some(GgmlType::Q6_K),
+        "ggml.q8_0" => Some(GgmlType::Q8_0),
+        _ => None,
+    }
+}
+
+fn decode_tensor(codec: &str, blob: &[u8], shape: &[u64], name: &str) -> Result<Tensor> {
     if codec == "gravity-pq" {
         Ok(Tensor::Pq(PqTensor::from_payload(blob)?))
+    } else if codec == "llama.residual-pq.v1" {
+        Ok(Tensor::ResidualPq(ResidualPqTensor::from_payload(blob)?))
     } else if codec == "activation-aware.f16" {
         Ok(Tensor::ActivationAware(
             ActivationAwareTensor::from_payload(blob)?,
         ))
+    } else if let Some(dtype) = raw_quant_dtype(codec) {
+        if shape.len() != 2 {
+            return Err(Error::Gravity(format!(
+                "tensor {name}: raw quant shape must be rank-2, got {shape:?}"
+            )));
+        }
+        Ok(Tensor::RawQuant(RawQuantTensor {
+            dtype,
+            rows: shape[0] as usize,
+            cols: shape[1] as usize,
+            payload: blob.to_vec(),
+        }))
     } else if codec.starts_with("native.") {
         Ok(Tensor::Dense(widen_native(codec, blob)?))
     } else {
@@ -699,6 +813,45 @@ pub struct GravityWeights {
     pub header: serde_json::Value,
 }
 impl GravityWeights {
+    /// Open one immutable `.gravity` shard without eagerly decoding every
+    /// tensor.  Tensor payloads are read, hash-checked, decoded, and released
+    /// at their actual use site; native dense tensors use the bounded memo
+    /// rather than becoming an unbounded full-model reconstruction.
+    ///
+    /// This is the single-shard counterpart of [`Self::open_dir`].  It is the
+    /// required admission mode for a layer-windowed runtime; [`Self::open`]
+    /// remains available only for compatibility callers that explicitly need
+    /// an eager artifact image.
+    pub fn open_lazy_file(path: &Path, verify_hash: bool) -> Result<GravityWeights> {
+        let shard = GravityShard::open(path)?;
+        let filename = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| {
+                Error::Gravity(format!("{}: shard filename is not UTF-8", path.display()))
+            })?
+            .to_string();
+        let shard_dir = path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .to_path_buf();
+        let tensor_shard = shard
+            .tensor_names()
+            .map(|name| (name.to_string(), filename.clone()))
+            .collect();
+        Ok(GravityWeights {
+            source: lazy_source(
+                shard_dir,
+                tensor_shard,
+                verify_hash,
+                LazyFormat::Gravity,
+                HashMap::new(),
+                HashMap::new(),
+            ),
+            header: shard.extra,
+        })
+    }
+
     pub fn open(path: &Path, verify_hash: bool) -> Result<GravityWeights> {
         let shard = GravityShard::open(path)?;
         let names: Vec<String> = shard.tensor_names().map(str::to_string).collect();
@@ -710,7 +863,11 @@ impl GravityWeights {
                 .codec
                 .clone();
             let blob = shard.read_tensor(name, verify_hash)?;
-            tensors.insert(name.clone(), decode_tensor(&codec, &blob, name)?);
+            let shape = &shard
+                .descriptor(name)
+                .expect("name came from tensor_names")
+                .shape;
+            tensors.insert(name.clone(), decode_tensor(&codec, &blob, shape, name)?);
         }
         Ok(GravityWeights {
             source: Source::Eager(tensors),
@@ -898,8 +1055,14 @@ impl GravityWeights {
                 Some(Tensor::ActivationAware(_)) => Err(Error::Gravity(format!(
                     "tensor {name}: compact admission requires gravity-pq, found activation-aware tensor"
                 ))),
+                Some(Tensor::ResidualPq(_)) => Err(Error::Gravity(format!(
+                    "tensor {name}: compact admission requires gravity-pq, found residual-pq tensor"
+                ))),
                 Some(Tensor::Dense(_)) => Err(Error::Gravity(format!(
                     "tensor {name}: compact admission requires gravity-pq, found native tensor"
+                ))),
+                Some(Tensor::RawQuant(_)) => Err(Error::Gravity(format!(
+                    "tensor {name}: compact admission requires gravity-pq, found raw quant tensor"
                 ))),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -988,8 +1151,14 @@ impl GravityWeights {
                 Some(Tensor::Pq(_)) => Err(Error::Gravity(format!(
                     "tensor {name:?} is packed; expected a natively-carried dense tensor"
                 ))),
+                Some(Tensor::ResidualPq(_)) => Err(Error::Gravity(format!(
+                    "tensor {name:?} is residual-packed; expected a natively-carried dense tensor"
+                ))),
                 Some(Tensor::ActivationAware(_)) => Err(Error::Gravity(format!(
                     "tensor {name:?} is activation-aware; expected a natively-carried dense tensor"
+                ))),
+                Some(Tensor::RawQuant(_)) => Err(Error::Gravity(format!(
+                    "tensor {name:?} is raw quantized; expected a natively-carried dense tensor"
                 ))),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -1060,7 +1229,9 @@ impl GravityWeights {
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.matvec(x),
+                Some(Tensor::ResidualPq(t)) => t.matvec(x),
                 Some(Tensor::ActivationAware(t)) => t.matvec(x),
+                Some(Tensor::RawQuant(t)) => t.matvec(x, name),
                 Some(Tensor::Dense(w)) => matvec_dense(w, x, name),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -1083,17 +1254,25 @@ impl GravityWeights {
                 *verify_hash,
                 name,
                 |shard| {
-                    let (codec, _) = shard.codec_and_shape(name)?;
+                    let (codec, shape) = shard.codec_and_shape(name)?;
                     let blob = shard.read_tensor(name, *verify_hash)?;
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                    match decode_tensor(&codec, &blob, name)? {
+                    match decode_tensor(&codec, &blob, &shape, name)? {
                         Tensor::Pq(t) => {
+                            cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                            t.matvec(x)
+                        }
+                        Tensor::ResidualPq(t) => {
                             cost_ledger::record_active_bytes_for(name, blob.len() as u64);
                             t.matvec(x)
                         }
                         Tensor::ActivationAware(t) => {
                             cost_ledger::record_active_bytes_for(name, blob.len() as u64);
                             t.matvec(x)
+                        }
+                        Tensor::RawQuant(t) => {
+                            cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                            t.matvec(x, name)
                         }
                         Tensor::Dense(w) => {
                             cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
@@ -1110,7 +1289,9 @@ impl GravityWeights {
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.row(index_),
+                Some(Tensor::ResidualPq(t)) => t.row(index_),
                 Some(Tensor::ActivationAware(t)) => t.row(index_),
+                Some(Tensor::RawQuant(t)) => t.row(index_, name),
                 Some(Tensor::Dense(w)) => row_dense(w, index_, cols, name),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -1134,7 +1315,7 @@ impl GravityWeights {
                     let memo = dense_memo.lock().expect("gravity dense-memo mutex");
                     *verify_hash && !memo.is_verified(name)
                 };
-                let (codec, blob) = Self::with_lazy_shard(
+                let (codec, shape, blob) = Self::with_lazy_shard(
                     shard_dir,
                     tensor_shard,
                     open_shards,
@@ -1144,9 +1325,9 @@ impl GravityWeights {
                     *verify_hash,
                     name,
                     |shard| {
-                        let (codec, _) = shard.codec_and_shape(name)?;
+                        let (codec, shape) = shard.codec_and_shape(name)?;
                         let blob = shard.read_tensor(name, need_verify)?;
-                        Ok((codec, blob))
+                        Ok((codec, shape, blob))
                     },
                 )?;
                 {
@@ -1160,9 +1341,26 @@ impl GravityWeights {
                 if codec == "gravity-pq" {
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     pq_row(&blob, index_)
+                } else if codec == "llama.residual-pq.v1" {
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    ResidualPqTensor::from_payload(&blob)?.row(index_)
                 } else if codec == "activation-aware.f16" {
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     ActivationAwareTensor::from_payload(&blob)?.row(index_)
+                } else if let Some(dtype) = raw_quant_dtype(&codec) {
+                    if shape.len() != 2 || shape[1] as usize != cols {
+                        return Err(Error::Gravity(format!(
+                            "raw tensor {name:?}: shape {shape:?} is not [rows, {cols}]"
+                        )));
+                    }
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    RawQuantTensor {
+                        dtype,
+                        rows: shape[0] as usize,
+                        cols,
+                        payload: blob,
+                    }
+                    .row(index_, name)
                 } else if codec.starts_with("native.") {
                     let w = {
                         let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
@@ -1326,6 +1524,34 @@ impl From<PqHeader> for GravityPqParams {
             cols: h.cols,
             nchunk: h.nchunk,
             bits: h.bits as u32,
+        }
+    }
+}
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+struct GravityResidualPqParams {
+    dim: u32,
+    stages: u32,
+    card: u32,
+    rows: u32,
+    cols: u32,
+    nchunk: u32,
+    bits: u32,
+    reserved: u32,
+}
+#[cfg(target_os = "macos")]
+impl From<ResidualPqHeader> for GravityResidualPqParams {
+    fn from(h: ResidualPqHeader) -> Self {
+        Self {
+            dim: h.d as u32,
+            stages: h.stages as u32,
+            card: h.card as u32,
+            rows: h.rows,
+            cols: h.cols,
+            nchunk: h.nchunk,
+            bits: h.bits as u32,
+            reserved: 0,
         }
     }
 }
@@ -1549,6 +1775,79 @@ pub fn pq_matvec_metal(
 ) -> Result<Vec<f32>> {
     pq_matvec_metal_with_variant(ctx, payload, x, PqMetalKernelVariant::Generic)
 }
+/// Compact residual-PQ buffers uploaded once for repeatable kernel timing.
+/// `GravityLlamaGpu` owns the full-model equivalent at decode time.
+#[cfg(target_os = "macos")]
+pub struct ResidualPqMetalMatrix {
+    header: ResidualPqHeader,
+    params: GravityResidualPqParams,
+    codebooks: metal::Buffer,
+    codes: metal::Buffer,
+}
+#[cfg(target_os = "macos")]
+impl ResidualPqMetalMatrix {
+    pub fn from_payload(ctx: &crate::metal::MetalContext, payload: &[u8]) -> Result<Self> {
+        let header = parse_residual_pq_header(payload)?;
+        let (cb, packed_codes) = residual_pq_sections(payload)?;
+        let mut codes = Vec::with_capacity(packed_codes.len() + 4);
+        codes.extend_from_slice(packed_codes);
+        codes.extend_from_slice(&[0u8; 4]);
+        Ok(Self {
+            header,
+            params: header.into(),
+            codebooks: ctx.new_buffer_with_bytes_checked(cb)?,
+            codes: ctx.new_buffer_with_bytes_checked(&codes)?,
+        })
+    }
+    pub const fn header(&self) -> ResidualPqHeader {
+        self.header
+    }
+    pub fn matvec(&self, ctx: &crate::metal::MetalContext, x: &[f32]) -> Result<Vec<f32>> {
+        if x.len() != self.header.cols as usize {
+            return Err(Error::Gravity(format!(
+                "residual PQ Metal matvec: x.len() {} != cols {}",
+                x.len(),
+                self.header.cols
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f32, u8>(x))?;
+        let y_buf =
+            ctx.new_buffer_checked(self.header.rows as usize * std::mem::size_of::<f32>())?;
+        let params = self.params;
+        const TG: u32 = 256;
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        tcb.dispatch_threads(
+            "gravity_residual_pq_matvec",
+            (params.rows.div_ceil(8) * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&self.codebooks), 0);
+                enc.set_buffer(1, Some(&self.codes), 0);
+                enc.set_buffer(2, Some(&x_buf), 0);
+                enc.set_buffer(3, Some(&y_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<GravityResidualPqParams>() as u64,
+                    &params as *const GravityResidualPqParams as *const _,
+                );
+            },
+        )?;
+        tcb.commit_and_wait()?;
+        let ptr = y_buf.contents() as *const f32;
+        Ok(unsafe { std::slice::from_raw_parts(ptr, self.header.rows as usize) }.to_vec())
+    }
+}
+/// Execute one `llama.residual-pq.v1` matvec directly on Metal. This
+/// convenience wrapper uploads compact buffers per call; benchmarks should
+/// retain a `ResidualPqMetalMatrix` instead.
+#[cfg(target_os = "macos")]
+pub fn residual_pq_matvec_metal(
+    ctx: &crate::metal::MetalContext,
+    payload: &[u8],
+    x: &[f32],
+) -> Result<Vec<f32>> {
+    ResidualPqMetalMatrix::from_payload(ctx, payload)?.matvec(ctx, x)
+}
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -1769,5 +2068,48 @@ mod tests {
         for _ in 0..5 { assert_eq!(weights.dense("big.weight").unwrap(), big); }
         let s = weights.dense_memo_stats();
         assert_eq!((s.verifications, s.hits, s.misses), (1, 4, 1));
+    }
+    #[test]
+    fn single_shard_lazy_open_defers_tensor_decode_and_keeps_native_memo_bounded() {
+        let dir = tempfile::tempdir().unwrap();
+        let values = [1.5f32, -2.0, 0.25, 4.0];
+        let path = write_native(dir.path(), &[("norm.weight", &values)]);
+        let weights = GravityWeights::open_lazy_file(&path, true).unwrap();
+
+        // `raw_payload` is only possible while the compact representation is
+        // still source-of-truth. An eager open discards these bytes at load.
+        let (codec, payload, shape) = weights.raw_payload_with_shape("norm.weight").unwrap();
+        assert_eq!(codec, "native.f32");
+        assert_eq!(shape, vec![4]);
+        assert_eq!(payload.len(), values.len() * 4);
+
+        assert_eq!(weights.dense("norm.weight").unwrap(), values);
+        let stats = weights.dense_memo_stats();
+        assert_eq!((stats.verifications, stats.misses, stats.entries), (1, 1, 1));
+        assert_eq!(stats.resident_bytes, 16);
+        assert!(stats.resident_bytes <= stats.budget_bytes);
+    }
+    #[test]
+    fn single_shard_lazy_raw_q8_row_uses_bounded_quant_decode() {
+        let dir = tempfile::tempdir().unwrap();
+        let name = "model.embed_tokens.weight";
+        // One exact GGML Q8_0 block: zero scale and zero values decode to a
+        // 32-wide zero row, exercising the lazy row path without widening an
+        // embedding table.
+        let path = write_gravity(
+            dir.path(),
+            "lazy-q8-row-fixture",
+            "ggml.q8_0",
+            vec![(
+                name.to_string(),
+                vec![0_u8; 34],
+                serde_json::json!({"shape": [1, 32], "elements": 32}),
+            )],
+        );
+        let weights = GravityWeights::open_lazy_file(&path, true).unwrap();
+        assert_eq!(weights.row(name, 0, 32).unwrap(), vec![0.0; 32]);
+        let stats = weights.dense_memo_stats();
+        assert_eq!(stats.verifications, 1);
+        assert_eq!(stats.resident_bytes, 0, "raw rows never enter dense memo");
     }
 }

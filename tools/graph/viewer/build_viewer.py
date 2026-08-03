@@ -8,11 +8,11 @@ Inlines vendored Cytoscape.js and a level-of-detail graph payload:
 
 Usage:
     python3.12 tools/graph/viewer/build_viewer.py \\
-        --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \\
-        --cluster-map build/graph/HAWKING_CLUSTER_MAP.json \\
-        --candidates build/graph/HAWKING_RECOMPOSITION_CANDIDATES.json
+        --graph workspace/ops/build/graph/HAWKING_SEMANTIC_GRAPH.jsonl \\
+        --cluster-map workspace/ops/build/graph/HAWKING_CLUSTER_MAP.json \\
+        --candidates workspace/ops/build/graph/HAWKING_RECOMPOSITION_CANDIDATES.json
 
-Writes to build/graph/ (gitignored) by default. The .html fetches its sibling
+Writes to workspace/ops/build/graph/ (gitignored) by default. The .html fetches its sibling
 HAWKING_GRAPH_VIEWER_FUNCTIONS.json at runtime, so keep the three files together.
 """
 
@@ -1028,8 +1028,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--candidates", default=None)
     p.add_argument(
         "--out",
-        default=str(Path(__file__).resolve().parents[3] / "build" / "graph" / "HAWKING_GRAPH_VIEWER.html"),
-        help="Default: build/graph/ (gitignored). The functions and payload files are "
+        default=str(REPO_ROOT / "workspace" / "ops" / "build" / "graph" / "HAWKING_GRAPH_VIEWER.html"),
+        help="Default: workspace/ops/build/graph/ (gitignored). The functions and payload files are "
              "written beside it and the page fetches them at runtime, so they must stay siblings.",
     )
     p.add_argument("--functions-out", default=None, help="Default: sibling of --out")

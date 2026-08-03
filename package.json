@@ -1,7 +1,0 @@
-{
-  "name": "hawking-workspace",
-  "private": true,
-  "scripts": {
-    "test": "pnpm --dir app test"
-  }
-}

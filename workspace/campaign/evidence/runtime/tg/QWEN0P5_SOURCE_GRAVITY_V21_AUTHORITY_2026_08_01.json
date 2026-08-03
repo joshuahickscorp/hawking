@@ -1,0 +1,111 @@
+{
+  "schema": "hawking.tg.qwen_source_gravity_v21_authority.v1",
+  "status": "PASS_BOUNDED_PHYSICAL_SOURCE_ARTIFACT_V21_NO_TG_PROMOTION",
+  "at": "2026-08-01T22:32:13Z",
+  "scope": "Re-admitted public Qwen-0.5B fixture only. This seals complete-prompt CPU and Metal Numeric Parity V2.1 against an independently decoded FP64 source-byte authority; it is neither a large-family completion nor a CLEAN throughput/capability receipt.",
+  "source": {
+    "repository": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "license": "Apache-2.0",
+    "architecture": "qwen2",
+    "parameter_class": {"total_parameters": "0.5B", "active_parameters": "0.5B", "bounded_fixture": true}
+  },
+  "artifact": {
+    "path": "models/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+    "bytes": 391949867,
+    "sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59",
+    "payload_bytes": 391859712,
+    "mapped_tensors": 290,
+    "source_quantization_preserved": true,
+    "codecs": ["ggml.q4_k", "ggml.q5_0", "ggml.q6_k", "ggml.q8_0", "native.f32", "native.f16"],
+    "complete_bpw": 6.345485358574433,
+    "packed_bpw": 6.341769212909218,
+    "lossy_fit": false,
+    "descriptor_hashes_verified": true
+  },
+  "tokenizer": {
+    "repository": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "path": "tokenizer.json",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "prompt": "2 + 2 =",
+    "exact_prompt_token_ids": [17, 488, 220, 17, 284]
+  },
+  "authority": {
+    "kind": "independent FP64 complete transformer forward over source-packed GGML bytes",
+    "not_authority": ["CPU f32 logits widened to f64", "GPU f32 logits widened to f64", "partial-forward checkpoint"],
+    "implementation": {
+      "gravity_llama_rs_sha256": "840c0e01130d1dbb2a4e2ea0edd5216eaf51060409e9ee66b98ad06f8776e249",
+      "numeric_parity_rs_sha256": "7fe09bfbf447e4a2ce049bb0dbe3c7498224939516ce832d29b60a6117959154",
+      "live_gate_rs_sha256": "1efad1e8be5861377d90c50fc4b005b0c5ba1f5c3f7b5aa1d6ba139cdc0fc452"
+    },
+    "contract": "Numeric Parity V2.1 full_forward_logits: relative-L2, cosine, KL, exact greedy/top-k and near-zero error are hard gates; max meaningful relative and ULP tails remain diagnostics for complete multi-layer forwards."
+  },
+  "physical_execution": {
+    "device": "Apple M3 Ultra, 60 GPU cores, Metal 4",
+    "cpu_complete_forward_elapsed_ms": 64767,
+    "gpu_prefill_dispatches": 1930,
+    "gpu_prefill_command_buffers": 5,
+    "gpu_cpu_reference_fallback_total": 0,
+    "gpu_readback": "complete vocabulary logits for V2.1 diagnostic only"
+  },
+  "v21": {
+    "reference_abs_error_cutoff": 0.000002277,
+    "cpu_f32": {
+      "pass": true,
+      "relative_l2": 0.000002561,
+      "cosine": 1.0,
+      "kl": 0.000000000005184,
+      "greedy_ref": 220,
+      "greedy_candidate": 220,
+      "top5_exact": true,
+      "max_meaningful_relative_diagnostic": 0.162,
+      "diagnostic_max_scalar_relative": 0.1394,
+      "ulp": {"median": 26, "p95": 309, "p99": 1593, "max": 1508352}
+    },
+    "gpu_f32": {
+      "pass": true,
+      "relative_l2": 0.000001610,
+      "cosine": 1.0,
+      "kl": 0.000000000001438,
+      "greedy_ref": 220,
+      "greedy_candidate": 220,
+      "top5_exact": true,
+      "max_meaningful_relative_diagnostic": 0.09077,
+      "diagnostic_max_scalar_relative": 0.08322,
+      "ulp": {"median": 17, "p95": 205, "p99": 1022, "max": 1070294}
+    },
+    "same_artifact_cpu_gpu": {
+      "greedy": 220,
+      "top5": [220, 1124, 481, 856, 264],
+      "max_abs": 0.00004148483276,
+      "relative_l2": 0.0000027822903
+    }
+  },
+  "logs": {
+    "cpu_v21_sha256": "b479c1083ce31638116a6e3fafdc70c6d0f93f3a6b8cc01a49fcf9fe13e49ad6",
+    "gpu_v21_sha256": "f6138b447d5f83debd112660af92719f45a1a922cdd2df1435fd93115da626a7",
+    "retention": "ephemeral model-lane diagnostic logs; hashes and all load-bearing measurements are copied here before mandatory lane eviction"
+  },
+  "promotion_boundary": {
+    "numeric_parity_v21": "PASS on bounded physical artifact",
+    "capability": "NOT_PRODUCT_CAPABILITY_EVIDENCE",
+    "clean_lease": "NOT_CLAIMED; fixture mechanics cannot certify a production result",
+    "tail_latency": "NOT_MEASURED",
+    "source_reference_tps": null,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "named_tg_rung": null,
+    "promotion_allowed": false,
+    "next_required_gate": "CLEAN, multi-token, same-model complete-token tail and capability run; then attempt the separately preflighted 72B direct-source first-dispatch localization."
+  },
+  "owner_gates": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false
+  }
+}

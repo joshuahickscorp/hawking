@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.tg.same_model_gravity_candidate_result.v1",
+  "status": "PROMOTED_SAME_MODEL_EXECUTABLE_GRAVITY_FLOOR_NO_NAMED_RUNG",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN32_EXECUTABLE_GRAVITY_PREREGISTRATION_2026_08_02.json",
+  "representation": {
+    "id": "qwen32-source-preserving-gravity-v1",
+    "format": "executable .gravity source-quant container",
+    "source_quantization_preserved": true,
+    "lossy_fit": false,
+    "dense_reconstruction_default": false,
+    "mapped_tensors": 771,
+    "artifact_bytes": 19845357568,
+    "artifact_sha256": "6e76f70831a4015f7c68114e20c366af8e21dc31c385dce254c87bc2f87a0b07",
+    "artifact_body_sha256": "aa2d667eb3155b3690643bedcc4ece32358911ad03845986d4c70abb4c783d0d",
+    "complete_bpw": 4.845667797006829,
+    "packed_bpw": 4.844740158425348
+  },
+  "protocol": {
+    "device": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 16,
+    "temperature": 0,
+    "profile": "exact",
+    "environment": {
+      "HAWKING_REQUIRE_METAL": "1",
+      "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED": "1",
+      "HAWKING_GRAVITY_FUSED_QKV": "0",
+      "HAWKING_GRAVITY_Q4_PREDEC": "0"
+    },
+    "continuation_token_ids": [12095, 13, 39970, 0, 576, 6722, 315, 9625, 374, 12824, 12095, 13, 12095, 374, 3881, 369],
+    "continuation_sha256": "0f6bf857b52d9c9c3c97c06d7af21086eb869e09d3b07c1e043892d9bd4216d7",
+    "raw_parity_control": "evidence/tg/raw/TG32_QWEN32_GRAVITY_SOURCE_CONTROL_CURRENT_16_2026_08_02.stderr",
+    "raw_parity_candidate": "evidence/tg/raw/TG32_QWEN32_GRAVITY_PARITY_EXACT_16_2026_08_02.stderr",
+    "raw_clean_control": "evidence/tg/raw/TG32_QWEN32_GRAVITY_CLEAN_SEED_SOURCE_16_2026_08_02.stderr",
+    "raw_clean_candidate": "evidence/tg/raw/TG32_QWEN32_GRAVITY_CLEAN_SEED_CANDIDATE_16_2026_08_02.stderr"
+  },
+  "control": {
+    "representation": "same Qwen32 GGUF source-compatible path",
+    "tps": 6.832642046012688,
+    "prefill_ms": 950.380833,
+    "decode_ms": 2195.344041,
+    "p50_ms": 146.162375,
+    "p95_ms": 147.4421838,
+    "p99_ms": 147.46103676,
+    "dispatches_per_forward": 740,
+    "cpu_reference_fallback_count": 0,
+    "metal_dispatches": 11100
+  },
+  "candidate": {
+    "representation": "executable Gravity raw Q4_K/Q5_0/Q6_K/Q8_0 direct grammar",
+    "tps": 22.29238130003595,
+    "prefill_ms": 370.210958,
+    "decode_ms": 672.875625,
+    "p50_ms": 44.954167,
+    "p95_ms": 45.785267,
+    "p99_ms": 46.022287,
+    "dispatches_per_forward": 1026,
+    "metal_dispatches": 15390,
+    "cpu_reference_fallback_count": 0,
+    "device": "Apple M3 Ultra",
+    "complete_tokens": 16
+  },
+  "deltas": {
+    "same_model_before_after": true,
+    "continuation_match": true,
+    "tps_percent_vs_current_source": 226.2629763115583,
+    "decode_wall_percent": -69.34987808591956,
+    "p99_percent": -68.79020518830103,
+    "named_rung_earned": false,
+    "target_named_rung": "TG32",
+    "target_tps": 31.25,
+    "first_failing_rung": "TG32"
+  },
+  "roofline": {
+    "binding": "the source-compatible Gravity path is materially faster but remains below TG32; lower dispatch count alone regresses because the fused QKV kernel is register/synchronization bound on this device",
+    "next_representation_change": "activation-aware or layer-protected executable codebooks with exact first-token parity",
+    "reopen_condition": "promote only a same-model compact representation that preserves the continuation and wins complete-token wall time"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

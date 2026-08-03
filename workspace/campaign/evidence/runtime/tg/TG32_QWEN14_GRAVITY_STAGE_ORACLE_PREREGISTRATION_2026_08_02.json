@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.tg.same_model_stage_oracle_preregistration.v1",
+  "status": "PREREGISTERED_DIAGNOSTIC_ONLY",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "hypothesis": "The source-preserving executable Gravity path diverges before completion token 2 because its Qwen2 adapter is not numerically equivalent at an identifiable embedding, RMSNorm, QKV+bias, RoPE, attention, O-projection, or SwiGLU layer boundary. A matched CPU-authority, native-Qwen GPU, Gravity CPU, and Gravity GPU trace at the first divergent prompt position will name the first non-parity stage before any speed retry.",
+  "binding_change": "No throughput or representation promotion. Add no new kernel. Rehydrate the exact immutable Q4_K_M source and reproduce the rejected artifact only to capture stage traces; compare scalar surfaces and first completion logits under Numeric Parity V2.1.",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "conditions_unchanged_since_scoreboard": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "selected_stable_median_gb_per_hour_decimal": 198.2617137337587,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true
+  },
+  "admission": {
+    "free_bytes_before": 375112019968,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "source_body_bytes": 8988110976,
+    "artifact_budget_bytes": 10000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "projected_free_after_body_artifact_scratch": 329280363392,
+    "projected_residual_above_floor_bytes": 129274473836,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "trace_contract": {
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "trace_position": 0,
+    "complete_tokens_required": 32,
+    "native_qwen_trace_env": "HAWKING_QWEN_LAYER_TRACE_PATH",
+    "gravity_cpu_trace_env": "HAWKING_GRAVITY_CPU_TRACE_PATH",
+    "gravity_gpu_trace_env": "HAWKING_GRAVITY_TRACE_PATH",
+    "parity_surfaces": [
+      "embedding",
+      "input_layernorm",
+      "qkv_post_bias",
+      "rope_qk",
+      "attention_output",
+      "post_attention_residual",
+      "ffn_norm",
+      "gate_up_swiglu",
+      "ffn_down_residual",
+      "final_norm",
+      "first_completion_logits"
+    ],
+    "fallback_required": 0,
+    "device_identity_required": "Apple M3 Ultra",
+    "speed_claim_allowed": false
+  },
+  "reopen_condition": "Only a sealed stage receipt naming the first mismatch and a parity repair may reopen an executable Gravity speed candidate.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "0db299340fd5fd176075548a76a5e8099a98f7c3c80a1b4cc35cb28a2d3032ca"
+}

@@ -1,6 +1,18 @@
 use crate::kernels::{gemv_f32, silu_mul, softmax_inplace};
 use crate::Result;
 
+/// Optional, fail-closed router tie policy used by the DeepSeek parity
+/// diagnostic.  The default is zero, preserving the historical comparator.
+/// A positive finite value makes scores within that probability distance a
+/// deterministic tie resolved by the lower expert id.
+pub fn route_tie_epsilon() -> f32 {
+    std::env::var("HAWKING_DS_ROUTE_TIE_EPS")
+        .ok()
+        .and_then(|value| value.parse::<f32>().ok())
+        .filter(|value| value.is_finite() && *value >= 0.0)
+        .unwrap_or(0.0)
+}
+
 /// Top-K gate over routed-expert logits.
 ///
 /// Inputs:

@@ -402,9 +402,9 @@ fn registry_json_roundtrip_matches_export() {
 #[test]
 fn registry_json_on_disk_matches_export() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json");
+        .join("../../workspace/campaign/evidence/systems/hide/HIDE_YOU_CONNECTOR_REGISTRY.json");
     let path = path.canonicalize().expect(
-        "evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json missing; run: cargo run -p hide-connectors --example export_registry -- evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json",
+        "workspace/campaign/evidence/systems/hide/HIDE_YOU_CONNECTOR_REGISTRY.json missing; run: cargo run -p hide-connectors --example export_registry -- workspace/campaign/evidence/systems/hide/HIDE_YOU_CONNECTOR_REGISTRY.json",
     );
     let on_disk: hide_backend::connector_abi::RegistryDocument =
         serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();

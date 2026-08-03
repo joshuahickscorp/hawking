@@ -719,6 +719,7 @@ def extract_rust_file(
 def is_test_path_name(rel: str, fname: str) -> bool:
     return (
         "/tests/" in rel
+        or rel.startswith("workspace/quality/tests/")
         or rel.endswith("_test.rs")
         or fname.startswith("test_")
         or fname.endswith("_test")

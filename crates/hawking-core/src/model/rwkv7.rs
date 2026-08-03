@@ -10,7 +10,8 @@
 //! The math mirrors llama.cpp's `rwkv7-base.cpp` (`build_rwkv7_time_mix` /
 //! `build_rwkv7_channel_mix`) and the scalar recurrence in
 //! `ggml_compute_forward_rwkv_wkv7_f32`. See `docs/strand/`-adjacent
-//! `reports/ssm_derisk_m3.md` (branch `ssm/derisk`) for the spec.
+//! `workspace/campaign/records/reports/ssm_derisk_m3.md` (branch `ssm/derisk`)
+//! for the spec.
 //!
 //! ## Per-token forward (decode, one token)
 //! ```text

@@ -22,6 +22,6 @@ path = "src/main.rs"
 
 [dependencies]
 hawking-core = { path = "../../crates/hawking-core" }
-strand-quant = { path = "../../vendor/strand-quant" }
+strand-quant = { path = "../../workspace/vendor/strand-quant" }
 anyhow = { workspace = true }
 sha2 = { workspace = true }

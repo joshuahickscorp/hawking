@@ -1,0 +1,188 @@
+{
+  "schema": "hawking.tg.breadth_ladder_state.v1",
+  "updated_at_utc": "2026-07-31T00:00:00Z",
+  "historical_snapshot": "The per-rung gate blocks below preserve the pre-artifact historical state. The current source-backed state is authoritative in current_source_quant_gravity.",
+  "active_storage": {
+    "policy_receipt": "evidence/tg/TG_STORAGE_CLEANUP_2026_07_31.json",
+    "active_model": "models/tg-breadth/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "active_family_count": 1,
+    "old_source_payloads": "recoverable-quarantine",
+    "parallel_admission": "requires measured <=90000000000-byte ledger and one heavy GPU lease"
+  },
+  "current_source_quant_gravity": {
+    "claim": "NO_CLAIM",
+    "families": {
+      "TG5_llama": {"source_materialized": false, "receipt": "evidence/tg/TG5_LLAMA_SOURCE_QUANT_GRAVITY.json", "matched_decode": "PASS_HISTORICAL", "resident_tps_context128": 67.86156029632174},
+      "TG10_mistral": {"source_materialized": false, "receipt": "evidence/tg/TG10_MISTRAL_SOURCE_QUANT_GRAVITY.json", "matched_decode": "PASS_HISTORICAL", "resident_tps_context32": 55.99120484555166},
+      "TG20_qwen": {"source_materialized": true, "receipt": "evidence/tg/TG20_QWEN_SOURCE_QUANT_GRAVITY.json", "matched_decode": "PASS", "resident_tps_context8": 47.28938263628211},
+      "TG4_deepseek": {"source_materialized": false, "receipt": "evidence/tg/TG4_DEEPSEEK_SOURCE_QUANT_GRAVITY.json", "matched_decode": "PASS_CPU_HISTORICAL", "resident_metal": "NOT_IMPLEMENTED"}
+    },
+    "next_gate": "Run reduced format-native artifacts through matched continuation/logit and resident TPS gates; do not promote a rung from byte reduction alone."
+  },
+  "rungs": {
+    "TG20": {
+      "source_materialized": false,
+      "source_bytes": 8988110976,
+      "source_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+      "source_path": "models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "PASS",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG20_QWEN_SOURCE_RECEIPT.json",
+        "adapter_oracle": "evidence/tg/TG20_QWEN_ADAPTER_ORACLE.json",
+        "state_advance": "The exact Hawking profile agrees with llama-completion for two completion tokens and diverges at token 3, so the source cannot receive tuning, Gravity, or latency claims.",
+        "eviction": "evidence/tg/TG20_QWEN_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG4": {
+      "source_materialized": false,
+      "source_bytes": 10364416320,
+      "source_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+      "source_path": "models/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+      "profile_path": "profiles/deepseek-v2-lite-q4.m3ultra.json",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "FAIL",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "PASS",
+        "AUTOTUNE_PROFILE": "PASS",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "hawking verify on 2026-07-30: 10,364,416,320 bytes; SHA-256 30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+        "raw_forward": "evidence/tg/TG_MOE_BISECT.json: exact prompt 'The capital of France is' produces ' t t t t t t t t' from Hawking; llama.cpp reads the same file correctly.",
+        "state_advance": "evidence/tg/TG_MOE_BISECT.json: position, KV slot, and sequence length advance, but the first decode token is already wrong and later tokens repeat.",
+        "adapter_accounting": "live 2026-07-30 run with the M3 Ultra profile reports device_id='Apple M3 Ultra' and dispatches_per_forward=589.",
+        "autotune": "profiles/deepseek-v2-lite-q4.m3ultra.json is layout-bound and required for the decode arena; the prior M3 Pro profile was correctly refused for layout mismatch.",
+        "eviction": "The workspace copy was moved to macOS Trash after sealing evidence/tg/TG4_DEEPSEEK_TERMINAL_EVICTION.json. Disk reclamation is pending a manual Trash empty, but the active-parent eviction is complete."
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG10": {
+      "source_materialized": false,
+      "source_bytes": 7477208192,
+      "source_sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46",
+      "source_path": "models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "FAIL",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG10_MISTRAL_SOURCE_RECEIPT.json",
+        "adapter_oracle": "evidence/tg/TG10_MISTRAL_ADAPTER_ORACLE.json",
+        "eviction": "evidence/tg/TG10_MISTRAL_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG5": {
+      "source_materialized": false,
+      "source_bytes": 4920739232,
+      "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+      "source_path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "FAIL",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG5_LLAMA_SOURCE_RECEIPT.json",
+        "adapter_oracle": "evidence/tg/TG5_LLAMA_ADAPTER_ORACLE.json",
+        "eviction": "evidence/tg/TG5_LLAMA_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG3": {
+      "source_materialized": false,
+      "source_bytes": 19851336576,
+      "source_sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+      "source_path": "models/tg-active/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "PASS",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG3_QWEN32_SOURCE_RECEIPT.json",
+        "adapter_oracle": "evidence/tg/TG3_QWEN32_ADAPTER_ORACLE.json",
+        "eviction": "evidence/tg/TG3_QWEN32_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG2": {
+      "source_materialized": false,
+      "source_bytes": 14333910496,
+      "source_sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+      "source_path": "models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "FAIL",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG2_MISTRAL_SMALL_SOURCE_RECEIPT.json",
+        "adapter_oracle": "evidence/tg/TG2_MISTRAL_SMALL_ADAPTER_ORACLE.json",
+        "eviction": "evidence/tg/TG2_MISTRAL_SMALL_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    },
+    "TG1": {
+      "source_materialized": false,
+      "source_bytes": 4920739232,
+      "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+      "source_path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "gates": {
+        "SOURCE_SEALED": "PASS",
+        "RAW_PARENT_FORWARD": "PASS",
+        "STATE_ADVANCE": "FAIL",
+        "ADAPTER_ACCOUNTING": "FAIL",
+        "AUTOTUNE_PROFILE": "BLOCKED",
+        "GRAVITY_ADAPTER": "BLOCKED",
+        "GRAVITY_ORACLE": "BLOCKED",
+        "RUNG_MEASUREMENT": "BLOCKED",
+        "EVICTION_RECEIPT": "PASS"
+      },
+      "evidence": {
+        "source_identity": "evidence/tg/TG1_LLAMA_REHYDRATION_RECEIPT.json",
+        "external_parent_oracle": "evidence/tg/TG5_LLAMA_ADAPTER_ORACLE.json (same source SHA-256 and prompt)",
+        "adapter_oracle": "evidence/tg/TG1_LLAMA_REHYDRATION_ORACLE.json",
+        "eviction": "evidence/tg/TG1_LLAMA_TERMINAL_EVICTION.json"
+      },
+      "claim": "NO_CLAIM"
+    }
+  }
+}

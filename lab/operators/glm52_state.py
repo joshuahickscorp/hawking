@@ -845,7 +845,7 @@ class TrustedArtifactStore:
         return tuple(parts)
 
     def _locate(self, relative_path: str) -> str:
-        """Map a bare basename onto ``evidence/<campaign>/<basename>``.
+        """Map a bare basename onto the compact evidence hierarchy.
 
         Contracts name campaign artifacts by basename and compare that string
         against sealed ``path`` fields, so it must survive the move. Only the
@@ -854,7 +854,9 @@ class TrustedArtifactStore:
         """
         if '/' in relative_path or (self.root / relative_path).is_file():
             return relative_path
-        found = sorted((self.root / 'evidence').glob(f'*/{relative_path}'))
+        found = sorted((self.root / 'workspace/campaign/evidence').glob(f'*/*/{relative_path}'))
+        if not found:
+            found = sorted((self.root / 'evidence').glob(f'*/{relative_path}'))
         if not found:
             return relative_path
         return found[0].relative_to(self.root).as_posix()

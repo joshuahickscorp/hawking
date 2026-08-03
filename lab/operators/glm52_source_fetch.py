@@ -7,6 +7,7 @@ from tools.condense import artifact_client as gravity_format
 from lab.operators.glm52_common import (
     resolve_artifact, seal, sha256_file, atomic_json, read_sealed_json, Glm52Error,
 )
+from lab.layout import evidence_dir
 
 import json
 import os
@@ -16,6 +17,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
+GLM52_EVIDENCE = evidence_dir('glm52')
 _CONDENSE = Path(__file__).resolve().parent
 STATE_DIR = Path('/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch')
 SOURCE_ROOT = Path('/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source')
@@ -27,9 +29,18 @@ PROBES = STATE_DIR / 'probes'
 ROLLUP = STATE_DIR / 'GLM52_SOURCE_WEIGHT_ATLAS.json'
 GRAPH = resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json')
 COMPACT = Path(os.environ.get('GLM52_COMPACT_ROOT', '/Users/scammermike/Desktop/GLM52-Gravity-SubBit'))
-MANIFEST = ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json'
-SCHEDULE = ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE.json'
-POLICY = ROOT / 'evidence' / 'glm52' / 'GLM52_RESOURCE_RESERVE_POLICY.json'
+MANIFEST = GLM52_EVIDENCE / 'GLM52_OFFICIAL_MANIFEST.json'
+# A restream can name a newly sealed, narrower schedule and reserve policy
+# without mutating the historical traversal plan.  The default remains the
+# historical binding, so existing controllers and receipts are unchanged.
+SCHEDULE = Path(os.environ.get(
+    'GLM52_STREAMING_SCHEDULE_PATH',
+    GLM52_EVIDENCE / 'GLM52_STREAMING_SCHEDULE.json',
+))
+POLICY = Path(os.environ.get(
+    'GLM52_RESOURCE_RESERVE_POLICY_PATH',
+    GLM52_EVIDENCE / 'GLM52_RESOURCE_RESERVE_POLICY.json',
+))
 os.environ.setdefault('HF_HOME', str(STATE_DIR / 'hf_home'))
 os.environ.setdefault('HF_HUB_CACHE', str(STATE_DIR / 'hf_cache'))
 os.environ.setdefault('HF_XET_HIGH_PERFORMANCE', '1')
@@ -166,7 +177,7 @@ def _teacher_authority(candidates: set[str], window: str) -> dict:
     an eviction instead of stranding a body on disk for the rest of the run.
     """
     try:
-        import glm52_teacher_capture as teacher
+        from lab.operators import glm52_teacher_capture as teacher
         authority = teacher.capture_for_eviction(candidates)
     except Exception as exc:
         _append_ledger({'event': 'TEACHER_GATE_ERROR', 'window': window, 'error': f'{type(exc).__name__}: {exc}', 'authorized': [], 'at': _now()})
@@ -214,9 +225,9 @@ def run() -> int:
     except BlockingIOError:
         sys.stderr.write('another fetcher holds the lock; exiting\n')
         return 0
-    manifest = _read_json(MANIFEST)
-    schedule = _read_json(SCHEDULE)
-    policy = _read_json(POLICY)
+    manifest = read_sealed_json(MANIFEST)
+    schedule = read_sealed_json(SCHEDULE)
+    policy = read_sealed_json(POLICY)
     residency_ceiling = int(os.environ.get('GLM52_FETCH_RESIDENCY_CEILING_BYTES', policy['derived']['preregistered_usable_raw_window_bytes']))
     repo, revision = (manifest['repo'], manifest['revision'])
     by_path = {f['path']: f for f in manifest['files'] if f.get('is_weight')}
@@ -445,7 +456,7 @@ def _controller() -> dict:
 
 def safe_to_leave() -> int:
     """Write the local status pair that replaces Telegram as the leave-it signal."""
-    import glm52_teacher_capture as teacher
+    from lab.operators import glm52_teacher_capture as teacher
     progress = _read_json(PROGRESS) if PROGRESS.exists() else {'state': 'NOT_STARTED'}
     rows = _ledger_rows()
     manifest = _read_json(MANIFEST)
@@ -512,8 +523,8 @@ def reconcile() -> int:
 
 def selftest() -> int:
     """Schedule/eviction invariants against the real sealed artifacts.  No network, no writes."""
-    manifest = _read_json(MANIFEST)
-    schedule = _read_json(SCHEDULE)
+    manifest = read_sealed_json(MANIFEST)
+    schedule = read_sealed_json(SCHEDULE)
     by_path = {f['path']: f for f in manifest['files'] if f.get('is_weight')}
     assert len(by_path) == 282, len(by_path)
     windows = schedule['windows']
@@ -523,7 +534,7 @@ def selftest() -> int:
     assert len(fetched) == 282, f'schedule must fetch every shard once, got {len(fetched)}'
     assert set(fetched) == set(by_path), 'schedule fetch set must equal the manifest weight set'
     assert len(set(fetched)) == len(fetched), 'no shard may be fetched twice'
-    ceiling = _read_json(POLICY)['derived']['preregistered_usable_raw_window_bytes']
+    ceiling = read_sealed_json(POLICY)['derived']['preregistered_usable_raw_window_bytes']
     resident: set[str] = set()
     peak = 0
     for index, window in enumerate(windows):

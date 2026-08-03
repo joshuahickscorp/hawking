@@ -45,7 +45,7 @@
           "predicate": "deepseek_cascade_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/deepseek_v4.json --work-dir reports/condense/engine/deepseek_v4",
+      "reproduction": "python3.12 -m lab lab/specs/deepseek_v4.json --work-dir workspace/campaign/records/reports/condense/engine/deepseek_v4",
       "resource_class": "heavy",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "sealed_negative",
@@ -129,7 +129,7 @@
           "predicate": "eco_law_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/eco.json --work-dir reports/condense/engine/eco",
+      "reproduction": "python3.12 -m lab lab/specs/eco.json --work-dir workspace/campaign/records/reports/condense/engine/eco",
       "resource_class": "light",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -242,7 +242,7 @@
         "seal",
         "report"
       ],
-      "reproduction": "python3.12 -m lab lab/specs/foundry_lab.json --work-dir reports/lab/foundry_lab",
+      "reproduction": "python3.12 -m lab lab/specs/foundry_lab.json --work-dir workspace/campaign/records/reports/lab/foundry_lab",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "live",
@@ -462,7 +462,7 @@
           "predicate": "sealed_parity_surface_changed"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/glm52.json --work-dir reports/condense/engine/glm52",
+      "reproduction": "python3.12 -m lab lab/specs/glm52.json --work-dir workspace/campaign/records/reports/condense/engine/glm52",
       "resource_class": "heavy",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "live",
@@ -595,7 +595,7 @@
           "predicate": "g3_winner_family_ready"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/gptoss.json --work-dir reports/condense/engine/gptoss",
+      "reproduction": "python3.12 -m lab lab/specs/gptoss.json --work-dir workspace/campaign/records/reports/condense/engine/gptoss",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -758,7 +758,7 @@
           "predicate": "doctor_boundary_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/gravity_frontier.json --work-dir reports/condense/engine/gravity_frontier",
+      "reproduction": "python3.12 -m lab lab/specs/gravity_frontier.json --work-dir workspace/campaign/records/reports/condense/engine/gravity_frontier",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -872,7 +872,7 @@
           "predicate": "kimi_corpus_revision_changed"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/kimi_k26.json --work-dir reports/condense/engine/kimi_k26",
+      "reproduction": "python3.12 -m lab lab/specs/kimi_k26.json --work-dir workspace/campaign/records/reports/condense/engine/kimi_k26",
       "resource_class": "network",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -1015,7 +1015,7 @@
           "predicate": "mechanics_law_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/mechanics.json --work-dir reports/condense/engine/mechanics",
+      "reproduction": "python3.12 -m lab lab/specs/mechanics.json --work-dir workspace/campaign/records/reports/condense/engine/mechanics",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -1144,7 +1144,7 @@
         ],
         "require_verdict": "PASS"
       },
-      "reproduction": "python3.12 -m lab lab/specs/odyssey_t0.json --work-dir reports/lab/odyssey_t0",
+      "reproduction": "python3.12 -m lab lab/specs/odyssey_t0.json --work-dir workspace/campaign/records/reports/lab/odyssey_t0",
       "resource_class": "light",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "live",
@@ -1199,7 +1199,7 @@
         "report"
       ],
       "receipt": "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json",
-      "reproduction": "python3.12 -m lab lab/specs/prometheus_math.json --work-dir reports/lab/prometheus_math",
+      "reproduction": "python3.12 -m lab lab/specs/prometheus_math.json --work-dir workspace/campaign/records/reports/lab/prometheus_math",
       "resource_class": "heavy",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "historical",
@@ -1306,7 +1306,7 @@
           "predicate": "qwen_parent_revision_changed"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/qwen.json --work-dir reports/condense/engine/qwen",
+      "reproduction": "python3.12 -m lab lab/specs/qwen.json --work-dir workspace/campaign/records/reports/condense/engine/qwen",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -1398,7 +1398,7 @@
           "predicate": "island_strategy_extended"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/second_light.json --work-dir reports/condense/engine/second_light",
+      "reproduction": "python3.12 -m lab lab/specs/second_light.json --work-dir workspace/campaign/records/reports/condense/engine/second_light",
       "resource_class": "gpu-lab",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -1503,7 +1503,7 @@
           "predicate": "succession_law_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/succession.json --work-dir reports/condense/engine/succession",
+      "reproduction": "python3.12 -m lab lab/specs/succession.json --work-dir workspace/campaign/records/reports/condense/engine/succession",
       "resource_class": "light",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",
@@ -1605,7 +1605,7 @@
           "predicate": "tg_law_superseded"
         }
       ],
-      "reproduction": "python3.12 -m lab lab/specs/tg.json --work-dir reports/condense/engine/tg",
+      "reproduction": "python3.12 -m lab lab/specs/tg.json --work-dir workspace/campaign/records/reports/condense/engine/tg",
       "resource_class": "light",
       "schema": "hawking.lab.experiment_spec.v1",
       "status": "retired",

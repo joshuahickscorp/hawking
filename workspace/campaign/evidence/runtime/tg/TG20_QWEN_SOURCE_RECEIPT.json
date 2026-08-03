@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.tg.source_receipt.v1",
+  "status": "SEALED",
+  "rung": "TG20",
+  "model": "Qwen2.5-14B-Instruct",
+  "family": "qwen",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "path": "models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "acquisition": {
+    "method": "hf download bartowski/Qwen2.5-14B-Instruct-GGUF Qwen2.5-14B-Instruct-Q4_K_M.gguf --local-dir models/tg-active",
+    "preflight": "Hub dry run reported one 9.0G file; the verified artifact occupies 8.37 GiB and satisfies TG20's 10 GiB source budget.",
+    "immutable_revision_source": "models/tg-active/.cache/huggingface/download/Qwen2.5-14B-Instruct-Q4_K_M.gguf.metadata",
+    "source_copy_policy": "This is the only active ladder parent. It must be evicted after a terminal Gravity/measurement receipt before another rung is acquired."
+  },
+  "local_inspection": {
+    "architecture": "qwen2",
+    "layers": 48,
+    "hidden": 5120,
+    "kv_heads": 8,
+    "context_estimate": 4096,
+    "weights_plus_kv_estimate_bytes": 10598723712,
+    "doctor_command": "hawking doctor --weights models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf"
+  }
+}

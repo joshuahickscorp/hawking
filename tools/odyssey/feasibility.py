@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.odyssey._paths import EXPECTED_BYTES, EXPECTED_BPW, MATH_ARTIFACT, ODYSSEY
+from tools.odyssey._paths import EXPECTED_BYTES, EXPECTED_BPW, MATH_ARTIFACT, RECORDS_DIR
 
 SCHEMA = "hawking.odyssey.feasibility.v1"
 
@@ -202,7 +202,7 @@ def estimate() -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     report = estimate()
-    out = ODYSSEY / "ODYSSEY_FEASIBILITY.json"
+    out = RECORDS_DIR / "ODYSSEY_FEASIBILITY.json"
     out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print(json.dumps(report["verdict"], indent=2))
     print("wrote", out)

@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-b9430-replayable-icb-graph",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_revision": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "protocol": {
+    "context_tokens": 2048,
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "profile": "exact",
+    "candidate": "pre-encoded replayable Metal ICB graphs, with the known layer-30 Q4 Q and Q6 V stages remaining direct dispatches",
+    "gates": [
+      "HAWKING_LLAMA_RESIDENT_REPLAY=1",
+      "HAWKING_LLAMA_RESIDENT_REPLAY_UNSAFE_DIAGNOSTIC=1"
+    ]
+  },
+  "repair_before_measurement": {
+    "issue": "The direct source lane opened a serial compute encoder before attempting ICB replay, and its mixed replay/direct/replay seam could leave an encoder active.",
+    "fix": "The replay branch bypasses the direct serial group and explicitly closes any active group before every replay graph execution.",
+    "default_lane_changed": false
+  },
+  "correctness": {
+    "exact_greedy_token_trace_against_source_baseline": true,
+    "cpu_reference_fallback_count": 0,
+    "candidate_dispatches_per_forward": 610
+  },
+  "measurements": {
+    "candidate_decode_tps": 24.292145502455156,
+    "candidate_decode_ms": 5269.192875,
+    "candidate_prefill_ms": 51156.110667,
+    "strict_matched_source_lane_tps_at_2k": 91.68638222193484,
+    "strict_matched_source_lane_dispatches_per_forward": 386
+  },
+  "verdict": "rejected",
+  "reason": "The repaired graph is token-exact, but it encodes 610 commands per forward and runs about 3.77x slower than the established strict matched source lane. It receives no adjacent multi-trial speed promotion and remains double-gated diagnostic-only.",
+  "runtime_status": "The replay path remains default-off and requires both explicitly named unsafe diagnostic flags.",
+  "reopen_condition": "Revisit only with a graph that preserves the already-promoted source fused QKV/RoPE/KV, residual-norm, and gate/up stages while reducing physical encoder work below the 386-dispatch direct lane; validate P8 logits and a five-trial strict match before timing claims."
+}

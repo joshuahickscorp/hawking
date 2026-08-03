@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.tg.gravity_artifact_admission.v1",
+  "status": "SEALED_SOURCE_BOUND_EXECUTABLE_GRAVITY",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct",
+  "family": "Qwen dense",
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "license": "apache-2.0",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json"
+  },
+  "artifact": {
+    "path": "models/tg-active/qwen32-gravity-first-2026-08-02/qwen32-source.gravity",
+    "file_bytes": 19845600696,
+    "body_bytes": 19845357568,
+    "file_sha256": "6e76f70831a4015f7c68114e20c366af8e21dc31c385dce254c87bc2f87a0b07",
+    "body_sha256": "aa2d667eb3155b3690643bedcc4ece32358911ad03845986d4c70abb4c783d0d",
+    "source_bound": true,
+    "mapped_tensors": 771,
+    "skipped_source_tensors": 0,
+    "compression": {
+      "codec": "ggml-source-q4_k-q5_k-q5_0-q6_k-q8_0",
+      "source_quantization_preserved": true,
+      "lossy_fit": false,
+      "complete_bpw": 4.845667797006829,
+      "packed_bpw": 4.844740158425348
+    },
+    "integrity": "artifact_client.verify PASS"
+  },
+  "tokenizer": {
+    "path": "models/tg-active/qwen32-gravity-first-2026-08-02/tokenizer/tokenizer.json",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "storage_sample_after_compact_retirement": {
+    "free_bytes": 342316630016,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 142310740460,
+    "model_lane_envelope_bytes": 110000000000,
+    "lane_contents": [
+      "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+      "qwen32-source.gravity",
+      "tokenizer/tokenizer.json"
+    ],
+    "rejected_compact_artifact_purged": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

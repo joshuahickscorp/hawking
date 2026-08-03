@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.tg.large_family_k0_terminal.v1",
+  "status": "TERMINAL_METAL_PREFILL_SWAP_FLOOR_NO_TG_RUNG",
+  "at": "2026-08-01T06:29:04Z",
+  "family": "qwen",
+  "attempt": "same_source_after_metal_representation_repair",
+  "rung": "TG32",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "sha256_verified_by": "hawking verify --expected-sha256",
+    "architecture": "qwen2",
+    "parameter_class": {"total_parameters":"72B","active_parameters":"72B","architecture":"dense"}
+  },
+  "bindings": {
+    "source_admission_receipt": "evidence/tg/TG32_QWEN72_REPROBE_SOURCE_ADMISSION.json",
+    "source_admission_seal_sha256": "25f7f4013422c5f77c64ea82d8b7974fe2ea0a2776fba47af2b5702366eddeab",
+    "metal_repair_receipt": "evidence/tg/TG_METAL_PREFLIGHT_CORRECTION.json",
+    "metal_repair_seal_sha256": "a094dd3ac172cbf8bd84a53cd49851093ed29fe73ff03514ebc1c0ede4599b35"
+  },
+  "hawking_k0": {
+    "command_profile": "exact",
+    "prompt": "2+2=",
+    "max_new_tokens": 1,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "max_stall_ms": 60000,
+    "environment": {"HAWKING_REQUIRE_METAL":"1","HAWKING_QWEN_PREFIX_CACHE":"0","HAWKING_QWEN_Q4K_PREDEC":"0","HAWKING_QWEN_BATCH_PREFILL":"0"},
+    "observed": {
+      "reason": "aborted",
+      "prompt_tokens": 4,
+      "completion_tokens": 0,
+      "prefill_ms": 116201.248542,
+      "decode_ms": 0.0,
+      "device_id": "Apple M3 Ultra",
+      "cpu_reference_fallback_count": 0,
+      "decode_cpu_reference_fallback_total": 0,
+      "dispatches_per_forward": 0,
+      "decode_metal_dispatches_total": 0
+    },
+    "v21_contract": {"exact_tokens":"NOT_OBTAINED","device_identity":"PASS","dispatches_greater_than_zero":"NOT_SERIALIZED_BY_PREFILL_ABORT_PATH","fallback_equal_zero":"PASS","result":"FAIL"}
+  },
+  "same_model_floor": {
+    "classification": "CURRENT_HOST_FIRST_PACKED_METAL_FORWARD_FLOOR_NOT_CLEAN_DECODE",
+    "one_completed_prefill_step_seconds": 116.201248542,
+    "one_step_tps": 0.00860575951245961,
+    "tg32_target_tps": 31.25,
+    "factor_below_tg32": 3631.2890169375,
+    "source_byte_rate_proxy_gb_per_second_decimal": 0.40804824460093453,
+    "proxy_warning": "source bytes divided by wall time is a representation-scale proxy, not measured bytes read"
+  },
+  "resource_evidence": {
+    "swap_used_before_first_forward_mebibytes": 1600.25,
+    "swap_used_during_first_forward_mebibytes": 15157.69,
+    "swap_used_after_process_exit_mebibytes": 2259.06,
+    "clean_benchmark": false,
+    "promotion_allowed": false,
+    "external_cpu_contention_present": true
+  },
+  "distinct_failure_count": 2,
+  "prior_failure": "silent Metal initialization failure forced CPU prefill",
+  "current_failure": "Metal device acquired, but first packed forward induced severe unified-memory/swap pressure and exceeded the watchdog before a token",
+  "promotion": {
+    "deepest_rung": null,
+    "tg_claim": "NONE",
+    "gravity_claim": "NONE",
+    "adapter_result": "DEVICE_ACQUIRED_BUT_K0_TOKEN_AND_DISPATCH_CONTRACT_FAILED",
+    "rotation_allowed": true,
+    "exact_next_representation_change": "avoid whole-source first-forward residency by executing a page/range-scheduled .gravity representation whose bounded working set stays resident; separately serialize completed prefill dispatch counters on watchdog abort"
+  },
+  "observability_repair": {
+    "source": "crates/hawking-core/src/model/qwen_dense.rs",
+    "source_sha256": "7ae0b85e02ac42e2c74d58bfd63574d0c15ef1dd47e120df9c09cab03785c005",
+    "behavior": "watchdog-aborted prefill now drains Metal trace/allocation/commit stats and records last_dispatch_count before returning",
+    "cargo_check_hawking_core": "PASS",
+    "live_reprobe_required": true
+  },
+  "eviction_required": {"source_artifact_only":true,"source_path":"models/tg-active/Qwen2.5-72B-Instruct-Q4_K_M.gguf","staging_root":"models/tg-active","next_receipt":"evidence/tg/TG32_QWEN72_REPROBE_TERMINAL_EVICTION.json"},
+  "seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c"
+}

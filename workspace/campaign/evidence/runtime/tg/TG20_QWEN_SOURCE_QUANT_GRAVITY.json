@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.source_quant_gravity_receipt.v1",
+  "status": "SOURCE_PRESERVING_ARTIFACT_AND_MATCHED_DECODE_PASS_NONCERTIFYING",
+  "claim": "NO_TG_RUNG",
+  "rung": "TG20",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen",
+  "source": {
+    "path": "models/tg-breadth/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "receipt": "evidence/tg/TG20_QWEN_SOURCE_RECEIPT.json"
+  },
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/qwen14-source-q4k.gravity",
+    "sha256": "128760939a27ea7beb4184310416385da3e5fb7f4c16e05e559a9e0f9ff80f36",
+    "physical_bytes": 8982325113,
+    "payload_bytes": 8982142976,
+    "mapped_tensors": 579,
+    "packed_bpw": 4.863518370607029,
+    "complete_bpw": 4.865062967536916,
+    "lossy_fit": false,
+    "raw_quant_codecs": ["ggml.q4_k", "ggml.q6_k"],
+    "native_bias_tensors": 144,
+    "rope_layout": "split_half",
+    "source_hash_verified": true,
+    "body_hash_verified": true
+  },
+  "matched_decode_gate": {
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "source_reference": {
+      "implementation": "llama.cpp",
+      "protocol": "one-token sequential decode with one warmup token",
+      "generated_token_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081]
+    },
+    "gravity_default_token_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081],
+    "equal": true,
+    "gravity_prefill_ms": 181.581667,
+    "gravity_decode_tps": 41.83272624896638,
+    "gravity_decode_dispatches": 6544,
+    "kv_mode": "automatic f16 SET_ROWS-compatible cache for qwen2",
+    "parity_scope": "greedy token IDs only; full-logit tolerance and matched timing are not certified"
+  },
+  "resident_measurements": {
+    "runtime": "GravityLlamaGpu raw K-quant b9430 kernels",
+    "context_tokens": 8,
+    "decode_tps": 47.28938263628211,
+    "decode_ms_per_token_median": 21.116,
+    "dispatches_per_token": 770,
+    "prefill_tps": 33.472143848010965,
+    "active_weight_bytes": 8982142976,
+    "device_resident_bytes": 8982142976,
+    "kv_bytes_per_token": 393216
+  },
+  "rung_gates": {
+    "TG8_125_tps": false,
+    "TG5_200_tps": false,
+    "TG4_250_tps": false,
+    "TG3_333_tps": false,
+    "TG2_500_tps": false,
+    "TG1_1000_tps": false,
+    "ladder_status": "NO_CLAIM"
+  },
+  "roofline": {
+    "bandwidth_constant_bytes_per_second": 736000000000,
+    "tg2_max_active_weight_bytes": 1472000000,
+    "tg1_max_active_weight_bytes": 736000000,
+    "tg2_reduction_from_current_resident_payload": 0.8360926801294204,
+    "tg1_reduction_from_current_resident_payload": 0.9180463400647102,
+    "constraint": "The source-preserving 14B payload is far above the TG2/TG1 active-byte ceilings; a format-native reduction is required."
+  },
+  "next_gate": "Keep the Qwen2 bias-offset and f16-KV contracts in the shared adapter, then produce a reduced format-native artifact with an equal matched decode gate before any rung claim."
+}

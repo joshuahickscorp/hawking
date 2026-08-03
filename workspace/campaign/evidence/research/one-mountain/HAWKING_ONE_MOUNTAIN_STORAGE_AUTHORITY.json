@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.one_mountain.storage_authority.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "authority": {
+    "handoff": "/Users/scammermike/Downloads/substrate/docs/tangible_sandbox/SHARED_STORAGE_HANDOFF.md",
+    "machine_readable_handoff": "/Users/scammermike/Downloads/substrate/evidence/substrate/tangible_sandbox/SUBSTRATE_SANDBOX_SHARED_STORAGE_HANDOFF.json",
+    "rule": "Use only live filesystem capacity minus the R2 continuity floor; do not subtract retained substrate data or an optional external reserve a second time."
+  },
+  "live_measurement": {
+    "mount": "/System/Volumes/Data",
+    "available_bytes": 305507610624,
+    "measurement_command": "df -k /Users/scammermike/Downloads/hawking",
+    "r2_continuity_floor_bytes": 200008355840,
+    "residual_above_continuity_floor_bytes": 105499254784
+  },
+  "hawking_reserves": {
+    "scratch_bytes": 8589934592,
+    "rollback_bytes": 4294967296,
+    "build_and_cache_bytes": 2684354560,
+    "maximum_additional_artifact_bytes_at_measurement": 89929998336
+  },
+  "post_provider_bakeoff_measurement": {
+    "available_bytes": 296814100480,
+    "r2_continuity_floor_bytes": 200008355840,
+    "residual_above_continuity_floor_bytes": 96805744640,
+    "maximum_additional_artifact_bytes_after_named_reserves": 81236488192,
+    "mlx_duplicate_free_bytes_before_trash_purge": 256064090112,
+    "mlx_duplicate_free_bytes_after_trash_purge": 296814100480,
+    "observed_host_free_byte_delta": 40750010368,
+    "attribution_note": "The MLX directory's own proven size was 40912224113 bytes. The host delta is an observation only because shared processes may write concurrently."
+  },
+  "post_gravity_eviction_measurement": {
+    "available_bytes": 212155645952,
+    "r2_continuity_floor_bytes": 200008355840,
+    "residual_above_continuity_floor_bytes": 12147290112,
+    "maximum_additional_artifact_bytes_after_named_reserves": 0,
+    "named_reserves_exceed_residual_by_bytes": 3421966336,
+    "action_taken": "The verified 47410029459-byte duplicate Gravity artifact was permanently evicted after its direct CPU test exceeded the one-hour cutoff. The selected 47415715488-byte Qwen GGUF remains.",
+    "measurement_scope": "Live shared filesystem observation after the mapped artifact released; no foreign-process free-space changes are attributed to Hawking.",
+    "policy": "No additional model payload, duplicate artifact, or large build cache may be created unless substrate publishes a new allocation or external storage is intentionally reserved."
+  },
+  "interpretation": "The prior 120 GiB figure is Odyssey future/private capacity, not Hawking's live allocation. Hawking selection is constrained by the live residual and named reserves above."
+}

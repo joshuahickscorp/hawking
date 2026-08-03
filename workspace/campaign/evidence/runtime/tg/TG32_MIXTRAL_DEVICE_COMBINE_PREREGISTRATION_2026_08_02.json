@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_MIXTRAL_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "mixtral-device-resident-two-expert-combine-v1",
+    "kind": "same_model_device_resident_moe_combine",
+    "hypothesis": "Keeping the two routed expert outputs, weighted combine, and residual add on Metal removes the per-layer host readbacks and writes that dominate the existing Mixtral route/combination path, without changing route selection or tensor arithmetic.",
+    "representation_change": "host read expert_out[0:2] -> CPU weighted sum -> host read x -> CPU residual -> host write x becomes one device two-expert weighted residual-add dispatch",
+    "scope": "same immutable Mixtral-8x7B-Instruct-v0.1 Q4_K_M source, same prompt, same Apple M3 Ultra, same exact tokenizer and route order",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "complete_token_wall_tps_improvement_percent": ">=3 versus same-run resident-combine control",
+      "p99_regression_percent": "<=0",
+      "exact_continuation_hash": "must_match_control and source when available",
+      "route_set_sequence": "must_match_control",
+      "fallback_count": 0,
+      "metal_dispatches": ">0",
+      "complete_tokens": ">=16"
+    }
+  },
+  "source": {
+    "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "total_parameters": "46.7B",
+    "active_parameters": "12.9B",
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "license": "apache-2.0",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_FRESH_2026_08_02.json",
+    "transfer_selection": "high_performance fixed concurrency 4; three-repeat median 314.6901258306453 GB/h"
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 357233774592,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 55359122848,
+    "planned_headroom_above_floor_after_body": 101868762188,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "control_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_MIXTRAL_CONVENTIONAL_DECODE_SEED": "1",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE": "0"
+  },
+  "candidate_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_MIXTRAL_CONVENTIONAL_DECODE_SEED": "1",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE": "1"
+  },
+  "control_reference": {
+    "receipt": "evidence/tg/TG32_MIXTRAL_FUSED_EXPERT_ADAPTER_RESULT_2026_08_02.json",
+    "source_reference_tps": 58.395754,
+    "prior_hawking_tps": 15.89820396820484,
+    "prior_first_divergent_emitted_token_index": 7,
+    "prior_route_combine_binding": "97 command buffers/forward and host expert/residual readback"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-final-ffn-fixed-router-hard-conditional-silu-student",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "teacher_dataset": {
+    "sha256": "3eee1ff9f003cfb83721025b74b2650383645478ccd30fb150bbe1c14a2d3edd",
+    "fit_rows": 17392,
+    "heldout_rows": 4636,
+    "surface": "layer 31 ffn_norm -> ffn_out",
+    "fit_isolation": "Router projection is fixed seed 17; centroids and expert weights use fit rows only."
+  },
+  "gate": {"max_heldout_normalized_rmse": 0.1},
+  "measurements": [
+    {
+      "experts": 8,
+      "width": 128,
+      "router_dim": 16,
+      "top_k": 1,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.6571441888023928,
+      "heldout_normalized_rmse": 0.662661851032487,
+      "stored_fp16_bytes": 16992512,
+      "active_fp16_bytes_per_token": 2253312,
+      "executed_macs_per_token": 1114112,
+      "sequential_matvecs_per_token": 3
+    },
+    {
+      "experts": 4,
+      "width": 256,
+      "router_dim": 16,
+      "top_k": 1,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.4086839423723429,
+      "heldout_normalized_rmse": 0.42801156523648193,
+      "stored_fp16_bytes": 16959616,
+      "active_fp16_bytes_per_token": 4350592,
+      "executed_macs_per_token": 2162688,
+      "sequential_matvecs_per_token": 3
+    }
+  ],
+  "verdict": "rejected",
+  "reason": "Hard routing into fit-only clusters lowers active bytes but reduces per-expert teacher coverage enough to underfit. Neither physical point reaches the 0.10 heldout capability gate, and both add a third sequential matvec for routing.",
+  "runtime_status": "No artifact was emitted and no model-quality, parity, or TPS claim is allowed.",
+  "reopen_condition": "Only revisit conditional computation with a source-structured or learned router whose independent generated-token quality holds at a materially lower active-byte bill.",
+  "tps_claim": null
+}

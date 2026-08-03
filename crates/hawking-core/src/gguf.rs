@@ -221,7 +221,11 @@ impl GgufFile {
         // `GgufFile`. The OS may still invalidate it if the file is
         // truncated under us; that's caller-error.
         let mmap = unsafe { Mmap::map(&f)? };
-        Self::from_mmap(mmap)
+        if mmap.len() >= 8 && &mmap[..8] == b"GRAVITY\0" {
+            Self::from_gravity_mmap(mmap)
+        } else {
+            Self::from_mmap(mmap)
+        }
     }
 
     pub fn from_mmap(mmap: Mmap) -> Result<Self> {
@@ -314,6 +318,137 @@ impl GgufFile {
         })
     }
 
+    /// Build the narrow GGUF view needed by the existing Mixtral adapter from
+    /// a source-preserving Gravity shard.  Gravity descriptors carry runtime
+    /// shapes and raw GGML codec names; reversing the two-dimensional shape
+    /// here restores the GGUF convention without copying or dequantizing any
+    /// payload. The returned mmap remains the Gravity file itself, so Metal
+    /// reads the sealed artifact body directly.
+    fn from_gravity_mmap(mmap: Mmap) -> Result<Self> {
+        const MAGIC: &[u8; 8] = b"GRAVITY\0";
+        if mmap.len() < 20 || &mmap[..8] != MAGIC {
+            return Err(Error::Gguf("bad Gravity magic".into()));
+        }
+        let format_version = u32::from_le_bytes(mmap[8..12].try_into().unwrap());
+        if format_version > 1 {
+            return Err(Error::Gguf(format!(
+                "unsupported Gravity format version {format_version}"
+            )));
+        }
+        let header_len = u64::from_le_bytes(mmap[12..20].try_into().unwrap());
+        let header_end = 20u64
+            .checked_add(header_len)
+            .ok_or_else(|| Error::Gguf("Gravity header length overflow".into()))?;
+        if header_end > mmap.len() as u64 {
+            return Err(Error::Gguf("Gravity header extends past file".into()));
+        }
+        let header: serde_json::Value = serde_json::from_slice(&mmap[20..header_end as usize])
+            .map_err(|e| Error::Gguf(format!("Gravity header JSON: {e}")))?;
+        let metadata_obj = header
+            .get("gguf_metadata")
+            .and_then(serde_json::Value::as_object)
+            .ok_or_else(|| Error::Gguf("Gravity shard has no gguf_metadata".into()))?;
+        let mut metadata = HashMap::with_capacity(metadata_obj.len());
+        for (key, value) in metadata_obj {
+            metadata.insert(key.clone(), meta_value_from_json(value)?);
+        }
+        let descriptors = header
+            .get("tensors")
+            .and_then(serde_json::Value::as_array)
+            .ok_or_else(|| Error::Gguf("Gravity shard has no tensor descriptors".into()))?;
+        let mut tensors = HashMap::with_capacity(descriptors.len());
+        let mut tensor_order = Vec::with_capacity(descriptors.len());
+        for descriptor in descriptors {
+            let name = descriptor
+                .get("name")
+                .and_then(serde_json::Value::as_str)
+                .ok_or_else(|| Error::Gguf("Gravity tensor has no name".into()))?
+                .to_string();
+            let shape = descriptor
+                .get("shape")
+                .and_then(serde_json::Value::as_array)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} has no shape")))?;
+            let runtime_shape: Vec<u64> = shape
+                .iter()
+                .map(|v| {
+                    v.as_u64().ok_or_else(|| {
+                        Error::Gguf(format!("Gravity tensor {name} shape is not unsigned"))
+                    })
+                })
+                .collect::<Result<_>>()?;
+            if runtime_shape.is_empty() || runtime_shape.len() > 3 {
+                return Err(Error::Gguf(format!(
+                    "Gravity tensor {name} has unsupported rank {}",
+                    runtime_shape.len()
+                )));
+            }
+            let dims = if runtime_shape.len() <= 1 {
+                runtime_shape.clone()
+            } else {
+                runtime_shape.iter().rev().copied().collect()
+            };
+            let codec = descriptor
+                .get("codec")
+                .and_then(serde_json::Value::as_str)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} has no codec")))?;
+            let dtype = gravity_codec_to_ggml(codec).ok_or_else(|| {
+                Error::Gguf(format!("Gravity tensor {name} has unsupported codec {codec:?}"))
+            })?;
+            let bytes = descriptor
+                .get("bytes")
+                .and_then(serde_json::Value::as_u64)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} has no byte length")))?;
+            let offset = descriptor
+                .get("offset")
+                .and_then(serde_json::Value::as_u64)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} has no offset")))?;
+            let absolute = header_end
+                .checked_add(offset)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} offset overflow")))?;
+            let end = absolute
+                .checked_add(bytes)
+                .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} size overflow")))?;
+            if end > mmap.len() as u64 {
+                return Err(Error::Gguf(format!(
+                    "Gravity tensor {name} ends at {end}, past file {}",
+                    mmap.len()
+                )));
+            }
+            let elements = dims.iter().try_fold(1u64, |acc, dim| {
+                acc.checked_mul(*dim).ok_or_else(|| {
+                    Error::Gguf(format!("Gravity tensor {name} element count overflow"))
+                })
+            })?;
+            let (block_size, bytes_per_block) = dtype.block_layout();
+            if elements % block_size != 0 || elements / block_size * bytes_per_block != bytes {
+                return Err(Error::Gguf(format!(
+                    "Gravity tensor {name} geometry mismatch: {elements} elems, {bytes} bytes, codec {codec}"
+                )));
+            }
+            if tensors.insert(
+                name.clone(),
+                TensorInfo {
+                    name: name.clone(),
+                    dims,
+                    dtype,
+                    data_offset: absolute,
+                    byte_size: bytes,
+                },
+            ).is_some() {
+                return Err(Error::Gguf(format!("duplicate Gravity tensor {name}")));
+            }
+            tensor_order.push(name);
+        }
+        Ok(Self {
+            mmap,
+            version: 3,
+            tensor_count: tensors.len() as u64,
+            metadata,
+            tensors,
+            tensor_order,
+        })
+    }
+
     pub fn architecture(&self) -> Option<&str> {
         self.metadata
             .get("general.architecture")
@@ -334,6 +469,59 @@ impl GgufFile {
         let end = start + t.byte_size as usize;
         Some(&self.mmap[start..end])
     }
+}
+
+fn gravity_codec_to_ggml(codec: &str) -> Option<GgmlType> {
+    Some(match codec {
+        "native.f32" => GgmlType::F32,
+        "native.f16" => GgmlType::F16,
+        "native.bf16" => GgmlType::BF16,
+        "ggml.q3_k" => GgmlType::Q3_K,
+        "ggml.q4_k" => GgmlType::Q4_K,
+        "ggml.q5_k" => GgmlType::Q5_K,
+        "ggml.q6_k" => GgmlType::Q6_K,
+        "ggml.q8_0" => GgmlType::Q8_0,
+        "ggml.q5_0" => GgmlType::Q5_0,
+        _ => return None,
+    })
+}
+
+fn meta_value_from_json(value: &serde_json::Value) -> Result<MetaValue> {
+    Ok(match value {
+        serde_json::Value::Bool(v) => MetaValue::Bool(*v),
+        serde_json::Value::String(v) => MetaValue::String(v.clone()),
+        serde_json::Value::Number(v) => {
+            if let Some(v) = v.as_u64() {
+                if v <= u32::MAX as u64 {
+                    MetaValue::U32(v as u32)
+                } else {
+                    MetaValue::U64(v)
+                }
+            } else if let Some(v) = v.as_i64() {
+                if (i32::MIN as i64..=i32::MAX as i64).contains(&v) {
+                    MetaValue::I32(v as i32)
+                } else {
+                    MetaValue::I64(v)
+                }
+            } else if let Some(v) = v.as_f64() {
+                MetaValue::F64(v)
+            } else {
+                return Err(Error::Gguf("unsupported JSON number in Gravity metadata".into()));
+            }
+        }
+        serde_json::Value::Array(values) => MetaValue::Array(
+            values
+                .iter()
+                .map(meta_value_from_json)
+                .collect::<Result<_>>()?,
+        ),
+        serde_json::Value::Null => {
+            return Err(Error::Gguf("null is not a GGUF metadata value".into()))
+        }
+        serde_json::Value::Object(_) => {
+            return Err(Error::Gguf("object is not a GGUF metadata value".into()))
+        }
+    })
 }
 
 #[inline]

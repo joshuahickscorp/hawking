@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.model_eviction_receipt.v1",
+  "status": "EVICTED_SOURCE_ARTIFACT_CACHE_AND_EXACT_TRASH_PURGED",
+  "at_utc": "2026-08-02",
+  "candidate_result": "evidence/tg/TG32_LLAMA70_V3_DUAL_GEOMETRY_RESULT_2026_08_02.json",
+  "lane": "/Users/scammermike/Downloads/hawking/models/tg-active/llama70-v3-dual-2026-08-02",
+  "contents_before": {
+    "allocated_bytes": 42520412160,
+    "full_model_bodies": 1,
+    "source_sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "artifact_published": false,
+    "cache": "Hugging Face metadata only"
+  },
+  "actions": [
+    "moved exact lane directory to macOS Trash",
+    "purged only the Trash item named llama70-v3-dual-2026-08-02",
+    "verified exact lane path absent",
+    "verified no model files remain below models/tg-active"
+  ],
+  "verification": {
+    "free_bytes_before": 316499513344,
+    "free_bytes_after": 359019958272,
+    "recovered_bytes": 42520444928,
+    "exact_trash_item_remaining": false,
+    "model_lane_empty": true,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 159014068716,
+    "second_full_model_body": false
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

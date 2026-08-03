@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "qwen2_dense",
+  "candidate": {
+    "id": "qwen14-source-quant-executable-gravity-v1",
+    "kind": "same_model_executable_gravity_representation",
+    "hypothesis": "A source-preserving executable .gravity container can run the Qwen-14B packed representation directly with persistent descriptors and the GravityLlama GPU grammar, removing GGUF adapter/container overhead without changing source quant bytes or token decisions.",
+    "mechanism": "Pack every executable Q4/Q5/Q6/native tensor byte-for-byte into the canonical Gravity container, bind an exact tokenizer sidecar, and run the artifact through GravityEngine; no lossy fit or dense reconstruction is allowed.",
+    "scope": "same exact Qwen2.5-14B-Instruct Q4_K_M source body, same immutable revision, same M3 Ultra, same prompt, same temperature and complete-token protocol",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32",
+      "artifact_source_hash_bound": true,
+      "tokenizer_hash_bound": true
+    },
+    "reject_conditions": [
+      "any source tensor coverage or hash failure",
+      "tokenizer ID mismatch",
+      "any generated token-ID change",
+      "fallback > 0",
+      "Gravity artifact fails to dispatch",
+      "no complete-token wall win >= 3 percent",
+      "p95 or p99 regression > 2 percent",
+      "dense reconstruction becomes the default execution path"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "control": {
+    "profile": "default fast-minus-f16-scales",
+    "measured_tps": 29.547609923981046,
+    "decode_ms": 1082.997917,
+    "p50_ms": 33.837396,
+    "p95_ms": 34.21186715,
+    "p99_ms": 34.276007060000005,
+    "dispatches_per_forward": 436,
+    "metal_dispatches_total": 13952,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "source_window_generated_prefix": [12095, 624, 32, 13]
+  },
+  "runtime": {
+    "artifact_format": "GRAVITY\\0",
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "execution": "GravityEngine -> GravityLlamaGpu; source quant bytes copied, no dense reconstruction",
+    "tokenizer_authority": "official Qwen tokenizer.json pinned and SHA-256 bound in artifact header",
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "74a4fdf4cd755bd2222ef8f73fa3d3ab4d623337d41ab26f1ae6eb1d40339f4a"
+}

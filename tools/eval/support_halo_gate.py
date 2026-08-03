@@ -17,7 +17,7 @@ Usage:
   python3 tools/eval/support_halo_gate.py score-completions \\
       --completions path/to/completions.jsonl \\
       --artifact-sha256 <index_or_file_sha> \\
-      --out odyssey/evaluation/receipts/run.json
+      --out workspace/campaign/governance/odyssey/program/evaluation/receipts/run.json
 
   # Compare two sealed reports (tournament rank):
   python3 tools/eval/support_halo_gate.py compare --a a.json --b b.json
@@ -27,7 +27,7 @@ Usage:
       --endpoint http://127.0.0.1:8899 \\
       --model math-preserve \\
       --artifact-sha256 33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9 \\
-      --out odyssey/evaluation/SUPPORT_HALO_BASELINE.json
+      --out workspace/campaign/governance/odyssey/program/evaluation/SUPPORT_HALO_BASELINE.json
 
   # Candidate artifact, bound to the server's exact index hash (also deferred):
   python3 tools/eval/support_halo_gate.py run-artifact \\
@@ -50,8 +50,14 @@ from collections import OrderedDict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RULES_PATH = ROOT / "odyssey/evaluation/SUPPORT_HALO_SCORING_RULES.json"
-CORPUS_PATH = ROOT / "odyssey/evaluation/support_halo_corpus_v0.jsonl"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import odyssey_path
+
+EVALUATION_DIR = odyssey_path("evaluation")
+RULES_PATH = EVALUATION_DIR / "SUPPORT_HALO_SCORING_RULES.json"
+CORPUS_PATH = EVALUATION_DIR / "support_halo_corpus_v0.jsonl"
 DIMENSIONS = [
     "technical_language",
     "general_reasoning",
@@ -708,7 +714,7 @@ def cmd_self_check(_args):
         "baseline_status": "NOT_RUN",
         "note": "Baseline generation on Math-Preserve is deferred (GPU/runtime measurement). Rules and corpus are frozen now so T7 cannot rewrite the judge after seeing candidates.",
     }
-    seal_path = ROOT / "odyssey/evaluation/SUPPORT_HALO_SEAL.json"
+    seal_path = EVALUATION_DIR / "SUPPORT_HALO_SEAL.json"
     write_json(seal_path, seal)
     return 0 if out["ok"] else 1
 
@@ -807,10 +813,10 @@ def cmd_run_baseline(args):
         "label": "GLM-5.2-H0.98-Math-Preserve.gravity",
         "artifact_sha256": args.artifact_sha256,
     }
-    out_path = Path(args.out or ROOT / "odyssey/evaluation/SUPPORT_HALO_BASELINE.json")
+    out_path = Path(args.out or EVALUATION_DIR / "SUPPORT_HALO_BASELINE.json")
     write_json(out_path, report)
     # Update seal baseline status
-    seal_path = ROOT / "odyssey/evaluation/SUPPORT_HALO_SEAL.json"
+    seal_path = EVALUATION_DIR / "SUPPORT_HALO_SEAL.json"
     if seal_path.is_file():
         seal = json.loads(seal_path.read_text())
         seal["baseline_status"] = "SEALED"
@@ -841,7 +847,7 @@ def cmd_run_artifact(args):
     tasks = load_corpus()
     rules_sha = sha256_file(RULES_PATH)
     corpus_sha = sha256_file(CORPUS_PATH)
-    seal_path = ROOT / "odyssey/evaluation/SUPPORT_HALO_SEAL.json"
+    seal_path = EVALUATION_DIR / "SUPPORT_HALO_SEAL.json"
     seal = json.loads(seal_path.read_text())
 
     completions = {}
@@ -932,7 +938,7 @@ def cmd_print_baseline_command(_args):
         "  --endpoint http://127.0.0.1:8899 \\\n"
         "  --model math-preserve \\\n"
         f"  --artifact-sha256 {sha} \\\n"
-        "  --out odyssey/evaluation/SUPPORT_HALO_BASELINE.json\n"
+        "  --out workspace/campaign/governance/odyssey/program/evaluation/SUPPORT_HALO_BASELINE.json\n"
         "\n"
         "# Prerequisite (live serve path; Math-Preserve base runtime, default-off flag):\n"
         "#   cargo run --release -p hawking -- serve \\\n"

@@ -9,40 +9,61 @@
 //! to be told where its tokenizer lives is not self-describing, and emitting
 //! raw token ids when it is missing would hide that rather than report it.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
 
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gravity::GravityShard;
+use crate::gravity_deepseek::GravityDeepSeek;
 use crate::gravity_glm::gpu::GravityGlmGpu;
 use crate::gravity_llama::gpu::GravityLlamaGpu;
+use crate::gravity_llama::gpu::ForwardStats as LlamaForwardStats;
+use crate::model::mixtral::MixtralEngine;
 use crate::metal::MetalContext;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 
-/// Either resident-GPU backend this registry serves. A caller only ever
-/// wants the logits, so this drops each backend's own trace/stats type
-/// (`ForwardStats`, `GlmTrace`) rather than inventing a third type wide
-/// enough to describe both.
+/// Either backend this registry serves. Llama's physical forward accounting
+/// is retained and projected into the shared `GenStats`; dropping it made the
+/// served executable-Gravity path unable to prove D/S or complete forwards.
 enum GravityModel {
     Llama(GravityLlamaGpu),
     Glm(GravityGlmGpu),
+    DeepSeek(GravityDeepSeek),
+    Mixtral(MixtralEngine),
 }
 
 impl GravityModel {
-    fn forward(&self, tokens: &[u32]) -> Result<Vec<f32>> {
+    fn forward(&self, tokens: &[u32]) -> Result<(Vec<f32>, Option<LlamaForwardStats>)> {
         match self {
-            GravityModel::Llama(m) => m.forward(tokens).map(|(logits, _)| logits),
-            GravityModel::Glm(m) => m.forward(tokens).map(|(logits, _)| logits),
+            GravityModel::Llama(m) => m.forward(tokens).map(|(logits, stats)| (logits, Some(stats))),
+            GravityModel::Glm(m) => m.forward(tokens).map(|(logits, _)| (logits, None)),
+            GravityModel::DeepSeek(m) => m.forward(tokens).map(|logits| (logits, None)),
+            GravityModel::Mixtral(_) => Err(Error::Unimplemented(
+                "Mixtral Gravity generation delegates to its stateful Engine path",
+            )),
         }
     }
 
-    fn forward_at(&self, tokens: &[u32], pos: usize) -> Result<Vec<f32>> {
+    fn forward_at(&self, tokens: &[u32], pos: usize) -> Result<(Vec<f32>, Option<LlamaForwardStats>)> {
         match self {
-            GravityModel::Llama(m) => m.forward_at(tokens, pos).map(|(logits, _)| logits),
-            GravityModel::Glm(m) => m.forward_at(tokens, pos).map(|(logits, _)| logits),
+            GravityModel::Llama(m) => m.forward_at(tokens, pos).map(|(logits, stats)| (logits, Some(stats))),
+            GravityModel::Glm(m) => m.forward_at(tokens, pos).map(|(logits, _)| (logits, None)),
+            GravityModel::DeepSeek(m) => m.forward_at(tokens, pos).map(|logits| (logits, None)),
+            GravityModel::Mixtral(_) => Err(Error::Unimplemented(
+                "Mixtral Gravity generation delegates to its stateful Engine path",
+            )),
+        }
+    }
+
+    fn device_name(&self) -> Option<String> {
+        match self {
+            GravityModel::Llama(m) => Some(m.device_name()),
+            GravityModel::Glm(m) => Some(m.device_name()),
+            GravityModel::DeepSeek(_) => None,
+            GravityModel::Mixtral(m) => m.metal_ctx.as_ref().map(|ctx| ctx.device_name()),
         }
     }
 }
@@ -279,6 +300,17 @@ impl Engine for GravityEngine {
             .and_then(serde_json::Value::as_str)
             .unwrap_or("unknown")
             .to_string();
+        // DeepSeek is intentionally parsed before the shard mmap is dropped.
+        // Its MLA/MoE fields are not a dense-Llama superset; validating the
+        // contract here makes a malformed artifact fail with the missing
+        // function field instead of reaching a plausible wrong forward.
+        let deepseek_arch = if matches!(arch.as_str(), "deepseek2" | "deepseek_v2") {
+            Some(crate::gravity_deepseek::DeepSeekGravityArch::from_header(
+                arch_source,
+            )?)
+        } else {
+            None
+        };
         let model_id = arch_source
             .get("model")
             .and_then(|m| m.get("repo"))
@@ -294,7 +326,7 @@ impl Engine for GravityEngine {
         // resolved it to a directory at pack time. Fall back to the
         // convention every packer that DOES stage one locally uses:
         // `tokenizer/` beside the shard(s) themselves.
-        let tok_path = match tok
+        let tok_path: Option<PathBuf> = match tok
             .and_then(|value| value.get("dir"))
             .and_then(serde_json::Value::as_str)
         {
@@ -304,29 +336,52 @@ impl Engine for GravityEngine {
                     .get("source")
                     .and_then(serde_json::Value::as_str)
                     .unwrap_or("tokenizer.json");
-                Path::new(dir).join(file)
+                Some(Path::new(dir).join(file))
             }
             None => weights
                 .parent()
-                .ok_or_else(|| {
-                    Error::Gravity(format!(
-                        "{weights:?}: artifact tokenizer names no directory and the shard has \
-                         no parent to fall back to"
-                    ))
-                })?
-                .join("tokenizer")
-                .join("tokenizer.json"),
+                .map(|parent| parent.join("tokenizer").join("tokenizer.json"))
+                .filter(|path| path.is_file()),
         };
-        if !tok_path.is_file() {
+        // Mixtral's first Gravity pack carries the exact GGUF tokenizer arrays
+        // in `gguf_metadata`; no mutable sidecar is needed for this embedded
+        // path. Other architectures remain fail-closed when a named sidecar
+        // is absent.
+        let embedded_mixtral_tokenizer = tok_path.is_none() && arch == "mixtral" && gravity_container;
+        if tok_path.is_none() && !embedded_mixtral_tokenizer {
             return Err(Error::Gravity(format!(
-                "artifact names tokenizer {tok_path:?}, which is not present; refusing to \
+                "artifact tokenizer is absent ({tok_path:?}); refusing to \
                  serve token ids in its place"
             )));
+        }
+        // A tokenizer changes prompt IDs, RoPE positions, KV contents, and
+        // therefore every continuation.  If the artifact declares an immutable
+        // tokenizer digest, reject a substituted sidecar before it can enter a
+        // forward.  Older artifacts without this field remain loadable but are
+        // intentionally ineligible for hash-bound capability promotion.
+        if let Some(expected) = tok
+            .and_then(|value| value.get("sha256"))
+            .and_then(serde_json::Value::as_str)
+        {
+            use sha2::{Digest, Sha256};
+            let path = tok_path.as_ref().ok_or_else(|| {
+                Error::Gravity("tokenizer hash is declared but no sidecar exists".into())
+            })?;
+            let bytes = std::fs::read(path)
+                .map_err(|e| Error::Gravity(format!("read tokenizer {path:?}: {e}")))?;
+            let actual = format!("{:x}", Sha256::digest(bytes));
+            if actual != expected {
+                return Err(Error::Gravity(format!(
+                    "tokenizer SHA-256 mismatch for {path:?}: expected {expected}, got {actual}"
+                )));
+            }
         }
         // Chat template lives next to tokenizer.json. GLM chat without the
         // artifact's real template produces fluent garbage that looks like
         // success — refuse to load rather than guess.
-        let template_path = tok_path.parent().map(|d| d.join("chat_template.jinja"));
+        let template_path = tok_path
+            .as_ref()
+            .and_then(|path| path.parent().map(|d| d.join("chat_template.jinja")));
         let (chat_template_path, chat_template) = match template_path {
             Some(p) if p.is_file() => {
                 let text = std::fs::read_to_string(&p)
@@ -345,7 +400,9 @@ impl Engine for GravityEngine {
 
         let ctx = MetalContext::new_with_trace(config.trace_dispatch)?;
         let model = match arch.as_str() {
-            "llama" => GravityModel::Llama(GravityLlamaGpu::open_with(ctx, weights, true)?),
+            "llama" | "mistral" | "qwen2" => {
+                GravityModel::Llama(GravityLlamaGpu::open_with(ctx, weights, true)?)
+            }
             "glm_moe_dsa" => {
                 // GLM is multi-shard: `weights` names one shard file (enough
                 // to read the header above), and the model lives in its
@@ -357,16 +414,40 @@ impl Engine for GravityEngine {
                 })?;
                 GravityModel::Glm(GravityGlmGpu::open_dir_with(ctx, dir, true)?)
             }
+            "deepseek2" | "deepseek_v2" => {
+                let _contract = deepseek_arch
+                    .as_ref()
+                    .expect("deepseek header was parsed above");
+                let parent = weights.parent().ok_or_else(|| {
+                    Error::Gravity(format!(
+                        "{weights:?}: DeepSeek Gravity shard has no parent directory"
+                    ))
+                })?;
+                let assembled = parent.join("model.gravity.index.json").is_file()
+                    || parent.join("model.activation_aware.index.json").is_file();
+                let model = if assembled {
+                    GravityDeepSeek::open_dir(parent, true)?
+                } else {
+                    GravityDeepSeek::open(weights, true)?
+                };
+                GravityModel::DeepSeek(model)
+            }
+            "mixtral" => GravityModel::Mixtral(MixtralEngine::load(weights, config)?),
             other => {
                 return Err(Error::Gravity(format!(
-                    "no .gravity engine for architecture {other:?} yet; llama and glm_moe_dsa \
-                     are wired"
+                    "no .gravity engine for architecture {other:?} yet; llama/mistral/qwen2/mixtral \
+                     and glm_moe_dsa are wired; DeepSeek MLA/MoE now has a correctness-first \
+                     CPU path, while resident Metal promotion remains gated on parity"
                 )))
             }
         };
         Ok(GravityEngine {
             model,
-            tokenizer: Tokenizer::from_file(&tok_path)?,
+            tokenizer: if let Some(path) = tok_path.as_ref() {
+                Tokenizer::from_file(path)?
+            } else {
+                Tokenizer::from_gguf(&crate::gguf::GgufFile::open(weights)?)?
+            },
             model_id,
             arch,
             index_sha256,
@@ -380,17 +461,30 @@ impl Engine for GravityEngine {
         req: GenerateRequest,
         sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
+        // Mixtral owns a stateful KV/router engine whose complete-token
+        // accounting is already implemented in its adapter.  Delegating the
+        // whole request keeps Gravity generation on that same resident path;
+        // routing it through the dense forward shim would reset state and
+        // silently invalidate parity.
+        if let GravityModel::Mixtral(model) = &mut self.model {
+            return model.generate(req, sink);
+        }
         let mut ids = self.tokenizer.encode(&req.prompt, true)?;
         let prompt_tokens = ids.len();
 
         let t_prefill = Instant::now();
-        let mut logits = self.model.forward(&ids)?;
+        let (mut logits, prefill_physical) = self.model.forward(&ids)?;
         let prefill_ms = t_prefill.elapsed().as_secs_f64() * 1e3;
 
         let mut sampler = Sampler::new(req.sampling.seed.unwrap_or(0));
         let mut pos = ids.len();
         let mut text = String::new();
         let mut completion = 0usize;
+        let mut decode_token_ms = Vec::new();
+        let mut decode_dispatches = 0usize;
+        let mut decode_command_buffers = 0usize;
+        let mut completed_decode_forwards = 0usize;
+        let mut last_dispatches = 0usize;
         let t_decode = Instant::now();
 
         let reason = loop {
@@ -423,9 +517,26 @@ impl Engine for GravityEngine {
             if req.stop.iter().any(|s| !s.is_empty() && text.contains(s)) {
                 break StopReason::StopString;
             }
+            // The logits produced by the final requested token are never
+            // consumed.  Do not pay for a trailing forward when the request
+            // is complete; this keeps complete-token accounting identical to
+            // the repaired native Qwen path and removes one needless command
+            // graph replay per generation.
+            if completion >= req.max_new_tokens {
+                break StopReason::MaxTokens;
+            }
 
             let step = Instant::now();
-            logits = self.model.forward_at(&[next], pos)?;
+            let (next_logits, physical) = self.model.forward_at(&[next], pos)?;
+            logits = next_logits;
+            let complete_forward_ms = step.elapsed().as_secs_f64() * 1e3;
+            decode_token_ms.push(complete_forward_ms);
+            completed_decode_forwards += 1;
+            if let Some(physical) = physical {
+                decode_dispatches += physical.dispatches;
+                decode_command_buffers += physical.command_buffers;
+                last_dispatches = physical.dispatches;
+            }
             pos += 1;
             if req.max_stall_ms > 0 && step.elapsed().as_millis() as u64 > req.max_stall_ms {
                 break StopReason::Aborted;
@@ -437,6 +548,15 @@ impl Engine for GravityEngine {
             completion_tokens: completion,
             prefill_ms,
             decode_ms: t_decode.elapsed().as_secs_f64() * 1e3,
+            decode_token_ms,
+            device_id: self.model.device_name(),
+            metal_dispatches: last_dispatches,
+            dispatches_per_forward: last_dispatches,
+            decode_metal_dispatches_total: decode_dispatches,
+            completed_decode_forwards,
+            decode_command_buffers_total: decode_command_buffers,
+            prefill_metal_dispatches_total: prefill_physical.as_ref().map_or(0, |value| value.dispatches),
+            prefill_command_buffers_total: prefill_physical.as_ref().map_or(0, |value| value.command_buffers),
             ..Default::default()
         };
         sink(StreamEvent::Done {
@@ -512,7 +632,8 @@ impl Engine for GravityEngine {
         let start = positions.first().copied().unwrap_or(0);
         let mut out = Vec::with_capacity(tokens.len());
         for (i, &t) in tokens.iter().enumerate() {
-            out.push(self.model.forward_at(&[t], start + i)?);
+            let (logits, _) = self.model.forward_at(&[t], start + i)?;
+            out.push(logits);
         }
         Ok(out)
     }

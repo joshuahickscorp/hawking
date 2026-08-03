@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.same_model_executable_gravity_preregistration.v2",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen32-executable-gravity-first-2026-08-02",
+  "objective": "Convert the next admitted >=32B source to executable Gravity before the runtime sweep; use GGUF/llama.cpp only as source-compatible control and capability oracle.",
+  "hypothesis": "A source-preserving executable Gravity container carrying the exact Qwen2.5-32B Q4_K_M packed bytes, repaired Qwen conventional decode seed, and hash-bound official tokenizer will remove GGUF adapter/container work and expose a direct Gravity execution seam. It may not claim a rung until whole-model token parity is exact.",
+  "representation": {
+    "stage": "executable_gravity_source_quant_v1",
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "dense_reconstruction_default": false,
+    "runtime": "GravityEngine -> GravityLlamaGpu; qwen2 dense adapter",
+    "next_change_after_parity": "activation-aware or basis/codebook executable Gravity representation; only after this source-preserving seam passes parity"
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "xet_hash": "c933aa99b1a3e41ac7ceb16c6794caedbc41e6b40774085b387c1f081ea243cd",
+    "license": "apache-2.0",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json"
+  },
+  "control": {
+    "same_model_source_receipt": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_RESULT_2026_08_02.json",
+    "source_reference": "evidence/tg/raw/TG32_QWEN32_LLAMA_CPP_REFERENCE_2026_08_02.json",
+    "control_tps": 14.048199372045488,
+    "control_dispatches_per_forward": 452,
+    "control_fallback": 0,
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 16,
+    "max_seq_len": 64,
+    "temperature": 0
+  },
+  "parity_and_promotion": {
+    "conventional_decode_seed": "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "prompt_ids_exact": true,
+    "complete_tokens_required": 16,
+    "generated_token_ids_exact": true,
+    "cpu_reference_fallback": 0,
+    "real_metal_dispatches": true,
+    "wall_win_threshold_percent": 3.0,
+    "p95_regression_max_percent": 2.0,
+    "p99_regression_max_percent": 2.0,
+    "tg32_target_tps": 31.25,
+    "named_rung_allowed": false
+  },
+  "admission": {
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 102000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "planned_source_bytes": 19851336576,
+    "planned_gravity_artifact_bytes_upper_bound": 19851336576,
+    "planned_tokenizer_bytes": 8000000,
+    "planned_peak_model_artifact_plus_scratch_bytes": 66302673152,
+    "active_full_model_bodies_before": 0
+  },
+  "owner_fences_false": true,
+  "reopen_condition": "Retire if any source coverage/hash/tokenizer/continuation mismatch, fallback, dispatch loss, p99 regression, or no clean wall win; do not substitute a fast but capability-drifted Gravity artifact."
+}

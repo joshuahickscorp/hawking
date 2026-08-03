@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.model_lane_purge.v2",
+  "status": "PURGED_AND_RECOVERED",
+  "source_receipt": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_RESULT_2026_08_02.json",
+  "lane": "models/tg-active/deepseek-route-tie-2026-08-02",
+  "evicted": [
+    {
+      "name": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+      "bytes": 10364416320,
+      "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+    },
+    {
+      "name": "deepseek-route-tie.gravity",
+      "bytes": 10362253454,
+      "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788"
+    }
+  ],
+  "lane_accounting": {
+    "allocated_file_bytes": 20742086656,
+    "free_bytes_before_move": 344160305152,
+    "free_bytes_after_move": 344160284672,
+    "free_bytes_after_exact_purge": 364902400000,
+    "observed_recovery_bytes": 20742115328,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_before": 144154415596,
+    "residual_above_floor_after": 164896510444
+  },
+  "eviction": {
+    "move_command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/deepseek-route-tie-2026-08-02",
+    "exact_trash_target": "/Users/scammermike/.Trash/deepseek-route-tie-2026-08-02",
+    "purge_command": "Finder deletion of the exact Trash item deepseek-route-tie-2026-08-02",
+    "exact_trash_target_absent": true,
+    "lane_empty": true,
+    "unrelated_trash_preserved": "none present at purge observation"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "model_lane_contents_after": [],
+  "verdict": "DEEPSEEK_ROUTE_TIE_DIAGNOSTIC_EVICTED_EXACT_TRASH_TARGET_PURGED_FREE_SPACE_RECOVERED"
+}

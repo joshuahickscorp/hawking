@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.one_mountain.qwen72_decode_roofline.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "scope": "Dense Qwen2.5-72B Q4_K_M decode lower-bound analysis for the selected source GGUF and its Metal provider; not a hardware-specification claim.",
+  "inputs": {
+    "selected_source_gguf_bytes": 47415715488,
+    "selected_source_gguf_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "best_single_stream_shared_generation_tps": 14.5,
+    "best_single_stream_receipt": "HAWKING_ONE_MOUNTAIN_PROVIDER_FLASH_ATTENTION_SHARED_BAKEOFF.json",
+    "eight_way_aggregate_shared_generation_tps": 12.96144123125591,
+    "eight_way_receipt": "HAWKING_ONE_MOUNTAIN_SERVER_NP8_SHARED_REJECTION.json"
+  },
+  "calculation": {
+    "assumption": "A dense decode token must at minimum access the selected model's 47415715488-byte weight body once. Actual traffic, activations, KV, and non-ideal locality can only increase the required bandwidth.",
+    "observed_single_stream_minimum_weight_read_bytes_per_second": 687527874576.0,
+    "observed_single_stream_minimum_weight_read_terabytes_per_second_decimal": 0.687527874576,
+    "base_true_tps_target": 100,
+    "target_minimum_weight_read_bytes_per_second": 4741571548800,
+    "target_minimum_weight_read_terabytes_per_second_decimal": 4.7415715488,
+    "target_over_best_single_stream_ratio": 6.896551724137931
+  },
+  "conclusion": {
+    "status": "base_true_tps_not_admitted_on_current_dense_provider_path",
+    "reason": "Measured provider paths are 12.96 aggregate and 14.5 single-stream t/s. Reaching 100 t/s would require at least 6.90x the observed effective dense-weight stream and at least 4.74 TB/s of minimum model-weight access before overhead.",
+    "allowed_next_classes": ["verified architecture-aware weight transformation with capability gates", "accelerator kernel/runtime work that materially changes effective weight traffic", "a future substrate/model allocation change"],
+    "forbidden_inference": "This roofline does not prove a hardware maximum or authorize a 100-TPS claim."
+  }
+}

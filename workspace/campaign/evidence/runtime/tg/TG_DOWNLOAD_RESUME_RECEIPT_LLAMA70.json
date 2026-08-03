@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.tg.download_resume_receipt.v1",
+  "status": "PASS_FRESH_SESSION_EXACT_RANGE_RESUME",
+  "at": "2026-08-01T06:03:30Z",
+  "source": {
+    "repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "path": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "file_bytes": 42520398816,
+    "file_sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_file_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 4,
+    "effective_download_concurrency": {"initial":16,"minimum":4,"maximum":124},
+    "requested_xet_chunk_cache_bytes": 0,
+    "client_visible_retries": 0,
+    "application_body_file_writes": 0
+  },
+  "range": {
+    "start": 0,
+    "interruption_boundary": 8388608,
+    "end": 67108864,
+    "combined_bytes": 67108864,
+    "combined_sha256": "7b5e158fad734cce10fbacf1ea33d8b54045e86e163dfb452b2418d3493a194c",
+    "uninterrupted_reference_sha256": "7b5e158fad734cce10fbacf1ea33d8b54045e86e163dfb452b2418d3493a194c",
+    "hash_matches_uninterrupted": true,
+    "parts": [
+      {"start":0,"end":8388608,"bytes":8388608,"sha256":"304f72a7bbab7e6bec54e2b961f6ab0a866a9b54e33911d00b7f4283291309ef"},
+      {"start":8388608,"end":67108864,"bytes":58720256,"sha256":"6d38001c9d63cc5762b30671527ec5e109eb6919a032ce161d870044a274ec65"}
+    ]
+  },
+  "measurement": {
+    "elapsed_seconds": 1.285759917,
+    "process_cpu_user_seconds": 0.088097,
+    "process_cpu_system_seconds": 0.048114,
+    "sealed_gb_per_hour_decimal": 187.89815050674036
+  },
+  "claim_boundary": [
+    "fresh in-memory Xet session with two exact half-open intervals",
+    "the second interval begins exactly at the interruption boundary",
+    "does not prove full-body resume or create a model body"
+  ],
+  "seal_sha256": "32cfa0696bda0699b6afe845085ee4342292bf8d6886261d08b5895d291203ef"
+}

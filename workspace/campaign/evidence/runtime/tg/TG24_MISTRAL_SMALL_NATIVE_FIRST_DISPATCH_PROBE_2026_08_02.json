@@ -1,0 +1,81 @@
+{
+  "artifact": "models/tg-active/mistral-small-24b/Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.source.gravity",
+  "continuation_sha256": "222191fe2feb48960dea2a9cfcc1970478f215061b9f84a140554e1294d433a5",
+  "decode_command_buffers": 1,
+  "decode_cpu_reference_fallback_total": 0,
+  "decode_dispatches": 522,
+  "decode_fused_gate_up_dispatches": 0,
+  "decode_fused_qkv_dispatches": 0,
+  "decode_max_ms": 29.112583,
+  "decode_min_ms": 29.112583,
+  "decode_ms": [
+    29.112583
+  ],
+  "decode_p50_ms": 29.112583,
+  "decode_p95_ms": 29.112583,
+  "decode_p99_ms": 29.112583,
+  "decode_tps": 34.349408295375234,
+  "device": "Apple M3 Ultra",
+  "execution_representation": {
+    "artifact_grammar": "source-preserving packed Gravity",
+    "kv_precision": "source_parity_f32",
+    "q4_kernel": "q4_k_b9430_parity_baseline",
+    "qkv_rope_kv_append": "decomposed_parity_baseline"
+  },
+  "generated_tokens": 1,
+  "greedy_first_token": 1032,
+  "greedy_generated_token_ids": [
+    1032
+  ],
+  "inline_token_prefix": [
+    1,
+    1050,
+    1867,
+    1032,
+    1050,
+    1376
+  ],
+  "kv_bytes_at_final_position": 2293760,
+  "load_ms": 10156.548583,
+  "measurement_classification": {
+    "capability_gate": "NOT_RUN",
+    "clean_lease": "NOT_ATTESTED_BY_THIS_PROBE",
+    "complete_token": true,
+    "reason": "The probe records physical resident decode facts; a TG promotion additionally requires a capability-matched, CLEAN same-model before/after campaign.",
+    "same_model_candidate_only": true,
+    "tg_promotion_allowed": false
+  },
+  "prefill_command_buffers": 86,
+  "prefill_dispatches": 3132,
+  "prefill_fused_gate_up_dispatches": 0,
+  "prefill_fused_qkv_dispatches": 0,
+  "prefill_ms": 354.107125,
+  "prefix_tokens": 6,
+  "resident_weight_bytes": 14326026240,
+  "rope_freq_factors": null,
+  "rope_interleaved": true,
+  "schema": "hawking.gravity.llama_source_probe.v2",
+  "tokens_file": null,
+  "top5_after_prefix": [
+    {
+      "id": 1032,
+      "logit": 15.2251615524292
+    },
+    {
+      "id": 7580,
+      "logit": 12.13310432434082
+    },
+    {
+      "id": 3082,
+      "logit": 11.786456108093262
+    },
+    {
+      "id": 32268,
+      "logit": 11.512594223022461
+    },
+    {
+      "id": 1267,
+      "logit": 11.28423023223877
+    }
+  ]
+}

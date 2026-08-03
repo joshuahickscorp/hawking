@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.tg.metal_preflight_correction.v1",
+  "status": "PASS_ROOT_CAUSE_REPAIRED_REPROBE_REQUIRED",
+  "at": "2026-08-01T06:04:31Z",
+  "trigger_receipt": "evidence/tg/TG32_QWEN72_K0_TERMINAL.json",
+  "trigger_seal_sha256": "de0d67517b9ec2a0083e7a99c304733b6f0c99bf47dfcda860ef5d7f4776bbd5",
+  "diagnosis": {
+    "observed_device_id": null,
+    "observed_prefill_ms": 1071264.127458,
+    "reproduction_command": "target/debug/hawking bench-q4k-shapes --iters 1",
+    "first_compiler_error": "quant.metal b9430_write_rope declared `half` as a uint variable; Metal 4 reserves `half` as a scalar type",
+    "causal_chain": [
+      "the monolithic Metal shader library failed compilation",
+      "QwenDense::load discarded MetalContext::new_with_trace error via .ok()",
+      "the traced K0 request silently selected the CPU packed-weight path",
+      "one prompt token scanned the 47,415,715,488-byte source before the 60-second post-step stall guard could abort"
+    ]
+  },
+  "repair": {
+    "representation_change": "rename the fused QKV/RoPE helper local from reserved `half` to `half_dim`",
+    "evidence_guard": "traced Qwen, Llama and DeepSeek-family loads now propagate Metal initialization errors; untraced portability loads retain a visible CPU fallback",
+    "explicit_guard_env": "HAWKING_REQUIRE_METAL=1",
+    "source_sha256": {
+      "crates/hawking-core/shaders/quant.metal": "1a2b4d54330553622311d283edef8b0e83ff20ad6cc7805ae919d765be02ba94",
+      "crates/hawking-core/src/engine.rs": "4ddcd952adc39680879a680e5ef9c7b56ca786205c28a60cb05af36ff63c65fb",
+      "crates/hawking-core/src/model/qwen_dense.rs": "b90bcdc53ecd3d802d9cd26af1850397e8c1a4391b06a5a248d0821c7701cb2d",
+      "crates/hawking-core/src/model/llama.rs": "a8762233a4974ac7035a46876ee7dcf4eb0fb3a7e6747692716ed5a2c73624db",
+      "crates/hawking-core/src/model/deepseek_v2.rs": "2c0488a9d1b983e48484bebcaac9df6f7ec1096b482c443463cd06ed4c01f1b7"
+    }
+  },
+  "verification": {
+    "cargo_check_hawking_core": "PASS",
+    "full_shader_registry_compile_and_dispatch": "PASS",
+    "command": "cargo run -q -p hawking -- bench-q4k-shapes --iters 1",
+    "device": "Apple M3 Ultra",
+    "shader_hash_prefix": "fe8b4b075ca0ee088dbf89a3",
+    "packed_q4_shapes_dispatched": 3,
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": [
+    "this corrects the failure classification but does not retroactively create a Qwen K0 forward",
+    "the Qwen source was already hash-verified and exactly evicted",
+    "same-source reacquisition, exact hash verification, token parity and measured TG evidence remain mandatory"
+  ],
+  "seal_sha256": "a094dd3ac172cbf8bd84a53cd49851093ed29fe73ff03514ebc1c0ede4599b35"
+}

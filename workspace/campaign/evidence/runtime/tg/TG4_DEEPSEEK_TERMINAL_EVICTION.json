@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG4",
+  "model": "DeepSeek-V2-Lite-Chat",
+  "source": {
+    "path": "models/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "quant": "Q4_K_M"
+  },
+  "terminal_gates": {
+    "RAW_PARENT_FORWARD": "FAIL",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "PASS",
+    "AUTOTUNE_PROFILE": "PASS"
+  },
+  "evidence": [
+    "evidence/tg/TG_MOE_BISECT.json",
+    "evidence/tg/TG_MOE_INSTRUMENT.json",
+    "evidence/tg/TG_BREADTH_LADDER_STATE.json"
+  ],
+  "decision": "Do not attribute latency to this incorrect adapter and do not retain its only local source copy. The source can be rehydrated later by its pinned identity when a dedicated DeepSeek reference-forward adapter effort is scheduled.",
+  "retained": [
+    "the exact source identity above",
+    "the M3 Ultra profile profiles/deepseek-v2-lite-q4.m3ultra.json",
+    "the raw-forward failure and routing/state investigation receipts"
+  ],
+  "eviction_target": "models/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+  "eviction_result": {
+    "workspace_copy": "removed by moving the exact verified source to macOS Trash",
+    "reclaim_status": "NOT_YET_RECLAIMED — macOS Trash retains the 10,364,416,320 bytes until it is emptied",
+    "recovery": "recover the exact source from Trash if a dedicated DeepSeek adapter repair is scheduled before the next source acquisition"
+  }
+}

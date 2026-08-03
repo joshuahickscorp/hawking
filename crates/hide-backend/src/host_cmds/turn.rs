@@ -167,7 +167,7 @@ impl BackendHost {
         session_id: SessionId,
         run_id: Option<RunId>,
     ) -> Arc<ToolDispatcher> {
-        let bound = crate::tools::DispatchContext { session_id, run_id };
+        let bound = crate::tools::DispatchContext::unverified_model(session_id, run_id);
         Arc::new(
             crate::tools::build_task_tool_dispatcher(
                 &self.services.config,

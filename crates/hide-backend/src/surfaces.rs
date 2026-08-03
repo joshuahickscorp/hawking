@@ -12,8 +12,9 @@ use crate::lenses::{
     Claim, DeliberateExclusion, EvidenceTier, HandoffCapsule, HandoffKind, Surface, SurfaceGraph,
     SurfaceGraphView,
 };
+use hawking_events::{Category, ContentVerification, NewCanonical, Subsystem};
 use hide_core::api::{UiEvent, UiEventKind};
-use hide_core::event::NewEvent;
+use hide_core::event::EventClass;
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
@@ -146,18 +147,18 @@ impl SurfaceGraphService {
                 "surface": capsule.permissions_at_creation.surface.as_str(),
                 "tools": capsule.permissions_at_creation.tools,
                 "connectors": capsule.permissions_at_creation.connectors,
-            },
-            "_canonical": {
-                "schema": "hawking.events.canonical.v1",
-                "surface": capsule.origin_surface.as_str(),
-                "subsystem": "hide_you",
-                "verification": "target_verified",
-                "category": "you_handoff",
             }
         });
-        let mut new = NewEvent::system(session.clone(), "you.handoff.created", payload);
-        new.class = hide_core::event::EventClass::Action;
-        new.actor = Some("hide_you".into());
+        let new = NewCanonical::new(
+            session.clone(),
+            Subsystem::HideYou,
+            ContentVerification::TargetVerified,
+            Category::YouHandoff,
+            payload,
+        )
+        .with_class(EventClass::Action)
+        .with_kind("you.handoff.created")
+        .into_new_event();
         let _event = self.events.append(new).await?;
 
         self.publish_view();

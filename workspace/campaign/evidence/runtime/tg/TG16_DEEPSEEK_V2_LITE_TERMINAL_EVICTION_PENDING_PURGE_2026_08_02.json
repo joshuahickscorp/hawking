@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "RECOVERABLY_EVICTED_PENDING_EXACT_TRASH_PURGE",
+  "family": "deepseek_v2_lite_moe_mla",
+  "source_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+  "artifact_sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+  "terminal_roofline": "evidence/tg/TG16_DEEPSEEK_V2_LITE_NATIVE_ROOFLINE_TERMINAL_2026_08_02.json",
+  "active_model_lane": "models/tg-active",
+  "active_model_lane_contents_after_move": [],
+  "exact_recoverable_trash_target": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02",
+  "contained_model_bodies": ["DeepSeek-V2-Lite-Chat-Q4_K_M.gguf", "gravity/DeepSeek-V2-Lite-Chat-Q4_K_M.source.gravity"],
+  "bytes_staged_for_recovery": 20726669774,
+  "free_bytes_before_move": 342666137600,
+  "free_bytes_after_recoverable_move": 342666125312,
+  "recovery_measurement": "PENDING: macOS Trash keeps bytes allocated until exact permanent purge; no recovered-free-space claim is made yet.",
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false}
+}

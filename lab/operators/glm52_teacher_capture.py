@@ -16,6 +16,7 @@ from lab.operators.glm52_common import seal
 from lab.operators.glm52_common import utc_now
 from lab.operators.glm52_common import verify_sealed
 from lab.operators import glm52_capture_program as program
+from lab.layout import evidence_dir
 import hashlib
 import io
 import json
@@ -27,6 +28,7 @@ from typing import Any, Iterable
 import numpy as np
 CONDENSE = Path(__file__).resolve().parent
 ROOT = CONDENSE.parents[1]
+GLM52_EVIDENCE = evidence_dir('glm52')
 SUPPORT = Path(os.environ.get('GLM52_SUPPORT_ROOT', '/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity'))
 SOURCE_ROOT = SUPPORT / 'source'
 CONTROL_ROOT = SUPPORT / 'control'
@@ -34,10 +36,13 @@ FETCH_LEDGER = SUPPORT / 'source_fetch' / 'SOURCE_FETCH_LEDGER.jsonl'
 TEACHER_DIR = SUPPORT / 'source_fetch' / 'teacher'
 CAPSULES = TEACHER_DIR / 'capsules'
 LEDGER = TEACHER_DIR / 'GLM52_TEACHER_EVIDENCE_LEDGER.jsonl'
-POLICY_PATH = ROOT / 'evidence' / 'glm52' / 'GLM52_TEACHER_EVIDENCE_POLICY.json'
+POLICY_PATH = GLM52_EVIDENCE / 'GLM52_TEACHER_EVIDENCE_POLICY.json'
 GRAPH_PATH = resolve_artifact('GLM52_SHARD_DEPENDENCY_GRAPH.json')
-SCHEDULE_PATH = ROOT / 'evidence' / 'glm52' / 'GLM52_STREAMING_SCHEDULE.json'
-MANIFEST_PATH = ROOT / 'evidence' / 'glm52' / 'GLM52_OFFICIAL_MANIFEST.json'
+SCHEDULE_PATH = Path(os.environ.get(
+    'GLM52_STREAMING_SCHEDULE_PATH',
+    GLM52_EVIDENCE / 'GLM52_STREAMING_SCHEDULE.json',
+))
+MANIFEST_PATH = GLM52_EVIDENCE / 'GLM52_OFFICIAL_MANIFEST.json'
 CALIBRATION_TOKENS = 256
 CALIBRATION_SPLITS = ('teacher_fit', 'teacher_router', 'teacher_doctor', 'teacher_cv', 'teacher_score', 'teacher_holdout', 'teacher_replication', 'teacher_protected', 'teacher_longctx')
 DEFAULT_SPLIT = 'teacher_fit'

@@ -3136,6 +3136,13 @@ pub mod gpu {
             self.resident_enabled
         }
 
+        /// The Metal device executing this artifact.  Bench receipts need the
+        /// concrete device rather than an inferred "GPU" label: a fast custom
+        /// format result without a named device is not a transferable result.
+        pub fn device_name(&self) -> String {
+            self.weights.ctx.device_name()
+        }
+
         /// Live `commit_and_wait` count from the last resident generation, if any.
         pub fn last_resident_waits(&self) -> Option<u64> {
             self.resident

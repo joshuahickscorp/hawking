@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.one_mountain.gravity_source_artifact.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "artifact": {
+    "state": "format_verified_cpu_execution_in_progress_then_evicted_for_substrate_floor",
+    "former_path": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gravity",
+    "bytes": 47410029459,
+    "schema": "hawking.gravity.shard_header.v1",
+    "format_version": 1,
+    "tensor_count": 963,
+    "body_bytes": 47409725440,
+    "body_sha256": "d978e6c422abb6d94999a703cdf59f6f7b0b92b4816691913e0dc4d335ea04c1",
+    "source_gguf_path": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-q4km-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "source_gguf_bytes": 47415715488,
+    "source_gguf_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "tokenizer_json_path": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02/tokenizer/tokenizer.json",
+    "tokenizer_json_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "packer": {
+    "implementation": "tools/qwen_q4k_gravity_stream_pack.py",
+    "method": "bounded-memory streaming source-preserving pack",
+    "lossy_fit": false,
+    "compression_claim": false,
+    "raw_stdout": "raw/QWEN2P5_72B_GRAVITY_SOURCE_PACK_TOKENIZER_BOUND.stdout",
+    "raw_stdout_sha256": "72feab6662aa004aad6ee6c99692089ad65de4af00f8efd531ddf4d7aa7756b1",
+    "raw_stderr": "raw/QWEN2P5_72B_GRAVITY_SOURCE_PACK_TOKENIZER_BOUND.stderr",
+    "raw_stderr_sha256": "9de928625e04dd675a23f9ee8f7d80333599593976e68407ae31ee894b5e20ee"
+  },
+  "format_verification": {
+    "status": "passed_under_shared_load",
+    "ok": true,
+    "body_sha256_ok": true,
+    "complete_rate_self_consistent": true,
+    "packed_rate_self_consistent": true,
+    "tensors_without_payload": 0,
+    "bad_tensors": 0,
+    "raw_result": "raw/QWEN2P5_72B_GRAVITY_SOURCE_TOKENIZER_BOUND_VERIFY.json",
+    "raw_result_sha256": "ae0d28b6a17e914cde8dc212539f2eb725d607e337a5ff299073b7c3192b3917",
+    "header_snapshot": "raw/QWEN2P5_72B_GRAVITY_SOURCE_HEADER.json",
+    "header_snapshot_sha256": "e097352801db4d439a678390f291641eea6ee2f815255769ea675d4aded15591"
+  },
+  "cpu_direct_execution": {
+    "status": "timed_out_after_one_hour_shared_load",
+    "test": "cargo test -p hawking-core --test qwen_source_gravity_live -- --nocapture",
+    "scope": "Attempted full CPU direct-grammar forward with source and tokenizer hash binding; a shared-load correctness experiment only",
+    "termination": "SIGTERM sent after more than one hour of sustained CPU execution without a completed forward or completion token. The test process reported signal 15; no execution-success claim is made.",
+    "throughput_conclusion": "Rejected as a serving/performance path. This timeout is not an absolute benchmark because unrelated shared processes were active.",
+    "raw_stdout": "raw/QWEN2P5_72B_GRAVITY_SOURCE_CPU_FORWARD.stdout",
+    "raw_stdout_sha256": "6bcc68f76366334d5d11299a89916ae0c3cb90aaac3bd4f5e57ba3927a42da58",
+    "raw_stderr": "raw/QWEN2P5_72B_GRAVITY_SOURCE_CPU_FORWARD.stderr",
+    "raw_stderr_sha256": "13730f2dbfc1969c6ca0cb76b3d7b225a4d2cee1d63d04203a1b4a2e8a2741f8"
+  },
+  "promotion_limits": [
+    "Not a capability-gate completion.",
+    "Not a GPU/Metal parity result.",
+    "Not a latency or throughput benchmark.",
+    "Not a 100 TPS claim.",
+    "Not the default serving spine."
+  ],
+  "development_history": {
+    "pre_tokenizer_artifact": "A prior 47410029326-byte source artifact was format-verified but evicted and rebuilt because its header did not bind the official tokenizer sidecar. The selected source GGUF and model selection did not change.",
+    "post_verification_eviction": "The final 47410029459-byte duplicate Gravity body was moved to Trash and permanently deleted while its opt-in CPU test retained an open mapping. This was necessary after the live filesystem reading fell below substrate's 200008355840-byte continuity floor. The selected 47415715488-byte Qwen GGUF remains present; the test may finish using its already-open mapping, but this receipt does not claim that result until captured."
+  }
+}

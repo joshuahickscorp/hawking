@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_NATIVE_PACKED_QWEN72_K0",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen72-native-q5q8-q6-head-k0-v1",
+    "kind": "same_model_source_native_representation",
+    "hypothesis": "Keeping Q5_0, Q8_0 and Q6_K tensors packed in the GGUF mmap and dispatching source-native GEMV kernels will remove the frontier loader's multi-GB f16 pin wall while preserving the exact prompt and complete-token path.",
+    "representation_change": "native Q5_0/Q8_0 dense GEMV; native Q6_K output head; no Qwen Q4K predecode, Q4K LM-head requant, vocab prune or CPU fallback",
+    "scope": "same Qwen2.5-72B Q4_K_M source, exact prompt 2+2=, 16 complete tokens, Apple M3 Ultra",
+    "target_named_rung": "TG32",
+    "target_tps": 31.25,
+    "promotion_gate": {
+      "complete_tokens": 16,
+      "device_dispatches": ">0",
+      "fallback_count": 0,
+      "source_hash": "must remain e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+      "continuation_hash": "record exactly; no parity promotion without an independent same-source token authority",
+      "load_stages": "no unexplained stage may exceed 2% of total load/prefill",
+      "tg_claim": "forbidden unless complete-token decode TPS reaches 31.25"
+    }
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_FRESH_2026_08_02.json"
+  },
+  "environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_TRACE_TOKENS": "1",
+    "HAWKING_QWEN_LOAD_TIMING": "1",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1",
+    "HAWKING_TCB_TRACE": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_NATIVE_LMHEAD": "1",
+    "HAWKING_QWEN_Q4K_PREDEC": "0",
+    "HAWKING_QWEN_Q4K_LMHEAD": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0",
+    "HAWKING_QWEN_VOCAB_PRUNE": "0"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

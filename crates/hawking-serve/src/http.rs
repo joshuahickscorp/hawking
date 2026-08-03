@@ -6,7 +6,7 @@
 //!   GET  /metrics               (Prometheus textfile)
 
 use crate::batch::driver::BatchDriver;
-use crate::system_kv_bank::SystemPromptKvBank;
+use crate::system_kv_bank::{SystemPromptKvBank, DEFAULT_MIN_PREFIX_TOKENS};
 use axum::{
     body::Bytes,
     extract::State,
@@ -174,6 +174,92 @@ pub struct AppState {
 /// to bank (the bank itself also rejects `< min_prefix_tokens`).
 pub fn banked_len_for(prompt_ids: &[u32]) -> usize {
     prompt_ids.len().saturating_sub(1)
+}
+
+/// Bounded, exact anchors retained after a successful prefill.  The strict
+/// full prompt is essential for a repeated request; power-of-two anchors make
+/// an extended chat turn reuse its largest completed earlier turn without an
+/// unbounded entry per token.
+pub(crate) fn bank_prefix_anchors(prompt_ids: &[u32]) -> Vec<usize> {
+    let strict = banked_len_for(prompt_ids);
+    if strict < DEFAULT_MIN_PREFIX_TOKENS {
+        return Vec::new();
+    }
+    let mut anchors = Vec::new();
+    let mut n = DEFAULT_MIN_PREFIX_TOKENS;
+    while n < strict {
+        anchors.push(n);
+        n = n.saturating_mul(2);
+    }
+    anchors.push(strict);
+    anchors
+}
+
+/// One admission authority for immediate HTTP traffic and drained waiters.
+///
+/// This is the serve-side equivalent of vLLM's prefix-cache routing decision:
+/// it admits exactly once, finds a live or banked exact prefix, copies the
+/// verified KV bytes (or reuses the same untouched slot), and records only a
+/// *skip* for Phase A.  Bank entries themselves are recorded only after
+/// successful prefill, so a failed/cold overwrite cannot later be mistaken
+/// for valid KV.
+pub(crate) fn admit_with_prefix_reuse(
+    state: &AppState,
+    req: GenerateRequest,
+) -> anyhow::Result<Option<u32>> {
+    let mut engine = state.engine.lock();
+    let slot_id = {
+        let mut driver = state.driver.lock();
+        driver.admit(&**engine, req)?
+    };
+    let Some(slot_id) = slot_id else {
+        return Ok(None);
+    };
+
+    let prompt_ids = state
+        .driver
+        .lock()
+        .scheduler
+        .slots
+        .iter()
+        .find(|slot| slot.id == slot_id)
+        .map(|slot| slot.prompt_ids.clone())
+        .unwrap_or_default();
+    if prompt_ids.is_empty() {
+        return Ok(Some(slot_id));
+    }
+
+    let mut source = state
+        .driver
+        .lock()
+        .scheduler
+        .find_decoding_prefix_match_excluding(&prompt_ids, DEFAULT_MIN_PREFIX_TOKENS, slot_id);
+    if source.is_none() {
+        source = state
+            .system_kv_bank
+            .lock()
+            .lookup_longest(&prompt_ids)
+            .map(|entry| (entry.source_slot, entry.prefix_len));
+    }
+    if let Some((source_slot, prefix_len)) = source {
+        let copied = source_slot == slot_id
+            || engine
+                .copy_kv_prefix_to_slot(source_slot as usize, slot_id as usize, prefix_len)
+                .is_ok();
+        if copied {
+            let mut driver = state.driver.lock();
+            driver.lane_stats.prefix_reuse_count += 1;
+            if let Some(slot) = driver
+                .scheduler
+                .slots
+                .iter_mut()
+                .find(|slot| slot.id == slot_id)
+            {
+                slot.prefix_skip = prefix_len;
+            }
+        }
+    }
+    Ok(Some(slot_id))
 }
 
 pub fn router(state: AppState) -> Router {
@@ -752,11 +838,7 @@ fn sse_response(
 
     // Admit the request under a short lock (tokenize + slot assignment only).
     // The engine lock is held only for the encoding step, not for generation.
-    let admit_outcome = {
-        let engine = state.engine.lock();
-        let mut driver = state.driver.lock();
-        driver.admit(&**engine, req.clone())
-    };
+    let admit_outcome = admit_with_prefix_reuse(&state, req.clone());
     // Distinguish a real admit decision from an engine that cannot serve this
     // request at all. `Ok(Some)` = admitted; `Ok(None)` = no free slot (→ queue);
     // `Err` (e.g. the engine lacks `encode_prompt_for_batch`, or tokenization
@@ -1055,11 +1137,7 @@ fn token_id_sse_response(
     // A future improvement can plumb token IDs through DecodeOutput → SlotToken.
     let (tok_tx, mut tok_rx) = async_mpsc::channel::<SlotToken>(256);
 
-    let slot_id_opt = {
-        let engine = state.engine.lock();
-        let mut driver = state.driver.lock();
-        driver.admit(&**engine, req.clone()).ok().flatten()
-    };
+    let slot_id_opt = admit_with_prefix_reuse(&state, req.clone()).ok().flatten();
 
     if let Some(slot_id) = slot_id_opt {
         state.requests_admitted.fetch_add(1, Ordering::Relaxed);
@@ -1148,11 +1226,7 @@ fn hawking_generate_sse(
         state.driver.lock().lane_stats.greedy_steps > 0 || req.sampling.temperature <= 0.0;
     let lm_head = lm_head_path_from_env();
 
-    let slot_id_opt = {
-        let engine = state.engine.lock();
-        let mut driver = state.driver.lock();
-        driver.admit(&**engine, req.clone()).ok().flatten()
-    };
+    let slot_id_opt = admit_with_prefix_reuse(&state, req.clone()).ok().flatten();
     if let Some(slot_id) = slot_id_opt {
         state.requests_admitted.fetch_add(1, Ordering::Relaxed);
         state.slot_senders.lock().insert(slot_id, tok_tx);

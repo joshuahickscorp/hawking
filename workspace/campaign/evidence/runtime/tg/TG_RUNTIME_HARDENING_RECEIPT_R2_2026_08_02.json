@@ -1,0 +1,329 @@
+{
+  "schema": "hawking.tg.runtime_hardening_receipt.v2",
+  "status": "FIXTURE_HARDENING_GREEN_OWNER_GATES_FALSE",
+  "at": "2026-08-02",
+  "tests": {
+    "hawking_serve_batch": "56 passed",
+    "hawking_speculation": "56 passed",
+    "lease_adversarial_subset": "9 passed, 27 deselected",
+    "hide_live_surface": "58 passed",
+    "deepseek_gravity_unit": "11 passed",
+    "metal_fusion_parity": "5 passed",
+    "restream_range_and_guard": "46 passed",
+    "ramanujan_fixture": "137 passed",
+    "flash_mla_candidate": "physically dispatched, source-window parity pass, retired 9.19 percent slower",
+    "deepseek_geometry_tg128_candidate": "physically dispatched, 32 complete tokens, source-window parity pass, retired 9.351610324231629 percent slower",
+    "hawking_core_full": "281 passed, 6 ignored",
+    "condense_restream_targeted": "37 passed",
+    "ramanujan_fixture_refresh": "161 passed, 3 subtests passed",
+    "hide_backend_refresh": "202 passed",
+    "lease_campaign_adversarial_refresh": "133 passed",
+    "telegram_and_gravity_contract_refresh": "133 passed, 5 skipped",
+    "condense_full_sweep_boundary": "1790 passed, 20 skipped; 8 retired tools/condense path errors and 3 stale assertions were isolated, with no TG runtime failure",
+    "llama70_rehydrated_floor": "8 complete source-matched tokens, 11.64468166294944 TPS, fallback 0"
+    ,"mixtral_fused_expert_adapter": "fused Q4_K/Q6_K expert slices loaded and physically dispatched on Apple M3 Ultra; resident K/V GQA, 32 complete tokens, 15.89820396820484 TPS diagnostic, 675 dispatches/forward, fallback 0; source continuation diverged at token 8 and no TG rung was promoted"
+    ,"qwen72_transfer_matrix": "fresh 64 MiB official standard/high-performance Xet profiles, 3 repeats per profile, exact range hashes and partial resume PASS; selected standard c8 median 534.822905425228 GB/hour; receipt evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_FRESH_2026_08_02.json"
+    ,"qwen72_first_dispatch_repair": "load stages localized; row-safe Q4K geometry guard; Apple M3 Ultra, 964 dispatches, fallback 0, one complete token at 0.8459170544491431 TPS"
+    ,"qwen72_geometry_guard": "cargo check -p hawking-core PASS; qwen-filtered core tests 3 passed, 2 ignored"
+    ,"qwen72_rehydrate_purge": "exact Trash target purged; 47415971840 bytes recovered; model lane empty"
+    ,"qwen72_predecode_lmhead_rejection": "same-model Q4K predecode+LM-head candidate physically dispatched 844 kernels but took 371398.118334 ms prefill, completed 0 tokens, and was retired"
+    ,"qwen72_predecode_lmhead_purge": "exact 47415715804-byte source body and matching Trash allocation purged; model lane empty; floor preserved"
+    ,"qwen72_native_q5q8_k0": "same-source Q5_0/Q8_0/Q6_K packed Metal path completed 16 tokens on Apple M3 Ultra at 2.8159135046887145 TPS, p99 358.72349365 ms, 964 dispatches/forward and fallback 0; no TG32 rung"
+    ,"qwen72_native_q5q8_load_win": "native packed loader reduced load_complete to 18774.51 ms and peak resident to 8291352576 bytes; prior direct K0 was 295559.58 ms and 41855664128 peak bytes"
+    ,"qwen72_native_q5q8_purge": "active model lane empty; exact qwen72 source path absent; Trash listing empty; post-sync free-space recheck recorded with APFS accounting note"
+    ,"qwen72_clean_no_trace_k0": "same-model exact-profile clean run with trace flags unset completed 16 tokens at 2.8601858696685474 TPS, p99 351.5381608 ms, 964 dispatches/forward and fallback 0; output hash matched traced native control; below 3 percent promotion gate and no TG32 rung"
+    ,"qwen72_clean_no_trace_purge": "exact qwen72 clean lane moved to Trash and exact target purged; observed free recovery 47415848960 bytes; model lane empty and protected floor preserved"
+    ,"qwen72_residency_k3": "same-model exact-profile MTLResidencySet run completed 16 tokens at 2.858173926033475 TPS, p99 355.3782519 ms, 964 dispatches/forward and fallback 0; output hash matched clean control; retired below wall gate with p99 regression"
+    ,"qwen72_residency_k3_purge": "exact qwen72 residency lane moved to Trash and exact target purged; observed free recovery 47419736064 bytes; model lane empty and protected floor preserved"
+    ,"deepseek_serial_expert_rejection": "same-model 32-token parity pass with fallback 0; v2t_gu_serial measured 33.48304351971662 TPS versus 41.19300296835878 control and was retired"
+    ,"deepseek_serial_expert_purge": "exact 10364416637-byte source body and matching Trash allocation purged; model lane empty; floor preserved"
+    ,"deepseek_fused_route_residual_rejection": "same-model 32-token parity pass with fallback 0; route-residual fusion reduced dispatches 487 to 461 but improved TPS only 0.128 percent and regressed p99, so it was retired"
+    ,"deepseek_fused_route_residual_purge": "exact 10364416636-byte source body and matching Trash allocation purged; model lane empty; floor preserved"
+    ,"deepseek_unfused_attention_gemv_rejection": "same-model 32-token parity pass with fallback 0; separating attention RMSNorm/GEMV measured 41.376389902921126 TPS versus 40.83979378456626 control, only 1.315 percent above the 3 percent gate, added 11.1 percent dispatches, and left unrelated token-two divergence"
+    ,"deepseek_unfused_attention_gemv_purge": "exact 10364416320-byte source body plus matching cache/Trash allocation purged; observed recovery 10364387328 bytes; model lane empty; floor preserved"
+    ,"deepseek_paired_route_guv3_rejection": "same-model 32-token parity pass with fallback 0; paired-route 512-threadgroup activation-preload path measured 40.56027900848086 TPS versus 41.03708626900145 control, 1.162 percent slower, with 12.426/12.882 percent p95/p99 regressions; unrelated token-two divergence remains"
+    ,"deepseek_paired_route_guv3_purge": "exact 10364416320-byte source body plus matching cache/Trash allocation purged; observed recovery and floor recorded in the paired-route purge receipt; model lane empty"
+    ,"deepseek_fused_router_rejection": "same-model 32-token complete run, fallback 0 and real Metal dispatches; router GEMV plus top-k reduced dispatches 487 to 461 but measured 34.198533978314124 TPS versus 41.0814565045265 same-build control (-16.754 percent), p95/p99 +19.313/+19.275 percent; removed from active runtime"
+    ,"deepseek_fused_router_purge": "exact 10364416320-byte source body moved to Trash, exact target permanently purged, observed recovery 10339557376 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_xet_transfer": "official Hub/Xet standard and high-performance 1/2/4/8 matrix, three-repeat stability for standard c2 and high-performance c8, resumable 8 MiB + 56 MiB range hash reconstruction PASS; selected standard c2 stable median 198.2617137337587 GB/hour"
+    ,"qwen14_native_baseline": "current qwen_dense default fast-minus-f16-scales path, Apple M3 Ultra, 32 complete tokens, 29.393150844731597 TPS, 436 dispatches/forward, fallback 0; no named rung"
+    ,"qwen14_qkv_rope_append_4r_rejection": "same-model 32-token run, exact IDs and fallback 0; 4R flag left dispatches 436 and measured 29.39375044334043 TPS versus 29.393150844731597 control (+0.002 percent), so it was rejected"
+    ,"qwen14_qkv_rope_append_4r_purge": "exact 8988110976-byte source body moved to Trash, exact target permanently purged, observed recovery 8988147712 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_concurrent_qkv_rejection": "same-model 32-token complete run, exact IDs and fallback 0; concurrent Q/K/V encoder measured 29.41532333817499 TPS versus 29.405859209340772 control (+0.032 percent), p95 -0.656 percent and p99 +1.472 percent, so it missed the 3 percent wall gate and was rejected"
+    ,"qwen14_concurrent_qkv_purge": "exact 8988110976-byte source body plus download metadata moved to Trash, exact target permanently purged, observed recovery 8988217344 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_pair8r_rejection": "same-model 32-token complete run, exact IDs and fallback 0; native 8-row pair geometry measured 11.266065971177795 TPS versus 29.547609923981046 control (-61.871 percent), p95/p99 +160.856/+160.594 percent, so it was rejected"
+    ,"qwen14_pair8r_purge": "exact 8988110976-byte source body plus download metadata moved to Trash, exact target permanently purged, observed recovery 8988082176 bytes, model lane empty and unrelated Trash item preserved"
+    ,"llama70_concurrent_projections_rejection": "same-model 8-token complete run, exact source IDs and fallback 0; resident concurrent projections measured 0.15347283973773265 TPS versus 11.594967100506606 serial control (-98.676 percent), p95/p99 +9102/+9091 percent, so it was rejected"
+    ,"llama70_concurrent_projections_purge": "exact 42520398816-byte source body plus download metadata moved to Trash, exact target permanently purged, observed recovery 42520272896 bytes, model lane empty and unrelated Trash item preserved"
+    ,"llama70_fused_gate_up_rejection": "same-model 8-token complete run, exact source IDs and fallback 0; fused gate/up reduced dispatches 962 to 882 and measured 11.675855720797012 TPS versus 11.643751124048228 control (+0.276 percent), p95/p99 +0.048/+0.080 percent, so it missed the 3 percent wall gate and was rejected"
+    ,"llama70_fused_gate_up_purge": "exact 42520398816-byte source body plus download metadata moved to Trash, exact target permanently purged, observed recovery 42520518656 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_executable_gravity_rejection": "same-model 32-token complete run, exact prompt IDs, real Metal dispatches 770/forward, fallback 0; executable source-preserving Gravity measured 38.24375512314688 TPS versus 29.547609923981046 control (+29.431 percent) but diverged at completion token index 1, so speed was rejected on capability parity"
+    ,"qwen14_executable_gravity_purge": "exact 8988110976-byte source, 8982325252-byte Gravity artifact, pinned 7031645-byte tokenizer and metadata moved to Trash; exact target permanently purged, observed recovery 18090930176 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_stage_oracle": "48-layer native-Qwen versus executable-Gravity traces at prompt positions 4 and 7; stage surfaces stayed numerically close, stale SwiGLU trace buffer was corrected, no first large layer mismatch; runtime seed/position bookkeeping localized"
+    ,"qwen14_conventional_decode_seed_repair": "same-model source and executable Gravity, 32 complete tokens, exact continuation hash cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c, Metal dispatches positive, fallback 0; parity repaired and TPS deliberately not promoted"
+    ,"qwen14_final_forward_elision": "two sequential same-model 32-token source/Gravity runs, exact continuation hash, 31 decode forwards on both sides, fallback 0; Gravity median 38.153345409910116 TPS clears TG32 and fails TG20 in narrow source-window scope"
+    ,"qwen14_gravity_gate_up_wave": "same-model executable Gravity gate/up pair ran with 722 versus 770 dispatches/forward, exact continuation hash, fallback 0; median 38.546889887997395 TPS versus 38.20592571176928 control (+0.892 percent), below the preregistered 3 percent wall gate and retired"
+    ,"qwen14_gravity_gate_up_purge": "exact 17977468468-byte source/artifact/tokenizer/cache lane moved to Trash, exact target permanently purged, observed recovery 17970520064 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_gravity_fused_qkv_wave": "same-model executable Gravity fused QKV+RoPE+KV-append ran with 434 versus 770 dispatches/forward, exact continuation hash, fallback 0; median 36.565203297068486 TPS versus 38.091488052794695 control (-4.007 percent), p95 +4.199 percent and p99 +2.317 percent, so it was retired"
+    ,"qwen14_gravity_fused_qkv_purge": "exact 17977468472-byte source/artifact/tokenizer/cache lane moved to Trash, exact target permanently purged, observed recovery 18035630080 bytes, model lane empty and unrelated Trash item preserved"
+    ,"qwen14_gravity_q4_v3_wave": "same-model executable Gravity Q4_K v3 8-row kernel ran with dispatches unchanged at 770/forward, exact continuation hash, fallback 0; median 14.48692051300976 TPS versus 38.64148357973693 control (-62.509 percent), p95 +166.497 percent and p99 +166.260 percent, so it was retired"
+    ,"qwen14_gravity_q4_v3_purge": "exact 17977468469-byte source/artifact/tokenizer/cache lane moved to Trash, exact target permanently purged, observed recovery 18000289792 bytes, model lane empty and unrelated Trash item preserved"
+    ,"llama70_gravity_source_q5k_repair": "Q5_K packer/runtime coverage repaired; 723 tensors admitted, direct Metal dispatch, 0 fallback, exact aligned 32-token source continuation"
+    ,"llama70_gravity_source_rejection": "same-model aligned 32-token Gravity run measured 10.007045332050762 TPS versus llama.cpp 14.287706495896606 TPS (-29.960450020969 percent), p95/p99 100.6205/102.123875 ms versus 69.962334/71.036458 ms; retired"
+    ,"llama70_gravity_source_purge": "exact 85033171317-byte source/artifact/cache/probe lane moved to Trash, exact target permanently purged, observed recovery 86107054080 bytes, model lane empty"
+    ,"deepseek_route_tie_epsilon_rejection": "same-model 32-token Metal A/B over exact source, 487 dispatches/forward, fallback 0, 40.87142564359304 TPS versus 40.741397955131944 control (+0.319 percent), exact continuation IDs; 1e-3 route policy changed 42 expert sets, 1e-4 changed 7, 1e-5 preserved sets but left boundary-order mismatches, so no promotion"
+    ,"deepseek_route_tie_epsilon_purge": "exact 20742086656-byte source+Gravity lane moved to Trash, exact target permanently purged, observed recovery 20742115328 bytes, model lane empty and floor preserved"
+    ,"qwen14_gravity_f16_kv_rejection": "same-model executable Gravity 32-token A/B physically selected persistent F16 KV and flash attention, exact continuation hash, fallback 0; 41.345918904890155 TPS versus 41.15491039050133 control (+0.464 percent), prefill +16.188 percent and dispatches 818 versus 770, so it missed the 3 percent wall gate and was retired"
+    ,"qwen14_gravity_f16_kv_purge": "exact 17994256384-byte allocated source/artifact/tokenizer/cache lane moved to Trash, exact target permanently purged, observed recovery 17993248768 bytes, model lane empty and floor preserved"
+    ,"mistral_small_xet_transfer": "official Hub/Xet 64MiB matrix, standard/HP c1/2/4/8, stable repeats and 8MiB+56MiB resume hash PASS; selected high-performance c8 stable median 135.49833153244296 GB/hour"
+    ,"mistral_small_gravity_f16_kv_rejection": "same-model 128-token 2 + 2 = A/B, exact continuation hash 680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee, fallback 0; 30.513213437949737 TPS versus 30.32515304224699 (+0.620 percent), prefill +3.281 percent, dispatches 562 versus 522; below TG32 and the 3 percent wall gate"
+    ,"mistral_small_gravity_f16_kv_purge": "exact 28677210112-byte allocated source/artifact/tokenizer/log/cache lane purged; observed recovery 28677091328 bytes; model lane empty and protected floor preserved"
+    ,"qwen14_gravity_fused_qkv_f16_kv_rejection": "same-model executable Gravity 32-token A/B physically selected fused source-QKV/RoPE/KV append plus explicit F16-KV flash; exact continuation hash cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c, fallback 0; 36.39641986109251 TPS versus 38.105274919936136 (-4.485 percent), decode wall +4.694 percent, p95/p99 +4.398/+4.444 percent, dispatches 482 versus 770; rejected below TG20"
+    ,"qwen14_gravity_fused_qkv_f16_kv_purge": "exact 17994285056-byte allocated source/artifact/tokenizer/log/cache lane purged; observed recovery 17994330112 bytes; model lane empty; protected floor preserved; unrelated Trash item retained"
+  },
+  "receipts": {
+    "llama_cpp_vllm_transfer_audit": "evidence/tg/TG_LLAMA_CPP_VLLM_TRANSFER_AUDIT_2026_08_02.json",
+    "model_trash_purge": "evidence/tg/TG_MODEL_TRASH_PURGE_RECEIPT_2026_08_02.json",
+    "model_scoreboard": "evidence/tg/TG_MODEL_SCOREBOARD.json",
+    "transfer_matrix": "evidence/tg/TG_TRANSFER_MATRIX.json",
+    "flash_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FLASH_MLA_PREREGISTRATION_2026_08_02.json",
+    "flash_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FLASH_MLA_REJECTED_2026_08_02.json",
+    "llama70_floor": "evidence/tg/TG32_LLAMA70_REHYDRATED_FLOOR_2026_08_02.json",
+    "mixtral_transfer_scoreboard": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_2026_08_02.json",
+    "mixtral_adapter_floor": "evidence/tg/TG32_MIXTRAL_FUSED_EXPERT_ADAPTER_RESULT_2026_08_02.json",
+    "mixtral_purge": "evidence/tg/TG_MIXTRAL_FUSED_EXPERT_ADAPTER_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_rehydrate_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_DEEPSEEK_REHYDRATE_2026_08_02.json",
+    "deepseek_geometry_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_MLA_TG128_REJECTED_2026_08_02.json",
+    "deepseek_rehydrate_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_REHYDRATE_PURGE_RECEIPT_2026_08_02.json",
+    "qwen72_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REHYDRATE_2026_08_02.json",
+    "qwen72_k0_repair": "evidence/tg/TG32_QWEN72_K0_REPAIR_PHYSICAL_2026_08_02.json",
+    "qwen72_predecode_lmhead_rejection": "evidence/tg/TG32_QWEN72_Q4K_PREDEC_LMHEAD_REJECTED_2026_08_02.json",
+    "qwen72_predecode_lmhead_purge": "evidence/tg/TG_QWEN72_PREDEC_LMHEAD_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_serial_expert_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_SERIAL_EXPERT_PREREGISTRATION_2026_08_02.json",
+    "deepseek_serial_expert_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_SERIAL_EXPERT_REJECTED_2026_08_02.json",
+    "deepseek_serial_expert_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_SERIAL_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_fused_route_residual_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTE_RESIDUAL_PREREGISTRATION_2026_08_02.json",
+    "deepseek_fused_route_residual_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTE_RESIDUAL_REJECTED_2026_08_02.json",
+    "deepseek_fused_route_residual_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_FUSED_ROUTE_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_unfused_attention_gemv_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_UNFUSED_ATTN_GEMV_PREREGISTRATION_2026_08_02.json",
+    "deepseek_unfused_attention_gemv_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_UNFUSED_ATTN_GEMV_REJECTED_2026_08_02.json",
+    "deepseek_unfused_attention_gemv_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_UNFUSED_ATTN_GEMV_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_paired_route_guv3_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_PAIRED_ROUTE_GUV3_PREREGISTRATION_2026_08_02.json",
+    "deepseek_paired_route_guv3_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_PAIRED_ROUTE_GUV3_REJECTED_2026_08_02.json",
+    "deepseek_paired_route_guv3_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_PAIRED_ROUTE_GUV3_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_stage_oracle_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_ORACLE_COMPARISON_PREREGISTRATION_2026_08_02.json",
+    "deepseek_stage_oracle_result": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_ORACLE_COMPARISON_RESULT_V2_2026_08_02.json",
+    "deepseek_stage_oracle_purge": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_ORACLE_PURGE_RECEIPT_V2_2026_08_02.json",
+    "deepseek_canonical_route_order_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_CANONICAL_ROUTE_ORDER_PREREGISTRATION_2026_08_02.json",
+    "deepseek_canonical_route_order_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_CANONICAL_ROUTE_ORDER_REJECTED_2026_08_02.json",
+    "deepseek_canonical_route_order_purge": "evidence/tg/TG32_DEEPSEEK_V2_LITE_CANONICAL_ROUTE_ORDER_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_fused_router_preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTER_PREREGISTRATION_2026_08_02.json",
+    "deepseek_fused_router_rejection": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTER_REJECTED_2026_08_02.json",
+    "deepseek_fused_router_purge": "evidence/tg/TG_DEEPSEEK_V2_LITE_FUSED_ROUTER_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_xet_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "qwen14_qkv_rope_append_4r_preregistration": "evidence/tg/TG32_QWEN14_QKV_ROPE_APPEND_4R_PREREGISTRATION_2026_08_02.json",
+    "qwen14_qkv_rope_append_4r_rejection": "evidence/tg/TG32_QWEN14_QKV_ROPE_APPEND_4R_REJECTED_2026_08_02.json",
+    "qwen14_qkv_rope_append_4r_purge": "evidence/tg/TG_QWEN14_QKV_ROPE_APPEND_4R_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_concurrent_qkv_preregistration": "evidence/tg/TG32_QWEN14_CONCURRENT_QKV_PREREGISTRATION_2026_08_02.json",
+    "qwen14_concurrent_qkv_rejection": "evidence/tg/TG32_QWEN14_CONCURRENT_QKV_REJECTED_2026_08_02.json",
+    "qwen14_concurrent_qkv_purge": "evidence/tg/TG_QWEN14_CONCURRENT_QKV_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_pair8r_preregistration": "evidence/tg/TG32_QWEN14_PAIR8R_PREREGISTRATION_2026_08_02.json",
+    "qwen14_pair8r_rejection": "evidence/tg/TG32_QWEN14_PAIR8R_REJECTED_2026_08_02.json",
+    "qwen14_pair8r_purge": "evidence/tg/TG_QWEN14_PAIR8R_PURGE_RECEIPT_2026_08_02.json",
+    "llama70_concurrent_projections_preregistration": "evidence/tg/TG32_LLAMA70_CONCURRENT_PROJECTIONS_PREREGISTRATION_2026_08_02.json",
+    "llama70_concurrent_projections_rejection": "evidence/tg/TG32_LLAMA70_CONCURRENT_PROJECTIONS_REJECTED_2026_08_02.json",
+    "llama70_concurrent_projections_purge": "evidence/tg/TG_LLAMA70_CONCURRENT_PROJECTIONS_PURGE_RECEIPT_2026_08_02.json",
+    "llama70_fused_gate_up_preregistration": "evidence/tg/TG32_LLAMA70_FUSED_GATE_UP_PREREGISTRATION_2026_08_02.json",
+    "llama70_fused_gate_up_rejection": "evidence/tg/TG32_LLAMA70_FUSED_GATE_UP_REJECTED_2026_08_02.json",
+    "llama70_fused_gate_up_purge": "evidence/tg/TG_LLAMA70_FUSED_GATE_UP_PURGE_RECEIPT_2026_08_02.json",
+    "llama70_v3_dual_geometry_preregistration": "evidence/tg/TG32_LLAMA70_V3_DUAL_GEOMETRY_PREREGISTRATION_2026_08_02.json",
+    "llama70_v3_dual_geometry_result": "evidence/tg/TG32_LLAMA70_V3_DUAL_GEOMETRY_RESULT_2026_08_02.json",
+    "llama70_v3_dual_geometry_pack_blocker": "evidence/tg/TG32_LLAMA70_V3_DUAL_PACK_BLOCKER_2026_08_02.json",
+    "llama70_v3_dual_geometry_eviction": "evidence/tg/TG32_LLAMA70_V3_DUAL_EVICTION_2026_08_02.json",
+    "qwen72_v4_q4k_lmhead_preregistration": "evidence/tg/TG32_QWEN72_V4_Q4K_LMHEAD_PREREGISTRATION_2026_08_02.json",
+    "qwen72_v4_q4k_lmhead_result": "evidence/tg/TG32_QWEN72_V4_Q4K_LMHEAD_RESULT_2026_08_02.json",
+    "qwen72_v4_q4k_lmhead_eviction": "evidence/tg/TG32_QWEN72_V4_Q4K_LMHEAD_EVICTION_2026_08_02.json",
+    "qwen72_native_q5q8_preregistration": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_PREREGISTRATION_2026_08_02.json",
+    "qwen72_native_q5q8_result": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_RESULT_2026_08_02.json",
+    "qwen72_native_q5q8_eviction": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_EVICTION_2026_08_02.json",
+    "qwen72_native_q5q8_raw_logs": "evidence/tg/raw/TG32_QWEN72_K0_NATIVE_Q5Q8_16_2026_08_02.stderr; evidence/tg/raw/TG32_QWEN72_LLAMA_CPP_REFERENCE_2026_08_02.json",
+    "qwen72_native_q5q8_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_NATIVE_Q5Q8_2026_08_02.tar.gz",
+    "qwen72_clean_no_trace_preregistration": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_PREREGISTRATION_2026_08_02.json",
+    "qwen72_clean_no_trace_result": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+    "qwen72_clean_no_trace_eviction": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_EVICTION_2026_08_02.json",
+    "qwen72_clean_no_trace_raw_logs": "evidence/tg/raw/TG32_QWEN72_CLEAN_NO_TRACE_16_2026_08_02.stdout; evidence/tg/raw/TG32_QWEN72_CLEAN_NO_TRACE_16_2026_08_02.stderr",
+    "qwen72_clean_no_trace_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_CLEAN_NO_TRACE_2026_08_02.tar.gz",
+    "qwen72_residency_preregistration": "evidence/tg/TG32_QWEN72_RESIDENCY_PREREGISTRATION_2026_08_02.json",
+    "qwen72_residency_result": "evidence/tg/TG32_QWEN72_RESIDENCY_RESULT_2026_08_02.json",
+    "qwen72_residency_eviction": "evidence/tg/TG32_QWEN72_RESIDENCY_EVICTION_2026_08_02.json",
+    "qwen72_residency_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_RESIDENCY_2026_08_02.tar.gz",
+    "qwen14_executable_gravity_preregistration": "evidence/tg/TG32_QWEN14_EXECUTABLE_GRAVITY_PREREGISTRATION_2026_08_02.json",
+    "qwen14_executable_gravity_rejection": "evidence/tg/TG32_QWEN14_EXECUTABLE_GRAVITY_REJECTED_2026_08_02.json",
+    "qwen14_executable_gravity_purge": "evidence/tg/TG_QWEN14_EXECUTABLE_GRAVITY_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_stage_oracle_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_STAGE_ORACLE_PREREGISTRATION_2026_08_02.json",
+    "qwen14_stage_oracle_result": "evidence/tg/TG32_QWEN14_GRAVITY_STAGE_ORACLE_RESULT_2026_08_02.json",
+    "qwen14_conventional_decode_seed_preregistration": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_PREREGISTRATION_2026_08_02.json",
+    "qwen14_conventional_decode_seed_result": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_RESULT_2026_08_02.json",
+    "qwen14_stage_oracle_purge": "evidence/tg/TG_QWEN14_GRAVITY_STAGE_ORACLE_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_final_forward_elision_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_PREREGISTRATION_2026_08_02.json",
+    "qwen14_final_forward_elision_result": "evidence/tg/TG32_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_RESULT_2026_08_02.json",
+    "qwen14_final_forward_elision_purge": "evidence/tg/TG_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_gate_up_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FUSE_GATE_UP_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_gate_up_result": "evidence/tg/TG32_QWEN14_GRAVITY_FUSE_GATE_UP_RESULT_2026_08_02.json",
+    "qwen14_gravity_gate_up_purge": "evidence/tg/TG_QWEN14_GRAVITY_FUSE_GATE_UP_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_result": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_RESULT_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_purge": "evidence/tg/TG_QWEN14_GRAVITY_FUSED_QKV_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_q4_v3_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_V3_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_q4_v3_result": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_V3_RESULT_2026_08_02.json",
+    "qwen14_gravity_q4_v3_purge": "evidence/tg/TG_QWEN14_GRAVITY_Q4_V3_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_q4_geometry_sweep_preregistrations": [
+      "evidence/tg/TG32_QWEN14_GRAVITY_Q4_DUAL_PREREGISTRATION_2026_08_02.json",
+      "evidence/tg/TG32_QWEN14_GRAVITY_Q4_LLAMA_PREREGISTRATION_2026_08_02.json",
+      "evidence/tg/TG32_QWEN14_GRAVITY_Q4_SIMDMAT_PREREGISTRATION_2026_08_02.json"
+    ],
+    "qwen14_gravity_q4_geometry_sweep_result": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_GEOMETRY_SWEEP_RESULT_2026_08_02.json",
+    "qwen14_gravity_q4_geometry_sweep_purge": "evidence/tg/TG_QWEN14_GRAVITY_Q4_GEOMETRY_SWEEP_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_q4_predec_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_PREDEC_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_q4_predec_result": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_PREDEC_RESULT_2026_08_02.json",
+    "qwen14_gravity_q4_predec_purge": "evidence/tg/TG_QWEN14_GRAVITY_Q4_PREDEC_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_q4_v2_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_V2_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_q4_v2_result": "evidence/tg/TG32_QWEN14_GRAVITY_Q4_V2_RESULT_2026_08_02.json",
+    "qwen14_gravity_q4_v2_purge": "evidence/tg/TG_QWEN14_GRAVITY_Q4_V2_PURGE_RECEIPT_2026_08_02.json",
+    "llama70_gravity_source_preregistration": "evidence/tg/TG32_LLAMA70_GRAVITY_SOURCE_PREREGISTRATION_2026_08_02.json",
+    "llama70_gravity_source_result": "evidence/tg/TG32_LLAMA70_GRAVITY_SOURCE_RESULT_2026_08_02.json",
+    "llama70_gravity_source_purge": "evidence/tg/TG_LLAMA70_GRAVITY_SOURCE_PURGE_RECEIPT_2026_08_02.json",
+    "deepseek_route_tie_epsilon_preregistration": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_PREREGISTRATION_2026_08_02.json",
+    "deepseek_route_tie_epsilon_1e4_preregistration": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_1E4_PREREGISTRATION_2026_08_02.json",
+    "deepseek_route_tie_epsilon_1e5_preregistration": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_1E5_PREREGISTRATION_2026_08_02.json",
+    "deepseek_route_tie_epsilon_result": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_RESULT_2026_08_02.json",
+    "deepseek_route_tie_epsilon_purge": "evidence/tg/TG32_DEEPSEEK_ROUTE_TIE_EPS_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_f16_kv_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_F16_KV_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_f16_kv_result": "evidence/tg/TG32_QWEN14_GRAVITY_F16_KV_RESULT_2026_08_02.json",
+    "qwen14_gravity_f16_kv_purge": "evidence/tg/TG_QWEN14_GRAVITY_F16_KV_PURGE_RECEIPT_2026_08_02.json",
+    "mistral_small_xet_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MISTRAL_SMALL_REHYDRATE_2026_08_02.json",
+    "mistral_small_gravity_f16_kv_preregistration": "evidence/tg/TG24_MISTRAL_SMALL_GRAVITY_F16_KV_PREREGISTRATION_2026_08_02.json",
+    "mistral_small_gravity_f16_kv_result": "evidence/tg/TG24_MISTRAL_SMALL_GRAVITY_F16_KV_RESULT_2026_08_02.json",
+    "mistral_small_gravity_f16_kv_purge": "evidence/tg/TG24_MISTRAL_SMALL_GRAVITY_F16_KV_PURGE_RECEIPT_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_f16_kv_preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_F16_KV_PREREGISTRATION_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_f16_kv_result": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_F16_KV_RESULT_2026_08_02.json",
+    "qwen14_gravity_fused_qkv_f16_kv_purge": "evidence/tg/TG_QWEN14_GRAVITY_FUSED_QKV_F16_KV_PURGE_RECEIPT_2026_08_02.json",
+    "qwen72_purge": "evidence/tg/TG_QWEN72_REHYDRATE_PURGE_RECEIPT_2026_08_02.json",
+    "qwen32_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json",
+    "qwen32_preregistration": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_PREREGISTRATION_2026_08_02.json",
+    "qwen32_source_admission": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_SOURCE_ADMISSION_2026_08_02.json",
+    "qwen32_result": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_RESULT_2026_08_02.json",
+    "qwen32_eviction": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_EVICTION_2026_08_02.json",
+    "qwen32_raw_logs": "evidence/tg/raw/TG32_QWEN32_CONTROL_2026_08_02.stderr; evidence/tg/raw/TG32_QWEN32_PREDEC_CANDIDATE_2026_08_02.stderr",
+    "qwen32_q6_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_Q6_2026_08_02.json",
+    "qwen32_q6_preregistration": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_PREREGISTRATION_2026_08_02.json",
+    "qwen32_q6_source_admission": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_SOURCE_ADMISSION_2026_08_02.json",
+    "qwen32_q6_result": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_RESULT_2026_08_02.json",
+    "qwen32_q6_raw_logs": "evidence/tg/raw/TG32_QWEN32_Q6_ANCHOR_2026_08_02.stderr; evidence/tg/raw/TG32_QWEN32_Q6_LLAMA_CPP_REFERENCE_2026_08_02.json",
+    "qwen32_q6_eviction": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_EVICTION_2026_08_02.json",
+    "qwen32_gravity_admission": "evidence/tg/TG32_QWEN32_EXECUTABLE_GRAVITY_ADMISSION_2026_08_02.json",
+    "qwen32_gravity_preregistration": "evidence/tg/TG32_QWEN32_EXECUTABLE_GRAVITY_PREREGISTRATION_2026_08_02.json",
+    "qwen32_gravity_result": "evidence/tg/TG32_QWEN32_EXECUTABLE_GRAVITY_RESULT_2026_08_02.json",
+    "qwen32_gravity_compact_result": "evidence/tg/TG32_QWEN32_RESIDUAL_PQ_RESULT_2026_08_02.json",
+    "qwen32_gravity_single_lever_preregistration": "evidence/tg/TG32_QWEN32_GRAVITY_SINGLE_LEVER_PREREGISTRATION_2026_08_02.json",
+    "qwen32_gravity_single_lever_result": "evidence/tg/TG32_QWEN32_GRAVITY_SINGLE_LEVER_RESULT_2026_08_02.json",
+    "qwen32_gravity_eviction": "evidence/tg/TG32_QWEN32_GRAVITY_FIRST_EVICTION_2026_08_02.json",
+    "qwen32_gravity_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN32_GRAVITY_FIRST_2026_08_02.tar.gz",
+    "llama70_fresh_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70_FRESH_2026_08_02.json",
+    "llama70_k0_preregistration": "evidence/tg/TG32_LLAMA70_K0_RERUN_PREREGISTRATION_2026_08_02.json",
+    "llama70_k0_source_admission": "evidence/tg/TG32_LLAMA70_K0_RERUN_SOURCE_ADMISSION_2026_08_02.json",
+    "llama70_k0_result": "evidence/tg/TG32_LLAMA70_K0_RERUN_RESULT_2026_08_02.json",
+    "llama70_k0_raw_logs": "evidence/tg/raw/TG32_LLAMA70_K0_RERUN_2026_08_02.stderr; evidence/tg/raw/TG32_LLAMA70_K0_RERUN_2026_08_02.stdout",
+    "llama70_k0_eviction": "evidence/tg/TG32_LLAMA70_K0_RERUN_EVICTION_2026_08_02.json",
+    "llama70_k0_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_LLAMA70_2026_08_02.tar.gz",
+    "mixtral_fresh_transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_FRESH_2026_08_02.json",
+    "mixtral_source_admission": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_SOURCE_ADMISSION_2026_08_02.json",
+    "mixtral_device_combine_v1_preregistration": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_PREREGISTRATION_2026_08_02.json",
+    "mixtral_device_combine_v1_result": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_RESULT_2026_08_02.json",
+    "mixtral_device_combine_v2_preregistration": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_PREREGISTRATION_2026_08_02.json",
+    "mixtral_device_combine_v2_result": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_RESULT_2026_08_02.json",
+    "mixtral_eviction": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_EVICTION_2026_08_02.json",
+    "mixtral_raw_logs": "evidence/tg/raw/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_CONTROL_2026_08_02.stderr; evidence/tg/raw/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_CANDIDATE_2026_08_02.stderr",
+    "new_size_campaign_receipts_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_2026_08_02.tar.gz",
+    "new_size_q6_anchor_archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_Q6_2026_08_02.tar.gz",
+    "owner_transition": "ramanujan/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+    "topology": "evidence/tg/TG_CODE_TOPOLOGY_CURRENT_R4_2026_08_02.json"
+  },
+  "owner_transition": {
+    "status": "STORAGE_GREEN",
+    "exact_next_owner_action": "OWNER_D5_APPROVAL",
+    "satisfied_gates": ["OWNER_GATE_READY", "STORAGE_GREEN"],
+    "missing_gates": ["OWNER_D5_APPROVAL", "OWNER_D8_APPROVAL", "OWNER_D9_APPROVAL", "OWNER_PARENT_RESTREAM_AUTHORIZATION", "OWNER_SIGNED_GREEN_LIGHT_AUTHORIZATION", "PRODUCTION_CLEAN_GPU_LEASE_IDENTITY", "OWNER_APPROVAL_OF_PRODUCTION_PHYSICAL_GLM52_WINDOW_OPERATOR"],
+    "restream_started": false,
+    "owner_fences_false": true
+  },
+  "storage": {
+    "current_free_bytes": 384325136384,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_contents": [],
+    "recoverable_trash_items_pending_exact_purge": []
+  },
+  "latest_new_size_campaign": {
+    "model": "Qwen2.5-32B-Instruct-Q6_K",
+    "status": "QUALITY_ANCHOR_SEALED_NO_CAPABILITY_PROMOTION",
+    "result": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_EVICTION_2026_08_02.json",
+    "archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_Q6_2026_08_02.tar.gz",
+    "model_lane_empty": true,
+    "free_space_recovery_proven": true
+  },
+  "latest_qwen32_gravity_first": {
+    "status": "SOURCE_PRESERVING_GRAVITY_PROMOTED_COMPACT_PQ_REJECTED_NO_NAMED_RUNG",
+    "result": "evidence/tg/TG32_QWEN32_EXECUTABLE_GRAVITY_RESULT_2026_08_02.json",
+    "compact_result": "evidence/tg/TG32_QWEN32_RESIDUAL_PQ_RESULT_2026_08_02.json",
+    "single_lever_result": "evidence/tg/TG32_QWEN32_GRAVITY_SINGLE_LEVER_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_QWEN32_GRAVITY_FIRST_EVICTION_2026_08_02.json",
+    "gravity_tps": 22.29238130003595,
+    "target_tps": 31.25,
+    "deepest_honest_rung": null,
+    "model_lane_empty": true,
+    "free_space_recovery_proven": true
+  },
+  "latest_llama70_floor_rerun": {
+    "status": "K0_FLOOR_SEALED_NO_NAMED_RUNG",
+    "result": "evidence/tg/TG32_LLAMA70_K0_RERUN_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_LLAMA70_K0_RERUN_EVICTION_2026_08_02.json",
+    "tps": 2.73770275255479,
+    "model_lane_empty": true,
+    "free_space_recovery_proven": true
+  },
+  "latest_qwen72_native_packed_floor": {
+    "status": "K0_REPAIRED_FLOOR_SEALED_NO_NAMED_RUNG",
+    "result": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_EVICTION_2026_08_02.json",
+    "tps": 2.8159135046887145,
+    "model_lane_empty": true,
+    "free_space_recovery_proven": "lane and Trash absent; APFS free-byte recheck recorded"
+  },
+  "latest_qwen72_clean_no_trace_floor": {
+    "status": "CLEAN_FLOOR_RETAINED_BELOW_THREE_PERCENT_PROMOTION_GATE",
+    "result": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_EVICTION_2026_08_02.json",
+    "archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_CLEAN_NO_TRACE_2026_08_02.tar.gz",
+    "tps": 2.8601858696685474,
+    "p50_ms": 349.3680835,
+    "p95_ms": 350.694136,
+    "p99_ms": 351.5381608,
+    "dispatches_per_forward": 964,
+    "fallback_count": 0,
+    "same_model_output_hash_matches_control": true,
+    "model_lane_empty": true,
+    "free_space_recovery_proven": true
+  },
+  "latest_qwen72_residency_attempt": {
+    "status": "RETIRED_RESIDENCY_NO_WALL_WIN_P99_REGRESSION",
+    "result": "evidence/tg/TG32_QWEN72_RESIDENCY_RESULT_2026_08_02.json",
+    "eviction": "evidence/tg/TG32_QWEN72_RESIDENCY_EVICTION_2026_08_02.json",
+    "archive": "evidence/tg/archive/TG_NEW_SIZE_MODELS_RECEIPTS_QWEN72_RESIDENCY_2026_08_02.tar.gz",
+    "tps": 2.858173926033475,
+    "p99_ms": 355.3782519,
+    "model_lane_empty": true,
+    "free_space_recovery_proven": true
+  },
+  "verdict": "RUNTIME_AND_OWNER_GATE_HARDENING_CONTINUES; DEEPSEEK_STAGE_ORACLE_BOUNDARY_LOCALIZED; DEEPSEEK_ROUTE_TIE_EPSILON_REJECTED_ON_ROUTE_SET_OR_RESIDUAL_MISMATCH_AND_SUB_3_PERCENT_WALL; CANONICAL_ROUTE_ORDER_AND_FUSED_ROUTER_RETIRED_WITHOUT_WALL_WIN; QWEN14_STAGE_ORACLE_LOCALIZED_AND_CONVENTIONAL_DECODE_SEED_PARITY_REPAIRED; QWEN14_EXECUTABLE_GRAVITY_FINAL_FORWARD_ELISION_PROMOTED_TG32_IN_NARROW_SOURCE_WINDOW_SCOPE; QWEN14_GRAVITY_GATE_UP_PHYSICALLY_REDUCED_DISPATCHES_BUT_RETIRED_BELOW_WALL_GATE; QWEN14_GRAVITY_FUSED_QKV_RETIRED_FOR_WALL_AND_TAIL_REGRESSION; QWEN14_GRAVITY_Q4_V3_RETIRED_CATASTROPHIC_WALL_AND_TAIL_REGRESSION; QWEN14_GRAVITY_Q4_DUAL_LLAMA_SIMDMAT_SWEEP_RETIRED_FOR_WALL_AND_TAIL_REGRESSION; QWEN14_GRAVITY_Q4_PREDEC_RETIRED_FOR_WALL_AND_TAIL_REGRESSION; QWEN14_GRAVITY_Q4_FUSED_V2_RETIRED_FOR_WALL_AND_TAIL_REGRESSION; QWEN14_GRAVITY_F16_KV_RETIRED_BELOW_WALL_GATE_WITH_PREFILL_AND_DISPATCH_REGRESSION; QWEN14_GRAVITY_FUSED_QKV_F16_KV_RETIRED_BELOW_TG20_WITH_WALL_AND_TAIL_REGRESSION; MISTRAL_SMALL_F16_KV_RETIRED_BELOW_TG32_AND_SUB_3_PERCENT_WALL_WITH_PREFILL_AND_DISPATCH_REGRESSION; LLAMA70_RESIDENT_SERIAL_FLOOR_REMEASURED_AND_CONCURRENT_PROJECTIONS_AND_FUSED_GATE_UP_RETIRED; LLAMA70_GRAVITY_Q5K_EXECUTION_REPAIRED_PARITY_CLEAN_BUT_WALL_REJECTED; LLAMA70_V3_DUAL_GEOMETRY_RETIRED_CATASTROPHIC_WALL_AND_TAIL_REGRESSION; LLAMA70_GRAVITY_PACKER_ABORTED_UNDER_BOUNDED_SWAP_GUARD; QWEN72_V4_Q4K_LMHEAD_PHYSICAL_MEMORY_REDUCTION_NO_SERIALIZED_TPS; QWEN72_K0_NATIVE_Q5Q8_LOAD_REPAIRED_AND_16_TOKEN_FLOOR_SEALED; QWEN72_CLEAN_NO_TRACE_RETAINED_BELOW_THREE_PERCENT_WALL_GATE; QWEN72_RESIDENCY_PHYSICAL_BUT_RETIRED_NO_WALL_WIN; QWEN32_Q4K_PREDECODE_PROMOTED_SAME_MODEL_FLOOR_NO_NAMED_RUNG; MIXTRAL_DEVICE_COMBINE_V1_REJECTED_EXTRA_COMMAND_BUFFER; MIXTRAL_DEVICE_COMBINE_V2_PROMOTED_SAME_MODEL_FLOOR_SOURCE_PARITY_BLOCKED; LLAMA_CPP_BASELINE_PIVOT_ACCEPTED; MODEL_LANE_EMPTY_AND_FREE_SPACE_RECHECKED; NO_FINAL_PARENT_RESTREAM_OR_PRODUCTION_AUTHORITY_INFERRED"
+}

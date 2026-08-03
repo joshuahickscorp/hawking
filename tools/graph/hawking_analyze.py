@@ -2,7 +2,7 @@
 """Run the eight G2 topology analyses and emit cluster map + recomposition queue.
 
 Usage:
-    python3.12 tools/graph/hawking_analyze.py --graph build/graph/HAWKING_SEMANTIC_GRAPH.jsonl
+    python3.12 tools/graph/hawking_analyze.py --graph workspace/ops/build/graph/HAWKING_SEMANTIC_GRAPH.jsonl
     python3.12 tools/graph/hawking_analyze.py --graph /tmp/fixture.jsonl --out /tmp/out \\
         --behaviour-map /tmp/beh.json --betweenness-k 64
 
@@ -22,7 +22,8 @@ from pathlib import Path
 from typing import Any
 
 _GRAPH_DIR = Path(__file__).resolve().parent
-_BUILD_GRAPH = _GRAPH_DIR.parents[1] / "build" / "graph"
+_REPO_ROOT = _GRAPH_DIR.parents[1]
+_BUILD_GRAPH = _REPO_ROOT / "workspace" / "ops" / "build" / "graph"
 if str(_GRAPH_DIR) not in sys.path:
     sys.path.insert(0, str(_GRAPH_DIR))
 
@@ -194,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--graph", required=True, help="HAWKING_SEMANTIC_GRAPH.jsonl path")
     p.add_argument("--out", default=str(_BUILD_GRAPH),
-                   help="Output directory (default: build/graph, gitignored — regenerable)")
+                   help="Output directory (default: workspace/ops/build/graph, gitignored — regenerable)")
     p.add_argument(
         "--behaviour-map",
         default=None,

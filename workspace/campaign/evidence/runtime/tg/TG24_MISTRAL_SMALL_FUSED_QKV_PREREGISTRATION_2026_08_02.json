@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.tg.optimization_preregistration.v1",
+  "at": "2026-08-02T07:00:00Z",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+  "artifact_sha256": "0b3024670765f03cb1bb9d5a487c9ae09ab18a5543bb540ff9f0a0d0af85ddce",
+  "baseline": "evidence/tg/TG24_MISTRAL_SMALL_NATIVE_Q4_128_COMPLETE_TOKEN_2026_08_02.json",
+  "hypothesis": "Selecting the existing source-preserving Q4_K fused QKV/RoPE/KV append wave will reduce complete-token command topology and improve wall TPS without changing the exact greedy continuation.",
+  "single_change": "HAWKING_GRAVITY_FUSED_QKV=1",
+  "required_acceptance": {
+    "same_artifact": true,
+    "generated_tokens": 128,
+    "continuation_sha256": "680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee",
+    "cpu_reference_fallback_total": 0,
+    "wall_tps_must_exceed_baseline": 29.838791525232033,
+    "p99_ms_must_not_regress": 37.729542
+  },
+  "promotion_boundary": "A pass remains a candidate only: no CLEAN lease, full Numeric Parity V2.1, or whole-model capability gate is present."
+}

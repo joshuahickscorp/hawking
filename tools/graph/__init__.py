@@ -1,6 +1,7 @@
 """G2 semantic-graph analysis, recomposition ranking, and viewer.
 
-Consumes the frozen contract in control/SEMANTIC_GRAPH_SCHEMA.json.
+Consumes the frozen contract in
+workspace/campaign/governance/control/catalog/manifests/SEMANTIC_GRAPH_SCHEMA.json.
 Does not modify the extractor (G1 owns tools/graph/hawking_graph.py).
 """
 

@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.tg.same_model_k0_preregistration.v2",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-clean-no-trace-k0-2026-08-02",
+  "hypothesis": "The sealed Qwen72 native Q5_0/Q8_0/Q6_K path was measured with diagnostic tracing enabled; tracing disables the default rope/KV fusion and adds instrumentation. Running the exact source, prompt, tokenizer and native packed representation with tracing disabled will reduce complete-token wall time without changing any decisions.",
+  "bounded_change": "measurement-only runtime configuration: remove HAWKING_QWEN_FIRST_DISPATCH_TRACE, HAWKING_TRACE_DISPATCH, HAWKING_TRACE_TOKENS and CLI trace flags; keep HAWKING_REQUIRE_METAL=1 and HAWKING_QWEN_NATIVE_LMHEAD=1",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "protocol": {
+    "prompt": "2+2=",
+    "prompt_tokens": 4,
+    "max_new_tokens": 16,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "complete_token_required": true,
+    "fallback_required": 0,
+    "same_model_before_receipt": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_RESULT_2026_08_02.json",
+    "source_reference": "evidence/tg/raw/TG32_QWEN72_LLAMA_CPP_REFERENCE_2026_08_02.json"
+  },
+  "admission": {
+    "preflight_free_bytes": 308679417856,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 108673528300,
+    "model_lane_envelope_bytes": 102000000000,
+    "model_bytes": 47415715488,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 74326369952,
+    "headroom_after_admission_bytes": 34347158348,
+    "active_model_count": 0
+  },
+  "promotion_gate": {
+    "must_be_clean": true,
+    "must_preserve_complete_token_ids": true,
+    "must_have_real_metal_dispatches": true,
+    "must_have_fallback_zero": true,
+    "wall_win_threshold_percent": 3.0,
+    "rung_target": "TG32",
+    "rung_target_tps": 31.25,
+    "reopen_condition": "If output, fallback, dispatch, tail, or wall gate is not clean, retire this measurement and keep the traced native floor as diagnostic-only."
+  },
+  "owner_fences_false": true
+}

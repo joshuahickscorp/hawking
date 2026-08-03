@@ -43,36 +43,58 @@ pub enum BatchPolicy {
 /// The scheduler exposes `find_prefix_match` to the serve layer.
 #[derive(Debug, Default)]
 pub struct PrefixIndex {
-    /// Map: slot_id → (hash, prefix_len). Updated on every admit.
-    entries: Vec<(u32, u64, usize)>, // (slot_id, prefix_hash, len)
+    /// One entry per live slot.  Keep rolling hashes for a cheap candidate
+    /// lookup *and* the token IDs for collision-free prefix admission.
+    ///
+    /// This is deliberately a small in-memory index (at most `max_batch_size`
+    /// requests), not a second KV store.  It follows the block/prefix cache
+    /// admission principle used by vLLM: hash to find a candidate, then verify
+    /// the immutable token identity before reusing device state.
+    entries: Vec<PrefixEntry>,
 }
 
-/// Hash a token sequence with FNV-1a. Fast, no dep.
-fn hash_tokens(tokens: &[u32]) -> u64 {
+#[derive(Debug, Clone)]
+struct PrefixEntry {
+    slot_id: u32,
+    tokens: Vec<u32>,
+    /// FNV-1a hash after each token. `rolling_hashes[n - 1]` is the hash of
+    /// `tokens[..n]`, making arbitrary common-prefix probes O(1) after the
+    /// request-local rolling hash is built.
+    rolling_hashes: Vec<u64>,
+}
+
+/// FNV-1a after each token in a sequence. Fast, deterministic, no dependency.
+/// Hashes are candidate filters only; every cache admission below compares IDs.
+fn rolling_token_hashes(tokens: &[u32]) -> Vec<u64> {
     let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut out = Vec::with_capacity(tokens.len());
     for &t in tokens {
         let bytes = t.to_le_bytes();
         for b in bytes {
             h ^= b as u64;
             h = h.wrapping_mul(0x0000_0100_0000_01b3);
         }
+        out.push(h);
     }
-    h
+    out
 }
 
 impl PrefixIndex {
     pub fn upsert(&mut self, slot_id: u32, prompt_ids: &[u32]) {
-        let h = hash_tokens(prompt_ids);
-        if let Some(e) = self.entries.iter_mut().find(|e| e.0 == slot_id) {
-            e.1 = h;
-            e.2 = prompt_ids.len();
+        let entry = PrefixEntry {
+            slot_id,
+            tokens: prompt_ids.to_vec(),
+            rolling_hashes: rolling_token_hashes(prompt_ids),
+        };
+        if let Some(e) = self.entries.iter_mut().find(|e| e.slot_id == slot_id) {
+            *e = entry;
         } else {
-            self.entries.push((slot_id, h, prompt_ids.len()));
+            self.entries.push(entry);
         }
     }
 
     pub fn remove(&mut self, slot_id: u32) {
-        self.entries.retain(|e| e.0 != slot_id);
+        self.entries.retain(|e| e.slot_id != slot_id);
     }
 
     /// Find the longest prefix match for `tokens` among active entries,
@@ -88,22 +110,23 @@ impl PrefixIndex {
         exclude_slot: u32,
     ) -> Option<(u32, usize)> {
         let mut best: Option<(u32, usize)> = None;
-        for &(slot_id, stored_hash, stored_len) in &self.entries {
-            if slot_id == exclude_slot {
+        let requested_hashes = rolling_token_hashes(tokens);
+        for entry in &self.entries {
+            if entry.slot_id == exclude_slot {
                 continue;
             }
-            if stored_len < min_len {
+            if entry.tokens.len() < min_len {
                 continue;
             }
-            let overlap = stored_len.min(tokens.len());
+            let overlap = entry.tokens.len().min(tokens.len());
             if overlap < min_len {
                 continue;
             }
-            let request_prefix_hash = hash_tokens(&tokens[..overlap]);
-            if stored_hash == request_prefix_hash
+            if entry.rolling_hashes[overlap - 1] == requested_hashes[overlap - 1]
+                && entry.tokens[..overlap] == tokens[..overlap]
                 && best.map(|(_, bl)| overlap > bl).unwrap_or(true)
             {
-                best = Some((slot_id, overlap));
+                best = Some((entry.slot_id, overlap));
             }
         }
         best
@@ -114,19 +137,20 @@ impl PrefixIndex {
     /// Only considers prefixes of length ≥ `min_len`.
     pub fn find_prefix_match(&self, tokens: &[u32], min_len: usize) -> Option<(u32, usize)> {
         let mut best: Option<(u32, usize)> = None;
-        for &(slot_id, stored_hash, stored_len) in &self.entries {
-            if stored_len < min_len {
+        let requested_hashes = rolling_token_hashes(tokens);
+        for entry in &self.entries {
+            if entry.tokens.len() < min_len {
                 continue;
             }
-            let overlap = stored_len.min(tokens.len());
+            let overlap = entry.tokens.len().min(tokens.len());
             if overlap < min_len {
                 continue;
             }
-            let request_prefix_hash = hash_tokens(&tokens[..overlap]);
-            if stored_hash == request_prefix_hash
+            if entry.rolling_hashes[overlap - 1] == requested_hashes[overlap - 1]
+                && entry.tokens[..overlap] == tokens[..overlap]
                 && best.map(|(_, bl)| overlap > bl).unwrap_or(true)
             {
-                best = Some((slot_id, overlap));
+                best = Some((entry.slot_id, overlap));
             }
         }
         best
@@ -238,6 +262,22 @@ pub struct Scheduler {
     pub prefix_index: PrefixIndex,
     /// Track 5.4: batch admission policy (default = FIFO).
     pub policy: BatchPolicy,
+    /// First slot eligible for the next bounded prefill turn.  This is not a
+    /// second scheduler: it only rotates the already policy-ranked cohort
+    /// after one capped chunk has made progress, preventing a long first slot
+    /// from consuming every prefill turn ahead of its peers.
+    prefill_next_slot: u32,
+}
+
+/// One bounded contiguous range selected for the next prefill submission.
+/// Coordinates are relative to the request's original prompt, so successive
+/// chunks keep using the same stable slot-resident KV region.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PrefillChunk {
+    pub slot_id: u32,
+    pub start: usize,
+    pub end: usize,
+    pub complete: bool,
 }
 
 impl Scheduler {
@@ -248,6 +288,7 @@ impl Scheduler {
             max_batch_size,
             prefix_index: PrefixIndex::default(),
             policy: BatchPolicy::Default,
+            prefill_next_slot: 0,
         }
     }
 
@@ -268,6 +309,26 @@ impl Scheduler {
             .iter()
             .filter(|s| s.state != SlotState::Idle)
             .count()
+    }
+
+    /// Longest exact prefix held by a slot whose KV is already materialized.
+    /// `PrefixIndex` intentionally includes newly admitted `Prefilling` slots
+    /// for grouping, but those slots have no valid device KV yet and must not
+    /// be used as copy sources.
+    pub fn find_decoding_prefix_match_excluding(
+        &self,
+        tokens: &[u32],
+        min_len: usize,
+        exclude_slot: u32,
+    ) -> Option<(u32, usize)> {
+        self.slots
+            .iter()
+            .filter(|slot| slot.id != exclude_slot && slot.state == SlotState::Decoding)
+            .filter_map(|slot| {
+                let shared = common_prefix_len(&slot.prompt_ids, tokens);
+                (shared >= min_len).then_some((slot.id, shared))
+            })
+            .max_by_key(|(_, shared)| *shared)
     }
 
     pub fn slot_mut(&mut self, id: u32) -> Option<&mut Slot> {
@@ -403,6 +464,104 @@ impl Scheduler {
             BatchPolicy::PrefixGrouped => group_by_prefix(&self.slots, cap, 8),
             _ => self.prefill_slots_bucketed(cap),
         }
+    }
+
+    /// Apply an exact token-work cap after the normal policy has ranked a
+    /// prefill cohort. This is the continuous-batching admission control that
+    /// prevents one batch of long prompts from turning into an unbounded TTFT
+    /// and p99 stall. `prefix_skip` is already resident KV, so only the
+    /// remaining tokens are charged.
+    ///
+    /// Progress is deliberate: the first ranked request is always admitted,
+    /// even when it alone exceeds `max_prefill_tokens`; otherwise a long
+    /// request could wait forever behind a cap it can never fit. A zero budget
+    /// therefore means "one request at a time", not "make no progress".
+    pub fn prefill_slots_token_budgeted(&self, max: usize, max_prefill_tokens: usize) -> Vec<u32> {
+        let ranked = self.prefill_slots_prefix_grouped(max);
+        let mut selected = Vec::with_capacity(ranked.len());
+        let mut charged = 0usize;
+        for id in ranked {
+            let Some(slot) = self.slots.iter().find(|slot| slot.id == id) else {
+                continue;
+            };
+            let remaining = slot.prompt_ids.len().saturating_sub(slot.prefix_skip);
+            if selected.is_empty() || charged.saturating_add(remaining) <= max_prefill_tokens {
+                charged = charged.saturating_add(remaining);
+                selected.push(id);
+            }
+        }
+        selected
+    }
+
+    /// Plan bounded contiguous prompt work after the ordinary prefix/length
+    /// policy ranks a cohort. This imports chunked prefill's latency boundary
+    /// without changing the engine or duplicating a scheduler: a long request
+    /// advances under the cap and retains its exact per-slot KV state.
+    ///
+    /// A zero budget means one-token progress rather than a deadlocked
+    /// request. The returned work is not committed until the caller reports a
+    /// successful engine submission through `commit_prefill_chunk`.
+    pub fn prefill_chunks_token_budgeted(
+        &mut self,
+        max: usize,
+        max_prefill_tokens: usize,
+    ) -> Vec<PrefillChunk> {
+        let mut ranked = self.prefill_slots_prefix_grouped(max);
+        if let Some(offset) = ranked.iter().position(|id| *id >= self.prefill_next_slot) {
+            ranked.rotate_left(offset);
+        }
+        let mut selected = Vec::with_capacity(ranked.len());
+        let mut budget = max_prefill_tokens.max(1);
+        for id in ranked {
+            if budget == 0 {
+                break;
+            }
+            let Some(slot) = self.slots.iter().find(|slot| slot.id == id) else {
+                continue;
+            };
+            let len = slot.prompt_ids.len();
+            let start = slot.prefill_cursor.max(slot.prefix_skip).min(len);
+            let outstanding = len.saturating_sub(start);
+            if outstanding == 0 {
+                continue;
+            }
+            let end = start + outstanding.min(budget);
+            budget -= end - start;
+            selected.push(PrefillChunk {
+                slot_id: id,
+                start,
+                end,
+                complete: end == len,
+            });
+        }
+        if let Some(last) = selected.last() {
+            self.prefill_next_slot = (last.slot_id + 1) % self.max_batch_size.max(1) as u32;
+        }
+        selected
+    }
+
+    /// Advance only a successfully executed, contiguous prefill range. This
+    /// cannot transition a slot to decoding; the final chunk is still subject
+    /// to the existing complete-prompt and first-token path.
+    pub fn commit_prefill_chunk(&mut self, id: u32, end: usize) -> bool {
+        let Some(slot) = self.slot_mut(id) else {
+            return false;
+        };
+        if slot.state != SlotState::Prefilling {
+            return false;
+        }
+        let start = slot
+            .prefill_cursor
+            .max(slot.prefix_skip)
+            .min(slot.prompt_ids.len());
+        if end < start || end > slot.prompt_ids.len() {
+            return false;
+        }
+        slot.prefill_cursor = end;
+        // Imported-prefix accounting is consumed by the first successful
+        // chunk. Later chunks continue from the materialized cursor itself.
+        slot.prefix_skip = 0;
+        true
     }
 
     pub fn mark_prefill_complete(&mut self, id: u32) -> bool {
@@ -633,6 +792,28 @@ mod tests {
         assert!(!scheduler.mark_prefill_complete(first));
     }
     #[test]
+    fn copy_source_must_have_materialized_kv() {
+        let mut scheduler = Scheduler::new(2);
+        let source = scheduler
+            .admit(req(4), (10..22).collect())
+            .expect("source slot");
+        let target = scheduler
+            .admit(req(4), (10..20).collect())
+            .expect("target slot");
+        assert!(scheduler
+            .find_decoding_prefix_match_excluding(&(10..20).collect::<Vec<_>>(), 8, target)
+            .is_none());
+        assert!(scheduler.mark_prefill_complete(source));
+        assert_eq!(
+            scheduler.find_decoding_prefix_match_excluding(
+                &(10..20).collect::<Vec<_>>(),
+                8,
+                target,
+            ),
+            Some((source, 10))
+        );
+    }
+    #[test]
     fn bucketed_prefill_selects_homogeneous_bucket() {
         let mut scheduler = Scheduler::new(8);
         for _ in 0..4 {
@@ -765,6 +946,159 @@ mod tests {
         assert_eq!(
             scheduler.prefill_slots_prefix_grouped(4),
             scheduler.prefill_slots_bucketed(4),
+        );
+    }
+
+    #[test]
+    fn token_budgeted_prefill_caps_cohort_but_never_starves_a_long_first_request() {
+        let mut scheduler = Scheduler::new(3);
+        for id in 0..3 {
+            let slot = scheduler
+                .slots
+                .iter_mut()
+                .find(|slot| slot.id == id)
+                .expect("slot");
+            slot.assign(req(4), vec![id + 1; 8]);
+        }
+        assert_eq!(scheduler.prefill_slots_token_budgeted(3, 16), vec![0, 1]);
+        assert_eq!(scheduler.prefill_slots_token_budgeted(3, 0), vec![0]);
+
+        // Already-copied KV does not consume the remaining prefill budget.
+        scheduler.slot_mut(0).expect("slot 0").prefix_skip = 8;
+        assert_eq!(scheduler.prefill_slots_token_budgeted(3, 8), vec![0, 1]);
+    }
+
+    #[test]
+    fn chunked_prefill_advances_only_exact_committed_ranges() {
+        let mut scheduler = Scheduler::new(2);
+        scheduler.admit(req(4), (0..20).collect()).expect("first");
+        scheduler
+            .admit(req(4), (100..110).collect())
+            .expect("second");
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 0,
+                end: 8,
+                complete: false
+            }]
+        );
+        assert!(scheduler.commit_prefill_chunk(0, 8));
+        assert!(!scheduler.commit_prefill_chunk(0, 7));
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 8,
+                end: 16,
+                complete: false
+            }]
+        );
+        assert!(scheduler.commit_prefill_chunk(0, 16));
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 16,
+                end: 20,
+                complete: true
+            }]
+        );
+    }
+
+    #[test]
+    fn chunked_prefill_charges_only_tail_after_imported_prefix_kv() {
+        let mut scheduler = Scheduler::new(1);
+        scheduler
+            .admit(req(4), (0..12).collect())
+            .expect("admission");
+        scheduler.slot_mut(0).expect("slot").prefix_skip = 8;
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(1, 3),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 8,
+                end: 11,
+                complete: false
+            }]
+        );
+        assert!(scheduler.commit_prefill_chunk(0, 11));
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(1, 3),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 11,
+                end: 12,
+                complete: true
+            }]
+        );
+    }
+
+    #[test]
+    fn chunked_prefill_round_robin_prevents_long_first_slot_starvation() {
+        let mut scheduler = Scheduler::new(2);
+        scheduler.admit(req(4), (0..20).collect()).expect("first");
+        scheduler
+            .admit(req(4), (100..120).collect())
+            .expect("second");
+
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 0,
+                end: 8,
+                complete: false,
+            }]
+        );
+        assert!(scheduler.commit_prefill_chunk(0, 8));
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 1,
+                start: 0,
+                end: 8,
+                complete: false,
+            }]
+        );
+        assert!(scheduler.commit_prefill_chunk(1, 8));
+        assert_eq!(
+            scheduler.prefill_chunks_token_budgeted(2, 8),
+            vec![PrefillChunk {
+                slot_id: 0,
+                start: 8,
+                end: 16,
+                complete: false,
+            }]
+        );
+    }
+
+    #[test]
+    fn prefix_index_reuses_a_shorter_prefix_of_a_live_longer_prompt() {
+        let mut index = PrefixIndex::default();
+        index.upsert(7, &[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+        assert_eq!(
+            index.find_prefix_match(&[10, 11, 12, 13, 14, 15, 16, 17], 8),
+            Some((7, 8)),
+            "a request must be able to reuse a live request's shorter exact prefix"
+        );
+    }
+
+    #[test]
+    fn prefix_index_requires_exact_token_identity_after_hash_lookup() {
+        let mut index = PrefixIndex::default();
+        index.upsert(1, &[1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        assert_eq!(
+            index.find_prefix_match(&[1, 2, 3, 4, 5, 6, 7, 99, 9], 8),
+            None,
+            "a divergent eighth token must never reuse KV merely because a hash lookup found a candidate"
+        );
+        index.upsert(2, &[1, 2, 3, 4, 5, 6, 7, 8, 10]);
+        assert_eq!(
+            index.find_prefix_match_excluding(&[1, 2, 3, 4, 5, 6, 7, 8], 8, 2),
+            Some((1, 8)),
+            "excluding the new slot must still find another exact live source"
         );
     }
 }

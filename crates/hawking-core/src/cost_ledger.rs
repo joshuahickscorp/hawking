@@ -2045,7 +2045,7 @@ pub struct MathPreserveActiveByteContract {
 
 pub fn math_preserve_active_byte_contract() -> MathPreserveActiveByteContract {
     MathPreserveActiveByteContract {
-        authority: "reports/base_runtime/GLM52_MATH_PRESERVE_RESIDENT_BF16_BYTE_CENSUS.json",
+        authority: "workspace/campaign/records/reports/base_runtime/GLM52_MATH_PRESERVE_RESIDENT_BF16_BYTE_CENSUS.json",
         metric: "resident source extent touched once per scheduled matvec",
         fixed_active_bytes: MATH_PRESERVE_FIXED_ACTIVE_BYTES,
         expected_routed_experts: MATH_PRESERVE_EXPECTED_ROUTED_EXPERTS,

@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from lab.layout import REPORTS_ROOT
 from tools.odyssey import SCHEMA_INVENTORY
 from tools.odyssey._paths import (
     DATA_DIR,
@@ -323,8 +324,7 @@ def inventory_repo_fixtures() -> list[dict[str, Any]]:
             "RWKV7 draft-model SFT sample fixture; not an Odyssey declared corpus",
         ),
         (
-            ROOT
-            / "reports/condense/glm52_generation_b/generation_a_fixtures/generation_a_TEACHER_EVIDENCE_LEDGER.jsonl",
+            REPORTS_ROOT / "condense/glm52_generation_b/generation_a_fixtures/generation_a_TEACHER_EVIDENCE_LEDGER.jsonl",
             "fixture",
             "generation-A fixture copy of teacher evidence ledger (16 lines); not T3 traces",
         ),
