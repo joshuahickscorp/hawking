@@ -326,7 +326,7 @@
     "os_build": "26A5378j",
     "user": "scammermike",
     "power_source": "AC Power (pmset -g ps), no battery, no UPS",
-    "sleep_state": "sleep prevented by ChatGPT, Claude, caffeinate x6, screensharingd, powerd; sleep 0, displaysleep 0, lowpowermode 0, SleepDisabled 1",
+    "sleep_state": "sleep prevented by interactive apps, caffeinate x6, screensharingd, powerd; sleep 0, displaysleep 0, lowpowermode 0, SleepDisabled 1",
     "sleep_note": "lowpowermode 0 confirms no clock cap. The caffeinate holders keep the machine from entering any low-power state, which is good for measurement stability and bad for any attempt to characterize true idle."
   },
 

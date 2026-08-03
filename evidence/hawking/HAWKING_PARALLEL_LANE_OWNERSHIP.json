@@ -147,7 +147,7 @@
     {
       "id": "L01",
       "name": "hide-archaeology-v2",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "audit",
       "resource_class": "light-readonly",
       "task_id": "hide-arch-v2-20260726-213343",
@@ -174,11 +174,11 @@
     {
       "id": "L02",
       "name": "hide-memory-six",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "hide-memory-six-20260726-213344",
-      "branch": "grok/hide-memory-six-20260726-213344",
+      "branch": "lane/hide-memory-six-20260726-213344",
       "worktree": "~/.lanes/worktrees/hide-memory-six-20260726-213344",
       "inputs": [
         "crates/hawking-context/src/{memory,recall,compiler,budget,capability,rot,sources}.rs",
@@ -203,11 +203,11 @@
     {
       "id": "L03",
       "name": "odyssey-t0",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "medium-io",
       "task_id": "odyssey-t0-20260726-213445",
-      "branch": "grok/odyssey-t0-20260726-213445",
+      "branch": "lane/odyssey-t0-20260726-213445",
       "worktree": "~/.lanes/worktrees/odyssey-t0-20260726-213445",
       "inputs": [
         "odyssey/**",
@@ -231,11 +231,11 @@
     {
       "id": "L04",
       "name": "fabric-software",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "fabric-software-20260726-213447",
-      "branch": "grok/fabric-software-20260726-213447",
+      "branch": "lane/fabric-software-20260726-213447",
       "worktree": "~/.lanes/worktrees/fabric-software-20260726-213447",
       "inputs": [
         "crates/hide-fleet/**",
@@ -258,11 +258,11 @@
     {
       "id": "L05",
       "name": "bridge-events-adapters",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "bridge-events-20260726-213449",
-      "branch": "grok/bridge-events-20260726-213449",
+      "branch": "lane/bridge-events-20260726-213449",
       "worktree": "~/.lanes/worktrees/bridge-events-20260726-213449",
       "inputs": [
         "FABRIC_BRIDGE_ARCHAEOLOGY.md",
@@ -288,7 +288,7 @@
     {
       "id": "L06",
       "name": "consolidation-inventory",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "audit",
       "resource_class": "light-readonly",
       "task_id": "consolidation-inventory-20260726-213450",
@@ -315,11 +315,11 @@
     {
       "id": "L18",
       "name": "gravity-serve",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "gravity-serve-20260726-214344",
-      "branch": "grok/gravity-serve-20260726-214344",
+      "branch": "lane/gravity-serve-20260726-214344",
       "worktree": "~/.lanes/worktrees/gravity-serve-20260726-214344",
       "inputs": [
         "crates/hawking-serve/**",
@@ -344,11 +344,11 @@
     {
       "id": "L07",
       "name": "speculation-safety",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "spec-safe-20260726-214346",
-      "branch": "grok/spec-safe-20260726-214346",
+      "branch": "lane/spec-safe-20260726-214346",
       "worktree": "~/.lanes/worktrees/spec-safe-20260726-214346",
       "inputs": [
         "crates/hawking-speculate",
@@ -370,7 +370,7 @@
     {
       "id": "L08",
       "name": "hide-os-wiring",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": null,
@@ -500,11 +500,11 @@
     {
       "id": "L19",
       "name": "odyssey-data",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "odyssey-data-20260726-214631",
-      "branch": "grok/odyssey-data-20260726-214631",
+      "branch": "lane/odyssey-data-20260726-214631",
       "worktree": "~/.lanes/worktrees/odyssey-data-20260726-214631",
       "inputs": [
         "odyssey/data/**",
@@ -531,11 +531,11 @@
     {
       "id": "L20",
       "name": "memory-writers",
-      "owner": "grok",
+      "owner": "controller",
       "mode": "delegate",
       "resource_class": "light-build",
       "task_id": "memory-writers-20260726-215341",
-      "branch": "grok/memory-writers-20260726-215341",
+      "branch": "lane/memory-writers-20260726-215341",
       "worktree": "~/.lanes/worktrees/memory-writers-20260726-215341",
       "inputs": [
         "crates/hawking-context/src/memory_classes.rs",
@@ -559,7 +559,7 @@
     {
       "id": "L21",
       "name": "gravity-degenerate-attribution",
-      "owner": "controller (run inline -- Grok slots held by a concurrent campaign; user authorized)",
+      "owner": "controller (run inline -- the delivery lane slots held by a concurrent campaign; user authorized)",
       "mode": "delegate",
       "resource_class": "medium-gpu",
       "task_id": null,
@@ -586,7 +586,7 @@
       ],
       "status": "INTEGRATED",
       "why_it_is_the_most_important_open_lane": "It decides whether the sealed substrate can generate at all. If H1, Odyssey would train on a model that cannot produce conditioned output, which is the exact failure ODYSSEY_PROMOTION_GATE.md exists to prevent and which cannot be un-trained.",
-      "blocked_by_resource": "all six Grok slots are held by a concurrent unrelated campaign (v2-spatial, v2-reconstruction, v2-procedural, v2-materials-lighting, v2-cinematic-delivery, v2-critics-active). Not this campaign's lanes; left alone rather than killed.",
+      "blocked_by_resource": "all six the delivery lane slots are held by a concurrent unrelated campaign (v2-spatial, v2-reconstruction, v2-procedural, v2-materials-lighting, v2-cinematic-delivery, v2-critics-active). Not this campaign's lanes; left alone rather than killed.",
       "verdict": "H1_ARTIFACT -- the substrate cannot generate; runtime and serve path both exonerated by exact oracle top-5 agreement on Math-Preserve itself"
     },
     {

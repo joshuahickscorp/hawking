@@ -9,7 +9,7 @@
   "delegated_lanes": [
     {
       "base_commit": "08082cc2dd066b342f6bb34c4e5d72093a86115b",
-      "branch": "grok/accel-rereceipt-20260726-140200",
+      "branch": "lane/accel-rereceipt-20260726-140200",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -39,7 +39,7 @@
     },
     {
       "base_commit": "8703c7a3214560ba588debc7bd942dbce1a4749a",
-      "branch": "grok/bf16-native-20260726-195755",
+      "branch": "lane/bf16-native-20260726-195755",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -129,7 +129,7 @@
     },
     {
       "base_commit": "bcea774c946036bdfa974615fe7db8bdd4fd04fd",
-      "branch": "grok/cost-ledger-20260726-142723",
+      "branch": "lane/cost-ledger-20260726-142723",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -189,7 +189,7 @@
     },
     {
       "base_commit": "26d2b68f358a073bb7421f589cead1ae725fdf80",
-      "branch": "grok/dense-memo-20260726-142348",
+      "branch": "lane/dense-memo-20260726-142348",
       "finished": true,
       "mode": "delegate",
       "profile": "power",
@@ -199,7 +199,7 @@
     },
     {
       "base_commit": "cf2ca73715bf79c85e1d243531f9828d9aff5ef7",
-      "branch": "grok/eval-harness-20260726-141543",
+      "branch": "lane/eval-harness-20260726-141543",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -209,7 +209,7 @@
     },
     {
       "base_commit": "9e98b684a06c4ba8ab06f95d862546ff58255eba",
-      "branch": "grok/expert-device-20260726-201041",
+      "branch": "lane/expert-device-20260726-201041",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -219,7 +219,7 @@
     },
     {
       "base_commit": "635512f96fca3002aae6b43b8c945eb92dd23e9e",
-      "branch": "grok/expert-wave-20260726-154007",
+      "branch": "lane/expert-wave-20260726-154007",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -239,7 +239,7 @@
     },
     {
       "base_commit": "602dc13fff320250d26470e3f8d51773f5758c55",
-      "branch": "grok/fit-kernel-v3-20260726-011556",
+      "branch": "lane/fit-kernel-v3-20260726-011556",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -249,7 +249,7 @@
     },
     {
       "base_commit": "9fd20db5e83010806f85828f3577f37bc7e29006",
-      "branch": "grok/gpu-resident-state-20260726-145909",
+      "branch": "lane/gpu-resident-state-20260726-145909",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -259,7 +259,7 @@
     },
     {
       "base_commit": "7053f6987b9be1fda2c8922ebf0be96a34c4c466",
-      "branch": "grok/gravity-gpu-cache-20260726-005741",
+      "branch": "lane/gravity-gpu-cache-20260726-005741",
       "finished": true,
       "mode": "delegate",
       "profile": "power",
@@ -279,7 +279,7 @@
     },
     {
       "base_commit": "ef2cc721efbb3f9cc391cb9809cf87b66b219704",
-      "branch": "grok/head-to-device-20260726-153638",
+      "branch": "lane/head-to-device-20260726-153638",
       "finished": false,
       "mode": "delegate",
       "profile": "maximum",
@@ -289,7 +289,7 @@
     },
     {
       "base_commit": "635512f96fca3002aae6b43b8c945eb92dd23e9e",
-      "branch": "grok/head-to-device2-20260726-154112",
+      "branch": "lane/head-to-device2-20260726-154112",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -299,7 +299,7 @@
     },
     {
       "base_commit": "8682e8a6564cfecd6e0f16832f818d85fb2fd4d0",
-      "branch": "grok/hide-approval-inc2-20260725-233330",
+      "branch": "lane/hide-approval-inc2-20260725-233330",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -319,7 +319,7 @@
     },
     {
       "base_commit": "35be6027bab4d05523a00e358f6039c6889979fa",
-      "branch": "grok/hide-context-os-20260726-032000",
+      "branch": "lane/hide-context-os-20260726-032000",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -329,7 +329,7 @@
     },
     {
       "base_commit": "5309baa833404492e173147a44a40ef565cc4c34",
-      "branch": "grok/hide-inc3-20260726-005734",
+      "branch": "lane/hide-inc3-20260726-005734",
       "finished": true,
       "mode": "delegate",
       "profile": "power",
@@ -339,7 +339,7 @@
     },
     {
       "base_commit": "35be6027bab4d05523a00e358f6039c6889979fa",
-      "branch": "grok/hide-live-loop-20260726-140240",
+      "branch": "lane/hide-live-loop-20260726-140240",
       "finished": false,
       "mode": "delegate",
       "profile": "maximum",
@@ -349,7 +349,7 @@
     },
     {
       "base_commit": "8ec49108ca61e1034bf968f670afc766ef8f9ef8",
-      "branch": "grok/hide-live-loop2-20260726-140311",
+      "branch": "lane/hide-live-loop2-20260726-140311",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -359,7 +359,7 @@
     },
     {
       "base_commit": "fccb6b3036f94ad85453f130f394b8ff7be4bca9",
-      "branch": "grok/hide-wiring-inc1-20260725-224036",
+      "branch": "lane/hide-wiring-inc1-20260725-224036",
       "finished": true,
       "mode": "delegate",
       "profile": "power",
@@ -389,7 +389,7 @@
     },
     {
       "base_commit": "ef2cc721efbb3f9cc391cb9809cf87b66b219704",
-      "branch": "grok/overread-20260726-153702",
+      "branch": "lane/overread-20260726-153702",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -399,7 +399,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/p1a-20260726-144318",
+      "branch": "lane/p1a-20260726-144318",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -409,7 +409,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/p1b-20260726-144348",
+      "branch": "lane/p1b-20260726-144348",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -419,7 +419,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/p3-20260726-144808",
+      "branch": "lane/p3-20260726-144808",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -429,7 +429,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/p5-20260726-144838",
+      "branch": "lane/p5-20260726-144838",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -449,7 +449,7 @@
     },
     {
       "base_commit": "3a46c01686f1a7a4b4df247943ecd3867488c38d",
-      "branch": "grok/profiler-recover-20260726-203119",
+      "branch": "lane/profiler-recover-20260726-203119",
       "finished": false,
       "mode": "delegate",
       "profile": "maximum",
@@ -469,7 +469,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/speed-backend-20260726-163704",
+      "branch": "lane/speed-backend-20260726-163704",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -479,7 +479,7 @@
     },
     {
       "base_commit": "9fd20db5e83010806f85828f3577f37bc7e29006",
-      "branch": "grok/tg-profiler-20260726-145930",
+      "branch": "lane/tg-profiler-20260726-145930",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -499,7 +499,7 @@
     },
     {
       "base_commit": "ca7294089935f010fac65bbbaaf689b90e21d612",
-      "branch": "grok/v21-suite-20260726-194028",
+      "branch": "lane/v21-suite-20260726-194028",
       "finished": false,
       "mode": "delegate",
       "profile": "maximum",
@@ -509,7 +509,7 @@
     },
     {
       "base_commit": "ca7294089935f010fac65bbbaaf689b90e21d612",
-      "branch": "grok/v21-suite2-20260726-194724",
+      "branch": "lane/v21-suite2-20260726-194724",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -519,7 +519,7 @@
     },
     {
       "base_commit": "08082cc2dd066b342f6bb34c4e5d72093a86115b",
-      "branch": "grok/warm-runtime-20260726-140218",
+      "branch": "lane/warm-runtime-20260726-140218",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -529,7 +529,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws10b-20260726-133108",
+      "branch": "lane/ws10b-20260726-133108",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -539,7 +539,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws12-20260726-132408",
+      "branch": "lane/ws12-20260726-132408",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -549,7 +549,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws1b-20260726-123717",
+      "branch": "lane/ws1b-20260726-123717",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -559,7 +559,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws2b-20260726-123407",
+      "branch": "lane/ws2b-20260726-123407",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -569,7 +569,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws4-20260726-125824",
+      "branch": "lane/ws4-20260726-125824",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -579,7 +579,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws5-20260726-125855",
+      "branch": "lane/ws5-20260726-125855",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -589,7 +589,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws7-20260726-132307",
+      "branch": "lane/ws7-20260726-132307",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -599,7 +599,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws8b-20260726-123742",
+      "branch": "lane/ws8b-20260726-123742",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",
@@ -609,7 +609,7 @@
     },
     {
       "base_commit": "fbe02ce7ff8e60d6be8b32745a95179bd425a700",
-      "branch": "grok/ws9b-20260726-123808",
+      "branch": "lane/ws9b-20260726-123808",
       "finished": true,
       "mode": "delegate",
       "profile": "maximum",

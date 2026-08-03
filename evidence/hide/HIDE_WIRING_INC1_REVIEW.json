@@ -8,7 +8,7 @@
     "profile": "power",
     "model": "grok-4.5/high",
     "base_commit": "fccb6b3036f94ad85453f130f394b8ff7be4bca9",
-    "branch": "grok/hide-wiring-inc1-20260725-224036",
+    "branch": "lane/hide-wiring-inc1-20260725-224036",
     "worktree": "~/.lanes/worktrees/hide-wiring-inc1-20260725-224036",
     "diff": "7 files, +834/-51"
   },
@@ -59,6 +59,6 @@
     }
   ],
   "why_tests_were_not_run_here": "MOP is suspended with roughly four hours of progress held in the RSS of 25 stopped processes, specifically so PASS3 can have the box. A cargo build and test sweep of a 28-crate Rust workspace would take cores and memory away from the job that pause exists to accelerate. This lane is on a separate branch with nothing waiting on it tonight, so the test run is deferred rather than the pause being spent on it.",
-  "next_action": "After PASS3 finalizes and MOP resumes: run the full workspace suite on the grok branch, compare against 616/4, resolve the two low findings, then merge into build/hide-impl-2026-07-19.",
+  "next_action": "After PASS3 finalizes and MOP resumes: run the full workspace suite on the the delivery lane branch, compare against 616/4, resolve the two low findings, then merge into build/hide-impl-2026-07-19.",
   "not_evidence_of": "that the wired subsystems behave correctly under real traffic; static reachability is not runtime correctness"
 }

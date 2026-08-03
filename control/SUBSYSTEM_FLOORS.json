@@ -1,7 +1,7 @@
 {
   "schema": "hawking.300k.irreducible_budget.v1",
   "measured_at": "2026-07-29",
-  "method": "Each figure is the result of a Grok lane given owned paths, a starting LOC, an explicit target, protected sets and independent controller verification -- not an audit estimate. A lane that could not reach its target had to name what it refused and why.",
+  "method": "Each figure is the result of a a delivery lane given owned paths, a starting LOC, an explicit target, protected sets and independent controller verification -- not an audit estimate. A lane that could not reach its target had to name what it refused and why.",
   "measurements": [
     {"subsystem": "tools/condense campaign controllers", "start": 111424, "target": 45000,
      "eliminated": 66433, "pct_of_target": 100, "verdict": "PAID",

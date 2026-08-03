@@ -31,7 +31,7 @@
     {
       "id": "L01",
       "name": "hide-archaeology-v2",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -41,7 +41,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/hide-arch-v2-20260726-213343/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/hide-arch-v2-20260726-213343/lane-report.md",
         "diff": null
       },
       "outputs": {
@@ -63,7 +63,7 @@
     {
       "id": "L02",
       "name": "hide-memory-six",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -73,7 +73,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/hide-memory-six-20260726-213344/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/hide-memory-six-20260726-213344/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/hide-memory-six-20260726-213344/diff.patch"
       },
       "outputs": {
@@ -93,7 +93,7 @@
     {
       "id": "L03",
       "name": "odyssey-t0",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -103,7 +103,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/odyssey-t0-20260726-213445/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/odyssey-t0-20260726-213445/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/odyssey-t0-20260726-213445/diff.patch"
       },
       "outputs": {
@@ -127,7 +127,7 @@
     {
       "id": "L04",
       "name": "fabric-software",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -137,7 +137,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/fabric-software-20260726-213447/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/fabric-software-20260726-213447/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/fabric-software-20260726-213447/diff.patch"
       },
       "outputs": {
@@ -159,7 +159,7 @@
     {
       "id": "L05",
       "name": "bridge-events-adapters",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -169,7 +169,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/bridge-events-20260726-213449/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/bridge-events-20260726-213449/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/bridge-events-20260726-213449/diff.patch"
       },
       "outputs": {
@@ -193,7 +193,7 @@
     {
       "id": "L06",
       "name": "consolidation-inventory",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -203,7 +203,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/consolidation-inventory-20260726-213450/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/consolidation-inventory-20260726-213450/lane-report.md",
         "diff": null
       },
       "outputs": {
@@ -225,7 +225,7 @@
     {
       "id": "L18",
       "name": "gravity-serve",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -235,7 +235,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/gravity-serve-20260726-214344/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/gravity-serve-20260726-214344/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/gravity-serve-20260726-214344/diff.patch"
       },
       "outputs": {
@@ -257,7 +257,7 @@
     {
       "id": "L07",
       "name": "speculation-safety",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -267,7 +267,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/spec-safe-20260726-214346/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/spec-safe-20260726-214346/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/spec-safe-20260726-214346/diff.patch"
       },
       "outputs": {
@@ -287,7 +287,7 @@
     {
       "id": "L08",
       "name": "hide-os-wiring",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "QUEUED",
       "evidence_status": "QUEUED",
       "disagrees": false,
@@ -517,7 +517,7 @@
     {
       "id": "L19",
       "name": "odyssey-data",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -527,7 +527,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/odyssey-data-20260726-214631/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/odyssey-data-20260726-214631/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/odyssey-data-20260726-214631/diff.patch"
       },
       "outputs": {
@@ -551,7 +551,7 @@
     {
       "id": "L20",
       "name": "memory-writers",
-      "owner": "grok",
+      "owner": "controller",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,
@@ -561,7 +561,7 @@
         "exit_code": "0",
         "process_alive": false,
         "stale_running": false,
-        "report": "/Users/scammermike/.lanes/tasks/memory-writers-20260726-215341/grok-report.md",
+        "report": "/Users/scammermike/.lanes/tasks/memory-writers-20260726-215341/lane-report.md",
         "diff": "/Users/scammermike/.lanes/tasks/memory-writers-20260726-215341/diff.patch"
       },
       "outputs": {
@@ -583,7 +583,7 @@
     {
       "id": "L21",
       "name": "gravity-degenerate-attribution",
-      "owner": "controller (run inline -- Grok slots held by a concurrent campaign; user authorized)",
+      "owner": "controller (run inline -- the delivery lane slots held by a concurrent campaign; user authorized)",
       "declared_status": "INTEGRATED",
       "evidence_status": "INTEGRATED",
       "disagrees": false,

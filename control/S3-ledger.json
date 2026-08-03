@@ -3,7 +3,7 @@
   "slice": "S3",
   "title": "HIDE YOU request -> Context OS -> permission -> tool -> memory -> handoff",
   "at": "2026-07-29",
-  "branch": "grok/s3-hide-20260729-124840",
+  "branch": "lane/s3-hide-20260729-124840",
   "scope_paths": [
     "crates/hide-backend",
     "crates/hide-kernel",

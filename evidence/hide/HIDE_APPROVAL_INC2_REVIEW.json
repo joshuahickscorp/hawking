@@ -7,7 +7,7 @@
     "mode": "delegate",
     "profile": "maximum",
     "base": "8682e8a6 (increment 1)",
-    "branch": "grok/hide-approval-inc2-20260725-233330",
+    "branch": "lane/hide-approval-inc2-20260725-233330",
     "diff": "2 files, +262/-7"
   },
   "status": "VERIFIED BY THE CONTROLLER. Tests re-run independently. Not merged pending one finding.",

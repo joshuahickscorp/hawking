@@ -177,7 +177,7 @@
  },
  "writer_wiring_followup": {
   "at": "2026-07-28T12:00:00Z",
-  "by": "grok (final-ascent hide-classed-writers lane)",
+  "by": "the delivery lane (final-ascent hide-classed-writers lane)",
   "status": "WIRED",
   "module": "crates/hide-backend/src/classed_writers.rs",
   "proven_by": [
