@@ -719,6 +719,57 @@ mod tests {
         assert_eq!(third.seq, 3);
         let _ = std::fs::remove_dir_all(dir);
     }
+    #[tokio::test]
+    async fn jsonl_causal_observation_hash_binds_cause() {
+        let dir = std::env::temp_dir().join(format!("hide_event_cause_{}", now_ms()));
+        let path = dir.join("events.jsonl");
+        let log = JsonlEventLog::open(&path).unwrap();
+        let session = SessionId::new();
+        let action = log
+            .append(
+                NewEvent::of(
+                    session.clone(),
+                    EventSource::Agent,
+                    "agent.action",
+                    Value::Null,
+                )
+                .with_class(EventClass::Action),
+            )
+            .await
+            .unwrap();
+        let observation = log
+            .append(
+                NewEvent::of(
+                    session.clone(),
+                    EventSource::Agent,
+                    "agent.observation",
+                    Value::Null,
+                )
+                .with_cause(action.id.clone())
+                .with_class(EventClass::Observation),
+            )
+            .await
+            .unwrap();
+        let previous = hex_decode(action.chain_hash.as_deref().unwrap()).unwrap();
+        let expected = compute_chain_hash(&previous, &observation).unwrap();
+        assert_eq!(
+            observation.chain_hash.as_deref(),
+            Some(hex_lower(&expected).as_str())
+        );
+
+        let loaded = JsonlEventLog::open(&path)
+            .unwrap()
+            .scan(Some(session), None, None)
+            .await
+            .unwrap();
+        assert_eq!(loaded[1].cause.as_ref(), Some(&action.id));
+        let reverified = compute_chain_hash(&previous, &loaded[1]).unwrap();
+        assert_eq!(
+            loaded[1].chain_hash.as_deref(),
+            Some(hex_lower(&reverified).as_str())
+        );
+        let _ = std::fs::remove_dir_all(dir);
+    }
     #[test]
     fn blake3_chain_detects_tampering() {
         let session = SessionId::new();

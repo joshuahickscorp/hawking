@@ -399,7 +399,7 @@ pub(crate) fn hex_lower(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hide_core::event::{Event, EventSource, NewEvent};
+    use hide_core::event::{Event, EventClass, EventSource, NewEvent};
     use hide_core::ids::SessionId;
     fn embed_chain(genesis: &[u8], events: &mut [Event]) {
         let mut prev = genesis.to_vec();
@@ -452,6 +452,23 @@ mod tests {
         ];
         embed_chain(&[0u8; CHAIN_HASH_LEN], &mut events);
         assert!(verify_event_chain(&events).ok);
+    }
+    #[test]
+    fn verifies_causal_observation_chain() {
+        let session = SessionId::new();
+        let action = ev(1, &session, "agent.action", 1);
+        let mut observation = ev(2, &session, "agent.observation", 2);
+        observation.class = EventClass::Observation;
+        observation.cause = Some(action.id.clone());
+        let mut events = [action, observation];
+        embed_chain(&[0u8; CHAIN_HASH_LEN], &mut events);
+        assert!(verify_event_chain(&events).ok);
+
+        let prior = chain_hash(&[0u8; CHAIN_HASH_LEN], &events[0]).unwrap();
+        let with_cause = chain_hash(&prior, &events[1]).unwrap();
+        let mut without_cause = events[1].clone();
+        without_cause.cause = None;
+        assert_ne!(with_cause, chain_hash(&prior, &without_cause).unwrap());
     }
     #[test]
     fn genesis_salt_changes_root() {
