@@ -732,9 +732,10 @@ kernel void deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority(
     float comb[kMaxHcMult * kMaxHcMult];
     for (uint lane = 0u; lane < hc_mult; ++lane) {
         const float pre_value = mixes[lane] * hc_scale[0] + hc_base[lane];
-        pre[lane] = 1.0f / (1.0f + exp(-pre_value)) + hc_eps;
+        // General Darwin double-double mHC control exp (not a fixed-input patch).
+        pre[lane] = 1.0f / (1.0f + deepseek_v4_mhc_control_expf(-pre_value)) + hc_eps;
         const float post_value = mixes[lane + hc_mult] * hc_scale[1] + hc_base[lane + hc_mult];
-        post[lane] = 2.0f * (1.0f / (1.0f + exp(-post_value)));
+        post[lane] = 2.0f * (1.0f / (1.0f + deepseek_v4_mhc_control_expf(-post_value)));
         pre_out[lane] = pre[lane];
         post_out[lane] = post[lane];
     }
@@ -756,7 +757,7 @@ kernel void deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority(
         float row_sum = 0.0f;
         for (uint column = 0u; column < hc_mult; ++column) {
             const uint index = start + column;
-            comb[index] = exp(comb[index] - row_max);
+            comb[index] = deepseek_v4_mhc_control_expf(comb[index] - row_max);
             row_sum = row_sum + comb[index];
         }
         for (uint column = 0u; column < hc_mult; ++column) {
@@ -1589,6 +1590,71 @@ kernel void deepseek_v4_p4b_kv_cache_write_bf16_authority(
 {
     if (head_dim == 0u || cache_position >= cache_capacity || dim >= head_dim) return;
     kv_cache_bf16[(ulong)cache_position * (ulong)head_dim + (ulong)dim] = kv_bf16[dim];
+}
+
+
+// General ratio-zero causal sparse attention for a growing KV cache.
+// Valid keys are cache slots [0, valid_kv_count). Position-0 (valid=1) and
+// position-1 (valid=2) specializations remain as fixed kernels; this kernel
+// is the parameterized path for arbitrary decode positions under ratio 0.
+// TileLang stores online-softmax numerator weights to BF16 before the value
+// GEMM while retaining an FP32 denominator. Not a compressor/indexer path.
+kernel void deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority(
+    device const ushort* q_bf16 [[buffer(0)]], // [heads, head_dim]
+    device const ushort* kv_cache_bf16 [[buffer(1)]], // [cache_capacity, head_dim]
+    device const float* attn_sink [[buffer(2)]], // [heads]
+    device ushort* output_bf16 [[buffer(3)]], // [heads, head_dim]
+    device float* scores [[buffer(4)]], // [heads, max_valid_kv], causal order
+    device float* denominators [[buffer(5)]], // [heads]
+    constant uint& heads [[buffer(6)]],
+    constant uint& head_dim [[buffer(7)]],
+    constant uint& cache_capacity [[buffer(8)]],
+    constant uint& valid_kv_count [[buffer(9)]],
+    constant uint& max_score_slots [[buffer(10)]],
+    constant float& softmax_scale [[buffer(11)]],
+    uint head [[thread_position_in_grid]])
+{
+    if (head >= heads || head_dim == 0u || cache_capacity == 0u
+        || valid_kv_count == 0u || valid_kv_count > cache_capacity
+        || max_score_slots < valid_kv_count || !(softmax_scale > 0.0f)) {
+        return;
+    }
+    const ulong q_base = (ulong)head * (ulong)head_dim;
+    // First pass: score max over valid keys for numerical stability.
+    float score_max = -3.402823466e+38f;
+    for (uint key = 0u; key < valid_kv_count; ++key) {
+        float dot = 0.0f;
+        const ulong kv_base = (ulong)key * (ulong)head_dim;
+        for (uint dim = 0u; dim < head_dim; ++dim) {
+            const float q = deepseek_v4_bf16_value(q_bf16[q_base + (ulong)dim]);
+            dot = dot + q * deepseek_v4_bf16_value(kv_cache_bf16[kv_base + (ulong)dim]);
+        }
+        const float score = dot * softmax_scale;
+        scores[(ulong)head * (ulong)max_score_slots + (ulong)key] = score;
+        score_max = max(score_max, score);
+    }
+    // Softmax numerators (BF16-stored) and FP32 denominator including sink.
+    float denominator = exp(attn_sink[head] - score_max);
+    float numerators_bf16[128];
+    // valid_kv_count is bounded by the source sliding window (128).
+    if (valid_kv_count > 128u) return;
+    for (uint key = 0u; key < valid_kv_count; ++key) {
+        const float score = scores[(ulong)head * (ulong)max_score_slots + (ulong)key];
+        const float numerator = exp(score - score_max);
+        numerators_bf16[key] = deepseek_v4_bf16_value(
+            deepseek_v4_bf16_encode_rne(numerator));
+        denominator = denominator + numerator;
+    }
+    denominators[head] = denominator;
+    for (uint dim = 0u; dim < head_dim; ++dim) {
+        float acc = 0.0f;
+        for (uint key = 0u; key < valid_kv_count; ++key) {
+            const ulong kv_base = (ulong)key * (ulong)head_dim;
+            acc = acc + numerators_bf16[key]
+                * deepseek_v4_bf16_value(kv_cache_bf16[kv_base + (ulong)dim]);
+        }
+        output_bf16[q_base + (ulong)dim] = deepseek_v4_bf16_encode_rne(acc / denominator);
+    }
 }
 
 // Exact source specialization at decode position one / ratio zero.  The

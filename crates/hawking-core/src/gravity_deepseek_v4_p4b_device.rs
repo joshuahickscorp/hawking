@@ -5,10 +5,12 @@
 //! fixed `[BOS, Hello]` trace at layer 0 / position 1, has no sampling or
 //! endpoint surface, and retains the terminal state as
 //! [`DeepSeekV4P4bParityClassification::NumericParityV21Only`].  In
-//! particular, it must not be relabelled as exact-storage parity: the sealed
-//! authority path measured one terminal mHC-post BF16 word difference after
-//! source/device exp-based controls, while all causal cache stores remain
-//! exact and V2.1 passes.
+//! particular, it must not be relabelled as exact-storage parity until a
+//! sealed end-to-end exact-storage receipt is earned. Production mHC control
+//! kernels now use the general Darwin double-double `deepseek_v4_mhc_control_expf`
+//! helper (not a fixed-input ULP patch); the public classification remains
+//! [`DeepSeekV4P4bParityClassification::NumericParityV21Only`] until that
+//! promotion is sealed against the host oracle for the full composed path.
 //!
 //! The executor never creates a Metal context and never exposes a host
 //! activation/readback API.  Its caller supplies the context for preparation,

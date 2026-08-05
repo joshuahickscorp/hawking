@@ -293,6 +293,10 @@ pub const SHADER_RWKV7: &str = include_str!("../../shaders/rwkv7.metal");
 /// frozen fixtures in `tests/fixtures/gravity_pq`, whose authority is the Python
 /// `gravity_forge.pq_execute`.
 pub const SHADER_GRAVITY_PQ: &str = include_str!("../../shaders/gravity_pq.metal");
+/// Shared DeepSeek-V4 mHC control-path exp (Darwin double-double reconstruction).
+/// Compiled before the P4B/P7 mHC kernels that call into it.
+pub const SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP: &str =
+    include_str!("../../shaders/deepseek_v4_mhc_control_exp.metal");
 /// Isolated DeepSeek-V4 P7 mHC-FFN pre/norm/post kernels.  These are compiled
 /// for traceable future device composition only; no Engine or HCLI path selects
 /// them until P4B/P6 composition has its own parity admission.
@@ -318,6 +322,8 @@ pub fn all_shader_sources() -> String {
         SHADER_MOE,
         SHADER_ATTN,
         SHADER_SAMPLE,
+        // mHC control exp must precede matmul/P7 kernels that call it.
+        SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP,
         SHADER_MATMUL,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
@@ -1338,7 +1344,10 @@ mod imp {
     #[cfg(test)]
     mod static_kernel_name_tests {
         use super::static_kernel_name;
-        use crate::metal::{SHADER_DEEPSEEK_V4_P7, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE};
+        use crate::metal::{
+            SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7, SHADER_GRAVITY_PQ,
+            SHADER_MATMUL, SHADER_MOE,
+        };
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -1521,6 +1530,7 @@ mod imp {
                 "deepseek_v4_p4b_rope_position1_bf16_authority",
                 "deepseek_v4_p4b_kv_cache_write_bf16_authority",
                 "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority",
+                "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
                 "deepseek_v4_p4b_hc_post_comb_precise_exp_candidate",
             ];
             for &kernel in KERNELS {
@@ -1530,6 +1540,10 @@ mod imp {
                     "DeepSeek-V4 P4B kernel must remain in the runtime Metal library"
                 );
             }
+            assert!(
+                SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP.contains("deepseek_v4_mhc_control_expf"),
+                "mHC control exp helper must compile into the shared Metal library"
+            );
         }
 
         #[test]

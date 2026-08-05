@@ -10,9 +10,10 @@
 //! intermediates; its caller owns the `MetalContext`, BF16 predecessor buffer,
 //! and returned MoE/route buffers.
 //!
-//! The current source/proof scope is layer 0.  The executor refuses any other
-//! layer rather than silently generalising a component proof into a 43-layer
-//! runtime claim.
+//! Hash-gate layers 0..2 are admitted: the P6 device graph uses the source
+//! `tid2eid` hash route kernel and layer-parameterized tensor names. Learned-
+//! bias layers (3..42) refuse cleanly until a learned-route kernel is admitted.
+//! This is not an Engine, causal loop, endpoint, parity receipt, or TPS path.
 
 use std::mem::size_of;
 
@@ -26,9 +27,10 @@ use crate::gravity_deepseek_v4_expert_cache::{
     CachedExpertBundle, DeepSeekV4ExpertBundleCache, ExpertBundleKey, ExpertOperator,
 };
 use crate::gravity_deepseek_v4_layer0_moe::{
-    verify_layer0_moe_source_anchors, ACTIVATED_EXPERTS, LAYER0_FFN_GATE_TID2EID,
-    LAYER0_FFN_GATE_WEIGHT, MOE_INTER_DIM, ROUTED_EXPERTS, ROUTE_SCALE,
+    ACTIVATED_EXPERTS, MOE_INTER_DIM, ROUTED_EXPERTS, ROUTE_SCALE,
 };
+use crate::gravity_deepseek_v4_layer_plan::DeepSeekV4LayerDeviceCatalog;
+use crate::gravity_deepseek_v4_layer_source_anchors::DeepSeekV4LayerGateMode;
 use crate::gravity_deepseek_v4_layer0_prefix::HIDDEN_SIZE;
 use crate::gravity_deepseek_v4_p7_composition::{
     DeepSeekV4P7FfnSourceContract, DeepSeekV4P7P6DeviceExecutor, DeepSeekV4P7P6DeviceInput,
@@ -59,7 +61,6 @@ const P6A_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authorit
 const P6A_SWIGLU_KERNEL: &str = "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority";
 const P6A_COMBINE_KERNEL: &str = "deepseek_v4_p6a_route6_shared_combine_bf16_authority";
 
-const LAYER0: usize = 0;
 const HIDDEN_BF16_BYTES: usize = HIDDEN_SIZE * size_of::<u16>();
 const ROUTE_IDS_BYTES: usize = ACTIVATED_EXPERTS * size_of::<u32>();
 const ROUTE_WEIGHTS_BYTES: usize = ACTIVATED_EXPERTS * size_of::<f32>();
@@ -265,13 +266,16 @@ impl DeepSeekV4Layer0P6MetalExecutor {
         cache: &mut DeepSeekV4ExpertBundleCache,
         controls: DeepSeekV4P6SourceControls,
     ) -> Result<Self> {
-        if controls.layer != LAYER0 {
+        let catalog = DeepSeekV4LayerDeviceCatalog::admit(reader)?;
+        let plan = catalog.plan(controls.layer)?;
+        plan.require_moe_device()?;
+        if plan.gate_mode != DeepSeekV4LayerGateMode::HashTokenIdToExpertIds {
             return Err(p6_error(format!(
-                "P6 reusable executor currently admits only independently proved layer 0, not layer {}",
-                controls.layer
+                "P6 device graph currently supports only hash tid2eid gate mode; layer {} uses {}",
+                controls.layer,
+                plan.gate_mode.as_str()
             )));
         }
-        let _anchors = verify_layer0_moe_source_anchors(reader)?;
         let (tid2eid_bytes, selected_ids_top_slot_order, execution) =
             source_route_plan(reader, controls)?;
         for &(_, expert_id) in &execution {
@@ -310,10 +314,15 @@ impl DeepSeekV4Layer0P6MetalExecutor {
                 "P6 Gate source read returned an unexpected length",
             ));
         }
-        let tid2eid_name = format!("layers.{}.ffn.gate.tid2eid", controls.layer);
-        if tid2eid_name != LAYER0_FFN_GATE_TID2EID || gate_weight_name != LAYER0_FFN_GATE_WEIGHT {
+        let tid2eid_name = catalog
+            .plan(controls.layer)?
+            .gate_route_data_name(catalog.anchors())?;
+        let expected_gate_weight = catalog
+            .plan(controls.layer)?
+            .gate_score_weight_name(catalog.anchors())?;
+        if gate_weight_name != expected_gate_weight || tid2eid_name != format!("layers.{}.ffn.gate.tid2eid", controls.layer) {
             return Err(p6_error(
-                "P6 layer-0 source naming invariant changed unexpectedly",
+                "P6 gate tensor names disagree with the verified layer-source anchors",
             ));
         }
 

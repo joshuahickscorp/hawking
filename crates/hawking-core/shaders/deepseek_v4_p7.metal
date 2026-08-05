@@ -102,10 +102,11 @@ kernel void deepseek_v4_p7_mhc_ffn_pre_authority(
     float comb[kHcMult * kHcMult];
     for (uint lane = 0u; lane < hc_mult; ++lane) {
         const float pre_value = mixes[lane] * hc_scale[0] + hc_base[lane];
-        pre[lane] = 1.0f / (1.0f + exp(-pre_value)) + hc_eps;
+        // General Darwin double-double mHC control exp (not a fixed-input patch).
+        pre[lane] = 1.0f / (1.0f + deepseek_v4_mhc_control_expf(-pre_value)) + hc_eps;
         const float post_value = mixes[lane + hc_mult] * hc_scale[1]
             + hc_base[lane + hc_mult];
-        post[lane] = 2.0f * (1.0f / (1.0f + exp(-post_value)));
+        post[lane] = 2.0f * (1.0f / (1.0f + deepseek_v4_mhc_control_expf(-post_value)));
         pre_out[lane] = pre[lane];
         post_out[lane] = post[lane];
     }
@@ -127,7 +128,7 @@ kernel void deepseek_v4_p7_mhc_ffn_pre_authority(
         float row_sum = 0.0f;
         for (uint column = 0u; column < hc_mult; ++column) {
             const uint index = start + column;
-            comb[index] = exp(comb[index] - row_max);
+            comb[index] = deepseek_v4_mhc_control_expf(comb[index] - row_max);
             row_sum = row_sum + comb[index];
         }
         for (uint column = 0u; column < hc_mult; ++column) {
