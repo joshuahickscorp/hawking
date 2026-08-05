@@ -203,11 +203,28 @@ inline int deepseek_v4_mhc_dd_nearest_i32(float2 value)
 
 // Production mHC control exp: general finite domain, embedded table, no
 // caller-bound buffer and no fixed-input patch.
+//
+// Domain policy matches host `expf` saturation, not quiet-NaN:
+//   non-finite -> propagate (NaN stays NaN; ±Inf map to +Inf / 0)
+//   |x| > 40    -> +Inf when x>0, +0 when x<0  (F32 exp overflows ~88.7)
+// The previous NaN-on-overflow path poisoned mHC Sinkhorn rows and made the
+// composed reduced BF16 state non-finite under real layer-0 activations.
 inline float deepseek_v4_mhc_control_expf(float x)
 {
+    if (!isfinite(x)) {
+        // exp(+Inf)=+Inf, exp(-Inf)=0, exp(NaN)=NaN
+        if (x > 0.0f) {
+            return as_type<float>(0x7f800000u);
+        }
+        if (x < 0.0f) {
+            return 0.0f;
+        }
+        return x;
+    }
     const uint absolute_bits = as_type<uint>(x) & 0x7fffffffu;
-    if (absolute_bits > 0x42200000u || !isfinite(x)) {
-        return as_type<float>(0x7fc00000u);
+    // 0x42200000 == 40.0f — outside the DD reconstruction table range.
+    if (absolute_bits > 0x42200000u) {
+        return x > 0.0f ? as_type<float>(0x7f800000u) : 0.0f;
     }
 
     // Exact F32 split of Darwin binary64 128/ln(2):

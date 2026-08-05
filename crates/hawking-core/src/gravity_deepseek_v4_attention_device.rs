@@ -1,16 +1,20 @@
 //! Parameterized DeepSeek-V4 ratio-zero attention device surface.
 //!
-//! This module generalizes the layer/position/ratio-0 attention *plan* that
-//! the fixed layer-0 and layer-1 device graphs already implement. It does not
-//! itself own a Metal command encoder: callers still dispatch through the
-//! existing L0/L1/P4B device graphs or a future unified executor.
+//! This module is the production plan + growing-KV authority surface for
+//! layers 0–1 (ratio-0 only). Live device graphs (P3A/P4A L0 BOS, P4B L0
+//! position-1, L1 BOS) now dispatch the general growing-KV sparse kernel
+//! [`DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL`] instead of the older
+//! position-0 / position-1 specializations.
 //!
 //! Honesty contract:
 //! - ratio 0 is the only compression family admitted here;
 //! - ratio 4 / 128 refuse cleanly via [`DeepSeekV4LayerDevicePlan`];
-//! - growing-KV sparse attention is expressed as the authority kernel
+//! - growing-KV sparse attention is the production kernel
 //!   `deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority`;
-//! - no Engine, HCLI, parity receipt, or TPS claim is made.
+//! - this module owns the plan/executor identity surface; Metal command
+//!   encoding for a full Q/KV/mHC graph remains in the L0/L1/P4B device
+//!   executors that share the same sparse kernel ABI;
+//! - no Engine, HCLI, exact-storage parity receipt, or TPS claim is made.
 
 use crate::gravity_deepseek_v4::DeepSeekV4FullStreamReader;
 use crate::gravity_deepseek_v4_layer_plan::{
@@ -103,6 +107,75 @@ impl DeepSeekV4Ratio0AttentionDevicePlan {
         let plan = Self::resolve(&catalog, layer, token_position)?;
         Ok((catalog, plan))
     }
+
+    /// Growing-KV ABI parameters for the production sparse kernel.
+    pub fn growing_kv_dispatch_params(&self) -> DeepSeekV4Ratio0GrowingKvDispatchParams {
+        DeepSeekV4Ratio0GrowingKvDispatchParams {
+            sparse_attention_kernel: self.sparse_attention_kernel,
+            cache_capacity: self.valid_kv_count as u32,
+            valid_kv_count: self.valid_kv_count as u32,
+            max_score_slots: self.valid_kv_count as u32,
+        }
+    }
+}
+
+/// Exact Metal ABI arguments for the production growing-KV sparse kernel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeepSeekV4Ratio0GrowingKvDispatchParams {
+    pub sparse_attention_kernel: &'static str,
+    pub cache_capacity: u32,
+    pub valid_kv_count: u32,
+    pub max_score_slots: u32,
+}
+
+/// General ratio-0 attention executor identity for one planned step.
+///
+/// Live graphs still reside in the specialized L0/L1/P4B modules, but every
+/// ratio-0 path is required to use the growing-KV kernel named here. This
+/// type is the single place multi-layer diagnostics record "which sparse
+/// kernel and valid-KV geometry did we intend".
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeepSeekV4Ratio0AttentionDeviceExecutor {
+    pub plan: DeepSeekV4Ratio0AttentionDevicePlan,
+    pub growing_kv: DeepSeekV4Ratio0GrowingKvDispatchParams,
+}
+
+impl DeepSeekV4Ratio0AttentionDeviceExecutor {
+    /// Resolve a production growing-KV attention step for a ratio-0 layer.
+    pub fn prepare(
+        catalog: &DeepSeekV4LayerDeviceCatalog,
+        layer: usize,
+        token_position: usize,
+    ) -> Result<Self> {
+        let plan = DeepSeekV4Ratio0AttentionDevicePlan::resolve(catalog, layer, token_position)?;
+        let growing_kv = plan.growing_kv_dispatch_params();
+        if growing_kv.sparse_attention_kernel != DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL {
+            return Err(attention_plan_error(
+                "ratio-0 attention executor requires the production growing-KV sparse kernel",
+            ));
+        }
+        if growing_kv.valid_kv_count == 0
+            || growing_kv.valid_kv_count > growing_kv.cache_capacity
+            || growing_kv.max_score_slots < growing_kv.valid_kv_count
+        {
+            return Err(attention_plan_error(
+                "ratio-0 growing-KV dispatch parameters are inconsistent",
+            ));
+        }
+        Ok(Self { plan, growing_kv })
+    }
+
+    pub fn layer(&self) -> usize {
+        self.plan.layer
+    }
+
+    pub fn token_position(&self) -> usize {
+        self.plan.token_position
+    }
+
+    pub fn sparse_attention_kernel(&self) -> &'static str {
+        self.growing_kv.sparse_attention_kernel
+    }
 }
 
 fn resolve_tensor_names(
@@ -179,7 +252,10 @@ mod tests {
         };
         let plan = DeepSeekV4LayerDevicePlan::from_anchor(&anchor);
         assert!(plan.require_attention_device().is_ok());
-        assert_eq!(DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL.contains("growing_kv"), true);
+        assert_eq!(
+            DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL.contains("growing_kv"),
+            true
+        );
     }
 
     #[test]
@@ -191,5 +267,23 @@ mod tests {
             tensor_count: 0,
         });
         assert!(plan.require_attention_device().is_err());
+    }
+
+    #[test]
+    fn executor_params_match_position() {
+        // Without a full artifact, exercise only the pure growing-KV math:
+        // position p => valid_kv_count p+1.
+        for position in [0usize, 1, 7, 127] {
+            let valid = position + 1;
+            let params = DeepSeekV4Ratio0GrowingKvDispatchParams {
+                sparse_attention_kernel: DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL,
+                cache_capacity: valid as u32,
+                valid_kv_count: valid as u32,
+                max_score_slots: valid as u32,
+            };
+            assert_eq!(params.valid_kv_count, (position + 1) as u32);
+            assert!(params.valid_kv_count <= params.cache_capacity);
+            assert!(params.max_score_slots >= params.valid_kv_count);
+        }
     }
 }
