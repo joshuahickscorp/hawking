@@ -1,0 +1,812 @@
+{
+  "adapter_manifest": {
+    "adapter_shape": {
+      "apply": "a_out = a_s + A(a_s)  # residual; A is zero-init at start",
+      "bias_shape": [
+        4096
+      ],
+      "bridge_io": {
+        "input_tensor_state": {
+          "name": "per_token_hidden_state",
+          "shape_contract": [
+            "batch",
+            "sequence",
+            4096
+          ],
+          "source_dtype": "bfloat16"
+        },
+        "output_tensor_state": {
+          "name": "reversible_residual_adapter_output",
+          "shape_contract": [
+            "batch",
+            "sequence",
+            4096
+          ],
+          "source_dtype": "bfloat16"
+        }
+      },
+      "bytes_bf16": 33562624,
+      "dtype": "bfloat16",
+      "name": "reversible_residual_adapter",
+      "parameter_count": 16781312,
+      "weight_shape": [
+        4096,
+        4096
+      ]
+    },
+    "block_count": 0,
+    "blocks": [],
+    "bridge": "GLM_MATH_BRIDGE",
+    "claim_boundary": {
+      "capability_claim_requires_sealed_shard_scores": true,
+      "direct_weight_transplant": false,
+      "full_model_bench_permitted": false,
+      "gradient_or_optimizer": false,
+      "gravity_compression_performed": false,
+      "kimi_consumed": false,
+      "kimi_simulated": false,
+      "lane_does_not_own": [
+        "C_FINAL_PROTO_KIMI",
+        "D_RAMANUJAN"
+      ],
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ],
+      "odyssey_or_ramanujan": false,
+      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+      "stage": 1,
+      "training_performed": false,
+      "weight_average_performed": false
+    },
+    "direct_weight_transplant": false,
+    "donor": {
+      "family": "mathematical_donor",
+      "repository": "zai-org/GLM-5.2",
+      "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+    },
+    "forbidden_bridges_stage1": [
+      "KIMI_STRATEGIC_BRIDGE"
+    ],
+    "gravity_compressed": false,
+    "io_contract": {
+      "dtype": "bfloat16",
+      "input_shape": [
+        "batch",
+        "sequence",
+        4096
+      ],
+      "output_shape": [
+        "batch",
+        "sequence",
+        4096
+      ]
+    },
+    "kind": "reversible_residual_adapter_or_compact_module",
+    "projection": {
+      "bias_shape": [
+        4096
+      ],
+      "bytes_bf16": 50339840,
+      "donor_repository": "zai-org/GLM-5.2",
+      "dtype": "bfloat16",
+      "math": "a_d_prime = a_d @ W_proj + b_proj  # a_d: [B,S,H_d] → [B,S,4096]",
+      "name": "project_glm_5_2_to_student",
+      "parameter_count": 25169920,
+      "student_repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "weight_shape": [
+        6144,
+        4096
+      ]
+    },
+    "recorded_at": "2026-08-05T17:38:18.680891Z",
+    "removable": true,
+    "reversible": true,
+    "schema": "hawking.frankenstein.stage1_adapter_manifest.v1",
+    "seal_sha256": "fa0db31db589d67a59599305b55df335c2b670eecef0b599f6de0032f3ff9dea",
+    "student_body": {
+      "hidden_size": 4096,
+      "num_hidden_layers": 43,
+      "read_only": true,
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+    },
+    "trained": false,
+    "training_free_closed_form_fit": true,
+    "transplant_points_available": [
+      "pre_norm_hidden_state",
+      "post_attention_hidden_state",
+      "pre_router_hidden_state",
+      "router_logits",
+      "selected_expert_ids",
+      "route_probabilities_and_margins",
+      "post_moe_hidden_state",
+      "mhc_state",
+      "attention_index_state",
+      "final_hidden_state",
+      "lm_head_logits",
+      "hcli_tool_action_decision"
+    ]
+  },
+  "arms": {
+    "A": "A_BASE_DSV4F",
+    "B": "B_PROTO_DSV4F_GLM"
+  },
+  "bindings": {
+    "glm_subspace": {
+      "directory": {
+        "kind": "directory",
+        "label": "glm-subspace",
+        "note": "directory cited; individual shard files bind separately",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/frankenstein/glm-subspace",
+        "present": true
+      },
+      "primary_artifact": {
+        "bytes": 476387487,
+        "file_sha256": null,
+        "hash_deferred": true,
+        "label": "glm-subspace/subspace_final.npz",
+        "note": "content hash deferred for artifact > 268435456 bytes; size and path are the binding",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/frankenstein/glm-subspace/subspace_final.npz",
+        "present": true
+      }
+    },
+    "latent_bridge_contract": {
+      "bytes": 23943,
+      "file_sha256": "d28f1dc7ec2667e55cc6752d67fa6d04b10bb20ee9899122df8165afb8217eac",
+      "label": "DSV4F_LATENT_BRIDGE_CONTRACT",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+      "present": true
+    },
+    "transplant_points": {
+      "bytes": 25936,
+      "file_sha256": "084c6bff563203482fde29bfe7e5807066954a3cbe58d49bf1782f5a42d2a410",
+      "label": "DSV4F_TRANSPLANT_POINTS",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json",
+      "present": true
+    }
+  },
+  "capability_ablation_vs_base": {
+    "math_mean_gain": 0.2000000000000001,
+    "reject_rule_fired": true,
+    "report": {
+      "additive_not_subtractive": false,
+      "bench_scope": "SHARD",
+      "bodies": {
+        "math_donor": {
+          "family": "mathematical_donor",
+          "hidden_size": 6144,
+          "num_hidden_layers": 78,
+          "repository": "zai-org/GLM-5.2",
+          "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+        },
+        "strategic_donor_stage2": "kimi_k3 (out of scope for stage 1)",
+        "student": {
+          "family": "student_body",
+          "hidden_size": 4096,
+          "num_hidden_layers": 43,
+          "repository": "deepseek-ai/DeepSeek-V4-Flash",
+          "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+        }
+      },
+      "bridges_in_play": {
+        "active_stage1": "GLM_MATH_BRIDGE",
+        "all_declared": [
+          "KIMI_STRATEGIC_BRIDGE",
+          "GLM_MATH_BRIDGE"
+        ],
+        "preserved_untouched_for_stage2": "KIMI_STRATEGIC_BRIDGE"
+      },
+      "claim_boundary": {
+        "capability_claim_requires_sealed_shard_scores": true,
+        "direct_weight_transplant": false,
+        "full_model_bench_permitted": false,
+        "gradient_or_optimizer": false,
+        "gravity_compression_performed": false,
+        "kimi_consumed": false,
+        "kimi_simulated": false,
+        "lane_does_not_own": [
+          "C_FINAL_PROTO_KIMI",
+          "D_RAMANUJAN"
+        ],
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ],
+        "odyssey_or_ramanujan": false,
+        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+        "stage": 1,
+        "training_performed": false,
+        "weight_average_performed": false
+      },
+      "comparison": {
+        "A": "A_BASE_DSV4F",
+        "B": "B_PROTO_DSV4F_GLM",
+        "C_later": "C_FINAL_PROTO_KIMI",
+        "D_later": "D_RAMANUJAN",
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ]
+      },
+      "extra": {
+        "fixture_meta": {
+          "expected_verdict": "REJECT",
+          "purpose": "stage1 governance evidence"
+        },
+        "fixture_path": "/Users/scammermike/.claude-grok/worktrees/proto-stage1-ablation-20260805-133146/workspace/campaign/evidence/models/frankenstein/receipts/STAGE1_CAPABILITY_FIXTURE__math_up_coding_down_REJECT.json",
+        "fixture_seal_sha256": "1ef05ed06f8eb75183033473b0e41bca6363e297c25e1284b0986a581e13daf4",
+        "fixture_sha256": "23ebbb4111fbc862bd81f1d7216f70d4aa20e1773887b190c3071abb06e6c523"
+      },
+      "fixture_id": "math_up_coding_down_REJECT",
+      "gate_policy": {
+        "accept_rule": {
+          "all_secondaries_non_regressing": true,
+          "bench_scope_must_be_shard_or_fixture": true,
+          "statement": "ACCEPT only when every secondary is ≥ base − tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
+        },
+        "claim_boundary": {
+          "capability_claim_requires_sealed_shard_scores": true,
+          "direct_weight_transplant": false,
+          "full_model_bench_permitted": false,
+          "gradient_or_optimizer": false,
+          "gravity_compression_performed": false,
+          "kimi_consumed": false,
+          "kimi_simulated": false,
+          "lane_does_not_own": [
+            "C_FINAL_PROTO_KIMI",
+            "D_RAMANUJAN"
+          ],
+          "lane_owns": [
+            "A_BASE_DSV4F",
+            "B_PROTO_DSV4F_GLM"
+          ],
+          "odyssey_or_ramanujan": false,
+          "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+          "stage": 1,
+          "training_performed": false,
+          "weight_average_performed": false
+        },
+        "kimi_out_of_scope": true,
+        "math_domains": [
+          "method_selection",
+          "mathematical_decomposition",
+          "formalization",
+          "proof_repair",
+          "value_ranking"
+        ],
+        "math_gain_advisory_min": 0.0,
+        "name": "additive_not_subtractive_stage1",
+        "optimization_target": "maximize_glm_mathematical_inheritance",
+        "reject_rule": {
+          "context_behavior_is_secondary": true,
+          "math_gain_cannot_override": true,
+          "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
+          "routing_stability_is_secondary": true,
+          "runtime_tps_is_secondary": true,
+          "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
+        },
+        "schema": "hawking.frankenstein.stage1_gate_policy.v1",
+        "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
+        "secondary_capabilities": [
+          "coding_and_repository_work",
+          "tool_use",
+          "agentic_planning",
+          "long_context_reasoning",
+          "repair_and_critique",
+          "hcli_protocols",
+          "general_knowledge_conversation",
+          "runtime_tps",
+          "bridge_compatibility",
+          "routing_stability",
+          "context_behavior"
+        ],
+        "secondary_tolerance_absolute": 0.02,
+        "training_free": true
+      },
+      "math": {
+        "advisory_min_gain": 0.0,
+        "any_gain": true,
+        "domains": [
+          {
+            "advisory": "OK",
+            "base": 0.7,
+            "delta": 0.20000000000000007,
+            "domain": "method_selection",
+            "gain": true,
+            "proto": 0.9
+          },
+          {
+            "advisory": "OK",
+            "base": 0.7,
+            "delta": 0.20000000000000007,
+            "domain": "mathematical_decomposition",
+            "gain": true,
+            "proto": 0.9
+          },
+          {
+            "advisory": "OK",
+            "base": 0.7,
+            "delta": 0.20000000000000007,
+            "domain": "formalization",
+            "gain": true,
+            "proto": 0.9
+          },
+          {
+            "advisory": "OK",
+            "base": 0.7,
+            "delta": 0.20000000000000007,
+            "domain": "proof_repair",
+            "gain": true,
+            "proto": 0.9
+          },
+          {
+            "advisory": "OK",
+            "base": 0.7,
+            "delta": 0.20000000000000007,
+            "domain": "value_ranking",
+            "gain": true,
+            "proto": 0.9
+          }
+        ],
+        "hard_reject_on_math": false,
+        "mean_gain": 0.2000000000000001,
+        "note": "Math domains are the optimization target.  They never override a secondary REJECT.",
+        "optimization_target": "maximize_glm_mathematical_inheritance",
+        "total_gain": 1.0000000000000004
+      },
+      "reason": "secondary capability regression beyond sealed tolerance; failed=['coding_and_repository_work']",
+      "recorded_at": "2026-08-05T17:38:18.680722Z",
+      "reject_rule_fired": true,
+      "schema": "hawking.frankenstein.stage1_avb_ablation.v1",
+      "seal_sha256": "59b4c43afb682563e498f61c5a2a1801891232099d883a0a63f23eb40bb27346",
+      "secondary": {
+        "domains": [
+          {
+            "base": 0.7,
+            "delta": -0.09999999999999998,
+            "domain": "coding_and_repository_work",
+            "floor": 0.6799999999999999,
+            "gate": "FAIL",
+            "hard": true,
+            "proto": 0.6,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "tool_use",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "agentic_planning",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "long_context_reasoning",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "repair_and_critique",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "hcli_protocols",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "general_knowledge_conversation",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "runtime_tps",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "bridge_compatibility",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "routing_stability",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          },
+          {
+            "base": 0.7,
+            "delta": 0.0,
+            "domain": "context_behavior",
+            "floor": 0.6799999999999999,
+            "gate": "PASS",
+            "hard": true,
+            "proto": 0.7,
+            "tolerance": 0.02
+          }
+        ],
+        "regressions": [
+          {
+            "base": 0.7,
+            "delta": -0.09999999999999998,
+            "domain": "coding_and_repository_work",
+            "floor": 0.6799999999999999,
+            "gate": "FAIL",
+            "hard": true,
+            "proto": 0.6,
+            "tolerance": 0.02
+          }
+        ],
+        "reject_rule": "any secondary proto < base − tolerance → REJECT (math gain cannot override)",
+        "reject_rule_fired": true,
+        "tolerance": 0.02,
+        "verdict": "REJECT"
+      },
+      "stage": 1,
+      "transfer_module_id": "demo-math_up_coding_down_REJECT",
+      "verdict": "REJECT"
+    },
+    "report_seal_sha256": "59b4c43afb682563e498f61c5a2a1801891232099d883a0a63f23eb40bb27346",
+    "verdict": "REJECT"
+  },
+  "claim_boundary": {
+    "capability_claim_requires_sealed_shard_scores": true,
+    "direct_weight_transplant": false,
+    "full_model_bench_permitted": false,
+    "gradient_or_optimizer": false,
+    "gravity_compression_performed": false,
+    "kimi_consumed": false,
+    "kimi_simulated": false,
+    "lane_does_not_own": [
+      "C_FINAL_PROTO_KIMI",
+      "D_RAMANUJAN"
+    ],
+    "lane_owns": [
+      "A_BASE_DSV4F",
+      "B_PROTO_DSV4F_GLM"
+    ],
+    "odyssey_or_ramanujan": false,
+    "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+    "stage": 1,
+    "training_performed": false,
+    "weight_average_performed": false
+  },
+  "coding_agent_tool_non_regression": {
+    "agentic_planning": {
+      "base": 0.7,
+      "delta": 0.0,
+      "gate": "PASS",
+      "proto": 0.7
+    },
+    "coding_and_repository_work": {
+      "base": 0.7,
+      "delta": -0.09999999999999998,
+      "gate": "FAIL",
+      "proto": 0.6
+    },
+    "domains": [
+      {
+        "base": 0.7,
+        "delta": -0.09999999999999998,
+        "domain": "coding_and_repository_work",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.6,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "tool_use",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "agentic_planning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "long_context_reasoning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "repair_and_critique",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "hcli_protocols",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "general_knowledge_conversation",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "runtime_tps",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "bridge_compatibility",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "routing_stability",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "context_behavior",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      }
+    ],
+    "reject_rule_fired": true,
+    "tool_use": {
+      "base": 0.7,
+      "delta": 0.0,
+      "gate": "PASS",
+      "proto": 0.7
+    },
+    "verdict": "REJECT"
+  },
+  "extra": {},
+  "glm_trace_shards": [
+    {
+      "binding": null,
+      "bridge": "GLM_MATH_BRIDGE",
+      "claim_boundary": {
+        "capability_claim_requires_sealed_shard_scores": true,
+        "direct_weight_transplant": false,
+        "full_model_bench_permitted": false,
+        "gradient_or_optimizer": false,
+        "gravity_compression_performed": false,
+        "kimi_consumed": false,
+        "kimi_simulated": false,
+        "lane_does_not_own": [
+          "C_FINAL_PROTO_KIMI",
+          "D_RAMANUJAN"
+        ],
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ],
+        "odyssey_or_ramanujan": false,
+        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+        "stage": 1,
+        "training_performed": false,
+        "weight_average_performed": false
+      },
+      "donor": "glm_5_2",
+      "meta": {},
+      "recorded_at": "2026-08-05T17:38:18.680923Z",
+      "schema": "hawking.frankenstein.glm_math_trace_shard.v1",
+      "seal_sha256": "d8f80ecc69a14f3305c5addc22e28627605cde716204a213b4003c700af52c92",
+      "shard_id": "demo-shard-0",
+      "student_layers": [],
+      "target_functions": [
+        "method_selection",
+        "mathematical_decomposition",
+        "formalization",
+        "proof_repair",
+        "value_ranking"
+      ],
+      "verified": false
+    }
+  ],
+  "kimi_handoff": {
+    "bridge_preserved": "KIMI_STRATEGIC_BRIDGE",
+    "contract_name": "PROTO_TO_KIMI_HANDOFF_CONTRACT.json",
+    "stage1_must_not_mutate": true
+  },
+  "math_domains": [
+    "method_selection",
+    "mathematical_decomposition",
+    "formalization",
+    "proof_repair",
+    "value_ranking"
+  ],
+  "math_targets": [
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "donor": "glm_5_2",
+      "name": "method_selection",
+      "optimization": "maximize",
+      "stage": 1
+    },
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "donor": "glm_5_2",
+      "name": "mathematical_decomposition",
+      "optimization": "maximize",
+      "stage": 1
+    },
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "donor": "glm_5_2",
+      "name": "formalization",
+      "optimization": "maximize",
+      "stage": 1
+    },
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "donor": "glm_5_2",
+      "name": "proof_repair",
+      "optimization": "maximize",
+      "stage": 1
+    },
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "donor": "glm_5_2",
+      "name": "value_ranking",
+      "optimization": "maximize",
+      "stage": 1
+    }
+  ],
+  "recorded_at": "2026-08-05T17:38:18.681012Z",
+  "runtime_storage": {
+    "claim_boundary": {
+      "capability_claim_requires_sealed_shard_scores": true,
+      "direct_weight_transplant": false,
+      "full_model_bench_permitted": false,
+      "gradient_or_optimizer": false,
+      "gravity_compression_performed": false,
+      "kimi_consumed": false,
+      "kimi_simulated": false,
+      "lane_does_not_own": [
+        "C_FINAL_PROTO_KIMI",
+        "D_RAMANUJAN"
+      ],
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ],
+      "odyssey_or_ramanujan": false,
+      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+      "stage": 1,
+      "training_performed": false,
+      "weight_average_performed": false
+    },
+    "notes": "Stage-1 accounting is declarative for unmeasured full-runtime fields. When TPS is supplied it is treated as a secondary hard gate (±2%).",
+    "recorded_at": "2026-08-05T17:38:18.680936Z",
+    "runtime": {
+      "full_model_runtime_available": false,
+      "measurement_scope": "shard_or_unmeasured",
+      "tps_base": null,
+      "tps_delta": null,
+      "tps_non_regression_within_2pct": null,
+      "tps_proto": null
+    },
+    "schema": "hawking.frankenstein.stage1_runtime_storage.v1",
+    "seal_sha256": "9d4f68c1e84c3fffb07bfa500786f7a7efefb6be9ea9a8386b4de9b384ff22bf",
+    "storage": {
+      "adapter_archive_bytes": 0,
+      "donor_weights_retained": false,
+      "floor_bytes": 16106127360,
+      "free_bytes_at_seal": null,
+      "gravity_compressed": false,
+      "student_body_resident_read_only": true,
+      "working_set_bytes": 0
+    }
+  },
+  "schema": "hawking.frankenstein.stage1_inheritance_receipt.v1",
+  "seal_sha256": "3a97ecb14dcdb4467eb8966d5bd3f366c8a4fbd29507eb1dc22c16168ba1be93",
+  "secondary_capabilities": [
+    "coding_and_repository_work",
+    "tool_use",
+    "agentic_planning",
+    "long_context_reasoning",
+    "repair_and_critique",
+    "hcli_protocols",
+    "general_knowledge_conversation",
+    "runtime_tps",
+    "bridge_compatibility",
+    "routing_stability",
+    "context_behavior"
+  ],
+  "stage": 1,
+  "transfer_module_id": "demo-math_up_coding_down_REJECT"
+}
