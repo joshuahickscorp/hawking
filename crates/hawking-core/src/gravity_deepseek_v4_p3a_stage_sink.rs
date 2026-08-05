@@ -221,7 +221,8 @@ mod macos {
     const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
     const PER_HEAD_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority";
     const KV_QAT_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority";
-    const SPARSE_KERNEL: &str = "deepseek_v4_p4a_sparse_attention_position0_sink_authority";
+    /// Production ratio-0 path: growing-KV supersedes the fixed position-0 specialization.
+    const SPARSE_KERNEL: &str = "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority";
     const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
     const HC_POST_KERNEL: &str = "deepseek_v4_p4a_hc_attn_post_authority";
     const P4A_AUTHORITY_RECEIPT_SEAL_SHA256: &str =
@@ -1147,6 +1148,10 @@ mod macos {
                         set_u32(encoder, 6, &kv_block);
                     },
                 )?;
+                // BOS/position-0: treat the single KV QAT row as a 1-slot growing cache.
+                let cache_capacity = 1u32;
+                let valid_kv_count = 1u32;
+                let max_score_slots = 1u32;
                 batch.dispatch_threads(SPARSE_KERNEL, (heads, 1, 1), (64, 1, 1), |encoder| {
                     encoder.set_buffer(0, Some(&q_head_output), 0);
                     encoder.set_buffer(1, Some(&kv_qat_output), 0);
@@ -1156,7 +1161,10 @@ mod macos {
                     encoder.set_buffer(5, Some(&sparse_denominators), 0);
                     set_u32(encoder, 6, &heads);
                     set_u32(encoder, 7, &head_dim);
-                    set_f32(encoder, 8, &sparse_scale);
+                    set_u32(encoder, 8, &cache_capacity);
+                    set_u32(encoder, 9, &valid_kv_count);
+                    set_u32(encoder, 10, &max_score_slots);
+                    set_f32(encoder, 11, &sparse_scale);
                 })?;
                 batch.dispatch_threads(WO_A_KERNEL, (wo_a_rows, 1, 1), (256, 1, 1), |encoder| {
                     encoder.set_buffer(0, Some(&wo_a_weight), 0);

@@ -58,7 +58,8 @@ const PER_HEAD_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority";
 const KV_QAT_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority";
 const ROPE_KERNEL: &str = "deepseek_v4_p4b_rope_position1_bf16_authority";
 const CACHE_KERNEL: &str = "deepseek_v4_p4b_kv_cache_write_bf16_authority";
-const SPARSE_KERNEL: &str = "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority";
+/// Production ratio-0 path: growing-KV supersedes the fixed position-1 two-row specialization.
+const SPARSE_KERNEL: &str = "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority";
 const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
 const HC_POST_KERNEL: &str = "deepseek_v4_p4a_hc_attn_post_authority";
 
@@ -960,6 +961,9 @@ fn dispatch_sparse(
     capacity: u32,
     scale: f32,
 ) -> Result<()> {
+    // Position-1 causal window: slots [0, 1] already written; max_score_slots == capacity.
+    let valid_kv_count = capacity;
+    let max_score_slots = capacity;
     batch.dispatch_threads(SPARSE_KERNEL, (heads, 1, 1), (64, 1, 1), |e| {
         e.set_buffer(0, Some(q), 0);
         e.set_buffer(1, Some(cache), 0);
@@ -970,7 +974,9 @@ fn dispatch_sparse(
         set_u32(e, 6, &heads);
         set_u32(e, 7, &head_dim);
         set_u32(e, 8, &capacity);
-        set_f32(e, 9, &scale);
+        set_u32(e, 9, &valid_kv_count);
+        set_u32(e, 10, &max_score_slots);
+        set_f32(e, 11, &scale);
     })
 }
 

@@ -1,0 +1,109 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "honesty": {
+    "full_metal_multi_layer_forward": true,
+    "greedy_token_produced": false,
+    "learned_bias_gate_status": "not_required_layers_0_1_are_hash_gate",
+    "ratio_4_128_status": "not_in_scope_layers_0_1_are_ratio_0",
+    "serve_endpoint_flipped": false
+  },
+  "l0_child_retained": true,
+  "l0_p4b_predecessor_parity": "P4A_EXACT_ATTENTION_ONLY",
+  "l1_child_retained": true,
+  "l1_p4b_predecessor_parity": "P4A_EXACT_ATTENTION_ONLY",
+  "metal": {
+    "command_buffers": 20,
+    "cpu_visible_waits": 20,
+    "fallback": 0,
+    "host_intermediate_handoff_between_stages": false,
+    "metal_dispatches": 169
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false,
+    "reason": "composed multi-layer path inherits NumericParityV21Only until a sealed exact-storage e2e receipt is earned on the full residual chain"
+  },
+  "schema": "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_l0_l1.v1",
+  "scope": {
+    "compression": "ratio_0_only",
+    "gate_mode": "hash_tid2eid",
+    "layers": [
+      0,
+      1
+    ],
+    "mhc_control_exp": "darwin_double_double_control_domain_general",
+    "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "token_id": 0,
+    "token_position": 0
+  },
+  "stages": [
+    {
+      "command_buffers": 11,
+      "cpu_visible_waits": 11,
+      "metal_dispatches": 21,
+      "notes": {
+        "host_intermediate_handoff_bytes": 0,
+        "p3a_gpu_dispatches": 10,
+        "p4a_gpu_dispatches": 11,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l0_attention_p3a_p4a_growing_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "host_activation_handoff": false,
+        "layer": 0,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l0_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "declared_dispatches": 22,
+        "host_intermediate_handoff_bytes": 0,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l1_attention_growing_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "host_activation_handoff": false,
+        "layer": 1,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          163,
+          137,
+          158,
+          97,
+          184,
+          8
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l1_p7_mhc_ffn_p6_moe_mhc_post"
+    }
+  ],
+  "status": "PASS_MULTI_LAYER_GPU_FORWARD_L0_L1",
+  "wall_time_ms": 17984.399292
+}

@@ -89,7 +89,8 @@ const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const PER_HEAD_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority";
 const KV_QAT_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority";
 const CACHE_KERNEL: &str = "deepseek_v4_p4b_kv_cache_write_bf16_authority";
-const SPARSE_KERNEL: &str = "deepseek_v4_p4a_sparse_attention_position0_sink_authority";
+/// Production ratio-0 path: growing-KV supersedes the fixed position-0 specialization.
+const SPARSE_KERNEL: &str = "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority";
 const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
 const HC_POST_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_authority";
 
@@ -240,6 +241,22 @@ pub struct DeepSeekV4L1BosAttentionDeviceOutput {
 }
 
 impl DeepSeekV4L1BosAttentionDeviceOutput {
+    /// Borrow the complete attention residual as a P7 position-0 input on the
+    /// caller's same Metal context. No host readback or buffer copy.
+    #[cfg(target_os = "macos")]
+    pub fn p7_attention_state<'a>(
+        &'a self,
+        metal: &'a MetalContext,
+    ) -> Result<crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState<'a>> {
+        self.validate()?;
+        crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState::position0(
+            metal,
+            &self.attention_hc_state_bf16,
+            self.layer,
+            self.token_id,
+        )
+    }
+
     pub fn validate(&self) -> Result<()> {
         if self.attention_hc_state_bf16.length() != DSV4F_L1_BOS_HC_STATE_BF16_BYTES as u64
             || self.causal_kv_slot0_bf16.length() != DSV4F_L1_BOS_KV_SLOT0_BF16_BYTES as u64
@@ -702,16 +719,20 @@ impl DeepSeekV4Layer1BosAttentionDeviceExecutor {
                 head_dim,
                 cache_capacity,
             )?;
-            dispatch_sparse_position0(
+            // BOS/position-0: one written KV row; growing-KV with valid_kv_count=1.
+            dispatch_sparse_growing_kv(
                 batch,
                 &self.q_head,
-                &self.kv.qat,
+                &self.causal_kv_slot0_bf16,
                 &self.attn_sink,
                 &self.sparse,
                 &self.scores,
                 &self.denominators,
                 heads,
                 head_dim,
+                cache_capacity,
+                /*valid_kv_count=*/ 1,
+                /*max_score_slots=*/ 1,
                 sparse_scale,
             )?;
             dispatch_wo_a(
@@ -843,8 +864,13 @@ fn verify_l1_bos_source_contract(reader: &DeepSeekV4FullStreamReader) -> Result<
         .get("compress_ratios")
         .and_then(Value::as_array)
         .ok_or_else(|| l1_error("L1 inference config lacks compress_ratios"))?;
-    if ratios.len() != 43
-        || ratios.get(DSV4F_L1_BOS_LAYER).and_then(Value::as_u64)
+    // Source lists 44 schedule entries (43 base + 1 dense head). Admit either
+    // 43 or 44 as long as base layers 0 and 1 remain ratio-zero.
+    if !(ratios.len() == 43 || ratios.len() == 44)
+        || ratios.get(0).and_then(Value::as_u64) != Some(0)
+        || ratios
+            .get(DSV4F_L1_BOS_LAYER)
+            .and_then(Value::as_u64)
             != Some(DSV4F_L1_BOS_COMPRESS_RATIO as u64)
     {
         return Err(l1_error(
@@ -1232,33 +1258,45 @@ fn dispatch_cache_write(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn dispatch_sparse_position0(
+fn dispatch_sparse_growing_kv(
     batch: &mut CommandBatch<'_>,
     q: &metal::Buffer,
-    kv: &metal::Buffer,
+    kv_cache: &metal::Buffer,
     sink: &metal::Buffer,
     output: &metal::Buffer,
     scores: &metal::Buffer,
     denominators: &metal::Buffer,
     heads: u32,
     head_dim: u32,
+    cache_capacity: u32,
+    valid_kv_count: u32,
+    max_score_slots: u32,
     scale: f32,
 ) -> Result<()> {
-    if heads != NUM_HEADS as u32 || head_dim != HEAD_DIM as u32 || !(scale > 0.0) {
+    if heads != NUM_HEADS as u32
+        || head_dim != HEAD_DIM as u32
+        || valid_kv_count == 0
+        || valid_kv_count > cache_capacity
+        || max_score_slots < valid_kv_count
+        || !(scale > 0.0)
+    {
         return Err(l1_error(
-            "L1 ratio-zero sparse-attention geometry is invalid",
+            "L1 ratio-zero growing-KV sparse-attention geometry is invalid",
         ));
     }
     batch.dispatch_threads(SPARSE_KERNEL, (heads, 1, 1), (64, 1, 1), |encoder| {
         encoder.set_buffer(0, Some(q), 0);
-        encoder.set_buffer(1, Some(kv), 0);
+        encoder.set_buffer(1, Some(kv_cache), 0);
         encoder.set_buffer(2, Some(sink), 0);
         encoder.set_buffer(3, Some(output), 0);
         encoder.set_buffer(4, Some(scores), 0);
         encoder.set_buffer(5, Some(denominators), 0);
         set_u32(encoder, 6, &heads);
         set_u32(encoder, 7, &head_dim);
-        set_f32(encoder, 8, &scale);
+        set_u32(encoder, 8, &cache_capacity);
+        set_u32(encoder, 9, &valid_kv_count);
+        set_u32(encoder, 10, &max_score_slots);
+        set_f32(encoder, 11, &scale);
     })
 }
 
