@@ -62,6 +62,19 @@ pub struct ContextInfo {
     pub free_slots: usize,
     #[serde(default)]
     pub max_batch: usize,
+    /// Optional hard cap for one request's newly generated tokens.  Older
+    /// endpoints omit this, in which case callers must keep their existing
+    /// local policy rather than inventing a lower or higher cap.
+    #[serde(default)]
+    pub max_output_tokens: Option<usize>,
+    #[serde(default)]
+    pub artifact_seal_sha256: String,
+    #[serde(default)]
+    pub capability_status: String,
+    #[serde(default)]
+    pub metal_dispatches: Option<usize>,
+    #[serde(default)]
+    pub chat_template: String,
 }
 
 /// A reqwest-backed [`ModelProvider`] pointed at a (supervised) serve instance.
@@ -245,6 +258,8 @@ impl HttpModelProvider {
         let stats = final_stats.unwrap_or(GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ms: None,
+            completed_decode_forwards: None,
             decode_tokens_per_second: None,
         });
         // Terminal Done so the bus flushes the coalesced batch (even if the
@@ -289,6 +304,13 @@ pub fn extract_completion(route: GenerateRoute, body: &Value) -> (String, Genera
             })
             .and_then(Value::as_u64)
             .unwrap_or(0) as usize,
+        decode_ms: stats_obj
+            .and_then(|s| s.get("decode_ms"))
+            .and_then(Value::as_f64),
+        completed_decode_forwards: stats_obj
+            .and_then(|s| s.get("completed_decode_forwards"))
+            .and_then(Value::as_u64)
+            .map(|v| v as usize),
         decode_tokens_per_second: stats_obj
             .and_then(|s| s.get("dec_tps"))
             .and_then(Value::as_f64)
@@ -329,6 +351,8 @@ pub fn parse_native_sse_line(line: &str) -> SseChunk {
         return SseChunk::Done(GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ms: None,
+            completed_decode_forwards: None,
             decode_tokens_per_second: None,
         });
     }
@@ -357,7 +381,11 @@ pub fn parse_native_sse_line(line: &str) -> SseChunk {
 /// True for the zeroed stats the `[DONE]` terminator carries, used so the real
 /// stats event (which precedes `[DONE]`) is not clobbered by the terminator.
 fn is_zero_stats(s: &GenerationStats) -> bool {
-    s.input_tokens == 0 && s.output_tokens == 0 && s.decode_tokens_per_second.is_none()
+    s.input_tokens == 0
+        && s.output_tokens == 0
+        && s.decode_ms.is_none()
+        && s.completed_decode_forwards.is_none()
+        && s.decode_tokens_per_second.is_none()
 }
 
 /// Extract the first embedding vector from a `/v1/embeddings` response.
@@ -408,9 +436,11 @@ impl ModelProvider for HttpModelProvider {
                     HideError::RuntimeUnavailable(format!("generate request failed: {e}"))
                 })?;
             if !resp.status().is_success() {
+                let status = resp.status();
+                let detail = resp.text().await.unwrap_or_default();
                 return Err(HideError::RuntimeUnavailable(format!(
-                    "generate returned {}",
-                    resp.status()
+                    "generate returned {status}: {}",
+                    detail.chars().take(480).collect::<String>()
                 )));
             }
 
@@ -481,11 +511,26 @@ impl ModelProvider for HttpModelProvider {
 /// `Act` step reach the supervised runtime via the host.
 pub struct ModelProviderInferenceClient<P: ModelProvider> {
     provider: P,
+    max_output_tokens: Option<usize>,
 }
 
 impl<P: ModelProvider> ModelProviderInferenceClient<P> {
     pub fn new(provider: P) -> Self {
-        Self { provider }
+        Self {
+            provider,
+            max_output_tokens: None,
+        }
+    }
+
+    /// Apply a host-observed, endpoint-declared output cap before every
+    /// orchestration request. This can only reduce a caller's request; the
+    /// host records the cap in its receipt rather than letting a 4-token
+    /// diagnostic endpoint reject planner/action defaults of 256/512.
+    pub fn with_max_output_tokens(provider: P, max_output_tokens: usize) -> Self {
+        Self {
+            provider,
+            max_output_tokens: Some(max_output_tokens.max(1)),
+        }
     }
 }
 
@@ -494,10 +539,15 @@ impl<P: ModelProvider> hawking_orch::inference::InferenceClient
 {
     fn generate<'a>(
         &'a self,
-        request: InferenceRequest,
+        mut request: InferenceRequest,
         sink: TokenSink<'a>,
     ) -> BoxFuture<'a, Result<GenerationStats>> {
-        self.provider.generate(request, sink)
+        Box::pin(async move {
+            if let Some(cap) = self.max_output_tokens {
+                request.max_output_tokens = request.max_output_tokens.min(cap);
+            }
+            self.provider.generate(request, sink).await
+        })
     }
 
     fn embed<'a>(&'a self, text: &'a str) -> BoxFuture<'a, Result<Vec<f32>>> {

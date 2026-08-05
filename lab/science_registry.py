@@ -7,8 +7,16 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
+from lab.semantic_taxonomy import (
+    CONDENSE_OPERATION,
+    legacy_alias_for_schema,
+    semantic_tags,
+)
+
 Handler = Callable[..., dict[str, Any]]
 OPS_ROOT = Path(__file__).resolve().parent / "operators"
+GRAVITY_OPERATOR_REGISTRY_SCHEMA = "hawking.gravity.operator_registry.v1"
+CONDENSE_OPERATOR_REGISTRY_SCHEMA = "hawking.condense.operator_registry.v1"
 
 class OperatorClass(str, Enum):
     OPERATOR = "operator"
@@ -93,6 +101,15 @@ IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
     _m("glm52_source_fetch", DA, "fetch.source", "BF16 source streamer body.", sci=True),
     _m("glm52_teacher_capture", OP, "measure.teacher_capture", "Teacher-evidence capture.", sci=True),
     _m("glm52_xet_autotune", EV, "plan.xet", "Xet autotune planner.", sealed=True),
+    _m("deepseek_v4_xet_autotune", EV, "measure.deepseek_v4_public_xet", "Fresh-process public Xet throughput matrix and frozen profile.", sealed=True, path="tools/condense/deepseek_v4_xet_autotune.py"),
+    _m("deepseek_v4_xet_sustained", EV, "measure.deepseek_v4_public_xet_sustained", "Long-form independent HTTP/2 versus direct-presigned public-path confirmation.", sealed=True, path="tools/condense/deepseek_v4_xet_sustained.py"),
+    _m("frankenstein_pipeline", OP, "plan.frankenstein_pipeline", "Fail-closed Kimi-to-GLM-to-DeepSeek staged pipeline preflight.", sealed=True, path="tools/condense/frankenstein_pipeline.py"),
+    _m("kimi_k3_source_admission", EV, "precheck.kimi_k3_source", "Official metadata-only Kimi K3 immutable source admission.", sealed=True, path="tools/condense/kimi_k3_source_admission.py"),
+    _m("deepseek_v4_gravity", OP, "pack.deepseek_v4_stream", "DeepSeek-V4 Gravity stream and restart-safe content-addressed source windows.", sci=True, path="tools/condense/deepseek_v4_gravity.py"),
+    _m("deepseek_v4_native_codec", NA, "codec.deepseek_v4_native", "Bounded DeepSeek-V4 FP4/FP8 byte-format codec.", sealed=True, sci=True, path="tools/condense/deepseek_v4_native_codec.py"),
+    _m("deepseek_v4_native_fixture", FX, "fixture.deepseek_v4_native", "Bounded in-memory native codec fixture.", sealed=True, sci=True, path="tools/condense/deepseek_v4_native_fixture.py"),
+    _m("deepseek_v4_stream_executor", OP, "plan.deepseek_v4_header", "Pinned header-only DeepSeek-V4 source admission.", sealed=True, path="tools/condense/deepseek_v4_stream_executor.py"),
+    _m("deepseek_v4_xet_slice", OP, "exec.deepseek_v4_xet_slice", "Bounded zero-cache DeepSeek-V4 Xet range stream.", sealed=True, path="tools/condense/deepseek_v4_xet_slice.py"),
     _m("glm52_activation_aware_pack", OP, "pack.activation_v1", "Activation-aware pack v1.", sci=True),
     _m("glm52_activation_aware_pack_v2", OP, "pack.activation_v2", "Activation-aware pack v2.", sci=True),
     _m("glm52_pack", OP, "pack.stream", "Sub-bit compact shard serializer.", sci=True),
@@ -204,7 +221,18 @@ class OperatorRegistry:
             by_class[r.class_name] = by_class.get(r.class_name, 0) + 1
             loc_by_class[r.class_name] = loc_by_class.get(r.class_name, 0) + r.loc
         return {
-            "schema": "hawking.condense.operator_registry.v1",
+            "schema": GRAVITY_OPERATOR_REGISTRY_SCHEMA,
+            "semantic_tags": semantic_tags(
+                operation=CONDENSE_OPERATION,
+                artifact_kind="operator_registry",
+            ),
+            "legacy_schema_aliases": [CONDENSE_OPERATOR_REGISTRY_SCHEMA],
+            # Keep the compact legacy list for older readers, and provide the
+            # complete forward-only mapping for callers that need to know its
+            # deprecation and Gravity successor.
+            "legacy_schema_compatibility": [
+                legacy_alias_for_schema(CONDENSE_OPERATOR_REGISTRY_SCHEMA)
+            ],
             "module_count": len(self.records),
             "total_loc": sum(r.loc for r in self.records),
             "science_floor_loc": self.science_floor_loc(),

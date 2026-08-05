@@ -13,8 +13,21 @@ from math import isfinite
 from threading import RLock
 from typing import Any, Mapping
 
+from lab.semantic_taxonomy import (
+    CONDENSE_OPERATION,
+    legacy_alias_for_schema,
+    semantic_tags,
+)
 
-SCHEMA = "hawking.condense.rotation_controller.v1"
+
+GRAVITY_SCHEMA = "hawking.gravity.rotation_controller.v1"
+"""Canonical schema for new controller snapshots."""
+
+CONDENSE_SCHEMA = "hawking.condense.rotation_controller.v1"
+"""Legacy schema retained for readers of historical Condense snapshots."""
+
+# ``SCHEMA`` remains the convenient current-schema import used by callers.
+SCHEMA = GRAVITY_SCHEMA
 _SEAL_HEX = frozenset("0123456789abcdef")
 
 # A controller instance has its own transition lock, but the heavy GPU is a
@@ -30,7 +43,7 @@ class ControllerError(RuntimeError):
 
 
 @dataclass(frozen=True)
-class CondenseTask:
+class GravityTask:
     """One source window and every artifact emitted from its single pack pass."""
 
     task_id: str
@@ -62,7 +75,7 @@ class CondenseTask:
 
 @dataclass
 class _TaskState:
-    task: CondenseTask
+    task: GravityTask
     phase: str = "PENDING"
     metadata_owner: str | None = None
     metadata_resident: bool = False
@@ -100,7 +113,7 @@ class _SharedStats:
         }
 
 
-class CondenseController:
+class GravityController:
     """Plan the ``N-1 evict -> N process -> N+1 metadata`` lifecycle.
 
     The controller has exactly one byte budget and one expected heavy-lease
@@ -111,13 +124,13 @@ class CondenseController:
     obtaining the cross-process GPU lease before it presents that token.
     """
 
-    def __init__(self, tasks: list[CondenseTask], *, byte_budget_bytes: int, heavy_lease_token: str) -> None:
+    def __init__(self, tasks: list[GravityTask], *, byte_budget_bytes: int, heavy_lease_token: str) -> None:
         if isinstance(byte_budget_bytes, bool) or not isinstance(byte_budget_bytes, int) or byte_budget_bytes <= 0:
             raise ControllerError("byte_budget_bytes must be a positive integer")
         if not isinstance(heavy_lease_token, str) or not heavy_lease_token or heavy_lease_token != heavy_lease_token.strip():
             raise ControllerError("heavy_lease_token must be a non-empty, trimmed string")
         if not tasks:
-            raise ControllerError("at least one CondenseTask is required")
+            raise ControllerError("at least one GravityTask is required (legacy: CondenseTask)")
         task_ids = [task.task_id for task in tasks]
         if len(task_ids) != len(set(task_ids)):
             raise ControllerError("task ids must be unique")
@@ -248,6 +261,11 @@ class CondenseController:
             used = self._used_bytes()
             return {
                 "schema": SCHEMA,
+                "semantic_tags": semantic_tags(
+                    operation=CONDENSE_OPERATION,
+                    artifact_kind="rotation_controller",
+                ),
+                "legacy_schema_compatibility": legacy_alias_for_schema(CONDENSE_SCHEMA),
                 "byte_budget_bytes": self._budget,
                 "resident_bytes": used,
                 "available_bytes": self._budget - used,
@@ -348,3 +366,21 @@ class CondenseController:
 
     def _record(self, kind: str, state: _TaskState, **detail: Any) -> None:
         self._events.append({"n": len(self._events), "kind": kind, "task_id": state.task.task_id, **detail})
+
+
+# Compatibility aliases intentionally keep existing integrations importable.
+# New code should use the Gravity names and the Gravity snapshot schema; the
+# aliases never rewrite historical Condense receipts or their original schema.
+CondenseTask = GravityTask
+CondenseController = GravityController
+
+__all__ = [
+    "CONDENSE_SCHEMA",
+    "CondenseController",
+    "CondenseTask",
+    "ControllerError",
+    "GRAVITY_SCHEMA",
+    "GravityController",
+    "GravityTask",
+    "SCHEMA",
+]

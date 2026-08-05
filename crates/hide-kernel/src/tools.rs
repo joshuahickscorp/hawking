@@ -6,11 +6,31 @@
 //! rather than re-running the effect (A.3 invariant).
 
 pub use parse::{has_tool_call, parse_tool_calls, ParsedToolCall};
-pub use runner::{CallDispatch, ToolLoop, ToolTurn, ToolTurnStatus};
+pub use runner::{
+    CallDispatch, ToolLoop, ToolLoopState, ToolTurn, ToolTurnStatus, VerifiedCallDispatch,
+};
 
-use hide_core::tool::{ToolCall, ToolResult};
+use futures::future::BoxFuture;
+use hide_core::ids::{RunId, SessionId};
+use hide_core::tool::{ToolCall, ToolResult, ToolSpec};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+
+/// The host-only execution authority for a tool call emitted by a model.
+///
+/// The kernel can parse model text, but it cannot decide that text has the
+/// durable target-verification and action-bound authorization required to
+/// cause an effect. Hosts that have that evidence may install this executor;
+/// otherwise parsed calls remain proposals. Implementations must bind the
+/// supplied session, run, and exact [`ToolCall`] to their verification record.
+pub trait VerifiedModelToolExecutor: Send + Sync {
+    fn dispatch<'a>(
+        &'a self,
+        session_id: SessionId,
+        run_id: RunId,
+        call: ToolCall,
+    ) -> BoxFuture<'a, hide_core::Result<ToolResult>>;
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IdempotencyRecord {
@@ -32,6 +52,14 @@ pub enum LintIssue {
     EmptyToolName,
     UnknownTool(String),
     ArgsNotObject,
+    /// The registered input schema rejected the call. `path` is a JSON-pointer
+    /// style location into the arguments; the message is a self-correction hint.
+    SchemaInvalid {
+        path: String,
+        message: String,
+    },
+    /// The model reused an idempotency key for different call contents.
+    IdempotencyConflict(String),
     /// An `edit`/`fs` call referencing a path that doesn't exist.
     HallucinatedFile(String),
 }
@@ -69,11 +97,317 @@ pub fn lint_tool_call(
     issues
 }
 
+/// Strictly lint a call against the host's actual tool catalog. Unlike
+/// [`lint_tool_call`], an empty catalog is fail-closed: a model cannot make an
+/// effectful call until the host can name and validate the tool it is proposing.
+///
+/// The validator covers the JSON-Schema vocabulary used by HIDE's built-in
+/// tools and common MCP definitions: object properties/required/additional
+/// properties, arrays/items, scalar types, enum/const, composition, and the
+/// standard bounds. Unsupported `$ref` definitions are rejected rather than
+/// silently treated as valid.
+pub fn lint_tool_call_against_specs(
+    call: &ToolCall,
+    specs: &[ToolSpec],
+    workspace_root: Option<&str>,
+) -> Vec<LintIssue> {
+    let known_tools: Vec<String> = specs.iter().map(|spec| spec.name.clone()).collect();
+    let mut issues = lint_tool_call(call, &known_tools, workspace_root);
+    if specs.is_empty() {
+        issues.push(LintIssue::UnknownTool(call.tool.clone()));
+        return issues;
+    }
+    let Some(spec) = specs.iter().find(|spec| spec.name == call.tool) else {
+        return issues;
+    };
+    if call.wire_version != spec.wire_version {
+        issues.push(LintIssue::SchemaInvalid {
+            path: "/wire_version".to_string(),
+            message: format!(
+                "tool wire version {} does not match registered version {}",
+                call.wire_version, spec.wire_version
+            ),
+        });
+    }
+    if call.args.is_object() {
+        if let Err((path, message)) = validate_schema(&spec.input_schema, &call.args, "") {
+            issues.push(LintIssue::SchemaInvalid { path, message });
+        }
+    }
+    issues
+}
+
+/// Minimal, deterministic JSON-Schema validator for the schemas HIDE exposes
+/// to models. It intentionally fails closed for `$ref`, because resolving an
+/// external reference at dispatch time would turn schema validation into an
+/// unbounded I/O capability.
+fn validate_schema(
+    schema: &serde_json::Value,
+    value: &serde_json::Value,
+    path: &str,
+) -> Result<(), (String, String)> {
+    use serde_json::Value;
+
+    if schema.get("$ref").is_some() {
+        return Err((
+            pointer(path),
+            "schema uses unsupported $ref; the host cannot safely validate this call".to_string(),
+        ));
+    }
+    if let Some(items) = schema.get("allOf").and_then(Value::as_array) {
+        for item in items {
+            validate_schema(item, value, path)?;
+        }
+    }
+    if let Some(items) = schema.get("anyOf").and_then(Value::as_array) {
+        if !items
+            .iter()
+            .any(|item| validate_schema(item, value, path).is_ok())
+        {
+            return Err((
+                pointer(path),
+                "value did not match any allowed schema".to_string(),
+            ));
+        }
+    }
+    if let Some(items) = schema.get("oneOf").and_then(Value::as_array) {
+        let matches = items
+            .iter()
+            .filter(|item| validate_schema(item, value, path).is_ok())
+            .count();
+        if matches != 1 {
+            return Err((
+                pointer(path),
+                format!("value matched {matches} schemas; exactly one is required"),
+            ));
+        }
+    }
+    if let Some(item) = schema.get("not") {
+        if validate_schema(item, value, path).is_ok() {
+            return Err((
+                pointer(path),
+                "value matched a forbidden schema".to_string(),
+            ));
+        }
+    }
+    if let Some(expected) = schema.get("const") {
+        if value != expected {
+            return Err((
+                pointer(path),
+                "value did not match the required constant".to_string(),
+            ));
+        }
+    }
+    if let Some(allowed) = schema.get("enum").and_then(Value::as_array) {
+        if !allowed.iter().any(|item| item == value) {
+            return Err((
+                pointer(path),
+                "value is not one of the allowed enum values".to_string(),
+            ));
+        }
+    }
+
+    if let Some(expected) = schema.get("type") {
+        let type_matches = match expected {
+            Value::String(expected) => value_matches_type(value, expected),
+            Value::Array(types) => types
+                .iter()
+                .filter_map(Value::as_str)
+                .any(|expected| value_matches_type(value, expected)),
+            _ => false,
+        };
+        if !type_matches {
+            return Err((
+                pointer(path),
+                format!("expected type {expected}, got {}", value_type_name(value)),
+            ));
+        }
+    }
+
+    if schema.get("properties").is_some()
+        || schema.get("required").is_some()
+        || schema.get("additionalProperties").is_some()
+    {
+        let Some(object) = value.as_object() else {
+            return Err((pointer(path), "expected an object".to_string()));
+        };
+        let properties = schema
+            .get("properties")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        for required in schema
+            .get("required")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+        {
+            if !object.contains_key(required) {
+                return Err((
+                    join_pointer(path, required),
+                    "required property is missing".to_string(),
+                ));
+            }
+        }
+        for (key, child) in object {
+            if let Some(child_schema) = properties.get(key) {
+                validate_schema(child_schema, child, &join_pointer(path, key))?;
+                continue;
+            }
+            match schema.get("additionalProperties") {
+                Some(Value::Bool(false)) => {
+                    return Err((
+                        join_pointer(path, key),
+                        "property is not allowed by this tool schema".to_string(),
+                    ));
+                }
+                Some(child_schema @ Value::Object(_)) => {
+                    validate_schema(child_schema, child, &join_pointer(path, key))?;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    if let Some(items_schema) = schema.get("items") {
+        let Some(items) = value.as_array() else {
+            return Err((pointer(path), "expected an array".to_string()));
+        };
+        for (index, child) in items.iter().enumerate() {
+            validate_schema(items_schema, child, &join_pointer(path, &index.to_string()))?;
+        }
+    }
+    if let Some(items) = value.as_array() {
+        validate_count(schema, "minItems", "maxItems", items.len(), path)?;
+    }
+    if let Some(text) = value.as_str() {
+        validate_count(schema, "minLength", "maxLength", text.chars().count(), path)?;
+        if let Some(pattern) = schema.get("pattern").and_then(Value::as_str) {
+            let regex = regex::Regex::new(pattern).map_err(|error| {
+                (
+                    pointer(path),
+                    format!("tool schema contains an invalid pattern: {error}"),
+                )
+            })?;
+            if !regex.is_match(text) {
+                return Err((
+                    pointer(path),
+                    "string does not match required pattern".to_string(),
+                ));
+            }
+        }
+    }
+    if let Some(number) = value.as_f64() {
+        validate_number_bound(schema, "minimum", number, path, |actual, bound| {
+            actual < bound
+        })?;
+        validate_number_bound(schema, "maximum", number, path, |actual, bound| {
+            actual > bound
+        })?;
+        validate_number_bound(schema, "exclusiveMinimum", number, path, |actual, bound| {
+            actual <= bound
+        })?;
+        validate_number_bound(schema, "exclusiveMaximum", number, path, |actual, bound| {
+            actual >= bound
+        })?;
+    }
+    Ok(())
+}
+
+fn validate_count(
+    schema: &serde_json::Value,
+    min_key: &str,
+    max_key: &str,
+    actual: usize,
+    path: &str,
+) -> Result<(), (String, String)> {
+    if let Some(min) = schema.get(min_key).and_then(serde_json::Value::as_u64) {
+        if actual < min as usize {
+            return Err((
+                pointer(path),
+                format!("must contain at least {min} item(s)"),
+            ));
+        }
+    }
+    if let Some(max) = schema.get(max_key).and_then(serde_json::Value::as_u64) {
+        if actual > max as usize {
+            return Err((pointer(path), format!("must contain at most {max} item(s)")));
+        }
+    }
+    Ok(())
+}
+
+fn validate_number_bound(
+    schema: &serde_json::Value,
+    key: &str,
+    actual: f64,
+    path: &str,
+    violated: impl Fn(f64, f64) -> bool,
+) -> Result<(), (String, String)> {
+    let Some(bound) = schema.get(key).and_then(serde_json::Value::as_f64) else {
+        return Ok(());
+    };
+    if violated(actual, bound) {
+        return Err((pointer(path), format!("number violates {key} {bound}")));
+    }
+    Ok(())
+}
+
+fn value_matches_type(value: &serde_json::Value, expected: &str) -> bool {
+    match expected {
+        "null" => value.is_null(),
+        "boolean" => value.is_boolean(),
+        "object" => value.is_object(),
+        "array" => value.is_array(),
+        "string" => value.is_string(),
+        "number" => value.is_number(),
+        "integer" => value.as_i64().is_some() || value.as_u64().is_some(),
+        _ => false,
+    }
+}
+
+fn value_type_name(value: &serde_json::Value) -> &'static str {
+    match value {
+        serde_json::Value::Null => "null",
+        serde_json::Value::Bool(_) => "boolean",
+        serde_json::Value::Number(_) => "number",
+        serde_json::Value::String(_) => "string",
+        serde_json::Value::Array(_) => "array",
+        serde_json::Value::Object(_) => "object",
+    }
+}
+
+fn pointer(path: &str) -> String {
+    if path.is_empty() {
+        "/".to_string()
+    } else {
+        path.to_string()
+    }
+}
+
+fn join_pointer(base: &str, segment: &str) -> String {
+    let escaped = segment.replace('~', "~0").replace('/', "~1");
+    format!("{}/{}", base.trim_end_matches('/'), escaped)
+}
+
 /// A simple idempotency ledger: keyed by the call's `idempotency_key`, it dedups
 /// identical calls so a replay returns the recorded result (K5 / A.3).
-#[derive(Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IdempotencyLedger {
     records: BTreeMap<String, IdempotencyRecord>,
+}
+
+/// How a proposed keyed call relates to the idempotency ledger.
+///
+/// `Conflict` is deliberately distinct from `Missing`: reusing an existing key
+/// for different arguments must fail closed rather than turning one model tool
+/// id into authorization for a second effect.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IdempotencyCheck {
+    Missing,
+    Match,
+    Conflict,
 }
 
 impl IdempotencyLedger {
@@ -93,15 +427,43 @@ impl IdempotencyLedger {
         }
     }
 
+    /// Classify a keyed call without pretending an in-memory result ordinal is
+    /// an event-log sequence. [`Self::lookup`] remains for callers that really
+    /// have a durable event sequence to return.
+    pub fn check(&self, call: &ToolCall) -> IdempotencyCheck {
+        let Some(key) = call.x.idempotency_key.as_ref() else {
+            return IdempotencyCheck::Missing;
+        };
+        let Some(record) = self.records.get(key) else {
+            return IdempotencyCheck::Missing;
+        };
+        if record.call_hash == call_hash(call) {
+            IdempotencyCheck::Match
+        } else {
+            IdempotencyCheck::Conflict
+        }
+    }
+
     /// Record an executed call so future identical calls dedup.
     pub fn record(&mut self, call: &ToolCall, result_event_seq: u64) {
+        self.record_inner(call, Some(result_event_seq));
+    }
+
+    /// Remember an executed call when the caller has a durable result body but
+    /// not its event-log sequence. This is used by the kernel's checkpointable
+    /// model-tool loop; it never fabricates a sequence number.
+    pub fn record_without_event_seq(&mut self, call: &ToolCall) {
+        self.record_inner(call, None);
+    }
+
+    fn record_inner(&mut self, call: &ToolCall, result_event_seq: Option<u64>) {
         if let Some(key) = &call.x.idempotency_key {
             self.records.insert(
                 key.clone(),
                 IdempotencyRecord {
                     key: key.clone(),
                     call_hash: call_hash(call),
-                    result_event_seq: Some(result_event_seq),
+                    result_event_seq,
                 },
             );
         }
@@ -554,9 +916,14 @@ pub mod runner {
     //! `hide_core::tool::ToolDispatcher` implements the trait.
 
     use super::parse::parse_tool_calls;
-    use super::{lint_tool_call, IdempotencyLedger, LintIssue};
+    use super::{
+        lint_tool_call, lint_tool_call_against_specs, IdempotencyCheck, IdempotencyLedger,
+        LintIssue, VerifiedModelToolExecutor,
+    };
     use futures::future::BoxFuture;
-    use hide_core::tool::{ToolCall, ToolResult};
+    use hide_core::ids::{RunId, SessionId};
+    use hide_core::tool::{ToolCall, ToolResult, ToolSpec};
+    use serde::{Deserialize, Serialize};
     use serde_json::json;
     use std::collections::BTreeMap;
 
@@ -569,6 +936,37 @@ pub mod runner {
     impl CallDispatch for hide_core::tool::ToolDispatcher {
         fn dispatch<'a>(&'a self, call: ToolCall) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
             Box::pin(async move { self.dispatch(call).await })
+        }
+    }
+
+    /// An adapter that gives [`ToolLoop`] the host's only allowed model-effect
+    /// capability. It never sees a raw [`ToolDispatcher`]: every call remains
+    /// bound to this session/run and the host must mint a target-verified,
+    /// exact-call permit before anything is applied.
+    pub struct VerifiedCallDispatch<'a> {
+        executor: &'a dyn VerifiedModelToolExecutor,
+        session_id: SessionId,
+        run_id: RunId,
+    }
+
+    impl<'a> VerifiedCallDispatch<'a> {
+        pub fn new(
+            executor: &'a dyn VerifiedModelToolExecutor,
+            session_id: SessionId,
+            run_id: RunId,
+        ) -> Self {
+            Self {
+                executor,
+                session_id,
+                run_id,
+            }
+        }
+    }
+
+    impl CallDispatch for VerifiedCallDispatch<'_> {
+        fn dispatch<'a>(&'a self, call: ToolCall) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
+            self.executor
+                .dispatch(self.session_id.clone(), self.run_id.clone(), call)
         }
     }
 
@@ -623,15 +1021,38 @@ pub mod runner {
         }
     }
 
+    /// Checkpointable idempotency state for a model-tool loop. It holds complete
+    /// result bodies so an identical keyed call can produce the same escaped
+    /// feedback after an in-process resume or an [`AgentCheckpoint`](crate::checkpoint::AgentCheckpoint)
+    /// restore without re-running an effect. The result's durable event sequence
+    /// stays `None` unless a host explicitly supplied one; this state never
+    /// invents event-log provenance.
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub struct ToolLoopState {
+        ledger: IdempotencyLedger,
+        cache: BTreeMap<String, ToolResult>,
+    }
+
+    impl ToolLoopState {
+        pub fn len(&self) -> usize {
+            self.cache.len()
+        }
+
+        pub fn is_empty(&self) -> bool {
+            self.cache.is_empty()
+        }
+    }
+
     /// The stateful loop. Holds the dispatcher, the known-tool set (for lint), the
     /// workspace root (for hallucinated-path lint), and the idempotency state.
     pub struct ToolLoop<'a, D: CallDispatch> {
         dispatcher: &'a D,
         known_tools: Vec<String>,
+        specs: Vec<ToolSpec>,
+        strict_catalog: bool,
         workspace_root: Option<String>,
         ledger: IdempotencyLedger,
         cache: BTreeMap<String, ToolResult>,
-        seq: u64,
     }
 
     impl<'a, D: CallDispatch> ToolLoop<'a, D> {
@@ -643,10 +1064,49 @@ pub mod runner {
             Self {
                 dispatcher,
                 known_tools,
+                specs: Vec::new(),
+                strict_catalog: false,
                 workspace_root,
                 ledger: IdempotencyLedger::new(),
                 cache: BTreeMap::new(),
-                seq: 0,
+            }
+        }
+
+        /// Build a fail-closed loop from the host's registered catalog. This is
+        /// the constructor used for model-authored calls: an unknown tool, empty
+        /// catalog, or malformed arguments cannot reach the verified executor.
+        pub fn with_specs(
+            dispatcher: &'a D,
+            specs: Vec<ToolSpec>,
+            workspace_root: Option<String>,
+        ) -> Self {
+            Self::with_specs_and_state(dispatcher, specs, workspace_root, ToolLoopState::default())
+        }
+
+        /// Resume a strict loop from checkpointable idempotency state.
+        pub fn with_specs_and_state(
+            dispatcher: &'a D,
+            specs: Vec<ToolSpec>,
+            workspace_root: Option<String>,
+            state: ToolLoopState,
+        ) -> Self {
+            let known_tools = specs.iter().map(|spec| spec.name.clone()).collect();
+            Self {
+                dispatcher,
+                known_tools,
+                specs,
+                strict_catalog: true,
+                workspace_root,
+                ledger: state.ledger,
+                cache: state.cache,
+            }
+        }
+
+        /// Extract state for a later model continuation or checkpoint.
+        pub fn into_state(self) -> ToolLoopState {
+            ToolLoopState {
+                ledger: self.ledger,
+                cache: self.cache,
             }
         }
 
@@ -665,21 +1125,50 @@ pub mod runner {
         pub async fn run_call(&mut self, call: ToolCall) -> ToolTurn {
             // 1. Idempotency: a keyed call we already ran returns its recorded result
             //    without re-dispatching (safe replay, A.3).
-            if self.ledger.lookup(&call).is_some() {
-                if let Some(key) = &call.x.idempotency_key {
-                    if let Some(cached) = self.cache.get(key).cloned() {
-                        let feedback = result_feedback(&call.tool, &cached);
-                        return ToolTurn {
-                            call,
-                            status: ToolTurnStatus::Deduped(cached),
-                            feedback,
-                        };
+            match self.ledger.check(&call) {
+                IdempotencyCheck::Match => {
+                    if let Some(key) = &call.x.idempotency_key {
+                        if let Some(cached) = self.cache.get(key).cloned() {
+                            let feedback = result_feedback(&call.tool, &cached);
+                            return ToolTurn {
+                                call,
+                                status: ToolTurnStatus::Deduped(cached),
+                                feedback,
+                            };
+                        }
                     }
+                    let issue = LintIssue::IdempotencyConflict(
+                        "idempotency record has no cached result; refusing to re-run the effect"
+                            .to_string(),
+                    );
+                    let feedback = lint_feedback(&call.tool, std::slice::from_ref(&issue));
+                    return ToolTurn {
+                        call,
+                        status: ToolTurnStatus::Rejected(vec![issue]),
+                        feedback,
+                    };
                 }
+                IdempotencyCheck::Conflict => {
+                    let key = call.x.idempotency_key.clone().unwrap_or_default();
+                    let issue = LintIssue::IdempotencyConflict(format!(
+                        "idempotency key {key:?} was already used for different tool arguments"
+                    ));
+                    let feedback = lint_feedback(&call.tool, std::slice::from_ref(&issue));
+                    return ToolTurn {
+                        call,
+                        status: ToolTurnStatus::Rejected(vec![issue]),
+                        feedback,
+                    };
+                }
+                IdempotencyCheck::Missing => {}
             }
 
             // 2. Lint before any effect (hallucinated tool/file, bad args).
-            let issues = lint_tool_call(&call, &self.known_tools, self.workspace_root.as_deref());
+            let issues = if self.strict_catalog {
+                lint_tool_call_against_specs(&call, &self.specs, self.workspace_root.as_deref())
+            } else {
+                lint_tool_call(&call, &self.known_tools, self.workspace_root.as_deref())
+            };
             if !issues.is_empty() {
                 let feedback = lint_feedback(&call.tool, &issues);
                 return ToolTurn {
@@ -694,9 +1183,8 @@ pub mod runner {
                 Ok(result) => {
                     let feedback = result_feedback(&call.tool, &result);
                     if let Some(key) = &call.x.idempotency_key {
-                        self.ledger.record(&call, self.seq);
+                        self.ledger.record_without_event_seq(&call);
                         self.cache.insert(key.clone(), result.clone());
-                        self.seq += 1;
                     }
                     ToolTurn {
                         call,
@@ -808,28 +1296,55 @@ pub mod runner {
         } else {
             json!({ "ok": result.ok, "exit_code": result.exit_code }).to_string()
         };
-        format!(
+        truncate_feedback(format!(
             "<tool_response name=\"{}\">{}</tool_response>",
             escape_name(name),
             escape_envelope(&body)
-        )
+        ))
     }
 
     fn lint_feedback(name: &str, issues: &[LintIssue]) -> String {
         let msgs: Vec<String> = issues.iter().map(lint_issue_hint).collect();
-        format!(
+        truncate_feedback(format!(
             "<tool_error name=\"{}\">{}</tool_error>",
             escape_name(name),
             escape_envelope(&msgs.join(" "))
-        )
+        ))
     }
 
     fn error_feedback(name: &str, message: &str) -> String {
-        format!(
+        truncate_feedback(format!(
             "<tool_error name=\"{}\">{}</tool_error>",
             escape_name(name),
             escape_envelope(message)
-        )
+        ))
+    }
+
+    /// A tool result can legitimately be large (for example a source file or a
+    /// compiler transcript). Keep the model-feedback channel bounded even when
+    /// the durable tool result itself lives in CAS/event storage. Truncate on a
+    /// char boundary so the next prompt is always valid UTF-8.
+    const MAX_FEEDBACK_CHARS: usize = 16 * 1024;
+
+    fn truncate_feedback(feedback: String) -> String {
+        if feedback.chars().count() <= MAX_FEEDBACK_CHARS {
+            return feedback;
+        }
+        let closing = if feedback.ends_with("</tool_response>") {
+            "</tool_response>"
+        } else if feedback.ends_with("</tool_error>") {
+            "</tool_error>"
+        } else {
+            ""
+        };
+        let marker = "… [tool feedback truncated]";
+        let take = MAX_FEEDBACK_CHARS
+            .saturating_sub(marker.chars().count())
+            .saturating_sub(closing.chars().count());
+        let mut out: String = feedback.chars().take(take).collect();
+        out.push_str(marker);
+        out.push_str(closing);
+        out
     }
 
     /// A self-correction hint for each lint issue (the error-as-steering-surface
@@ -845,6 +1360,12 @@ pub mod runner {
             LintIssue::ArgsNotObject => {
                 "Tool arguments must be a JSON object like {\"path\": \"...\"}.".to_string()
             }
+            LintIssue::SchemaInvalid { path, message } => format!(
+                "Arguments failed the registered tool schema at {path}: {message}. Fix the JSON and retry."
+            ),
+            LintIssue::IdempotencyConflict(message) => format!(
+                "Refusing to reuse this tool-call idempotency key: {message}. Emit a new call id only when a distinct effect is intentional."
+            ),
             LintIssue::HallucinatedFile(p) => format!(
                 "The path \"{p}\" does not exist in the workspace. List or read it before editing."
             ),
@@ -855,7 +1376,7 @@ pub mod runner {
     mod tests {
         use super::*;
         use hide_core::ids::ToolCallId;
-        use hide_core::tool::ToolResult;
+        use hide_core::tool::{ToolAnnotations, ToolResult, ToolSpec};
         use hide_core::types::EffectSet;
         use std::sync::atomic::{AtomicUsize, Ordering};
         struct FakeDispatcher {
@@ -902,6 +1423,32 @@ pub mod runner {
         fn known() -> Vec<String> {
             vec!["fs.read".to_string(), "shell.run".to_string()]
         }
+
+        fn strict_fs_read_spec() -> ToolSpec {
+            ToolSpec {
+                name: "fs.read".to_string(),
+                title: "Read".to_string(),
+                version: "test".to_string(),
+                wire_version: 1,
+                description: "test catalog entry".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": { "path": { "type": "string" } },
+                    "required": ["path"],
+                    "additionalProperties": false,
+                }),
+                output_schema: None,
+                annotations: ToolAnnotations {
+                    read_only: true,
+                    destructive: false,
+                    idempotent: true,
+                    open_world: false,
+                },
+                capabilities_required: Vec::new(),
+                output_cap_bytes: 1024,
+                timeout_ms: 1000,
+            }
+        }
         #[tokio::test]
         async fn dispatches_valid_call_and_formats_response() {
             let d = FakeDispatcher::ok();
@@ -931,6 +1478,32 @@ pub mod runner {
             assert!(turns[0].feedback.contains("Unknown tool"));
             assert_eq!(d.count(), 0);
         }
+
+        #[tokio::test]
+        async fn strict_catalog_rejects_bad_schema_before_verified_dispatch() {
+            let d = FakeDispatcher::ok();
+            let mut lp = ToolLoop::with_specs(&d, vec![strict_fs_read_spec()], None);
+            let turn = lp
+                .run_call(ToolCall::new(
+                    "fs.read",
+                    json!({ "path": 7, "extra": true }),
+                ))
+                .await;
+            assert!(matches!(turn.status, ToolTurnStatus::Rejected(_)));
+            assert!(turn.feedback.contains("registered tool schema"));
+            assert_eq!(d.count(), 0, "schema-invalid call must never dispatch");
+        }
+
+        #[tokio::test]
+        async fn strict_catalog_fails_closed_when_empty() {
+            let d = FakeDispatcher::ok();
+            let mut lp = ToolLoop::with_specs(&d, Vec::new(), None);
+            let turn = lp
+                .run_call(ToolCall::new("fs.read", json!({ "path": "a" })))
+                .await;
+            assert!(matches!(turn.status, ToolTurnStatus::Rejected(_)));
+            assert_eq!(d.count(), 0, "no catalog means no model effect");
+        }
         #[tokio::test]
         async fn parallel_calls_all_dispatch() {
             let d = FakeDispatcher::ok();
@@ -953,6 +1526,42 @@ pub mod runner {
             let second = lp.run_call(call).await;
             assert!(matches!(second.status, ToolTurnStatus::Deduped(_)));
             assert_eq!(d.count(), 1);
+        }
+
+        #[tokio::test]
+        async fn keyed_call_conflict_never_reuses_effect_authority() {
+            let d = FakeDispatcher::ok();
+            let mut lp = ToolLoop::new(&d, known(), None);
+            let mut first = ToolCall::new("shell.run", json!({ "argv": ["true"] }));
+            first.x.idempotency_key = Some("model-call-1".to_string());
+            assert!(matches!(
+                lp.run_call(first).await.status,
+                ToolTurnStatus::Ok(_)
+            ));
+
+            let mut substituted = ToolCall::new("shell.run", json!({ "argv": ["false"] }));
+            substituted.x.idempotency_key = Some("model-call-1".to_string());
+            let second = lp.run_call(substituted).await;
+            assert!(matches!(second.status, ToolTurnStatus::Rejected(_)));
+            assert!(second.feedback.contains("idempotency key"));
+            assert_eq!(d.count(), 1, "substituted keyed call must not dispatch");
+        }
+
+        #[tokio::test]
+        async fn checkpointable_loop_state_replays_feedback_without_a_second_dispatch() {
+            let d = FakeDispatcher::ok();
+            let mut first_loop = ToolLoop::with_specs(&d, vec![strict_fs_read_spec()], None);
+            let mut call = ToolCall::new("fs.read", json!({ "path": "a" }));
+            call.x.idempotency_key = Some("resume-safe".to_string());
+            let first = first_loop.run_call(call.clone()).await;
+            assert!(matches!(first.status, ToolTurnStatus::Ok(_)));
+            let state = first_loop.into_state();
+
+            let mut resumed =
+                ToolLoop::with_specs_and_state(&d, vec![strict_fs_read_spec()], None, state);
+            let replayed = resumed.run_call(call).await;
+            assert!(matches!(replayed.status, ToolTurnStatus::Deduped(_)));
+            assert_eq!(d.count(), 1, "restored state must not re-run the effect");
         }
         #[tokio::test]
         async fn to_observation_summarizes_ok_and_rejected() {
@@ -1049,6 +1658,20 @@ pub mod runner {
             let reparsed = crate::tools::parse::parse_tool_calls(&fb);
             assert!(reparsed.iter().all(|c| c.name != "shell.run"));
         }
+
+        #[test]
+        fn truncated_feedback_keeps_a_closed_safe_envelope() {
+            let result = ToolResult::ok(
+                ToolCallId::new(),
+                Some(json!({ "contents": "x".repeat(MAX_FEEDBACK_CHARS * 2) })),
+                EffectSet::default(),
+            );
+            let feedback = result_feedback("fs.read", &result);
+            assert!(feedback.ends_with("</tool_response>"));
+            assert!(feedback.contains("[tool feedback truncated]"));
+            assert!(crate::tools::parse::parse_tool_calls(&feedback).is_empty());
+        }
+
         #[test]
         fn malicious_tool_name_cannot_break_the_error_envelope() {
             let issues = vec![LintIssue::UnknownTool(

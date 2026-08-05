@@ -512,7 +512,14 @@ impl EventLog for JsonlEventLog {
     fn append<'a>(&'a self, event: NewEvent) -> BoxFuture<'a, Result<Event>> {
         Box::pin(async move {
             let mut state = self.state.lock();
-            let mut event = Event::new(state.next_seq, event);
+            // Hash the same JSON value that a later reader will deserialize.
+            // In particular, a `serde_json::Value` originating from an `f32`
+            // can emit a decimal spelling on its first serialization that
+            // normalizes to a neighboring `f64` spelling after JSONL reload.
+            // Without this one-time normalization, a faithfully persisted
+            // event can fail its own chain audit even though no bytes changed.
+            let fresh = Event::new(state.next_seq, event);
+            let mut event: Event = serde_json::from_slice(&serde_json::to_vec(&fresh)?)?;
             let chain_hash = compute_chain_hash(&state.previous_hash, &event)?;
             event.chain_hash = Some(hex_lower(&chain_hash));
 
@@ -767,6 +774,45 @@ mod tests {
         assert_eq!(
             loaded[1].chain_hash.as_deref(),
             Some(hex_lower(&reverified).as_str())
+        );
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn jsonl_hashes_survive_reload_of_f32_metric_payloads() {
+        // `GenerationStats::decode_tokens_per_second` is an `f32`. The event
+        // chain must be computed from the same canonical representation that a
+        // later verifier obtains after reading the JSONL record back.
+        let dir = std::env::temp_dir().join(format!("hide_event_float_{}", now_ms()));
+        let path = dir.join("events.jsonl");
+        let log = JsonlEventLog::open(&path).unwrap();
+        let session = SessionId::new();
+        // This decimal is the first serialization of a real `f32` TPS value.
+        // A JSONL reload represents it as a nearest `f64`, which used to make
+        // the second serialization differ by the final decimal digit.
+        let metric = 1.317_299_8f32;
+        let recorded = log
+            .append(NewEvent::system(
+                session.clone(),
+                "agent.model_metrics",
+                serde_json::json!({
+                    "decode_tps": metric,
+                    "decode_ms": 2277.385832974687_f64,
+                }),
+            ))
+            .await
+            .unwrap();
+
+        let loaded = JsonlEventLog::open(&path)
+            .unwrap()
+            .scan(Some(session), None, None)
+            .await
+            .unwrap();
+        let reverified = compute_chain_hash(&[0u8; 32], &loaded[0]).unwrap();
+        assert_eq!(
+            recorded.chain_hash.as_deref(),
+            Some(hex_lower(&reverified).as_str()),
+            "a persisted metric event must reserialize to the bytes originally chained"
         );
         let _ = std::fs::remove_dir_all(dir);
     }

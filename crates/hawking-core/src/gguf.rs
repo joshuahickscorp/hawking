@@ -392,7 +392,9 @@ impl GgufFile {
                 .and_then(serde_json::Value::as_str)
                 .ok_or_else(|| Error::Gguf(format!("Gravity tensor {name} has no codec")))?;
             let dtype = gravity_codec_to_ggml(codec).ok_or_else(|| {
-                Error::Gguf(format!("Gravity tensor {name} has unsupported codec {codec:?}"))
+                Error::Gguf(format!(
+                    "Gravity tensor {name} has unsupported codec {codec:?}"
+                ))
             })?;
             let bytes = descriptor
                 .get("bytes")
@@ -425,16 +427,19 @@ impl GgufFile {
                     "Gravity tensor {name} geometry mismatch: {elements} elems, {bytes} bytes, codec {codec}"
                 )));
             }
-            if tensors.insert(
-                name.clone(),
-                TensorInfo {
-                    name: name.clone(),
-                    dims,
-                    dtype,
-                    data_offset: absolute,
-                    byte_size: bytes,
-                },
-            ).is_some() {
+            if tensors
+                .insert(
+                    name.clone(),
+                    TensorInfo {
+                        name: name.clone(),
+                        dims,
+                        dtype,
+                        data_offset: absolute,
+                        byte_size: bytes,
+                    },
+                )
+                .is_some()
+            {
                 return Err(Error::Gguf(format!("duplicate Gravity tensor {name}")));
             }
             tensor_order.push(name);
@@ -506,7 +511,9 @@ fn meta_value_from_json(value: &serde_json::Value) -> Result<MetaValue> {
             } else if let Some(v) = v.as_f64() {
                 MetaValue::F64(v)
             } else {
-                return Err(Error::Gguf("unsupported JSON number in Gravity metadata".into()));
+                return Err(Error::Gguf(
+                    "unsupported JSON number in Gravity metadata".into(),
+                ));
             }
         }
         serde_json::Value::Array(values) => MetaValue::Array(

@@ -57,6 +57,41 @@ fn distinct_bytes_distinct_objects() {
     assert_eq!(store.object_count(), 2);
     assert_eq!(store.ref_count(), 2);
 }
+
+#[test]
+fn ready_objects_and_refs_survive_a_store_reopen() {
+    let dir = tempdir().unwrap();
+    let hash;
+    let first_ref;
+    {
+        let store = ObjectStore::open(dir.path(), StorageBudget::test_small()).unwrap();
+        hash = ingest_and_finish(&store, b"persisted evidence", "text/plain", "note.txt");
+        first_ref = store.refs_for(&hash).pop().unwrap();
+        assert_eq!(store.object_count(), 1);
+        assert_eq!(store.ref_count(), 1);
+    }
+
+    let reopened = ObjectStore::open(dir.path(), StorageBudget::test_small()).unwrap();
+    assert_eq!(reopened.object_count(), 1);
+    assert_eq!(reopened.ref_count(), 1);
+    assert_eq!(
+        reopened.used_local_bytes(),
+        b"persisted evidence".len() as u64
+    );
+    assert_eq!(reopened.get_ref(first_ref.id.as_str()).unwrap(), first_ref);
+    let view = reopened
+        .compile_view_for_ref(
+            first_ref.id.as_str(),
+            &reader("alice"),
+            &DerivativeSelection::default(),
+        )
+        .unwrap();
+    assert_eq!(view.content_hash, hash);
+    assert!(view
+        .derivatives
+        .iter()
+        .any(|derivative| derivative.text.is_some()));
+}
 #[test]
 fn large_synthetic_fixture_streams_without_full_ram() {
     let dir = tempdir().unwrap();

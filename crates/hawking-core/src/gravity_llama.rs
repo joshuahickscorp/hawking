@@ -1122,10 +1122,7 @@ pub mod gpu {
     }
 
     fn q4_schedule_from_env() -> Q4Schedule {
-        match std::env::var("HAWKING_GRAVITY_Q4_SCHEDULE")
-            .ok()
-            .as_deref()
-        {
+        match std::env::var("HAWKING_GRAVITY_Q4_SCHEDULE").ok().as_deref() {
             Some("v3_8r") => Q4Schedule::V3_8R,
             Some("v3_dual") => Q4Schedule::V3Dual,
             Some("v3_llama") => Q4Schedule::V3Llama,
@@ -1140,9 +1137,7 @@ pub mod gpu {
                 }
             }
             Some(other) => {
-                eprintln!(
-                    "unknown HAWKING_GRAVITY_Q4_SCHEDULE={other:?}; using strict b9430"
-                );
+                eprintln!("unknown HAWKING_GRAVITY_Q4_SCHEDULE={other:?}; using strict b9430");
                 Q4Schedule::B9430
             }
         }
@@ -1442,11 +1437,7 @@ pub mod gpu {
                     }
                 } else if matches!(
                     codec.as_str(),
-                    "ggml.q4_k"
-                        | "ggml.q5_k"
-                        | "ggml.q6_k"
-                        | "ggml.q5_0"
-                        | "ggml.q8_0"
+                    "ggml.q4_k" | "ggml.q5_k" | "ggml.q6_k" | "ggml.q5_0" | "ggml.q8_0"
                 ) {
                     let kind = if codec == "ggml.q4_k" {
                         RawQuantKind::Q4K
@@ -1710,24 +1701,18 @@ pub mod gpu {
                 (Q4Schedule::V3_8R, true) => crate::kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
                     tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y,
                 ),
-                (Q4Schedule::V3_8R, false) => {
-                    crate::kernels::gemv_q4_k_m_v3_8r_pinned_off_tcb(
-                        tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
-                    )
-                }
+                (Q4Schedule::V3_8R, false) => crate::kernels::gemv_q4_k_m_v3_8r_pinned_off_tcb(
+                    tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
+                ),
                 (Q4Schedule::V3Dual, true) => crate::kernels::gemv_q4_k_m_v3_dual_pinned_tcb(
                     tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y,
                 ),
-                (Q4Schedule::V3Dual, false) => {
-                    crate::kernels::gemv_q4_k_m_v3_dual_pinned_off_tcb(
-                        tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
-                    )
-                }
-                (Q4Schedule::V3Llama, true) => {
-                    crate::kernels::gemv_q4_k_m_v3_llama_pinned_tcb(
-                        tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y,
-                    )
-                }
+                (Q4Schedule::V3Dual, false) => crate::kernels::gemv_q4_k_m_v3_dual_pinned_off_tcb(
+                    tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
+                ),
+                (Q4Schedule::V3Llama, true) => crate::kernels::gemv_q4_k_m_v3_llama_pinned_tcb(
+                    tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y,
+                ),
                 (Q4Schedule::V3Llama, false) => {
                     crate::kernels::gemv_q4_k_m_v3_llama_pinned_off_tcb(
                         tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
@@ -1736,11 +1721,9 @@ pub mod gpu {
                 (Q4Schedule::Simdmat, true) => crate::kernels::gemv_q4_k_m_simdmat_pinned_tcb(
                     tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y,
                 ),
-                (Q4Schedule::Simdmat, false) => {
-                    crate::kernels::gemv_q4_k_m_simdmat_pinned_off_tcb(
-                        tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
-                    )
-                }
+                (Q4Schedule::Simdmat, false) => crate::kernels::gemv_q4_k_m_simdmat_pinned_off_tcb(
+                    tcb, &w.data, 0, w.bytes, w.rows, w.cols, x, y, off,
+                ),
                 (Q4Schedule::Predec2R, true) => {
                     let scales = w.predec_scales.as_ref().ok_or_else(|| {
                         Error::Gravity("Q4 predecode schedule selected without scale table".into())
@@ -1871,19 +1854,18 @@ pub mod gpu {
                 }
                 GpuWeight::RawQuant(w) => match w.kind {
                     RawQuantKind::Q4K => self.encode_q4_matvec(tcb, w, x, y, y_offset),
-                    RawQuantKind::Q5K =>
-                        crate::kernels::gemv_q5_k_serial_authority_pinned_off_tcb(
-                            tcb,
-                            &w.data,
-                            0,
-                            w.bytes,
-                            w.rows,
-                            w.cols,
-                            x,
-                            0,
-                            y,
-                            y_offset * std::mem::size_of::<f32>(),
-                        ),
+                    RawQuantKind::Q5K => crate::kernels::gemv_q5_k_serial_authority_pinned_off_tcb(
+                        tcb,
+                        &w.data,
+                        0,
+                        w.bytes,
+                        w.rows,
+                        w.cols,
+                        x,
+                        0,
+                        y,
+                        y_offset * std::mem::size_of::<f32>(),
+                    ),
                     RawQuantKind::Q6K => crate::kernels::gemv_q6_k_llama_b9430_pinned_off_tcb(
                         tcb,
                         &w.data,

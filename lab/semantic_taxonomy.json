@@ -1,0 +1,163 @@
+{
+  "schema": "hawking.semantic_taxonomy.v1",
+  "version": 1,
+  "canonical_identity": {
+    "id": "gravity",
+    "display_name": "Gravity",
+    "public": true,
+    "kind": "artifact_and_runtime_identity",
+    "public_cli": {
+      "command": "hawking gravity serve --artifact <PATH>",
+      "status_command": "hawking gravity --json",
+      "plan_command": "hawking gravity plan --dry-run --weights <PATH>",
+      "environment_variable": "HAWKING_GRAVITY",
+      "environment_variable_scope": "legacy hawking serve --gravity selector only",
+      "command_exists": true,
+      "compatibility_commands": [
+        {
+          "command": "hawking serve --gravity <PATH>",
+          "status": "supported_compatibility",
+          "selector_environment_variable": "HAWKING_GRAVITY"
+        },
+        {
+          "command": "hawking condense --dry-run --weights <PATH>",
+          "status": "warnings_backed_compatibility"
+        },
+        {
+          "command": "hawking press --dry-run --weights <PATH>",
+          "status": "warnings_backed_compatibility"
+        }
+      ]
+    },
+    "claim_boundary": "Identity alone does not assert an available model, capability, benchmark result, or active deployment."
+  },
+  "operations": {
+    "condense": {
+      "id": "condense",
+      "display_name": "Condense",
+      "engine_operation": true,
+      "canonical_identity": "gravity",
+      "output_identity": "gravity",
+      "optional_provenance_tag": true,
+      "optimization_target": "capability-size-runtime equilibrium",
+      "not_a": [
+        "separate_public_artifact_identity",
+        "bpw_only_optimization_claim"
+      ]
+    }
+  },
+  "tag_contract": {
+    "schema": "hawking.semantic_tags.v1",
+    "canonical_identity_key": "canonical_identity",
+    "operation_key": "operation",
+    "artifact_kind_key": "artifact_kind",
+    "artifact_provenance_key": "artifact_provenance",
+    "legacy_alias_key": "legacy_alias",
+    "operation_is_optional": true,
+    "historical_records_are_rewritten": false,
+    "field_tag_mapping": {
+      "id": "hawking.gravity.condense_compatibility.v1",
+      "version": 1,
+      "entries": [
+        {
+          "source_field": "schema",
+          "target_field": "semantic_tags.legacy_alias.raw_schema",
+          "transform": "copy_exact",
+          "unit": "schema_identifier"
+        },
+        {
+          "source_field": "hawking.condense.* namespace",
+          "target_field": "semantic_tags.canonical_identity",
+          "transform": "constant",
+          "value": "gravity",
+          "unit": "identity_identifier"
+        },
+        {
+          "source_field": "hawking.condense.* namespace",
+          "target_field": "semantic_tags.operation",
+          "transform": "constant",
+          "value": "condense",
+          "unit": "operation_identifier"
+        },
+        {
+          "source_field": "hawking.condense.* namespace",
+          "target_field": "semantic_tags.legacy_alias.deprecated",
+          "transform": "constant",
+          "value": true,
+          "unit": "boolean"
+        },
+        {
+          "source_field": "hawking.condense.* namespace",
+          "target_field": "semantic_tags.legacy_alias.superseded_by",
+          "transform": "constant",
+          "value": "gravity",
+          "unit": "identity_identifier"
+        },
+        {
+          "source_field": "artifacts[]",
+          "target_field": "semantic_tags.artifact_provenance.reference_count",
+          "transform": "count_declared_without_resolution",
+          "unit": "reference_count"
+        }
+      ]
+    }
+  },
+  "artifact_provenance_contract": {
+    "schema": "hawking.artifact_provenance.v1",
+    "purpose": "Summarize declared artifact references without resolving a path, downloading content, or asserting artifact availability.",
+    "assertion_values": [
+      "no_artifact_presence_asserted",
+      "references_declared_not_resolved"
+    ],
+    "locator_kind_values": [
+      "opaque_reference",
+      "filesystem_path",
+      "uri",
+      "content_digest"
+    ],
+    "normalization": {
+      "no_references": "no_artifact_presence_asserted",
+      "declared_references": "references_declared_not_resolved",
+      "filesystem_access": "never performed",
+      "network_access": "never performed",
+      "artifact_existence_claim": "never inferred"
+    }
+  },
+  "compatibility": {
+    "legacy_schema_prefixes": [
+      {
+        "prefix": "hawking.condense.",
+        "status": "legacy_operation_namespace",
+        "deprecated": true,
+        "superseded_by": "gravity",
+        "replacement_command": "hawking gravity",
+        "canonical_identity": "gravity",
+        "operation": "condense",
+        "field_tag_mapping_id": "hawking.gravity.condense_compatibility.v1",
+        "historical_records_are_rewritten": false
+      }
+    ],
+    "legacy_command_aliases": [
+      {
+        "command": "hawking condense",
+        "status": "warnings_backed_compatibility",
+        "deprecated": true,
+        "superseded_by": "hawking gravity plan",
+        "maps_to_engine_operation": "condense"
+      },
+      {
+        "command": "hawking press",
+        "status": "warnings_backed_compatibility",
+        "deprecated": true,
+        "superseded_by": "hawking gravity plan",
+        "maps_to_engine_operation": "condense",
+        "not_an_operation": true
+      }
+    ]
+  },
+  "capability_claim_limits": {
+    "hcli_executes_optimization": false,
+    "v4_runtime_claim": false,
+    "artifact_identity_is_not_capability_evidence": true
+  }
+}

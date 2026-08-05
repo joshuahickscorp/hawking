@@ -4,6 +4,7 @@
 //! [`ObjectRecord`] and two [`ObjectRef`]s.
 
 use parking_lot::Mutex;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -48,6 +49,37 @@ struct Inner {
     clock_ms: Option<u64>,
 }
 
+/// Durable, restart-safe portion of an [`ObjectStore`].
+///
+/// The queue and staging files deliberately remain ephemeral: callers can
+/// retry an interrupted ingestion explicitly and every completed object/ref is
+/// persisted atomically before `process_one` reports success.  Persisting only
+/// ready records also avoids reopening a half-written staging file as if it
+/// were model-readable evidence.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct PersistedState {
+    schema: String,
+    #[serde(default)]
+    objects: BTreeMap<String, ObjectRecord>,
+    #[serde(default)]
+    refs: BTreeMap<String, ObjectRef>,
+    #[serde(default)]
+    used_local_bytes: u64,
+}
+
+impl PersistedState {
+    const SCHEMA: &'static str = "hide.objects.state.v1";
+
+    fn empty() -> Self {
+        Self {
+            schema: Self::SCHEMA.to_string(),
+            objects: BTreeMap::new(),
+            refs: BTreeMap::new(),
+            used_local_bytes: 0,
+        }
+    }
+}
+
 impl Inner {
     fn now(&self) -> u64 {
         self.clock_ms.unwrap_or_else(now_ms)
@@ -65,6 +97,10 @@ impl Inner {
     fn staging_path(&self, job_id: &str) -> PathBuf {
         self.root.join("staging").join(job_id)
     }
+
+    fn state_path(&self) -> PathBuf {
+        self.root.join("meta").join("state.json")
+    }
 }
 
 /// The YOU object store: queue, content-addressed blobs, pipeline, compile view.
@@ -81,21 +117,67 @@ impl ObjectStore {
         fs::create_dir_all(root.join("derivatives"))?;
         fs::create_dir_all(root.join("staging"))?;
         fs::create_dir_all(root.join("meta"))?;
+        let state_path = root.join("meta").join("state.json");
+        let state = if state_path.exists() {
+            let bytes = fs::read(&state_path)?;
+            let state: PersistedState = serde_json::from_slice(&bytes).map_err(|error| {
+                ObjectError::Invalid(format!(
+                    "could not read persisted object metadata at {}: {error}",
+                    state_path.display()
+                ))
+            })?;
+            if state.schema != PersistedState::SCHEMA {
+                return Err(ObjectError::Invalid(format!(
+                    "unsupported object metadata schema {:?} at {}",
+                    state.schema,
+                    state_path.display()
+                )));
+            }
+            state
+        } else {
+            PersistedState::empty()
+        };
+
+        // Do not trust a stored accounting number over the durable records.
+        // A metadata-only edit cannot make the next admission overcommit the
+        // configured local-storage budget.
+        let used_local_bytes = state.objects.values().map(|record| record.size_bytes).sum();
+
         Ok(Self {
             inner: Arc::new(Mutex::new(Inner {
                 root,
                 budget,
-                objects: BTreeMap::new(),
-                refs: BTreeMap::new(),
+                objects: state.objects,
+                refs: state.refs,
                 staging: BTreeMap::new(),
                 in_flight: BTreeMap::new(),
-                used_local_bytes: 0,
+                used_local_bytes,
                 queue: IngestQueue::new(),
                 live_session: None,
                 clock_ms: None,
             })),
             processors: ProcessorSet::fake_defaults(),
         })
+    }
+
+    /// Persist ready object/ref metadata using a same-directory rename.  The
+    /// body was already content-addressed by the Persist stage; this metadata
+    /// commit is what makes it discoverable after a new HCLI process opens the
+    /// workspace.  A failed commit is surfaced to the caller, never hidden.
+    fn persist_state(inner: &Inner) -> Result<()> {
+        let state = PersistedState {
+            schema: PersistedState::SCHEMA.to_string(),
+            objects: inner.objects.clone(),
+            refs: inner.refs.clone(),
+            used_local_bytes: inner.used_local_bytes,
+        };
+        let bytes = serde_json::to_vec_pretty(&state)
+            .map_err(|error| ObjectError::Invalid(format!("serialize object metadata: {error}")))?;
+        let path = inner.state_path();
+        let tmp = path.with_extension(format!("{}.tmp", ulid::Ulid::new()));
+        fs::write(&tmp, bytes)?;
+        fs::rename(&tmp, &path)?;
+        Ok(())
     }
 
     pub fn set_clock_ms(&self, ms: Option<u64>) {
@@ -230,6 +312,11 @@ impl ObjectStore {
                     let now = g.now();
                     // Merge in-flight record into objects map (dedup by hash).
                     if let Some(rec) = g.in_flight.remove(&job_id) {
+                        // Keep a copy until the metadata commit succeeds.  If
+                        // that commit fails, the job goes through the normal
+                        // visible retry/dead-letter path rather than being
+                        // silently lost after the raw body was persisted.
+                        let rec_for_retry = rec.clone();
                         let hash_key = rec.content_hash.as_str().to_string();
                         job.content_hash = Some(rec.content_hash.clone());
                         let is_new = !g.objects.contains_key(&hash_key);
@@ -255,12 +342,32 @@ impl ObjectStore {
                         // Always create a new ref (dedup = same object, extra ref).
                         let r = ObjectRef {
                             id: RefId::new(),
-                            content_hash: ContentHash(hash_key),
+                            content_hash: ContentHash(hash_key.clone()),
                             label: job.label.clone(),
                             created_at_ms: now,
                             created_by: job.created_by.clone(),
                         };
-                        g.refs.insert(r.id.as_str().to_string(), r);
+                        let ref_id = r.id.as_str().to_string();
+                        g.refs.insert(ref_id.clone(), r);
+                        // The durable metadata commit happens before the job
+                        // is reported succeeded, so a new process can list or
+                        // compile this evidence immediately after success.
+                        if let Err(error) = Self::persist_state(&g) {
+                            g.refs.remove(&ref_id);
+                            if is_new {
+                                g.objects.remove(&hash_key);
+                                g.used_local_bytes =
+                                    g.used_local_bytes.saturating_sub(rec_for_retry.size_bytes);
+                            }
+                            g.in_flight.insert(job_id.clone(), rec_for_retry);
+                            let st = g.queue.fail_stage(
+                                job,
+                                StageName::Finalize,
+                                error.to_string(),
+                                now,
+                            );
+                            return Ok((job_id, st));
+                        }
                         if let Some(p) = g.staging.remove(&job_id) {
                             let _ = fs::remove_file(p);
                         }
@@ -432,6 +539,13 @@ impl ObjectStore {
 
     pub fn ref_count(&self) -> usize {
         self.inner.lock().refs.len()
+    }
+
+    /// Snapshot every named reference in stable id order.  This intentionally
+    /// returns metadata only; callers must still use `get_record` or
+    /// `compile_view_for_ref` to cross the permission boundary.
+    pub fn list_refs(&self) -> Vec<ObjectRef> {
+        self.inner.lock().refs.values().cloned().collect()
     }
 
     /// Context-compile path: derivatives only. Never raw bytes.

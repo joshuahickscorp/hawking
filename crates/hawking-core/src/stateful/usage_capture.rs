@@ -174,10 +174,9 @@ pub fn flush() {
         Ok(g) => g,
         Err(_) => return,
     };
-    let out_path = std::env::var("HAWKING_USAGE_CAPTURE_OUT")
-        .unwrap_or_else(|_| {
-            "workspace/campaign/records/reports/bench/usage_capture.json".to_string()
-        });
+    let out_path = std::env::var("HAWKING_USAGE_CAPTURE_OUT").unwrap_or_else(|_| {
+        "workspace/campaign/records/reports/bench/usage_capture.json".to_string()
+    });
     let topk = std::env::var("HAWKING_USAGE_CAPTURE_TOPK")
         .ok()
         .and_then(|v| v.parse().ok())

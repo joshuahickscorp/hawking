@@ -1,0 +1,155 @@
+{
+  "content_blake3": "c6037e7b8857c320057e611e32f6e452cd2950340b9f39e3228e65ca5e970fa8",
+  "context": {
+    "attached_to_turn_or_agent_context": false,
+    "ingested_to_durable_object_store": true,
+    "note": "Ingestion never auto-attaches evidence. A later explicit HCLI --attach selection may use bounded model-facing derivatives for one run or agent invocation."
+  },
+  "finished_ms": 1785871947785,
+  "input": {
+    "kind": "stdin",
+    "label": "bounded-local-evidence",
+    "mime_requested_or_inferred": "text/plain",
+    "network": false
+  },
+  "limits": [
+    "Only explicit local files and stdin are accepted by this command; it performs no URL, cloud, MCP-resource, or connector fetch.",
+    "Text extraction is deterministic UTF-8 where applicable. Image/PDF OCR and audio/video transcription use explicitly labelled Fake* processors in the current object pipeline.",
+    "Storage is bounded by StorageBudget and local disk; this command does not claim unlimited uploads."
+  ],
+  "object": {
+    "content_hash": "blake3:645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f",
+    "derivatives": [
+      {
+        "kind": "text_extract",
+        "mime": "text/plain",
+        "produced_by": "utf8_text_extract",
+        "size_bytes": 43,
+        "text_available": true,
+        "text_blake3": "645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f",
+        "text_utf8_chars": 43
+      },
+      {
+        "kind": "summary",
+        "mime": "text/plain",
+        "produced_by": "finalize_summary",
+        "size_bytes": 127,
+        "text_available": true,
+        "text_blake3": "ca9ea98c390d8027c931b306e09fc2f8c5ce369928441406092d7e8129dd4b1f",
+        "text_utf8_chars": 127
+      }
+    ],
+    "kind": "document",
+    "label": "bounded-local-evidence",
+    "mime": "text/plain",
+    "permissions": {
+      "allow_export": false,
+      "allow_model_derivatives": true,
+      "owner": "hcli-local",
+      "readers": [],
+      "surfaces": [
+        "you",
+        "chat",
+        "ide"
+      ]
+    },
+    "reference_created_at_ms": 1785871947784,
+    "reference_id": "oref_01KZ746P08ZZ1F37J9HFCEEYQ0",
+    "retention": {
+      "policy": "durable"
+    },
+    "size_bytes": 43,
+    "source": {
+      "filename": "bounded-local-evidence",
+      "kind": "user_upload",
+      "session_id": null
+    },
+    "stages": [
+      {
+        "attempts": 1,
+        "bytes_processed": 43,
+        "bytes_total": 43,
+        "last_error": null,
+        "peak_buffer_bytes": 43,
+        "stage": "receive",
+        "status": "complete"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 43,
+        "bytes_total": 43,
+        "last_error": null,
+        "peak_buffer_bytes": 43,
+        "stage": "persist",
+        "status": "complete"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 0,
+        "bytes_total": null,
+        "last_error": null,
+        "peak_buffer_bytes": 0,
+        "stage": "classify",
+        "status": "complete"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 43,
+        "bytes_total": 43,
+        "last_error": null,
+        "peak_buffer_bytes": 43,
+        "stage": "extract_text",
+        "status": "complete"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 0,
+        "bytes_total": null,
+        "last_error": null,
+        "peak_buffer_bytes": 0,
+        "stage": "ocr_or_transcript",
+        "status": "skipped"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 0,
+        "bytes_total": null,
+        "last_error": null,
+        "peak_buffer_bytes": 43,
+        "stage": "thumbnail",
+        "status": "skipped"
+      },
+      {
+        "attempts": 1,
+        "bytes_processed": 0,
+        "bytes_total": null,
+        "last_error": null,
+        "peak_buffer_bytes": 0,
+        "stage": "finalize",
+        "status": "complete"
+      }
+    ],
+    "status": "ready"
+  },
+  "provenance": {
+    "bytes_streamed": 43,
+    "kind": "stdin",
+    "network": false
+  },
+  "schema": "hcli.source.ingest.v1",
+  "status": "completed",
+  "storage": {
+    "bounded_storage_note": "Storage is effectively unbounded relative to a single turn or attachment, but is always finite: bounded by configured local/cloud storage (StorageBudget), free disk, model context capability for derivatives, and user policy. Never claim literal unlimited storage.",
+    "budget": {
+      "max_cloud_bytes": 274877906944,
+      "max_local_bytes": 68719476736,
+      "max_object_bytes": 34359738368,
+      "policy_note": "bounded by configured local/cloud storage, model capability, and user policy — not unlimited"
+    },
+    "identity": "blake3 content hash",
+    "references": 2,
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r/.hide/evidence",
+    "unique_objects": 2,
+    "used_local_bytes": 75
+  }
+}

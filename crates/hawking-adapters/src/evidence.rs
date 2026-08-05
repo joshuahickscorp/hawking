@@ -109,7 +109,11 @@ fn check_evidence_path(root: &Path, family: &str, ev: &Evidence) -> Result<(), S
 pub fn resolve_logical_path(root: &Path, value: &str) -> PathBuf {
     let path = PathBuf::from(value);
     if path.is_absolute() || value.starts_with("workspace/") {
-        return if path.is_absolute() { path } else { root.join(path) };
+        return if path.is_absolute() {
+            path
+        } else {
+            root.join(path)
+        };
     }
 
     let mut parts = value.split('/').filter(|part| !part.is_empty());
@@ -152,9 +156,8 @@ pub fn resolve_logical_path(root: &Path, value: &str) -> PathBuf {
             return evidence;
         }
         "control" => match tail.first().copied() {
-            Some("catalog") | Some("ledgers") | Some("receipts") | Some("rungs") | Some("verdicts") => {
-                governance.join("control")
-            }
+            Some("catalog") | Some("ledgers") | Some("receipts") | Some("rungs")
+            | Some("verdicts") => governance.join("control"),
             Some(name) if name.ends_with("-ledger.json") => governance.join("control/ledgers"),
             Some(name) if name.ends_with("-verdict.json") => governance.join("control/verdicts"),
             Some(name) if name.contains("receipt") || name.contains("identity") => {

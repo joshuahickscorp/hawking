@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping
 
 from lab.layout import resolve_workspace_path
+from lab.semantic_taxonomy import (
+    CONDENSE_OPERATION,
+    SemanticTaxonomyError,
+    normalize_semantic_tags,
+)
 
 RECEIPT_SCHEMA = "hawking.lab.receipt.v1"
 GATE_EVIDENCE_SCHEMA = "hawking.lab.gate_evidence.v1"
@@ -198,6 +203,23 @@ def read_jsonl_ledger(path: str | Path) -> Iterator[dict[str, Any]]:
             yield row
 
 
+def _declared_artifact_references(value: object) -> tuple[str, ...]:
+    """Return document-declared references without probing the referenced data.
+
+    Receipt normalisation must remain safe for historical documents.  This
+    helper deliberately makes no path, digest, or network availability claim;
+    it only gives the semantic taxonomy enough syntax to count what the record
+    already declared.
+    """
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        return (value,) if value.strip() else ()
+    if not isinstance(value, (list, tuple)):
+        return ()
+    return tuple(str(item) for item in value if str(item).strip())
+
+
 def read_any_receipt(path: str | Path) -> dict[str, Any]:
     """Normalize a lab or legacy campaign receipt into a common shape."""
     path = _existing_workspace_path(path)
@@ -208,8 +230,32 @@ def read_any_receipt(path: str | Path) -> dict[str, Any]:
     if schema == RECEIPT_SCHEMA or schema.startswith("hawking.lab."):
         out = dict(raw)
         out.setdefault("raw_schema", schema)
+        try:
+            out["semantic_tags"] = normalize_semantic_tags(
+                raw.get("semantic_tags"),
+                operation=CONDENSE_OPERATION,
+                artifact_kind="lab_receipt",
+                raw_schema=schema,
+                missing_status=(
+                    "historical_unlabeled" if raw.get("semantic_tags") is None else None
+                ),
+                artifact_references=_declared_artifact_references(raw.get("artifacts")),
+            )
+        except SemanticTaxonomyError as exc:
+            raise SealIntegrityError(f"receipt semantic tags are invalid: {exc}") from exc
         return out
     status = str(raw.get("status") or raw.get("verdict") or "unknown")
+    try:
+        tags = normalize_semantic_tags(
+            raw.get("semantic_tags"),
+            operation=CONDENSE_OPERATION,
+            artifact_kind="legacy_receipt",
+            raw_schema=schema or None,
+            missing_status="historical_unlabeled",
+            artifact_references=_declared_artifact_references(raw.get("artifacts")),
+        )
+    except SemanticTaxonomyError as exc:
+        raise SealIntegrityError(f"receipt semantic tags are invalid: {exc}") from exc
     return {
         "schema": RECEIPT_SCHEMA,
         "raw_schema": schema or "legacy",
@@ -224,6 +270,7 @@ def read_any_receipt(path: str | Path) -> dict[str, Any]:
         "artifacts": raw.get("artifacts") or [],
         "path": str(path),
         "seal_sha256": raw.get("seal_sha256") or "",
+        "semantic_tags": tags,
     }
 
 
@@ -242,8 +289,19 @@ class Receipt:
     reproduction: str = ""
     artifacts: tuple[str, ...] = ()
     summary: Mapping[str, Any] = field(default_factory=dict)
+    semantic_tags: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        try:
+            tags = normalize_semantic_tags(
+                self.semantic_tags or None,
+                operation=CONDENSE_OPERATION,
+                artifact_kind="lab_receipt",
+                raw_schema=self.schema,
+                artifact_references=_declared_artifact_references(self.artifacts),
+            )
+        except SemanticTaxonomyError as exc:
+            raise SealIntegrityError(f"receipt semantic tags are invalid: {exc}") from exc
         body = {
             "schema": self.schema,
             "campaign_id": self.campaign_id,
@@ -258,12 +316,27 @@ class Receipt:
             "reproduction": self.reproduction,
             "artifacts": list(self.artifacts),
             "summary": dict(self.summary),
+            "semantic_tags": tags,
         }
         return seal(body)
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "Receipt":
         verify(raw, label="receipt")
+        schema = str(raw.get("schema") or RECEIPT_SCHEMA)
+        try:
+            tags = normalize_semantic_tags(
+                raw.get("semantic_tags"),
+                operation=CONDENSE_OPERATION,
+                artifact_kind="lab_receipt",
+                raw_schema=schema,
+                missing_status=(
+                    "historical_unlabeled" if raw.get("semantic_tags") is None else None
+                ),
+                artifact_references=_declared_artifact_references(raw.get("artifacts")),
+            )
+        except SemanticTaxonomyError as exc:
+            raise SealIntegrityError(f"receipt semantic tags are invalid: {exc}") from exc
         return cls(
             campaign_id=str(raw.get("campaign_id") or ""),
             verdict=str(raw.get("verdict") or raw.get("status") or ""),
@@ -274,10 +347,11 @@ class Receipt:
             phase=str(raw.get("phase") or ""),
             status=str(raw.get("status") or ""),
             at=str(raw.get("at") or ""),
-            schema=str(raw.get("schema") or RECEIPT_SCHEMA),
+            schema=schema,
             reproduction=str(raw.get("reproduction") or ""),
             artifacts=tuple(str(x) for x in raw.get("artifacts") or ()),
             summary=dict(raw.get("summary") or {}),
+            semantic_tags=tags,
         )
 
 

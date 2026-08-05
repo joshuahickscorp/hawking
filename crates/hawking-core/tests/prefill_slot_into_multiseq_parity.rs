@@ -109,7 +109,11 @@ fn prefix_resume_decode_after_prefill(
     let mut out = vec![current];
     for step in 1..3usize {
         let logits = engine
-            .forward_multiseq_batched(&[current], &[target_prompt.len() + step - 1], &[target_slot])
+            .forward_multiseq_batched(
+                &[current],
+                &[target_prompt.len() + step - 1],
+                &[target_slot],
+            )
             .expect("resumed multiseq decode");
         current = argmax(&logits[0]);
         out.push(current);

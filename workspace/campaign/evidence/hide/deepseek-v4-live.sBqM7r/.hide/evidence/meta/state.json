@@ -1,0 +1,380 @@
+{
+  "schema": "hide.objects.state.v1",
+  "objects": {
+    "blake3:4c75d05c72f863d9bef64954800448e6bd341da91b85b19b7f327e07737e1e2d": {
+      "content_hash": "blake3:4c75d05c72f863d9bef64954800448e6bd341da91b85b19b7f327e07737e1e2d",
+      "mime": "text/markdown",
+      "kind": "document",
+      "size_bytes": 5027,
+      "source": {
+        "kind": "user_upload",
+        "filename": "full-readme-context-compaction",
+        "session_id": null
+      },
+      "location": {
+        "tier": "local",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r/.hide/evidence/objects/4c75d05c72f863d9bef64954800448e6bd341da91b85b19b7f327e07737e1e2d"
+      },
+      "status": "ready",
+      "stages": [
+        {
+          "stage": "receive",
+          "status": "complete",
+          "bytes_processed": 5027,
+          "bytes_total": 5027,
+          "peak_buffer_bytes": 5027,
+          "attempts": 1,
+          "updated_at_ms": 1785872831188
+        },
+        {
+          "stage": "persist",
+          "status": "complete",
+          "bytes_processed": 5027,
+          "bytes_total": 5027,
+          "peak_buffer_bytes": 5027,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        },
+        {
+          "stage": "classify",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        },
+        {
+          "stage": "extract_text",
+          "status": "complete",
+          "bytes_processed": 5027,
+          "bytes_total": 5027,
+          "peak_buffer_bytes": 5027,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        },
+        {
+          "stage": "ocr_or_transcript",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        },
+        {
+          "stage": "thumbnail",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 5027,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        },
+        {
+          "stage": "finalize",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785872831189
+        }
+      ],
+      "derivatives": [
+        {
+          "kind": "text_extract",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 5027,
+          "inline_text": "# hawking\n\n`hawking` runs quantized language models on Apple Silicon GPUs. It is one Rust control plane\nthat loads a GGUF model file, selects a source-compatible execution substrate, and serves it\nover an OpenAI-compatible HTTP API. The pinned llama.cpp/ggml build is the source authority;\nHawking's native Metal and executable Gravity paths are admitted only when they beat that\nauthority on the same model and complete-token protocol.\n\nThe Hawking-specific value remains the runtime graph, adapter and kernel registries, executable\nGravity representations, foundry, capability gates, storage/lease controls, and receipt plane.\nRust reimplementation of a llama.cpp component is deferred until it has a measured parity and\nwall-time reason to exist.\n\n## Status\n\n- Best-tested model: Qwen2.5-3B-Instruct in Q4_K_M.\n- Measured baseline: about 31 decode tok/s on Qwen2.5-3B-Q4_K_M, on an M3 Pro with 18 GB,\n  in clean-room runs. That number is deliberately modest and it is measured, not projected.\n- Other model families run on the same code, but how much each one has been verified\n  varies. Check [MODELS.md](workspace/docs/reference/MODELS.md) before you rely on one.\n- Active development. Expect sharp edges.\n\n## What it does\n\n- Loads GGUF weights with a single mmap and no copies.\n- Runs Q4_K / Q6_K matrix-vector kernels, attention (standard and MLA), RoPE, RMSNorm, and\n  sampling on the GPU. The Metal source is embedded and compiled at runtime.\n- Handles these architectures today: Qwen2.5 dense, Llama, Qwen3-MoE, DeepSeek-V2, RWKV-7.\n- Serves `/v1/chat/completions` and `/v1/completions` with streaming, plus `/healthz` and a\n  Prometheus `/metrics` endpoint. Requests are batched continuously.\n- Checks whether a model fits in your Mac's memory before loading it (`doctor`, `fit`), and\n  times kernel variants on your own machine to pick the fastest (`autotune`).\n- Has a pure-Rust CPU path, used to check the Metal kernels produce the same tokens and to\n  build off macOS.\n- Ships a desktop front-end, HIDE, under `app/`: a React/TypeScript chat and code interface\n  that talks to the same engine, plus a Tauri v2 shell that supervises the local server. The\n  web front-end is the developed part; the native shell is a build-ready scaffold that has not\n  been compiled yet.\n\n## Build\n\nYou need an Apple Silicon Mac, Rust 1.80 or newer, and the Xcode command line tools.\nQwen2.5-3B in Q4_K_M needs about 4 GB of RAM.\n\n```sh\ngit clone https://github.com/joshuahickscorp/hawking.git\ncd hawking\ncargo build --release --workspace\n```\n\nThe binary lands at `target/release/hawking`. [ARCHITECTURE.md](workspace/docs/reference/ARCHITECTURE.md) is the\ninternal map if you want to change something.\n\n## Get a model\n\nPut any GGUF file in `workspace/ops/local/models/` and pass it with `--weights`. The best-tested target is\nQwen2.5-3B-Instruct-Q4_K_M, which you download yourself. There is also\n`./tools/fetch-model.sh`, but note it fetches DeepSeek-V2-Lite-Chat Q4_K_M, not the Qwen\nmodel used in the examples below.\n\n## Usage\n\n```sh\nM=workspace/ops/local/models/qwen2.5-3b-instruct-q4_k_m.gguf\n\n# Will this model fit on this Mac?\nhawking doctor --weights $M\n\n# Time the kernels on this machine and save the winners.\nhawking autotune --weights $M --out workspace/campaign/config/profiles/local/my-mac.json\n\n# Generate text.\nhawking generate --weights $M --kernel-profile workspace/campaign/config/profiles/local/my-mac.json \\\n  --prompt \"Write a Rust function that reverses a linked list.\" --max-new-tokens 256\n\n# Serve an OpenAI-compatible API.\nhawking serve --weights $M --kernel-profile workspace/campaign/config/profiles/local/my-mac.json --addr 127.0.0.1:8080\n```\n\n`workspace/campaign/config/profiles/` already ships tuned profiles for an M3 Pro 18 GB (Qwen2.5 0.5B/1.5B/3B/7B and\nDeepSeek-V2-Lite), so you can skip `autotune` on that machine. [serve.md](workspace/docs/guides/serve.md)\ncovers the API; `hawking --help` lists the rest (`bench`, `tokenize`, `verify`, `press`, and\nothers). One of those, `hawking press --dry-run`, prints a plan for compressing a model too\nlarge to hold in memory. It only prints the plan — it cannot produce a compressed model yet.\n\n## Performance\n\nBenchmark numbers are only trustworthy on an otherwise idle GPU; a heavy background app can\ninflate them several times over. The harness, its caveats, and the head-to-head run against\nllama.cpp and MLX are in [BENCHMARKS.md](workspace/docs/reference/BENCHMARKS.md). Optimizations that were\ntried and rejected are written up in [dead_levers.md](workspace/docs/guides/dead_levers.md).\n\n```sh\nTRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh\nbash tools/bench/clean_room_batch.sh\n```\n\n## What's next\n\nThe near-term work is stabilization: finishing wiring that already exists, adding gates for\nmodel families that don't have them, and cleaning up docs before a release. See\n[ROADMAP.md](workspace/docs/reference/ROADMAP.md).\n\n## Maintainer and license\n\nJoshua Hicks. MIT — see [LICENSE](LICENSE) and [CONTRIBUTING.md](CONTRIBUTING.md).\n",
+          "produced_by": "utf8_text_extract",
+          "produced_at_ms": 1785872831189
+        },
+        {
+          "kind": "summary",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 132,
+          "inline_text": "object kind=document mime=text/markdown size_bytes=5027 hash=blake3:4c75d05c72f863d9bef64954800448e6bd341da91b85b19b7f327e07737e1e2d",
+          "produced_by": "finalize_summary",
+          "produced_at_ms": 1785872831189
+        }
+      ],
+      "permissions": {
+        "owner": "hcli-local",
+        "readers": [],
+        "surfaces": [
+          "you",
+          "chat",
+          "ide"
+        ],
+        "allow_model_derivatives": true,
+        "allow_export": false
+      },
+      "retention": {
+        "policy": "durable"
+      },
+      "created_at_ms": 1785872831188,
+      "updated_at_ms": 1785872831189
+    },
+    "blake3:645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f": {
+      "content_hash": "blake3:645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f",
+      "mime": "text/plain",
+      "kind": "document",
+      "size_bytes": 43,
+      "source": {
+        "kind": "user_upload",
+        "filename": "bounded-local-evidence",
+        "session_id": null
+      },
+      "location": {
+        "tier": "local",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r/.hide/evidence/objects/645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f"
+      },
+      "status": "ready",
+      "stages": [
+        {
+          "stage": "receive",
+          "status": "complete",
+          "bytes_processed": 43,
+          "bytes_total": 43,
+          "peak_buffer_bytes": 43,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "persist",
+          "status": "complete",
+          "bytes_processed": 43,
+          "bytes_total": 43,
+          "peak_buffer_bytes": 43,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "classify",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "extract_text",
+          "status": "complete",
+          "bytes_processed": 43,
+          "bytes_total": 43,
+          "peak_buffer_bytes": 43,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "ocr_or_transcript",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "thumbnail",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 43,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        },
+        {
+          "stage": "finalize",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871947784
+        }
+      ],
+      "derivatives": [
+        {
+          "kind": "text_extract",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 43,
+          "inline_text": "HCLI_EVIDENCE_FACT: bounded local evidence.",
+          "produced_by": "utf8_text_extract",
+          "produced_at_ms": 1785871947784
+        },
+        {
+          "kind": "summary",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 127,
+          "inline_text": "object kind=document mime=text/plain size_bytes=43 hash=blake3:645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f",
+          "produced_by": "finalize_summary",
+          "produced_at_ms": 1785871947784
+        }
+      ],
+      "permissions": {
+        "owner": "hcli-local",
+        "readers": [],
+        "surfaces": [
+          "you",
+          "chat",
+          "ide"
+        ],
+        "allow_model_derivatives": true,
+        "allow_export": false
+      },
+      "retention": {
+        "policy": "durable"
+      },
+      "created_at_ms": 1785871947784,
+      "updated_at_ms": 1785871947784
+    },
+    "blake3:a1fb304d7fcd971cdc12cfd3f5e6e7417bde24e91a608451e01273ae33bfcd6b": {
+      "content_hash": "blake3:a1fb304d7fcd971cdc12cfd3f5e6e7417bde24e91a608451e01273ae33bfcd6b",
+      "mime": "text/plain",
+      "kind": "document",
+      "size_bytes": 32,
+      "source": {
+        "kind": "user_upload",
+        "filename": "app-gitignore-repo-context",
+        "session_id": null
+      },
+      "location": {
+        "tier": "local",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r/.hide/evidence/objects/a1fb304d7fcd971cdc12cfd3f5e6e7417bde24e91a608451e01273ae33bfcd6b"
+      },
+      "status": "ready",
+      "stages": [
+        {
+          "stage": "receive",
+          "status": "complete",
+          "bytes_processed": 32,
+          "bytes_total": 32,
+          "peak_buffer_bytes": 32,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "persist",
+          "status": "complete",
+          "bytes_processed": 32,
+          "bytes_total": 32,
+          "peak_buffer_bytes": 32,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "classify",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "extract_text",
+          "status": "complete",
+          "bytes_processed": 32,
+          "bytes_total": 32,
+          "peak_buffer_bytes": 32,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "ocr_or_transcript",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "thumbnail",
+          "status": "skipped",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 32,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        },
+        {
+          "stage": "finalize",
+          "status": "complete",
+          "bytes_processed": 0,
+          "bytes_total": null,
+          "peak_buffer_bytes": 0,
+          "attempts": 1,
+          "updated_at_ms": 1785871884019
+        }
+      ],
+      "derivatives": [
+        {
+          "kind": "text_extract",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 32,
+          "inline_text": "node_modules\ndist\n*.local\n.vite\n",
+          "produced_by": "utf8_text_extract",
+          "produced_at_ms": 1785871884019
+        },
+        {
+          "kind": "summary",
+          "content_hash": null,
+          "mime": "text/plain",
+          "size_bytes": 127,
+          "inline_text": "object kind=document mime=text/plain size_bytes=32 hash=blake3:a1fb304d7fcd971cdc12cfd3f5e6e7417bde24e91a608451e01273ae33bfcd6b",
+          "produced_by": "finalize_summary",
+          "produced_at_ms": 1785871884019
+        }
+      ],
+      "permissions": {
+        "owner": "hcli-local",
+        "readers": [],
+        "surfaces": [
+          "you",
+          "chat",
+          "ide"
+        ],
+        "allow_model_derivatives": true,
+        "allow_export": false
+      },
+      "retention": {
+        "policy": "durable"
+      },
+      "created_at_ms": 1785871884019,
+      "updated_at_ms": 1785871884019
+    }
+  },
+  "refs": {
+    "oref_01KZ744QQKBA0RPTRJJMH4TX7V": {
+      "id": "oref_01KZ744QQKBA0RPTRJJMH4TX7V",
+      "content_hash": "blake3:a1fb304d7fcd971cdc12cfd3f5e6e7417bde24e91a608451e01273ae33bfcd6b",
+      "label": "app-gitignore-repo-context",
+      "created_at_ms": 1785871884019,
+      "created_by": "hcli-local"
+    },
+    "oref_01KZ746P08ZZ1F37J9HFCEEYQ0": {
+      "id": "oref_01KZ746P08ZZ1F37J9HFCEEYQ0",
+      "content_hash": "blake3:645d4cea30ca5d59aeb17b51e144d0eff19e5e16868c55a3d92772264733110f",
+      "label": "bounded-local-evidence",
+      "created_at_ms": 1785871947784,
+      "created_by": "hcli-local"
+    },
+    "oref_01KZ751MPN474XWD6TPJ40N43E": {
+      "id": "oref_01KZ751MPN474XWD6TPJ40N43E",
+      "content_hash": "blake3:4c75d05c72f863d9bef64954800448e6bd341da91b85b19b7f327e07737e1e2d",
+      "label": "full-readme-context-compaction",
+      "created_at_ms": 1785872831189,
+      "created_by": "hcli-local"
+    }
+  },
+  "used_local_bytes": 5102
+}

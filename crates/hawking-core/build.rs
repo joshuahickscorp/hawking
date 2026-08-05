@@ -13,6 +13,5 @@ fn main() {
             .file("src/metal/ggml_fattn_authority.c")
             .warnings_into_errors(true)
             .compile("hawking_ggml_fattn_authority");
-
     }
 }

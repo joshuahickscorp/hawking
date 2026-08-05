@@ -34,6 +34,18 @@ pub mod commands;
 pub mod compat_instructions;
 pub mod connectors;
 pub mod digest;
+/// Transport-neutral JSONL machine-control contract for the HCLI surface.
+pub mod hcli_bridge;
+/// Named, bounded compute profiles for the HCLI surface.
+pub mod hcli_profile;
+/// Evidence-first, checkpointed local-model research and data procurement.
+pub mod hcli_research;
+/// Bounded, durable local-file/stdin evidence ingestion for the HCLI surface.
+pub mod hcli_sources;
+/// Actual parallel analysis lanes for HCLI, with sealed aggregate receipts.
+pub mod hcli_swarm;
+/// Headless agent runner that emits sealed, evidence-oriented audit receipts.
+pub mod headless;
 pub mod host;
 pub mod initialize;
 pub mod interrupt;
@@ -65,7 +77,9 @@ pub use compat_instructions::{
     LoadedInstruction, ResolvedInstructions,
 };
 pub use connectors::{Connector, ConnectorRegistry, ConnectorStatus};
-pub use host::{BackendHost, BackendStatus, EvidenceLink, SideChatResult, StaticAnalysisReceipt};
+pub use host::{
+    BackendHost, BackendStatus, EvidenceLink, HcliTurnResult, SideChatResult, StaticAnalysisReceipt,
+};
 pub use initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 pub use interrupt::InterruptHub;
 pub use live_thread::{LiveThread, LiveThreadInitGuard, THREAD_PERSISTED_KIND};

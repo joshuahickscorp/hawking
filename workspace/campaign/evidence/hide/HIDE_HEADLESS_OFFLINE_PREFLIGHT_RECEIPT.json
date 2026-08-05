@@ -1,0 +1,1391 @@
+{
+  "agent": null,
+  "content_blake3": "cae2cb01b958d51ce39ff9f8af6ba0edae0c4e1714222894a361f75cb7e1b7c9",
+  "context": {
+    "kernel_grounding": {
+      "compiled_context_injected_into_model_prompt": false,
+      "descriptor_context_tokens": 8192,
+      "manifest_hash_recorded": null,
+      "note": "The current AgentKernel grounds a step with a manifest hash, but does not inject the packed compiled context into act_model prompts. This receipt must not be treated as a packed-context retention test.",
+      "status": "provenance_only"
+    },
+    "normal_turn_configured_input_tokens": 16384,
+    "normal_turn_reserved_output_tokens": 2048,
+    "output_limits": {
+      "agent_act_model_max_output_tokens": 512,
+      "planner_max_output_tokens": 256
+    }
+  },
+  "driver": {
+    "kernel_autonomy": "suggest_only",
+    "kernel_autonomy_environment": null,
+    "max_transitions_effective": 200,
+    "max_transitions_requested": 200,
+    "note": "Autonomy controls effect approval only. It does not make search_breadth or self_consistency_k into an implemented multi-agent swarm."
+  },
+  "event_chain": {
+    "chain_root": null,
+    "checked_events": 0,
+    "detail": "event chain verified",
+    "ok": true
+  },
+  "event_window": {
+    "event_count": 0,
+    "first_seq": null,
+    "last_seq": null,
+    "note": "The event-chain audit covers the full workspace log. This session window includes direct planned-tool events whose run_id can be null by design.",
+    "session_id": null
+  },
+  "failure": null,
+  "finished_ms": 1785842566685,
+  "goal": {
+    "blake3": "0daba7767f8a00ef7584186982fd505e0e7322f5e65713d523cb3389e33b2e04",
+    "text": "headless offline preflight: do not fabricate a model TPS result",
+    "utf8_bytes": 63
+  },
+  "host": {
+    "crate_version": "0.2.2",
+    "status": {
+      "capabilities": {
+        "agent_kernel": true,
+        "code_index": true,
+        "context_compiler": true,
+        "fleet": true,
+        "model_orchestration": true,
+        "personalization": true,
+        "remote_protocol": false,
+        "research_lab": true
+      },
+      "connectors": [
+        {
+          "contributions": [],
+          "detail": "generation=0, indexed_files=0, stale_files=0",
+          "healthy": true,
+          "id": "code_index"
+        },
+        {
+          "contributions": [],
+          "detail": "roles=4, indexed_files=0",
+          "healthy": true,
+          "id": "context"
+        },
+        {
+          "contributions": [],
+          "detail": "root=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp.tBfPCCpjq4",
+          "healthy": true,
+          "id": "fs"
+        },
+        {
+          "contributions": [],
+          "detail": "courtyard digest",
+          "healthy": true,
+          "id": "home"
+        },
+        {
+          "contributions": [],
+          "detail": "0 personalization records available",
+          "healthy": true,
+          "id": "personalization"
+        },
+        {
+          "contributions": [],
+          "detail": "0 research runs available",
+          "healthy": true,
+          "id": "research"
+        },
+        {
+          "contributions": [],
+          "detail": "4 model roles registered",
+          "healthy": true,
+          "id": "runtime"
+        }
+      ],
+      "model_roles": [
+        {
+          "caps": {
+            "embeddings": true,
+            "grammar": false,
+            "kv_handles": false,
+            "logprobs": false,
+            "lora": false,
+            "native_tokens_endpoint": true,
+            "raw_logits": false,
+            "streaming": true
+          },
+          "default_sampler": {
+            "deterministic": false,
+            "repetition_penalty": null,
+            "seed": null,
+            "temperature": 0.20000000298023224,
+            "top_k": 40,
+            "top_p": 0.949999988079071
+          },
+          "id": "rol_01KZ6861GRA4Q632X53V4JPYTX",
+          "metadata": {},
+          "model": {
+            "architecture": "transformer",
+            "context_tokens": 16384,
+            "footprint_mb": 4096,
+            "id": "mdl_01KZ6861GR8X1NBX6P8PJ4PD38",
+            "name": "hawking-fast-draft",
+            "tokenizer_signature": "hawking-local"
+          },
+          "name": "hawking-fast-draft",
+          "purpose": "fast_draft"
+        },
+        {
+          "caps": {
+            "embeddings": true,
+            "grammar": false,
+            "kv_handles": false,
+            "logprobs": false,
+            "lora": false,
+            "native_tokens_endpoint": false,
+            "raw_logits": false,
+            "streaming": false
+          },
+          "default_sampler": {
+            "deterministic": true,
+            "repetition_penalty": null,
+            "seed": 0,
+            "temperature": 0.0,
+            "top_k": null,
+            "top_p": null
+          },
+          "id": "rol_01KZ6861GRM0RVNVBNG8RGCTWM",
+          "metadata": {},
+          "model": {
+            "architecture": "transformer",
+            "context_tokens": 8192,
+            "footprint_mb": 1024,
+            "id": "mdl_01KZ6861GR771R3ZCZJ2GTBWJH",
+            "name": "hawking-embedder",
+            "tokenizer_signature": "hawking-local"
+          },
+          "name": "hawking-embedder",
+          "purpose": "embedder"
+        },
+        {
+          "caps": {
+            "embeddings": true,
+            "grammar": true,
+            "kv_handles": false,
+            "logprobs": false,
+            "lora": false,
+            "native_tokens_endpoint": true,
+            "raw_logits": false,
+            "streaming": true
+          },
+          "default_sampler": {
+            "deterministic": true,
+            "repetition_penalty": null,
+            "seed": 0,
+            "temperature": 0.0,
+            "top_k": null,
+            "top_p": null
+          },
+          "id": "rol_01KZ6861GRQ7F16MQEYZPRVPN2",
+          "metadata": {},
+          "model": {
+            "architecture": "transformer",
+            "context_tokens": 16384,
+            "footprint_mb": 4096,
+            "id": "mdl_01KZ6861GR60T2GDV4HPSSA8N7",
+            "name": "hawking-tool-planner",
+            "tokenizer_signature": "hawking-local"
+          },
+          "name": "hawking-tool-planner",
+          "purpose": "tool_planner"
+        },
+        {
+          "caps": {
+            "embeddings": true,
+            "grammar": false,
+            "kv_handles": false,
+            "logprobs": false,
+            "lora": false,
+            "native_tokens_endpoint": true,
+            "raw_logits": false,
+            "streaming": true
+          },
+          "default_sampler": {
+            "deterministic": true,
+            "repetition_penalty": null,
+            "seed": 0,
+            "temperature": 0.0,
+            "top_k": null,
+            "top_p": null
+          },
+          "id": "rol_01KZ6861GRQDYQ36H006Q1GFBF",
+          "metadata": {},
+          "model": {
+            "architecture": "transformer",
+            "context_tokens": 32768,
+            "footprint_mb": 8192,
+            "id": "mdl_01KZ6861GRH8KXAJ1N45TH5PM2",
+            "name": "hawking-hero-coder",
+            "tokenizer_signature": "hawking-local"
+          },
+          "name": "hawking-hero-coder",
+          "purpose": "hero_coder"
+        }
+      ],
+      "runtime": null,
+      "tools": [
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "shell.exec"
+          ],
+          "description": "Build the project (sandboxed). Compiler errors are DATA, not an error.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "description": "command + args; argv form avoids shell injection",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "env": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "name": "build.run",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "exit_code": {
+                "type": "integer"
+              },
+              "stderr": {
+                "type": "string"
+              },
+              "stdout": {
+                "type": "string"
+              },
+              "stdout_truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "exit_code",
+              "stdout",
+              "stderr"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 600000,
+          "title": "Build project",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "shell.exec"
+          ],
+          "description": "Type-check the project (sandboxed). Diagnostics are DATA, not an error.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "description": "command + args; argv form avoids shell injection",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "env": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "name": "compile.check",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "exit_code": {
+                "type": "integer"
+              },
+              "stderr": {
+                "type": "string"
+              },
+              "stdout": {
+                "type": "string"
+              },
+              "stdout_truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "exit_code",
+              "stdout",
+              "stderr"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 600000,
+          "title": "Type-check",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "fs.write"
+          ],
+          "description": "Apply a unified diff to a file, verified by re-deriving the post-image. base_hash gives optimistic concurrency.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "base_hash": {
+                "type": "string"
+              },
+              "patch": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "patch"
+            ],
+            "type": "object"
+          },
+          "name": "edit.apply_patch",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Apply unified diff",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "fs.write"
+          ],
+          "description": "Apply exact/anchored search-replace blocks (Aider/Cline style) with whitespace and fuzzy fallback; returns CONFLICT with the closest region on no-match.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "base_hash": {
+                "type": "string"
+              },
+              "edits": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "occurrence": {
+                      "default": "first",
+                      "enum": [
+                        "first",
+                        "all"
+                      ],
+                      "type": "string"
+                    },
+                    "replace": {
+                      "type": "string"
+                    },
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search",
+                    "replace"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "edits"
+            ],
+            "type": "object"
+          },
+          "name": "edit.search_replace",
+          "output_cap_bytes": 262144,
+          "output_schema": {
+            "properties": {
+              "applied": {
+                "type": "array"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "applied"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "Search/replace edit",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "fs.write"
+          ],
+          "description": "Tier-0 full-file write; create_only guards against clobbering, base_hash gives optimistic concurrency.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "base_hash": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "create_only": {
+                "default": false,
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ],
+            "type": "object"
+          },
+          "name": "edit.write_file",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Write whole file",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "fs.read"
+          ],
+          "description": "Match files by glob pattern under a root, respecting .gitignore.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "pattern": {
+                "type": "string"
+              },
+              "root": {
+                "default": ".",
+                "type": "string"
+              }
+            },
+            "required": [
+              "pattern"
+            ],
+            "type": "object"
+          },
+          "name": "fs.glob",
+          "output_cap_bytes": 524288,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Glob files",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "fs.read"
+          ],
+          "description": "List a directory, respecting .gitignore by default.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "depth": {
+                "default": 1,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "include_hidden": {
+                "default": false,
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "name": "fs.list",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "entries": {
+                "type": "array"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "entries"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "List directory",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "fs.read"
+          ],
+          "description": "Read a file from an authorized scope. Supports line ranges and base64/utf8 encoding; spills over-cap output to a bytes_ref with a head preview.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "encoding": {
+                "default": "auto",
+                "enum": [
+                  "utf8",
+                  "base64",
+                  "auto"
+                ],
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "range": {
+                "additionalProperties": false,
+                "properties": {
+                  "end_line": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "start_line": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "name": "fs.read",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "bytes": {
+                "type": "integer"
+              },
+              "content": {
+                "type": "string"
+              },
+              "encoding": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "Read file",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "fs.read"
+          ],
+          "description": "Return size, mtime, mode, is_dir, and the blake3 content hash of a file.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "name": "fs.stat",
+          "output_cap_bytes": 65536,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Stat path",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "fs.read"
+          ],
+          "description": "Poll a path for a single change within a bounded window and report what changed. A persistent watcher is owned by the run loop (documented seam).",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "timeout_ms": {
+                "default": 2000,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "name": "fs.watch",
+          "output_cap_bytes": 16384,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Watch path",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "fs.write"
+          ],
+          "description": "Write UTF-8 content to an authorized scope. `create_only` guards against clobbering.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "content": {
+                "type": "string"
+              },
+              "create_dirs": {
+                "default": false,
+                "type": "boolean"
+              },
+              "create_only": {
+                "default": false,
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ],
+            "type": "object"
+          },
+          "name": "fs.write",
+          "output_cap_bytes": 262144,
+          "output_schema": {
+            "properties": {
+              "bytes": {
+                "type": "integer"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "bytes"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "Write file",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "git.write"
+          ],
+          "description": "Stage given paths (or all) and commit with a message. No AI attribution is added.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "amend": {
+                "default": false,
+                "type": "boolean"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "paths": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "type": "object"
+          },
+          "name": "git.commit",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 30000,
+          "title": "Git commit",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "git.read"
+          ],
+          "description": "Unified diff; optional ref, --staged, and path filter.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cwd": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "staged": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "name": "git.diff",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Git diff",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "git.read"
+          ],
+          "description": "History as oneline entries; optional ref, max count, path.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cwd": {
+                "type": "string"
+              },
+              "max": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "path": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "name": "git.log",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Git log",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "git.read"
+          ],
+          "description": "Porcelain `git status --short --branch`.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cwd": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "name": "git.status",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "Git status",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "git.write"
+          ],
+          "description": "Create a git worktree at `path` on a new branch — the agent-isolation primitive.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "branch": {
+                "type": "string"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "from": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "branch"
+            ],
+            "type": "object"
+          },
+          "name": "git.worktree.add",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 30000,
+          "title": "Add worktree",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "git.read"
+          ],
+          "description": "Enumerate git worktrees (porcelain).",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cwd": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "name": "git.worktree.list",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 15000,
+          "title": "List worktrees",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "git.write"
+          ],
+          "description": "Remove a git worktree by path (optionally force).",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cwd": {
+                "type": "string"
+              },
+              "force": {
+                "default": false,
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "name": "git.worktree.remove",
+          "output_cap_bytes": 262144,
+          "output_schema": null,
+          "timeout_ms": 30000,
+          "title": "Remove worktree",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "fs.write"
+          ],
+          "description": "Durable cross-session memory rooted at a private directory. command=view|create|str_replace|insert|delete|rename. All paths are relative to the memory root; escapes are rejected.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "command": {
+                "enum": [
+                  "view",
+                  "create",
+                  "str_replace",
+                  "insert",
+                  "delete",
+                  "rename"
+                ],
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "insert_line": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "new_path": {
+                "type": "string"
+              },
+              "new_str": {
+                "type": "string"
+              },
+              "old_str": {
+                "type": "string"
+              },
+              "path": {
+                "description": "path relative to the memory root",
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ],
+            "type": "object"
+          },
+          "name": "memory",
+          "output_cap_bytes": 262144,
+          "output_schema": {
+            "properties": {
+              "command": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "Memory",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "index.read"
+          ],
+          "description": "Regex search over the workspace, respecting .gitignore. Returns line hits.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "glob": {
+                "type": "string"
+              },
+              "ignore_case": {
+                "default": false,
+                "type": "boolean"
+              },
+              "max": {
+                "default": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "pattern": {
+                "type": "string"
+              },
+              "root": {
+                "default": ".",
+                "type": "string"
+              }
+            },
+            "required": [
+              "pattern"
+            ],
+            "type": "object"
+          },
+          "name": "search.text",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "matches": {
+                "type": "array"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "matches"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 15000,
+          "title": "Search text",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": false,
+            "idempotent": true,
+            "open_world": false,
+            "read_only": true
+          },
+          "capabilities_required": [
+            "shell.exec"
+          ],
+          "description": "Validate a command and render its sandbox profile without executing.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "name": "shell.plan",
+          "output_cap_bytes": 65536,
+          "output_schema": null,
+          "timeout_ms": 5000,
+          "title": "Plan shell command",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": true,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "shell.exec"
+          ],
+          "description": "Run an already-authorized non-interactive command (argv form), sandboxed and deadline-bounded. Non-zero exit is data, not an error.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "description": "command + args; argv form avoids shell injection",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "env": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "name": "shell.run",
+          "output_cap_bytes": 262144,
+          "output_schema": {
+            "properties": {
+              "exit_code": {
+                "type": "integer"
+              },
+              "stderr": {
+                "type": "string"
+              },
+              "stdout": {
+                "type": "string"
+              },
+              "stdout_truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "exit_code",
+              "stdout",
+              "stderr"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 30000,
+          "title": "Run shell command",
+          "version": "0.1.0",
+          "wire_version": 1
+        },
+        {
+          "annotations": {
+            "destructive": true,
+            "idempotent": false,
+            "open_world": false,
+            "read_only": false
+          },
+          "capabilities_required": [
+            "shell.exec"
+          ],
+          "description": "Run the project test suite (sandboxed). Failing tests are DATA, not an error.",
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "description": "command + args; argv form avoids shell injection",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "env": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "name": "test.run",
+          "output_cap_bytes": 1048576,
+          "output_schema": {
+            "properties": {
+              "exit_code": {
+                "type": "integer"
+              },
+              "stderr": {
+                "type": "string"
+              },
+              "stdout": {
+                "type": "string"
+              },
+              "stdout_truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "exit_code",
+              "stdout",
+              "stderr"
+            ],
+            "type": "object"
+          },
+          "timeout_ms": 600000,
+          "title": "Run tests",
+          "version": "0.1.0",
+          "wire_version": 1
+        }
+      ],
+      "workspace_root": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp.tBfPCCpjq4"
+    },
+    "workspace_root": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp.tBfPCCpjq4"
+  },
+  "limitations": [
+    "A V4 TPS result is valid only when the runtime context identifies a loadable deepseek_v4 artifact and its per-call decode metrics include completed_decode_forwards plus decode_ms.",
+    "Agent wall time includes planning, verification, tool dispatch, filesystem work, and scheduling; it is not model decode TPS.",
+    "Current kernel grounding is provenance-only; packed-context injection is not yet exercised by this harness.",
+    "Current uploads are not end-to-end model context inputs and are bounded rather than unlimited."
+  ],
+  "runtime": {
+    "context_after": {
+      "status": "not_run"
+    },
+    "context_before": {
+      "status": "not_checked"
+    },
+    "health": {
+      "status": "not_checked"
+    },
+    "model_tps_claim": "not_measured",
+    "requested_url": null
+  },
+  "schema": "hide.headless.audit.v1",
+  "started_ms": 1785842566685,
+  "status": "blocked_no_model_url",
+  "uploads": {
+    "declared_storage_budget": {
+      "bound_statement": "Storage is effectively unbounded relative to a single turn or attachment, but is always finite: bounded by configured local/cloud storage (StorageBudget), free disk, model context capability for derivatives, and user policy. Never claim literal unlimited storage.",
+      "max_cloud_bytes": 274877906944,
+      "max_local_bytes": 68719476736,
+      "max_object_bytes": 34359738368,
+      "policy_note": "bounded by configured local/cloud storage, model capability, and user policy — not unlimited"
+    },
+    "end_to_end_upload_to_context": false,
+    "literal_unlimited": false,
+    "note": "HIDE has blob and object-store primitives, but no HTTP attachment upload-to-context route or context injection path. No upload capacity is claimed by this run.",
+    "status": "not_implemented"
+  },
+  "wall_elapsed_ms": 0
+}

@@ -1,6 +1,7 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::hcli_sources::HcliSourceContext;
 use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
 use crate::live_thread::LiveThread;
@@ -55,6 +56,38 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+
+/// A durable, explicit-runtime model turn for HCLI and other headless callers.
+///
+/// Unlike the historical [`BackendHost::generate_and_publish`] convenience
+/// method, this result proves that the user prompt was first recorded in the
+/// session log. That makes subsequent calls to the same named session a real
+/// contextual conversation rather than a completion-only sequence.
+#[derive(Debug, Clone, Serialize)]
+pub struct HcliTurnResult {
+    pub session_id: SessionId,
+    /// The exact durable user-intent event written before inference began.
+    pub intent_event_id: EventId,
+    pub intent_event_seq: u64,
+    /// The target-verified assistant history event written after successful
+    /// inference. This is absent only when generation itself errors, in which
+    /// case this method returns an error instead of a partial success result.
+    pub assistant_event_id: EventId,
+    /// The durable runtime-generation event sequence, suitable for correlating
+    /// Wire-B token streaming with the terminal HCLI response.
+    pub stream_id: String,
+    pub completion: String,
+    /// Raw metrics from the model runtime. Optional fields mean the runtime did
+    /// not expose them; callers must not derive a complete-forward TPS without
+    /// both `decode_ms` and `completed_decode_forwards`.
+    pub generation_stats: hide_core::runtime::GenerationStats,
+    pub complete_forward_tps: Option<f64>,
+    /// Metadata-only receipt for an explicit local evidence selection. This is
+    /// present only when the caller supplied a source pack; the derivative text
+    /// itself is never echoed in the terminal result.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_context: Option<Value>,
+}
 
 impl BackendHost {
     pub async fn steer_run(
@@ -122,20 +155,58 @@ impl BackendHost {
         session_id: SessionId,
         run_id: RunId,
     ) -> AgentKernel {
+        self.build_kernel_for_runtime(base_url, session_id, Some(run_id), None, false)
+    }
+
+    /// Build the full agent kernel for a non-interactive headless run.
+    ///
+    /// The agent mints its own `RunId` in `AgentKernel::start_run`, so this
+    /// path deliberately leaves the dispatch attribution unbound at construction
+    /// time. The verified model-tool executor then receives and verifies the
+    /// actual generated run id on each call. Binding a guessed id here would make
+    /// the audit trail internally inconsistent.
+    pub fn build_headless_kernel(
+        &self,
+        base_url: String,
+        session_id: SessionId,
+        runtime_output_cap: Option<usize>,
+        compact_model_prompts: bool,
+    ) -> AgentKernel {
+        self.build_kernel_for_runtime(
+            base_url,
+            session_id,
+            None,
+            runtime_output_cap,
+            compact_model_prompts,
+        )
+    }
+
+    fn build_kernel_for_runtime(
+        &self,
+        base_url: String,
+        session_id: SessionId,
+        run_id: Option<RunId>,
+        runtime_output_cap: Option<usize>,
+        compact_model_prompts: bool,
+    ) -> AgentKernel {
         use crate::model_provider::{HttpModelProvider, ModelProviderInferenceClient};
         use hawking_orch::inference::InferenceClient;
         use hawking_orch::router::SimpleRouter;
         use hide_kernel::runtime_client::KernelRuntimeClient;
 
-        let inference: Arc<dyn InferenceClient> = Arc::new(ModelProviderInferenceClient::new(
-            HttpModelProvider::new(base_url),
-        ));
+        let provider = HttpModelProvider::new(base_url);
+        let inference: Arc<dyn InferenceClient> = match runtime_output_cap.filter(|cap| *cap > 0) {
+            Some(cap) => Arc::new(ModelProviderInferenceClient::with_max_output_tokens(
+                provider, cap,
+            )),
+            None => Arc::new(ModelProviderInferenceClient::new(provider)),
+        };
         let runtime = Arc::new(KernelRuntimeClient::new(
             Arc::new(SimpleRouter::new(self.services.role_registry.clone())),
             inference,
         ));
 
-        let dispatcher = self.build_turn_dispatcher(session_id, Some(run_id));
+        let dispatcher = self.build_turn_dispatcher(session_id, run_id);
         let grounding = Arc::new(Grounding::new(self.services.code_index.clone()));
 
         AgentKernel::builder(self.services.event_log.clone())
@@ -148,9 +219,11 @@ impl BackendHost {
             )
             .autonomy(turn_kernel_autonomy())
             .grounding(grounding)
+            .compact_model_prompts(compact_model_prompts)
             // `.runtime(..)` installs a `RuntimePlanner` since no planner is set.
             .runtime(runtime)
             .dispatcher(dispatcher.clone())
+            .verified_model_tool_executor(self.verified_model_tool_executor())
             .with_standard_oracles(dispatcher)
             .build()
     }
@@ -180,6 +253,19 @@ impl BackendHost {
                 bound,
             ))),
         )
+    }
+
+    /// The only kernel-facing authority allowed to execute a parsed model tool
+    /// call. It uses the host's shared dispatcher (not the per-turn unverified
+    /// one) so the executor can establish the durable, action-bound
+    /// target-verification context before dispatch.
+    pub fn verified_model_tool_executor(
+        &self,
+    ) -> Arc<dyn hide_kernel::tools::VerifiedModelToolExecutor> {
+        Arc::new(crate::tools::DirectTargetModelToolExecutor::new(
+            self.services.clone(),
+            self.dispatcher.clone(),
+        ))
     }
 
     /// Spawn the generation for an accepted `SubmitTurn`: route it at the live
@@ -222,6 +308,7 @@ impl BackendHost {
             // `.runtime(..)` installs RuntimePlanner when no planner is set.
             .runtime(runtime)
             .dispatcher(dispatcher.clone())
+            .verified_model_tool_executor(self.verified_model_tool_executor())
             .with_standard_oracles(dispatcher)
             .build()
     }
@@ -242,6 +329,189 @@ impl BackendHost {
         base_url: impl Into<String>,
         prompt: impl Into<String>,
     ) -> Result<String> {
+        let outcome = self
+            .generate_and_publish_outcome(
+                session_id,
+                base_url.into(),
+                prompt.into(),
+                None,
+                None,
+                None,
+            )
+            .await?;
+        Ok(outcome.completion)
+    }
+
+    /// Run one externally selected local model endpoint as a durable HCLI
+    /// conversation turn. The explicit URL avoids coupling a CLI client to the
+    /// optional `HIDE_MODEL_WEIGHTS` supervisor, while the recorded
+    /// `SubmitTurn` preserves the full user/assistant history for the next
+    /// call. This method deliberately does *not* call `handle_intent`, because
+    /// that method would also start the supervisor-owned generation path.
+    pub async fn hcli_turn(
+        &self,
+        session_id: SessionId,
+        base_url: impl Into<String>,
+        prompt: impl Into<String>,
+    ) -> Result<HcliTurnResult> {
+        self.hcli_turn_with_output_cap(session_id, base_url, prompt, None)
+            .await
+    }
+
+    /// As [`Self::hcli_turn`], with an explicit caller-requested output cap.
+    /// The cap only narrows the model window derived by `run_turn_core`; it can
+    /// never make a packed context claim a larger usable window.
+    pub async fn hcli_turn_with_output_cap(
+        &self,
+        session_id: SessionId,
+        base_url: impl Into<String>,
+        prompt: impl Into<String>,
+        requested_output_cap: Option<usize>,
+    ) -> Result<HcliTurnResult> {
+        self.hcli_turn_with_output_cap_and_source_context(
+            session_id,
+            base_url,
+            prompt,
+            requested_output_cap,
+            None,
+        )
+        .await
+    }
+
+    /// As [`Self::hcli_turn_with_output_cap`], with a single explicit,
+    /// bounded pack of local object-store derivatives. The pack is injected
+    /// into this invocation's real native prompt as untrusted reference
+    /// material; it is not appended to durable user history or implicitly
+    /// carried to a later turn.
+    pub async fn hcli_turn_with_output_cap_and_source_context(
+        &self,
+        session_id: SessionId,
+        base_url: impl Into<String>,
+        prompt: impl Into<String>,
+        requested_output_cap: Option<usize>,
+        source_context: Option<HcliSourceContext>,
+    ) -> Result<HcliTurnResult> {
+        let prompt = prompt.into();
+        let base_url = base_url.into();
+        // An explicitly selected HCLI endpoint may have a much smaller native
+        // window than the product-default coding role.  Consult the endpoint
+        // before compiling durable context so the packer does not knowingly
+        // send an over-window prompt and rely on the runtime to truncate it.
+        // `None` remains an honest fallback for legacy/unreachable endpoints.
+        let live_ceiling = crate::model_provider::HttpModelProvider::new(base_url.clone())
+            .get_context_info()
+            .await
+            .and_then(|info| {
+                let ceiling = info.ctx_len_effective.or(info.ctx_len_native)?;
+                Some((
+                    info.recurrent_state_bytes,
+                    info.ctx_len_native,
+                    ceiling,
+                    info.max_output_tokens,
+                ))
+            });
+        let ack = self
+            .commands
+            .handle(Intent::SubmitTurn {
+                session_id: session_id.clone(),
+                text: prompt.clone(),
+                attachments: Vec::new(),
+            })
+            .await?;
+        if !ack.accepted {
+            return Err(hide_core::error::HideError::PolicyDenied(
+                ack.message
+                    .unwrap_or_else(|| "HCLI turn was refused before logging".to_string()),
+            ));
+        }
+        let intent_event_seq = ack.event_seq.ok_or_else(|| {
+            hide_core::error::HideError::PolicyDenied(
+                "accepted HCLI turn was missing its durable intent event".to_string(),
+            )
+        })?;
+        let intent_event_id = self
+            .services
+            .event_log
+            .scan(Some(session_id.clone()), None, None)
+            .await?
+            .into_iter()
+            .find(|event| event.seq == intent_event_seq)
+            .map(|event| event.id)
+            .ok_or_else(|| {
+                hide_core::error::HideError::PolicyDenied(
+                    "accepted HCLI turn intent event could not be recovered from the durable log"
+                        .to_string(),
+                )
+            })?;
+        let outcome = self
+            .generate_and_publish_outcome(
+                session_id.clone(),
+                base_url,
+                prompt,
+                requested_output_cap,
+                source_context.as_ref(),
+                live_ceiling,
+            )
+            .await?;
+        let complete_forward_tps = match (
+            outcome.generation_stats.decode_ms,
+            outcome.generation_stats.completed_decode_forwards,
+        ) {
+            (Some(decode_ms), Some(forwards)) if decode_ms > 0.0 && forwards > 0 => {
+                Some(forwards as f64 / (decode_ms / 1_000.0))
+            }
+            _ => None,
+        };
+        let source_context_disposition = outcome.source_context_disposition;
+        Ok(HcliTurnResult {
+            session_id,
+            intent_event_id,
+            intent_event_seq,
+            assistant_event_id: outcome.assistant_event_id,
+            stream_id: outcome.stream_seq.to_string(),
+            completion: outcome.completion,
+            generation_stats: outcome.generation_stats,
+            complete_forward_tps,
+            source_context: source_context.as_ref().map(|context| {
+                let mut receipt = context.receipt_json();
+                let (target, model_prompt_omitted, note) = match source_context_disposition {
+                    SourceContextDisposition::Injected => (
+                        "durable_native_turn_prompt",
+                        false,
+                        "Only this turn receives the selected model-facing derivatives. The durable context.compiled event stores the same metadata-only selection receipt.",
+                    ),
+                    SourceContextDisposition::OmittedWholeBlockForLiveWindow => (
+                        "none",
+                        true,
+                        "The complete selected evidence block plus the reconstructed native prompt and response reserve did not fit the observed compact context, so it was omitted rather than truncated. Its selection metadata is preserved in the durable context.compiled event.",
+                    ),
+                    SourceContextDisposition::NotRequested => (
+                        "none",
+                        true,
+                        "No non-empty selected evidence block was available for this turn.",
+                    ),
+                };
+                receipt["injection"] = json!({
+                    "status": source_context_disposition.as_str(),
+                    "target": target,
+                    "model_prompt_omitted": model_prompt_omitted,
+                    "persisted_as_user_history": false,
+                    "note": note,
+                });
+                receipt
+            }),
+        })
+    }
+
+    async fn generate_and_publish_outcome(
+        &self,
+        session_id: SessionId,
+        base_url: String,
+        prompt: String,
+        requested_output_cap: Option<usize>,
+        source_context: Option<&HcliSourceContext>,
+        live_ceiling: Option<(Option<usize>, Option<usize>, usize, Option<usize>)>,
+    ) -> Result<TurnOutcome> {
         use crate::model_provider::{HttpModelProvider, ModelProviderInferenceClient};
 
         let provider = HttpModelProvider::new(base_url);
@@ -251,7 +521,7 @@ impl BackendHost {
         // path and this one build the SAME real request (compiled context + real
         // history + a derived budget) and can never drift. This twin skips the
         // per-step / post-turn live-manifest telemetry (no run/interrupt wiring).
-        let outcome = run_turn_core(
+        run_turn_core(
             inference,
             self.services.event_log.clone(),
             self.services.role_registry.clone(),
@@ -261,11 +531,12 @@ impl BackendHost {
             self.ui_bus.clone(),
             session_id,
             prompt.into(),
-            None,
+            live_ceiling,
             None,
             self.services.repo_instructions.clone(),
+            requested_output_cap,
+            source_context,
         )
-        .await?;
-        Ok(outcome.completion)
+        .await
     }
 }

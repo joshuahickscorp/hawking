@@ -874,7 +874,10 @@ mod tests {
             ("qwen", "qwen3b-instruct-q4k.m3pro18.json"),
             ("qwen", "qwen15b-instruct-q4k.m3pro18.json"),
             ("qwen", "qwen05b-instruct-q4k.m3pro18.json"),
-            ("deepseek-v2-lite/baseline", "deepseek-v2-lite-q4.m3pro18.json"),
+            (
+                "deepseek-v2-lite/baseline",
+                "deepseek-v2-lite-q4.m3pro18.json",
+            ),
         ];
         for (family, f) in files {
             let path = root.join(family).join(f);

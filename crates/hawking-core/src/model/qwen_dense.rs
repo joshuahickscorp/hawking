@@ -1189,7 +1189,10 @@ impl Engine for QwenDense {
                 None if lm_head_raw
                     .as_ref()
                     .map(|t| matches!(t.dtype, GgmlType::Q4_K | GgmlType::Q6_K))
-                    .unwrap_or(false) => ctx.new_buffer_with_bytes_checked(&[0u8])?,
+                    .unwrap_or(false) =>
+                {
+                    ctx.new_buffer_with_bytes_checked(&[0u8])?
+                }
                 None => {
                     ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?
                 }
@@ -1264,8 +1267,7 @@ impl Engine for QwenDense {
                             | GgmlType::Q5_K
                             | GgmlType::Q6_K
                             | GgmlType::Q8_0
-                    )
-                    {
+                    ) {
                         *slot = Some(dequant_to_f16_pin(t)?);
                     }
                 }
@@ -1836,9 +1838,8 @@ impl Engine for QwenDense {
             }
             if !prefill_aborted {
                 for j in batch_end..prompt_len {
-                    prefill_greedy_next = Some(
-                        self.forward_token_greedy_tcb(prompt_ids[j], positions[j])?,
-                    );
+                    prefill_greedy_next =
+                        Some(self.forward_token_greedy_tcb(prompt_ids[j], positions[j])?);
                 }
             }
         } else {
@@ -2524,7 +2525,11 @@ impl Engine for QwenDense {
                     produced += 1;
                     last_id = seeded;
                     decode_start_step = 1;
-                    if req.stop.iter().any(|s| !s.is_empty() && seeded_text.contains(s)) {
+                    if req
+                        .stop
+                        .iter()
+                        .any(|s| !s.is_empty() && seeded_text.contains(s))
+                    {
                         reason = StopReason::StopString;
                     }
                 }
@@ -4080,8 +4085,9 @@ impl QwenDense {
             std::path::PathBuf::from(
                 "workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json",
             ),
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json"),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+                "../../workspace/campaign/records/reports/w4a8_lmhead_calibration_2026_05_26.json",
+            ),
         ];
         let json_path = match candidates.iter().find(|p| p.exists()) {
             Some(p) => p,

@@ -146,3 +146,7 @@ tools/sovereignty/__pycache__/
 # 52 MB GLM52 shard dependency graph. Regenerable campaign evidence, too large
 # to belong in a public repository; the receipt beside it carries its hash.
 /workspace/campaign/evidence/models/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json
+
+# HCLI live runtime state (sessions, memory.db, sqlite indices). Regenerated
+# per run, not source.
+/.hide/

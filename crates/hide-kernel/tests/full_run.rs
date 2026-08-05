@@ -1,10 +1,12 @@
 use futures::future::BoxFuture;
-use hawking_orch::inference::StubInferenceClient;
+use hawking_orch::inference::{ScriptedInferenceClient, StubInferenceClient};
 use hawking_orch::registry::RoleRegistry;
 use hawking_orch::router::SimpleRouter;
 use hide_core::event::{Event, EventLog, InMemoryEventLog};
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynEventLog;
+use hide_core::tool::{ToolCall, ToolResult};
+use hide_core::types::EffectSet;
 use hide_core::Result;
 use hide_kernel::govern::Autonomy;
 use hide_kernel::machine::effects::Mode;
@@ -12,6 +14,7 @@ use hide_kernel::machine::state::{AgentState, Phase};
 use hide_kernel::plan::planner::Planner;
 use hide_kernel::plan::schema::{Acceptance, Plan, PlanStatus, PlanStep, StepKind};
 use hide_kernel::runtime_client::KernelRuntimeClient;
+use hide_kernel::tools::VerifiedModelToolExecutor;
 use hide_kernel::{allow_all_dispatcher, AgentKernel};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -59,6 +62,37 @@ impl Planner for FixedPlanner {
         })
     }
 }
+
+/// Test-only host authority. Production uses an executor that persists a
+/// target-verification event and mints an exact-call permit before dispatch;
+/// this one only proves the kernel's autonomy and cardinality boundaries.
+struct CountingVerifiedExecutor {
+    calls: AtomicU64,
+}
+
+impl CountingVerifiedExecutor {
+    fn new() -> Self {
+        Self {
+            calls: AtomicU64::new(0),
+        }
+    }
+
+    fn count(&self) -> u64 {
+        self.calls.load(Ordering::SeqCst)
+    }
+}
+
+impl VerifiedModelToolExecutor for CountingVerifiedExecutor {
+    fn dispatch<'a>(
+        &'a self,
+        _session_id: hide_core::ids::SessionId,
+        _run_id: hide_core::ids::RunId,
+        call: ToolCall,
+    ) -> BoxFuture<'a, Result<ToolResult>> {
+        self.calls.fetch_add(1, Ordering::SeqCst);
+        Box::pin(async move { Ok(ToolResult::ok(call.call_id, None, EffectSet::default())) })
+    }
+}
 fn unique() -> String {
     static N: AtomicU64 = AtomicU64::new(0);
     format!(
@@ -102,6 +136,12 @@ fn runtime_with(out: &str) -> Arc<KernelRuntimeClient> {
     let inference = Arc::new(StubInferenceClient::new(out));
     Arc::new(KernelRuntimeClient::new(router, inference))
 }
+fn scripted_runtime(responses: Vec<String>) -> Arc<KernelRuntimeClient> {
+    let registry = Arc::new(RoleRegistry::with_default_local_roles());
+    let router = Arc::new(SimpleRouter::new(registry));
+    let inference = Arc::new(ScriptedInferenceClient::new(responses));
+    Arc::new(KernelRuntimeClient::new(router, inference))
+}
 fn build_kernel_with_stub(
     log: DynEventLog,
     root: &Path,
@@ -117,6 +157,26 @@ fn build_kernel_with_stub(
         .planner(planner)
         .runtime(runtime_with(stub_out))
         .dispatcher(dispatcher.clone())
+        .with_standard_oracles(dispatcher)
+        .build()
+}
+fn build_kernel_with_verified_executor(
+    log: DynEventLog,
+    root: &Path,
+    planner: Arc<dyn Planner>,
+    stub_out: &str,
+    autonomy: Autonomy,
+    executor: Arc<dyn VerifiedModelToolExecutor>,
+) -> AgentKernel {
+    let dispatcher = allow_all_dispatcher(root.to_string_lossy().to_string());
+    AgentKernel::builder(log)
+        .workspace_root(root.to_string_lossy().to_string())
+        .autonomy(autonomy)
+        .mode(Mode::Live)
+        .planner(planner)
+        .runtime(runtime_with(stub_out))
+        .dispatcher(dispatcher.clone())
+        .verified_model_tool_executor(executor)
         .with_standard_oracles(dispatcher)
         .build()
 }
@@ -403,5 +463,221 @@ async fn model_step_does_not_auto_dispatch_subprocess_readonly_tool() {
         proposed,
         "a subprocess read-only tool must not auto-dispatch from a model step"
     );
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+#[tokio::test]
+async fn verified_model_executor_stays_proposal_only_in_suggest_only() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let executor = Arc::new(CountingVerifiedExecutor::new());
+    let executor_for_kernel: Arc<dyn VerifiedModelToolExecutor> = executor.clone();
+    let kernel = build_kernel_with_verified_executor(
+        log.clone(),
+        &repo,
+        planner,
+        "<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"src/lib.rs\"}}</tool_call>",
+        Autonomy::SuggestOnly,
+        executor_for_kernel,
+    );
+    let mut state = kernel
+        .start_run(SessionId::new(), "investigate without taking effects")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    assert_eq!(
+        executor.count(),
+        0,
+        "SuggestOnly must not hand model-authored calls to the host executor"
+    );
+    let events = log.scan(None, None, None).await.unwrap();
+    let proposed = events.iter().any(|event| {
+        event.kind == "agent.observation"
+            && event
+                .payload
+                .get("tool_calls")
+                .and_then(|value| value.as_array())
+                .map(|calls| {
+                    calls.iter().any(|call| {
+                        call.get("status").and_then(|value| value.as_str()) == Some("proposed")
+                            && call.get("dispatched").and_then(|value| value.as_bool())
+                                == Some(false)
+                    })
+                })
+                .unwrap_or(false)
+    });
+    assert!(
+        proposed,
+        "the unapproved model call must remain auditable data"
+    );
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+#[tokio::test]
+async fn verified_model_executor_caps_a_single_completion_at_eight_calls() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let executor = Arc::new(CountingVerifiedExecutor::new());
+    let executor_for_kernel: Arc<dyn VerifiedModelToolExecutor> = executor.clone();
+    let completion = (0..10)
+        .map(|index| {
+            format!(
+                "<tool_call>{{\"name\":\"fs.read\",\"arguments\":{{\"path\":\"src/{index}.rs\"}}}}</tool_call>"
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let kernel = build_kernel_with_verified_executor(
+        log.clone(),
+        &repo,
+        planner,
+        &completion,
+        Autonomy::FullAuto,
+        executor_for_kernel,
+    );
+    let mut state = kernel
+        .start_run(SessionId::new(), "bounded model tool calls")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    assert_eq!(
+        executor.count(),
+        8,
+        "one completion may dispatch at most eight calls"
+    );
+    assert_eq!(
+        state.ledger.tool_calls, 8,
+        "only dispatched calls consume budget"
+    );
+    let events = log.scan(None, None, None).await.unwrap();
+    let records = events
+        .iter()
+        .find_map(|event| {
+            (event.kind == "agent.observation")
+                .then(|| {
+                    event
+                        .payload
+                        .get("tool_calls")
+                        .and_then(|value| value.as_array())
+                })
+                .flatten()
+        })
+        .expect("the model observation must retain every parsed call");
+    assert_eq!(
+        records
+            .iter()
+            .filter(|call| call.get("dispatched").and_then(|value| value.as_bool()) == Some(true))
+            .count(),
+        8
+    );
+    assert_eq!(
+        records
+            .iter()
+            .filter(|call| {
+                call.get("status").and_then(|value| value.as_str()) == Some("budget_exhausted")
+            })
+            .count(),
+        2,
+        "the excess calls must be durably marked rather than silently dropped"
+    );
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+#[tokio::test]
+async fn verified_model_tool_loop_reaches_a_follow_up_completion() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let executor = Arc::new(CountingVerifiedExecutor::new());
+    let executor_for_kernel: Arc<dyn VerifiedModelToolExecutor> = executor.clone();
+    let dispatcher = allow_all_dispatcher(repo.to_string_lossy().to_string());
+    let kernel = AgentKernel::builder(log.clone())
+        .workspace_root(repo.to_string_lossy().to_string())
+        .autonomy(Autonomy::FullAuto)
+        .planner(planner)
+        .runtime(scripted_runtime(vec![
+            "<tool_call>{\"id\":\"read-1\",\"name\":\"fs.read\",\"arguments\":{\"path\":\"src/lib.rs\"}}</tool_call>".to_string(),
+            "I reviewed the tool result and can now summarize the evidence.".to_string(),
+        ]))
+        .dispatcher(dispatcher.clone())
+        .verified_model_tool_executor(executor_for_kernel)
+        .with_standard_oracles(dispatcher)
+        .build();
+    let mut state = kernel
+        .start_run(SessionId::new(), "investigate with a verified read")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    assert_eq!(
+        executor.count(),
+        1,
+        "only the validated call reached the executor"
+    );
+    assert_eq!(
+        state.model_tool_loop.len(),
+        1,
+        "result is checkpointable for resume"
+    );
+    let events = log.scan(None, None, None).await.unwrap();
+    let observation = events
+        .iter()
+        .find(|event| event.kind == "agent.observation" && event.payload.get("generated").is_some())
+        .expect("model observation");
+    assert_eq!(observation.payload["model_rounds"], 2);
+    assert!(observation.payload["generated"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("reviewed the tool result"));
+    assert!(observation.payload["tool_calls"][0]["feedback"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("<tool_response"));
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+#[tokio::test]
+async fn verified_model_executor_never_receives_unknown_or_schema_invalid_calls() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let executor = Arc::new(CountingVerifiedExecutor::new());
+    let executor_for_kernel: Arc<dyn VerifiedModelToolExecutor> = executor.clone();
+    let kernel = build_kernel_with_verified_executor(
+        log.clone(),
+        &repo,
+        planner,
+        "<tool_call>{\"name\":\"made.up\",\"arguments\":{}}</tool_call>\n\
+         <tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":7}}</tool_call>",
+        Autonomy::FullAuto,
+        executor_for_kernel,
+    );
+    let mut state = kernel
+        .start_run(SessionId::new(), "do not execute malformed tool syntax")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    assert_eq!(executor.count(), 0, "preflight must reject both calls");
+    let events = log.scan(None, None, None).await.unwrap();
+    let rejected = events.iter().any(|event| {
+        event.kind == "agent.observation"
+            && event
+                .payload
+                .get("tool_calls")
+                .and_then(|value| value.as_array())
+                .is_some_and(|calls| {
+                    calls.iter().any(|call| {
+                        call.get("status").and_then(|value| value.as_str()) == Some("rejected")
+                            && call.get("dispatched").and_then(|value| value.as_bool())
+                                == Some(false)
+                    })
+                })
+    });
+    assert!(rejected, "schema/known-tool lint must be durably visible");
     let _ = std::fs::remove_dir_all(repo);
 }

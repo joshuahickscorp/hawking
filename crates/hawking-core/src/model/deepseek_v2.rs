@@ -27,7 +27,8 @@ use std::time::Instant;
 fn deepseek_stage_f32(label: &str, ptr: *const f32, len: usize) -> serde_json::Value {
     use sha2::{Digest, Sha256};
 
-    let bytes = unsafe { std::slice::from_raw_parts(ptr.cast::<u8>(), len * std::mem::size_of::<f32>()) };
+    let bytes =
+        unsafe { std::slice::from_raw_parts(ptr.cast::<u8>(), len * std::mem::size_of::<f32>()) };
     let first: Vec<serde_json::Value> = unsafe { std::slice::from_raw_parts(ptr, len) }
         .iter()
         .take(8)
@@ -363,7 +364,9 @@ impl FfnMoeSetup {
             "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             // v2t_gu / v2t_gu_serial / v2t_gu_v2 / v2t_gu_v3 fuse gate+up into one kernel;
             // single-matrix GEMVs (down) use v2t
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+                "moe_batched_gemm_q4_indexed_v2t"
+            }
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -1122,8 +1125,8 @@ impl Engine for DeepSeekV2 {
             let step_start = Instant::now();
             let _ = self.forward_token(t, i)?;
             if self.last_dispatch_count > 0 {
-                prefill_metal_dispatches_total = prefill_metal_dispatches_total
-                    .saturating_add(self.last_dispatch_count);
+                prefill_metal_dispatches_total =
+                    prefill_metal_dispatches_total.saturating_add(self.last_dispatch_count);
                 prefill_command_buffers_total = prefill_command_buffers_total.saturating_add(1);
             }
             if stall_active && step_start.elapsed() > stall_limit {
@@ -1313,8 +1316,8 @@ impl Engine for DeepSeekV2 {
                 };
                 completed_decode_forwards = completed_decode_forwards.saturating_add(1);
                 if self.last_dispatch_count > 0 {
-                    decode_metal_dispatches_total = decode_metal_dispatches_total
-                        .saturating_add(self.last_dispatch_count);
+                    decode_metal_dispatches_total =
+                        decode_metal_dispatches_total.saturating_add(self.last_dispatch_count);
                     decode_command_buffers_total = decode_command_buffers_total.saturating_add(1);
                 } else {
                     decode_cpu_reference_fallback_total =
@@ -2041,7 +2044,10 @@ impl DeepSeekV2 {
                 // doesn't have a matching kernel name. Map all v2t_* schedules
                 // to the v2 standalone kernel so we never silently regress to
                 // the slow scalar `gemv_q4_k_m` here.
-                if matches!(schedule, "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_serial") {
+                if matches!(
+                    schedule,
+                    "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_serial"
+                ) {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
                             ctx,
@@ -3029,16 +3035,14 @@ impl DeepSeekV2 {
 
                             if stage_trace_active {
                                 let q_len = self.config.n_heads
-                                    * (self.config.qk_nope_head_dim
-                                        + self.config.qk_rope_head_dim);
-                                let kv_a_len = self.config.kv_lora_rank
-                                    + self.config.qk_rope_head_dim;
+                                    * (self.config.qk_nope_head_dim + self.config.qk_rope_head_dim);
+                                let kv_a_len =
+                                    self.config.kv_lora_rank + self.config.qk_rope_head_dim;
                                 let attn_out_len = self.config.n_heads * self.config.v_head_dim;
                                 let q_ptr = arena.q.contents() as *const f32;
                                 let kv_a_ptr = arena.kv_a_out_buf.contents() as *const f32;
                                 let c_kv_ptr = arena.c_kv_normed_buf.contents() as *const f32;
-                                let k_pe_ptr = (self.mla_k_pe_gpu[li].contents()
-                                    as *const f32)
+                                let k_pe_ptr = (self.mla_k_pe_gpu[li].contents() as *const f32)
                                     .wrapping_add(seq_slot * qk_rope_head_dim);
                                 let attn_out_ptr = arena.attn_out.contents() as *const f32;
                                 let out_ptr = arena.out.contents() as *const f32;
@@ -3046,7 +3050,8 @@ impl DeepSeekV2 {
                                 let ffn_out_ptr = arena.ffn_out_buf.contents() as *const f32;
                                 let x_ptr = arena.x_buf.contents() as *const f32;
                                 let moe_logits_ptr = arena.moe_logits_buf.contents() as *const f32;
-                                let route_ids_ptr = arena.moe_route_ids_buf.contents() as *const u32;
+                                let route_ids_ptr =
+                                    arena.moe_route_ids_buf.contents() as *const u32;
                                 let route_weights_ptr =
                                     arena.moe_route_weights_buf.contents() as *const f32;
                                 stage_records.push(serde_json::json!({

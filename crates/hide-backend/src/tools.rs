@@ -1,11 +1,15 @@
 use crate::security::SecurityServices;
 use crate::speculation_safety::VerifiedEffectPermit;
+use futures::future::BoxFuture;
+use hawking_speculate::TargetVerification;
 use hide_core::config::HideConfig;
+use hide_core::error::HideError;
 use hide_core::permission::{PermissionEngine, PermissionRequest, PermissionVerdict};
 use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult};
 use hide_core::types::{Decision, EffectKind};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
 pub fn build_default_tool_registry() -> ToolRegistry {
@@ -120,7 +124,75 @@ pub async fn dispatch_verified_model_tool_effect(
     dispatcher: &ToolDispatcher,
 ) -> hide_core::Result<ToolResult> {
     let context = DispatchContext::target_verified_model(session_id, run_id, permit, &call)?;
-    Ok(DISPATCH_CTX.scope(context, dispatcher.dispatch(call)).await?)
+    Ok(DISPATCH_CTX
+        .scope(context, dispatcher.dispatch(call))
+        .await?)
+}
+
+/// Host-owned model-tool authority for a completed direct-target decode.
+///
+/// This is deliberately not a `ToolDispatcher` wrapper: it first persists a
+/// target-verified canonical token and mints a one-use permit bound to the
+/// exact call, session, and run. Only then does the shared host dispatcher see
+/// the call under [`DispatchOrigin::TargetVerifiedModel`]. The shared dispatcher
+/// is important: per-turn dispatchers are deliberately bound to
+/// `UnverifiedModel` and must remain unable to execute effects.
+pub struct DirectTargetModelToolExecutor {
+    services: crate::services::SharedBackend,
+    dispatcher: Arc<ToolDispatcher>,
+    next_token_id: AtomicU32,
+}
+
+impl DirectTargetModelToolExecutor {
+    pub fn new(services: crate::services::SharedBackend, dispatcher: Arc<ToolDispatcher>) -> Self {
+        Self {
+            services,
+            dispatcher,
+            // Zero is reserved as an invalid / absent ordinal in surrounding
+            // receipts. Never wrap: a long-lived executor fails closed instead.
+            next_token_id: AtomicU32::new(1),
+        }
+    }
+
+    fn next_token_id(&self) -> Option<u32> {
+        self.next_token_id
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+            .ok()
+    }
+}
+
+impl hide_kernel::tools::VerifiedModelToolExecutor for DirectTargetModelToolExecutor {
+    fn dispatch<'a>(
+        &'a self,
+        session_id: hide_core::ids::SessionId,
+        run_id: hide_core::ids::RunId,
+        call: ToolCall,
+    ) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
+        let Some(token_id) = self.next_token_id() else {
+            return Box::pin(async {
+                Err(HideError::PolicyDenied(
+                    "target-verified model-tool token sequence exhausted".to_string(),
+                ))
+            });
+        };
+        let services = self.services.clone();
+        let dispatcher = self.dispatcher.clone();
+        Box::pin(async move {
+            // This executor is called only by AgentKernel after its target
+            // runtime `generate` future completed successfully. Persist the
+            // direct-target token before issuing the exact-call permit.
+            let mut sinks = services.verified_token_sinks(session_id.clone());
+            let permit = sinks
+                .authorize_verified_tool_effect(
+                    TargetVerification::gate().emit_target(token_id),
+                    Some(run_id.clone()),
+                    &call,
+                )
+                .await?;
+            dispatch_verified_model_tool_effect(session_id, Some(run_id), permit, call, &dispatcher)
+                .await
+        })
+    }
 }
 
 /// The attribution in force on this task, if any.
@@ -579,15 +651,9 @@ mod tests {
             .unwrap();
         let dispatcher =
             build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
-        let result = dispatch_verified_model_tool_effect(
-            session,
-            None,
-            permit,
-            call,
-            &dispatcher,
-        )
-        .await
-        .unwrap();
+        let result = dispatch_verified_model_tool_effect(session, None, permit, call, &dispatcher)
+            .await
+            .unwrap();
         assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
         assert_eq!(std::fs::read_to_string(&target).unwrap(), "target verified");
         let _ = std::fs::remove_dir_all(dir);
@@ -623,9 +689,15 @@ mod tests {
         );
         let dispatcher =
             build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
-        assert!(dispatch_verified_model_tool_effect(session, None, permit, substituted, &dispatcher)
-            .await
-            .is_err());
+        assert!(dispatch_verified_model_tool_effect(
+            session,
+            None,
+            permit,
+            substituted,
+            &dispatcher
+        )
+        .await
+        .is_err());
         assert!(!dir.join("blocked.txt").exists());
         let _ = std::fs::remove_dir_all(dir);
     }

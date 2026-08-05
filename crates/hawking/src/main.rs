@@ -3,10 +3,18 @@ mod capture;
 // `studio` (quant-campaign orchestration) extracted to the hawking-lab pack (Architecture B).
 
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+
+/// Stable public identifiers for the Gravity command surface.  These are CLI
+/// contracts, not artifact, runtime, benchmark, or model-capability receipts.
+const GRAVITY_IDENTITY_TAG: &str = "hawking.gravity.v1";
+const GRAVITY_STATUS_SCHEMA: &str = "hawking.gravity.status.v1";
+const GRAVITY_PLAN_SCHEMA: &str = "hawking.gravity.plan.v1";
+const GRAVITY_CANONICAL_PLAN_COMMAND: &str = "hawking gravity plan";
+const GRAVITY_CANONICAL_SERVE_COMMAND: &str = "hawking gravity serve --artifact <PATH>";
 
 #[derive(Parser, Debug)]
 #[command(name = "hawking", about = "Apple Silicon MoE inference", version)]
@@ -126,122 +134,284 @@ fn apply_qwen_tq_flags(
     }
 }
 
+/// Tuning controls shared by the legacy `serve` command and the canonical
+/// `gravity serve` command. They deliberately do not contain a model profile:
+/// the root `--profile` remains the runtime lever bundle, while a Gravity
+/// invocation names its artifact explicitly.
+#[derive(Args, Debug)]
+struct ServeControls {
+    /// Explicit wall-clock budget (seconds) for a single completion when
+    /// serving `.gravity`. Defaults to 3600 for the gravity path (base
+    /// runtime is ~0.4 tok/s warm). Also via env
+    /// `HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS`.
+    ///
+    /// `--gravity-request-timeout-secs` remains accepted for compatibility.
+    #[arg(
+        long = "request-timeout-secs",
+        visible_alias = "gravity-request-timeout-secs",
+        value_name = "SECS"
+    )]
+    request_timeout_secs: Option<u64>,
+    #[arg(long, default_value = "0.0.0.0:8080")]
+    addr: std::net::SocketAddr,
+    #[arg(long, default_value_t = 1)]
+    max_batch_size: usize,
+    /// Cap aggregate *new* prompt tokens per prefill wave. Longer prompts
+    /// continue in exact KV-preserving chunks and rotate with peers, which
+    /// bounds TTFT/p99 without starving them.
+    #[arg(long, value_name = "TOKENS")]
+    max_prefill_tokens: Option<usize>,
+    #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
+    speculate: Option<String>,
+    #[arg(long, default_value_t = 4)]
+    verify_window: usize,
+    /// Load a hardware kernel-profile JSON produced by `hawking autotune`.
+    /// Controls which Metal kernel variant is selected per tensor shape.
+    /// This flag is about hardware tuning, not runtime behavior — see
+    /// --profile for the runtime quality/throughput lever.
+    #[arg(long)]
+    kernel_profile: Option<PathBuf>,
+    /// Alias for --kernel-profile. Both names are accepted; --hardware-profile
+    /// is the preferred spelling because it makes clear this is a JSON path
+    /// from `hawking autotune`, not a runtime mode selector.
+    #[arg(long, conflicts_with = "kernel_profile")]
+    hardware_profile: Option<PathBuf>,
+    #[arg(long)]
+    prefill_cache_dir: Option<PathBuf>,
+    #[arg(long)]
+    max_routed_expert_ram_mb: Option<usize>,
+    /// Total memory budget for weights + KV cache in MiB. Engine errors at
+    /// load time if the model file exceeds this limit. Pass 0 for auto-
+    /// detection (80% of system RAM). Default: unlimited.
+    #[arg(long)]
+    memory_limit_mb: Option<usize>,
+    /// Energy mode for gather-window sizing.
+    ///   off       — no gather window (lowest latency, default)
+    ///   balanced  — 3 ms gather window (good batch-fill vs latency tradeoff)
+    ///   efficient — 8 ms gather window (maximise batch fill for lower J/tok)
+    #[arg(long, default_value = "off", value_name = "MODE")]
+    energy_mode: Option<String>,
+    /// Print a human-readable performance summary at startup before
+    /// accepting connections, then continue serving normally.
+    #[arg(long, default_value_t = false)]
+    explain_performance: bool,
+    /// Track 5.3: force f16 KV cache on (overrides profile default).
+    /// Halves KV memory; wins at long context, neutral for short ctx.
+    /// Mutually exclusive with --no-f16-kv.
+    #[arg(long, conflicts_with = "no_f16_kv")]
+    f16_kv: bool,
+    /// Track 5.3: force f16 KV cache off (overrides profile default).
+    /// Mutually exclusive with --f16-kv.
+    #[arg(long, conflicts_with = "f16_kv")]
+    no_f16_kv: bool,
+    /// Track 5.4: batch admission policy.
+    ///   default         — FIFO (current behavior)
+    ///   greedy-first    — greedy (temp=0) slots first; maximises token-only lane hits
+    ///   prefix-grouped  — prefer slots sharing a common prefix
+    #[arg(long, default_value = "default", value_name = "POLICY")]
+    batch_policy: Option<String>,
+    /// Track 9.3: workload pack — sets profile/energy/batch-policy defaults.
+    ///   default             — no change (individual flags apply as-is)
+    ///   code-completion     — race profile + energy off + greedy-first batching
+    ///   chat-shared-prompt  — fast profile + balanced energy + prefix-grouped batching
+    ///   batch-summarization — efficient profile + efficient energy + greedy-first batching
+    ///   local-agent-loop    — fast profile + energy off + greedy-first batching
+    /// Individual flags always override the workload pack's defaults.
+    #[arg(long, default_value = "default", value_name = "PACK")]
+    workload: Option<String>,
+    /// Apple Fit auto mode (Lane H / A3): inspect this Mac and choose the
+    /// strongest STABLE config for `--intent` (KV policy, energy, profile),
+    /// announce it + alternatives, then serve. Capability-first; never a
+    /// hidden throttle (downgrades are printed). Explicit flags
+    /// (--f16-kv/--no-f16-kv/--profile/--energy-mode) always override.
+    #[arg(long, default_value_t = false)]
+    auto: bool,
+    /// Intent for `--auto`: max-capability (default), max-context, max-quality,
+    /// max-speed, max-battery, safe-fit.
+    #[arg(long, default_value = "max-capability", value_name = "INTENT")]
+    intent: String,
+    /// Explicit Qwen `.tq` artifact for native TQ serve. Sets
+    /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
+    #[arg(long, value_name = "ARTIFACT")]
+    tq: Option<PathBuf>,
+    /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
+    /// all-linear projection coverage, and GPU bitslice ownership required.
+    #[arg(long, default_value_t = false)]
+    tq_proof_mode: bool,
+    /// Require a matching `.tq` artifact instead of silently falling back.
+    #[arg(long, default_value_t = false)]
+    tq_strict: bool,
+    /// Require all Qwen attention and FFN linear projections in the `.tq`.
+    #[arg(long, default_value_t = false)]
+    tq_require_all_linear: bool,
+    /// Require GPU bitslice ownership for every `.tq` projection.
+    #[arg(long, default_value_t = false)]
+    tq_require_gpu: bool,
+}
+
+/// Arguments shared by `hawking serve` and `hawking gravity serve`.
+/// `--artifact` is the canonical spelling for a sealed Gravity-compatible
+/// artifact; `--gravity` remains a visible compatibility alias.
+#[derive(Args, Debug)]
+struct ServeArgs {
+    /// Path to a GGUF (or a single `.gravity` shard file). Required unless
+    /// `--gravity` or env `HAWKING_GRAVITY` selects a Gravity-compatible artifact.
+    #[arg(long)]
+    weights: Option<PathBuf>,
+    /// Serve a sealed `.gravity` / activation-aware artifact (directory or shard
+    /// file). Also accepted via env `HAWKING_GRAVITY`; the first ordered shard in
+    /// a valid model directory is resolved before the real server starts.
+    #[arg(long, visible_alias = "artifact", value_name = "PATH")]
+    gravity: Option<PathBuf>,
+    #[command(flatten)]
+    controls: ServeControls,
+}
+
+/// Metadata-only plan inputs shared by the canonical Gravity command and the
+/// `condense` / `press` compatibility operations.
+#[derive(Args, Debug)]
+struct GravityPlanArgs {
+    /// Source GGUF or safetensors model to inspect.
+    #[arg(long)]
+    weights: PathBuf,
+    /// Inspect metadata and print a plan. Required today: no artifact is
+    /// created, modified, downloaded, or loaded into a GPU by this command.
+    #[arg(long, default_value_t = false)]
+    dry_run: bool,
+    /// Declared local memory budget for creation estimates, for example `18gb`.
+    #[arg(long, value_name = "SIZE")]
+    memory_budget: Option<String>,
+    /// Comma-separated target bit-widths to estimate, for example `4,3,2,1`.
+    #[arg(long, default_value = "4,3,2,1", value_name = "BITS")]
+    target: String,
+    /// Requested balance while comparing plans. This labels a decision policy;
+    /// it does not assert that any candidate reaches a capability/latency goal.
+    #[arg(
+        long,
+        default_value = "auto",
+        value_parser = ["auto", "capability", "density", "latency"],
+        value_name = "MODE"
+    )]
+    equilibrium: String,
+    /// Requested workload intent for downstream evaluation/selection. This is
+    /// intentionally distinct from the root runtime-lever `--profile` flag.
+    #[arg(
+        long = "intent-profile",
+        default_value = "general",
+        value_parser = ["general", "code", "math", "agent", "personal"],
+        value_name = "INTENT"
+    )]
+    intent_profile: String,
+    /// Requested execution target. `local` is the only supported planner target;
+    /// this command never schedules cloud work.
+    #[arg(long, default_value = "local", value_parser = ["local"], value_name = "TARGET")]
+    target_device: String,
+    /// Requested upper bound for the fully completed artifact's estimated bpw.
+    /// This is a constraint echo only, not an achieved compression claim.
+    #[arg(long, value_name = "BPW")]
+    max_complete_bpw: Option<f64>,
+    /// Requested maximum artifact size, for example `24gb`. Validated and echoed
+    /// only; no artifact is written or checked against it by this command.
+    #[arg(long, value_name = "SIZE")]
+    max_artifact_bytes: Option<String>,
+    /// Requested maximum resident-memory footprint, for example `18gb`.
+    /// Validated and echoed only; no model is loaded to measure residency.
+    #[arg(long, value_name = "SIZE")]
+    max_resident_bytes: Option<String>,
+    /// Requested minimum base-runtime tokens/sec. This planner does not benchmark
+    /// a model, so the value is never reported as achieved throughput.
+    #[arg(long, value_name = "TPS")]
+    min_base_tps: Option<f64>,
+    /// Request a wide frontier comparison instead of selecting one recommendation.
+    /// Current output records the request; it does not claim a frontier search ran.
+    #[arg(long, default_value_t = false)]
+    frontier: bool,
+    /// Emit the stable `hawking.gravity.plan.v1` contract. It contains source
+    /// metadata and estimates only; constraints remain requested-only and no
+    /// output artifact provenance is invented.
+    #[arg(long, default_value_t = false)]
+    json: bool,
+}
+
+/// Streaming integrity check inputs for an existing Gravity artifact or shard.
+#[derive(Args, Debug)]
+struct GravityVerifyArgs {
+    /// Existing artifact or shard file to hash. Directories are not hashed.
+    #[arg(long, value_name = "PATH")]
+    artifact: PathBuf,
+    /// Expected SHA-256 hex string. A mismatch is reported in the existing
+    /// verifier output.
+    #[arg(long)]
+    expected_sha256: Option<String>,
+}
+
+/// Execute the bounded DeepSeek-V4 diagnostic Condense engine behind the
+/// canonical Gravity namespace.  The implementation is deliberately a thin
+/// launcher over the reviewed internal Python engine: it does not invent a
+/// second V4 public surface, silently download a parent, or turn a diagnostic
+/// result into a full-model capability claim.
+#[derive(Args, Debug)]
+struct GravityExecuteArgs {
+    /// Destination directory for the sealed content-addressed artifact.
+    #[arg(long, value_name = "PATH")]
+    artifact_dir: PathBuf,
+    /// A newly-created empty Xet retention root. It is checked after execution
+    /// so source cache files cannot survive a successful run.
+    #[arg(long, value_name = "PATH")]
+    xet_root: PathBuf,
+    /// Workspace containing tools/condense/deepseek_v4_gravity.py. Defaults to
+    /// the current directory so the public command remains relocatable.
+    #[arg(long, value_name = "PATH")]
+    workspace_root: Option<PathBuf>,
+    /// Preserve at least this many free bytes throughout the stream.
+    #[arg(long, default_value_t = 15 * 1024 * 1024 * 1024u64)]
+    protected_floor_bytes: u64,
+    /// Maximum one-active source range. The internal engine rejects values
+    /// above 16 MiB and records every sealed range for exact resume.
+    #[arg(long, default_value_t = 8 * 1024 * 1024usize)]
+    range_bytes: usize,
+    /// Stream all 46 pinned source shards. The resulting artifact is sealed
+    /// but remains runtime-pending until a full 43-layer adapter is present.
+    #[arg(long, default_value_t = false)]
+    full_model: bool,
+    /// Bounded concurrent source-shard workers for `--full-model` (1..32).
+    #[arg(long, default_value_t = 4usize)]
+    parallel_workers: usize,
+}
+
+#[derive(Subcommand, Debug)]
+enum GravityCmd {
+    /// Canonical metadata-only capability/size plan. Requires `--dry-run` today.
+    Plan(GravityPlanArgs),
+    /// Compatibility spelling for `hawking gravity plan`; no artifact creation is
+    /// implemented through this alias.
+    Condense(GravityPlanArgs),
+    /// Start the real OpenAI-compatible server. Use `--artifact <PATH>` for a
+    /// sealed local Gravity artifact; no download or conversion is attempted.
+    Serve(ServeArgs),
+    /// Build a source-real DeepSeek-V4 artifact via bounded Xet streaming,
+    /// native-codec checks, and atomic Gravity chunks. Use `--full-model` for
+    /// all 46 shards; without it the command builds the layer-4 diagnostic.
+    Execute(GravityExecuteArgs),
+    /// Stream SHA-256 verification for an existing artifact/shard file.
+    Verify(GravityVerifyArgs),
+}
+
 #[derive(Subcommand, Debug)]
 enum Cmd {
-    /// Start the OpenAI-compatible HTTP server.
-    Serve {
-        /// Path to a GGUF (or a single `.gravity` shard file). Required unless
-        /// `--gravity` or env `HAWKING_GRAVITY` selects a `.gravity` artifact
-        /// (validated after parse so the env form works without clap's env feature).
-        #[arg(long)]
-        weights: Option<PathBuf>,
-        /// Serve a sealed `.gravity` artifact (directory or shard file). Default
-        /// off: when unset, `hawking serve` behaves exactly as today. Also
-        /// accepted via env `HAWKING_GRAVITY` (see serve handler). Resolves a
-        /// multi-shard directory to its first `model-*.gravity` shard.
-        #[arg(long, value_name = "PATH")]
-        gravity: Option<PathBuf>,
-        /// Explicit wall-clock budget (seconds) for a single completion when
-        /// serving `.gravity`. Defaults to 3600 for the gravity path (base
-        /// runtime is ~0.4 tok/s warm). Also via env
-        /// `HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS`.
-        #[arg(long, value_name = "SECS")]
-        gravity_request_timeout_secs: Option<u64>,
-        #[arg(long, default_value = "0.0.0.0:8080")]
-        addr: std::net::SocketAddr,
-        #[arg(long, default_value_t = 1)]
-        max_batch_size: usize,
-        /// Cap aggregate *new* prompt tokens per prefill wave. Longer prompts
-        /// continue in exact KV-preserving chunks and rotate with peers, which
-        /// bounds TTFT/p99 without starving them.
-        #[arg(long, value_name = "TOKENS")]
-        max_prefill_tokens: Option<usize>,
-        #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
-        speculate: Option<String>,
-        #[arg(long, default_value_t = 4)]
-        verify_window: usize,
-        /// Load a hardware kernel-profile JSON produced by `hawking autotune`.
-        /// Controls which Metal kernel variant is selected per tensor shape.
-        /// This flag is about hardware tuning, not runtime behavior — see
-        /// --profile for the runtime quality/throughput lever.
-        #[arg(long)]
-        kernel_profile: Option<PathBuf>,
-        /// Alias for --kernel-profile. Both names are accepted; --hardware-profile
-        /// is the preferred spelling because it makes clear this is a JSON path
-        /// from `hawking autotune`, not a runtime mode selector.
-        #[arg(long, conflicts_with = "kernel_profile")]
-        hardware_profile: Option<PathBuf>,
-        #[arg(long)]
-        prefill_cache_dir: Option<PathBuf>,
-        #[arg(long)]
-        max_routed_expert_ram_mb: Option<usize>,
-        /// Total memory budget for weights + KV cache in MiB. Engine errors at
-        /// load time if the model file exceeds this limit. Pass 0 for auto-
-        /// detection (80% of system RAM). Default: unlimited.
-        #[arg(long)]
-        memory_limit_mb: Option<usize>,
-        /// Energy mode for gather-window sizing.
-        ///   off       — no gather window (lowest latency, default)
-        ///   balanced  — 3 ms gather window (good batch-fill vs latency tradeoff)
-        ///   efficient — 8 ms gather window (maximise batch fill for lower J/tok)
-        #[arg(long, default_value = "off", value_name = "MODE")]
-        energy_mode: Option<String>,
-        /// Print a human-readable performance summary at startup before
-        /// accepting connections, then continue serving normally.
+    /// Start the OpenAI-compatible HTTP server. For sealed Gravity artifacts,
+    /// prefer `hawking gravity serve --artifact <PATH>`; this compatibility form
+    /// retains the historical `--gravity` and `HAWKING_GRAVITY` selectors.
+    Serve(ServeArgs),
+    /// Canonical public Gravity artifact lifecycle commands.
+    Gravity {
+        #[command(subcommand)]
+        command: Option<GravityCmd>,
+        /// Emit the Gravity identity/capability tag as one JSON object. Useful
+        /// for launchers that need to discover the truthful local surface
+        /// without parsing human help text.
         #[arg(long, default_value_t = false)]
-        explain_performance: bool,
-        /// Track 5.3: force f16 KV cache on (overrides profile default).
-        /// Halves KV memory; wins at long context, neutral for short ctx.
-        /// Mutually exclusive with --no-f16-kv.
-        #[arg(long, conflicts_with = "no_f16_kv")]
-        f16_kv: bool,
-        /// Track 5.3: force f16 KV cache off (overrides profile default).
-        /// Mutually exclusive with --f16-kv.
-        #[arg(long, conflicts_with = "f16_kv")]
-        no_f16_kv: bool,
-        /// Track 5.4: batch admission policy.
-        ///   default         — FIFO (current behavior)
-        ///   greedy-first    — greedy (temp=0) slots first; maximises token-only lane hits
-        ///   prefix-grouped  — prefer slots sharing a common prefix
-        #[arg(long, default_value = "default", value_name = "POLICY")]
-        batch_policy: Option<String>,
-        /// Track 9.3: workload pack — sets profile/energy/batch-policy defaults.
-        ///   default             — no change (individual flags apply as-is)
-        ///   code-completion     — race profile + energy off + greedy-first batching
-        ///   chat-shared-prompt  — fast profile + balanced energy + prefix-grouped batching
-        ///   batch-summarization — efficient profile + efficient energy + greedy-first batching
-        ///   local-agent-loop    — fast profile + energy off + greedy-first batching
-        /// Individual flags always override the workload pack's defaults.
-        #[arg(long, default_value = "default", value_name = "PACK")]
-        workload: Option<String>,
-        /// Apple Fit auto mode (Lane H / A3): inspect this Mac and choose the
-        /// strongest STABLE config for `--intent` (KV policy, energy, profile),
-        /// announce it + alternatives, then serve. Capability-first; never a
-        /// hidden throttle (downgrades are printed). Explicit flags
-        /// (--f16-kv/--no-f16-kv/--profile/--energy-mode) always override.
-        #[arg(long, default_value_t = false)]
-        auto: bool,
-        /// Intent for `--auto`: max-capability (default), max-context, max-quality,
-        /// max-speed, max-battery, safe-fit.
-        #[arg(long, default_value = "max-capability", value_name = "INTENT")]
-        intent: String,
-        /// Explicit Qwen `.tq` artifact for native TQ serve. Sets
-        /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
-        #[arg(long, value_name = "ARTIFACT")]
-        tq: Option<PathBuf>,
-        /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
-        /// all-linear projection coverage, and GPU bitslice ownership required.
-        #[arg(long, default_value_t = false)]
-        tq_proof_mode: bool,
-        /// Require a matching `.tq` artifact instead of silently falling back.
-        #[arg(long, default_value_t = false)]
-        tq_strict: bool,
-        /// Require all Qwen attention and FFN linear projections in the `.tq`.
-        #[arg(long, default_value_t = false)]
-        tq_require_all_linear: bool,
-        /// Require GPU bitslice ownership for every `.tq` projection.
-        #[arg(long, default_value_t = false)]
-        tq_require_gpu: bool,
+        json: bool,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -609,40 +779,19 @@ enum Cmd {
         #[arg(long, value_name = "PATH")]
         tier_map_json: Option<PathBuf>,
     },
-    /// Condense Model Press — plan (and, later, create) a low-bit Hawking artifact
-    /// from a parent model under a declared memory budget.
-    ///
-    /// Only `--dry-run` is implemented today: it inspects model metadata (GGUF or
-    /// safetensors; no weights, GPU, or network) and prints a Press Plan — peak CREATION
-    /// memory for out-of-core (tensor-at-a-time) pressing vs full-resident, the
-    /// Condense ladder (4/3/2/1-bit) output sizes, and whether it fits the budget.
-    /// The bake itself is owner-gated and not performed here.
-    ///
-    ///   hawking press --dry-run --memory-budget 18gb --target 4,3,2 --weights model.gguf
-    Press {
-        /// Source model file (GGUF) to plan a press for.
-        #[arg(long)]
-        weights: PathBuf,
-        /// Plan only — inspect metadata and print the Press Plan. REQUIRED today
-        /// (the bake path is owner-gated and not yet implemented).
-        #[arg(long, default_value_t = false)]
-        dry_run: bool,
-        /// Declared local memory budget for artifact creation, e.g. `18gb`, `64gb`,
-        /// `2tb`, `1500mb`, or a raw byte count. Drives the fit verdict.
-        #[arg(long, value_name = "SIZE")]
-        memory_budget: Option<String>,
-        /// Comma-separated Condense ladder target bit-widths to estimate, e.g.
-        /// `4,3,2,1`. Default reports the full ladder.
-        #[arg(long, default_value = "4,3,2,1", value_name = "BITS")]
-        target: String,
-    },
+    /// Compatibility alias for `hawking gravity plan`. Only the metadata-only
+    /// `--dry-run` plan exists; this command never creates an artifact.
+    Condense(GravityPlanArgs),
+    /// Legacy compatibility alias for `hawking gravity plan`. Prefer the
+    /// canonical Gravity namespace for new automation.
+    Press(GravityPlanArgs),
     /// Apple Fit — inspect THIS Mac and report the strongest usable run
     /// configuration for a model (Lane H / A2). CPU-only: detects chip + unified
     /// memory, reads the model's attention config from metadata, and predicts the
     /// context/KV-policy fit envelope (FITS/TIGHT/SWAP/OOM) for the current machine.
     /// Capability-first: it shows the MAX usable envelope + stronger/safer
     /// alternatives and never silently caps. GGUF models only (runnable); use
-    /// `hawking press` to plan condensing a safetensors parent.
+    /// `hawking gravity plan` to estimate condensing a safetensors parent.
     ///
     ///   hawking fit --weights model.gguf [--intent max-capability] [--max-context 32768]
     Fit {
@@ -675,43 +824,113 @@ fn main() -> Result<()> {
     // resolved profile; utility subcommands (shader-hash/doctor/version/verify/
     // stats/autotune/bake-sidecar/bench-*) keep clean single-line stdout/stderr.
     let announce_profile = matches!(
-        cli.cmd,
-        Cmd::Generate { .. } | Cmd::Serve { .. } | Cmd::Bench { .. }
+        &cli.cmd,
+        Cmd::Generate { .. }
+            | Cmd::Serve(_)
+            | Cmd::Bench { .. }
+            | Cmd::Gravity {
+                command: Some(GravityCmd::Serve(_)),
+                ..
+            }
+    );
+    let gravity_namespace_serve = matches!(
+        &cli.cmd,
+        Cmd::Gravity {
+            command: Some(GravityCmd::Serve(_)),
+            ..
+        }
     );
     apply_profile(&cli.profile, announce_profile);
     match cli.cmd {
-        Cmd::Serve {
-            weights,
-            gravity,
-            gravity_request_timeout_secs,
-            addr,
-            max_batch_size,
-            max_prefill_tokens,
-            speculate,
-            verify_window,
-            kernel_profile,
-            hardware_profile,
-            prefill_cache_dir,
-            max_routed_expert_ram_mb,
-            memory_limit_mb,
-            energy_mode,
-            explain_performance,
-            f16_kv,
-            no_f16_kv,
-            batch_policy,
-            workload,
-            auto,
-            intent,
-            tq,
-            tq_proof_mode,
-            tq_strict,
-            tq_require_all_linear,
-            tq_require_gpu,
+        Cmd::Serve(args)
+        | Cmd::Gravity {
+            command: Some(GravityCmd::Serve(args)),
+            ..
         } => {
+            let ServeArgs {
+                weights,
+                gravity,
+                controls:
+                    ServeControls {
+                        request_timeout_secs: gravity_request_timeout_secs,
+                        addr,
+                        max_batch_size,
+                        max_prefill_tokens,
+                        speculate,
+                        verify_window,
+                        kernel_profile,
+                        hardware_profile,
+                        prefill_cache_dir,
+                        max_routed_expert_ram_mb,
+                        memory_limit_mb,
+                        energy_mode,
+                        explain_performance,
+                        f16_kv,
+                        no_f16_kv,
+                        batch_policy,
+                        workload,
+                        auto,
+                        intent,
+                        tq,
+                        tq_proof_mode,
+                        tq_strict,
+                        tq_require_all_linear,
+                        tq_require_gpu,
+                    },
+            } = args;
+            require_canonical_gravity_artifact(gravity_namespace_serve, gravity.as_deref())?;
             // Resolve --gravity / HAWKING_GRAVITY to a loadable shard. Default
             // off: when neither flag nor env is set, require --weights as before.
             let gravity =
                 gravity.or_else(|| std::env::var_os("HAWKING_GRAVITY").map(PathBuf::from));
+            // The layer-4 V4 diagnostic is a sealed directory whose registered
+            // adapter is the reviewed Condense Python runtime, not a Rust
+            // `GRAVITY\\0` shard.  Dispatch it before the legacy resolver so
+            // `hawking gravity execute -> hawking gravity serve` remains one
+            // public Gravity surface and never pretends this CPU diagnostic is
+            // a Metal artifact.
+            if let Some(gpath) = gravity.as_deref() {
+                if is_deepseek_v4_diagnostic_artifact(gpath)? {
+                    if weights.is_some() {
+                        return Err(anyhow::anyhow!(
+                            "a DeepSeek-V4 diagnostic artifact cannot be combined with --weights"
+                        ));
+                    }
+                    if gravity_request_timeout_secs.is_some()
+                        || max_batch_size != 1
+                        || max_prefill_tokens.is_some()
+                        || speculate.is_some()
+                        || verify_window != 4
+                        || kernel_profile.is_some()
+                        || hardware_profile.is_some()
+                        || prefill_cache_dir.is_some()
+                        || max_routed_expert_ram_mb.is_some()
+                        || memory_limit_mb.is_some()
+                        || energy_mode.as_deref() != Some("off")
+                        || explain_performance
+                        || f16_kv
+                        || no_f16_kv
+                        || batch_policy.as_deref() != Some("default")
+                        || workload.as_deref() != Some("default")
+                        || auto
+                        || tq.is_some()
+                        || tq_proof_mode
+                        || tq_strict
+                        || tq_require_all_linear
+                        || tq_require_gpu
+                    {
+                        return Err(anyhow::anyhow!(
+                            "the DeepSeek-V4 diagnostic adapter supports only --artifact/--gravity and --addr; Metal, batching, TQ, profile, and request-control flags are not implemented"
+                        ));
+                    }
+                    return run_gravity_v4_diagnostic_serve(gpath, addr);
+                }
+                if is_deepseek_v4_full_stream_artifact(gpath)? {
+                    return Err(anyhow::anyhow!(
+                        "the DeepSeek-V4 full stream is sealed but runtime-pending; it cannot be served until a registered 43-layer adapter is available"
+                    ));
+                }
+            }
             let gravity_request_timeout_secs = gravity_request_timeout_secs.or_else(|| {
                 std::env::var("HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS")
                     .ok()
@@ -723,8 +942,13 @@ fn main() -> Result<()> {
                     use hawking_core::model::gravity_engine::GravityEngine;
                     let resolved = GravityEngine::resolve_entry(&gpath)
                         .map_err(|e| anyhow::anyhow!("--gravity {gpath:?}: {e}"))?;
+                    let source_label = if gravity_namespace_serve {
+                        "gravity serve"
+                    } else {
+                        "serve --gravity"
+                    };
                     eprintln!(
-                        "[serve --gravity] resolved {} -> {}",
+                        "[{source_label}] resolved {} -> {}",
                         gpath.display(),
                         resolved.display()
                     );
@@ -888,6 +1112,31 @@ fn main() -> Result<()> {
                 ..Default::default()
             }))
         }
+        Cmd::Gravity {
+            command: None,
+            json,
+        } => gravity_status_main(json),
+        Cmd::Gravity {
+            command: Some(GravityCmd::Plan(args)),
+            ..
+        } => run_gravity_plan(args, GravityPlanInvocation::Canonical),
+        Cmd::Gravity {
+            command: Some(GravityCmd::Condense(args)),
+            ..
+        } => {
+            eprintln!(
+                "[gravity condense] compatibility spelling; use `hawking gravity plan` for new automation."
+            );
+            run_gravity_plan(args, GravityPlanInvocation::GravityCondense)
+        }
+        Cmd::Gravity {
+            command: Some(GravityCmd::Execute(args)),
+            ..
+        } => run_gravity_v4_execute(args),
+        Cmd::Gravity {
+            command: Some(GravityCmd::Verify(args)),
+            ..
+        } => verify_main(args.artifact, args.expected_sha256),
         Cmd::Generate {
             weights,
             prompt,
@@ -1074,12 +1323,16 @@ fn main() -> Result<()> {
             weights,
             expected_sha256,
         } => verify_main(weights, expected_sha256),
-        Cmd::Press {
-            weights,
-            dry_run,
-            memory_budget,
-            target,
-        } => press_main(weights, dry_run, memory_budget, target),
+        Cmd::Condense(args) => {
+            eprintln!(
+                "[condense] compatibility alias; use `hawking gravity plan` for new automation."
+            );
+            run_gravity_plan(args, GravityPlanInvocation::RootCondense)
+        }
+        Cmd::Press(args) => {
+            eprintln!("[press] legacy compatibility alias; use `hawking gravity plan` for new automation.");
+            run_gravity_plan(args, GravityPlanInvocation::Press)
+        }
         Cmd::Fit {
             weights,
             intent,
@@ -1089,24 +1342,538 @@ fn main() -> Result<()> {
     }
 }
 
-/// `hawking press --dry-run`: the Condense Planner. Reads GGUF or safetensors
-/// metadata ONLY (no weights resident, no GPU, no network) and prints a Press Plan:
-/// peak CREATION memory for out-of-core (tensor-at-a-time) pressing vs
-/// full-resident, the Condense ladder (4/3/2/1-bit) output sizes, and the budget
-/// fit verdict. The bake/condense path is owner-gated and not performed here.
+/// Print the truthful capability identity for bare `hawking gravity`. This is
+/// deliberately model-state-free: it does not search for, download, convert,
+/// or load a model merely to report command availability.
+fn gravity_status_main(json: bool) -> Result<()> {
+    if json {
+        println!("{}", gravity_status_json());
+    } else {
+        println!("Gravity — {GRAVITY_IDENTITY_TAG}");
+        println!(
+            "  serve   existing local artifact -> registered runtime server (Metal artifacts or explicit V4 diagnostic adapter)"
+        );
+        println!(
+            "  execute bounded source-real DeepSeek-V4 layer-4 diagnostic -> sealed .gravity artifact"
+        );
+        println!("  plan    metadata-only estimate; requires --dry-run; creates nothing");
+        println!("  verify  streaming SHA-256 for one existing artifact/shard file");
+        println!("  canonical: gravity execute --artifact-dir <PATH> --xet-root <NEW_EMPTY_PATH>");
+        println!(
+            "  plan intent: --equilibrium / --intent-profile / --target-device and optional limits"
+        );
+        println!("  runtime levers stay at root: --profile <default|fast|race|efficient|exact>");
+        println!("  machine status: hawking gravity --json");
+        println!("  machine plan:   hawking gravity plan --dry-run --json --weights <PATH>");
+        println!(
+            "  compatibility: gravity condense / condense / press / serve --gravity (deprecated; see --json)"
+        );
+    }
+    Ok(())
+}
+
+/// Machine-readable Gravity status. It intentionally reports the command
+/// contract only: it does not inspect the filesystem or imply an available
+/// artifact, downloaded model, measured capability, or throughput result.
+fn gravity_status_json() -> serde_json::Value {
+    serde_json::json!({
+        "schema": GRAVITY_STATUS_SCHEMA,
+        "tag": GRAVITY_IDENTITY_TAG,
+        "surface": "hawking gravity",
+        "canonical_identity": "gravity",
+        "version": env!("CARGO_PKG_VERSION"),
+        "host_os": std::env::consts::OS,
+        "runtime_profile_flag": "--profile",
+        "artifact_selector": "--artifact",
+        "artifact_provenance": {
+            "state": "not_inspected",
+            "reason": "status reports command availability only; it does not discover or validate artifacts"
+        },
+        "plan_constraint_flags": {
+            "equilibrium": ["auto", "capability", "density", "latency"],
+            "intent_profile": ["general", "code", "math", "agent", "personal"],
+            "target_device": ["local"],
+            "optional": [
+                "max_complete_bpw",
+                "max_artifact_bytes",
+                "max_resident_bytes",
+                "min_base_tps",
+                "frontier"
+            ],
+            "json_flag": "--json",
+            "plan_schema": GRAVITY_PLAN_SCHEMA,
+            "semantics": "requested constraints only; not achieved, benchmarked, or runtime measurements"
+        },
+        "operations": {
+            "serve": {
+                "state": "implemented",
+                "requires": "existing local sealed Gravity-compatible artifact",
+                "canonical_command": GRAVITY_CANONICAL_SERVE_COMMAND,
+                "downloads": false,
+                "conversion": false,
+                "runtime": "macOS Metal artifacts, plus the explicit CPU NumPy DeepSeek-V4 diagnostic adapter",
+                "artifact_provenance_state": "resolved_only_when_the_command_runs"
+            },
+            "execute": {
+                "state": "implemented_bounded_diagnostic",
+                "canonical_command": "hawking gravity execute --artifact-dir <PATH> --xet-root <NEW_EMPTY_PATH>",
+                "implementation": "internal Condense DeepSeek-V4 engine",
+                "source": "deepseek-ai/DeepSeek-V4-Flash@60d8d70770c6776ff598c94bb586a859a38244f1",
+                "scope": "full-width embedding, HC control, complete layer 4 including all routed experts, HC head, and output head scan",
+                "full_model": false,
+                "source_transport": "direct pinned Xet ranges",
+                "max_range_bytes": 16777216,
+                "protected_free_floor_bytes": 16106127360_i64,
+                "source_cache": "disallowed after successful seal",
+                "quality": "diagnostic only; no source-runtime parity claim",
+                "throughput": "not_measured"
+            },
+            "plan": {
+                "state": "metadata-only",
+                "canonical_command": "hawking gravity plan --dry-run --weights <PATH>",
+                "schema": GRAVITY_PLAN_SCHEMA,
+                "operation": "condense",
+                "requires": "--dry-run",
+                "creates_artifact": false,
+                "loads_weights": false,
+                "uses_gpu": false,
+                "uses_network": false,
+                "quality": "not_measured",
+                "throughput": "not_measured"
+            },
+            "verify": {
+                "state": "implemented",
+                "method": "streaming SHA-256 file verification"
+            }
+        },
+        "compatibility": gravity_compatibility_json()
+    })
+}
+
+/// Legacy spellings remain parse-compatible, but machine clients can make an
+/// explicit migration decision instead of inferring it from human help text.
+fn gravity_compatibility_json() -> Vec<serde_json::Value> {
+    vec![
+        serde_json::json!({
+            "command": "hawking gravity condense",
+            "operation": "condense",
+            "state": "deprecated_compatibility",
+            "deprecated": true,
+            "superseded_by": GRAVITY_CANONICAL_PLAN_COMMAND,
+            "reason": "Condense is the Gravity engine operation; Gravity plan is the canonical public call."
+        }),
+        serde_json::json!({
+            "command": "hawking condense",
+            "operation": "condense",
+            "state": "deprecated_compatibility",
+            "deprecated": true,
+            "superseded_by": GRAVITY_CANONICAL_PLAN_COMMAND,
+            "reason": "Root Condense remains an alias for the Gravity Condense engine operation."
+        }),
+        serde_json::json!({
+            "command": "hawking press",
+            "operation": "condense",
+            "state": "deprecated_compatibility",
+            "deprecated": true,
+            "superseded_by": GRAVITY_CANONICAL_PLAN_COMMAND,
+            "reason": "Press is a historical alias for the Condense engine operation, not a separate operation."
+        }),
+        serde_json::json!({
+            "command": "hawking serve --gravity <PATH>",
+            "operation": "serve",
+            "state": "deprecated_compatibility",
+            "deprecated": true,
+            "superseded_by": GRAVITY_CANONICAL_SERVE_COMMAND,
+            "reason": "The canonical public artifact selector is --artifact inside the Gravity namespace."
+        }),
+    ]
+}
+
+fn require_canonical_gravity_artifact(
+    is_gravity_namespace: bool,
+    artifact: Option<&Path>,
+) -> Result<()> {
+    if is_gravity_namespace && artifact.is_none() {
+        return Err(anyhow::anyhow!(
+            "`hawking gravity serve` requires --artifact <PATH> \
+             (or compatibility alias --gravity); it does not use --weights \
+             or HAWKING_GRAVITY selection"
+        ));
+    }
+    Ok(())
+}
+
+fn run_gravity_plan(args: GravityPlanArgs, invocation: GravityPlanInvocation) -> Result<()> {
+    let constraints = GravityPlanConstraints::from_args(&args)?;
+    gravity_plan_main(
+        args.weights,
+        args.dry_run,
+        args.memory_budget,
+        args.target,
+        args.json,
+        &constraints,
+        invocation,
+    )
+}
+
+/// Whether a directory is the sealed source-real V4 diagnostic produced by the
+/// one Condense implementation behind `gravity execute`.  This is deliberately
+/// a manifest identity check rather than an extension heuristic: the legacy
+/// Rust resolver remains responsible for every other Gravity artifact.
+fn is_deepseek_v4_diagnostic_artifact(path: &Path) -> Result<bool> {
+    let manifest = path.join("manifest.json");
+    if !manifest.is_file() {
+        return Ok(false);
+    }
+    let bytes = std::fs::read(&manifest).map_err(|err| {
+        anyhow::anyhow!("cannot read Gravity manifest {}: {err}", manifest.display())
+    })?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes).map_err(|err| {
+        anyhow::anyhow!(
+            "cannot parse Gravity manifest {} as JSON: {err}",
+            manifest.display()
+        )
+    })?;
+    Ok(value.get("schema").and_then(serde_json::Value::as_str)
+        == Some("hawking.gravity.deepseek_v4.diagnostic.v1"))
+}
+
+/// A full V4 stream is intentionally not routed to the legacy Rust resolver:
+/// it has complete source bytes but no registered 43-layer execution adapter.
+fn is_deepseek_v4_full_stream_artifact(path: &Path) -> Result<bool> {
+    let manifest = path.join("manifest.json");
+    if !manifest.is_file() {
+        return Ok(false);
+    }
+    let bytes = std::fs::read(&manifest).map_err(|err| {
+        anyhow::anyhow!("cannot read Gravity manifest {}: {err}", manifest.display())
+    })?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes).map_err(|err| {
+        anyhow::anyhow!(
+            "cannot parse Gravity manifest {} as JSON: {err}",
+            manifest.display()
+        )
+    })?;
+    Ok(value.get("schema").and_then(serde_json::Value::as_str)
+        == Some("hawking.gravity.deepseek_v4.full_stream.v1"))
+}
+
+/// Start the registered V4 diagnostic adapter through the canonical public
+/// Gravity namespace.  The adapter itself owns its tokenizer and exact native
+/// codec dependencies, so this launcher intentionally does not emulate it in
+/// Rust or silently select a Metal runtime.
+fn run_gravity_v4_diagnostic_serve(artifact: &Path, addr: std::net::SocketAddr) -> Result<()> {
+    let mut candidates = vec![std::env::current_dir()?];
+    if let Some(workspace) = std::env::var_os("HAWKING_V4_CONDENSE_WORKSPACE") {
+        candidates.push(PathBuf::from(workspace));
+    }
+    if let Ok(canonical_artifact) = std::fs::canonicalize(artifact) {
+        candidates.extend(canonical_artifact.ancestors().map(Path::to_path_buf));
+    }
+    let workspace = candidates.into_iter().find(|candidate| {
+        candidate
+            .join("tools/condense/deepseek_v4_gravity.py")
+            .is_file()
+    });
+    let workspace = workspace.ok_or_else(|| {
+        anyhow::anyhow!(
+            "cannot locate tools/condense/deepseek_v4_gravity.py for {}; run from the Hawking workspace or set HAWKING_V4_CONDENSE_WORKSPACE",
+            artifact.display()
+        )
+    })?;
+    let script = workspace.join("tools/condense/deepseek_v4_gravity.py");
+    let python = std::env::var_os("HAWKING_V4_CONDENSE_PYTHON")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| workspace.join("tools/condense/.venv/bin/python"));
+    if !python.is_file() {
+        return Err(anyhow::anyhow!(
+            "pinned Condense Python is absent at {}; create tools/condense/.venv or set HAWKING_V4_CONDENSE_PYTHON",
+            python.display()
+        ));
+    }
+    eprintln!(
+        "[gravity serve] DeepSeek-V4 layer-4 diagnostic adapter: CPU NumPy only, Metal dispatches=0, context=128, max output=4; not Base True TPS/TG eligible"
+    );
+    let status = std::process::Command::new(&python)
+        .arg(&script)
+        .arg("serve")
+        .arg("--artifact-dir")
+        .arg(artifact)
+        .arg("--addr")
+        .arg(addr.to_string())
+        .status()
+        .map_err(|err| {
+            anyhow::anyhow!(
+                "could not start DeepSeek-V4 diagnostic adapter {}: {err}",
+                python.display()
+            )
+        })?;
+    if !status.success() {
+        return Err(anyhow::anyhow!(
+            "DeepSeek-V4 diagnostic adapter exited with {status}"
+        ));
+    }
+    Ok(())
+}
+
+/// Launch the one reviewed internal Condense implementation used for the
+/// source-real V4 diagnostic.  Keeping this a thin process boundary lets the
+/// Python transport retain its exact Xet dependency pin and receipt protocol,
+/// while `hawking gravity` remains the only public Gravity entry point.
+fn run_gravity_v4_execute(args: GravityExecuteArgs) -> Result<()> {
+    let workspace = match args.workspace_root {
+        Some(path) => path,
+        None => std::env::current_dir()?,
+    };
+    let workspace = std::fs::canonicalize(&workspace).map_err(|err| {
+        anyhow::anyhow!(
+            "cannot resolve --workspace-root {}: {err}",
+            workspace.display()
+        )
+    })?;
+    let script = workspace.join("tools/condense/deepseek_v4_gravity.py");
+    if !script.is_file() {
+        return Err(anyhow::anyhow!(
+            "DeepSeek-V4 Condense engine is absent at {}; pass --workspace-root containing tools/condense/deepseek_v4_gravity.py",
+            script.display()
+        ));
+    }
+    let python = std::env::var_os("HAWKING_V4_CONDENSE_PYTHON")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| workspace.join("tools/condense/.venv/bin/python"));
+    if !python.is_file() {
+        return Err(anyhow::anyhow!(
+            "pinned Condense Python is absent at {}; create tools/condense/.venv or set HAWKING_V4_CONDENSE_PYTHON",
+            python.display()
+        ));
+    }
+    let mut command = std::process::Command::new(&python);
+    command
+        .arg(&script)
+        .arg(if args.full_model {
+            "build-full"
+        } else {
+            "build"
+        })
+        .arg("--artifact-dir")
+        .arg(&args.artifact_dir)
+        .arg("--workspace-root")
+        .arg(&workspace)
+        .arg("--xet-root")
+        .arg(&args.xet_root)
+        .arg("--protected-floor-bytes")
+        .arg(args.protected_floor_bytes.to_string())
+        .arg("--range-bytes")
+        .arg(args.range_bytes.to_string());
+    if args.full_model {
+        command
+            .arg("--parallel-workers")
+            .arg(args.parallel_workers.to_string());
+    }
+    let status = command.status().map_err(|err| {
+        anyhow::anyhow!(
+            "could not start pinned Condense engine {}: {err}",
+            python.display()
+        )
+    })?;
+    if !status.success() {
+        return Err(anyhow::anyhow!(
+            "DeepSeek-V4 Condense execution failed with {status}; resume with the same --artifact-dir and a newly-created empty --xet-root"
+        ));
+    }
+    Ok(())
+}
+
+/// Invocation names are retained in JSON solely for migration/audit purposes.
+/// All of them execute the same Condense engine operation; Press is not an
+/// independent operation.
+#[derive(Clone, Copy, Debug)]
+enum GravityPlanInvocation {
+    Canonical,
+    GravityCondense,
+    RootCondense,
+    Press,
+}
+
+impl GravityPlanInvocation {
+    fn command(self) -> &'static str {
+        match self {
+            Self::Canonical => GRAVITY_CANONICAL_PLAN_COMMAND,
+            Self::GravityCondense => "hawking gravity condense",
+            Self::RootCondense => "hawking condense",
+            Self::Press => "hawking press",
+        }
+    }
+
+    fn state(self) -> &'static str {
+        match self {
+            Self::Canonical => "canonical",
+            Self::GravityCondense | Self::RootCondense | Self::Press => "deprecated_compatibility",
+        }
+    }
+
+    fn deprecated(self) -> bool {
+        !matches!(self, Self::Canonical)
+    }
+}
+
+/// User-declared plan intent. Every field is a request for later selection or
+/// measurement; this metadata-only planner never turns a request into a pass.
+#[derive(Debug)]
+struct GravityPlanConstraints {
+    equilibrium: String,
+    intent_profile: String,
+    target_device: String,
+    max_complete_bpw: Option<f64>,
+    max_artifact_bytes: Option<(String, u64)>,
+    max_resident_bytes: Option<(String, u64)>,
+    min_base_tps: Option<f64>,
+    frontier: bool,
+}
+
+impl GravityPlanConstraints {
+    fn from_args(args: &GravityPlanArgs) -> Result<Self> {
+        Ok(Self {
+            equilibrium: args.equilibrium.clone(),
+            intent_profile: args.intent_profile.clone(),
+            target_device: args.target_device.clone(),
+            max_complete_bpw: validate_positive_requested_number(
+                args.max_complete_bpw,
+                "--max-complete-bpw",
+            )?,
+            max_artifact_bytes: parse_requested_size(
+                args.max_artifact_bytes.as_deref(),
+                "--max-artifact-bytes",
+            )?,
+            max_resident_bytes: parse_requested_size(
+                args.max_resident_bytes.as_deref(),
+                "--max-resident-bytes",
+            )?,
+            min_base_tps: validate_positive_requested_number(args.min_base_tps, "--min-base-tps")?,
+            frontier: args.frontier,
+        })
+    }
+}
+
+fn validate_positive_requested_number(value: Option<f64>, flag: &str) -> Result<Option<f64>> {
+    match value {
+        Some(v) if !v.is_finite() || v <= 0.0 => Err(anyhow::anyhow!(
+            "{flag} must be a finite number greater than zero"
+        )),
+        other => Ok(other),
+    }
+}
+
+fn parse_requested_size(raw: Option<&str>, flag: &str) -> Result<Option<(String, u64)>> {
+    raw.map(|raw| {
+        let bytes = parse_size_arg(raw).map_err(|e| anyhow::anyhow!("{flag}: {e}"))?;
+        if bytes == 0 {
+            return Err(anyhow::anyhow!("{flag} must be greater than zero"));
+        }
+        Ok((raw.to_owned(), bytes))
+    })
+    .transpose()
+}
+
+fn print_requested_gravity_constraints(constraints: &GravityPlanConstraints) {
+    print!("{}", format_requested_gravity_constraints(constraints));
+}
+
+fn format_requested_gravity_constraints(constraints: &GravityPlanConstraints) -> String {
+    use std::fmt::Write;
+
+    let mut report = String::from("-- requested plan constraints (not achieved measurements) --\n");
+    writeln!(
+        report,
+        "  equilibrium:       {} (requested decision policy)",
+        constraints.equilibrium
+    )
+    .expect("writing to String cannot fail");
+    writeln!(
+        report,
+        "  intent profile:    {} (requested evaluation intent)",
+        constraints.intent_profile
+    )
+    .expect("writing to String cannot fail");
+    writeln!(
+        report,
+        "  target device:     {} (requested execution target)",
+        constraints.target_device
+    )
+    .expect("writing to String cannot fail");
+    if let Some(bpw) = constraints.max_complete_bpw {
+        writeln!(
+            report,
+            "  max complete bpw:  <= {bpw:.4} (requested; not achieved)"
+        )
+        .expect("writing to String cannot fail");
+    }
+    if let Some((raw, bytes)) = &constraints.max_artifact_bytes {
+        writeln!(
+            report,
+            "  max artifact:      <= {raw} / {} (requested; not achieved)",
+            fmt_bytes_h(*bytes)
+        )
+        .expect("writing to String cannot fail");
+    }
+    if let Some((raw, bytes)) = &constraints.max_resident_bytes {
+        writeln!(
+            report,
+            "  max resident:      <= {raw} / {} (requested; not achieved)",
+            fmt_bytes_h(*bytes)
+        )
+        .expect("writing to String cannot fail");
+    }
+    if let Some(tps) = constraints.min_base_tps {
+        writeln!(
+            report,
+            "  min base TPS:      >= {tps:.4} (requested; not measured)"
+        )
+        .expect("writing to String cannot fail");
+    }
+    writeln!(
+        report,
+        "  frontier:          {} ({})",
+        constraints.frontier,
+        if constraints.frontier {
+            "requested; frontier search is not implemented"
+        } else {
+            "not requested"
+        }
+    )
+    .expect("writing to String cannot fail");
+    report.push('\n');
+    report
+}
+
+/// `hawking gravity plan --dry-run`: the Condense engine planner. It reads GGUF
+/// or safetensors metadata only (no weights resident, GPU, or network) and
+/// estimates creation-memory and flat-bpw output sizes. It never creates an
+/// artifact. `--json` emits a stable request/evidence contract rather than a
+/// fabricated artifact or benchmark receipt.
 /// See `docs/plans/condense_frontier_2026_06_22.md` (work package C1).
-fn press_main(
+fn gravity_plan_main(
     weights: PathBuf,
     dry_run: bool,
     memory_budget: Option<String>,
     target: String,
+    json: bool,
+    constraints: &GravityPlanConstraints,
+    invocation: GravityPlanInvocation,
 ) -> Result<()> {
     if !dry_run {
-        eprintln!(
-            "[press] only --dry-run is implemented. The bake/condense path is owner-gated \
-             (no downloads, cloud spend, or artifact writes here). Re-run with --dry-run \
-             for a truthful Press Plan."
-        );
+        if json {
+            println!(
+                "{}",
+                gravity_plan_not_executed_json(&weights, &target, constraints, invocation)
+            );
+        } else {
+            eprintln!(
+                "[gravity plan] only --dry-run is implemented. Artifact creation/condensing \
+                 is not implemented (no downloads, cloud spend, or artifact writes here). \
+                 Re-run with --dry-run for a truthful metadata-only plan."
+            );
+        }
         return Ok(());
     }
 
@@ -1143,7 +1910,7 @@ fn press_main(
     let cur_bpw = (total_bytes as f64 * 8.0) / total_elems as f64;
     let f32b: u64 = 4;
     // Out-of-core peak (tensor-at-a-time): the largest tensor materialized to f32
-    // (a dequant working copy) plus its largest output block. THIS is the wedge.
+    // (a dequant working copy) plus its largest output block.
     let max_out_bytes = tiers
         .iter()
         .map(|(_, bpw)| ((largest_elems as f64) * bpw / 8.0).ceil() as u64)
@@ -1153,9 +1920,43 @@ fn press_main(
     // Full-resident peak (what naive post-hoc quant needs): the whole parent as f32.
     let full_resident_f32 = total_elems * f32b;
 
-    println!("== Condense Press Plan (dry-run) ==");
-    println!("model:            {}", weights.display());
-    println!("source:           {source}");
+    if json {
+        println!(
+            "{}",
+            gravity_plan_json(
+                &weights,
+                &source,
+                &dtype_summary,
+                memory_budget.as_deref(),
+                budget,
+                &target,
+                constraints,
+                invocation,
+                n_tensors,
+                total_bytes,
+                total_elems,
+                cur_bpw,
+                &largest_name,
+                &largest_dims,
+                largest_elems,
+                ooc_peak,
+                full_resident_f32,
+                &tiers,
+            )
+        );
+        return Ok(());
+    }
+
+    println!("== Gravity Condense Plan (metadata-only dry-run) ==");
+    println!("operation:        Condense engine via Gravity plan; no artifact is created");
+    println!("artifact state:   unavailable (no path, hash, or receipt exists for this dry-run)");
+    println!(
+        "source state:     local input metadata inspected; source hash/verification not performed"
+    );
+    print_requested_gravity_constraints(constraints);
+
+    println!("source input:     {}", weights.display());
+    println!("source format:    {source}");
     println!("dtypes:           {dtype_summary}");
     println!("tensors:          {n_tensors}");
     println!(
@@ -1175,18 +1976,18 @@ fn press_main(
         fmt_bytes_h(largest_elems * f32b)
     );
     println!();
-    println!("-- peak CREATION memory (the wedge) --");
+    println!("-- estimated creation memory (from metadata; not measured) --");
     println!(
-        "  out-of-core (tensor-at-a-time): {:>10}   <- Hawking Press target",
+        "  out-of-core (tensor-at-a-time): {:>10}   <- Condense planning estimate",
         fmt_bytes_h(ooc_peak)
     );
     println!(
-        "  full-resident parent as f32:    {:>10}   <- naive post-hoc quant",
+        "  full-resident parent as f32:    {:>10}   <- naive post-hoc estimate",
         fmt_bytes_h(full_resident_f32)
     );
     if ooc_peak > 0 {
         println!(
-            "  out-of-core is ~{:.0}x smaller peak than full-resident",
+            "  out-of-core estimate is ~{:.0}x smaller than full-resident estimate",
             full_resident_f32 as f64 / ooc_peak as f64
         );
     }
@@ -1194,7 +1995,7 @@ fn press_main(
     println!("-- Condense ladder (estimated output; flat per-tensor bpw) --");
     println!(
         "  {:<8} {:>8} {:>12} {:>9}",
-        "tier", "bpw", "out size", "vs now"
+        "tier", "bpw", "out size", "vs source"
     );
     for (label, bpw) in &tiers {
         let out_bytes = ((total_elems as f64) * bpw / 8.0).ceil() as u64;
@@ -1208,43 +2009,305 @@ fn press_main(
         );
     }
     println!();
-    match budget {
-        Some(b) => {
-            println!("-- budget verdict (--memory-budget {}) --", fmt_bytes_h(b));
+    match (memory_budget.as_deref(), budget) {
+        (Some(raw), Some(b)) => {
+            println!(
+                "-- requested creation-memory estimate (--memory-budget {raw}, {}) --",
+                fmt_bytes_h(b)
+            );
             let ooc_ok = ooc_peak <= b;
             let full_ok = full_resident_f32 <= b;
             println!(
-                "  out-of-core press:  {:<7} (needs {})",
-                if ooc_ok { "FITS" } else { "EXCEEDS" },
+                "  out-of-core estimate: {:<7} (estimated need {})",
+                if ooc_ok { "WITHIN" } else { "EXCEEDS" },
                 fmt_bytes_h(ooc_peak)
             );
             println!(
-                "  full-resident:      {:<7} (needs {})",
-                if full_ok { "FITS" } else { "EXCEEDS" },
+                "  full-resident estimate:{:<7} (estimated need {})",
+                if full_ok { "WITHIN" } else { "EXCEEDS" },
                 fmt_bytes_h(full_resident_f32)
             );
             if ooc_ok && !full_ok {
-                println!("  => WEDGE: Hawking can press this out-of-core under the budget; naive full-resident quant cannot.");
+                println!("  => metadata estimate favors the out-of-core approach under this requested budget; no execution was run.");
             } else if ooc_ok && full_ok {
-                println!("  => both fit; out-of-core still lowers peak creation memory.");
+                println!("  => both metadata estimates are within the requested budget; no execution was run.");
             } else {
-                println!("  => even out-of-core exceeds the budget; raise it or split the largest tensor.");
+                println!("  => the out-of-core metadata estimate exceeds the requested budget; no execution was run.");
             }
         }
-        None => println!("(no --memory-budget given; pass one for a fit verdict.)"),
+        _ => println!("(no --memory-budget requested; no budget estimate was evaluated.)"),
     }
     println!();
-    println!("NOTE: estimates from model metadata only (GGUF or safetensors) — no weights, GPU, or network.");
-    println!("      Output sizes use a flat per-tensor bpw; the real damage-ranked allocator (C3)");
-    println!(
-        "      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here)."
-    );
+    println!("NOTE: values are metadata-derived estimates only; no weights were loaded, GPU used, or network contacted.");
+    println!("      This does not create a model/artifact, validate quality, load a runtime, benchmark TPS,");
+    println!("      or measure resident memory. Use --json for the stable {GRAVITY_PLAN_SCHEMA} contract.");
     Ok(())
+}
+
+/// Stable plan JSON for a completed metadata-only dry run. Every source fact is
+/// labeled by how it was obtained; every requested target remains a request.
+/// In particular, the absent output artifact has no invented path, ID, hash, or
+/// receipt field.
+#[allow(clippy::too_many_arguments)]
+fn gravity_plan_json(
+    weights: &Path,
+    source: &str,
+    dtype_summary: &str,
+    memory_budget_input: Option<&str>,
+    memory_budget_bytes: Option<u64>,
+    target: &str,
+    constraints: &GravityPlanConstraints,
+    invocation: GravityPlanInvocation,
+    n_tensors: usize,
+    total_bytes: u64,
+    total_elems: u64,
+    cur_bpw: f64,
+    largest_name: &str,
+    largest_dims: &[u64],
+    largest_elems: u64,
+    ooc_peak: u64,
+    full_resident_f32: u64,
+    tiers: &[(String, f64)],
+) -> serde_json::Value {
+    let tier_estimates: Vec<serde_json::Value> = tiers
+        .iter()
+        .map(|(label, bpw)| {
+            let estimated_output_bytes = ((total_elems as f64) * bpw / 8.0).ceil() as u64;
+            serde_json::json!({
+                "label": label,
+                "target_bpw": bpw,
+                "target_bpw_unit": "bits per weight element",
+                "estimated_output_bytes": estimated_output_bytes,
+                "estimated_output_bytes_unit": "bytes",
+                "estimated_ratio_vs_source_tensor_bytes": total_bytes as f64 / estimated_output_bytes as f64,
+                "result_state": "estimated_from_source_metadata_not_created"
+            })
+        })
+        .collect();
+    let memory_budget = match (memory_budget_input, memory_budget_bytes) {
+        (Some(input), Some(bytes)) => serde_json::json!({
+            "state": "requested",
+            "input": input,
+            "bytes": bytes,
+            "unit": "bytes",
+            "result_state": "compared_to_metadata_estimate_not_measured"
+        }),
+        _ => serde_json::json!({
+            "state": "not_requested",
+            "unit": "bytes",
+            "result_state": "not_evaluated"
+        }),
+    };
+
+    serde_json::json!({
+        "schema": GRAVITY_PLAN_SCHEMA,
+        "tag": GRAVITY_IDENTITY_TAG,
+        "canonical_identity": "gravity",
+        "invocation": {
+            "command": invocation.command(),
+            "state": invocation.state(),
+            "deprecated": invocation.deprecated(),
+            "superseded_by": if invocation.deprecated() { Some(GRAVITY_CANONICAL_PLAN_COMMAND) } else { None::<&str> }
+        },
+        "operation": {
+            "name": "condense",
+            "kind": "gravity_engine_operation",
+            "state": "metadata_only_planning",
+            "artifact_creation": "not_executed"
+        },
+        "execution": {
+            "state": "completed_metadata_only_dry_run",
+            "dry_run": true,
+            "weights_loaded": false,
+            "uses_gpu": false,
+            "uses_network": false,
+            "downloads": false,
+            "artifact_writes": false
+        },
+        "source_provenance": {
+            "state": "declared_local_input_metadata_inspected",
+            "declared_path": weights.display().to_string(),
+            "format": source,
+            "content_hash_state": "not_computed",
+            "verification_state": "not_performed",
+            "inventory_scope": "metadata header and declared tensor byte ranges only"
+        },
+        "artifact_provenance": {
+            "state": "unavailable",
+            "reason": "metadata-only dry-run creates no output artifact, so no artifact path, ID, hash, or receipt exists"
+        },
+        "constraints": gravity_plan_constraints_json(constraints),
+        "target_request": {
+            "state": "requested",
+            "input": target,
+            "interpretation": "flat per-tensor target bpw estimates",
+            "result_state": "not_executed"
+        },
+        "memory_budget": memory_budget,
+        "source_inventory": {
+            "state": "measured_from_metadata",
+            "dtype_summary": dtype_summary,
+            "tensor_count": n_tensors,
+            "parameter_elements": total_elems,
+            "parameter_elements_unit": "elements",
+            "source_tensor_bytes": total_bytes,
+            "source_tensor_bytes_unit": "bytes",
+            "source_tensor_bpw_estimate": cur_bpw,
+            "source_tensor_bpw_unit": "bits per weight element",
+            "largest_tensor": {
+                "name": largest_name,
+                "shape": largest_dims,
+                "elements": largest_elems,
+                "f32_working_bytes_estimate": largest_elems.saturating_mul(4),
+                "f32_working_bytes_unit": "bytes"
+            }
+        },
+        "estimates": {
+            "state": "estimated_from_source_metadata_not_measured",
+            "creation_memory": {
+                "out_of_core_peak_bytes": ooc_peak,
+                "full_resident_f32_bytes": full_resident_f32,
+                "unit": "bytes",
+                "method": "largest-tensor f32 working copy plus largest target output block"
+            },
+            "tiers": tier_estimates
+        },
+        "evidence_state": {
+            "artifact_created": "not_executed",
+            "artifact_provenance": "unavailable",
+            "runtime_load": "not_executed",
+            "quality": "not_measured",
+            "throughput": "not_measured",
+            "resident_memory": "not_measured"
+        }
+    })
+}
+
+/// `--json` without `--dry-run` remains a stable refusal object, rather than a
+/// plan receipt. This preserves the historical non-destructive behavior while
+/// making the unavailable work explicit to automation.
+fn gravity_plan_not_executed_json(
+    weights: &Path,
+    target: &str,
+    constraints: &GravityPlanConstraints,
+    invocation: GravityPlanInvocation,
+) -> serde_json::Value {
+    serde_json::json!({
+        "schema": GRAVITY_PLAN_SCHEMA,
+        "tag": GRAVITY_IDENTITY_TAG,
+        "canonical_identity": "gravity",
+        "invocation": {
+            "command": invocation.command(),
+            "state": invocation.state(),
+            "deprecated": invocation.deprecated(),
+            "superseded_by": if invocation.deprecated() { Some(GRAVITY_CANONICAL_PLAN_COMMAND) } else { None::<&str> }
+        },
+        "operation": {
+            "name": "condense",
+            "kind": "gravity_engine_operation",
+            "state": "not_executed",
+            "artifact_creation": "not_executed"
+        },
+        "execution": {
+            "state": "not_executed",
+            "dry_run": false,
+            "reason": "--dry-run is required; artifact creation/condensing is not implemented by this command"
+        },
+        "source_provenance": {
+            "state": "not_inspected",
+            "declared_path": weights.display().to_string(),
+            "content_hash_state": "not_computed",
+            "verification_state": "not_performed"
+        },
+        "artifact_provenance": {
+            "state": "unavailable",
+            "reason": "no artifact is created or selected by a non-dry-run plan invocation"
+        },
+        "constraints": gravity_plan_constraints_json(constraints),
+        "target_request": {
+            "state": "not_validated",
+            "input": target,
+            "result_state": "not_executed"
+        },
+        "evidence_state": {
+            "artifact_created": "not_executed",
+            "runtime_load": "not_executed",
+            "quality": "not_measured",
+            "throughput": "not_measured",
+            "resident_memory": "not_measured"
+        }
+    })
+}
+
+fn gravity_plan_constraints_json(constraints: &GravityPlanConstraints) -> serde_json::Value {
+    serde_json::json!({
+        "semantics": "requested inputs only; no constraint is an achieved, benchmarked, or runtime measurement",
+        "equilibrium": {
+            "value": &constraints.equilibrium,
+            "state": "selected_plan_policy",
+            "result_state": "not_evaluated"
+        },
+        "intent_profile": {
+            "value": &constraints.intent_profile,
+            "state": "selected_evaluation_intent",
+            "result_state": "not_evaluated"
+        },
+        "target_device": {
+            "value": &constraints.target_device,
+            "state": "requested_execution_target",
+            "result_state": "not_scheduled"
+        },
+        "max_complete_bpw": requested_plan_number_json(
+            constraints.max_complete_bpw,
+            "bits per weight element"
+        ),
+        "max_artifact_bytes": requested_plan_size_json(constraints.max_artifact_bytes.as_ref()),
+        "max_resident_bytes": requested_plan_size_json(constraints.max_resident_bytes.as_ref()),
+        "min_base_tps": requested_plan_number_json(constraints.min_base_tps, "tokens per second"),
+        "frontier": {
+            "value": constraints.frontier,
+            "state": if constraints.frontier { "requested" } else { "not_requested" },
+            "result_state": "not_executed"
+        }
+    })
+}
+
+fn requested_plan_number_json(value: Option<f64>, unit: &str) -> serde_json::Value {
+    match value {
+        Some(value) => serde_json::json!({
+            "state": "requested",
+            "value": value,
+            "unit": unit,
+            "result_state": "not_measured"
+        }),
+        None => serde_json::json!({
+            "state": "not_requested",
+            "unit": unit,
+            "result_state": "not_measured"
+        }),
+    }
+}
+
+fn requested_plan_size_json(value: Option<&(String, u64)>) -> serde_json::Value {
+    match value {
+        Some((input, bytes)) => serde_json::json!({
+            "state": "requested",
+            "input": input,
+            "bytes": bytes,
+            "unit": "bytes",
+            "result_state": "not_measured"
+        }),
+        None => serde_json::json!({
+            "state": "not_requested",
+            "unit": "bytes",
+            "result_state": "not_measured"
+        }),
+    }
 }
 
 /// Read a tensor inventory (name, dims, on-disk bytes) + a source label + a dtype
 /// summary from a model file's METADATA ONLY — GGUF or safetensors. No weights are
-/// loaded, no GPU, no network. Used by `hawking press --dry-run`.
+/// loaded, no GPU, no network. Used by `hawking gravity plan --dry-run`.
 fn read_inventory(
     path: &std::path::Path,
 ) -> Result<(String, String, Vec<(String, Vec<u64>, u64)>)> {
@@ -1350,7 +2413,7 @@ fn read_safetensors_inventory(
 }
 
 /// Parse a human size like `18gb`, `64GB`, `2tb`, `1500mb`, `512kb`, `4096b`, or a
-/// raw byte count, into bytes (binary multipliers). Used by `hawking press`.
+/// raw byte count, into bytes (binary multipliers). Used by `hawking gravity plan`.
 fn parse_size_arg(s: &str) -> std::result::Result<u64, String> {
     let s = s.trim().to_lowercase();
     let (num, mult): (&str, u64) = if let Some(p) = s.strip_suffix("tb") {
@@ -1385,6 +2448,11 @@ fn parse_tier_arg(s: &str) -> std::result::Result<Vec<(String, f64)>, String> {
         let bits: f64 = p
             .parse()
             .map_err(|_| format!("bad tier '{p}' (use bit-widths like 4,3,2,1)"))?;
+        if !bits.is_finite() || bits <= 0.0 {
+            return Err(format!(
+                "bad tier '{p}' (bit-widths must be finite and greater than zero)"
+            ));
+        }
         let bpw = match bits as i64 {
             4 => 4.5,  // Q4_K compatibility floor
             3 => 3.0,  // first extreme public tier (TQ3)
@@ -1538,7 +2606,7 @@ fn fit_main(
         if &magic != b"GGUF" {
             return Err(anyhow::anyhow!(
                 "hawking fit expects a runnable GGUF model. To plan how to CONDENSE a \
-                 safetensors parent, use `hawking press --dry-run`."
+                 safetensors parent, use `hawking gravity plan --dry-run`."
             ));
         }
     }
@@ -2794,21 +3862,15 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
                 max_stall_ms: 30_000,
                 json_mode: false,
             };
-            let mut decode_ms = 0.0f64;
-            let mut completion_tokens = 0usize;
+            let mut measured_tps = None;
             engine
                 .generate(req, &mut |ev| {
                     if let StreamEvent::Done { stats, .. } = ev {
-                        decode_ms = stats.decode_ms;
-                        completion_tokens = stats.completion_tokens;
+                        measured_tps = (stats.decode_ms > 0.0).then(|| stats.dec_tps());
                     }
                 })
                 .ok()?;
-            if decode_ms > 0.0 && completion_tokens > 0 {
-                Some(completion_tokens as f64 / (decode_ms / 1000.0))
-            } else {
-                None
-            }
+            measured_tps.filter(|tps| *tps > 0.0)
         })();
 
         // Clean up vars we set so the next run starts fresh.
@@ -3136,27 +4198,31 @@ fn generate_main(
     let prompts: Vec<String> = if let Some(path) = prompt_file.as_ref() {
         vec![std::fs::read_to_string(path)
             .map_err(|e| anyhow::anyhow!("read prompt file {}: {e}", path.display()))?]
-    } else { match prompts_file.as_ref() {
-        Some(path) => {
-            let raw = std::fs::read_to_string(path)
-                .map_err(|e| anyhow::anyhow!("read prompts file {}: {e}", path.display()))?;
-            let v: Vec<String> = raw
-                .lines()
-                .map(|l| l.trim())
-                .filter(|l| !l.is_empty())
-                .map(|l| l.to_string())
-                .collect();
-            if v.is_empty() {
-                return Err(anyhow::anyhow!(
-                    "prompts file {} has no prompts",
-                    path.display()
-                ));
+    } else {
+        match prompts_file.as_ref() {
+            Some(path) => {
+                let raw = std::fs::read_to_string(path)
+                    .map_err(|e| anyhow::anyhow!("read prompts file {}: {e}", path.display()))?;
+                let v: Vec<String> = raw
+                    .lines()
+                    .map(|l| l.trim())
+                    .filter(|l| !l.is_empty())
+                    .map(|l| l.to_string())
+                    .collect();
+                if v.is_empty() {
+                    return Err(anyhow::anyhow!(
+                        "prompts file {} has no prompts",
+                        path.display()
+                    ));
+                }
+                eprintln!("[capture] {} prompts from {}", v.len(), path.display());
+                v
             }
-            eprintln!("[capture] {} prompts from {}", v.len(), path.display());
-            v
+            None => vec![prompt.ok_or_else(|| {
+                anyhow::anyhow!("provide --prompt, --prompt-file, or --prompts-file")
+            })?],
         }
-        None => vec![prompt.ok_or_else(|| anyhow::anyhow!("provide --prompt, --prompt-file, or --prompts-file"))?],
-    }};
+    };
 
     // ── Batched teacher-capture fast path ─────────────────────────────────
     // Routes the whole prompt corpus through the multiseq path (capture_batch
@@ -3819,6 +4885,467 @@ fn verify_main(weights: PathBuf, expected_sha256: Option<String>) -> Result<()> 
 }
 
 #[cfg(test)]
+mod gravity_cli_tests {
+    use super::{
+        format_requested_gravity_constraints, gravity_plan_json, gravity_plan_not_executed_json,
+        gravity_status_json, require_canonical_gravity_artifact, Cli, Cmd, GravityCmd,
+        GravityPlanConstraints, GravityPlanInvocation, GRAVITY_IDENTITY_TAG, GRAVITY_PLAN_SCHEMA,
+        GRAVITY_STATUS_SCHEMA,
+    };
+    use clap::Parser;
+    use std::path::Path;
+
+    #[test]
+    fn bare_gravity_and_machine_tag_parse_without_a_subcommand() {
+        let cli = Cli::try_parse_from(["hawking", "gravity", "--json"]).unwrap();
+        assert!(matches!(
+            cli.cmd,
+            Cmd::Gravity {
+                command: None,
+                json: true
+            }
+        ));
+    }
+
+    #[test]
+    fn gravity_execute_is_the_canonical_bounded_v4_build_surface() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "execute",
+            "--artifact-dir",
+            "/tmp/deepseek-v4.gravity",
+            "--xet-root",
+            "/tmp/deepseek-v4-xet",
+            "--range-bytes",
+            "8388608",
+        ])
+        .unwrap();
+        match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Execute(args)),
+                ..
+            } => {
+                assert_eq!(
+                    args.artifact_dir,
+                    std::path::PathBuf::from("/tmp/deepseek-v4.gravity")
+                );
+                assert_eq!(
+                    args.xet_root,
+                    std::path::PathBuf::from("/tmp/deepseek-v4-xet")
+                );
+                assert_eq!(args.range_bytes, 8 * 1024 * 1024);
+                assert_eq!(args.protected_floor_bytes, 15 * 1024 * 1024 * 1024);
+            }
+            other => panic!("expected gravity execute, got {other:?}"),
+        }
+        let status = gravity_status_json();
+        assert_eq!(
+            status["operations"]["execute"]["state"],
+            "implemented_bounded_diagnostic"
+        );
+        assert_eq!(status["operations"]["execute"]["full_model"], false);
+    }
+
+    #[test]
+    fn canonical_gravity_plan_and_compatibility_aliases_share_the_same_arguments() {
+        let canonical = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.safetensors",
+            "--dry-run",
+            "--memory-budget",
+            "18gb",
+            "--target",
+            "4,3,2",
+            "--equilibrium",
+            "capability",
+            "--intent-profile",
+            "agent",
+            "--target-device",
+            "local",
+            "--max-complete-bpw",
+            "1.5",
+            "--max-artifact-bytes",
+            "24gb",
+            "--max-resident-bytes",
+            "18gb",
+            "--min-base-tps",
+            "80",
+            "--frontier",
+            "--json",
+        ])
+        .unwrap();
+        match canonical.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => {
+                assert_eq!(args.weights, std::path::PathBuf::from("parent.safetensors"));
+                assert!(args.dry_run);
+                assert_eq!(args.memory_budget.as_deref(), Some("18gb"));
+                assert_eq!(args.target, "4,3,2");
+                assert_eq!(args.equilibrium, "capability");
+                assert_eq!(args.intent_profile, "agent");
+                assert_eq!(args.target_device, "local");
+                assert_eq!(args.max_complete_bpw, Some(1.5));
+                assert_eq!(args.max_artifact_bytes.as_deref(), Some("24gb"));
+                assert_eq!(args.max_resident_bytes.as_deref(), Some("18gb"));
+                assert_eq!(args.min_base_tps, Some(80.0));
+                assert!(args.frontier);
+                assert!(args.json);
+            }
+            other => panic!("expected canonical Gravity plan, got {other:?}"),
+        }
+
+        for command in [
+            ["hawking", "gravity", "condense"],
+            ["hawking", "condense", "--unused"],
+            ["hawking", "press", "--unused"],
+        ] {
+            let mut argv: Vec<&str> = command
+                .into_iter()
+                .filter(|part| *part != "--unused")
+                .collect();
+            argv.extend(["--weights", "parent.gguf", "--dry-run", "--json"]);
+            assert!(Cli::try_parse_from(argv).is_ok());
+        }
+    }
+
+    #[test]
+    fn status_contract_exposes_structured_deprecation_and_supersession() {
+        let status = gravity_status_json();
+        assert_eq!(status["schema"], GRAVITY_STATUS_SCHEMA);
+        assert_eq!(status["tag"], GRAVITY_IDENTITY_TAG);
+        assert_eq!(status["artifact_provenance"]["state"], "not_inspected");
+        assert_eq!(status["operations"]["plan"]["operation"], "condense");
+        assert_eq!(status["operations"]["plan"]["throughput"], "not_measured");
+
+        let compatibility = status["compatibility"].as_array().unwrap();
+        assert_eq!(compatibility.len(), 4);
+        for entry in compatibility {
+            assert_eq!(entry["state"], "deprecated_compatibility");
+            assert_eq!(entry["deprecated"], true);
+            assert!(entry["superseded_by"].as_str().is_some());
+        }
+        let press = compatibility
+            .iter()
+            .find(|entry| entry["command"] == "hawking press")
+            .unwrap();
+        assert_eq!(press["operation"], "condense");
+        assert_eq!(press["superseded_by"], "hawking gravity plan");
+    }
+
+    #[test]
+    fn gravity_serve_uses_artifact_and_runtime_profile_without_a_profile_collision() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "serve",
+            "--artifact",
+            "model.gravity",
+            "--request-timeout-secs",
+            "42",
+            "--profile",
+            "exact",
+        ])
+        .unwrap();
+        assert_eq!(cli.profile.as_deref(), Some("exact"));
+        match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Serve(args)),
+                ..
+            } => {
+                assert_eq!(
+                    args.gravity,
+                    Some(std::path::PathBuf::from("model.gravity"))
+                );
+                assert_eq!(args.controls.request_timeout_secs, Some(42));
+                assert!(args.weights.is_none());
+            }
+            other => panic!("expected Gravity serve, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn canonical_gravity_serve_rejects_implicit_or_non_gravity_selectors() {
+        assert!(require_canonical_gravity_artifact(true, None).is_err());
+        assert!(require_canonical_gravity_artifact(
+            true,
+            Some(std::path::Path::new("model.gravity"))
+        )
+        .is_ok());
+        assert!(require_canonical_gravity_artifact(false, None).is_ok());
+    }
+
+    #[test]
+    fn legacy_serve_spellings_remain_accepted() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "serve",
+            "--gravity",
+            "model.gravity",
+            "--gravity-request-timeout-secs",
+            "9",
+        ])
+        .unwrap();
+        match cli.cmd {
+            Cmd::Serve(args) => {
+                assert_eq!(
+                    args.gravity,
+                    Some(std::path::PathBuf::from("model.gravity"))
+                );
+                assert_eq!(args.controls.request_timeout_secs, Some(9));
+            }
+            other => panic!("expected legacy serve, got {other:?}"),
+        }
+
+        let cli = Cli::try_parse_from(["hawking", "serve", "--weights", "model.gguf"]).unwrap();
+        match cli.cmd {
+            Cmd::Serve(args) => {
+                assert_eq!(args.weights, Some(std::path::PathBuf::from("model.gguf")));
+                assert!(args.gravity.is_none());
+            }
+            other => panic!("expected legacy weights serve, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn plan_intent_is_validated_without_turning_constraints_into_achievements() {
+        assert!(Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.gguf",
+            "--equilibrium",
+            "impossible-mode",
+        ])
+        .is_err());
+
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.gguf",
+            "--max-complete-bpw",
+            "0",
+        ])
+        .unwrap();
+        let args = match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => args,
+            other => panic!("expected Gravity plan, got {other:?}"),
+        };
+        assert!(GravityPlanConstraints::from_args(&args).is_err());
+    }
+
+    #[test]
+    fn requested_constraints_report_is_explicitly_not_an_achievement_receipt() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.gguf",
+            "--equilibrium",
+            "latency",
+            "--intent-profile",
+            "code",
+            "--max-complete-bpw",
+            "1.5",
+            "--max-artifact-bytes",
+            "24gb",
+            "--max-resident-bytes",
+            "18gb",
+            "--min-base-tps",
+            "80",
+            "--frontier",
+        ])
+        .unwrap();
+        let args = match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => args,
+            other => panic!("expected Gravity plan, got {other:?}"),
+        };
+        let report = format_requested_gravity_constraints(
+            &GravityPlanConstraints::from_args(&args).unwrap(),
+        );
+        assert!(report.contains("not achieved measurements"));
+        assert!(report.contains("equilibrium:       latency"));
+        assert!(report.contains("intent profile:    code"));
+        assert!(report.contains("max complete bpw:  <= 1.5000 (requested; not achieved)"));
+        assert!(report.contains("min base TPS:      >= 80.0000 (requested; not measured)"));
+        assert!(report.contains("frontier search is not implemented"));
+    }
+
+    #[test]
+    fn plan_json_contract_keeps_requests_and_artifact_provenance_honest() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.safetensors",
+            "--max-complete-bpw",
+            "1.5",
+            "--max-artifact-bytes",
+            "24gb",
+            "--max-resident-bytes",
+            "18gb",
+            "--min-base-tps",
+            "80",
+            "--frontier",
+        ])
+        .unwrap();
+        let args = match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => args,
+            other => panic!("expected Gravity plan, got {other:?}"),
+        };
+        let constraints = GravityPlanConstraints::from_args(&args).unwrap();
+        let plan = gravity_plan_json(
+            Path::new("parent.safetensors"),
+            "safetensors",
+            "F16×1",
+            Some("18gb"),
+            Some(18 * (1_u64 << 30)),
+            "4,3",
+            &constraints,
+            GravityPlanInvocation::Press,
+            2,
+            72,
+            36,
+            16.0,
+            "a.weight",
+            &[4, 8],
+            32,
+            140,
+            144,
+            &[("4-bit".to_owned(), 4.5), ("3-bit".to_owned(), 3.0)],
+        );
+
+        assert_eq!(plan["schema"], GRAVITY_PLAN_SCHEMA);
+        assert_eq!(plan["tag"], GRAVITY_IDENTITY_TAG);
+        assert_eq!(plan["operation"]["name"], "condense");
+        assert_eq!(plan["invocation"]["command"], "hawking press");
+        assert_eq!(plan["invocation"]["deprecated"], true);
+        assert_eq!(plan["invocation"]["superseded_by"], "hawking gravity plan");
+        assert_eq!(plan["artifact_provenance"]["state"], "unavailable");
+        assert!(plan["artifact_provenance"].get("path").is_none());
+        assert!(plan["artifact_provenance"].get("hash").is_none());
+        assert_eq!(plan["constraints"]["min_base_tps"]["state"], "requested");
+        assert_eq!(
+            plan["constraints"]["min_base_tps"]["unit"],
+            "tokens per second"
+        );
+        assert_eq!(
+            plan["constraints"]["min_base_tps"]["result_state"],
+            "not_measured"
+        );
+        assert_eq!(plan["evidence_state"]["throughput"], "not_measured");
+        assert_eq!(plan["evidence_state"]["runtime_load"], "not_executed");
+        assert_eq!(
+            plan["estimates"]["tiers"][0]["result_state"],
+            "estimated_from_source_metadata_not_created"
+        );
+    }
+
+    #[test]
+    fn dry_run_json_path_executes_against_a_metadata_only_fixture() {
+        use std::io::Write;
+
+        let header = br#"{"tiny.weight":{"dtype":"F16","shape":[2,2],"data_offsets":[0,8]}}"#;
+        let path = std::env::temp_dir().join(format!(
+            "hawking_gravity_plan_json_{}_{}.safetensors",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let mut fixture = std::fs::File::create(&path).unwrap();
+        fixture
+            .write_all(&(header.len() as u64).to_le_bytes())
+            .unwrap();
+        fixture.write_all(header).unwrap();
+        drop(fixture);
+
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            path.to_str().unwrap(),
+            "--dry-run",
+            "--json",
+            "--min-base-tps",
+            "80",
+        ])
+        .unwrap();
+        let args = match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => args,
+            other => panic!("expected Gravity plan, got {other:?}"),
+        };
+        let constraints = GravityPlanConstraints::from_args(&args).unwrap();
+        let result = super::gravity_plan_main(
+            args.weights,
+            args.dry_run,
+            args.memory_budget,
+            args.target,
+            args.json,
+            &constraints,
+            GravityPlanInvocation::Canonical,
+        );
+        std::fs::remove_file(&path).unwrap();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn non_dry_run_json_is_a_refusal_not_a_plan_receipt() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "plan",
+            "--weights",
+            "parent.safetensors",
+        ])
+        .unwrap();
+        let args = match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::Plan(args)),
+                ..
+            } => args,
+            other => panic!("expected Gravity plan, got {other:?}"),
+        };
+        let constraints = GravityPlanConstraints::from_args(&args).unwrap();
+        let refusal = gravity_plan_not_executed_json(
+            Path::new("parent.safetensors"),
+            "4,3,2,1",
+            &constraints,
+            GravityPlanInvocation::Canonical,
+        );
+        assert_eq!(refusal["schema"], GRAVITY_PLAN_SCHEMA);
+        assert_eq!(refusal["execution"]["state"], "not_executed");
+        assert_eq!(refusal["source_provenance"]["state"], "not_inspected");
+        assert_eq!(refusal["artifact_provenance"]["state"], "unavailable");
+        assert_eq!(refusal["evidence_state"]["throughput"], "not_measured");
+    }
+}
+
+#[cfg(test)]
 mod press_tests {
     use super::{parse_size_arg, parse_tier_arg, read_safetensors_inventory};
     #[test]
@@ -3847,6 +5374,9 @@ mod press_tests {
         assert_eq!(parse_tier_arg("6").unwrap()[0], ("6-bit".to_string(), 6.0)); // literal bpw
         assert!(parse_tier_arg("").is_err());
         assert!(parse_tier_arg("x").is_err());
+        assert!(parse_tier_arg("0").is_err());
+        assert!(parse_tier_arg("-1").is_err());
+        assert!(parse_tier_arg("NaN").is_err());
     }
     #[test]
     fn safetensors_header_inventory_metadata_only() {

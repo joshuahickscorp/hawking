@@ -920,6 +920,7 @@ pub(crate) async fn generate_submit_turn(
                 i.recurrent_state_bytes,
                 i.ctx_len_native,
                 i.ctx_len_effective.or(i.ctx_len_native).unwrap_or(0),
+                i.max_output_tokens,
             )
         });
 
@@ -943,6 +944,8 @@ pub(crate) async fn generate_submit_turn(
         live_snap,
         Some(run_id.as_str().to_string()),
         repo_instructions,
+        None,
+        None,
     )
     .await?;
     let buf = outcome.completion;

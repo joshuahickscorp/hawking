@@ -4,6 +4,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+from lab.semantic_taxonomy import (
+    CONDENSE_OPERATION,
+    SemanticTaxonomyError,
+    normalize_semantic_tags,
+)
 SCHEMA = 'hawking.lab.experiment_spec.v1'
 LAB_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = LAB_DIR / 'campaigns.json'
@@ -208,6 +213,7 @@ class ExperimentSpec:
     resume_policy: Mapping[str, Any] = field(default_factory=dict)
     notes: str = ''
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    semantic_tags: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -237,6 +243,7 @@ class ExperimentSpec:
             'resume_policy': dict(self.resume_policy),
             'notes': self.notes,
             'metadata': dict(self.metadata),
+            'semantic_tags': dict(self.semantic_tags),
         }
 
     def steps_for(self, phase: str | CampaignPhase) -> list[StepSpec]:
@@ -257,8 +264,13 @@ def validate_spec(raw: Mapping[str, Any]) -> ExperimentSpec:
     if not isinstance(raw, Mapping):
         raise SpecError('spec root must be an object')
     schema = raw.get('schema')
-    if schema not in _ACCEPTED_SCHEMAS:
+    if not isinstance(schema, str) or schema not in _ACCEPTED_SCHEMAS:
         raise SpecError(f'unsupported schema {schema!r}; expected one of {sorted(_ACCEPTED_SCHEMAS)}')
+    declared_identity = raw.get('semantic_identity')
+    if declared_identity is not None and declared_identity != 'gravity':
+        raise SpecError(
+            "semantic_identity must be 'gravity'; Condense is an operation tag"
+        )
     campaign_id = raw.get('campaign_id') or raw.get('id')
     if not isinstance(campaign_id, str) or not campaign_id:
         raise SpecError('campaign_id must be a non-empty string')
@@ -325,6 +337,24 @@ def validate_spec(raw: Mapping[str, Any]) -> ExperimentSpec:
     metadata = raw.get('metadata') or raw.get('meta') or {}
     if not isinstance(metadata, Mapping):
         raise SpecError('metadata must be an object')
+    # These are plan-declared references only.  The semantic normalizer never
+    # resolves them, so adding the tag cannot turn a plan into an artifact
+    # availability claim.
+    declared_artifact_references = tuple(
+        str(value)
+        for value in (raw.get('receipt'), raw.get('fixture'))
+        if value
+    )
+    try:
+        semantic_tags = normalize_semantic_tags(
+            raw.get('semantic_tags'),
+            operation=CONDENSE_OPERATION,
+            artifact_kind='experiment_spec',
+            raw_schema=schema,
+            artifact_references=declared_artifact_references,
+        )
+    except SemanticTaxonomyError as exc:
+        raise SpecError(str(exc)) from exc
 
     def _obj(key: str) -> dict[str, Any]:
         val = raw.get(key) or {}
@@ -358,6 +388,7 @@ def validate_spec(raw: Mapping[str, Any]) -> ExperimentSpec:
         resume_policy=_obj('resume_policy'),
         notes=str(raw.get('notes') or ''),
         metadata=dict(metadata),
+        semantic_tags=semantic_tags,
     )
 
 def _load_catalog() -> dict[str, Any]:

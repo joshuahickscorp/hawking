@@ -142,7 +142,9 @@ fn metric_value(bind: &str, metric: &str) -> u64 {
         .write_all(b"GET /metrics HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
         .expect("request Hawking metrics");
     let mut response = String::new();
-    stream.read_to_string(&mut response).expect("read Hawking metrics");
+    stream
+        .read_to_string(&mut response)
+        .expect("read Hawking metrics");
     response
         .split("\r\n\r\n")
         .nth(1)

@@ -1,5 +1,5 @@
 use crate::competitors::{Competitor, LlamaCppBackend, MlxBackend};
-use crate::BenchOptions;
+use crate::{measured_decode_tps, BenchOptions};
 use anyhow::{anyhow, Result};
 use hawking_core::{
     profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -133,8 +133,7 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
         let stats = engine
             .generate(req, &mut sink)
             .map_err(|e| anyhow!("{e}"))?;
-        let secs = (stats.decode_ms / 1000.0).max(1e-6);
-        let decode_tps = stats.completion_tokens as f64 / secs;
+        let decode_tps = measured_decode_tps(&stats).unwrap_or(0.0);
         tps.push(decode_tps);
         total_decode_ms += stats.decode_ms;
         let mut ts = serde_json::json!({
@@ -142,6 +141,12 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
             "produced_tokens": produced,
             "prompt_tokens": stats.prompt_tokens,
             "completion_tokens": stats.completion_tokens,
+            "completed_decode_forwards": stats.completed_decode_forwards,
+            "throughput_token_count": if stats.completed_decode_forwards > 0 {
+                stats.completed_decode_forwards
+            } else {
+                stats.completion_tokens
+            },
             "prefill_ms": stats.prefill_ms,
             "decode_ms": stats.decode_ms,
             "draft_accepted": stats.draft_accepted,

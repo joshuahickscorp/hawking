@@ -804,13 +804,21 @@ fn forward_impl(
                     arch.kv_lora_rank + arch.qk_rope_head_dim
                 )));
             }
-            let layer_kv_a = if tracing { compressed.clone() } else { Vec::new() };
+            let layer_kv_a = if tracing {
+                compressed.clone()
+            } else {
+                Vec::new()
+            };
             let k_latent = rmsnorm(
                 &compressed[..arch.kv_lora_rank],
                 &weights.dense(&format!("{attn}.kv_a_layernorm.weight"))?,
                 arch.rms_norm_eps,
             )?;
-            let layer_c_kv = if tracing { k_latent.clone() } else { Vec::new() };
+            let layer_c_kv = if tracing {
+                k_latent.clone()
+            } else {
+                Vec::new()
+            };
             let k_rope = rope_interleaved(
                 &compressed[arch.kv_lora_rank..arch.kv_lora_rank + arch.qk_rope_head_dim],
                 pos,
@@ -898,7 +906,11 @@ fn forward_impl(
                     arch.hidden
                 )));
             }
-            let layer_attn_out = if tracing { attn_out.clone() } else { Vec::new() };
+            let layer_attn_out = if tracing {
+                attn_out.clone()
+            } else {
+                Vec::new()
+            };
             for (value, update) in x.iter_mut().zip(attn_out) {
                 *value += update;
             }
@@ -1073,7 +1085,10 @@ mod tests {
 
         let reversed = [0.5f32, 0.5005, 0.1, 0.05];
         assert_eq!(super::topk_desc_with_epsilon(&reversed, 2, 0.0), vec![1, 0]);
-        assert_eq!(super::topk_desc_with_epsilon(&reversed, 2, 0.001), vec![0, 1]);
+        assert_eq!(
+            super::topk_desc_with_epsilon(&reversed, 2, 0.001),
+            vec![0, 1]
+        );
 
         let clear = [0.9f32, 0.5, 0.1, 0.05];
         assert_eq!(super::topk_desc_with_epsilon(&clear, 2, 0.001), vec![0, 1]);

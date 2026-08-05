@@ -1316,6 +1316,573 @@ kernel void moe_route_accumulate_two_add(
     residual[id] += weight0 * routed_out0[id] + weight1 * routed_out1[id];
 }
 
+// ── DeepSeek-V4 P5B bounded MoE device-boundary authority ────────────────
+//
+// These symbols are deliberately isolated from the generic MoE graph above.
+// They implement only the source-storage boundaries needed by the bounded
+// layer-0 P5B receipt: BF16 SwiGLU (with the V4 clamps and optional route
+// factor), source-layout FP4 QAT matvec, and the routed+shared BF16 combine.
+// No Engine, token loop, or HCLI path selects them.
+//
+// `moe.metal` is concatenated before `matmul.metal`, so this family owns
+// private helper names rather than relying on later DeepSeek component helpers.
+
+static inline float deepseek_v4_p5b_bf16_value(ushort bits)
+{
+    return as_type<float>(((uint)bits) << 16u);
+}
+
+static inline ushort deepseek_v4_p5b_bf16_encode_rne(float value)
+{
+    const uint bits = as_type<uint>(value);
+    const uint low_lsb = (bits >> 16u) & 1u;
+    return (ushort)((bits + 0x7fffu + low_lsb) >> 16u);
+}
+
+static inline float deepseek_v4_p5b_e4m3fn_value(uchar bits)
+{
+    const uint raw = (uint)bits;
+    const uint exponent = (raw >> 3u) & 0x0fu;
+    const uint mantissa = raw & 0x07u;
+    if (exponent == 0x0fu && mantissa == 0x07u) return 0.0f;
+    const float magnitude = exponent == 0u
+        ? (float)mantissa * 0.001953125f
+        : as_type<float>(((exponent + 120u) << 23u) | (mantissa << 20u));
+    return (raw & 0x80u) != 0u ? -magnitude : magnitude;
+}
+
+static inline float deepseek_v4_p5b_e8m0fnu_value(uchar bits)
+{
+    if ((uint)bits == 0xffu) return 0.0f;
+    return (uint)bits == 0u
+        ? as_type<float>(0x00400000u)
+        : as_type<float>(((uint)bits) << 23u);
+}
+
+static inline float deepseek_v4_p5b_e2m1fn_value(uchar packed, bool high_nibble)
+{
+    const uint nibble = high_nibble ? (((uint)packed >> 4u) & 0x0fu)
+                                     : ((uint)packed & 0x0fu);
+    float magnitude = 0.0f;
+    switch (nibble & 0x07u) {
+        case 0u: magnitude = 0.0f; break;
+        case 1u: magnitude = 0.5f; break;
+        case 2u: magnitude = 1.0f; break;
+        case 3u: magnitude = 1.5f; break;
+        case 4u: magnitude = 2.0f; break;
+        case 5u: magnitude = 3.0f; break;
+        case 6u: magnitude = 4.0f; break;
+        default: magnitude = 6.0f; break;
+    }
+    return (nibble & 0x08u) != 0u ? -magnitude : magnitude;
+}
+
+static inline float deepseek_v4_p5b_silu(float value)
+{
+    // Match the source-oracle's overflow-avoiding formulation rather than a
+    // generic expression whose large-negative intermediate may differ.
+    if (value >= 0.0f) return value / (1.0f + exp(-value));
+    const float e = exp(value);
+    return value * e / (1.0f + e);
+}
+
+// Source Expert.forward storage boundary:
+// BF16 W1/W3 outputs -> clamp -> SiLU*up -> optional route factor -> BF16.
+// `route_weight` is 1.0 for the shared expert and the selected source f32
+// route weight for the routed expert.  It is intentionally applied before W2.
+kernel void deepseek_v4_p5b_swiglu_route_bf16_authority(
+    device const ushort* gate_bf16 [[buffer(0)]],
+    device const ushort* up_bf16   [[buffer(1)]],
+    device       ushort* output_bf16 [[buffer(2)]],
+    constant float& route_weight [[buffer(3)]],
+    constant uint& count [[buffer(4)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index >= count) return;
+    const float gate = min(deepseek_v4_p5b_bf16_value(gate_bf16[index]), 10.0f);
+    const float up = clamp(deepseek_v4_p5b_bf16_value(up_bf16[index]), -10.0f, 10.0f);
+    output_bf16[index] = deepseek_v4_p5b_bf16_encode_rne(
+        deepseek_v4_p5b_silu(gate) * up * route_weight);
+}
+
+// Source-native FP4 `fp4_gemm` shape after device QAT.  The accumulation is
+// explicitly 32-K block-local, then scaled by the corresponding 128-K
+// activation E8M0 and 32-K weight E8M0 values, matching the CPU source
+// authority rather than the older F32-x FP4 component kernel's association.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p5b_fp4_act_quant_e2m1fn_x2_e8m0_matvec_authority(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kFp4Block = 32u;
+    constexpr uint kActBlock = 128u;
+    if (row >= rows || packed_cols == 0u || scale_cols == 0u
+        || packed_cols * 2u != scale_cols * kFp4Block) return;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        float block_accumulator = 0.0f;
+        const uint start = block * kFp4Block;
+        for (uint offset = 0u; offset < kFp4Block; ++offset) {
+            const uint col = start + offset;
+            const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+            const float activation = deepseek_v4_p5b_e4m3fn_value(quantized[col]);
+            const float weight = deepseek_v4_p5b_e2m1fn_value(packed, (col & 1u) != 0u);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = deepseek_v4_p5b_e8m0fnu_value(
+            act_scales[block / (kActBlock / kFp4Block)]);
+        const float weight_scale = deepseek_v4_p5b_e8m0fnu_value(
+            weight_scales[scale_base + (ulong)block]);
+        row_accumulator = row_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// The source MoE loop adds routed and shared BF16 W2 results in F32 before it
+// casts the combined result back to the current BF16 dtype.  P5B has exactly
+// one routed expert, whose source route weight was already applied before W2.
+kernel void deepseek_v4_p5b_route_shared_combine_bf16_authority(
+    device const ushort* routed_bf16 [[buffer(0)]],
+    device const ushort* shared_bf16 [[buffer(1)]],
+    device       ushort* output_bf16 [[buffer(2)]],
+    constant uint& count [[buffer(3)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index >= count) return;
+    const float value = deepseek_v4_p5b_bf16_value(routed_bf16[index])
+        + deepseek_v4_p5b_bf16_value(shared_bf16[index]);
+    output_bf16[index] = deepseek_v4_p5b_bf16_encode_rne(value);
+}
+
+// ── DeepSeek-V4 P6A bounded six-expert wave authority ────────────────────
+//
+// This extension deliberately remains a layer-0, fixed-predecessor probe.
+// Unlike P5B, Gate scores, the complete hash tid2eid lookup, gathered score
+// normalization, and all six routed expert weights are device-resident.  The
+// caller must still establish that its predecessor BF16 vector is legitimate;
+// these kernels are not registered in a decoder or an HCLI path.
+
+// Source Gate: one serial F32 row reduction over BF16 storage.  Keeping each
+// row scalar makes the reduction order explicit and comparable to the CPU
+// source transcription used by the P6A receipt.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_gate_bf16_matvec_authority(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    if (row >= rows || cols == 0u) return;
+    float accumulator = 0.0f;
+    const ulong base = (ulong)row * (ulong)cols;
+    for (uint col = 0u; col < cols; ++col) {
+        accumulator = accumulator
+            + deepseek_v4_p5b_bf16_value(input_bf16[col])
+            * deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]);
+    }
+    logits_f32[row] = accumulator;
+}
+#pragma clang fp contract(on)
+
+// ── Isolated P0 Gate reduction candidates ──────────────────────────────────
+//
+// These are named, bounded diagnostic candidates for the frozen P0
+// BF16[4096] Gate input. The associated sweep runner stages only the admitted
+// Gate matrix and that frozen input, then compares the resulting F32[256]
+// logits with a separately captured Torch F.linear calibration and an
+// independent FP64 authority. C1-C3 and C5-C7 remain sweep-only. C4 alone is
+// selected by the bounded reusable layer-0 P6 executor after its isolated
+// admission; it remains outside an Engine, causal loop, HCLI endpoint, and
+// TPS path. Keeping the original P6A authority kernel intact preserves the
+// frozen baseline/trace control for future comparison.
+//
+// C1: preserve the existing scalar column order while making the fused
+// multiply-add explicit.  This isolates product/add rounding from reduction
+// association.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p0_gate_reduction_c1_serial_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    if (row >= rows || cols == 0u) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float accumulator = 0.0f;
+    for (uint col = 0u; col < cols; ++col) {
+        const float activation = deepseek_v4_p5b_bf16_value(input_bf16[col]);
+        const float weight = deepseek_v4_p5b_bf16_value(
+            gate_weight_bf16[base + (ulong)col]);
+        accumulator = metal::precise::fma(activation, weight, accumulator);
+    }
+    logits_f32[row] = accumulator;
+}
+
+// C2: four fixed, interleaved F32 FMA accumulators followed by an explicitly
+// ordered fold.  The layout mirrors the scalar lanes of a width-four CPU SIMD
+// dot product without assuming that any particular host BLAS implementation
+// uses this exact microkernel.
+kernel void deepseek_v4_p0_gate_reduction_c2_strided4_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kLanes = 4u;
+    if (row >= rows || cols == 0u || (cols % kLanes) != 0u) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float lane0 = 0.0f;
+    float lane1 = 0.0f;
+    float lane2 = 0.0f;
+    float lane3 = 0.0f;
+    for (uint col = 0u; col < cols; col += kLanes) {
+        lane0 = metal::precise::fma(
+            deepseek_v4_p5b_bf16_value(input_bf16[col]),
+            deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), lane0);
+        lane1 = metal::precise::fma(
+            deepseek_v4_p5b_bf16_value(input_bf16[col + 1u]),
+            deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col + 1ul]), lane1);
+        lane2 = metal::precise::fma(
+            deepseek_v4_p5b_bf16_value(input_bf16[col + 2u]),
+            deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col + 2ul]), lane2);
+        lane3 = metal::precise::fma(
+            deepseek_v4_p5b_bf16_value(input_bf16[col + 3u]),
+            deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col + 3ul]), lane3);
+    }
+    float accumulator = metal::precise::fma(1.0f, lane0, 0.0f);
+    accumulator = metal::precise::fma(1.0f, lane1, accumulator);
+    accumulator = metal::precise::fma(1.0f, lane2, accumulator);
+    accumulator = metal::precise::fma(1.0f, lane3, accumulator);
+    logits_f32[row] = accumulator;
+}
+
+// C3: thirty-two contiguous K=128 partials, each accumulated by FMA, then a
+// deterministic increasing-block fold.  This is a K-block association probe;
+// it intentionally remains one device thread per Gate row so its final fold
+// has no hardware-defined reduction tree.
+kernel void deepseek_v4_p0_gate_reduction_c3_block128_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 128u;
+    constexpr uint kBlocks = 32u;
+    if (row >= rows || cols != kBlock * kBlocks) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float partials[kBlocks];
+    for (uint block = 0u; block < kBlocks; ++block) {
+        float partial = 0.0f;
+        const uint start = block * kBlock;
+        for (uint offset = 0u; offset < kBlock; ++offset) {
+            const uint col = start + offset;
+            partial = metal::precise::fma(
+                deepseek_v4_p5b_bf16_value(input_bf16[col]),
+                deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), partial);
+        }
+        partials[block] = partial;
+    }
+    float accumulator = 0.0f;
+    for (uint block = 0u; block < kBlocks; ++block) {
+        accumulator = metal::precise::fma(1.0f, partials[block], accumulator);
+    }
+    logits_f32[row] = accumulator;
+}
+
+// C5: thirty-two fixed, interleaved FMA accumulators followed by an ordered
+// lane fold.  This is the deterministic scalar counterpart to the C4
+// SIMDgroup layout: it keeps the same i, i+32, ... input ownership but makes
+// the final association explicit rather than delegating it to simd_sum.
+kernel void deepseek_v4_p0_gate_reduction_c5_strided32_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kLanes = 32u;
+    if (row >= rows || cols == 0u || (cols % kLanes) != 0u) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float partials[kLanes];
+    for (uint lane = 0u; lane < kLanes; ++lane) {
+        float partial = 0.0f;
+        for (uint col = lane; col < cols; col += kLanes) {
+            partial = metal::precise::fma(
+                deepseek_v4_p5b_bf16_value(input_bf16[col]),
+                deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), partial);
+        }
+        partials[lane] = partial;
+    }
+    float accumulator = 0.0f;
+    for (uint lane = 0u; lane < kLanes; ++lane) {
+        accumulator = metal::precise::fma(1.0f, partials[lane], accumulator);
+    }
+    logits_f32[row] = accumulator;
+}
+
+// C6: sixteen contiguous K=256 FMA partials and a deterministic ordered
+// fold.  The host-only association screen selected this compact blocked shape
+// as a strong source-target candidate; the real-Metal sweep remains the only
+// admissible device evidence.
+kernel void deepseek_v4_p0_gate_reduction_c6_block256x16_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 256u;
+    constexpr uint kBlocks = 16u;
+    if (row >= rows || cols != kBlock * kBlocks) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float partials[kBlocks];
+    for (uint block = 0u; block < kBlocks; ++block) {
+        float partial = 0.0f;
+        const uint start = block * kBlock;
+        for (uint offset = 0u; offset < kBlock; ++offset) {
+            const uint col = start + offset;
+            partial = metal::precise::fma(
+                deepseek_v4_p5b_bf16_value(input_bf16[col]),
+                deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), partial);
+        }
+        partials[block] = partial;
+    }
+    float accumulator = 0.0f;
+    for (uint block = 0u; block < kBlocks; ++block) {
+        accumulator = metal::precise::fma(1.0f, partials[block], accumulator);
+    }
+    logits_f32[row] = accumulator;
+}
+
+// C7: sixty-four contiguous K=64 FMA partials and a deterministic ordered
+// fold.  It tests the more finely blocked candidate found by the host-only
+// screen without changing any execution-path authority.
+kernel void deepseek_v4_p0_gate_reduction_c7_block64x64_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 64u;
+    constexpr uint kBlocks = 64u;
+    if (row >= rows || cols != kBlock * kBlocks) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float partials[kBlocks];
+    for (uint block = 0u; block < kBlocks; ++block) {
+        float partial = 0.0f;
+        const uint start = block * kBlock;
+        for (uint offset = 0u; offset < kBlock; ++offset) {
+            const uint col = start + offset;
+            partial = metal::precise::fma(
+                deepseek_v4_p5b_bf16_value(input_bf16[col]),
+                deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), partial);
+        }
+        partials[block] = partial;
+    }
+    float accumulator = 0.0f;
+    for (uint block = 0u; block < kBlocks; ++block) {
+        accumulator = metal::precise::fma(1.0f, partials[block], accumulator);
+    }
+    logits_f32[row] = accumulator;
+}
+
+// C4: one 32-lane SIMDgroup per Gate row.  Lane i accumulates the fixed
+// strided column sequence i, i+32, ... with precise FMA; simd_sum then applies
+// Metal's hardware reduction tree.  This is the only candidate that permits a
+// hardware-defined final association, so the host admits it only when the
+// pipeline reports a 32-thread execution width and records it separately.
+kernel void deepseek_v4_p0_gate_reduction_c4_simd32_fma_candidate(
+    device const ushort* gate_weight_bf16 [[buffer(0)]],
+    device const ushort* input_bf16       [[buffer(1)]],
+    device       float* logits_f32         [[buffer(2)]],
+    constant uint& rows                    [[buffer(3)]],
+    constant uint& cols                    [[buffer(4)]],
+    uint row [[threadgroup_position_in_grid]],
+    uint lane [[thread_index_in_simdgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    if (row >= rows || cols == 0u || tg_size != kSimdWidth) return;
+    const ulong base = (ulong)row * (ulong)cols;
+    float partial = 0.0f;
+    for (uint col = lane; col < cols; col += kSimdWidth) {
+        partial = metal::precise::fma(
+            deepseek_v4_p5b_bf16_value(input_bf16[col]),
+            deepseek_v4_p5b_bf16_value(gate_weight_bf16[base + (ulong)col]), partial);
+    }
+    const float total = simd_sum(partial);
+    if (lane == 0u) logits_f32[row] = total;
+}
+#pragma clang fp contract(on)
+
+// Source hash route: score every Gate logit with thresholded sqrt-softplus,
+// gather `tid2eid[token_id]` from the native I64 table represented as LE u32
+// word pairs, then normalize only the six gathered *unbiased* scores before
+// applying route_scale.  A single device thread preserves the source slot and
+// summation order and exposes a validity bit instead of silently accepting an
+// invalid I64, non-finite score, or zero normalization sum.
+
+// The host source uses `ln_1p`, which retains a positive sub-ULP score for
+// very negative Gate logits.  Metal's portable `log(1.0f + u)` rounds that
+// sum to one for small positive `u`, silently turning a valid source route
+// score into zero.  The source branch only supplies u in [0, 1], so retain the
+// first terms of ln(1+u) below 1e-4 (the cubic term is below one f32 ULP at
+// the cutoff) and use the normal logarithm outside the cancellation region.
+static inline float deepseek_v4_p6a_log1p_source_stable(float u)
+{
+    if (u < 0.0001f) {
+        return u - 0.5f * u * u;
+    }
+    return metal::precise::log(1.0f + u);
+}
+
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_hash_route_sqrtsoftplus_authority(
+    device const float* logits_f32          [[buffer(0)]],
+    device const uint* tid2eid_i64_le_words [[buffer(1)]],
+    device       uint* selected_ids         [[buffer(2)]],
+    device       float* selected_weights    [[buffer(3)]],
+    device       float* original_scores     [[buffer(4)]],
+    device       uint* valid                [[buffer(5)]],
+    constant uint& token_id                 [[buffer(6)]],
+    constant uint& expert_count             [[buffer(7)]],
+    constant uint& top_k                    [[buffer(8)]],
+    constant float& route_scale             [[buffer(9)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index != 0u) return;
+    valid[0] = 0u;
+    if (expert_count == 0u || top_k != 6u || !isfinite(route_scale)) {
+        valid[0] = 2u;
+        return;
+    }
+
+    for (uint expert = 0u; expert < expert_count; ++expert) {
+        const float logit = logits_f32[expert];
+        if (!isfinite(logit)) {
+            valid[0] = 16u + expert;
+            return;
+        }
+        const float softplus = logit > 20.0f
+            ? logit
+            : (logit >= 0.0f
+                ? logit + deepseek_v4_p6a_log1p_source_stable(metal::precise::exp(-logit))
+                : deepseek_v4_p6a_log1p_source_stable(metal::precise::exp(logit)));
+        const float score = metal::precise::sqrt(softplus);
+        if (!(isfinite(score) && score > 0.0f)) {
+            valid[0] = 512u + expert;
+            return;
+        }
+        original_scores[expert] = score;
+    }
+
+    const ulong row_base = (ulong)token_id * (ulong)top_k * 2ul;
+    float sum = 0.0f;
+    for (uint slot = 0u; slot < top_k; ++slot) {
+        const ulong word = row_base + (ulong)slot * 2ul;
+        const uint lo = tid2eid_i64_le_words[word];
+        const uint hi = tid2eid_i64_le_words[word + 1ul];
+        // Valid source I64 experts are nonnegative and fit in the configured
+        // routed-expert range, so the high word must be zero.
+        if (hi != 0u || lo >= expert_count) {
+            valid[0] = 1024u + slot;
+            return;
+        }
+        selected_ids[slot] = lo;
+        const float score = original_scores[lo];
+        selected_weights[slot] = score;
+        sum = sum + score;
+    }
+    if (!(isfinite(sum) && sum > 0.0f)) {
+        valid[0] = 1536u;
+        return;
+    }
+    for (uint slot = 0u; slot < top_k; ++slot) {
+        const float weight = (selected_weights[slot] / sum) * route_scale;
+        if (!isfinite(weight)) {
+            valid[0] = 1792u + slot;
+            return;
+        }
+        selected_weights[slot] = weight;
+    }
+    valid[0] = 1u;
+}
+#pragma clang fp contract(on)
+
+// Device-route-weighted source SwiGLU.  `route_slot` indexes the device
+// result above; the host does not supply the floating route factor.  Each
+// expert wave uses a distinct output allocation, so these invocations are
+// safe to put in an explicitly concurrent command encoder.
+kernel void deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority(
+    device const ushort* gate_bf16      [[buffer(0)]],
+    device const ushort* up_bf16        [[buffer(1)]],
+    device       ushort* output_bf16    [[buffer(2)]],
+    device const float* route_weights   [[buffer(3)]],
+    constant uint& route_slot           [[buffer(4)]],
+    constant uint& count                [[buffer(5)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index >= count) return;
+    const float route_weight = route_weights[route_slot];
+    const float gate = min(deepseek_v4_p5b_bf16_value(gate_bf16[index]), 10.0f);
+    const float up = clamp(deepseek_v4_p5b_bf16_value(up_bf16[index]), -10.0f, 10.0f);
+    output_bf16[index] = deepseek_v4_p5b_bf16_encode_rne(
+        deepseek_v4_p5b_silu(gate) * up * route_weight);
+}
+
+// Exact source-loop combine for six routed outputs stored in ascending
+// numeric-expert order plus the always-on shared output.  The sequential
+// statements intentionally retain the `y = 0; y += expert_i; y += shared`
+// association from the source model instead of collapsing the sum.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_route6_shared_combine_bf16_authority(
+    device const ushort* routed_0_bf16 [[buffer(0)]],
+    device const ushort* routed_1_bf16 [[buffer(1)]],
+    device const ushort* routed_2_bf16 [[buffer(2)]],
+    device const ushort* routed_3_bf16 [[buffer(3)]],
+    device const ushort* routed_4_bf16 [[buffer(4)]],
+    device const ushort* routed_5_bf16 [[buffer(5)]],
+    device const ushort* shared_bf16    [[buffer(6)]],
+    device       ushort* output_bf16    [[buffer(7)]],
+    constant uint& count                 [[buffer(8)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index >= count) return;
+    float value = 0.0f;
+    value = value + deepseek_v4_p5b_bf16_value(routed_0_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(routed_1_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(routed_2_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(routed_3_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(routed_4_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(routed_5_bf16[index]);
+    value = value + deepseek_v4_p5b_bf16_value(shared_bf16[index]);
+    output_bf16[index] = deepseek_v4_p5b_bf16_encode_rne(value);
+}
+#pragma clang fp contract(on)
+
 // H2.3 — weighted gather of per-(token, expert) outputs back into
 // per-token activations. One thread per (token, hidden) pair.
 //

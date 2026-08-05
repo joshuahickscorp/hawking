@@ -832,16 +832,8 @@ fn native_q4k_embedding_lookup_matches_independent_packed_decoder() {
     let token = 5_u32;
 
     let mut tcb = TokenCommandBuffer::new(&ctx);
-    kernels::embed_lookup_q4_k_m_tcb(
-        &mut tcb,
-        &weights,
-        0,
-        packed.len(),
-        token,
-        COLS,
-        &out,
-    )
-    .expect("native Q4_K embed encode");
+    kernels::embed_lookup_q4_k_m_tcb(&mut tcb, &weights, 0, packed.len(), token, COLS, &out)
+        .expect("native Q4_K embed encode");
     assert_eq!(tcb.dispatch_count(), 1, "one native source lookup dispatch");
     tcb.commit_and_wait().expect("native Q4_K embed completion");
 

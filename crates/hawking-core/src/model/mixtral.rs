@@ -229,9 +229,12 @@ pub struct MixtralDecodeArena;
 impl MixtralEngine {
     pub fn load_tokenizer_preview(weights: &Path, gguf: &GgufFile) -> Result<Tokenizer> {
         let sidecar = weights.parent().and_then(|d| {
-            [d.join("tokenizer.json"), d.join("tokenizer").join("tokenizer.json")]
-                .into_iter()
-                .find(|p| p.exists())
+            [
+                d.join("tokenizer.json"),
+                d.join("tokenizer").join("tokenizer.json"),
+            ]
+            .into_iter()
+            .find(|p| p.exists())
         });
         if let Some(path) = sidecar {
             Tokenizer::from_file(path)
@@ -325,22 +328,21 @@ impl MixtralEngine {
             .checked_mul(bytes_per_block)
             .ok_or_else(|| Error::Model(format!("fused tensor `{name}` byte-size overflow")))?
             as usize;
-        let expected_total = per_bytes
-            .checked_mul(n_experts)
-            .ok_or_else(|| Error::Model(format!("fused tensor `{name}` total byte-size overflow")))?;
+        let expected_total = per_bytes.checked_mul(n_experts).ok_or_else(|| {
+            Error::Model(format!("fused tensor `{name}` total byte-size overflow"))
+        })?;
         if info.byte_size as usize != expected_total {
             return Err(Error::Model(format!(
                 "fused tensor `{name}` byte-size {} expected {}",
                 info.byte_size, expected_total
             )));
         }
-        let offset = (info.data_offset as usize)
-            .checked_add(
-                expert_id
-                    .checked_mul(per_bytes)
-                    .ok_or_else(|| Error::Model(format!("fused tensor `{name}` offset overflow")))?,
-            )
-            .ok_or_else(|| Error::Model(format!("fused tensor `{name}` offset overflow")))?;
+        let offset =
+            (info.data_offset as usize)
+                .checked_add(expert_id.checked_mul(per_bytes).ok_or_else(|| {
+                    Error::Model(format!("fused tensor `{name}` offset overflow"))
+                })?)
+                .ok_or_else(|| Error::Model(format!("fused tensor `{name}` offset overflow")))?;
         let byte_size = per_bytes;
         let chunk_offset = offset % WEIGHT_CHUNK_STRIDE;
         if chunk_offset + byte_size > WEIGHT_CHUNK_STRIDE + WEIGHT_CHUNK_OVERLAP {
@@ -474,7 +476,13 @@ impl Engine for MixtralEngine {
         let cfg = MixtralConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("mixtral-8x7b").to_string();
         let tokenizer = Self::load_tokenizer_preview(weights, &gguf)?;
-        let embed_raw = Self::tensor_ref_expected(&gguf, "token_embd.weight", GgmlType::Q4_K, cfg.vocab_size, cfg.hidden)?;
+        let embed_raw = Self::tensor_ref_expected(
+            &gguf,
+            "token_embd.weight",
+            GgmlType::Q4_K,
+            cfg.vocab_size,
+            cfg.hidden,
+        )?;
         let embed = dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
@@ -1175,7 +1183,8 @@ impl MixtralEngine {
                     let n_dispatch = tcb.dispatch_count();
                     tcb.commit_and_wait()?;
                     self.last_dispatch_count = self.last_dispatch_count.saturating_add(n_dispatch);
-                    self.last_command_buffer_count = self.last_command_buffer_count.saturating_add(1);
+                    self.last_command_buffer_count =
+                        self.last_command_buffer_count.saturating_add(1);
                     if li == 0 {
                         Self::debug_buffer("embed", &arena.x_buf, h, 5)?;
                     }
@@ -1235,7 +1244,8 @@ impl MixtralEngine {
                     let n_dispatch = rope_tcb.dispatch_count();
                     rope_tcb.commit_and_wait()?;
                     self.last_dispatch_count = self.last_dispatch_count.saturating_add(n_dispatch);
-                    self.last_command_buffer_count = self.last_command_buffer_count.saturating_add(1);
+                    self.last_command_buffer_count =
+                        self.last_command_buffer_count.saturating_add(1);
                     Self::debug_buffer(
                         &format!("layer{li}.q_post_rope_head0"),
                         &arena.q_buf,
@@ -1295,7 +1305,8 @@ impl MixtralEngine {
                     let n_dispatch = tcb.dispatch_count();
                     tcb.commit_and_wait()?;
                     self.last_dispatch_count = self.last_dispatch_count.saturating_add(n_dispatch);
-                    self.last_command_buffer_count = self.last_command_buffer_count.saturating_add(1);
+                    self.last_command_buffer_count =
+                        self.last_command_buffer_count.saturating_add(1);
                 }
             }
 
@@ -1361,8 +1372,8 @@ impl MixtralEngine {
 
             {
                 let layer = &self.layers[li];
-                let device_combine_in_tcb = crate::env_on("HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB")
-                    && routes.len() == 2;
+                let device_combine_in_tcb =
+                    crate::env_on("HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB") && routes.len() == 2;
                 let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                 for (route_i, (eid, _weight)) in routes.iter().enumerate() {
                     self.encode_k_quant_tcb(
@@ -1434,9 +1445,7 @@ impl MixtralEngine {
                 combine_tcb.commit_and_wait()?;
                 self.last_dispatch_count = self.last_dispatch_count.saturating_add(n_dispatch);
                 self.last_command_buffer_count = self.last_command_buffer_count.saturating_add(1);
-            } else if crate::env_on("HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB")
-                && routes.len() == 2
-            {
+            } else if crate::env_on("HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB") && routes.len() == 2 {
                 // The v2 combine was appended to the expert TCB above; no
                 // host weighted-sum or residual copy is permitted here.
             } else {

@@ -26,6 +26,7 @@ use crate::machine::effects::Mode;
 use crate::machine::state::AgentState;
 use crate::plan::planner::{Planner, RuntimePlanner, StubPlanner};
 use crate::runtime_client::KernelRuntimeClient;
+use crate::tools::VerifiedModelToolExecutor;
 use crate::verify::deterministic::ProcessOracle;
 use crate::verify::gate::VerificationGate;
 use crate::verify::OracleSuite;
@@ -42,10 +43,21 @@ use parking_lot::Mutex;
 use serde_json::json;
 use std::sync::Arc;
 
+/// The packed codebase context that grounds one agent step. The content is
+/// retained only for the step's subsequent model request; the manifest hash and
+/// counts are what durable receipts expose by default.
+#[derive(Debug, Clone)]
+pub struct GroundedContext {
+    pub manifest_hash: String,
+    pub prompt: String,
+    pub used_tokens: usize,
+    pub retained_span_count: usize,
+}
+
 /// Codebase grounding: the context compiler over the code index (imports the
 /// `hawking-context` + `hawking-index` crates the audit flagged as
-/// declared-but-unused). `compile(task)` returns the manifest hash that grounds
-/// a step.
+/// declared-but-unused). `compile(task)` returns both provenance and the packed
+/// context so a selected step is actually grounded in its model request.
 pub struct Grounding {
     index: Arc<dyn CodeIndex>,
     profile: ContextProfile,
@@ -68,8 +80,10 @@ impl Grounding {
         }
     }
 
-    /// Compile context for a task and return the manifest content hash.
-    pub async fn compile(&self, task: &str) -> Result<Option<String>> {
+    /// Compile context for a task. An empty pack is still returned with its
+    /// manifest, allowing the caller to distinguish "no matching spans" from
+    /// "grounding unavailable" without inventing source content.
+    pub async fn compile(&self, task: &str) -> Result<Option<GroundedContext>> {
         let mut compiler = ContextCompiler::new();
         compiler.add_source(hawking_context::sources::CodeIndexContextSource::new(
             self.index.clone(),
@@ -89,7 +103,12 @@ impl Grounding {
             hasher.update(span.id.as_bytes());
             hasher.update(b"\0");
         }
-        Ok(Some(format!("blake3:{}", hasher.finalize().to_hex())))
+        Ok(Some(GroundedContext {
+            manifest_hash: format!("blake3:{}", hasher.finalize().to_hex()),
+            prompt: compiled.prompt,
+            used_tokens: compiled.manifest.used_tokens,
+            retained_span_count: compiled.manifest.retained.len(),
+        }))
     }
 }
 
@@ -104,7 +123,12 @@ pub struct AgentKernel {
     governor: Mutex<Governor>,
     runtime: Option<Arc<KernelRuntimeClient>>,
     dispatcher: Option<Arc<ToolDispatcher>>,
+    model_tool_executor: Option<Arc<dyn VerifiedModelToolExecutor>>,
     grounding: Option<Arc<Grounding>>,
+    /// A small live endpoint may not have room for the ordinary code-index
+    /// pack or tool catalog.  This opt-in omits those whole optional blocks;
+    /// it never truncates an unknown prompt invisibly.
+    compact_model_prompts: bool,
     workspace_root: String,
     mode: Mode,
 }
@@ -122,7 +146,9 @@ impl AgentKernel {
             governor: Mutex::new(Governor::default()),
             runtime: None,
             dispatcher: None,
+            model_tool_executor: None,
             grounding: None,
+            compact_model_prompts: false,
             workspace_root: ".".to_string(),
             mode: Mode::Live,
         }
@@ -168,7 +194,9 @@ impl AgentKernel {
                 governor: &mut governor,
                 runtime: self.runtime.as_deref(),
                 dispatcher: self.dispatcher.as_deref(),
+                model_tool_executor: self.model_tool_executor.as_deref(),
                 grounding: self.grounding.as_deref(),
+                compact_model_prompts: self.compact_model_prompts,
                 workspace_root: self.workspace_root.clone(),
                 mode: self.mode,
             };
@@ -201,7 +229,9 @@ pub struct KernelBuilder {
     autonomy: Autonomy,
     runtime: Option<Arc<KernelRuntimeClient>>,
     dispatcher: Option<Arc<ToolDispatcher>>,
+    model_tool_executor: Option<Arc<dyn VerifiedModelToolExecutor>>,
     grounding: Option<Arc<Grounding>>,
+    compact_model_prompts: bool,
     workspace_root: String,
     mode: Mode,
 }
@@ -216,7 +246,9 @@ impl KernelBuilder {
             autonomy: Autonomy::FullAuto,
             runtime: None,
             dispatcher: None,
+            model_tool_executor: None,
             grounding: None,
+            compact_model_prompts: false,
             workspace_root: ".".to_string(),
             mode: Mode::Live,
         }
@@ -257,6 +289,14 @@ impl KernelBuilder {
         self
     }
 
+    /// Omit optional grounding and tool-catalog prompt blocks for a known
+    /// small live context.  The host must record this choice in its receipt.
+    /// This is a whole-block omission, not character or token truncation.
+    pub fn compact_model_prompts(mut self, enabled: bool) -> Self {
+        self.compact_model_prompts = enabled;
+        self
+    }
+
     /// Wire the runtime client (model). Also installs a [`RuntimePlanner`] if no
     /// planner has been set yet.
     pub fn runtime(mut self, runtime: Arc<KernelRuntimeClient>) -> Self {
@@ -270,6 +310,17 @@ impl KernelBuilder {
     /// Wire a tool dispatcher (effectful steps + shelling oracles).
     pub fn dispatcher(mut self, dispatcher: Arc<ToolDispatcher>) -> Self {
         self.dispatcher = Some(dispatcher);
+        self
+    }
+
+    /// Install the host-owned capability that may execute a model-emitted tool
+    /// call after it binds that exact call to durable target verification.
+    /// Without this, model text stays proposal-only.
+    pub fn verified_model_tool_executor(
+        mut self,
+        executor: Arc<dyn VerifiedModelToolExecutor>,
+    ) -> Self {
+        self.model_tool_executor = Some(executor);
         self
     }
 
@@ -299,7 +350,9 @@ impl KernelBuilder {
             governor: Mutex::new(Governor::new(self.autonomy)),
             runtime: self.runtime,
             dispatcher: self.dispatcher,
+            model_tool_executor: self.model_tool_executor,
             grounding: self.grounding,
+            compact_model_prompts: self.compact_model_prompts,
             workspace_root: self.workspace_root,
             mode: self.mode,
         }

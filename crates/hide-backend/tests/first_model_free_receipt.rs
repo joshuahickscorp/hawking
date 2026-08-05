@@ -21,6 +21,7 @@ use hide_kernel::machine::state::{AgentState, Phase};
 use hide_kernel::plan::planner::Planner;
 use hide_kernel::plan::schema::{Acceptance, Plan, PlanStatus, PlanStep, StepKind};
 use hide_kernel::runtime_client::KernelRuntimeClient;
+use hide_kernel::tools::VerifiedModelToolExecutor;
 use hide_kernel::{AgentKernel, Grounding};
 use parking_lot::Mutex;
 use serde_json::{json, Value};
@@ -153,6 +154,8 @@ impl InferenceClient for ScriptedInferenceClient {
             Ok(GenerationStats {
                 input_tokens: 0,
                 output_tokens: 1,
+                decode_ms: None,
+                completed_decode_forwards: None,
                 decode_tokens_per_second: None,
             })
         })
@@ -270,6 +273,7 @@ async fn run_scripted_flow(
     role_registry: Arc<RoleRegistry>,
     code_index: Arc<dyn CodeIndex>,
     dispatcher: Arc<ToolDispatcher>,
+    model_tool_executor: Option<Arc<dyn VerifiedModelToolExecutor>>,
     fixture: &Path,
     session: SessionId,
     steer: Option<&str>,
@@ -324,15 +328,18 @@ async fn run_scripted_flow(
         inference.clone() as Arc<dyn InferenceClient>,
     ));
     let grounding = Arc::new(Grounding::new(code_index.clone() as Arc<dyn CodeIndex>));
-    let kernel = AgentKernel::builder(event_log.clone())
+    let mut kernel_builder = AgentKernel::builder(event_log.clone())
         .workspace_root(root.clone())
         .autonomy(Autonomy::FullAuto)
         .grounding(grounding)
         .planner(planner.clone() as Arc<dyn Planner>)
         .runtime(runtime)
         .dispatcher(dispatcher.clone())
-        .with_standard_oracles(dispatcher)
-        .build();
+        .with_standard_oracles(dispatcher);
+    if let Some(executor) = model_tool_executor {
+        kernel_builder = kernel_builder.verified_model_tool_executor(executor);
+    }
+    let kernel = kernel_builder.build();
     let mut state = kernel.start_run(session, objective.clone()).await.unwrap();
     state.budget.max_repairs = 0;
     let mut steered = false;
@@ -409,6 +416,7 @@ async fn run_once_in_memory() -> Vec<String> {
         role_registry,
         code_index,
         dispatcher,
+        None,
         &repo,
         session.clone(),
         None,
@@ -567,6 +575,7 @@ async fn first_model_free_implementation_receipt() {
         host.services.role_registry.clone(),
         host.services.code_index.clone(),
         dispatcher.clone(),
+        Some(host.verified_model_tool_executor()),
         &repo,
         session.clone(),
         Some("prefer a clear, idiomatic maximum-scan"),

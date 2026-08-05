@@ -69,13 +69,23 @@ pub mod planner {
     use crate::runtime_client::KernelRuntimeClient;
     use futures::future::BoxFuture;
     use hide_core::ids::PlanId;
-    use hide_core::runtime::{InferenceRequest, StreamChunk};
+    use hide_core::runtime::{GenerationStats, InferenceRequest, StreamChunk};
     use hide_core::Result;
+    use parking_lot::Mutex;
     use std::collections::BTreeMap;
     use std::sync::Arc;
 
     pub trait Planner: Send + Sync {
         fn synthesize<'a>(&'a self, objective: &'a str) -> BoxFuture<'a, Result<Plan>>;
+
+        /// Return the metrics for the most recent model-backed planning call.
+        /// Planners that do not call a model deliberately return `None`.
+        /// The driver consumes this immediately after `synthesize`, before any
+        /// other model request can occur, and persists the accounting in the
+        /// run receipt.
+        fn take_generation_stats(&self) -> Option<GenerationStats> {
+            None
+        }
     }
 
     /// A single-step planner (tests / trivial objectives). The step verifies via the
@@ -114,11 +124,15 @@ pub mod planner {
     /// investigate → edit → verify DAG (so the loop is never blocked on the model).
     pub struct RuntimePlanner {
         runtime: Arc<KernelRuntimeClient>,
+        last_generation_stats: Mutex<Option<GenerationStats>>,
     }
 
     impl RuntimePlanner {
         pub fn new(runtime: Arc<KernelRuntimeClient>) -> Self {
-            Self { runtime }
+            Self {
+                runtime,
+                last_generation_stats: Mutex::new(None),
+            }
         }
 
         /// The canonical three-step DAG: investigate (no effect) → edit (typecheck +
@@ -180,9 +194,13 @@ pub mod planner {
                     }
                     Ok(())
                 };
-                // On a runtime error, fall back to the canonical DAG.
-                if self.runtime.generate(request, &mut sink).await.is_err() {
-                    return Ok(Self::default_dag(objective));
+                // On a runtime error, fall back to the canonical DAG. A
+                // successful planning call records its exact runtime metrics so
+                // a headless receipt never omits planner compute from the agent
+                // ledger.
+                match self.runtime.generate(request, &mut sink).await {
+                    Ok(stats) => *self.last_generation_stats.lock() = Some(stats),
+                    Err(_) => return Ok(Self::default_dag(objective)),
                 }
                 let titles: Vec<String> = buf
                     .lines()
@@ -238,6 +256,10 @@ pub mod planner {
                     budget: Default::default(),
                 })
             })
+        }
+
+        fn take_generation_stats(&self) -> Option<GenerationStats> {
+            self.last_generation_stats.lock().take()
         }
     }
 

@@ -1,0 +1,88 @@
+{
+  "aggregate": {
+    "complete_forward_tps": 1.4036831876177809,
+    "complete_forward_tps_quantiles": {
+      "count": 3,
+      "p50": 1.4081137704544955,
+      "p95": 1.451046555927585,
+      "p99": 1.451046555927585
+    },
+    "completed_decode_forwards": 9,
+    "decode_ms": 6411.703210091218,
+    "e2e_emitted_token_tps": 1.414292295629248,
+    "output_tokens": 12,
+    "runtime_reported_decode_token_tps_quantiles": {
+      "count": 3,
+      "p50": 1.408113718032837,
+      "p95": 1.4510465860366821,
+      "p99": 1.4510465860366821
+    },
+    "tps_authority": "sum(completed_decode_forwards) / sum(decode_ms), from real runtime requests",
+    "wall_ms": 8484.809001000001,
+    "wall_time_note": "e2e_emitted_token_tps includes request, scheduler, prefill, decode, and streaming overhead; it is not a kernel decode-TPS claim"
+  },
+  "content_blake3": "7175e8a03186d190307e46335c293a6830e15cc574a375f28caf5d3c9dbaa35a",
+  "requested": {
+    "max_output_tokens": 4,
+    "measured_runs": 3,
+    "prompt_blake3": "fbc2b0516ee8744d293b980779178a3508850fdcfe965985782c39601b65794f",
+    "warmup": 1
+  },
+  "runtime": {
+    "context": {
+      "active_slots": 0,
+      "arch": "deepseek_v4_layer4_diagnostic",
+      "artifact_seal_sha256": "850f6d20a1b770f75ec3a3b237c2b5b070e289b273359d154d4b991b13e4e6b9",
+      "capability_status": "diagnostic_cpu_only_not_tg_eligible",
+      "chat_template": "SOURCE_TOKENIZER_CONFIG_HAS_NO_CHAT_TEMPLATE_ROLE_TAG_FALLBACK",
+      "ctx_len_effective": 128,
+      "ctx_len_native": 128,
+      "free_slots": 1,
+      "max_batch": 1,
+      "max_output_tokens": 4,
+      "metal_dispatches": 0,
+      "model_id": "deepseek-ai/DeepSeek-V4-Flash@60d8d70770c6776ff598c94bb586a859a38244f1:layer4-diagnostic",
+      "recurrent_state_bytes": null,
+      "status": "available",
+      "tq_estimated": false,
+      "tq_multiplier": 1.0
+    },
+    "health": {
+      "http_status": 200,
+      "ready": true,
+      "status": "ready",
+      "url": "http://127.0.0.1:8787/healthz"
+    }
+  },
+  "samples": [
+    {
+      "completed_decode_forwards": 3,
+      "decode_ms": 2130.5096668656915,
+      "decode_tokens_per_second": 1.408113718032837,
+      "emitted_utf8_bytes": 26,
+      "input_tokens": 1,
+      "output_tokens": 4,
+      "wall_ms": 2836.302834
+    },
+    {
+      "completed_decode_forwards": 3,
+      "decode_ms": 2213.7202511075884,
+      "decode_tokens_per_second": 1.35518479347229,
+      "emitted_utf8_bytes": 26,
+      "input_tokens": 1,
+      "output_tokens": 4,
+      "wall_ms": 2893.686959
+    },
+    {
+      "completed_decode_forwards": 3,
+      "decode_ms": 2067.4732921179384,
+      "decode_tokens_per_second": 1.4510465860366821,
+      "emitted_utf8_bytes": 26,
+      "input_tokens": 1,
+      "output_tokens": 4,
+      "wall_ms": 2754.819208
+    }
+  ],
+  "schema": "hcli.model_benchmark.v1",
+  "status": "completed"
+}

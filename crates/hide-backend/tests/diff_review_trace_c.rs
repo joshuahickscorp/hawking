@@ -435,12 +435,24 @@ async fn a_kernel_dispatch_records_tool_events_and_a_revertible_hunk() {
     let run = RunId::new();
     let path = dir.join("k.rs").to_string_lossy().to_string();
     std::fs::write(&path, "fn k() -> u32 { 1 }\n").unwrap();
-    let dispatcher = host.build_turn_dispatcher(session.clone(), Some(run.clone()));
-    let result = dispatcher
-        .dispatch(ToolCall::new(
-            "edit.write_file",
-            json!({ "path": path, "content": "fn k() -> u32 { 2 }\n" }),
-        ))
+    let call = ToolCall::new(
+        "edit.write_file",
+        json!({ "path": path, "content": "fn k() -> u32 { 2 }\n" }),
+    );
+    // A model-origin write needs a durable target-verified token that is bound
+    // to this precise action.  Do not bypass that invariant by calling a
+    // turn dispatcher directly: raw model text is proposal-only.
+    let mut sinks = host.services.verified_token_sinks(session.clone());
+    let permit = sinks
+        .authorize_verified_tool_effect(
+            hide_backend::speculation_safety::HostDurableSinks::target_gate().emit_target(1),
+            Some(run.clone()),
+            &call,
+        )
+        .await
+        .unwrap();
+    let result = host
+        .dispatch_verified_model_tool(session.clone(), Some(run.clone()), permit, call)
         .await
         .unwrap();
     assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);

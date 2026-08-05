@@ -17,10 +17,10 @@ use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason,
 use crate::gravity::GravityShard;
 use crate::gravity_deepseek::GravityDeepSeek;
 use crate::gravity_glm::gpu::GravityGlmGpu;
-use crate::gravity_llama::gpu::GravityLlamaGpu;
 use crate::gravity_llama::gpu::ForwardStats as LlamaForwardStats;
-use crate::model::mixtral::MixtralEngine;
+use crate::gravity_llama::gpu::GravityLlamaGpu;
 use crate::metal::MetalContext;
+use crate::model::mixtral::MixtralEngine;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -38,7 +38,9 @@ enum GravityModel {
 impl GravityModel {
     fn forward(&self, tokens: &[u32]) -> Result<(Vec<f32>, Option<LlamaForwardStats>)> {
         match self {
-            GravityModel::Llama(m) => m.forward(tokens).map(|(logits, stats)| (logits, Some(stats))),
+            GravityModel::Llama(m) => m
+                .forward(tokens)
+                .map(|(logits, stats)| (logits, Some(stats))),
             GravityModel::Glm(m) => m.forward(tokens).map(|(logits, _)| (logits, None)),
             GravityModel::DeepSeek(m) => m.forward(tokens).map(|logits| (logits, None)),
             GravityModel::Mixtral(_) => Err(Error::Unimplemented(
@@ -47,9 +49,15 @@ impl GravityModel {
         }
     }
 
-    fn forward_at(&self, tokens: &[u32], pos: usize) -> Result<(Vec<f32>, Option<LlamaForwardStats>)> {
+    fn forward_at(
+        &self,
+        tokens: &[u32],
+        pos: usize,
+    ) -> Result<(Vec<f32>, Option<LlamaForwardStats>)> {
         match self {
-            GravityModel::Llama(m) => m.forward_at(tokens, pos).map(|(logits, stats)| (logits, Some(stats))),
+            GravityModel::Llama(m) => m
+                .forward_at(tokens, pos)
+                .map(|(logits, stats)| (logits, Some(stats))),
             GravityModel::Glm(m) => m.forward_at(tokens, pos).map(|(logits, _)| (logits, None)),
             GravityModel::DeepSeek(m) => m.forward_at(tokens, pos).map(|logits| (logits, None)),
             GravityModel::Mixtral(_) => Err(Error::Unimplemented(
@@ -347,7 +355,8 @@ impl Engine for GravityEngine {
         // in `gguf_metadata`; no mutable sidecar is needed for this embedded
         // path. Other architectures remain fail-closed when a named sidecar
         // is absent.
-        let embedded_mixtral_tokenizer = tok_path.is_none() && arch == "mixtral" && gravity_container;
+        let embedded_mixtral_tokenizer =
+            tok_path.is_none() && arch == "mixtral" && gravity_container;
         if tok_path.is_none() && !embedded_mixtral_tokenizer {
             return Err(Error::Gravity(format!(
                 "artifact tokenizer is absent ({tok_path:?}); refusing to \
@@ -435,10 +444,10 @@ impl Engine for GravityEngine {
             "mixtral" => GravityModel::Mixtral(MixtralEngine::load(weights, config)?),
             other => {
                 return Err(Error::Gravity(format!(
-                    "no .gravity engine for architecture {other:?} yet; llama/mistral/qwen2/mixtral \
+                "no .gravity engine for architecture {other:?} yet; llama/mistral/qwen2/mixtral \
                      and glm_moe_dsa are wired; DeepSeek MLA/MoE now has a correctness-first \
                      CPU path, while resident Metal promotion remains gated on parity"
-                )))
+            )))
             }
         };
         Ok(GravityEngine {
@@ -555,8 +564,12 @@ impl Engine for GravityEngine {
             decode_metal_dispatches_total: decode_dispatches,
             completed_decode_forwards,
             decode_command_buffers_total: decode_command_buffers,
-            prefill_metal_dispatches_total: prefill_physical.as_ref().map_or(0, |value| value.dispatches),
-            prefill_command_buffers_total: prefill_physical.as_ref().map_or(0, |value| value.command_buffers),
+            prefill_metal_dispatches_total: prefill_physical
+                .as_ref()
+                .map_or(0, |value| value.dispatches),
+            prefill_command_buffers_total: prefill_physical
+                .as_ref()
+                .map_or(0, |value| value.command_buffers),
             ..Default::default()
         };
         sink(StreamEvent::Done {

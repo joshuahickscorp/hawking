@@ -1635,11 +1635,25 @@ impl LlamaDense {
     ) -> Result<()> {
         if crate::env_on("HAWKING_LLAMA_RESIDENT_B9430_GEOM_V3_DUAL") {
             crate::kernels::gemv_q4_k_m_v3_dual_pinned_tcb(
-                tcb, model_buf, w_offset, w_byte_size, rows, cols, x_buf, out_buf,
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                rows,
+                cols,
+                x_buf,
+                out_buf,
             )
         } else {
             crate::kernels::gemv_q4_k_m_llama_b9430_pinned_tcb(
-                tcb, model_buf, w_offset, w_byte_size, rows, cols, x_buf, out_buf,
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                rows,
+                cols,
+                x_buf,
+                out_buf,
             )
         }
     }
@@ -1699,7 +1713,10 @@ impl LlamaDense {
         if let Some((bad_layer, layer)) = self.layers.iter().enumerate().find(|(_, layer)| {
             layer.q_proj.dtype != GgmlType::Q4_K
                 || layer.k_proj.dtype != GgmlType::Q4_K
-                || !matches!(layer.v_proj.dtype, GgmlType::Q4_K | GgmlType::Q5_K | GgmlType::Q6_K)
+                || !matches!(
+                    layer.v_proj.dtype,
+                    GgmlType::Q4_K | GgmlType::Q5_K | GgmlType::Q6_K
+                )
                 || layer.o_proj.dtype != GgmlType::Q4_K
                 || layer.ffn_gate.dtype != GgmlType::Q4_K
                 || layer.ffn_up.dtype != GgmlType::Q4_K
@@ -3824,7 +3841,8 @@ impl Engine for LlamaDense {
             // Completion token zero samples the final prompt logits; it has no
             // decode forward behind it.  Never include that instantaneous
             // sampling-only event in complete-token decode latency/TPS.
-            let measured_step_start = (step > 0 && step >= matched_warmup_tokens).then(Instant::now);
+            let measured_step_start =
+                (step > 0 && step >= matched_warmup_tokens).then(Instant::now);
             if step > 0 {
                 if step >= matched_warmup_tokens && decode_start.is_none() {
                     decode_start = Some(Instant::now());
@@ -3840,8 +3858,8 @@ impl Engine for LlamaDense {
                     measured_metal_dispatches_total = measured_metal_dispatches_total
                         .saturating_add(self.last_dispatch_count.load(Ordering::Relaxed));
                     let command_buffers = self.last_command_buffer_count.load(Ordering::Relaxed);
-                    decode_command_buffers_total = decode_command_buffers_total
-                        .saturating_add(command_buffers);
+                    decode_command_buffers_total =
+                        decode_command_buffers_total.saturating_add(command_buffers);
                     if command_buffers > 0 {
                         completed_decode_forwards = completed_decode_forwards.saturating_add(1);
                     }

@@ -315,6 +315,14 @@ impl ToolDispatcher {
             .unwrap_or(false)
     }
 
+    /// Snapshot the registered tool contracts without granting execution
+    /// authority. The kernel uses this only to construct a strict model-call
+    /// catalog (known names plus input schemas); model-origin effects still go
+    /// through the host's target-verified executor rather than this dispatcher.
+    pub fn tool_specs(&self) -> Vec<ToolSpec> {
+        self.registry.specs()
+    }
+
     pub async fn dispatch(&self, call: ToolCall) -> Result<ToolResult> {
         let call_id = call.call_id.clone();
         let tool = self

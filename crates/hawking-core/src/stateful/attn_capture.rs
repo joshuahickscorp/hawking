@@ -217,10 +217,9 @@ pub fn flush() {
         Ok(g) => g,
         Err(_) => return,
     };
-    let out_path = std::env::var("HAWKING_ATTN_CAPTURE_OUT")
-        .unwrap_or_else(|_| {
-            "workspace/campaign/records/reports/bench/attn_capture.json".to_string()
-        });
+    let out_path = std::env::var("HAWKING_ATTN_CAPTURE_OUT").unwrap_or_else(|_| {
+        "workspace/campaign/records/reports/bench/attn_capture.json".to_string()
+    });
 
     let mut s = String::new();
     s.push_str("{\n");

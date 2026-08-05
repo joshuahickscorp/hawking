@@ -6593,11 +6593,15 @@ mod metal_dispatch {
         }
         let x_bytes = cols
             .checked_mul(std::mem::size_of::<f32>())
-            .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb activation size overflow")))?;
+            .ok_or_else(|| {
+                Error::Kernel(format!("{kernel}_pinned_tcb activation size overflow"))
+            })?;
         let y_end = out_offset_bytes
             .checked_add(
                 rows.checked_mul(std::mem::size_of::<f32>())
-                    .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb output size overflow")))?,
+                    .ok_or_else(|| {
+                        Error::Kernel(format!("{kernel}_pinned_tcb output size overflow"))
+                    })?,
             )
             .ok_or_else(|| Error::Kernel(format!("{kernel}_pinned_tcb output offset overflow")))?;
         if x_buf.length() < x_bytes as u64 || out_buf.length() < y_end as u64 {
@@ -10420,7 +10424,13 @@ mod metal_dispatch {
         let half_dim = head_dim / 2;
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
         )?;
         ab.set_u32(0, src_offset as u32);
         ab.set_u32(1, dst_offset as u32);
@@ -12654,10 +12664,8 @@ mod metal_dispatch {
         let top_k_u32 = top_k as u32;
         let tie_epsilon = crate::moe::route_tie_epsilon();
         let shmem_bytes = (n_experts as u64) * std::mem::size_of::<f32>() as u64;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32])?;
         ab.set_u32(0, n_experts_u32);
         ab.set_u32(1, top_k_u32);
         ab.set_f32(2, tie_epsilon);
@@ -12691,7 +12699,9 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+                "moe_batched_gemm_q4_indexed_v2t"
+            }
             _ => "moe_batched_gemm_q4_indexed",
         };
 
@@ -12822,7 +12832,9 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+                "moe_batched_gemm_q4_indexed_v2t"
+            }
             _ => "moe_batched_gemm_q4_indexed",
         };
         let use_fused_gu_v2 = q4k_schedule == "v2t_gu_v2";
@@ -13114,7 +13126,9 @@ mod metal_dispatch {
             .checked_add(tensor_bytes)
             .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
         if end > model_buf.length() as usize || out_buf.length() < (hidden * 4) as u64 {
-            return Err(Error::Kernel(format!("{KERNEL} buffer bounds check failed")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL} buffer bounds check failed"
+            )));
         }
         let hidden_u32 = hidden as u32;
         let tg = TG_SIZE.min(hidden_u32);

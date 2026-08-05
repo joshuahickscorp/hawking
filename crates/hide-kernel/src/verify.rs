@@ -192,7 +192,7 @@ pub mod deterministic {
     };
     use futures::future::BoxFuture;
     use hide_core::tool::{ToolCall, ToolDispatcher, ToolResult};
-    use hide_core::Result;
+    use hide_core::{HideError, Result};
     use serde_json::{json, Value};
     use std::sync::Arc;
     use std::time::Instant;
@@ -305,10 +305,22 @@ pub mod deterministic {
                     argv.extend(input.tests.iter().cloned());
                     args["argv"] = json!(argv);
                 }
-                let result = self
+                let result = match self
                     .dispatcher
                     .dispatch(ToolCall::new(self.tool.clone(), args))
-                    .await?;
+                    .await
+                {
+                    Ok(result) => result,
+                    // A policy denial happens before the tool runs. Treat it as
+                    // a durable, deterministic *inconclusive* verification
+                    // observation instead of aborting the whole agent loop:
+                    // the gate cannot accept it, while read-only mode remains
+                    // fail-closed and no result is fabricated.
+                    Err(HideError::PolicyDenied(reason)) => {
+                        return Ok(self.policy_refused(reason, start.elapsed().as_millis() as u64));
+                    }
+                    Err(error) => return Err(error),
+                };
                 let dur = start.elapsed().as_millis() as u64;
                 Ok(self.project(&result, dur))
             })
@@ -316,6 +328,29 @@ pub mod deterministic {
     }
 
     impl ProcessOracle {
+        fn policy_refused(&self, reason: String, duration_ms: u64) -> Verdict {
+            let message = format!(
+                "verification proposal for {} was refused before execution: {reason}",
+                self.tool
+            );
+            Verdict {
+                status: VerdictStatus::Inconclusive,
+                score: 0.0,
+                oracle: self.name.clone(),
+                class: OracleClass::Deterministic,
+                detail: message.clone(),
+                failures: vec![Failure {
+                    file: None,
+                    line: None,
+                    code: Some("POLICY_DENIED".to_string()),
+                    category: self.category.clone(),
+                    message,
+                }],
+                artifacts: Vec::new(),
+                duration_ms,
+            }
+        }
+
         fn project(&self, result: &ToolResult, duration_ms: u64) -> Verdict {
             // A spawn fault (couldn't even run the tool) is genuinely Inconclusive.
             if !result.ok {
@@ -634,6 +669,63 @@ pub mod deterministic {
     #[cfg(test)]
     mod tests {
         use super::*;
+        use futures::future::BoxFuture;
+        use hide_core::permission::{PermissionPolicy, StaticPermissionEngine};
+        use hide_core::tool::{
+            Tool, ToolAnnotations, ToolCtx, ToolDispatcher, ToolRegistry, ToolSpec,
+        };
+        use hide_core::types::Decision;
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        struct NeverRunTool {
+            spec: ToolSpec,
+            executed: Arc<AtomicBool>,
+        }
+
+        impl Tool for NeverRunTool {
+            fn spec(&self) -> &ToolSpec {
+                &self.spec
+            }
+
+            fn call<'a>(&'a self, _args: Value, _ctx: ToolCtx) -> BoxFuture<'a, ToolResult> {
+                self.executed.store(true, Ordering::SeqCst);
+                Box::pin(async { panic!("policy-denied verification must not execute its tool") })
+            }
+        }
+
+        fn policy_denied_build_dispatcher(executed: Arc<AtomicBool>) -> Arc<ToolDispatcher> {
+            let registry = Arc::new(ToolRegistry::default());
+            registry.register(NeverRunTool {
+                spec: ToolSpec {
+                    name: "build.run".to_string(),
+                    title: "Build".to_string(),
+                    version: "test".to_string(),
+                    wire_version: 1,
+                    description: "must not run under a denial".to_string(),
+                    input_schema: json!({ "type": "object" }),
+                    output_schema: None,
+                    annotations: ToolAnnotations {
+                        read_only: false,
+                        destructive: true,
+                        idempotent: false,
+                        open_world: false,
+                    },
+                    capabilities_required: vec!["shell.exec".to_string()],
+                    output_cap_bytes: 1024,
+                    timeout_ms: 1000,
+                },
+                executed,
+            });
+            Arc::new(ToolDispatcher::new(
+                registry,
+                Arc::new(StaticPermissionEngine::new(PermissionPolicy {
+                    default_decision: Decision::Deny,
+                    rules: Vec::new(),
+                    risk_gates: Vec::new(),
+                })),
+            ))
+        }
+
         #[test]
         fn parses_rustc_error_with_location() {
             let stderr = "\
@@ -660,6 +752,27 @@ error[E0308]: mismatched types
                 .unwrap();
             assert_eq!(v.status, VerdictStatus::Fail);
             assert_eq!(v.failures.len(), 1);
+        }
+
+        #[tokio::test]
+        async fn policy_denied_process_verification_is_visible_and_inconclusive() {
+            let executed = Arc::new(AtomicBool::new(false));
+            let oracle = ProcessOracle::build(policy_denied_build_dispatcher(executed.clone()));
+            let verdict = oracle
+                .verify(&VerificationInput::new("/safe/read-only-workspace"))
+                .await
+                .expect("a policy refusal is a verification observation, not a driver error");
+
+            assert_eq!(verdict.status, VerdictStatus::Inconclusive);
+            assert_eq!(verdict.class, OracleClass::Deterministic);
+            assert!(verdict.detail.contains("refused before execution"));
+            assert_eq!(verdict.failures[0].code.as_deref(), Some("POLICY_DENIED"));
+            assert!(!executed.load(Ordering::SeqCst));
+            assert_eq!(
+                crate::verify::gate::VerificationGate::default().decide(&[verdict]),
+                crate::verify::gate::GateDecision::Inconclusive,
+                "a denied verification cannot be mistaken for a passing result"
+            );
         }
     }
 }

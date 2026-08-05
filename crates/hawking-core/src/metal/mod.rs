@@ -293,6 +293,10 @@ pub const SHADER_RWKV7: &str = include_str!("../../shaders/rwkv7.metal");
 /// frozen fixtures in `tests/fixtures/gravity_pq`, whose authority is the Python
 /// `gravity_forge.pq_execute`.
 pub const SHADER_GRAVITY_PQ: &str = include_str!("../../shaders/gravity_pq.metal");
+/// Isolated DeepSeek-V4 P7 mHC-FFN pre/norm/post kernels.  These are compiled
+/// for traceable future device composition only; no Engine or HCLI path selects
+/// them until P4B/P6 composition has its own parity admission.
+pub const SHADER_DEEPSEEK_V4_P7: &str = include_str!("../../shaders/deepseek_v4_p7.metal");
 /// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
 /// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
 /// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
@@ -319,6 +323,7 @@ pub fn all_shader_sources() -> String {
         SHADER_MEGAKERNEL,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
+        SHADER_DEEPSEEK_V4_P7,
     ];
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
@@ -360,6 +365,77 @@ pub struct DispatchSample {
     pub gpu_start_ns: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_end_ns: Option<u64>,
+}
+
+/// Timing from one explicitly committed Metal compute dispatch.
+///
+/// This is deliberately a diagnostic/probe surface rather than a decode
+/// scheduler primitive.  It keeps the timing authority honest: the GPU fields
+/// are populated only from the completed command buffer's
+/// `GPUStartTime`/`GPUEndTime`; they are never a CPU-wall proxy.  A caller must
+/// treat `None` as unavailable rather than substituting another clock.
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+pub struct MetalDispatchTiming {
+    /// CPU time spent resolving the pipeline. This can include first-use
+    /// compilation and is intentionally separated from command execution.
+    pub pipeline_lookup_us: u64,
+    /// CPU time from command-buffer allocation through encoder completion.
+    pub encode_us: u64,
+    /// CPU duration of `commit`.
+    pub submit_us: u64,
+    /// CPU duration of the completed-command-buffer wait.
+    pub wait_us: u64,
+    /// End-to-end CPU wall time for the diagnostic dispatch.
+    pub host_wall_us: u64,
+    /// GPU execution time from `GPUEndTime - GPUStartTime`, if the driver
+    /// exposed a valid timestamp pair after completion.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_duration_us: Option<u64>,
+    /// Raw GPU timeline endpoints in nanoseconds, if the driver exposed them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
+    /// This surface always owns one command buffer, one compute encoder, and
+    /// one `dispatch_threads` invocation. They are explicit so probe receipts
+    /// cannot imply a larger topology.
+    pub command_buffers: u64,
+    pub compute_encoders: u64,
+    pub compute_dispatches: u64,
+}
+
+/// Timing from one explicitly committed Metal command buffer containing one or
+/// more compute encoders/dispatches.
+///
+/// This is a diagnostic topology surface for bounded component probes.  GPU
+/// timing is the completed command buffer's `GPUStartTime`/`GPUEndTime`, so it
+/// measures the entire ordered GPU chain rather than adding CPU wall clocks.
+/// Per-encoder GPU timestamps are intentionally not implied by this type.
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+pub struct MetalBatchTiming {
+    /// Sum of CPU time resolving every pipeline used by the batch.
+    pub pipeline_lookup_us: u64,
+    /// CPU time from command-buffer allocation through final encoder close.
+    pub encode_us: u64,
+    /// CPU duration of the single `commit`.
+    pub submit_us: u64,
+    /// CPU duration of the completed-command-buffer wait.
+    pub wait_us: u64,
+    /// End-to-end CPU wall time for the diagnostic batch.
+    pub host_wall_us: u64,
+    /// GPU execution time from `GPUEndTime - GPUStartTime`, if available.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_duration_us: Option<u64>,
+    /// Raw command-buffer GPU timeline endpoints in nanoseconds, if available.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
+    /// Explicit command topology; unlike [`MetalDispatchTiming`], the
+    /// encoder/dispatch counts may exceed one.
+    pub command_buffers: u64,
+    pub compute_encoders: u64,
+    pub compute_dispatches: u64,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -734,7 +810,7 @@ mod imp {
 
     // Re-export Metal's Buffer type so callers can hold pinned-weight
     // handles without depending on the upstream `metal` crate directly.
-    pub use ::metal::Buffer as PinnedBuffer;
+    pub use metal::Buffer as PinnedBuffer;
 
     /// Accumulated per-dispatch timing samples. Gate-able via
     /// `HAWKING_TRACE_DISPATCH` env var; when the var is absent the
@@ -819,6 +895,14 @@ mod imp {
         ctx: &'a MetalContext,
         cmd: &'a CommandBufferRef,
         physical_trace: Option<PhysicalCommandIdentity>,
+        // An opt-in `MTLDispatchTypeConcurrent` encoder for a caller-proved
+        // independent wave.  It is intentionally separate from the ordinary
+        // per-dispatch and ordered-pair paths: callers must close it before a
+        // dependent dispatch can be encoded.
+        concurrent_encoder: Option<ComputeCommandEncoder>,
+        pipeline_lookup_us: u64,
+        compute_encoders: u64,
+        compute_dispatches: u64,
     }
 
     struct Inner {
@@ -874,6 +958,129 @@ mod imp {
             "gemm_q6_k_llama_b9430" => "gemm_q6_k_llama_b9430",
             "gemm_q4_k_m_fused_simd" => "gemm_q4_k_m_fused_simd",
             "gemm_q4_k_m_fused_v2" => "gemm_q4_k_m_fused_v2",
+            // Bounded DeepSeek-V4 FP8 component authority probe. This is a
+            // source-native E4M3FN/E8M0 matvec, not a registered V4 runtime.
+            "deepseek_v4_fp8_e4m3fn_e8m0_matvec_authority" => {
+                "deepseek_v4_fp8_e4m3fn_e8m0_matvec_authority"
+            }
+            // Optional component-only split-K SIMDgroup candidate. It is not
+            // wired into any V4 engine/runtime path; the dedicated sweep
+            // records whether it earns promotion against the authority probe.
+            "deepseek_v4_fp8_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
+                "deepseek_v4_fp8_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate"
+            }
+            // Bounded source `Linear` checkpoint: GPU BF16 act_quant into
+            // native E4M3FN/E8M0, followed by a separate source-native FP8
+            // projection. These remain component probes, not a V4 runtime.
+            "deepseek_v4_act_quant_bf16_ue8m0_authority" => {
+                "deepseek_v4_act_quant_bf16_ue8m0_authority"
+            }
+            // Optional block-parallel SIMDgroup act-quant candidate.  It is
+            // intentionally component-only and can be selected only by its
+            // byte-exact CPU-oracle sweep receipt, never by a V4 runtime.
+            "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate" => {
+                "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate"
+            }
+            "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority" => {
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority"
+            }
+            "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate"
+            }
+            // Bounded P3A layer-0 pre-attention authority probes.  These
+            // symbols are intentionally traceable but are not registered in
+            // an Engine, token loop, or HCLI runtime path.
+            "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority" => {
+                "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority"
+            }
+            "deepseek_v4_p3a_rmsnorm_bf16_authority" => "deepseek_v4_p3a_rmsnorm_bf16_authority",
+            "deepseek_v4_p3a_fp32_to_bf16_authority" => "deepseek_v4_p3a_fp32_to_bf16_authority",
+            "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority" => {
+                "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority"
+            }
+            // Bounded P4A continuation: complete layer-0 attention at the
+            // fixed BOS/position-zero specialization. These remain separate
+            // source-authority probes, not Engine/HCLI runtime kernels.
+            "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority" => {
+                "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority"
+            }
+            "deepseek_v4_p4a_sparse_attention_position0_sink_authority" => {
+                "deepseek_v4_p4a_sparse_attention_position0_sink_authority"
+            }
+            "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority" => {
+                "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority"
+            }
+            "deepseek_v4_p4a_hc_attn_post_authority" => "deepseek_v4_p4a_hc_attn_post_authority",
+            // Bounded P4B continuation: real position-one, ratio-zero RoPE
+            // and causal KV cache read/write authority probes. They are not
+            // a persistent decode/runtime registration.
+            "deepseek_v4_p4b_rope_position1_bf16_authority" => {
+                "deepseek_v4_p4b_rope_position1_bf16_authority"
+            }
+            "deepseek_v4_p4b_kv_cache_write_bf16_authority" => {
+                "deepseek_v4_p4b_kv_cache_write_bf16_authority"
+            }
+            "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority" => {
+                "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority"
+            }
+            // Isolated P4B mHC-control precision experiment. This is never a
+            // baseline/runtime selection: it may be invoked only to test
+            // whether precise exponent evaluation restores control and final
+            // storage equality against the independent CPU oracle.
+            "deepseek_v4_p4b_hc_post_comb_precise_exp_candidate" => {
+                "deepseek_v4_p4b_hc_post_comb_precise_exp_candidate"
+            }
+            // Bounded DeepSeek-V4 FP4 routed-expert component authority
+            // probe. This is deliberately not a registered V4 runtime.
+            "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_authority" => {
+                "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_authority"
+            }
+            // Optional component-only packed FP4 split-K candidate. This
+            // trace name intentionally makes it impossible to conflate with
+            // the serial source-native authority probe.
+            "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
+                "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_simdgroup_v4_splitk_candidate"
+            }
+            // Bounded P5B layer-0 MoE source-storage authority kernels.  They
+            // are traceable component probes only; no runtime path selects
+            // them until a separately proved causal adapter exists.
+            "deepseek_v4_p5b_swiglu_route_bf16_authority" => {
+                "deepseek_v4_p5b_swiglu_route_bf16_authority"
+            }
+            "deepseek_v4_p5b_fp4_act_quant_e2m1fn_x2_e8m0_matvec_authority" => {
+                "deepseek_v4_p5b_fp4_act_quant_e2m1fn_x2_e8m0_matvec_authority"
+            }
+            "deepseek_v4_p5b_route_shared_combine_bf16_authority" => {
+                "deepseek_v4_p5b_route_shared_combine_bf16_authority"
+            }
+            // Bounded P6A layer-0 full hash-route / six-expert wave. These
+            // remain explicitly traceable component probes; no runtime path
+            // selects them until the causal layer adapter is separately proved.
+            "deepseek_v4_p6a_gate_bf16_matvec_authority" => {
+                "deepseek_v4_p6a_gate_bf16_matvec_authority"
+            }
+            // The isolated P0 C4 Gate reduction was admitted solely for the
+            // bounded reusable P6 layer-0 seam. Keep it trace-named so it
+            // cannot disappear into the generic `other` bucket.
+            "deepseek_v4_p0_gate_reduction_c4_simd32_fma_candidate" => {
+                "deepseek_v4_p0_gate_reduction_c4_simd32_fma_candidate"
+            }
+            "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority" => {
+                "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority"
+            }
+            "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority" => {
+                "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority"
+            }
+            "deepseek_v4_p6a_route6_shared_combine_bf16_authority" => {
+                "deepseek_v4_p6a_route6_shared_combine_bf16_authority"
+            }
+            // Isolated P7 mHC-FFN composition kernels.  These are traceable
+            // library residents only, not a registered causal-runtime path.
+            "deepseek_v4_p7_mhc_ffn_pre_authority" => "deepseek_v4_p7_mhc_ffn_pre_authority",
+            "deepseek_v4_p7_ffn_rmsnorm_bf16_authority" => {
+                "deepseek_v4_p7_ffn_rmsnorm_bf16_authority"
+            }
+            "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
             "gemv_f32_moe" => "gemv_f32_moe",
             "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
             // indexed moe batched gemm variants
@@ -1131,7 +1338,7 @@ mod imp {
     #[cfg(test)]
     mod static_kernel_name_tests {
         use super::static_kernel_name;
-        use crate::metal::SHADER_GRAVITY_PQ;
+        use crate::metal::{SHADER_DEEPSEEK_V4_P7, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE};
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -1178,6 +1385,168 @@ mod imp {
             }
             assert_eq!(static_kernel_name("not_a_hawking_kernel"), "other");
         }
+
+        #[test]
+        fn deepseek_v4_fp8_authority_probe_is_trace_named_and_compiled() {
+            const KERNEL: &str = "deepseek_v4_fp8_e4m3fn_e8m0_matvec_authority";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MATMUL.contains(&format!("kernel void {KERNEL}(")),
+                "DeepSeek-V4 FP8 authority kernel must remain in the runtime Metal library"
+            );
+        }
+
+        #[test]
+        fn deepseek_v4_fp4_authority_probe_is_trace_named_and_compiled() {
+            const KERNEL: &str = "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_authority";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MATMUL.contains(&format!("kernel void {KERNEL}(")),
+                "DeepSeek-V4 FP4 authority kernel must remain in the runtime Metal library"
+            );
+        }
+
+        #[test]
+        fn deepseek_v4_p5b_moe_authority_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p5b_swiglu_route_bf16_authority",
+                "deepseek_v4_p5b_fp4_act_quant_e2m1fn_x2_e8m0_matvec_authority",
+                "deepseek_v4_p5b_route_shared_combine_bf16_authority",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MOE.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P5B authority kernel must remain in moe.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p6a_full_route_wave_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p6a_gate_bf16_matvec_authority",
+                "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority",
+                "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority",
+                "deepseek_v4_p6a_route6_shared_combine_bf16_authority",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MOE.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P6A authority kernel must remain in moe.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p6_c4_gate_kernel_is_trace_named_and_compiled() {
+            const KERNEL: &str = "deepseek_v4_p0_gate_reduction_c4_simd32_fma_candidate";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MOE.contains(&format!("kernel void {KERNEL}(")),
+                "DeepSeek-V4 P6 C4 Gate kernel must remain in moe.metal"
+            );
+        }
+
+        #[test]
+        fn deepseek_v4_optional_simdgroup_candidates_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_fp8_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
+                "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_simdgroup_v4_splitk_candidate",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "optional DeepSeek-V4 SIMDgroup candidate must remain in the runtime Metal library"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_source_linear_checkpoint_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_act_quant_bf16_ue8m0_authority",
+                "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 source-linear checkpoint kernel must remain in the runtime Metal library"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p3a_layer0_preattention_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority",
+                "deepseek_v4_p3a_rmsnorm_bf16_authority",
+                "deepseek_v4_p3a_fp32_to_bf16_authority",
+                "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P3A kernel must remain in the runtime Metal library"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p4a_layer0_attention_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority",
+                "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
+                "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
+                "deepseek_v4_p4a_hc_attn_post_authority",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P4A kernel must remain in the runtime Metal library"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p4b_position1_causal_kv_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p4b_rope_position1_bf16_authority",
+                "deepseek_v4_p4b_kv_cache_write_bf16_authority",
+                "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority",
+                "deepseek_v4_p4b_hc_post_comb_precise_exp_candidate",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P4B kernel must remain in the runtime Metal library"
+                );
+            }
+        }
+
+        #[test]
+        fn deepseek_v4_p7_mhc_ffn_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "deepseek_v4_p7_mhc_ffn_pre_authority",
+                "deepseek_v4_p7_ffn_rmsnorm_bf16_authority",
+                "deepseek_v4_p7_mhc_ffn_post_authority",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_DEEPSEEK_V4_P7.contains(&format!("kernel void {kernel}(")),
+                    "DeepSeek-V4 P7 kernel must remain in deepseek_v4_p7.metal"
+                );
+            }
+        }
     }
 
     impl MetalContext {
@@ -1195,6 +1564,35 @@ mod imp {
                 .new_library_with_source(&src, &opts)
                 .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
             // Resolve at construction so hot-path checks are a single bool load.
+            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+            Ok(Self {
+                inner: Arc::new(Inner {
+                    device,
+                    queue,
+                    library,
+                    pipelines: Mutex::new(HashMap::new()),
+                    icb_pipelines: Mutex::new(HashMap::new()),
+                }),
+                trace: Arc::new(DispatchTrace::new()),
+                stats: Arc::new(MetalContextStats::new()),
+                trace_dispatch: effective,
+            })
+        }
+
+        /// Compile a separate diagnostic-only Metal library with fast-math
+        /// disabled.  The normal constructors intentionally retain their
+        /// default compile options; callers must opt in explicitly and must
+        /// not treat this as a runtime-wide arithmetic policy.
+        pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
+            let device = Device::system_default()
+                .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+            let queue = device.new_command_queue();
+            let opts = metal::CompileOptions::new();
+            opts.set_fast_math_enabled(false);
+            let src = super::all_shader_sources();
+            let library = device
+                .new_library_with_source(&src, &opts)
+                .map_err(|e| Error::Metal(format!("strict-math shader compile: {e}")))?;
             let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
             Ok(Self {
                 inner: Arc::new(Inner {
@@ -1527,6 +1925,95 @@ mod imp {
             Ok(())
         }
 
+        /// Submit one compute dispatch and return its completed-command-buffer
+        /// timing without treating a CPU wall clock as GPU execution time.
+        ///
+        /// This intentionally uses the same pipeline cache, queue, labels,
+        /// physical-trace attribution, shared-buffer assumptions, and
+        /// `dispatch_threads` geometry as [`Self::dispatch_threads`].  It is
+        /// suited to bounded source-native parity probes where a missing GPU
+        /// timestamp must be visible in the receipt instead of silently
+        /// replaced by `wait_us`.
+        pub fn dispatch_threads_timed(
+            &self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<super::MetalDispatchTiming> {
+            let total_started = Instant::now();
+            let pipeline_started = Instant::now();
+            let pipe = self.pipeline(fn_name)?;
+            let pipeline_lookup_us = pipeline_started.elapsed().as_micros() as u64;
+
+            let encode_started = Instant::now();
+            let cmd = self.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let enc = cmd.new_compute_command_encoder();
+            if let Some((command, _)) = physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            let encode_us = encode_started.elapsed().as_micros() as u64;
+
+            let submit_started = Instant::now();
+            cmd.commit();
+            let submit_us = submit_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+
+            let wait_started = Instant::now();
+            cmd.wait_until_completed();
+            let wait_us = wait_started.elapsed().as_micros() as u64;
+            let (gpu_start_s, gpu_end_s) = unsafe { cb_gpu_start_end_s(&cmd) };
+            let (gpu_duration_us, gpu_start_ns, gpu_end_ns) = match (gpu_start_s, gpu_end_s) {
+                (Some(start), Some(end)) if end > start => (
+                    Some(((end - start) * 1_000_000.0) as u64),
+                    Some((start * 1_000_000_000.0) as u64),
+                    Some((end * 1_000_000_000.0) as u64),
+                ),
+                _ => (None, None, None),
+            };
+            let host_wall_us = total_started.elapsed().as_micros() as u64;
+
+            if self.trace_dispatch {
+                self.trace.samples.lock().push(super::DispatchSample {
+                    kernel_name: static_kernel_name(fn_name),
+                    wall_us: host_wall_us,
+                    layer_hint: super::current_layer(),
+                    gpu_us: gpu_duration_us,
+                    gpu_start_ns,
+                    gpu_end_ns,
+                });
+            }
+
+            Ok(super::MetalDispatchTiming {
+                pipeline_lookup_us,
+                encode_us,
+                submit_us,
+                wait_us,
+                host_wall_us,
+                gpu_duration_us,
+                gpu_start_ns,
+                gpu_end_ns,
+                command_buffers: 1,
+                compute_encoders: 1,
+                compute_dispatches: 1,
+            })
+        }
+
         pub fn dispatch_batch(
             &self,
             encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
@@ -1547,8 +2034,17 @@ mod imp {
                 ctx: self,
                 cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                pipeline_lookup_us: 0,
+                compute_encoders: 0,
+                compute_dispatches: 0,
             };
             encode(&mut batch)?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_batch returned with an unclosed concurrent group".into(),
+                ));
+            }
             let CommandBatch { cmd, .. } = batch;
             cmd.commit();
             if trace_enabled {
@@ -1564,9 +2060,160 @@ mod imp {
             }
             Ok(())
         }
+
+        /// Encode one or more dependent GPU kernels into one command buffer
+        /// and return completed-command-buffer GPU timestamps plus exact
+        /// command topology.  This is intentionally a probe-only surface:
+        /// it does not expose per-encoder timestamps or claim that a batch is
+        /// a production decode graph.
+        pub fn dispatch_batch_timed(
+            &self,
+            encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+        ) -> Result<super::MetalBatchTiming> {
+            let total_started = Instant::now();
+            let encode_started = Instant::now();
+            let cmd = self.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                pipeline_lookup_us: 0,
+                compute_encoders: 0,
+                compute_dispatches: 0,
+            };
+            encode(&mut batch)?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_batch_timed returned with an unclosed concurrent group".into(),
+                ));
+            }
+            let encode_us = encode_started.elapsed().as_micros() as u64;
+            let CommandBatch {
+                cmd,
+                pipeline_lookup_us,
+                compute_encoders,
+                compute_dispatches,
+                ..
+            } = batch;
+
+            let submit_started = Instant::now();
+            cmd.commit();
+            let submit_us = submit_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            let wait_started = Instant::now();
+            cmd.wait_until_completed();
+            let wait_us = wait_started.elapsed().as_micros() as u64;
+            let (gpu_start_s, gpu_end_s) = unsafe { cb_gpu_start_end_s(&cmd) };
+            let (gpu_duration_us, gpu_start_ns, gpu_end_ns) = match (gpu_start_s, gpu_end_s) {
+                (Some(start), Some(end)) if end > start => (
+                    Some(((end - start) * 1_000_000.0) as u64),
+                    Some((start * 1_000_000_000.0) as u64),
+                    Some((end * 1_000_000_000.0) as u64),
+                ),
+                _ => (None, None, None),
+            };
+            let host_wall_us = total_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.trace.samples.lock().push(super::DispatchSample {
+                    kernel_name: "dispatch_batch",
+                    wall_us: host_wall_us,
+                    layer_hint: super::current_layer(),
+                    gpu_us: gpu_duration_us,
+                    gpu_start_ns,
+                    gpu_end_ns,
+                });
+            }
+            Ok(super::MetalBatchTiming {
+                pipeline_lookup_us,
+                encode_us,
+                submit_us,
+                wait_us,
+                host_wall_us,
+                gpu_duration_us,
+                gpu_start_ns,
+                gpu_end_ns,
+                command_buffers: 1,
+                compute_encoders,
+                compute_dispatches,
+            })
+        }
     }
 
     impl CommandBatch<'_> {
+        /// Begin one explicit `MTLDispatchTypeConcurrent` wave.
+        ///
+        /// This is a narrow probe surface for independently writable work
+        /// items. The caller is responsible for proving that every dispatch
+        /// in the wave has disjoint writes and no intra-wave producer/
+        /// consumer dependency. `end_concurrent_group` is mandatory before
+        /// returning from the batch closure or issuing an ordered dispatch.
+        pub fn begin_concurrent_group(&mut self) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "begin_concurrent_group called while a group is already active".into(),
+                ));
+            }
+            let enc = self
+                .cmd
+                .compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(
+                    command,
+                    "compute_encoder",
+                    "concurrent_group",
+                ));
+            } else {
+                enc.set_label("concurrent_group");
+            }
+            self.concurrent_encoder = Some(enc.to_owned());
+            Ok(())
+        }
+
+        /// Encode one caller-proved independent dispatch into the active
+        /// concurrent group. It consumes no additional command encoder.
+        pub fn dispatch_threads_in_concurrent_group(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let pipeline_started = Instant::now();
+            let pipe = self.ctx.pipeline(fn_name)?;
+            self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+            let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
+                Error::Metal(
+                    "dispatch_threads_in_concurrent_group called without an active group".into(),
+                )
+            })?;
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            self.compute_dispatches += 1;
+            Ok(())
+        }
+
+        /// Close the active concurrent wave. Closing is explicit so the next
+        /// command encoder establishes the required dependency boundary.
+        pub fn end_concurrent_group(&mut self) -> Result<()> {
+            let enc = self.concurrent_encoder.take().ok_or_else(|| {
+                Error::Metal("end_concurrent_group called with no active group".into())
+            })?;
+            enc.end_encoding();
+            self.compute_encoders += 1;
+            Ok(())
+        }
+
         pub fn dispatch_threads(
             &mut self,
             fn_name: &str,
@@ -1574,7 +2221,14 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_threads cannot run while a concurrent group is active".into(),
+                ));
+            }
+            let pipeline_started = Instant::now();
             let pipe = self.ctx.pipeline(fn_name)?;
+            self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
             let enc = self.cmd.new_compute_command_encoder();
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
@@ -1588,6 +2242,74 @@ mod imp {
                 MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
             );
             enc.end_encoding();
+            self.compute_encoders += 1;
+            self.compute_dispatches += 1;
+            Ok(())
+        }
+
+        /// Encode two dependency-ordered compute dispatches into one compute
+        /// encoder. A resource-scoped Metal memory barrier makes writes from
+        /// the first dispatch visible to the second without adding an encoder
+        /// or command-buffer boundary. This is a diagnostic building block;
+        /// callers must still prove output parity for their particular chain.
+        #[allow(clippy::too_many_arguments)]
+        pub fn dispatch_threads_pair_in_one_encoder(
+            &mut self,
+            first_name: &str,
+            first_grid: (u32, u32, u32),
+            first_tg: (u32, u32, u32),
+            first_encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+            barrier_resources: &[&metal::ResourceRef],
+            second_name: &str,
+            second_grid: (u32, u32, u32),
+            second_tg: (u32, u32, u32),
+            second_encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_threads_pair_in_one_encoder cannot run while a concurrent group is active".into(),
+                ));
+            }
+            let first_pipeline_started = Instant::now();
+            let first_pipe = self.ctx.pipeline(first_name)?;
+            self.pipeline_lookup_us += first_pipeline_started.elapsed().as_micros() as u64;
+            let second_pipeline_started = Instant::now();
+            let second_pipe = self.ctx.pipeline(second_name)?;
+            self.pipeline_lookup_us += second_pipeline_started.elapsed().as_micros() as u64;
+            let enc = self.cmd.new_compute_command_encoder();
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(
+                    command,
+                    "compute_encoder",
+                    "ordered_pair_with_resource_barrier",
+                ));
+            } else {
+                enc.set_label("ordered_pair_with_resource_barrier");
+            }
+            enc.set_compute_pipeline_state(&first_pipe);
+            first_encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(
+                    first_grid.0 as u64,
+                    first_grid.1 as u64,
+                    first_grid.2 as u64,
+                ),
+                MTLSize::new(first_tg.0 as u64, first_tg.1 as u64, first_tg.2 as u64),
+            );
+            enc.memory_barrier_with_resources(barrier_resources);
+            enc.set_compute_pipeline_state(&second_pipe);
+            second_encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(
+                    second_grid.0 as u64,
+                    second_grid.1 as u64,
+                    second_grid.2 as u64,
+                ),
+                MTLSize::new(second_tg.0 as u64, second_tg.1 as u64, second_tg.2 as u64),
+            );
+            enc.end_encoding();
+            self.compute_encoders += 1;
+            self.compute_dispatches += 2;
             Ok(())
         }
     }
@@ -3299,6 +4021,10 @@ mod imp {
         }
 
         pub fn new_with_trace(_trace_dispatch: bool) -> Result<Self> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn new_with_trace_strict_math(_trace_dispatch: bool) -> Result<Self> {
             Err(Error::Metal("metal unavailable on this platform".into()))
         }
 
