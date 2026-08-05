@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 220,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: restrictScalars_apply\nStatement:\nrestrictScalars_apply (f : A →ₙₐ[S] B) (x : A) : f.restrictScalars R x = f x\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: restrictScalars_apply\nStatement:\nrestrictScalars_apply (f : A →ₙₐ[S] B) (x : A) : f.restrictScalars R x = f x\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.854607Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "671310a0d6d01972baaca34d26da0e2786d7743b5c9159a31942809a1f2b07b7",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 5.0516533851623535,
+          "rank": 0,
+          "token_id": 5
+        },
+        {
+          "logit": 4.425444602966309,
+          "rank": 1,
+          "token_id": 63
+        },
+        {
+          "logit": 2.7124156951904297,
+          "rank": 2,
+          "token_id": 16
+        },
+        {
+          "logit": 2.480116128921509,
+          "rank": 3,
+          "token_id": 31
+        },
+        {
+          "logit": 2.4086830615997314,
+          "rank": 4,
+          "token_id": 10
+        },
+        {
+          "logit": 2.3696939945220947,
+          "rank": 5,
+          "token_id": 20
+        },
+        {
+          "logit": 2.329782247543335,
+          "rank": 6,
+          "token_id": 8
+        },
+        {
+          "logit": 2.1795566082000732,
+          "rank": 7,
+          "token_id": 60
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17630578577518463,
+          "l2": 3.5333170890808105,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "e567c1cbc00686a68e6632a373364c7221a6b9b1dd0885a624c9cbfebedb24d8",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 108,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 2 + 2?\nExpression: 2 + 2\nReturn the exact answer only.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:expert:fix:two_plus_two",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 2 + 2?\nExpression: 2 + 2\nReturn the exact answer only.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.857202Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "7632a9f1c00bd6732568d2aa8b90c4e326117a027d5b8ccce2485b7fe6b70f45",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.6161530017852783,
+          "rank": 0,
+          "token_id": 60
+        },
+        {
+          "logit": 2.0998549461364746,
+          "rank": 1,
+          "token_id": 25
+        },
+        {
+          "logit": 2.057398557662964,
+          "rank": 2,
+          "token_id": 30
+        },
+        {
+          "logit": 1.702630639076233,
+          "rank": 3,
+          "token_id": 42
+        },
+        {
+          "logit": 1.697015404701233,
+          "rank": 4,
+          "token_id": 62
+        },
+        {
+          "logit": 1.6042587757110596,
+          "rank": 5,
+          "token_id": 33
+        },
+        {
+          "logit": 1.5854566097259521,
+          "rank": 6,
+          "token_id": 55
+        },
+        {
+          "logit": 1.540223479270935,
+          "rank": 7,
+          "token_id": 63
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17807625234127045,
+          "l2": 3.1809773445129395,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "94c6bdc267066c76427aa2e7717bad60439ad2260415f8a087caae9e4a0311e7",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

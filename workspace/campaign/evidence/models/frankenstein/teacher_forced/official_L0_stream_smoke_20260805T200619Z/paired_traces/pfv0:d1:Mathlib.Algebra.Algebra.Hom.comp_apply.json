@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 232,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.854002Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "acac18999c802cfd58441bcf554943360e8983f433d38ef0a0db7050cba3eb18",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 4.509600639343262,
+          "rank": 0,
+          "token_id": 62
+        },
+        {
+          "logit": 4.368663787841797,
+          "rank": 1,
+          "token_id": 16
+        },
+        {
+          "logit": 4.226998329162598,
+          "rank": 2,
+          "token_id": 2
+        },
+        {
+          "logit": 4.104968547821045,
+          "rank": 3,
+          "token_id": 60
+        },
+        {
+          "logit": 3.858861207962036,
+          "rank": 4,
+          "token_id": 23
+        },
+        {
+          "logit": 3.7892160415649414,
+          "rank": 5,
+          "token_id": 4
+        },
+        {
+          "logit": 3.598677158355713,
+          "rank": 6,
+          "token_id": 21
+        },
+        {
+          "logit": 3.5096640586853027,
+          "rank": 7,
+          "token_id": 18
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1839570552110672,
+          "l2": 3.5686938762664795,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "764f44d25e11f4604899b9eceba93c168de046ac6fb68489d1c4affd07c8043c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

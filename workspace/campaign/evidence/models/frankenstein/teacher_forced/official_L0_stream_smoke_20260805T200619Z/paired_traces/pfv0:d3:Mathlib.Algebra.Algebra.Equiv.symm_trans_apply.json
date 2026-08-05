@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 429,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nsymm_trans_apply (e₁ : A₁ ≃ₐ[R] A₂) (e₂ : A₂ ≃ₐ[R] A₃) (x : A₃) :\n    (e₁.trans e₂).symm x = e₁.symm (e₂.symm x)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- self_trans_symm\n- e.trans\n- e.symm\n- refl\n- symm_trans_self\n- e.symm.trans\n- norm_cast\n- ext\n- congr_arg\n- congr_fun\n- coe_mk\n\nReturn the useful premises only.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nsymm_trans_apply (e₁ : A₁ ≃ₐ[R] A₂) (e₂ : A₂ ≃ₐ[R] A₃) (x : A₃) :\n    (e₁.trans e₂).symm x = e₁.symm (e₂.symm x)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- self_trans_symm\n- e.trans\n- e.symm\n- refl\n- symm_trans_self\n- e.symm.trans\n- norm_cast\n- ext\n- congr_arg\n- congr_fun\n- coe_mk\n\nReturn the useful premises only.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.852570Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "9a9d206426ca1a3173462b63455993f9cc82facdae1597fa0e3f6f850a2f545b",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 4.6970720291137695,
+          "rank": 0,
+          "token_id": 17
+        },
+        {
+          "logit": 4.522520542144775,
+          "rank": 1,
+          "token_id": 16
+        },
+        {
+          "logit": 3.5667130947113037,
+          "rank": 2,
+          "token_id": 23
+        },
+        {
+          "logit": 3.4041242599487305,
+          "rank": 3,
+          "token_id": 24
+        },
+        {
+          "logit": 3.3450112342834473,
+          "rank": 4,
+          "token_id": 22
+        },
+        {
+          "logit": 3.1196672916412354,
+          "rank": 5,
+          "token_id": 18
+        },
+        {
+          "logit": 2.8462610244750977,
+          "rank": 6,
+          "token_id": 0
+        },
+        {
+          "logit": 2.7929790019989014,
+          "rank": 7,
+          "token_id": 19
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1666388064622879,
+          "l2": 3.7262015342712402,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "0724bb8dcbec33f30182e64b361e6c95c0f51915853ccd5836fbf02df9d0f39a",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

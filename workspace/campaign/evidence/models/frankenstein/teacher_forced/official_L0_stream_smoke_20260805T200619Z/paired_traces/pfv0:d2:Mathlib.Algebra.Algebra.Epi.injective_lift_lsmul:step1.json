@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 209,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Given the Lean proof state goal:\n:\n    Injective (lift <| LinearMap.restrictScalars₁₂ R R (LinearMap.lsmul A M))\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Given the Lean proof state goal:\n:\n    Injective (lift <| LinearMap.restrictScalars₁₂ R R (LinearMap.lsmul A M))\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.854283Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "ce669d0b4f6ded7d8b98c9f3092b87c7afa574b959726cec3b654cdf7cbadab7",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 8.665343284606934,
+          "rank": 0,
+          "token_id": 20
+        },
+        {
+          "logit": 8.2607421875,
+          "rank": 1,
+          "token_id": 23
+        },
+        {
+          "logit": 7.9645256996154785,
+          "rank": 2,
+          "token_id": 24
+        },
+        {
+          "logit": 7.716512680053711,
+          "rank": 3,
+          "token_id": 22
+        },
+        {
+          "logit": 7.171480178833008,
+          "rank": 4,
+          "token_id": 19
+        },
+        {
+          "logit": 7.017390251159668,
+          "rank": 5,
+          "token_id": 16
+        },
+        {
+          "logit": 6.944404602050781,
+          "rank": 6,
+          "token_id": 18
+        },
+        {
+          "logit": 6.6763153076171875,
+          "rank": 7,
+          "token_id": 17
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.19804276525974274,
+          "l2": 3.7785894870758057,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "cd1b3abe8d304b48e3ab86cc2ca1b9df0831dfc9dd10715da0da2712ff6d4a1d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}
