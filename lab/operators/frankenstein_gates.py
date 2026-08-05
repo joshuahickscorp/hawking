@@ -81,8 +81,9 @@ GATE_MISSING_INFRA: dict[str, str] = {
         "Cannot run verified expert iteration (attempt→verify→critique→repair)."
     ),
     REQUIRES_BENCHMARK_CORPUS: (
-        "No frozen held-out math suite with disjoint train/calib/public/hidden "
-        "memberships. Suite harness exists; corpus missing."
+        "L0/L1 problem corpus + disjoint memberships may be frozen under "
+        "evidence/models/frankenstein/corpus/, but live held-out eval still needs "
+        "student/teacher forward measurement scores (not corpus assembly alone)."
     ),
     REQUIRES_DSV4F_FORWARD: (
         "Student forward measurement gated or partial; full capability benches "
@@ -182,9 +183,11 @@ def inventory_built_vs_gated() -> dict[str, Any]:
         "built_now": [
             "LINEAR_SUBSPACE_INITIALIZATION label + claim boundary",
             "BASE_DSV4F baseline freeze descriptor (measurable fields)",
-            "paired evidence trace schema + membership manager",
-            "tokenizer-independent span/byte/action aligner",
-            "layer correspondence cartography (CKA/CCA/Procrustes) on synthetic",
+            "paired evidence trace schema + membership manager (incl. retention)",
+            "PROTO_FRANKENSTEIN_V0 L0/L1 real-problem corpus assembler",
+            "tokenizer-independent span/byte/token→span/semantic-anchor aligner",
+            "layer correspondence cartography (CKA/CCA/Procrustes/intervention) on synthetic",
+            "GLM_DSV4F_LAYER_CORRESPONDENCE + PHASE_ALIGNMENT emitters (PENDING activations)",
             "reversible nonlinear bridge + adapter module architectures",
             "A–G ablation harness + reject rule extension",
             "frozen promotion gate (returns PENDING honestly)",

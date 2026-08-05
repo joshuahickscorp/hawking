@@ -33,6 +33,7 @@ MEMBERSHIP_SPLITS: tuple[str, ...] = (
     "calibration",
     "public_test",
     "hidden_test",
+    "retention",
 )
 
 # Fields that a complete paired evidence item may carry.
@@ -208,7 +209,8 @@ class MembershipManager:
             "assignments": dict(sorted(self.assignments.items())),
             "disjoint": True,
             "note": (
-                "train/calibration/public_test/hidden_test must never share example_ids"
+                "train/calibration/public_test/hidden_test/retention must never "
+                "share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)"
             ),
         }
         return seal(doc)

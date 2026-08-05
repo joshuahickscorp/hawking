@@ -1,0 +1,36 @@
+{
+  "claim_boundary": {
+    "awaiting": "paired GLM×DSV4F activations from capture lanes",
+    "correspondence_numbers_measured": false,
+    "synthetic_only": false
+  },
+  "executed": false,
+  "fabricated": false,
+  "functional_intervention_sensitivity": null,
+  "gate": "REQUIRES_GLM_RUNTIME",
+  "geometries": {
+    "dsv4f_hidden": 4096,
+    "dsv4f_layers": 43,
+    "glm_hidden": 6144,
+    "glm_layers": 78
+  },
+  "matrix": null,
+  "metrics": [
+    "cka",
+    "cca",
+    "procrustes",
+    "functional_intervention"
+  ],
+  "missing_infra": "No local GLM-5.2 runtime (≈1.5 TB donor not served). Cannot capture GLM trajectories, activations, or logits.",
+  "name": "GLM_DSV4F_LAYER_CORRESPONDENCE",
+  "note": "emit_layer_correspondence refused: REQUIRES_GLM_RUNTIME. Framework/interface exists; runtime work is not simulated.",
+  "operation": "emit_layer_correspondence",
+  "ratio_map_rejected": true,
+  "recorded_at": "2026-08-05T19:46:30.969838Z",
+  "sample_pair_metrics": null,
+  "schema": "hawking.frankenstein.glm_dsv4f_layer_correspondence.v1",
+  "seal_sha256": "940b9865317e5136ccb5dc05501bf6516ffd5a8bebb7137a67e17759033b5e4f",
+  "source": "pending_activations",
+  "stage": "4_layer_cartography",
+  "status": "PENDING_REAL_ACTIVATIONS"
+}

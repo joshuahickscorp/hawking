@@ -127,7 +127,10 @@ def test_align_paired_sides_report() -> None:
         "tool_events": [],
     }
     report = aligner.align_paired_sides(left, right)
-    assert report["method_policy"]["forbidden"] == ["token_ids", "vocab_index_match"]
+    forbidden = report["method_policy"]["forbidden"]
+    assert "token_ids" in forbidden
+    assert "vocab_index_match" in forbidden
+    assert "token_id_to_token_id" in forbidden
     assert report["summary"]["n_span_alignments"] == 1
     assert report["summary"]["n_action_alignments"] == 1
 
