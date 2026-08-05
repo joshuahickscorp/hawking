@@ -7,12 +7,17 @@ honest about what is impossible:
 
   weight-average / direct splice of mismatched tensors  →  IMPOSSIBLE
   direct donor weight transplant into student slots     →  IMPOSSIBLE (contract)
+  loss-fitted residual adapter (SGD/Adam / backprop)    →  EXCLUDED (training)
 
-The admissible op is **block-wise streaming distillation through the latent
-bridge contracts**: project donor activations into the student hidden width,
-fit a residual adapter at each transplant point, seal, then evict the donor
-window.  No two donor bodies are ever resident together; the DeepSeek body is
-read-only.
+The admissible op is **training-free weight-space transfer** (see
+``frankenstein_transfer``): SVD/PCA math-subspace extraction from GLM weights,
+closed-form GLM→DeepSeek projection, fixed residual steering + router bias,
+sealed as a reversible residual module.  No two donor bodies are ever resident
+together; the DeepSeek body is read-only.
+
+The historical ``loss_target`` / fitted-adapter path is retained only as a
+deprecated reference describing what *would* require the student forward; it is
+not executed by the harness.
 """
 from __future__ import annotations
 
@@ -98,12 +103,17 @@ BRIDGES: tuple[str, ...] = (
     "GLM_MATH_BRIDGE",
 )
 
-# Loss weights for the residual-adapter fit (active only after student forward).
+# DEPRECATED: loss weights for the residual-adapter *fit* path.
+# Training-free transfer does not use these.  Kept so historical receipts and
+# unit tests that document the excluded path remain readable.
 DEFAULT_LOSS_WEIGHTS = {
     "mse": 1.0,
     "cosine": 0.1,
     "route_kl": 0.05,  # only when transplant point is route-related
 }
+
+LOSS_FIT_PATH_STATUS = "DEPRECATED_EXCLUDED_TRAINING_PATH"
+TRAINING_FREE_METHOD = "weight_space_gram_pca_closed_form_projection_steering"
 
 ROUTE_RELATED_POINTS = frozenset(
     {
@@ -280,7 +290,12 @@ def loss_target(
     transplant_point: str,
     weights: Mapping[str, float] | None = None,
 ) -> dict[str, Any]:
-    """Fit target once student activations exist (post DEEPSEEK_FORWARD)."""
+    """DEPRECATED training-path description (not executed by the harness).
+
+    Retained for contract documentation and tests that assert the historical
+    shape of a loss that *would* require student activations.  The live path is
+    ``frankenstein_transfer`` (closed-form only).
+    """
 
     if transplant_point not in TRANSPLANT_POINT_NAMES:
         raise ValueError(f"unknown transplant point: {transplant_point!r}")
@@ -324,6 +339,9 @@ def loss_target(
     return {
         "transplant_point": transplant_point,
         "status": "DEFINED_BUT_GATED_ON_STUDENT_FORWARD",
+        "deprecated": True,
+        "path_status": LOSS_FIT_PATH_STATUS,
+        "executed_by_harness": False,
         "forward_gate": FORWARD_GATE,
         "normalization": {
             "source_config_rms_norm_eps": BRIDGE_RMS_NORM_EPS,
@@ -337,6 +355,63 @@ def loss_target(
         ),
         "terms": terms,
         "direct_weight_transplant": False,
+        "replacement": TRAINING_FREE_METHOD,
+    }
+
+
+def training_free_operation_spec() -> dict[str, Any]:
+    """Executable description of the training-free transfer (live path)."""
+
+    h_g = int(GLM_5_2["hidden_size"])
+    h_s = int(DEEPSEEK_V4_FLASH["hidden_size"])
+    return {
+        "name": TRAINING_FREE_METHOD,
+        "verdict": "REAL_AND_MINIMAL_TRAINING_FREE",
+        "summary": (
+            "Extract a low-rank math subspace from GLM weight matrices via Gram "
+            "PCA/SVD (weight-only, no GLM runtime).  Map GLM→DeepSeek with a "
+            "closed-form isometric embedding of that subspace into H=4096.  "
+            "Seal a reversible rank-1 residual steering module + router bias at "
+            "v3 transplant points.  No gradient descent, no loss fit."
+        ),
+        "excluded": [
+            "gradient_descent",
+            "backprop",
+            "optimizer_steps",
+            "loss_minimization_loops",
+            "loss_fitted_residual_adapter",
+        ],
+        "steps": [
+            "stream_glm_math_weight_tensors",
+            "accumulate_hidden_gram",
+            "top_r_eigenspace_svd_pca",
+            "closed_form_projection_B_E_T",
+            "steering_vector_from_top_singular_direction",
+            "router_bias_from_expert_frobenius_energy",
+            "seal_reversible_residual_module",
+            "structural_apply_reference_body_read_only",
+            "evict_working_windows",
+        ],
+        "shapes": {
+            "glm_hidden": h_g,
+            "deepseek_hidden": h_s,
+            "projection_weight": [h_g, h_s],
+            "residual_A": [h_s, h_s],
+            "router_bias": [int(DEEPSEEK_V4_FLASH["n_routed_experts"])],
+        },
+        "forward_gate": FORWARD_GATE,
+        "forward_gate_blocks": [
+            "math_bench_measurement",
+            "paired_activation_procrustes_refinement",
+        ],
+        "forward_gate_does_not_block": [
+            "weight_subspace_extraction",
+            "closed_form_projection",
+            "module_seal",
+            "structural_apply",
+        ],
+        "capability_status_default": "UNVALIDATED_WEIGHT_ONLY_DERIVED",
+        "implementation": "lab.operators.frankenstein_transfer",
     }
 
 
@@ -359,19 +434,36 @@ def donor_for_bridge(bridge: str) -> str:
 
 
 def fusion_operation_spec() -> dict[str, Any]:
-    """Full executable description of the minimal correct fusion op."""
+    """Full executable description of the minimal correct fusion op.
+
+    Primary path is training-free (``training_free``).  The historical
+    distillation name is retained for schedule/harness compatibility; the
+    ``fit_residual_adapter`` step is bypassed in favour of
+    ``frankenstein_transfer``.
+    """
 
     adapter = residual_adapter_shape()
+    training_free = training_free_operation_spec()
     return {
         "name": "block_wise_streaming_distillation_via_latent_bridge",
         "verdict": "REAL_AND_MINIMAL",
         "summary": (
-            "Keep the DeepSeek-V4-Flash body as the executable student.  For each "
-            "(bridge, transplant_point, student_layer) block: stream one donor "
-            "window, project donor activations H_d→4096, fit a residual adapter "
-            "against student activations at that transplant point, seal the "
-            "adapter block raw (no gravity), evict the donor window, resume."
+            "Keep the DeepSeek-V4-Flash body as the executable student.  Live "
+            "path: training-free GLM math-subspace extraction + closed-form "
+            "projection + reversible residual steering (no loss fit).  For each "
+            "schedule block: stream one donor window (or reuse weight-only "
+            "module), seal raw residual module (no gravity), evict donor window."
         ),
+        "primary_method": training_free["name"],
+        "training_free": training_free,
+        "loss_fit_path": {
+            "status": LOSS_FIT_PATH_STATUS,
+            "executed_by_harness": False,
+            "note": (
+                "α‖·‖² + β cos + γ KL residual-adapter fit is excluded.  "
+                "loss_target() remains as documentation only."
+            ),
+        },
         "impossible": impossible_operations(),
         "geometries": {
             "deepseek_v4_flash": DEEPSEEK_V4_FLASH,
@@ -392,6 +484,7 @@ def fusion_operation_spec() -> dict[str, Any]:
             "direct_weight_transplant": False,
             "loss_target_in_contract": "NOT_DEFINED_NO_DONOR_TRAINING_IN_THIS_LANE",
             "loss_target_defined_here": True,
+            "loss_target_executed": False,
         },
         "transplant_points_citation": {
             "path_hint": (
@@ -410,11 +503,10 @@ def fusion_operation_spec() -> dict[str, Any]:
         "residual_adapter": adapter,
         "per_block_lifecycle": [
             "disk_floor_check",
-            "stream_one_donor_window",
+            "stream_one_donor_window_or_weight_only_module",
             "verify_range_identity_and_provenance",
-            "project_donor_activations_or_record_PENDING",
-            "student_forward_or_DEEPSEEK_FORWARD_PENDING",
-            "fit_residual_adapter_or_stub",
+            "training_free_subspace_project_steer_or_record_PENDING",
+            "student_forward_validation_or_DEEPSEEK_FORWARD_PENDING",
             "seal_output_block_raw_no_gravity",
             "evict_donor_window_and_scratch",
             "append_progress_cursor",
@@ -426,7 +518,9 @@ def fusion_operation_spec() -> dict[str, Any]:
             "contains_merged_donor_weights": False,
             "contains_student_body": False,
             "student_body_reference": "read-only DeepSeek-V4 full-43-layer-stream.gravity",
-            "blocks": "one sealed residual adapter (+ shared projections) per schedule row",
+            "blocks": (
+                "training-free reversible residual module + per-schedule raw blocks"
+            ),
         },
         "example_loss": loss_target(transplant_point="post_moe_hidden_state"),
         "example_layer_map": {

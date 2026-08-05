@@ -5,11 +5,14 @@ Direct pipeline (no Ramanujan launcher, no Ed25519 owner green-light, no GPU
 lease ceremony).  Provenance is still recorded as engineering hygiene.
 
 Lifecycle for every schedule block:
-  disk_floor_check → stream donor window → (fit | DEEPSEEK_FORWARD_PENDING)
+  disk_floor_check → stream donor window → training-free transfer (or fixture)
   → seal raw output block → evict donor window → advance cursor
 
-The student DeepSeek forward is intentionally stubbed behind
-``DEEPSEEK_FORWARD_PENDING`` until the separate runtime lane lands.
+Capability *validation* (math-bench) is gated on ``DEEPSEEK_FORWARD_PENDING``.
+Weight-only subspace extraction / closed-form projection does not need the
+forward — see ``frankenstein_transfer``.
+
+The historical loss-fitted residual adapter is excluded (no SGD/Adam/backprop).
 """
 from __future__ import annotations
 
@@ -32,6 +35,8 @@ from lab.operators.frankenstein_fusion_op import (
     FORWARD_GATE,
     GLM_5_2,
     KIMI_K3,
+    LOSS_FIT_PATH_STATUS,
+    TRAINING_FREE_METHOD,
     TRANSPLANT_POINT_NAMES,
     block_id,
     donor_for_bridge,
@@ -41,6 +46,7 @@ from lab.operators.frankenstein_fusion_op import (
     loss_target,
     projection_shape,
     residual_adapter_shape,
+    training_free_operation_spec,
 )
 from lab.receipts import SealIntegrityError, seal, verify
 
@@ -52,7 +58,7 @@ EVIDENCE_ROOT = CAMPAIGN_ROOT / "evidence"
 RUN_ROOT = CAMPAIGN_ROOT / "records" / "runs" / "frankenstein"
 FRANK_EVIDENCE = EVIDENCE_ROOT / "models" / "frankenstein"
 
-MIN_FREE_FLOOR_BYTES = 15 * 1024**3
+MIN_FREE_FLOOR_BYTES = 25 * 1024**3
 # Default donor working-set ceiling (one window).  Real GLM 90GB schedule peaks
 # near ~22 GiB incremental; we budget 32 GiB as a hard refuse line for this
 # harness so the floor cannot be crossed by a runaway window.
@@ -507,7 +513,7 @@ def compute_disk_budget(
     archive_upper_bound: int,
     body_already_on_volume: bool,
 ) -> dict[str, Any]:
-    """Prove the 15 GiB floor is preserved under the working-set invariant.
+    """Prove the 25 GiB floor is preserved under the working-set invariant.
 
     Working set = (body if counted) + one donor window + one output block + scratch.
     Body is already on disk when present; free_now already reflects it.
@@ -597,7 +603,7 @@ def build_schedule(*, paths: HarnessPaths, mode: str = "pilot") -> dict[str, Any
     )
     if disk["verdict"] != "SAFE_UNDER_WORKING_SET":
         raise FrankensteinDirectError(
-            "disk budget refuses schedule: working set would breach 15 GiB floor"
+            "disk budget refuses schedule: working set would breach 25 GiB floor"
         )
 
     # Seal only structural disk fields (not live free_bytes) so the schedule is
@@ -680,6 +686,9 @@ def build_schedule(*, paths: HarnessPaths, mode: str = "pilot") -> dict[str, Any
         "fusion_operation": {
             "name": fusion["name"],
             "verdict": fusion["verdict"],
+            "primary_method": fusion.get("primary_method", TRAINING_FREE_METHOD),
+            "training_free": fusion.get("training_free"),
+            "loss_fit_path": fusion.get("loss_fit_path"),
             "impossible_names": [row["name"] for row in fusion["impossible"]],
             "forward_gate": FORWARD_GATE,
             "projections": fusion["projections"],
@@ -795,8 +804,11 @@ def _fixture_payload(*, block: Mapping[str, Any], nbytes: int = 64 * 1024) -> by
 def _write_zero_adapter_block(path: Path, *, block: Mapping[str, Any]) -> dict[str, Any]:
     """Write a raw, un-gravity adapter block: header + zero-init dense residual.
 
-    This is a *placeholder* fit output under DEEPSEEK_FORWARD_PENDING — not a
-    trained graft.  Shape matches residual_adapter_shape(); bytes are real on disk.
+    Fixture / harness-lifecycle placeholder — **not** a trained graft and **not**
+    the loss-fit path.  The live training-free module is produced by
+    ``frankenstein_transfer``.  Shape matches residual_adapter_shape(); bytes are
+    real on disk.  Validation of any non-zero transfer effect remains
+    DEEPSEEK_FORWARD_PENDING.
     """
 
     adapter = residual_adapter_shape()
@@ -818,12 +830,16 @@ def _write_zero_adapter_block(path: Path, *, block: Mapping[str, Any]) -> dict[s
         "payload_bytes": len(payload),
         "fit_status": FORWARD_GATE,
         "trained": False,
+        "training_method": "none",
+        "loss_fit_path": LOSS_FIT_PATH_STATUS,
+        "primary_method": TRAINING_FREE_METHOD,
         "gravity_compressed": False,
         "direct_weight_transplant": False,
         "init": "zeros_residual_identity",
         "note": (
-            "Zero-init residual adapter (identity at apply-time).  Real fit requires "
-            "DeepSeek student forward + donor activations."
+            "Zero-init residual adapter (identity at apply-time) for harness "
+            "lifecycle proof.  Training-free subspace module is sealed separately "
+            "by frankenstein_transfer; math-bench validation needs student forward."
         ),
     }
     header_raw = _canonical(header)
@@ -999,17 +1015,27 @@ def run_block(
         ),
     }
 
-    # --- fit (honest stub) ---
+    # --- transfer (training-free; loss fit excluded) ---
+    # Fixture blocks keep a zero residual placeholder for lifecycle proof.
+    # Live weight-only extraction is ``frankenstein_transfer.run_weight_only_transfer``
+    # and does not require the student forward; only math-bench validation does.
     fit_result = {
         "status": FORWARD_GATE,
         "trained": False,
+        "method": TRAINING_FREE_METHOD,
+        "loss_fit_path": LOSS_FIT_PATH_STATUS,
+        "loss_fit_executed": False,
         "reason": (
-            "DeepSeek-V4 student forward is owned by a separate lane and is not "
-            "available to this harness yet.  Projection + residual fit cannot "
-            "measure student activations; writing zero-init reversible adapter "
-            "placeholder only."
+            "Loss-fitted residual adapter is excluded.  Training-free transfer "
+            "is implemented in frankenstein_transfer (weight-only subspace + "
+            "closed-form projection).  This fixture block writes a zero residual "
+            "placeholder for harness lifecycle proof.  Math-bench validation of "
+            "any transferred module remains DEEPSEEK_FORWARD_PENDING."
         ),
-        "loss_target": loss_target(transplant_point=str(block["transplant_point"])),
+        "loss_target_deprecated": loss_target(
+            transplant_point=str(block["transplant_point"])
+        ),
+        "training_free": training_free_operation_spec(),
         "projection": projection_shape(donor=str(block["donor"])),
     }
 
@@ -1061,12 +1087,14 @@ def run_block(
             },
             "claim_boundary": {
                 "trained_adapter": False,
+                "loss_fit_executed": False,
                 "merged_model_file": False,
                 "weight_average": False,
                 "gravity_compressed": False,
                 "donor_weights_retained": False,
                 "deepseek_body_modified": False,
                 "frankenstein_capability_claim": False,
+                "math_capability_validated": False,
             },
         }
     )
@@ -1220,6 +1248,22 @@ def _parser() -> argparse.ArgumentParser:
     blk.add_argument("--order", type=int, default=0)
     blk.add_argument("--schedule", type=Path, default=None)
     blk.add_argument("--fixture", action="store_true", default=True)
+    xfer = commands.add_parser(
+        "training-free",
+        help="weight-only GLM math subspace + seal reversible transfer module",
+    )
+    xfer.add_argument(
+        "--donor-dir",
+        type=Path,
+        default=Path(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/"
+            "runs/frankenstein/glm-donor"
+        ),
+    )
+    xfer.add_argument("--rank", type=int, default=64)
+    xfer.add_argument("--experts-per-layer", type=int, default=32)
+    xfer.add_argument("--max-tensors", type=int, default=None)
+    xfer.add_argument("--steering-scale", type=float, default=0.05)
     return parser
 
 
@@ -1263,6 +1307,19 @@ def main(argv: list[str] | None = None) -> int:
                 schedule=schedule,
                 order=args.order,
                 fixture=bool(args.fixture),
+            )
+        elif args.command == "training-free":
+            from lab.operators.frankenstein_transfer import run_weight_only_transfer
+
+            result = run_weight_only_transfer(
+                donor_dir=Path(args.donor_dir),
+                out_dir=paths.out_dir / "evidence" / "models" / "frankenstein",
+                body_path=paths.body_path,
+                rank=int(args.rank),
+                experts_per_layer=int(args.experts_per_layer),
+                max_tensors=args.max_tensors,
+                steering_scale=float(args.steering_scale),
+                workspace=paths.workspace,
             )
         else:  # pragma: no cover
             raise FrankensteinDirectError(f"unsupported command: {args.command}")
