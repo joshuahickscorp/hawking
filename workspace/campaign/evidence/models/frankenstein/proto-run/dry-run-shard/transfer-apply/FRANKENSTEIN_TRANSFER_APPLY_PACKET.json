@@ -1,0 +1,1 @@
+{"note":"arrays live in FRANKENSTEIN_TRAINING_FREE_MODULE.raw_module","projection_weight_shape":[6144,4096],"residual_A_shape":[4096,4096],"residual_bias_shape":[4096],"router_bias_shape":[256]}

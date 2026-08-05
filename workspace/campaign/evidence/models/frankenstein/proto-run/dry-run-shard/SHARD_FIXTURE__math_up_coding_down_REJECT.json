@@ -1,0 +1,77 @@
+{
+  "base": {
+    "math": {
+      "formalization": 0.7,
+      "mathematical_decomposition": 0.7,
+      "method_selection": 0.7,
+      "proof_repair": 0.7,
+      "value_ranking": 0.7
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    }
+  },
+  "bench_scope": "SHARD",
+  "claim_boundary": {
+    "capability_claim_requires_sealed_shard_scores": true,
+    "direct_weight_transplant": false,
+    "full_model_bench_permitted": false,
+    "gradient_or_optimizer": false,
+    "gravity_compression_performed": false,
+    "kimi_consumed": false,
+    "kimi_simulated": false,
+    "lane_does_not_own": [
+      "C_FINAL_PROTO_KIMI",
+      "D_RAMANUJAN"
+    ],
+    "lane_owns": [
+      "A_BASE_DSV4F",
+      "B_PROTO_DSV4F_GLM"
+    ],
+    "odyssey_or_ramanujan": false,
+    "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+    "stage": 1,
+    "training_performed": false,
+    "weight_average_performed": false
+  },
+  "fixture_id": "math_up_coding_down_REJECT",
+  "meta": {
+    "expected_verdict": "REJECT",
+    "intent": "prove reject rule fires on math-up/coding-down"
+  },
+  "proto": {
+    "math": {
+      "formalization": 0.9,
+      "mathematical_decomposition": 0.9,
+      "method_selection": 0.9,
+      "proof_repair": 0.9,
+      "value_ranking": 0.9
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.6,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    }
+  },
+  "schema": "hawking.frankenstein.stage1_capability_scores.v1",
+  "seal_sha256": "f433153166a1093edfb361481ee42805d8620fcd3a979ca4f521d5ae18393de7",
+  "transfer_module_id": "proto-run-reject-fixture"
+}
