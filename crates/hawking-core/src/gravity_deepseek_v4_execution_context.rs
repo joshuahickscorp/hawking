@@ -13,12 +13,19 @@ use crate::gravity_deepseek_v4_expert_cache::{
     resolve_expert_bundle, DeepSeekV4ExpertBundleCache, ExpertBundleKey, ExpertCacheAccess,
     ExpertCacheState, ExpertOperator,
 };
+use crate::gravity_deepseek_v4_layer_source_anchors::{
+    verify_deepseek_v4_layer_source_anchors, DeepSeekV4LayerSourceAnchors,
+};
 use crate::gravity_deepseek_v4_runtime_spine::{
     DeepSeekV4CompressionMode, DeepSeekV4ControlProjection, DeepSeekV4ExpertProjection,
     DeepSeekV4RuntimeSpine, DeepSeekV4StagedNativePair, DeepSeekV4StagedTensor,
     DSV4F_BASE_LAYER_COUNT, DSV4F_HC_MULT, DSV4F_HIDDEN_SIZE, DSV4F_TOP_K_EXPERTS,
     MAX_STAGED_OPERATOR_BYTES, PROVISIONAL_CONTROL_RESIDENT_CEILING_BYTES,
     PROVISIONAL_ROUTED_EXPERT_COLD_CEILING_BYTES, PROVISIONAL_ROUTED_EXPERT_HOT_CEILING_BYTES,
+};
+use crate::gravity_deepseek_v4_verified_tensor_cache::{
+    DeepSeekV4VerifiedTensorCache, DeepSeekV4VerifiedTensorCacheConfig,
+    DeepSeekV4VerifiedTensorCacheCounters,
 };
 use crate::{Error, Result};
 
@@ -36,6 +43,10 @@ pub struct DeepSeekV4ExecutionContextConfig {
     pub routed_expert_hot_capacity_bytes: u64,
     pub routed_expert_cold_capacity_bytes: u64,
     pub command_ledger_capacity: usize,
+    /// When `Some`, control tensor staging uses the authenticated verified
+    /// tensor cache so multi-layer loops do not re-stream/re-verify static
+    /// controls already held. `None` preserves the historical direct-read path.
+    pub verified_tensor_cache: Option<DeepSeekV4VerifiedTensorCacheConfig>,
 }
 
 impl Default for DeepSeekV4ExecutionContextConfig {
@@ -47,6 +58,8 @@ impl Default for DeepSeekV4ExecutionContextConfig {
             routed_expert_hot_capacity_bytes: PROVISIONAL_ROUTED_EXPERT_HOT_CEILING_BYTES,
             routed_expert_cold_capacity_bytes: PROVISIONAL_ROUTED_EXPERT_COLD_CEILING_BYTES,
             command_ledger_capacity: DEFAULT_COMMAND_LEDGER_CAPACITY,
+            // Default on: multi-layer staging must not re-verify every control.
+            verified_tensor_cache: Some(DeepSeekV4VerifiedTensorCacheConfig::default()),
         }
     }
 }
@@ -563,6 +576,10 @@ pub struct DeepSeekV4ExecutionContext {
     config: DeepSeekV4ExecutionContextConfig,
     control_arena: DeepSeekV4ControlStagingArena,
     expert_cache: DeepSeekV4ExpertBundleCache,
+    /// Compact per-layer source anchors (tensor names/modes for layers 0..42).
+    layer_source_anchors: DeepSeekV4LayerSourceAnchors,
+    /// Optional authenticated control/tile cache shared across layer stages.
+    verified_tensor_cache: Option<DeepSeekV4VerifiedTensorCache>,
     decode_state: DeepSeekV4DecodeState,
     command_ledger: DeepSeekV4CommandGraphLedger,
 }
@@ -586,6 +603,13 @@ impl DeepSeekV4ExecutionContext {
             config.routed_expert_hot_capacity_bytes,
             config.routed_expert_cold_capacity_bytes,
         )?;
+        let layer_source_anchors = verify_deepseek_v4_layer_source_anchors(spine.reader())?;
+        let verified_tensor_cache = match config.verified_tensor_cache {
+            Some(cache_config) => {
+                Some(DeepSeekV4VerifiedTensorCache::new(spine.reader(), cache_config)?)
+            }
+            None => None,
+        };
         let decode_state = DeepSeekV4DecodeState::new(config.max_context_tokens, &spine)?;
         let command_ledger = DeepSeekV4CommandGraphLedger::new(config.command_ledger_capacity)?;
         Ok(Self {
@@ -593,6 +617,8 @@ impl DeepSeekV4ExecutionContext {
             config,
             control_arena,
             expert_cache,
+            layer_source_anchors,
+            verified_tensor_cache,
             decode_state,
             command_ledger,
         })
@@ -609,6 +635,16 @@ impl DeepSeekV4ExecutionContext {
     }
     pub fn expert_cache_state(&self) -> ExpertCacheState {
         self.expert_cache.state()
+    }
+    /// Compact, verified per-layer tensor anchors for layers 0..42.
+    pub fn layer_source_anchors(&self) -> &DeepSeekV4LayerSourceAnchors {
+        &self.layer_source_anchors
+    }
+    /// Counters for the optional verified control/tile cache, if enabled.
+    pub fn verified_tensor_cache_counters(&self) -> Option<DeepSeekV4VerifiedTensorCacheCounters> {
+        self.verified_tensor_cache
+            .as_ref()
+            .map(DeepSeekV4VerifiedTensorCache::counters)
     }
     pub fn decode_state(&self) -> &DeepSeekV4DecodeState {
         &self.decode_state
@@ -675,7 +711,13 @@ impl DeepSeekV4ExecutionContext {
         layer: usize,
         projection: DeepSeekV4ControlProjection,
     ) -> Result<DeepSeekV4ControlLease> {
-        let pair = self.spine.stage_control_pair(layer, projection)?;
+        let pair = if self.verified_tensor_cache.is_some() {
+            let binding = self.spine.topology().layer(layer)?;
+            let weight_name = binding.control_weight_name(projection);
+            self.stage_native_pair_cached(&weight_name, crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn)?
+        } else {
+            self.spine.stage_control_pair(layer, projection)?
+        };
         let lease = self
             .control_arena
             .insert(DeepSeekV4ControlPayload::NativePair(pair))?;
@@ -687,7 +729,13 @@ impl DeepSeekV4ExecutionContext {
         layer: usize,
         projection: DeepSeekV4ExpertProjection,
     ) -> Result<DeepSeekV4ControlLease> {
-        let pair = self.spine.stage_shared_expert_pair(layer, projection)?;
+        let pair = if self.verified_tensor_cache.is_some() {
+            let binding = self.spine.topology().layer(layer)?;
+            let weight_name = binding.shared_expert_weight_name(projection);
+            self.stage_native_pair_cached(&weight_name, crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn)?
+        } else {
+            self.spine.stage_shared_expert_pair(layer, projection)?
+        };
         let lease = self
             .control_arena
             .insert(DeepSeekV4ControlPayload::NativePair(pair))?;
@@ -769,8 +817,9 @@ impl DeepSeekV4ExecutionContext {
         self.decode_state.reset();
     }
 
-    fn stage_full_control_tensor(&self, name: &str) -> Result<DeepSeekV4StagedTensor> {
-        let bytes = self.spine.reader().tensor_metadata(name)?.bytes;
+    fn stage_full_control_tensor(&mut self, name: &str) -> Result<DeepSeekV4StagedTensor> {
+        let metadata = self.spine.reader().tensor_metadata(name)?;
+        let bytes = metadata.bytes;
         let bytes_usize =
             usize::try_from(bytes).map_err(|_| context_error("tensor bytes exceed host usize"))?;
         if bytes_usize > self.control_arena.capacity_bytes() {
@@ -778,8 +827,48 @@ impl DeepSeekV4ExecutionContext {
                 "{name}: exceeds configured control arena"
             )));
         }
+        if let Some(cache) = self.verified_tensor_cache.as_mut() {
+            let access = cache.acquire(self.spine.reader(), name, 0..bytes)?;
+            let _ = access.result; // Hit or VerifiedSourceRead; both yield verified bytes.
+            return Ok(DeepSeekV4StagedTensor {
+                name: metadata.name.clone(),
+                dtype: metadata.dtype.clone(),
+                shape: metadata.shape.clone(),
+                source_shard: metadata.source_shard.clone(),
+                range: 0..bytes,
+                bytes: access.slice.bytes().to_vec(),
+            });
+        }
         self.spine
             .stage_base_tensor_range(name, 0..bytes, self.control_arena.capacity_bytes())
+    }
+
+    fn stage_native_pair_cached(
+        &mut self,
+        weight_name: &str,
+        expected_kind: crate::gravity_deepseek_v4::NativeScalePairKind,
+    ) -> Result<DeepSeekV4StagedNativePair> {
+        let pair = self.spine.reader().native_scale_pair(weight_name)?;
+        if pair.kind != expected_kind {
+            return Err(context_error(format!(
+                "{weight_name}: native pair kind {} differs from required {}",
+                pair.kind.as_str(),
+                expected_kind.as_str()
+            )));
+        }
+        let scale_name = pair.scale.name.clone();
+        let kind = pair.kind;
+        let logical_k = pair.logical_k;
+        let out_rows = pair.out_rows;
+        let weight = self.stage_full_control_tensor(weight_name)?;
+        let scale = self.stage_full_control_tensor(&scale_name)?;
+        Ok(DeepSeekV4StagedNativePair {
+            kind,
+            weight,
+            scale,
+            logical_k,
+            out_rows,
+        })
     }
 
     fn record_control_stage(

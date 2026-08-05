@@ -18,8 +18,7 @@
 use serde_json::Value;
 
 use crate::gravity_deepseek_v4::{
-    DeepSeekV4FullStreamReader, DeepSeekV4TensorMetadata, NativeScalePairKind,
-    PINNED_REPOSITORY, PINNED_REVISION,
+    DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::{Error, Result};
 
@@ -1245,14 +1244,20 @@ fn verify_tensor_anchor(
     reader: &DeepSeekV4FullStreamReader,
     anchor: &DeepSeekV4TensorSourceAnchor,
 ) -> Result<()> {
-    verify_tensor(
-        reader,
-        &anchor.name,
-        TensorExpectation {
-            dtype: anchor.dtype,
-            shape: &anchor.shape,
-        },
-    )
+    let metadata = reader.tensor_metadata(&anchor.name)?;
+    let expected_bytes = tensor_bytes_from_parts(anchor.dtype, &anchor.shape)?;
+    if metadata.name != anchor.name
+        || metadata.dtype != anchor.dtype
+        || metadata.shape.as_slice() != anchor.shape.as_slice()
+        || metadata.bytes != expected_bytes
+        || metadata.segments.is_empty()
+    {
+        return Err(anchor_error(format!(
+            "{}: metadata differs from required {} {:?} / {expected_bytes} bytes",
+            anchor.name, anchor.dtype, anchor.shape
+        )));
+    }
+    Ok(())
 }
 
 fn verify_native_pair_anchor(
@@ -1299,12 +1304,16 @@ fn verify_tensor(
 }
 
 fn tensor_bytes(expected: TensorExpectation) -> Result<u64> {
-    let elements = expected.shape.iter().try_fold(1_u64, |total, dim| {
+    tensor_bytes_from_parts(expected.dtype, expected.shape)
+}
+
+fn tensor_bytes_from_parts(dtype: &str, shape: &[u64]) -> Result<u64> {
+    let elements = shape.iter().try_fold(1_u64, |total, dim| {
         total
             .checked_mul(*dim)
             .ok_or_else(|| anchor_error("expected tensor element count overflow"))
     })?;
-    let element_bytes = match expected.dtype {
+    let element_bytes = match dtype {
         "BF16" => 2,
         "F32" => 4,
         "I64" => 8,

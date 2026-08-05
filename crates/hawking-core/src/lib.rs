@@ -49,6 +49,15 @@ pub mod gravity_deepseek_v4_layer1_attention_device;
 /// Incremental bounded source-staging scheduler for the future DeepSeek-V4
 /// native layer loop. It has no default device encoder or causal runtime.
 pub mod gravity_deepseek_v4_layer_scheduler;
+/// Compact, source-bound per-layer tensor anchors for every DeepSeek-V4-Flash
+/// base layer (0..42). Metadata-only; no Engine, Metal, or forward surface.
+pub mod gravity_deepseek_v4_layer_source_anchors;
+/// General per-layer device plan resolved from source anchors: compression
+/// mode, gate mode, and honest refusal for unimplemented ratio-4/128 paths.
+pub mod gravity_deepseek_v4_layer_plan;
+/// Parameterized ratio-zero attention device plan (layer/position/growing KV).
+/// Resolves source tensor names and refuses ratio-4/128 cleanly.
+pub mod gravity_deepseek_v4_attention_device;
 /// Bounded verifier for the opt-in, source-bound Torch F32 Gate calibration
 /// target used by the position-zero diagnostic. It has no Metal, runtime,
 /// route-default, or TPS surface.
