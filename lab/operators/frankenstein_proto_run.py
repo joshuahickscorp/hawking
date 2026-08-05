@@ -62,6 +62,11 @@ from lab.operators.frankenstein_receipts import (
     build_runtime_storage_accounting,
     write_handoff_contract,
 )
+from lab.operators.frankenstein_gates import (
+    LINEAR_INIT_HONEST_STATUS,
+    LINEAR_SUBSPACE_INITIALIZATION,
+    linear_init_claim_boundary,
+)
 from lab.operators.frankenstein_transfer import (
     DEFAULT_BODY_PATH,
     DEFAULT_BRIDGE_PATH,
@@ -108,6 +113,10 @@ CLAIM_BOUNDARY = {
     "kimi_strategic_bridge_preserved": True,
     "forward_capability_measurement_requires_callable": True,
     "dry_run_does_not_validate_capability": True,
+    # Linear mapping is initialization infrastructure, not PROTO complete.
+    "linear_mapping_role": LINEAR_SUBSPACE_INITIALIZATION,
+    "proto_frankenstein_complete_from_projection": False,
+    "is_inheritance": False,
 }
 
 
@@ -528,9 +537,14 @@ def compose_proto_artifact(
     artifact = {
         "schema": PROTO_ARTIFACT_SCHEMA,
         "name": "PROTO_FRANKENSTEIN",
+        # Structural composition only — role is linear init, not complete proto.
+        "role": LINEAR_SUBSPACE_INITIALIZATION,
+        "inheritance_status": "NOT_INHERITANCE_LINEAR_INIT_ONLY",
+        "proto_frankenstein_complete": False,
         "recorded_at": _utc_now(),
         "kind": "raw_proto_composition_descriptor",
-        "status": "STRUCTURAL_PROTO_COMPOSED_VALIDATION_PENDING",
+        "status": "STRUCTURAL_LINEAR_INIT_COMPOSED_VALIDATION_PENDING",
+        "legacy_status_alias": "STRUCTURAL_PROTO_COMPOSED_VALIDATION_PENDING",
         "gravity_compressed": False,
         "byte_merge": False,
         "direct_weight_transplant": False,
@@ -601,11 +615,17 @@ def compose_proto_artifact(
             "math_bench": "NOT_RUN",
             "capability_claim": False,
             "note": (
-                "Structural PROTO composition only.  Live capability measurement "
-                "requires the DeepSeek student forward."
+                "Structural LINEAR_SUBSPACE_INITIALIZATION composition only. "
+                "Not PROTO_FRANKENSTEIN_COMPLETE. Live capability measurement "
+                "requires the DeepSeek student forward and a trained functional "
+                "transfer (not linear projection alone)."
             ),
         },
-        "claim_boundary": dict(CLAIM_BOUNDARY),
+        "honest_status": LINEAR_INIT_HONEST_STATUS,
+        "claim_boundary": {
+            **dict(CLAIM_BOUNDARY),
+            **linear_init_claim_boundary(),
+        },
     }
     sealed = seal(artifact)
     path = out_dir / PROTO_ARTIFACT_NAME
