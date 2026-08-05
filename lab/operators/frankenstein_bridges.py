@@ -46,6 +46,24 @@ ADAPTER_NAMES: tuple[str, ...] = (
     "METHOD_CONDITIONED_ROUTE_BIAS",
 )
 
+# Full latent V0 named modules (owner steer PROTO_FRANKENSTEIN_V0).
+# Implemented as trainable torch modules in frankenstein_latent_v0.
+V0_BRIDGE_SITES: tuple[str, ...] = (
+    "GLM_EARLY_CONTEXT_BRIDGE",
+    "GLM_METHOD_BRIDGE",
+    "GLM_DECOMPOSITION_BRIDGE",
+    "GLM_PRE_ROUTER_BRIDGE",
+    "GLM_POST_MOE_BRIDGE",
+    "GLM_FORMALIZATION_BRIDGE",
+    "GLM_REPAIR_BRIDGE",
+    "GLM_LATE_CONSOLIDATION_BRIDGE",
+)
+
+V0_MODULE_NAMES: tuple[str, ...] = V0_BRIDGE_SITES + (
+    "GLM_VALUE_HEAD",
+    "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+)
+
 # Loss names optimized at train time (definitions only here).
 LOSS_DEFINITIONS: dict[str, str] = {
     "functional_output": "held-out functional output match (span/action level)",
@@ -55,6 +73,21 @@ LOSS_DEFINITIONS: dict[str, str] = {
     "verifier_outcome": "verifier pass/fail CE on repair trajectories",
     # Explicitly NOT the sole objective:
     "latent_cosine_alone": "FORBIDDEN as sole objective",
+}
+
+# Full V0 11-loss portfolio (steer); training lives in frankenstein_latent_v0.
+V0_LOSS_PORTFOLIO: dict[str, str] = {
+    "L_latent": "shared-space feature align (teacher proj ↔ student observer)",
+    "L_function": "functional checkpoint agreement",
+    "L_span": "aligned decoded-span / action distribution KL",
+    "L_method": "method-family classification CE",
+    "L_decomposition": "decomposition / planning head CE",
+    "L_formal": "formalization head CE",
+    "L_repair": "repair / critique trajectory CE",
+    "L_value": "verified outcome / value rank BCE",
+    "L_route": "semantic route policy KL",
+    "L_retention": "base-capability preservation",
+    "L_runtime": "adapter sparsity / cost",
 }
 
 

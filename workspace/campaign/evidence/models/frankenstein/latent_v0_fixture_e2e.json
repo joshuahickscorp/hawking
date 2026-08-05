@@ -1,0 +1,1321 @@
+{
+  "bytes_accounted": true,
+  "capability_claim": false,
+  "checkpoint_slots": [
+    "CURRENT",
+    "BEST_MATH",
+    "BEST_BALANCED",
+    "ROLLBACK"
+  ],
+  "checkpoints": {
+    "BEST_BALANCED": {
+      "content_hash": "a2efe0b3e57d810ded631cdc973d21c14404948a96fc74b728e82703dddff1fa",
+      "metrics": {
+        "balanced_proxy": 0.18839962836666935,
+        "balanced_score": 0.18839962836666935,
+        "eval_loss": 4.309598922729492,
+        "math_proxy": 0.18839962836666935,
+        "train_loss": 1.5595827102661133
+      },
+      "parameter_bytes": 5694712,
+      "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_BALANCED.pt",
+      "phase": "A",
+      "slot": "BEST_BALANCED"
+    },
+    "BEST_MATH": {
+      "content_hash": "a2efe0b3e57d810ded631cdc973d21c14404948a96fc74b728e82703dddff1fa",
+      "metrics": {
+        "balanced_proxy": 0.18839962836666935,
+        "eval_loss": 4.309598922729492,
+        "math_proxy": 0.18839962836666935,
+        "math_score": 0.18839962836666935,
+        "train_loss": 1.5595827102661133
+      },
+      "parameter_bytes": 5694712,
+      "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_MATH.pt",
+      "phase": "A",
+      "slot": "BEST_MATH"
+    },
+    "CURRENT": {
+      "content_hash": "3e2a85d9137214318acbe9b3ebcf65457183bb549db04398cbdd11f965f1fb85",
+      "metrics": {
+        "balanced_proxy": 0.05722993617657407,
+        "eval_loss": 10.894579887390137,
+        "math_proxy": 0.10987026248713615,
+        "train_loss": 3.603776454925537
+      },
+      "parameter_bytes": 5694712,
+      "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/CURRENT.pt",
+      "phase": "E",
+      "slot": "CURRENT"
+    },
+    "ROLLBACK": {
+      "content_hash": "4e3fd4bd50d3e7296bace51b4962efc4d17009c431a3a77da3695de44295c8a4",
+      "metrics": {
+        "balanced_proxy": 0.1858660900420043,
+        "eval_loss": 4.381950378417969,
+        "math_proxy": 0.1858660900420043,
+        "math_score": 0.1858660900420043,
+        "train_loss": 3.254188140233358
+      },
+      "parameter_bytes": 5694712,
+      "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_MATH.pt",
+      "phase": "A",
+      "slot": "ROLLBACK"
+    }
+  },
+  "claim_boundary": {
+    "capability_claim": false,
+    "gravity_recomposition": false,
+    "kimi_consumed": false,
+    "proto_complete": false,
+    "requires_real_paired_capture_for_capability": true,
+    "still_closed": "REQUIRES_PAIRED_CAPTURE",
+    "training_performed_on_fixture": true
+  },
+  "data_kind": "REAL_SHAPED_PAIRED_ACTIVATION_FIXTURE",
+  "fabricated_capability_number": false,
+  "fail_closed_real_train": {
+    "capability_claim": false,
+    "detail": "Real paired (GLM,DSV4F) capture is absent. No capability number is reported. Capture lanes must deliver sealed activations before real train.",
+    "executed": false,
+    "fabricated": false,
+    "gate": "REQUIRES_PAIRED_CAPTURE",
+    "operation": "real_train_absent",
+    "recorded_at": "2026-08-05T19:46:04.697515Z",
+    "schema": "hawking.frankenstein.fail_closed.v1",
+    "seal_sha256": "e164207b46162ca2654b1b2445a62af7a9bf98d73af3d968a315198872544e42",
+    "stage": "latent_v0_e2e",
+    "status": "FAIL_CLOSED",
+    "trained": false
+  },
+  "fixture": {
+    "capability_claim": false,
+    "config": {
+      "batch_size": 8,
+      "d_hidden": 64,
+      "d_latent": 64,
+      "n_actions": 12,
+      "n_eval": 8,
+      "n_experts": 16,
+      "n_methods": 11,
+      "n_train": 24,
+      "rank": 8,
+      "seed": 0,
+      "seq_len": 2
+    },
+    "data_kind": "REAL_SHAPED_PAIRED_ACTIVATION_FIXTURE",
+    "geometry": {
+      "d_student": 4096,
+      "d_teacher": 6144,
+      "dsv4f_full_hidden": 4096,
+      "glm_full_hidden": 6144,
+      "matches_full_geometry": true
+    },
+    "note": "Real-shaped fixture proves train/reverse/byte/TPS/reject loop. NOT real paired capture. Capability numbers require capture lanes.",
+    "real_glm_dsv4f_capture": false,
+    "real_shaped": true,
+    "recorded_at": "2026-08-05T19:45:53.395204Z",
+    "schema": "hawking.frankenstein.latent_v0_real_shaped_fixture.v1",
+    "seal_sha256": "f9d747c283ae99904365279991b5b6acb1eae0cdb64b852fab168685cf221381"
+  },
+  "learned": true,
+  "loss_names": [
+    "L_latent",
+    "L_function",
+    "L_span",
+    "L_method",
+    "L_decomposition",
+    "L_formal",
+    "L_repair",
+    "L_value",
+    "L_route",
+    "L_retention",
+    "L_runtime"
+  ],
+  "losses": {
+    "L_decomposition": "decomposition / planning head CE",
+    "L_formal": "formalization head CE",
+    "L_function": "functional checkpoint agreement (adapted hidden \u2194 teacher target)",
+    "L_latent": "shared-space feature align (teacher proj \u2194 student observer)",
+    "L_method": "method-family classification CE",
+    "L_repair": "repair / critique trajectory CE",
+    "L_retention": "base-capability preservation (base-logit KL + feature anchor)",
+    "L_route": "semantic route policy KL (native top-6 preserved)",
+    "L_runtime": "adapter sparsity / cost (L1 on residual scale + FLOP proxy)",
+    "L_span": "aligned decoded-span / action distribution KL",
+    "L_value": "verified outcome / value rank BCE",
+    "latent_cosine_alone": "FORBIDDEN as sole objective"
+  },
+  "promotion_gate": {
+    "capability_claim": false,
+    "checks": {
+      "complete_intended_bridge_classes": true,
+      "complete_v0_beats_linear_init": true,
+      "held_out_math_improves_over_base": true,
+      "kimi_strategic_bridge_intact": true,
+      "method_decomp_repair_improve": true,
+      "no_material_secondary_regression": false,
+      "nonlinear_latent_bridges_trained": true,
+      "real_glm_activations_from_78_layer_path": false,
+      "reversible_and_loadable": true,
+      "routing_stable": true
+    },
+    "failed": [
+      "real_glm_activations_from_78_layer_path",
+      "no_material_secondary_regression"
+    ],
+    "note": "Promotion requires real capture. Fixture runs never promote.",
+    "recorded_at": "2026-08-05T19:46:04.697504Z",
+    "schema": "hawking.frankenstein.latent_v0_promotion_gate.v1",
+    "seal_sha256": "849feeee2541fe4f21aed62b66b691c1f593b15b77d1dddcabb168edfb680ba6",
+    "verdict": "HOLD_REQUIRES_PAIRED_CAPTURE"
+  },
+  "real_glm_dsv4f_capture": false,
+  "recorded_at": "2026-08-05T19:46:04.697523Z",
+  "reject_proof": {
+    "healthy_proxy": {
+      "reject_rule_fired": false,
+      "verdict": "ACCEPT"
+    },
+    "math_up_secondary_down": {
+      "reject_rule_fired": true,
+      "seal_sha256": "e4910bf9006cdb685b3f57f5356d5802892821b030ddeff5d99f39bd990bd879",
+      "verdict": "REJECT"
+    },
+    "proved_reject_fires": true
+  },
+  "result": {
+    "arm": "G_COMPLETE_V0",
+    "bytes_account": {
+      "active_bytes_per_token_proxy": 4097272,
+      "approx_flops_per_token": 1171456,
+      "bytes_per_param": 4,
+      "glm_router_weights_copied": false,
+      "hash_bound": "3e2a85d9137214318acbe9b3ebcf65457183bb549db04398cbdd11f965f1fb85",
+      "kimi_bridge_compatible": true,
+      "parts": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "15997bc2385d88273123d0379a8afa405c0fcbb95485b9cc786a81e9a0fe8d82",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_DECOMPOSITION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "846129d5783ed296499dadc3b32363665de6daceff362d7cde88a639e14015c0",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_EARLY_CONTEXT_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "0f1561771ff96417a53f893395c5b5980e01ece1e35323a37e64dd5fffca65f6",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_FORMALIZATION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "088b74ed9d66126ca9b3958d85235699dbf5ef1ca568c54e25be7bbd1b7bd964",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_METHOD_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "4e70143cbb086f43889257056b79e9966283394e47bed36f0a6c9e0a7c06d6fb",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_METHOD_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "e5e9046ebd1de916eb0b4ef18aa3aa4e5ade744d1b668af4b9439cb0acd0470d",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_POST_MOE_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "2e83f1b5adba956881823e2feed50c8947e08b329acef774011a1dc35ae988d1",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_PRE_ROUTER_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "139bf1d3d3edc93990e076f5933e035b95fa3be1153f4bd61e3a648369333295",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_REPAIR_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "action_proj": {
+          "name": "action_proj",
+          "parameter_bytes": 196656,
+          "parameter_count": 49164
+        },
+        "decomp_head": {
+          "ablatable": true,
+          "hash_bound": "3902ced60818b79ffcf6c7cbdf67b965be26f98f20c62f555daedb65f79fcdf4",
+          "name": "GLM_DECOMPOSITION_HEAD",
+          "parameter_bytes": 98328,
+          "parameter_count": 24582,
+          "runtime_resident": true
+        },
+        "formal_head": {
+          "ablatable": true,
+          "hash_bound": "bb778ccf9006404293882c60a06cc2989f5fef8c07aeae2dfe0a8780835c349f",
+          "name": "GLM_FORMALIZATION_HEAD",
+          "parameter_bytes": 65552,
+          "parameter_count": 16388,
+          "runtime_resident": true
+        },
+        "method_head": {
+          "ablatable": true,
+          "hash_bound": "f78b32a69087538e177dbe5a656d6bc87d8562c542a1469e0dbb60425dcdb27a",
+          "name": "GLM_METHOD_HEAD",
+          "parameter_bytes": 180268,
+          "parameter_count": 45067,
+          "runtime_resident": true
+        },
+        "repair_head": {
+          "ablatable": true,
+          "hash_bound": "f579729208d09f61b5f007e4aac93254a03f95c27bbd61cf42fb12dd993346e9",
+          "name": "GLM_REPAIR_HEAD",
+          "parameter_bytes": 65552,
+          "parameter_count": 16388,
+          "runtime_resident": true
+        },
+        "route_residual": {
+          "ablatable": true,
+          "copy_glm_router_weights": false,
+          "hash_bound": "5d1c9a1f030d44754c54bae8bb25c33f73528f1121cd7bf43256882c95e55ab3",
+          "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+          "parameter_bytes": 1088,
+          "parameter_count": 272,
+          "reversible": true
+        },
+        "student_observer": {
+          "ablatable": true,
+          "hash_bound": "98e0aa3328ac6123326bcc2ce03850b4a226efcbe7a0021a9fdf903a713f0baa",
+          "name": "STUDENT_OBSERVER",
+          "parameter_bytes": 1064960,
+          "parameter_count": 266240,
+          "runtime_resident": true
+        },
+        "teacher_projector": {
+          "ablatable": true,
+          "hash_bound": "1f1fd76376ca0ecada5569c8b5bf5d6d8df2859a3b4d1fbe2dee9351d50a1fd9",
+          "name": "TEACHER_PROJECTOR",
+          "parameter_bytes": 1597440,
+          "parameter_count": 399360,
+          "runtime_resident": false,
+          "training_only": true
+        },
+        "value_head": {
+          "ablatable": true,
+          "copy_glm_router_weights": false,
+          "hash_bound": "fb3629ce42d2f6563eded095288e327bac9338395233002b38e6b905c5342358",
+          "name": "GLM_VALUE_HEAD",
+          "parameter_bytes": 16388,
+          "parameter_count": 4097,
+          "reversible": false
+        }
+      },
+      "runtime_parameter_bytes": 4097272,
+      "steps": 60,
+      "total_parameter_bytes": 5694712,
+      "total_parameter_count": 1423679,
+      "tps_proxy_at_1gflops": 853.638548951049,
+      "training_only_parameter_bytes": 1597440,
+      "wall_train_ms": 10318.685042000652
+    },
+    "capability_claim": false,
+    "checkpoints": {
+      "BEST_BALANCED": {
+        "content_hash": "a2efe0b3e57d810ded631cdc973d21c14404948a96fc74b728e82703dddff1fa",
+        "metrics": {
+          "balanced_proxy": 0.18839962836666935,
+          "balanced_score": 0.18839962836666935,
+          "eval_loss": 4.309598922729492,
+          "math_proxy": 0.18839962836666935,
+          "train_loss": 1.5595827102661133
+        },
+        "parameter_bytes": 5694712,
+        "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_BALANCED.pt",
+        "phase": "A",
+        "slot": "BEST_BALANCED"
+      },
+      "BEST_MATH": {
+        "content_hash": "a2efe0b3e57d810ded631cdc973d21c14404948a96fc74b728e82703dddff1fa",
+        "metrics": {
+          "balanced_proxy": 0.18839962836666935,
+          "eval_loss": 4.309598922729492,
+          "math_proxy": 0.18839962836666935,
+          "math_score": 0.18839962836666935,
+          "train_loss": 1.5595827102661133
+        },
+        "parameter_bytes": 5694712,
+        "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_MATH.pt",
+        "phase": "A",
+        "slot": "BEST_MATH"
+      },
+      "CURRENT": {
+        "content_hash": "3e2a85d9137214318acbe9b3ebcf65457183bb549db04398cbdd11f965f1fb85",
+        "metrics": {
+          "balanced_proxy": 0.05722993617657407,
+          "eval_loss": 10.894579887390137,
+          "math_proxy": 0.10987026248713615,
+          "train_loss": 3.603776454925537
+        },
+        "parameter_bytes": 5694712,
+        "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/CURRENT.pt",
+        "phase": "E",
+        "slot": "CURRENT"
+      },
+      "ROLLBACK": {
+        "content_hash": "4e3fd4bd50d3e7296bace51b4962efc4d17009c431a3a77da3695de44295c8a4",
+        "metrics": {
+          "balanced_proxy": 0.1858660900420043,
+          "eval_loss": 4.381950378417969,
+          "math_proxy": 0.1858660900420043,
+          "math_score": 0.1858660900420043,
+          "train_loss": 3.254188140233358
+        },
+        "parameter_bytes": 5694712,
+        "path": "/Users/scammermike/.claude-grok/worktrees/v0-latent-bridge-train-20260805-153435/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/fixture_e2e/BEST_MATH.pt",
+        "phase": "A",
+        "slot": "ROLLBACK"
+      }
+    },
+    "data_kind": "REAL_SHAPED_PAIRED_ACTIVATION_FIXTURE",
+    "final_eval_loss": 10.894579887390137,
+    "final_train_loss": 3.603776454925537,
+    "history": [
+      {
+        "epoch": 0.0,
+        "eval_L_latent": 4.440892696380615,
+        "eval_L_runtime": 0.1732867956161499,
+        "eval_loss": 4.442625522613525,
+        "phase": "A",
+        "train_loss": 4.212271372477214
+      },
+      {
+        "epoch": 1.0,
+        "eval_L_latent": 4.456849575042725,
+        "eval_L_runtime": 0.1732867956161499,
+        "eval_loss": 4.458582401275635,
+        "phase": "A",
+        "train_loss": 4.146658738454183
+      },
+      {
+        "epoch": 2.0,
+        "eval_L_latent": 4.380217552185059,
+        "eval_L_runtime": 0.1732867956161499,
+        "eval_loss": 4.381950378417969,
+        "phase": "A",
+        "train_loss": 3.254188140233358
+      },
+      {
+        "epoch": 3.0,
+        "eval_L_latent": 4.307866096496582,
+        "eval_L_runtime": 0.1732867956161499,
+        "eval_loss": 4.309598922729492,
+        "phase": "A",
+        "train_loss": 1.5595827102661133
+      },
+      {
+        "epoch": 0.0,
+        "eval_L_function": 0.12299133837223053,
+        "eval_L_latent": 4.417773246765137,
+        "eval_L_retention": 0.8839370012283325,
+        "eval_L_runtime": 0.17216578125953674,
+        "eval_loss": 2.5614705085754395,
+        "phase": "B",
+        "train_loss": 0.836354931195577
+      },
+      {
+        "epoch": 1.0,
+        "eval_L_function": 0.12305845320224762,
+        "eval_L_latent": 4.397346496582031,
+        "eval_L_retention": 0.9190135598182678,
+        "eval_L_runtime": 0.1711064577102661,
+        "eval_loss": 2.5600407123565674,
+        "phase": "B",
+        "train_loss": 4.109252691268921
+      },
+      {
+        "epoch": 2.0,
+        "eval_L_function": 0.12311363220214844,
+        "eval_L_latent": 4.323976516723633,
+        "eval_L_retention": 0.9430167078971863,
+        "eval_L_runtime": 0.1702190637588501,
+        "eval_loss": 2.529367208480835,
+        "phase": "B",
+        "train_loss": 2.842570702234904
+      },
+      {
+        "epoch": 3.0,
+        "eval_L_function": 0.12318059802055359,
+        "eval_L_latent": 4.267725944519043,
+        "eval_L_retention": 0.9692674279212952,
+        "eval_L_runtime": 0.17022283375263214,
+        "eval_loss": 2.507871627807617,
+        "phase": "B",
+        "train_loss": 1.0496236085891724
+      },
+      {
+        "epoch": 0.0,
+        "eval_L_decomposition": 2.231107234954834,
+        "eval_L_formal": 1.5189423561096191,
+        "eval_L_function": 0.12320208549499512,
+        "eval_L_latent": 4.270468235015869,
+        "eval_L_method": 3.17016863822937,
+        "eval_L_repair": 1.638697862625122,
+        "eval_L_retention": 0.9740228056907654,
+        "eval_L_runtime": 0.16954319179058075,
+        "eval_L_span": 2.175776958465576,
+        "eval_L_value": 0.9909266233444214,
+        "eval_loss": 11.71849250793457,
+        "phase": "C",
+        "train_loss": 10.804126103719076
+      },
+      {
+        "epoch": 1.0,
+        "eval_L_decomposition": 2.3481619358062744,
+        "eval_L_formal": 1.5149270296096802,
+        "eval_L_function": 0.12331704795360565,
+        "eval_L_latent": 4.27113676071167,
+        "eval_L_method": 3.329603672027588,
+        "eval_L_repair": 1.6845120191574097,
+        "eval_L_retention": 0.9817756414413452,
+        "eval_L_runtime": 0.16960963606834412,
+        "eval_L_span": 2.228370189666748,
+        "eval_L_value": 0.9683502912521362,
+        "eval_loss": 12.031457901000977,
+        "phase": "C",
+        "train_loss": 1.0693780581156414
+      },
+      {
+        "epoch": 2.0,
+        "eval_L_decomposition": 2.446131467819214,
+        "eval_L_formal": 1.5510516166687012,
+        "eval_L_function": 0.12339256703853607,
+        "eval_L_latent": 4.2715277671813965,
+        "eval_L_method": 3.4565303325653076,
+        "eval_L_repair": 1.7428330183029175,
+        "eval_L_retention": 0.9805051684379578,
+        "eval_L_runtime": 0.16933481395244598,
+        "eval_L_span": 2.2435920238494873,
+        "eval_L_value": 0.9336384534835815,
+        "eval_loss": 12.319380760192871,
+        "phase": "C",
+        "train_loss": 0.653396079937617
+      },
+      {
+        "epoch": 3.0,
+        "eval_L_decomposition": 2.5264172554016113,
+        "eval_L_formal": 1.5918883085250854,
+        "eval_L_function": 0.12346714735031128,
+        "eval_L_latent": 4.272478103637695,
+        "eval_L_method": 3.5628247261047363,
+        "eval_L_repair": 1.7951955795288086,
+        "eval_L_retention": 0.9795920252799988,
+        "eval_L_runtime": 0.1690453290939331,
+        "eval_L_span": 2.248802900314331,
+        "eval_L_value": 0.9165469408035278,
+        "eval_loss": 12.583174705505371,
+        "phase": "C",
+        "train_loss": 0.8057416081428528
+      },
+      {
+        "epoch": 0.0,
+        "eval_L_function": 0.12355813384056091,
+        "eval_L_latent": 4.270505905151367,
+        "eval_L_method": 3.5985138416290283,
+        "eval_L_retention": 0.9288352131843567,
+        "eval_L_route": 0.23748546838760376,
+        "eval_L_runtime": 0.1682828813791275,
+        "eval_L_span": 2.161719799041748,
+        "eval_loss": 4.179409503936768,
+        "phase": "D",
+        "train_loss": 0.9750285347302755
+      },
+      {
+        "epoch": 1.0,
+        "eval_L_function": 0.12377844750881195,
+        "eval_L_latent": 4.269150733947754,
+        "eval_L_method": 3.645354986190796,
+        "eval_L_retention": 0.9144705533981323,
+        "eval_L_route": 0.23749741911888123,
+        "eval_L_runtime": 0.16841062903404236,
+        "eval_L_span": 2.1572837829589844,
+        "eval_loss": 4.194328308105469,
+        "phase": "D",
+        "train_loss": 0.8819925983746847
+      },
+      {
+        "epoch": 2.0,
+        "eval_L_function": 0.12409825623035431,
+        "eval_L_latent": 4.2677435874938965,
+        "eval_L_method": 3.6990513801574707,
+        "eval_L_retention": 0.9116907715797424,
+        "eval_L_route": 0.2375025600194931,
+        "eval_L_runtime": 0.16897431015968323,
+        "eval_L_span": 2.173279285430908,
+        "eval_loss": 4.223627090454102,
+        "phase": "D",
+        "train_loss": 0.7649190823237101
+      },
+      {
+        "epoch": 3.0,
+        "eval_L_function": 0.12434445321559906,
+        "eval_L_latent": 4.266063213348389,
+        "eval_L_method": 3.7366957664489746,
+        "eval_L_retention": 0.9062296748161316,
+        "eval_L_route": 0.23750576376914978,
+        "eval_L_runtime": 0.16902247071266174,
+        "eval_L_span": 2.184748649597168,
+        "eval_loss": 4.2422943115234375,
+        "phase": "D",
+        "train_loss": 0.7412567039330801
+      },
+      {
+        "epoch": 0.0,
+        "eval_L_decomposition": 2.6499547958374023,
+        "eval_L_formal": 1.4883263111114502,
+        "eval_L_function": 0.12442466616630554,
+        "eval_L_latent": 4.390742301940918,
+        "eval_L_method": 3.702984094619751,
+        "eval_L_repair": 1.8487164974212646,
+        "eval_L_retention": 0.8866081833839417,
+        "eval_L_route": 0.23751039803028107,
+        "eval_L_runtime": 0.16890302300453186,
+        "eval_L_span": 2.107656955718994,
+        "eval_L_value": 0.9466272592544556,
+        "eval_loss": 10.844099998474121,
+        "phase": "E",
+        "train_loss": 1.267384131749471
+      },
+      {
+        "epoch": 1.0,
+        "eval_L_decomposition": 2.735863208770752,
+        "eval_L_formal": 1.4492300748825073,
+        "eval_L_function": 0.12445291876792908,
+        "eval_L_latent": 4.376213073730469,
+        "eval_L_method": 3.7006638050079346,
+        "eval_L_repair": 1.9068043231964111,
+        "eval_L_retention": 0.9027561545372009,
+        "eval_L_route": 0.2375035434961319,
+        "eval_L_runtime": 0.168302983045578,
+        "eval_L_span": 2.113489866256714,
+        "eval_L_value": 0.962424635887146,
+        "eval_loss": 10.889342308044434,
+        "phase": "E",
+        "train_loss": 14.491920789082846
+      },
+      {
+        "epoch": 2.0,
+        "eval_L_decomposition": 2.7998385429382324,
+        "eval_L_formal": 1.4399242401123047,
+        "eval_L_function": 0.12451086938381195,
+        "eval_L_latent": 4.310053825378418,
+        "eval_L_method": 3.7104878425598145,
+        "eval_L_repair": 1.9475184679031372,
+        "eval_L_retention": 0.9235847592353821,
+        "eval_L_route": 0.23749376833438873,
+        "eval_L_runtime": 0.1678987592458725,
+        "eval_L_span": 2.138411045074463,
+        "eval_L_value": 0.9718197584152222,
+        "eval_loss": 10.896711349487305,
+        "phase": "E",
+        "train_loss": 9.458211104075113
+      },
+      {
+        "epoch": 3.0,
+        "eval_L_decomposition": 2.8347432613372803,
+        "eval_L_formal": 1.430450439453125,
+        "eval_L_function": 0.12450844049453735,
+        "eval_L_latent": 4.2779974937438965,
+        "eval_L_method": 3.6991379261016846,
+        "eval_L_repair": 1.984959602355957,
+        "eval_L_retention": 0.919804036617279,
+        "eval_L_route": 0.23748145997524261,
+        "eval_L_runtime": 0.1675282120704651,
+        "eval_L_span": 2.16070556640625,
+        "eval_L_value": 0.9804880023002625,
+        "eval_loss": 10.894579887390137,
+        "phase": "E",
+        "train_loss": 3.603776454925537
+      }
+    ],
+    "learned": true,
+    "phase_results": {
+      "A": {
+        "epochs": 4,
+        "final_eval_loss": 4.309598922729492,
+        "history_len": 4,
+        "loss_weights": {
+          "L_decomposition": 0.0,
+          "L_formal": 0.0,
+          "L_function": 0.0,
+          "L_latent": 1.0,
+          "L_method": 0.0,
+          "L_repair": 0.0,
+          "L_retention": 0.0,
+          "L_route": 0.0,
+          "L_runtime": 0.01,
+          "L_span": 0.0,
+          "L_value": 0.0
+        },
+        "status": "TRAINED"
+      },
+      "B": {
+        "epochs": 4,
+        "final_eval_loss": 2.507871627807617,
+        "history_len": 4,
+        "loss_weights": {
+          "L_decomposition": 0.0,
+          "L_formal": 0.0,
+          "L_function": 1.0,
+          "L_latent": 0.5,
+          "L_method": 0.0,
+          "L_repair": 0.0,
+          "L_retention": 0.25,
+          "L_route": 0.0,
+          "L_runtime": 0.05,
+          "L_span": 0.0,
+          "L_value": 0.0
+        },
+        "status": "TRAINED"
+      },
+      "C": {
+        "epochs": 4,
+        "final_eval_loss": 12.583174705505371,
+        "history_len": 4,
+        "loss_weights": {
+          "L_decomposition": 1.0,
+          "L_formal": 1.0,
+          "L_function": 0.5,
+          "L_latent": 0.25,
+          "L_method": 1.0,
+          "L_repair": 1.0,
+          "L_retention": 0.5,
+          "L_route": 0.0,
+          "L_runtime": 0.05,
+          "L_span": 0.25,
+          "L_value": 1.0
+        },
+        "status": "TRAINED"
+      },
+      "D": {
+        "epochs": 4,
+        "final_eval_loss": 4.2422943115234375,
+        "history_len": 4,
+        "loss_weights": {
+          "L_decomposition": 0.0,
+          "L_formal": 0.0,
+          "L_function": 0.5,
+          "L_latent": 0.25,
+          "L_method": 0.5,
+          "L_repair": 0.0,
+          "L_retention": 0.5,
+          "L_route": 1.0,
+          "L_runtime": 0.05,
+          "L_span": 0.25,
+          "L_value": 0.0
+        },
+        "status": "TRAINED"
+      },
+      "E": {
+        "epochs": 4,
+        "final_eval_loss": 10.894579887390137,
+        "history_len": 4,
+        "loss_weights": {
+          "L_decomposition": 0.4,
+          "L_formal": 0.4,
+          "L_function": 1.0,
+          "L_latent": 1.0,
+          "L_method": 0.5,
+          "L_repair": 0.4,
+          "L_retention": 0.75,
+          "L_route": 0.5,
+          "L_runtime": 0.05,
+          "L_span": 0.5,
+          "L_value": 0.25
+        },
+        "status": "TRAINED"
+      }
+    },
+    "reverse_ok": true,
+    "reverse_recon_error": 2.384185791015625e-07,
+    "steps": 60,
+    "wall_ms": 10318.685042000652
+  },
+  "retention_gate": {
+    "capability_claim": false,
+    "domains": [
+      {
+        "base": 0.7,
+        "delta": -0.15000000000000002,
+        "domain": "coding_and_repository_work",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.5499999999999999,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": -0.09999999999999998,
+        "domain": "tool_use",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.6,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "agentic_planning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "long_context_reasoning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "repair_and_critique",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "hcli_protocols",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "general_knowledge_conversation",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "runtime_tps",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "bridge_compatibility",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": -0.12,
+        "domain": "routing_stability",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.58,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "context_behavior",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      }
+    ],
+    "recorded_at": "2026-08-05T19:46:04.697468Z",
+    "regressions": [
+      {
+        "base": 0.7,
+        "delta": -0.15000000000000002,
+        "domain": "coding_and_repository_work",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.5499999999999999,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": -0.09999999999999998,
+        "domain": "tool_use",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.6,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": -0.12,
+        "domain": "routing_stability",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.58,
+        "tolerance": 0.02
+      }
+    ],
+    "reject_rule_fired": true,
+    "schema": "hawking.frankenstein.latent_v0_retention_gate.v1",
+    "seal_sha256": "dd845bc2e9b930d36caaecb3f7b5996d3889b75d1fc38883a8cc98c4bd678c53",
+    "tolerance": 0.02,
+    "verdict": "REJECT"
+  },
+  "reverse_ok": true,
+  "schedule_phases": [
+    {
+      "description": "projectors + shared-latent align",
+      "id": "A"
+    },
+    {
+      "description": "reversible student latent adapters (interventions)",
+      "id": "B"
+    },
+    {
+      "description": "method / decomp / formal / repair / value heads",
+      "id": "C"
+    },
+    {
+      "description": "bounded route residual",
+      "id": "D"
+    },
+    {
+      "description": "joint consolidation with retention replay",
+      "id": "E"
+    },
+    {
+      "description": "hidden eval + repair",
+      "id": "F"
+    }
+  ],
+  "schema": "hawking.frankenstein.latent_v0_train_run.v1",
+  "seal_sha256": "51dd0f427a36714cf1a4ab80be03adc557bda64738b8ff98a520176cd33d15e8",
+  "site_ablations": {
+    "GLM_DECOMPOSITION_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.803932189941406,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "15997bc2385d88273123d0379a8afa405c0fcbb95485b9cc786a81e9a0fe8d82",
+      "independently_ablatable": true
+    },
+    "GLM_EARLY_CONTEXT_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.804998397827148,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "846129d5783ed296499dadc3b32363665de6daceff362d7cde88a639e14015c0",
+      "independently_ablatable": true
+    },
+    "GLM_FORMALIZATION_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.80511474609375,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "0f1561771ff96417a53f893395c5b5980e01ece1e35323a37e64dd5fffca65f6",
+      "independently_ablatable": true
+    },
+    "GLM_LATE_CONSOLIDATION_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.803706169128418,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "088b74ed9d66126ca9b3958d85235699dbf5ef1ca568c54e25be7bbd1b7bd964",
+      "independently_ablatable": true
+    },
+    "GLM_METHOD_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.805084228515625,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "4e70143cbb086f43889257056b79e9966283394e47bed36f0a6c9e0a7c06d6fb",
+      "independently_ablatable": true
+    },
+    "GLM_POST_MOE_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.804061889648438,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "e5e9046ebd1de916eb0b4ef18aa3aa4e5ade744d1b668af4b9439cb0acd0470d",
+      "independently_ablatable": true
+    },
+    "GLM_PRE_ROUTER_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.80456829071045,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "2e83f1b5adba956881823e2feed50c8947e08b329acef774011a1dc35ae988d1",
+      "independently_ablatable": true
+    },
+    "GLM_REPAIR_BRIDGE": {
+      "bypassable": true,
+      "eval_loss_when_skipped": 10.805022239685059,
+      "full_eval_loss": 10.894579887390137,
+      "hash_bound": "139bf1d3d3edc93990e076f5933e035b95fa3be1153f4bd61e3a648369333295",
+      "independently_ablatable": true
+    }
+  },
+  "stack_spec": {
+    "bridge_sites": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE"
+    ],
+    "d_hidden": 64,
+    "d_latent": 64,
+    "d_student": 4096,
+    "d_teacher": 6144,
+    "gravity": {
+      "active_bytes_per_token_proxy": 4097272,
+      "approx_flops_per_token": 1171456,
+      "bytes_per_param": 4,
+      "glm_router_weights_copied": false,
+      "hash_bound": "3e2a85d9137214318acbe9b3ebcf65457183bb549db04398cbdd11f965f1fb85",
+      "kimi_bridge_compatible": true,
+      "parts": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "15997bc2385d88273123d0379a8afa405c0fcbb95485b9cc786a81e9a0fe8d82",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_DECOMPOSITION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "846129d5783ed296499dadc3b32363665de6daceff362d7cde88a639e14015c0",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_EARLY_CONTEXT_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "0f1561771ff96417a53f893395c5b5980e01ece1e35323a37e64dd5fffca65f6",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_FORMALIZATION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "088b74ed9d66126ca9b3958d85235699dbf5ef1ca568c54e25be7bbd1b7bd964",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_METHOD_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "4e70143cbb086f43889257056b79e9966283394e47bed36f0a6c9e0a7c06d6fb",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_METHOD_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "e5e9046ebd1de916eb0b4ef18aa3aa4e5ade744d1b668af4b9439cb0acd0470d",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_POST_MOE_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "2e83f1b5adba956881823e2feed50c8947e08b329acef774011a1dc35ae988d1",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_PRE_ROUTER_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "ablatable": true,
+          "approx_flops_per_token": 146432,
+          "bypassable": true,
+          "gravity_accounted": true,
+          "hash_bound": "139bf1d3d3edc93990e076f5933e035b95fa3be1153f4bd61e3a648369333295",
+          "kimi_bridge_compatible": true,
+          "name": "GLM_REPAIR_BRIDGE",
+          "parameter_bytes": 301060,
+          "parameter_count": 75265,
+          "reversible": true,
+          "runtime_resident": true
+        },
+        "action_proj": {
+          "name": "action_proj",
+          "parameter_bytes": 196656,
+          "parameter_count": 49164
+        },
+        "decomp_head": {
+          "ablatable": true,
+          "hash_bound": "3902ced60818b79ffcf6c7cbdf67b965be26f98f20c62f555daedb65f79fcdf4",
+          "name": "GLM_DECOMPOSITION_HEAD",
+          "parameter_bytes": 98328,
+          "parameter_count": 24582,
+          "runtime_resident": true
+        },
+        "formal_head": {
+          "ablatable": true,
+          "hash_bound": "bb778ccf9006404293882c60a06cc2989f5fef8c07aeae2dfe0a8780835c349f",
+          "name": "GLM_FORMALIZATION_HEAD",
+          "parameter_bytes": 65552,
+          "parameter_count": 16388,
+          "runtime_resident": true
+        },
+        "method_head": {
+          "ablatable": true,
+          "hash_bound": "f78b32a69087538e177dbe5a656d6bc87d8562c542a1469e0dbb60425dcdb27a",
+          "name": "GLM_METHOD_HEAD",
+          "parameter_bytes": 180268,
+          "parameter_count": 45067,
+          "runtime_resident": true
+        },
+        "repair_head": {
+          "ablatable": true,
+          "hash_bound": "f579729208d09f61b5f007e4aac93254a03f95c27bbd61cf42fb12dd993346e9",
+          "name": "GLM_REPAIR_HEAD",
+          "parameter_bytes": 65552,
+          "parameter_count": 16388,
+          "runtime_resident": true
+        },
+        "route_residual": {
+          "ablatable": true,
+          "copy_glm_router_weights": false,
+          "hash_bound": "5d1c9a1f030d44754c54bae8bb25c33f73528f1121cd7bf43256882c95e55ab3",
+          "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+          "parameter_bytes": 1088,
+          "parameter_count": 272,
+          "reversible": true
+        },
+        "student_observer": {
+          "ablatable": true,
+          "hash_bound": "98e0aa3328ac6123326bcc2ce03850b4a226efcbe7a0021a9fdf903a713f0baa",
+          "name": "STUDENT_OBSERVER",
+          "parameter_bytes": 1064960,
+          "parameter_count": 266240,
+          "runtime_resident": true
+        },
+        "teacher_projector": {
+          "ablatable": true,
+          "hash_bound": "1f1fd76376ca0ecada5569c8b5bf5d6d8df2859a3b4d1fbe2dee9351d50a1fd9",
+          "name": "TEACHER_PROJECTOR",
+          "parameter_bytes": 1597440,
+          "parameter_count": 399360,
+          "runtime_resident": false,
+          "training_only": true
+        },
+        "value_head": {
+          "ablatable": true,
+          "copy_glm_router_weights": false,
+          "hash_bound": "fb3629ce42d2f6563eded095288e327bac9338395233002b38e6b905c5342358",
+          "name": "GLM_VALUE_HEAD",
+          "parameter_bytes": 16388,
+          "parameter_count": 4097,
+          "reversible": false
+        }
+      },
+      "runtime_parameter_bytes": 4097272,
+      "total_parameter_bytes": 5694712,
+      "total_parameter_count": 1423679,
+      "tps_proxy_at_1gflops": 853.638548951049,
+      "training_only_parameter_bytes": 1597440
+    },
+    "kimi_bridge_compatible": true,
+    "loss_portfolio": {
+      "L_decomposition": "decomposition / planning head CE",
+      "L_formal": "formalization head CE",
+      "L_function": "functional checkpoint agreement (adapted hidden \u2194 teacher target)",
+      "L_latent": "shared-space feature align (teacher proj \u2194 student observer)",
+      "L_method": "method-family classification CE",
+      "L_repair": "repair / critique trajectory CE",
+      "L_retention": "base-capability preservation (base-logit KL + feature anchor)",
+      "L_route": "semantic route policy KL (native top-6 preserved)",
+      "L_runtime": "adapter sparsity / cost (L1 on residual scale + FLOP proxy)",
+      "L_span": "aligned decoded-span / action distribution KL",
+      "L_value": "verified outcome / value rank BCE",
+      "latent_cosine_alone": "FORBIDDEN as sole objective"
+    },
+    "meta": {
+      "direct_weight_transplant": false,
+      "glm_router_weights_copied": false,
+      "kimi_bridge_compatible": true,
+      "runtime_keeps_teacher_projector": false,
+      "schema": "hawking.frankenstein.latent_v0_stack.v1",
+      "trained": true
+    },
+    "modules_present": {
+      "behavior_heads": true,
+      "interventions": [
+        "GLM_EARLY_CONTEXT_BRIDGE",
+        "GLM_METHOD_BRIDGE",
+        "GLM_DECOMPOSITION_BRIDGE",
+        "GLM_PRE_ROUTER_BRIDGE",
+        "GLM_POST_MOE_BRIDGE",
+        "GLM_FORMALIZATION_BRIDGE",
+        "GLM_REPAIR_BRIDGE",
+        "GLM_LATE_CONSOLIDATION_BRIDGE"
+      ],
+      "linear_init": false,
+      "route_residual": true,
+      "student_observer": true,
+      "teacher_projector": true,
+      "value_head": true
+    },
+    "rank": 8,
+    "schema": "hawking.frankenstein.latent_v0_stack.v1",
+    "v0_module_names": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "GLM_VALUE_HEAD",
+      "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+    ]
+  },
+  "status": "FIXTURE_E2E_COMPLETE",
+  "tps_accounted": true,
+  "v0_modules": [
+    "GLM_EARLY_CONTEXT_BRIDGE",
+    "GLM_METHOD_BRIDGE",
+    "GLM_DECOMPOSITION_BRIDGE",
+    "GLM_PRE_ROUTER_BRIDGE",
+    "GLM_POST_MOE_BRIDGE",
+    "GLM_FORMALIZATION_BRIDGE",
+    "GLM_REPAIR_BRIDGE",
+    "GLM_LATE_CONSOLIDATION_BRIDGE",
+    "GLM_VALUE_HEAD",
+    "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+  ]
+}
