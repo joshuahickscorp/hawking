@@ -983,6 +983,276 @@ def run_ag_ablation(
     return seal(document)
 
 
+# ---------------------------------------------------------------------------
+# Independent-challenger extensions (contamination / memorization / A–G re-run)
+# ---------------------------------------------------------------------------
+
+INDEPENDENT_CHALLENGE_SCHEMA = "hawking.frankenstein.independent_challenger.v1"
+CONTAMINATION_AUDIT_SCHEMA = "hawking.frankenstein.contamination_audit.v1"
+MEMORIZATION_AUDIT_SCHEMA = "hawking.frankenstein.teacher_memorization_audit.v1"
+
+
+def audit_contamination(
+    *,
+    membership: Mapping[str, Any] | None = None,
+    overlap_ids: Sequence[str] | None = None,
+    barrier_pass: bool | None = None,
+) -> dict[str, Any]:
+    """Audit train/eval contamination for independent challenger.
+
+    Without membership evidence, returns PENDING (never fabricates clean=true).
+    Explicit overlap ids or barrier_pass=False → FAIL / contamination_detected.
+    """
+
+    overlaps = list(overlap_ids or ())
+    if barrier_pass is False or overlaps:
+        return seal(
+            {
+                "schema": CONTAMINATION_AUDIT_SCHEMA,
+                "recorded_at": _utc_now(),
+                "status": "FAIL",
+                "pass": False,
+                "clean": False,
+                "contamination_detected": True,
+                "overlap_ids": overlaps,
+                "barrier_pass": barrier_pass,
+                "membership_present": membership is not None,
+                "fabricated": False,
+                "reason": (
+                    "train/eval overlap or failed contamination barrier; "
+                    "gains from contamination are rejected"
+                ),
+            }
+        )
+    if membership is None and barrier_pass is None:
+        return seal(
+            {
+                "schema": CONTAMINATION_AUDIT_SCHEMA,
+                "recorded_at": _utc_now(),
+                "status": "PENDING",
+                "pass": False,
+                "clean": False,
+                "contamination_detected": False,
+                "overlap_ids": [],
+                "fabricated": False,
+                "reason": "no membership / barrier evidence submitted",
+            }
+        )
+    # Membership present or explicit barrier_pass=True and no overlaps.
+    disjoint = True
+    if isinstance(membership, Mapping):
+        disjoint = bool(membership.get("disjoint", True))
+        if membership.get("contamination_hits"):
+            disjoint = False
+    ok = disjoint and (barrier_pass is not False) and not overlaps
+    return seal(
+        {
+            "schema": CONTAMINATION_AUDIT_SCHEMA,
+            "recorded_at": _utc_now(),
+            "status": "PASS" if ok else "FAIL",
+            "pass": ok,
+            "clean": ok,
+            "contamination_detected": not ok,
+            "overlap_ids": overlaps,
+            "barrier_pass": barrier_pass if barrier_pass is not None else ok,
+            "membership_present": membership is not None,
+            "fabricated": False,
+            "reason": "no train/eval contamination detected" if ok else "membership not disjoint",
+        }
+    )
+
+
+def audit_teacher_memorization(
+    *,
+    hidden_exact_match_rate: float | None = None,
+    teacher_answer_replay_rate: float | None = None,
+    max_exact_match: float = 0.05,
+    max_replay: float = 0.10,
+    flags: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Reject teacher-answer memorization disguised as transfer.
+
+    Rates are optional. Missing rates → PENDING. Explicit rates above thresholds
+    or flags.memorization_detected → FAIL.
+    """
+
+    if flags and flags.get("memorization_detected") is True:
+        return seal(
+            {
+                "schema": MEMORIZATION_AUDIT_SCHEMA,
+                "recorded_at": _utc_now(),
+                "status": "FAIL",
+                "pass": False,
+                "memorization_detected": True,
+                "hidden_exact_match_rate": hidden_exact_match_rate,
+                "teacher_answer_replay_rate": teacher_answer_replay_rate,
+                "thresholds": {
+                    "max_exact_match": max_exact_match,
+                    "max_replay": max_replay,
+                },
+                "fabricated": False,
+                "reason": "explicit memorization_detected flag",
+            }
+        )
+    if hidden_exact_match_rate is None and teacher_answer_replay_rate is None:
+        return seal(
+            {
+                "schema": MEMORIZATION_AUDIT_SCHEMA,
+                "recorded_at": _utc_now(),
+                "status": "PENDING",
+                "pass": False,
+                "memorization_detected": False,
+                "hidden_exact_match_rate": None,
+                "teacher_answer_replay_rate": None,
+                "thresholds": {
+                    "max_exact_match": max_exact_match,
+                    "max_replay": max_replay,
+                },
+                "fabricated": False,
+                "reason": "no memorization rates submitted",
+            }
+        )
+    mem = False
+    reasons: list[str] = []
+    if hidden_exact_match_rate is not None and float(hidden_exact_match_rate) > max_exact_match:
+        mem = True
+        reasons.append(
+            f"hidden_exact_match_rate={hidden_exact_match_rate} > {max_exact_match}"
+        )
+    if teacher_answer_replay_rate is not None and float(teacher_answer_replay_rate) > max_replay:
+        mem = True
+        reasons.append(
+            f"teacher_answer_replay_rate={teacher_answer_replay_rate} > {max_replay}"
+        )
+    ok = not mem
+    return seal(
+        {
+            "schema": MEMORIZATION_AUDIT_SCHEMA,
+            "recorded_at": _utc_now(),
+            "status": "PASS" if ok else "FAIL",
+            "pass": ok,
+            "memorization_detected": mem,
+            "hidden_exact_match_rate": hidden_exact_match_rate,
+            "teacher_answer_replay_rate": teacher_answer_replay_rate,
+            "thresholds": {
+                "max_exact_match": max_exact_match,
+                "max_replay": max_replay,
+            },
+            "fabricated": False,
+            "reason": "; ".join(reasons) if reasons else "within memorization thresholds",
+        }
+    )
+
+
+def run_independent_challenger(
+    *,
+    arm_scores: Mapping[str, Mapping[str, Any]] | None = None,
+    secondary_tolerance: float = DEFAULT_SECONDARY_TOLERANCE,
+    membership: Mapping[str, Any] | None = None,
+    contamination_overlap_ids: Sequence[str] | None = None,
+    contamination_barrier_pass: bool | None = None,
+    hidden_exact_match_rate: float | None = None,
+    teacher_answer_replay_rate: float | None = None,
+    memorization_flags: Mapping[str, Any] | None = None,
+    base_arm: str = ARM_FT_A,
+    matrix: str = "functional_transfer",
+) -> dict[str, Any]:
+    """Independent-challenger harness: re-run A–G + contamination + memorization.
+
+    Does not trust training-lane verdict caches — re-evaluates from sealed arm
+    scores when provided. Without scores, returns FRAMEWORK_PENDING honestly.
+    """
+
+    if matrix == "latent_v0":
+        # Deferred import keeps stage-1 ablation free of torch at import time.
+        from lab.operators import frankenstein_latent_v0 as latent_v0
+
+        ag = latent_v0.run_latent_ag_ablation(
+            arm_scores, secondary_tolerance=secondary_tolerance
+        )
+        matrix_label = "latent_v0"
+    else:
+        ag = run_ag_ablation(
+            arm_scores=arm_scores,
+            secondary_tolerance=secondary_tolerance,
+            base_arm=base_arm,
+        )
+        matrix_label = "functional_transfer"
+
+    contam = audit_contamination(
+        membership=membership,
+        overlap_ids=contamination_overlap_ids,
+        barrier_pass=contamination_barrier_pass,
+    )
+    memor = audit_teacher_memorization(
+        hidden_exact_match_rate=hidden_exact_match_rate,
+        teacher_answer_replay_rate=teacher_answer_replay_rate,
+        flags=memorization_flags,
+    )
+
+    hard_fail = (
+        contam.get("contamination_detected") is True
+        or memor.get("memorization_detected") is True
+        or ag.get("verdict") == "REJECT"
+    )
+    if hard_fail:
+        overall = "REJECT"
+        status = "EVALUATED"
+    elif ag.get("verdict") in {None, "PENDING"} or contam.get("status") == "PENDING" or memor.get(
+        "status"
+    ) == "PENDING":
+        overall = "PENDING"
+        status = "FRAMEWORK_PENDING" if arm_scores is None else "PARTIAL"
+    elif ag.get("verdict") in {"ACCEPT", "PARTIAL", "BASE"}:
+        # Independent pass only when A–G ACCEPT and both audits PASS.
+        if (
+            ag.get("verdict") == "ACCEPT"
+            and contam.get("status") == "PASS"
+            and memor.get("status") == "PASS"
+        ):
+            overall = "ACCEPT"
+            status = "EVALUATED"
+        else:
+            overall = "PARTIAL"
+            status = "PARTIAL"
+    else:
+        overall = str(ag.get("verdict") or "PENDING")
+        status = "EVALUATED"
+
+    return seal(
+        {
+            "schema": INDEPENDENT_CHALLENGE_SCHEMA,
+            "recorded_at": _utc_now(),
+            "status": status,
+            "verdict": overall,
+            "pass": overall == "ACCEPT",
+            "matrix": matrix_label,
+            "ablation": {
+                "schema": ag.get("schema"),
+                "verdict": ag.get("verdict"),
+                "status": ag.get("status"),
+                "reject_rule_fired": ag.get("reject_rule_fired"),
+                "seal_sha256": ag.get("seal_sha256"),
+                "arms": ag.get("arms"),
+            },
+            "contamination": contam,
+            "teacher_memorization": memor,
+            "independent_of_training_lane": True,
+            "fabricated_scores": False,
+            "claim_boundary": {
+                **dict(CLAIM_BOUNDARY),
+                "independent_challenger": True,
+                "rejects_contamination": True,
+                "rejects_teacher_memorization": True,
+            },
+            "note": (
+                "Independent re-run of A–G ablation plus contamination / "
+                "teacher-memorization audits. Does not fabricate scores."
+            ),
+        }
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(

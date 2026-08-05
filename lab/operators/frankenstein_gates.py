@@ -45,6 +45,8 @@ REQUIRES_TRAINING_LOOP = "REQUIRES_TRAINING_LOOP"
 REQUIRES_VERIFIER = "REQUIRES_VERIFIER"
 REQUIRES_BENCHMARK_CORPUS = "REQUIRES_BENCHMARK_CORPUS"
 REQUIRES_DSV4F_FORWARD = "DEEPSEEK_FORWARD_PENDING"  # existing forward gate alias
+# V0 seal path: refuse empty / untrained / scaffold-only module packs.
+REQUIRES_TRAINED_MODULES = "REQUIRES_TRAINED_MODULES"
 
 # Stages that need each gate (owner steer numbering).
 STAGE_GATES: dict[str, tuple[str, ...]] = {
@@ -62,9 +64,12 @@ STAGE_GATES: dict[str, tuple[str, ...]] = {
         REQUIRES_BENCHMARK_CORPUS,
         REQUIRES_DSV4F_FORWARD,
         REQUIRES_TRAINING_LOOP,
+        REQUIRES_TRAINED_MODULES,
     ),
     "11_reject_imitation": (),  # policy only
     "12_secondary_search_gains": (REQUIRES_VERIFIER, REQUIRES_BENCHMARK_CORPUS),
+    "13_v0_seal_assemble": (REQUIRES_TRAINED_MODULES,),
+    "14_v0_cloud_confirm": (),  # human upload + remote-hash confirm hook
 }
 
 GATE_MISSING_INFRA: dict[str, str] = {
@@ -88,6 +93,11 @@ GATE_MISSING_INFRA: dict[str, str] = {
     REQUIRES_DSV4F_FORWARD: (
         "Student forward measurement gated or partial; full capability benches "
         "require a registered DeepSeek forward callable."
+    ),
+    REQUIRES_TRAINED_MODULES: (
+        "No real trained V0 modules (bridges / behavior heads / route residual) "
+        "with trained=true + content hashes. Refuse sealing empty/untrained/"
+        "scaffold-only PROTO_FRANKENSTEIN_V0 artifacts."
     ),
 }
 
@@ -193,6 +203,9 @@ def inventory_built_vs_gated() -> dict[str, Any]:
             "frozen promotion gate (returns PENDING honestly)",
             "secondary non-regression suite framework",
             "Gravity byte/TPS accounting hooks on adapters",
+            "V0 HCLI-loadable artifact assembler (fail-closed REQUIRES_TRAINED_MODULES)",
+            "independent-challenger verify harness (A–G + retention + promotion)",
+            "cloud-upload package + one-command restore + PROTO_CLOUD_SEALED hook",
         ],
         "runtime_gated": {
             REQUIRES_GLM_RUNTIME: [
@@ -212,6 +225,10 @@ def inventory_built_vs_gated() -> dict[str, Any]:
                 "held-out math suite evaluation",
                 "promotion gate live scores",
                 "disjoint membership eval over real problems",
+            ],
+            REQUIRES_TRAINED_MODULES: [
+                "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED loadable artifact",
+                "honest Gravity byte/resident/active-bytes/TPS seal accounting",
             ],
         },
         "missing_infra": dict(GATE_MISSING_INFRA),
