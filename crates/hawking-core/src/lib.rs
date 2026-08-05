@@ -63,6 +63,10 @@ pub mod gravity_deepseek_v4_layer_plan;
 /// Parameterized ratio-zero attention device plan (layer/position/growing KV).
 /// Resolves source tensor names and refuses ratio-4/128 cleanly.
 pub mod gravity_deepseek_v4_attention_device;
+/// Multi-token / non-BOS growing-KV attention (empty-compressed specialization
+/// for ratio-4/128). Capture path for PROTO_FRANKENSTEIN_V0 bridge sites.
+#[cfg(target_os = "macos")]
+pub mod gravity_deepseek_v4_fullseq_attention_device;
 /// Bounded verifier for the opt-in, source-bound Torch F32 Gate calibration
 /// target used by the position-zero diagnostic. It has no Metal, runtime,
 /// route-default, or TPS surface.

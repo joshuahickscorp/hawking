@@ -162,6 +162,53 @@ impl DeepSeekV4LayerDevicePlan {
         self.require_moe_device()
     }
 
+    /// Admit multi-token / non-BOS attention only when the source compressed
+    /// topk is still empty at `token_position` (0-based).
+    ///
+    /// - ratio-0: always (within the 128-token sliding window)
+    /// - ratio-4: only while `token_position + 1 < 4` (empty compressed slots)
+    /// - ratio-128: only while `token_position + 1 < 128`
+    ///
+    /// Full indexer/compressor graphs for non-empty compressed slots remain
+    /// refused — this is the exact source window-only specialization, not a
+    /// substitute for ratio-4/128 compressed attention.
+    pub fn require_empty_compressed_growing_kv_attention(
+        &self,
+        token_position: usize,
+    ) -> Result<()> {
+        const WINDOW: usize = 128;
+        if token_position >= WINDOW {
+            return Err(plan_error(format!(
+                "layer {} token position {token_position} exceeds the sliding window of {WINDOW}",
+                self.layer
+            )));
+        }
+        let ratio = self.compression.ratio();
+        if ratio == 0 {
+            return Ok(());
+        }
+        let end_pos = token_position
+            .checked_add(1)
+            .ok_or_else(|| plan_error("token position overflow"))?;
+        let compressed_slots = end_pos / ratio;
+        if compressed_slots == 0 {
+            return Ok(());
+        }
+        Err(plan_error(format!(
+            "layer {} ratio-{ratio} fullseq attention refused at position {token_position}: \
+             compressed topk is non-empty ({compressed_slots} slots); \
+             indexer/compressor graph is not implemented (window-only empty-compressed \
+             specialization covers only positions where end_pos // ratio == 0)",
+            self.layer
+        )))
+    }
+
+    /// Full multi-token layer step under the empty-compressed growing-KV rule.
+    pub fn require_fullseq_full_layer_device(&self, token_position: usize) -> Result<()> {
+        self.require_empty_compressed_growing_kv_attention(token_position)?;
+        self.require_moe_device()
+    }
+
     pub fn common_tensor_name(&self, anchors: &DeepSeekV4LayerSourceAnchors, kind: DeepSeekV4LayerCommonTensor) -> Result<String> {
         Ok(anchors.layer(self.layer)?.common_tensor(kind).name)
     }
@@ -333,5 +380,38 @@ mod tests {
             43
         );
         assert_eq!(DSV4F_HASH_GATE_LAYER_COUNT, 3);
+    }
+
+    #[test]
+    fn empty_compressed_growing_kv_admits_ratio4_early_positions() {
+        let ratio4 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 2,
+            compression: DeepSeekV4LayerCompressionMode::Ratio4WithIndexer,
+            gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
+            tensor_count: 0,
+        });
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(2).is_ok());
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(3).is_err());
+
+        let ratio128 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 3,
+            compression: DeepSeekV4LayerCompressionMode::Ratio128,
+            gate_mode: DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias,
+            tensor_count: 0,
+        });
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(126).is_ok());
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(127).is_err());
+
+        let ratio0 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 0,
+            compression: DeepSeekV4LayerCompressionMode::SlidingWindowOnly,
+            gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
+            tensor_count: 0,
+        });
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(127).is_ok());
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(128).is_err());
     }
 }

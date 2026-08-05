@@ -455,7 +455,23 @@ pub fn sparse_attention_position1_two_kv_source_algorithm(
 pub fn layer0_position1_rope_table(
     reader: &DeepSeekV4FullStreamReader,
 ) -> Result<PositionOneRopeTable> {
+    yarn_rope_table_for_position(reader, POSITION1)
+}
+
+/// Source-derived YaRN cos/sin table for an arbitrary decode position.
+/// Position 0 is the identity rotation (cos=1, sin=0). Tables are static
+/// source control — not hidden activations — so a device graph may upload
+/// them without creating a host activation bridge.
+pub fn yarn_rope_table_for_position(
+    reader: &DeepSeekV4FullStreamReader,
+    position: usize,
+) -> Result<PositionOneRopeTable> {
     verify_layer0_position1_continuation_anchors(reader)?;
+    if position >= WINDOW_SIZE {
+        return Err(continuation(format!(
+            "RoPE position {position} exceeds the ratio-0 sliding window of {WINDOW_SIZE}"
+        )));
+    }
     let low = find_correction_dim(ROPE_BETA_FAST).floor().max(0.0) as usize;
     let high = find_correction_dim(ROPE_BETA_SLOW)
         .ceil()
@@ -468,7 +484,7 @@ pub fn layer0_position1_rope_table(
         let ramp = ((index as f32 - low as f32) / (high as f32 - low as f32)).clamp(0.0, 1.0);
         let smooth = 1.0 - ramp;
         let frequency = base_frequency / ROPE_FACTOR * (1.0 - smooth) + base_frequency * smooth;
-        let (sin, cos) = (POSITION1 as f32 * frequency).sin_cos();
+        let (sin, cos) = (position as f32 * frequency).sin_cos();
         cos_f32.push(cos);
         sin_f32.push(sin);
     }

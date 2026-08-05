@@ -393,6 +393,52 @@ mod device {
                 kv_rows: DSV4F_P7_POSITION1_KV_ROWS,
             })
         }
+
+        /// Bind a fullseq multi-token attention residual with a growing KV
+        /// cache. `kv_rows` must equal `token_position + 1` (causal fill).
+        pub fn fullseq(
+            metal: &'a MetalContext,
+            attention_hc_post_bf16: &'a metal::Buffer,
+            causal_kv_cache_bf16: &'a metal::Buffer,
+            layer: usize,
+            token_id: u32,
+            token_position: usize,
+            kv_rows: usize,
+        ) -> Result<Self> {
+            if token_position >= 128 {
+                return Err(p7_error(
+                    "fullseq P7 attention state refuses positions beyond the 128-token window",
+                ));
+            }
+            if kv_rows != token_position.saturating_add(1) {
+                return Err(p7_error(
+                    "fullseq P7 attention state requires kv_rows == token_position + 1",
+                ));
+            }
+            if attention_hc_post_bf16.length() < DSV4F_P7_MHC_STATE_BF16_BYTES as u64 {
+                return Err(p7_error(
+                    "fullseq attention residual buffer is smaller than BF16[4,4096]",
+                ));
+            }
+            let min_kv = kv_rows
+                .checked_mul(DSV4F_P7_KV_HEAD_DIM)
+                .and_then(|n| n.checked_mul(std::mem::size_of::<u16>()))
+                .ok_or_else(|| p7_error("fullseq KV byte geometry overflow"))?;
+            if causal_kv_cache_bf16.length() < min_kv as u64 {
+                return Err(p7_error(
+                    "fullseq causal KV buffer is smaller than the declared growing-KV geometry",
+                ));
+            }
+            Ok(Self {
+                metal,
+                attention_hc_post_bf16,
+                causal_kv_cache_bf16: Some(causal_kv_cache_bf16),
+                layer,
+                token_id,
+                token_position,
+                kv_rows,
+            })
+        }
     }
 
     /// Device-only result of mHC-FFN-pre plus FFn RMSNorm. The source-lease

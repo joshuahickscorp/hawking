@@ -1,0 +1,545 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 24,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "shared",
+      "text": "Evaluate (17 × 29) + 7.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "v0_math_01",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "ladder": "L0",
+    "layers_run": [
+      0,
+      1
+    ],
+    "max_layer": 1,
+    "parity": "NUMERIC_PARITY_V2_1_ONLY",
+    "seq_index": 0
+  },
+  "method_family_choice": "reasoning",
+  "prompt_text": "Evaluate (17 × 29) + 7.",
+  "proof_plan": null,
+  "recorded_at": "unix:1785959781",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "fdd314b6d2cda65a86de5e9d0937276bc3fa3c3476fd012c67801999a375e41b",
+  "sides": {
+    "dsv4f": {
+      "capture_status": "OK",
+      "hcli_action_tool_decisions": null,
+      "hcli_note": "HCLI not exercised in this bounded capture; field reserved",
+      "layers_run": [
+        0,
+        1
+      ],
+      "parity": "NUMERIC_PARITY_V2_1_ONLY",
+      "positions": [
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 22,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "adb03beb1f7022fb2b7f33b4dc57b7eee98f9f5b3107fafd6b749e9974fe6d61",
+              "empty_compressed": true,
+              "kv_rows": 1,
+              "late_hidden_child_hc_sha256": "a43d928f5dea968c0c692b22d340c19525b6a78ea33a3beda7e815f050408a8e",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "3cc2ebb125a2a7b86aac27ae3760980ddab91e2c0e99e698d100aa424fceea30",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "d3b13bfd84f5e60467209ce80ee2e4fdb440ff693f445bb3c99c3a60fc8451ce",
+              "pre_router_ffn_norm_sha256": "18332a637c442e81c92adb7fd590f503674c2ac7c99a136856ff2e5a81bd88b7",
+              "router_scores_sha256": "b034087887cd7c03880db6ff732bb611ef87d72893c33f3f52a04dfcaa920737",
+              "router_top6_route_ids": [
+                254,
+                222,
+                245,
+                200,
+                53,
+                35
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 0,
+              "token_position": 0
+            },
+            {
+              "attn_metal_dispatches": 22,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 1,
+              "late_hidden_child_hc_sha256": "4e1d73a10b527c59ce56e42765cb660f0b418f3381d6dfc884725e0de2eb80d9",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "45280f8f35133efb5a535286919a1f03cafbd3420e3cb41065768cfedbb1a6c9",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "3db07dd3772bce8779aecf0043bc0d14ea6bfd592d11b377f7b4efd917bc69e2",
+              "pre_router_ffn_norm_sha256": "19ac87d201d89effa5e17ad4919e88b8c726148a186b02f2ba3c17dbf4a9614a",
+              "router_scores_sha256": "84ae45d9000bcf192031e35a4da931a62f4ae4361174e487de6d10cbce546d34",
+              "router_top6_route_ids": [
+                163,
+                137,
+                158,
+                97,
+                184,
+                8
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 0,
+              "token_position": 0
+            }
+          ],
+          "position": 0,
+          "token_id": 0
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "b006a17381fd19c3e7a5548b9ba0d2c18b51d39cec227be5b88e19ba66ad629e",
+              "empty_compressed": true,
+              "kv_rows": 2,
+              "late_hidden_child_hc_sha256": "134704146ed021646335a78643540f39779774a2bb1dcfdb2641f6aa7de7de70",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "b16b882a238787efee446f13b80d76d179df4cafd1cfb59304fc10c6187ad44f",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "70403ae86ca1eb76a2423cab3318693ac06dbbacb53e804e731d546af6d491a0",
+              "pre_router_ffn_norm_sha256": "0412ac85e0b08438c44c7e2ae3d3061c8a2876b424c9202658e9b88f2e8f7ea2",
+              "router_scores_sha256": "37706e9d1d71362d5a935668bd461cd8d6fbed0391801a8d04134e8ccd948153",
+              "router_top6_route_ids": [
+                12,
+                224,
+                194,
+                154,
+                105,
+                175
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 54204,
+              "token_position": 1
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 2,
+              "late_hidden_child_hc_sha256": "9e40c69519770928800271f2e1c90bd150bbcd2dafde293c6d06102d8976910f",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "99cc949ce5535bd4fd621a3816a313815701d9f30df43ad3b7ce385cacea9e1a",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "64896379dd05e6b2d9345512aec4e2e280069ffa2f3bd9b17f33de460d1b5c57",
+              "pre_router_ffn_norm_sha256": "fc2475ba67ec1fb383522d69114e24c3827a1931b3640ed2a4b11655605b5625",
+              "router_scores_sha256": "3f88c2f366b3b3a72ff6fdad6dc7907f6e09a808d81a0eb50e7edb46a3f94016",
+              "router_top6_route_ids": [
+                235,
+                73,
+                54,
+                49,
+                14,
+                5
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 54204,
+              "token_position": 1
+            }
+          ],
+          "position": 1,
+          "token_id": 54204
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "0a988ad95a3ebb2c603184fdaa6c896aa6d0c4d812483746937750d57c91abff",
+              "empty_compressed": true,
+              "kv_rows": 3,
+              "late_hidden_child_hc_sha256": "37356fb27395ccb7eca39a7e4f0a0d7616a5dc60612fc816adad114bbe7c86f5",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "8c3950ba2ecd000a28bffa3f6a5a22389adb882dc02c7fbfc2407f965981bdf4",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "efb4fcbc98996eed3b092590d54c45e54abc054bc924d40a823a51539204537c",
+              "pre_router_ffn_norm_sha256": "7f3cbaad25f9c07313a29c392680424bf1e6d54efb4e91920e8799799eb325fd",
+              "router_scores_sha256": "808594dce1346d62bc202a0699196b540a65fd9b7e3d0a1c75254ba8cd2ad994",
+              "router_top6_route_ids": [
+                178,
+                16,
+                44,
+                224,
+                42,
+                66
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 343,
+              "token_position": 2
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 3,
+              "late_hidden_child_hc_sha256": "c9dcfd813c671831b17496e969dcc19eb701a2842c0c9cc8f607b52256e1a591",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "d961e11460953b26c65e7366c469708d11da959697f628ee9a8c266d3d812345",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "90467b6a6f3a3cad3ee6cfbf6c2708438503439e8060c323388112fd9bfe8992",
+              "pre_router_ffn_norm_sha256": "2f98da5f3e0dbb9b7b9a45ae34d6d62223af06ded82866380bf98967a4bc02f1",
+              "router_scores_sha256": "07c52aeecf664483e1cb22a9c9eec08bcb2bdf9b0a46bfbe0286938920c4ddec",
+              "router_top6_route_ids": [
+                84,
+                250,
+                75,
+                116,
+                2,
+                157
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 343,
+              "token_position": 2
+            }
+          ],
+          "position": 2,
+          "token_id": 343
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "560cbeef76b7700d360625d6e7c436c1b585deb64174a0dd69e4c0d7723953cc",
+              "empty_compressed": true,
+              "kv_rows": 4,
+              "late_hidden_child_hc_sha256": "73e765f97b87ab1332b31b3ed7cbfba5f554a3350cddb0899ee22fbc569bc181",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "d497dc1697734e988e577e94256ef3fb430d4a16c5bd930a5307098d815069c2",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "13ea4600ab6c40cae58f2bc1dd90023a3d4a77c1247a84e202cc85a6ec3d11af",
+              "pre_router_ffn_norm_sha256": "5a18e4ad5506ef9cd87ef9f2430d3d587a6075b497bf8a83a466cce7c2ee27e8",
+              "router_scores_sha256": "0e8ab8e5914ab9bd4980f9d307995b7ad30eabe129c5624b48c6b3269916a5a4",
+              "router_top6_route_ids": [
+                23,
+                91,
+                180,
+                234,
+                77,
+                153
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 1002,
+              "token_position": 3
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 4,
+              "late_hidden_child_hc_sha256": "792706a745685588012af3fe31dcd928c2d4ba178d0d42e765c890fcad84447a",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "32aa88679faecbd313915e5486a398e73cc6172fd12e20241087f28146ea1cdc",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "3c287f5607edda315acd36bccf170e0a6f1b5705df41f11e33a9c09d3748d5f5",
+              "pre_router_ffn_norm_sha256": "4a3260bd967a122bc8a991fc12f27324d0a34803a8daabb503441e0d0c871a83",
+              "router_scores_sha256": "f3cff93be87bf73c12e975cb9f7b28d410d752009e16ce2e718e97c5d63c2643",
+              "router_top6_route_ids": [
+                217,
+                214,
+                197,
+                69,
+                131,
+                176
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 1002,
+              "token_position": 3
+            }
+          ],
+          "position": 3,
+          "token_id": 1002
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "90af54cd124b7d33fd067019e3ab02a9686a5ab5a0a15477b0d240fa9e0d9540",
+              "empty_compressed": true,
+              "kv_rows": 5,
+              "late_hidden_child_hc_sha256": "ceb481da6873db5718d70e89ccfd72aa5af82edcccedfcbb1e2a1b282dba2d13",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "c923913feab646dd299caf5fde388a0f41e8d3e05da40bcc982b7204312415a2",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "434c2fc1dd658b870b480ad0e122a9d663d47b4acbda8bc807709548c0591839",
+              "pre_router_ffn_norm_sha256": "9768e6a60c5476fc0523f3066e0222c0ef8ad595686f98035d44069ac38e6723",
+              "router_scores_sha256": "4cbdf2912b059369282ef8315876370b8eeef597aaae5d8f4be46e41167310b9",
+              "router_top6_route_ids": [
+                121,
+                92,
+                43,
+                47,
+                51,
+                37
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 2863,
+              "token_position": 4
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 5,
+              "late_hidden_child_hc_sha256": "33ecbb48d1461d08d457cd65404417733a60e005e1f0c84b36124115f447730d",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "6fde837f2e3af4763d210bb7d71e2c7cafdf900686a1defb88f63a5c6cc071cf",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "04f0b6e291dd6ab38ca2bae8f1dd90e16dfec6c77b2cf9462164758c791c4398",
+              "pre_router_ffn_norm_sha256": "093efbb51e68731f6a49e91f3090b72412ee858f20cfae288fb775849eaced40",
+              "router_scores_sha256": "06a6b2ee16595d0e3ff9efc22a06aedac2a771dee2bae200ffc9334a84faed78",
+              "router_top6_route_ids": [
+                133,
+                229,
+                29,
+                114,
+                127,
+                210
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 2863,
+              "token_position": 4
+            }
+          ],
+          "position": 4,
+          "token_id": 2863
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "54a4e6f9522f9ad24e63df55eb16418a23efc5424bd8362fe4c968a960efaedc",
+              "empty_compressed": true,
+              "kv_rows": 6,
+              "late_hidden_child_hc_sha256": "1558eeb7d65ca30a824c23ed83b4094fef3f019690a46d1564bd41be6f373236",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "ae23cba5836e7ca69c2b3c942338aa2581c6f36d12d46a0e70b4684cde9320d6",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "20dc493c6d573cdbddea197585d664d2b01d26d4ceabeb2d449dc23e2a2cbff8",
+              "pre_router_ffn_norm_sha256": "2d22a1ddf0ffec23395f20dada078cb0af9cc410a3b6389876b89eef69837c70",
+              "router_scores_sha256": "9649ce7f6d666a9e1b4dce46033485a88a45ec66bfb0339ece177755942cef67",
+              "router_top6_route_ids": [
+                216,
+                182,
+                63,
+                0,
+                115,
+                153
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 223,
+              "token_position": 5
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 6,
+              "late_hidden_child_hc_sha256": "1bc785d4c7e16623e10154f67ced7921f2b2901960ae4e3c98a14bb1cf0d5e2d",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "72d4331f9a7f254e2b8e27a2df4e8beff8909d92e0b7582ecc5e4d03369fe655",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "fa1df463e4936341546bbeae81e0fad327d9db807fb31ae034bd885f94385786",
+              "pre_router_ffn_norm_sha256": "0fbe19d247f3ee8d2deae5e2abc36db105cf0c72167ae8d4fc7db6d6ede78709",
+              "router_scores_sha256": "d537bdcf6b1edcd1456a6266f8ed59d98e4e5c4b00d2f49762b0ad11b931d163",
+              "router_top6_route_ids": [
+                135,
+                19,
+                243,
+                237,
+                176,
+                66
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 223,
+              "token_position": 5
+            }
+          ],
+          "position": 5,
+          "token_id": 223
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "1b47acedb5b588a8f89b6439f4b96390a5224948602599d09d31cd3db9ca4b85",
+              "empty_compressed": true,
+              "kv_rows": 7,
+              "late_hidden_child_hc_sha256": "f322d0ebfc92a9af40e088a23f28b18fa8ab5f90df2b4e4d40b7d00b78a3b1b0",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "0b9548a47ddfae678f7c17c43f57616abc1dd9c0195271dc20d81166e48079b8",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "407b9125c0221b580c1cfabe51af68f8b69c4061d39d1c23836a601ad8a878e0",
+              "pre_router_ffn_norm_sha256": "1456e390af765e206d4d85ed2a35acc9eba33f8ab024191cd1bd8db6a6423638",
+              "router_scores_sha256": "255295c015f17b5b24b862cbfd8f4fee8be77adb2c606a73c500b4352284e092",
+              "router_top6_route_ids": [
+                239,
+                127,
+                24,
+                76,
+                192,
+                93
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 1557,
+              "token_position": 6
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 7,
+              "late_hidden_child_hc_sha256": "32de8d60002bdaec2619bba1d9c97164bc4e3871f9bc2feb9659b77d125ec37a",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "50879749e118c11461bd061c3beaa1896a0c3026c0b3025de99f5de82423cae8",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "fa73378cc58db276fa895a6424355903f26e90f9a0995bed2596402016a2bac6",
+              "pre_router_ffn_norm_sha256": "4a15f6d10d478ad116772bc456fc0dcb6fef4af55aa4ef8eb7c345edb2036991",
+              "router_scores_sha256": "2252d79cc9f6cca0c44c241b4f51bf5ef8a3d5356553042a052fdd5a39507d56",
+              "router_top6_route_ids": [
+                189,
+                155,
+                254,
+                70,
+                6,
+                107
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 1557,
+              "token_position": 6
+            }
+          ],
+          "position": 6,
+          "token_id": 1557
+        },
+        {
+          "layers": [
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": "dd5206f1ac03274253ac7a0e425259a1093a5084c184b7f2591bf751acd3b302",
+              "empty_compressed": true,
+              "kv_rows": 8,
+              "late_hidden_child_hc_sha256": "d36f5eab9a17e9e4a40e0c2fef396f59eb064f561b51d71168d72b8d07de4ea7",
+              "layer": 0,
+              "mhc_pre_post_attn_hc_sha256": "fe33cfcea21d543577c9a7428801d08d4927459b0d4e493400bc16d1bf8d9cb3",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "1542c7fed1602c187a4888491257951c94fd48cdf8533fd927bf98419f9f0019",
+              "pre_router_ffn_norm_sha256": "aae70b194a28b74878797a2fddd443839799d24f8a44d01dd0db545466ba2afe",
+              "router_scores_sha256": "f9d36ca6c658a362ff964933f5c8863407e091cbc54e3721a5abe336f99aebdf",
+              "router_top6_route_ids": [
+                187,
+                44,
+                30,
+                219,
+                4,
+                35
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 11,
+              "token_position": 7
+            },
+            {
+              "attn_metal_dispatches": 25,
+              "compress_ratio": 0,
+              "embedding_row_sha256": null,
+              "empty_compressed": true,
+              "kv_rows": 8,
+              "late_hidden_child_hc_sha256": "ca024b6525c089c8f4b9f159197b923a78f1137c73ddd726920871a6fb9e7df0",
+              "layer": 1,
+              "mhc_pre_post_attn_hc_sha256": "855dc7293c1155a5d6f22fce8cab6fbca89fa4846049c4640b183cd287b8135b",
+              "p7_p6_metal_dispatches": 63,
+              "post_moe_sha256": "0fce5e979df5faa9782f97c827abbabe36ff01956f9df3ac2cf08e5f46f113e1",
+              "pre_router_ffn_norm_sha256": "571299f646bbe086d1fe5af2b6c31fcc70b15be67411dc419c2bf6e69f67f1d2",
+              "router_scores_sha256": "64fb21fa32857b9de781fa8bcc5965e9aaf65d4a8f59b8ff7af49caba5fdf4e5",
+              "router_top6_route_ids": [
+                6,
+                178,
+                250,
+                32,
+                175,
+                136
+              ],
+              "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+              "token_id": 11,
+              "token_position": 7
+            }
+          ],
+          "position": 7,
+          "token_id": 11
+        }
+      ],
+      "present": true,
+      "representative_hidden_states": [
+        {
+          "note": "sha256 of child HC BF16[4,4096]; full tensor retained on device only",
+          "site": "late_hidden_last_pos_last_layer"
+        }
+      ],
+      "route_statistics": {
+        "note": "native DSV4F routes; never copied from GLM",
+        "top_k": 6
+      },
+      "side": "dsv4f",
+      "token_count": 8,
+      "token_ids_for_debug_only": [
+        0,
+        54204,
+        343,
+        1002,
+        2863,
+        223,
+        1557,
+        11
+      ],
+      "token_ids_forbidden_for_alignment": true
+    },
+    "glm": {
+      "capture_status": "ABSENT_PENDING_GLM_TEACHER_FORCED",
+      "note": "GLM side filled by the parallel GLM teacher-forced capture lane; byte-span anchors match prompt_text",
+      "present": false,
+      "side": "glm"
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

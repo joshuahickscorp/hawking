@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture_master.v1",
+  "recorded_at": "2026-08-05T20:09:01.350717Z",
+  "status": "PASS_FULLSEQ_CAPTURE_L0_AND_L1_RATIO0_PLUS_EMPTY_COMPRESSED_RATIO4_128_SMOKE",
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false
+  },
+  "non_bos_forward": {
+    "ratio_0": "full multi-token growing-KV (layers 0-1) \u2014 production path for V0 corpus",
+    "ratio_4": "empty-compressed growing-KV only (seq_len <= 3); full indexer graph NOT implemented",
+    "ratio_128": "empty-compressed growing-KV only (seq_len <= 127); full compressed graph NOT implemented",
+    "kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority"
+  },
+  "corpus": {
+    "L0": {
+      "sequences": 32,
+      "tokens": 255,
+      "dispatches": 44688,
+      "wall_ms": 143684.3605,
+      "receipt": "receipts/dsv4f_fullseq_capture_L0/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+      "traces_dir": "receipts/dsv4f_fullseq_capture_L0/traces"
+    },
+    "L1": {
+      "sequences": 128,
+      "tokens": 1020,
+      "dispatches": 178752,
+      "wall_ms": 575182.011166,
+      "receipt": "receipts/dsv4f_fullseq_capture_L1/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+      "traces_dir": "receipts/dsv4f_fullseq_capture_L1/traces"
+    },
+    "ratio4_128_smoke": {
+      "layers": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dispatches": 1044,
+      "seq_len": 3
+    }
+  },
+  "sites_captured": [
+    "embedding",
+    "mHC",
+    "pre_post_attn",
+    "pre_router",
+    "router_logits_top6_routes",
+    "post_MoE",
+    "late_hidden"
+  ],
+  "honesty": {
+    "fabricated_activations": false,
+    "serve_endpoint_flipped": false,
+    "glm_side_present": false,
+    "hcli_decisions_captured": false,
+    "logits_captured": false,
+    "fallback": 0
+  },
+  "totals": {
+    "metal_dispatches": 223440,
+    "sequences": 160,
+    "tokens": 1275,
+    "traces": 160
+  },
+  "fabricated": false,
+  "seal_sha256": "9523c80acd077afd4b42754ad4bb4791d2c2a868d72348fd559f3bff394a2a3c"
+}

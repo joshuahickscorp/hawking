@@ -23,12 +23,9 @@ use std::mem::size_of;
 
 use sha2::{Digest, Sha256};
 
-use crate::gravity_deepseek_v4_layer0_continuation::{
-    POSITION1, POSITION1_KV_ROWS, POSITION1_TOKEN_ID,
-};
+use crate::gravity_deepseek_v4_layer0_continuation::POSITION1;
 use crate::gravity_deepseek_v4_layer0_prefix::{
-    HC_EPS, HC_FLAT_WIDTH, HC_MIX_WIDTH, HC_MULT, HC_SINKHORN_ITERS, HIDDEN_SIZE, PREFIX_TOKEN_ID,
-    RMS_NORM_EPS,
+    HC_EPS, HC_FLAT_WIDTH, HC_MIX_WIDTH, HC_MULT, HC_SINKHORN_ITERS, HIDDEN_SIZE, RMS_NORM_EPS,
 };
 use crate::gravity_deepseek_v4_p4b_device::{
     DeepSeekV4Layer0P4bDeviceExecutor, DeepSeekV4P4bParityClassification,
@@ -38,7 +35,7 @@ use crate::gravity_deepseek_v4_p7_composition::{
     DeepSeekV4P7FfnSourceContract, DeepSeekV4P7P6DeviceExecutor, DeepSeekV4P7P6DeviceOutput,
     DeepSeekV4P7SourceLeasePreparation, DeepSeekV4P7SourceTensorBinding,
     DSV4F_P7_FFN_NORM_BF16_BYTES, DSV4F_P7_MHC_COMB_F32_BYTES, DSV4F_P7_MHC_POST_F32_BYTES,
-    DSV4F_P7_MHC_STATE_BF16_BYTES, DSV4F_P7_POSITION1_KV_BF16_BYTES,
+    DSV4F_P7_MHC_STATE_BF16_BYTES,
 };
 use crate::gravity_deepseek_v4_runtime_spine::DeepSeekV4StagedTensor;
 use crate::metal::MetalContext;
@@ -50,9 +47,7 @@ const P7_MHC_POST_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_authority";
 
 /// Historical layer-0 convenience constant. Prefer the source contract's layer.
 pub const DSV4F_P7_DEFAULT_LAYER: usize = 0;
-const P7_POSITION0_TOKEN_ID: u32 = PREFIX_TOKEN_ID as u32;
 const P7_POSITION0: usize = 0;
-const P7_POSITION1_TOKEN_ID: u32 = POSITION1_TOKEN_ID as u32;
 const P7_POSITION1: usize = POSITION1;
 const P7_PRE_NORM_THREADS: u32 = 1;
 const P7_POST_THREADS: u32 = 256;
@@ -289,11 +284,12 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
         attention: DeepSeekV4P7AttentionDeviceState<'_>,
     ) -> Result<DeepSeekV4P7DeviceOutput> {
         if attention.layer != self.source.layer
-            || attention.token_id != P7_POSITION0_TOKEN_ID
+            || attention.token_id != self.source.token_id
+            || attention.token_position != self.source.token_position
             || attention.token_position != P7_POSITION0
         {
             return Err(p7_device_error(format!(
-                "position-zero continuation requires layer-{}/BOS/position-0 state matching the source contract",
+                "position-zero continuation requires layer-{}/position-0 state matching the source contract",
                 self.source.layer
             )));
         }
@@ -319,15 +315,36 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
             ));
         }
         if attention.layer != self.source.layer
-            || attention.token_id != P7_POSITION1_TOKEN_ID
+            || attention.token_id != self.source.token_id
+            || attention.token_position != self.source.token_position
             || attention.token_position != P7_POSITION1
         {
             return Err(p7_device_error(format!(
-                "position-one continuation requires layer-{}/token-19923/position-1 state matching the source contract",
+                "position-one continuation requires layer-{}/position-1 state matching the source contract",
                 self.source.layer
             )));
         }
         self.execute_bounded(attention, p4b_predecessor_parity)
+    }
+
+    /// Fullseq multi-token P7/P6 step. Any admitted (layer, token_id,
+    /// position < 128) with NumericParityV21Only labelling.
+    pub fn execute_fullseq(
+        &mut self,
+        attention: DeepSeekV4P7AttentionDeviceState<'_>,
+    ) -> Result<DeepSeekV4P7DeviceOutput> {
+        if attention.layer != self.source.layer
+            || attention.token_id != self.source.token_id
+            || attention.token_position != self.source.token_position
+        {
+            return Err(p7_device_error(
+                "fullseq P7 continuation requires attention state matching the prepared source contract",
+            ));
+        }
+        self.execute_bounded(
+            attention,
+            DeepSeekV4P7P4BPredecessorParity::NumericParityV21Only,
+        )
     }
 
     fn execute_bounded(
@@ -385,21 +402,23 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
                 "P7 attention state identity does not match the prepared source contract layer/token/position",
             ));
         }
-        let position0 = attention.token_id == P7_POSITION0_TOKEN_ID
-            && attention.token_position == P7_POSITION0
+        let position0 = attention.token_position == P7_POSITION0
             && attention.kv_rows == 0
             && attention.causal_kv_cache_bf16.is_none();
-        let position1 = attention.token_id == P7_POSITION1_TOKEN_ID
-            && attention.token_position == P7_POSITION1
-            && attention.kv_rows == POSITION1_KV_ROWS
-            && attention
-                .causal_kv_cache_bf16
-                .is_some_and(|cache| cache.length() >= DSV4F_P7_POSITION1_KV_BF16_BYTES as u64);
-        if !position0 && !position1
+        // Fullseq / non-BOS: growing-KV rows == position+1 with a live cache.
+        let fullseq_growing = attention.token_position < 128
+            && attention.kv_rows == attention.token_position.saturating_add(1)
+            && attention.causal_kv_cache_bf16.is_some_and(|cache| {
+                cache.length()
+                    >= (attention.kv_rows
+                        * crate::gravity_deepseek_v4_p7_composition::DSV4F_P7_KV_HEAD_DIM
+                        * size_of::<u16>()) as u64
+            });
+        if (!position0 && !fullseq_growing)
             || attention.attention_hc_post_bf16.length() < DSV4F_P7_MHC_STATE_BF16_BYTES as u64
         {
             return Err(p7_device_error(
-                "P7 accepts only same-context BOS/position-0 or token-19923/position-1 BF16 attention state for the prepared layer",
+                "P7 accepts only same-context BOS/position-0 (no KV) or fullseq growing-KV attention state for the prepared layer",
             ));
         }
         Ok(())
@@ -487,7 +506,7 @@ fn validate_source_contract(source: &DeepSeekV4P7FfnSourceContract) -> Result<()
         || source.host_activation_handoff_permitted
     {
         return Err(p7_device_error(
-            "P7 device graph requires a bounded base-layer BOS/position-0 or token-19923/position-1 no-host source contract",
+            "P7 device graph requires a bounded base-layer fullseq-compatible no-host source contract (position < 128)",
         ));
     }
     // Source tensor names must bind the prepared layer (general, not layer-0-hardcoded).
@@ -504,10 +523,10 @@ fn validate_source_contract(source: &DeepSeekV4P7FfnSourceContract) -> Result<()
     Ok(())
 }
 
-const fn is_supported_p7_identity(layer: usize, token_id: u32, token_position: usize) -> bool {
-    layer < P7_BASE_LAYER_COUNT
-        && ((token_id == P7_POSITION0_TOKEN_ID && token_position == P7_POSITION0)
-            || (token_id == P7_POSITION1_TOKEN_ID && token_position == P7_POSITION1))
+/// Admit any base layer + any token id at a sliding-window position (<128).
+/// Historical BOS/pos0 and P4B/pos1 proofs remain valid under this rule.
+const fn is_supported_p7_identity(layer: usize, _token_id: u32, token_position: usize) -> bool {
+    layer < P7_BASE_LAYER_COUNT && token_position < 128
 }
 
 fn validate_staged_tensor(
