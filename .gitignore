@@ -150,3 +150,6 @@ tools/sovereignty/__pycache__/
 # HCLI live runtime state (sessions, memory.db, sqlite indices). Regenerated
 # per run, not source.
 /.hide/
+
+# python venv (never commit; self-symlink hazard)
+/tools/condense/.venv/
