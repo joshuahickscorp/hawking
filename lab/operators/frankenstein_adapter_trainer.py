@@ -64,7 +64,16 @@ SYNTHETIC_FIXTURE_SCHEMA = "hawking.frankenstein.synthetic_paired_activation.v1"
 AG_TRAIN_SCHEMA = "hawking.frankenstein.adapter_ag_train_ablation.v1"
 
 REQUIRES_PAIRED_DATA = "REQUIRES_PAIRED_DATA"
+REQUIRES_PAIRED_CAPTURE = "REQUIRES_PAIRED_CAPTURE"  # latent V0 real-train gate
 REQUIRES_TRAINING_LOOP = "REQUIRES_TRAINING_LOOP"  # opened by this module for adapters
+
+# Full latent V0 lives in frankenstein_latent_v0 (teacher proj / observer /
+# interventions / 11-loss schedule A–F / latent A–G).  This module remains the
+# functional-transfer adapter path and re-exports the latent entry points.
+def _latent_v0():
+    from lab.operators import frankenstein_latent_v0 as latent_v0
+
+    return latent_v0
 
 # Functional-transfer A–G arms (aligned with scaffold; local so this lane
 # does not depend on an unmerged ablation extension).
@@ -1080,6 +1089,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_real.add_argument("--paired", type=Path, required=True)
     p_real.add_argument("--out", type=Path, default=None)
 
+    # Full latent V0 (PROTO_FRANKENSTEIN_V0) — delegates to frankenstein_latent_v0.
+    p_lat = sub.add_parser(
+        "latent-fixture-e2e",
+        help="Full latent V0: learn+reverse+reject on real-shaped fixture",
+    )
+    p_lat.add_argument("--epochs-per-phase", type=int, default=6)
+    p_lat.add_argument("--scaled", action="store_true")
+    p_lat.add_argument("--device", type=str, default="cpu")
+    p_lat.add_argument("--out", type=Path, default=None)
+
+    p_lat_ag = sub.add_parser(
+        "latent-train-ag",
+        help="Full latent V0 A–G train + retention/reject wire",
+    )
+    p_lat_ag.add_argument("--epochs-per-phase", type=int, default=4)
+    p_lat_ag.add_argument("--scaled", action="store_true")
+    p_lat_ag.add_argument("--device", type=str, default="cpu")
+    p_lat_ag.add_argument("--out", type=Path, default=None)
+
     return p
 
 
@@ -1182,6 +1210,26 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+
+    if args.command == "latent-fixture-e2e":
+        lv = _latent_v0()
+        argv = ["fixture-e2e", "--device", args.device or "cpu"]
+        argv += ["--epochs-per-phase", str(args.epochs_per_phase)]
+        if args.scaled:
+            argv.append("--scaled")
+        if args.out:
+            argv += ["--out", str(args.out)]
+        return lv.main(argv)
+
+    if args.command == "latent-train-ag":
+        lv = _latent_v0()
+        argv = ["train-ag", "--device", args.device or "cpu"]
+        argv += ["--epochs-per-phase", str(args.epochs_per_phase)]
+        if args.scaled:
+            argv.append("--scaled")
+        if args.out:
+            argv += ["--out", str(args.out)]
+        return lv.main(argv)
 
     raise TrainerError(f"unknown command: {args.command}")
 

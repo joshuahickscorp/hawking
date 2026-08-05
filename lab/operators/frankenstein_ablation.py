@@ -759,6 +759,28 @@ FUNCTIONAL_TRANSFER_ARMS: tuple[tuple[str, str], ...] = (
 
 AG_ABLATION_SCHEMA = "hawking.frankenstein.functional_transfer_ag_ablation.v1"
 
+# Latent V0 A–G matrix (owner steer PROTO_FRANKENSTEIN_V0).
+# Live train/eval is in frankenstein_latent_v0; this catalog is the sealed arm list.
+ARM_LATENT_A = "A_BASE_DSV4F"
+ARM_LATENT_B = "B_LINEAR_SUBSPACE_INITIALIZATION"
+ARM_LATENT_C = "C_LATENT_BRIDGES"
+ARM_LATENT_D = "D_BEHAVIOR_HEADS"
+ARM_LATENT_E = "E_LATENT_BEHAVIOR"
+ARM_LATENT_F = "F_LATENT_ROUTE_RESIDUAL"
+ARM_LATENT_G = "G_COMPLETE_V0"
+
+LATENT_V0_ARMS: tuple[tuple[str, str], ...] = (
+    (ARM_LATENT_A, "Base DSV4F only; no donor inheritance"),
+    (ARM_LATENT_B, "LINEAR_SUBSPACE_INITIALIZATION only (not inheritance)"),
+    (ARM_LATENT_C, "Latent bridges only (projectors + interventions)"),
+    (ARM_LATENT_D, "Behavior heads only (method/decomp/formal/repair/value)"),
+    (ARM_LATENT_E, "Latent bridges + behavior heads"),
+    (ARM_LATENT_F, "Latent bridges + semantic route residual"),
+    (ARM_LATENT_G, "Complete V0 (latent + behavior + route + retention)"),
+)
+
+LATENT_AG_ABLATION_SCHEMA = "hawking.frankenstein.latent_v0_ag_ablation.v1"
+
 
 def functional_transfer_arm_catalog() -> dict[str, Any]:
     return {
@@ -774,6 +796,26 @@ def functional_transfer_arm_catalog() -> dict[str, Any]:
         ),
         "linear_init_is_not_proto_complete": True,
         "g_requires_all_prior_plus_gates": True,
+    }
+
+
+def latent_v0_arm_catalog() -> dict[str, Any]:
+    """Sealed latent V0 A–G arm catalog (steer ablation matrix)."""
+
+    return {
+        "schema": "hawking.frankenstein.latent_v0_arm_catalog.v1",
+        "arms": [
+            {"id": aid, "description": desc, "index": i}
+            for i, (aid, desc) in enumerate(LATENT_V0_ARMS)
+        ],
+        "reject_rule": (
+            "REJECT any arm that regresses secondary capabilities beyond tolerance. "
+            "Math gain cannot override. Complete V0 must beat linear init."
+        ),
+        "linear_init_is_not_proto_complete": True,
+        "g_requires_all_prior_plus_gates": True,
+        "training_module": "lab.operators.frankenstein_latent_v0",
+        "pending_real_capture": True,
     }
 
 
