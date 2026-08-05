@@ -381,4 +381,37 @@ mod tests {
         );
         assert_eq!(DSV4F_HASH_GATE_LAYER_COUNT, 3);
     }
+
+    #[test]
+    fn empty_compressed_growing_kv_admits_ratio4_early_positions() {
+        let ratio4 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 2,
+            compression: DeepSeekV4LayerCompressionMode::Ratio4WithIndexer,
+            gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
+            tensor_count: 0,
+        });
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(2).is_ok());
+        assert!(ratio4.require_empty_compressed_growing_kv_attention(3).is_err());
+
+        let ratio128 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 3,
+            compression: DeepSeekV4LayerCompressionMode::Ratio128,
+            gate_mode: DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias,
+            tensor_count: 0,
+        });
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(126).is_ok());
+        assert!(ratio128.require_empty_compressed_growing_kv_attention(127).is_err());
+
+        let ratio0 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
+            layer: 0,
+            compression: DeepSeekV4LayerCompressionMode::SlidingWindowOnly,
+            gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
+            tensor_count: 0,
+        });
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(0).is_ok());
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(127).is_ok());
+        assert!(ratio0.require_empty_compressed_growing_kv_attention(128).is_err());
+    }
 }
