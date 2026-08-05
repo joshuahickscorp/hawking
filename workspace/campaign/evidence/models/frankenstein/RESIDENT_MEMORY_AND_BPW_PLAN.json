@@ -1,0 +1,142 @@
+{
+  "arithmetic_floors_not_promises": {
+    "deepseek_v4_flash_active_1_5_bpw_gb": 2.4375,
+    "deepseek_v4_flash_total_1_5_bpw_gb": 53.25,
+    "disclaimer": "Floors ignore native/protected tensors, scales, kernel tables, runtime buffers, KV cache, expert cache, HCLI, macOS reserve, and capability gates.",
+    "formula": "bytes ≈ N_params * BPW / 8",
+    "kimi_interactive_resident": false,
+    "kimi_k3_source_tb": 1.560936091448,
+    "qwen3_coder_30b_active_1_5_bpw_gb": 0.61875,
+    "qwen3_coder_30b_total_1_5_bpw_gb": 5.71875,
+    "sum_total_weight_floors_gb": 58.96875
+  },
+  "disk_floors": {
+    "baselines_procure_note": "current free with 150 GB hard floor + 64 GB scratch + 32 GB HF/Xet cache for heavy procure/processing",
+    "frankenstein_hard_free_floor_bytes": 16106127360,
+    "source": "workspace/docs/reference/BASELINES.md"
+  },
+  "doc_path": "workspace/docs/plans/RESIDENT_MEMORY_AND_BPW_PLAN.md",
+  "file_sha256_preseal": "cbed55afc8ae911d271517973e34beda278afceb88424fae2c45b91aa797bca8",
+  "glm_sub1_bpw_collapse": {
+    "artifacts": [
+      {
+        "capability": "REFUSED",
+        "complete_bpw": 0.9774017488417455,
+        "integrity": "SEALED_AND_COMPLETE",
+        "name": "GLM-5.2-H0.98-Math-Preserve",
+        "probes": [
+          {
+            "decodes_to": " combust",
+            "expected": " Paris",
+            "prompt": "The capital of France is"
+          },
+          {
+            "decodes_to": "rus",
+            "expected": " 4",
+            "prompt": "2 + 2 ="
+          }
+        ],
+        "reason": "H1_ARTIFACT / SEMANTIC_COLLAPSE",
+        "source": "workspace/campaign/governance/odyssey/program/launch/SUBSTRATE_CAPABILITY.json"
+      },
+      {
+        "capability": "REFUSED",
+        "complete_bpw_range": [
+          0.882888,
+          0.9211
+        ],
+        "name": "GLM-5.2-General-R0",
+        "note": "R0_IS_THE_PRACTICAL_CEILING for that path; failed after lm_head/embed_tokens native protection",
+        "source": "workspace/campaign/governance/odyssey/program/launch/SUBSTRATE_CAPABILITY.json"
+      }
+    ],
+    "dead_lever": {
+      "name": "GLM-5.2 sub-bit MoE expert path",
+      "note": "Four families 0.116-0.157 cos @ 0.75 BPW; none beat null 0.898",
+      "source": "workspace/docs/guides/dead_levers.md",
+      "status": "NO-GO Type-1"
+    },
+    "law": "1.5 BPW is a target, not a proven capability-safe threshold; prior GLM sub-1 BPW collapse is binding caution."
+  },
+  "machine": {
+    "advertised_bw_gbs": 819,
+    "name": "M3 Ultra Studio",
+    "note": "Coding-agent is a protected interactive tenant; full 96 GB is never available to one process.",
+    "process_admission_budget_gib": 78,
+    "uma_gb": 96
+  },
+  "moe_strategy": {
+    "priority_order": [
+      "capability_gates_green",
+      "minimize_measured_active_bytes_per_token",
+      "expert_cache_hit_rate_under_hcli",
+      "total_resident_rss_under_admission_budget",
+      "average_bpw_headlines_last"
+    ],
+    "runtime_accounting_analytical": {
+      "binding_organ": "attention",
+      "functional_student_complete_token_active_gb": 7.732,
+      "source": "workspace/campaign/evidence/models/deepseek-v4/DEEPSEEK_V4_RUNTIME_ACCOUNTING.json",
+      "teacher_complete_token_active_gb": 11.7,
+      "true_tps_note": "served TPS requires resident compact model; streamed forward is not served TPS"
+    },
+    "student_moe": {
+      "active_params_card": "13B",
+      "n_routed_experts": 256,
+      "num_experts_per_tok": 6,
+      "total_params_card": "284B"
+    }
+  },
+  "plan_kind": "executable_planning_only",
+  "resident_buckets_to_charge": [
+    "packed_weights",
+    "native_protected_tensors",
+    "scales_codebooks_luts",
+    "kernel_tables",
+    "runtime_buffers",
+    "kv_cache",
+    "expert_cache",
+    "hcli_agent_overhead",
+    "macos_system_reserve",
+    "capability_gates"
+  ],
+  "schema": "hawking.frankenstein.resident_memory_and_bpw_plan.v1",
+  "seal_note": "Planning seal: file_sha256_preseal is SHA-256 of the JSON body before this stamp field set was added; recompute on mutation.",
+  "seal_sha256": "7c196f20f2b020d07513a2532dc406c0cf04fdd68d30da5f836a9297a3e606e2",
+  "sealed_at": "2026-08-05T17:33:25Z",
+  "status": "PLAN_SEALED_HONEST_MEMORY_LAW",
+  "switching_plan": {
+    "co_residency_rule": "Allowed only if measured RSS_qwen + RSS_candidate + KV + HCLI + reserve <= admission budget AND capability gates hold; else swap.",
+    "luna_default_resident": "Qwen3-Coder-30B-A3B Gravity",
+    "measurement_required_before_claims": [
+      "cold_load_peak_uma_rss_swap",
+      "warm_generate_at_4k_32k_128k",
+      "active_bytes_per_token_or_proxy",
+      "capability_gate_suite",
+      "dual_load_attempt_with_receipt"
+    ],
+    "sol_on_demand": "Final Frankenstein / Ramanujan",
+    "sol_vs_terra_ram": "Plan for Sol replacing Terra in RAM when flagship is needed, not Sol+Terra+Luna all hot unless measured",
+    "terra_on_demand": "DeepSeek-V4-Flash Gravity"
+  },
+  "unknowns_measure_do_not_assume": [
+    "measured_rss_qwen3_coder_30b_a3b_gravity",
+    "measured_rss_dsv4f_gravity_native_vs_recompressed",
+    "expert_cache_hot_n_for_hcli",
+    "interactive_context_profiles_for_sol",
+    "owner_tolerance_bands_for_bpw_regression"
+  ],
+  "verdicts": {
+    "bpw_1_5_is_proven_capability_safe": false,
+    "bpw_1_5_role": "planning_target_and_arithmetic_floor_only",
+    "co_residency_from_arithmetic_alone": false,
+    "default_resident": "Qwen Gravity (Luna)",
+    "integrity_seal_equals_capability": false,
+    "load_on_demand": [
+      "DeepSeek-V4-Flash Gravity (Terra)",
+      "Final/Ramanujan (Sol)"
+    ],
+    "prefer_moderate_total_plus_low_active_bytes_plus_expert_cache": true,
+    "prefer_uniform_force_every_tensor_to_1_5_bpw": false
+  }
+}
