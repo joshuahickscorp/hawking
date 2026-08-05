@@ -211,7 +211,7 @@
         "hash-APPROVED Math-Preserve-v2 substrate entry in SUBSTRATE_CAPABILITY.json",
         "capability gate receipt with G_math and G_live PASS"
       ],
-      "owner": "controller+grok",
+      "owner": "controller",
       "pid": null,
       "promotion_gate": "artifact_index_sha256 bound APPROVED in odyssey/launch/SUBSTRATE_CAPABILITY.json after G_math and G_live PASS; reconstruction metrics never substitute",
       "resource_class": "HEAVY-EXCLUSIVE",
@@ -243,7 +243,7 @@
         "BASE_TRUE_TPS measured on a capable provider",
         "acceleration provider receipt"
       ],
-      "owner": "codex+controller",
+      "owner": "delegate+controller",
       "pid": null,
       "promotion_gate": "real provider capable; TPS measured not estimated; no kernel turn flip",
       "resource_class": "medium-gpu",
@@ -276,7 +276,7 @@
         "HIDE surfaces REAL_WIRED against a capable provider",
         "kernel-turn still default-off until explicit promotion"
       ],
-      "owner": "grok+controller",
+      "owner": "controller",
       "pid": null,
       "promotion_gate": "HIDE_KERNEL_TURN stays false until a capable real provider passes its promotion gate; wiring prep may proceed without flipping the fence",
       "resource_class": "light-medium",
@@ -370,7 +370,7 @@
         "Fabric/Bridge/adapter ABI sealed",
         "CLI and model-vault surfaces"
       ],
-      "owner": "grok",
+      "owner": "controller",
       "pid": null,
       "promotion_gate": "contracts real; no overclaim on unwired surfaces",
       "resource_class": "light-medium",
@@ -468,7 +468,7 @@
       "outputs": [
         "retriever/formalizer/prover/repair metrics on held-out split"
       ],
-      "owner": "controller+grok",
+      "owner": "controller",
       "pid": null,
       "promotion_gate": "cannot promote without the frozen Director (FA06)",
       "resource_class": "HEAVY-EXCLUSIVE",
@@ -498,7 +498,7 @@
         "search + cognition stack with falsifiers",
         "governance refusal layer"
       ],
-      "owner": "controller+grok",
+      "owner": "controller",
       "pid": null,
       "promotion_gate": "invariants green; MOP refusal layer ported without touching MOP",
       "resource_class": "medium",

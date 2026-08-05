@@ -6,7 +6,7 @@ and nothing here is a promise.
 
 The engine is close to a stable state. Most of the remaining work is finishing wiring that
 already exists, adding tests to things that only have code paths, and tidying up before a
-release — not new features.
+release , not new features.
 
 ## Near term
 
@@ -21,7 +21,7 @@ release — not new features.
   run. The kernels and the parity test are built and passing; only the wiring and the
   quality check are left.
 - Add parity or quality gates for the families that currently only "Run" or are "Untested"
-  in `MODELS.md` — Qwen2.5-1.5B/7B, Llama 3.x, Mistral, Qwen3-MoE, DeepSeek-V2-Lite.
+  in `MODELS.md` , Qwen2.5-1.5B/7B, Llama 3.x, Mistral, Qwen3-MoE, DeepSeek-V2-Lite.
 - Extend the MoE CPU reference path into a real CPU-vs-Metal greedy comparison. The CPU
   decode path exists and is gated, but only as a light one-token check, not a parity run.
 - Pick one canonical home for the pinned-requirements file that currently exists in two
@@ -33,7 +33,7 @@ release — not new features.
 
 - Finish the Eagle5 speculative decoding port. Two pieces are missing: real capture-layer
   plumbing (the trained head currently runs with its inputs zeroed, which drops the accept
-  rate to roughly 0.05–0.15 against a projected 0.70) and a batched verify step. Until both
+  rate to roughly 0.05-0.15 against a projected 0.70) and a batched verify step. Until both
   land, speculative decoding does not make anything faster.
 - Close the remaining single-stream decode gap to llama.cpp and MLX. The harness that
   measures it already exists.
@@ -56,8 +56,8 @@ nothing here changes it. Remaining work:
   282 shards. A chunked rewrite was tried and reverted after it caused GPU faults.
 - Make the product-quantization packer deterministic, or correct the docstring that claims
   it already is. Identical weights and seed currently produce different hashes.
-- Run the six planned pilot windows, then replace the current rate allocation — which is
-  positional, and says so rather than pretending it was earned — with one based on measured
+- Run the six planned pilot windows, then replace the current rate allocation , which is
+  positional, and says so rather than pretending it was earned , with one based on measured
   per-role sensitivity.
 - Run the real parent-vs-packed forward pass on the frozen holdout. The structural
   expert-reduction arm is implemented with an exact byte ledger, but no claim about model

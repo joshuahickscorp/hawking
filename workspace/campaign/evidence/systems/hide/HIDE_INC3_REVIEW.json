@@ -1,7 +1,7 @@
 {
   "schema": "hawking.hide.inc3_review.v1",
   "at": "2026-07-26T05:55:00Z",
-  "status": "VERIFIED BY CLAUDE. 244 passed, 0 failed (was 240). Not merged.",
+  "status": "VERIFIED BY THE CONTROLLER. 244 passed, 0 failed (was 240). Not merged.",
   "w5_permission_hole": {
     "closed": true,
     "defense_in_depth": "Refused at the intent boundary (host.rs:1235, 'approve_effect requires step_id (blanket approve is refused)') AND again at the drain site.",

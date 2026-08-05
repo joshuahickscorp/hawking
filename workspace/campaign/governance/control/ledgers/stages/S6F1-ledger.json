@@ -40,7 +40,7 @@
     "git_diff_check": "PASS",
     "unit_tests": "21 OK"
   },
-  "branch": "grok/s6-f1-f2-atomic-builder-20260729-164118",
+  "branch": "lane/s6-f1-f2-atomic-builder-20260729-164118",
   "commit": "NONE",
   "ledger": {
     "added_apparatus": 2877,

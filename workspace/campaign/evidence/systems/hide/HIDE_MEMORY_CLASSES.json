@@ -155,7 +155,7 @@
  },
  "controller_review": {
   "at": "2026-07-27T01:52:59Z",
-  "by": "controller (claude), re-derived from the source",
+  "by": "controller, re-derived from the source",
   "claim_corrected": {
    "actually": "VerifierWriteCap::mint() and UserWriteCap::mint() are public and unrestricted. Any caller in any crate can mint one; the restriction is a doc comment ('Mint only at the verifier entry point'), which is a convention.",
    "disposition": "accepted as delivered; the receipt is corrected rather than the code re-engineered. Sealing the mint to the verifier's own construction path is the upgrade if this is ever load-bearing for a trust boundary.",
@@ -177,7 +177,7 @@
  },
  "writer_wiring_followup": {
   "at": "2026-07-28T12:00:00Z",
-  "by": "grok (final-ascent hide-classed-writers lane)",
+  "by": "the delivery lane (final-ascent hide-classed-writers lane)",
   "status": "WIRED",
   "module": "crates/hide-backend/src/classed_writers.rs",
   "proven_by": [

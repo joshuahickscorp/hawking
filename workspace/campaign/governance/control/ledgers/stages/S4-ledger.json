@@ -4,7 +4,7 @@
   "title": "Schema authority, protocol surface, and the three lenses",
   "revision": 2,
   "at": "2026-07-29",
-  "branch": "grok/s4-surface-20260729-133330",
+  "branch": "lane/s4-surface-20260729-133330",
   "base_commit": "7d17720d3806ad2dcdf72085ffd609f7264c5dd2",
   "scope_paths": [
     "crates/hide-protocol",

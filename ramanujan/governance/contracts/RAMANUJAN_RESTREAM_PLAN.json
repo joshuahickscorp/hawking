@@ -30,7 +30,7 @@
     "known_waste": "every shard is currently fetched twice, about 2 x 1.4 TiB, because global allocation needs all 282 headers before packing starts. A header-only first pass removes the second fetch and is the single largest speed lever on this path.",
     "traps": [
       "--disk-floor-gib is silently ignored on the pack path",
-      "nice fails inside the Grok sandbox",
+      "nice fails inside the the delivery lane sandbox",
       "macOS 'used' RAM counts purgeable, so the memory headroom reads worse than it is"
     ]
   },
