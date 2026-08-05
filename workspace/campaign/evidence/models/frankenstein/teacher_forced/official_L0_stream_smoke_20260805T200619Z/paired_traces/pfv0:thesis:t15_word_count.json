@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 295,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t15_word_count",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.858614Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "efd94e11f6cf02037e87ba71d2803a437c8da637cca775b51ce7274b36d0a788",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 10.345918655395508,
+          "rank": 0,
+          "token_id": 24
+        },
+        {
+          "logit": 9.582118034362793,
+          "rank": 1,
+          "token_id": 16
+        },
+        {
+          "logit": 9.101862907409668,
+          "rank": 2,
+          "token_id": 17
+        },
+        {
+          "logit": 9.009373664855957,
+          "rank": 3,
+          "token_id": 20
+        },
+        {
+          "logit": 8.851003646850586,
+          "rank": 4,
+          "token_id": 15
+        },
+        {
+          "logit": 8.717174530029297,
+          "rank": 5,
+          "token_id": 22
+        },
+        {
+          "logit": 8.517263412475586,
+          "rank": 6,
+          "token_id": 23
+        },
+        {
+          "logit": 8.404854774475098,
+          "rank": 7,
+          "token_id": 18
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1962476521730423,
+          "l2": 3.66560435295105,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8fe968a477f690a0855d8a01bd8783fe0edd4cb267ef93e0574e9b0aa1446579",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

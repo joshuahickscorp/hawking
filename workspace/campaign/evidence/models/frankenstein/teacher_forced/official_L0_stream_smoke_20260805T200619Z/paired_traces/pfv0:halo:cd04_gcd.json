@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 177,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `gcd(a, b)` that returns the greatest common divisor of two non-negative integers (Euclidean algorithm). Return only the function in a fenced code block.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:halo:cd04_gcd",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `gcd(a, b)` that returns the greatest common divisor of two non-negative integers (Euclidean algorithm). Return only the function in a fenced code block.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.858080Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "4e4d3668861d1c6974484b799e1b088fc56c5c5c8e1cb2d8a59e435928bd4ffc",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 4.404143333435059,
+          "rank": 0,
+          "token_id": 23
+        },
+        {
+          "logit": 4.131317138671875,
+          "rank": 1,
+          "token_id": 22
+        },
+        {
+          "logit": 3.9216599464416504,
+          "rank": 2,
+          "token_id": 16
+        },
+        {
+          "logit": 3.6516175270080566,
+          "rank": 3,
+          "token_id": 19
+        },
+        {
+          "logit": 3.6366071701049805,
+          "rank": 4,
+          "token_id": 18
+        },
+        {
+          "logit": 3.537343740463257,
+          "rank": 5,
+          "token_id": 17
+        },
+        {
+          "logit": 3.5073094367980957,
+          "rank": 6,
+          "token_id": 20
+        },
+        {
+          "logit": 3.5018792152404785,
+          "rank": 7,
+          "token_id": 24
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1857411116361618,
+          "l2": 3.615171432495117,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "fda72c9b660e5bd97c102275830cf2b8cf70613408f3a218ba6a2cd8d1595f68",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

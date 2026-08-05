@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 183,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Given the Lean proof state goal:\n(h : Surjective (algebraMap R A)) :\n    Algebra.IsEpi R A\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Given the Lean proof state goal:\n(h : Surjective (algebraMap R A)) :\n    Algebra.IsEpi R A\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.853723Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "f508c364e36df927116edb81d01469023c351e5ef28b5186d80fe651e9754357",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.376023292541504,
+          "rank": 0,
+          "token_id": 10
+        },
+        {
+          "logit": 2.0290305614471436,
+          "rank": 1,
+          "token_id": 60
+        },
+        {
+          "logit": 1.711783528327942,
+          "rank": 2,
+          "token_id": 6
+        },
+        {
+          "logit": 1.6347121000289917,
+          "rank": 3,
+          "token_id": 63
+        },
+        {
+          "logit": 1.6285090446472168,
+          "rank": 4,
+          "token_id": 52
+        },
+        {
+          "logit": 1.5185633897781372,
+          "rank": 5,
+          "token_id": 62
+        },
+        {
+          "logit": 1.3607969284057617,
+          "rank": 6,
+          "token_id": 53
+        },
+        {
+          "logit": 1.060624122619629,
+          "rank": 7,
+          "token_id": 55
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.18953637778759003,
+          "l2": 3.6243064403533936,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "122542f0d557d35ce97e197a7a046fd70fe65b845a8f04415312600ffd376d57",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

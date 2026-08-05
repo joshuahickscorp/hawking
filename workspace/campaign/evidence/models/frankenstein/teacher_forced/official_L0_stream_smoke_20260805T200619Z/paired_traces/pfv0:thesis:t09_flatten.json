@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 284,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `flatten(nested)` that flattens a list of lists into a single list preserving order. Return only the function in a code block.\n\nTests (must pass):\n```\nassert flatten([[1,2],[3],[4,5]]) == [1,2,3,4,5]\nassert flatten([[],[1]]) == [1]\nassert flatten([]) == []\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t09_flatten",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `flatten(nested)` that flattens a list of lists into a single list preserving order. Return only the function in a code block.\n\nTests (must pass):\n```\nassert flatten([[1,2],[3],[4,5]]) == [1,2,3,4,5]\nassert flatten([[],[1]]) == [1]\nassert flatten([]) == []\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.857789Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "50a6cb06ca9989649a45d8cb3b5d5ea05a0ec7643722ded3035e5b92cc8880f6",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 4.300074577331543,
+          "rank": 0,
+          "token_id": 23
+        },
+        {
+          "logit": 4.027335166931152,
+          "rank": 1,
+          "token_id": 22
+        },
+        {
+          "logit": 4.001148223876953,
+          "rank": 2,
+          "token_id": 20
+        },
+        {
+          "logit": 3.8368117809295654,
+          "rank": 3,
+          "token_id": 21
+        },
+        {
+          "logit": 3.4042885303497314,
+          "rank": 4,
+          "token_id": 24
+        },
+        {
+          "logit": 2.815161943435669,
+          "rank": 5,
+          "token_id": 16
+        },
+        {
+          "logit": 2.639026165008545,
+          "rank": 6,
+          "token_id": 15
+        },
+        {
+          "logit": 2.632499933242798,
+          "rank": 7,
+          "token_id": 18
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.19820666313171387,
+          "l2": 3.474881887435913,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "adb0aa596c924461c05a0ca8715f56770035d1719f89d3038e7f7b6136d3301f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

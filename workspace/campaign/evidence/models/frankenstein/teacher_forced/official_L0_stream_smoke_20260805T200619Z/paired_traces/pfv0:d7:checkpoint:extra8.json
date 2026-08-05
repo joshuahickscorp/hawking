@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 195,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "You are solving a formal proof search problem `extra_8`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_8 id=e70305587eeae682\n\nPreferred tool family: search_checkpoint.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d7:checkpoint:extra8",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "You are solving a formal proof search problem `extra_8`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_8 id=e70305587eeae682\n\nPreferred tool family: search_checkpoint.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.860576Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "efed6325644efecc47cb2cc20980b0152e7ab23cf06de82ba278df86fd8bc2b2",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 6.2431111335754395,
+          "rank": 0,
+          "token_id": 20
+        },
+        {
+          "logit": 6.038707733154297,
+          "rank": 1,
+          "token_id": 17
+        },
+        {
+          "logit": 5.7858781814575195,
+          "rank": 2,
+          "token_id": 19
+        },
+        {
+          "logit": 5.318595886230469,
+          "rank": 3,
+          "token_id": 18
+        },
+        {
+          "logit": 4.595201015472412,
+          "rank": 4,
+          "token_id": 21
+        },
+        {
+          "logit": 4.470519065856934,
+          "rank": 5,
+          "token_id": 23
+        },
+        {
+          "logit": 4.42976713180542,
+          "rank": 6,
+          "token_id": 31
+        },
+        {
+          "logit": 4.42573356628418,
+          "rank": 7,
+          "token_id": 5
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.20828616619110107,
+          "l2": 3.682979106903076,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "f8270b605a32e27b9bd2c485420a164165b655e58208e3cc3615c274cb3bc9fc",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}
