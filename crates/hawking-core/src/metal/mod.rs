@@ -1074,6 +1074,9 @@ mod imp {
             "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority" => {
                 "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority"
             }
+            "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority" => {
+                "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority"
+            }
             "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority" => {
                 "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority"
             }
@@ -1436,6 +1439,7 @@ mod imp {
             const KERNELS: &[&str] = &[
                 "deepseek_v4_p6a_gate_bf16_matvec_authority",
                 "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority",
+                "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority",
                 "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority",
                 "deepseek_v4_p6a_route6_shared_combine_bf16_authority",
             ];

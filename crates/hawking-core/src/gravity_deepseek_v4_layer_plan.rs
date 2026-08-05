@@ -6,9 +6,12 @@
 //! device executor stages or dispatches work.
 //!
 //! Honesty contract:
-//! - ratio-0 / sliding-window attention is the only attention family the
-//!   current device chain can execute;
-//! - ratio-4 and ratio-128 refuse cleanly (indexer path not implemented);
+//! - ratio-0 / sliding-window attention is the full growing-KV attention
+//!   family the device chain can execute at any BOS-compatible position;
+//! - at BOS/position-0 only, ratio-4 and ratio-128 also admit a
+//!   *window-only* attention specialization because the source algorithm
+//!   yields zero compressed slots (`end_pos // ratio == 0`); that is not a
+//!   full compressed/indexer graph for later positions;
 //! - hash gate mode (`tid2eid`) is the only MoE route mode the current P6
 //!   device graph can execute; learned-bias layers refuse cleanly until a
 //!   learned-route kernel is admitted;
@@ -34,9 +37,14 @@ pub struct DeepSeekV4LayerDevicePlan {
     pub layer: usize,
     pub compression: DeepSeekV4LayerCompressionMode,
     pub gate_mode: DeepSeekV4LayerGateMode,
+    /// Full growing-KV ratio-0 attention (any BOS-compatible position).
     pub attention_device_supported: bool,
+    /// BOS/position-0 window-only attention. True for every base layer because
+    /// compressed topk is empty at `start_pos=0, seqlen=1`.
+    pub bos_window_attention_device_supported: bool,
     pub moe_device_supported: bool,
     pub attention_refusal: Option<&'static str>,
+    pub bos_window_attention_refusal: Option<&'static str>,
     pub moe_refusal: Option<&'static str>,
     pub mhc_control_exp: DeepSeekV4MhcControlExpStrategy,
 }
@@ -68,16 +76,19 @@ impl DeepSeekV4LayerDevicePlan {
             DeepSeekV4LayerCompressionMode::Ratio4WithIndexer => (
                 false,
                 Some(
-                    "ratio-4 compressed attention with indexer is not implemented in the device chain; refuses cleanly",
+                    "ratio-4 compressed attention with indexer is not implemented for non-BOS positions; use require_bos_window_attention_device for the BOS window-only specialization",
                 ),
             ),
             DeepSeekV4LayerCompressionMode::Ratio128 => (
                 false,
                 Some(
-                    "ratio-128 compressed attention is not implemented in the device chain; refuses cleanly",
+                    "ratio-128 compressed attention is not implemented for non-BOS positions; use require_bos_window_attention_device for the BOS window-only specialization",
                 ),
             ),
         };
+        // BOS/pos0/seqlen1: compressed topk is empty for every ratio. Window-only
+        // sparse attention is source-correct at this specialization only.
+        let (bos_window_attention_device_supported, bos_window_attention_refusal) = (true, None);
         let (moe_device_supported, moe_refusal) = match anchor.gate_mode {
             DeepSeekV4LayerGateMode::HashTokenIdToExpertIds => (true, None),
             DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias => (
@@ -92,14 +103,16 @@ impl DeepSeekV4LayerDevicePlan {
             compression: anchor.compression,
             gate_mode: anchor.gate_mode,
             attention_device_supported,
+            bos_window_attention_device_supported,
             moe_device_supported,
             attention_refusal,
+            bos_window_attention_refusal,
             moe_refusal,
             mhc_control_exp: DeepSeekV4MhcControlExpStrategy::DarwinDoubleDoubleControlDomain,
         }
     }
 
-    /// Fail-closed check before an attention device step may begin.
+    /// Fail-closed check before a full growing-KV ratio-0 attention step.
     pub fn require_attention_device(&self) -> Result<()> {
         if self.attention_device_supported {
             return Ok(());
@@ -109,6 +122,20 @@ impl DeepSeekV4LayerDevicePlan {
             self.layer,
             self.attention_refusal
                 .unwrap_or("attention device path is unavailable")
+        )))
+    }
+
+    /// Fail-closed check for the BOS/position-0 window-only attention path
+    /// (valid for every compression mode; compressed slots empty at BOS).
+    pub fn require_bos_window_attention_device(&self) -> Result<()> {
+        if self.bos_window_attention_device_supported {
+            return Ok(());
+        }
+        Err(plan_error(format!(
+            "layer {} BOS window attention device refused: {}",
+            self.layer,
+            self.bos_window_attention_refusal
+                .unwrap_or("BOS window attention path is unavailable")
         )))
     }
 
@@ -125,9 +152,16 @@ impl DeepSeekV4LayerDevicePlan {
         )))
     }
 
-    /// Fail-closed check for a full attention+MoE layer step.
+    /// Fail-closed check for a full attention+MoE layer step (ratio-0 only).
     pub fn require_full_layer_device(&self) -> Result<()> {
         self.require_attention_device()?;
+        self.require_moe_device()
+    }
+
+    /// Fail-closed check for BOS window attention + MoE (hash layers only until
+    /// learned-bias is admitted).
+    pub fn require_bos_full_layer_device(&self) -> Result<()> {
+        self.require_bos_window_attention_device()?;
         self.require_moe_device()
     }
 
@@ -200,7 +234,7 @@ impl DeepSeekV4LayerDeviceCatalog {
         })
     }
 
-    /// Layers that currently admit both attention and MoE device execution.
+    /// Layers that currently admit both full ratio-0 attention and MoE device execution.
     pub fn full_layer_device_supported(&self) -> Vec<usize> {
         self.plans
             .iter()
@@ -209,11 +243,20 @@ impl DeepSeekV4LayerDeviceCatalog {
             .collect()
     }
 
-    /// Layers that admit attention device execution only (ratio-0).
+    /// Layers that admit full ratio-0 attention device execution.
     pub fn attention_device_supported(&self) -> Vec<usize> {
         self.plans
             .iter()
             .filter(|plan| plan.attention_device_supported)
+            .map(|plan| plan.layer)
+            .collect()
+    }
+
+    /// Layers that admit BOS window-only attention + currently supported MoE.
+    pub fn bos_full_layer_device_supported(&self) -> Vec<usize> {
+        self.plans
+            .iter()
+            .filter(|plan| plan.bos_window_attention_device_supported && plan.moe_device_supported)
             .map(|plan| plan.layer)
             .collect()
     }
@@ -266,6 +309,9 @@ mod tests {
         assert!(ratio4.moe_device_supported);
         assert!(ratio4.require_attention_device().is_err());
         assert!(ratio4.require_full_layer_device().is_err());
+        // BOS window-only specialization is admitted for ratio-4 + hash.
+        assert!(ratio4.require_bos_window_attention_device().is_ok());
+        assert!(ratio4.require_bos_full_layer_device().is_ok());
 
         let learned = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
             layer: 3,
@@ -275,6 +321,9 @@ mod tests {
         });
         assert!(learned.require_attention_device().is_err());
         assert!(learned.require_moe_device().is_err());
+        // Attention BOS path admits; MoE still refuses until learned-bias lands.
+        assert!(learned.require_bos_window_attention_device().is_ok());
+        assert!(learned.require_bos_full_layer_device().is_err());
     }
 
     #[test]

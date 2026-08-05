@@ -1832,6 +1832,111 @@ kernel void deepseek_v4_p6a_hash_route_sqrtsoftplus_authority(
 }
 #pragma clang fp contract(on)
 
+// Learned-bias Gate route (layers >= n_hash_layers):
+//   original_scores = sqrt(softplus(logits))
+//   selection_scores = original_scores + bias
+//   indices = topk(selection_scores, k=6)  // stable: higher score wins; ties keep lower expert id
+//   weights = original_scores[indices]; weights /= sum; weights *= route_scale
+// Bias affects selection only, never the gathered route weights (source Gate.forward).
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority(
+    device const float* logits_f32          [[buffer(0)]],
+    device const float* bias_f32            [[buffer(1)]],
+    device       uint* selected_ids         [[buffer(2)]],
+    device       float* selected_weights    [[buffer(3)]],
+    device       float* original_scores     [[buffer(4)]],
+    device       uint* valid                [[buffer(5)]],
+    constant uint& expert_count             [[buffer(6)]],
+    constant uint& top_k                    [[buffer(7)]],
+    constant float& route_scale             [[buffer(8)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index != 0u) return;
+    valid[0] = 0u;
+    if (expert_count == 0u || expert_count > 256u || top_k != 6u || !isfinite(route_scale)) {
+        valid[0] = 2u;
+        return;
+    }
+
+    for (uint expert = 0u; expert < expert_count; ++expert) {
+        const float logit = logits_f32[expert];
+        if (!isfinite(logit)) {
+            valid[0] = 16u + expert;
+            return;
+        }
+        const float softplus = logit > 20.0f
+            ? logit
+            : (logit >= 0.0f
+                ? logit + deepseek_v4_p6a_log1p_source_stable(metal::precise::exp(-logit))
+                : deepseek_v4_p6a_log1p_source_stable(metal::precise::exp(logit)));
+        const float score = metal::precise::sqrt(softplus);
+        if (!(isfinite(score) && score > 0.0f)) {
+            valid[0] = 512u + expert;
+            return;
+        }
+        original_scores[expert] = score;
+    }
+
+    // Serial top-k on selection scores = original + bias. Deterministic:
+    // prefer higher score; on exact ties prefer the lower expert id.
+    for (uint slot = 0u; slot < top_k; ++slot) {
+        uint best_id = 0xffffffffu;
+        float best_score = -INFINITY;
+        for (uint expert = 0u; expert < expert_count; ++expert) {
+            bool already = false;
+            for (uint prev = 0u; prev < slot; ++prev) {
+                if (selected_ids[prev] == expert) {
+                    already = true;
+                    break;
+                }
+            }
+            if (already) continue;
+            const float bias = bias_f32[expert];
+            if (!isfinite(bias)) {
+                valid[0] = 768u + expert;
+                return;
+            }
+            const float sel = original_scores[expert] + bias;
+            if (!isfinite(sel)) {
+                valid[0] = 896u + expert;
+                return;
+            }
+            if (best_id == 0xffffffffu
+                || sel > best_score
+                || (sel == best_score && expert < best_id)) {
+                best_score = sel;
+                best_id = expert;
+            }
+        }
+        if (best_id == 0xffffffffu || best_id >= expert_count) {
+            valid[0] = 1024u + slot;
+            return;
+        }
+        selected_ids[slot] = best_id;
+    }
+
+    float sum = 0.0f;
+    for (uint slot = 0u; slot < top_k; ++slot) {
+        const float score = original_scores[selected_ids[slot]];
+        selected_weights[slot] = score;
+        sum = sum + score;
+    }
+    if (!(isfinite(sum) && sum > 0.0f)) {
+        valid[0] = 1536u;
+        return;
+    }
+    for (uint slot = 0u; slot < top_k; ++slot) {
+        const float weight = (selected_weights[slot] / sum) * route_scale;
+        if (!isfinite(weight)) {
+            valid[0] = 1792u + slot;
+            return;
+        }
+        selected_weights[slot] = weight;
+    }
+    valid[0] = 1u;
+}
+#pragma clang fp contract(on)
+
 // Device-route-weighted source SwiGLU.  `route_slot` indexes the device
 // result above; the host does not supply the floating route factor.  Each
 // expert wave uses a distinct output allocation, so these invocations are

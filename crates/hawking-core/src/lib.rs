@@ -46,6 +46,11 @@ pub mod gravity_deepseek_v4_layer0_prefix;
 /// forward, Engine, HCLI endpoint, parity receipt, or TPS result.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_layer1_attention_device;
+/// Parameterized BOS/position-0 attention device graph for any base layer
+/// 1..42. Window-KV only (compressed slots empty at BOS). Not a full causal
+/// compressed graph, Engine, HCLI, serve, or TPS claim.
+#[cfg(target_os = "macos")]
+pub mod gravity_deepseek_v4_bos_layer_attention_device;
 /// Incremental bounded source-staging scheduler for the future DeepSeek-V4
 /// native layer loop. It has no default device encoder or causal runtime.
 pub mod gravity_deepseek_v4_layer_scheduler;
