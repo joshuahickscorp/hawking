@@ -107,6 +107,9 @@ pub mod gravity_glm;
 pub mod gravity_glm_resident;
 pub mod gravity_llama;
 pub mod json_constrain;
+/// Broker-kernel A/B promotion gate + receipt-backed cost registry.
+/// Planning/groundwork only; does not touch the DeepSeek-V4 forward lane.
+pub mod broker_kernel_ab;
 pub mod kernel_bench;
 pub mod kernels;
 pub mod metal;
