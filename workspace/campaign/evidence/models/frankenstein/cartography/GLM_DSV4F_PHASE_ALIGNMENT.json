@@ -1,0 +1,83 @@
+{
+  "claim_boundary": {
+    "awaiting": "paired activations + correspondence matrix",
+    "phase_scores_measured": false
+  },
+  "executed": false,
+  "fabricated": false,
+  "gate": "REQUIRES_GLM_RUNTIME",
+  "many_to_one": true,
+  "missing_infra": "No local GLM-5.2 runtime (≈1.5 TB donor not served). Cannot capture GLM trajectories, activations, or logits.",
+  "monotonic": null,
+  "name": "GLM_DSV4F_PHASE_ALIGNMENT",
+  "note": "emit_phase_alignment refused: REQUIRES_GLM_RUNTIME. Framework/interface exists; runtime work is not simulated.",
+  "operation": "emit_phase_alignment",
+  "pairs": null,
+  "phase_blocks": [
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "lexical_context",
+      "phase_index": 0,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "early_reasoning",
+      "phase_index": 1,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "method_selection",
+      "phase_index": 2,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "planning_decomposition",
+      "phase_index": 3,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "tool_formal_prep",
+      "phase_index": 4,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "repair_critique",
+      "phase_index": 5,
+      "status": "PENDING"
+    },
+    {
+      "dsv4f_layer_range": null,
+      "glm_layer_range": null,
+      "phase": "answer_proof_consolidation",
+      "phase_index": 6,
+      "status": "PENDING"
+    }
+  ],
+  "phases": [
+    "lexical_context",
+    "early_reasoning",
+    "method_selection",
+    "planning_decomposition",
+    "tool_formal_prep",
+    "repair_critique",
+    "answer_proof_consolidation"
+  ],
+  "ratio_map_rejected": true,
+  "recorded_at": "2026-08-05T19:46:30.970663Z",
+  "schema": "hawking.frankenstein.glm_dsv4f_phase_alignment.v1",
+  "seal_sha256": "06683ec2e743f3afc592a49d506189f34f3d4e743347893dd0fe918af3c7892f",
+  "source": "pending_activations",
+  "stage": "4_layer_cartography",
+  "status": "PENDING_REAL_ACTIVATIONS"
+}
