@@ -1,0 +1,16 @@
+{
+  "activations_captured": false,
+  "capability_claim_permitted": false,
+  "captured_at": "2026-08-05T19:19:43.634739Z",
+  "error_count": 0,
+  "honest_note": "Dry-run seals prompt membership and provider gates only. Zero trajectories by construction; live capture requires an API key.",
+  "mode": "dry_run",
+  "preflight_seal_sha256": "b15dc59e589efefdb82d6e0aade3788cf1169274da326ceaa252ed33783fa98b",
+  "preflight_status": "DRY_RUN_ONLY_NO_CREDENTIAL",
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.behavior_capture_receipt.v1",
+  "seal_sha256": "414599d5bca7b336e8204fa903d920f16e61ac97186ddf4bc59de4d56c83b99b",
+  "status": "DRY_RUN_NO_TRAJECTORIES",
+  "trajectory_count": 0
+}
