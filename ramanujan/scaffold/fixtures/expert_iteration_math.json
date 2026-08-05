@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.ramanujan.expert_iteration_fixture.v1",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "description": "Small exact-numeric problems for the verifier + expert-iteration end-to-end fixture. Wrong attempts must be REJECTED; repairs accepted only when recomputation matches.",
+  "problems": [
+    {
+      "id": "fix:two_plus_two",
+      "kind": "exact_numeric",
+      "statement": "What is 2 + 2?",
+      "expression": "2 + 2",
+      "wrong_attempt": "5",
+      "correct_repair": "4",
+      "notes": "classic smoke; wrong answer 5 must be caught"
+    },
+    {
+      "id": "fix:fraction_sum",
+      "kind": "exact_numeric",
+      "statement": "Compute 1/2 + 1/3 as a reduced fraction.",
+      "expression": "1/2 + 1/3",
+      "wrong_attempt": "1/5",
+      "correct_repair": "5/6",
+      "notes": "rational arithmetic"
+    },
+    {
+      "id": "fix:power",
+      "kind": "exact_numeric",
+      "statement": "What is 3 ** 4?",
+      "expression": "3 ** 4",
+      "wrong_attempt": "12",
+      "correct_repair": "81",
+      "notes": "exponent"
+    },
+    {
+      "id": "fix:mixed",
+      "kind": "exact_numeric",
+      "statement": "Evaluate (7 + 5) * 3 - 4.",
+      "expression": "(7 + 5) * 3 - 4",
+      "wrong_attempt": "28",
+      "correct_repair": "32",
+      "notes": "associativity"
+    }
+  ],
+  "lean_smoke": {
+    "id": "lean:sorry_refused",
+    "kind": "lean_capsule",
+    "statement": "2 + 2 = 4 with a sorry — must REJECT statically",
+    "proof_lean": "theorem t : (2:Nat)+2 = 4 := by sorry",
+    "expect_verdict": "REJECTED"
+  }
+}
