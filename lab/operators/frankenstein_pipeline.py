@@ -912,6 +912,18 @@ def _parser() -> argparse.ArgumentParser:
     preflight.add_argument("--workspace", type=Path, default=WORKSPACE_ROOT)
     preflight.add_argument("--out", type=Path)
     preflight.add_argument("--progress", type=Path, default=RUN_ROOT / PROGRESS_NAME)
+    direct = commands.add_parser(
+        "direct",
+        help=(
+            "ceremony-free streaming fusion harness (see lab.operators.frankenstein_direct); "
+            "remaining args are forwarded"
+        ),
+    )
+    direct.add_argument(
+        "direct_argv",
+        nargs=argparse.REMAINDER,
+        help="arguments forwarded to frankenstein_direct (e.g. first-step, schedule)",
+    )
     return parser
 
 
@@ -934,6 +946,15 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 progress=args.progress,
             )
+        elif args.command == "direct":
+            # Thin forwarder to the ceremony-free harness.  Strips a leading "--"
+            # that argparse.REMAINDER may preserve after `direct -- first-step`.
+            from lab.operators.frankenstein_direct import main as direct_main
+
+            forwarded = list(args.direct_argv or [])
+            if forwarded and forwarded[0] == "--":
+                forwarded = forwarded[1:]
+            return direct_main(forwarded)
         else:  # pragma: no cover - argparse makes this unreachable.
             raise FrankensteinPipelineError(f"unsupported command: {args.command}")
     except FrankensteinPipelineError as exc:
