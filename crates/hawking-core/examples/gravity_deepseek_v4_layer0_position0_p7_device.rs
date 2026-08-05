@@ -1135,8 +1135,26 @@ mod macos {
                 "p6_gate_route_bindings": {
                     "gate_weight_name": &p6_bindings.gate_weight_name,
                     "gate_weight_sha256": &p6_bindings.gate_weight_sha256,
-                    "tid2eid_name": &p6_bindings.tid2eid_name,
-                    "tid2eid_sha256": &p6_bindings.tid2eid_sha256,
+                    "tid2eid_name": match &p6_bindings.route {
+                        hawking_core::gravity_deepseek_v4_p6_device::DeepSeekV4P6GateRouteBinding::HashTid2Eid {
+                            tid2eid_name,
+                            ..
+                        } => tid2eid_name.as_str(),
+                        hawking_core::gravity_deepseek_v4_p6_device::DeepSeekV4P6GateRouteBinding::LearnedBias {
+                            bias_name,
+                            ..
+                        } => bias_name.as_str(),
+                    },
+                    "tid2eid_sha256": match &p6_bindings.route {
+                        hawking_core::gravity_deepseek_v4_p6_device::DeepSeekV4P6GateRouteBinding::HashTid2Eid {
+                            tid2eid_sha256,
+                            ..
+                        } => tid2eid_sha256.as_str(),
+                        hawking_core::gravity_deepseek_v4_p6_device::DeepSeekV4P6GateRouteBinding::LearnedBias {
+                            bias_sha256,
+                            ..
+                        } => bias_sha256.as_str(),
+                    },
                     "selected_expert_ids_top_slot_order": &p6_bindings.selected_expert_ids_top_slot_order,
                 },
             },

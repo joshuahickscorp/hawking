@@ -12,9 +12,8 @@
 //!   *window-only* attention specialization because the source algorithm
 //!   yields zero compressed slots (`end_pos // ratio == 0`); that is not a
 //!   full compressed/indexer graph for later positions;
-//! - hash gate mode (`tid2eid`) is the only MoE route mode the current P6
-//!   device graph can execute; learned-bias layers refuse cleanly until a
-//!   learned-route kernel is admitted;
+//! - hash gate mode (`tid2eid`) and learned-bias mode (dynamic top-k +
+//!   two-phase expert load) are both admitted for MoE/P6 device execution;
 //! - this module never dispatches Metal, never claims parity, and never
 //!   flips a runtime/Engine gate.
 
@@ -89,14 +88,12 @@ impl DeepSeekV4LayerDevicePlan {
         // BOS/pos0/seqlen1: compressed topk is empty for every ratio. Window-only
         // sparse attention is source-correct at this specialization only.
         let (bos_window_attention_device_supported, bos_window_attention_refusal) = (true, None);
+        // Both gate modes are admitted: hash uses the precomputed tid2eid
+        // residency plan; learned-bias uses the two-phase P6 path (route on
+        // device, then load the six selected expert bundles).
         let (moe_device_supported, moe_refusal) = match anchor.gate_mode {
             DeepSeekV4LayerGateMode::HashTokenIdToExpertIds => (true, None),
-            DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias => (
-                false,
-                Some(
-                    "learned-bias gate mode is not yet implemented in the P6 device graph; refuses cleanly",
-                ),
-            ),
+            DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias => (true, None),
         };
         Self {
             layer: anchor.layer,
@@ -299,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    fn ratio_four_and_learned_bias_refuse_cleanly() {
+    fn ratio_four_refuses_full_attention_but_admits_bos_and_learned_moe() {
         let ratio4 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
             layer: 2,
             compression: DeepSeekV4LayerCompressionMode::Ratio4WithIndexer,
@@ -319,11 +316,12 @@ mod tests {
             gate_mode: DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias,
             tensor_count: 0,
         });
+        // Full growing-KV ratio-128 attention still refuses for non-BOS;
+        // MoE and BOS full-layer are now admitted (two-phase learned P6).
         assert!(learned.require_attention_device().is_err());
-        assert!(learned.require_moe_device().is_err());
-        // Attention BOS path admits; MoE still refuses until learned-bias lands.
+        assert!(learned.require_moe_device().is_ok());
         assert!(learned.require_bos_window_attention_device().is_ok());
-        assert!(learned.require_bos_full_layer_device().is_err());
+        assert!(learned.require_bos_full_layer_device().is_ok());
     }
 
     #[test]

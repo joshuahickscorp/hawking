@@ -53,11 +53,10 @@ mod macos {
         if plan.gate_mode.as_str() != "learned_scores_with_selection_bias" {
             return Err(format!("layer {LAYER} is not learned-bias gate").into());
         }
-        // BOS window attention admits; MoE still refuses (expected).
+        // BOS window attention and learned MoE (two-phase) are both admitted.
+        // This example still seals only the route kernel in isolation.
         plan.require_bos_window_attention_device()?;
-        if plan.require_moe_device().is_ok() {
-            return Err("expected layer-3 MoE plan to still refuse full P6 composition".into());
-        }
+        plan.require_moe_device()?;
 
         let bias_name = format!("layers.{LAYER}.ffn.gate.bias");
         let bias_meta = reader.tensor_metadata(&bias_name)?;
@@ -179,7 +178,7 @@ mod macos {
             },
             "honesty": {
                 "full_p6_moe_composed": false,
-                "reason": "dynamic topk requires two-phase expert load; this receipt seals the route kernel only",
+                "reason": "this receipt seals the route kernel alone; full two-phase learned P6 is composed by the multi-layer BOS forward",
                 "serve_endpoint_flipped": false,
             },
             "wall_time_ms": wall_ms,
