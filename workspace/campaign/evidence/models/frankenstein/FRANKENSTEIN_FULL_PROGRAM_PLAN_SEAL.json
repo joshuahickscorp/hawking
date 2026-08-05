@@ -1,0 +1,110 @@
+{
+  "architecture": {
+    "stage_1": "GLM math -> DeepSeek-V4-Flash body = PROTO_FRANKENSTEIN (active)",
+    "stage_2": "Kimi K3 strategic -> Proto = FINAL_FRANKENSTEIN",
+    "stage_3": "Odyssey + formal tools + verifier + Q-gauntlet + sandbox = RAMANUJAN"
+  },
+  "bpw_verdict": {
+    "arithmetic_floor_dsv4f_1_5_bpw_gb": 53.25,
+    "arithmetic_floor_qwen_1_5_bpw_gb": 5.71875,
+    "co_residency": "MEASURE_DO_NOT_ASSUME",
+    "glm_sub1_collapse_cited": true,
+    "one_point_five_bpw": "TARGET_NOT_PROVEN_CAPABILITY_SAFE"
+  },
+  "documents": {
+    "post_final": "workspace/docs/plans/POST_FINAL_GRAVITY_HCLI_PLAN.md",
+    "programme": "workspace/docs/plans/FRANKENSTEIN_PROGRAM.md",
+    "resident_memory_bpw": "workspace/docs/plans/RESIDENT_MEMORY_AND_BPW_PLAN.md",
+    "stage2_kimi": "workspace/docs/plans/STAGE2_KIMI_STREAMING_DISTILL_PLAN.md"
+  },
+  "inventory_sha256": {
+    "docs": {
+      "FRANKENSTEIN_PROGRAM.md": "aab30ad069cdb9d885eb4e37df88fb0f382d4ad8b922dde3adbb84b174d7fc72",
+      "POST_FINAL_GRAVITY_HCLI_PLAN.md": "a5e802a83429e3fa5e8e1a1a43588e1b155a8f63899f91e4af877357374367b5",
+      "RESIDENT_MEMORY_AND_BPW_PLAN.md": "9167daab3401cda243ba336ddc837d5f8f5be0ad5f431da15feadad33d200f8e",
+      "STAGE2_KIMI_STREAMING_DISTILL_PLAN.md": "a1ec7f87982e61eb257637900bbd4a8fcf0d3488d317df543f05f3451b7621c9"
+    },
+    "json_plans": {
+      "FRANKENSTEIN_PROGRAM_PLAN.json": {
+        "bytes": 5678,
+        "file_sha256_preseal": "35153c494b4ede54b77001102f16b062a766f291b070d628b43b6fd466560e9f",
+        "path": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_PROGRAM_PLAN.json",
+        "seal_sha256": "9bd015992f82047f7b54a990ffcc3aad8a69d36f7112eb9e4a78be0d42e33191"
+      },
+      "POST_FINAL_GRAVITY_HCLI_PLAN.json": {
+        "bytes": 4813,
+        "file_sha256_preseal": "17d6d7b9a5cc1faaa91bf5b655c1090efe689dc65bd18407e5cf21c2b44e1fc0",
+        "path": "workspace/campaign/evidence/models/frankenstein/POST_FINAL_GRAVITY_HCLI_PLAN.json",
+        "seal_sha256": "448e4fcbe0ca05c5f3f59943d1da715ca0c444fff464ee34b52f4e58c5c7fe61"
+      },
+      "RESIDENT_MEMORY_AND_BPW_PLAN.json": {
+        "bytes": 5732,
+        "file_sha256_preseal": "cbed55afc8ae911d271517973e34beda278afceb88424fae2c45b91aa797bca8",
+        "path": "workspace/campaign/evidence/models/frankenstein/RESIDENT_MEMORY_AND_BPW_PLAN.json",
+        "seal_sha256": "7c196f20f2b020d07513a2532dc406c0cf04fdd68d30da5f836a9297a3e606e2"
+      },
+      "STAGE2_KIMI_STREAMING_DISTILL_PLAN.json": {
+        "bytes": 7207,
+        "file_sha256_preseal": "ca6a0e7ea761d5c00e24f5fa58982411883a88c93e51cccbcd9653a7f61b81fb",
+        "path": "workspace/campaign/evidence/models/frankenstein/STAGE2_KIMI_STREAMING_DISTILL_PLAN.json",
+        "seal_sha256": "56ccbbbd057191cc29cbecd5257ac06da64d34d38891ffe4748ef88fdf2d05de"
+      }
+    }
+  },
+  "json_plans": {
+    "post_final": "workspace/campaign/evidence/models/frankenstein/POST_FINAL_GRAVITY_HCLI_PLAN.json",
+    "programme": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_PROGRAM_PLAN.json",
+    "resident_memory_bpw": "workspace/campaign/evidence/models/frankenstein/RESIDENT_MEMORY_AND_BPW_PLAN.json",
+    "stage2_kimi": "workspace/campaign/evidence/models/frankenstein/STAGE2_KIMI_STREAMING_DISTILL_PLAN.json"
+  },
+  "model_card_facts": {
+    "deepseek_v4_flash": {
+      "active": "13B",
+      "context": "1M",
+      "total": "284B"
+    },
+    "kimi_k3": {
+      "active": "104B",
+      "context": "1M",
+      "source_bytes": 1560936091448,
+      "total": "2.8T"
+    },
+    "qwen3_coder_30b_a3b": {
+      "active": "3.3B",
+      "total": "30.5B"
+    }
+  },
+  "naming_freeze": {
+    "DeepSeek-V4-Flash Gravity": "plain Terra-role model",
+    "Final Frankenstein": "DeepSeek + GLM + Kimi",
+    "Proto-Frankenstein": "DeepSeek + GLM",
+    "Qwen Gravity": "Luna-role executor",
+    "Ramanujan": "Final after Odyssey/verified-training/Q-gauntlet/sandbox"
+  },
+  "non_goals_honored": [
+    "no_implementation",
+    "no_streaming",
+    "no_runtime_edits",
+    "no_model_consumption",
+    "no_push_pr_remote"
+  ],
+  "plan_kind": "executable_planning_only_no_implementation",
+  "post_final_manual": {
+    "cloud_seal_upload": "HUMAN",
+    "gravity_terra_luna": "eng",
+    "hcli_wire": "eng",
+    "kernel_tuning_brokers": "eng_ongoing",
+    "re_download_clean_parents": "eng_after_human"
+  },
+  "prior_seals_bound": {
+    "dsv4f_admission_seal_sha256": "769d5083fed7dab0dffef29e24467d406e1b910225cbb917fbb6e5f73a328a54",
+    "fusion_operation": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_FUSION_OPERATION.json",
+    "fusion_operation_seal_sha256": "459830a224fc16c5efb3d58136a79072f5a47015b203de8304c23d1a81acf492",
+    "kimi_k3_admission_seal_sha256": "597ac05752f84c8fffc175255e64d0c56b976ef3c389a59cebabf322b4fa30b0"
+  },
+  "schema": "hawking.frankenstein.full_program_plan_seal.v1",
+  "seal_sha256": "14b03f7faa7db4c0e66b071a5e4c1bcbf3c1ad78ad09dc4d8dd70ece3fa24825",
+  "sealed_at": "2026-08-05T17:33:25Z",
+  "status": "FULL_PROGRAMME_PLAN_SEALED",
+  "title": "Frankenstein 3-generation programme — authoritative plan seal"
+}

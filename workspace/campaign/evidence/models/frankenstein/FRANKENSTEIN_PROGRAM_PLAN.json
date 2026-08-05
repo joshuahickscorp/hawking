@@ -1,0 +1,178 @@
+{
+  "additive_not_subtractive_law": {
+    "consequences": [
+      "Stage-2 includes math regression probes from Stage-1",
+      "Stage-3 includes coding+agentic+tool-use+general regression probes from BASE and Final",
+      "Adapters and Odyssey modules stay reversible/content-addressed"
+    ],
+    "statement": "capability gains are stacked; no stage may pay for its gain by permanently deleting a prior stage win"
+  },
+  "doc_path": "workspace/docs/plans/FRANKENSTEIN_PROGRAM.md",
+  "file_sha256_preseal": "35153c494b4ede54b77001102f16b062a766f291b070d628b43b6fd466560e9f",
+  "four_way_comparison": {
+    "A_BASE": {
+      "composition": "student body only",
+      "name": "DeepSeek-V4-Flash Gravity"
+    },
+    "B_PROTO": {
+      "composition": "A + GLM math inheritance",
+      "name": "Proto-Frankenstein"
+    },
+    "C_FINAL": {
+      "composition": "B + Kimi strategic inheritance",
+      "name": "Final Frankenstein"
+    },
+    "D_RAMANUJAN": {
+      "composition": "C after Odyssey/verifier/Q-gauntlet/sandbox",
+      "name": "Ramanujan"
+    },
+    "promotion_rule": "Each stage must add its axis without permanently deleting prior stage wins; tolerances owner-set before runs.",
+    "required": true
+  },
+  "fusion_mechanism": {
+    "allowed": "block_wise_streaming_distillation_via_latent_bridge",
+    "citation": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_FUSION_OPERATION.json",
+    "impossible": [
+      "stream_portion_and_average_weights",
+      "direct_weight_transplant",
+      "hold_two_donors_resident"
+    ]
+  },
+  "model_card_pins": {
+    "deepseek_v4_flash": {
+      "active_params": "13B",
+      "card": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash",
+      "context": "1M",
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+      "total_params": "284B"
+    },
+    "glm_5_2_stage1_donor": {
+      "repository": "zai-org/GLM-5.2",
+      "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+    },
+    "kimi_k3": {
+      "active_params": "104B",
+      "card": "https://huggingface.co/moonshotai/Kimi-K3",
+      "context": "1M",
+      "repository": "moonshotai/Kimi-K3",
+      "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+      "total_params": "2.8T"
+    },
+    "qwen3_coder_30b_a3b": {
+      "active_params": "3.3B",
+      "card": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "revision": "PIN_AT_DOWNLOAD_TIME",
+      "total_params": "30.5B"
+    }
+  },
+  "naming_freeze": {
+    "DeepSeek-V4-Flash Gravity": "plain Terra-role model; no Frankenstein donor inheritance",
+    "Final Frankenstein": "DeepSeek + GLM + Kimi",
+    "Proto-Frankenstein": "DeepSeek + GLM",
+    "Qwen Gravity": "Luna-role executor",
+    "Ramanujan": "Final Frankenstein after Odyssey/verified-training/Q-gauntlet/sandbox"
+  },
+  "non_goals": [
+    "implementation_in_this_lane",
+    "streaming_or_model_consumption",
+    "runtime_edits",
+    "push_pr_remote",
+    "redesign_of_three_stage_stack"
+  ],
+  "plan_kind": "executable_planning_only",
+  "programme_phases": [
+    {
+      "id": "P0",
+      "stage": null,
+      "title": "Plan seals"
+    },
+    {
+      "id": "P1",
+      "stage": 1,
+      "title": "Proto build + seal"
+    },
+    {
+      "id": "P2",
+      "stage": "1->2",
+      "title": "Clear storage"
+    },
+    {
+      "id": "P3",
+      "stage": 2,
+      "title": "Kimi stream + Final seal"
+    },
+    {
+      "id": "P4",
+      "stage": 2,
+      "title": "Four-way A/B/C ablation"
+    },
+    {
+      "human": true,
+      "id": "P5",
+      "stage": "post-C",
+      "title": "Cloud seal Final"
+    },
+    {
+      "id": "P6",
+      "stage": "post-C",
+      "title": "Re-download clean DSV4F + Qwen3-Coder-30B"
+    },
+    {
+      "id": "P7",
+      "stage": "post-C",
+      "title": "Gravity Terra + Luna; HCLI wire"
+    },
+    {
+      "id": "P8",
+      "owner_gated": true,
+      "stage": 3,
+      "title": "Odyssey / Q-gauntlet / sandbox -> Ramanujan"
+    },
+    {
+      "id": "P9",
+      "stage": 3,
+      "title": "Four-way A/B/C/D full comparison"
+    }
+  ],
+  "related_plans": [
+    "workspace/docs/plans/STAGE2_KIMI_STREAMING_DISTILL_PLAN.md",
+    "workspace/docs/plans/RESIDENT_MEMORY_AND_BPW_PLAN.md",
+    "workspace/docs/plans/POST_FINAL_GRAVITY_HCLI_PLAN.md"
+  ],
+  "roles": {
+    "Luna": "Qwen Gravity; fast coding executor",
+    "Sol": "Final Frankenstein -> Ramanujan; flagship strategy and orchestration",
+    "Terra": "DeepSeek-V4-Flash Gravity; general/agent body"
+  },
+  "schema": "hawking.frankenstein.program_plan.v1",
+  "seal_note": "Planning seal: file_sha256_preseal is SHA-256 of the JSON body before this stamp field set was added; recompute on mutation.",
+  "seal_sha256": "9bd015992f82047f7b54a990ffcc3aad8a69d36f7112eb9e4a78be0d42e33191",
+  "sealed_at": "2026-08-05T17:33:25Z",
+  "stages": [
+    {
+      "bridge": "GLM_MATH_BRIDGE",
+      "id": 1,
+      "inheritance": "GLM math -> DeepSeek-V4-Flash body",
+      "name": "PROTO_FRANKENSTEIN",
+      "state": "ACTIVE"
+    },
+    {
+      "bridge": "KIMI_STRATEGIC_BRIDGE",
+      "detail_plan": "workspace/docs/plans/STAGE2_KIMI_STREAMING_DISTILL_PLAN.md",
+      "id": 2,
+      "inheritance": "Kimi K3 strategic -> Proto",
+      "name": "FINAL_FRANKENSTEIN",
+      "state": "PLANNED"
+    },
+    {
+      "additive_law": "Does not erase coding/agentic/tool-use/general reasoning",
+      "id": 3,
+      "inheritance": "Odyssey + formal tools + verifier + Q-gauntlet + sandbox qualification on Final",
+      "name": "RAMANUJAN",
+      "state": "PLANNED"
+    }
+  ],
+  "status": "PLAN_SEALED_PROGRAMME_AUTHORITY_DOCS_ONLY"
+}
