@@ -1,0 +1,105 @@
+{
+  "built_at": "2026-08-05T19:19:43.634344Z",
+  "capture_contract": {
+    "fail_closed": [
+      "no API credential",
+      "HTTP error",
+      "empty choices",
+      "fabricating logprobs"
+    ],
+    "max_tokens_default": 64,
+    "never_supplies": [
+      "hidden states",
+      "router logits",
+      "IndexShare selections",
+      "MoE expert activations"
+    ],
+    "supplies": [
+      "assistant text",
+      "token trajectory when returned",
+      "top-k logprobs when returned"
+    ],
+    "temperature_default": 0.0,
+    "top_logprobs_default": 20
+  },
+  "credential_error": "no hosted GLM-5.2 API credential found; set one of ZHIPU_API_KEY, BIGMODEL_API_KEY, ZAI_API_KEY, OPENROUTER_API_KEY, TOGETHER_API_KEY, FIREWORKS_API_KEY (or pass --dry-run)",
+  "intended_open_weight_identity": {
+    "byte_equality_with_hosted_not_claimed": true,
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+  },
+  "prompt_count": 8,
+  "prompt_membership_sha256": "28c137f2ca0547d2465629661a25334a91a9f95c1fae9809c4e2d3a2cab41dfb",
+  "prompts": [
+    {
+      "domain": "mathematics",
+      "partition": "builtin_calibration",
+      "prompt_chars": 39,
+      "prompt_sha256": "a25903fbb523aa31973a7db3f0eac7c71750182ed00711cfb0c6d0691cff24aa",
+      "record_id": "builtin.math.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "mathematics",
+      "partition": "builtin_calibration",
+      "prompt_chars": 39,
+      "prompt_sha256": "ceac1aeceb607b52c3402e1cd57b527b03f5604adc9e81f9f9192fd6f5117af6",
+      "record_id": "builtin.math.02",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "coding",
+      "partition": "builtin_calibration",
+      "prompt_chars": 54,
+      "prompt_sha256": "2f68f1bf3a0af757b071b635420d3c54bd884f7971f4dcfea35a9d9e1287c5a7",
+      "record_id": "builtin.code.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "reasoning",
+      "partition": "builtin_calibration",
+      "prompt_chars": 85,
+      "prompt_sha256": "dbe53a387bab2cfc8b0c37797b48a49589a5d9e9bce99dbda6f273c0b5b4f827",
+      "record_id": "builtin.reason.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "factual",
+      "partition": "builtin_calibration",
+      "prompt_chars": 36,
+      "prompt_sha256": "4084beddca5b9171f97fd9a74e2fc709f69656e1acadaf1e29759aa569325497",
+      "record_id": "builtin.fact.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "general prose",
+      "partition": "builtin_calibration",
+      "prompt_chars": 34,
+      "prompt_sha256": "bc4760407e47d62ac1bbbaa83659d51e137db9f937370f45bdcbd55aebda2c81",
+      "record_id": "builtin.prose.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "science",
+      "partition": "builtin_calibration",
+      "prompt_chars": 37,
+      "prompt_sha256": "44ab25eebe1926f14c729d3b609bd918ef28c13f0d1d324b624aaa59de6349a1",
+      "record_id": "builtin.science.01",
+      "source": "builtin_fail_open_set"
+    },
+    {
+      "domain": "tool formatting",
+      "partition": "builtin_calibration",
+      "prompt_chars": 38,
+      "prompt_sha256": "2d825eaa807e0bbefc680da51e4fcf9e5853d26f79df36da91d8f80583b45c2a",
+      "record_id": "builtin.tool.01",
+      "source": "builtin_fail_open_set"
+    }
+  ],
+  "provider": null,
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.behavior_capture_preflight.v1",
+  "seal_sha256": "b15dc59e589efefdb82d6e0aade3788cf1169274da326ceaa252ed33783fa98b",
+  "status": "DRY_RUN_ONLY_NO_CREDENTIAL"
+}
