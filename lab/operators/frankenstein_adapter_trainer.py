@@ -1070,7 +1070,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_syn.add_argument("--n-train", type=int, default=128)
     p_syn.add_argument("--n-eval", type=int, default=32)
     p_syn.add_argument("--seed", type=int, default=0)
-    p_syn.add_argument("--device", type=str, default=None)
+    p_syn.add_argument("--device", type=str, default="cpu")
     p_syn.add_argument("--out", type=Path, default=None)
 
     p_ag = sub.add_parser("train-ag", help="Train B..G variants + reject-rule wire")
@@ -1079,7 +1079,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_ag.add_argument("--n-train", type=int, default=96)
     p_ag.add_argument("--n-eval", type=int, default=24)
     p_ag.add_argument("--seed", type=int, default=1)
-    p_ag.add_argument("--device", type=str, default=None)
+    p_ag.add_argument("--device", type=str, default="cpu")
     p_ag.add_argument("--out", type=Path, default=None)
 
     p_real = sub.add_parser(
