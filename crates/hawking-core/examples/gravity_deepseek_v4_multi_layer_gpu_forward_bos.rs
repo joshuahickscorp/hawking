@@ -1,21 +1,23 @@
 //! Real multi-layer Metal forward over contiguous BOS layers of DeepSeek-V4-Flash.
 //!
-//! Default layers: 0..=2 (the full hash-gate span). Layer 0 uses the P3A/P4A
+//! Default layers: 0..=42 (full base body). Layer 0 uses the P3A/P4A
 //! embed→attention path; layers 1..N use the parameterized BOS window-KV
-//! attention executor. Every layer runs P7 mHC-FFN + P6 hash-gate MoE.
+//! attention executor. Every layer runs P7 mHC-FFN + P6 MoE.
 //!
 //! Layer schedule honesty:
 //! - layers 0,1: ratio-0 (full growing-KV BOS specialization, valid_kv=1)
-//! - layer 2: ratio-4 with indexer; at BOS/pos0 compressed topk is empty
+//! - even layers ≥2: ratio-4 with indexer; at BOS/pos0 compressed topk is empty
 //!   (`end_pos // 4 == 0`), so window-only sparse is the exact source path
-//! - layers ≥3: learned-bias gate — refused by P6 until the two-phase learned
-//!   MoE path is composed; stop with an honest blocker rather than faking
+//! - odd layers ≥3: ratio-128; same BOS empty-compressed specialization
+//! - layers 0..2: hash tid2eid MoE (pre-resident experts)
+//! - layers ≥3: learned-bias two-phase MoE (route on device → load six experts
+//!   → expert body; host reads selected IDs only for residency)
 //!
 //! Usage:
 //!   cargo run -p hawking-core --example gravity_deepseek_v4_multi_layer_gpu_forward_bos -- \
 //!     --artifact <full-43-layer-stream.gravity> \
 //!     --out <receipt.json> \
-//!     [--max-layer 2]
+//!     [--max-layer 42]
 
 #[cfg(not(target_os = "macos"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -47,9 +49,14 @@ mod macos {
         DeepSeekV4LayerPreparationScheduler, DeepSeekV4LayerPreparationStage,
     };
     use hawking_core::gravity_deepseek_v4_p3a_stage_sink::DeepSeekV4P3aMetalStageSink;
+    use hawking_core::gravity_deepseek_v4_final_head::{
+        host_greedy_lm_head, host_merge_final_head_from_hc_bf16, read_hc_bf16_from_buffer,
+    };
+    use hawking_core::gravity_deepseek_v4_layer_source_anchors::DeepSeekV4LayerGateMode;
     use hawking_core::gravity_deepseek_v4_p6_device::{
         DeepSeekV4Layer0P6MetalExecutor, DSV4F_P6_DEVICE_COMMAND_BUFFERS,
-        DSV4F_P6_DEVICE_DISPATCHES,
+        DSV4F_P6_DEVICE_DISPATCHES, DSV4F_P6_LEARNED_DEVICE_COMMAND_BUFFERS,
+        DSV4F_P6_LEARNED_DEVICE_DISPATCHES,
     };
     use hawking_core::gravity_deepseek_v4_p7_composition::{
         DeepSeekV4P7AttentionDeviceState, DeepSeekV4P7FfnSourceContract,
@@ -74,8 +81,8 @@ mod macos {
     const RECEIPT_SCHEMA: &str = "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_bos.v1";
     const PARITY: &str = "NUMERIC_PARITY_V2_1_ONLY";
     const L0_BOS_ROUTE_IDS: [u16; 6] = [254, 222, 245, 200, 53, 35];
-    /// Default deepest layer is the last hash-gate layer (0..2).
-    const DEFAULT_MAX_LAYER: usize = 2;
+    /// Default deepest layer is the last base layer (0..42).
+    const DEFAULT_MAX_LAYER: usize = 42;
 
     type ProbeResult<T> = Result<T, Box<dyn Error>>;
 
@@ -229,9 +236,10 @@ mod macos {
             &mut accounting,
         )?;
 
-        // ---- Layers 1..=deepest via general BOS attention ----
+        // ---- Layers 1..=deepest via general BOS attention + P7/P6 ----
         let mut prev_child = child;
-        let mut deepest_attention_only: Option<usize> = None;
+        let mut learned_layers: Vec<usize> = Vec::new();
+        let mut hash_layers: Vec<usize> = vec![0];
         for layer in 1..=deepest {
             let plan = catalog.plan(layer)?;
             plan.require_bos_full_layer_device()?;
@@ -271,72 +279,71 @@ mod macos {
             );
 
             let attention = attn_out.p7_attention_state(metal)?;
+            match plan.gate_mode {
+                DeepSeekV4LayerGateMode::HashTokenIdToExpertIds => hash_layers.push(layer),
+                DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias => {
+                    learned_layers.push(layer)
+                }
+            }
             prev_child = run_p7_p6(
                 metal,
                 reader,
                 layer,
                 PREFIX_TOKEN_ID as u32,
-                None, // resolve from tid2eid for hash layers
+                if layer == 0 {
+                    Some(L0_BOS_ROUTE_IDS.map(u32::from))
+                } else {
+                    None
+                },
                 attention,
                 &mut accounting,
             )?;
-        }
-
-        // If the next layer admits BOS window attention but refuses MoE
-        // (learned-bias), still seal one attention step so ratio-128 BOS is
-        // proven with real dispatches before the honest MoE stop.
-        let probe_layer = deepest + 1;
-        if probe_layer < 43 {
-            let plan = catalog.plan(probe_layer)?;
-            if plan.require_bos_window_attention_device().is_ok()
-                && plan.require_moe_device().is_err()
-            {
-                let compress = expected_bos_compress_ratio(probe_layer);
-                let mut attn = DeepSeekV4BosLayerAttentionDeviceExecutor::prepare(
-                    metal,
-                    reader,
-                    probe_layer,
-                )?;
-                let input = DeepSeekV4BosLayerChildDeviceInput::from_p7_position0_child(
-                    metal,
-                    &prev_child,
-                )?;
-                let attn_out = attn.execute(metal, input)?;
-                attn_out.validate()?;
-                accounting.record(
-                    &format!("l{probe_layer}_attention_bos_window_kv_moe_blocked"),
-                    attn_out.actual_gpu_dispatches,
-                    attn_out.actual_command_buffers,
-                    attn_out.actual_cpu_visible_waits,
-                    json!({
-                        "layer": probe_layer,
-                        "compression_ratio": compress,
-                        "compression": plan.compression.as_str(),
-                        "gate_mode": plan.gate_mode.as_str(),
-                        "bos_window_only": true,
-                        "compressed_topk_empty_at_bos": compress > 0,
-                        "moe_status": "refused_learned_bias_two_phase_not_composed",
-                        "moe_refusal": plan.moe_refusal,
-                    }),
-                );
-                deepest_attention_only = Some(probe_layer);
-                if stop_reason.is_none() {
-                    stop_reason = Some(format!(
-                        "layer {probe_layer}: BOS window attention sealed; MoE refused: {}",
-                        plan.moe_refusal.unwrap_or("learned-bias gate")
-                    ));
-                }
-            }
         }
 
         if accounting.metal_dispatches == 0 {
             return Err("multi-layer GPU forward recorded zero Metal dispatches".into());
         }
 
+        let full_body = deepest == 42 && layers_run.len() == 43;
+        // Final head + greedy only after a complete 43-layer BOS body.
+        let mut greedy_token: Option<serde_json::Value> = None;
+        let mut greedy_token_id: Option<u32> = None;
+        if full_body {
+            let hc_bits = read_hc_bf16_from_buffer(&prev_child.child_hc_state_bf16)?;
+            let merge = host_merge_final_head_from_hc_bf16(reader, &hc_bits)?;
+            // Host-streamed lm_head (honest bootstrap; ~1 GB streamed once).
+            let greedy = host_greedy_lm_head(reader, &merge.merged_f32)?;
+            greedy_token_id = Some(greedy.token_id);
+            greedy_token = Some(json!({
+                "token_id": greedy.token_id,
+                "logit": greedy.logit,
+                "vocab_size": greedy.vocab_size,
+                "lm_head_on_device": greedy.lm_head_on_device,
+                "argmax_on_device": greedy.argmax_on_device,
+                "metal_dispatches": greedy.metal_dispatches,
+                "final_head_path": "host_f64_mhc_merge_rmsnorm_then_host_streamed_lm_head_greedy",
+                "hc_mix_weights": merge.mix_weights_f32,
+                "flat_rsqrt": merge.flat_rsqrt,
+            }));
+            accounting.record(
+                "final_mhc_head_norm_lm_head_greedy",
+                greedy.metal_dispatches,
+                greedy.command_buffers,
+                0,
+                greedy_token.clone().unwrap(),
+            );
+        }
+
         let wall_ms = wall.elapsed().as_secs_f64() * 1e3;
-        let status = format!(
-            "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L{deepest}"
-        );
+        let status = if full_body && greedy_token_id.is_some() {
+            "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L42_GREEDY_TOKEN".to_string()
+        } else if full_body {
+            "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L42".to_string()
+        } else {
+            format!("PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L{deepest}")
+        };
+        let has_ratio4 = layers_run.iter().any(|&l| expected_bos_compress_ratio(l) == 4);
+        let has_ratio128 = layers_run.iter().any(|&l| expected_bos_compress_ratio(l) == 128);
         let receipt = json!({
             "schema": RECEIPT_SCHEMA,
             "status": status,
@@ -351,7 +358,14 @@ mod macos {
                 "deepest_layer": deepest,
                 "token_id": PREFIX_TOKEN_ID,
                 "token_position": 0,
-                "gate_mode_span": "hash_tid2eid_layers_0_1_2",
+                "gate_mode_span": if learned_layers.is_empty() {
+                    "hash_tid2eid_only".to_string()
+                } else {
+                    format!(
+                        "hash_layers_{:?}_learned_layers_{:?}_span",
+                        hash_layers, learned_layers.first().zip(learned_layers.last())
+                    )
+                },
                 "sparse_attention_kernel": DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL,
                 "mhc_control_exp": "darwin_double_double_control_domain_general",
                 "requested_max_layer": args.max_layer,
@@ -363,6 +377,7 @@ mod macos {
                 "cpu_visible_waits": accounting.cpu_visible_waits,
                 "fallback": 0,
                 "host_intermediate_handoff_between_stages": false,
+                "host_route_id_readback_for_learned_residency": !learned_layers.is_empty(),
             },
             "stages": accounting.stages,
             "parity": {
@@ -372,26 +387,43 @@ mod macos {
             },
             "honesty": {
                 "full_metal_multi_layer_forward": true,
+                "full_43_layer_bos_body": full_body,
                 "serve_endpoint_flipped": false,
-                "greedy_token_produced": false,
+                "greedy_token_produced": greedy_token_id.is_some(),
+                "greedy_token": greedy_token,
                 "ratio_0_layers": [0, 1],
-                "ratio_4_bos_window_only": layers_run.contains(&2),
+                "ratio_4_bos_window_only": has_ratio4,
                 "ratio_4_full_compressed_graph": false,
-                "ratio_128_bos_window_attention_only": deepest_attention_only == Some(3),
+                "ratio_128_bos_window_only": has_ratio128,
                 "ratio_128_full_compressed_graph": false,
-                "ratio_128_status": if deepest_attention_only == Some(3) {
-                    "bos_window_attention_sealed_at_layer_3; full_layer_blocked_on_learned_bias_moe"
+                "ratio_128_status": if has_ratio128 {
+                    "bos_window_attention_and_learned_moe_composed"
                 } else {
                     "not_reached"
                 },
-                "learned_bias_gate_status": "route_kernel_sealed_separately; full_p6_two_phase_moe_not_composed",
-                "layer_schedule_note": "only base layers 0 and 1 are ratio-0; even layers >=2 are ratio-4; odd layers >=3 are ratio-128",
+                "learned_bias_gate_status": if learned_layers.is_empty() {
+                    "not_required_for_selected_span".to_string()
+                } else {
+                    format!(
+                        "two_phase_p6_composed_layers_{}_to_{}",
+                        learned_layers.first().unwrap(),
+                        learned_layers.last().unwrap()
+                    )
+                },
+                "layer_schedule_note": "only base layers 0 and 1 are ratio-0; even layers >=2 are ratio-4; odd layers >=3 are ratio-128; BOS compressed topk empty",
                 "deepest_full_layer": deepest,
-                "deepest_attention_only_layer": deepest_attention_only,
+                "hash_layers_run": hash_layers,
+                "learned_layers_run": learned_layers,
+                "final_head_note": if greedy_token_id.is_some() {
+                    "host_f64_mhc_head_merge_rmsnorm_plus_host_streamed_lm_head; full device lm_head gemv optional follow-on"
+                } else {
+                    "not_run_requires_full_43_layer_body"
+                },
             },
             "wall_time_ms": wall_ms,
             "final_child_layer": prev_child.layer,
             "final_child_retained": true,
+            "greedy_token_id": greedy_token_id,
         });
 
         if let Some(parent) = args.out.parent() {
@@ -410,6 +442,9 @@ mod macos {
             accounting.metal_dispatches, accounting.command_buffers, accounting.cpu_visible_waits
         );
         println!("deepest_layer: {deepest}");
+        if let Some(tid) = greedy_token_id {
+            println!("greedy_token_id: {tid}");
+        }
         println!("status: {status}");
         println!("parity: {PARITY}");
         println!("wall_time_ms: {wall_ms:.1}");
@@ -426,25 +461,53 @@ mod macos {
         accounting: &mut StageAccounting,
     ) -> ProbeResult<DeepSeekV4P7DeviceOutput> {
         let (source, ffn_norm, mhc_ffn) = stage_p7_controls(reader, layer, token_id, 0)?;
-        let route_ids_u32 = if let Some(routes) = pinned_routes {
-            routes
+        let catalog = DeepSeekV4LayerDeviceCatalog::admit(reader)?;
+        let plan = catalog.plan(layer)?;
+        let learned = plan.gate_mode == DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias;
+
+        // Hash: pre-size cache from known routes. Learned: minimal placeholder
+        // cache (experts load mid-execute after on-device route).
+        let mut cache = if learned {
+            // Non-zero capacity required by cache ctor; unused at prepare.
+            DeepSeekV4ExpertBundleCache::new(1, 0)?
         } else {
-            let tid2eid_name = format!("layers.{layer}.ffn.gate.tid2eid");
-            let meta = reader.tensor_metadata(&tid2eid_name)?;
-            let bytes = reader.read_verified_full(&tid2eid_name, meta.bytes as usize)?;
-            read_tid2eid_row_u16(&bytes, token_id as usize)?.map(u32::from)
+            let route_ids_u32 = if let Some(routes) = pinned_routes {
+                routes
+            } else {
+                let tid2eid_name = format!("layers.{layer}.ffn.gate.tid2eid");
+                let meta = reader.tensor_metadata(&tid2eid_name)?;
+                let bytes = reader.read_verified_full(&tid2eid_name, meta.bytes as usize)?;
+                read_tid2eid_row_u16(&bytes, token_id as usize)?.map(u32::from)
+            };
+            DeepSeekV4ExpertBundleCache::new(
+                required_hot_cache_bytes(reader, layer as u16, &route_ids_u32)?,
+                0,
+            )?
         };
-        let mut cache = DeepSeekV4ExpertBundleCache::new(
-            required_hot_cache_bytes(reader, layer as u16, &route_ids_u32)?,
-            0,
-        )?;
+
         let p6 = DeepSeekV4Layer0P6MetalExecutor::prepare_for_p7(metal, reader, &mut cache, &source)?;
-        if p6.source_bindings().selected_expert_ids_top_slot_order != route_ids_u32 {
+        if !learned {
+            let route_ids_u32 = if let Some(routes) = pinned_routes {
+                routes
+            } else {
+                let tid2eid_name = format!("layers.{layer}.ffn.gate.tid2eid");
+                let meta = reader.tensor_metadata(&tid2eid_name)?;
+                let bytes = reader.read_verified_full(&tid2eid_name, meta.bytes as usize)?;
+                read_tid2eid_row_u16(&bytes, token_id as usize)?.map(u32::from)
+            };
+            if p6.source_bindings().selected_expert_ids_top_slot_order != route_ids_u32 {
+                return Err(format!(
+                    "L{layer} P6 tid2eid plan differs from source BOS row"
+                )
+                .into());
+            }
+        } else if !p6.source_bindings().host_route_id_readback_for_residency {
             return Err(format!(
-                "L{layer} P6 tid2eid plan differs from source BOS row"
+                "L{layer} learned P6 must declare host route-id readback for residency"
             )
             .into());
         }
+
         let mut p7 = DeepSeekV4P7BoundedDeviceExecutor::prepare(
             metal,
             source.clone(),
@@ -456,8 +519,20 @@ mod macos {
         let _ = metal.drain_stats();
         let output = p7.execute_position0(attention)?;
         output.validate()?;
-        let moe_dispatches = DSV4F_P7_OWNED_DEVICE_DISPATCHES + DSV4F_P6_DEVICE_DISPATCHES;
-        let moe_cbs = DSV4F_P7_OWNED_COMMAND_BUFFERS + DSV4F_P6_DEVICE_COMMAND_BUFFERS;
+
+        // Read device route IDs for the receipt (diagnostic; not an activation handoff).
+        let route_ids_u32 = read_route_ids_from_output(&output)?;
+
+        let (p6_dispatches, p6_cbs) = if learned {
+            (
+                DSV4F_P6_LEARNED_DEVICE_DISPATCHES,
+                DSV4F_P6_LEARNED_DEVICE_COMMAND_BUFFERS,
+            )
+        } else {
+            (DSV4F_P6_DEVICE_DISPATCHES, DSV4F_P6_DEVICE_COMMAND_BUFFERS)
+        };
+        let moe_dispatches = DSV4F_P7_OWNED_DEVICE_DISPATCHES + p6_dispatches;
+        let moe_cbs = DSV4F_P7_OWNED_COMMAND_BUFFERS + p6_cbs;
         accounting.record(
             &format!("l{layer}_p7_mhc_ffn_p6_moe_mhc_post"),
             moe_dispatches,
@@ -467,13 +542,29 @@ mod macos {
                 "layer": layer,
                 "token_id": token_id,
                 "token_position": 0,
+                "gate_mode": plan.gate_mode.as_str(),
                 "route_ids_top_slot": route_ids_u32,
-                "p6_dispatches": DSV4F_P6_DEVICE_DISPATCHES,
+                "p6_dispatches": p6_dispatches,
                 "p7_owned_dispatches": DSV4F_P7_OWNED_DEVICE_DISPATCHES,
                 "host_activation_handoff": false,
+                "host_route_id_readback_for_residency": learned,
             }),
         );
         Ok(output)
+    }
+
+    fn read_route_ids_from_output(output: &DeepSeekV4P7DeviceOutput) -> ProbeResult<[u32; 6]> {
+        let buf = &output.p6.route_ids_u32;
+        let ptr = buf.contents() as *const u8;
+        if ptr.is_null() {
+            return Err("route_ids buffer contents null".into());
+        }
+        let bytes = unsafe { std::slice::from_raw_parts(ptr, 6 * 4) };
+        let mut out = [0u32; 6];
+        for (i, slot) in out.iter_mut().enumerate() {
+            *slot = u32::from_le_bytes(bytes[i * 4..i * 4 + 4].try_into()?);
+        }
+        Ok(out)
     }
 
     fn stage_p7_controls(

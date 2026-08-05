@@ -207,8 +207,8 @@ fn main() -> ExampleResult<()> {
             "full_metal_multi_layer_forward": false,
             "serve_endpoint_flipped": false,
             "parity_classification": "staging_and_plan_only_no_numeric_parity_claim",
-            "ratio_4_128_status": "honestly_refused_when_selected",
-            "learned_bias_gate_status": "honestly_refused_until_p6_kernel_admitted",
+            "ratio_4_128_status": "full_growing_kv_refused_non_bos; bos_window_admitted",
+            "learned_bias_gate_status": "two_phase_p6_admitted_for_bos_full_layer",
         },
     });
 

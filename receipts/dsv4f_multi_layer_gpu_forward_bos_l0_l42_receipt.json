@@ -1,0 +1,1906 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "final_child_layer": 42,
+  "final_child_retained": true,
+  "honesty": {
+    "deepest_full_layer": 42,
+    "full_43_layer_bos_body": true,
+    "full_metal_multi_layer_forward": true,
+    "greedy_token_produced": false,
+    "hash_layers_run": [
+      0,
+      1,
+      2
+    ],
+    "layer_schedule_note": "only base layers 0 and 1 are ratio-0; even layers >=2 are ratio-4; odd layers >=3 are ratio-128; BOS compressed topk empty",
+    "learned_bias_gate_status": "two_phase_p6_composed_layers_3_to_42",
+    "learned_layers_run": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "ratio_0_layers": [
+      0,
+      1
+    ],
+    "ratio_128_bos_window_only": true,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_128_status": "bos_window_attention_and_learned_moe_composed",
+    "ratio_4_bos_window_only": true,
+    "ratio_4_full_compressed_graph": false,
+    "serve_endpoint_flipped": false
+  },
+  "metal": {
+    "command_buffers": 265,
+    "cpu_visible_waits": 265,
+    "fallback": 0,
+    "host_intermediate_handoff_between_stages": false,
+    "host_route_id_readback_for_learned_residency": true,
+    "metal_dispatches": 3654
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false,
+    "reason": "composed multi-layer path inherits NumericParityV21Only until a sealed exact-storage e2e receipt is earned on the full residual chain"
+  },
+  "schema": "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_bos.v1",
+  "scope": {
+    "deepest_layer": 42,
+    "gate_mode_span": "hash_layers_[0, 1, 2]_learned_layers_Some((3, 42))_span",
+    "layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "mhc_control_exp": "darwin_double_double_control_domain_general",
+    "requested_max_layer": 42,
+    "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "stop_reason": null,
+    "token_id": 0,
+    "token_position": 0
+  },
+  "stages": [
+    {
+      "command_buffers": 11,
+      "cpu_visible_waits": 11,
+      "metal_dispatches": 21,
+      "notes": {
+        "compression": "ratio_0",
+        "layer": 0,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l0_attention_p3a_p4a_growing_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": false,
+        "layer": 0,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          254,
+          222,
+          245,
+          200,
+          53,
+          35
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l0_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": false,
+        "compression": "sliding_window_only",
+        "compression_ratio": 0,
+        "declared_dispatches": 22,
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "layer": 1,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l1_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": false,
+        "layer": 1,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          163,
+          137,
+          158,
+          97,
+          184,
+          8
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l1_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "layer": 2,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l2_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": false,
+        "layer": 2,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          108,
+          115,
+          43,
+          53,
+          132,
+          143
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l2_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 3,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l3_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 3,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          124,
+          143,
+          175,
+          153,
+          79,
+          213
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l3_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 4,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l4_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 4,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          64,
+          224,
+          182,
+          110,
+          50,
+          178
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l4_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 5,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l5_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 5,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          35,
+          235,
+          1,
+          129,
+          92,
+          74
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l5_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 6,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l6_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 6,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          56,
+          13,
+          161,
+          14,
+          61,
+          79
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l6_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 7,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l7_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 7,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          8,
+          56,
+          26,
+          188,
+          142,
+          169
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l7_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 8,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l8_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 8,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          20,
+          116,
+          219,
+          71,
+          101,
+          131
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l8_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 9,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l9_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 9,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          72,
+          51,
+          65,
+          209,
+          46,
+          147
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l9_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 10,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l10_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 10,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          8,
+          14,
+          33,
+          63,
+          178,
+          93
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l10_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 11,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l11_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 11,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          18,
+          146,
+          231,
+          81,
+          107,
+          216
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l11_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 12,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l12_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 12,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          80,
+          58,
+          169,
+          43,
+          210,
+          47
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l12_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 13,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l13_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 13,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          129,
+          130,
+          82,
+          234,
+          48,
+          205
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l13_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 14,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l14_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 14,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          164,
+          33,
+          147,
+          225,
+          21,
+          102
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l14_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 15,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l15_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 15,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          90,
+          242,
+          145,
+          186,
+          106,
+          22
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l15_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 16,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l16_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 16,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          250,
+          165,
+          76,
+          253,
+          158,
+          172
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l16_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 17,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l17_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 17,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          181,
+          22,
+          113,
+          182,
+          68,
+          90
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l17_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 18,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l18_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 18,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          83,
+          186,
+          152,
+          74,
+          193,
+          251
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l18_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 19,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l19_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 19,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          38,
+          176,
+          116,
+          158,
+          249,
+          4
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l19_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 20,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l20_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 20,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          86,
+          147,
+          244,
+          22,
+          210,
+          2
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l20_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 21,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l21_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 21,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          177,
+          222,
+          37,
+          167,
+          97,
+          185
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l21_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 22,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l22_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 22,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          205,
+          38,
+          178,
+          140,
+          203,
+          109
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l22_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 23,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l23_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 23,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          139,
+          26,
+          247,
+          188,
+          242,
+          248
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l23_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 24,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l24_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 24,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          114,
+          81,
+          58,
+          198,
+          85,
+          159
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l24_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 25,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l25_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 25,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          60,
+          120,
+          64,
+          244,
+          184,
+          243
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l25_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 26,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l26_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 26,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          73,
+          7,
+          224,
+          56,
+          99,
+          248
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l26_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 27,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l27_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 27,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          233,
+          128,
+          162,
+          101,
+          86,
+          96
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l27_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 28,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l28_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 28,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          32,
+          230,
+          225,
+          106,
+          233,
+          86
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l28_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 29,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l29_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 29,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          126,
+          45,
+          47,
+          170,
+          139,
+          61
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l29_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 30,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l30_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 30,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          176,
+          65,
+          70,
+          4,
+          183,
+          63
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l30_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 31,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l31_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 31,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          182,
+          87,
+          148,
+          179,
+          111,
+          180
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l31_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 32,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l32_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 32,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          216,
+          237,
+          148,
+          152,
+          50,
+          6
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l32_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 33,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l33_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 33,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          65,
+          189,
+          60,
+          170,
+          62,
+          42
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l33_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 34,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l34_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 34,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          33,
+          89,
+          202,
+          23,
+          233,
+          79
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l34_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 35,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l35_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 35,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          81,
+          150,
+          215,
+          201,
+          47,
+          243
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l35_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 36,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l36_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 36,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          104,
+          77,
+          111,
+          197,
+          11,
+          142
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l36_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 37,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l37_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 37,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          93,
+          237,
+          227,
+          128,
+          45,
+          142
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l37_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 38,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l38_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 38,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          152,
+          60,
+          188,
+          20,
+          115,
+          232
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l38_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 39,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l39_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 39,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          228,
+          64,
+          217,
+          113,
+          141,
+          93
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l39_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 40,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l40_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 40,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          29,
+          117,
+          9,
+          222,
+          184,
+          7
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l40_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 41,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l41_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 41,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          154,
+          112,
+          164,
+          142,
+          85,
+          109
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l41_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 42,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l42_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 5,
+      "cpu_visible_waits": 5,
+      "metal_dispatches": 63,
+      "notes": {
+        "gate_mode": "learned_scores_with_selection_bias",
+        "host_activation_handoff": false,
+        "host_route_id_readback_for_residency": true,
+        "layer": 42,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          26,
+          23,
+          123,
+          28,
+          154,
+          152
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l42_p7_mhc_ffn_p6_moe_mhc_post"
+    }
+  ],
+  "status": "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L42",
+  "wall_time_ms": 42134.358791
+}

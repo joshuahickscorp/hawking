@@ -90,6 +90,9 @@ pub mod gravity_deepseek_v4_p7_composition;
 /// has no decoder-runtime, endpoint, or TPS claim.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_p7_device;
+/// Final mHC-head merge, RMSNorm, and greedy LM-head (host authority + optional
+/// device gemv). Not an Engine, serve path, or exact-storage parity claim.
+pub mod gravity_deepseek_v4_final_head;
 /// Immutable source-hash-bound ABI, storage, kernel-slot, residency, and
 /// bridge-point sidecar for a future DeepSeek-V4 runtime. It cannot alter the
 /// sealed stream, register an Engine, expose HCLI, or claim TPS.
