@@ -49,6 +49,11 @@ from lab.operators.frankenstein_fusion_op import (
     TRANSPLANT_POINT_NAMES,
     layer_map,
 )
+from lab.operators.frankenstein_gates import (
+    LINEAR_INIT_HONEST_STATUS,
+    LINEAR_SUBSPACE_INITIALIZATION,
+    linear_init_claim_boundary,
+)
 from lab.receipts import seal
 
 
@@ -885,11 +890,15 @@ def build_transfer_module(
     module = {
         "schema": TRANSFER_MODULE_SCHEMA,
         "status": "TRAINING_FREE_MODULE_SEALED_UNVALIDATED",
+        # Owner steer: hardened linear mapping = init, not inheritance.
+        "role": LINEAR_SUBSPACE_INITIALIZATION,
+        "inheritance_status": "NOT_INHERITANCE_LINEAR_INIT_ONLY",
         "kind": "reversible_residual_steering_module",
         "bridge": "GLM_MATH_BRIDGE",
         "direct_weight_transplant": False,
         "trained": False,
         "training_method": "none_closed_form_linear_algebra_only",
+        "proto_frankenstein_complete": False,
         "forbidden_path_excluded": {
             "loss_fitted_adapter": True,
             "gradient_descent": True,
@@ -979,6 +988,8 @@ def build_transfer_module(
         "capability_status": "UNVALIDATED_WEIGHT_ONLY_DERIVED",
         "capability_claim": False,
         "math_bench_status": "NOT_RUN",
+        "honest_status": LINEAR_INIT_HONEST_STATUS,
+        "claim_boundary_linear_init": linear_init_claim_boundary(),
         "forward_gate": FORWARD_GATE,
         "validation_gate": {
             "name": FORWARD_GATE,
@@ -986,12 +997,14 @@ def build_transfer_module(
                 "math_bench_measurement",
                 "paired_activation_procrustes_refinement",
                 "steering_scale_effect_measurement",
+                "PROTO_FRANKENSTEIN_COMPLETE",
             ],
             "does_not_block": [
                 "weight_subspace_extraction",
                 "closed_form_projection",
                 "module_seal",
                 "structural_apply_artifact",
+                "LINEAR_SUBSPACE_INITIALIZATION",
             ],
         },
         "arrays": {
@@ -1497,6 +1510,9 @@ def run_weight_only_transfer(
         {
             "schema": SUBSPACE_RECEIPT_SCHEMA,
             "status": "GLM_MATH_SUBSPACE_EXTRACTED_WEIGHT_ONLY",
+            "role": LINEAR_SUBSPACE_INITIALIZATION,
+            "inheritance_status": "NOT_INHERITANCE_LINEAR_INIT_ONLY",
+            "proto_frankenstein_complete": False,
             "recorded_at": _utc_now(),
             "trained": False,
             "donor": extraction["donor"],
@@ -1527,7 +1543,12 @@ def run_weight_only_transfer(
     run_receipt = seal(
         {
             "schema": RUN_RECEIPT_SCHEMA,
-            "status": "TRAINING_FREE_WEIGHT_ONLY_COMPLETE_UNVALIDATED",
+            # Sealed as LINEAR_SUBSPACE_INITIALIZATION — never PROTO complete.
+            "status": LINEAR_SUBSPACE_INITIALIZATION,
+            "role": LINEAR_SUBSPACE_INITIALIZATION,
+            "legacy_status_alias": "TRAINING_FREE_WEIGHT_ONLY_COMPLETE_UNVALIDATED",
+            "inheritance_status": "NOT_INHERITANCE_LINEAR_INIT_ONLY",
+            "proto_frankenstein_complete": False,
             "recorded_at": _utc_now(),
             "trained": False,
             "training_path_guard": guard,
@@ -1544,6 +1565,7 @@ def run_weight_only_transfer(
                 "module_sha256": sealed["module_sha256"],
                 "module_bytes": sealed["module_bytes"],
                 "capability_status": sealed["capability_status"],
+                "role": LINEAR_SUBSPACE_INITIALIZATION,
             },
             "apply": {
                 "path": applied["apply_path"],
@@ -1556,6 +1578,7 @@ def run_weight_only_transfer(
                 "bytes_evicted_working_set"
             ),
             "claim_boundary": {
+                **linear_init_claim_boundary(),
                 "math_capability_validated": False,
                 "trained_adapter": False,
                 "direct_weight_transplant": False,
@@ -1564,10 +1587,7 @@ def run_weight_only_transfer(
                 "deepseek_body_modified": False,
             },
             "forward_gate": FORWARD_GATE,
-            "honest_status": (
-                "Subspace extracted, closed-form projection sealed, structural apply "
-                "recorded.  Effect on math-bench is UNVALIDATED until DeepSeek forward."
-            ),
+            "honest_status": LINEAR_INIT_HONEST_STATUS,
         }
     )
     run_path = evidence / "FRANKENSTEIN_TRAINING_FREE_RUN.json"

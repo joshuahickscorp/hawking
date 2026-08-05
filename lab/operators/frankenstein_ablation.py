@@ -733,6 +733,214 @@ def write_report(path: Path | str, report: Mapping[str, Any]) -> str:
     return _atomic_write_json(out, report)
 
 
+# ---------------------------------------------------------------------------
+# Functional-transfer A–G ablation harness (owner steer §9)
+# ---------------------------------------------------------------------------
+
+# Extended arms for the trained functional-transfer program.
+# Stage-1 still owns only A vs B on shard fixtures; C–G need training/evidence.
+ARM_FT_A = "A_BASE_DSV4F"
+ARM_FT_B = "B_LINEAR_SUBSPACE_INIT"
+ARM_FT_C = "C_BEHAVIOR_DISTILL"
+ARM_FT_D = "D_NONLINEAR_BRIDGES"
+ARM_FT_E = "E_ROUTER_METHOD_ADAPTERS"
+ARM_FT_F = "F_EXPERT_ITERATION"
+ARM_FT_G = "G_COMPLETE_PROTO_FRANKENSTEIN"
+
+FUNCTIONAL_TRANSFER_ARMS: tuple[tuple[str, str], ...] = (
+    (ARM_FT_A, "Base DSV4F only; no donor inheritance"),
+    (ARM_FT_B, "Base + LINEAR_SUBSPACE_INITIALIZATION (not inheritance)"),
+    (ARM_FT_C, "Behavior distillation objectives (gated: training loop)"),
+    (ARM_FT_D, "Nonlinear reversible bridges (gated: training loop)"),
+    (ARM_FT_E, "Router/method adapters (gated: training loop; no GLM router copy)"),
+    (ARM_FT_F, "Verified expert iteration (gated: verifier + training)"),
+    (ARM_FT_G, "Complete Proto-Frankenstein = full functional transfer stack"),
+)
+
+AG_ABLATION_SCHEMA = "hawking.frankenstein.functional_transfer_ag_ablation.v1"
+
+
+def functional_transfer_arm_catalog() -> dict[str, Any]:
+    return {
+        "schema": "hawking.frankenstein.functional_transfer_arm_catalog.v1",
+        "arms": [
+            {"id": aid, "description": desc, "index": i}
+            for i, (aid, desc) in enumerate(FUNCTIONAL_TRANSFER_ARMS)
+        ],
+        "reject_rule": (
+            "REJECT any arm that regresses secondary capabilities beyond tolerance, "
+            "or that improves imitation but fails proof/computation/repair/transfer/"
+            "hidden eval. Math gain cannot override secondary REJECT."
+        ),
+        "linear_init_is_not_proto_complete": True,
+        "g_requires_all_prior_plus_gates": True,
+    }
+
+
+def run_ag_ablation(
+    *,
+    arm_scores: Mapping[str, Mapping[str, Any]] | None = None,
+    secondary_tolerance: float = DEFAULT_SECONDARY_TOLERANCE,
+    base_arm: str = ARM_FT_A,
+) -> dict[str, Any]:
+    """A–G ablation harness.
+
+    Without sealed arm_scores, returns a FRAMEWORK report with PENDING arms
+    (never fabricates scores).  With scores, applies secondary reject rule
+    pairwise against BASE for each arm.
+    """
+
+    catalog = functional_transfer_arm_catalog()
+    policy = sealed_gate_policy(secondary_tolerance=secondary_tolerance)
+    arm_rows: list[dict[str, Any]] = []
+
+    if arm_scores is None:
+        for aid, desc in FUNCTIONAL_TRANSFER_ARMS:
+            arm_rows.append(
+                {
+                    "arm": aid,
+                    "description": desc,
+                    "status": "PENDING",
+                    "verdict": None,
+                    "reason": (
+                        "no sealed scores; arm not evaluated "
+                        "(REQUIRES_BENCHMARK_CORPUS / training / forward as applicable)"
+                    ),
+                    "fabricated": False,
+                }
+            )
+        document = {
+            "schema": AG_ABLATION_SCHEMA,
+            "recorded_at": _utc_now(),
+            "status": "FRAMEWORK_PENDING",
+            "verdict": "PENDING",
+            "arms": arm_rows,
+            "catalog": catalog,
+            "gate_policy": policy,
+            "reject_rule_fired": False,
+            "fabricated_scores": False,
+            "note": (
+                "A–G harness is real code; live evaluation is pending corpus + "
+                "trained modules.  B is LINEAR_SUBSPACE_INITIALIZATION, not PROTO complete."
+            ),
+            "claim_boundary": {
+                **dict(CLAIM_BOUNDARY),
+                "functional_transfer_ag": True,
+                "proto_complete_from_linear": False,
+            },
+        }
+        return seal(document)
+
+    if base_arm not in arm_scores:
+        raise AblationError(f"arm_scores must include base arm {base_arm!r}")
+    base = arm_scores[base_arm]
+    base_math = _require_score_map(
+        base.get("math") or {}, MATH_DOMAINS, label=f"{base_arm}.math"
+    )
+    base_sec = _require_score_map(
+        base.get("secondary") or {},
+        SECONDARY_CAPABILITIES,
+        label=f"{base_arm}.secondary",
+    )
+
+    any_reject = False
+    for aid, desc in FUNCTIONAL_TRANSFER_ARMS:
+        if aid not in arm_scores:
+            arm_rows.append(
+                {
+                    "arm": aid,
+                    "description": desc,
+                    "status": "PENDING",
+                    "verdict": None,
+                    "reason": "scores not provided for this arm",
+                    "fabricated": False,
+                }
+            )
+            continue
+        if aid == base_arm:
+            arm_rows.append(
+                {
+                    "arm": aid,
+                    "description": desc,
+                    "status": "BASE",
+                    "verdict": "BASE",
+                    "math": base_math,
+                    "secondary": base_sec,
+                }
+            )
+            continue
+        scores = arm_scores[aid]
+        # Optional reject: imitation without proof
+        if scores.get("imitation_only_without_proof") is True:
+            any_reject = True
+            arm_rows.append(
+                {
+                    "arm": aid,
+                    "description": desc,
+                    "status": "EVALUATED",
+                    "verdict": "REJECT",
+                    "reason": (
+                        "improves imitation but fails proof/computation/repair/"
+                        "transfer/hidden eval"
+                    ),
+                    "reject_rule_fired": True,
+                }
+            )
+            continue
+        report = run_avb_ablation(
+            base_math=base_math,
+            base_secondary=base_sec,
+            proto_math=scores.get("math") or {},
+            proto_secondary=scores.get("secondary") or {},
+            bench_scope=str(scores.get("bench_scope") or "FIXTURE"),
+            fixture_id=f"ag-{aid}",
+            transfer_module_id=aid,
+            secondary_tolerance=secondary_tolerance,
+        )
+        if report["verdict"] == "REJECT":
+            any_reject = True
+        arm_rows.append(
+            {
+                "arm": aid,
+                "description": desc,
+                "status": "EVALUATED",
+                "verdict": report["verdict"],
+                "reject_rule_fired": report["reject_rule_fired"],
+                "math_mean_gain": (report.get("math") or {}).get("mean_gain"),
+                "ablation_seal_sha256": report.get("seal_sha256"),
+            }
+        )
+
+    evaluated = [r for r in arm_rows if r.get("status") == "EVALUATED"]
+    if not evaluated:
+        overall = "PENDING"
+    elif any_reject:
+        overall = "REJECT"
+    elif any(r.get("status") == "PENDING" for r in arm_rows):
+        overall = "PARTIAL"
+    else:
+        overall = "ACCEPT"
+
+    document = {
+        "schema": AG_ABLATION_SCHEMA,
+        "recorded_at": _utc_now(),
+        "status": "EVALUATED" if evaluated else "FRAMEWORK_PENDING",
+        "verdict": overall,
+        "arms": arm_rows,
+        "catalog": catalog,
+        "gate_policy": policy,
+        "reject_rule_fired": any_reject,
+        "fabricated_scores": False,
+        "base_arm": base_arm,
+        "claim_boundary": {
+            **dict(CLAIM_BOUNDARY),
+            "functional_transfer_ag": True,
+            "proto_complete_from_linear": False,
+        },
+    }
+    return seal(document)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
