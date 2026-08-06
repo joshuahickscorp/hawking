@@ -1057,6 +1057,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-comms"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hawking-context"
 version = "0.2.2"
 dependencies = [
@@ -1170,6 +1180,16 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "toml",
+]
+
+[[package]]
+name = "hawking-perception"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
