@@ -1,0 +1,1319 @@
+{
+  "fabricated": false,
+  "frozen_at": "2026-08-06T11:16:15.672875Z",
+  "level": "L1",
+  "max_sequence": 64,
+  "membership": {
+    "assignments": {
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add": "train",
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_nsmul_add": "hidden_test",
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_sub_const": "train",
+      "pfv0:d1:Mathlib.Algebra.AffineMonoid.Irreducible.Submonoid.FG.finite_irreducible_mem_submonoidClosure": "hidden_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Defs._root_.RingHom.smulOneHom_eq_algebraMap": "public_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Defs.coe_linearMap": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.arrowCongr_refl": "hidden_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.coe_ringEquiv": "calibration",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.mul_apply": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.toAlgHom_toLinearMap": "hidden_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Field.coe_div": "public_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_id": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.map_smul_of_tower": "hidden_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.coe_comp": "calibration",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.coe_toNonUnitalSubring": "public_test",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.toSubmodule_injective": "calibration",
+      "pfv0:d2:Mathlib.Algebra.AffineMonoid.Irreducible.Submonoid.closure_irreducible:step11": "calibration",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast:step1": "hidden_test",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul':step0": "train",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1": "train",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_iff_forall_one_tmul_eq:step3": "public_test",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2": "train",
+      "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.map_ofNat": "train",
+      "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.map_sub_const": "public_test",
+      "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.rel_map_of_Icc": "hidden_test",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff": "calibration",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast": "hidden_test",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_eq_zero_iff": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.Algebra.subsingleton": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Epi.tmul_comm": "public_test",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.apply_symm_apply": "calibration",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply": "train",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_const:flip_eq_goal": "hidden_test",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_nat_add:flip_eq_goal": "public_test",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal": "train",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_zsmul:flip_eq_goal": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':drop_last_tactic": "calibration",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.algebraMap_ofSubring:drop_last_tactic": "hidden_test",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.algebra_compatible_smul:wrong_rw_lemma": "public_test",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:rfl_to_absurd": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.mul_sub_algebraMap_pow_commutes:drop_last_tactic": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Bilinear._root_.NonUnitalAlgHom.coe_lmul_eq_mul:flip_eq_goal": "calibration",
+      "pfv0:d6:enum:13:61f74e6b32": "calibration",
+      "pfv0:d6:enum:22:6158dc9739": "public_test",
+      "pfv0:d6:enum:33:9e03d650eb": "calibration",
+      "pfv0:d6:enum:43:6c39613064": "train",
+      "pfv0:d6:enum:49:2dae20f7d8": "train",
+      "pfv0:d6:enum:75:ea6555e66b": "public_test",
+      "pfv0:d6:enum:77:b7a0b9f465": "calibration",
+      "pfv0:d6:enum:83:9578a4c57d": "train",
+      "pfv0:d6:mathlib_ce:CharPZeroNeCharZero": "train",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable": "train",
+      "pfv0:d7:checkpoint:extra11": "hidden_test",
+      "pfv0:d7:checkpoint:extra13": "train",
+      "pfv0:d7:checkpoint:extra16": "train",
+      "pfv0:d7:checkpoint:extra2": "retention",
+      "pfv0:d7:checkpoint:extra5": "retention",
+      "pfv0:d7:checkpoint:extra7": "calibration",
+      "pfv0:d7:checkpoint:extra8": "retention",
+      "pfv0:d7:checkpoint:extra9": "retention",
+      "pfv0:d7:repair:add_comm_toy": "retention",
+      "pfv0:d7:repair:dead_end_then_ce": "retention",
+      "pfv0:d7:retrieve:dead_end_then_ce": "train",
+      "pfv0:d7:retrieve:extra10": "train",
+      "pfv0:d7:retrieve:extra2": "hidden_test",
+      "pfv0:d7:retrieve:extra8": "retention",
+      "pfv0:d7:search:dead_end_then_ce:4174f1f1:norm_num": "retention",
+      "pfv0:d7:search:extra0:018694eb:295e": "retention",
+      "pfv0:d7:search:extra10:5e686393:6bac": "public_test",
+      "pfv0:d7:search:extra16:8267037a:007a": "train",
+      "pfv0:d7:search:extra18:21b93851:9128": "train",
+      "pfv0:d7:search:extra19:742d6ed5:7e08": "train",
+      "pfv0:d7:search:extra19:7621061d:ea73": "retention",
+      "pfv0:d7:search:extra1:20ce0eba:f84f": "hidden_test",
+      "pfv0:d7:search:extra3:55937dbb:738f": "train",
+      "pfv0:d7:search:extra4:18aabb09:91b2": "public_test",
+      "pfv0:d7:search:extra9:2cc00eab:e903": "train",
+      "pfv0:d7:search:two_step:3eefe03e:rw add_zero": "hidden_test",
+      "pfv0:expert:fix:power": "train",
+      "pfv0:expert:fix:two_plus_two": "train",
+      "pfv0:halo:cd01_add": "calibration",
+      "pfv0:halo:cd02_is_prime": "public_test",
+      "pfv0:halo:cd04_gcd": "retention",
+      "pfv0:halo:gr01_wolves": "retention",
+      "pfv0:halo:gr02_count": "public_test",
+      "pfv0:halo:gr03_logic": "train",
+      "pfv0:halo:gr04_schedule": "train",
+      "pfv0:halo:lc01_needle": "train",
+      "pfv0:halo:lc02_needle": "train",
+      "pfv0:halo:rt01_doc_lookup": "public_test",
+      "pfv0:halo:rt02_doc_lookup": "train",
+      "pfv0:halo:rt03_table": "train",
+      "pfv0:halo:rt04_multi": "retention",
+      "pfv0:halo:sc01_fix_math": "hidden_test",
+      "pfv0:halo:sc02_fix_code": "calibration",
+      "pfv0:halo:sc03_fix_fact": "train",
+      "pfv0:halo:sc05_screen_trivial": "train",
+      "pfv0:halo:tl01_idempotent": "calibration",
+      "pfv0:halo:tl02_bpw": "calibration",
+      "pfv0:halo:tl03_moe": "train",
+      "pfv0:halo:tl04_deterministic": "train",
+      "pfv0:thesis:r02_is_prime": "train",
+      "pfv0:thesis:r04_reverse_words": "retention",
+      "pfv0:thesis:r05_gcd": "train",
+      "pfv0:thesis:r06_is_palindrome": "train",
+      "pfv0:thesis:r09_merge_sorted": "train",
+      "pfv0:thesis:r10_binary_search": "train",
+      "pfv0:thesis:r11_count_words": "retention",
+      "pfv0:thesis:r12_roman": "train",
+      "pfv0:thesis:t01_add": "train",
+      "pfv0:thesis:t02_is_prime": "train",
+      "pfv0:thesis:t03_fib": "calibration",
+      "pfv0:thesis:t04_reverse_words": "public_test",
+      "pfv0:thesis:t06_gcd": "public_test",
+      "pfv0:thesis:t07_is_palindrome": "train",
+      "pfv0:thesis:t09_flatten": "retention",
+      "pfv0:thesis:t12_merge_sorted": "train",
+      "pfv0:thesis:t13_anagram": "train",
+      "pfv0:thesis:t14_binary_search": "hidden_test",
+      "pfv0:thesis:t15_word_count": "train"
+    },
+    "counts": {
+      "calibration": 17,
+      "hidden_test": 16,
+      "public_test": 17,
+      "retention": 16,
+      "train": 62
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T11:16:15.672715Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "1c935555cb367ba73269d137c09e00752ca5ee74b5dfc229bdceb352eea20e51",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "membership_sha256": "62f23eb05b4ce8f9e697312404395de761f0c076a9c67a1c72fddddf0c518787",
+  "n_sequences": 128,
+  "pad_id": 154820,
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.frankenstein.glm_frozen_corpus.v1",
+  "seal_sha256": "c83373e8c4d4b34dc13386abb830d2f5cadb10b2bf4792642a3e476c021ffa1b",
+  "sequences": [
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nsymm_trans_apply (e₁ : A₁ ≃ₐ[R] A₂) (e₂ : A₂ ≃ₐ[R] A₃) (x : A₃) :\n    (e₁.trans e₂).symm x = e₁.symm (e₂.symm x)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- self_trans_symm\n- e.trans\n- e.symm\n- refl\n- symm_trans_self\n- e.symm.trans\n- norm_cast\n- ext\n- congr_arg\n- congr_fun\n- coe_mk\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "17556d3c4eb8f51ec7511365992295c9b841f8783731b0bb19300f3caead259f",
+      "token_ids_sha256": "870f0be366220f38a1e124c5a0d04cc605733c955ff6de771257c02462cb85ab"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nalgebraMap.coe_smul' [Monoid A] [MulDistribMulAction A C] [SMulDistribClass A B C] :\n    (a • b : B) = a • (b : C)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- Algebra.algebraMap_eq_smul_one\n- smul_distrib_smul\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "815d8b1015c2c16b9f2b29bd4899022515078d1c478b473237b83e027e14ea19",
+      "token_ids_sha256": "43e08fa184e647af72f6fb94c35ec45cbc7611776354d9193fa82dba5d420cef"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\ncommute_algebraMap_left (r : R) (x : A) : Commute (algebraMap R A r) x\n\nCandidate premises (mixed useful/distractor):\n- Algebra.commutes\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "0800c806f25e45de1755f7c844edf851d401006d7d96790e4cb11013793cd7ee",
+      "token_ids_sha256": "8d025e18bb8343059a95bfb3a44c6a63cad31d158fbca7c0c5b4095c3b421bd1"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.Algebra.subsingleton",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nAlgebra.subsingleton (R : Type u) (A : Type v) [CommSemiring R] [Semiring A] [Algebra R A]\n    [Subsingleton R] : Subsingleton A\n\nCandidate premises (mixed useful/distractor):\n- algebraMap\n- codomain_trivial\n- reducible\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n- coe_pow\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "c0161f5220cd24ecf48cffb857b86b85fa7a9d21a3ce0cd20d1c4d3d4c4ae858",
+      "token_ids_sha256": "8241acb9570e7d446dfaa768499bc164aa4227622eee7095d4bca8094618241e"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_eq_zero_iff",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nalgebraMap_eq_zero_iff {r : R} : algebraMap R A r = 0 ↔ r = 0\n\nCandidate premises (mixed useful/distractor):\n- map_eq_zero_iff\n- algebraMap\n- algebraMap_injective\n- simp\n- algebraMap_pUnit\n- _root_.ULift.algebraMap_eq\n- _root_.ULift.down_algebraMap\n- _root_.ULift.algebraMap_apply'\n- algebraMap_ofSubsemiring\n- coe_algebraMap_ofSubsemiring\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "f41a8029da9dfcd5e4e93f40fb83d13e28b7a821ebf5efcbf1ae80a59c3f891e",
+      "token_ids_sha256": "4f59aedf423ca18d42a223a8e99aecb52234436d1a1f37fd5e7fc7620489e93f"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.map_ofNat",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nmap_ofNat [AddMonoidWithOne G] [AddMonoidWithOne H] [AddConstMapClass F G H 1 1]\n    (f : F) (n : ℕ) [n.AtLeastTwo] :\n    f ofNat(n) = f 0 + ofNat(n)\n\nCandidate premises (mixed useful/distractor):\n- map_nat\n- scoped\n- simp\n- semiconj\n- map_add_nsmul\n- map_add_nat'\n- map_add_one\n- map_add_ofNat'\n- map_add_nat\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "0de21bc2ec07a2efefd00b09847a06278af0c8e271bc0d6d525bc1287bfa4a6c",
+      "token_ids_sha256": "c30e1d19154df41870c5b9c009f30b28a2ddc0acbea9e0424e6b3bcb51f1c870"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nEnd.algebraMap_isUnit_inv_apply_eq_iff {x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    (↑(h.unit⁻¹) : Module.End S M) m = m' ↔ m = x • m' where\n  mp H\n\nCandidate premises (mixed useful/distractor):\n- isUnit_apply_inv_apply_of_isUnit\n- symm\n- apply_fun\n- h.unit.val\n- isUnit_iff\n- injective\n- simpa\n- Module.End.isUnit_apply_inv_apply_of_isUnit\n- algebraMap_pUnit\n- _root_.ULift.algebraMap_eq\n- _root_.ULift.down_algebraMap\n- _root_.ULift.algebraMap_apply'\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "c0bcbf23336a1519d8a1804981a05e49a0c75346f209be092f7299133aaf4613",
+      "token_ids_sha256": "178851b139cd7d3982f60b1db6ae1911723ec44362c9357ee770c8790042595d"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.apply_symm_apply",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\napply_symm_apply (e : A₁ ≃ₐ[R] A₂) : ∀ x, e (e.symm x) = x\n\nCandidate premises (mixed useful/distractor):\n- e.toEquiv.apply_symm_apply\n- simp\n- ext\n- congr_arg\n- congr_fun\n- coe_mk\n- mk_coe\n- toEquiv_eq_coe\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "faed7c924d0e62ea00a9c9b371665cf41cdc73a303786c936177fb71b3dc8b60",
+      "token_ids_sha256": "43b33ac739913edc225dbfe31fb7fad5983e46ec849d12c5d6cd705b60aeb320"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.map_sub_const",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nmap_sub_const [AddGroup G] [AddGroup H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) : f (x - a) = f x - b\n\nCandidate premises (mixed useful/distractor):\n- simpa\n- map_sub_nsmul\n- semiconj\n- map_add_nsmul\n- map_add_nat'\n- map_add_one\n- map_add_ofNat'\n- map_add_nat\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "b7f5e81fe28ec4221ac9cf3bfbe9705547ded97d583f49c9a96e2f8f91e4afba",
+      "token_ids_sha256": "c7caf7b55d8492e59ea3d926ebf13d56b57f2edd781322f5f5e41d7dda219f00"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Epi.tmul_comm",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\ntmul_comm (a b : A) :\n    a ⊗ₜ[R] b = b ⊗ₜ[R] a\n\nCandidate premises (mixed useful/distractor):\n- tmul_eq_smul_one_tmul\n- isEpi_iff_forall_one_tmul_eq\n- inferInstance\n- this\n- smul_comm\n- isEpi_of_surjective_algebraMap\n- isEpi_iff_surjective_algebraMap_of_finite\n- injective_lift_lsmul\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "029ed3702fdec4bacdbd88512546a995854e1f9ad4a262270a440dc1cd563e28",
+      "token_ids_sha256": "68047d1b0957b829eea06e306e351881ce155ace54449cd282c7b6874f76c9ec"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.rel_map_of_Icc",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nrel_map_of_Icc [AddCommGroup G] [LinearOrder G] [IsOrderedAddMonoid G]\n    [Archimedean G] [AddGroup H]\n    [AddConstMapClass F G H a b] {f : F} {R : H → H → Prop} [IsTrans H R]\n    [hR : CovariantClass H H (fun x y ↦ y + x) R] (ha : 0 < a) {l : G}\n    (hf : ∀ x ∈ Icc l (l + a), ∀ y ∈ Icc l (l + a), x < y → R (f x) (f y)) :\n    ((· < ·) ⇒ R) f f\n\nCandidate premises (mixed useful/distractor):\n- replace\n- hR.elim\n- ha.le\n- wlog\n- Ico\n- generalizing\n- rcases\n- existsUnique_sub_zsmul_mem_Ico\n- suffices\n- simpa\n- this\n- exact\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "4d12fc17e33a39d9f57c74515ab8745d2d2e9814f2c9f7a93c9353bff0946757",
+      "token_ids_sha256": "a33fa09cf11e7ca52373673b03a91e8dfa451553c72a16e2d188a54e62cc07a1"
+    },
+    {
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nalgebraMap_comp_natCast (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A] :\n    algebraMap R A ∘ Nat.cast = Nat.cast\n\nCandidate premises (mixed useful/distractor):\n- simp\n- algebraMap_pUnit\n- _root_.ULift.algebraMap_eq\n- _root_.ULift.down_algebraMap\n- _root_.ULift.algebraMap_apply'\n- algebraMap_ofSubsemiring\n- coe_algebraMap_ofSubsemiring\n\nReturn the useful premises only.",
+      "prompt_text_sha256": "4366ff43234cee656868c2cbe846508aa3d1d466a619ae3ebbfcc8d95c4348ab",
+      "token_ids_sha256": "b4e5a600e0abf679b3705f89b19725c7bf20651f18afd98708ac0ceedcc1eefc"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "membership": "train",
+      "n_tokens": 44,
+      "prompt_text": "Given the Lean proof state goal:\n(h : Surjective (algebraMap R A)) :\n    Algebra.IsEpi R A\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "5731bf025e7094395360096202a886afe4cf33f9922e211ffc02da8d896c998b",
+      "token_ids_sha256": "f71e81c57de274ee14e828c8c1f34d8910f6b718a9a735c14c5c702432961810"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "8abe240145bb644b1419b67071ba37e44ae728168a4a80520bc276fa85e970a1",
+      "token_ids_sha256": "d337429ce2f2588b16b2d790efe1c8be75381d8feca172995b655bdd398ff179"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "membership": "train",
+      "n_tokens": 49,
+      "prompt_text": "Given the Lean proof state goal:\n:\n    Injective (lift <| LinearMap.restrictScalars₁₂ R R (LinearMap.lsmul A M))\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "1663f516cd6cb056ed50b0ea4c3d77d1eb29a6519c24f1f2a7ac6c68defc0208",
+      "token_ids_sha256": "2f4aa45b08d049a69cb84899aa1716a41452824cb4a53d68eb04930ee58b0452"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.mul_apply",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: mul_apply\nStatement:\nmul_apply (e₁ e₂ : A₁ ≃ₐ[R] A₁) (x : A₁) : (e₁ * e₂) x = e₁ (e₂ x)\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "57136aef25c1837a1424bf9ec510368a778fa10cb886236d7eff7b0183e8738f",
+      "token_ids_sha256": "bd1862946f83a9d369b8f808c8594ab5a073ed1014b1d234292e83c141aa4449"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul':step0",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Given the Lean proof state goal:\n[Monoid A] [MulDistribMulAction A C] [SMulDistribClass A B C] :\n    (a • b : B) = a • (b : C)\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "d0a2b7c588caaa326d808b7cedf532c7d9ef347133296f275d86ce53124740c3",
+      "token_ids_sha256": "a49b26dd1a511dde495385e1e063c751ac3cca6ef8b1329c19a1b4f7574aef15"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_id",
+      "membership": "train",
+      "n_tokens": 43,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_id\nStatement:\ncomp_id : φ.comp (AlgHom.id R A) = φ\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "4b976157fa4612e9c1c595e92191a8d438c9880dd01377a85de465635cac241b",
+      "token_ids_sha256": "7a2b3798534bb493e690ebc63ac182afd78ed953767abd2bad51c9f71aba81b5"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.AffineMonoid.Irreducible.Submonoid.closure_irreducible:step11",
+      "membership": "calibration",
+      "n_tokens": 52,
+      "prompt_text": "Given the Lean proof state goal:\n[Monoid.FG M] :\n    Submonoid.closure {p : M | Irreducible p} = ⊤\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "bd305abe51ca9963f3de2538afe9ac3876e3f719a3b1a072fa5a50cc9338bcee",
+      "token_ids_sha256": "29206c30c5e537b1cf0fb8b3d36a5d4f022e2513207192e1d38a45927550717e"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.coe_comp",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: coe_comp\nStatement:\ncoe_comp (f : B →ₛₙₐ[ψ] C) (g : A →ₛₙₐ[φ] B) [MonoidHom.CompTriple φ ψ χ] :\n    ⇑(f.comp g) = (⇑f) ∘ (⇑g)\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "baf3d0893fcb57e88d95c16ae69fac820b243101acaaccf7556e1b05fa21844a",
+      "token_ids_sha256": "7598096870a37e0ded9c2a4cbcd9a282d675983c21fc5f7b1562cca5bbb16e02"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_iff_forall_one_tmul_eq:step3",
+      "membership": "public_test",
+      "n_tokens": 58,
+      "prompt_text": "Given the Lean proof state goal:\n:\n    Algebra.IsEpi R A ↔ ∀ a : A, 1 ⊗ₜ[R] a = a ⊗ₜ[R] 1\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "64eee67d7261c2f59f8b8819004c1d762c816cdf703965b64a68d75f0fdcbe96",
+      "token_ids_sha256": "8a289df692c19e12f115f77ec35c68a67099e5169649a04f6901e5de627f82be"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.coe_toNonUnitalSubring",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: coe_toNonUnitalSubring\nStatement:\ncoe_toNonUnitalSubring (S : NonUnitalSubalgebra R A) :\n    (↑S.toNonUnitalSubring : Set A) = S\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "6742eaa11797d838b5735590c58214bed950f26a3f50ff42e03cbca88dfe393f",
+      "token_ids_sha256": "e1836971e29e748de9436eb665aa02f8721018c165e71981272164991d0d93eb"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast:step1",
+      "membership": "hidden_test",
+      "n_tokens": 60,
+      "prompt_text": "Given the Lean proof state goal:\n(R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A] :\n    algebraMap R A ∘ Nat.cast = Nat.cast\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "prompt_text_sha256": "7657be8a622cf951ac3ba1136e1eb6daba0649340dfede41ecfd1f3f6cdb6be4",
+      "token_ids_sha256": "28a046ecce5752bbf8643058d3ce5958283e3cf51875f94eba5233a060b16910"
+    },
+    {
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.toAlgHom_toLinearMap",
+      "membership": "hidden_test",
+      "n_tokens": 56,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: toAlgHom_toLinearMap\nStatement:\ntoAlgHom_toLinearMap : e.toAlgHom.toLinearMap = e.toLinearEquiv.toLinearMap\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "9ba7e004a56a8cc7872317e2b14ddc357aaca3b5b4dfd7ab545335c3f13caad9",
+      "token_ids_sha256": "d9b9458336ef25eccc5dd7bbdd46883c72e63fa2539b937bfcc29e6acff6f06d"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "membership": "train",
+      "n_tokens": 61,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: restrictScalars_apply\nStatement:\nrestrictScalars_apply (f : A →ₙₐ[S] B) (x : A) : f.restrictScalars R x = f x\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "aa20d8fb5db2f201fdc383f772291d9ffdd27a5afeb7667e22b17898744f9eeb",
+      "token_ids_sha256": "64e9a8f928fbc71c162d67c2e3c537d586998cea7477cfc33b7a4398c4d7f882"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: map_const_add\nStatement:\nmap_const_add [AddCommMagma G] [Add H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) : f (a + x) = f x + b\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "67379eb8d8151b8b5c7f7ec65f13e570fde4ea957cd135af973be4d862cb34cc",
+      "token_ids_sha256": "a78b188849aedbaaaf7e130812598011cc1201d416d80a917613e09d73166194"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "membership": "train",
+      "n_tokens": 60,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: mem_carrier\nStatement:\nmem_carrier {s : NonUnitalSubalgebra R A} {x : A} : x ∈ s.carrier ↔ x ∈ s\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "782902e8deaa26666a9eaff70cf1ad2a9923e806f190bdec89a8789c88c5e28c",
+      "token_ids_sha256": "44c6b281732f7ce3308d75ed3cb2f48cc8d50e8e2bcc2e17a2d47b2af044c566"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Defs.coe_linearMap",
+      "membership": "train",
+      "n_tokens": 50,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: coe_linearMap\nStatement:\ncoe_linearMap : ⇑(Algebra.linearMap R A) = algebraMap R A\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "f445d5335854ce1d4dac26f4335dc1c7304b59650b134a4d6d9ab0d4ad21df50",
+      "token_ids_sha256": "4c1d112ff65eb862ae84e4c28e835491e47dd7e6e1fed75dd066ac4141f1df7a"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "membership": "train",
+      "n_tokens": 60,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: commute_algebraMap_left\nStatement:\ncommute_algebraMap_left (r : R) (x : A) : Commute (algebraMap R A r) x\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "d4fdab1556236fdf55cfc3470184411548a6f2ae8412e3d5c4a7e6094f9db9b2",
+      "token_ids_sha256": "3ecda315173a3082959ec3c62332994952cd19ed3f1909a779c140570c018e9a"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_sub_const",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: map_sub_const\nStatement:\nmap_sub_const [AddGroup G] [AddGroup H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) : f (x - a) = f x - b\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "cfcbe097b6ba3ca0c41806abb74185a0049cc183218faa4f70fe3c4d3d75f15e",
+      "token_ids_sha256": "ff163ff286901fa4277b0c80613edfed9b1783915f0886199d9d08576a7c1b5b"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.toSubmodule_injective",
+      "membership": "calibration",
+      "n_tokens": 59,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: toSubmodule_injective\nStatement:\ntoSubmodule_injective : (toSubmodule : NonUnitalSubalgebra R A → Submodule R A).Injective\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "c9dd2b88731a7d95565659374ba04e582b50d7e4a390c002b81bc2e103640aa1",
+      "token_ids_sha256": "5a9c602bc71909e2f3c0207decc10fecb47e42966869752af8c3886256688872"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.coe_ringEquiv",
+      "membership": "calibration",
+      "n_tokens": 58,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: coe_ringEquiv\nStatement:\ncoe_ringEquiv : ((e : A₁ ≃+* A₂) : A₁ → A₂) = e\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "df120cb3c7d135e5ccea7f9f073fd0f2e87d7aa090189d8f209f1a45c425e86d",
+      "token_ids_sha256": "cee3685bcd4ae74d95d22cc8fb908712ffcd44c0e920d767a96d8a1f6aeabf93"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Defs._root_.RingHom.smulOneHom_eq_algebraMap",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: _root_.RingHom.smulOneHom_eq_algebraMap\nStatement:\n_root_.RingHom.smulOneHom_eq_algebraMap : RingHom.smulOneHom = algebraMap R A\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "1642bfa36cef15e6a66b374ffa8df9895890496aa954dd831eaee7f7006e44a8",
+      "token_ids_sha256": "ad1564d9053cde30c64b86a9f5f4de58e3f18d41252922f71a559f903b70a2f6"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Field.coe_div",
+      "membership": "public_test",
+      "n_tokens": 54,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: coe_div\nStatement:\ncoe_div (r s : R) : ↑(r / s) = (↑r / ↑s : A)\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "da1e36ee5614fc528e2f60618d0fc157de02f9cd7fdfc5a2491de29ff7ef2b41",
+      "token_ids_sha256": "d4ff9707d8de96a982f69fe981c2788177830bbbb43fa2cdcd7325a3fb0cdac1"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.AffineMonoid.Irreducible.Submonoid.FG.finite_irreducible_mem_submonoidClosure",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: Submonoid.FG.finite_irreducible_mem_submonoidClosure\nStatement:\nSubmonoid.FG.finite_irreducible_mem_submonoidClosure {S : Submonoid M} (hS : S.FG) :\n    {p ∈ S | Irreducible p}.Finite\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "1d46672cf5bc5c4cf991f70a7506536b7a6650aac5a137ff3e81a070d1a5195f",
+      "token_ids_sha256": "60d1f26df2469e1a7ac1ef3698ea1b26706b0d79b921db6ecde8b1a2cb1e8f0e"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.map_smul_of_tower",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: map_smul_of_tower\nStatement:\nmap_smul_of_tower {R'} [SMul R' A] [SMul R' B] [LinearMap.CompatibleSMul A B R' R] (r : R')\n    (x : A) : φ (r • x) = r • φ x\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "c6e8d52b4979efbdb946c310e772960c6822e1fac8feb5851ec217f136b58c49",
+      "token_ids_sha256": "095eea032f08b8e64d2a2e9cf57a47b7bfb3c9d9f9be0552a407db5976716ba3"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_nsmul_add",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: map_nsmul_add\nStatement:\nmap_nsmul_add [AddCommMonoid G] [AddMonoid H] [AddConstMapClass F G H a b]\n    (f : F) (n : ℕ) (x : G) : f (n • a + x) = f x + n • b\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "ff1117c850dc8a98986c7db16e1da06ff41d2445a367fabd701da4d32cb06457",
+      "token_ids_sha256": "356ef3e7d02714f727871fbd7403a79222161226e60dbd8eea0dea99744d8e58"
+    },
+    {
+      "domain": "formalization",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Equiv.arrowCongr_refl",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: arrowCongr_refl\nStatement:\narrowCongr_refl : arrowCongr AlgEquiv.refl AlgEquiv.refl = Equiv.refl (A₁ →ₐ[R] A₂)\n\nProvide a valid proof term or tactic script.",
+      "prompt_text_sha256": "c5f893afd3b787cbc93ae4ebeadd75fd189704e8de41183c2505f77e56ed795b",
+      "token_ids_sha256": "5286a0f64347a278bccaf3020efa4583dd5e043a9c42cac318915834bd23bf5e"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n[AddGroupWithOne G] [AddGroup H] [AddConstMapClass F G H 1 b]\n    (f : F) (x : G) (n : ℕ) : f x - n • b = f (x - n)\n\nBroken proof:\nsimpa using map_sub_nsmul f x n\n\n@[scoped simp]\n\nLean error:\nBroken.lean:4:42: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  FunLike F G H\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:10:0: error: unexpected end of input; expected 'lemma'\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "db47f7b6b02ecb3c94e7479b607890531740929e797673064c67994a21bb52a9",
+      "token_ids_sha256": "c7810749777d97b462111dd712e57075f2a84a640b5d178790f5f28c6f8ce847"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [ThisLemmaDoesNotExist, H]\n    simpa using isUnit_apply_inv_apply_of_isUnit h (x • m') |>.symm\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "2c8e62db7378bc70343ac66d81e13efd30e91eef4225f14b73769f55be01960f",
+      "token_ids_sha256": "aa488542208e685a2edd7a9dbe8bda438d411ac9edf7088c7d732c76ad0634f9"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n(S : C) : (algebraMap S R : Subtype.val = S → R)\n\nBroken proof:\nrfl\n\nLean error:\nBroken.lean:4:30: error: Application type mismatch: The argument\n  S\nhas type\n  C\nbut is expected to have type\n  Type ?u.14\nin the application\n  algebraMap S\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "01bcee016cb5ad3bb9510631d07d7db13082af69774cd5d28e70c27aecd1b9da",
+      "token_ids_sha256": "810ddb638018174881c12052516c5dd3d185ed7d072ae828ae5efed19d20d3e9"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.mul_sub_algebraMap_pow_commutes:drop_last_tactic",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n[Ring A] [Algebra R A] (x : A) (r : R) (n : ℕ) :\n    x * (x - algebraMap R A r) ^ n = (x - algebraMap R A r) ^ n * x\n\nBroken proof:\ninduction n with\n  | zero => simp\n  | succ n ih =>\n\nLean error:\nBroken.lean:10:0: error: unexpected end of input; expected '?', '_' or '{'\nBroken.lean:4:18: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  CommSemiring R\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "2d5ed87d1a5e74548ed21373e104bb6f07d3fdd8623f28bad368253d1309e3be",
+      "token_ids_sha256": "1047bd1f27763662f945474594022a6d5f913d976b3450afd7fa03b095c917e3"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:rfl_to_absurd",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n(S : C) : (algebraMap S R : S → R) = Subtype.val\n\nBroken proof:\nexact absurd\n\nLean error:\nBroken.lean:4:36: error: type expected, got\n  (S : C)\nBroken.lean:4:30: error: Application type mismatch: The argument\n  S\nhas type\n  C\nbut is expected to have type\n  Type ?u.11\nin the application\n  algebraMap S\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "897fc9b1aeab989c59214a413c3ca642def6b8c2d19bd1b1aad38a62d532fa78",
+      "token_ids_sha256": "8250edcd2d7cd1fbd5a9a5798d53a7e0ba396877732e5e6af78ac8a33984ef2f"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_zsmul:flip_eq_goal",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n[AddGroup G] [AddGroup H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) (n : ℤ) : f x - n • b = f (x - n • a)\n\nBroken proof:\nsimpa [sub_eq_add_neg] using map_add_zsmul f x (-n)\n\n@[scoped simp]\n\nLean error:\nBroken.lean:4:35: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  FunLike F G H\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:10:0: error: unexpected end of input; expected 'lemma'\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "c3120524c6245b53723daf7b4e2d3f9978ffe6b64a3cc936a9ad3c2ac4ac6f79",
+      "token_ids_sha256": "230e338bc36d5342999d8ed9e995c33cf0e8d91b44558c5e7888ec87bc4bda17"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Bilinear._root_.NonUnitalAlgHom.coe_lmul_eq_mul:flip_eq_goal",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n: mul R A = ⇑(NonUnitalAlgHom.lmul R A)\n\nBroken proof:\nrfl\n\nLean error:\nBroken.lean:4:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  CommSemiring R\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:4:10: error: Function expected at\n  mul\nbut this term has type\n  ?m.1\nNote: Expected a function because this term is being applied to the argument\n  R\nHint: The identifier `mul` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "10d750119ced50d0049db537bbc03fe35796c93b9a28b8c28e973f50debd69e3",
+      "token_ids_sha256": "9cadfda4b27dffc264fa8f16d8442055c1ba1ef9547f6fe869bdb6375cae6cea"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':drop_last_tactic",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [H]\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "0bdd6061c544f729bb0d89262d910271438ad54f4d12f0b5075d377a9a887bac",
+      "token_ids_sha256": "aa488542208e685a2edd7a9dbe8bda438d411ac9edf7088c7d732c76ad0634f9"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_nat_add:flip_eq_goal",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n[AddCommMonoidWithOne G] [AddMonoidWithOne H] [AddConstMapClass F G H 1 1]\n    (f : F) (n : ℕ) (x : G) : f x + n = f (↑n + x)\n\nBroken proof:\nsimp\n\nLean error:\nBroken.lean:4:55: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  FunLike F G H\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "5d22f43a2325bbc40ad5d35d60eb858541883c4e3681b556ffb586eecc5497e7",
+      "token_ids_sha256": "15da08f6f803f6330653062d37839e929480ce4abca2a3f7fcd2793b04317bb7"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.algebra_compatible_smul:wrong_rw_lemma",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n(r : R) (m : M) : r • m = (algebraMap R A) r • m\n\nBroken proof:\nrw [ThisLemmaDoesNotExist, ← one_smul A m, ← smul_assoc, Algebra.smul_def, mul_one, one_smul]\n\n@[simp]\n\nLean error:\nBroken.lean:4:26: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.8\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:4:35: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Algebra R A\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:6: error(lean.unknownIdentifier): Unknown identifier `ThisLemmaDoesNotExist`\nBroken.lean:5:0: error: unsolved goals\nR : Type ?u.10\nM : Type ?u.9\nA : Type ?u.15\nr : R\nm : M\n⊢ sorry\nBroken.lean:9:0: error: unexpected end of input; expected 'lemma'\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "1ae762b6bba5ddba99fa56777ae6ec80668900c73c8d128083e14d64c4d63b77",
+      "token_ids_sha256": "27f1d43d35b5bd3a261fea0f1801d223a9692533fe5e84aa061f586bb6809548"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_const:flip_eq_goal",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n[AddZeroClass G] [Add H] [AddConstMapClass F G H a b] (f : F) : f 0 + b = f a\n\nBroken proof:\nsimpa using map_add_const f 0\n\nLean error:\nBroken.lean:6:14: error: unexpected token 'using'; expected ')', ',' or ':'\nBroken.lean:4:34: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  FunLike F G H\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "6e16c1b37a0e57854baa90a695ea6e55b40bc80defbee3eea293dde4279e9ecc",
+      "token_ids_sha256": "d32f332e0f84b3568f0a955da19e18f7ce1bb4343253b43dcf09fddf52de2521"
+    },
+    {
+      "domain": "proof_repair",
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.algebraMap_ofSubring:drop_last_tactic",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n{R : Type*} [CommRing R] (S : Subring R) :\n    (algebraMap S R : S →+* R) = S.subtype\n\nBroken proof:\nskip\n\nLean error:\nBroken.lean:7:9: error(lean.unknownIdentifier): Unknown identifier `skip`\n\nProvide a corrected proof.",
+      "prompt_text_sha256": "af72d5bab31f6f9fa32e7e1c481febc42e89f6ea924804656fde777ab70c0fa4",
+      "token_ids_sha256": "24af80a484756428b3446e093c8d339e70ba747637b5972cb55d87645d052c90"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "membership": "train",
+      "n_tokens": 48,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\nSee Mathlib Counterexamples.SeparableNotSecondCountable — documented false claim or failed conjecture with formal refutation.",
+      "prompt_text_sha256": "2e84cc517f5a1f8117085a3f9a7e16b1152c7aa612532be8bda2183970e1182b",
+      "token_ids_sha256": "374dd7b44641daf4aa500e11ab633c5c38087ebe5da9b89b3f5c4159f1915c45"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:83:9578a4c57d",
+      "membership": "train",
+      "n_tokens": 49,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ x y : Nat, x * y = x + y  (false; witness x=3, y=9)",
+      "prompt_text_sha256": "3331869752061ba6be9dc947f102ef6713b177d62087236a0f162725213f9f42",
+      "token_ids_sha256": "0cbdb56a0ee418057429db838f17f5ff13dc5a15f684b506d6a95cf50b26ccfd"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:43:6c39613064",
+      "membership": "train",
+      "n_tokens": 49,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ x y : Nat, x * y = x + y  (false; witness x=0, y=4)",
+      "prompt_text_sha256": "e37bbc712ba7ab372d5f5e528fd6763b4fc5ca1e2b8e43dfe30022ed301817ff",
+      "token_ids_sha256": "87d93f19fd70fca782e0e1ad4949df92d1d2b971820fa3a03b969160786f0ddf"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:mathlib_ce:CharPZeroNeCharZero",
+      "membership": "train",
+      "n_tokens": 47,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\nSee Mathlib Counterexamples.CharPZeroNeCharZero — documented false claim or failed conjecture with formal refutation.",
+      "prompt_text_sha256": "7416bd92d73e63a9e4af3df702b1f7a44e1efe3672d1485b102194c749e02a4a",
+      "token_ids_sha256": "d4964e8f2cd51e385cdbe93f0c444adf4624569229fb23f5484cfeb4b14af9d5"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:49:2dae20f7d8",
+      "membership": "train",
+      "n_tokens": 49,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ x y : Nat, x * y = x + y  (false; witness x=0, y=10)",
+      "prompt_text_sha256": "3cc04b6a0b0ed178626ffbcbfd938524589b57b233d44e3d19624fea882ec694",
+      "token_ids_sha256": "c241ec2a76dc4d91a407eb82ac6d498be38137a0fb2e03718bc31b24b32bfcce"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:33:9e03d650eb",
+      "membership": "calibration",
+      "n_tokens": 43,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ k : Nat, k + k = k  (false; witness k = 33)",
+      "prompt_text_sha256": "688dc3271c3a8f1d94f4c81b6b9b4bf42bdc4cd7efcc3097cb3696c440ec6d65",
+      "token_ids_sha256": "c9153dbb0d32a94c96b879322ca5affe25c27358cd844d77d5b408a73315776d"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:13:61f74e6b32",
+      "membership": "calibration",
+      "n_tokens": 43,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ k : Nat, k + k = k  (false; witness k = 13)",
+      "prompt_text_sha256": "b8a8afad8850340deb7b68a9e2a253fa301a68470e408c259ba6f600db4f3928",
+      "token_ids_sha256": "1a0b6b0a2a1b42897b37810e90fb236da5af414c10f072b817cb4623691e3bb9"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:77:b7a0b9f465",
+      "membership": "calibration",
+      "n_tokens": 49,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ x y : Nat, x * y = x + y  (false; witness x=3, y=3)",
+      "prompt_text_sha256": "7282f79f4d842d5836ef3355a76285802312b16a9c2ebeeb914d7b414a85f7a9",
+      "token_ids_sha256": "08eaeaff2ec6dd1d86e871493a2e1714201ccd8db42c7d7e0f30e905f44873a1"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:75:ea6555e66b",
+      "membership": "public_test",
+      "n_tokens": 49,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ x y : Nat, x * y = x + y  (false; witness x=3, y=1)",
+      "prompt_text_sha256": "5ce2aa1a6615e2086c52b3b232fbc41108e139c3f1a2c896c660d336afe6c344",
+      "token_ids_sha256": "61466039f8273660836b28c861d7a17317c641c81e0b0c694688299e610ebc04"
+    },
+    {
+      "domain": "counterexample",
+      "example_id": "pfv0:d6:enum:22:6158dc9739",
+      "membership": "public_test",
+      "n_tokens": 43,
+      "prompt_text": "The following claim is false or a known failed conjecture. Provide a counterexample or refutation sketch.\n\nClaim:\n∀ k : Nat, k + k = k  (false; witness k = 22)",
+      "prompt_text_sha256": "170ab89211d90e6ede1547270f1083d319e12c7a28ec922df018dd9a4c6b7a73",
+      "token_ids_sha256": "9c01854ed39e3297db47d2f7d084375766d2d22cc35bb4903a8d2122a00b5dae"
+    },
+    {
+      "domain": "symbolic",
+      "example_id": "pfv0:expert:fix:two_plus_two",
+      "membership": "train",
+      "n_tokens": 33,
+      "prompt_text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 2 + 2?\nExpression: 2 + 2\nReturn the exact answer only.",
+      "prompt_text_sha256": "763834615d730b5112335ba1a4135655dc0c0ae4cd9f57ccf9c550e8f6a095e4",
+      "token_ids_sha256": "9686f5a90ca61307d95307303459dc51211aa03ea0f131ac44296bee996cdbad"
+    },
+    {
+      "domain": "symbolic",
+      "example_id": "pfv0:expert:fix:power",
+      "membership": "train",
+      "n_tokens": 33,
+      "prompt_text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 3 ** 4?\nExpression: 3 ** 4\nReturn the exact answer only.",
+      "prompt_text_sha256": "6bb80168855500f22180837a4e7d4a2765946246a23bf24a327aced208c56de8",
+      "token_ids_sha256": "9178b578572c394e927a6efe9a4b7fc31782d289df9133f5404b741261cc8eb5"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t09_flatten",
+      "membership": "retention",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `flatten(nested)` that flattens a list of lists into a single list preserving order. Return only the function in a code block.\n\nTests (must pass):\n```\nassert flatten([[1,2],[3],[4,5]]) == [1,2,3,4,5]\nassert flatten([[],[1]]) == [1]\nassert flatten([]) == []\n```",
+      "prompt_text_sha256": "e7c82c58780e356f4030c6c430f1b8b07607f66219d3182e18aa2f938aaa8162",
+      "token_ids_sha256": "55e04e3a4964f5c5fdc64eb6bfcd9a189f80cce7c126c9c12ad7389108b972c5"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:halo:cd04_gcd",
+      "membership": "retention",
+      "n_tokens": 36,
+      "prompt_text": "Write a Python function `gcd(a, b)` that returns the greatest common divisor of two non-negative integers (Euclidean algorithm). Return only the function in a fenced code block.",
+      "prompt_text_sha256": "d8d567d96445590982ab9b7a0141392000f117e7852f833de090b97656c7e394",
+      "token_ids_sha256": "a9d9b30504f60a5a38ebf043810a17a14f1dee096dba90f55cf81be83d051233"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t01_add",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `add(a, b)` that returns the sum of two integers. Return only the function in a code block.\n\nTests (must pass):\n```\nassert add(2, 3) == 5\nassert add(-1, 1) == 0\nassert add(0, 0) == 0\n```",
+      "prompt_text_sha256": "09e6b020d72e52098316e3bbde8915ecaffa8d8f6eba2e91be3b7931e0aa0df7",
+      "token_ids_sha256": "11252c48a6e04e1309ef5ff40b90e3362764e62f059c2a730d39e8e2b113738a"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t15_word_count",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+      "prompt_text_sha256": "44da74b3b282cf338e71eb7756cc40d8e32b0e2022017a5db536a609feff9161",
+      "token_ids_sha256": "3c8acac4279ee96d8c023fc11a06e399678864cbd5b4d3f6455f4a251a30b818"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t12_merge_sorted",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `merge_sorted(a, b)` that merges two already-sorted ascending lists into one sorted list. Return only the function in a code block.\n\nTests (must pass):\n```\nassert merge_sorted([1,3,5],[2,4,6]) == [1,2,3,4,5,6]\nassert merge_sorted([],[1]) == [1]\nassert merge_sorted([1,2],[]) == [1,2]\n```",
+      "prompt_text_sha256": "61fbe143f6e3f9a78acef0b49866d1ea43fb385a8ac85675ab608d457e2b5fd1",
+      "token_ids_sha256": "4da8080670ab2d793fcc474b803532b18934ef06984cce20e73b15ec2d53e227"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t13_anagram",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `is_anagram(a, b)` that returns True if the two strings are anagrams of each other (same letters, case-insensitive, ignoring spaces). Return only the function in a code block.\n\nTests (must pass):\n```\nassert is_anagram('listen','silent') is True\nassert is_anagram('Dormitory','Dirty Room') is True\nassert is_anagram('a','b') is False\n```",
+      "prompt_text_sha256": "bbf12e8d912bcbfc35745c10fe927625ee24a63fd35ede23623494e87377b24b",
+      "token_ids_sha256": "92fd9d0201ba3814cb1b08d6e071c4f74ae44dde4e8049c15e32926c666dd0c9"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t07_is_palindrome",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `is_palindrome(s)` that returns True if the string reads the same forwards and backwards, ignoring case and non-alphanumeric characters. Return only the function in a code block.\n\nTests (must pass):\n```\nassert is_palindrome('A man, a plan, a canal: Panama') is True\nassert is_palindrome('hello') is False\nassert is_palindrome('') is True\n```",
+      "prompt_text_sha256": "4e2f2823b258cc4f844e2ad5a8bc92be3e9f4b889282cd0740f1e54c3f6fbb6b",
+      "token_ids_sha256": "eb4f6339c6aa8a954fb488f59c53f091c2031601855014de09954bbf76b3e8e4"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t02_is_prime",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise. Handle n < 2 as not prime. Return only the function in a code block.\n\nTests (must pass):\n```\nassert is_prime(2) is True\nassert is_prime(11) is True\nassert is_prime(1) is False\nassert is_prime(15) is False\nassert is_prime(97) is True\n```",
+      "prompt_text_sha256": "653a99637adaf39cfc164cd783a0cbdcb419e44966118b913d16b29f1956f4c2",
+      "token_ids_sha256": "aa0beb56fa29152cab61f87955f22cc0fe7e9de63b905f7b887e4d7ad1cb578a"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t03_fib",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `fib(n)` that returns the n-th Fibonacci number with fib(0)=0 and fib(1)=1. Return only the function in a code block.\n\nTests (must pass):\n```\nassert fib(0) == 0\nassert fib(1) == 1\nassert fib(10) == 55\nassert fib(15) == 610\n```",
+      "prompt_text_sha256": "5c57bdda2188ce66b024cecdf40d48f7aa9aa95b4751aef2109fb4b89ebbeab4",
+      "token_ids_sha256": "f4550f9f2b2a4280d8fd089415a3c8f477136e9d7f23f9d0c749629df43f74ab"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:halo:cd01_add",
+      "membership": "calibration",
+      "n_tokens": 28,
+      "prompt_text": "Write a Python function `add(a, b)` that returns the sum of two integers. Return only the function in a fenced code block.",
+      "prompt_text_sha256": "5e1bb64b190390cbf5a20c059ba24cb147348a3f5d994b0cea17ab7e9cba3bde",
+      "token_ids_sha256": "a77e99fd46837e40e3ab2a952662715dfd6e9552750e23caa37c453a5b882cba"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t06_gcd",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `gcd(a, b)` that returns the greatest common divisor of two positive integers. Return only the function in a code block.\n\nTests (must pass):\n```\nassert gcd(12, 8) == 4\nassert gcd(17, 5) == 1\nassert gcd(100, 25) == 25\n```",
+      "prompt_text_sha256": "f3d94efd8a2f9068586e51cf99192816029ab5d461d657d31dddfcb9d8895f20",
+      "token_ids_sha256": "f80f59eac3c173178a50f128ad068af0ac905b2d7052afb98080414d35833f4d"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:halo:cd02_is_prime",
+      "membership": "public_test",
+      "n_tokens": 39,
+      "prompt_text": "Write a Python function `is_prime(n)` that returns True if n is prime and False otherwise. Treat n < 2 as not prime. Return only the function in a fenced code block.",
+      "prompt_text_sha256": "5b00f222825b559f4d75e78826c7529120497d0a39b20a96a9842c91a344f095",
+      "token_ids_sha256": "9048acbee6bc17fd521cb323a5ea2b4c101b083ca16c3ad5aba1d433eccc5bcf"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t04_reverse_words",
+      "membership": "public_test",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `reverse_words(s)` that reverses the order of words in a string separated by single spaces. Return only the function in a code block.\n\nTests (must pass):\n```\nassert reverse_words('hello world') == 'world hello'\nassert reverse_words('a b c') == 'c b a'\nassert reverse_words('one') == 'one'\n```",
+      "prompt_text_sha256": "a75226cd8478133edf24833d768bbe50b487c75d94759852293ce9c82c384e6e",
+      "token_ids_sha256": "489d99094b5dde3a1639b814373c7ee4c6630b2e12075eb4dfc2087d45f3892e"
+    },
+    {
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t14_binary_search",
+      "membership": "hidden_test",
+      "n_tokens": 64,
+      "prompt_text": "Write a Python function `binary_search(arr, target)` that returns the index of target in a sorted ascending list, or -1 if not found. Return only the function in a code block.\n\nTests (must pass):\n```\nassert binary_search([1,2,3,4,5], 4) == 3\nassert binary_search([1,2,3], 0) == -1\nassert binary_search([], 1) == -1\nassert binary_search([5], 5) == 0\n```",
+      "prompt_text_sha256": "64fb6649d25e194b42d185582133be2d8bfb9fe41194171069b167e8289b031e",
+      "token_ids_sha256": "4c2cf35c4b217a78042156f24e939f407784e2eabba93472b7669e2bc7c20ff8"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r04_reverse_words",
+      "membership": "retention",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn reverse_words(s: &str) -> String` that reverses the order of space-separated words. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert_eq!(reverse_words(\"hello world\"), \"world hello\"); assert_eq!(reverse_words(\"a b c\"), \"c b a\"); }\n```",
+      "prompt_text_sha256": "cfa818fd11ae5d00d5d8a9d70d0a1a113faa13f543a80385342dcd1f0aef7e06",
+      "token_ids_sha256": "f96c9f20057dee6f98a0d7dc875f486e3f4eb869d6c73aacc8c5543eefb5085f"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r11_count_words",
+      "membership": "retention",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn word_count(text: &str) -> std::collections::HashMap<String, usize>` mapping each whitespace-separated word to its count. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { let m = word_count(\"a b a\"); assert_eq!(m[\"a\"],2); assert_eq!(m[\"b\"],1); assert!(word_count(\"\").is_empty()); }\n```",
+      "prompt_text_sha256": "e6cb288b39d6e60d39c2a99364e31299da46c773746b227863f7f3139a90e109",
+      "token_ids_sha256": "3b2a6146d9544e80e0a953949f7836d7b9c244301cca6a696bb30a0a81290728"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r10_binary_search",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn binary_search(arr: &[i32], target: i32) -> i64` returning the index of target in a sorted ascending slice, or -1 if absent. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert_eq!(binary_search(&[1,2,3,4,5],4),3); assert_eq!(binary_search(&[1,2,3],0),-1); assert_eq!(binary_search(&[],1),-1); }\n```",
+      "prompt_text_sha256": "5d24098a649ade6f4c9dc1d135d7593ffadb228ad03c18cc796f7af3537a74ae",
+      "token_ids_sha256": "bb3321da025f2c608c586885ed41368b0c6f25c352635b9cdc9310fa8bcdd3ee"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r12_roman",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn to_roman(n: u32) -> String` converting an integer 1..=3999 to a Roman numeral. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert_eq!(to_roman(4),\"IV\"); assert_eq!(to_roman(9),\"IX\"); assert_eq!(to_roman(58),\"LVIII\"); assert_eq!(to_roman(1994),\"MCMXCIV\"); }\n```",
+      "prompt_text_sha256": "3db4bba333d8dcd31261d69c3fe646a160303dbb317e85c680c6a9a9c4b46e55",
+      "token_ids_sha256": "41791fbb1385b7099dcea6bef11bfb41e536fc6dabb5825c0d3beb77c744f201"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r06_is_palindrome",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn is_palindrome(s: &str) -> bool` that returns whether the string reads the same forwards and backwards considering only ascii alphanumeric characters, case-insensitive. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert!(is_palindrome(\"A man, a plan, a canal: Panama\")); assert!(!is_palindrome(\"hello\")); assert!(is_palindrome(\"\")); }\n```",
+      "prompt_text_sha256": "306983289784db682eb7b2591cdbfc131eab7e0d797147159ce5d3124f6bd97f",
+      "token_ids_sha256": "272ebc358385b07c4a78af7071c32931fd616cc68ae4c483d90c0c39403cc41f"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r02_is_prime",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn is_prime(n: u64) -> bool` that returns whether n is prime (n < 2 is not prime). Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert!(is_prime(2)); assert!(is_prime(97)); assert!(!is_prime(1)); assert!(!is_prime(15)); }\n```",
+      "prompt_text_sha256": "fa763b5410ecd9db9a1c3260cae21cca509c0bcceb6e18de9cf2e2fb1ad0ecb6",
+      "token_ids_sha256": "91073679bf74ba21f54c2f451b4c7f9cc24f38cd4d8838b65d2adba971728d11"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r09_merge_sorted",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32>` merging two ascending-sorted slices into one sorted Vec. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert_eq!(merge_sorted(&[1,3,5],&[2,4,6]),vec![1,2,3,4,5,6]); assert_eq!(merge_sorted(&[],&[1]),vec![1]); }\n```",
+      "prompt_text_sha256": "be4fdecca623998ffe34eebb43fb20bcafeee7857ac7457de59c6893d0288385",
+      "token_ids_sha256": "8b050b2ddf83c45124f9fcf189b70f8924332fdce416cd0ff252f87ce4511fa7"
+    },
+    {
+      "domain": "repo",
+      "example_id": "pfv0:thesis:r05_gcd",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Write a Rust function `fn gcd(a: u64, b: u64) -> u64` returning the greatest common divisor. Return only the function in a ```rust code block, no main.\n\nTests (must pass):\n```\nfn main() { assert_eq!(gcd(12,8),4); assert_eq!(gcd(17,5),1); assert_eq!(gcd(100,25),25); }\n```",
+      "prompt_text_sha256": "dd4ebc4beb40075a35193c34b3b9f6a10079cefa0eaf25c9e703872830128661",
+      "token_ids_sha256": "e09108477a67c3c2b426fe014c268fcd97b9eab0c590a4b330385357a0f62989"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:checkpoint:extra5",
+      "membership": "retention",
+      "n_tokens": 50,
+      "prompt_text": "You are solving a formal proof search problem `extra_5`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_5 id=cd4c01bad15f229a\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "db59d4860c050203e20ab37b3c8bcfa5734aa78cc81b4f898b1225681d18ee49",
+      "token_ids_sha256": "41eff4be69d0381f68f9ec144839286696d9823edce6e4f39bf3297f4f242557"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:checkpoint:extra9",
+      "membership": "retention",
+      "n_tokens": 53,
+      "prompt_text": "You are solving a formal proof search problem `extra_9`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_9 id=6388c2b545a7272a\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "a872844be4c95d92bf2d39e7ac4f2bc5fdf4773bc3e1da255d8a5a127ce6c3cb",
+      "token_ids_sha256": "3452b44980a10395a20c7e4dee4bb5ddb338afd66aba9a09e3db694dd51d5fb4"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:search:extra19:7621061d:ea73",
+      "membership": "retention",
+      "n_tokens": 48,
+      "prompt_text": "You are solving a formal proof search problem `extra_19`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_19 goal=2 + 2 = 4\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "ef1e0feb185f83f9c242edeafea62d5c25948d4915bf4271bbe1112953b818bd",
+      "token_ids_sha256": "2ec0646ce64fa6bf6952e31e95a399a40408460af9cf2a1a35b2d4fa7cccf44b"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:repair:add_comm_toy",
+      "membership": "retention",
+      "n_tokens": 52,
+      "prompt_text": "You are solving a formal proof search problem `add_comm_toy`.\nEmit the next tool action.\n\nContext:\ntool=compiler_repair problem=add_comm_toy repaired='have h := by simp\\nexact h'\n\nPreferred tool family: repair_from_error.",
+      "prompt_text_sha256": "094034111f7f6cff531fcd034216f19834696f3c200053135a135b7f2b02999a",
+      "token_ids_sha256": "cd96bf65fedf32501abdb1064959abbfbe7dad137dfde7f82af14d148e00cfaa"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:retrieve:extra8",
+      "membership": "retention",
+      "n_tokens": 56,
+      "prompt_text": "You are solving a formal proof search problem `extra_8`.\nEmit the next tool action.\n\nContext:\ntool=premise_retrieval goal=n < n + 1 top=['add_comm', 'add_assoc']\n\nPreferred tool family: PremiseRetrieval.retrieve.",
+      "prompt_text_sha256": "a4bb85afa32fdd5f12527255033cf06f00f08eaa2cb95517f475e9866334cc35",
+      "token_ids_sha256": "a2e5a776a201b413328f019e3b6576fadb2aa21e900e0f5454d0a54778bb2bba"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:retrieve:dead_end_then_ce",
+      "membership": "train",
+      "n_tokens": 54,
+      "prompt_text": "You are solving a formal proof search problem `dead_end_then_ce`.\nEmit the next tool action.\n\nContext:\ntool=premise_retrieval goal=2 + 2 = 5 top=add_comm\n\nPreferred tool family: PremiseRetrieval.retrieve.",
+      "prompt_text_sha256": "d0f91b1fb1eeab208c5eab51691ad5f2ebfdbdd46cc28323450525527d86502d",
+      "token_ids_sha256": "41374e96341da391e5330e8a7b7449766b40fa2ea240692e3e6dae8e9d6fab51"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:search:extra9:2cc00eab:e903",
+      "membership": "train",
+      "n_tokens": 52,
+      "prompt_text": "You are solving a formal proof search problem `extra_9`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_9 goal=a + b + c = a + (b + c)\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "894b01b7d77f224e6ef24f2eafcb5668e1b4c83a1087d980a020746190a6dd02",
+      "token_ids_sha256": "6ac065457ee47bf5eea4b152e78bdd91e8677a44ecfd1106715d0d76d484a6dd"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:retrieve:extra10",
+      "membership": "train",
+      "n_tokens": 57,
+      "prompt_text": "You are solving a formal proof search problem `extra_10`.\nEmit the next tool action.\n\nContext:\ntool=premise_retrieval goal=a * b = b * a top=['add_comm', 'add_assoc']\n\nPreferred tool family: PremiseRetrieval.retrieve.",
+      "prompt_text_sha256": "d4da7abb360d804a46a99d0a18e66030baed91daf80e0d4f68ccf394b96c9b57",
+      "token_ids_sha256": "e58dd30454c8521c611bfc27566bc9fe99f0e003127dc80ee50cc5ceb4768816"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:search:extra18:21b93851:9128",
+      "membership": "train",
+      "n_tokens": 46,
+      "prompt_text": "You are solving a formal proof search problem `extra_18`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_18 goal=n = n + 0\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "9fac2838efde0033bec5be49664ee45d3c3b56491ea947b59cdeb99ca760ba9a",
+      "token_ids_sha256": "e85e646d1aa6ea1f08da0835f664059e70a661408399a0cac10827af94dda1cf"
+    },
+    {
+      "domain": "tools",
+      "example_id": "pfv0:d7:checkpoint:extra16",
+      "membership": "train",
+      "n_tokens": 50,
+      "prompt_text": "You are solving a formal proof search problem `extra_16`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_16 id=9ba5aca69a1ae41e\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "4a197ff02cee93fcc18c7e5e20da75c7ec93241f044eb19ff4a05264e5b06c02",
+      "token_ids_sha256": "acbf4867bbd373b5f96ff6d4ed60396c4f4147e0ce2f85577b0d431eca49eb81"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:checkpoint:extra2",
+      "membership": "retention",
+      "n_tokens": 53,
+      "prompt_text": "You are solving a formal proof search problem `extra_2`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_2 id=03d32c8101b7e6f9\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "d2b449265d20e235fdd632c5d36b6046525119ad3aa330d2734b5b97f4891188",
+      "token_ids_sha256": "1f05d9ecd6a8ff8ae61a9a8b7c68b23a59d7777266e8500a5cc64a65ddf6073e"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:checkpoint:extra8",
+      "membership": "retention",
+      "n_tokens": 49,
+      "prompt_text": "You are solving a formal proof search problem `extra_8`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_8 id=e70305587eeae682\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "e98eec219f233fde911acbe936860329a52d98113c3a1d7d1f1d398130e1ebd6",
+      "token_ids_sha256": "4b04930c213efcd2d0723ea77067d02ee1a236adb59fee7649a64f56ff261e12"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:dead_end_then_ce:4174f1f1:norm_num",
+      "membership": "retention",
+      "n_tokens": 46,
+      "prompt_text": "You are solving a formal proof search problem `dead_end_then_ce`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=norm_num problem=dead_end_then_ce found=False\n\nPreferred tool family: norm_num.",
+      "prompt_text_sha256": "9fe27e9e976faff8b2c3b42030cf4ee7ea0ebe1e176ac6df2c0f2c08bc2b77ee",
+      "token_ids_sha256": "5d544ed8903192bce21dfdc52a97cd1738a37a2063a7d1b8f8a929013fc0193a"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:repair:dead_end_then_ce",
+      "membership": "retention",
+      "n_tokens": 53,
+      "prompt_text": "You are solving a formal proof search problem `dead_end_then_ce`.\nEmit the next tool action.\n\nContext:\ntool=compiler_repair problem=dead_end_then_ce repaired='have h := by simp\\nexact h'\n\nPreferred tool family: repair_from_error.",
+      "prompt_text_sha256": "5b307cd4c492b3d9a45cfa0bf5ab86bd2bd32f50ebbfe1bd750db9f60a4ce0d8",
+      "token_ids_sha256": "45ea3dcc9a240c441909a46887d63afb2bea91273014407caf299208ecde7a1c"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra0:018694eb:295e",
+      "membership": "retention",
+      "n_tokens": 49,
+      "prompt_text": "You are solving a formal proof search problem `extra_0`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rfl_close_0 goal=b + a = a + b\n\nPreferred tool family: rfl_close_0.",
+      "prompt_text_sha256": "56100dcba4ee3d0a415406dab599402827d2b3a710ce065272a4ca8fb3b5897c",
+      "token_ids_sha256": "d97429e97d686de49f48267027abcc1edaef759e85c80d1e5eb1e42a0970201f"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:checkpoint:extra13",
+      "membership": "train",
+      "n_tokens": 53,
+      "prompt_text": "You are solving a formal proof search problem `extra_13`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_13 id=0dc3f81bf1b2d6b3\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "63274d7ad67c7a85c4090d33ff8409df68663aee4659758208be9795fbb5408e",
+      "token_ids_sha256": "9d25789d9c0ea9e3ebe6b28f8be4affc94b3ce6e416329213db8a32b9de32245"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra3:55937dbb:738f",
+      "membership": "train",
+      "n_tokens": 54,
+      "prompt_text": "You are solving a formal proof search problem `extra_3`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rfl_close_3 goal=length (xs ++ ys) = length xs + length ys\n\nPreferred tool family: rfl_close_3.",
+      "prompt_text_sha256": "ab7815c22ab526bd9d3667b79f123cf1b779c866d129105a2b1f887904ab8b0e",
+      "token_ids_sha256": "6f684b31eb45f06eb1a06ef1085cbd6c40c091a02ed8822e4d45b747584c8850"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra16:8267037a:007a",
+      "membership": "train",
+      "n_tokens": 52,
+      "prompt_text": "You are solving a formal proof search problem `extra_16`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rfl_close_16 goal=a + b + 0 = a + b\n\nPreferred tool family: rfl_close_16.",
+      "prompt_text_sha256": "d5186712fd8b2d9d88bc1526a95e016b564b7d9ddd5bf17a2f14155c7b46b753",
+      "token_ids_sha256": "427ef2dd42f92dfb6efdbef30949b5ac4b1dc139a932296b05c81200b26ce7b4"
+    },
+    {
+      "domain": "long_ctx",
+      "example_id": "pfv0:halo:lc02_needle",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "Read the log below, then answer.\n\nLOG\nlorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit\nAUDIT_TOKEN=NIGHTINGALE-3\n amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet c\nEND LOG\n\nQuestion: What is the audit token? Reply with only the token.",
+      "prompt_text_sha256": "bb4ed5c47aec6ae253a9995bea087fbcac2a88715517a0f3ca673f1a77013139",
+      "token_ids_sha256": "d47368a51b6b36fa4f4427ed32364fbd1e7ac32224d71537c928bfa3246f1d2f"
+    },
+    {
+      "domain": "long_ctx",
+      "example_id": "pfv0:halo:lc01_needle",
+      "membership": "train",
+      "n_tokens": 64,
+      "prompt_text": "You will read a long note and then answer one question.\n\nNOTE START\nlorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet c\nSECRET_PASSCODE=ORBIT-77-ALPHA\nonsectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet c\nNOTE END\n\nQuestion: What is the secret passcode embedded in the note? Reply with only the passcode.",
+      "prompt_text_sha256": "419349225db034046161ff2727b741c74bd53a52db38879065d71b6b3c446e67",
+      "token_ids_sha256": "e3aaedfd90b763a01701005ae01d475c4cc359dfe8376ad3625f5e7ad6e2b9d8"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:rt04_multi",
+      "membership": "retention",
+      "n_tokens": 48,
+      "prompt_text": "Notes:\n- Primary gate is G5.\n- Secondary gate is G2.\n- Rollback token is QUARTZ.\nQuestion: Name the primary gate and the rollback token. Include both G5 and QUARTZ in the answer.",
+      "prompt_text_sha256": "a01225e8e36d23e7d16b908d72a71e2966d8687fd299e51c75b17f2a1b1c1ca2",
+      "token_ids_sha256": "684b110b223f97de88aef63f008e278d09e90f8b5374134ff0a3c688bf521321"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:gr01_wolves",
+      "membership": "retention",
+      "n_tokens": 63,
+      "prompt_text": "There are 3 wolves and 4 sheep on one side of a river. A boat holds at most 2 animals. Wolves may never outnumber sheep on either side if sheep are present. Is the classic constraint about not leaving wolves outnumbering sheep on a side with sheep present? Reply with only YES or NO.",
+      "prompt_text_sha256": "06c53080dada6908243413386d6439127049991836d23e4c9aeaabaefc1baf70",
+      "token_ids_sha256": "0035b79d716c7cf49df8343b49c50a3d257181bee6129cd886f30d509845f148"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:rt03_table",
+      "membership": "train",
+      "n_tokens": 40,
+      "prompt_text": "Table:\nname,role,id\nAda,router,17\nBen,expert,22\nCy,verifier,9\nQuestion: What is Ben's id? Reply with only the number.",
+      "prompt_text_sha256": "93f61242259f3d6f3e500e782ab3656c31cfced1cac69fe239c46f98052e7022",
+      "token_ids_sha256": "1eb1530d00b2f3f546d0f41fd405385adc043d38b012c942f2eec8d8ed2c26c1"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:rt02_doc_lookup",
+      "membership": "train",
+      "n_tokens": 58,
+      "prompt_text": "Document:\nSensor A reports 12.5 kPa. Sensor B reports 9.1 kPa. The interlock trips if either exceeds 11.0 kPa.\nQuestion: Which sensor would trip the interlock based on the readings above? Reply with only A or B.",
+      "prompt_text_sha256": "c69045e5c7977ff5c90e8eb542fdaefdb0f3838961a747124ed6807fbf3cddd6",
+      "token_ids_sha256": "459003047cdad2d32904033691b02c309785341a91e4e553f35154a28d52e811"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:tl04_deterministic",
+      "membership": "train",
+      "n_tokens": 29,
+      "prompt_text": "What does temperature=0 greedy decoding mean for reproducibility? Mention \"greedy\" and that the highest-probability token is chosen.",
+      "prompt_text_sha256": "0708fc7922ba4e088bfd84968c70124af6dc5caf47bc9c3812f5a59964cc2dae",
+      "token_ids_sha256": "378b913ab381a8c04f9928d36ff5202affdf3690a76990a9fa1de542b2d0e008"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:gr04_schedule",
+      "membership": "train",
+      "n_tokens": 49,
+      "prompt_text": "Alice can paint a fence in 6 hours, Bob in 3 hours. Working together at constant rates, how many hours do they need to paint one fence? Reply with only a number (integer or simplest fraction like 2/1).",
+      "prompt_text_sha256": "74abf2b5a8037ea378481678e913ae4ae21ee1049488355a28beb32db3f7742e",
+      "token_ids_sha256": "852492aeef40c6ba9488932af9efffd2716aa0fa7783aece3999103e6387b4c4"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:gr03_logic",
+      "membership": "train",
+      "n_tokens": 35,
+      "prompt_text": "All flurbs are glibs. No glib is a snorf. Is it possible that some flurb is a snorf? Reply with only YES or NO.",
+      "prompt_text_sha256": "14943b1e23e89cc5103d9403bcdbbc337ae5f4190ca9b57644da87775b3c06fa",
+      "token_ids_sha256": "656bb26c240a7a19645d86e44a0f0bae575589560cdab862b5e6cc255bc79fba"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:tl03_moe",
+      "membership": "train",
+      "n_tokens": 29,
+      "prompt_text": "In a Mixture-of-Experts transformer, what does the router do? Answer in 1-2 sentences and use the word \"expert\".",
+      "prompt_text_sha256": "8506796f969fc8dd8326ebac5284d02b5de26e601dc8cf176521618632d686a4",
+      "token_ids_sha256": "38fe6001344c60c7ee631724e72b51c23e71634bbcfc9637734fe4e93c1c8cd7"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:tl02_bpw",
+      "membership": "calibration",
+      "n_tokens": 25,
+      "prompt_text": "What does BPW stand for in model compression / quantization? Answer briefly and include the exact phrase \"bits per weight\".",
+      "prompt_text_sha256": "3ad41f34acfac4c307e15c00a229cfe564b4ccf6a240c0de79ce7cb1027cd852",
+      "token_ids_sha256": "12e10205a01dcc579eff4ecfda6be2360a0fa160d0885a6c89c8cf18b7aedef3"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:tl01_idempotent",
+      "membership": "calibration",
+      "n_tokens": 39,
+      "prompt_text": "In one or two sentences, define what an idempotent HTTP method means. Include the word \"idempotent\" and the idea that repeating the request does not change the resource state further.",
+      "prompt_text_sha256": "950c8ebdd20587da7a4ac3057c6a69c3d881f45df69eaa1afc36e047a46bfccb",
+      "token_ids_sha256": "d4bf695d15d966f763f1375a90ec8f588a6bb99b4748fe8cf5002f85dc8a0c2b"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:gr02_count",
+      "membership": "public_test",
+      "n_tokens": 39,
+      "prompt_text": "A sequence starts at 3 and each term is the previous term plus 5. What is the 4th term (the first term is term 1)? Reply with only the integer.",
+      "prompt_text_sha256": "31f83ce78dc834cd69505d9d84a91cddf06fcda6f4a3f701229c3a73a87bfb35",
+      "token_ids_sha256": "d0fe5d970ae6cef6973c0a057638cb366394a906fc0bd73f3bed78a1d4ea58ef"
+    },
+    {
+      "domain": "general",
+      "example_id": "pfv0:halo:rt01_doc_lookup",
+      "membership": "public_test",
+      "n_tokens": 45,
+      "prompt_text": "Document:\nProject ORION uses ledger code Zebra-914 and ships on vessel MARLIN.\nThe backup site is called COLDSTORE-7.\nQuestion: What is the ledger code? Reply with only the code.",
+      "prompt_text_sha256": "929dc9847d6d87f75ec943d6be441867416f32deb4241ca9974a5eb3f141f6ce",
+      "token_ids_sha256": "d8afd9a3727645414184966a4f0d1d8f2e2bffc6c8050689eb65ba7eb44de081"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:halo:sc05_screen_trivial",
+      "membership": "train",
+      "n_tokens": 27,
+      "prompt_text": "Previous answer was empty. Please answer: name one primary color. Include the word \"red\" or \"blue\" or \"yellow\".",
+      "prompt_text_sha256": "90cc5eed51b14f30e95fd77259a31d4bd734acb0b15f89eb532bf906491e8ba1",
+      "token_ids_sha256": "bdb604d52b8dc25f1f03b68ce83a8f39a9c54e1bb127faa914862f0960143932"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra19:742d6ed5:7e08",
+      "membership": "train",
+      "n_tokens": 50,
+      "prompt_text": "You are solving a formal proof search problem `extra_19`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rfl_close_19 goal=2 + 2 = 4\n\nPreferred tool family: rfl_close_19.",
+      "prompt_text_sha256": "bc31543734df150d11ac0778802bf9637aeb3a1a5f7904c5e6d9e52350fb8970",
+      "token_ids_sha256": "6f2917b9baf5bed681bae9e64b4db3401554d28bc0d2e4c3809e9af0dc1c854c"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:halo:sc03_fix_fact",
+      "membership": "train",
+      "n_tokens": 27,
+      "prompt_text": "Someone claimed the capital of Australia is Sydney. That is incorrect. What is the capital of Australia? Reply with only the city name.",
+      "prompt_text_sha256": "e2f0f05298362f628ce5a7e6085dd96561d9935eb94850021040f2901ed781eb",
+      "token_ids_sha256": "a1159ac31b6b1b3d286ea5d265679fb0472eb7f67eff11f4cb9ccb0b122008f7"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:checkpoint:extra7",
+      "membership": "calibration",
+      "n_tokens": 51,
+      "prompt_text": "You are solving a formal proof search problem `extra_7`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_7 id=d9f5147ca5f88a51\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "7fa22a9f8ee3f11217c03f0534e10482c57fbd437ed1f2c2f82e7b5c3f8959c3",
+      "token_ids_sha256": "6f983a3a961fe3cc6e334cb825e9de20986b64defe7f217eb642b14e44c3cd04"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:halo:sc02_fix_code",
+      "membership": "calibration",
+      "n_tokens": 64,
+      "prompt_text": "The following function is wrong:\n```python\ndef clamp(x, lo, hi):\n    return x\n```\nIt failed with: clamp(5, 0, 3) returned 5 but expected 3. Write a correct `clamp(x, lo, hi)` that returns x bounded into [lo, hi]. Return only the function in a fenced code block.",
+      "prompt_text_sha256": "52433baa22b0cef51508fcbfea1198495691fef70e30817be6db20cd4b49c693",
+      "token_ids_sha256": "9a58475b9c1b20314da86a83458267d3094c7afd9095ed0ade50faea72131f92"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra4:18aabb09:91b2",
+      "membership": "public_test",
+      "n_tokens": 43,
+      "prompt_text": "You are solving a formal proof search problem `extra_4`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_4 goal=x = x\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "c093db853501bfcae9d73fd166ad10e12309b516f668df479ec9f8d3114b33e5",
+      "token_ids_sha256": "b50b4f50834ac6eeffbd6d4193b76064eb98818c3a4577fa80591bcccd0aee74"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra10:5e686393:6bac",
+      "membership": "public_test",
+      "n_tokens": 47,
+      "prompt_text": "You are solving a formal proof search problem `extra_10`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_10 goal=a * b = b * a\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "caa96c2cf5a2e92730f56bb12412d8e1edad181f67a0df44e66c414f46ceeab6",
+      "token_ids_sha256": "72d043e6b0f4e3ff2ca2c58ac0b5b5d2f7d8a7835238d8c6ff0ae2c72f08a637"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:extra1:20ce0eba:f84f",
+      "membership": "hidden_test",
+      "n_tokens": 46,
+      "prompt_text": "You are solving a formal proof search problem `extra_1`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw step0_1 goal=0 + n = n\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "cb33998f198b68e82e0b94e14895431928b33bb96e15b93d712046589a914d54",
+      "token_ids_sha256": "001c6de2865ea9de62f4231991270401b3aa8372eee5b10136647bfee227ddf4"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:halo:sc01_fix_math",
+      "membership": "hidden_test",
+      "n_tokens": 28,
+      "prompt_text": "A student answered 17*23 as 381. That is wrong. What is the correct product? Reply with only the integer.",
+      "prompt_text_sha256": "98733d281f23685d570f75753b80b5c4346c85fafe6bbebe8b1111ae51367283",
+      "token_ids_sha256": "51beebdd7301a753a21b3b7c65eafd0af199031faf6b8ea5789b158edee68c9e"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:search:two_step:3eefe03e:rw add_zero",
+      "membership": "hidden_test",
+      "n_tokens": 42,
+      "prompt_text": "You are solving a formal proof search problem `two_step`.\nEmit the next tool action.\n\nContext:\ntool=tactic action=rw add_zero problem=two_step found=True\n\nPreferred tool family: rw.",
+      "prompt_text_sha256": "4c4544dd6ca45cdacbc62287a83feb54683446bf192c06d1c1c20f4a2b4c8993",
+      "token_ids_sha256": "840fdb3f4374b4abe47aa4057ed2f50e06686b424d724a9d5a19e27f64e0a206"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:retrieve:extra2",
+      "membership": "hidden_test",
+      "n_tokens": 56,
+      "prompt_text": "You are solving a formal proof search problem `extra_2`.\nEmit the next tool action.\n\nContext:\ntool=premise_retrieval goal=n * 1 = n top=['add_assoc', 'add_comm']\n\nPreferred tool family: PremiseRetrieval.retrieve.",
+      "prompt_text_sha256": "580a44834c4ab8ba9ac66809fcad36876efe55886bded15d39a9ebd095f248b9",
+      "token_ids_sha256": "ef951330538104a46faa3bdd476fbf02ed1b94ea0a4f8ba3d26572ba6adf62de"
+    },
+    {
+      "domain": "agent",
+      "example_id": "pfv0:d7:checkpoint:extra11",
+      "membership": "hidden_test",
+      "n_tokens": 51,
+      "prompt_text": "You are solving a formal proof search problem `extra_11`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_11 id=7ff734a7763cc902\n\nPreferred tool family: search_checkpoint.",
+      "prompt_text_sha256": "4717ac8eeb161bddd42f969ed7d86745ea4773e88901e1034ea6beb2f489292c",
+      "token_ids_sha256": "c801e6b75759184ae19d28f41fa0768577087c180d2e8413dc73834b904220c5"
+    }
+  ],
+  "source": "PROTO_FRANKENSTEIN_V0_MERGED_CORPUS",
+  "target_n": 128
+}
