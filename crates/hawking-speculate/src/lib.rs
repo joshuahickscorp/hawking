@@ -53,7 +53,8 @@ pub mod verifier;
 pub use durable::{DurableRecord, DurableTokenSink, InMemoryDurableSink};
 pub use kv_dual::{CommittedKv, DualKv, KvFingerprint, ProvisionalKv};
 pub use metrics_sep::{
-    AccelCostLedger, AcceleratedAcceptedTps, BaseTrueTps, SeparatedTpsScoreboard,
+    AccelCostLedger, AcceleratedAcceptedTps, BaseTrueTps, BlockExecutedTps, PrefillTps,
+    SeparatedTgScoreboard, SeparatedTpsScoreboard, TtftSeconds,
 };
 pub use suspension::{
     action_for, evaluate, policy_for, SpeculationPermit, SuspensionAction, SuspensionBoundary,

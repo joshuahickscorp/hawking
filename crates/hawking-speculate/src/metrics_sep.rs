@@ -1,12 +1,16 @@
-//! Metric separation for speculation scoreboards.
+//! Metric separation for speculation and TG-ladder scoreboards.
 //!
-//! `BASE_TRUE_TPS` and `ACCELERATED_ACCEPTED_TPS` must never be averaged or
-//! mixed in a shared float field. They are distinct newtypes with no conversion
-//! between them and no shared "mean tps" helper.
+//! `BASE_TRUE_TPS`, `BLOCK_EXECUTED_TPS`, `ACCELERATED_ACCEPTED_TPS`,
+//! `PREFILL_TPS`, and `TTFT` must never be averaged or mixed in a shared float
+//! field. They are distinct newtypes with no conversion between them and no
+//! shared "mean tps" helper.
 //!
 //! **Accepted TPS accounting rule:** wall time must include **full draft +
 //! verify + rollback** cost. Draft-side throughput alone is not
 //! `ACCELERATED_ACCEPTED_TPS`.
+//!
+//! Ascension bible §10 keeps the same separation for Self-TG gauntlets;
+//! Python scaffold: `lab/operators/ascension_tg_gauntlet.py`.
 
 use core::fmt;
 use core::time::Duration;
@@ -20,6 +24,22 @@ pub struct BaseTrueTps(f64);
 /// cost in the denominator. Scoreboard name: `ACCELERATED_ACCEPTED_TPS`.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct AcceleratedAcceptedTps(f64);
+
+/// Tokens/second counted only while the GPU block/command graph is executing
+/// (excludes host queue wait that is not device work). Scoreboard name:
+/// `BLOCK_EXECUTED_TPS`. Never a substitute for `BASE_TRUE_TPS`.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct BlockExecutedTps(f64);
+
+/// Prefill-phase tokens/second. Scoreboard name: `PREFILL_TPS`.
+/// Kept separate from decode `BASE_TRUE_TPS`.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct PrefillTps(f64);
+
+/// Time to first token (seconds). Scoreboard name: `TTFT`.
+/// Not a tokens/second metric; never mixed into a TPS average.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct TtftSeconds(f64);
 
 impl BaseTrueTps {
     pub const SCOREBOARD: &'static str = "BASE_TRUE_TPS";
@@ -50,6 +70,54 @@ impl AcceleratedAcceptedTps {
     }
 }
 
+impl BlockExecutedTps {
+    pub const SCOREBOARD: &'static str = "BLOCK_EXECUTED_TPS";
+
+    pub fn new(tps: f64) -> Self {
+        Self(tps.max(0.0))
+    }
+
+    pub fn value(self) -> f64 {
+        self.0
+    }
+
+    pub fn from_counts(tokens: u64, block_wall: Duration) -> Self {
+        Self::new(tps(tokens, block_wall))
+    }
+}
+
+impl PrefillTps {
+    pub const SCOREBOARD: &'static str = "PREFILL_TPS";
+
+    pub fn new(tps: f64) -> Self {
+        Self(tps.max(0.0))
+    }
+
+    pub fn value(self) -> f64 {
+        self.0
+    }
+
+    pub fn from_counts(tokens: u64, wall: Duration) -> Self {
+        Self::new(tps(tokens, wall))
+    }
+}
+
+impl TtftSeconds {
+    pub const SCOREBOARD: &'static str = "TTFT";
+
+    pub fn new(seconds: f64) -> Self {
+        Self(seconds.max(0.0))
+    }
+
+    pub fn value(self) -> f64 {
+        self.0
+    }
+
+    pub fn from_duration(wall: Duration) -> Self {
+        Self::new(wall.as_secs_f64())
+    }
+}
+
 impl fmt::Display for BaseTrueTps {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}={:.6}", Self::SCOREBOARD, self.0)
@@ -59,6 +127,24 @@ impl fmt::Display for BaseTrueTps {
 impl fmt::Display for AcceleratedAcceptedTps {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}={:.6}", Self::SCOREBOARD, self.0)
+    }
+}
+
+impl fmt::Display for BlockExecutedTps {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}={:.6}", Self::SCOREBOARD, self.0)
+    }
+}
+
+impl fmt::Display for PrefillTps {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}={:.6}", Self::SCOREBOARD, self.0)
+    }
+}
+
+impl fmt::Display for TtftSeconds {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}={:.6}s", Self::SCOREBOARD, self.0)
     }
 }
 
@@ -156,6 +242,40 @@ impl SeparatedTpsScoreboard {
     }
 }
 
+/// Full TG / complete-token scoreboard with every bible §10 metric kept as a
+/// distinct typed field. Optional cells are `None` until eligible measurement.
+/// There is **no** blended TPS method.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SeparatedTgScoreboard {
+    pub base_true: Option<BaseTrueTps>,
+    pub block_executed: Option<BlockExecutedTps>,
+    pub accelerated_accepted: Option<AcceleratedAcceptedTps>,
+    pub prefill: Option<PrefillTps>,
+    pub ttft: Option<TtftSeconds>,
+}
+
+impl SeparatedTgScoreboard {
+    pub fn empty() -> Self {
+        Self {
+            base_true: None,
+            block_executed: None,
+            accelerated_accepted: None,
+            prefill: None,
+            ttft: None,
+        }
+    }
+
+    /// Reporting-only speedup; never a blended mean.
+    pub fn accel_over_base_ratio(self) -> Option<f64> {
+        let b = self.base_true?.value();
+        let a = self.accelerated_accepted?.value();
+        if b <= 0.0 {
+            return None;
+        }
+        Some(a / b)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -195,5 +315,27 @@ mod tests {
         assert!((board.accelerated_accepted.value() - 70.0).abs() < 1e-9);
         let ratio = board.speedup_ratio().unwrap();
         assert!((ratio - 0.7).abs() < 1e-9);
+    }
+
+    #[test]
+    fn tg_scoreboard_keeps_block_prefill_ttft_separate() {
+        let mut board = SeparatedTgScoreboard::empty();
+        assert!(board.base_true.is_none());
+        board.base_true = Some(BaseTrueTps::from_counts(50, Duration::from_secs(1)));
+        board.block_executed = Some(BlockExecutedTps::from_counts(80, Duration::from_secs(1)));
+        board.prefill = Some(PrefillTps::from_counts(200, Duration::from_secs(1)));
+        board.ttft = Some(TtftSeconds::from_duration(Duration::from_millis(25)));
+        board.accelerated_accepted = Some(AcceleratedAcceptedTps::new(70.0));
+        assert_eq!(board.base_true.unwrap().value(), 50.0);
+        assert_eq!(board.block_executed.unwrap().value(), 80.0);
+        assert_eq!(board.prefill.unwrap().value(), 200.0);
+        assert!((board.ttft.unwrap().value() - 0.025).abs() < 1e-9);
+        // Block-executed must not silently stand in for base-true.
+        assert!(board.block_executed.unwrap().value() > board.base_true.unwrap().value());
+        assert_eq!(BlockExecutedTps::SCOREBOARD, "BLOCK_EXECUTED_TPS");
+        assert_eq!(PrefillTps::SCOREBOARD, "PREFILL_TPS");
+        assert_eq!(TtftSeconds::SCOREBOARD, "TTFT");
+        let ratio = board.accel_over_base_ratio().unwrap();
+        assert!((ratio - 1.4).abs() < 1e-9);
     }
 }
