@@ -27,6 +27,9 @@
 //!   descriptor registry; the wasmtime component host is post-shell. No
 //!   `wasmtime` dep.
 
+/// HCLI Agent OS — many logical agents on one loaded model (Ascension §13).
+/// Scaffold: pure state machine + fairness/starvation/tool-wait; no model I/O.
+pub mod agent_scheduler;
 pub mod approval;
 /// Production writers for the six classed memory stores (one mint site per cap).
 pub mod classed_writers;
@@ -53,6 +56,9 @@ pub mod live_thread;
 pub mod memory;
 pub mod model_provider;
 pub mod plan_domain;
+/// HCLI Agent OS — planning diagnostic stage pipeline + research contract (§14).
+/// Scaffold: receipts + validation; no model plan synthesis or tool execution.
+pub mod planning_diagnostic;
 pub mod policy;
 pub mod process;
 pub mod program;
@@ -70,6 +76,11 @@ pub mod tools;
 pub mod tq_metadata;
 pub mod ui_bus;
 
+pub use agent_scheduler::{
+    AgentSchedState, AgentScheduler, AgentTickPlan, CheckpointRef, LogicalAgent, LogicalAgentId,
+    ModelResidency, ModelResidencyId, ResidencyMode, SchedError, SchedulerMetrics, SchedulerPolicy,
+    AGENT_SCHEDULER_SCHEMA,
+};
 pub use approval::{ApprovalDecision, ApprovalHub};
 pub use commands::CommandRouter;
 pub use compat_instructions::{
@@ -88,6 +99,11 @@ pub use memory::{
     MemoryStatus, PrivacyClass, RevalidateTarget,
 };
 pub use model_provider::{GenerateRoute, HttpModelProvider};
+pub use planning_diagnostic::{
+    reject_unbounded_language, DiagnosticError, DiagnosticPlanProposal, DiagnosticRunStatus,
+    DiagnosticStage, ExperimentBound, KernelResearchContract, PlanningDiagnosticRun, PlanningMode,
+    StageReceipt, StageStatus, PLANNING_DIAGNOSTIC_SCHEMA,
+};
 pub use policy::{
     derive_policy_decision, tool_declared_effects, PolicyDecision, PolicyDecisionRecord,
 };
