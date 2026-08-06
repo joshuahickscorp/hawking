@@ -1,0 +1,272 @@
+{
+  "schema": "hawking.ascension.completion_states.v1",
+  "bible_section": 36,
+  "bible_source": "HAWKING_ASCENSION_BIBLE.md",
+  "title": "Ascension completion state machine",
+  "authority": {
+    "sandbox_models": "may_report_candidate_only",
+    "controller_or_human": "sole_certifier_of_terminal_and_promoted_states",
+    "rule": "Sandbox models may report candidate states. Only the controller or human certifies terminal states."
+  },
+  "status_policy": {
+    "allowed_statuses": [
+      "CANDIDATE",
+      "SANDBOX_REPORTED",
+      "CONTROLLER_CERTIFIED",
+      "REJECTED",
+      "SUPERSEDED"
+    ],
+    "initial_status": "CANDIDATE",
+    "note": "Every state seeds as CANDIDATE (not achieved). SANDBOX_REPORTED is a non-authoritative claim. CONTROLLER_CERTIFIED is the only value that gates later programme work."
+  },
+  "states": [
+    {
+      "id": "PROTO_FRANKENSTEIN_OFFLOADED",
+      "order": 0,
+      "description": "Proto-Frankenstein finished, sealed, offloaded, hash-verified, and removed from the active local storage envelope.",
+      "prerequisites": [],
+      "produced_by_schedule_steps": [0],
+      "gates_schedule_steps": [1, 2, 3, 4],
+      "gates_states": [
+        "HAWKING_RESEARCH_PORTFOLIO_FROZEN",
+        "HCLI_AGENT_OS_FOUNDATION_READY"
+      ],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HAWKING_RESEARCH_PORTFOLIO_FROZEN",
+      "order": 1,
+      "description": "Research registry/Graveyard live; Qwen architectures audited; B/F/U/R/D/S/K mechanisms prototyped and classified (Gravity/runtime/kernel/deferred/rejected).",
+      "prerequisites": ["PROTO_FRANKENSTEIN_OFFLOADED"],
+      "produced_by_schedule_steps": [5, 6, 7, 8],
+      "gates_schedule_steps": [10, 11],
+      "gates_states": [
+        "QWEN3_30B_GRAVITY_READY",
+        "QWEN3_NEXT_80B_GRAVITY_READY"
+      ],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HCLI_AGENT_OS_FOUNDATION_READY",
+      "order": 2,
+      "description": "HCLI Agent OS foundations installed: scheduler, planning diagnostic, retrieval gateway, tool gateway, memory OS, Skill Foundry, perception service, execution sandbox, verification authority, observability.",
+      "prerequisites": ["PROTO_FRANKENSTEIN_OFFLOADED"],
+      "produced_by_schedule_steps": [9],
+      "gates_schedule_steps": [24, 26],
+      "gates_states": [
+        "HAWKING_OPTION_C_KERNEL_SANDBOX_READY",
+        "HCLI_AGENT_PIPELINE_READY"
+      ],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "QWEN3_30B_GRAVITY_READY",
+      "order": 3,
+      "description": "Qwen3-Coder-30B streamed and Gravity-packaged as a sealed exact-model substrate.",
+      "prerequisites": ["HAWKING_RESEARCH_PORTFOLIO_FROZEN"],
+      "produced_by_schedule_steps": [11],
+      "gates_schedule_steps": [12, 13, 14],
+      "gates_states": ["QWEN3_30B_EXECUTOR_READY"],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "TG3_REVIEW_REQUIRED",
+      "order": 4,
+      "description": "Mandatory TG3 stop-for-review gate. Re-entered after each self-TG gauntlet (30B and 80B). Sandbox may signal readiness for review; only controller/human clears the gate.",
+      "prerequisites": [],
+      "produced_by_schedule_steps": [15, 22],
+      "gates_schedule_steps": [16, 23, 31],
+      "gates_states": [
+        "QWEN3_30B_EXECUTOR_READY",
+        "QWEN3_NEXT_80B_REVIEWER_READY"
+      ],
+      "kind": "review_gate",
+      "re_entrant": true,
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": [],
+      "notes": "Clearing TG3 means controller/human recorded a review decision for a specific subject (30B or 80B), not a permanent global flag that never returns."
+    },
+    {
+      "id": "QWEN3_30B_EXECUTOR_READY",
+      "order": 5,
+      "description": "30B exact-model path built, profiled, self-TG'd, TG3-reviewed, and promoted as the approved executor.",
+      "prerequisites": [
+        "QWEN3_30B_GRAVITY_READY",
+        "TG3_REVIEW_REQUIRED"
+      ],
+      "produced_by_schedule_steps": [12, 13, 14, 15, 16],
+      "gates_schedule_steps": [17, 19, 24, 28],
+      "gates_states": [
+        "HAWKING_OPTION_C_KERNEL_SANDBOX_READY",
+        "QWEN3_NEXT_80B_GRAVITY_READY"
+      ],
+      "kind": "promotion",
+      "may_be_reported_by": ["sandbox", "engineering"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "QWEN3_NEXT_80B_GRAVITY_READY",
+      "order": 6,
+      "description": "Qwen3-Coder-Next 80B streamed and Gravity-packaged.",
+      "prerequisites": [
+        "HAWKING_RESEARCH_PORTFOLIO_FROZEN",
+        "QWEN3_30B_EXECUTOR_READY"
+      ],
+      "produced_by_schedule_steps": [17],
+      "gates_schedule_steps": [18, 19, 20],
+      "gates_states": ["QWEN3_NEXT_80B_REVIEWER_READY"],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "QWEN3_NEXT_80B_REVIEWER_READY",
+      "order": 7,
+      "description": "80B hybrid path built, 30B wins ported where admitted, profiled, self-TG'd, TG3-reviewed, and promoted as the approved reviewer.",
+      "prerequisites": [
+        "QWEN3_NEXT_80B_GRAVITY_READY",
+        "TG3_REVIEW_REQUIRED"
+      ],
+      "produced_by_schedule_steps": [18, 19, 20, 21, 22, 23],
+      "gates_schedule_steps": [24, 28],
+      "gates_states": ["HAWKING_OPTION_C_KERNEL_SANDBOX_READY"],
+      "kind": "promotion",
+      "may_be_reported_by": ["sandbox", "engineering"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HAWKING_OPTION_C_KERNEL_SANDBOX_READY",
+      "order": 8,
+      "description": "Option-C HCLI kernel sandbox enabled with dual-resident / executor-resident / phase-separated modes testable.",
+      "prerequisites": [
+        "HCLI_AGENT_OS_FOUNDATION_READY",
+        "QWEN3_30B_EXECUTOR_READY",
+        "QWEN3_NEXT_80B_REVIEWER_READY"
+      ],
+      "produced_by_schedule_steps": [24, 25],
+      "gates_schedule_steps": [26, 27],
+      "gates_states": ["HCLI_AGENT_PIPELINE_READY"],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HCLI_AGENT_PIPELINE_READY",
+      "order": 9,
+      "description": "Production retrieval, memory, skills and selective perception enabled; bible §33 product-test matrix is the acceptance surface.",
+      "prerequisites": [
+        "HCLI_AGENT_OS_FOUNDATION_READY",
+        "HAWKING_OPTION_C_KERNEL_SANDBOX_READY"
+      ],
+      "produced_by_schedule_steps": [26],
+      "gates_schedule_steps": [27, 29, 32],
+      "gates_states": [
+        "HAWKING_SELF_CONTAINED_MODEL_LADDER_ACTIVE",
+        "HAWKING_APPLE_PRODUCTION_RELEASE_READY"
+      ],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HAWKING_SELF_CONTAINED_MODEL_LADDER_ACTIVE",
+      "order": 10,
+      "description": "Exact-model paths generalized into family graphs; autonomous wider model ladder launched under Hawking authority.",
+      "prerequisites": [
+        "HCLI_AGENT_PIPELINE_READY",
+        "QWEN3_30B_EXECUTOR_READY",
+        "QWEN3_NEXT_80B_REVIEWER_READY"
+      ],
+      "produced_by_schedule_steps": [28, 29],
+      "gates_schedule_steps": [30, 31, 32],
+      "gates_states": ["HAWKING_APPLE_PRODUCTION_RELEASE_READY"],
+      "kind": "milestone",
+      "may_be_reported_by": ["sandbox", "engineering", "controller", "human"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": []
+    },
+    {
+      "id": "HAWKING_APPLE_PRODUCTION_RELEASE_READY",
+      "order": 11,
+      "description": "Apple production release sealed. Terminal programme state for the Apple-first slice. CUDA remains a separately funded post-release backend.",
+      "prerequisites": [
+        "HCLI_AGENT_PIPELINE_READY",
+        "HAWKING_SELF_CONTAINED_MODEL_LADDER_ACTIVE"
+      ],
+      "produced_by_schedule_steps": [32],
+      "gates_schedule_steps": [33],
+      "gates_states": [],
+      "kind": "terminal",
+      "may_be_reported_by": ["sandbox", "engineering"],
+      "may_be_certified_by": ["controller", "human"],
+      "status": "CANDIDATE",
+      "certified_by": null,
+      "certified_at": null,
+      "evidence_refs": [],
+      "notes": "No sandbox model may mark this CONTROLLER_CERTIFIED."
+    }
+  ],
+  "state_count": 12,
+  "certification_api": {
+    "sandbox_report": {
+      "allowed_fields": ["status=SANDBOX_REPORTED", "evidence_refs", "notes"],
+      "forbidden_fields": ["status=CONTROLLER_CERTIFIED", "certified_by", "certified_at"]
+    },
+    "controller_certify": {
+      "required_fields": ["status=CONTROLLER_CERTIFIED", "certified_by", "certified_at", "evidence_refs"],
+      "actors": ["controller", "human"]
+    }
+  },
+  "tracking_notes": "This file is the durable state machine for the programme. Do not flip status away from CANDIDATE without real sealed evidence and an authorized certifier."
+}
