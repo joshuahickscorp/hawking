@@ -507,6 +507,40 @@ class FrozenCorpus:
         self.seal_sha256 = sealed["seal_sha256"]
         return sealed
 
+    def slice_sequences(self, start: int, end: int | None = None) -> "FrozenCorpus":
+        """Return a new corpus covering sequences[start:end] (half-open).
+
+        Used for sequence-batch multi-worker sharding when weights are already
+        resident. Does not change token content — only which examples this
+        process owns. Re-freezes membership/seal over the slice.
+        """
+        n = self.n_sequences
+        if start < 0:
+            raise TeacherForcedError(f"seq_start must be >= 0, got {start}")
+        stop = n if end is None else int(end)
+        if stop < start:
+            raise TeacherForcedError(
+                f"seq_end ({stop}) must be >= seq_start ({start})"
+            )
+        if start > n:
+            raise TeacherForcedError(
+                f"seq_start ({start}) exceeds corpus length ({n})"
+            )
+        stop = min(stop, n)
+        sliced = list(self.sequences[start:stop])
+        mgr = MembershipManager()
+        for seq in sliced:
+            mgr.assign(seq.example_id, seq.membership)
+        return FrozenCorpus(
+            level=self.level,
+            sequences=sliced,
+            membership=mgr,
+            pad_id=self.pad_id,
+            max_sequence=self.max_sequence,
+            revision=self.revision,
+            source=f"{self.source}|shard[{start}:{stop}]",
+        )
+
 
 def _synthetic_prompts(n: int) -> list[tuple[str, str, str]]:
     """(example_id, membership, text) for offline synthetic L0/L1 smoke."""
@@ -1237,6 +1271,14 @@ class ExecutorConfig:
     control_root: Path | None = None
     prefetch: bool = True
     corpus_jsonl: Path | None = None  # merged v0 L0/L1 jsonl override
+    # Sequence-batch multi-worker sharding (safe only when weights are not
+    # independently re-streamed per worker — see allow_weight_stream_amplification).
+    seq_start: int = 0
+    seq_end: int | None = None  # exclusive; None = full corpus after freeze
+    worker_id: str | None = None
+    # Explicit opt-in to the DANGEROUS pattern: N stream workers each re-fetch
+    # the same ~1.5 TB donor body (network bytes × N). Default refuse.
+    allow_weight_stream_amplification: bool = False
     # Model architecture binding. Defaults to GLM-5.2 so existing callers and
     # sealed 78-layer capture paths stay byte-identical.
     architecture: DonorArchitecture = GLM52_ARCHITECTURE
@@ -1372,6 +1414,46 @@ def _build_plan_from_streamer(
     )
 
 
+def _shard_is_active(cfg: ExecutorConfig) -> bool:
+    return int(cfg.seq_start or 0) > 0 or cfg.seq_end is not None
+
+
+def _apply_corpus_shard(
+    corpus: FrozenCorpus, cfg: ExecutorConfig
+) -> tuple[FrozenCorpus, dict[str, Any]]:
+    """Slice a frozen corpus to [seq_start, seq_end) and record shard provenance."""
+    corpus_len = corpus.n_sequences
+    start = int(cfg.seq_start or 0)
+    end = corpus_len if cfg.seq_end is None else int(cfg.seq_end)
+    if start == 0 and cfg.seq_end is None:
+        meta = {
+            "seq_start": 0,
+            "seq_end": corpus_len,
+            "corpus_len_before_shard": corpus_len,
+            "n_sequences_in_shard": corpus_len,
+            "worker_id": cfg.worker_id,
+            "out_dir": str(cfg.output_dir),
+            "sharded": False,
+            "weight_stream_amplification_risk": False,
+        }
+        return corpus, meta
+    sliced = corpus.slice_sequences(start, end)
+    meta = {
+        "seq_start": start,
+        "seq_end": end,
+        "corpus_len_before_shard": corpus_len,
+        "n_sequences_in_shard": sliced.n_sequences,
+        "worker_id": cfg.worker_id,
+        "out_dir": str(cfg.output_dir),
+        "sharded": True,
+        "example_ids": [s.example_id for s in sliced.sequences],
+        # True only if this process will independently stream weights (see guard).
+        "weight_stream_amplification_risk": bool(cfg.stream)
+        and cfg.profile == PROFILE_OFFICIAL,
+    }
+    return sliced, meta
+
+
 def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
     """Execute the full layer-major teacher-forced capture pipeline."""
     started = time.time()
@@ -1394,6 +1476,24 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
 
     # Official streaming path: control plane + direct hf_hub layer-major body.
     use_stream = bool(cfg.stream) and profile == PROFILE_OFFICIAL
+
+    # Fail closed: sequence multi-worker + independent weight re-stream multiplies
+    # network bytes by N. Sealed full-stack runs already sit at ~95–119% of the
+    # 194 MiB/s public-path ceiling — more concurrent re-streams cannot help and
+    # typically make wall-clock worse. Safe form: resident weights (synthetic or
+    # shared no-evict root) with sequence shards, one stream of weights.
+    if use_stream and _shard_is_active(cfg) and not cfg.allow_weight_stream_amplification:
+        raise TeacherForcedError(
+            "sequence sharding with --stream would re-fetch the same donor layer "
+            "weights per worker (network bytes × N). Official GLM capture is already "
+            "link-ceiling-bound (sealed L0 full-stack wall ~184–232 MiB/s vs "
+            "TG_XET_PUBLIC_PATH_SUSTAINED_WINNER_RETRY_BALANCED_SCHEDULER 194 MiB/s). "
+            "Refuse by default. Safe parallelism: resident weights without --stream "
+            "(or shared stream_root + single downloader) using --seq-start/--seq-end. "
+            "Override only with --allow-weight-stream-amplification after measuring "
+            "amplification cost."
+        )
+
     if use_stream:
         control = Path(cfg.control_root or DEFAULT_CONTROL_ROOT)
         try:
@@ -1488,6 +1588,15 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
                     vocab_size=int(config["vocab_size"]),
                     pad_id=0,
                 )
+
+    # Sequence-batch shard AFTER freeze so token identity matches serial baseline
+    # on the same global indices; seal is over the worker's slice only.
+    corpus, shard_meta = _apply_corpus_shard(corpus, cfg)
+    if corpus.n_sequences == 0:
+        raise TeacherForcedError(
+            f"empty sequence shard [{shard_meta['seq_start']}:{shard_meta['seq_end']}] "
+            f"of corpus_len={shard_meta['corpus_len_before_shard']}"
+        )
 
     corpus_doc = corpus.document()
     atomic_json(out / f"FROZEN_CORPUS_{cfg.corpus_level}.json", corpus_doc)
@@ -1956,7 +2065,9 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
                 "membership_sha256": corpus.membership_sha256(),
                 "seal_sha256": corpus_doc["seal_sha256"],
                 "max_sequence": corpus.max_sequence,
+                "shard": dict(shard_meta),
             },
+            "shard": dict(shard_meta),
             "layers_captured": layers_captured,
             "deepest_layer_verified": (max(layers_captured) if layers_captured else None),
             "layers_total_config": int(config["num_hidden_layers"]),
@@ -2103,6 +2214,38 @@ def main(argv: list[str] | None = None) -> int:
         help="Override merged v0 corpus jsonl (default PROTO_FRANKENSTEIN_V0_L0/L1)",
     )
     parser.add_argument(
+        "--seq-start",
+        type=int,
+        default=0,
+        help=(
+            "Inclusive 0-based sequence index into the frozen corpus (after level "
+            "size). Safe multi-worker form when weights are resident (no --stream). "
+            "Shared source_root across workers requires --no-evict so workers do "
+            "not unlink each other's weight shards."
+        ),
+    )
+    parser.add_argument(
+        "--seq-end",
+        type=int,
+        default=None,
+        help="Exclusive sequence end index; default = full corpus length",
+    )
+    parser.add_argument(
+        "--worker-id",
+        type=str,
+        default=None,
+        help="Optional label recorded in receipt.shard for merge provenance",
+    )
+    parser.add_argument(
+        "--allow-weight-stream-amplification",
+        action="store_true",
+        help=(
+            "DANGEROUS: permit --seq-start/--seq-end together with --stream "
+            "(each worker re-downloads the same ~1.5 TB donor body). Default is "
+            "fail-closed because the official path is already link-ceiling-bound."
+        ),
+    )
+    parser.add_argument(
         "--build-synthetic-fixture",
         type=Path,
         default=None,
@@ -2176,6 +2319,12 @@ def main(argv: list[str] | None = None) -> int:
         control_root=args.control_root,
         prefetch=not args.no_prefetch,
         corpus_jsonl=args.corpus_jsonl,
+        seq_start=int(args.seq_start or 0),
+        seq_end=args.seq_end,
+        worker_id=args.worker_id,
+        allow_weight_stream_amplification=bool(
+            args.allow_weight_stream_amplification
+        ),
     )
     try:
         receipt = run_teacher_forced(cfg)

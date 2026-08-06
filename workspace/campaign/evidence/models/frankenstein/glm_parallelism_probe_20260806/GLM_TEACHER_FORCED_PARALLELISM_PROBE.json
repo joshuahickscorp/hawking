@@ -1,0 +1,692 @@
+{
+  "branch": "grok/glm-parallel-design-20260806-082059",
+  "code_changes": [
+    {
+      "change": "Added --seq-start/--seq-end/--worker-id sequence sharding; fail-closed refuse of --stream + sharding without --allow-weight-stream-amplification; shard provenance on receipt; FrozenCorpus.slice_sequences",
+      "path": "lab/operators/frankenstein_teacher_forced_executor.py"
+    },
+    {
+      "change": "Merge disjoint worker out-dirs: concat layer/carry npz axis0, paired traces, merged receipt",
+      "path": "tools/condense/merge_glm_teacher_forced_shards.py"
+    },
+    {
+      "change": "Official receipt ceiling analysis + synthetic bit-exact probe + amplification model",
+      "path": "tools/condense/glm_teacher_forced_parallelism_probe.py"
+    },
+    {
+      "change": "Bit-exact 2w/4w vs serial; stream amplification refuse; overlap refuse at merge",
+      "path": "tools/condense/tests/test_glm_teacher_forced_sequence_sharding.py"
+    },
+    {
+      "change": "This seal",
+      "path": "GLM_TEACHER_FORCED_PARALLELISM_FINDINGS.json"
+    }
+  ],
+  "confidence": {
+    "link_bound_diagnosis": 0.93,
+    "no_naive_restream_headroom": 0.97,
+    "notes": "Official full-stack wall 184.5 MiB/s = 95% of sealed 194 MiB/s ceiling; Amdahl max from residual ~1.05x. Sequence sharding correctness proven bit-exact on synthetic resident weights. ProcessPool blocked in sandbox; subprocess concurrent showed 1.25x@2w on tiny synthetic only.",
+    "official_multiworker_speedup_if_attempted": 0.05,
+    "overall": 0.9,
+    "sequence_shard_bit_exact_synthetic": 0.95
+  },
+  "fabricated_speedup": false,
+  "full_scale_run_launched": false,
+  "headroom": {
+    "exists_for_multi_worker_download": false,
+    "exists_for_naive_process_duplication_with_restream": false,
+    "exists_for_sequence_batch_on_resident_weights": true,
+    "recommended_action": "Do NOT launch N independent --stream workers. Keep single layer-major streamer (already double-buffered). Sequence sharding is implemented and correctness-proven for resident weights only; official path remains one process, one weight stream. Optional future: one downloader + multi-consumer forward on resident layer (attacks ~5% residual only).",
+    "why": [
+      "Official wall rate 184.451 MiB/s is 95.08% of sealed 194 MiB/s public-path ceiling \u2014 link-bound.",
+      "Residual vs pure-download-at-ceiling is only 4.9% of wall (Amdahl max ~1.0518x even if residual fully parallelizes)."
+    ]
+  },
+  "naive_stream_amplification_model": {
+    "assumption": "N independent --stream workers each re-download the full donor body; single shared public path at measured wall MiB/s.",
+    "rows": [
+      {
+        "network_amplification": 1,
+        "network_bytes": 1490586345576,
+        "speedup_vs_serial_if_link_saturated": 1.0,
+        "verdict": "BASELINE",
+        "wall_lower_bound_from_bytes_at_measured_rate_s": 7706.838,
+        "wall_lower_bound_if_link_saturated_s": 7706.83,
+        "workers": 1
+      },
+      {
+        "network_amplification": 2,
+        "network_bytes": 2981172691152,
+        "speedup_vs_serial_if_link_saturated": 0.5,
+        "verdict": "WORSE_NOT_BETTER",
+        "wall_lower_bound_from_bytes_at_measured_rate_s": 15413.675,
+        "wall_lower_bound_if_link_saturated_s": 15413.66,
+        "workers": 2
+      },
+      {
+        "network_amplification": 4,
+        "network_bytes": 5962345382304,
+        "speedup_vs_serial_if_link_saturated": 0.25,
+        "verdict": "WORSE_NOT_BETTER",
+        "wall_lower_bound_from_bytes_at_measured_rate_s": 30827.351,
+        "wall_lower_bound_if_link_saturated_s": 30827.32,
+        "workers": 4
+      }
+    ]
+  },
+  "official_receipt_analysis": [
+    {
+      "amdahl_max_speedup_if_only_residual_parallel": 1.0518,
+      "bytes_fetched": 1490586345576,
+      "capture_seconds": 7706.83,
+      "ceiling_mib_s": 194.0,
+      "fetch_seconds_sum_of_shard_downloads": 14022.843,
+      "interpretation": "Already at/near public-path link ceiling on wall-clock bytes/capture_seconds. Residual compute/export vs pure-download-at-ceiling is the ONLY sequence-parallel headroom without re-fetching weights.",
+      "layers_captured": 78,
+      "n_sequences": 32,
+      "path": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json",
+      "pct_of_ceiling": 95.08,
+      "pure_download_seconds_at_ceiling": 7327.494,
+      "residual_fraction_of_wall": 0.0492,
+      "residual_seconds_vs_ceiling": 379.336,
+      "status": "PASS_FULL_STACK",
+      "wall_mib_s": 184.451
+    },
+    {
+      "amdahl_max_speedup_if_only_residual_parallel": 1.0,
+      "bytes_fetched": 1479859916920,
+      "capture_seconds": 6090.402,
+      "ceiling_mib_s": 194.0,
+      "fetch_seconds_sum_of_shard_downloads": 20454.356,
+      "interpretation": "Already at/near public-path link ceiling on wall-clock bytes/capture_seconds. Residual compute/export vs pure-download-at-ceiling is the ONLY sequence-parallel headroom without re-fetching weights.",
+      "layers_captured": 78,
+      "n_sequences": 32,
+      "path": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json",
+      "pct_of_ceiling": 119.45,
+      "pure_download_seconds_at_ceiling": 7274.765,
+      "residual_fraction_of_wall": -0.1945,
+      "residual_seconds_vs_ceiling": -1184.363,
+      "status": "PASS_FULL_STACK",
+      "wall_mib_s": 231.726
+    }
+  ],
+  "public_path_ceiling_mib_s": 194.0,
+  "public_path_winner_path": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/runtime/tg/TG_XET_PUBLIC_PATH_SUSTAINED_WINNER_RETRY_BALANCED_SCHEDULER.json",
+  "remaining_work": [
+    "Do not roll out multi-worker --stream for official GLM (link-bound; amplification worsens wall)",
+    "Optional: single downloader + multi-consumer forward against resident layer (max ~1.05x Amdahl on official residual)",
+    "Optional: port official stream transport from hf_hub to sealed direct_presigned_range winner if not already at ceiling (reexport already beat 194 MiB/s wall)",
+    "If resident full BF16 ever fits in RAM with --no-evict, sequence sharding becomes productive for multi-seq capture without re-download"
+  ],
+  "schema": "hawking.frankenstein.glm_teacher_forced_parallelism_probe.v1",
+  "status": "PASS_LINK_BOUND_NO_DOWNLOAD_HEADROOM_SEQUENCE_SHARD_SAFE_PATH_PROVEN",
+  "synthetic_sequence_shard_probe": {
+    "bit_exact": {
+      "PASS_BIT_EXACT": true,
+      "carry": {
+        "after_L00.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L01.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L02.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L03.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L04.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L05.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        },
+        "after_L06.npz": {
+          "match": true,
+          "per_key": {
+            "carry_hidden": true,
+            "carry_index_selection": true
+          }
+        }
+      },
+      "layers": {
+        "L00.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true
+          }
+        },
+        "L01.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true
+          }
+        },
+        "L02.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true
+          }
+        },
+        "L03.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "expert_contribution_l2": true,
+            "expert_hit_count": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true,
+            "router_logits/samples": true,
+            "topk_indices": true,
+            "topk_margin_8th_vs_9th": true,
+            "topk_weights": true
+          }
+        },
+        "L04.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "expert_contribution_l2": true,
+            "expert_hit_count": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true,
+            "router_logits/samples": true,
+            "topk_indices": true,
+            "topk_margin_8th_vs_9th": true,
+            "topk_weights": true
+          }
+        },
+        "L05.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "expert_contribution_l2": true,
+            "expert_hit_count": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true,
+            "router_logits/samples": true,
+            "topk_indices": true,
+            "topk_margin_8th_vs_9th": true,
+            "topk_weights": true
+          }
+        },
+        "L06.npz": {
+          "match": true,
+          "per_key": {
+            "attention_input/absmax": true,
+            "attention_input/l2": true,
+            "attention_input/mean": true,
+            "attention_input/sample_width": true,
+            "attention_input/samples": true,
+            "attention_input/var": true,
+            "attention_output/absmax": true,
+            "attention_output/l2": true,
+            "attention_output/mean": true,
+            "attention_output/sample_width": true,
+            "attention_output/samples": true,
+            "attention_output/var": true,
+            "block_output/absmax": true,
+            "block_output/l2": true,
+            "block_output/mean": true,
+            "block_output/sample_width": true,
+            "block_output/samples": true,
+            "block_output/var": true,
+            "expert_contribution_l2": true,
+            "expert_hit_count": true,
+            "index_selection": true,
+            "input_hidden/absmax": true,
+            "input_hidden/l2": true,
+            "input_hidden/mean": true,
+            "input_hidden/sample_width": true,
+            "input_hidden/samples": true,
+            "input_hidden/var": true,
+            "post_attention_hidden/absmax": true,
+            "post_attention_hidden/l2": true,
+            "post_attention_hidden/mean": true,
+            "post_attention_hidden/sample_width": true,
+            "post_attention_hidden/samples": true,
+            "post_attention_hidden/var": true,
+            "post_moe/absmax": true,
+            "post_moe/l2": true,
+            "post_moe/mean": true,
+            "post_moe/sample_width": true,
+            "post_moe/samples": true,
+            "post_moe/var": true,
+            "pre_router_hidden/absmax": true,
+            "pre_router_hidden/l2": true,
+            "pre_router_hidden/mean": true,
+            "pre_router_hidden/sample_width": true,
+            "pre_router_hidden/samples": true,
+            "pre_router_hidden/var": true,
+            "router_logits/samples": true,
+            "topk_indices": true,
+            "topk_margin_8th_vs_9th": true,
+            "topk_weights": true
+          }
+        },
+        "embedding.npz": {
+          "match": true,
+          "per_key": {
+            "embedding/absmax": true,
+            "embedding/l2": true,
+            "embedding/mean": true,
+            "embedding/sample_width": true,
+            "embedding/samples": true,
+            "embedding/var": true
+          }
+        },
+        "final.npz": {
+          "match": true,
+          "per_key": {
+            "final_norm/absmax": true,
+            "final_norm/l2": true,
+            "final_norm/mean": true,
+            "final_norm/sample_width": true,
+            "final_norm/samples": true,
+            "final_norm/var": true,
+            "short_logits": true
+          }
+        }
+      }
+    },
+    "honesty": "Synthetic geometry is miniature (hidden=32, 7 layers). Process startup can dominate wall; speedup here is NOT a prediction of official multi-TB stream speedup (which is link-bound and refused).",
+    "level": "L0",
+    "merge_status": "MERGED",
+    "n_sequences": 32,
+    "parallel_efficiency": 0.3817,
+    "parallel_note": "process_pool_failed_fallback_serial_workers: [Errno 1] Operation not permitted",
+    "parallel_wall_s": 0.2992,
+    "serial_status": "PASS_SYNTHETIC_FULL_STACK",
+    "serial_wall_s": 0.2284,
+    "speedup": 0.7633,
+    "stream_amplification_refuse": {
+      "PASS": true,
+      "message_head": "sequence sharding with --stream would re-fetch the same donor layer weights per worker (network bytes \u00d7 N). Official GLM capture is already link-ceiling-bound (sealed L0 full-stack wall ~184\u2013232 MiB/s vs TG_XET_PUBLIC_PATH_SUSTAINED_WINNER_RETRY_BALANCED_SCHEDULER 194 MiB/s). Refuse by default. Safe parallelism: resident weights without --stream (or shared stream_root + single downloader) using --"
+    },
+    "weights_path": "resident_synthetic_fixture_no_network",
+    "worker_results": [
+      {
+        "n_sequences": 16,
+        "out": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/glm_parallelism_probe_20260806/synthetic/w0",
+        "seal_sha256": "174f1eb0b218ffa8784c7b7ba793e0c453b2ead15a7790e7f5b5e3db19e402d4",
+        "shard": {
+          "corpus_len_before_shard": 32,
+          "example_ids": [
+            "tf_syn_0000",
+            "tf_syn_0001",
+            "tf_syn_0002",
+            "tf_syn_0003",
+            "tf_syn_0004",
+            "tf_syn_0005",
+            "tf_syn_0006",
+            "tf_syn_0007",
+            "tf_syn_0008",
+            "tf_syn_0009",
+            "tf_syn_0010",
+            "tf_syn_0011",
+            "tf_syn_0012",
+            "tf_syn_0013",
+            "tf_syn_0014",
+            "tf_syn_0015"
+          ],
+          "n_sequences_in_shard": 16,
+          "out_dir": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/glm_parallelism_probe_20260806/synthetic/w0",
+          "seq_end": 16,
+          "seq_start": 0,
+          "sharded": true,
+          "weight_stream_amplification_risk": false,
+          "worker_id": "w0"
+        },
+        "status": "PASS_SYNTHETIC_FULL_STACK",
+        "wall_s": 0.14906820899341255
+      },
+      {
+        "n_sequences": 16,
+        "out": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/glm_parallelism_probe_20260806/synthetic/w1",
+        "seal_sha256": "2db52d829fe696a82805f43233c3fd819a5c18a218a5c0dbe6b7348fd4402cfa",
+        "shard": {
+          "corpus_len_before_shard": 32,
+          "example_ids": [
+            "tf_syn_0016",
+            "tf_syn_0017",
+            "tf_syn_0018",
+            "tf_syn_0019",
+            "tf_syn_0020",
+            "tf_syn_0021",
+            "tf_syn_0022",
+            "tf_syn_0023",
+            "tf_syn_0024",
+            "tf_syn_0025",
+            "tf_syn_0026",
+            "tf_syn_0027",
+            "tf_syn_0028",
+            "tf_syn_0029",
+            "tf_syn_0030",
+            "tf_syn_0031"
+          ],
+          "n_sequences_in_shard": 16,
+          "out_dir": "/Users/scammermike/.claude-grok/worktrees/glm-parallel-design-20260806-082059/workspace/campaign/evidence/models/frankenstein/glm_parallelism_probe_20260806/synthetic/w1",
+          "seq_end": 32,
+          "seq_start": 16,
+          "sharded": true,
+          "weight_stream_amplification_risk": false,
+          "worker_id": "w1"
+        },
+        "status": "PASS_SYNTHETIC_FULL_STACK",
+        "wall_s": 0.1495799169933889
+      }
+    ],
+    "workers": 2
+  },
+  "synthetic_subprocess_concurrent_speedup": {
+    "method": "subprocess.Popen concurrent, synthetic L0 32-seq miniature, --no-evict shared fixture",
+    "note": "Tiny synthetic compute: process startup dominates. Concurrent speedup exists (~1.25x@2w, ~1.41x@4w) but does NOT transfer to official stream path (link-bound). Naive restream multi-worker would be 0.5x/0.25x.",
+    "serial_wall_s": 0.3328,
+    "summary_table": [
+      {
+        "speedup": 1.0,
+        "wall_s": 0.3328,
+        "workers": 1
+      },
+      {
+        "speedup": 1.25,
+        "wall_s": 0.2681,
+        "workers": 2
+      },
+      {
+        "speedup": 1.41,
+        "wall_s": 0.2364,
+        "workers": 4
+      }
+    ],
+    "workers_2": {
+      "efficiency": 0.623,
+      "speedup": 1.2466,
+      "wall_s": 0.2681
+    },
+    "workers_4": {
+      "efficiency": 0.352,
+      "speedup": 1.4076,
+      "wall_s": 0.2364
+    }
+  },
+  "tests_run": [
+    "pytest tools/condense/tests/test_glm_teacher_forced_sequence_sharding.py (4 passed)",
+    "pytest tools/condense/tests/test_glm52_teacher_forced_executor.py + test_frankenstein_teacher_forced_generalized.py (regression pass)",
+    "python3.12 tools/condense/glm_teacher_forced_parallelism_probe.py --workers 2",
+    "subprocess concurrent 2-worker synthetic speedup measure"
+  ],
+  "touched_glm_floats_safe": false,
+  "worktree": "glm-parallel-design-20260806-082059"
+}

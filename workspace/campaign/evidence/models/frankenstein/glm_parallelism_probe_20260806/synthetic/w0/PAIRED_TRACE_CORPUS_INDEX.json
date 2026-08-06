@@ -1,0 +1,160 @@
+{
+  "fabricated": false,
+  "membership": {
+    "assignments": {
+      "tf_syn_0000": "train",
+      "tf_syn_0001": "train",
+      "tf_syn_0002": "train",
+      "tf_syn_0003": "train",
+      "tf_syn_0004": "train",
+      "tf_syn_0005": "train",
+      "tf_syn_0006": "train",
+      "tf_syn_0007": "train",
+      "tf_syn_0008": "train",
+      "tf_syn_0009": "train",
+      "tf_syn_0010": "train",
+      "tf_syn_0011": "train",
+      "tf_syn_0012": "train",
+      "tf_syn_0013": "train",
+      "tf_syn_0014": "train",
+      "tf_syn_0015": "train"
+    },
+    "counts": {
+      "calibration": 0,
+      "hidden_test": 0,
+      "public_test": 0,
+      "retention": 0,
+      "train": 16
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T12:29:28.594613Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "7455b938dca30f0e1cb3bb98add4d49ef4771b55857b80bb8588b39f3cdd5e2e",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "n_traces": 16,
+  "recorded_at": "2026-08-06T12:29:28.594608Z",
+  "rows": [
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0000",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "f479d06977b1c33885b24bf099c1d3ebcc438ed3d1ecde0f894032e82b429ce6"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0001",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "137492e594a4ae821c534b89662d53de3354828f1cf0613efed2641474edc322"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0002",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "5c295a7b8aaa932a4b5807dcfba9a62c574ca6eec061827fabddee7615b47a04"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0003",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "21d445fba03bf3aa493d491540f727dc1ea972c3a3c881f5d91498115e28c863"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0004",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "6fdbe4e3e0e70b66dc06a55c2c6e4654b88b8d07973b7fc28ad14b1b5e261761"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0005",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "cc809e1925f64dd3b924d38df5fa93ce631d60fabb34295e9ba0cb64c0ddce4f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0006",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "ba5f8df18eede96ac9b5028cd26f36b53a2989b3553d373d0e76e5503bf78fa7"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0007",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "b63ba8128c506eb51cfb40d6c7f656875322990af0db763971711500cce565d6"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0008",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "10048c9f6c8801509a0c325b15c1b00c334a794a17060e340276bbfe5045c5a4"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0009",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "107bcfa9d1df968af202804bb6691322e42517af3428a4307961cf37796c2b78"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0010",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "343ba2c792ff52ad52932978d4e2d390c79f02158457c7959f618f17822331cc"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0011",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "c7d3d9a981c6ee51b842b1f6823836741ee3fa7fa71404a4e10d76cecb7f6cc8"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0012",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "4de27a1d4ed9e8905d4b9493fffaf4a5d3ec6e23216949b456c2f0d29726412d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0013",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "b713e6b68896ea79856ee96f7713ce188165eda82e1761dcde08adb9b56119a8"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0014",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "9893141a9fe871da65bf3cb0d32e922909f94da278ecdc66c10b4ea28df499dc"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0015",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "6443bfa5dc1bf14712612cb943bdf77c40c110e3f444ce41771e9cab14c3657a"
+    }
+  ],
+  "schema": "hawking.frankenstein.evidence_corpus_index.v1",
+  "seal_sha256": "a375b3404085c9cbd5dc6f4f18c3b5b5fe65afd76b147134e018a7ee1c829743"
+}

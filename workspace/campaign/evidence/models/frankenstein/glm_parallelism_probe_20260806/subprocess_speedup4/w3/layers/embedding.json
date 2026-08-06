@@ -1,0 +1,36 @@
+{
+  "array_names": [
+    "embedding/absmax",
+    "embedding/l2",
+    "embedding/mean",
+    "embedding/sample_width",
+    "embedding/samples",
+    "embedding/var"
+  ],
+  "array_sha256": {
+    "embedding/absmax": "9e152220104d7daad8ac970f00e4009c75c3f8fc6ddea281ac3d7c6db36419fe",
+    "embedding/l2": "5e4837624f9bd77433f0c7656b87bede94feda2168de550c2ead948c9b796b15",
+    "embedding/mean": "bac87f67f1ec43e3c91f216c8628b30e4513a11f47a9d780eb54ee0000fe169d",
+    "embedding/sample_width": "ab4f9ec6a106ce6db42a8ee8edf72714144bcbf908942c8c3e833a5209699bc6",
+    "embedding/samples": "c2c986c3f3ad40d0674536519baa27583c164cb8d84bcf546620f267bf89b598",
+    "embedding/var": "e3aae07de739827925f68632b96009e72c49ef89ae7091ed821ddbf63f8c57bb"
+  },
+  "corpus_seal_sha256": "cb517e400ad941d592086bc402d0df32482ac5230bea58c2d86eb572ff872090",
+  "layer_id": "embedding",
+  "meta": {
+    "metrics": {
+      "embedding_l2_mean": 2.26204252243042
+    },
+    "shape": [
+      8,
+      2,
+      32
+    ],
+    "site": "embedding"
+  },
+  "npz_bytes": 6818,
+  "npz_sha256": "eb681eb66c2de08b43e6add93a52491f582f786646201a630e9bce4cf51caef8",
+  "schema": "hawking.frankenstein.glm_layer_capture_shard.v1",
+  "seal_sha256": "b410bee9eba0f8c07d1d9b8cc8ef85615e13429b8607c92b651d21fe7de4fcdc",
+  "sealed_at": "2026-08-06T12:30:06.678727Z"
+}
