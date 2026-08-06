@@ -1,0 +1,628 @@
+{
+  "bridges": [
+    {
+      "bridge": "KIMI_PLANNING_BRIDGE",
+      "composition_with_glm": {
+        "collision_policy": "separate adapter block_id; additive residual on same residual stream",
+        "exclusive_slots": "prefer student layers 14-22 for Kimi planning when GLM decomposition is denser on 8-16 \u2014 final co-location decided by measured correspondence",
+        "glm_neighbors": [
+          "GLM_DECOMPOSITION_BRIDGE",
+          "GLM_METHOD_BRIDGE"
+        ],
+        "site_overlap": "may share post_attention_hidden_state TYPE with GLM_DECOMPOSITION on mid layers; do not overwrite GLM adapter tensors"
+      },
+      "description": "Long-horizon plan formation, goal stack, subgoal selection.",
+      "direct_weight_transplant": false,
+      "function": "planning",
+      "source_kimi": {
+        "dtype": "bfloat16",
+        "hidden_size": 7168,
+        "layer_index_status": "phase-estimated, to be corrected by real correspondence measurement",
+        "layer_indices": [
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51
+        ],
+        "note": "Prefer layers near hybrid full-attn checkpoints for planning signals; exact layer TBD by CKA/CCA vs Proto.",
+        "phase": "mid_planning",
+        "state": "post_attention_hidden_state / block residual stream"
+      },
+      "steer_target": "planning",
+      "student_proto": {
+        "adapter_form": "reversible residual: y = x + A_kimi_planning(x)",
+        "block_id_pattern": "KIMI_PLANNING_BRIDGE__post_attention_hidden_state__L{layer:02d}",
+        "dtype": "bfloat16",
+        "input_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "output_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "preferred_student_layers": [
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
+        "transplant_point": "post_attention_hidden_state"
+      }
+    },
+    {
+      "bridge": "KIMI_TOOL_POLICY_BRIDGE",
+      "composition_with_glm": {
+        "collision_policy": "Kimi owns hcli_tool_action_decision primarily; GLM math route residual stays math-class only",
+        "exclusive_slots": "hcli_tool_action_decision is Kimi-primary (Stage-1 must leave PRESERVED_UNTOUCHED)",
+        "glm_neighbors": [
+          "GLM_PRE_ROUTER_BRIDGE",
+          "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+        ],
+        "site_overlap": "pre_router may host both; distinct block_ids; no shared parameter tensors"
+      },
+      "description": "Tool selection, argument filling, call/no-call policy, HCLI action decisions.",
+      "direct_weight_transplant": false,
+      "function": "tool_policy",
+      "source_kimi": {
+        "also_capture": [
+          "router_logits",
+          "selected_expert_ids"
+        ],
+        "dtype": "bfloat16",
+        "hidden_size": 7168,
+        "layer_index_status": "phase-estimated, to be corrected by real correspondence measurement",
+        "layer_indices": [
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64
+        ],
+        "phase": "tool_policy_mid_late",
+        "state": "pre_router_hidden_state + late action/tool head state"
+      },
+      "steer_target": "tool policy",
+      "student_proto": {
+        "adapter_form": "reversible residual + optional tool-policy head",
+        "block_id_pattern": "KIMI_TOOL_POLICY_BRIDGE__{transplant_point}__L{layer:02d}",
+        "dtype": "bfloat16",
+        "input_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "output_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "preferred_student_layers": [
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "transplant_points": [
+          "pre_router_hidden_state",
+          "hcli_tool_action_decision"
+        ]
+      }
+    },
+    {
+      "bridge": "KIMI_LONG_HORIZON_BRIDGE",
+      "composition_with_glm": {
+        "collision_policy": "additive residuals; GLM math decomp vs Kimi agentic decomp are different heads even if both touch post_moe",
+        "exclusive_slots": "prefer student 24-32 for Kimi long-horizon if GLM post-moe concentrates earlier",
+        "glm_neighbors": [
+          "GLM_POST_MOE_BRIDGE",
+          "GLM_DECOMPOSITION_BRIDGE"
+        ],
+        "site_overlap": "post_moe_hidden_state TYPE shared; parameter namespaces disjoint"
+      },
+      "description": "Multi-step agentic decomposition over long horizons, dependency graphs, replan triggers.",
+      "direct_weight_transplant": false,
+      "function": "long_horizon_decomposition",
+      "source_kimi": {
+        "dtype": "bfloat16",
+        "hidden_size": 7168,
+        "layer_index_status": "phase-estimated, to be corrected by real correspondence measurement",
+        "layer_indices": [
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69
+        ],
+        "phase": "long_horizon_mid_late",
+        "state": "post_moe_hidden_state"
+      },
+      "steer_target": "long-horizon decomposition",
+      "student_proto": {
+        "adapter_form": "reversible residual",
+        "block_id_pattern": "KIMI_LONG_HORIZON_BRIDGE__post_moe_hidden_state__L{layer:02d}",
+        "dtype": "bfloat16",
+        "input_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "output_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "preferred_student_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "transplant_point": "post_moe_hidden_state"
+      }
+    },
+    {
+      "bridge": "KIMI_CRITIQUE_BRIDGE",
+      "composition_with_glm": {
+        "collision_policy": "GLM_REPAIR is math proof-repair; KIMI_CRITIQUE is agentic/plan critique \u2014 different losses and labels",
+        "exclusive_slots": "student 32-38 preferred for Kimi critique",
+        "glm_neighbors": [
+          "GLM_REPAIR_BRIDGE",
+          "GLM_LATE_CONSOLIDATION_BRIDGE"
+        ],
+        "site_overlap": "late post_attention may co-locate; distinct block_ids"
+      },
+      "description": "Multi-step self-critique, synthesis, rejection of bad tool/plan branches (not math proof-repair).",
+      "direct_weight_transplant": false,
+      "function": "critique",
+      "source_kimi": {
+        "dtype": "bfloat16",
+        "hidden_size": 7168,
+        "layer_index_status": "phase-estimated, to be corrected by real correspondence measurement",
+        "layer_indices": [
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83
+        ],
+        "phase": "critique_late",
+        "state": "post_attention_hidden_state / late residual"
+      },
+      "steer_target": "critique",
+      "student_proto": {
+        "adapter_form": "reversible residual",
+        "block_id_pattern": "KIMI_CRITIQUE_BRIDGE__post_attention_hidden_state__L{layer:02d}",
+        "dtype": "bfloat16",
+        "input_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "output_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "preferred_student_layers": [
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38
+        ],
+        "transplant_point": "post_attention_hidden_state"
+      }
+    },
+    {
+      "bridge": "KIMI_CONTEXT_MGMT_BRIDGE",
+      "composition_with_glm": {
+        "collision_policy": "early pre_norm may co-locate with GLM_EARLY_CONTEXT; both residual, both ablatable",
+        "exclusive_slots": "final_hidden_state late slots 36-42 Kimi-primary for context retention signals",
+        "glm_neighbors": [
+          "GLM_EARLY_CONTEXT_BRIDGE",
+          "GLM_LATE_CONSOLIDATION_BRIDGE",
+          "GLM_VALUE_HEAD"
+        ],
+        "site_overlap": "early layers 0-6 shared TYPE; GLM early context is math-context, Kimi is long-ctx management"
+      },
+      "description": "Long-context intake, memory compression cues, what-to-retain/forget, 1M-ctx habits distilled into Proto.",
+      "direct_weight_transplant": false,
+      "function": "context_management",
+      "source_kimi": {
+        "donor_context_length": 1048576,
+        "dtype": "bfloat16",
+        "hidden_size": 7168,
+        "layer_index_status": "phase-estimated, to be corrected by real correspondence measurement",
+        "layer_indices_early": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "layer_indices_late": [
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92
+        ],
+        "phase": "context_early_and_late",
+        "state": "pre_norm_hidden_state (early) + late consolidation residual"
+      },
+      "steer_target": "context management",
+      "student_proto": {
+        "adapter_form": "reversible residual",
+        "block_id_pattern": "KIMI_CONTEXT_MGMT_BRIDGE__{transplant_point}__L{layer:02d}",
+        "dtype": "bfloat16",
+        "input_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "output_shape": [
+          "batch",
+          "sequence",
+          4096
+        ],
+        "preferred_student_layers_early": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "preferred_student_layers_late": [
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42
+        ],
+        "transplant_points": [
+          "pre_norm_hidden_state",
+          "final_hidden_state"
+        ]
+      }
+    }
+  ],
+  "claim_boundary": {
+    "adapters_trained": false,
+    "correspondence_measured": false,
+    "kimi_activations_captured": false,
+    "kimi_weights_streamed": false,
+    "layer_indices_are_phase_estimates": true,
+    "requires_proto_v0_seal_first": true,
+    "stage2_execution_authorized": false,
+    "two_stage_not_simultaneous": true
+  },
+  "composition_law": {
+    "ablation": "each bridge block_id independently ablatable / bypassable / hash-bound",
+    "formula": "h_out = h_base + sum(GLM_adapters) + sum(KIMI_adapters)",
+    "never": [
+      "overwrite_glm_adapter_tensors_with_kimi",
+      "direct_weight_transplant",
+      "elementwise_average_misaligned_donors",
+      "simultaneous_dual_donor_residency"
+    ],
+    "stage_order": "Stage-1 GLM seals first; Stage-2 Kimi only after PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED"
+  },
+  "donor": {
+    "attention_variant": "kimi_linear_hybrid_mla_kda",
+    "family": "kimi_k3",
+    "hidden_size": 7168,
+    "moe_variant": "noaux_tc_situ_latent_moe",
+    "n_routed_experts": 896,
+    "n_shared_experts": 2,
+    "num_experts_per_tok": 16,
+    "num_hidden_layers": 93,
+    "projection_to_student": {
+      "W_shape": [
+        7168,
+        4096
+      ],
+      "dtype": "bfloat16",
+      "math": "a_d_prime = a_d @ W_proj + b_proj",
+      "name": "project_kimi_k3_to_student"
+    },
+    "repository": "moonshotai/Kimi-K3",
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "torch_dtype": "bfloat16",
+    "weight_shard_bytes": 1560936091448,
+    "weight_shard_count": 96
+  },
+  "glm_v0_bridge_names_must_not_collide": [
+    "GLM_EARLY_CONTEXT_BRIDGE",
+    "GLM_METHOD_BRIDGE",
+    "GLM_DECOMPOSITION_BRIDGE",
+    "GLM_PRE_ROUTER_BRIDGE",
+    "GLM_POST_MOE_BRIDGE",
+    "GLM_FORMALIZATION_BRIDGE",
+    "GLM_REPAIR_BRIDGE",
+    "GLM_LATE_CONSOLIDATION_BRIDGE",
+    "GLM_VALUE_HEAD",
+    "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+  ],
+  "named_children_of_parent": [
+    "KIMI_PLANNING_BRIDGE",
+    "KIMI_TOOL_POLICY_BRIDGE",
+    "KIMI_LONG_HORIZON_BRIDGE",
+    "KIMI_CRITIQUE_BRIDGE",
+    "KIMI_CONTEXT_MGMT_BRIDGE"
+  ],
+  "parent_contract_bridge": "KIMI_STRATEGIC_BRIDGE",
+  "preferred_student_layer_union": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42
+  ],
+  "schema": "hawking.frankenstein.kimi_strategic_bridge_contract.v1",
+  "seal_sha256": "399115e0a8eb8b60dcdd067a7bed46e0bed14fea80b0ff77309e297cd220687d",
+  "sealed_at": "2026-08-05T23:57:52Z",
+  "sources": {
+    "kimi_admission": {
+      "path": "workspace/campaign/evidence/models/kimi-k3/KIMI_K3_SOURCE_ADMISSION.json",
+      "repository": "moonshotai/Kimi-K3",
+      "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+      "seal_sha256": "597ac05752f84c8fffc175255e64d0c56b976ef3c389a59cebabf322b4fa30b0"
+    },
+    "kimi_hf_config_json": {
+      "note": "Admission architecture_facts left n_routed_experts/num_experts_per_tok null because extractor did not descend text_config; config.json is authoritative.",
+      "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+      "text_config_facts": {
+        "attention": "hybrid full_attn_layers + kda_layers (KimiLinear)",
+        "first_k_dense_replace": 1,
+        "hidden_act": "situ",
+        "hidden_size": 7168,
+        "max_position_embeddings": 1048576,
+        "model_type": "kimi_linear",
+        "moe_intermediate_size": 3072,
+        "num_experts": 896,
+        "num_experts_per_token": 16,
+        "num_hidden_layers": 93,
+        "num_shared_experts": 2,
+        "topk_method": "noaux_tc",
+        "vocab_size": 163840
+      },
+      "url": "https://huggingface.co/moonshotai/Kimi-K3/raw/9f62e4e9fffbd0a83ddd60e1c209d828994b3569/config.json"
+    },
+    "proto_to_kimi_handoff": {
+      "note": "Stage-1 must leave all KIMI_STRATEGIC_BRIDGE adapters PRESERVED_UNTOUCHED on every student layer.",
+      "path": "workspace/campaign/evidence/models/frankenstein/PROTO_TO_KIMI_HANDOFF_CONTRACT.json"
+    },
+    "student_latent_bridge_contract": {
+      "label": "DSV4F_LATENT_BRIDGE_CONTRACT",
+      "parent_bridge_name": "KIMI_STRATEGIC_BRIDGE",
+      "parent_targets": [
+        "planning",
+        "tool_policy",
+        "long_horizon_decomposition",
+        "critique",
+        "context_management"
+      ],
+      "path": "workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+      "seal_sha256": "48de7dc2930a4e5a8c33d31d61c91147c9efb142c76328baba2a9355df3196d8"
+    },
+    "student_transplant_points": {
+      "label": "DSV4F_TRANSPLANT_POINTS",
+      "path": "workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json",
+      "point_names": [
+        "pre_norm_hidden_state",
+        "post_attention_hidden_state",
+        "pre_router_hidden_state",
+        "router_logits",
+        "selected_expert_ids",
+        "route_probabilities_and_margins",
+        "post_moe_hidden_state",
+        "mhc_state",
+        "attention_index_state",
+        "final_hidden_state",
+        "lm_head_logits",
+        "hcli_tool_action_decision"
+      ],
+      "seal_sha256": "0843659df50d46726e891b7f9458f0f9eeb27bee9e2312c2db88f710df32bbf3"
+    },
+    "tokenizer": {
+      "assets": [
+        "tiktoken.model",
+        "tokenizer_config.json"
+      ],
+      "kind": "tiktoken",
+      "tiktoken_model_sha256": "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103",
+      "tokenizer_config_sha256": "5d0803c94db9cd78763499e0956c95fd5a225c14a727e5a6cf5db3f96f010a6e"
+    }
+  },
+  "status": "KIMI_STRATEGIC_BRIDGE_CONTRACT_SEALED_PREP_ONLY",
+  "student": {
+    "family": "deepseek_v4_flash_proto",
+    "hidden_size": 4096,
+    "n_routed_experts": 256,
+    "note": "Proto = DeepSeek body + Stage-1 GLM adapters. Stage-2 adds Kimi adapters; body stays.",
+    "num_experts_per_tok": 6,
+    "num_hidden_layers": 43,
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  }
+}
