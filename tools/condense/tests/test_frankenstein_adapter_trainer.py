@@ -186,3 +186,109 @@ def test_default_loss_weights_not_cosine_alone() -> None:
     d = w.as_dict()
     assert d["functional_output"] > 0
     assert sum(v for k, v in d.items() if k != "latent_cosine") > 0
+
+
+# ---------------------------------------------------------------------------
+# CPU multi-worker parallelism (sites + A–G arms)
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_cpu_parallel_budget_no_oversubscription() -> None:
+    b = trainer.resolve_cpu_parallel_budget(8, cpu_count=28, max_workers=None)
+    assert b["n_workers"] == 8
+    assert b["threads_per_worker"] == 3  # 28 // 8
+    assert b["total_threads_budget"] == 24
+    # Explicit pin
+    b2 = trainer.resolve_cpu_parallel_budget(
+        8, cpu_count=28, max_workers=4, threads_per_worker=2
+    )
+    assert b2["n_workers"] == 4
+    assert b2["threads_per_worker"] == 2
+    # Serial
+    b3 = trainer.resolve_cpu_parallel_budget(8, cpu_count=28, max_workers=1)
+    assert b3["n_workers"] == 1
+    assert b3["threads_per_worker"] == 28
+
+
+def test_parallel_sites_match_serial_bit_exact() -> None:
+    """Independent sites: parallel == serial with pinned threads_per_worker."""
+
+    sites = [
+        "GLM_METHOD_BRIDGE",
+        "GLM_DECOMPOSITION_BRIDGE",
+        "GLM_FORMALIZATION_BRIDGE",
+        "GLM_REPAIR_BRIDGE",
+    ]
+    report = trainer.compare_serial_parallel_sites(
+        synth_cfg=trainer.SyntheticConfig(
+            n_train=32,
+            n_eval=8,
+            seq_len=4,
+            d_model=24,
+            batch_size=8,
+            seed=11,
+        ),
+        epochs=12,
+        sites=sites,
+        max_workers=4,
+    )
+    assert report["unit"] == "site"
+    assert report["bit_exact_match"] is True or report["tolerance_match"] is True, report
+    assert report["capability_claim"] is False
+    assert report["threads_per_worker_pinned"] >= 1
+    # Fixture-scale speedup is measured; do not require >1 on tiny jobs
+    assert report["serial_wall_ms"] > 0
+    assert report["parallel_wall_ms"] > 0
+
+
+def test_parallel_arms_match_serial() -> None:
+    arms = [trainer.ARM_FT_D, trainer.ARM_FT_E, trainer.ARM_FT_G]
+    report = trainer.compare_serial_parallel_arms(
+        synth_cfg=trainer.SyntheticConfig(
+            n_train=32,
+            n_eval=8,
+            seq_len=4,
+            d_model=24,
+            n_experts=4,
+            n_actions=4,
+            batch_size=8,
+            seed=5,
+        ),
+        train_cfg=trainer.TrainConfig(epochs=10, lr=5e-3, device="cpu"),
+        arms=arms,
+        max_workers=3,
+    )
+    assert report["unit"] == "arm"
+    assert report["bit_exact_match"] is True or report["tolerance_match"] is True, report
+    assert report["capability_claim"] is False
+
+
+def test_train_sites_still_labels_synthetic_and_gate() -> None:
+    doc = trainer.train_sites(
+        sites=["GLM_METHOD_BRIDGE", "GLM_DECOMPOSITION_BRIDGE"],
+        synth_cfg=trainer.SyntheticConfig(
+            n_train=24,
+            n_eval=8,
+            seq_len=4,
+            d_model=24,
+            batch_size=8,
+            seed=2,
+        ),
+        epochs=15,
+        parallel=True,
+        max_workers=2,
+    )
+    verify(doc, label="site train")
+    assert doc["capability_claim"] is False
+    assert doc["gate_still_closed"] == trainer.REQUIRES_PAIRED_DATA
+    assert doc["parallelism"]["unit"] == "site"
+    assert doc["all_reverse_ok"] is True
+
+
+def test_fit_real_still_requires_paired_data() -> None:
+    """Parallelism does not open the real-data gate."""
+
+    with pytest.raises(trainer.RequiresPairedData):
+        trainer.require_paired_data(None, allow_synthetic=False, synthetic_flag=False)
+    rc = trainer.main(["fit-real", "--paired", "/no/such/paired.pt"])
+    assert rc == 3
