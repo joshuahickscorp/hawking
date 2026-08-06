@@ -14,6 +14,14 @@ Pipeline:
      through frankenstein_latent_v0 (11-loss portfolio, CURRENT/BEST_*/ROLLBACK).
   4. A–G ablation vs BASE_DSV4F with additive-not-subtractive reject rule.
   5. Promote only if gates pass; otherwise seal a REJECT receipt (no fake PASS).
+
+CPU multi-worker parallelism (orchestration only):
+  * Independent A–G arms train concurrently across processes.
+  * Independent V0 bridge sites can be pre-trained the same way (synthetic
+    fixture path in frankenstein_adapter_trainer; real path uses arm-level
+    latent stacks once GLM floats land).
+  * Thread budget is partitioned per worker to avoid BLAS oversubscription.
+  * REQUIRES_PAIRED_DATA / real-pair load still fail closed until floats exist.
 """
 from __future__ import annotations
 
@@ -28,6 +36,7 @@ import numpy as np
 import torch
 
 from lab.operators import frankenstein_ablation as ablation
+from lab.operators import frankenstein_adapter_trainer as adapter_trainer
 from lab.operators import frankenstein_latent_v0 as latent_v0
 from lab.operators.frankenstein_bridges import V0_BRIDGE_SITES
 from lab.operators.frankenstein_correspondence_loader import (
@@ -559,6 +568,78 @@ def build_real_training_tensors(
     return pack(train_idx), pack(eval_idx), meta
 
 
+def _cpu_tensor_payload(t: Mapping[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    """Detach + cpu-clone tensors for process-pool transfer."""
+
+    return {k: v.detach().cpu().contiguous().clone() for k, v in t.items()}
+
+
+def _train_one_real_arm_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Process-pool worker: train one independent latent A–G arm on real pairs."""
+
+    from lab.operators import frankenstein_latent_v0 as lv
+
+    threads = int(payload["threads_per_worker"])
+    adapter_trainer.apply_cpu_thread_budget(threads)
+    arm = str(payload["arm"])
+    seed = int(payload["unit_seed"])
+    adapter_trainer._seed_everything(seed)
+
+    train_t = payload["train_t"]
+    eval_t = payload["eval_t"]
+    d_teacher = int(payload["d_teacher"])
+    d_student = int(payload["d_student"])
+    batch_size = int(payload["batch_size"])
+    epochs_per_phase = int(payload["epochs_per_phase"])
+    ckpt = Path(payload["checkpoint_dir"])
+
+    train_loader = lv.make_loader(train_t, batch_size=batch_size, shuffle=True)
+    eval_loader = lv.make_loader(eval_t, batch_size=batch_size, shuffle=False)
+
+    adapter_trainer._seed_everything(seed + 1)
+    stack = lv.build_stack_for_arm(
+        arm,
+        d_teacher=d_teacher,
+        d_student=d_student,
+        d_latent=128,
+        rank=16,
+        d_hidden=128,
+        n_experts=16,
+        n_methods=len(lv.METHOD_CLASSES),
+        n_actions=12,
+    )
+    tcfg = lv.TrainConfig(
+        epochs_per_phase=epochs_per_phase,
+        lr=3e-3,
+        device="cpu",
+        phases=("A", "B", "C", "E"),
+        checkpoint_dir=ckpt,
+    )
+    result = lv.train_schedule(
+        stack,
+        train_loader,
+        eval_loader,
+        cfg=tcfg,
+        arm=arm,
+        data_kind="REAL_PAIRED_CAPTURE",
+    )
+    scores = lv._proxy_scores_from_result(result)
+    scores["synthetic_proxy"] = False
+    scores["data_kind"] = "REAL_PAIRED_CAPTURE"
+    scores["bench_scope"] = "BOUNDED_FIXTURE"
+    scores["capability_claim"] = False
+    scores["note"] = (
+        "Proxy scores from real-activation train losses — "
+        "NOT full-model math inheritance measurement."
+    )
+    return {
+        "arm": arm,
+        "unit_seed": seed,
+        "result": result.as_dict(),
+        "scores": scores,
+    }
+
+
 def train_on_real_pairs(
     *,
     train_t: Mapping[str, torch.Tensor],
@@ -568,22 +649,24 @@ def train_on_real_pairs(
     epochs_per_phase: int = 4,
     device: str = "cpu",
     seed: int = 0,
+    max_workers: int | None = None,
+    threads_per_worker: int | None = None,
+    parallel: bool = True,
 ) -> dict[str, Any]:
-    """Train latent A–G on real paired tensors; checkpoint CURRENT/BEST_*/ROLLBACK."""
+    """Train latent A–G on real paired tensors; checkpoint CURRENT/BEST_*/ROLLBACK.
 
+    Arms B..G are independent stacks — trained concurrently across CPU workers
+    when ``parallel=True`` (thread budget partitioned to avoid oversubscription).
+    """
+
+    if device != "cpu":
+        device = "cpu"
     torch.manual_seed(seed)
     d_teacher = int(train_t["teacher_hidden"].shape[-1])
     d_student = int(train_t["student_hidden"].shape[-1])
     n_train = int(train_t["student_hidden"].shape[0])
     n_eval = int(eval_t["student_hidden"].shape[0])
     batch_size = min(8, max(1, n_train))
-
-    train_loader = latent_v0.make_loader(
-        train_t, batch_size=batch_size, shuffle=True
-    )
-    eval_loader = latent_v0.make_loader(
-        eval_t, batch_size=batch_size, shuffle=False
-    )
 
     arms = [
         latent_v0.ARM_B,
@@ -593,6 +676,51 @@ def train_on_real_pairs(
         latent_v0.ARM_F,
         latent_v0.ARM_G,
     ]
+    budget = adapter_trainer.resolve_cpu_parallel_budget(
+        len(arms),
+        max_workers=(1 if not parallel else max_workers),
+        threads_per_worker=threads_per_worker,
+    )
+    if not parallel:
+        budget = adapter_trainer.resolve_cpu_parallel_budget(
+            len(arms),
+            max_workers=1,
+            threads_per_worker=(
+                threads_per_worker
+                if threads_per_worker is not None
+                else budget["threads_per_worker"]
+            ),
+        )
+
+    train_cpu = _cpu_tensor_payload(train_t)
+    eval_cpu = _cpu_tensor_payload(eval_t)
+    payloads = [
+        {
+            "arm": arm,
+            "unit_seed": adapter_trainer.unit_seed(seed, f"real-arm:{arm}"),
+            "train_t": train_cpu,
+            "eval_t": eval_cpu,
+            "d_teacher": d_teacher,
+            "d_student": d_student,
+            "batch_size": batch_size,
+            "epochs_per_phase": epochs_per_phase,
+            "checkpoint_dir": str(out_dir / "checkpoints" / f"real_{arm}"),
+            "threads_per_worker": budget["threads_per_worker"],
+        }
+        for arm in arms
+    ]
+
+    t0 = time.perf_counter()
+    unit_rows = adapter_trainer.map_train_units(
+        _train_one_real_arm_payload,
+        payloads,
+        n_workers=budget["n_workers"],
+        threads_per_worker=budget["threads_per_worker"],
+        worker_name="train_one_real_arm",
+    )
+    arm_wall_ms = (time.perf_counter() - t0) * 1000.0
+    backend = unit_rows[0].get("_parallel_backend") if unit_rows else "serial"
+
     arm_results: dict[str, Any] = {}
     arm_scores: dict[str, Any] = {
         latent_v0.ARM_A: {
@@ -604,48 +732,9 @@ def train_on_real_pairs(
             "note": "BASE_DSV4F reference template (no bridge)",
         }
     }
-
-    for arm in arms:
-        stack = latent_v0.build_stack_for_arm(
-            arm,
-            d_teacher=d_teacher,
-            d_student=d_student,
-            d_latent=128,
-            rank=16,
-            d_hidden=128,
-            n_experts=16,
-            n_methods=len(latent_v0.METHOD_CLASSES),
-            n_actions=12,
-        )
-        ckpt = out_dir / "checkpoints" / f"real_{arm}"
-        tcfg = latent_v0.TrainConfig(
-            epochs_per_phase=epochs_per_phase,
-            lr=3e-3,
-            device=device,
-            phases=("A", "B", "C", "E"),
-            checkpoint_dir=ckpt,
-        )
-        result = latent_v0.train_schedule(
-            stack,
-            train_loader,
-            eval_loader,
-            cfg=tcfg,
-            arm=arm,
-            data_kind="REAL_PAIRED_CAPTURE",
-        )
-        arm_results[arm] = result.as_dict()
-        # Map train metrics → score maps; mark as real-data train proxy,
-        # NOT a full-model math bench.
-        scores = latent_v0._proxy_scores_from_result(result)
-        scores["synthetic_proxy"] = False
-        scores["data_kind"] = "REAL_PAIRED_CAPTURE"
-        scores["bench_scope"] = "BOUNDED_FIXTURE"
-        scores["capability_claim"] = False
-        scores["note"] = (
-            "Proxy scores from real-activation train losses — "
-            "NOT full-model math inheritance measurement."
-        )
-        arm_scores[arm] = scores
+    for row in unit_rows:
+        arm_results[row["arm"]] = row["result"]
+        arm_scores[row["arm"]] = row["scores"]
 
     ag = latent_v0.run_latent_ag_ablation(arm_scores=arm_scores)
 
@@ -688,7 +777,7 @@ def train_on_real_pairs(
             "data_kind": "REAL_PAIRED_CAPTURE",
             "capability_claim": False,
             "real_glm_dsv4f_capture": True,
-            "device": device,
+            "device": "cpu",
             "n_train": n_train,
             "n_eval": n_eval,
             "d_teacher": d_teacher,
@@ -702,6 +791,19 @@ def train_on_real_pairs(
             "complete_beats_linear": complete_beats_linear,
             "v0_modules": list(latent_v0.V0_MODULE_NAMES),
             "loss_portfolio": list(latent_v0.LOSS_NAMES),
+            "parallelism": {
+                **budget,
+                "parallel": bool(parallel and budget["n_workers"] > 1),
+                "unit": "arm",
+                "wall_ms": arm_wall_ms,
+                "backend": backend,
+                "cpu_only": True,
+                "gpu_used": False,
+                "why_safe": (
+                    "Each A–G arm builds its own LatentV0Stack with independent "
+                    "params/optimizer; no shared state across arms."
+                ),
+            },
             "claim_boundary": {
                 "training_performed_on_real_activations": True,
                 "full_model_math_bench": False,
@@ -710,6 +812,35 @@ def train_on_real_pairs(
                 "kimi_consumed": False,
             },
         }
+    )
+
+
+def train_sites_ready_fixture(
+    *,
+    seed: int = 0,
+    epochs: int = 30,
+    max_workers: int | None = None,
+    parallel: bool = True,
+) -> dict[str, Any]:
+    """Pre-build parallel site training on synthetic fixture (real floats not required).
+
+    Used to prove the multi-worker path before GLM floats land.  Does NOT open
+    the real-data gate — capability_claim stays False.
+    """
+
+    return adapter_trainer.train_sites(
+        sites=list(V0_BRIDGE_SITES),
+        synth_cfg=adapter_trainer.SyntheticConfig(
+            n_train=64,
+            n_eval=16,
+            seq_len=4,
+            d_model=32,
+            batch_size=8,
+            seed=seed,
+        ),
+        epochs=epochs,
+        max_workers=max_workers,
+        parallel=parallel,
     )
 
 
@@ -787,6 +918,8 @@ def run_real_first(
     epochs_per_phase: int = 4,
     device: str = "cpu",
     seed: int = 0,
+    max_workers: int | None = None,
+    parallel: bool = True,
 ) -> dict[str, Any]:
     """End-to-end first real bridge train attempt (CPU)."""
 
@@ -919,6 +1052,8 @@ def run_real_first(
             epochs_per_phase=epochs_per_phase,
             device=device,
             seed=seed,
+            max_workers=max_workers,
+            parallel=parallel,
         )
         (out_dir / "REAL_AG_TRAIN.json").write_text(
             json.dumps(train_doc, indent=2, sort_keys=True) + "\n",
@@ -1084,6 +1219,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--epochs-per-phase", type=int, default=4)
     p.add_argument("--device", type=str, default="cpu")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument(
+        "--max-workers",
+        type=int,
+        default=None,
+        help="CPU process workers for independent A–G arms (default: min(arms, cpus))",
+    )
+    p.add_argument(
+        "--serial",
+        action="store_true",
+        help="Force serial arm training",
+    )
+    p.add_argument(
+        "--ready-sites-fixture",
+        action="store_true",
+        help=(
+            "Also run parallel site training on synthetic fixture to prove the "
+            "multi-worker path is ready before real GLM floats land"
+        ),
+    )
     return p
 
 
@@ -1110,7 +1264,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         epochs_per_phase=args.epochs_per_phase,
         device="cpu",
         seed=args.seed,
+        max_workers=args.max_workers,
+        parallel=not args.serial,
     )
+    if args.ready_sites_fixture:
+        site_doc = train_sites_ready_fixture(
+            seed=args.seed,
+            max_workers=args.max_workers,
+            parallel=not args.serial,
+        )
+        site_path = Path(args.out) / "SITE_PARALLEL_FIXTURE_READY.json"
+        site_path.parent.mkdir(parents=True, exist_ok=True)
+        site_path.write_text(
+            json.dumps(site_doc, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        doc = dict(doc)
+        doc["site_parallel_fixture"] = {
+            "path": str(site_path),
+            "status": site_doc.get("status"),
+            "parallelism": site_doc.get("parallelism"),
+            "all_learned": site_doc.get("all_learned"),
+            "gate_still_closed": site_doc.get("gate_still_closed"),
+            "capability_claim": False,
+        }
     summary = {
         "status": doc["status"],
         "promotion_verdict": doc["promotion_verdict"],
