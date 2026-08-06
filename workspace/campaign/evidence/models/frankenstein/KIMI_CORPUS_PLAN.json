@@ -1,0 +1,164 @@
+{
+  "capability_families_additive": [
+    {
+      "description": "multi-goal plans, plan revision, goal stacks",
+      "family": "agentic_planning",
+      "sources_planned": [
+        "local agent plan traces (when sealed)",
+        "structured plan templates derived from existing agent fixtures"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.18
+    },
+    {
+      "description": "multi-tool call chains, argument filling, error recovery",
+      "family": "tool_use_sequences",
+      "sources_planned": [
+        "tools/eval thesis + support-halo tool rows (local)",
+        "HCLI protocol fixtures"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.18
+    },
+    {
+      "description": "tasks needing >5 step dependency decomposition",
+      "family": "long_horizon_decomposition",
+      "sources_planned": [
+        "repo-scale task descriptions (local)",
+        "multi-step agent scenarios"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.16
+    },
+    {
+      "description": "critique of plans/tool traces, not math proof-repair",
+      "family": "multi_step_critique",
+      "sources_planned": [
+        "paired (draft, critique, revision) local fixtures"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.14
+    },
+    {
+      "description": "broader coding/repo than Stage-1 math-coding mix",
+      "family": "coding_breadth",
+      "sources_planned": [
+        "tools/eval/thesis_rust_corpus_v0.jsonl",
+        "tools/eval/thesis_smoke_corpus_v0.jsonl"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.16
+    },
+    {
+      "description": "long-ctx intake, what-to-keep, cross-section recall",
+      "family": "context_management",
+      "note": "Capture max_sequence for teacher-forced smoke remains bounded; long-ctx behavior probes may use longer student-side eval separately.",
+      "sources_planned": [
+        "long-ctx local fixtures (truncated to capture max_sequence for smoke)",
+        "needle/section management scenarios (local, non-synthetic-Gaussian)"
+      ],
+      "synthetic_gaussian_forbidden": true,
+      "target_fraction_of_slice": 0.18
+    }
+  ],
+  "claim_boundary": {
+    "execution_authorized": false,
+    "network_beyond_spec_lookup": false,
+    "sequences_fetched": false,
+    "sequences_generated": false
+  },
+  "execution_gate": "Do not generate or fetch sequences until PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED and Stage-2 stream gate opens.",
+  "ladder": {
+    "L0": {
+      "n_sequences": 32,
+      "role": "pipeline smoke, all 93 Kimi layers when streaming"
+    },
+    "L1": {
+      "n_sequences": 128,
+      "role": "first full Stage-2 train"
+    },
+    "L2": {
+      "n_sequences": 256,
+      "role": "primary strategic inheritance"
+    },
+    "L3": {
+      "n_sequences": 512,
+      "role": "only if held-out gain + time"
+    },
+    "note": "Scale corpus size, never cut teacher-forced layer-major mechanism."
+  },
+  "membership_discipline": {
+    "disjoint": true,
+    "no_leakage": "example_id appears in exactly one split",
+    "retention_must_include": [
+      "math_method",
+      "formalization",
+      "coding",
+      "repo",
+      "general",
+      "conversation"
+    ],
+    "splits": {
+      "calibration": {
+        "purpose": "temperature / gate calibration",
+        "target_fraction": 0.08
+      },
+      "hidden_test": {
+        "purpose": "owner-only final gate",
+        "target_fraction": 0.07
+      },
+      "public_test": {
+        "purpose": "reported held-out",
+        "target_fraction": 0.08
+      },
+      "retention": {
+        "purpose": "preserve base + Stage-1 math + non-strategic secondaries",
+        "target_fraction": 0.07
+      },
+      "train": {
+        "purpose": "adapter fit",
+        "target_fraction": 0.7
+      }
+    }
+  },
+  "objective": "Additive Stage-2 corpus slice for Kimi strategic/agentic inheritance. Final Frankenstein needs BOTH the existing math corpus (Stage-1 GLM) and this strategic slice. Never replace math memberships.",
+  "planned_artifacts_when_executed": [
+    "workspace/campaign/evidence/models/frankenstein/corpus/KIMI_STAGE2_L0_CORPUS.jsonl",
+    "workspace/campaign/evidence/models/frankenstein/corpus/KIMI_STAGE2_L1_CORPUS.jsonl",
+    "workspace/campaign/evidence/models/frankenstein/corpus/KIMI_STAGE2_MEMBERSHIP.json",
+    "workspace/campaign/evidence/models/frankenstein/corpus/KIMI_STAGE2_CORPUS_INDEX.json"
+  ],
+  "relationship_to_math_corpus": {
+    "additive": true,
+    "final_frankenstein_needs_both": true,
+    "joint_training_batches": "mix strategic slice + math retention + base retention",
+    "math_corpus_retained": true,
+    "never_drop_math_train_to_make_room_for_kimi": true
+  },
+  "reuse": {
+    "aligner": "lab/operators/frankenstein_aligner.py",
+    "alignment_law": "tokenizer-independent: UTF-8 byte spans + semantic anchors; never token-ID\u2194token-ID",
+    "corpus_framework": "lab/operators/frankenstein_corpus.py",
+    "existing_math_corpora": [
+      "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl",
+      "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl",
+      "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_MEMBERSHIP.json"
+    ],
+    "membership_splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ],
+    "tokenizer_sides": {
+      "kimi": "tiktoken (tiktoken.model @ admission)",
+      "student": "DeepSeek-V4-Flash tokenizer (pinned with body)"
+    },
+    "trace_format": "lab/operators/frankenstein_trace_format.py"
+  },
+  "schema": "hawking.frankenstein.kimi_corpus_plan.v1",
+  "seal_sha256": "315e11caf4ad5cf4c3377ba3d9d1a1c79b86543ea19da4776a02c31128ab72d1",
+  "sealed_at": "2026-08-05T23:57:52Z",
+  "status": "KIMI_CORPUS_PLAN_SEALED_PLANNING_ONLY"
+}
