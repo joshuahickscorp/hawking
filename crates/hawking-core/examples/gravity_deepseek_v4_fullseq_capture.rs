@@ -12,7 +12,21 @@
 //!   cargo run -p hawking-core --release --example gravity_deepseek_v4_fullseq_capture -- \
 //!     --artifact /path/to/full-43-layer-stream.gravity \
 //!     --out-dir receipts/dsv4f_fullseq_capture \
-//!     [--ladder L0|L1] [--max-layer 1] [--max-seq-len 8] [--limit N]
+//!     [--ladder L0|L1] [--max-layer 1] [--max-seq-len 8] [--limit N] \
+//!     [--corpus-mode frozen|synthetic] [--corpus PATH.jsonl] \
+//!     [--export-host-activations]
+//!
+//! Corpus: default `--corpus-mode frozen` loads PROTO_FRANKENSTEIN_V0
+//! (pfv0:* example_ids, same rows as GLM teacher-forced). The legacy
+//! hard-coded v0_math_*/v0_code_* table is `--corpus-mode synthetic` only
+//! (smoke / empty-compressed window tests).
+//!
+//! Host export: `--export-host-activations` is an **offline-analysis diagnostic**.
+//! It copies bounded activation tensors from Metal buffers to
+//! `out_dir/activations/` AFTER device execution. It does **not** set
+//! `host_activation_handoff_permitted=true` on the P6/P7 source contract
+//! (that flag remains false; the device graph still rejects host-handoff
+//! contracts). Default runtime path is unchanged (hashes only).
 
 #[cfg(not(target_os = "macos"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,13 +62,15 @@ mod macos {
         DSV4F_P7_OWNED_COMMAND_BUFFERS, DSV4F_P7_OWNED_DEVICE_DISPATCHES,
     };
     use hawking_core::gravity_deepseek_v4_runtime_spine::DeepSeekV4StagedTensor;
+    use half::bf16;
     use hawking_core::metal::MetalContext;
     use serde_json::json;
     use sha2::{Digest, Sha256};
+    use std::collections::BTreeMap;
     use std::error::Error;
     use std::fs::{self, File};
-    use std::io::Write;
-    use std::path::PathBuf;
+    use std::io::{BufRead, BufReader, Write};
+    use std::path::{Path, PathBuf};
     use std::time::Instant;
     use tokenizers::Tokenizer;
 
@@ -63,6 +79,11 @@ mod macos {
     const PARITY: &str = "NUMERIC_PARITY_V2_1_ONLY";
     const DEFAULT_MAX_LAYER: usize = 1; // ratio-0 L0+L1 by default
     const DEFAULT_MAX_SEQ_LEN: usize = 8;
+    /// Canonical frozen V0 corpora (same rows GLM teacher-forced freezes).
+    const DEFAULT_FROZEN_L0: &str =
+        "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl";
+    const DEFAULT_FROZEN_L1: &str =
+        "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl";
 
     type ProbeResult<T> = Result<T, Box<dyn Error>>;
 
@@ -73,6 +94,12 @@ mod macos {
         max_layer: usize,
         max_seq_len: usize,
         limit: Option<usize>,
+        /// "frozen" (default, PROTO_FRANKENSTEIN_V0) or "synthetic" (legacy short prompts).
+        corpus_mode: String,
+        corpus_path: Option<PathBuf>,
+        /// Offline-analysis diagnostic: copy bounded activations to host files.
+        /// Does NOT flip host_activation_handoff_permitted on the device contract.
+        export_host_activations: bool,
     }
 
     #[derive(Default)]
@@ -93,6 +120,9 @@ mod macos {
         let wall = Instant::now();
         fs::create_dir_all(&args.out_dir)?;
         fs::create_dir_all(args.out_dir.join("traces"))?;
+        if args.export_host_activations {
+            fs::create_dir_all(args.out_dir.join("activations"))?;
+        }
 
         let reader = DeepSeekV4FullStreamReader::admit(&args.artifact)?;
         let catalog = DeepSeekV4LayerDeviceCatalog::admit(&reader)?;
@@ -115,8 +145,22 @@ mod macos {
             .into());
         }
 
-        let corpus = build_v0_corpus(&args.ladder, args.limit)?;
+        let corpus = build_v0_corpus(
+            &args.ladder,
+            args.limit,
+            &args.corpus_mode,
+            args.corpus_path.as_deref(),
+        )?;
         let tokenizer = load_dsv4f_tokenizer(&reader)?;
+        // Per-layer host export accumulators: example order → late_hidden f32[H].
+        // Only populated when --export-host-activations is set.
+        let mut export_late_hidden: BTreeMap<usize, Vec<Vec<f32>>> = BTreeMap::new();
+        let mut export_example_ids: Vec<String> = Vec::new();
+        if args.export_host_activations {
+            for &layer in &layers_run {
+                export_late_hidden.insert(layer, Vec::new());
+            }
+        }
 
         // Prepare per-layer attention executors once.
         let mut attn_execs: Vec<DeepSeekV4FullseqAttentionDeviceExecutor> = Vec::new();
@@ -218,7 +262,16 @@ mod macos {
                     let late_hidden_sha = buffer_sha256(&child.child_hc_state_bf16)?;
                     let ffn_norm_sha = buffer_sha256(&child.ffn_norm_bf16)?;
 
-                    let sites = json!({
+                    // Optional offline host export: copy late_hidden AFTER device
+                    // work. Does not change host_activation_handoff_permitted
+                    // (still false on the P7 source contract above).
+                    let mut late_hidden_export: Option<Vec<f32>> = None;
+                    if args.export_host_activations {
+                        let f32s = buffer_to_f32_mean_pool(&child.child_hc_state_bf16)?;
+                        late_hidden_export = Some(f32s);
+                    }
+
+                    let mut sites = json!({
                         "layer": layer,
                         "token_id": tid,
                         "token_position": pos,
@@ -236,8 +289,33 @@ mod macos {
                         "attn_metal_dispatches": attn_out.actual_gpu_dispatches,
                         "p7_p6_metal_dispatches": p7_disp,
                     });
+                    if let Some(ref vec) = late_hidden_export {
+                        // Embed last-position vector only when this is the final
+                        // token of the sequence (filled below after the pos loop
+                        // for the sidecar; inline for last pos to keep traces useful).
+                        sites.as_object_mut().unwrap().insert(
+                            "late_hidden_export_mode".into(),
+                            json!("offline_analysis_diagnostic"),
+                        );
+                        sites.as_object_mut().unwrap().insert(
+                            "late_hidden_dtype".into(),
+                            json!("f32"),
+                        );
+                        sites.as_object_mut().unwrap().insert(
+                            "late_hidden_shape".into(),
+                            json!([vec.len()]),
+                        );
+                        // Stash on sites for last-pos promotion after the token loop.
+                        sites.as_object_mut().unwrap().insert(
+                            "_late_hidden_f32_tmp".into(),
+                            json!(vec),
+                        );
+                    }
                     // Approximate capture payload (hashes + route ids, not full tensors).
                     total_capture_bytes += 6 * 32 + 6 * 4 + 128;
+                    if late_hidden_export.is_some() {
+                        total_capture_bytes += late_hidden_export.as_ref().map(|v| v.len() * 4).unwrap_or(0) as u64;
+                    }
                     for key in [
                         "embedding",
                         "mHC",
@@ -264,6 +342,59 @@ mod macos {
             accounting.sequences += 1;
             accounting.layers_per_token.push(layers_run.len());
 
+            // Promote last-position late_hidden f32 into the trace for the loader,
+            // strip temporary vectors from earlier positions (keep hashes only).
+            if args.export_host_activations {
+                if let Some(last_pos) = positions_capture.last_mut() {
+                    if let Some(layers) = last_pos.get_mut("layers").and_then(|v| v.as_array_mut())
+                    {
+                        for layer_row in layers.iter_mut() {
+                            let obj = layer_row
+                                .as_object_mut()
+                                .ok_or("layer row not object during export promote")?;
+                            if let Some(tmp) = obj.remove("_late_hidden_f32_tmp") {
+                                let layer_idx = obj
+                                    .get("layer")
+                                    .and_then(|v| v.as_u64())
+                                    .ok_or("missing layer in export row")?
+                                    as usize;
+                                let f32s: Vec<f32> = tmp
+                                    .as_array()
+                                    .ok_or("late_hidden tmp not array")?
+                                    .iter()
+                                    .map(|v| v.as_f64().unwrap_or(0.0) as f32)
+                                    .collect();
+                                obj.insert("late_hidden".into(), tmp);
+                                if let Some(bucket) = export_late_hidden.get_mut(&layer_idx) {
+                                    bucket.push(f32s);
+                                }
+                            }
+                        }
+                    }
+                }
+                // Drop temp vectors from non-last positions to keep traces bounded.
+                let npos = positions_capture.len();
+                for (i, pos_row) in positions_capture.iter_mut().enumerate() {
+                    if i + 1 == npos {
+                        continue;
+                    }
+                    if let Some(layers) = pos_row.get_mut("layers").and_then(|v| v.as_array_mut()) {
+                        for layer_row in layers.iter_mut() {
+                            if let Some(obj) = layer_row.as_object_mut() {
+                                obj.remove("_late_hidden_f32_tmp");
+                            }
+                        }
+                    }
+                }
+                export_example_ids.push(example.example_id.clone());
+            }
+
+            let hidden_note = if args.export_host_activations {
+                "offline_analysis_diagnostic: late_hidden f32 exported on last position + activations/LXX.npy sidecars; device contract still host_activation_handoff_permitted=false"
+            } else {
+                "sha256 of child HC BF16; full tensor retained on device only (set --export-host-activations for offline correspondence export)"
+            };
+
             let dsv4f_side = json!({
                 "side": "dsv4f",
                 "present": true,
@@ -275,10 +406,12 @@ mod macos {
                 "layers_run": layers_run,
                 "positions": positions_capture,
                 "parity": PARITY,
+                "host_activation_export": args.export_host_activations,
+                "host_activation_handoff_permitted": false,
                 "representative_hidden_states": [
                     {
                         "site": "late_hidden_last_pos_last_layer",
-                        "note": "sha256 of child HC BF16[4,4096]; full tensor retained on device only",
+                        "note": hidden_note,
                     }
                 ],
                 "route_statistics": {
@@ -360,6 +493,68 @@ mod macos {
             );
         }
 
+        // Write activation sidecars for the correspondence loader
+        // (activations/L{nn:02d}.npy with shape [N, D] float32 C-order).
+        let mut export_sidecar_paths: Vec<serde_json::Value> = Vec::new();
+        if args.export_host_activations {
+            let act_dir = args.out_dir.join("activations");
+            let ids_path = act_dir.join("example_ids.json");
+            write_json(
+                &ids_path,
+                &json!({
+                    "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export_ids.v1",
+                    "example_ids": export_example_ids,
+                    "n": export_example_ids.len(),
+                    "mode": "offline_analysis_diagnostic",
+                    "host_activation_handoff_permitted": false,
+                }),
+            )?;
+            for (&layer, rows) in &export_late_hidden {
+                if rows.is_empty() {
+                    continue;
+                }
+                let n = rows.len();
+                let d = rows[0].len();
+                if rows.iter().any(|r| r.len() != d) {
+                    return Err(format!(
+                        "export layer {layer}: inconsistent hidden widths"
+                    )
+                    .into());
+                }
+                let mut flat: Vec<f32> = Vec::with_capacity(n * d);
+                for r in rows {
+                    flat.extend_from_slice(r);
+                }
+                let npy_path = act_dir.join(format!("L{layer:02}.npy"));
+                write_npy_f32_2d(&npy_path, &flat, n, d)?;
+                export_sidecar_paths.push(json!({
+                    "layer": layer,
+                    "path": npy_path.display().to_string(),
+                    "shape": [n, d],
+                    "dtype": "float32",
+                    "site": "late_hidden",
+                }));
+                // Also write a one-key npz-equivalent via a tiny companion json
+                // the Python loader understands alongside .npy.
+                let meta_path = act_dir.join(format!("L{layer:02}.export.json"));
+                write_json(
+                    &meta_path,
+                    &json!({
+                        "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export.v1",
+                        "layer": layer,
+                        "site": "late_hidden",
+                        "npy": npy_path.display().to_string(),
+                        "shape": [n, d],
+                        "dtype": "float32",
+                        "example_ids_path": ids_path.display().to_string(),
+                        "mode": "offline_analysis_diagnostic",
+                        "host_activation_handoff_permitted": false,
+                        "note": "Post-execute host copy for correspondence only; device graph still no-host.",
+                    }),
+                )?;
+            }
+        }
+
         let wall_ms = wall.elapsed().as_secs_f64() * 1e3;
         let ratios_covered = json!({
             "ratio_0": layers_run.iter().any(|&l| expected_ratio(l) == 0),
@@ -391,6 +586,9 @@ mod macos {
                 "layers_run": layers_run,
                 "max_layer_requested": args.max_layer,
                 "layer_blockers": layer_blockers,
+                "corpus_mode": args.corpus_mode,
+                "corpus_path": args.corpus_path.as_ref().map(|p| p.display().to_string()),
+                "export_host_activations": args.export_host_activations,
             },
             "non_bos_forward": {
                 "ratios_covered": ratios_covered,
@@ -422,6 +620,24 @@ mod macos {
                 "hcli_decisions_captured": false,
                 "logits_captured": false,
                 "logits_note": "final lm_head requires full 43-layer body per token; not run under ratio-0-only default",
+                "host_activation_handoff_permitted": false,
+                "host_activation_export_is_diagnostic_only": true,
+            },
+            "host_activation_export": {
+                "enabled": args.export_host_activations,
+                "mode": if args.export_host_activations {
+                    "offline_analysis_diagnostic"
+                } else {
+                    "disabled_default_hashes_only"
+                },
+                "host_activation_handoff_permitted": false,
+                "note": "Export copies bounded Metal buffers to host AFTER execute for correspondence (CKA/CCA/Procrustes). The P6/P7 source contract keeps host_activation_handoff_permitted=false; the device graph is unchanged.",
+                "sidecars": export_sidecar_paths,
+                "dir": if args.export_host_activations {
+                    Some(args.out_dir.join("activations").display().to_string())
+                } else {
+                    None
+                },
             },
             "wall_time_ms": wall_ms,
             "parity": {
@@ -460,10 +676,113 @@ mod macos {
         method_family: Option<String>,
     }
 
-    fn build_v0_corpus(ladder: &str, limit: Option<usize>) -> ProbeResult<Vec<CorpusExample>> {
-        // Frozen V0 ladder sizes (steer): L0=32, L1=128. Short math/method prompts
-        // so sequences stay within empty-compressed windows for ratio-4/128 if
-        // deeper layers are later admitted.
+    fn build_v0_corpus(
+        ladder: &str,
+        limit: Option<usize>,
+        corpus_mode: &str,
+        corpus_path: Option<&Path>,
+    ) -> ProbeResult<Vec<CorpusExample>> {
+        match corpus_mode {
+            "frozen" | "proto" | "pfv0" => {
+                let path = match corpus_path {
+                    Some(p) => p.to_path_buf(),
+                    None => PathBuf::from(match ladder {
+                        "L0" => DEFAULT_FROZEN_L0,
+                        "L1" => DEFAULT_FROZEN_L1,
+                        other => {
+                            return Err(format!("unknown ladder {other}; use L0 or L1").into())
+                        }
+                    }),
+                };
+                let mut out = load_frozen_proto_corpus(&path)?;
+                if let Some(n) = limit {
+                    out.truncate(n);
+                }
+                if out.is_empty() {
+                    return Err(format!("frozen corpus empty: {}", path.display()).into());
+                }
+                println!(
+                    "corpus_mode=frozen path={} n={} id0={}",
+                    path.display(),
+                    out.len(),
+                    out[0].example_id
+                );
+                Ok(out)
+            }
+            "synthetic" | "legacy_short" => {
+                // Legacy short prompts (v0_math_*/v0_code_*). NOT the frozen V0
+                // corpus — zero content-hash overlap with GLM/PROTO. Kept only
+                // for empty-compressed window smokes.
+                let out = build_synthetic_short_corpus(ladder, limit)?;
+                println!(
+                    "corpus_mode=synthetic n={} WARNING: not PROTO_FRANKENSTEIN_V0; correspondence ID intersection with GLM will be empty",
+                    out.len()
+                );
+                Ok(out)
+            }
+            other => Err(format!(
+                "unknown --corpus-mode {other}; use frozen (default) or synthetic"
+            )
+            .into()),
+        }
+    }
+
+    fn load_frozen_proto_corpus(path: &Path) -> ProbeResult<Vec<CorpusExample>> {
+        let file = File::open(path)
+            .map_err(|e| format!("open frozen corpus {}: {e}", path.display()))?;
+        let reader = BufReader::new(file);
+        let mut out = Vec::new();
+        for (lineno, line) in reader.lines().enumerate() {
+            let line = line.map_err(|e| format!("{}:{}: {e}", path.display(), lineno + 1))?;
+            let line = line.trim();
+            if line.is_empty() {
+                continue;
+            }
+            let v: serde_json::Value = serde_json::from_str(line)
+                .map_err(|e| format!("{}:{}: JSON {e}", path.display(), lineno + 1))?;
+            let example_id = v
+                .get("example_id")
+                .and_then(|x| x.as_str())
+                .ok_or_else(|| format!("{}:{}: missing example_id", path.display(), lineno + 1))?
+                .to_string();
+            let prompt_text = v
+                .get("surface_text")
+                .or_else(|| v.get("prompt_text"))
+                .and_then(|x| x.as_str())
+                .ok_or_else(|| {
+                    format!(
+                        "{}:{}: missing surface_text/prompt_text",
+                        path.display(),
+                        lineno + 1
+                    )
+                })?
+                .to_string();
+            let membership = v
+                .get("membership")
+                .and_then(|x| x.as_str())
+                .unwrap_or("train")
+                .to_string();
+            let method_family = v
+                .get("family")
+                .or_else(|| v.get("method_family"))
+                .and_then(|x| x.as_str())
+                .map(|s| s.to_string());
+            out.push(CorpusExample {
+                example_id,
+                membership,
+                prompt_text,
+                method_family,
+            });
+        }
+        Ok(out)
+    }
+
+    fn build_synthetic_short_corpus(
+        ladder: &str,
+        limit: Option<usize>,
+    ) -> ProbeResult<Vec<CorpusExample>> {
+        // Short math/method prompts so sequences stay within empty-compressed
+        // windows for ratio-4/128 smoke tests. NOT for real correspondence.
         let base: Vec<(&str, &str, &str)> = vec![
             ("v0_math_01", "train", "Evaluate (17 × 29) + 7."),
             ("v0_math_02", "train", "Find gcd(119, 203)."),
@@ -720,6 +1039,91 @@ mod macos {
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
 
+    /// Offline-analysis diagnostic: copy a BF16 Metal buffer to host f32.
+    ///
+    /// Child HC state is BF16 with leading layout rows (typically HC mult × hidden).
+    /// We mean-pool over complete 4096-wide rows so the correspondence vector is
+    /// width=hidden (4096). This is a post-execute host read for diagnostics only
+    /// — it does not set host_activation_handoff_permitted on the device contract.
+    fn buffer_to_f32_mean_pool(buf: &metal::Buffer) -> ProbeResult<Vec<f32>> {
+        const HIDDEN: usize = 4096;
+        let ptr = buf.contents() as *const u8;
+        if ptr.is_null() {
+            return Err("buffer contents null for host export".into());
+        }
+        let nbytes = buf.length() as usize;
+        if nbytes % 2 != 0 {
+            return Err(format!("BF16 buffer length {nbytes} not even").into());
+        }
+        let n_bf16 = nbytes / 2;
+        let bits = unsafe { std::slice::from_raw_parts(ptr as *const u16, n_bf16) };
+        if n_bf16 == 0 {
+            return Err("empty BF16 buffer for host export".into());
+        }
+        // Prefer mean-pool over full hidden rows; fall back to flat convert.
+        if n_bf16 % HIDDEN == 0 {
+            let rows = n_bf16 / HIDDEN;
+            let mut acc = vec![0.0f32; HIDDEN];
+            for r in 0..rows {
+                for c in 0..HIDDEN {
+                    let v = bf16::from_bits(bits[r * HIDDEN + c]).to_f32();
+                    acc[c] += v;
+                }
+            }
+            if rows > 1 {
+                let inv = 1.0 / rows as f32;
+                for x in acc.iter_mut() {
+                    *x *= inv;
+                }
+            }
+            Ok(acc)
+        } else {
+            Ok(bits
+                .iter()
+                .map(|b| bf16::from_bits(*b).to_f32())
+                .collect())
+        }
+    }
+
+    /// Minimal NumPy `.npy` writer for C-order float32 2-D arrays (no extra deps).
+    fn write_npy_f32_2d(path: &Path, data: &[f32], rows: usize, cols: usize) -> ProbeResult<()> {
+        if data.len() != rows * cols {
+            return Err(format!(
+                "npy size mismatch: data={} expected {}",
+                data.len(),
+                rows * cols
+            )
+            .into());
+        }
+        // NPY v1.0 header.
+        let descr = "{'descr': '<f4', 'fortran_order': False, 'shape': (ROWS, COLS), }"
+            .replace("ROWS", &rows.to_string())
+            .replace("COLS", &cols.to_string());
+        // Header must be padded so magic(6)+ver(2)+hlen(2)+header is 64-byte aligned.
+        let prefix = 10usize; // 6 magic + 2 ver + 2 header_len
+        let mut header = descr;
+        // numpy pads with spaces and terminates with '\n'
+        let mut total = prefix + header.len() + 1; // +1 for newline
+        let pad = (64 - (total % 64)) % 64;
+        header.push_str(&" ".repeat(pad));
+        header.push('\n');
+        total = prefix + header.len();
+        if total % 64 != 0 {
+            return Err("npy header alignment bug".into());
+        }
+        let header_len = u16::try_from(header.len())
+            .map_err(|_| "npy header exceeds u16")?;
+        let mut f = File::create(path)?;
+        f.write_all(b"\x93NUMPY")?;
+        f.write_all(&[1u8, 0u8])?; // v1.0
+        f.write_all(&header_len.to_le_bytes())?;
+        f.write_all(header.as_bytes())?;
+        for &v in data {
+            f.write_all(&v.to_le_bytes())?;
+        }
+        Ok(())
+    }
+
     fn expected_ratio(layer: usize) -> usize {
         match layer {
             0 | 1 => 0,
@@ -765,6 +1169,9 @@ mod macos {
         let mut max_layer = DEFAULT_MAX_LAYER;
         let mut max_seq_len = DEFAULT_MAX_SEQ_LEN;
         let mut limit = None;
+        let mut corpus_mode = "frozen".to_string();
+        let mut corpus_path = None;
+        let mut export_host_activations = false;
         let mut args = std::env::args().skip(1);
         while let Some(arg) = args.next() {
             match arg.as_str() {
@@ -799,9 +1206,24 @@ mod macos {
                             .map_err(|_| "--limit must be int")?,
                     );
                 }
+                "--corpus-mode" => {
+                    corpus_mode = args
+                        .next()
+                        .ok_or("--corpus-mode needs frozen|synthetic")?;
+                }
+                "--corpus" => {
+                    corpus_path =
+                        Some(PathBuf::from(args.next().ok_or("--corpus needs path")?));
+                }
+                "--export-host-activations" => {
+                    export_host_activations = true;
+                }
                 "--help" | "-h" => {
                     println!(
-                        "gravity_deepseek_v4_fullseq_capture --artifact <p> --out-dir <p> [--ladder L0|L1] [--max-layer N] [--max-seq-len N] [--limit N]"
+                        "gravity_deepseek_v4_fullseq_capture --artifact <p> --out-dir <p> \
+                         [--ladder L0|L1] [--max-layer N] [--max-seq-len N] [--limit N] \
+                         [--corpus-mode frozen|synthetic] [--corpus PATH.jsonl] \
+                         [--export-host-activations]"
                     );
                     std::process::exit(0);
                 }
@@ -815,6 +1237,9 @@ mod macos {
             max_layer,
             max_seq_len,
             limit,
+            corpus_mode,
+            corpus_path,
+            export_host_activations,
         })
     }
 }
