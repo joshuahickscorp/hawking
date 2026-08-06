@@ -1,0 +1,18 @@
+{
+  "serial_receipt_wall_ms": 9128.031042,
+  "serial_external_wall_s": 9.186,
+  "w2_external_wall_s": 6.531,
+  "w4_external_wall_s": 5.106,
+  "speedup_w2_vs_serial_receipt": 1.3976467680293982,
+  "speedup_w4_vs_serial_receipt": 1.7877068237367804,
+  "efficiency_w2": 0.6988233840146991,
+  "efficiency_w4": 0.4469267059341951,
+  "workload": {
+    "limit": 4,
+    "max_layer": 1,
+    "max_seq_len": 3,
+    "corpus": "synthetic",
+    "export": true
+  },
+  "concurrent_live_l1_capture": true
+}

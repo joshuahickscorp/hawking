@@ -1,0 +1,125 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture_merged.v1",
+  "status": "PASS_FULLSEQ_CAPTURE_MERGED_4_SEQS_2_WORKERS",
+  "workers": [
+    {
+      "worker_id": "w0",
+      "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker0",
+      "seq_start": 0,
+      "seq_end": 2,
+      "receipt_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker0/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+      "receipt_sha256": "03cda993e3373828b37ca45658b22c1c3359f2f31de19209eaa00132fd973945",
+      "n_sequences": 2,
+      "wall_time_ms": 6472.477083000001
+    },
+    {
+      "worker_id": "w1",
+      "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker1",
+      "seq_start": 2,
+      "seq_end": 4,
+      "receipt_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker1/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+      "receipt_sha256": "aed5dfd3fc78dc778e3995947f048176af3e21b94883fd56b74b7b1108cc8ead",
+      "n_sequences": 2,
+      "wall_time_ms": 5221.620791
+    }
+  ],
+  "scope": {
+    "sequences": 4,
+    "example_ids": [
+      "v0_math_01",
+      "v0_math_02",
+      "v0_math_03",
+      "v0_math_04"
+    ],
+    "tokens_total": 12,
+    "layers_run": [
+      0,
+      1
+    ],
+    "seq_range_union": [
+      0,
+      4
+    ]
+  },
+  "paired_traces": {
+    "n_traces": 4,
+    "dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/traces",
+    "rows": [
+      {
+        "example_id": "v0_math_01",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/traces/v0_math_01.json",
+        "source_worker_id": "w0",
+        "source_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker0/traces/v0_math_01.json",
+        "sha256": "8dec69250e7dd80b685c6db7621ace429f1a2673b5eff73b3e82801c9b77db18"
+      },
+      {
+        "example_id": "v0_math_02",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/traces/v0_math_02.json",
+        "source_worker_id": "w0",
+        "source_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker0/traces/v0_math_02.json",
+        "sha256": "f732893a211d547dfc23d24c176735c994b71c8153be5bad48ca760adaa7b75c"
+      },
+      {
+        "example_id": "v0_math_03",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/traces/v0_math_03.json",
+        "source_worker_id": "w1",
+        "source_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker1/traces/v0_math_03.json",
+        "sha256": "de4d6f85bcbdc15d3a769a0437f23f416945d08c184886f57d1ee09a3caf1c6d"
+      },
+      {
+        "example_id": "v0_math_04",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/traces/v0_math_04.json",
+        "source_worker_id": "w1",
+        "source_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/w2/worker1/traces/v0_math_04.json",
+        "sha256": "618414c57c19d2c326fbb5a3e4644839d05f2f0ee1008ff9cb299b45748d17d4"
+      }
+    ]
+  },
+  "host_activation_export": {
+    "enabled": true,
+    "sidecars": [
+      {
+        "layer": 0,
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations/L00.npy",
+        "shape": [
+          4,
+          4096
+        ],
+        "dtype": "float32",
+        "site": "late_hidden",
+        "npy_sha256": "fcb655e0184b6b4e9681483f284cc2aaa4409a39d07c112531f09ad0ad97c0ea"
+      },
+      {
+        "layer": 1,
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations/L01.npy",
+        "shape": [
+          4,
+          4096
+        ],
+        "dtype": "float32",
+        "site": "late_hidden",
+        "npy_sha256": "b3a5d928bd871e3b695b6646d4a853399125eeac2cd4f50670b0f440ea9e4d21"
+      }
+    ],
+    "dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations",
+    "example_ids_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations/example_ids.json"
+  },
+  "metal_aggregated": {
+    "metal_dispatches": 2088,
+    "command_buffers": 120,
+    "cpu_visible_waits": 120,
+    "note": "sum across workers (not comparable to single-process counters under contention)"
+  },
+  "wall_time": {
+    "sum_worker_ms": 11694.097874000001,
+    "max_worker_ms": 6472.477083000001,
+    "note": "max_worker_ms approximates parallel wall if workers started together"
+  },
+  "honesty": {
+    "fabricated_activations": false,
+    "merge_only_reorders_disjoint_shards": true,
+    "layer_shard_supported": false
+  },
+  "merged_receipt_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/DSV4F_FULLSEQ_CAPTURE_MERGED_RECEIPT.json",
+  "merged_receipt_sha256": "56d2034c3c4826117a83afbe89db68ae99fd256bd00b8576047afbe240e79234"
+}
