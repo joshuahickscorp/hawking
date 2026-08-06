@@ -1,0 +1,499 @@
+{
+  "schema": "hawking.ascension.master_schedule.v1",
+  "bible_section": 35,
+  "bible_source": "HAWKING_ASCENSION_BIBLE.md",
+  "title": "Canonical execution schedule",
+  "status_policy": {
+    "allowed_statuses": [
+      "NOT_STARTED",
+      "IN_PROGRESS",
+      "BLOCKED",
+      "CANDIDATE_COMPLETE",
+      "CONTROLLER_CERTIFIED"
+    ],
+    "initial_status": "NOT_STARTED",
+    "note": "Sandbox models may report CANDIDATE_COMPLETE only. Only controller/human may set CONTROLLER_CERTIFIED. This scaffold seeds every step as NOT_STARTED."
+  },
+  "primary_product_metric": "verified_tasks_completed_per_hour",
+  "cuda_policy": {
+    "bible_section": 34,
+    "stance": "deferred_not_rejected",
+    "preserve": [
+      "architecture_ir",
+      "gravity_tensor_semantics",
+      "kernel_grammar",
+      "benchmark_contracts",
+      "parity_capability_suites",
+      "receipt_schema",
+      "scheduler_api"
+    ],
+    "begin_at_step": 33,
+    "requires": [
+      "real_cuda_hardware",
+      "independent_parity_performance_evidence"
+    ],
+    "apple_claims": "remain_apple_specific"
+  },
+  "final_directive_summary": "Research the physical path, encode it into Gravity, make the Qwen pair fast enough to build the laboratory, give HCLI the memory/search/skills/perception/communication needed to operate autonomously, and let Hawking—not the sandbox models—decide what becomes infrastructure.",
+  "steps": [
+    {
+      "id": 0,
+      "description": "Finish, seal, offload and remove Proto-Frankenstein from active storage.",
+      "prerequisites": [],
+      "produces_completion_state": "PROTO_FRANKENSTEIN_OFFLOADED",
+      "companion_lanes": [],
+      "companion_docs": [],
+      "notes": "Programme begins only after Proto-Frankenstein is sealed, offloaded, hash-verified, and removed from the active local storage envelope. Do not touch live frankenstein operators or evidence while GLM recapture is running.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 1,
+      "description": "Freeze protected Hawking authorities and stable binaries.",
+      "prerequisites": [0],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-governance-scaffold"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_GARBAGE_ECOSYSTEM_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_PRESSURE_GOVERNOR_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_NOTIFICATIONS_PLAN.md"
+      ],
+      "notes": "Protects judge authority before sandbox workforce expansion.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 2,
+      "description": "Install report-only model authority.",
+      "prerequisites": [1],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-governance-scaffold"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_NOTIFICATIONS_PLAN.md"
+      ],
+      "notes": "Sandbox models report candidates; they never certify terminal states (bible §2, §36).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 3,
+      "description": "Install garbage ownership and pressure governor.",
+      "prerequisites": [1],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-governance-scaffold"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_GARBAGE_ECOSYSTEM_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_PRESSURE_GOVERNOR_PLAN.md"
+      ],
+      "notes": "PINNED / LEASED / EVICTABLE / QUARANTINED plus GREEN→CRITICAL pressure bands.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 4,
+      "description": "Install credential broker.",
+      "prerequisites": [1],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-acquisition-registry"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_CREDENTIAL_BROKER_PLAN.md"
+      ],
+      "notes": "Source acquisition without scattering secrets into sandbox agents.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 5,
+      "description": "Build research registry and Graveyard retrieval.",
+      "prerequisites": [4],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-acquisition-registry", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_RESEARCH_REGISTRY_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "Negative-science inheritance and paper→experiment retrieval live here (bible §5, §32).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 6,
+      "description": "Audit both Qwen architectures and representative tensor geometries.",
+      "prerequisites": [5],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "No full artifact construction until research admits the physical path (bible §4).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 7,
+      "description": "Prototype B/F/U/R/D/S/K mechanisms on bounded fixtures and source windows.",
+      "prerequisites": [6],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "Mechanisms that change bytes, operations, utilization, reuse, depth, synchronization, state.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 8,
+      "description": "Classify every mechanism as Gravity/runtime/kernel/deferred/rejected.",
+      "prerequisites": [7],
+      "produces_completion_state": "HAWKING_RESEARCH_PORTFOLIO_FROZEN",
+      "companion_lanes": ["ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "CUDA-specific mechanisms remain deferred (not rejected) per bible §34.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 9,
+      "description": "Build HCLI Agent OS foundations: scheduler, planning diagnostic, retrieval gateway, tool gateway, memory OS, Skill Foundry, perception service, execution sandbox, verification authority, observability.",
+      "prerequisites": [2, 3],
+      "produces_completion_state": "HCLI_AGENT_OS_FOUNDATION_READY",
+      "companion_lanes": [
+        "hcli-scheduler-planning",
+        "hcli-retrieval-tools",
+        "hcli-memory-skills",
+        "hcli-perception-comms",
+        "hcli-sandbox-verification",
+        "hcli-evolution-optionc",
+        "ascension-master-schedule"
+      ],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/HCLI_AGENT_SCHEDULER_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_PLANNING_DIAGNOSTIC_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_RETRIEVAL_GATEWAY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_TOOL_GATEWAY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_MEMORY_OS_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_SKILL_FOUNDRY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_PERCEPTION_SERVICE_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_COMMUNICATION_BUS_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_EXECUTION_SANDBOX_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_VERIFICATION_AUTHORITY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_SELF_EVOLUTION_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_HCLI_PRODUCT_TEST_PLAN.md"
+      ],
+      "notes": "Self-evolution engine is designed with foundations but activates later with Option-C. Product tests (bible §33) are the acceptance surface.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 10,
+      "description": "Design Gravity direct-execution layouts from admitted findings.",
+      "prerequisites": [8],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "Backend-neutral IR/tensor semantics/kernel grammar must remain portable for later CUDA (bible §34).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 11,
+      "description": "Stream and Gravity Qwen3-Coder-30B.",
+      "prerequisites": [10, 6],
+      "produces_completion_state": "QWEN3_30B_GRAVITY_READY",
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md"
+      ],
+      "notes": "Bootstrap model 1 — executor path (bible §8).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 12,
+      "description": "Build exact-model 30B production path.",
+      "prerequisites": [11],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md"
+      ],
+      "notes": "Apple/Metal production backend is Tier 1.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 13,
+      "description": "Run parity, capability and complete-token profiler.",
+      "prerequisites": [12],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+      ],
+      "notes": "Complete-token profiler and FLOPS ledger (bible §11).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 14,
+      "description": "Run 30B self-TG gauntlet.",
+      "prerequisites": [13],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+      ],
+      "notes": "Self-TG before sandbox admission (bible §10).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 15,
+      "description": "Stop at TG3 for review.",
+      "prerequisites": [14],
+      "produces_completion_state": "TG3_REVIEW_REQUIRED",
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-master-schedule"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETION_STATES.json"
+      ],
+      "notes": "Mandatory human/controller review gate. TG2/TG1 remain frontier under later step 31.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 16,
+      "description": "Promote approved 30B executor.",
+      "prerequisites": [15],
+      "produces_completion_state": "QWEN3_30B_EXECUTOR_READY",
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md"
+      ],
+      "notes": "Promotion requires controller/human certification of the TG3 review outcome.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 17,
+      "description": "Stream and Gravity Qwen3-Coder-Next 80B.",
+      "prerequisites": [10, 16],
+      "produces_completion_state": "QWEN3_NEXT_80B_GRAVITY_READY",
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md"
+      ],
+      "notes": "Bootstrap model 2 — reviewer path (bible §9). Depends on Gravity layouts and 30B promotion for win porting context.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 18,
+      "description": "Build exact-model Qwen3-Next hybrid path.",
+      "prerequisites": [17],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md"
+      ],
+      "notes": "Hybrid architecture exact-model path, not a second full-dense rebuild of 30B patterns blindly.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 19,
+      "description": "Port applicable 30B wins.",
+      "prerequisites": [16, 18],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "Only admitted Gravity/runtime/kernel wins transfer; deferred/rejected mechanisms stay classified.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 20,
+      "description": "Run 80B parity, capability and profiler.",
+      "prerequisites": [18, 19],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+      ],
+      "notes": null,
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 21,
+      "description": "Run 80B self-TG gauntlet.",
+      "prerequisites": [20],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+      ],
+      "notes": null,
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 22,
+      "description": "Stop at TG3 for review.",
+      "prerequisites": [21],
+      "produces_completion_state": "TG3_REVIEW_REQUIRED",
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-master-schedule"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETION_STATES.json"
+      ],
+      "notes": "Second TG3 stop — same state id may re-enter as a review gate for the 80B path.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 23,
+      "description": "Promote approved 80B reviewer.",
+      "prerequisites": [22],
+      "produces_completion_state": "QWEN3_NEXT_80B_REVIEWER_READY",
+      "companion_lanes": ["ascension-bootstrap-parity"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md"
+      ],
+      "notes": "Controller/human certifies promotion after TG3 review.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 24,
+      "description": "Enable Option-C HCLI sandbox.",
+      "prerequisites": [9, 16, 23],
+      "produces_completion_state": "HAWKING_OPTION_C_KERNEL_SANDBOX_READY",
+      "companion_lanes": ["hcli-evolution-optionc", "hcli-sandbox-verification"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/HCLI_OPTION_C_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_EXECUTION_SANDBOX_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_VERIFICATION_AUTHORITY_PLAN.md"
+      ],
+      "notes": "Requires Agent OS foundations plus dual Qwen roles (executor + reviewer).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 25,
+      "description": "Test dual-resident, executor-resident and phase-separated modes.",
+      "prerequisites": [24],
+      "produces_completion_state": null,
+      "companion_lanes": ["hcli-evolution-optionc"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/HCLI_RESIDENCY_MODES_PLAN.md"
+      ],
+      "notes": "Modes A/B/C (bible §25).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 26,
+      "description": "Enable production retrieval, memory, skills and selective perception.",
+      "prerequisites": [9, 24, 25],
+      "produces_completion_state": "HCLI_AGENT_PIPELINE_READY",
+      "companion_lanes": [
+        "hcli-retrieval-tools",
+        "hcli-memory-skills",
+        "hcli-perception-comms",
+        "ascension-master-schedule"
+      ],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/HCLI_RETRIEVAL_GATEWAY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_MEMORY_OS_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_SKILL_FOUNDRY_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_PERCEPTION_SERVICE_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_HCLI_PRODUCT_TEST_PLAN.md"
+      ],
+      "notes": "Full bible §33 product-test matrix becomes the gate for pipeline readiness.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 27,
+      "description": "Begin isolated same-model latent communication experiments.",
+      "prerequisites": [26],
+      "produces_completion_state": null,
+      "companion_lanes": ["hcli-perception-comms"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/HCLI_COMMUNICATION_BUS_PLAN.md"
+      ],
+      "notes": "Isolated experiments only; no authority escalation for sandbox models.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 28,
+      "description": "Generalize exact-model paths into Qwen family graphs.",
+      "prerequisites": [16, 23, 12, 18],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md"
+      ],
+      "notes": "Family kernel architecture (bible §29).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 29,
+      "description": "Launch autonomous wider model ladder.",
+      "prerequisites": [26, 28],
+      "produces_completion_state": "HAWKING_SELF_CONTAINED_MODEL_LADDER_ACTIVE",
+      "companion_lanes": ["ascension-bootstrap-parity", "hcli-evolution-optionc"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/HCLI_SELF_EVOLUTION_PLAN.md"
+      ],
+      "notes": "Wider autonomous model ladder (bible §30).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 30,
+      "description": "Rotate across increasingly difficult families.",
+      "prerequisites": [29],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-acquisition-registry"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_RESEARCH_REGISTRY_PLAN.md"
+      ],
+      "notes": "Rotation rule (bible §31).",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 31,
+      "description": "Continue TG2/TG1 research under human/controller authority.",
+      "prerequisites": [15, 22],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-bootstrap-parity", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "TG2/TG1 remain frontier; never auto-certified by sandbox models.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 32,
+      "description": "Seal Apple production release.",
+      "prerequisites": [26, 29, 1],
+      "produces_completion_state": "HAWKING_APPLE_PRODUCTION_RELEASE_READY",
+      "companion_lanes": ["ascension-master-schedule", "ascension-governance-scaffold"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_PROGRAM_OVERVIEW.md",
+        "workspace/docs/plans/ascension/ASCENSION_HCLI_PRODUCT_TEST_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETION_STATES.json"
+      ],
+      "notes": "Terminal Apple production state. Controller/human certification only.",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 33,
+      "description": "Begin CUDA only as a separately funded post-release backend.",
+      "prerequisites": [32],
+      "produces_completion_state": null,
+      "companion_lanes": ["ascension-master-schedule", "ascension-gravity-research"],
+      "companion_docs": [
+        "workspace/docs/plans/ascension/ASCENSION_PROGRAM_OVERVIEW.md",
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+      ],
+      "notes": "Deferred programme (bible §34). Reuses preserved backend-neutral contracts; Apple claims stay Apple-specific.",
+      "status": "NOT_STARTED"
+    }
+  ],
+  "step_count": 34,
+  "step_id_range": {"min": 0, "max": 33},
+  "tracking_notes": "Bible §35 lists steps 0–33 (34 numbered items). This JSON is the durable programme tracker; companion lanes own detailed designs and must not silently advance step status."
+}
