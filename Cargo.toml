@@ -20,6 +20,12 @@ members = [
     "crates/hawking-orch",
     "crates/hawking-research",
     "crates/hawking-eval",
+    # HCLI Perception Service (Ascension Bible §19): cheap-first document pipeline
+    # interfaces + stubs. Model-free; OCR/vision backends DEFERRED.
+    "crates/hawking-perception",
+    # HCLI Communication Bus (Ascension Bible §20): L1 text / L2 structured state /
+    # L3 experimental latent sealed-packet format. Model-free; no live KV transfer.
+    "crates/hawking-comms",
     # HIDE config-compatibility readers (Bible sec 58 / Phase 11): model-free parsing
     # so a repo configured for another agent migrates to HIDE with minimal changes.
     # HIDE unified capability registry (Bible sec 24): one ABI for every extension
@@ -82,6 +88,8 @@ default-members = [
     "crates/hawking-orch",
     "crates/hawking-research",
     "crates/hawking-eval",
+    "crates/hawking-perception",
+    "crates/hawking-comms",
     "crates/hawking-events",
     "crates/hawking-adapters",
     "tools/q4k_fast",
