@@ -1,0 +1,1384 @@
+{
+  "ablation": {
+    "arms": [
+      {
+        "arm": "A_BASE_DSV4F",
+        "description": "Base DSV4F only; no donor inheritance",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+        "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "C_LATENT_BRIDGES",
+        "description": "Latent bridges only (projectors + interventions)",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "D_BEHAVIOR_HEADS",
+        "description": "Behavior heads only (method/decomp/formal/repair/value)",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "E_LATENT_BEHAVIOR",
+        "description": "Latent bridges + behavior heads",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "F_LATENT_ROUTE_RESIDUAL",
+        "description": "Latent bridges + semantic route residual",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      },
+      {
+        "arm": "G_COMPLETE_V0",
+        "description": "Complete V0 (latent + behavior + route + retention)",
+        "fabricated": false,
+        "reason": "awaiting real paired capture scores",
+        "status": "PENDING",
+        "verdict": null
+      }
+    ],
+    "capability_claim": false,
+    "catalog": {
+      "arms": [
+        {
+          "description": "Base DSV4F only; no donor inheritance",
+          "id": "A_BASE_DSV4F",
+          "index": 0
+        },
+        {
+          "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+          "id": "B_LINEAR_SUBSPACE_INITIALIZATION",
+          "index": 1
+        },
+        {
+          "description": "Latent bridges only (projectors + interventions)",
+          "id": "C_LATENT_BRIDGES",
+          "index": 2
+        },
+        {
+          "description": "Behavior heads only (method/decomp/formal/repair/value)",
+          "id": "D_BEHAVIOR_HEADS",
+          "index": 3
+        },
+        {
+          "description": "Latent bridges + behavior heads",
+          "id": "E_LATENT_BEHAVIOR",
+          "index": 4
+        },
+        {
+          "description": "Latent bridges + semantic route residual",
+          "id": "F_LATENT_ROUTE_RESIDUAL",
+          "index": 5
+        },
+        {
+          "description": "Complete V0 (latent + behavior + route + retention)",
+          "id": "G_COMPLETE_V0",
+          "index": 6
+        }
+      ],
+      "linear_init_is_not_proto_complete": true,
+      "loss_portfolio": [
+        "L_latent",
+        "L_function",
+        "L_span",
+        "L_method",
+        "L_decomposition",
+        "L_formal",
+        "L_repair",
+        "L_value",
+        "L_route",
+        "L_retention",
+        "L_runtime"
+      ],
+      "reject_rule": "REJECT any arm that regresses secondary capabilities beyond tolerance. Math gain cannot override. Complete V0 must beat linear init.",
+      "schema": "hawking.frankenstein.latent_v0_arm_catalog.v1",
+      "v0_modules": [
+        "GLM_EARLY_CONTEXT_BRIDGE",
+        "GLM_METHOD_BRIDGE",
+        "GLM_DECOMPOSITION_BRIDGE",
+        "GLM_PRE_ROUTER_BRIDGE",
+        "GLM_POST_MOE_BRIDGE",
+        "GLM_FORMALIZATION_BRIDGE",
+        "GLM_REPAIR_BRIDGE",
+        "GLM_LATE_CONSOLIDATION_BRIDGE",
+        "GLM_VALUE_HEAD",
+        "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+      ]
+    },
+    "fabricated_scores": false,
+    "gate_policy": {
+      "accept_rule": {
+        "all_secondaries_non_regressing": true,
+        "bench_scope_must_be_shard_or_fixture": true,
+        "statement": "ACCEPT only when every secondary is \u2265 base \u2212 tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
+      },
+      "claim_boundary": {
+        "capability_claim_requires_sealed_shard_scores": true,
+        "direct_weight_transplant": false,
+        "full_model_bench_permitted": false,
+        "gradient_or_optimizer": false,
+        "gravity_compression_performed": false,
+        "kimi_consumed": false,
+        "kimi_simulated": false,
+        "lane_does_not_own": [
+          "C_FINAL_PROTO_KIMI",
+          "D_RAMANUJAN"
+        ],
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ],
+        "odyssey_or_ramanujan": false,
+        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+        "stage": 1,
+        "training_performed": false,
+        "weight_average_performed": false
+      },
+      "kimi_out_of_scope": true,
+      "math_domains": [
+        "method_selection",
+        "mathematical_decomposition",
+        "formalization",
+        "proof_repair",
+        "value_ranking"
+      ],
+      "math_gain_advisory_min": 0.0,
+      "name": "additive_not_subtractive_stage1",
+      "optimization_target": "maximize_glm_mathematical_inheritance",
+      "reject_rule": {
+        "context_behavior_is_secondary": true,
+        "math_gain_cannot_override": true,
+        "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
+        "routing_stability_is_secondary": true,
+        "runtime_tps_is_secondary": true,
+        "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
+      },
+      "schema": "hawking.frankenstein.stage1_gate_policy.v1",
+      "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
+      "secondary_capabilities": [
+        "coding_and_repository_work",
+        "tool_use",
+        "agentic_planning",
+        "long_context_reasoning",
+        "repair_and_critique",
+        "hcli_protocols",
+        "general_knowledge_conversation",
+        "runtime_tps",
+        "bridge_compatibility",
+        "routing_stability",
+        "context_behavior"
+      ],
+      "secondary_tolerance_absolute": 0.02,
+      "training_free": true
+    },
+    "recorded_at": "2026-08-06T11:16:12.139810Z",
+    "reject_rule_fired": false,
+    "requires": "REQUIRES_PAIRED_CAPTURE",
+    "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
+    "seal_sha256": "ea5a8861f761e11017d192c37aa18aa9bc7a341769ad11206ada89c965cae934",
+    "status": "FRAMEWORK_PENDING_REAL_CAPTURE",
+    "verdict": "PENDING"
+  },
+  "avb_untrained": {
+    "additive_not_subtractive": true,
+    "bench_scope": "BOUNDED_FIXTURE",
+    "bodies": {
+      "math_donor": {
+        "family": "mathematical_donor",
+        "hidden_size": 6144,
+        "num_hidden_layers": 78,
+        "repository": "zai-org/GLM-5.2",
+        "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+      },
+      "strategic_donor_stage2": "kimi_k3 (out of scope for stage 1)",
+      "student": {
+        "family": "student_body",
+        "hidden_size": 4096,
+        "num_hidden_layers": 43,
+        "repository": "deepseek-ai/DeepSeek-V4-Flash",
+        "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+      }
+    },
+    "bridges_in_play": {
+      "active_stage1": "GLM_MATH_BRIDGE",
+      "all_declared": [
+        "KIMI_STRATEGIC_BRIDGE",
+        "GLM_MATH_BRIDGE"
+      ],
+      "preserved_untouched_for_stage2": "KIMI_STRATEGIC_BRIDGE"
+    },
+    "claim_boundary": {
+      "capability_claim_requires_sealed_shard_scores": true,
+      "direct_weight_transplant": false,
+      "full_model_bench_permitted": false,
+      "gradient_or_optimizer": false,
+      "gravity_compression_performed": false,
+      "kimi_consumed": false,
+      "kimi_simulated": false,
+      "lane_does_not_own": [
+        "C_FINAL_PROTO_KIMI",
+        "D_RAMANUJAN"
+      ],
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ],
+      "odyssey_or_ramanujan": false,
+      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+      "stage": 1,
+      "training_performed": false,
+      "weight_average_performed": false
+    },
+    "comparison": {
+      "A": "A_BASE_DSV4F",
+      "B": "B_PROTO_DSV4F_GLM",
+      "C_later": "C_FINAL_PROTO_KIMI",
+      "D_later": "D_RAMANUJAN",
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ]
+    },
+    "extra": {},
+    "fixture_id": "real-run-no-teacher-untrained",
+    "gate_policy": {
+      "accept_rule": {
+        "all_secondaries_non_regressing": true,
+        "bench_scope_must_be_shard_or_fixture": true,
+        "statement": "ACCEPT only when every secondary is \u2265 base \u2212 tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
+      },
+      "claim_boundary": {
+        "capability_claim_requires_sealed_shard_scores": true,
+        "direct_weight_transplant": false,
+        "full_model_bench_permitted": false,
+        "gradient_or_optimizer": false,
+        "gravity_compression_performed": false,
+        "kimi_consumed": false,
+        "kimi_simulated": false,
+        "lane_does_not_own": [
+          "C_FINAL_PROTO_KIMI",
+          "D_RAMANUJAN"
+        ],
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ],
+        "odyssey_or_ramanujan": false,
+        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+        "stage": 1,
+        "training_performed": false,
+        "weight_average_performed": false
+      },
+      "kimi_out_of_scope": true,
+      "math_domains": [
+        "method_selection",
+        "mathematical_decomposition",
+        "formalization",
+        "proof_repair",
+        "value_ranking"
+      ],
+      "math_gain_advisory_min": 0.0,
+      "name": "additive_not_subtractive_stage1",
+      "optimization_target": "maximize_glm_mathematical_inheritance",
+      "reject_rule": {
+        "context_behavior_is_secondary": true,
+        "math_gain_cannot_override": true,
+        "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
+        "routing_stability_is_secondary": true,
+        "runtime_tps_is_secondary": true,
+        "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
+      },
+      "schema": "hawking.frankenstein.stage1_gate_policy.v1",
+      "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
+      "secondary_capabilities": [
+        "coding_and_repository_work",
+        "tool_use",
+        "agentic_planning",
+        "long_context_reasoning",
+        "repair_and_critique",
+        "hcli_protocols",
+        "general_knowledge_conversation",
+        "runtime_tps",
+        "bridge_compatibility",
+        "routing_stability",
+        "context_behavior"
+      ],
+      "secondary_tolerance_absolute": 0.02,
+      "training_free": true
+    },
+    "math": {
+      "advisory_min_gain": 0.0,
+      "any_gain": false,
+      "domains": [
+        {
+          "advisory": "OK",
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "method_selection",
+          "gain": false,
+          "proto": 0.7
+        },
+        {
+          "advisory": "OK",
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "mathematical_decomposition",
+          "gain": false,
+          "proto": 0.7
+        },
+        {
+          "advisory": "OK",
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "formalization",
+          "gain": false,
+          "proto": 0.7
+        },
+        {
+          "advisory": "OK",
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "proof_repair",
+          "gain": false,
+          "proto": 0.7
+        },
+        {
+          "advisory": "OK",
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "value_ranking",
+          "gain": false,
+          "proto": 0.7
+        }
+      ],
+      "hard_reject_on_math": false,
+      "mean_gain": 0.0,
+      "note": "Math domains are the optimization target.  They never override a secondary REJECT.",
+      "optimization_target": "maximize_glm_mathematical_inheritance",
+      "total_gain": 0.0
+    },
+    "reason": "all secondary gates held; math deltas recorded as optimization signal",
+    "recorded_at": "2026-08-06T11:16:12.140203Z",
+    "reject_rule_fired": false,
+    "schema": "hawking.frankenstein.stage1_avb_ablation.v1",
+    "seal_sha256": "eaff086c6b914721afd8d374f5375323e694b0bff16296d8b37a852b98ddc92f",
+    "secondary": {
+      "domains": [
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "coding_and_repository_work",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "tool_use",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "agentic_planning",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "long_context_reasoning",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "repair_and_critique",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "hcli_protocols",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "general_knowledge_conversation",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "runtime_tps",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "bridge_compatibility",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "routing_stability",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "context_behavior",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        }
+      ],
+      "regressions": [],
+      "reject_rule": "any secondary proto < base \u2212 tolerance \u2192 REJECT (math gain cannot override)",
+      "reject_rule_fired": false,
+      "tolerance": 0.02,
+      "verdict": "PASS"
+    },
+    "stage": 1,
+    "transfer_module_id": "UNTRAINED_NO_GLM_TEACHER",
+    "verdict": "ACCEPT"
+  },
+  "bridges_trained": [],
+  "claim_boundary": {
+    "capability_claim": false,
+    "fabricated": false,
+    "forced_promotion": false,
+    "full_model_bench": false,
+    "kimi_consumed": false,
+    "odyssey": false,
+    "training_on_real_pairs": false
+  },
+  "cpu_only": true,
+  "desktop_copy_hint": "cp /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json /Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
+  "desktop_reject_receipt": null,
+  "desktop_reject_seal_sha256": "05531db8c354284aa4ef18c2528d54149a84a555970caf673379939107057a0d",
+  "desktop_target": "/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
+  "desktop_write_error": "PermissionError: [Errno 1] Operation not permitted: '/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json'",
+  "desktop_write_ok": false,
+  "device": "cpu",
+  "dsv4f_solo": {
+    "blockers": [],
+    "example_ids_head": [
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply"
+    ],
+    "hidden": 4096,
+    "layers_loaded": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "n_sequences": 32
+  },
+  "gpu_used": false,
+  "inventory": {
+    "blocker": "GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.",
+    "bridge_contract_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+    "capability_claim": false,
+    "contracts": {
+      "bridge_contract_present": true,
+      "bridges": [
+        "KIMI_STRATEGIC_BRIDGE",
+        "GLM_MATH_BRIDGE"
+      ],
+      "site_to_transplant": {
+        "GLM_DECOMPOSITION_BRIDGE": "pre_router_hidden_state",
+        "GLM_EARLY_CONTEXT_BRIDGE": "pre_norm_hidden_state",
+        "GLM_FORMALIZATION_BRIDGE": "post_moe_hidden_state",
+        "GLM_LATE_CONSOLIDATION_BRIDGE": "final_hidden_state",
+        "GLM_METHOD_BRIDGE": "post_attention_hidden_state",
+        "GLM_POST_MOE_BRIDGE": "post_moe_hidden_state",
+        "GLM_PRE_ROUTER_BRIDGE": "pre_router_hidden_state",
+        "GLM_REPAIR_BRIDGE": "final_hidden_state"
+      },
+      "transplant_points": [
+        "pre_norm_hidden_state",
+        "post_attention_hidden_state",
+        "pre_router_hidden_state",
+        "router_logits",
+        "selected_expert_ids",
+        "route_probabilities_and_margins",
+        "post_moe_hidden_state",
+        "mhc_state",
+        "attention_index_state",
+        "final_hidden_state",
+        "lm_head_logits",
+        "hcli_tool_action_decision"
+      ],
+      "transplant_points_present": true,
+      "v0_bridge_sites": [
+        "GLM_EARLY_CONTEXT_BRIDGE",
+        "GLM_METHOD_BRIDGE",
+        "GLM_DECOMPOSITION_BRIDGE",
+        "GLM_PRE_ROUTER_BRIDGE",
+        "GLM_POST_MOE_BRIDGE",
+        "GLM_FORMALIZATION_BRIDGE",
+        "GLM_REPAIR_BRIDGE",
+        "GLM_LATE_CONSOLIDATION_BRIDGE"
+      ]
+    },
+    "correspondence": {
+      "fabricated": false,
+      "geometries": {
+        "dsv4f_hidden": 4096,
+        "dsv4f_layers": 43,
+        "glm_hidden": 6144,
+        "glm_layers": 78
+      },
+      "present": true,
+      "source": "real_teacher_forced_and_fullseq_export",
+      "status": "OK"
+    },
+    "dsv4f": {
+      "dsv4f_hash_only": false,
+      "export_json": 43,
+      "hidden_size": 4096,
+      "npy_on_disk": 43,
+      "ready": true,
+      "shape_sample": [
+        32,
+        4096
+      ]
+    },
+    "dsv4f_export_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export",
+    "fabricated": false,
+    "geometry": {
+      "dsv4f_hidden": 4096,
+      "glm_hidden_full": 6144,
+      "glm_sample_width_default": 64,
+      "note": "Teacher-forced capture stores first N=64 dims of hidden samples (DEFAULT_SAMPLE_HIDDEN); full 6144 not retained in sample NPZ."
+    },
+    "glm": {
+      "json_receipts": 78,
+      "note": "Layer NPZs are gitignored (*.npz). Correspondence was measured when NPZs existed in recapture worktree; they are absent here.",
+      "npz_claim_sample": {
+        "layer_id": "L13",
+        "npz_bytes_claimed": 11419354,
+        "npz_present_on_disk": false,
+        "npz_sha256_claimed": "1828e8b3d59aeaf6de40f0e36f5b86973556031fac2fe8aefb11f3afcbaf7509"
+      },
+      "npz_on_disk": 0,
+      "ready": false
+    },
+    "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
+    "layer_correspondence_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_LAYER_CORRESPONDENCE.json",
+    "paired_ready": false,
+    "phase_alignment": {
+      "dsv4f_sources": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "fabricated": false,
+      "glm_targets": [
+        13
+      ],
+      "many_to_one": true,
+      "monotonic": true,
+      "n_pairs": 43,
+      "present": true,
+      "score_max": 0.5652091246747242,
+      "score_min": 0.33186852781400145
+    },
+    "phase_alignment_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_PHASE_ALIGNMENT.json",
+    "recorded_at": "2026-08-06T11:16:11.538924Z",
+    "schema": "hawking.frankenstein.bridge_train_real_inventory.v1",
+    "seal_sha256": "e9c8f108d5bf9ef5f91069b443ad4fa2e46a23e4f9bb4a3f5f2983c7f41423b5",
+    "transplant_points_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json"
+  },
+  "local_reject_receipt": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
+  "name": "V0_BRIDGE_TRAIN_REAL_FIRST_RUN",
+  "next_required": [
+    "Restore GLM teacher-forced layer NPZs under /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers (or re-run teacher-forced capture with NPZ retention; *.npz is gitignored and was not preserved after recapture merge).",
+    "Re-run this operator: train-real --device cpu",
+    "Then frankenstein_v0_seal assemble + verify if promotion_gate=PROMOTE"
+  ],
+  "out_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real",
+  "paired_load_gate": "REQUIRES_PAIRED_CAPTURE",
+  "paired_load_status": "FAIL_CLOSED",
+  "paired_report": {
+    "alignment": "intersection",
+    "blockers": [
+      "All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes."
+    ],
+    "dsv4f_example_ids": [
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
+      "pfv0:d6:enum:83:9578a4c57d",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "pfv0:d7:checkpoint:extra2",
+      "pfv0:d7:checkpoint:extra5",
+      "pfv0:d7:checkpoint:extra8",
+      "pfv0:d7:checkpoint:extra9",
+      "pfv0:d7:search:extra19:7621061d:ea73",
+      "pfv0:expert:fix:power",
+      "pfv0:expert:fix:two_plus_two",
+      "pfv0:halo:cd04_gcd",
+      "pfv0:halo:gr01_wolves",
+      "pfv0:halo:lc01_needle",
+      "pfv0:halo:lc02_needle",
+      "pfv0:halo:rt03_table",
+      "pfv0:halo:rt04_multi",
+      "pfv0:thesis:r04_reverse_words",
+      "pfv0:thesis:r11_count_words",
+      "pfv0:thesis:t01_add",
+      "pfv0:thesis:t09_flatten",
+      "pfv0:thesis:t15_word_count"
+    ],
+    "dsv4f_hash_only": false,
+    "dsv4f_layer_range": {
+      "end": 44,
+      "n": 44,
+      "start": 0
+    },
+    "dsv4f_layers_loaded": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "dsv4f_receipts": [
+      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export"
+    ],
+    "dsv4f_shapes": [
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ],
+      [
+        32,
+        4096
+      ]
+    ],
+    "dsv4f_trace_dirs": [
+      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces"
+    ],
+    "dsv4f_vector_sites_found": [
+      "npy:L00.npy:late_hidden",
+      "npy:L01.npy:late_hidden",
+      "npy:L02.npy:late_hidden",
+      "npy:L03.npy:late_hidden",
+      "npy:L04.npy:late_hidden",
+      "npy:L05.npy:late_hidden",
+      "npy:L06.npy:late_hidden",
+      "npy:L07.npy:late_hidden",
+      "npy:L08.npy:late_hidden",
+      "npy:L09.npy:late_hidden",
+      "npy:L10.npy:late_hidden",
+      "npy:L11.npy:late_hidden",
+      "npy:L12.npy:late_hidden",
+      "npy:L13.npy:late_hidden",
+      "npy:L14.npy:late_hidden",
+      "npy:L15.npy:late_hidden",
+      "npy:L16.npy:late_hidden",
+      "npy:L17.npy:late_hidden",
+      "npy:L18.npy:late_hidden",
+      "npy:L19.npy:late_hidden",
+      "npy:L20.npy:late_hidden",
+      "npy:L21.npy:late_hidden",
+      "npy:L22.npy:late_hidden",
+      "npy:L23.npy:late_hidden",
+      "npy:L24.npy:late_hidden",
+      "npy:L25.npy:late_hidden",
+      "npy:L26.npy:late_hidden",
+      "npy:L27.npy:late_hidden",
+      "npy:L28.npy:late_hidden",
+      "npy:L29.npy:late_hidden",
+      "npy:L30.npy:late_hidden",
+      "npy:L31.npy:late_hidden",
+      "npy:L32.npy:late_hidden",
+      "npy:L33.npy:late_hidden",
+      "npy:L34.npy:late_hidden",
+      "npy:L35.npy:late_hidden",
+      "npy:L36.npy:late_hidden",
+      "npy:L37.npy:late_hidden",
+      "npy:L38.npy:late_hidden",
+      "npy:L39.npy:late_hidden",
+      "npy:L40.npy:late_hidden",
+      "npy:L41.npy:late_hidden",
+      "npy:L42.npy:late_hidden"
+    ],
+    "fabricated": false,
+    "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
+    "glm_example_ids": [
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "pfv0:d6:enum:83:9578a4c57d",
+      "pfv0:expert:fix:two_plus_two",
+      "pfv0:expert:fix:power",
+      "pfv0:thesis:t09_flatten",
+      "pfv0:halo:cd04_gcd",
+      "pfv0:thesis:t01_add",
+      "pfv0:thesis:t15_word_count",
+      "pfv0:thesis:r04_reverse_words",
+      "pfv0:thesis:r11_count_words",
+      "pfv0:d7:checkpoint:extra5",
+      "pfv0:d7:checkpoint:extra9",
+      "pfv0:d7:search:extra19:7621061d:ea73",
+      "pfv0:d7:checkpoint:extra2",
+      "pfv0:d7:checkpoint:extra8",
+      "pfv0:halo:lc02_needle",
+      "pfv0:halo:lc01_needle",
+      "pfv0:halo:rt04_multi",
+      "pfv0:halo:gr01_wolves",
+      "pfv0:halo:rt03_table"
+    ],
+    "glm_layer_range": {
+      "end": 15,
+      "n": 2,
+      "start": 13
+    },
+    "glm_layers_loaded": [],
+    "glm_npz_missing": [
+      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers/L13.npz",
+      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers/L14.npz"
+    ],
+    "glm_npz_present": [],
+    "glm_shapes": [],
+    "n_sequences": 0,
+    "ok": false,
+    "shared_example_ids": [
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "pfv0:d6:enum:83:9578a4c57d",
+      "pfv0:expert:fix:two_plus_two",
+      "pfv0:expert:fix:power",
+      "pfv0:thesis:t09_flatten",
+      "pfv0:halo:cd04_gcd",
+      "pfv0:thesis:t01_add",
+      "pfv0:thesis:t15_word_count",
+      "pfv0:thesis:r04_reverse_words",
+      "pfv0:thesis:r11_count_words",
+      "pfv0:d7:checkpoint:extra5",
+      "pfv0:d7:checkpoint:extra9",
+      "pfv0:d7:search:extra19:7621061d:ea73",
+      "pfv0:d7:checkpoint:extra2",
+      "pfv0:d7:checkpoint:extra8",
+      "pfv0:halo:lc02_needle",
+      "pfv0:halo:lc01_needle",
+      "pfv0:halo:rt04_multi",
+      "pfv0:halo:gr01_wolves",
+      "pfv0:halo:rt03_table"
+    ],
+    "warnings": [
+      "L13.json present but L13.npz absent (gitignored *.npz not in worktree)",
+      "L14.json present but L14.npz absent (gitignored *.npz not in worktree)"
+    ]
+  },
+  "phase_pairs_n": 43,
+  "promotion_gate": {
+    "capability_claim": false,
+    "checks": {
+      "complete_intended_bridge_classes": false,
+      "complete_v0_beats_linear_init": false,
+      "held_out_math_improves_over_base": false,
+      "kimi_strategic_bridge_intact": true,
+      "method_decomp_repair_improve": false,
+      "no_material_secondary_regression": true,
+      "nonlinear_latent_bridges_trained": false,
+      "real_glm_activations_from_78_layer_path": false,
+      "reversible_and_loadable": true,
+      "routing_stable": true
+    },
+    "failed": [
+      "real_glm_activations_from_78_layer_path",
+      "nonlinear_latent_bridges_trained",
+      "complete_intended_bridge_classes",
+      "held_out_math_improves_over_base",
+      "complete_v0_beats_linear_init",
+      "method_decomp_repair_improve"
+    ],
+    "note": "Promotion requires real capture. Fixture runs never promote.",
+    "recorded_at": "2026-08-06T11:16:12.140562Z",
+    "schema": "hawking.frankenstein.latent_v0_promotion_gate.v1",
+    "seal_sha256": "e9dfe08670ac7f672c17f086a67a2d45771404558a1cf95485657d5bab0b27b3",
+    "verdict": "HOLD_REQUIRES_PAIRED_CAPTURE"
+  },
+  "promotion_verdict": "HOLD_REQUIRES_PAIRED_CAPTURE",
+  "real_data_used": {
+    "behavior_labels": false,
+    "correspondence_sealed": true,
+    "dsv4f_floats": true,
+    "glm_floats": false,
+    "phase_alignment": true
+  },
+  "recorded_at": "2026-08-06T11:16:12.140581Z",
+  "reject_reasons": [
+    "GLM teacher NPZ floats missing \u2014 cannot form real paired activations for L_latent / L_function bridge fit (inventory blocker: GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.)",
+    "promotion_gate=HOLD_REQUIRES_PAIRED_CAPTURE failed=['real_glm_activations_from_78_layer_path', 'nonlinear_latent_bridges_trained', 'complete_intended_bridge_classes', 'held_out_math_improves_over_base', 'complete_v0_beats_linear_init', 'method_decomp_repair_improve']"
+  ],
+  "schema": "hawking.frankenstein.bridge_train_real_run.v1",
+  "seal_sha256": "d82190fad2b4731d779d06dfb139c3981498a9ba943e3bfeac349d1ad0ccd12f",
+  "sealed_to_desktop": false,
+  "site_map": {
+    "GLM_DECOMPOSITION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 15,
+      "glm_layer": 13,
+      "phase_score": 0.5566583814057259,
+      "site": "GLM_DECOMPOSITION_BRIDGE",
+      "transplant_point": "pre_router_hidden_state"
+    },
+    "GLM_EARLY_CONTEXT_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 7,
+      "glm_layer": 13,
+      "phase_score": 0.5652091246747242,
+      "site": "GLM_EARLY_CONTEXT_BRIDGE",
+      "transplant_point": "pre_norm_hidden_state"
+    },
+    "GLM_FORMALIZATION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 25,
+      "glm_layer": 13,
+      "phase_score": 0.4021373589065593,
+      "site": "GLM_FORMALIZATION_BRIDGE",
+      "transplant_point": "post_moe_hidden_state"
+    },
+    "GLM_LATE_CONSOLIDATION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 37,
+      "glm_layer": 13,
+      "phase_score": 0.366099523022149,
+      "site": "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "transplant_point": "final_hidden_state"
+    },
+    "GLM_METHOD_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 7,
+      "glm_layer": 13,
+      "phase_score": 0.5652091246747242,
+      "site": "GLM_METHOD_BRIDGE",
+      "transplant_point": "post_attention_hidden_state"
+    },
+    "GLM_POST_MOE_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 16,
+      "glm_layer": 13,
+      "phase_score": 0.5609983617853487,
+      "site": "GLM_POST_MOE_BRIDGE",
+      "transplant_point": "post_moe_hidden_state"
+    },
+    "GLM_PRE_ROUTER_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 16,
+      "glm_layer": 13,
+      "phase_score": 0.5609983617853487,
+      "site": "GLM_PRE_ROUTER_BRIDGE",
+      "transplant_point": "pre_router_hidden_state"
+    },
+    "GLM_REPAIR_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 34,
+      "glm_layer": 13,
+      "phase_score": 0.37975650110355375,
+      "site": "GLM_REPAIR_BRIDGE",
+      "transplant_point": "final_hidden_state"
+    }
+  },
+  "status": "REJECT_NO_TEACHER_FLOATS",
+  "student_reverse_probe": {
+    "all_reverse_ok": true,
+    "capability_claim": false,
+    "inheritance_claim": false,
+    "note": "Student-side reverse probe on real DSV4F floats only. Does not claim GLM math inheritance.",
+    "recorded_at": "2026-08-06T11:16:12.139223Z",
+    "schema": "hawking.frankenstein.student_only_reverse_probe.v1",
+    "seal_sha256": "58ecf7aa2e8aa40424bc69b6dfe4d3e79baf12b7c7cf1328441de866416059a0",
+    "sites": {
+      "GLM_DECOMPOSITION_BRIDGE": {
+        "dsv4f_layer": 15,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.5566583814057259,
+        "reverse_ok": true,
+        "reverse_recon_error": 2.9802322387695312e-08,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "pre_router_hidden_state"
+      },
+      "GLM_EARLY_CONTEXT_BRIDGE": {
+        "dsv4f_layer": 7,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.5652091246747242,
+        "reverse_ok": true,
+        "reverse_recon_error": 7.450580596923828e-09,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "pre_norm_hidden_state"
+      },
+      "GLM_FORMALIZATION_BRIDGE": {
+        "dsv4f_layer": 25,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.4021373589065593,
+        "reverse_ok": true,
+        "reverse_recon_error": 1.1920928955078125e-07,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "post_moe_hidden_state"
+      },
+      "GLM_LATE_CONSOLIDATION_BRIDGE": {
+        "dsv4f_layer": 37,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.366099523022149,
+        "reverse_ok": true,
+        "reverse_recon_error": 2.384185791015625e-07,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "final_hidden_state"
+      },
+      "GLM_METHOD_BRIDGE": {
+        "dsv4f_layer": 7,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.5652091246747242,
+        "reverse_ok": true,
+        "reverse_recon_error": 7.450580596923828e-09,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "post_attention_hidden_state"
+      },
+      "GLM_POST_MOE_BRIDGE": {
+        "dsv4f_layer": 16,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.5609983617853487,
+        "reverse_ok": true,
+        "reverse_recon_error": 2.9802322387695312e-08,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "post_moe_hidden_state"
+      },
+      "GLM_PRE_ROUTER_BRIDGE": {
+        "dsv4f_layer": 16,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.5609983617853487,
+        "reverse_ok": true,
+        "reverse_recon_error": 2.9802322387695312e-08,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "pre_router_hidden_state"
+      },
+      "GLM_REPAIR_BRIDGE": {
+        "dsv4f_layer": 34,
+        "hidden": 4096,
+        "identity_init": true,
+        "n": 32,
+        "note": "untrained residual \u22480; reverse exact on real student activations",
+        "phase_score": 0.37975650110355375,
+        "reverse_ok": true,
+        "reverse_recon_error": 2.9802322387695312e-08,
+        "status": "OK",
+        "trained": false,
+        "transplant_point": "final_hidden_state"
+      }
+    },
+    "status": "STUDENT_REVERSE_PROBE"
+  },
+  "train": null,
+  "wall_ms": 604.0348749957047
+}

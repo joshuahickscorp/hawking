@@ -1,0 +1,155 @@
+{
+  "blocker": "GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.",
+  "bridge_contract_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+  "capability_claim": false,
+  "contracts": {
+    "bridge_contract_present": true,
+    "bridges": [
+      "KIMI_STRATEGIC_BRIDGE",
+      "GLM_MATH_BRIDGE"
+    ],
+    "site_to_transplant": {
+      "GLM_DECOMPOSITION_BRIDGE": "pre_router_hidden_state",
+      "GLM_EARLY_CONTEXT_BRIDGE": "pre_norm_hidden_state",
+      "GLM_FORMALIZATION_BRIDGE": "post_moe_hidden_state",
+      "GLM_LATE_CONSOLIDATION_BRIDGE": "final_hidden_state",
+      "GLM_METHOD_BRIDGE": "post_attention_hidden_state",
+      "GLM_POST_MOE_BRIDGE": "post_moe_hidden_state",
+      "GLM_PRE_ROUTER_BRIDGE": "pre_router_hidden_state",
+      "GLM_REPAIR_BRIDGE": "final_hidden_state"
+    },
+    "transplant_points": [
+      "pre_norm_hidden_state",
+      "post_attention_hidden_state",
+      "pre_router_hidden_state",
+      "router_logits",
+      "selected_expert_ids",
+      "route_probabilities_and_margins",
+      "post_moe_hidden_state",
+      "mhc_state",
+      "attention_index_state",
+      "final_hidden_state",
+      "lm_head_logits",
+      "hcli_tool_action_decision"
+    ],
+    "transplant_points_present": true,
+    "v0_bridge_sites": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE"
+    ]
+  },
+  "correspondence": {
+    "fabricated": false,
+    "geometries": {
+      "dsv4f_hidden": 4096,
+      "dsv4f_layers": 43,
+      "glm_hidden": 6144,
+      "glm_layers": 78
+    },
+    "present": true,
+    "source": "real_teacher_forced_and_fullseq_export",
+    "status": "OK"
+  },
+  "dsv4f": {
+    "dsv4f_hash_only": false,
+    "export_json": 43,
+    "hidden_size": 4096,
+    "npy_on_disk": 43,
+    "ready": true,
+    "shape_sample": [
+      32,
+      4096
+    ]
+  },
+  "dsv4f_export_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export",
+  "fabricated": false,
+  "geometry": {
+    "dsv4f_hidden": 4096,
+    "glm_hidden_full": 6144,
+    "glm_sample_width_default": 64,
+    "note": "Teacher-forced capture stores first N=64 dims of hidden samples (DEFAULT_SAMPLE_HIDDEN); full 6144 not retained in sample NPZ."
+  },
+  "glm": {
+    "json_receipts": 78,
+    "note": "Layer NPZs are gitignored (*.npz). Correspondence was measured when NPZs existed in recapture worktree; they are absent here.",
+    "npz_claim_sample": {
+      "layer_id": "L13",
+      "npz_bytes_claimed": 11419354,
+      "npz_present_on_disk": false,
+      "npz_sha256_claimed": "1828e8b3d59aeaf6de40f0e36f5b86973556031fac2fe8aefb11f3afcbaf7509"
+    },
+    "npz_on_disk": 0,
+    "ready": false
+  },
+  "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
+  "layer_correspondence_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_LAYER_CORRESPONDENCE.json",
+  "paired_ready": false,
+  "phase_alignment": {
+    "dsv4f_sources": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "fabricated": false,
+    "glm_targets": [
+      13
+    ],
+    "many_to_one": true,
+    "monotonic": true,
+    "n_pairs": 43,
+    "present": true,
+    "score_max": 0.5652091246747242,
+    "score_min": 0.33186852781400145
+  },
+  "phase_alignment_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_PHASE_ALIGNMENT.json",
+  "recorded_at": "2026-08-06T11:16:11.538924Z",
+  "schema": "hawking.frankenstein.bridge_train_real_inventory.v1",
+  "seal_sha256": "e9c8f108d5bf9ef5f91069b443ad4fa2e46a23e4f9bb4a3f5f2983c7f41423b5",
+  "transplant_points_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json"
+}
