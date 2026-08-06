@@ -1,171 +1,370 @@
 {
   "claim_boundary": {
-    "awaiting": "GLM layer NPZ payloads + DSV4F host float vectors on a shared frozen corpus (same example_ids)",
-    "correspondence_numbers_measured": false,
-    "load_report": {
-      "blockers": [
-        "shared example_id intersection size=0 (<2). GLM ids sample=['pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply', \"pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'\", 'pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left']\u2026 DSV4F ids sample=['v0_agent_01', 'v0_agent_02', 'v0_code_01']\u2026. Captures currently use different corpora (GLM pfv0:* mathlib/thesis vs DSV4F v0_math_*/v0_code_*). Re-run both captures on the same frozen FROZEN_CORPUS membership, or pass align=index only if N and order match.",
-        "DSV4F fullseq traces contain only sha256 digests of Metal activation buffers (late_hidden_child_hc_sha256 / post_moe_sha256 / \u2026), not host float vectors. Capture note: 'full tensor retained on device only'; host_activation_handoff_permitted=false. Re-run gravity_deepseek_v4_fullseq_capture with --export-host-activations (and --corpus-mode frozen) so activations/L{nn}.npy + last-pos late_hidden f32 are written. Default path keeps host_activation_handoff_permitted=false.",
-        "All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-correspondence-fix-20260805-211220/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes."
-      ],
-      "dsv4f_hash_only": true,
-      "glm_layers_json_discovered": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77
-      ],
-      "glm_npz_missing_count": 2,
-      "glm_npz_present_count": 0,
-      "ok": false,
-      "shared_example_ids": 0
-    },
-    "load_report_seal_sha256": "31d39cb561922d468ac7a49de9daef40a1d6a6f5e018a81a06c26b3c1279d16b",
-    "phase_scores_measured": false
+    "phase_scores_measured": true,
+    "synthetic_only": false
   },
-  "executed": false,
   "fabricated": false,
-  "gate": "REQUIRES_GLM_RUNTIME",
-  "load_blockers": [
-    "shared example_id intersection size=0 (<2). GLM ids sample=['pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply', \"pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'\", 'pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left']\u2026 DSV4F ids sample=['v0_agent_01', 'v0_agent_02', 'v0_code_01']\u2026. Captures currently use different corpora (GLM pfv0:* mathlib/thesis vs DSV4F v0_math_*/v0_code_*). Re-run both captures on the same frozen FROZEN_CORPUS membership, or pass align=index only if N and order match.",
-    "DSV4F fullseq traces contain only sha256 digests of Metal activation buffers (late_hidden_child_hc_sha256 / post_moe_sha256 / \u2026), not host float vectors. Capture note: 'full tensor retained on device only'; host_activation_handoff_permitted=false. Re-run gravity_deepseek_v4_fullseq_capture with --export-host-activations (and --corpus-mode frozen) so activations/L{nn}.npy + last-pos late_hidden f32 are written. Default path keeps host_activation_handoff_permitted=false.",
-    "All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-correspondence-fix-20260805-211220/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes."
-  ],
-  "load_warnings": [
-    "Refusing silent index alignment across disjoint example_id sets (would compare unrelated prompts). Pass align='index' only if you intentionally accept order-based pairing.",
-    "L00.json present but L00.npz absent (gitignored *.npz not in worktree)",
-    "L01.json present but L01.npz absent (gitignored *.npz not in worktree)"
-  ],
   "many_to_one": true,
-  "missing_infra": "shared example_id intersection size=0 (<2). GLM ids sample=['pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply', \"pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'\", 'pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left']\u2026 DSV4F ids sample=['v0_agent_01', 'v0_agent_02', 'v0_code_01']\u2026. Captures currently use different corpora (GLM pfv0:* mathlib/thesis vs DSV4F v0_math_*/v0_code_*). Re-run both captures on the same frozen FROZEN_CORPUS membership, or pass align=index only if N and order match.; DSV4F fullseq traces contain only sha256 digests of Metal activation buffers (late_hidden_child_hc_sha256 / post_moe_sha256 / \u2026), not host float vectors. Capture note: 'full tensor retained on device only'; host_activation_handoff_permitted=false. Re-run gravity_deepseek_v4_fullseq_capture with --export-host-activations (and --corpus-mode frozen) so activations/L{nn}.npy + last-pos late_hidden f32 are written. Default path keeps host_activation_handoff_permitted=false.; All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-correspondence-fix-20260805-211220/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes.",
-  "monotonic": null,
+  "monotonic": true,
   "name": "GLM_DSV4F_PHASE_ALIGNMENT",
-  "note": "emit_layer_correspondence refused: real capture receipts exist but host-resident float activations could not be assembled. Blockers: shared example_id intersection size=0 (<2). GLM ids sample=['pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply', \"pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'\", 'pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left']\u2026 DSV4F ids sample=['v0_agent_01', 'v0_agent_02', 'v0_code_01']\u2026. Captures currently use different corpora (GLM pfv0:* mathlib/thesis vs DSV4F v0_math_*/v0_code_*). Re-run both captures on the same frozen FROZEN_CORPUS membership, or pass align=index only if N and order match. | DSV4F fullseq traces contain only sha256 digests of Metal activation buffers (late_hidden_child_hc_sha256 / post_moe_sha256 / \u2026), not host float vectors. Capture note: 'full tensor retained on device only'; host_activation_handoff_permitted=false. Re-run gravity_deepseek_v4_fullseq_capture with --export-host-activations (and --corpus-mode frozen) so activations/L{nn}.npy + last-pos late_hidden f32 are written. Default path keeps host_activation_handoff_permitted=false. | All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-correspondence-fix-20260805-211220/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes.",
-  "operation": "emit_phase_alignment",
-  "pairs": null,
+  "pairs": [
+    {
+      "dsv4f_layer": 0,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5643690613625724
+    },
+    {
+      "dsv4f_layer": 1,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5446595612619145
+    },
+    {
+      "dsv4f_layer": 2,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5154223206042251
+    },
+    {
+      "dsv4f_layer": 3,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5435142797293773
+    },
+    {
+      "dsv4f_layer": 4,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5633981597148898
+    },
+    {
+      "dsv4f_layer": 5,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5649289379544995
+    },
+    {
+      "dsv4f_layer": 6,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5610118852632539
+    },
+    {
+      "dsv4f_layer": 7,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5652091246747242
+    },
+    {
+      "dsv4f_layer": 8,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5537651504969391
+    },
+    {
+      "dsv4f_layer": 9,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5552254763658978
+    },
+    {
+      "dsv4f_layer": 10,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5535905781895619
+    },
+    {
+      "dsv4f_layer": 11,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5420058640358338
+    },
+    {
+      "dsv4f_layer": 12,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5455621488863127
+    },
+    {
+      "dsv4f_layer": 13,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5503135349587934
+    },
+    {
+      "dsv4f_layer": 14,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.550975364523231
+    },
+    {
+      "dsv4f_layer": 15,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5566583814057259
+    },
+    {
+      "dsv4f_layer": 16,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5609983617853487
+    },
+    {
+      "dsv4f_layer": 17,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.46730013505856066
+    },
+    {
+      "dsv4f_layer": 18,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.48895497361642193
+    },
+    {
+      "dsv4f_layer": 19,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.4764449810089251
+    },
+    {
+      "dsv4f_layer": 20,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.5200811890348995
+    },
+    {
+      "dsv4f_layer": 21,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.49199297580738105
+    },
+    {
+      "dsv4f_layer": 22,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.40930390836944713
+    },
+    {
+      "dsv4f_layer": 23,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.40125020267522465
+    },
+    {
+      "dsv4f_layer": 24,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3976853820064022
+    },
+    {
+      "dsv4f_layer": 25,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.4021373589065593
+    },
+    {
+      "dsv4f_layer": 26,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3836817886723186
+    },
+    {
+      "dsv4f_layer": 27,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.388252053850011
+    },
+    {
+      "dsv4f_layer": 28,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3879262117611684
+    },
+    {
+      "dsv4f_layer": 29,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.37709884320262665
+    },
+    {
+      "dsv4f_layer": 30,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.37792439115998644
+    },
+    {
+      "dsv4f_layer": 31,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3723098441627621
+    },
+    {
+      "dsv4f_layer": 32,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3753212621878923
+    },
+    {
+      "dsv4f_layer": 33,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3771577522624466
+    },
+    {
+      "dsv4f_layer": 34,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.37975650110355375
+    },
+    {
+      "dsv4f_layer": 35,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3623872516314587
+    },
+    {
+      "dsv4f_layer": 36,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.36454974282752
+    },
+    {
+      "dsv4f_layer": 37,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.366099523022149
+    },
+    {
+      "dsv4f_layer": 38,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3660580803963319
+    },
+    {
+      "dsv4f_layer": 39,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3613661345487984
+    },
+    {
+      "dsv4f_layer": 40,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.34821544674467264
+    },
+    {
+      "dsv4f_layer": 41,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.3447764200328559
+    },
+    {
+      "dsv4f_layer": 42,
+      "glm_layer": 13,
+      "method": "monotonic_argmax_correspondence",
+      "score": 0.33186852781400145
+    }
+  ],
   "phase_blocks": [
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        0,
+        6
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.549382053437913,
+      "n_dsv4f_layers": 6,
       "phase": "lexical_context",
-      "phase_index": 0,
-      "status": "PENDING"
+      "phase_index": 0
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        6,
+        12
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.5551346798377018,
+      "n_dsv4f_layers": 6,
       "phase": "early_reasoning",
-      "phase_index": 1,
-      "status": "PENDING"
+      "phase_index": 1
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        12,
+        18
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.5386346544363287,
+      "n_dsv4f_layers": 6,
       "phase": "method_selection",
-      "phase_index": 2,
-      "status": "PENDING"
+      "phase_index": 2
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        18,
+        25
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.4551019446455288,
+      "n_dsv4f_layers": 7,
       "phase": "planning_decomposition",
-      "phase_index": 3,
-      "status": "PENDING"
+      "phase_index": 3
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        25,
+        31
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.386170107925445,
+      "n_dsv4f_layers": 6,
       "phase": "tool_formal_prep",
-      "phase_index": 4,
-      "status": "PENDING"
+      "phase_index": 4
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        31,
+        37
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.3719137256959389,
+      "n_dsv4f_layers": 6,
       "phase": "repair_critique",
-      "phase_index": 5,
-      "status": "PENDING"
+      "phase_index": 5
     },
     {
-      "dsv4f_layer_range": null,
-      "glm_layer_range": null,
+      "dsv4f_layer_range": [
+        37,
+        43
+      ],
+      "glm_layer_range": [
+        13,
+        14
+      ],
+      "mean_score": 0.3530640220931349,
+      "n_dsv4f_layers": 6,
       "phase": "answer_proof_consolidation",
-      "phase_index": 6,
-      "status": "PENDING"
+      "phase_index": 6
     }
   ],
   "phases": [
@@ -178,10 +377,9 @@
     "answer_proof_consolidation"
   ],
   "ratio_map_rejected": true,
-  "recorded_at": "2026-08-06T01:21:27.132104Z",
+  "recorded_at": "2026-08-06T04:45:12.653785Z",
   "schema": "hawking.frankenstein.glm_dsv4f_phase_alignment.v1",
-  "seal_sha256": "80a134f440385a69933688f155f9ea5788560ef6ff99afbb1751dae16c29ccc1",
-  "source": "pending_activations_load_blocked",
-  "stage": "4_layer_cartography",
-  "status": "PENDING_REAL_ACTIVATIONS"
+  "seal_sha256": "2053640f6e290653e36fbed3ae4d0bd259c4102da0c6f2be8961957e106d6777",
+  "source": "real_teacher_forced_and_fullseq_export",
+  "status": "OK"
 }

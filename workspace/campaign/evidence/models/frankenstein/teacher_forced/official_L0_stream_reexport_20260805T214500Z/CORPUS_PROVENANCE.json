@@ -1,0 +1,43 @@
+{
+  "capture_seconds": 6090.402,
+  "corpus_jsonl": "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl",
+  "corpus_jsonl_sha256": "342430cff2a76926bf975f9192e36b21950c5ef59ad431c98a6e386d39cb9e64",
+  "frozen_corpus_path": "workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/FROZEN_CORPUS_L0.json",
+  "frozen_seal_sha256": "6ee4032689816467f23680cf0c077052ef9c3826b46d140733e753ff27653fed",
+  "identical_to_dsv4f_example_ids": true,
+  "identical_to_prior_official_freeze_content": true,
+  "membership_sha256": "a318f866624c8a3cb352d381d28a00740d821f52cf74e477263735fa8fa26b68",
+  "mode": "official_teacher_forced",
+  "n_layer_npz": 78,
+  "n_sequences": 32,
+  "npz_float_payloads_retained": true,
+  "prior_capture_seconds_reference": 7706.83,
+  "prior_official_freeze_seal_sha256": "aad523b155c90adbb41b6db0615155d8eaf6722d420be4e35689e2544af1b37c",
+  "sample_layers_for_phase_correspondence": {
+    "early": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "late_consolidation": [
+      70,
+      72,
+      74,
+      76,
+      77
+    ],
+    "middle_routing": [
+      35,
+      38,
+      40,
+      42,
+      45
+    ],
+    "rationale": "span early (~5-10), middle/routing (~35-45), late consolidation (~70-77) named in steer; full 78 layers executed+retained so denser matrix also available"
+  },
+  "schema": "hawking.frankenstein.glm_capture_corpus_provenance.v1",
+  "seal_sha256": "ebf1aa662ec1e2bf4100837fc8ae570f49db2646e2292b83d0ae2131798e9705"
+}
