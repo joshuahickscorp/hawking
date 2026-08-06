@@ -1,0 +1,172 @@
+{
+  "activation_trigger": {
+    "default": "FAIL_CLOSED_NO_ACTIVATION_SIGNAL",
+    "evaluator": "lab.operators.frankenstein_adapter_hub.evaluate_activation_trigger",
+    "not_yet_run": "A\u2013G ablation / auto-bench still waiting on real correspondence data. This scaffold is ready, not production-validated.",
+    "signals": [
+      {
+        "detail": "Any secondary axis drops more than tolerance under always-on bridges relative to baseline (A\u2013G ablation / auto-bench).",
+        "name": "secondary_regression_beyond_tolerance",
+        "tolerance_source": "frankenstein_promotion_gate.SECONDARY_TOLERANCE",
+        "tolerance_value": 0.02
+      },
+      {
+        "detail": "Measured interference when two donor bridges at one transplant site fire additively.  Contract site_overlap notes alone are NOT sufficient.",
+        "name": "confirmed_site_collision"
+      }
+    ]
+  },
+  "bypass": {
+    "choice": "A_BYPASS",
+    "index": 0,
+    "property": "exact identity: Hub(x) = x when bypass is selected (top-1) or when all bridge gates are zero (soft)"
+  },
+  "claim_boundary": {
+    "capability_claim": false,
+    "fabricated_fix_claim": false,
+    "live_v0_switched": false,
+    "production_validated": false,
+    "ready_inactive_infrastructure": true
+  },
+  "collision_resolution": {
+    "default_collision_sites": [
+      {
+        "contenders": [
+          "GLM_DECOMPOSITION_BRIDGE",
+          "KIMI_PLANNING_BRIDGE"
+        ],
+        "hub_resolution": "gate selects EITHER (top-1) or a learned soft mix \u2014 never forced dual-add",
+        "legacy_workaround": "disjoint block_ids, do not overwrite",
+        "student_layers_hint": [
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
+        "transplant_point": "post_attention_hidden_state"
+      },
+      {
+        "contenders": [
+          "GLM_PRE_ROUTER_BRIDGE",
+          "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+          "KIMI_TOOL_POLICY_BRIDGE"
+        ],
+        "hub_resolution": "gate selects among contenders + bypass; exclusive top-1 available",
+        "legacy_workaround": "distinct block_ids; no shared parameter tensors",
+        "student_layers_hint": "shared pre_router layers when measured",
+        "transplant_point": "pre_router_hidden_state"
+      }
+    ],
+    "hub_fix": "At a shared site, register both bridges on one MultiAdapterHub; gate selects EITHER (top-1) or a learned soft mix \u2014 not forced dual additive fire.",
+    "problem": "GLM and Kimi both want a bridge at the same transplant site; legacy workaround was disjoint block_ids / do-not-overwrite."
+  },
+  "composition_with_promotion_gate": {
+    "does_not": [
+      "touch_native_256_expert_router",
+      "auto_flip_on_contract_site_overlap_notes_alone",
+      "claim_production_validation",
+      "replace_promotion_ACCEPT"
+    ],
+    "order_of_operations": [
+      "1. Run always-on V0 bridges (HUB_ACTIVE=false) through A\u2013G ablation / auto-bench",
+      "2. If secondary regression > tolerance OR confirmed site collision \u2192 permit hub flip",
+      "3. Train/fit tiny external router on real paired activations (REQUIRES_TRAINING_LOOP)",
+      "4. Re-run ablation with HUB_ACTIVE=true; verify bypass identity + no dual-add collision",
+      "5. Promotion gate evaluates the chosen configuration (always-on or hub) independently"
+    ],
+    "promotion_gate_schema": "hawking.frankenstein.functional_transfer_promotion_gate.v1",
+    "relationship": "HUB_ACTIVE is independent of promotion ACCEPT/REJECT.  The hub may be flipped as a *mitigation* when always-on bridges cause secondary regression beyond promotion-gate tolerance, or when site collision is measured.  Promotion still requires held-out math gains, gap recovery, provenance, gravity accounting, and stable routing.",
+    "reversible_ablatable_gravity": "Hub is independently ablatable (set hub_active=false or remove hub), bypass is exact identity, residual reverse via stored r, and gravity_accounting() reports router + bridge bytes like every other module.",
+    "secondary_tolerance_absolute": 0.02
+  },
+  "external_router": {
+    "architecture": "LayerNorm \u2192 Linear(d, gate_hidden) \u2192 GELU \u2192 Linear(gate_hidden, n_choices)",
+    "choices": "{A_BYPASS, A_glm_i, A_kimi_i, ...}",
+    "input": "local hidden state at transplant site",
+    "kind": "TinyExternalRouter",
+    "not": "DeepSeek native 256-expert top-6 router",
+    "selection_modes": [
+      "soft",
+      "top1"
+    ]
+  },
+  "formula": "Hub(x) = x + sum_i gate_i(x) * residual_i(x)",
+  "implementation": {
+    "config": "evidence/models/frankenstein/MULTI_ADAPTER_HUB_CONFIG.json",
+    "module": "lab/operators/frankenstein_adapter_hub.py",
+    "tests": "tools/condense/tests/test_frankenstein_adapter_hub.py"
+  },
+  "inactive_path": {
+    "behavior": "byte-identical to always_on_apply (sequential residual by default)",
+    "live_v0": "unchanged \u2014 current always-on bridges keep running",
+    "when": "hub_active=false (default)"
+  },
+  "module_default": {
+    "HUB_ACTIVE": false,
+    "config_field": "hub_active",
+    "env_override": "FRANKENSTEIN_HUB_ACTIVE",
+    "one_line_flip": "Set hub_active=true in MULTI_ADAPTER_HUB_CONFIG.json or HUB_ACTIVE=True in frankenstein_adapter_hub.py"
+  },
+  "named_bridge_catalog": {
+    "full": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "KIMI_PLANNING_BRIDGE",
+      "KIMI_TOOL_POLICY_BRIDGE",
+      "KIMI_LONG_HORIZON_BRIDGE",
+      "KIMI_CRITIQUE_BRIDGE",
+      "KIMI_CONTEXT_MGMT_BRIDGE"
+    ],
+    "glm_v0_sites": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE"
+    ],
+    "kimi_children": [
+      "KIMI_PLANNING_BRIDGE",
+      "KIMI_TOOL_POLICY_BRIDGE",
+      "KIMI_LONG_HORIZON_BRIDGE",
+      "KIMI_CRITIQUE_BRIDGE",
+      "KIMI_CONTEXT_MGMT_BRIDGE"
+    ],
+    "kimi_parent": "KIMI_STRATEGIC_BRIDGE",
+    "note": "Hub wraps existing modules from frankenstein_bridges / frankenstein_adapter_modules / frankenstein_latent_v0 \u2014 does not reimplement residual architectures."
+  },
+  "non_goals": [
+    "Do not activate for live V0 run",
+    "No GPU / no live recapture-fixed-corpus edits",
+    "No Kimi/Odyssey execution in this scaffold pass",
+    "No fabricated 'this fixed X' production claim"
+  ],
+  "objective": "Tiny external router selecting among residual bridges instead of always-on addition \u2014 fixes irrelevant-input interference and GLM\u00d7Kimi co-location without native MoE surgery.",
+  "properties": {
+    "ablatable": true,
+    "bypass_exact_identity": true,
+    "gravity_accounted": true,
+    "hash_bound": true,
+    "native_router_untouched": true,
+    "reversible": true
+  },
+  "rank": 1,
+  "recorded_at": "2026-08-06T01:58:28.122452Z",
+  "schema": "hawking.frankenstein.multi_adapter_hub_design.v1",
+  "seal_sha256": "f1d07c49f70c0d9a0055b2227e44d568419dfa9be64ac24e8ade70896e9e91a4",
+  "source_research": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md",
+  "status": "READY_INACTIVE_SCAFFOLD"
+}
