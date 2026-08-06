@@ -154,3 +154,7 @@ tools/sovereignty/__pycache__/
 # python venv (never commit; self-symlink hazard)
 /tools/condense/.venv/
 /tools/condense/.venv
+
+# real GLM float exports — large binary, correctly excluded from git, but lives inside
+# the repo tree (not a worktree-only path) so it survives worktree cleanup
+/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/
