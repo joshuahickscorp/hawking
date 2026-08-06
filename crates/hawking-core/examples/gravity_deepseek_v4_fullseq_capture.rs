@@ -12,7 +12,8 @@
 //!   cargo run -p hawking-core --release --example gravity_deepseek_v4_fullseq_capture -- \
 //!     --artifact /path/to/full-43-layer-stream.gravity \
 //!     --out-dir receipts/dsv4f_fullseq_capture \
-//!     [--ladder L0|L1] [--max-layer 1] [--max-seq-len 8] [--limit N] \
+//!     [--ladder L0|L1] [--min-layer 0] [--max-layer 1] [--max-seq-len 8] [--limit N] \
+//!     [--seq-start N] [--seq-end M] [--worker-id ID] \
 //!     [--corpus-mode frozen|synthetic] [--corpus PATH.jsonl] \
 //!     [--export-host-activations]
 //!
@@ -20,6 +21,15 @@
 //! (pfv0:* example_ids, same rows as GLM teacher-forced). The legacy
 //! hard-coded v0_math_*/v0_code_* table is `--corpus-mode synthetic` only
 //! (smoke / empty-compressed window tests).
+//!
+//! Multi-worker sharding (sequence slices only):
+//!   `--seq-start N --seq-end M` selects a half-open corpus index range
+//!   `[N, M)` after `--limit` is applied. Each worker MUST use a distinct
+//!   `--out-dir` (never share activation/trace paths). Optional `--worker-id`
+//!   is recorded in the receipt for merge provenance. Layer multi-worker
+//!   sharding is **not** supported: layer L>0 consumes L-1 residual in-process;
+//!   `--min-layer` must remain 0 (default). Merge worker dirs with
+//!   `tools/condense/merge_fullseq_capture_shards.py`.
 //!
 //! Host export: `--export-host-activations` is an **offline-analysis diagnostic**.
 //! It copies bounded activation tensors from Metal buffers to
@@ -94,9 +104,19 @@ mod macos {
         artifact: PathBuf,
         out_dir: PathBuf,
         ladder: String,
+        /// Inclusive start of the contiguous layer stack. Must be 0: residual
+        /// handoff across workers is not implemented, so multi-worker layer
+        /// sharding is unsupported.
+        min_layer: usize,
         max_layer: usize,
         max_seq_len: usize,
         limit: Option<usize>,
+        /// Half-open corpus index range [seq_start, seq_end) after --limit.
+        /// None seq_end means "through end of corpus".
+        seq_start: usize,
+        seq_end: Option<usize>,
+        /// Optional worker label written into the receipt for merge provenance.
+        worker_id: Option<String>,
         /// "frozen" (default, PROTO_FRANKENSTEIN_V0) or "synthetic" (legacy short prompts).
         corpus_mode: String,
         corpus_path: Option<PathBuf>,
@@ -120,6 +140,17 @@ mod macos {
         if args.max_layer >= 43 {
             return Err("--max-layer must be in 0..42".into());
         }
+        if args.min_layer > args.max_layer {
+            return Err("--min-layer must be <= --max-layer".into());
+        }
+        if args.min_layer > 0 {
+            return Err(
+                "--min-layer > 0 is unsupported: layer L>0 requires in-process residual from L-1; \
+                 multi-worker layer sharding needs residual handoff (not implemented). \
+                 Shard by --seq-start/--seq-end instead."
+                    .into(),
+            );
+        }
         let wall = Instant::now();
         fs::create_dir_all(&args.out_dir)?;
         fs::create_dir_all(args.out_dir.join("traces"))?;
@@ -132,9 +163,10 @@ mod macos {
         let metal = MetalContext::new()?;
 
         // Admit layers under empty-compressed fullseq at position 0 (always ok).
+        // Contiguous stack from min_layer..=max_layer (min_layer must be 0 today).
         let mut layers_run = Vec::new();
         let mut layer_blockers = Vec::new();
-        for layer in 0..=args.max_layer {
+        for layer in args.min_layer..=args.max_layer {
             match catalog.plan(layer)?.require_fullseq_full_layer_device(0) {
                 Ok(()) => layers_run.push(layer),
                 Err(err) => layer_blockers.push(format!("layer {layer}: {err}")),
@@ -148,12 +180,73 @@ mod macos {
             .into());
         }
 
-        let (corpus, corpus_provenance) = build_v0_corpus(
+        let (corpus_full, corpus_provenance_full) = build_v0_corpus(
             &args.ladder,
             args.limit,
             &args.corpus_mode,
             args.corpus_path.as_deref(),
         )?;
+        let corpus_len_before_shard = corpus_full.len();
+        let seq_end = args.seq_end.unwrap_or(corpus_len_before_shard);
+        if args.seq_start > seq_end {
+            return Err(format!(
+                "--seq-start ({}) > --seq-end ({})",
+                args.seq_start, seq_end
+            )
+            .into());
+        }
+        if args.seq_start > corpus_len_before_shard {
+            return Err(format!(
+                "--seq-start ({}) past corpus length ({})",
+                args.seq_start, corpus_len_before_shard
+            )
+            .into());
+        }
+        let seq_end = seq_end.min(corpus_len_before_shard);
+        let corpus: Vec<CorpusExample> = corpus_full
+            .into_iter()
+            .enumerate()
+            .filter(|(i, _)| *i >= args.seq_start && *i < seq_end)
+            .map(|(_, e)| e)
+            .collect();
+        if corpus.is_empty() {
+            return Err(format!(
+                "empty shard after --seq-start {} --seq-end {}: corpus_len={}",
+                args.seq_start, seq_end, corpus_len_before_shard
+            )
+            .into());
+        }
+        // Provenance reflects the sharded example set actually captured.
+        let corpus_provenance = {
+            let mut p = corpus_provenance_full;
+            if let Some(obj) = p.as_object_mut() {
+                obj.insert(
+                    "shard".into(),
+                    json!({
+                        "seq_start": args.seq_start,
+                        "seq_end": seq_end,
+                        "corpus_len_before_shard": corpus_len_before_shard,
+                        "n_sequences_in_shard": corpus.len(),
+                        "worker_id": args.worker_id,
+                        "example_ids_in_shard": corpus.iter().map(|e| e.example_id.clone()).collect::<Vec<_>>(),
+                    }),
+                );
+                obj.insert("n_sequences".into(), json!(corpus.len()));
+                obj.insert(
+                    "example_ids".into(),
+                    json!(corpus.iter().map(|e| e.example_id.clone()).collect::<Vec<_>>()),
+                );
+            }
+            p
+        };
+        println!(
+            "shard seq=[{}, {}) worker_id={:?} n_in_shard={} corpus_len_before_shard={}",
+            args.seq_start,
+            seq_end,
+            args.worker_id,
+            corpus.len(),
+            corpus_len_before_shard
+        );
         let tokenizer = load_dsv4f_tokenizer(&reader)?;
         // Per-layer host export accumulators: example order → late_hidden f32[H].
         // Only populated when --export-host-activations is set.
@@ -178,7 +271,9 @@ mod macos {
         let mut total_capture_bytes: u64 = 0;
         let mut sites_union: Vec<String> = Vec::new();
 
-        for (seq_idx, example) in corpus.iter().enumerate() {
+        for (local_idx, example) in corpus.iter().enumerate() {
+            // Global index into the pre-shard (post-limit) corpus.
+            let seq_idx = args.seq_start + local_idx;
             let mut token_ids = tokenize(&tokenizer, &example.prompt_text)?;
             if token_ids.is_empty() || token_ids[0] != PREFIX_TOKEN_ID as u32 {
                 token_ids.insert(0, PREFIX_TOKEN_ID as u32);
@@ -470,6 +565,11 @@ mod macos {
                     "complete_pair": false,
                     "ladder": args.ladder,
                     "seq_index": seq_idx,
+                    "seq_index_local": local_idx,
+                    "seq_start": args.seq_start,
+                    "seq_end": seq_end,
+                    "worker_id": args.worker_id,
+                    "min_layer": args.min_layer,
                     "max_layer": args.max_layer,
                     "layers_run": layers_run,
                     "parity": PARITY,
@@ -587,12 +687,26 @@ mod macos {
                 "tokens_total": accounting.tokens,
                 "max_seq_len": args.max_seq_len,
                 "layers_run": layers_run,
+                "min_layer_requested": args.min_layer,
                 "max_layer_requested": args.max_layer,
                 "layer_blockers": layer_blockers,
                 "corpus_mode": args.corpus_mode,
                 "corpus_path": args.corpus_path.as_ref().map(|p| p.display().to_string()),
                 "export_host_activations": args.export_host_activations,
                 "empty_compressed_fullseq_note": "ratio-4 layers only admit positions 0..2 (end_pos//4==0); ratio-128 admit 0..126; ratio-0 admit 0..127. All-43-layer capture requires max_seq_len<=3.",
+            },
+            // Multi-worker sequence sharding: half-open [seq_start, seq_end).
+            // Each worker writes a distinct out_dir; merge with
+            // tools/condense/merge_fullseq_capture_shards.py.
+            "shard": {
+                "seq_start": args.seq_start,
+                "seq_end": seq_end,
+                "corpus_len_before_shard": corpus_len_before_shard,
+                "n_sequences_in_shard": accounting.sequences,
+                "worker_id": args.worker_id,
+                "out_dir": args.out_dir.display().to_string(),
+                "layer_shard_supported": false,
+                "layer_shard_note": "min_layer must be 0; residual handoff across workers not implemented. Sequence sharding only.",
             },
             // Provenance gap fix: prior receipts omitted corpus identity, so the
             // synthetic v0_math_* table went undetected against GLM's pfv0:* freeze.
@@ -659,19 +773,29 @@ mod macos {
         file.write_all(pretty.as_bytes())?;
         file.write_all(b"\n")?;
         let seal = format!("{:x}", Sha256::digest(pretty.as_bytes()));
-        // Also drop a copy under repo receipts/ for discoverability.
-        let repo_receipt = PathBuf::from("receipts/dsv4f_fullseq_capture_receipt.json");
-        if let Some(parent) = repo_receipt.parent() {
-            let _ = fs::create_dir_all(parent);
+        // Drop a discoverable copy under receipts/ only for unsharded full runs
+        // so concurrent workers never race a shared fixed path.
+        let is_partial_shard =
+            args.seq_start > 0 || args.seq_end.is_some() || args.worker_id.is_some();
+        if !is_partial_shard {
+            let repo_receipt = PathBuf::from("receipts/dsv4f_fullseq_capture_receipt.json");
+            if let Some(parent) = repo_receipt.parent() {
+                let _ = fs::create_dir_all(parent);
+            }
+            let _ = fs::write(&repo_receipt, pretty.as_bytes());
         }
-        let _ = fs::write(&repo_receipt, pretty.as_bytes());
 
         println!("{pretty}");
         println!("receipt_path: {}", receipt_path.display());
         println!("receipt_sha256: {seal}");
         println!(
-            "metal_dispatches: {} sequences: {} tokens: {}",
-            accounting.metal_dispatches, accounting.sequences, accounting.tokens
+            "metal_dispatches: {} sequences: {} tokens: {} shard=[{}, {}) worker_id={:?}",
+            accounting.metal_dispatches,
+            accounting.sequences,
+            accounting.tokens,
+            args.seq_start,
+            seq_end,
+            args.worker_id
         );
         Ok(())
     }
@@ -1302,9 +1426,13 @@ mod macos {
         let mut artifact = None;
         let mut out_dir = None;
         let mut ladder = "L0".to_string();
+        let mut min_layer = 0usize;
         let mut max_layer = DEFAULT_MAX_LAYER;
         let mut max_seq_len = DEFAULT_MAX_SEQ_LEN;
         let mut limit = None;
+        let mut seq_start = 0usize;
+        let mut seq_end: Option<usize> = None;
+        let mut worker_id: Option<String> = None;
         let mut corpus_mode = "frozen".to_string();
         let mut corpus_path = None;
         let mut export_host_activations = false;
@@ -1319,6 +1447,13 @@ mod macos {
                 }
                 "--ladder" => {
                     ladder = args.next().ok_or("--ladder needs L0|L1")?;
+                }
+                "--min-layer" => {
+                    min_layer = args
+                        .next()
+                        .ok_or("--min-layer needs value")?
+                        .parse()
+                        .map_err(|_| "--min-layer must be int")?;
                 }
                 "--max-layer" => {
                     max_layer = args
@@ -1342,6 +1477,24 @@ mod macos {
                             .map_err(|_| "--limit must be int")?,
                     );
                 }
+                "--seq-start" => {
+                    seq_start = args
+                        .next()
+                        .ok_or("--seq-start needs value")?
+                        .parse()
+                        .map_err(|_| "--seq-start must be int")?;
+                }
+                "--seq-end" => {
+                    seq_end = Some(
+                        args.next()
+                            .ok_or("--seq-end needs value")?
+                            .parse()
+                            .map_err(|_| "--seq-end must be int")?,
+                    );
+                }
+                "--worker-id" => {
+                    worker_id = Some(args.next().ok_or("--worker-id needs value")?);
+                }
                 "--corpus-mode" => {
                     corpus_mode = args
                         .next()
@@ -1357,9 +1510,13 @@ mod macos {
                 "--help" | "-h" => {
                     println!(
                         "gravity_deepseek_v4_fullseq_capture --artifact <p> --out-dir <p> \
-                         [--ladder L0|L1] [--max-layer N] [--max-seq-len N] [--limit N] \
+                         [--ladder L0|L1] [--min-layer 0] [--max-layer N] [--max-seq-len N] \
+                         [--limit N] [--seq-start N] [--seq-end M] [--worker-id ID] \
                          [--corpus-mode frozen|synthetic] [--corpus PATH.jsonl] \
-                         [--export-host-activations]"
+                         [--export-host-activations]\n\
+                         Sequence sharding: half-open [seq-start, seq-end) after --limit; \
+                         each worker needs a distinct --out-dir. Layer multi-worker \
+                         sharding unsupported (min-layer must stay 0)."
                     );
                     std::process::exit(0);
                 }
@@ -1370,9 +1527,13 @@ mod macos {
             artifact: artifact.ok_or("--artifact is required")?,
             out_dir: out_dir.ok_or("--out-dir is required")?,
             ladder,
+            min_layer,
             max_layer,
             max_seq_len,
             limit,
+            seq_start,
+            seq_end,
+            worker_id,
             corpus_mode,
             corpus_path,
             export_host_activations,

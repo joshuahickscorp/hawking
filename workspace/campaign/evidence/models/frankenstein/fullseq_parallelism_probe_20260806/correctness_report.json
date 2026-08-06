@@ -1,0 +1,270 @@
+{
+  "ids_equal": true,
+  "npy": {
+    "L00.npy": {
+      "serial_sha256": "fcb655e0184b6b4e9681483f284cc2aaa4409a39d07c112531f09ad0ad97c0ea",
+      "merged_sha256": "fcb655e0184b6b4e9681483f284cc2aaa4409a39d07c112531f09ad0ad97c0ea",
+      "bit_exact": true
+    },
+    "L01.npy": {
+      "serial_sha256": "b3a5d928bd871e3b695b6646d4a853399125eeac2cd4f50670b0f440ea9e4d21",
+      "merged_sha256": "b3a5d928bd871e3b695b6646d4a853399125eeac2cd4f50670b0f440ea9e4d21",
+      "bit_exact": true
+    }
+  },
+  "trace_hashes": {
+    "v0_math_01": {
+      "match": true,
+      "serial": {
+        "0": {
+          "late_hidden_child_hc_sha256": "37356fb27395ccb7eca39a7e4f0a0d7616a5dc60612fc816adad114bbe7c86f5",
+          "post_moe_sha256": "efb4fcbc98996eed3b092590d54c45e54abc054bc924d40a823a51539204537c",
+          "pre_router_ffn_norm_sha256": "7f3cbaad25f9c07313a29c392680424bf1e6d54efb4e91920e8799799eb325fd",
+          "router_top6_route_ids": [
+            178,
+            16,
+            44,
+            224,
+            42,
+            66
+          ],
+          "mhc_pre_post_attn_hc_sha256": "8c3950ba2ecd000a28bffa3f6a5a22389adb882dc02c7fbfc2407f965981bdf4"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "c9dcfd813c671831b17496e969dcc19eb701a2842c0c9cc8f607b52256e1a591",
+          "post_moe_sha256": "90467b6a6f3a3cad3ee6cfbf6c2708438503439e8060c323388112fd9bfe8992",
+          "pre_router_ffn_norm_sha256": "2f98da5f3e0dbb9b7b9a45ae34d6d62223af06ded82866380bf98967a4bc02f1",
+          "router_top6_route_ids": [
+            84,
+            250,
+            75,
+            116,
+            2,
+            157
+          ],
+          "mhc_pre_post_attn_hc_sha256": "d961e11460953b26c65e7366c469708d11da959697f628ee9a8c266d3d812345"
+        }
+      },
+      "merged": {
+        "0": {
+          "late_hidden_child_hc_sha256": "37356fb27395ccb7eca39a7e4f0a0d7616a5dc60612fc816adad114bbe7c86f5",
+          "post_moe_sha256": "efb4fcbc98996eed3b092590d54c45e54abc054bc924d40a823a51539204537c",
+          "pre_router_ffn_norm_sha256": "7f3cbaad25f9c07313a29c392680424bf1e6d54efb4e91920e8799799eb325fd",
+          "router_top6_route_ids": [
+            178,
+            16,
+            44,
+            224,
+            42,
+            66
+          ],
+          "mhc_pre_post_attn_hc_sha256": "8c3950ba2ecd000a28bffa3f6a5a22389adb882dc02c7fbfc2407f965981bdf4"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "c9dcfd813c671831b17496e969dcc19eb701a2842c0c9cc8f607b52256e1a591",
+          "post_moe_sha256": "90467b6a6f3a3cad3ee6cfbf6c2708438503439e8060c323388112fd9bfe8992",
+          "pre_router_ffn_norm_sha256": "2f98da5f3e0dbb9b7b9a45ae34d6d62223af06ded82866380bf98967a4bc02f1",
+          "router_top6_route_ids": [
+            84,
+            250,
+            75,
+            116,
+            2,
+            157
+          ],
+          "mhc_pre_post_attn_hc_sha256": "d961e11460953b26c65e7366c469708d11da959697f628ee9a8c266d3d812345"
+        }
+      }
+    },
+    "v0_math_02": {
+      "match": true,
+      "serial": {
+        "0": {
+          "late_hidden_child_hc_sha256": "3835eb6bd97572eb5607732683b9877c399ac9a3aa30ac0839fb26aac5107eac",
+          "post_moe_sha256": "3e838edd594c1631e621964c4ec732df97035c8c31cd741b4c668a9f52f5b077",
+          "pre_router_ffn_norm_sha256": "b4781b9f6f75a7ac16f3a13d2a1d513db3021ce02bf8d6442c3f72a1d8c9fc68",
+          "router_top6_route_ids": [
+            232,
+            123,
+            238,
+            104,
+            63,
+            142
+          ],
+          "mhc_pre_post_attn_hc_sha256": "ab17ccafd63f2a7446884a408a983d14824da0acd1a36805d621797cc56219d3"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "c4447f4f93b19a77f08e0cac6da244e8412472c925b70cdafce50f44c80a3600",
+          "post_moe_sha256": "e31615fe47ed2647c158d447868ba33d8f861c74a4d45076de399c84444cb779",
+          "pre_router_ffn_norm_sha256": "a594017643889e6806d217c8461197cbc8f861eb67426f5d72eb695ba763426a",
+          "router_top6_route_ids": [
+            197,
+            167,
+            68,
+            5,
+            81,
+            226
+          ],
+          "mhc_pre_post_attn_hc_sha256": "7b9273395406903dd419254155b96f68702993846387502a76d920fac4e2f218"
+        }
+      },
+      "merged": {
+        "0": {
+          "late_hidden_child_hc_sha256": "3835eb6bd97572eb5607732683b9877c399ac9a3aa30ac0839fb26aac5107eac",
+          "post_moe_sha256": "3e838edd594c1631e621964c4ec732df97035c8c31cd741b4c668a9f52f5b077",
+          "pre_router_ffn_norm_sha256": "b4781b9f6f75a7ac16f3a13d2a1d513db3021ce02bf8d6442c3f72a1d8c9fc68",
+          "router_top6_route_ids": [
+            232,
+            123,
+            238,
+            104,
+            63,
+            142
+          ],
+          "mhc_pre_post_attn_hc_sha256": "ab17ccafd63f2a7446884a408a983d14824da0acd1a36805d621797cc56219d3"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "c4447f4f93b19a77f08e0cac6da244e8412472c925b70cdafce50f44c80a3600",
+          "post_moe_sha256": "e31615fe47ed2647c158d447868ba33d8f861c74a4d45076de399c84444cb779",
+          "pre_router_ffn_norm_sha256": "a594017643889e6806d217c8461197cbc8f861eb67426f5d72eb695ba763426a",
+          "router_top6_route_ids": [
+            197,
+            167,
+            68,
+            5,
+            81,
+            226
+          ],
+          "mhc_pre_post_attn_hc_sha256": "7b9273395406903dd419254155b96f68702993846387502a76d920fac4e2f218"
+        }
+      }
+    },
+    "v0_math_03": {
+      "match": true,
+      "serial": {
+        "0": {
+          "late_hidden_child_hc_sha256": "e617769229cef01b245091cedf557d3ceb26c6e401fe66dfec87922a3b978f68",
+          "post_moe_sha256": "9d640c7f0c1166acc696947aa02d83b737f8e1e672fff3ef13d6554e8ea9f9f7",
+          "pre_router_ffn_norm_sha256": "3f63bf021b0935c7678b9444b6ea04bef140bdd875963890924a0bed4b709b56",
+          "router_top6_route_ids": [
+            76,
+            227,
+            250,
+            10,
+            106,
+            117
+          ],
+          "mhc_pre_post_attn_hc_sha256": "18f6d2641a8f0ed791256962e27def017978cdfb1394e4e525afbeb896ae8535"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "2e2b0d3aa690a2a174eef8ad1cde45d66504a639e1d7795b8a59df9c8a36a4af",
+          "post_moe_sha256": "582a553a8bdd01f003871f341897547ef4b8d5073a480b3ce1ea85390391476f",
+          "pre_router_ffn_norm_sha256": "aa521e63e21d0821d965d520d993af9ddf168ffa38dc4740509950cd9c882758",
+          "router_top6_route_ids": [
+            161,
+            155,
+            133,
+            127,
+            136,
+            77
+          ],
+          "mhc_pre_post_attn_hc_sha256": "59b5ca49372500983df59808d3f09a07e78ad80f13ec3bf2a1cdef3679874d3f"
+        }
+      },
+      "merged": {
+        "0": {
+          "late_hidden_child_hc_sha256": "e617769229cef01b245091cedf557d3ceb26c6e401fe66dfec87922a3b978f68",
+          "post_moe_sha256": "9d640c7f0c1166acc696947aa02d83b737f8e1e672fff3ef13d6554e8ea9f9f7",
+          "pre_router_ffn_norm_sha256": "3f63bf021b0935c7678b9444b6ea04bef140bdd875963890924a0bed4b709b56",
+          "router_top6_route_ids": [
+            76,
+            227,
+            250,
+            10,
+            106,
+            117
+          ],
+          "mhc_pre_post_attn_hc_sha256": "18f6d2641a8f0ed791256962e27def017978cdfb1394e4e525afbeb896ae8535"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "2e2b0d3aa690a2a174eef8ad1cde45d66504a639e1d7795b8a59df9c8a36a4af",
+          "post_moe_sha256": "582a553a8bdd01f003871f341897547ef4b8d5073a480b3ce1ea85390391476f",
+          "pre_router_ffn_norm_sha256": "aa521e63e21d0821d965d520d993af9ddf168ffa38dc4740509950cd9c882758",
+          "router_top6_route_ids": [
+            161,
+            155,
+            133,
+            127,
+            136,
+            77
+          ],
+          "mhc_pre_post_attn_hc_sha256": "59b5ca49372500983df59808d3f09a07e78ad80f13ec3bf2a1cdef3679874d3f"
+        }
+      }
+    },
+    "v0_math_04": {
+      "match": true,
+      "serial": {
+        "0": {
+          "late_hidden_child_hc_sha256": "a87e01a10ce925ce88a669f70c3e91f7820a43dc34fdce7999fe5e4bc5f186e8",
+          "post_moe_sha256": "27f7590ef133109c359808fd1e98a1e3ceb3a8e53c3d7ccf5aa8ac0d87bc89d1",
+          "pre_router_ffn_norm_sha256": "30688143a4a03187088d4d7314e2efc3850fca414479a47d50134272572bf664",
+          "router_top6_route_ids": [
+            221,
+            93,
+            50,
+            255,
+            51,
+            27
+          ],
+          "mhc_pre_post_attn_hc_sha256": "3e95a20e0099b716736d09ba1dfe83321b05259717024223bbce473bcdf64097"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "e2f9445ebdf82696d87d6fa52f60e51dcb763dacb15d9007c084aa8d25494615",
+          "post_moe_sha256": "235290e27146fa4eff32107d6a5db87a6869aa24bdcc952869f5c34ab5fa5567",
+          "pre_router_ffn_norm_sha256": "9a01aa1d1abb5acdd952975224183787e01c23e5e7bfc78958f1012cef266213",
+          "router_top6_route_ids": [
+            215,
+            89,
+            107,
+            79,
+            149,
+            8
+          ],
+          "mhc_pre_post_attn_hc_sha256": "1ff0f3bb0f55c24b2cee64a832ca27e672ac6dc1eae7a5480355b245805de311"
+        }
+      },
+      "merged": {
+        "0": {
+          "late_hidden_child_hc_sha256": "a87e01a10ce925ce88a669f70c3e91f7820a43dc34fdce7999fe5e4bc5f186e8",
+          "post_moe_sha256": "27f7590ef133109c359808fd1e98a1e3ceb3a8e53c3d7ccf5aa8ac0d87bc89d1",
+          "pre_router_ffn_norm_sha256": "30688143a4a03187088d4d7314e2efc3850fca414479a47d50134272572bf664",
+          "router_top6_route_ids": [
+            221,
+            93,
+            50,
+            255,
+            51,
+            27
+          ],
+          "mhc_pre_post_attn_hc_sha256": "3e95a20e0099b716736d09ba1dfe83321b05259717024223bbce473bcdf64097"
+        },
+        "1": {
+          "late_hidden_child_hc_sha256": "e2f9445ebdf82696d87d6fa52f60e51dcb763dacb15d9007c084aa8d25494615",
+          "post_moe_sha256": "235290e27146fa4eff32107d6a5db87a6869aa24bdcc952869f5c34ab5fa5567",
+          "pre_router_ffn_norm_sha256": "9a01aa1d1abb5acdd952975224183787e01c23e5e7bfc78958f1012cef266213",
+          "router_top6_route_ids": [
+            215,
+            89,
+            107,
+            79,
+            149,
+            8
+          ],
+          "mhc_pre_post_attn_hc_sha256": "1ff0f3bb0f55c24b2cee64a832ca27e672ac6dc1eae7a5480355b245805de311"
+        }
+      }
+    }
+  },
+  "PASS_BIT_EXACT": true
+}

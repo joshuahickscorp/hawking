@@ -1,0 +1,10 @@
+{
+  "example_ids": [
+    "v0_math_03",
+    "v0_math_04"
+  ],
+  "host_activation_handoff_permitted": false,
+  "mode": "offline_analysis_diagnostic",
+  "n": 2,
+  "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export_ids.v1"
+}

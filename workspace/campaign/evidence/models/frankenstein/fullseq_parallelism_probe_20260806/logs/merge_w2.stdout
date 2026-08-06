@@ -1,0 +1,9 @@
+{
+  "merged_receipt": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/DSV4F_FULLSEQ_CAPTURE_MERGED_RECEIPT.json",
+  "n_traces": 4,
+  "n_ids": 4,
+  "layers": [
+    0,
+    1
+  ]
+}

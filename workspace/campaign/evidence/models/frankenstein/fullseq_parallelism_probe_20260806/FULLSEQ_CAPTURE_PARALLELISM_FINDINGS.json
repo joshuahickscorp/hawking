@@ -1,0 +1,241 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture_parallelism_findings.v1",
+  "recorded_at_unix": 1754482800,
+  "worktree": "parallelize-fullseq-capture-20260806-072951",
+  "branch": "grok/parallelize-fullseq-capture-20260806-072951",
+  "status": "PASS_SHARDING_IMPLEMENTED_AND_MEASURED",
+  "honesty": {
+    "fabricated_speedup": false,
+    "full_production_run_launched": false,
+    "touched_live_l1_or_glm_lanes": false,
+    "measurements_under_concurrent_live_l1": true,
+    "live_l1_note": "pid 31213 gravity_deepseek_v4_fullseq_capture L1 frozen export (max-layer 42) was running throughout (~90-98% of ONE core, GPU Device Utilization often 60-70% with intermittent 0% windows). Speedups are lower bounds under GPU/driver contention; remeasure when machine is idle before full-scale roll-out."
+  },
+  "real_bottleneck_diagnosis": {
+    "method": [
+      "Sampled live L1 capture (pid 31213) via ps %cpu + ioreg IOAccelerator Device/Renderer Utilization over 5s",
+      "Short bounded probe in this worktree: synthetic limit=4, max-layer 0 then 1, max-seq-len 3, --export-host-activations, concurrent ioreg sampler",
+      "Receipt metal counters: metal_dispatches, command_buffers, cpu_visible_waits"
+    ],
+    "live_l1_process": {
+      "cpu_percent_of_one_core": "90-98%",
+      "thread_rows_ps_M": 5,
+      "gpu_device_utilization_percent": "often 60-73, intermittent windows at 0",
+      "gpu_renderer_utilization_percent": 0,
+      "rss_approx_gb": 7,
+      "interpretation": "Single-threaded host orchestration; GPU is partially utilized in bursts but host serial path (1 of 28 cores) remains the control plane. Not pure GPU-idle as sometimes observed mid-export/setup; not GPU-saturated either."
+    },
+    "probe_profile_serial_l0_4seq": {
+      "wall_time_ms": 6979.576,
+      "metal_dispatches": 1044,
+      "command_buffers": 60,
+      "cpu_visible_waits": 60,
+      "our_cpu_percent_mean_during_run": 59.9,
+      "our_cpu_percent_max": 83.5,
+      "gpu_device_percent_mean": 66.2,
+      "gpu_device_percent_max": 83,
+      "concurrent_live_l1_cpu_mean": 92.0
+    },
+    "probe_serial_l1_4seq_receipt": {
+      "wall_time_ms": 9128.031042,
+      "metal_dispatches": 2088,
+      "command_buffers": 120,
+      "cpu_visible_waits": 120,
+      "tokens_total": 12,
+      "layers_run": [0, 1],
+      "cpu_visible_waits_per_token_layer": 5.0,
+      "metal_dispatches_per_token_layer": 87.0
+    },
+    "serial_bottleneck_identified": {
+      "primary": "Host-side serial staging between Metal dispatches: ~5 cpu_visible_waits per token×layer (command-buffer commit + wait_until_completed style sync). Process is single-core bound (~97% of one core) while 27 cores idle.",
+      "secondary": "Per-token/layer host work: buffer SHA-256 for capture sites, optional host export (bf16→f32 mean-pool copy), expert bundle resolve, JSON trace assembly. npy write is end-of-run and small at this scale (4×4096 f32).",
+      "not_primary": "Raw Metal kernel throughput alone (GPU Device Util often 60%+ under load but process still 1-thread CPU-bound between waits).",
+      "not_layer_shardable_without_residual_handoff": "Layer L>0 input is previous layer child residual in-process; multi-worker layer ranges would change the graph unless residuals are exported/imported."
+    }
+  },
+  "sharding_design": {
+    "approach": "Multi-process sequence sharding with distinct output directories + offline merge",
+    "cli_flags_added": {
+      "--seq-start": "inclusive 0-based index into corpus after --limit (default 0)",
+      "--seq-end": "exclusive end index; default = corpus length",
+      "--worker-id": "optional label recorded in receipt.shard for merge provenance",
+      "--min-layer": "must be 0; >0 hard-errors with residual-handoff explanation"
+    },
+    "existing_flags_used": ["--max-layer", "--out-dir", "--limit", "--export-host-activations"],
+    "isolation_rule": "Each worker MUST use a distinct --out-dir (traces/ + activations/). Shared fixed path receipts/dsv4f_fullseq_capture_receipt.json is skipped when sharding.",
+    "receipt_fields": {
+      "shard": {
+        "seq_start": "int",
+        "seq_end": "int",
+        "corpus_len_before_shard": "int",
+        "n_sequences_in_shard": "int",
+        "worker_id": "string|null",
+        "out_dir": "string",
+        "layer_shard_supported": false
+      },
+      "corpus_provenance.shard": "mirrors example_ids actually captured"
+    },
+    "merge_tool": {
+      "path": "tools/condense/merge_fullseq_capture_shards.py",
+      "inputs": "N worker out-dirs each with DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+      "outputs": [
+        "out/traces/*.json",
+        "out/activations/LXX.npy (concat in seq_start order)",
+        "out/activations/example_ids.json",
+        "out/DSV4F_FULLSEQ_CAPTURE_MERGED_RECEIPT.json with per-worker provenance"
+      ],
+      "safety": "refuses overlapping [seq_start,seq_end) ranges; refuses duplicate example_ids"
+    },
+    "layer_sharding": {
+      "supported": false,
+      "reason": "residual handoff across workers not implemented; --min-layer > 0 errors closed"
+    }
+  },
+  "correctness_proof": {
+    "workload": {
+      "corpus_mode": "synthetic",
+      "limit": 4,
+      "max_layer": 1,
+      "max_seq_len": 3,
+      "export_host_activations": true,
+      "example_ids": ["v0_math_01", "v0_math_02", "v0_math_03", "v0_math_04"]
+    },
+    "serial_vs_2_workers": {
+      "split": "worker0 [0,2) + worker1 [2,4)",
+      "ids_equal": true,
+      "npy_bit_exact": {
+        "L00.npy": true,
+        "L01.npy": true,
+        "L00_sha256": "fcb655e0184b6b4e9681483f284cc2aaa4409a39d07c112531f09ad0ad97c0ea",
+        "L01_sha256": "b3a5d928bd871e3b695b6646d4a853399125eeac2cd4f50670b0f440ea9e4d21"
+      },
+      "trace_site_hashes_match_all_4_examples": true,
+      "sites_compared": [
+        "late_hidden_child_hc_sha256",
+        "post_moe_sha256",
+        "pre_router_ffn_norm_sha256",
+        "router_top6_route_ids",
+        "mhc_pre_post_attn_hc_sha256"
+      ],
+      "PASS_BIT_EXACT": true,
+      "report_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/correctness_report.json"
+    },
+    "serial_vs_4_workers": {
+      "split": "four workers each [i, i+1)",
+      "PASS_BIT_EXACT": true,
+      "report_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/correctness_w4.json"
+    },
+    "conclusion": "Sequence sharding does not change the math; only wall-clock. Merged npy files are byte-identical to a single serial process on the same slice."
+  },
+  "real_measured_speedup": {
+    "workload": "synthetic limit=4, max_layer=1, max_seq-len=3, export-host-activations, under concurrent live L1 capture",
+    "serial_1_worker": {
+      "external_wall_s": 9.186,
+      "receipt_wall_ms": 9128.031042
+    },
+    "workers_2": {
+      "external_wall_s": 6.531,
+      "per_worker_receipt_wall_ms": [6472.477, 5221.621],
+      "speedup_vs_serial_receipt": 1.398,
+      "parallel_efficiency": 0.699,
+      "note": "Not 2.0x — shared Metal driver/GPU with live L1 + duplicated per-process admit/prepare startup."
+    },
+    "workers_4": {
+      "external_wall_s": 5.106,
+      "per_worker_receipt_wall_ms": [3748.4, 5041.7, 5044.4, 3728.4],
+      "speedup_vs_serial_receipt": 1.788,
+      "parallel_efficiency": 0.447,
+      "sampler": {
+        "max_concurrent_worker_processes": 4,
+        "cpu_percent_mean": 222.0,
+        "cpu_percent_max": 373.6,
+        "gpu_device_percent_mean": 63.1,
+        "gpu_device_percent_max": 87
+      },
+      "note": "Multi-core host utilization proven (up to ~3.7 cores). Efficiency drops vs 2w: per-worker model admit + GPU contention + tiny 1-seq shards."
+    },
+    "summary_table": [
+      {"workers": 1, "wall_s": 9.186, "speedup": 1.0, "efficiency": 1.0},
+      {"workers": 2, "wall_s": 6.531, "speedup": 1.40, "efficiency": 0.70},
+      {"workers": 4, "wall_s": 5.106, "speedup": 1.79, "efficiency": 0.45}
+    ],
+    "artifact_dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806"
+  },
+  "recommendation": {
+    "worth_using_at_full_scale": true,
+    "recommended_worker_count": {
+      "starting_point": 2,
+      "try_next": 4,
+      "do_not_assume_linear": true,
+      "cap_guidance": "On this M3 Ultra (28 CPU / 60 GPU cores) start with N=2–4 sequence workers for full-layer captures. Re-benchmark idle-machine before N>4: 4w already showed sub-linear returns under contention. Memory: each worker reloads the gravity stream reader + Metal executors (~GB RSS each); RAM may cap N before GPU does."
+    },
+    "why": [
+      "Bit-exact correctness proven for multi-process sequence shards",
+      "Real wall-clock win: 1.4x at 2 workers and 1.8x at 4 workers even while fighting a live full L1 capture",
+      "Host was single-core bound; multi-worker converts idle CPU cores into concurrent host orchestrators feeding Metal",
+      "GPU contention caps gain below linear — still net positive, not cancelled"
+    ],
+    "how_to_run_full_scale_later": {
+      "pattern": "N processes with disjoint --seq-start/--seq-end, distinct --out-dir, same --limit/corpus/max-layer/max-seq-len, then merge_fullseq_capture_shards.py",
+      "example_2_workers_32_seqs": [
+        "worker0: --seq-start 0 --seq-end 16 --out-dir receipts/dsv4f_shard_w0 --worker-id w0",
+        "worker1: --seq-start 16 --seq-end 32 --out-dir receipts/dsv4f_shard_w1 --worker-id w1",
+        "merge: python3 tools/condense/merge_fullseq_capture_shards.py --out receipts/dsv4f_merged --worker receipts/dsv4f_shard_w0 --worker receipts/dsv4f_shard_w1"
+      ],
+      "coordinate": "Do not overlap with live v0-l1-capture-parallel or glm-floats-safe lanes; schedule after those finish or use disjoint GPU time."
+    },
+    "not_recommended": [
+      "Layer multi-worker sharding without residual handoff",
+      "Sharing one --out-dir across workers",
+      "Assuming 28-worker linear speedup (Metal + RAM will collapse efficiency)"
+    ]
+  },
+  "glm_teacher_forced_investigation": {
+    "status": "code_review_only_no_live_benchmark",
+    "path": "lab/operators/frankenstein_teacher_forced_executor.py",
+    "architecture": "Layer-major donor capture: stream one layer's weights, run that layer over ALL sequences (microbatch), seal carry, evict, advance. Double-buffer N-1/N/N+1 prefetch.",
+    "existing_parallelism_knobs": ["--microbatch", "--max-layers", "--no-prefetch", "--stream"],
+    "no_seq_start_end_today": true,
+    "bottleneck_character": "Different from DSV4F: weight-shard I/O + layer residency dominate (official MoE body is multi-hundred-GB streamed). Sequence multi-process would multiply weight streaming unless weights stay resident (--no-evict) and RAM allows. Intra-layer microbatch already amortizes a resident layer across sequences.",
+    "recommendation": "Do not copy DSV4F process-sharding blindly onto GLM. Prefer larger --microbatch and keeping the layer-major stream single-process; if multi-worker is attempted, shard sequences only with --no-evict and shared warm stream root, measure I/O amplification first. No multi-worker GLM change shipped in this task."
+  },
+  "code_changes": [
+    {
+      "path": "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+      "change": "Added --seq-start/--seq-end/--worker-id/--min-layer; shard provenance in receipt; skip shared repo receipt path when sharding; refuse min_layer>0"
+    },
+    {
+      "path": "tools/condense/merge_fullseq_capture_shards.py",
+      "change": "New merge tool: traces + npy concat + merged receipt with worker provenance"
+    },
+    {
+      "path": "FULLSEQ_CAPTURE_PARALLELISM_FINDINGS.json",
+      "change": "This seal"
+    }
+  ],
+  "tests_run": [
+    "cargo build -p hawking-core --release --example gravity_deepseek_v4_fullseq_capture (CARGO_TARGET_DIR=target-parallel)",
+    "CLI --help lists new flags",
+    "--min-layer 1 hard-errors as designed",
+    "Profile run: synthetic 4 seq max-layer 0 export (wall ~7.0s) + ioreg/ps sampling",
+    "Serial baseline: synthetic 4 seq max-layer 1 export (wall ~9.1s)",
+    "2-worker concurrent [0,2)+[2,4): wall 6.531s, merge, bit-exact npy+trace hashes vs serial",
+    "4-worker concurrent four singleton shards: wall 5.106s, merge, bit-exact vs serial",
+    "python3 -m py_compile tools/condense/merge_fullseq_capture_shards.py"
+  ],
+  "remaining_work": [
+    "Idle-machine remeasure of 1/2/4/8 workers on a larger slice (e.g. frozen L0 limit=32, max-layer=42, max-seq-len=3) to size production N without live-lane contention",
+    "Optional: amortize admit/prepare via a long-lived worker daemon (out of scope; process-per-shard is simpler and proven)",
+    "Optional residual handoff for true layer sharding (not needed if sequence sharding is used)",
+    "Wire a thin shell launcher (run_fullseq_sharded.sh) once production schedule is free of the live L1/GLM lanes",
+    "GLM: only if weight-resident multi-process is desired — add --seq-start/--seq-end after an I/O amplification study"
+  ],
+  "confidence": {
+    "overall": 0.86,
+    "correctness_bit_exact": 0.95,
+    "speedup_numbers_under_contention": 0.8,
+    "speedup_numbers_as_idle_machine_prediction": 0.65,
+    "glm_bottleneck_claim": 0.7,
+    "notes": "Correctness is high confidence (byte-identical npy + matching site hashes). Speedup is real but measured under a competing full-stack L1 capture; idle-machine speedups likely higher for 2w and possibly 4w. Production N still needs a clean remeasure."
+  }
+}
