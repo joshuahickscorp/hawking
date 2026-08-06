@@ -14,6 +14,12 @@ Contract:
     admission. Fail closed on mismatch.
   - 25 GiB free-space floor + source-only reclaim (unlink admitted shards only).
   - Double-buffer: prefetch N+1 while N executes.
+  - Multi-shard downloads run concurrently (default 4 workers). Measured GLM
+    official capture was download-bound at ~95–110 MiB/s/shard with only 2
+    workers and sequential ensure(); Kimi (96 shards, 1.56 TB) needs the
+    concurrency. The frozen public-path winner (194 MiB/s direct_presigned
+    range) is a different transport; this module stays on hf_hub_download but
+    applies the compatible HF_XET knobs and multi-file fan-out.
 """
 from __future__ import annotations
 
@@ -43,6 +49,10 @@ from lab.layout import EVIDENCE_ROOT
 
 
 MIN_FREE_FLOOR_BYTES = 25 * 1024**3
+# GLM layers average ~4.5 shards; 4 concurrent downloads saturates the ~200
+# MiB/s aggregate observed when two 100 MiB/s streams ran in parallel without
+# blowing the 2-layer double-buffer working set.
+DEFAULT_PREFETCH_WORKERS = int(os.environ.get("FRANK_PREFETCH_WORKERS", "4"))
 DEFAULT_STREAM_ROOT = Path(
     "/Users/scammermike/Library/Application Support/hawking/"
     "GLM52Gravity/stream_scratch"
@@ -55,6 +65,47 @@ DEFAULT_CONTROL_ROOT = Path(
 OFFICIAL_MANIFEST = (
     EVIDENCE_ROOT / "models" / "glm52" / "GLM52_OFFICIAL_MANIFEST.json"
 )
+# Compatible subset of the frozen public-path profile that applies to
+# official_hf_xet / hf_hub_download (not the custom direct_presigned transport).
+# Must be set before hf_xet is imported for full effect; setdefault so callers
+# can override.
+_PUBLIC_PATH_COMPAT_ENV: dict[str, str] = {
+    "HF_HUB_DISABLE_TELEMETRY": "1",
+    "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+    "HF_HUB_ENABLE_HF_TRANSFER": "0",
+    "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0",
+    "HF_XET_RECONSTRUCT_WRITE_SEQUENTIALLY": "false",
+    "HF_XET_RECONSTRUCTION_USE_VECTORED_WRITE": "true",
+    # High-performance single-file reconstruction + multi-range fan-out.
+    "HF_XET_HIGH_PERFORMANCE": "1",
+    "HF_XET_NUM_CONCURRENT_RANGE_GETS": os.environ.get(
+        "HF_XET_NUM_CONCURRENT_RANGE_GETS", "8"
+    ),
+    "HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS": os.environ.get(
+        "HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS", "4"
+    ),
+}
+
+
+def apply_public_path_compat_env() -> dict[str, str]:
+    """Apply HF/Xet knobs compatible with the frozen public-path winner profile.
+
+    The sustained winner (194 MiB/s) uses custom ``direct_presigned_range`` +
+    ``python_http11_reuse``. Full-shard capture stays on ``hf_hub_download``;
+    these knobs are the subset that still applies (vectored reconstruct, range
+    concurrency, no chunk-cache growth, high-performance). Returns the keys
+    that were newly set (previously unset).
+    """
+    newly: dict[str, str] = {}
+    for key, value in _PUBLIC_PATH_COMPAT_ENV.items():
+        if key not in os.environ:
+            os.environ[key] = value
+            newly[key] = value
+    return newly
+
+
+# Apply as early as import for processes that load this module before hub/xet.
+apply_public_path_compat_env()
 
 
 class LayerStreamError(Glm52Error):
@@ -151,14 +202,21 @@ class LayerMajorStreamer:
         revision: str = IMMUTABLE_REVISION,
         manifest_path: Path | None = None,
         require_floor: bool = True,
-        prefetch_workers: int = 2,
+        prefetch_workers: int | None = None,
     ) -> None:
+        # Env before any hub/xet import path this instance may trigger.
+        self._env_applied = apply_public_path_compat_env()
         self.control_root = Path(control_root).resolve()
         self.stream_root = Path(stream_root).resolve()
         self.repo = repo
         self.revision = revision
         self.require_floor = require_floor
-        self.prefetch_workers = max(1, int(prefetch_workers))
+        workers = (
+            DEFAULT_PREFETCH_WORKERS
+            if prefetch_workers is None
+            else int(prefetch_workers)
+        )
+        self.prefetch_workers = max(1, workers)
         self.lfs = load_official_lfs_hashes(manifest_path)
         self.events: list[dict[str, Any]] = []
         self.verified_hashes: dict[str, str] = {}
@@ -178,11 +236,6 @@ class LayerMajorStreamer:
                 f"model.safetensors.index.json absent at {self.control_root}"
             )
         self.stream_root.mkdir(parents=True, exist_ok=True)
-        # Point HF caches away from growing unbounded under $HOME when possible.
-        os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
-        os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
-        # Prefer direct Xet path; disable hf_transfer so we match the mapping.
-        os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "0")
 
         config = load_json_strict(self.control_root / "config.json")
         if not isinstance(config, dict):
@@ -199,6 +252,14 @@ class LayerMajorStreamer:
             self.shard_to_layers,
         ) = layer_to_shards_from_index(weight_map)
         self.weight_map: dict[str, str] = dict(weight_map)
+        self._log(
+            "STREAMER_INIT",
+            prefetch_workers=self.prefetch_workers,
+            public_path_compat_env_newly_set=sorted(self._env_applied),
+            public_path_compat_env_active={
+                k: os.environ.get(k) for k in _PUBLIC_PATH_COMPAT_ENV
+            },
+        )
 
     def _log(self, kind: str, **detail: Any) -> None:
         row = {"event": kind, "at": utc_now(), **detail}
@@ -322,18 +383,61 @@ class LayerMajorStreamer:
         self._log("SHARD_HASH_OK", shard=name, sha256=digest)
         return digest
 
+    def _submit_download(self, name: str, *, event: str) -> Future | None:
+        """Submit one shard download if not resident and not already in flight.
+
+        Returns the Future to join, or None when the shard is already on disk.
+        Thread-safe w.r.t. concurrent prefetch/ensure for the same name.
+        """
+        if name not in self.lfs:
+            raise LayerStreamError(f"unknown shard {name}")
+        with self._lock:
+            if name in self._prefetch_futures:
+                return self._prefetch_futures[name]
+            dest = self.stream_root / name
+            expected = self.lfs[name]["logical_bytes"]
+            if dest.is_file() and dest.stat().st_size == expected:
+                return None
+            fut = self._prefetch_pool.submit(self._download_one, name)
+            self._prefetch_futures[name] = fut
+        self._log(event, shard=name)
+        return fut
+
     def ensure(self, shards: Sequence[str] | Iterable[str]) -> list[dict[str, Any]]:
-        """Block until every named shard is resident and hash-verified."""
+        """Block until every named shard is resident and hash-verified.
+
+        In-flight prefetches and any still-missing shards are collected in
+        parallel on the prefetch pool (not serial). Correctness is unchanged:
+        every shard is LFS-sha256 verified before return.
+        """
         wanted = sorted(set(shards))
         results: list[dict[str, Any]] = []
-        # Wait for any in-flight prefetch first.
+        errors: list[BaseException] = []
+        pending: list[tuple[str, Future]] = []
+
         for name in wanted:
-            fut = self._prefetch_futures.pop(name, None)
+            fut = self._submit_download(name, event="ENSURE_SUBMIT")
             if fut is not None:
+                pending.append((name, fut))
+
+        for name, fut in pending:
+            with self._lock:
+                self._prefetch_futures.pop(name, None)
+            try:
                 results.append(fut.result())
-        still = self.missing(wanted)
-        for name in still:
-            results.append(self._download_one(name))
+            except BaseException as exc:  # noqa: BLE001 — aggregate then re-raise
+                errors.append(exc)
+                self._log(
+                    "ENSURE_FAIL",
+                    shard=name,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+
+        if errors:
+            raise LayerStreamError(
+                f"ensure failed for {len(errors)} shard(s): {errors[0]}"
+            ) from errors[0]
+
         # Final verify pass for anything already resident without a digest.
         for name in wanted:
             if name not in self.verified_hashes:
@@ -343,14 +447,7 @@ class LayerMajorStreamer:
     def prefetch(self, shards: Sequence[str] | Iterable[str]) -> None:
         """Kick off background downloads for shards not yet resident / in flight."""
         for name in sorted(set(shards)):
-            if name in self.resident() or name in self._prefetch_futures:
-                continue
-            if name not in self.lfs:
-                raise LayerStreamError(f"prefetch of unknown shard {name}")
-            self._prefetch_futures[name] = self._prefetch_pool.submit(
-                self._download_one, name
-            )
-            self._log("PREFETCH_SUBMIT", shard=name)
+            self._submit_download(name, event="PREFETCH_SUBMIT")
 
     def evict(self, shards: Sequence[str] | Iterable[str]) -> dict[str, Any]:
         """Source-only reclaim: unlink stream_root shards (never control assets)."""
@@ -426,9 +523,20 @@ class LayerMajorStreamer:
             "verified_hashes_head": dict(list(sorted(self.verified_hashes.items()))[:8]),
             "events_tail": self.events[-40:],
             "transport": "huggingface_hub.hf_hub_download",
+            "prefetch_workers": self.prefetch_workers,
+            "public_path_compat_env": {
+                k: os.environ.get(k) for k in _PUBLIC_PATH_COMPAT_ENV
+            },
+            "public_path_note": (
+                "Uses hf_hub_download with multi-shard concurrency + HF_XET knobs "
+                "compatible with the frozen public-path profile. Does NOT use the "
+                "custom direct_presigned_range python_http11_reuse transport "
+                "(194 MiB/s sustained winner) — that remains a separate path."
+            ),
             "not_used": [
                 "GLM52_STREAMING_SCHEDULE restream",
                 "glm-donor mapping cache as authority",
+                "direct_presigned_range python_http11_reuse (winner transport)",
             ],
         }
 
@@ -440,6 +548,7 @@ def ensure_control_assets(
     revision: str = IMMUTABLE_REVISION,
 ) -> Path:
     """Download config + index + tokenizer into a revision-bound control root."""
+    apply_public_path_compat_env()
     control_root = Path(control_root)
     control_root.mkdir(parents=True, exist_ok=True)
     from huggingface_hub import hf_hub_download

@@ -885,17 +885,54 @@ def _sample_positions(length: int) -> dict[str, int]:
 
 
 def _hidden_sample(hidden: np.ndarray, lengths: np.ndarray, width: int) -> dict[str, Any]:
-    """Bounded per-sequence samples + sufficient statistics."""
+    """Bounded per-sequence samples + sufficient statistics.
+
+    Fast path: when every sequence shares the same valid length (common after
+    pad/truncate to a frozen max), stats are fully vectorized. Variable-length
+    batches fall back to the original per-row loop. Outputs are bit-identical
+    for the equal-length case (see tests).
+    """
     batch, seq, dim = hidden.shape
     width = min(width, dim)
+    lengths_arr = np.asarray(lengths, dtype=np.int64)
+    if lengths_arr.shape[0] < batch:
+        # Pad missing lengths with full seq (defensive; callers pass full batch).
+        pad = np.full((batch - lengths_arr.shape[0],), seq, dtype=np.int64)
+        lengths_arr = np.concatenate([lengths_arr, pad], axis=0)
+    lengths_arr = lengths_arr[:batch]
+    lengths_arr = np.clip(lengths_arr, 1, seq)
+
+    if batch > 0 and np.all(lengths_arr == lengths_arr[0]):
+        L = int(lengths_arr[0])
+        slice_ = hidden[:, :L, :]
+        # Match the per-row loop: np.mean/var on float32 (numpy reduces in float64
+        # then casts back). Avoid a full float64 clone for L2 — einsum accumulates
+        # in float64 without materialising slice_**2.
+        means = np.asarray(np.mean(slice_, axis=1), dtype=np.float32)
+        vars_ = np.asarray(np.var(slice_, axis=1), dtype=np.float32)
+        l2 = np.sqrt(
+            np.einsum("bsh,bsh->b", slice_, slice_, dtype=np.float64)
+        ).astype(np.float32)
+        absmax = np.max(np.abs(slice_), axis=(1, 2)).astype(np.float32, copy=False)
+        pos = _sample_positions(L)
+        idx = [pos[slot] for slot in SAMPLE_TOKEN_SLOTS]
+        samples = slice_[:, idx, :width]
+        return {
+            "samples": samples,
+            "mean": means,
+            "var": vars_,
+            "l2": l2,
+            "absmax": absmax,
+            "sample_width": np.full((batch,), width, dtype=np.int32),
+        }
+
     samples = np.zeros((batch, len(SAMPLE_TOKEN_SLOTS), width), dtype=np.float32)
     means = np.zeros((batch, dim), dtype=np.float32)
     vars_ = np.zeros((batch, dim), dtype=np.float32)
     l2 = np.zeros((batch,), dtype=np.float32)
     absmax = np.zeros((batch,), dtype=np.float32)
     for b in range(batch):
-        L = int(lengths[b]) if b < len(lengths) else seq
-        L = max(1, min(L, seq))
+        L = int(lengths_arr[b])
         slice_ = hidden[b, :L]
         means[b] = np.mean(slice_, axis=0)
         vars_[b] = np.var(slice_, axis=0)
