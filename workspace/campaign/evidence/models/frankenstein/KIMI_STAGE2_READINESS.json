@@ -1,0 +1,64 @@
+{
+  "blocked_until_v0_seals": {
+    "boundary": "Actual Kimi streaming, capture, and training MUST NOT start until PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED. Design is two-stage, not simultaneous. Stage-2 loads the same DeepSeek body + Stage-1 adapters (Proto) and adds Kimi strategic adapters.",
+    "required_endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+    "still_requires": [
+      "complete 78-layer GLM teacher-forced official capture sealed",
+      "paired DSV4F path + measured correspondence",
+      "trained nonlinear GLM latent bridges + retention gates",
+      "full ablation G COMPLETE V0 beats linear init",
+      "loadable reversible Proto artifact",
+      "KIMI_STRATEGIC_BRIDGE left PRESERVED_UNTOUCHED by Stage-1",
+      "storage reclaim of GLM donor cache only (body stays)",
+      "disk floor re-check before first Kimi window",
+      "Kimi reference backend for teacher-forced decoder_layer",
+      "Kimi corpus materialization (L0/L1 jsonl) from KIMI_CORPUS_PLAN",
+      "live Kimi\u2194Proto correspondence measurement (replace phase estimates)",
+      "Stage-2 residual adapter training loop on strategic losses"
+    ]
+  },
+  "explicitly_not_done_this_lane": [
+    "no Kimi model bytes downloaded or streamed",
+    "no GPU use",
+    "no touch of dsv4f-fullseq-depth worktree",
+    "no touch of v0-correspondence-l0l1 files",
+    "no ramanujan / crates DSV4F runtime edits",
+    "no push/PR/remote"
+  ],
+  "generation_architecture": {
+    "local_free": true,
+    "stage_1": "GLM-5.2 -> DSV4F = Proto-Frankenstein (math full-latent)",
+    "stage_2": "Kimi-K3 -> Proto = Final Frankenstein (strategic/agentic)",
+    "stage_3": "Odyssey = Ramanujan (formal/verifier/sandbox)",
+    "two_stage_not_simultaneous": true
+  },
+  "kimi_source_pin": {
+    "admission_seal_sha256": "597ac05752f84c8fffc175255e64d0c56b976ef3c389a59cebabf322b4fa30b0",
+    "repository": "moonshotai/Kimi-K3",
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "weight_shard_bytes": 1560936091448,
+    "weight_shard_count": 96
+  },
+  "ready_now": {
+    "generalized_teacher_forced_executor": {
+      "architecture_config": true,
+      "cli": "tools/condense/frankenstein_teacher_forced_executor.py",
+      "existing_glm_tests": "tools/condense/tests/test_glm52_teacher_forced_executor.py",
+      "glm_binding": "GLM52_ARCHITECTURE (H=6144, L=78, MLA+DSA IndexShare, MoE 256/8)",
+      "glm_regression_tests": "tools/condense/tests/test_frankenstein_teacher_forced_generalized.py",
+      "glm_wrapper": "lab/operators/glm52_teacher_forced_executor.py",
+      "kimi_binding": "KIMI_K3_ARCHITECTURE (H=7168, L=93, hybrid KDA+full, MoE 896/16) \u2014 backend PENDING",
+      "module": "lab/operators/frankenstein_teacher_forced_executor.py"
+    },
+    "kimi_architecture_facts_fetched": true,
+    "kimi_corpus_plan": "workspace/campaign/evidence/models/frankenstein/KIMI_CORPUS_PLAN.json",
+    "kimi_stage2_streaming_plan": "workspace/campaign/evidence/models/frankenstein/KIMI_STAGE2_STREAMING_PLAN.md",
+    "kimi_strategic_bridge_contract": "workspace/campaign/evidence/models/frankenstein/KIMI_STRATEGIC_BRIDGE_CONTRACT.json",
+    "prior_stage2_plan_companion": "workspace/campaign/evidence/models/frankenstein/STAGE2_KIMI_STREAMING_DISTILL_PLAN.json",
+    "reclaim_script_keeps_deepseek_body": "workspace/campaign/records/runs/frankenstein/reclaim_storage_keep_proto.py"
+  },
+  "schema": "hawking.frankenstein.kimi_stage2_readiness.v1",
+  "seal_sha256": "bac83b48c6a6159703b1901c18883a62b1e2d02716fd3fe430721e9caa7e9d6a",
+  "sealed_at": "2026-08-05T23:57:52Z",
+  "status": "STAGE2_PREP_READY_V0_SEAL_REQUIRED_BEFORE_STREAM"
+}

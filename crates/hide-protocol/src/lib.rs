@@ -179,130 +179,35 @@ mod tests {
             created_ms: 4,
         }
     }
+    const ITEM_KINDS_JSON: &str = r#"[
+{"kind":"user_message","payload":{"attachments":[{"hash":"h","id":"blb_1","media_type":null,"size_bytes":3}],"text":"hello"}},
+{"kind":"agent_message","payload":{"text":"on it"}},
+{"kind":"reasoning_summary","payload":{"text":"considering three fixes"}},
+{"kind":"plan","payload":{"created_ms":1,"goal":"goal_1","id":"pln_1","steps":[{"acceptance_oracle":"orc_test","cost":{"tokens":1200,"usd_micros":null,"wall_ms":30000},"dependencies":[],"effects":["read_fs","shell"],"expected_artifacts":["repro.log"],"id":"stp_1","objective":"reproduce the flake","parallelizable":false,"rollback_boundary":{"kind":"none","reference":null},"scope":{"description":"the retry module only","network":false,"paths":["src/retry.ts"]}},{"acceptance_oracle":null,"cost":{"tokens":null,"usd_micros":null,"wall_ms":null},"dependencies":["stp_1"],"effects":["write_fs"],"expected_artifacts":[],"id":"stp_2","objective":"apply the fix","parallelizable":true,"rollback_boundary":{"kind":"checkpoint","reference":"ckpt_pre"},"scope":{"description":"the retry module only","network":false,"paths":["src/retry.ts"]}}]}},
+{"kind":"plan_mutation","payload":{"detail":null,"kind":"add_step","plan":"pln_1","step":"stp_3"}},
+{"kind":"context_receipt","payload":{"note":null,"sources":[{"name":"retry.ts","token_estimate":300,"trust":"workspace","uri":"file://retry.ts"}],"total_token_estimate":300}},
+{"kind":"tool_call","payload":{"arguments":{"cmd":"cargo test"},"call_id":"tcl_1","tool":"tool_bash"}},
+{"kind":"tool_result","payload":{"call_id":"tcl_1","error":null,"ok":true,"output":{"code":0}}},
+{"kind":"shell_stream","payload":{"call_id":"tcl_1","channel":"stdout","chunk":"running 12 tests"}},
+{"kind":"patch","payload":{"files":["retry.ts"],"patch_id":"p1","summary":"fix retry","unified_diff":"--- a\n+++ b\n"}},
+{"kind":"diff","payload":{"diff_id":"d1","hunks":[{"new_lines":3,"new_start":1,"old_lines":2,"old_start":1,"text":"@@"}],"path":"retry.ts","status":"proposed"}},
+{"kind":"approval_request","payload":{"action":"write retry.ts","detail":null,"effects":["write_fs"],"request_id":"apr_1","risk":"low"}},
+{"kind":"approval_result","payload":{"decision":"approved","reason":null,"request_id":"apr_1"}},
+{"kind":"verification_request","payload":{"oracle":"orc_test","request_id":"ver_1","target":"stp_2"}},
+{"kind":"verification_receipt","payload":{"detail":null,"oracle":"orc_test","outcome":"pass","request_id":"ver_1"}},
+{"kind":"artifact","payload":{"created_ms":3,"digest":"sha256:abc","id":"art_1","kind":"patch","name":"patch.diff","path":"out/patch.diff","produced_by":"stp_2","size_bytes":128}},
+{"kind":"checkpoint","payload":{"at_turn":"trn_1","capsule":{"capsule_id":"hs_cap_abc","created_ms":2,"digest":"blake3:deadbeef","id":"cap_1","model_id":"mdl_x","size_bytes":4096},"created_ms":4,"id":"ckpt_1","label":"pre-fix","session":"ses_1","thread":"thr_1","vcs_ref":"stash@{0}"}},
+{"kind":"state_capsule","payload":{"capsule_id":"hs_cap_abc","created_ms":2,"digest":"blake3:deadbeef","id":"cap_1","model_id":"mdl_x","size_bytes":4096}},
+{"kind":"agent_spawn","payload":{"agent":"agt_1","objective":"fix the flake","role":"fixer"}},
+{"kind":"agent_result","payload":{"agent":"agt_1","outcome":"success","summary":"green"}},
+{"kind":"steer","payload":{"directive":"keep the one that passes"}},
+{"kind":"interrupt","payload":{"reason":"stop"}},
+{"kind":"error","payload":{"code":"E1","message":"boom"}},
+{"kind":"completion","payload":{"status":"success","summary":null}},
+{"kind":"blocker","payload":{"code":"B1","message":"need a token","needs":"api key"}}
+]"#;
     fn one_item_per_kind() -> Vec<ItemKind> {
-        vec![
-            ItemKind::UserMessage(UserMessage {
-                text: "hello".into(),
-                attachments: vec![Attachment {
-                    id: "blb_1".into(),
-                    hash: "h".into(),
-                    size_bytes: 3,
-                    media_type: None,
-                }],
-            }),
-            ItemKind::AgentMessage(AgentMessage {
-                text: "on it".into(),
-            }),
-            ItemKind::ReasoningSummary(ReasoningSummary {
-                text: "considering three fixes".into(),
-            }),
-            ItemKind::Plan(sample_plan()),
-            ItemKind::PlanMutation(PlanMutation {
-                plan: PlanId::from("pln_1"),
-                kind: PlanMutationKind::AddStep,
-                step: Some(StepId::from("stp_3")),
-                detail: None,
-            }),
-            ItemKind::ContextReceipt(ContextReceipt {
-                sources: vec![ContextSource {
-                    name: "retry.ts".into(),
-                    uri: Some("file://retry.ts".into()),
-                    trust: Some("workspace".into()),
-                    token_estimate: Some(300),
-                }],
-                total_token_estimate: Some(300),
-                note: None,
-            }),
-            ItemKind::ToolCall(ToolCall {
-                call_id: ToolCallId::from("tcl_1"),
-                tool: ToolId::from("tool_bash"),
-                arguments: serde_json::json!({ "cmd": "cargo test" }),
-            }),
-            ItemKind::ToolResult(ToolResult {
-                call_id: ToolCallId::from("tcl_1"),
-                ok: true,
-                output: serde_json::json!({ "code": 0 }),
-                error: None,
-            }),
-            ItemKind::ShellStream(ShellStream {
-                call_id: Some(ToolCallId::from("tcl_1")),
-                channel: ShellChannel::Stdout,
-                chunk: "running 12 tests".into(),
-            }),
-            ItemKind::Patch(Patch {
-                patch_id: "p1".into(),
-                summary: Some("fix retry".into()),
-                files: vec!["retry.ts".into()],
-                unified_diff: "--- a\n+++ b\n".into(),
-            }),
-            ItemKind::Diff(Diff {
-                diff_id: "d1".into(),
-                path: "retry.ts".into(),
-                hunks: vec![DiffHunk {
-                    old_start: 1,
-                    old_lines: 2,
-                    new_start: 1,
-                    new_lines: 3,
-                    text: "@@".into(),
-                }],
-                status: DiffStatus::Proposed,
-            }),
-            ItemKind::ApprovalRequest(ApprovalRequest {
-                request_id: ApprovalId::from("apr_1"),
-                action: "write retry.ts".into(),
-                risk: Risk::Low,
-                effects: vec![Effect::WriteFs],
-                detail: None,
-            }),
-            ItemKind::ApprovalResult(ApprovalResult {
-                request_id: ApprovalId::from("apr_1"),
-                decision: ApprovalDecision::Approved,
-                reason: None,
-            }),
-            ItemKind::VerificationRequest(VerificationRequest {
-                request_id: VerificationId::from("ver_1"),
-                oracle: OracleId::from("orc_test"),
-                target: Some("stp_2".into()),
-            }),
-            ItemKind::VerificationReceipt(VerificationReceipt {
-                request_id: VerificationId::from("ver_1"),
-                oracle: OracleId::from("orc_test"),
-                outcome: VerificationOutcome::Pass,
-                detail: None,
-            }),
-            ItemKind::Artifact(sample_artifact()),
-            ItemKind::Checkpoint(sample_checkpoint()),
-            ItemKind::StateCapsule(sample_state_capsule_ref()),
-            ItemKind::AgentSpawn(AgentSpawn {
-                agent: AgentId::from("agt_1"),
-                role: "fixer".into(),
-                objective: "fix the flake".into(),
-            }),
-            ItemKind::AgentResult(AgentResult {
-                agent: AgentId::from("agt_1"),
-                outcome: CompletionStatus::Success,
-                summary: Some("green".into()),
-            }),
-            ItemKind::Steer(Steer {
-                directive: "keep the one that passes".into(),
-            }),
-            ItemKind::Interrupt(Interrupt {
-                reason: Some("stop".into()),
-            }),
-            ItemKind::Error(ErrorItem {
-                code: "E1".into(),
-                message: "boom".into(),
-            }),
-            ItemKind::Completion(Completion {
-                status: CompletionStatus::Success,
-                summary: None,
-            }),
-            ItemKind::Blocker(Blocker {
-                code: "B1".into(),
-                message: "need a token".into(),
-                needs: Some("api key".into()),
-            }),
-        ]
+        serde_json::from_str(ITEM_KINDS_JSON).expect("item kind fixtures")
     }
     fn sample_turn() -> Turn {
         let items = one_item_per_kind()
@@ -568,8 +473,14 @@ mod tests {
     fn version_negotiation_picks_the_highest_shared_by_server_preference() {
         let server = vec!["hide.agent.v2".to_string(), "hide.agent.v1".to_string()];
         let client = vec!["hide.agent.v1".to_string()];
- assert_eq!( negotiate_version(&client, &server), Some("hide.agent.v1".to_string()) );
-        assert_eq!(negotiate_version(&["hide.agent.v9".to_string()], &server), None);
+        assert_eq!(
+            negotiate_version(&client, &server),
+            Some("hide.agent.v1".to_string())
+        );
+        assert_eq!(
+            negotiate_version(&["hide.agent.v9".to_string()], &server),
+            None
+        );
     }
     #[test]
     fn capability_negotiation_ands_shared_flags() {
@@ -584,7 +495,10 @@ mod tests {
         let server = ServerCapabilities::full();
         let effective = negotiate_capabilities(&client, &server);
         assert!(effective.streaming, "both want streaming");
- assert!( !effective.subscriptions, "client did not opt into subscriptions" );
+        assert!(
+            !effective.subscriptions,
+            "client did not opt into subscriptions"
+        );
         assert!(effective.state, "server-only capability passes through");
     }
     #[test]
@@ -629,7 +543,8 @@ mod tests {
     fn method_serializes_as_its_slash_string() {
         let value = serde_json::to_value(Method::StateFork).unwrap();
         assert_eq!(value, serde_json::json!("state/fork"));
-        let back: Method = serde_json::from_value(serde_json::json!("thread/merge_summary")).unwrap();
+        let back: Method =
+            serde_json::from_value(serde_json::json!("thread/merge_summary")).unwrap();
         assert_eq!(back, Method::ThreadMergeSummary);
     }
     #[test]
@@ -641,10 +556,16 @@ mod tests {
         assert_eq!(cyclic.validate_dag(), Err(DagError::Cycle));
         let mut dangling = sample_plan();
         dangling.steps[0].dependencies = vec![StepId::from("stp_missing")];
- assert!(matches!( dangling.validate_dag(), Err(DagError::DanglingDependency { .. }) ));
+        assert!(matches!(
+            dangling.validate_dag(),
+            Err(DagError::DanglingDependency { .. })
+        ));
         let mut dup = sample_plan();
         dup.steps[1].id = StepId::from("stp_1");
- assert!(matches!( dup.validate_dag(), Err(DagError::DuplicateStepId(_)) ));
+        assert!(matches!(
+            dup.validate_dag(),
+            Err(DagError::DuplicateStepId(_))
+        ));
     }
     #[test]
     fn notification_method_tag_matches_serialized_form() {
@@ -658,4 +579,3 @@ mod tests {
 }
 
 pub mod sdk;
-

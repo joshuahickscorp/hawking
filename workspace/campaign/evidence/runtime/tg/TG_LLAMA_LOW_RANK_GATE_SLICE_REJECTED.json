@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.tg.llama_candidate_rejection.v1",
+  "candidate": "plain fp16 low-rank factorization of Llama FFN gate",
+  "status": "rejected_at_offline_capability_probe",
+  "source": {
+    "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "tensor": "blk.0.ffn_gate.weight",
+    "source_dtype": "Q4_K",
+    "sample_shape": [512, 4096],
+    "method": "torch.pca_lowrank q=256 niter=2 on CPU; offline source-slice proxy only"
+  },
+  "results": [
+    {"rank": 16, "relative_weight_error": 0.9373361453, "fp16_factor_bpw": 0.5625},
+    {"rank": 32, "relative_weight_error": 0.9010149309, "fp16_factor_bpw": 1.125},
+    {"rank": 64, "relative_weight_error": 0.8410754985, "fp16_factor_bpw": 2.25},
+    {"rank": 128, "relative_weight_error": 0.7389899822, "fp16_factor_bpw": 4.5},
+    {"rank": 256, "relative_weight_error": 0.5647539580, "fp16_factor_bpw": 9.0}
+  ],
+  "cause": "The sampled gate rows have no low-rank frontier that simultaneously lowers bytes/work and retains the source projection. Ranks small enough to meet the active-byte budget destroy the tensor; rank 256 remains high-error and exceeds the Q4 source storage rate on the sampled matrix.",
+  "reopen_condition": "Only a learned functional/student factorization evaluated with full continuation/logit capability evidence may reopen this branch. Plain source-SVD factors are not a same-model executable compression grammar."
+}

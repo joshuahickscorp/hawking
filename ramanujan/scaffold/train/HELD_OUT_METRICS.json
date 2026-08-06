@@ -1,0 +1,191 @@
+{
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "at": "2026-07-27T19:35:09Z",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "components": {
+    "formalizer": {
+      "baseline_test": null,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.7065868263473054,
+        "exact_match": 0.09580838323353294,
+        "majority_baseline_exact_match": 0.21756487025948104,
+        "majority_label": "exact ( rfl",
+        "n": 501,
+        "n_classes_train": 365,
+        "n_correct": 48,
+        "n_gold_in_train_vocab": 354
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.6807228915662651,
+        "exact_match": 0.10642570281124498,
+        "majority_baseline_exact_match": 0.178714859437751,
+        "majority_label": "exact ( rfl",
+        "n": 498,
+        "n_classes_train": 365,
+        "n_correct": 53,
+        "n_gold_in_train_vocab": 339
+      },
+      "held_out_test_lean": null,
+      "improved_vs_baseline": false,
+      "metric_definition": "Held-out exact match of predicted first-tactic / first proof line against D1 gold, closed over train-vocab classes (min_count=2).",
+      "source": "D1",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "trained": true
+    },
+    "prover": {
+      "baseline_test": null,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.4262295081967213,
+        "exact_match": 0.03278688524590164,
+        "majority_baseline_exact_match": 0.05942622950819672,
+        "majority_label": "rw [ \u2190",
+        "n": 488,
+        "n_classes_train": 381,
+        "n_correct": 16,
+        "n_gold_in_train_vocab": 208
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.4,
+        "exact_match": 0.04036697247706422,
+        "majority_baseline_exact_match": 0.04954128440366973,
+        "majority_label": "rw [ \u2190",
+        "n": 545,
+        "n_classes_train": 381,
+        "n_correct": 22,
+        "n_gold_in_train_vocab": 218
+      },
+      "held_out_test_lean": null,
+      "improved_vs_baseline": false,
+      "metric_definition": "Held-out exact match of predicted next tactic against D2 gold.",
+      "source": "D2",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "trained": true
+    },
+    "repair": {
+      "baseline_test": null,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.9333333333333333,
+        "exact_match": 0.14666666666666667,
+        "majority_baseline_exact_match": 0.41333333333333333,
+        "majority_label": "rfl",
+        "n": 75,
+        "n_classes_train": 178,
+        "n_correct": 11,
+        "n_gold_in_train_vocab": 70
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.8888888888888888,
+        "exact_match": 0.13333333333333333,
+        "majority_baseline_exact_match": 0.4,
+        "majority_label": "rfl",
+        "n": 90,
+        "n_classes_train": 178,
+        "n_correct": 12,
+        "n_gold_in_train_vocab": 80
+      },
+      "held_out_test_lean": {
+        "exact_match_on_lean_subset": 0.2,
+        "gold_fix_compiles": 0.1,
+        "lean_workers": 4,
+        "n_evaluated": 40,
+        "n_gold_compiles": 4,
+        "n_nat_basic": 6,
+        "n_predicted_compiles": 2,
+        "nat_basic_gold_compiles": 0.6666666666666666,
+        "nat_basic_predicted_compiles": 0.3333333333333333,
+        "note": "Compile under pinned Mathlib via lake env lean. Gold compile rate < 1 on non-Nat imports means the isolated example wrapper lacks typeclass context (honest ceiling). Nat.Basic subset is the fairer compile metric.",
+        "predicted_fix_compiles": 0.05
+      },
+      "improved_vs_baseline": false,
+      "metric_definition": "Held-out exact match of predicted fix_proof; plus Lean compile rate of predicted fixes under pinned Mathlib (lake env lean).",
+      "source": "D4",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "trained": true
+    },
+    "retriever": {
+      "baseline_test": {
+        "label": "token_overlap_baseline",
+        "mrr": 0.7140024961597542,
+        "n": 496,
+        "recall@1": 0.6108870967741935,
+        "recall@3": 0.7459677419354839,
+        "recall@5": 0.8326612903225806
+      },
+      "held_out_dev": {
+        "mrr": 0.9038033395176246,
+        "n": 539,
+        "recall@1": 0.8311688311688312,
+        "recall@3": 0.9777365491651205,
+        "recall@5": 1.0
+      },
+      "held_out_test": {
+        "mrr": 0.879459485407066,
+        "n": 496,
+        "recall@1": 0.7943548387096774,
+        "recall@3": 0.9556451612903226,
+        "recall@5": 0.9899193548387096
+      },
+      "held_out_test_lean": null,
+      "improved_vs_baseline": true,
+      "metric_definition": "For each test D3 item, rank positive_premises \u222a negative_premises by cosine of dual encoders; report recall@k (any positive in top-k) and MRR.",
+      "source": "D3",
+      "status": "TRAINED_AND_BEATS_BASELINE",
+      "trained": true
+    },
+    "value": {
+      "baseline_test": null,
+      "held_out_dev": {
+        "closed_accuracy": 0.9631147540983607,
+        "majority_closed_baseline_accuracy": 0.7295081967213115,
+        "n": 488,
+        "remaining_steps_mae": 1.7425131358734294,
+        "train_closed_rate": 0.2914040982723236
+      },
+      "held_out_test": {
+        "closed_accuracy": 0.9688073394495413,
+        "majority_closed_baseline_accuracy": 0.7009174311926606,
+        "n": 545,
+        "remaining_steps_mae": 1.5375785503206574,
+        "train_closed_rate": 0.2914040982723236
+      },
+      "held_out_test_lean": null,
+      "improved_vs_baseline": true,
+      "metric_definition": "Held-out accuracy of P(state_after.closed) and MAE of len(state_after.remaining_tactics) from state_before.goal only.",
+      "source": "D2",
+      "status": "TRAINED_AND_BEATS_MAJORITY",
+      "trained": true
+    }
+  },
+  "converged_components": [
+    "retriever",
+    "value"
+  ],
+  "device": "cpu",
+  "did_not_train": [],
+  "membership_path": "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json",
+  "membership_sha256": "c0c13806a1f14553dfa3cdafa747071a088c084e7c462230ed83f1f9011675ce",
+  "note": "All metrics are on the frozen TEST membership unless labeled otherwise. No train-split numbers are reported as held-out. 'converged' means the held-out metric strictly beats the stated baseline (token-overlap for retriever; majority class for classifiers/value).",
+  "schema": "hawking.ramanujan.held_out_metrics.v1",
+  "still_scaffold": [
+    "end_to_end_search_policy",
+    "composer_solver_curriculum",
+    "preference_rl_from_verifier",
+    "hidden_rediscovery_D8",
+    "frontier_variant_D9",
+    "math_preserve_teacher_distillation",
+    "seq2seq_proof_generation_beyond_closed_vocab",
+    "interactive_lean_state_value_from_real_goals"
+  ],
+  "trained_but_did_not_converge": [
+    "formalizer",
+    "prover",
+    "repair"
+  ],
+  "trained_components": [
+    "retriever",
+    "formalizer",
+    "prover",
+    "repair",
+    "value"
+  ]
+}

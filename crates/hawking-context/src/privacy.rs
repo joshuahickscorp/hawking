@@ -148,7 +148,9 @@ pub struct NetworkCapableHandle {
 
 impl NetworkCapableHandle {
     /// Construct a network-capable handle. **Fails at construction**, not on use.
-    pub fn try_construct(policy: &PrivacyPolicy) -> std::result::Result<Self, PrivacyBoundaryError> {
+    pub fn try_construct(
+        policy: &PrivacyPolicy,
+    ) -> std::result::Result<Self, PrivacyBoundaryError> {
         if !policy.allows_network() {
             return Err(PrivacyBoundaryError {
                 handle: "NetworkCapableHandle".into(),
@@ -167,7 +169,9 @@ pub struct ConnectorCapableHandle {
 }
 
 impl ConnectorCapableHandle {
-    pub fn try_construct(policy: &PrivacyPolicy) -> std::result::Result<Self, PrivacyBoundaryError> {
+    pub fn try_construct(
+        policy: &PrivacyPolicy,
+    ) -> std::result::Result<Self, PrivacyBoundaryError> {
         if !policy.allows_connectors() {
             return Err(PrivacyBoundaryError {
                 handle: "ConnectorCapableHandle".into(),
@@ -188,7 +192,9 @@ pub struct EncryptedVaultHandle {
 }
 
 impl EncryptedVaultHandle {
-    pub fn try_construct(policy: &PrivacyPolicy) -> std::result::Result<Self, PrivacyBoundaryError> {
+    pub fn try_construct(
+        policy: &PrivacyPolicy,
+    ) -> std::result::Result<Self, PrivacyBoundaryError> {
         if !policy.requires_encrypted_vault() {
             return Err(PrivacyBoundaryError {
                 handle: "EncryptedVaultHandle".into(),
@@ -245,7 +251,8 @@ impl PrivacySession {
     }
 
     fn check_vault_scope(&self, draft: &ClassMemoryDraft) -> Result<()> {
-        if draft.scope == Some(PersonalScope::PrivateVault) && self.policy.requires_encrypted_vault()
+        if draft.scope == Some(PersonalScope::PrivateVault)
+            && self.policy.requires_encrypted_vault()
         {
             // Callers must use write_*_vault with EncryptedVaultHandle.
             return Err(HideError::CapabilityMissing(
@@ -396,12 +403,7 @@ mod tests {
         let session = PrivacySession::new("eph-sess-1", policy);
         let tcap = TurnWriteCap::new("t1");
         session
-            .write_working(
-                &mem,
-                &tcap,
-                "kernel",
-                ClassMemoryDraft::new("scratch only"),
-            )
+            .write_working(&mem, &tcap, "kernel", ClassMemoryDraft::new("scratch only"))
             .unwrap();
         assert_eq!(mem.list_working("t1").len(), 1);
         assert!(session

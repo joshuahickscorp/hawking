@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_ARTIFACT_TOKENIZER_CACHE_AND_TEMP_PURGED_FREE_BYTES_RECOVERED",
+  "at": "2026-08-01T22:10:00Z",
+  "family": "qwen",
+  "scope": "bounded Qwen source-preserving Gravity Metal reprobe only; this does not complete the Qwen large-family campaign or promote a TG rung",
+  "terminal_receipt": "evidence/tg/QWEN0P5_SOURCE_PRESERVING_GRAVITY_METAL_REPROBE_2026_08_01.json",
+  "removed": [
+    {"path": "models/qwen0p5-gravity-probe2/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf", "bytes": 397808192, "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653", "classification": "official Qwen source body"},
+    {"path": "models/qwen0p5-gravity-probe2/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity", "bytes": 391949878, "sha256": "0ddec965e7b25cf012dea1f4bc1bc20dab176494cc15606d9e6dbeee92a78c42", "classification": "pre-description-update executable artifact"},
+    {"path": "models/qwen0p5-gravity-probe2/Qwen2.5-0.5B-Instruct-Q4_K_M.source-v2.gravity", "bytes": 391949878, "sha256": "0ddec965e7b25cf012dea1f4bc1bc20dab176494cc15606d9e6dbeee92a78c42", "classification": "final source-preserving executable artifact"},
+    {"path": "models/qwen0p5-gravity-probe2/tokenizer/tokenizer.json", "bytes": 7031645, "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539", "classification": "hash-bound tokenizer"},
+    {"path": "models/qwen0p5-gravity-probe2/.cache and .hf-home", "classification": "campaign-local Hub metadata, lock, and Xet diagnostic log"},
+    {"path": "five exact /tmp pack, Metal, and CPU diagnostics", "bytes": 6829, "classification": "transcribed bounded campaign diagnostics"}
+  ],
+  "trash": {
+    "exact_items": [
+      "/Users/scammermike/.Trash/qwen0p5-gravity-probe2",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-reprobe-pack.json",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-reprobe-metal.log",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-reprobe-pack-v2.json",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-reprobe-metal-v2.log",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-reprobe-cpu-v2.log"
+    ],
+    "other_trash_items_touched": false,
+    "purge_method": "Finder delete applied only to the six exact item names",
+    "exact_items_permanently_purged": true,
+    "postcondition": "each exact Trash path was absent after the Finder operation"
+  },
+  "filesystem": {
+    "free_before_bytes": 379117031424,
+    "free_after_bytes": 380303609856,
+    "recovered_bytes": 1186578432,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 180297720300,
+    "recovery_interpretation": "the source staging tree and exact Trash items were absent and free space increased by 1186578432 bytes in the immediate samples. The small difference from logical file totals is attributable to ordinary filesystem activity and allocation accounting; this is a recovery proof, not an assertion of a byte-for-byte df identity."
+  },
+  "postconditions": {
+    "source_staging_absent": true,
+    "source_body_absent": true,
+    "all_artifacts_absent": true,
+    "tokenizer_cache_and_temp_absent": true,
+    "model_lane_contents": [],
+    "green_light_status_after_eviction": "STORAGE_GREEN",
+    "current_free_bytes_after_status": 380303040512,
+    "restream_started": false,
+    "owner_controlled_gates_changed": false
+  },
+  "cold_upload": {"performed": false, "reason": "no configured remote destination or owner upload authority"}
+}

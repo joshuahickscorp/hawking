@@ -54,7 +54,9 @@ fn multiseq_decode(engine: &mut RwkvSeven, slot: usize, prompt_ids: &[u32]) -> V
     let mut cur = first;
     let mut seq = vec![cur];
     for step in 1..N_DECODE {
-        let logits = engine.forward_multiseq_batched(&[cur], &[prompt_len + step - 1], &[slot]).expect("multiseq decode step");
+        let logits = engine
+            .forward_multiseq_batched(&[cur], &[prompt_len + step - 1], &[slot])
+            .expect("multiseq decode step");
         cur = argmax(&logits[0]);
         seq.push(cur);
     }
@@ -64,13 +66,18 @@ fn run_parity(slot: usize) {
     let Some(mut engine) = load() else {
         return;
     };
-    let prompt_ids = engine.encode_prompt_for_batch("The capital of France is").expect("encode prompt");
+    let prompt_ids = engine
+        .encode_prompt_for_batch("The capital of France is")
+        .expect("encode prompt");
     assert!(!prompt_ids.is_empty(), "empty prompt_ids");
     let eos = engine.eos_id_for_batch();
     let solo = solo_gpu_decode(&mut engine, &prompt_ids);
     let multi = multiseq_decode(&mut engine, slot, &prompt_ids);
     if let Some(e) = eos {
-        assert_ne!(multi[0], e, "served first token is an immediate EOS (slot={slot}) — the serve prefill/handoff bug");
+        assert_ne!(
+            multi[0], e,
+            "served first token is an immediate EOS (slot={slot}) — the serve prefill/handoff bug"
+        );
     }
     assert_eq!(
         solo, multi,

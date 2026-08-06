@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
     pub(crate) fn publish_memory(&self, kind: &str, record: &MemoryRecord) {
@@ -198,8 +198,8 @@ impl BackendHost {
         goal_id: Option<String>,
         budget: Budget,
     ) -> Result<JobRecord> {
-        let mut job =
-            JobRecord::pending(session.clone(), vec![Trigger::Manual], budget).with_run(run_id.as_str());
+        let mut job = JobRecord::pending(session.clone(), vec![Trigger::Manual], budget)
+            .with_run(run_id.as_str());
         // The run is already executing: the promoted job is Running, not Pending.
         job.status = JobStatus::Running;
         if let Some(goal) = goal_id {
@@ -469,10 +469,7 @@ impl BackendHost {
             let reason = if resolved {
                 "all citations resolve against the repo on disk".to_string()
             } else {
-                format!(
-                    "citation(s) no longer resolve: {}",
-                    unresolved.join(", ")
-                )
+                format!("citation(s) no longer resolve: {}", unresolved.join(", "))
             };
             out.push(MemoryRevalidation {
                 memory_id: record.memory_id,
@@ -529,8 +526,12 @@ impl BackendHost {
         parent: SessionId,
         summary_text: impl Into<String>,
     ) -> Result<Event> {
-        self.merge_side_chat_result(side_chat, parent, SideChatResult::summary_only(summary_text))
-            .await
+        self.merge_side_chat_result(
+            side_chat,
+            parent,
+            SideChatResult::summary_only(summary_text),
+        )
+        .await
     }
 
     /// Side-chat lifecycle -- MERGE a CONCISE TYPED result (bible sec 32-33, sec

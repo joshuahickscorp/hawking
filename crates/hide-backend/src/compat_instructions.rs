@@ -21,11 +21,11 @@
 use std::collections::HashSet;
 use std::path::Path;
 
+use crate::compat::layout::Layout;
+use crate::compat::CompatConfig;
 use futures::future::BoxFuture;
 use hawking_context::compiler::{CompileInput, ContextCandidate, ContextSource};
 use hawking_context::manifest::{ContextSourceKind, PinState};
-use crate::compat::layout::Layout;
-use crate::compat::CompatConfig;
 use hide_core::error::Result;
 use hide_core::types::{Provenance, TrustLevel};
 
@@ -260,7 +260,10 @@ mod tests {
         let resolved = resolve_repo_instructions_for_root(&root);
         assert!(!resolved.is_empty(), "root CLAUDE.md must resolve");
         assert!(resolved.text.contains("RULE_ALPHA_TOKEN"));
-        assert!(resolved .files .iter() .any(|f| f.path.ends_with("CLAUDE.md") && f.kind == "project"));
+        assert!(resolved
+            .files
+            .iter()
+            .any(|f| f.path.ends_with("CLAUDE.md") && f.kind == "project"));
         let _ = std::fs::remove_dir_all(root);
     }
     #[tokio::test]
@@ -290,7 +293,11 @@ mod tests {
             .find(|s| s.provenance.source == "compat_instructions")
             .expect("compat instruction span retained");
         assert_eq!(span.source, ContextSourceKind::System);
-        assert!(span.provenance.derived_from.iter().any(|p| p.ends_with("CLAUDE.md")));
+        assert!(span
+            .provenance
+            .derived_from
+            .iter()
+            .any(|p| p.ends_with("CLAUDE.md")));
         let _ = std::fs::remove_dir_all(root);
     }
     #[test]
@@ -330,7 +337,11 @@ mod tests {
             .find("RULE_LAYER_TOKEN")
             .expect("rule layer present");
         assert!(root_at < nested_at);
- assert!( nested_at < rule_at, "un-scoped rules load after memory; text: {}", resolved.text );
+        assert!(
+            nested_at < rule_at,
+            "un-scoped rules load after memory; text: {}",
+            resolved.text
+        );
         assert_eq!(resolved.files.len(), 3, "receipt: {:?}", resolved.files);
         let _ = std::fs::remove_dir_all(root);
     }

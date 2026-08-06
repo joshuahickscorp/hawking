@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.tg.same_model_gravity_sweep_result.v1",
+  "status": "REJECTED_NO_CLEAN_WALL_WIN",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct-Q4_K_M",
+  "artifact": "models/tg-active/qwen32-gravity-first-2026-08-02/qwen32-source.gravity",
+  "source_sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+  "preregistration": "evidence/tg/TG32_QWEN32_GRAVITY_SINGLE_LEVER_PREREGISTRATION_2026_08_02.json",
+  "protocol": {
+    "device": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "complete_tokens": 16,
+    "temperature": 0,
+    "profile": "exact",
+    "conventional_decode_seed": true,
+    "continuation_sha256": "0f6bf857b52d9c9c3c97c06d7af21086eb869e09d3b07c1e043892d9bd4216d7",
+    "fallback": 0
+  },
+  "control": {
+    "tps": 22.29238130003595,
+    "p50_ms": 45.019791,
+    "p95_ms": 46.0327418,
+    "p99_ms": 46.05271476,
+    "dispatches_per_forward": 1026
+  },
+  "candidates": [
+    {
+      "id": "gravity-q4-predec-only",
+      "environment": "HAWKING_GRAVITY_Q4_PREDEC=1",
+      "tps": 22.163557190762447,
+      "p50_ms": 45.187333,
+      "p95_ms": 46.2354707,
+      "p99_ms": 46.38762774,
+      "dispatches_per_forward": 1026,
+      "continuation_match": true,
+      "raw_stderr": "evidence/tg/raw/TG32_QWEN32_GRAVITY_PREDEC_ONLY_16_2026_08_02.stderr"
+    },
+    {
+      "id": "gravity-fused-qkv-only",
+      "environment": "HAWKING_GRAVITY_FUSED_QKV=1",
+      "tps": 21.02709043700291,
+      "p50_ms": 47.373208,
+      "p95_ms": 48.9829329,
+      "p99_ms": 49.03841938,
+      "dispatches_per_forward": 578,
+      "continuation_match": true,
+      "raw_stderr": "evidence/tg/raw/TG32_QWEN32_GRAVITY_FUSED_ONLY_16_2026_08_02.stderr"
+    },
+    {
+      "id": "gravity-fused-qkv-plus-predec",
+      "environment": "HAWKING_GRAVITY_FUSED_QKV=1 HAWKING_GRAVITY_Q4_PREDEC=1",
+      "tps": 21.092025562128846,
+      "p50_ms": 47.348417,
+      "p95_ms": 48.6651957,
+      "p99_ms": 49.53387274,
+      "dispatches_per_forward": 578,
+      "continuation_match": true,
+      "raw_stderr": "evidence/tg/raw/TG32_QWEN32_GRAVITY_FUSED_QKV_PREDEC_PARITY_16_2026_08_02.stderr"
+    }
+  ],
+  "decision": {
+    "promoted": false,
+    "target_rung": "TG32",
+    "target_tps": 31.25,
+    "binding_finding": "Lower dispatch count did not lower complete-token wall time; fusion is register/synchronization bound on this M3 Ultra geometry and predecode adds residency without a win.",
+    "next_representation_change": "activation-aware or layer-protected executable Gravity codebooks with a parity contract; do not retry these flags unchanged"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

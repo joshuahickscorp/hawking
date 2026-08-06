@@ -12,8 +12,8 @@
 use serde_json::Value;
 
 use hide_protocol::item::{
-    ApprovalRequest, Diff as HideDiff, DiffStatus, ItemKind, Patch, ShellStream, ToolCall as HideToolCall,
-    ToolResult,
+    ApprovalRequest, Diff as HideDiff, DiffStatus, ItemKind, Patch, ShellStream,
+    ToolCall as HideToolCall, ToolResult,
 };
 use hide_protocol::model::Risk;
 use hide_protocol::plan::{Effect, Plan};
@@ -87,7 +87,10 @@ impl ProjectHideToAcp {
     where
         I: IntoIterator<Item = &'a Item>,
     {
-        items.into_iter().flat_map(|i| self.project_item(i)).collect()
+        items
+            .into_iter()
+            .flat_map(|i| self.project_item(i))
+            .collect()
     }
 
     /// Project a server notification (the streaming form). `item/added` and
@@ -135,7 +138,9 @@ impl ProjectHideToAcp {
                 vec![self.update(update)]
             }
             ItemKind::Plan(p) => vec![self.update(self.plan_update(p))],
-            ItemKind::ToolCall(tc) => vec![self.update(SessionUpdate::ToolCall(self.tool_call(tc)))],
+            ItemKind::ToolCall(tc) => {
+                vec![self.update(SessionUpdate::ToolCall(self.tool_call(tc)))]
+            }
             ItemKind::ToolResult(tr) => {
                 vec![self.update(SessionUpdate::ToolCallUpdate(self.tool_result(tr)))]
             }
@@ -281,7 +286,10 @@ impl ProjectHideToAcp {
             .collect();
         ToolCall {
             tool_call_id: AcpToolCallId::new(&p.patch_id),
-            title: p.summary.clone().unwrap_or_else(|| "Proposed edit".to_string()),
+            title: p
+                .summary
+                .clone()
+                .unwrap_or_else(|| "Proposed edit".to_string()),
             kind: ToolKind::Edit,
             status: ToolCallStatus::Pending,
             content,
@@ -368,9 +376,15 @@ fn tool_kind_for(tool: &str) -> ToolKind {
 
 /// Choose an ACP tool kind for an approval from its declared effects.
 fn kind_for_effects(effects: &[Effect], _risk: Risk) -> ToolKind {
-    if effects.iter().any(|e| matches!(e, Effect::WriteFs | Effect::Vcs)) {
+    if effects
+        .iter()
+        .any(|e| matches!(e, Effect::WriteFs | Effect::Vcs))
+    {
         ToolKind::Edit
-    } else if effects.iter().any(|e| matches!(e, Effect::Shell | Effect::Process)) {
+    } else if effects
+        .iter()
+        .any(|e| matches!(e, Effect::Shell | Effect::Process))
+    {
         ToolKind::Execute
     } else if effects.iter().any(|e| matches!(e, Effect::Network)) {
         ToolKind::Fetch

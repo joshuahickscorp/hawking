@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.tg.large_family_k0_residency_blocker.v1",
+  "status": "SEALED_PRE_DISPATCH_WHOLE_SOURCE_RESIDENCY_AND_SWAP_BLOCKER_NO_TG_RUNG",
+  "family": "qwen",
+  "rung": "TG32",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "full_body_sha256_verified": true
+  },
+  "admission": {
+    "unified_floor_bytes": 200005889556,
+    "scratch_reserve_bytes": 26843545600,
+    "model_lane_file_count_before": 0,
+    "result": "ADMITTED"
+  },
+  "command": {
+    "metal_required": true,
+    "q4k_predecode": false,
+    "prefix_cache": false,
+    "batch_prefill": false,
+    "first_dispatch_trace": true,
+    "prompt": "2+2=",
+    "max_new_tokens": 1,
+    "max_seq_len": 64,
+    "max_stall_ms": 60000
+  },
+  "observed": {
+    "process_elapsed_before_controlled_termination_seconds": 883,
+    "peak_rss_kib_observed": 42879872,
+    "peak_swap_mib_observed": 23438.12,
+    "generated_tokens": 0,
+    "completed_gpu_dispatches": 0,
+    "cpu_fallback": "NOT_CLAIMED; no completed forward occurred",
+    "device_identity": "NOT_CLAIMED; first encoder/dispatch trace stage was never reached",
+    "terminal_stage": "whole-source load/residency construction before first traced command-buffer creation",
+    "termination": "controller SIGTERM to protect host swap and filesystem safety; this is diagnostic-only and not a performance benchmark"
+  },
+  "classification": {
+    "clean": false,
+    "tg_claim": "NONE",
+    "gravity_claim": "NONE",
+    "capability_claim": "NONE",
+    "exact_blocker": "The direct 72B Q4_K_M path requires a whole-source residency/load phase that drove host swap to 23.4 GiB before a first command buffer, encoder, dispatch, completion, or token. A page/range-scheduled executable Gravity representation with a bounded resident working set is required before another 72B direct-path attempt."
+  },
+  "eviction": {
+    "source_sha256_rechecked_before_evict": true,
+    "active_lane_absent_after_evict": true,
+    "exact_trash_item_purged": true,
+    "temporary_hf_and_xet_caches_purged": true,
+    "free_bytes_before": 336817737728,
+    "free_bytes_after": 384244064256,
+    "recovered_bytes": 47426326528,
+    "recovery_verdict": "PASS"
+  },
+  "seal_sha256": "7c122430a584ba0a6872ac4224471835b15a94fa95265ee19215f060b41c4906"
+}

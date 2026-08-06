@@ -1,5 +1,5 @@
 /*
-  ChatPane.tsx — the right-hand AI pane (Cursor's chat panel). A VS Code-style header (title + model +
+  ChatPane.tsx — the right-hand AI pane. A flat header (title + model +
   pop-to-chat + new-chat + float + close) over the Chat surface. Resizable: drag the left edge to size it
   for the moment (shrink down to just the composer). Width persists.
 */

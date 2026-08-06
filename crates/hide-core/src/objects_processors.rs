@@ -152,12 +152,7 @@ impl Thumbnailer for FakeThumbnailer {
         "FakeThumbnailer"
     }
 
-    fn thumbnail(
-        &self,
-        kind: ObjectKind,
-        mime: &str,
-        body: &[u8],
-    ) -> Option<BinaryDerivativeOut> {
+    fn thumbnail(&self, kind: ObjectKind, mime: &str, body: &[u8]) -> Option<BinaryDerivativeOut> {
         // Only for kinds that usually get a visual proxy.
         if !matches!(
             kind,

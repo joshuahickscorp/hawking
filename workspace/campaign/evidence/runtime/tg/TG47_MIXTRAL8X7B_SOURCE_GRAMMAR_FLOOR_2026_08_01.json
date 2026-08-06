@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.tg.large_family_terminal_floor.v1",
+  "status": "SEALED_SOURCE_REFERENCE_GRAMMAR_BLOCKER_NO_TG_RUNG",
+  "family": "mistral_mixtral",
+  "model": {
+    "name": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+    "total_parameters": "46.7B",
+    "active_parameters": "12.9B",
+    "license": "Apache-2.0 (official Mistral source model card)",
+    "source": {
+      "repo": "TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF",
+      "revision": "fa1d3835c5d45a3a74c0b68805fcdc133dba2b6a",
+      "path": "models/tg-active/mixtral8x7b/mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf",
+      "bytes": 26441533376,
+      "sha256": "9193684683657e90707087bd1ed19fd0b277ab66358d19edeadc26d6fdec4f53"
+    },
+    "transfer": {
+      "mode": "official Hugging Face Xet high-performance",
+      "requested_workers": 4,
+      "chunk_cache_bytes": 0,
+      "download_result": "complete_exact_size_and_sha256"
+    }
+  },
+  "g0_source_and_reference": {
+    "hawking_doctor": {
+      "result": "PARSE_PASS_ONLY",
+      "architecture": "llama",
+      "tensors": 995,
+      "hidden": 4096,
+      "layers": 32,
+      "kv_heads": 8
+    },
+    "llama_cpp_b9430": {
+      "result": "FAIL_BEFORE_FIRST_FORWARD",
+      "error": "missing tensor 'blk.0.ffn_down_exps.weight'",
+      "stage": "llama_model_load",
+      "generated_tokens": 0,
+      "gpu_dispatches": 0
+    },
+    "verdict": "NO_SOURCE_AUTHORITY; Hawking inference and all TPS/capability gates are blocked"
+  },
+  "roofline": {
+    "deepest_honest_rung": "NONE",
+    "first_failing_rung": "TG32",
+    "binding_failure": "Current llama.cpp b9430 cannot load this exact historical GGUF tensor grammar, so no independent source reference exists.",
+    "next_representation_change": "Admit a current Mixtral GGUF whose tensor grammar passes the current llama.cpp source load before any Hawking sparse/router experiment."
+  },
+  "promotion_gates": {
+    "source_hash": true,
+    "source_reference_load": false,
+    "hawking_complete_token": false,
+    "clean_lease": false,
+    "tg32": false,
+    "tg1": false
+  },
+  "rotation": {
+    "condition": "B",
+    "result": "measured source/reference grammar blocker sealed",
+    "eviction_required_before_next_family": true
+  },
+  "eviction": {
+    "active_lane_path": "models/tg-active/mixtral8x7b",
+    "active_lane_absent_after_eviction": true,
+    "trash_item_identity": "file:///Users/scammermike/.Trash/mixtral8x7b/",
+    "trash_item_purged": true,
+    "unrelated_trash_items_preserved": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ],
+    "free_bytes_before": 360719040512,
+    "free_bytes_after": 387196530688,
+    "recovered_bytes": 26477490176,
+    "source_lane_bytes_before": 26441533376,
+    "recovery_verdict": "PASS"
+  }
+}

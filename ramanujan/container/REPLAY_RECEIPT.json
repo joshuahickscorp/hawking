@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.ramanujan.clean_proof_replay_receipt.v1",
+  "at": "2026-08-01T19:10:32Z",
+  "status": "REPLAY_OK",
+  "exit_code": 0,
+  "image": "ramanujan-clean-replay:2ec0166b",
+  "image_id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
+  "capsule": "/Users/scammermike/Downloads/hawking/ramanujan/container/capsules/two_plus_two.capsule.json",
+  "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+  "network": "none",
+  "host_state": "none (capsule bind-mounted read-only; no host toolchain mounts)",
+  "contract": "a Tier 3 claim must be re-provable from its capsule in a container built only from the lock, with no network and no host state"
+}

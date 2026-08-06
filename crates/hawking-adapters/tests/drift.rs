@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use hawking_adapters::generate::{generate_all, repo_root_artifacts};
+use std::path::PathBuf;
 fn crate_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
@@ -32,7 +32,11 @@ fn generated_artifacts_match_checked_in() {
             ));
         }
     }
- assert!( failures.is_empty(), "generated artifact drift:\n{}", failures.join("\n") );
+    assert!(
+        failures.is_empty(),
+        "generated artifact drift:\n{}",
+        failures.join("\n")
+    );
 }
 #[test]
 fn adapter_deliverables_live_under_generated_only() {
@@ -62,7 +66,11 @@ fn adapter_deliverables_live_under_generated_only() {
             ));
         }
     }
- assert!( failures.is_empty(), "adapter deliverable placement/drift:\n{}", failures.join("\n") );
+    assert!(
+        failures.is_empty(),
+        "adapter deliverable placement/drift:\n{}",
+        failures.join("\n")
+    );
 }
 #[test]
 fn regenerating_produces_no_diff() {
@@ -102,7 +110,10 @@ fn you_events_present_in_canonical_export() {
         "ProjectUpdated",
         "HandoffCreated",
     ] {
- assert!( names.contains(&expected), "missing YOU event {expected} in export" );
+        assert!(
+            names.contains(&expected),
+            "missing YOU event {expected} in export"
+        );
     }
     let envelope = doc["chosen_model"]["envelope_fields"]
         .as_array()
@@ -115,7 +126,10 @@ fn you_events_present_in_canonical_export() {
         "subsystem",
         "verification",
     ] {
- assert!( envelope.iter().any(|v| v.as_str() == Some(field)), "envelope missing {field}" );
+        assert!(
+            envelope.iter().any(|v| v.as_str() == Some(field)),
+            "envelope missing {field}"
+        );
     }
     assert_eq!(doc["category_count"], 24);
 }
@@ -130,7 +144,9 @@ fn cli_surface_lists_registry_families() {
     let r = hawking_adapters::builtin_registry();
     assert_eq!(families.len(), r.families().count());
     for d in r.families() {
-        assert!(families.iter().any(|f| f["id"] == d.id && f["level"] == d.level.as_str()));
+        assert!(families
+            .iter()
+            .any(|f| f["id"] == d.id && f["level"] == d.level.as_str()));
     }
     let honesty = &doc["honesty"]["bridge_endpoints"];
     for ep in ["POST /v1/responses", "POST /v1/messages"] {
@@ -187,7 +203,7 @@ fn sdk_types_cover_required_domains() {
         "export interface ToolEffectSet",
         "export type ContentVerification",
     ] {
- assert!( ts.contains(needle), "sdk_types.d.ts missing {needle}" );
+        assert!(ts.contains(needle), "sdk_types.d.ts missing {needle}");
     }
     assert!(ts.contains("ObjectAdded"));
     assert!(ts.contains("HandoffCreated"));
@@ -210,6 +226,10 @@ fn honest_family_grades_match_evidence_ladder() {
     let r = hawking_adapters::builtin_registry();
     for (id, level) in expected {
         let d = r.get(id).unwrap_or_else(|| panic!("missing family {id}"));
- assert_eq!( d.level.as_str(), level, "family {id} grade drifted from the honest evidence ladder" );
+        assert_eq!(
+            d.level.as_str(),
+            level,
+            "family {id} grade drifted from the honest evidence ladder"
+        );
     }
 }

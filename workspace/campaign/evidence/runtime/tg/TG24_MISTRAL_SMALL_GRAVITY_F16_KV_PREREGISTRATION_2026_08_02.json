@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v2",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+  "family": "mistral_dense",
+  "hypothesis": "The existing source-preserving executable Gravity Q4_K representation can use persistent device-resident F16 KV images and F16-KV flash attention to cross the TG32 boundary without changing the Mistral continuation.",
+  "mechanism": "Set HAWKING_GRAVITY_F16_KV=1 on the same source-packed Gravity artifact. Weight bytes, source quantization, tokenizer, prompt, RoPE, sampling and layer schedule remain fixed; only KV cache precision and the attention grammar change.",
+  "scope": "same exact Mistral source and executable Gravity artifact, same immutable revision, same Apple M3 Ultra and complete-token protocol",
+  "source": {
+    "official_release": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "quant_repository": "bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF",
+    "revision": "f73dfd9e812922fb503a993e3fa5671424f486d3",
+    "filename": "mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "license": "Apache-2.0"
+  },
+  "artifact": {
+    "filename": "mistral-small-f16kv.gravity",
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false
+  },
+  "tokenizer": {
+    "repository": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "filename": "tokenizer.json",
+    "bytes": 17078037,
+    "sha256": "b76085f9923309d873994d444989f7eb6ec074b06f25b58f1e8d7b7741070949"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MISTRAL_SMALL_REHYDRATE_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "high_performance",
+    "selected_concurrency": 8,
+    "resume_hash_verified": true
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "2 + 2 =",
+    "prompt_token_ids": [1, 1050, 1867, 1032, 1050, 1376],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 128,
+    "runs_each_side": 2,
+    "max_seq_len": 256,
+    "control_env": "HAWKING_REQUIRE_METAL=1",
+    "candidate_env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_F16_KV=1",
+    "fallback_required": 0,
+    "clean_sequential_gpu_required": true
+  },
+  "promotion_gates": {
+    "all_complete_tokens": true,
+    "continuation_hash_equal": true,
+    "numeric_parity_v21": true,
+    "dispatch_count_positive": true,
+    "fallback_count_zero": true,
+    "candidate_median_tps_must_exceed": 29.838791525232033,
+    "candidate_median_p99_must_not_exceed_ms": 37.729542,
+    "candidate_wall_improvement_percent_min": 3.0,
+    "same_model_before_after": true,
+    "rung_claim_requires": "candidate must clear TG32 at 31.25 TPS with complete-token parity and no tail regression"
+  },
+  "reopen_condition": "If F16-KV changes the continuation, fails full-logit parity, adds unacceptable dispatch or prefill work, or remains below 31.25 TPS, retire it and require an executable lower-active-byte representation such as basis/lookup or mean-plus-residual."
+}

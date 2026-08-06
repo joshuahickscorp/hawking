@@ -846,7 +846,10 @@ mod tests {
         sup.boot().await.unwrap();
         rt.set_healthy(false);
         let state = sup.supervise_once().await;
- assert!(matches!( state, RuntimeSupervisorState::Booting | RuntimeSupervisorState::Degraded ));
+        assert!(matches!(
+            state,
+            RuntimeSupervisorState::Booting | RuntimeSupervisorState::Degraded
+        ));
         rt.set_healthy(true);
         let state = sup.supervise_once().await;
         assert_eq!(state, RuntimeSupervisorState::Ready);
@@ -872,7 +875,10 @@ mod tests {
         sup.boot().await.unwrap();
         rt.set_crashed(true);
         let state = sup.supervise_once().await;
- assert!(matches!( state, RuntimeSupervisorState::Ready | RuntimeSupervisorState::Booting ));
+        assert!(matches!(
+            state,
+            RuntimeSupervisorState::Ready | RuntimeSupervisorState::Booting
+        ));
         assert!(sup.status().restarts >= 1);
         rt.stop();
     }
@@ -922,7 +928,10 @@ mod tests {
         .unwrap();
         let sup = RuntimeSupervisor::new(cfg.clone(), Arc::new(FakeLauncher::new(rt.clone())));
         let err = sup.boot().await.unwrap_err();
- assert!( err.contains("held by live process"), "boot should refuse a live lock, got: {err}" );
+        assert!(
+            err.contains("held by live process"),
+            "boot should refuse a live lock, got: {err}"
+        );
         assert_eq!(sup.state(), RuntimeSupervisorState::Down);
         let body = std::fs::read_to_string(&lock).unwrap();
         assert!(body.contains(&std::process::id().to_string()));
@@ -957,7 +966,10 @@ mod tests {
         sup.boot().await.unwrap();
         assert!(lock.exists(), "runtime.lock should exist while Ready");
         sup.shutdown().await;
- assert!( !lock.exists(), "runtime.lock should be released on shutdown" );
+        assert!(
+            !lock.exists(),
+            "runtime.lock should be released on shutdown"
+        );
         let _ = std::fs::remove_dir_all(dir);
         rt.stop();
     }

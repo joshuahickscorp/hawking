@@ -1,0 +1,42 @@
+{
+  "at": "2026-07-29T17:32:55Z",
+  "honest_summary": "The trainer apparatus is proven on toy fixtures. A real Odyssey training run cannot start: no APPROVED substrate, no collected corpora, no trajectory traces, fence false, no heavy window.",
+  "schema": "hawking.odyssey.heavy_prerequisites.v1",
+  "what_a_real_run_would_need_that_does_not_exist": [
+    {
+      "detail": "odyssey/launch/SUBSTRATE_CAPABILITY.json records Math-Preserve as REFUSED (SEMANTIC_COLLAPSE). No substrate currently has capability_verdict=APPROVED. Silence is not a pass: unlisted artifacts are UNVERIFIED\u2192REFUSED.",
+      "id": "approved_substrate",
+      "status": "MISSING"
+    },
+    {
+      "detail": "odyssey/data/ODYSSEY_DATA_MANIFEST.json declares math-core, support-language, long-horizon, sovereignty-corpus \u2014 all present=false / DECLARED_NOT_COLLECTED.",
+      "id": "training_corpora",
+      "status": "DECLARED_NOT_PRESENT"
+    },
+    {
+      "detail": "Teacher ledger: 122 lines, 118 per-layer captures, 0 trajectory traces. T3 cannot run without parent trajectory traces.",
+      "id": "trajectory_traces",
+      "status": "MISSING"
+    },
+    {
+      "detail": "ODYSSEY_LAUNCH_AUTHORIZED is false. This is deliberate. The apparatus must not flip it.",
+      "id": "launch_authorization",
+      "status": "FALSE"
+    },
+    {
+      "detail": "A real T1+ step against a 92 GB substrate needs a heavy resource window: streaming-adapter step ~2.1 GiB working set (or ~86 GiB full-resident), wall clock minutes\u2013hours per meaningful step, and sole occupancy of the machine (LIGHT_ONLY currently forbids heavy parent work).",
+      "id": "heavy_window",
+      "status": "NOT_GRANTED"
+    },
+    {
+      "detail": "Forge F1\u2013F4 and false-refusal metrics need a served model that is not semantically collapsed. Math-Preserve is not that model.",
+      "id": "served_capable_model",
+      "status": "MISSING"
+    },
+    {
+      "detail": "Only FakeUniformQuantizer exists. Full QAT recovery on a real substrate is not implementable under LIGHT_ONLY and has never been measured here.",
+      "id": "qat_on_parent",
+      "status": "NOT_IMPLEMENTABLE_HERE"
+    }
+  ]
+}

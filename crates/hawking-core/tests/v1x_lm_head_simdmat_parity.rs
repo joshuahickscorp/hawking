@@ -5,7 +5,10 @@ use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 mod common;
 use common::*;
 fn fixed_f16(n: usize, seed: u64) -> Vec<f16> {
-    fixed_f32(n, seed).iter().map(|&v| f16::from_f32(v)).collect()
+    fixed_f32(n, seed)
+        .iter()
+        .map(|&v| f16::from_f32(v))
+        .collect()
 }
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
@@ -16,7 +19,12 @@ fn cpu_gemv_f16(w: &[f16], rows: usize, cols: usize, x: &[f32]) -> Vec<f32> {
     out
 }
 fn cpu_argmax(logits: &[f32]) -> u32 {
-    logits.iter().enumerate().max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap()).map(|(i, _)| i as u32).unwrap()
+    logits
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .map(|(i, _)| i as u32)
+        .unwrap()
 }
 #[test]
 fn phase_x_simdmat_matches_cpu_basic() {
@@ -34,7 +42,10 @@ fn phase_x_simdmat_matches_cpu_basic() {
         tcb.commit_and_wait().expect("commit");
         let gpu = read_f32_buf(&y_buf, rows);
         let diff = max_abs_diff(&cpu, &gpu);
-        assert!(diff < 1e-3, "rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3");
+        assert!(
+            diff < 1e-3,
+            "rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3"
+        );
     }
 }
 #[test]
@@ -49,11 +60,15 @@ fn phase_x_simdmat_matches_cpu_lm_head_shape() {
     let x_buf = new_f32_buf(ctx, &x);
     let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_f16_simdmat_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf).expect("gemv_f16_simdmat_tcb");
+    kernels::gemv_f16_simdmat_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf)
+        .expect("gemv_f16_simdmat_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu = read_f32_buf(&y_buf, rows);
     let diff = max_abs_diff(&cpu, &gpu);
-    assert!(diff < 1e-3, "lm_head_shape rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3");
+    assert!(
+        diff < 1e-3,
+        "lm_head_shape rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3"
+    );
 }
 #[test]
 fn phase_x_simdmat_argmax_matches_cpu() {
@@ -68,11 +83,15 @@ fn phase_x_simdmat_argmax_matches_cpu() {
     let x_buf = new_f32_buf(ctx, &x);
     let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_f16_simdmat_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf).expect("gemv_f16_simdmat_tcb");
+    kernels::gemv_f16_simdmat_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf)
+        .expect("gemv_f16_simdmat_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu_logits = read_f32_buf(&y_buf, rows);
     let gpu_token = cpu_argmax(&gpu_logits);
-    assert_eq!(gpu_token, cpu_token, "argmax: gpu={gpu_token} cpu={cpu_token}");
+    assert_eq!(
+        gpu_token, cpu_token,
+        "argmax: gpu={gpu_token} cpu={cpu_token}"
+    );
     let diff = max_abs_diff(&cpu_logits, &gpu_logits);
     assert!(diff < 1e-3, "logits diff={diff:.2e} > 1e-3");
 }

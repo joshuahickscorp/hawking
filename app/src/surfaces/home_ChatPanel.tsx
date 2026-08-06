@@ -1,5 +1,5 @@
 /*
-  ChatPanel.tsx — the active-chat side panel (Claude Code's Terminal / Diff / Preview, recast). A
+  ChatPanel.tsx — the active-chat side panel: Terminal / Diff / Preview, recast. A
   full-height right column beside the conversation; the switcher lives in the Chat stage and toggles which
   face shows. Terminal and the diff review are the real IDE components, reused; Preview is the local view;
   Tools is the agent's live tool feed; Artifacts is what the run produced; Context is the Context Stack,

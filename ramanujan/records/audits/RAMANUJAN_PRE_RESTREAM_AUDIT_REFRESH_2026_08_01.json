@@ -1,0 +1,178 @@
+{
+  "schema": "hawking.ramanujan.pre_restream_audit_refresh.v2",
+  "status": "NOT_RESTREAM_READY_OWNER_AND_PHYSICAL_OPERATOR_INPUT_REQUIRED",
+  "sampled_at": "2026-08-01T07:53:14Z",
+  "mission_state": {
+    "large_family_count": 3,
+    "large_families": [
+      {
+        "family": "Qwen2.5-72B",
+        "result": "FLOOR_SEALED_AFTER_TWO_DISTINCT_FAILURES",
+        "terminal_seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c",
+        "eviction_seal_sha256": "c08c83014abf6afc821a62c848749da13443f5a0fca873d7a311bbc850b666e2"
+      },
+      {
+        "family": "Llama-3.3-70B",
+        "result": "EXACT_TOKEN_ZERO_FALLBACK_ROOFLINE_2.964_TPS_TG32_NOT_REACHED",
+        "terminal_seal_sha256": "0ec1f2ace9f09e431b677bb950d3641bb1a41f67dee3bc8bf246016214760105",
+        "eviction_seal_sha256": "452a6f1f003b24947f287daab84addc6e9ccd565298eac7943e3f60c2481c517"
+      },
+      {
+        "family": "GPT-OSS-120B",
+        "total_parameters": "117B",
+        "active_parameters": "5.1B",
+        "result": "EXACT_SOURCE_MXFP4_EXPERT_OPERATOR_FLOOR_CONTAINER_ADAPTER_PENDING",
+        "terminal_seal_sha256": "fc592485ca47203fbfde50a836cd3aa3cc2ccddb1055bb696798785e0c55f176",
+        "eviction_seal_sha256": "269080def21f57143e8177a1ebe10ddb233250e2d014a7db2571c2229414dbdc"
+      }
+    ],
+    "xet_scoreboards": [
+      {
+        "family": "Qwen2.5-72B",
+        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REPROBE.json",
+        "seal_sha256": "a6e5d8f98b884ade0a5de4a6df23ce11494592afe5b4e3daae7f471a14d02c13"
+      },
+      {
+        "family": "Llama-3.3-70B",
+        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+        "seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0"
+      },
+      {
+        "family": "GPT-OSS-120B",
+        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_GPTOSS120.json",
+        "seal_sha256": "c5b559bc9d49b23f3b890e6783a7e1f35716dfdc7c35fe6db3e383d9dc5f06dc"
+      }
+    ]
+  },
+  "unified_storage_sample": {
+    "free_bytes": 409373962240,
+    "protected_filesystem_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 209368072684,
+    "model_files_resident": 0,
+    "all_rotating_model_source_artifact_temp_cache_bytes_evicted": true,
+    "admission_law": "Recompute free bytes immediately before every window; admit only if free_bytes - exact_window_incremental_bytes >= protected_filesystem_floor_bytes."
+  },
+  "bounded_parent_contract": {
+    "schedule_path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+    "schedule_seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+    "policy_path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+    "policy_seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+    "window_count": 81,
+    "range_count": 59585,
+    "logical_source_payload_bytes": 1506659919872,
+    "rounded_source_payload_bytes": 1506686271488,
+    "peak_incremental_bytes": 58885799936,
+    "peak_incremental_gib": 54.84,
+    "envelope_bytes": 90000000000,
+    "envelope_slack_bytes": 31114200064,
+    "rollback_scratch_reserve_bytes": 17179869184,
+    "artifact_retention": "CURRENT_WINDOW_ONLY_AFTER_SEALED_REMOTE_HASH_AND_EXACT_EVICTION_RECEIPT",
+    "offline_admission": "PASS",
+    "live_allocation_and_capability": "PENDING"
+  },
+  "range_executor": {
+    "path": "tools/condense/glm52_range_stream_executor.py",
+    "module_sha256": "6db1e2ed16581b299fd5bbdf8e3e4be32e57a7164ce1ef6320fd61e2bffe3c54",
+    "entrypoint_sha256": "38e1bca94aaa2f1235d86c442b1b1ee3dd0342daaa2fb7cb46e671fac82f3e75",
+    "source_mode": "official hf_xet 1.5.2 ordered tensor ranges streamed directly without full-shard writes",
+    "resume_unit": "one sealed terminal receipt per organ window",
+    "predecessor_gate": "verified cold remote SHA-256 plus exact source/artifact/temp/cache/Trash eviction and free-byte recovery",
+    "launcher_preflight": "PASS_SCHEDULE_POLICY_THEN_REFUSED_ABSENT_WINDOW_OPERATOR",
+    "physical_window_operator": "PENDING_OWNER_APPROVED_TESTED_EXECUTABLE"
+  },
+  "external_source_intake": {
+    "status": "MECHANICALLY_READY_PENDING_OWNER_VALUES",
+    "authority": "ramanujan/data/freeze_memberships.py",
+    "authority_sha256": "0d143b7b00cd2d6e1719e71d139ca9f42c76084a0e37f68dda65cf43306d3e05",
+    "template_command": ".venv/glm52/bin/python -m ramanujan.data.freeze_memberships --print-external-template",
+    "freeze_command": ".venv/glm52/bin/python -m ramanujan.data.freeze_memberships --external-intake '<owner-filled-sealed-intake.json>' --external-receipt '<public-freeze-receipt.json>'",
+    "sources": ["D5", "D8", "D9"],
+    "gates": [
+      "exact source and license hashes",
+      "owner authority receipt",
+      "distinct owner, membership-sealer, adjudicator and D9 generator roles",
+      "owner-only D8 filesystem mode",
+      "D8 canonical membership commitment with no public ids or paths",
+      "Odyssey exact/Jaccard no-leak audit across every current D1-D7 training item",
+      "sealed executable adjudicator and D9 variant generator",
+      "research and candidate authorization remain false"
+    ],
+    "data_matrix_sha256": "a20fe359b41dc3b02c1799ad49b853b55d724b9bf74e73dfaeae6ca34d50867e",
+    "data_matrix_current_file_hashes_verified": true,
+    "data_matrix_content_digest_drift_refusal": true
+  },
+  "code_topology_exit": {
+    "status": "PASS_ALL_BINDING_DIMENSIONS_AT_OR_BELOW_ENTRY",
+    "receipt": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+    "seal_sha256": "d2544ed127dd83a035e5f4e29b756c9bd52eef62e41acb2886908a577a02d5bd",
+    "non_ignored_untracked_source_included": true,
+    "active_loc_entry": 430284,
+    "active_loc_exit": 370291,
+    "source_files_entry": 1227,
+    "source_files_exit": 946,
+    "directories_entry": 179,
+    "directories_exit": 121,
+    "public_symbols_entry": 9412,
+    "public_symbols_exit": 8188,
+    "functions_entry": 14587,
+    "functions_exit": 12764
+  },
+  "non_parent_ramanujan": {
+    "Q1_D4_D7": {
+      "status": "PROVEN_OFFLINE",
+      "membership_items": 16188,
+      "contamination_rejected": 0,
+      "membership_manifest_sha256": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29"
+    },
+    "D5": {
+      "status": "PENDING_OWNER_INPUT_MECHANICAL_INTAKE_READY",
+      "required": "owner-approved licensed informal/formal pair source"
+    },
+    "Q2_D8": {
+      "status": "PENDING_OWNER_INPUT_MECHANICAL_INTAKE_READY",
+      "required": "owner-approved licensed D8 source and hidden-membership procedure"
+    },
+    "Q3_D9": {
+      "status": "PENDING_OWNER_INPUT_MECHANICAL_INTAKE_READY",
+      "required": "owner-approved licensed D9 source and sealed variant generator"
+    },
+    "Odyssey_T0_full_replay": {
+      "status": "REFUSED_BY_STATE",
+      "reason": "only 1 of 282 substrate shards is present; no historical progress may mint a pass"
+    },
+    "Odyssey_capability": {
+      "status": "REFUSED",
+      "reason": "Math-Preserve and General-R0 remain refused; unlisted hashes remain unverified"
+    }
+  },
+  "verification": [
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q tools/condense/tests/test_glm52_restream_contract.py tools/condense/tests/test_glm52_range_stream_executor.py tools/condense/tests/test_restream_guard.py tools/condense/tests/test_gravity_range_scheduler.py",
+      "result": "24 passed"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q ramanujan/test_ramanujan.py ramanujan/test_prover.py ramanujan/test_roles_economics.py ramanujan/test_search.py ramanujan/test_cognition.py ramanujan/test_governance_invariants.py ramanujan/test_you_research.py ramanujan/data/test_data.py ramanujan/data/test_freeze.py tools/odyssey/test_odyssey_data.py tools/odyssey/test_odyssey_t0.py tools/odyssey/test_rate_binding.py",
+      "result": "200 passed plus 3 adversarial subtests"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m pytest -q ramanujan/data/test_data.py ramanujan/data/test_freeze.py ramanujan/test_ramanujan.py",
+      "result": "44 passed plus 3 adversarial subtests"
+    },
+    {
+      "command": ".venv/glm52/bin/python -m ramanujan.gen_data_matrix --check",
+      "result": "generated artifacts match; all six present sources bind current file SHA after exact content-digest verification"
+    }
+  ],
+  "exact_restream_command": "HAWKING_PARENT_RESTREAM_AUTHORIZED=YES HAWKING_CLEAN_GPU_LEASE_ID='<clean-live-lease-id>' HAWKING_GLM52_WINDOW_OPERATOR='<owner-approved-tested-window-operator>' bash /Users/scammermike/Downloads/hawking/ramanujan/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+  "remaining_blockers": [
+    "OWNER_D5_SOURCE_LICENSE_SELECTION",
+    "OWNER_D8_SOURCE_LICENSE_AND_HIDDEN_MEMBERSHIP_SELECTION",
+    "OWNER_D9_SOURCE_LICENSE_AND_VARIANT_GENERATOR_SELECTION",
+    "OWNER_PARENT_RESTREAM_AUTHORIZATION",
+    "CLEAN_LIVE_GPU_LEASE",
+    "OWNER_APPROVED_TESTED_PHYSICAL_GLM52_WINDOW_OPERATOR",
+    "LIVE_ALLOCATION_CAPABILITY_AND_TERMINAL_RESTREAM_RECEIPTS"
+  ],
+  "endpoint": "NOT_RAMANUJAN_RESTREAM_READY",
+  "seal_sha256": "afa15e00bb768d168cf024f97d6473214b5881692e1330fee4f18d7b290db29b"
+}

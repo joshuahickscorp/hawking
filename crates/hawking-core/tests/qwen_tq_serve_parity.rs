@@ -14,11 +14,16 @@ fn greedy_tq_trajectory(tq_cpu: bool) -> Vec<u32> {
     } else {
         std::env::remove_var("HAWKING_QWEN_TQ_CPU");
     }
-    let mut engine = load_engine(Path::new(WEIGHTS), EngineConfig::default()).expect("load TQ engine");
+    let mut engine =
+        load_engine(Path::new(WEIGHTS), EngineConfig::default()).expect("load TQ engine");
     let req = GenerateRequest {
         prompt: PROMPT.to_string(),
         max_new_tokens: N_TOKENS,
-        sampling: SamplingParams { temperature: 0.0, seed: Some(0), ..Default::default() },
+        sampling: SamplingParams {
+            temperature: 0.0,
+            seed: Some(0),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -40,13 +45,25 @@ fn qwen_tq_served_forward_is_nondegenerate_and_cpu_gpu_agree() {
     let weights = Path::new(WEIGHTS);
     let sidecar = Path::new(SIDECAR);
     if !weights.exists() || !sidecar.exists() {
-        eprintln!("qwen_tq_served_forward: skip (need {} + {})", weights.display(), sidecar.display());
+        eprintln!(
+            "qwen_tq_served_forward: skip (need {} + {})",
+            weights.display(),
+            sidecar.display()
+        );
         return;
     }
     let gpu = greedy_tq_trajectory(false);
-    assert!(!gpu.is_empty(), "TQ served forward produced no tokens (load or decode broke)");
+    assert!(
+        !gpu.is_empty(),
+        "TQ served forward produced no tokens (load or decode broke)"
+    );
     let distinct = gpu.iter().collect::<std::collections::HashSet<_>>().len();
-    assert!(distinct > 1, "TQ served forward is degenerate: {} tokens, all identical ({:?})", gpu.len(), gpu.first());
+    assert!(
+        distinct > 1,
+        "TQ served forward is degenerate: {} tokens, all identical ({:?})",
+        gpu.len(),
+        gpu.first()
+    );
     let cpu = greedy_tq_trajectory(true);
     assert_eq!(
         gpu, cpu,

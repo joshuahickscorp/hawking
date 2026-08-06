@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.model_trash_purge.v1",
+  "at": "2026-08-02",
+  "operation": "permanent deletion of one exact rehydrated DeepSeek source body after same-model sweep",
+  "target": {
+    "path": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02",
+    "kind": "directory",
+    "bytes_in_trash_before_delete": 10364416636,
+    "source_body_bytes": 10364416320,
+    "source_body_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "source_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_GUV2_PROMOTION_2026_08_02.json",
+    "geometry_rejection_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_MLA_TG128_REJECTED_2026_08_02.json"
+  },
+  "free_space": {
+    "before_bytes": 370739335168,
+    "after_bytes": 381103869952,
+    "recovered_bytes": 10364534784,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_bytes": 181097980396
+  },
+  "postconditions": {
+    "exact_source_absent": true,
+    "exact_trash_item_absent": true,
+    "active_model_lane_empty": true,
+    "deletion_scope": "exact source directory moved to its exact Trash item, then that item permanently deleted; no wildcard and no broad Trash empty"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "verdict": "MODEL_BYTES_EVICTED_AND_FREE_SPACE_RECOVERED"
+}

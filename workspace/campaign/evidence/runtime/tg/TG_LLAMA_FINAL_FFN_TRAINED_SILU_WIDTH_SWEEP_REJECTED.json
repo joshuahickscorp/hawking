@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-final-ffn-trained-two-matvec-silu-student-width-sweep",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "teacher_dataset": {
+    "path": "/tmp/hawking-llama-resident-binary-full-20260731/layer31-pairs.npz",
+    "sha256": "3eee1ff9f003cfb83721025b74b2650383645478ccd30fb150bbe1c14a2d3edd",
+    "fit_rows": 17392,
+    "heldout_rows": 4636,
+    "surface": "layer 31 ffn_norm -> ffn_out",
+    "authority": "resident source decode capture; heldout rows excluded from fitting"
+  },
+  "gate": {
+    "max_heldout_normalized_rmse": 0.1,
+    "required_after_offline_pass": [
+      "generated-token capability",
+      "artifact/runtime parity",
+      "strict matched decode"
+    ]
+  },
+  "measurements": [
+    {
+      "width": 128,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.3994088661,
+      "heldout_normalized_rmse": 0.4176305223,
+      "prospective_fp16_artifact_bytes": 2121984,
+      "executed_macs_per_token": 1048576
+    },
+    {
+      "width": 512,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.2505101959,
+      "heldout_normalized_rmse": 0.2784443165,
+      "prospective_fp16_artifact_bytes": 8414208,
+      "executed_macs_per_token": 4194304
+    },
+    {
+      "width": 1024,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.2072726329883323,
+      "heldout_normalized_rmse": 0.2399637973216288,
+      "prospective_fp16_artifact_bytes": 16803840,
+      "executed_macs_per_token": 8388608
+    },
+    {
+      "width": 1024,
+      "epochs": 16,
+      "fit_normalized_rmse": 0.22306971837640904,
+      "heldout_normalized_rmse": 0.25125987903299074,
+      "prospective_fp16_artifact_bytes": 16803840,
+      "executed_macs_per_token": 8388608
+    },
+    {
+      "width": 2048,
+      "epochs": 4,
+      "fit_normalized_rmse": 0.18173665008224665,
+      "heldout_normalized_rmse": 0.21788181261686326,
+      "prospective_fp16_artifact_bytes": 33583104,
+      "executed_macs_per_token": 16777216
+    }
+  ],
+  "verdict": "rejected",
+  "reason": "The best heldout score is 0.2179, over twice the predeclared 0.10 capability limit. Extending the 1024-wide fit from 4 to 16 epochs worsened heldout error, and expanding to 2048 adds artifact bytes and work without reaching capability.",
+  "runtime_status": "No artifact was emitted; no generated-token, quality, parity, or TPS claim is permitted.",
+  "reopen_condition": "Use a materially different grammar (for example a multi-block, stateful, conditional, or source-structured student) with a predeclared physical ledger and an independently held-out generated-token gate.",
+  "tps_claim": null
+}

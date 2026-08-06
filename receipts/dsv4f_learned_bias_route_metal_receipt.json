@@ -1,0 +1,44 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"
+  },
+  "honesty": {
+    "full_p6_moe_composed": false,
+    "reason": "dynamic topk requires two-phase expert load; this receipt seals the route kernel only",
+    "serve_endpoint_flipped": false
+  },
+  "metal": {
+    "command_buffers": 1,
+    "cpu_visible_waits": 1,
+    "fallback": 0,
+    "metal_dispatches": 1
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false,
+    "max_abs_score_err_f64": 9.564396852290713e-8,
+    "max_abs_weight_err_f64": 2.437323143311687e-8,
+    "selected_ids": [
+      174,
+      160,
+      153,
+      180,
+      167,
+      166
+    ],
+    "selected_ids_exact_match": true
+  },
+  "schema": "hawking.gravity.deepseek_v4.learned_bias_route_metal.v1",
+  "scope": {
+    "bias_tensor": "layers.3.ffn.gate.bias",
+    "expert_count": 256,
+    "kernel": "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority",
+    "layer": 3,
+    "logits": "synthetic_deterministic_not_live_activation",
+    "route_scale": 1.5,
+    "top_k": 6
+  },
+  "status": "PASS_LEARNED_BIAS_ROUTE_KERNEL_METAL",
+  "wall_time_ms": 6556.298083
+}

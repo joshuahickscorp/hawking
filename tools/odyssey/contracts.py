@@ -12,7 +12,12 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.odyssey._paths import CHECKPOINTS, ODYSSEY, ROOT
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from lab.layout import PROFILES_ROOT, odyssey_path, resolve_workspace_path
+from tools.odyssey._paths import CHECKPOINTS
 from tools.odyssey import hidden_memberships, tournament
 
 # ---------------------------------------------------------------------------
@@ -23,7 +28,7 @@ OBJECTIVE_SCHEMA = "hawking.odyssey.objective.runtime.v1"
 
 
 def load_profile(name: str = "math-v1") -> dict[str, Any]:
-    path = ROOT / "profiles" / "prometheus" / f"{name}.json"
+    path = PROFILES_ROOT / "prometheus" / f"{name}.json"
     return json.loads(path.read_text())
 
 
@@ -87,14 +92,14 @@ PROFILE_HALO_SCHEMA = "hawking.odyssey.profile_support_halo.runtime.v1"
 
 
 def profile_support_halo_contract() -> dict[str, Any]:
-    manifest = json.loads((ODYSSEY / "profiles" / "ODYSSEY_PROFILE_MANIFEST.json").read_text())
+    manifest = json.loads(odyssey_path("profiles", "ODYSSEY_PROFILE_MANIFEST.json").read_text())
     selected = manifest["selected_for_odyssey"]
-    path = ROOT / "profiles" / "prometheus" / f"{selected}.json"
+    path = PROFILES_ROOT / "prometheus" / f"{selected}.json"
     observed = hashlib.sha256(path.read_bytes()).hexdigest()
     expected = next(p["sha256"] for p in manifest["profiles"] if p["name"] == selected)
-    seal = json.loads((ODYSSEY / "evaluation" / "SUPPORT_HALO_SEAL.json").read_text())
-    rules_path = ROOT / seal["rules_path"]
-    corpus_path = ROOT / seal["corpus_path"]
+    seal = json.loads(odyssey_path("evaluation", "SUPPORT_HALO_SEAL.json").read_text())
+    rules_path = resolve_workspace_path(seal["rules_path"])
+    corpus_path = resolve_workspace_path(seal["corpus_path"])
     rules_ok = hashlib.sha256(rules_path.read_bytes()).hexdigest() == seal["rules_sha256"]
     corpus_ok = hashlib.sha256(corpus_path.read_bytes()).hexdigest() == seal["corpus_sha256"]
     return {
@@ -218,9 +223,9 @@ def create_checkpoint(
 ) -> dict[str, Any]:
     CHECKPOINTS.mkdir(parents=True, exist_ok=True)
     obj = objective_weights()
-    data_m = (ODYSSEY / "data" / "ODYSSEY_DATA_MANIFEST.json").read_bytes()
-    prof = (ROOT / "profiles" / "prometheus" / "math-v1.json").read_bytes()
-    sov = (ODYSSEY / "sovereignty" / "SOVEREIGNTY.json").read_bytes()
+    data_m = odyssey_path("data", "ODYSSEY_DATA_MANIFEST.json").read_bytes()
+    prof = (PROFILES_ROOT / "prometheus" / "math-v1.json").read_bytes()
+    sov = odyssey_path("sovereignty", "SOVEREIGNTY.json").read_bytes()
     body = {
         "schema": CKPT_SCHEMA,
         "stage": stage,
@@ -299,11 +304,11 @@ def rollback_to(checkpoint_id: str) -> dict[str, Any]:
 
 
 def forge_gate() -> dict[str, Any]:
-    forge = json.loads((ODYSSEY / "forge" / "FORGE.json").read_text())
+    forge = json.loads(odyssey_path("forge", "FORGE.json").read_text())
     # F0 diagnose is the only stage that can run without a served model:
     # check that sovereignty tools and limit registry exist.
-    sov_impl = ROOT / "tools" / "sovereignty" / "sovereignty.py"
-    limits = ODYSSEY / "sovereignty" / "LIMIT_REGISTRY.json"
+    sov_impl = _REPO_ROOT / "tools" / "sovereignty" / "sovereignty.py"
+    limits = odyssey_path("sovereignty", "LIMIT_REGISTRY.json")
     f0_ok = sov_impl.is_file() and limits.is_file()
     return {
         "schema": "hawking.odyssey.forge.runtime.v1",
@@ -322,7 +327,7 @@ def forge_gate() -> dict[str, Any]:
 
 
 def sovereignty_gate() -> dict[str, Any]:
-    sov = json.loads((ODYSSEY / "sovereignty" / "SOVEREIGNTY.json").read_text())
+    sov = json.loads(odyssey_path("sovereignty", "SOVEREIGNTY.json").read_text())
     computable = {
         k: v
         for k, v in (sov.get("metrics") or {}).items()
@@ -356,7 +361,7 @@ def sovereignty_gate() -> dict[str, Any]:
 
 def resource_scheduler_admit(request: dict[str, Any], state: dict[str, Any] | None = None) -> dict[str, Any]:
     """Admit or deny a heavy lane based on sandbox policy ceilings."""
-    policy = json.loads((ODYSSEY / "sandbox" / "POLICY.json").read_text())
+    policy = json.loads(odyssey_path("sandbox", "POLICY.json").read_text())
     resources = policy.get("resources") or {}
     max_heavy = int(resources.get("max_concurrent_heavy_lanes", 1))
     mem_ceiling = int(resources.get("memory_ceiling_bytes", 103_079_215_104))
@@ -553,7 +558,7 @@ def closure_report() -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     report = closure_report()
-    out = ODYSSEY / "ODYSSEY_CONTRACT_CLOSURE.json"
+    out = odyssey_path("ODYSSEY_CONTRACT_CLOSURE.json")
     out.write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n")
     print(json.dumps(report["summary"], indent=2))
     print("wrote", out)

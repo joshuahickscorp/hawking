@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "paired-route-activation-preload-guv3",
+    "hypothesis": "Two routed experts in one 512-threadgroup can share the hidden-state preload and reduce activation SRAM traffic without changing Q4 arithmetic or route/output ordering.",
+    "mechanism": "moe_batched_gemm_q4_indexed_v2t_gu_v3 maps eight simdgroups to each of two routes, cooperatively preloads x once, and retains v2t_gu_v2 sumy, scale-preload and paired-nibble arithmetic.",
+    "scope": "same DeepSeek source/artifact, tokenizer, prompt, quantization, MLA, RoPE, route IDs and head; only routed gate/up threadgroup geometry changes",
+    "required_safety": [
+      "same source hash",
+      "complete 32-token sample",
+      "CPU reference fallback = 0",
+      "real Apple M3 Ultra dispatches",
+      "exact source-window IDs [8913,13,185,185]",
+      "candidate profile shader hash validated",
+      "same-model CLEAN before/after wall and p99 gate"
+    ]
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-r3-2026-08-02.json",
+    "profile_sha256": "e5001a620044409e5203f102991a81e33941ffb121b150bf5f6b2e0737544df0",
+    "profile_shader_hash": "4178883ad381bacf5ff0285f",
+    "decode_tps_reference": 41.32293880290225,
+    "dispatches_per_forward_reference": 487,
+    "fallback_reference": 0,
+    "prompt": "The capital of France is",
+    "source_window_ids": [8913, 13, 185, 185]
+  },
+  "candidate_profile": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv3-paired-route-prereg-2026-08-02.json",
+    "shader_hash": "4178883ad381bacf5ff0285f",
+    "schedule": "v2t_gu_v3",
+    "threadgroup_threads": 512,
+    "routes_per_threadgroup": 2,
+    "shared_expert_schedule": "v2t_gu_v2"
+  },
+  "promotion_gate": {
+    "minimum_complete_token_wall_win_percent": 3.0,
+    "maximum_p99_regression_percent": 2.0,
+    "reject_if": [
+      "any source-window token changes",
+      "fallback > 0",
+      "shader/profile mismatch",
+      "no complete-token wall win >= 3%",
+      "p99 regression > 2%",
+      "odd-route barrier or output-bound failure"
+    ],
+    "capability_note": "The exact source window is necessary but not sufficient; broader G3-G9 capability remains separately gated."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "ac794301b3aaca79b52bdcdc2e0aad676f4876c2fd4cbdb4dece568f55ee5393"
+}

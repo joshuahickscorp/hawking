@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.tg.qwen_k0_bounded_first_dispatch.v1",
+  "status": "PASS_REAL_QWEN_LOAD_AND_COMPLETE_TOKEN_NO_TG_PROMOTION",
+  "at": "2026-08-01T21:13:32Z",
+  "scope": "bounded Qwen loader and first-dispatch localization fixture; not a large-family, capability, or named-TG receipt",
+  "source": {
+    "repository": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "hub_etag_sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "license": "Apache-2.0",
+    "architecture": "qwen2",
+    "parameter_class": {"total_parameters": "0.5B", "active_parameters": "0.5B", "bounded_fixture": true}
+  },
+  "transfer": {
+    "official_client": "huggingface_hub 1.24.0 with hf_xet 1.5.2",
+    "mode": "HF_XET_HIGH_PERFORMANCE=1",
+    "full_body_elapsed_seconds": 2.971,
+    "full_body_rate_bytes_per_second": 133914665,
+    "bounded_range_diagnostics": [
+      {"method": "HTTP Range via curl", "mode": "standard", "bytes": 8388608, "rate_bytes_per_second": 14923188, "http_status": 206},
+      {"method": "HTTP Range via curl", "mode": "not an hf_xet client benchmark", "bytes": 8388608, "rate_bytes_per_second": 20798321, "http_status": 206}
+    ],
+    "integrity": "local SHA-256 equals immutable Hub ETag SHA-256"
+  },
+  "exact_run": {
+    "command": "HAWKING_QWEN_LOAD_TIMING=1 HAWKING_QWEN_FIRST_DISPATCH_TRACE=1 HAWKING_TRACE_DISPATCH=1 target/debug/hawking generate --profile exact --weights <source> --prompt '2 + 2 =' --max-new-tokens 1 --max-seq-len 128 --temperature 0 --top-k 1 --top-p 1 --trace-dispatch --trace-tokens --max-stall-ms 30000",
+    "prompt": "2 + 2 =",
+    "prompt_tokens": 5,
+    "completion_token_ids": [220],
+    "completion_text": " ",
+    "continuation_token_ids_sha256": "991a26ff4edaa7d5244848d1b20fa4c667589de6f83f6e38b45c763f8bee10eb",
+    "device_id": "Apple M3 Ultra",
+    "cpu_reference_fallback_count": 0,
+    "decode_cpu_reference_fallback_total": 0,
+    "dispatches_per_forward": 279,
+    "decode_metal_dispatches_total": 279,
+    "decode_command_buffers_total": 1,
+    "prefill_metal_dispatches_total": 1395,
+    "prefill_command_buffers_total": 5,
+    "prefill_ms": 65.757042,
+    "decode_ms": 6.191416,
+    "decode_token_ms": [5.976084],
+    "decode_tps": 161.51394123735184,
+    "lm_head_path": "f16",
+    "draft_accepted": 0,
+    "draft_rejected": 0
+  },
+  "stage_localization": {
+    "load_complete_elapsed_us": 5757357,
+    "load_complete_peak_resident_bytes": 2328346624,
+    "first_dispatch_stages_all_passed": true,
+    "first_dispatch_elapsed_us": 27888,
+    "first_command_commit_and_completion_elapsed_us": 25629,
+    "first_dispatch_peak_resident_bytes": 2333622272,
+    "unexplained_load_or_first_dispatch_stage_over_two_percent": false,
+    "exact_failure_localization_result": "the bounded source reaches MTLComputeCommandEncoder dispatch, MTLCommandBuffer commit/completion, and token readback; the 72B pre-forward failure is therefore not a universal Qwen tokenizer, GGUF parser, Metal discovery, command-buffer, encoder, or first-dispatch failure"
+  },
+  "contract": {
+    "real_device_identity": "PASS",
+    "dispatches_greater_than_zero": "PASS",
+    "cpu_fallback_equal_zero": "PASS",
+    "exact_prompt_token_count": "PASS",
+    "numeric_parity_v21": "NOT_RUN_AGAINST_INDEPENDENT_ORACLE",
+    "capability_gate": "NOT_PRODUCT_CAPABILITY_EVIDENCE",
+    "clean_benchmark": false,
+    "reason_not_clean": "single bounded loader localization probe; no independent oracle, tail distribution, contention audit, or same-model representation comparison",
+    "source_reference_tps": null,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "named_tg_rung": null
+  },
+  "promotion": {
+    "allowed": false,
+    "deepest_honest_tg_rung": null,
+    "next_required_work": "implement descriptor-verified, dependency-complete layer-window transfer and direct executable Gravity kernels for a large Qwen body; then rerun exact-source capability and CLEAN same-model complete-token sweep"
+  },
+  "eviction_required": {
+    "source_path": "models/qwen0p5-loader-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "source_local_cache": "models/qwen0p5-loader-probe/.cache/huggingface",
+    "postcondition": "purge exact campaign Trash item and seal free-byte recovery before another model admission"
+  }
+}

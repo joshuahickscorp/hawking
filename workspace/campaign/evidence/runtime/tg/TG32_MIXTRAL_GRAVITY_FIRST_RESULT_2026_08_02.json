@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.tg.same_model_gravity_first_result.v1",
+  "status": "EXECUTABLE_GRAVITY_PARITY_PASS_NO_SPEED_PROMOTION_NO_NAMED_RUNG",
+  "at_utc": "2026-08-02",
+  "model": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+  "family": "mistral_mixtral_sparse_moe",
+  "admission": "evidence/tg/TG32_MIXTRAL_GRAVITY_FIRST_ADMISSION_2026_08_02.json",
+  "preregistration": "evidence/tg/TG32_MIXTRAL_GRAVITY_FIRST_PREREGISTRATION_2026_08_02.json",
+  "source": {
+    "sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "representation": "immutable GGUF source control",
+    "samples": 3,
+    "median_tps": 18.243923321670696,
+    "median_prefill_ms": 1182.922042,
+    "median_decode_ms": 1699.195916,
+    "median_p50_ms": 54.866209,
+    "median_p95_ms": 56.679958,
+    "median_p99_ms": 58.644375,
+    "dispatches_per_forward": 675,
+    "decode_metal_dispatches_total": 20925,
+    "command_buffers_total": 3007,
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate": {
+    "artifact_file_sha256": "6db456e78623716a5229911066bdc1f04aa6ee2aabb434fd98e474caabe0ee37",
+    "representation": "executable Gravity mmap with direct raw-quant expert-split payloads",
+    "samples": 3,
+    "median_tps": 17.749739134517373,
+    "median_prefill_ms": 1739.7101670000002,
+    "median_decode_ms": 1746.504541,
+    "median_p50_ms": 56.516708,
+    "median_p95_ms": 60.054875,
+    "median_p99_ms": 60.915667,
+    "dispatches_per_forward": 675,
+    "decode_metal_dispatches_total": 20925,
+    "command_buffers_total": 3007,
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate_combine_lever": {
+    "environment_delta": "HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB=1",
+    "samples": 3,
+    "median_tps": 18.197896103074644,
+    "median_decode_ms": 1703.493625,
+    "median_p50_ms": 54.351333000000004,
+    "median_p95_ms": 58.446625000000004,
+    "median_p99_ms": 59.09975,
+    "dispatches_per_forward": 675,
+    "decode_metal_dispatches_total": 21917,
+    "command_buffers_total": 3007,
+    "cpu_reference_fallback_count": 0,
+    "promotion": "REJECTED_BELOW_3_PERCENT_CLEAN_WALL_FLOOR"
+  },
+  "parity": {
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "complete_tokens": 32,
+    "continuation_sha256_compact_json": "not emitted by this non-trace sweep; all nine stdout continuation hashes equal c9bf2ec586e472f5426d2c090a428436ba1099e1adcf25ed86f1c2dd7087a3be",
+    "stdout_continuation_hash": "c9bf2ec586e472f5426d2c090a428436ba1099e1adcf25ed86f1c2dd7087a3be",
+    "source_candidate_match": true
+  },
+  "promotion": {
+    "same_model_before_after": true,
+    "numeric_parity_v2_1": "PASS",
+    "clean_gpu": "PASS Apple M3 Ultra, dispatches > 0, fallback = 0",
+    "gravity_execution": "PASS direct Gravity mmap; no dense reconstruction",
+    "speed_promotion": "REJECTED: median decode wall +2.78 percent vs source; p99 regressed",
+    "named_rung_earned": false,
+    "deepest_stable_rung": null,
+    "first_failing_rung": "TG32",
+    "honest_gravity_floor_tps": 17.749739134517373
+  },
+  "roofline": {
+    "binding": "Metal expert-wave compute and 97 command buffers/forward remain dominant; Gravity container changes storage/indexing but not executed kernels yet",
+    "physical_cost_vector": {
+      "bytes_per_token": "source quant bytes; Gravity body is direct mmap",
+      "executed_ops_per_token": "unchanged Mixtral top-2 expert projections",
+      "dependency_depth": 97,
+      "synchronization": 97 waits/forward",
+      "kv_state": "device-resident f32 KV"
+    },
+    "next_representation_change": "activation-aware/layer-protected expert codebooks or one-pass device-resident expert wave; do not claim compact loss without capability parity",
+    "reopen_condition": "only a materially different representation or a clean same-model wall/p99 win"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

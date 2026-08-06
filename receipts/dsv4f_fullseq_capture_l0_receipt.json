@@ -1,0 +1,233 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "capture_bytes_approx": 175440,
+  "honesty": {
+    "fabricated_activations": false,
+    "full_43_layer_fullseq": false,
+    "glm_side_present": false,
+    "hcli_decisions_captured": false,
+    "logits_captured": false,
+    "logits_note": "final lm_head requires full 43-layer body per token; not run under ratio-0-only default",
+    "serve_endpoint_flipped": false
+  },
+  "metal": {
+    "command_buffers": 2550,
+    "cpu_visible_waits": 2550,
+    "fallback": 0,
+    "metal_dispatches": 44688
+  },
+  "non_bos_forward": {
+    "blocker_ratio_128_full": "same empty-compressed specialization only",
+    "blocker_ratio_4_full": "indexer/compressor graph not implemented for non-empty compressed slots (layer_plan::require_empty_compressed_growing_kv_attention)",
+    "exact_storage": false,
+    "growing_kv_sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "parity": "NUMERIC_PARITY_V2_1_ONLY",
+    "ratios_covered": {
+      "ratio_0": true,
+      "ratio_128_empty_compressed_only": false,
+      "ratio_128_full_compressed_graph": false,
+      "ratio_4_empty_compressed_only": false,
+      "ratio_4_full_indexer_graph": false
+    }
+  },
+  "paired_traces": {
+    "dir": "receipts/dsv4f_fullseq_capture_L0/traces",
+    "n_traces": 32,
+    "rows": [
+      {
+        "example_id": "v0_math_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_01.json",
+        "seal_sha256": "fdd314b6d2cda65a86de5e9d0937276bc3fa3c3476fd012c67801999a375e41b"
+      },
+      {
+        "example_id": "v0_math_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_02.json",
+        "seal_sha256": "042db71223c45f8f1b8485e29cfa26b1d743cf5f9841483d31ae3aaab7be18b2"
+      },
+      {
+        "example_id": "v0_math_03",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_03.json",
+        "seal_sha256": "dbf646b93ddcb939f58c79377b41af1ecf0db7cd298b2def1365f66600c31399"
+      },
+      {
+        "example_id": "v0_math_04",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_04.json",
+        "seal_sha256": "63dde13c6a3ea2dc1d148b8063f4f6923c78c15b5432d75b2d2df7127b0b5ea8"
+      },
+      {
+        "example_id": "v0_math_05",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_05.json",
+        "seal_sha256": "89175f304dbd5e0f050e7934c3813b81a90cb25a2b4dceb4940b81729abdd845"
+      },
+      {
+        "example_id": "v0_math_06",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_06.json",
+        "seal_sha256": "4bdc13066d1df7523b9cb06405d4c6f874abffee841e75f40c38cad2e64ccb8d"
+      },
+      {
+        "example_id": "v0_math_07",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_07.json",
+        "seal_sha256": "1d13926339caa2e770ae5a5707a422d2226a294d7da97e76787158436c363afb"
+      },
+      {
+        "example_id": "v0_math_08",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_08.json",
+        "seal_sha256": "903d53697dfc849b3b9c9a9ed9484e82dc1bbac91521ed85586311891d55dcdd"
+      },
+      {
+        "example_id": "v0_math_09",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_09.json",
+        "seal_sha256": "f151058c9c5f1b38e4554ef6d5a182abaef16dfe6ff681d7f4f16b6f4f855ada"
+      },
+      {
+        "example_id": "v0_math_10",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_math_10.json",
+        "seal_sha256": "0c7020762ff46397459e860af3bacbedab643bbd7b9ada61f98a83884c16c081"
+      },
+      {
+        "example_id": "v0_code_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_01.json",
+        "seal_sha256": "26399612b01674c473f0d21e5fac95de6fdfb4cfd1a8272adb5b90933ef394e7"
+      },
+      {
+        "example_id": "v0_code_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_02.json",
+        "seal_sha256": "05f182e6d1528685d69dcc19b1d44ef5302a007df0e903e0dcd5d2d2a2fb54fe"
+      },
+      {
+        "example_id": "v0_code_03",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_03.json",
+        "seal_sha256": "2d10c6f8602405524c003139e03738ed9364d284ebdd76358cea00bd79bb4c90"
+      },
+      {
+        "example_id": "v0_code_04",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_04.json",
+        "seal_sha256": "d4d0f316a0ceb2cf6997aab0d11fb41c6143f90d881c70300088e695b5057f24"
+      },
+      {
+        "example_id": "v0_code_05",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_05.json",
+        "seal_sha256": "b82ecd6c379a9a9fdc9d1fdd938fb315d40875840029ec688787c6212665de0d"
+      },
+      {
+        "example_id": "v0_reason_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_reason_01.json",
+        "seal_sha256": "a641b62b2c0aec8a5998c65edad301b248b1d2b29041dbe2a35d5edcf55ef045"
+      },
+      {
+        "example_id": "v0_reason_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_reason_02.json",
+        "seal_sha256": "29e9173bc407949ce76135621b2eda2138218e3f183776f07624bf3f9dd7e16f"
+      },
+      {
+        "example_id": "v0_reason_03",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_reason_03.json",
+        "seal_sha256": "83c09e797a4e101aa6cc322f32f7ec9e5b01c39ba98e54d2dd2a7db9cc0ac5ff"
+      },
+      {
+        "example_id": "v0_reason_04",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_reason_04.json",
+        "seal_sha256": "621b2491aa78ed49991eea890e0daa9b2512924ec39c6e09996e30c77b02add8"
+      },
+      {
+        "example_id": "v0_reason_05",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_reason_05.json",
+        "seal_sha256": "c1fed2982127a7f3bb8852c59527fabb19b25d748751cef4cfa5109a0c7e5d94"
+      },
+      {
+        "example_id": "v0_tool_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_tool_01.json",
+        "seal_sha256": "8bbba03462975b3a2793af0e0263cb763562befa7eebf68ca3aea83d89f44904"
+      },
+      {
+        "example_id": "v0_tool_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_tool_02.json",
+        "seal_sha256": "99995f28942db1edb622e02d8211c86eb18130ba6fc57e70abf414f79b8e1903"
+      },
+      {
+        "example_id": "v0_tool_03",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_tool_03.json",
+        "seal_sha256": "7ba3b1d94c65cee2b952cd5a1e9647649ae6dd6055462cabe7ff80a0eee2bb59"
+      },
+      {
+        "example_id": "v0_formal_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_formal_01.json",
+        "seal_sha256": "5535cba4760770742556deae465e413bc507e99026313316923418c758cbc3a9"
+      },
+      {
+        "example_id": "v0_formal_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_formal_02.json",
+        "seal_sha256": "ef3711f21333a9be3fe7b04b808221be0a411a55d3195d120b389a2cd805a165"
+      },
+      {
+        "example_id": "v0_repair_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_repair_01.json",
+        "seal_sha256": "f85ef38cf04e953c8ff05c81b31830111a96c3f0a773a1e8547c0f0015f9f3da"
+      },
+      {
+        "example_id": "v0_agent_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_agent_01.json",
+        "seal_sha256": "7d9e6f1b43e54c39411aa68abc64a008fcd0ab8f370176624ead32fd43ac9bcd"
+      },
+      {
+        "example_id": "v0_agent_02",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_agent_02.json",
+        "seal_sha256": "f743e008a04b2fd4569f0526e2ad8c808a35cc54202560f0e16a1eb2c473fcad"
+      },
+      {
+        "example_id": "v0_zh_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_zh_01.json",
+        "seal_sha256": "ebb5726b108eb653f389f45b7dc61f3df0bfb6ff2f84a31ed27e815b7a7f293e"
+      },
+      {
+        "example_id": "v0_en_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_en_01.json",
+        "seal_sha256": "8ab2a7872d5729618c3adcf95bca0fb78f4fddce99ad20fde0fec64ac792d75f"
+      },
+      {
+        "example_id": "v0_mix_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_mix_01.json",
+        "seal_sha256": "e439ccfc2352d145d26113c5f5115424cffca84eda84d76b85d11ca4db139d0d"
+      },
+      {
+        "example_id": "v0_long_01",
+        "path": "receipts/dsv4f_fullseq_capture_L0/traces/v0_long_01.json",
+        "seal_sha256": "ca86c068471fda55d7d3e1fc1270f29edf7b5932a4587e826f3c596629f3c49b"
+      }
+    ],
+    "schema": "hawking.frankenstein.paired_functional_trace.v1"
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false
+  },
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture.v1",
+  "scope": {
+    "ladder": "L0",
+    "layer_blockers": [],
+    "layers_run": [
+      0,
+      1
+    ],
+    "max_layer_requested": 1,
+    "max_seq_len": 8,
+    "sequences": 32,
+    "tokens_total": 255
+  },
+  "sites_captured": [
+    "embedding",
+    "mHC",
+    "pre_post_attn",
+    "pre_router",
+    "router_logits_top6_routes",
+    "post_MoE",
+    "late_hidden"
+  ],
+  "status": "PASS_FULLSEQ_CAPTURE_L0_32_LAYERS_0_TO_1",
+  "wall_time_ms": 143684.3605
+}

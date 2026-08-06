@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_AND_TEMP_PURGED_BYTES_RECOVERED",
+  "at": "2026-08-01T06:31:00Z",
+  "family": "qwen",
+  "terminal_receipt": "evidence/tg/TG32_QWEN72_K0_REPROBE_TERMINAL.json",
+  "terminal_seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c",
+  "removed": [
+    {"path":"models/tg-active/Qwen2.5-72B-Instruct-Q4_K_M.gguf","bytes":47415715488,"sha256":"e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"},
+    {"path":"models/tg-active/.cache/huggingface","classification":"source-local metadata, lock and cache-control files"},
+    {"path":"stderr","bytes":0,"classification":"campaign-created llama.cpp temporary stderr artifact"}
+  ],
+  "trash": {
+    "exact_items": ["/Users/scammermike/.Trash/tg-active","/Users/scammermike/.Trash/stderr"],
+    "other_trash_items_touched": false,
+    "exact_items_permanently_purged": true,
+    "postcondition": "both exact Trash paths absent"
+  },
+  "filesystem": {
+    "free_before_bytes": 365963362304,
+    "free_after_samples_bytes": [413412560896,413425876992,413425868800],
+    "free_after_bytes": 413425868800,
+    "recovered_bytes": 47462506496,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 213419979244
+  },
+  "postconditions": {
+    "models_file_count": 0,
+    "source_staging_absent": true,
+    "source_body_absent": true,
+    "campaign_temp_absent": true
+  },
+  "cold_upload": {"performed":false,"reason":"optional; no remote destination or upload authority supplied"},
+  "seal_sha256": "c08c83014abf6afc821a62c848749da13443f5a0fca873d7a311bbc850b666e2"
+}

@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 mod common;
 use common::argmax;
 use common::weights_path_qwen as weights_path;
@@ -20,7 +22,10 @@ fn load_q4k_lmhead() -> Option<QwenDense> {
     }
     std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1"); // env_on => exact "1"; full-vocab Q4_K head
     let profile = fresh_test_profile(&w).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     Some(QwenDense::load(&w, cfg).expect("load qwen-3b (q4k lm-head)"))
 }
 fn solo_tokens(engine: &mut QwenDense, seed: u32, n: usize, max_seq: usize) -> Vec<u32> {
@@ -28,7 +33,9 @@ fn solo_tokens(engine: &mut QwenDense, seed: u32, n: usize, max_seq: usize) -> V
     let mut cur = seed;
     let mut out = Vec::with_capacity(n);
     for pos in 0..n {
-        let next = engine.forward_tokens_multiseq(&[cur], &[pos], max_seq).expect("solo q4k lm-head");
+        let next = engine
+            .forward_tokens_multiseq(&[cur], &[pos], max_seq)
+            .expect("solo q4k lm-head");
         out.push(next[0]);
         cur = next[0];
     }
@@ -46,13 +53,18 @@ fn multiseq_q4k_lmhead_batched_equals_solo() {
     let n = 4usize;
     let max_seq = 16usize;
     assert!(b <= 8, "B must be <= MAX_MULTISEQ_SLOTS (8)");
-    let solo: Vec<Vec<u32>> = seeds.iter().map(|&s| solo_tokens(&mut engine, s, n, max_seq)).collect();
+    let solo: Vec<Vec<u32>> = seeds
+        .iter()
+        .map(|&s| solo_tokens(&mut engine, s, n, max_seq))
+        .collect();
     engine.multiseq_arena = None;
     let mut cur = seeds.clone();
     let mut batched: Vec<Vec<u32>> = vec![Vec::new(); b];
     for pos in 0..n {
         let positions = vec![pos; b];
-        let next = engine.forward_tokens_multiseq(&cur, &positions, max_seq).expect("batched q4k lm-head");
+        let next = engine
+            .forward_tokens_multiseq(&cur, &positions, max_seq)
+            .expect("batched q4k lm-head");
         for bi in 0..b {
             batched[bi].push(next[bi]);
         }
@@ -81,15 +93,27 @@ fn multiseq_q4k_lmhead_divergent_positions_equal_solo() {
     let mut solo: Vec<u32> = Vec::with_capacity(b);
     for bi in 0..b {
         engine.multiseq_arena = None;
-        let logits = engine.forward_tokens_multiseq_logits(&[seeds[bi]], &[start_pos[bi]], &[0], max_seq).expect("solo divergent logits");
-        assert_eq!(logits[0].len(), engine.config.vocab_size, "solo logits must be full-vocab");
+        let logits = engine
+            .forward_tokens_multiseq_logits(&[seeds[bi]], &[start_pos[bi]], &[0], max_seq)
+            .expect("solo divergent logits");
+        assert_eq!(
+            logits[0].len(),
+            engine.config.vocab_size,
+            "solo logits must be full-vocab"
+        );
         solo.push(argmax(&logits[0]));
     }
     engine.multiseq_arena = None;
     let regions: Vec<usize> = (0..b).collect();
-    let logits = engine.forward_tokens_multiseq_logits(&seeds, &start_pos, &regions, max_seq).expect("batched divergent logits");
+    let logits = engine
+        .forward_tokens_multiseq_logits(&seeds, &start_pos, &regions, max_seq)
+        .expect("batched divergent logits");
     for l in &logits {
-        assert_eq!(l.len(), engine.config.vocab_size, "batched logits must be full-vocab");
+        assert_eq!(
+            l.len(),
+            engine.config.vocab_size,
+            "batched logits must be full-vocab"
+        );
     }
     let batched: Vec<u32> = logits.iter().map(|l| argmax(l)).collect();
     for bi in 0..b {

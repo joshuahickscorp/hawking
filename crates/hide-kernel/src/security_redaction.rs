@@ -481,34 +481,57 @@ mod tests {
     #[test]
     fn redacts_aws_access_key() {
         let r = Redactor::default().redact("export AWS_KEY=AKIAIOSFODNN7EXAMPLE done");
- assert!( r.text.contains("\u{00AB}redacted:aws_access_key\u{00BB}"), "{}", r.text );
- assert!(r .redactions .iter() .any(|x| x.pattern_name == "aws_access_key"));
+        assert!(
+            r.text.contains("\u{00AB}redacted:aws_access_key\u{00BB}"),
+            "{}",
+            r.text
+        );
+        assert!(r
+            .redactions
+            .iter()
+            .any(|x| x.pattern_name == "aws_access_key"));
         assert!(!r.text.contains("AKIA"));
     }
     #[test]
     fn redacts_github_pat() {
         let token = format!("ghp_{}", "a".repeat(36));
         let r = Redactor::default().redact(&format!("token={token}"));
- assert!( r.text.contains("\u{00AB}redacted:github_pat\u{00BB}"), "{}", r.text );
+        assert!(
+            r.text.contains("\u{00AB}redacted:github_pat\u{00BB}"),
+            "{}",
+            r.text
+        );
     }
     #[test]
     fn redacts_jwt() {
         let jwt = "eyJhbGciOiJIUzI1Ni1.eyJzdWIiOiIxMjM0NTY3.SflKxwRJSMeKKF2QT4f";
         let r = Redactor::default().redact(&format!("auth {jwt} end"));
- assert!( r.text.contains("\u{00AB}redacted:jwt\u{00BB}"), "{}", r.text );
+        assert!(
+            r.text.contains("\u{00AB}redacted:jwt\u{00BB}"),
+            "{}",
+            r.text
+        );
     }
     #[test]
     fn redacts_pem_block() {
         let pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKj...\nabcDEF123==\n-----END RSA PRIVATE KEY-----";
         let r = Redactor::default().redact(&format!("key:\n{pem}\nrest"));
- assert!( r.text.contains("\u{00AB}redacted:pem_private_key\u{00BB}"), "{}", r.text );
+        assert!(
+            r.text.contains("\u{00AB}redacted:pem_private_key\u{00BB}"),
+            "{}",
+            r.text
+        );
         assert!(!r.text.contains("PRIVATE KEY-----\nMIIB"));
     }
     #[test]
     fn entropy_catches_unknown_high_entropy_token() {
         let secret = "Zk9Qm2Xp7Lv3Rt8Wf1Yc6Nb4Hd0Sg5Aj"; // 33 chars, mixed
         let r = Redactor::default().redact(&format!("password is {secret} ok"));
- assert!( r.text.contains("\u{00AB}redacted:entropy\u{00BB}"), "got: {}", r.text );
+        assert!(
+            r.text.contains("\u{00AB}redacted:entropy\u{00BB}"),
+            "got: {}",
+            r.text
+        );
     }
     #[test]
     fn marker_uses_guillemets_and_lowercase_detector(/* item 1 */) {
@@ -519,7 +542,11 @@ mod tests {
         let r = Redactor::patterns_only()
             .with_detector("MyCorp_Token", Regex::new(r"\bMYC-[0-9]{6}\b").unwrap())
             .redact("see MYC-123456 here");
- assert!( r.text.contains("\u{00AB}redacted:mycorp_token\u{00BB}"), "{}", r.text );
+        assert!(
+            r.text.contains("\u{00AB}redacted:mycorp_token\u{00BB}"),
+            "{}",
+            r.text
+        );
     }
     #[test]
     fn entropy_leaves_prose_and_ids_alone() {
@@ -542,8 +569,16 @@ mod tests {
         });
         let report = r.redact_json(&payload);
         assert!(!report.is_clean());
- assert!( report.paths.contains(&"/output/stdout".to_string()), "{:?}", report.paths );
- assert!( report.paths.contains(&"/args/1".to_string()), "{:?}", report.paths );
+        assert!(
+            report.paths.contains(&"/output/stdout".to_string()),
+            "{:?}",
+            report.paths
+        );
+        assert!(
+            report.paths.contains(&"/args/1".to_string()),
+            "{:?}",
+            report.paths
+        );
         assert_eq!(report.value["output"]["exit"], 0);
         assert_eq!(report.value["args"][0], "clean");
         assert!(report.value["output"]["stdout"]
@@ -572,14 +607,21 @@ mod tests {
     #[test]
     fn entropy_catches_single_class_all_lowercase_secret(/* item 3 */) {
         let secret = "qjxmfwbnzkdpvhsugtrclyaeoiqwrtmkxbv";
- assert!( !looks_secretish(secret), "test premise: token must be single-class" );
+        assert!(
+            !looks_secretish(secret),
+            "test premise: token must be single-class"
+        );
         assert!(shannon_entropy(secret) >= 4.2);
         let r = Redactor::default().redact(&format!("api_key={secret}"));
         assert!(r.text.contains("\u{00AB}redacted:entropy\u{00BB}"));
         let sha = "a1b9c3d7e5f1a2b4c6d8e0f2a4b6c8d0e2f4a6b8"; // 40 hex chars
         let id = "0123456789012345678901234567890123456789"; // 40 digits
         let clean = Redactor::default().redact(&format!("{sha} {id}"));
- assert!( clean.is_clean(), "hex/decimal id redacted: {:?}", clean.redactions );
+        assert!(
+            clean.is_clean(),
+            "hex/decimal id redacted: {:?}",
+            clean.redactions
+        );
     }
     #[test]
     fn single_class_dial_is_tunable(/* item 3 dial */) {
@@ -588,7 +630,11 @@ mod tests {
         let loosened = Redactor::default()
             .with_single_class(16, 3.5)
             .redact(&format!("x={tok}"));
- assert!( loosened.text.contains("\u{00AB}redacted:entropy\u{00BB}"), "{}", loosened.text );
+        assert!(
+            loosened.text.contains("\u{00AB}redacted:entropy\u{00BB}"),
+            "{}",
+            loosened.text
+        );
         let tight = Redactor::default().redact(&format!("x={tok}"));
         assert!(tight.is_clean(), "{:?}", tight.redactions);
     }

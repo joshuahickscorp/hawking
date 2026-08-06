@@ -24,9 +24,9 @@ impl FamilyRegistry {
     }
 
     pub fn get(&self, id: &str) -> Option<&FamilyDescriptor> {
-        self.by_id.get(id).or_else(|| {
-            self.by_id.values().find(|d| d.aliases.contains(&id))
-        })
+        self.by_id
+            .get(id)
+            .or_else(|| self.by_id.values().find(|d| d.aliases.contains(&id)))
     }
 
     pub fn families(&self) -> impl Iterator<Item = &FamilyDescriptor> {
@@ -128,7 +128,12 @@ mod tests {
     fn no_family_is_production() {
         let r = builtin_registry();
         for d in r.families() {
- assert_ne!( d.level, SupportLevel::Production, "{} must not be PRODUCTION", d.id );
+            assert_ne!(
+                d.level,
+                SupportLevel::Production,
+                "{} must not be PRODUCTION",
+                d.id
+            );
         }
     }
     #[test]
@@ -138,14 +143,17 @@ mod tests {
         assert_eq!(q.level, SupportLevel::SourceHeaderValidated);
         assert!(q.executes);
         assert!(q.serve_registered);
- assert!(q .evidence .iter() .any(|e| e.path.contains("ADAPTER_QWEN_RECEIPT")));
+        assert!(q
+            .evidence
+            .iter()
+            .any(|e| e.path.contains("ADAPTER_QWEN_RECEIPT")));
     }
     #[test]
     fn glm_is_small_real_checkpoint() {
         let r = builtin_registry();
         let g = r.get("glm").unwrap();
         assert_eq!(g.level, SupportLevel::SmallRealCheckpoint);
- assert!(g .evidence .iter() .any(|e| e.path.contains("GLM52_FLAGSHIP")));
+        assert!(g.evidence.iter().any(|e| e.path.contains("GLM52_FLAGSHIP")));
     }
     #[test]
     fn kimi_is_synthetic_not_serve_registered() {

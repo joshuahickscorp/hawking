@@ -9,6 +9,7 @@ pub mod dispatch;
 pub mod expert_cache;
 pub mod gravity_engine;
 pub mod llama;
+pub mod mixtral;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
@@ -76,17 +77,21 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
         || gravity_engine::GravityEngine::is_activation_aware(weights)
     {
         return Err(Error::Model(
-            "this is a .gravity artifact; its runtime is Metal-only and this is not macOS"
-                .into(),
+            "this is a .gravity artifact; its runtime is Metal-only and this is not macOS".into(),
         ));
     }
 
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
+    let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
     // Track 4.3: read + honor (log) the sidecar mixed-quant tier map, if present.
     let _ = honor_sidecar_tier_map(weights, &gguf);
     drop(gguf); // model loaders re-open via mmap
     match arch.as_str() {
+        "llama" if is_mixtral => {
+            let e = mixtral::MixtralEngine::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         // Llama-family dense arch (Llama-2 / Llama-3.x / Mistral).
         "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => {
             let e = llama::LlamaDense::load(weights, config)?;
@@ -229,7 +234,8 @@ mod tier_map_hook_tests {
     fn tm(pairs: &[(&str, &str)]) -> SidecarTierMap {
         SidecarTierMap {
             entries: pairs
-                .iter().map(|(t, d)| SidecarTierEntry {
+                .iter()
+                .map(|(t, d)| SidecarTierEntry {
                     tensor: (*t).to_string(),
                     dtype: (*d).to_string(),
                 })
@@ -265,7 +271,8 @@ mod tier_map_hook_tests {
             ("blk.5.ffn_up.weight", "q8_0"),
             ("blk.5.ffn_down.weight", "q6_K"),
         ]);
-        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"]; let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
+        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"];
+        let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
         assert_eq!(tier_map_overrides_for_names(&m, a), 2);
         assert_eq!(tier_map_overrides_for_names(&m, b), 2);
     }

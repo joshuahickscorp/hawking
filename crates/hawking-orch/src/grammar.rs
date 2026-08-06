@@ -489,8 +489,14 @@ mod tests {
     }
     #[test]
     fn schema_to_choices_and_regex() {
-        assert_eq!(ShellGrammarCompiler::spec_from_schema("{\"enum\":[\"a\",\"b\"]}").unwrap(), GrammarSpec::Choices(vec!["a".into(), "b".into()]));
-        assert_eq!(ShellGrammarCompiler::spec_from_schema("{\"pattern\":\"^\\\\d+$\"}").unwrap(), GrammarSpec::Regex("^\\d+$".into()));
+        assert_eq!(
+            ShellGrammarCompiler::spec_from_schema("{\"enum\":[\"a\",\"b\"]}").unwrap(),
+            GrammarSpec::Choices(vec!["a".into(), "b".into()])
+        );
+        assert_eq!(
+            ShellGrammarCompiler::spec_from_schema("{\"pattern\":\"^\\\\d+$\"}").unwrap(),
+            GrammarSpec::Regex("^\\d+$".into())
+        );
     }
     #[test]
     fn json_object_validate_missing_key() {

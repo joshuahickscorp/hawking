@@ -65,6 +65,11 @@ const LLAMA_GAPS: &[&str] = &[
     "no standing PRODUCTION parity receipt",
     "smoke and gravity_llama_forward skip when weights/artifacts are absent",
     "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents",
+    // Measured 2026-07-30 on Llama-3.2-1B-Instruct-Q4_K_M, evidence/tg/TG_EXTERNAL_BASELINE.json.
+    // `executes` stays true by its own definition, a forward does run, but these
+    // two are what a reader needs before treating that as working support.
+    "executes on CPU only: dispatches_per_forward=0 and device_id=null, so no Metal path is reached",
+    "output is degenerate on both a raw prompt and a correct Llama-3 chat template, while llama.cpp reads the same GGUF at 338 tok/s against our 3.63",
 ];
 const LLAMA_SOURCE_CLASSES: &[&str] = &[
     "gguf.llama",
@@ -111,7 +116,6 @@ const MISTRAL_EVIDENCE: &[Evidence] = &[
     Evidence { path: "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json", claim: "Stage A: official config/tokenizer/safetensors header parsed and mapped", kind: EvidenceKind::SourceHeader },
     Evidence { path: "crates/hawking-core/tests/llama32_smoke.rs", claim: "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)", kind: EvidenceKind::SmallCheckpointRun },
     Evidence { path: "packs/hawking-adapters-extra.json", claim: "mixtral extracted off-tree to adapters-extra pack", kind: EvidenceKind::Description },
-    Evidence { path: "crates/hawking-seed-c/src/providers/adapters.rs", claim: "seed-c ArchAdapter::mixtral is declarative plan-only (does not execute)", kind: EvidenceKind::Description },
 ];
 const MISTRAL_GAPS: &[&str] = &[
     "mixtral MoE not in shipping load_engine",
@@ -241,9 +245,9 @@ const QWEN_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const GLM_EVIDENCE: &[Evidence] = &[
-    Evidence { path: "GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
+    Evidence { path: "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
     Evidence { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: EvidenceKind::Description },
-    Evidence { path: "crates/hawking-core/tests/gravity_engine_registry.rs", claim: "registry path for .gravity artifacts", kind: EvidenceKind::Description },
+    Evidence { path: "crates/hawking-core/tests/gravity_artifact_suite.rs", claim: "committed .gravity artifact registry and integrity suite", kind: EvidenceKind::Description },
     // Stage C: this test runs UNCONDITIONALLY. Unlike the weight-gated tests, it does
     // not skip -- the fixture is committed. Real container, real codec, real oracle.
     Evidence { path: "crates/hawking-core/tests/gravity_glm_forward.rs", claim: "unconditional: real .gravity container decoded, complete token executed, matches numpy oracle reading the same container (3 passed, 0.04s)", kind: EvidenceKind::RealTensorDecode },
@@ -365,7 +369,7 @@ const DEEPSEEK_ABI: FamilyAbi = FamilyAbi {
 };
 const KIMI_EVIDENCE: &[Evidence] = &[
     Evidence {
-        path: "KIMI_K26_ADAPTER_TWIN.json",
+        path: "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
         claim: "synthetic CPU reference + bound real-source metal K1 twin",
         kind: EvidenceKind::SyntheticParity,
     },
@@ -423,7 +427,7 @@ const KIMI_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const MINIMAX_EVIDENCE: &[Evidence] = &[Evidence {
-    path: "FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    path: "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
     claim: "family listed in bridge archaeology; no serve path found",
     kind: EvidenceKind::Description,
 }];
@@ -471,11 +475,6 @@ const GEMMA_EVIDENCE: &[Evidence] = &[
         claim: "smoke test remains but load_engine rejects unknown gemma2 arch without pack",
         kind: EvidenceKind::Description,
     },
-    Evidence {
-        path: "crates/hawking-seed-c/src/providers/adapters.rs",
-        claim: "seed-c ArchAdapter::gemma2 is declarative plan-only",
-        kind: EvidenceKind::Description,
-    },
 ];
 const GEMMA_SOURCE_CLASSES: &[&str] = &[
     "gguf.gemma2",
@@ -506,11 +505,6 @@ const PHI_EVIDENCE: &[Evidence] = &[
     Evidence {
         path: "crates/hawking-core/tests/phi3_smoke.rs",
         claim: "smoke test remains; arch not in shipping load_engine",
-        kind: EvidenceKind::Description,
-    },
-    Evidence {
-        path: "crates/hawking-seed-c/src/providers/adapters.rs",
-        claim: "seed-c ArchAdapter::phi3 is declarative plan-only",
         kind: EvidenceKind::Description,
     },
 ];

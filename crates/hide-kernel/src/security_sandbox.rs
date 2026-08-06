@@ -413,7 +413,10 @@ mod tests {
         let r = render_macos_seatbelt(&p);
         assert!(r.profile_text.contains("(deny process-exec*)"));
         assert!(!r.profile_text.contains("(allow process-exec\n"));
- assert!(r .warnings .iter() .any(|w| w.contains("process-exec fully denied")));
+        assert!(r
+            .warnings
+            .iter()
+            .any(|w| w.contains("process-exec fully denied")));
     }
     #[test]
     fn denies_secret_reads_and_hide_log_writes() {
@@ -424,10 +427,18 @@ mod tests {
             worktree_root: Some("/work/wt".to_string()),
         };
         let r = render_macos_seatbelt_with(&p, &opts);
- assert!(r .profile_text .contains("(deny file-read* (subpath \"$HOME/.ssh\"))"));
- assert!(r .profile_text .contains(r#"(deny file-read* (regex #"\.pem$"))"#));
- assert!(r .profile_text .contains("(deny file-write* (subpath \"/work/.hide/log\"))"));
- assert!(r .profile_text .contains("(deny file-write* (subpath \"/work/.hide\"))"));
+        assert!(r
+            .profile_text
+            .contains("(deny file-read* (subpath \"$HOME/.ssh\"))"));
+        assert!(r
+            .profile_text
+            .contains(r#"(deny file-read* (regex #"\.pem$"))"#));
+        assert!(r
+            .profile_text
+            .contains("(deny file-write* (subpath \"/work/.hide/log\"))"));
+        assert!(r
+            .profile_text
+            .contains("(deny file-write* (subpath \"/work/.hide\"))"));
     }
     #[test]
     fn proxy_port_is_the_only_egress() {
@@ -438,8 +449,13 @@ mod tests {
         };
         let r = render_macos_seatbelt_with(&p, &opts);
         assert!(r.profile_text.contains("(deny network*)"));
- assert!(r .profile_text .contains("(allow network-outbound (remote ip \"localhost:8131\"))"));
- assert!(r .warnings .iter() .any(|w| w.contains("allowed_hosts are enforced at the proxy")));
+        assert!(r
+            .profile_text
+            .contains("(allow network-outbound (remote ip \"localhost:8131\"))"));
+        assert!(r
+            .warnings
+            .iter()
+            .any(|w| w.contains("allowed_hosts are enforced at the proxy")));
     }
     #[test]
     fn deny_network_without_proxy_warns_zero_egress() {
@@ -452,7 +468,11 @@ mod tests {
     fn bare_command_renders_basename_regex() {
         let p = profile_with(&["cargo"], Decision::Deny);
         let r = render_macos_seatbelt(&p);
- assert!( r.profile_text.contains(r#"(regex #"/cargo$")"#), "{}", r.profile_text );
+        assert!(
+            r.profile_text.contains(r#"(regex #"/cargo$")"#),
+            "{}",
+            r.profile_text
+        );
     }
     #[test]
     fn emit_grant_profile_writes_sb() {

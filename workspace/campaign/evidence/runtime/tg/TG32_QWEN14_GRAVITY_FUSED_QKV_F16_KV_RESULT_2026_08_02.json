@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.tg.same_model_representation_result.v2",
+  "status": "REJECTED_COMBINED_QKV_F16_KV_WALL_AND_TAIL_REGRESSION",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_F16_KV_PREREGISTRATION_2026_08_02.json",
+  "preregistration_sha256": "d25a40e6cfa8ad3240f0fd34349b22136bb1a750755a9e74fb04676553c59f12",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-fused-qkv-f16kv.gravity",
+    "bytes": 8982325254,
+    "payload_bytes": 8982142976,
+    "sha256": "436bef785dab6686331a29cc7803ca54adcbd2b118c5873c66e51dc5efa73283",
+    "mapped_tensors": 579,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py"
+  },
+  "tokenizer": {
+    "repository": "Qwen/Qwen2.5-14B-Instruct",
+    "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "receipt_seal_sha256": "f9d1675742ee3410991e2ddc70a73a936d801dc53c8ca4e05ec17b0183602fd4",
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 32,
+    "runs_each_side": 2,
+    "completed_decode_forwards_each_run": 31,
+    "clean_sequential_gpu": true,
+    "control_env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_FUSED_QKV=0 HAWKING_GRAVITY_F16_KV=0",
+    "candidate_env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_FUSED_QKV=1 HAWKING_GRAVITY_F16_KV=1",
+    "cpu_reference_fallback_required": 0,
+    "continuation_hash_algorithm": "sha256(compact_json_array_of_completion_token_ids)",
+    "continuation_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "all_token_ids_equal": true
+  },
+  "control": {
+    "runs": [
+      {"tps": 38.212518995890036, "decode_ms": 811.252459, "prefill_ms": 171.513167, "p50_ms": 25.326958, "p95_ms": 26.344875, "p99_ms": 26.5244875, "dispatches_per_forward": 770, "decode_metal_dispatches_total": 23870, "command_buffers_per_token": 1, "fallback_count": 0},
+      {"tps": 37.998030843982235, "decode_ms": 815.83175, "prefill_ms": 169.565583, "p50_ms": 25.42875, "p95_ms": 26.246, "p99_ms": 26.4154207, "dispatches_per_forward": 770, "decode_metal_dispatches_total": 23870, "command_buffers_per_token": 1, "fallback_count": 0}
+    ],
+    "median_tps": 38.105274919936136,
+    "median_decode_ms": 813.5421045,
+    "median_prefill_ms": 170.539375,
+    "median_p50_ms": 25.377854,
+    "median_p95_ms": 26.2954375,
+    "median_p99_ms": 26.4699541,
+    "median_dispatches_per_forward": 770,
+    "median_decode_metal_dispatches_total": 23870,
+    "fallback_count": 0
+  },
+  "candidate": {
+    "runs": [
+      {"tps": 36.42189717214198, "decode_ms": 851.136333, "prefill_ms": 181.083, "p50_ms": 26.570125, "p95_ms": 27.327479, "p99_ms": 27.6085669, "dispatches_per_forward": 482, "decode_metal_dispatches_total": 14942, "command_buffers_per_token": 1, "fallback_count": 0},
+      {"tps": 36.37094255004305, "decode_ms": 852.32875, "prefill_ms": 179.186375, "p50_ms": 26.515166, "p95_ms": 27.576229, "p99_ms": 27.6841544, "dispatches_per_forward": 482, "decode_metal_dispatches_total": 14942, "command_buffers_per_token": 1, "fallback_count": 0}
+    ],
+    "median_tps": 36.39641986109251,
+    "median_decode_ms": 851.7325415,
+    "median_prefill_ms": 180.1346875,
+    "median_p50_ms": 26.5426455,
+    "median_p95_ms": 27.451854,
+    "median_p99_ms": 27.64636065,
+    "median_dispatches_per_forward": 482,
+    "median_decode_metal_dispatches_total": 14942,
+    "fallback_count": 0,
+    "physical_probe": {
+      "receipt_control": "models/tg-active/qwen14-fused-qkv-f16kv-2026-08-02/probe_control.json",
+      "receipt_candidate": "models/tg-active/qwen14-fused-qkv-f16kv-2026-08-02/probe_candidate.json",
+      "candidate_kv_precision": "explicit_f16_candidate",
+      "candidate_qkv_rope_kv_append": "fused_source_candidate",
+      "candidate_prefill_fused_qkv_dispatches": 240,
+      "candidate_decode_fused_qkv_dispatches": 384,
+      "control_prefill_fused_qkv_dispatches": 0,
+      "control_decode_fused_qkv_dispatches": 0,
+      "candidate_probe_continuation_sha256": "5ac3d1c5bf766be79dcdbe9c756461c367e4c557c097e8322fe54c5f00784c18",
+      "control_probe_continuation_sha256": "5ac3d1c5bf766be79dcdbe9c756461c367e4c557c097e8322fe54c5f00784c18"
+    }
+  },
+  "deltas": {
+    "median_tps_percent": -4.484562996682584,
+    "median_decode_wall_percent": 4.694340561939536,
+    "median_prefill_percent": 5.626449903431396,
+    "median_p95_percent": 4.397783836074232,
+    "median_p99_percent": 4.44430899107604,
+    "dispatches_removed_per_forward": 288,
+    "decode_metal_dispatches_removed_total": 8928,
+    "same_model": true,
+    "same_prompt_ids": true,
+    "complete_token_protocol_equal": true,
+    "token_id_sequence_match": true,
+    "cpu_reference_fallback_delta": 0,
+    "physical_topology_changed": true
+  },
+  "rung": {
+    "deepest_stable_rung": "TG32",
+    "candidate_clears_tg32": true,
+    "candidate_tps": 36.39641986109251,
+    "first_failing_rung": "TG20",
+    "scope": "NARROW_SOURCE_WINDOW_RUNTIME_SCOPE_ONLY",
+    "capability_boundary": "G0/G1 source coverage, exact tokenizer/prompt IDs, Numeric Parity V2.1 continuation and real Metal are sealed. G2-G9 whole-model/product capability gates remain open and are not claimed."
+  },
+  "verdict": "REJECTED: combined fused QKV plus F16-KV flash physically dispatched and preserved all 32 completion IDs, but median TPS fell 4.485 percent, decode wall regressed 4.694 percent, prefill regressed 5.626 percent, p95/p99 regressed 4.398/4.444 percent, and the candidate remains below TG20. The prior Qwen14 TG32 narrow floor is unchanged; require a materially different lower-active-byte or command-graph representation.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

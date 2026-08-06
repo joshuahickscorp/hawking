@@ -1,0 +1,57 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "deterministic-route-tie-epsilon-v1",
+    "kind": "same_model_router_tie_policy",
+    "hypothesis": "The native Metal path's first broader divergence is caused by a near-tied router pair whose fp32 logits drift across CPU and Metal; an explicit small tie epsilon with expert-id ordering will make only near-tied choices deterministic while leaving ordinary score ordering unchanged.",
+    "mechanism": "Add an opt-in epsilon to the existing Metal top-k selector. During each masked selection, treat scores within epsilon as tied and choose the lower expert ID; use the same deterministic tie policy in the CPU Gravity authority for the comparison run.",
+    "scope": "same exact DeepSeek Q4_K_M source, revision, prompt, tokenizer, v2t_gu_v2 profile and 32 complete decode tokens; no quantization, tokenizer, context, expert-count, top-k or model-family change; diagnostic candidate until full parity and CLEAN wall gates pass",
+    "candidate_env": "HAWKING_DS_ROUTE_TIE_EPS=0.001",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_window_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "route_set_unchanged": true,
+      "route_order_mismatch_reduced": true,
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "capability_scope": "G0/G1 plus explicit route-order diagnostic; no broader product approval"
+    }
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "measured_tps": 41.06909043843913,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "source_window_ids": [8913, 13, 185, 185]
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

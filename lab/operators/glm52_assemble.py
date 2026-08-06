@@ -16,7 +16,7 @@ STATE = APPSUP / 'GLM52Gravity/source_fetch'
 COMPACT_ROOT = Path(os.environ.get('GLM52_COMPACT_ROOT', str(Path.home() / 'Desktop/GLM52-Gravity-SubBit')))
 MODELS_ROOT = APPSUP / 'Models/GLM-5.2'
 MANIFEST = STATE / 'GLM52_OFFICIAL_TENSOR_INDEX.json'
-CONTRACT = REPO / 'GLM52_ARCHITECTURE_CONTRACT.json'
+CONTRACT = REPO / 'evidence' / 'glm52' / 'GLM52_ARCHITECTURE_CONTRACT.json'
 CONFIG = APPSUP / 'GLM52Gravity/control/config.json'
 
 def _now() -> str:

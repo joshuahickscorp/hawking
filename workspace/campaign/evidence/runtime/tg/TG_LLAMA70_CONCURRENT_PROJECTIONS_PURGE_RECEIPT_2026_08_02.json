@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_AND_RECOVERED",
+  "candidate": "llama70-resident-concurrent-projections-v1",
+  "rejection_receipt": "evidence/tg/TG32_LLAMA70_CONCURRENT_PROJECTIONS_REJECTED_2026_08_02.json",
+  "lane": "models/tg-active/llama70-concurrent-2026-08-02",
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "body_bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664"
+  },
+  "storage": {
+    "free_before_admission": 374324441088,
+    "protected_floor_bytes": 200005889556,
+    "free_after_move_to_trash": 331616772096,
+    "free_after_exact_purge": 374137044992,
+    "recovered_free_bytes": 42520272896,
+    "observed_recovery_minus_body_bytes": -125920,
+    "model_lane_empty": true,
+    "active_model_files": 0,
+    "exact_trash_target": "llama70-concurrent-2026-08-02",
+    "exact_trash_target_purged": true,
+    "unrelated_trash_preserved": ["SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "2262c1af41c1bb0ae2d15c1e99cbc907706e379c79793a7e971a2dbb2a5394e2"
+}

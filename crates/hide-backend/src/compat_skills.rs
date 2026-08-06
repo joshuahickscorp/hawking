@@ -73,8 +73,7 @@ fn from_frontmatter(path: &Path, fm: &Frontmatter, body: String) -> Skill {
 /// Discover skills under the project and user `.claude/skills` trees. Project
 /// skills win by name. Sorted by name for determinism.
 pub fn discover(layout: &Layout) -> Vec<Skill> {
-    let mut by_name: std::collections::BTreeMap<String, Skill> =
-        std::collections::BTreeMap::new();
+    let mut by_name: std::collections::BTreeMap<String, Skill> = std::collections::BTreeMap::new();
 
     for dir in [
         layout.home.join(".claude").join("skills"),
@@ -93,7 +92,10 @@ fn parse_dir(dir: &Path) -> Vec<Skill> {
         return Vec::new();
     }
     let mut files: Vec<PathBuf> = Vec::new();
-    for entry in walkdir::WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in walkdir::WalkDir::new(dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         if entry.file_type().is_file() && entry.file_name() == "SKILL.md" {
             files.push(entry.into_path());
         }

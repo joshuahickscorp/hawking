@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.glm52.streaming_windowed_candidate.v1",
+    "status": "OFFLINE_CANDIDATE_BLOCKED_ARTIFACT_RETENTION_NOT_AUTHORITY",
+  "authoritative": false,
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abaf5283eab3d9",
+  "inputs": {
+    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
+    "dependency_graph": "evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+    "dependency_graph_seal_sha256": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9"
+  },
+  "partition": {
+    "rule": "one dependency-graph organ per window, execution_order ascending; every tensor half-open interval is charged exactly once",
+    "window_count": 81,
+    "range_count": 59585,
+        "window_partition_sha256": "ecff939ad471cbe324c4dc7a8ee99beea0e29082abfb22ed0ee4c38107f76772",
+    "scratch_multiplier": 1.05,
+    "artifact_bytes_per_window": 2147483648,
+    "metadata_bytes_per_window": 67108864,
+    "prefetch": "next organ source payload, charged as explicit non-source residency"
+  },
+  "offline_result": {
+        "offline_admission": "BLOCKED",
+        "envelope_bytes": 90000000000,
+        "peak_resident_bytes": 208071098368,
+        "peak_resident_gib": 193.78056514263153,
+        "slack_bytes": -118071098368,
+        "offline_block_reasons": [
+            "candidate_peak_exceeds_90gb_envelope",
+            "per-window artifact eviction or remote handoff is not sealed"
+        ],
+    "range_payload_bytes": 1506659919872,
+    "range_rounded_bytes": 1506686271488,
+    "scratch_bytes": 78456356864,
+    "artifact_bytes_total_across_windows": 173946175488,
+    "metadata_bytes_total_across_windows": 5435817984,
+        "prefetch_bytes_total_across_windows": 1504756754432
+    },
+    "reproduction": {
+        "builder": "lab.operators.gravity_range_scheduler.plan_glm52_organ_windows",
+        "partition_algorithm": "organ_execution_order.v1",
+        "inputs": "the two sealed input artifacts above",
+        "artifact_retention_rule": "All emitted per-window artifacts remain charged until a distinct sealed eviction or remote-handoff authority proves otherwise.",
+        "physical_range_fetch_implemented": false
+    },
+  "does_not_prove": [
+        "live Xet allocation or resident-byte measurement",
+        "per-window artifact eviction or a remote artifact handoff",
+    "runtime dependency sufficiency of organ-only carry state",
+    "GPU capability, parity, benchmark, or TG rung",
+    "teacher capture, artifact quality, or Odyssey authorization"
+  ],
+  "required_next": [
+        "build a materially different candidate with bounded retained artifacts, or seal every per-window artifact eviction/remote handoff before subtracting it from the residency ledger",
+        "rebuild a sealed schedule from the corrected candidate after live range/allocation measurement",
+    "bind a <=90000000000-byte resource policy and exact carry/prefetch accounting",
+    "run the fail-closed parent launcher only after owner authorization, clean lease, capability approval, and pinned runtime checks"
+  ]
+}

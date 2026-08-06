@@ -11,7 +11,11 @@ fn run_greedy(weights: &PathBuf) -> Vec<u32> {
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -37,5 +41,9 @@ fn phi35_mini_greedy_smoke() {
     let ids = run_greedy(&weights);
     let ids2 = run_greedy(&weights);
     assert_eq!(ids, ids2, "greedy not deterministic");
-    check_or_pin_hash(Path::new("tests/golden/_phi3_token_baseline.hashes"), "phi3", &hash16_tokens(&ids));
+    check_or_pin_hash(
+        Path::new("tests/golden/_phi3_token_baseline.hashes"),
+        "phi3",
+        &hash16_tokens(&ids),
+    );
 }

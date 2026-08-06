@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.tg.same_model_k0_result.v2",
+  "status": "RETAINED_DIAGNOSTIC_NO_NAMED_RUNG",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-clean-no-trace-k0-2026-08-02",
+  "preregistration": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_PREREGISTRATION_2026_08_02.json",
+  "device": {
+    "identity": "Apple M3 Ultra",
+    "metal_dispatches": 964,
+    "command_buffers_per_token": 1,
+    "waits_per_token": 1,
+    "cpu_reference_fallback": 0
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "protocol": {
+    "profile": "exact",
+    "prompt": "2+2=",
+    "prompt_tokens": 4,
+    "completion_tokens": 16,
+    "temperature": 0,
+    "complete_token": true,
+    "output_sha256": "34ef0c9d0184dc0d5863cf5a4e67cc1c51aa0ad572d1009a9bb5f708eeb7a980",
+    "output_hash_matches_traced_native_q5q8": true,
+    "trace_flags": "unset",
+    "stdout": "evidence/tg/raw/TG32_QWEN72_CLEAN_NO_TRACE_16_2026_08_02.stdout",
+    "stderr": "evidence/tg/raw/TG32_QWEN72_CLEAN_NO_TRACE_16_2026_08_02.stderr"
+  },
+  "candidate": {
+    "tps": 2.8601858696685474,
+    "prefill_ms": 2326.469542,
+    "decode_ms": 5594.042041,
+    "p50_ms": 349.3680835,
+    "p95_ms": 350.694136,
+    "p99_ms": 351.5381608,
+    "min_ms": 348.12429099999997,
+    "max_ms": 351.749167,
+    "decode_metal_dispatches_total": 15424,
+    "completed_decode_forwards": 16,
+    "lm_head_path": "raw-q6k",
+    "peak_resident_bytes": 8292696064,
+    "load_complete_ms": 19235.46
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN72_K0_NATIVE_Q5Q8_RESULT_2026_08_02.json",
+    "tps": 2.8159135046887145,
+    "p50_ms": 354.63125,
+    "p95_ms": 357.76246825,
+    "p99_ms": 358.72349365,
+    "dispatches_per_forward": 964,
+    "trace_enabled": true
+  },
+  "delta": {
+    "tps_percent": 1.5722203436332904,
+    "p50_percent": -1.4841237200613366,
+    "p95_percent": -1.9757053568460692,
+    "p99_percent": -2.0030282312679004,
+    "dispatch_delta": 0,
+    "promotion_wall_gate_percent": 3.0
+  },
+  "promotion": {
+    "same_model": true,
+    "complete_token": true,
+    "capability_match": "continuation text hash exact against traced native control; full-logit V2.1 authority not claimed",
+    "named_rung": false,
+    "deepest_stable_rung": null,
+    "target_rung": "TG32",
+    "target_tps": 31.25,
+    "verdict": "CLEAN_NO_TRACE_PATH IS 1.572 PERCENT FASTER WITH 2.003 PERCENT P99 IMPROVEMENT, BUT IT MISSES THE 3 PERCENT SAME-MODEL PROMOTION GATE AND REMAINS 10.94X BELOW TG32. RETAIN AS THE CURRENT CLEAN QWEN72 FLOOR; NEXT CHANGE MUST REDUCE 964 DISPATCHES/COMPLETED TOKEN OR REPLACE THE MEMORY-BOUND Q5/Q8 GEMV GRAMMAR.",
+    "reopen_condition": "A K3 projection wave, command-topology reduction, or llama.cpp-backed kernel must preserve complete-token parity and improve clean wall time by at least 3 percent."
+  },
+  "owner_fences_false": true
+}

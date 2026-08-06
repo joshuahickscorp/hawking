@@ -24,7 +24,7 @@
 #                 (default: traces)
 #   BIN           dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS       GGUF model file (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
-#   PROFILE       kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
+#   PROFILE       kernel profile JSON (default: workspace/campaign/config/profiles/qwen/qwen3b-instruct-q4k.m3pro18.json)
 #   PY            python3 binary (default: .venv/bin/python or /usr/bin/python3)
 #
 # NOTE ON TOKENS:
@@ -50,7 +50,7 @@ TOKENS="${TOKENS:-200}"
 OUT_DIR="${OUT_DIR:-traces}"
 BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
-PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
+PROFILE="${PROFILE:-workspace/campaign/config/profiles/qwen/qwen3b-instruct-q4k.m3pro18.json}"
 
 # Python — prefer venv if present
 if [[ -x ".venv/bin/python" ]]; then

@@ -1,0 +1,135 @@
+{
+  "schema": "hawking.tg.same_model_candidate_result.v1",
+  "status": "REJECTED_CLEAN_SAME_MODEL_WALL_REGRESSION",
+  "model": "Llama-3.3-70B-Instruct-Q4_K_M",
+  "family": "llama3_dense",
+  "preregistration": "evidence/tg/TG32_LLAMA70_V3_DUAL_GEOMETRY_PREREGISTRATION_2026_08_02.json",
+  "pack_blocker": "evidence/tg/TG32_LLAMA70_V3_DUAL_PACK_BLOCKER_2026_08_02.json",
+  "candidate": {
+    "id": "llama70-resident-q4-v3-dual-geometry-v1",
+    "environment_delta": "HAWKING_LLAMA_RESIDENT_B9430_GEOM_V3_DUAL=1",
+    "runs": [
+      {
+        "complete_tokens": 8,
+        "tps": 4.426607789511592,
+        "decode_ms": 1581.346334,
+        "prefill_ms": 1829.827458,
+        "token_latency_ms": [226.1425, 225.980291, 225.932583, 225.705167, 226.493209, 225.520417, 225.560041],
+        "p50_ms": 225.932583,
+        "p95_ms": 226.3879963,
+        "p99_ms": 226.47216646,
+        "metal_dispatches_total": 6734,
+        "dispatches_per_forward": 962,
+        "command_buffers_total": 7,
+        "fallback_count": 0
+      },
+      {
+        "complete_tokens": 8,
+        "tps": 4.419703924034129,
+        "decode_ms": 1583.8165,
+        "prefill_ms": 1856.468917,
+        "token_latency_ms": [225.516958, 227.701833, 226.112083, 226.043834, 226.24429, 226.059333, 226.125166],
+        "p50_ms": 226.112083,
+        "p95_ms": 227.2645701,
+        "p99_ms": 227.61438042,
+        "metal_dispatches_total": 6734,
+        "dispatches_per_forward": 962,
+        "command_buffers_total": 7,
+        "fallback_count": 0
+      }
+    ],
+    "mean_tps": 4.42315585677286,
+    "mean_p50_ms": 226.022333,
+    "mean_p95_ms": 226.8262832,
+    "mean_p99_ms": 227.04327344,
+    "device_id": "Apple M3 Ultra",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "generated_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+    "continuation_hash_sha256_compact_json": "3c28ddd07507c1720471ad323fa141c08300984939d12177af1184bd7b4d74c3"
+  },
+  "control": {
+    "profile": "resident_b9430_fused_graph_q5_value_repair",
+    "runs": [
+      {
+        "complete_tokens": 8,
+        "tps": 11.408595508684655,
+        "decode_ms": 613.572459,
+        "prefill_ms": 19771.447041,
+        "token_latency_ms": [87.638583, 87.042083, 87.396625, 87.756291, 88.356708, 87.965166, 87.406125],
+        "p50_ms": 87.638583,
+        "p95_ms": 88.2392454,
+        "p99_ms": 88.33321548,
+        "metal_dispatches_total": 6734,
+        "dispatches_per_forward": 962,
+        "command_buffers_total": 7,
+        "fallback_count": 0
+      },
+      {
+        "complete_tokens": 8,
+        "tps": 11.298745011428544,
+        "decode_ms": 619.537833,
+        "prefill_ms": 1016.329708,
+        "token_latency_ms": [88.348334, 88.769125, 88.176875, 88.006875, 89.181125, 88.446542, 88.596125],
+        "p50_ms": 88.446542,
+        "p95_ms": 89.057525,
+        "p99_ms": 89.156405,
+        "metal_dispatches_total": 6734,
+        "dispatches_per_forward": 962,
+        "command_buffers_total": 7,
+        "fallback_count": 0
+      }
+    ],
+    "mean_tps": 11.3536702600566,
+    "mean_p50_ms": 88.0425625,
+    "mean_p95_ms": 88.6483852,
+    "mean_p99_ms": 88.74481024,
+    "device_id": "Apple M3 Ultra",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "generated_token_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925],
+    "continuation_hash_sha256_compact_json": "3c28ddd07507c1720471ad323fa141c08300984939d12177af1184bd7b4d74c3"
+  },
+  "deltas": {
+    "tps_percent": -61.042061681727844,
+    "p50_percent": 156.72310196706287,
+    "p95_percent": 155.91306965739938,
+    "p99_percent": 156.07930390062872,
+    "dispatches_per_forward_delta": 0,
+    "metal_dispatch_delta": 0,
+    "token_id_sequence_match": true,
+    "prompt_id_sequence_match": true,
+    "cpu_reference_fallback_delta": 0,
+    "complete_token_wall_promotion_gate_percent": 3.0
+  },
+  "verdict": "REJECT_NO_PROMOTION",
+  "reason": "The dual-row kernel preserved exact continuation, real Metal dispatch and zero fallback, but complete-token decode TPS fell 61.04 percent and p99 rose 156.08 percent. The geometry is retired and remains opt-in only.",
+  "rung": {
+    "target": "TG32",
+    "candidate_tps": 4.42315585677286,
+    "candidate_meets_target": false,
+    "deepest_stable_rung": null,
+    "first_failing_rung": "TG32"
+  },
+  "roofline": {
+    "binding": "resident Q4 projection geometry: eight-row threadgroups increase per-dispatch decode latency from approximately 88 ms to 226 ms without reducing dispatch topology",
+    "current_honest_floor_tps": 11.3536702600566,
+    "next_representation_change": "bounded streaming Gravity writer, then a geometry that reduces bytes or command topology rather than increasing row occupancy",
+    "rotation_condition": "two materially distinct Llama resident failures are now sealed; rotate to the next >=32B family after exact eviction"
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "source_hash_reverified_after_download": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

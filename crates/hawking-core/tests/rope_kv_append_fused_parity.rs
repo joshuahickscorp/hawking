@@ -38,11 +38,36 @@ fn run_ref(
     let kb_buf = k_bias.map(|b| new_f32_buf(ctx, b));
     let vb_buf = v_bias.map(|b| new_f32_buf(ctx, b));
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::rope_qk_f32_b1_bias_tcb(&mut tcb, &q_buf, &k_buf, qb_buf.as_ref(), kb_buf.as_ref(), n_q, n_k, head_dim, pos, base)
-        .expect("ref rope_qk");
-    kernels::kv_append_vbias_f32_tcb(&mut tcb, &k_buf, &v_buf, vb_buf.as_ref(), &k_cache, &v_cache, kv_dim, kv_off).expect("ref kv_append");
+    kernels::rope_qk_f32_b1_bias_tcb(
+        &mut tcb,
+        &q_buf,
+        &k_buf,
+        qb_buf.as_ref(),
+        kb_buf.as_ref(),
+        n_q,
+        n_k,
+        head_dim,
+        pos,
+        base,
+    )
+    .expect("ref rope_qk");
+    kernels::kv_append_vbias_f32_tcb(
+        &mut tcb,
+        &k_buf,
+        &v_buf,
+        vb_buf.as_ref(),
+        &k_cache,
+        &v_cache,
+        kv_dim,
+        kv_off,
+    )
+    .expect("ref kv_append");
     tcb.commit_and_wait().expect("ref commit");
-    (read_f32_buf(&q_buf, q.len()), read_f32_buf(&k_cache, cache_size), read_f32_buf(&v_cache, cache_size))
+    (
+        read_f32_buf(&q_buf, q.len()),
+        read_f32_buf(&k_cache, cache_size),
+        read_f32_buf(&v_cache, cache_size),
+    )
 }
 #[allow(clippy::too_many_arguments)]
 fn run_fused(
@@ -91,7 +116,11 @@ fn run_fused(
     )
     .expect("fused dispatch");
     tcb.commit_and_wait().expect("fused commit");
-    (read_f32_buf(&q_buf, q.len()), read_f32_buf(&k_cache, cache_size), read_f32_buf(&v_cache, cache_size))
+    (
+        read_f32_buf(&q_buf, q.len()),
+        read_f32_buf(&k_cache, cache_size),
+        read_f32_buf(&v_cache, cache_size),
+    )
 }
 #[test]
 fn rope_qk_kv_append_vbias_fused_matches_two_dispatch() {
@@ -116,18 +145,43 @@ fn rope_qk_kv_append_vbias_fused_matches_two_dispatch() {
         let q_bias_data = rnd(q_dim, seed ^ 0x3000);
         let k_bias_data = rnd(kv_dim, seed ^ 0x4000);
         let v_bias_data = rnd(kv_dim, seed ^ 0x5000);
-        let q_bias = if with_biases { Some(q_bias_data.as_slice()) } else { None };
-        let k_bias = if with_biases { Some(k_bias_data.as_slice()) } else { None };
-        let v_bias = if with_biases { Some(v_bias_data.as_slice()) } else { None };
-        let (ref_q, ref_kc, ref_vc) =
-            run_ref(ctx, &q, &k_tok, &v_tok, q_bias, k_bias, v_bias, kv_off, cache_size, n_q, n_k, head_dim, pos, base);
-        let (fused_q, fused_kc, fused_vc) =
-            run_fused(ctx, &q, &k_tok, &v_tok, q_bias, k_bias, v_bias, kv_off, cache_size, n_q, n_k, head_dim, pos, base);
+        let q_bias = if with_biases {
+            Some(q_bias_data.as_slice())
+        } else {
+            None
+        };
+        let k_bias = if with_biases {
+            Some(k_bias_data.as_slice())
+        } else {
+            None
+        };
+        let v_bias = if with_biases {
+            Some(v_bias_data.as_slice())
+        } else {
+            None
+        };
+        let (ref_q, ref_kc, ref_vc) = run_ref(
+            ctx, &q, &k_tok, &v_tok, q_bias, k_bias, v_bias, kv_off, cache_size, n_q, n_k,
+            head_dim, pos, base,
+        );
+        let (fused_q, fused_kc, fused_vc) = run_fused(
+            ctx, &q, &k_tok, &v_tok, q_bias, k_bias, v_bias, kv_off, cache_size, n_q, n_k,
+            head_dim, pos, base,
+        );
         let dq = max_abs_diff(&ref_q, &fused_q);
         let dkc = max_abs_diff(&ref_kc, &fused_kc);
         let dvc = max_abs_diff(&ref_vc, &fused_vc);
-        assert_eq!(dq, 0.0, "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: q max_diff={dq:.2e}");
-        assert_eq!(dkc, 0.0, "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: k_cache max_diff={dkc:.2e}");
-        assert_eq!(dvc, 0.0, "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: v_cache max_diff={dvc:.2e}");
+        assert_eq!(
+            dq, 0.0,
+            "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: q max_diff={dq:.2e}"
+        );
+        assert_eq!(
+            dkc, 0.0,
+            "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: k_cache max_diff={dkc:.2e}"
+        );
+        assert_eq!(
+            dvc, 0.0,
+            "n_q={n_q} n_k={n_k} hd={head_dim} pos={pos}: v_cache max_diff={dvc:.2e}"
+        );
     }
 }

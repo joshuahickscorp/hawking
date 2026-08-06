@@ -1,0 +1,303 @@
+{
+  "schema": "hawking.rebuild.rung_topology.v1",
+  "rung": "D-SEAM-COLLAPSE-V1",
+  "base_rev": "bd3c04fc6a2c92f92ea5d64a0c5707a52e8bedce",
+  "candidate_rev": "bbd454e7ff05675b61cd5269277894b9fba58654",
+  "base": {
+    "directories_all": 115,
+    "directories_leaf": 90,
+    "source_files": 868,
+    "rust_crates": 19,
+    "public_symbols": 7683,
+    "functions": 11927,
+    "files_over_1500_lines": 16,
+    "tiny_forwarders": 15
+  },
+  "candidate": {
+    "directories_all": 115,
+    "directories_leaf": 90,
+    "source_files": 868,
+    "rust_crates": 19,
+    "public_symbols": 7675,
+    "functions": 11920,
+    "files_over_1500_lines": 16,
+    "tiny_forwarders": 15
+  },
+  "full_base": {
+    "by_area": {
+      "app": 73,
+      "crates": 584,
+      "docs": 1,
+      "lab": 72,
+      "odyssey": 1,
+      "ramanujan": 6,
+      "run_7b_frontier.sh": 1,
+      "tools": 130
+    },
+    "commit": "bd3c04fc6a2c92f92ea5d64a0c5707a52e8bedce",
+    "detail": {
+      "files_over_1500_lines": [
+        {
+          "file": "crates/hawking-core/src/gravity_glm_resident.rs",
+          "lines": 13035
+        },
+        {
+          "file": "crates/hawking-core/src/kernels/mod.rs",
+          "lines": 11296
+        },
+        {
+          "file": "crates/hawking-core/src/model/qwen_dense.rs",
+          "lines": 9161
+        },
+        {
+          "file": "crates/hawking-core/shaders/quant.metal",
+          "lines": 5621
+        },
+        {
+          "file": "crates/hawking/src/main.rs",
+          "lines": 4118
+        },
+        {
+          "file": "crates/hawking-core/src/model/deepseek_v2.rs",
+          "lines": 4070
+        },
+        {
+          "file": "crates/hawking-core/src/gravity_glm.rs",
+          "lines": 3601
+        },
+        {
+          "file": "crates/hawking-core/src/model/rwkv7.rs",
+          "lines": 3454
+        },
+        {
+          "file": "crates/hawking-core/src/metal/mod.rs",
+          "lines": 3156
+        },
+        {
+          "file": "lab/operators/glm52_state.py",
+          "lines": 2777
+        },
+        {
+          "file": "crates/hawking-core/src/cost_ledger.rs",
+          "lines": 2666
+        },
+        {
+          "file": "crates/hawking-core/shaders/gravity_pq.metal",
+          "lines": 1790
+        },
+        {
+          "file": "crates/hawking-core/src/tq_gpu.rs",
+          "lines": 1781
+        },
+        {
+          "file": "tools/condense/tests/test_glm52_state.py",
+          "lines": 1776
+        },
+        {
+          "file": "crates/hawking-core/src/gravity.rs",
+          "lines": 1773
+        },
+        {
+          "file": "tools/graph/fixture.py",
+          "lines": 1510
+        }
+      ],
+      "single_file_directories": [
+        ".",
+        "app/src-tauri",
+        "app/src-tauri/src",
+        "crates/hawking-adapters/goldens",
+        "crates/hawking-adapters/src/bin",
+        "crates/hawking-bench/src",
+        "crates/hawking-core",
+        "crates/hawking-core/tests/common",
+        "crates/hawking-events/tests",
+        "crates/hide-acp/src/bin",
+        "crates/hide-core/tests",
+        "crates/hide-fleet/src/bin",
+        "crates/hide-protocol/src/bin",
+        "docs/hide-impl/preview",
+        "odyssey/training",
+        "tools",
+        "tools/awq_bake/src",
+        "tools/bench/lib",
+        "tools/bench/workloads",
+        "tools/q4k_fast/src",
+        "tools/tq_bake/src",
+        "tools/tq_bake/tests"
+      ],
+      "tiny_forwarders": [
+        "crates/hawking-events/src/adapters/mod.rs",
+        "crates/hide-backend/src/connector_abi_impls.rs",
+        "lab/__main__.py",
+        "lab/bench_harness/__init__.py",
+        "lab/bench_harness/__main__.py",
+        "lab/operators/__init__.py",
+        "lab/operators/acquire.py",
+        "lab/operators/auth.py",
+        "lab/operators/evaluate.py",
+        "lab/operators/forge.py",
+        "lab/operators/gravity_exec.py",
+        "lab/operators/gravity_math.py",
+        "lab/operators/notify.py",
+        "lab/operators/pack.py",
+        "tools/condense/tests/_glm52_fakes.py"
+      ]
+    },
+    "directories_all": 115,
+    "directories_leaf": 90,
+    "files_over_1500_lines": 16,
+    "functions": 11927,
+    "hide_crates": 7,
+    "hide_directories": 25,
+    "hide_files": 311,
+    "public_symbols": 7683,
+    "rev": "bd3c04fc6a2c92f92ea5d64a0c5707a52e8bedce",
+    "rust_crates": 19,
+    "schema": "hawking.topology.v1",
+    "single_file_directories": 22,
+    "source_files": 868,
+    "tiny_forwarders": 15
+  },
+  "full_candidate": {
+    "by_area": {
+      "app": 73,
+      "crates": 584,
+      "docs": 1,
+      "lab": 72,
+      "odyssey": 1,
+      "ramanujan": 6,
+      "run_7b_frontier.sh": 1,
+      "tools": 130
+    },
+    "commit": "bbd454e7ff05675b61cd5269277894b9fba58654",
+    "detail": {
+      "files_over_1500_lines": [
+        {
+          "file": "crates/hawking-core/src/gravity_glm_resident.rs",
+          "lines": 13035
+        },
+        {
+          "file": "crates/hawking-core/src/kernels/mod.rs",
+          "lines": 11296
+        },
+        {
+          "file": "crates/hawking-core/src/model/qwen_dense.rs",
+          "lines": 9161
+        },
+        {
+          "file": "crates/hawking-core/shaders/quant.metal",
+          "lines": 5621
+        },
+        {
+          "file": "crates/hawking/src/main.rs",
+          "lines": 4118
+        },
+        {
+          "file": "crates/hawking-core/src/model/deepseek_v2.rs",
+          "lines": 4070
+        },
+        {
+          "file": "crates/hawking-core/src/gravity_glm.rs",
+          "lines": 3601
+        },
+        {
+          "file": "crates/hawking-core/src/model/rwkv7.rs",
+          "lines": 3454
+        },
+        {
+          "file": "crates/hawking-core/src/metal/mod.rs",
+          "lines": 3156
+        },
+        {
+          "file": "lab/operators/glm52_state.py",
+          "lines": 2777
+        },
+        {
+          "file": "crates/hawking-core/src/cost_ledger.rs",
+          "lines": 2666
+        },
+        {
+          "file": "crates/hawking-core/shaders/gravity_pq.metal",
+          "lines": 1790
+        },
+        {
+          "file": "crates/hawking-core/src/tq_gpu.rs",
+          "lines": 1781
+        },
+        {
+          "file": "tools/condense/tests/test_glm52_state.py",
+          "lines": 1776
+        },
+        {
+          "file": "crates/hawking-core/src/gravity.rs",
+          "lines": 1773
+        },
+        {
+          "file": "tools/graph/fixture.py",
+          "lines": 1510
+        }
+      ],
+      "single_file_directories": [
+        ".",
+        "app/src-tauri",
+        "app/src-tauri/src",
+        "crates/hawking-adapters/goldens",
+        "crates/hawking-adapters/src/bin",
+        "crates/hawking-bench/src",
+        "crates/hawking-core",
+        "crates/hawking-core/tests/common",
+        "crates/hawking-events/tests",
+        "crates/hide-acp/src/bin",
+        "crates/hide-core/tests",
+        "crates/hide-fleet/src/bin",
+        "crates/hide-protocol/src/bin",
+        "docs/hide-impl/preview",
+        "odyssey/training",
+        "tools",
+        "tools/awq_bake/src",
+        "tools/bench/lib",
+        "tools/bench/workloads",
+        "tools/q4k_fast/src",
+        "tools/tq_bake/src",
+        "tools/tq_bake/tests"
+      ],
+      "tiny_forwarders": [
+        "crates/hawking-events/src/adapters/mod.rs",
+        "crates/hide-backend/src/connector_abi_impls.rs",
+        "lab/__main__.py",
+        "lab/bench_harness/__init__.py",
+        "lab/bench_harness/__main__.py",
+        "lab/operators/__init__.py",
+        "lab/operators/acquire.py",
+        "lab/operators/auth.py",
+        "lab/operators/evaluate.py",
+        "lab/operators/forge.py",
+        "lab/operators/gravity_exec.py",
+        "lab/operators/gravity_math.py",
+        "lab/operators/notify.py",
+        "lab/operators/pack.py",
+        "tools/condense/tests/_glm52_fakes.py"
+      ]
+    },
+    "directories_all": 115,
+    "directories_leaf": 90,
+    "files_over_1500_lines": 16,
+    "functions": 11920,
+    "hide_crates": 7,
+    "hide_directories": 25,
+    "hide_files": 311,
+    "public_symbols": 7675,
+    "rev": "HEAD",
+    "rust_crates": 19,
+    "schema": "hawking.topology.v1",
+    "single_file_directories": 22,
+    "source_files": 868,
+    "tiny_forwarders": 15
+  },
+  "delta": {
+    "public_symbols": -8,
+    "functions": -7
+  },
+  "non_worse": true
+}

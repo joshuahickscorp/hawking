@@ -1,185 +1,55 @@
 # hawking
 
-`hawking` is a from-scratch LLM inference engine for Apple Silicon. It loads
-GGUF models with mmap, runs hand-written Metal kernels from Rust, and exposes a
-small CLI plus an OpenAI-compatible HTTP server.
+Runs quantized language models on Apple Silicon GPUs. One Rust binary: it mmaps a GGUF file, pushes
+it through hand-written Metal kernels, and serves it over an OpenAI-compatible HTTP API. No Python,
+no llama.cpp, no BLAS, no MPSGraph: the whole stack is in-tree and readable.
 
-It is a systems project first: no Python runtime, no `llama.cpp` dependency, no
-BLAS, and no MPSGraph. The goal is an auditable inference stack that can be
-measured, tested, and changed without hiding work in external runtimes.
+## How it works
 
-## Status
+Weights are mmapped once with no copies. Q4_K and Q6_K matrix-vector kernels, attention (standard
+and MLA), RoPE, RMSNorm and sampling run on the GPU; the Metal source is embedded and compiled at
+runtime. A pure-Rust CPU path checks the kernels emit the same tokens, and builds off macOS.
+Architectures today: Qwen2.5 dense, Llama, Qwen3-MoE, DeepSeek-V2, RWKV-7.
 
-- Primary tuned target: Qwen2.5 dense GGUF, especially Q4_K_M.
-- Dense and MoE families share the same runtime, but verification varies by
-  model. Check [MODELS.md](MODELS.md) before relying on a family.
-- Current clean-room baseline on an M3 Pro 18 GB: about 31 decode tok/s on
-  Qwen2.5-3B-Q4_K_M.
-- Active development. Expect sharp edges.
+`serve` gives `/v1/chat/completions` and `/v1/completions` with streaming, plus `/healthz` and
+Prometheus `/metrics`, batching continuously. `doctor` and `fit` say whether a model fits this Mac
+before loading; `autotune` picks the fastest kernel variants here; `press --dry-run` plans a
+compression for a model too big to hold in memory but cannot bake one yet. `app/` is HIDE, a
+React/TypeScript front-end on the same engine: the web side is developed, the Tauri v2 shell a
+scaffold never compiled.
 
-## Features
+## Build and run
 
-- Zero-copy GGUF weight loading through mmap-backed Metal buffers.
-- Hand-written Metal kernels for Q4_K / Q6_K GEMV, attention, RoPE, RMSNorm,
-  sampling, and fused paths.
-- OpenAI-compatible `/v1/chat/completions` and `/v1/completions` endpoints.
-- `generate`, `serve`, `bench`, `doctor`, `autotune`, `fit`, and `press` CLI workflows.
-- Apple Fit: `hawking fit` and `doctor --json` predict the strongest usable
-  configuration for the current Mac; `serve --auto --intent <…>` selects it
-  (capability-first — it reports the full envelope and never hides a throttle).
-- Condense (low-bit model press): `hawking press --dry-run --memory-budget` plans
-  out-of-core artifact creation for parent models too large to hold fully resident.
-- CPU reference path for off-macOS builds and Metal parity checks.
-- Prefix-cache reuse, speculative decode experiments, and benchmark tooling.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map and
-[docs/BENCHMARKS.md](docs/BENCHMARKS.md) for the SOTA comparison harness
-(Hawking vs llama.cpp vs MLX).
-
-## Build
-
-Requirements:
-
-- Apple Silicon Mac for the Metal path
-- Rust stable 1.80 or newer
-- Xcode Command Line Tools
-- About 4 GB RAM for Qwen2.5-3B Q4_K_M
+Apple Silicon, Rust 1.80 or newer, Xcode command line tools. Qwen2.5-3B Q4_K_M needs about 4 GB.
+Bring your own GGUF. `profiles/` ships tuned profiles for an M3 Pro 18 GB.
+[ARCHITECTURE.md](ARCHITECTURE.md) maps the internals, [docs/serve.md](docs/serve.md) the API.
 
 ```sh
-git clone https://github.com/joshuahickscorp/hawking.git
-cd hawking
-cargo build --release --workspace
+cargo build --release --workspace          # binary lands at target/release/hawking
+M=models/qwen2.5-3b-instruct-q4_k_m.gguf
+hawking doctor --weights $M
+hawking serve  --weights $M --kernel-profile profiles/qwen3b-instruct-q4k.m3pro18.json
 ```
 
-The binary is written to `target/release/hawking`.
+## Numbers
 
-## Get A Model
+About 31 decode tok/s on Qwen2.5-3B-Q4_K_M, M3 Pro 18 GB, clean-room greedy decode. Measured, not
+projected, and the lower of two unreconciled clean-room anchors. Absolute numbers mean nothing off
+an idle GPU: a heavy background app inflates them several times over. Bench harness, caveats and
+rejected optimizations: [docs/BENCHMARKS.md](docs/BENCHMARKS.md),
+[docs/dead_levers.md](docs/dead_levers.md). Only Qwen2.5-3B and 0.5B have parity or quality gates;
+every other family runs ungated or untested, so read [MODELS.md](MODELS.md) first.
 
-```sh
-./tools/fetch-model.sh
-./tools/fetch-mixtral.sh
-```
+## What's next
 
-You can also place any GGUF file in `models/` and pass it with `--weights`.
-The best-tested target is Qwen2.5-3B-Instruct-Q4_K_M.
+Stabilization: finishing wiring that exists, gating the ungated families, pulling docs back in line
+with the code. Full list in [ROADMAP.md](ROADMAP.md). Two research tracks also live here and neither
+has trained anything real. `odyssey/` is a prepared continued-training campaign against a 92 GB
+compressed artifact: the trainer is proven on numpy toy fixtures only, the launch fence is false,
+the corpora were never collected, the substrate is refused. `ramanujan/` is the math-research half,
+a governance layer of roles, an append-only ledger, memory stores, tribunal and graveyard, tested on
+fixtures under non-production authority; five small components trained there on CPU, of which
+retriever and value beat their baselines while formalizer, prover and repair did not beat the
+majority class. It splits into its own repo once a frozen math model exists to direct it.
 
-## Usage
-
-```sh
-# Check whether the model fits before loading it.
-hawking doctor --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
-
-# Tune kernels for this machine.
-hawking autotune \
-  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
-  --out profiles/my-mac.json
-
-# Generate text.
-hawking generate \
-  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
-  --kernel-profile profiles/my-mac.json \
-  --prompt "Write a Rust function that reverses a linked list." \
-  --max-new-tokens 256
-
-# Serve an OpenAI-compatible API.
-hawking serve \
-  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
-  --kernel-profile profiles/my-mac.json \
-  --addr 127.0.0.1:8080
-```
-
-See [docs/serve.md](docs/serve.md) for API details.
-
-## Performance
-
-The headline number is intentionally modest and measured: Qwen2.5-3B-Q4_K_M
-runs at about 31 decode tok/s on an M3 Pro 18 GB in clean-room runs. The project
-keeps a kill-ledger of optimizations that were tested and rejected in
-[docs/dead_levers.md](docs/dead_levers.md).
-
-Useful bench entry points:
-
-```sh
-TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh
-bash tools/bench/clean_room_batch.sh
-```
-
-See [tools/bench/README.md](tools/bench/README.md) for conventions.
-
-## Contributors
-
-- Joshua Hicks
-
-## License
-
-MIT. See [LICENSE](LICENSE).
-
-## Roadmap
-
-Hawking is a from-scratch LLM inference engine for Apple Silicon, written in
-Rust with hand-written Metal kernels. It runs quantized GGUF models end to end
-on the GPU, with no PyTorch, llama.cpp, or BLAS. The work ahead is about
-pushing quality, memory, and context length further on Apple hardware, with the
-heavy runs on an Apple M3 Ultra Mac Studio (96 GB unified memory, 819 GB/s advertised
-memory bandwidth, 1 TB SSD). The condense/studio research
-program - the largest-model, lowest-bit, and long-context work below - is a
-single command away: see `docs/plans/STUDIO_GO.md`.
-
-The Studio program is governed by
-[`Beyond FLOPS`](docs/plans/computational_efficiency_paradigms_2026_07_11.md): optimize useful
-capability per joule, byte moved, resident byte, parameter, and wall-clock second, while holding quality
-fixed. Its safe initial ladder is the staged 0.5B/1.5B/7B sequence, then 14B alone; 32B remains gated on a
-measured memory-pressure or streamed/blockwise proof. Storage plans use current free space with a 150 GB
-safety reserve, 64 GB scratch, and 32 GB HF/Xet cache. Downloads and processing checkpoint so the Studio
-can be drained, shut down, moved, and resumed without treating partial artifacts as complete.
-
-### Now (works today)
-- Dense Qwen2.5 forward pass on Metal, GGUF-native, with Q4_K / Q6_K kernels,
-  RoPE / RMSNorm / attention / GPU sampling, and an OpenAI-compatible server.
-- CPU-to-GPU numerical-parity tests and golden-hash regression gates running in
-  CI on real Apple Silicon.
-
-### Next
-- RWKV-7 (SSM): the decode engine and CPU/Metal parity tests exist; what's left
-  is wiring it into the OpenAI-compatible serve path so the flat-cost,
-  no-KV-wall long-context case is reachable the same way Qwen2.5 is.
-- Per-channel int4 KV cache, to cut KV memory by roughly three quarters.
-- Post-hoc context extension (YaRN RoPE-scaling) validated by needle-in-a-haystack
-  retrieval, not just "it didn't crash" - stretch the trained window at serve time,
-  paired with int4 KV so the longer context actually fits in memory.
-- STKV, a tiered KV hybrid that is Hawking-specific because it uses both engines at
-  once: exact int8 recall for attention sinks and the recent window, a trellis-coded
-  warm band (the same codec as the weights, on the cache), and an unbounded cold tail
-  that is either paged to SSD (lossless, slow) or summarized into an RWKV-7 state
-  (lossy, flat memory). Exact recall where attention lands, unbounded reach beyond it.
-- Close the remaining decode-throughput gap to llama.cpp / MLX (kernel and
-  scheduling work).
-
-### Later
-- Condense: an out-of-core, memory-budgeted low-bit compression pipeline that
-  can quantize models too large to hold resident, so a single Mac can prepare
-  and serve models well beyond its own memory.
-- The Doctor as a registry: quality restoration at low bits is not one method
-  but a pluggable set - calibration, activation-aware pre-scaling, output-
-  sensitivity mixed precision, full-rank residual, block-wise QAT, codec-native
-  error feedback, and distillation - auto-composed per model and target bit-rate,
-  with a ledger that reports which method recovers the most per unit of compute so
-  the next lever is chosen from evidence, not guesswork.
-- The size frontier: stop requiring the whole model resident. The parameter
-  ceiling is then storage, not RAM - the model lives on the SSD and only the
-  weights a token touches stream through memory. For MoE (all the giant models),
-  only the routed experts page in, so a multi-trillion-parameter model runs at a
-  usable rate where a RAM-resident engine tops out near half a trillion. An auto
-  advisor picks the bit format and the serve regime (resident / expert-paged /
-  dense out-of-core) per model and device.
-- Broader verified architecture coverage (MoE, Mamba2, more dense families)
-  under the same correctness-before-speed gates. Mamba2 already ships as a real
-  serve engine (flat O(1) recurrent state, same long-context shape as RWKV-7)
-  and now has condense-track coverage too: its state geometry is computed from
-  its own config, and the Doctor knows which recovery methods apply to an SSM
-  versus a dense-attention or MoE model.
-- A codec-parallelism triage step, so a new low-bit format is scored for decode
-  parallelism (not just density) before any Metal kernel work starts on it -
-  compression and speed are aligned on this hardware as long as decode stays
-  lane-independent; a denser format that forces serial decode can lose the
-  bandwidth win it was supposed to buy.
+MIT. Joshua Hicks.

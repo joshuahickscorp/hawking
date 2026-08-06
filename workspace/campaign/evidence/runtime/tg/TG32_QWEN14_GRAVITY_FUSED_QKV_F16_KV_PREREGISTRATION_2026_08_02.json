@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v2",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "hypothesis": "Combining the existing source-QKV/RoPE/KV-append grammar with persistent F16-KV flash attention will reduce complete-token decode wall time beyond either individually retired change while preserving exact source decisions.",
+  "mechanism": "Set HAWKING_GRAVITY_FUSED_QKV=1 and HAWKING_GRAVITY_F16_KV=1 on the same source-preserving Q4_K Gravity artifact. The candidate admits no weight, tokenizer, prompt, sampling, or model-architecture change; it changes only the QKV/KV-cache execution grammar.",
+  "scope": "same exact source and executable Gravity artifact, same immutable revision, same device, same prompt and complete-token protocol",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-fused-qkv-f16kv.gravity",
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false
+  },
+  "admission": {
+    "free_bytes_before": 364166537216,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "source_artifact_tokenizer_bytes": 17977459884,
+    "projected_free_after_source_artifact_tokenizer_scratch": 319315318668,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 32,
+    "runs_each_side": 2,
+    "max_seq_len": 64,
+    "control_env": "HAWKING_REQUIRE_METAL=1",
+    "candidate_env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_FUSED_QKV=1 HAWKING_GRAVITY_F16_KV=1",
+    "fallback_required": 0,
+    "clean_sequential_gpu_required": true
+  },
+  "promotion_gates": {
+    "all_complete_tokens": true,
+    "continuation_hash_equal": true,
+    "numeric_parity_v21": true,
+    "dispatch_count_positive": true,
+    "fallback_count_zero": true,
+    "candidate_wall_improvement_percent_min": 3.0,
+    "candidate_p95_not_regress_percent_max": 0.0,
+    "candidate_p99_not_regress_percent_max": 0.0,
+    "same_model_before_after": true,
+    "rung_claim_requires": "candidate median TPS clears TG20 (50 TPS) or a higher named rung; otherwise retain the prior TG32 narrow floor"
+  },
+  "reopen_condition": "Retire if any token changes, source parity fails, complete-token wall or p95/p99 regresses, physical fused-QKV and flash dispatches are not proven, or fallback occurs.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "hawking.tg.shared_adapter_repair.v1",
+  "at": "2026-07-30",
+  "status": "REPAIRED_TWO_SHARED_CONTRACT_BUGS_BUT_STILL_TERMINAL_FOR_RAW_LLAMA",
+  "source": {
+    "family": "llama",
+    "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "bytes": 4920739232,
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "revision": "bf5b95a",
+    "reused_tg_receipts": [
+      "evidence/tg/TG5_LLAMA_ADAPTER_ORACLE.json",
+      "evidence/tg/TG1_LLAMA_REHYDRATION_ORACLE.json"
+    ]
+  },
+  "repairs": [
+    {
+      "file": "crates/hawking-core/src/model/llama.rs",
+      "contract": "prefill owns the final-prompt logits; decode token zero samples those logits instead of forwarding the final prompt token a second time",
+      "regression_test": "model::llama::tests::decode_does_not_duplicate_the_last_prompt_token"
+    },
+    {
+      "file": "crates/hawking-core/src/tokenizer.rs",
+      "contract": "GGUF llama-bpe metadata without an explicit add_bos flag defaults to the llama.cpp BOS behavior",
+      "regression_test": "tokenizer_defaults_tests::llama_bpe_uses_llama_cpp_bos_default_when_flag_is_absent"
+    }
+  ],
+  "independent_parent_oracle": {
+    "engine": "llama-completion",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "prompt_tokens": 6,
+    "expected_completion_prefix": " Paris, which is located in the north"
+  },
+  "post_repair_run": {
+    "command": "target/release/hawking generate --weights models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 8 --max-seq-len 32 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 30000",
+    "observed_completion": " a city of love, a city of",
+    "prompt_tokens": 6,
+    "completion_tokens": 8,
+    "first_token": {"id": 264, "text": " a"},
+    "matching_prefix_tokens": 0,
+    "prefill_ms": 8946.733958,
+    "decode_ms": 9426.735083000001,
+    "decode_tokens_per_second": 0.8486501349154334,
+    "device_id": null,
+    "dispatches_per_forward": 0,
+    "verdict": "FAIL"
+  },
+  "gate_results": {
+    "TOKENIZER_PROMPT_CONTRACT": "PASS",
+    "PREFILL_TO_DECODE_STATE_HANDOFF": "PASS",
+    "RAW_PARENT_FORWARD": "FAIL",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "FAIL",
+    "AUTOTUNE_PROFILE": "BLOCKED",
+    "GRAVITY_ADAPTER": "BLOCKED",
+    "GRAVITY_ORACLE": "BLOCKED",
+    "RUNG_MEASUREMENT": "BLOCKED"
+  },
+  "decision": {
+    "tg_claim": "NO_CLAIM",
+    "why": "The two shared interface defects are fixed and prompt length now matches llama.cpp, but the generic raw Llama forward remains wrong at K0 and has no real device dispatch accounting. It cannot receive a TG rung, tuning, or custom-format claim.",
+    "storage_action": "Evict this rehydrated 4.58 GiB source after sealing this receipt. Any subsequent numeric bisect must rehydrate the exact SHA-256 and use an intermediate-tensor oracle; it must not be hidden as decode-kernel work."
+  }
+}

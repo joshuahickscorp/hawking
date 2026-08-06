@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.tg.llama_baseline.v1",
+  "status": "SEALED_SHORT_CONTEXT_REFERENCE",
+  "model": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "quantization": "Q4_K_M",
+  "bos_token_id": 128000,
+  "eos_token_id": 128009,
+  "sampling": {"greedy": true, "temperature": 0, "top_k": 0, "top_p": 1, "seed": 42},
+  "completion_tokens": 512,
+  "continuation_sha256": "65cc49044a6a8d0bfb5ed66b54431eaacc6094f446dcc846b3523095c3a98b99",
+  "hawking_tps": {"median": 98.67882401342438, "minimum": 98.595225, "maximum": 98.795246},
+  "quality": {"p8_logits_128_256_exact": true, "continuation_exact": true},
+  "device": "Apple M3 Ultra",
+  "note": "Short-context baseline only; it is not a matched llama.cpp promotion receipt."
+}

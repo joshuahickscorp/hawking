@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "profile_id": "candidate-deepseek-rope-v2t-guv2-2026-08-02",
+  "profile_name": "exact",
+  "model_id": "DeepSeek-V2-Lite-Chat",
+  "model_arch": "deepseek2",
+  "tensor_layout_hash": "f8bfe40a02b1ab326491a0c3",
+  "device_name": "Apple M3 Ultra",
+  "shader_hash": "740df9c5f8858547f45b71ee",
+  "selected": {
+    "id": "rope-v2t-guv2-routed-shared-rmsnorm-candidate",
+    "moe_schedule": "indexed-no-pack-one-cb",
+    "mla_schedule": "metal-mla",
+    "lm_head_schedule": "metal-argmax-token-only",
+    "command_buffering": "one-cb-per-block",
+    "gpu_buffer_reuse": "decode-arena",
+    "deterministic_rank": 1,
+    "gemm_q4_k_schedule": "v2t_gu_v2",
+    "gemm_q4_k_schedule_per_shape": {"1024x4096": "simdmat", "4096x1024": "simdmat", "4096x4096": "v3_dual"},
+    "attn_block_schedule": "mla",
+    "x_norm_dtype": "f32",
+    "routed_down_schedule": "v2t",
+    "shared_down_schedule": "v2t",
+    "rmsnorm_attn_schedule": "v2t"
+  },
+  "evidence": {
+    "profile": "manual-preregistered-same-model-candidate",
+    "max_hours": 0.0,
+    "prompt_count": 1,
+    "token_lengths": [4, 32],
+    "candidate_count": 1,
+    "measurements": [{"variant_id": "rope-v2t-guv2-routed-shared-rmsnorm-candidate", "deterministic_rank": 1, "score": 41069, "quality": 1.0, "status": "measured_same_model_source_window_pass"}],
+    "target_tps": 41.06909043843913,
+    "notes": ["One bounded same-model schedule change: route Q4_K gate+up through the v2t_gu_v2 fused kernel. Promote only on exact source-window decisions and a complete-token wall/p99 win."]
+  },
+  "runtime_levers": {"profile_name": "exact", "ffn_down_q4k": false, "lm_head_path": "f16", "scale_dtype": "f32", "kv_dtype": "f32"}
+}

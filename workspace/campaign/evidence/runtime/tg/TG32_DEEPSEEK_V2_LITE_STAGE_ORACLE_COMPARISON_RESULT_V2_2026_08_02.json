@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.tg.same_model_stage_diagnostic_result.v2",
+  "status": "LOCALIZED_DIAGNOSTIC_ONLY",
+  "family": "deepseek_v2_lite_moe_mla",
+  "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_ORACLE_COMPARISON_PREREGISTRATION_2026_08_02.json",
+  "instrumentation_correction": {
+    "id": "native-stage-context-attn-out-boundary-v2",
+    "change": "Native stage trace now records arena.attn_out as per-head MLA context and arena.out as hidden-width post-o-projection attention output; the earlier probe aliased both labels.",
+    "compile": "cargo check -p hawking-core",
+    "unit_tests": "cargo test -p hawking-core --lib",
+    "unit_test_result": "280 passed; 0 failed; 6 ignored"
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "artifact": {
+    "path": "models/tg-active/deepseek-v2-lite-2026-08-02-stage-oracle/deepseek-v2-lite-q4.gravity",
+    "bytes": 10362253454,
+    "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+    "source_preserving": true,
+    "verification": "source body SHA-256 and packed verification passed"
+  },
+  "fixed_prompt": {
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "first_greedy_token_expected": 8913,
+    "native_first_greedy_token": 8913,
+    "native_first_greedy_text": " Paris"
+  },
+  "traces": {
+    "cpu_path": "GravityDeepSeek::forward_with_stage_trace",
+    "cpu_path_sha256": "c0c6c1c89f1e947363629d941686d18e45891d9da202cf8b3bad806735bd9350",
+    "cpu_positions": [0, 1, 2, 3, 4, 5],
+    "native_path": "HAWKING_DS_STAGE_TRACE=1",
+    "native_path_sha256": "e2d2d42bc22df59b36af23a1f847ee60f5bc6d5f88c2aaeaeebc02c45244985e",
+    "native_positions": [0, 1, 2, 3, 4, 5, 6],
+    "native_stage_records": 189,
+    "compared_moe_boundaries": 156,
+    "native_profiler": {
+      "metal_dispatches": 0,
+      "cpu_reference_fallback_count": 1,
+      "classification": "DIAGNOSTIC_NOT_CLEAN; stage mode forces per-layer commits and the aggregate profiler records a fallback"
+    }
+  },
+  "comparison": {
+    "first_route_set_mismatch": null,
+    "first_route_order_mismatch": {
+      "position": 5,
+      "layer": 24,
+      "cpu": [60, 15, 4, 48, 28, 55],
+      "native": [60, 4, 15, 48, 28, 55],
+      "same_expert_set": true,
+      "route_weight_order_follows_native_ids": true,
+      "interpretation": "A near-tied expert pair changes order after small CPU/Metal router-logit drift; no expert-set mismatch was observed in the six-token prompt trace. This is a parity diagnostic, not a promotion or claimed kernel bug."
+    },
+    "max_abs_delta_first8": {
+      "q": 0.0013823509,
+      "kv_a": 0.0018906593,
+      "c_kv": 0.0013076067,
+      "k_pe": 0.0006837845,
+      "context": 0.0005798340,
+      "attn_out": 0.0002161786,
+      "ffn_norm": 0.0008926392,
+      "router_logits": 0.0006809235,
+      "route_weights": 0.0000681728,
+      "ffn_out": 0.0016174316,
+      "after_attention": 0.0016961098
+    },
+    "numeric_parity_v21": "BOUNDARY_TRACE_ONLY; full-vector tolerance and complete-token capability approval remain open",
+    "promotion": "none; native diagnostic was not CLEAN and no TG rung changes"
+  },
+  "next_change": {
+    "reopen_condition": "Add full-vector Numeric Parity V2.1 summaries and a deterministic near-tie route-order policy, then preregister a separate same-model CLEAN A/B. Do not change expert selection from this diagnostic alone.",
+    "roofline": "DeepSeek promoted floor remains 41.06909043843913 TPS at TG32; TG20 remains not reached."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "seal_sha256": "8afb2bccb8e41530d0f38c760611091228b968ba572bd08187e3eef595d27433"
+}

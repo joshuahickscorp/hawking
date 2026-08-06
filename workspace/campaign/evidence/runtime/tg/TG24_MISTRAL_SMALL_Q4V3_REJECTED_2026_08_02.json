@@ -1,0 +1,10 @@
+{
+  "schema": "hawking.tg.same_artifact_candidate_result.v1",
+  "status": "REJECTED_COMPLETE_TOKEN_CATASTROPHIC_REGRESSION",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+  "artifact_sha256": "0b3024670765f03cb1bb9d5a487c9ae09ab18a5543bb540ff9f0a0d0af85ddce",
+  "baseline": {"receipt": "evidence/tg/TG24_MISTRAL_SMALL_NATIVE_Q4_128_COMPLETE_TOKEN_2026_08_02.json", "tps": 29.838791525232033, "p99_ms": 37.729542, "dispatches_per_token": 522},
+  "candidate": {"receipt": "evidence/tg/TG24_MISTRAL_SMALL_Q4V3_128_COMPLETE_TOKEN_2026_08_02.json", "tps": 9.703349984791329, "p99_ms": 109.794791, "dispatches_per_token": 522},
+  "parity": {"continuation_sha256_equal": true, "cpu_reference_fallback_total": 0},
+  "decision": "The V3 eight-row geometry is not viable for this exact source and device. Do not retry it merely with a different environment flag; a material representation change is required."
+}

@@ -1,8 +1,8 @@
 /*
-  Home.tsx — the Chat chamber, the front door. Claude Code style: you arrive to the digest and recents,
+  Home.tsx — the Chat chamber, the front door. Conversation-first: you arrive to the digest and recents,
   describe a task, and the reply streams into the conversation right here (it stays in chat). Empty shows
   the launcher (greeting, digest, recents, fleet); active shows the conversation with a Terminal / Diff /
-  Preview side panel (the Claude Code active-chat panels). The composer is always at the foot. Pop-out
+  Preview side panel (the active-chat panels). The composer is always at the foot. Pop-out
   opens the same conversation in the Code chamber (Cursor style), and back again.
 
   This and the Executor render the same <Conversation/> from one store, so they are one session with one

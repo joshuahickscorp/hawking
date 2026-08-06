@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_SINGLE_LEVER_SWEEP",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen32-gravity-single-lever-2026-08-02",
+  "scope": "same Qwen2.5-32B source-preserving Gravity artifact, same exact prompt/tokenizer/device, conventional decode seed enabled",
+  "control": {
+    "clean_decode_tps": 22.29238130003595,
+    "continuation_sha256": "0f6bf857b52d9c9c3c97c06d7af21086eb869e09d3b07c1e043892d9bd4216d7",
+    "complete_tokens": 16,
+    "p50_ms": 45.019791,
+    "p95_ms": 46.0327418,
+    "p99_ms": 46.05271476,
+    "dispatches_per_forward": 1026,
+    "fallback": 0
+  },
+  "candidates": [
+    {
+      "id": "gravity-q4-predec-only",
+      "environment_delta": "HAWKING_GRAVITY_Q4_PREDEC=1; HAWKING_GRAVITY_FUSED_QKV=0",
+      "hypothesis": "resident Q4_K scale tables reduce repeated scale unpack without changing command topology",
+      "gate": "exact continuation; >=3% wall win; p95/p99 <=2% regression; fallback=0"
+    },
+    {
+      "id": "gravity-fused-qkv-only",
+      "environment_delta": "HAWKING_GRAVITY_FUSED_QKV=1; HAWKING_GRAVITY_Q4_PREDEC=0",
+      "hypothesis": "QKV+RoPE+KV append reduces synchronization without the predecode residency cost",
+      "gate": "exact continuation; >=3% wall win; p95/p99 <=2% regression; fallback=0"
+    }
+  ],
+  "target_named_rung": "TG32",
+  "target_tps": 31.25,
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

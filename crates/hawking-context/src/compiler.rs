@@ -1061,7 +1061,10 @@ mod tests {
             .unwrap()
             .expect("code degraded");
         assert!(dt.text.contains("masked"), "tool output should be masked");
- assert!( !dc.text.contains("masked"), "code should be truncated, not masked" );
+        assert!(
+            !dc.text.contains("masked"),
+            "code should be truncated, not masked"
+        );
     }
     #[tokio::test]
     async fn compaction_archives_original_for_reversible_restore() {
@@ -1090,7 +1093,14 @@ mod tests {
             .await
             .unwrap();
         let events = &compiled.manifest.compaction_events;
-        assert!(!events.is_empty() || compiled .manifest .retained .iter() .any(|s| s.compacted_from.is_some()));
+        assert!(
+            !events.is_empty()
+                || compiled
+                    .manifest
+                    .retained
+                    .iter()
+                    .any(|s| s.compacted_from.is_some())
+        );
         if let Some(ev) = events.first() {
             let restored = ev
                 .restore_original()
@@ -1206,7 +1216,11 @@ mod tests {
         let realized_ids: HashSet<String> = realized.lock().unwrap().iter().cloned().collect();
         assert!(realized_ids.contains("keep"));
         assert!(!realized_ids.contains("drop"));
-        assert!(compiled .manifest .dropped .iter() .any(|d| d.id == "drop" && d.reason == DropReason::NoFit));
+        assert!(compiled
+            .manifest
+            .dropped
+            .iter()
+            .any(|d| d.id == "drop" && d.reason == DropReason::NoFit));
         assert!(compiled.prompt.contains("important task content"));
     }
     #[tokio::test]
@@ -1331,7 +1345,11 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(compiled .manifest .dropped .iter() .any(|d| d.reason == DropReason::Redundant));
+        assert!(compiled
+            .manifest
+            .dropped
+            .iter()
+            .any(|d| d.reason == DropReason::Redundant));
     }
     #[tokio::test]
     async fn debug_profile_band_boosts_diagnostics_over_code() {
@@ -1363,7 +1381,11 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(compiled .manifest .retained .iter() .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)));
+        assert!(compiled
+            .manifest
+            .retained
+            .iter()
+            .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)));
         let standard = compiler
             .compile(CompileInput {
                 profile: ContextProfile::standard(72),

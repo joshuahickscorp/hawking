@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 110,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 3 ** 4?\nExpression: 3 ** 4\nReturn the exact answer only.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:expert:fix:power",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 3 ** 4?\nExpression: 3 ** 4\nReturn the exact answer only.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.857517Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "88a4e8ed5ebb25f795117e6c3746a836809d4b4643b7f8a866e04a52ba3c3bd8",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.6564791202545166,
+          "rank": 0,
+          "token_id": 60
+        },
+        {
+          "logit": 2.15065860748291,
+          "rank": 1,
+          "token_id": 25
+        },
+        {
+          "logit": 2.023411273956299,
+          "rank": 2,
+          "token_id": 30
+        },
+        {
+          "logit": 1.7184011936187744,
+          "rank": 3,
+          "token_id": 42
+        },
+        {
+          "logit": 1.7168747186660767,
+          "rank": 4,
+          "token_id": 62
+        },
+        {
+          "logit": 1.6085155010223389,
+          "rank": 5,
+          "token_id": 33
+        },
+        {
+          "logit": 1.6050139665603638,
+          "rank": 6,
+          "token_id": 55
+        },
+        {
+          "logit": 1.5729514360427856,
+          "rank": 7,
+          "token_id": 63
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.18050698935985565,
+          "l2": 3.2711009979248047,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "21d2f335c5cbe0d77a4eb550cbab0e034d5a65eba4edc6d31664c1ebce9e12a1",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

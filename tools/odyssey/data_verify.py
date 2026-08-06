@@ -12,11 +12,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from tools.odyssey._paths import ODYSSEY, ROOT
+from tools.odyssey._paths import DATA_DIR, ROOT, TEACHER_DIR
 
 SCHEMA = "hawking.odyssey.t0.data_verify.v1"
-DATA_MANIFEST = ODYSSEY / "data" / "ODYSSEY_DATA_MANIFEST.json"
-TEACHER_MANIFEST = ODYSSEY / "teacher_traces" / "ODYSSEY_TEACHER_TRACE_MANIFEST.json"
+DATA_MANIFEST = DATA_DIR / "ODYSSEY_DATA_MANIFEST.json"
+TEACHER_MANIFEST = TEACHER_DIR / "ODYSSEY_TEACHER_TRACE_MANIFEST.json"
 
 
 def _present(path: Path | None) -> bool:
@@ -34,9 +34,9 @@ def verify_data_manifest(path: Path = DATA_MANIFEST) -> dict[str, Any]:
         # Corpora are declared without on-disk paths today; membership means a
         # content-addressed payload under odyssey/data/<id>/ or an explicit path.
         candidates = [
-            ODYSSEY / "data" / str(cid),
-            ODYSSEY / "data" / f"{cid}.jsonl",
-            ODYSSEY / "data" / f"{cid}.json",
+            DATA_DIR / str(cid),
+            DATA_DIR / f"{cid}.jsonl",
+            DATA_DIR / f"{cid}.json",
         ]
         if corpus.get("path"):
             candidates.insert(0, Path(corpus["path"]))

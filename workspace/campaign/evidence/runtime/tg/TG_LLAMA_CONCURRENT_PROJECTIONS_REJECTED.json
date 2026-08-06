@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-b9430-concurrent-independent-projections",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "protocol": {
+    "context_tokens": 2048,
+    "prompt_tokens": 1984,
+    "generated_tokens": 64,
+    "profile": "exact",
+    "candidate_flags": [
+      "HAWKING_LLAMA_RESIDENT_CONCURRENT=1",
+      "HAWKING_LLAMA_RESIDENT_B9430=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_QKV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_FUSED_RESIDUAL_NORM=1"
+    ],
+    "change": "Omit the serial compute encoder and issue independent Q/K/V and gate/up projections in concurrent command-buffer groups."
+  },
+  "correctness": {
+    "cpu_reference_fallback_count": 0,
+    "greedy_trace_observation": "All 64 diagnostic tokens were id 29531 (the repeated benchmark token); this is insufficient to promote correctness and no parity claim is made.",
+    "candidate_dispatches_per_forward": 418
+  },
+  "measurements": {
+    "candidate_decode_tps": 79.51213095772206,
+    "candidate_decode_ms": 804.908625,
+    "candidate_p50_ms": 12.452209,
+    "candidate_p99_ms": 15.458834,
+    "strict_matched_source_lane_tps_at_2k": 91.68638222193484,
+    "strict_matched_source_lane_dispatches_per_forward": 386
+  },
+  "verdict": "rejected",
+  "reason": "Concurrent command-buffer groups add 32 dispatches per forward and reduce diagnostic decode throughput by 13.28%. It cannot be a parity or TG promotion candidate.",
+  "reopen_condition": "Revisit only with an implementation that retains a single encoder or demonstrably reduces physical dispatches while passing full current-context token and logit gates.",
+  "tps_claim": null
+}

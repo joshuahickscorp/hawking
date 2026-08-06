@@ -1,0 +1,70 @@
+{
+  "schema": "hawking.tg.xet_transfer_scoreboard.v2",
+  "status": "SEALED_BEFORE_QWEN32_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "classification": "CLEAN_BOUNDED_RANGE_TRANSFER_DIAGNOSTIC",
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "lfs_sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "xet_file_hash": "c933aa99b1a3e41ac7ceb16c6794caedbc41e6b40774085b387c1f081ea243cd",
+    "license": "apache-2.0"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "authenticated": false,
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "chunk_cache_bytes": 0,
+    "range_api": "XetSession.new_download_stream_group.download_stream",
+    "endpoint_binding": "HUB_DEFAULT_ENDPOINT",
+    "representative_range": {
+      "start": 0,
+      "end": 67108864,
+      "bytes": 67108864,
+      "sha256": "22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc"
+    }
+  },
+  "trials": [
+    {"mode":"standard","requested_fixed_download_concurrency":1,"repeat":1,"elapsed_seconds":3.8894768331665546,"sealed_gb_per_hour_decimal":62.11424331927743,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":1,"repeat":2,"elapsed_seconds":3.08712016697973,"sealed_gb_per_hour_decimal":78.25801955625211,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":2,"repeat":1,"elapsed_seconds":1.6858572498895228,"sealed_gb_per_hour_decimal":143.30508138564636,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":2,"repeat":2,"elapsed_seconds":1.8060996669810265,"sealed_gb_per_hour_decimal":133.76443992364568,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":4,"repeat":1,"elapsed_seconds":3.145276209106669,"sealed_gb_per_hour_decimal":76.81103163547525,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":4,"repeat":2,"elapsed_seconds":1.6878514590207487,"sealed_gb_per_hour_decimal":143.13576535945043,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"repeat":1,"elapsed_seconds":2.5845147920772433,"sealed_gb_per_hour_decimal":93.47669865949042,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"repeat":2,"elapsed_seconds":1.057756874943152,"sealed_gb_per_hour_decimal":228.40022704932463,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"standard","requested_fixed_download_concurrency":8,"repeat":3,"elapsed_seconds":2.270998500054702,"sealed_gb_per_hour_decimal":106.38136061920811,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":1,"repeat":1,"elapsed_seconds":3.351229791995138,"sealed_gb_per_hour_decimal":72.0905235973596,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":1,"repeat":2,"elapsed_seconds":1.5125455409288406,"sealed_gb_per_hour_decimal":159.72537941015682,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"repeat":1,"elapsed_seconds":2.266636040993035,"sealed_gb_per_hour_decimal":106.586106472637,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"repeat":2,"elapsed_seconds":1.2282974170520902,"sealed_gb_per_hour_decimal":196.68844617439626,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":2,"repeat":3,"elapsed_seconds":3.0871922089718282,"sealed_gb_per_hour_decimal":78.25619334549332,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":4,"repeat":1,"elapsed_seconds":2.302583417156711,"sealed_gb_per_hour_decimal":104.92210992222113,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":4,"repeat":2,"elapsed_seconds":1.5332095420453697,"sealed_gb_per_hour_decimal":157.57266294971373,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":8,"repeat":1,"elapsed_seconds":3.0277984999120235,"sealed_gb_per_hour_decimal":79.79127752623556,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0},
+    {"mode":"high_performance","requested_fixed_download_concurrency":8,"repeat":2,"elapsed_seconds":2.3462177920155227,"sealed_gb_per_hour_decimal":102.97079462195197,"range_sha256":"22021c6124d5dad21af460331be493e037083582cf0b0b9e76df9f37b9643abc","body_file_writes":0,"retries":0}
+  ],
+  "selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 2,
+    "stable_median_sealed_gb_per_hour_decimal": 106.586106472637,
+    "comparison": "three-repeat high-performance c2 median 106.586 GB/h is the fastest stable median; standard c8 median is 106.381 GB/h",
+    "bounded_range_only": true
+  },
+  "integrity": {
+    "all_range_hashes_identical": true,
+    "application_body_file_writes_total": 0,
+    "client_visible_retries_total": 0,
+    "free_disk_delta_is_not_model_body_evidence": true
+  },
+  "claim_boundary": "Official bounded Xet range transfer and byte-admission prerequisite only; no model capability, TPS, TG, production lease, or owner gate is inferred.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

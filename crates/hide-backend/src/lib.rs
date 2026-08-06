@@ -34,6 +34,18 @@ pub mod commands;
 pub mod compat_instructions;
 pub mod connectors;
 pub mod digest;
+/// Transport-neutral JSONL machine-control contract for the HCLI surface.
+pub mod hcli_bridge;
+/// Named, bounded compute profiles for the HCLI surface.
+pub mod hcli_profile;
+/// Evidence-first, checkpointed local-model research and data procurement.
+pub mod hcli_research;
+/// Bounded, durable local-file/stdin evidence ingestion for the HCLI surface.
+pub mod hcli_sources;
+/// Actual parallel analysis lanes for HCLI, with sealed aggregate receipts.
+pub mod hcli_swarm;
+/// Headless agent runner that emits sealed, evidence-oriented audit receipts.
+pub mod headless;
 pub mod host;
 pub mod initialize;
 pub mod interrupt;
@@ -66,11 +78,9 @@ pub use compat_instructions::{
 };
 pub use connectors::{Connector, ConnectorRegistry, ConnectorStatus};
 pub use host::{
-    BackendHost, BackendStatus, EvidenceLink, SideChatResult, StaticAnalysisReceipt,
+    BackendHost, BackendStatus, EvidenceLink, HcliTurnResult, SideChatResult, StaticAnalysisReceipt,
 };
-pub use services::DynCodeIndex;
 pub use initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-pub use speculation_safety::{HostDurableRecord, HostDurableSinks};
 pub use interrupt::InterruptHub;
 pub use live_thread::{LiveThread, LiveThreadInitGuard, THREAD_PERSISTED_KIND};
 pub use memory::{
@@ -82,27 +92,26 @@ pub use policy::{
     derive_policy_decision, tool_declared_effects, PolicyDecision, PolicyDecisionRecord,
 };
 pub use process::{ProcessState, ProcessStatus, ProcessSupervisor, StartSpec};
-pub use program::{
-    default_program_limits, HostProgramHandles, ProgramRunError, ProgramRunResult,
-};
+pub use program::{default_program_limits, HostProgramHandles, ProgramRunError, ProgramRunResult};
 pub use replay::{BackendReplayService, TranscriptHit, TranscriptQuery};
 pub use rewind::{
-    CheckpointCoverage, ChangeStatus, FileChange, ForkPoint, GoalRef, ReceiptScope, RewindTarget,
+    ChangeStatus, CheckpointCoverage, FileChange, ForkPoint, GoalRef, ReceiptScope, RewindTarget,
     StateRef,
 };
 pub use rpc::{ui_event_to_notification, RpcResult};
+pub use services::DynCodeIndex;
 pub use services::{
     BackendCapabilities, BackendServices, CheckpointRecord, CheckpointStore, ConversationEdge,
     ConversationGraph, ConversationNode, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
     GoalVerdict, SessionRecord, SessionRegistry, SessionRelationship,
 };
+pub use speculation_safety::{HostDurableRecord, HostDurableSinks};
 pub use supervisor::{
     ProcessLauncher, RuntimeChild, RuntimeLauncher, RuntimeSupervisor, SupervisorConfig,
 };
 pub use ui_bus::UiEventBus;
 
+pub mod compat;
+pub mod connector_abi;
 pub mod lenses;
 pub mod personalize;
-pub mod connector_abi;
-pub mod compat;
-

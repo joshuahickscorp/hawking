@@ -3,7 +3,16 @@ use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
 mod common;
 use common::*;
-fn run_ref_v3w(ctx: &MetalContext, w_q4: &[u8], scales: &[f32], gate: &[f32], up: &[f32], rows: usize, cols: usize, b: usize) -> Vec<f32> {
+fn run_ref_v3w(
+    ctx: &MetalContext,
+    w_q4: &[u8],
+    scales: &[f32],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+    b: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w_q4);
     let sc_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(scales));
     let gate_buf = new_f32_buf(ctx, gate);
@@ -13,7 +22,10 @@ fn run_ref_v3w(ctx: &MetalContext, w_q4: &[u8], scales: &[f32], gate: &[f32], up
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::silu_mul_tcb(&mut tcb, &gate_buf, &up_buf, &act_buf, b * cols).unwrap();
     let w_bytes = rows * (cols / 256) * 144;
-    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(&mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &y_buf).unwrap();
+    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+        &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, b * rows)
 }
@@ -41,7 +53,16 @@ fn run_fused_v3w(
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, b * rows)
 }
-fn run_ref_v4r(ctx: &MetalContext, w_q4: &[u8], scales: &[f32], gate: &[f32], up: &[f32], rows: usize, cols: usize, b: usize) -> Vec<f32> {
+fn run_ref_v4r(
+    ctx: &MetalContext,
+    w_q4: &[u8],
+    scales: &[f32],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+    b: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w_q4);
     let sc_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(scales));
     let gate_buf = new_f32_buf(ctx, gate);
@@ -51,7 +72,10 @@ fn run_ref_v4r(ctx: &MetalContext, w_q4: &[u8], scales: &[f32], gate: &[f32], up
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::silu_mul_tcb(&mut tcb, &gate_buf, &up_buf, &act_buf, b * cols).unwrap();
     let w_bytes = rows * (cols / 256) * 144;
-    kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(&mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &y_buf).unwrap();
+    kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+        &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, b * rows)
 }
@@ -98,8 +122,15 @@ fn swiglu_fused_v3w_matches_ref() {
         let up = rand_vec(b * cols, 0xBEEF + b as u32);
         let ref_out = run_ref_v3w(ctx, &w, &scales, &gate, &up, rows, cols, b);
         let fused_out = run_fused_v3w(ctx, &w, &scales, &gate, &up, rows, cols, b);
-        let max_diff = ref_out.iter().zip(&fused_out).map(|(a, b)| (a - b).abs()).fold(0.0f32, f32::max);
-        assert!(max_diff < 1e-4, "B={b}: v3w swiglu max_diff={max_diff} > atol 1e-4");
+        let max_diff = ref_out
+            .iter()
+            .zip(&fused_out)
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0f32, f32::max);
+        assert!(
+            max_diff < 1e-4,
+            "B={b}: v3w swiglu max_diff={max_diff} > atol 1e-4"
+        );
     }
 }
 #[test]
@@ -113,7 +144,14 @@ fn swiglu_fused_v4r_matches_ref() {
         let up = rand_vec(b * cols, 0xF00D + b as u32);
         let ref_out = run_ref_v4r(ctx, &w, &scales, &gate, &up, rows, cols, b);
         let fused_out = run_fused_v4r(ctx, &w, &scales, &gate, &up, rows, cols, b);
-        let max_diff = ref_out.iter().zip(&fused_out).map(|(a, b)| (a - b).abs()).fold(0.0f32, f32::max);
-        assert!(max_diff < 1e-4, "B={b}: v4r swiglu max_diff={max_diff} > atol 1e-4");
+        let max_diff = ref_out
+            .iter()
+            .zip(&fused_out)
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0f32, f32::max);
+        assert!(
+            max_diff < 1e-4,
+            "B={b}: v4r swiglu max_diff={max_diff} > atol 1e-4"
+        );
     }
 }

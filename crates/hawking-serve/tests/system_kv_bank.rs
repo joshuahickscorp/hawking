@@ -6,14 +6,26 @@ fn sys_prompt(n: usize) -> Vec<u32> {
 #[test]
 fn hash_is_stable_and_prefix_sensitive() {
     let toks = sys_prompt(40);
-    assert_eq!(SystemPromptKvBank::hash_prefix(&toks, 16), SystemPromptKvBank::hash_prefix(&toks, 16));
-    assert_ne!(SystemPromptKvBank::hash_prefix(&toks, 16), SystemPromptKvBank::hash_prefix(&toks, 24));
+    assert_eq!(
+        SystemPromptKvBank::hash_prefix(&toks, 16),
+        SystemPromptKvBank::hash_prefix(&toks, 16)
+    );
+    assert_ne!(
+        SystemPromptKvBank::hash_prefix(&toks, 16),
+        SystemPromptKvBank::hash_prefix(&toks, 24)
+    );
     let mut toks2 = toks.clone();
     toks2[5] = 99999;
-    assert_ne!(SystemPromptKvBank::hash_prefix(&toks, 16), SystemPromptKvBank::hash_prefix(&toks2, 16));
+    assert_ne!(
+        SystemPromptKvBank::hash_prefix(&toks, 16),
+        SystemPromptKvBank::hash_prefix(&toks2, 16)
+    );
     let mut toks3 = toks.clone();
     toks3[20] = 88888;
-    assert_eq!(SystemPromptKvBank::hash_prefix(&toks, 16), SystemPromptKvBank::hash_prefix(&toks3, 16));
+    assert_eq!(
+        SystemPromptKvBank::hash_prefix(&toks, 16),
+        SystemPromptKvBank::hash_prefix(&toks3, 16)
+    );
 }
 #[test]
 fn record_then_hit_returns_source_slot() {
@@ -90,7 +102,11 @@ fn lru_eviction_caps_entries_and_keeps_newest() {
     let p0: Vec<u32> = (0..9u32).map(|j| 0 * 100 + j).collect(); // 8-tok span + tail
     assert!(bank.lookup(&p0, 8).is_none(), "oldest evicted");
     let p3: Vec<u32> = (0..9u32).map(|j| 3 * 100 + j).collect();
- assert_eq!( bank.lookup(&p3, 8).unwrap().source_slot, 3, "newest survives" );
+    assert_eq!(
+        bank.lookup(&p3, 8).unwrap().source_slot,
+        3,
+        "newest survives"
+    );
 }
 #[test]
 fn lru_touch_on_hit_protects_entry() {
@@ -122,5 +138,8 @@ fn forget_slot_invalidates_its_entries() {
     q.push(1);
     assert!(bank.lookup(&q, 16).is_some());
     assert_eq!(bank.forget_slot(7), 1);
- assert!( bank.lookup(&q, 16).is_none(), "forgotten slot no longer routable" );
+    assert!(
+        bank.lookup(&q, 16).is_none(),
+        "forgotten slot no longer routable"
+    );
 }

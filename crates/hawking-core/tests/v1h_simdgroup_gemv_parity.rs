@@ -20,7 +20,10 @@ fn wedge_h_simdgroup_f32_basic() {
         tcb.commit_and_wait().expect("commit");
         let gpu_out = read_f32_buf(&y_buf, rows);
         let diff = max_abs_diff(&cpu_out, &gpu_out);
-        assert!(diff < 1e-4, "rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-4");
+        assert!(
+            diff < 1e-4,
+            "rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-4"
+        );
     }
 }
 #[test]
@@ -36,11 +39,15 @@ fn wedge_h_simdgroup_f32_qb_shape() {
     let x_buf = new_f32_buf(ctx, &x);
     let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_simdgroup_f32_tcb(&mut tcb, &w_buf, &x_buf, &y_buf, rows, cols).expect("gemv_simdgroup_f32_tcb");
+    kernels::gemv_simdgroup_f32_tcb(&mut tcb, &w_buf, &x_buf, &y_buf, rows, cols)
+        .expect("gemv_simdgroup_f32_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu_out = read_f32_buf(&y_buf, rows);
     let diff = max_abs_diff(&cpu_out, &gpu_out);
-    assert!(diff < 1e-3, "q_b_shape rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3");
+    assert!(
+        diff < 1e-3,
+        "q_b_shape rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3"
+    );
 }
 #[test]
 fn wedge_h_simdgroup_f32_argmax_agrees() {
@@ -51,14 +58,28 @@ fn wedge_h_simdgroup_f32_argmax_agrees() {
     let x = fixed_f32(cols, 0xCAFE_5678);
     let mut cpu_out = vec![0.0f32; rows];
     kernels::gemv_f32(&w, rows, cols, &x, &mut cpu_out);
-    let cpu_winner = cpu_out.iter().enumerate().max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap()).map(|(i, _)| i as u32).unwrap();
+    let cpu_winner = cpu_out
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .map(|(i, _)| i as u32)
+        .unwrap();
     let w_buf = new_f32_buf(ctx, &w);
     let x_buf = new_f32_buf(ctx, &x);
     let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_simdgroup_f32_tcb(&mut tcb, &w_buf, &x_buf, &y_buf, rows, cols).expect("gemv_simdgroup_f32_tcb");
+    kernels::gemv_simdgroup_f32_tcb(&mut tcb, &w_buf, &x_buf, &y_buf, rows, cols)
+        .expect("gemv_simdgroup_f32_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu_out = read_f32_buf(&y_buf, rows);
-    let gpu_winner = gpu_out.iter().enumerate().max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap()).map(|(i, _)| i as u32).unwrap();
-    assert_eq!(gpu_winner, cpu_winner, "argmax: gpu={gpu_winner} cpu={cpu_winner}");
+    let gpu_winner = gpu_out
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .map(|(i, _)| i as u32)
+        .unwrap();
+    assert_eq!(
+        gpu_winner, cpu_winner,
+        "argmax: gpu={gpu_winner} cpu={cpu_winner}"
+    );
 }

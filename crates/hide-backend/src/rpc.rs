@@ -613,7 +613,11 @@ mod tests {
         let result = out.result().expect("thread/fork returns an Ok result");
         let new_id = result["session_id"].as_str().expect("carries a session_id");
         assert!(!new_id.is_empty(), "the fork's session id is non-empty");
-        assert_ne!(new_id, session.as_str(), "the fork is a NEW, independent session");
+        assert_ne!(
+            new_id,
+            session.as_str(),
+            "the fork is a NEW, independent session"
+        );
     }
     #[tokio::test]
     async fn item_list_searches_the_transcript_and_returns_hits() {
@@ -627,7 +631,10 @@ mod tests {
             .await;
         let result = out.result().expect("item/list returns an Ok result");
         let hits = result["hits"].as_array().expect("carries a hits array");
-        assert!(!hits.is_empty(), "the literal substring matches the seeded turn");
+        assert!(
+            !hits.is_empty(),
+            "the literal substring matches the seeded turn"
+        );
     }
     #[tokio::test]
     async fn goal_set_records_a_durable_goal() {
@@ -644,9 +651,14 @@ mod tests {
             )
             .await;
         assert!(out.is_ok(), "goal/set dispatches successfully");
-        let stored = host.goal_get(&session).expect("the goal was recorded durably");
+        let stored = host
+            .goal_get(&session)
+            .expect("the goal was recorded durably");
         assert_eq!(stored.condition, "all oracles pass");
-        assert_eq!(stored.acceptance, vec!["build".to_string(), "test".to_string()]);
+        assert_eq!(
+            stored.acceptance,
+            vec!["build".to_string(), "test".to_string()]
+        );
     }
     #[tokio::test]
     async fn checkpoint_create_records_a_checkpoint() {
@@ -679,7 +691,10 @@ mod tests {
             )
             .await;
         assert!(out.is_ok(), "approval/respond dispatches successfully");
-        assert!(host.approvals().is_pending(&run), "the decision was deposited");
+        assert!(
+            host.approvals().is_pending(&run),
+            "the decision was deposited"
+        );
     }
     #[tokio::test]
     async fn approval_respond_refuse_approve_without_step_id() {
@@ -692,7 +707,10 @@ mod tests {
             )
             .await;
         assert!(matches!(out, RpcResult::Error { .. }));
- assert!( !host.approvals().is_pending(&run), "no decision may be buffered for a blanket approve" );
+        assert!(
+            !host.approvals().is_pending(&run),
+            "no decision may be buffered for a blanket approve"
+        );
     }
     #[tokio::test]
     async fn approval_respond_allows_deny_without_step_id() {
@@ -731,23 +749,35 @@ mod tests {
             .and_then(|v| v.as_str())
             .expect("state/save returns a checkpoint_id")
             .to_string();
-        assert!(host.checkpoint_list(&session) .iter() .any(|c| c.checkpoint_id == ckpt_id));
+        assert!(host
+            .checkpoint_list(&session)
+            .iter()
+            .any(|c| c.checkpoint_id == ckpt_id));
         let fork = host
             .rpc(Method::StateFork, json!({ "state_id": ckpt_id }))
             .await;
         assert!(fork.is_ok(), "state/fork -> checkpoint_fork: {fork:?}");
-        assert!(fork.result() .and_then(|r| r.get("session_id")) .and_then(|v| v.as_str()) .is_some());
-        let load = crate::tools::with_approved_writes(host.rpc(
-            Method::StateLoad,
-            json!({ "state_id": ckpt_id }),
-        ))
+        assert!(fork
+            .result()
+            .and_then(|r| r.get("session_id"))
+            .and_then(|v| v.as_str())
+            .is_some());
+        let load = crate::tools::with_approved_writes(
+            host.rpc(Method::StateLoad, json!({ "state_id": ckpt_id })),
+        )
         .await;
         assert!(load.is_ok(), "state/load -> checkpoint_restore: {load:?}");
         let release = host
             .rpc(Method::StateRelease, json!({ "state_id": ckpt_id }))
             .await;
-        assert!(release.is_ok(), "state/release -> checkpoint_release: {release:?}");
-        assert!(host.checkpoint_list(&session) .iter() .all(|c| c.checkpoint_id != ckpt_id));
+        assert!(
+            release.is_ok(),
+            "state/release -> checkpoint_release: {release:?}"
+        );
+        assert!(host
+            .checkpoint_list(&session)
+            .iter()
+            .all(|c| c.checkpoint_id != ckpt_id));
     }
     #[tokio::test]
     async fn unimplemented_method_returns_typed_not_implemented_not_a_panic() {
@@ -759,7 +789,11 @@ mod tests {
             Method::TurnCreate,
         ] {
             let out = host.rpc(method, json!({})).await;
- assert!( out.is_not_implemented(), "{} must return a typed NotImplemented", method.as_str() );
+            assert!(
+                out.is_not_implemented(),
+                "{} must return a typed NotImplemented",
+                method.as_str()
+            );
         }
     }
     #[tokio::test]

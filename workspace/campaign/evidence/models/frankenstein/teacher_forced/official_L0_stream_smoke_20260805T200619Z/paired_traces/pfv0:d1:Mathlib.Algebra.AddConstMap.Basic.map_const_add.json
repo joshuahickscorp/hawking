@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 239,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: map_const_add\nStatement:\nmap_const_add [AddCommMagma G] [Add H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) : f (a + x) = f x + b\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: map_const_add\nStatement:\nmap_const_add [AddCommMagma G] [Add H] [AddConstMapClass F G H a b]\n    (f : F) (x : G) : f (a + x) = f x + b\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.854973Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "c2641afa092e4940b0c3fd14f6c8316218ce8064b96438fb21e8a47e2ebd918a",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 8.763646125793457,
+          "rank": 0,
+          "token_id": 17
+        },
+        {
+          "logit": 8.613848686218262,
+          "rank": 1,
+          "token_id": 15
+        },
+        {
+          "logit": 7.992217540740967,
+          "rank": 2,
+          "token_id": 23
+        },
+        {
+          "logit": 7.5895094871521,
+          "rank": 3,
+          "token_id": 18
+        },
+        {
+          "logit": 7.464476585388184,
+          "rank": 4,
+          "token_id": 22
+        },
+        {
+          "logit": 7.2569756507873535,
+          "rank": 5,
+          "token_id": 16
+        },
+        {
+          "logit": 6.877608299255371,
+          "rank": 6,
+          "token_id": 21
+        },
+        {
+          "logit": 6.6278252601623535,
+          "rank": 7,
+          "token_id": 20
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.18330711126327515,
+          "l2": 3.6491544246673584,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "0383b4a7fdd0cb8cc0706d765c1777fb3bc5d9669e17ae67e76828121bb10e62",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

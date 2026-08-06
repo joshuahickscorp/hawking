@@ -56,7 +56,9 @@ impl Frontmatter {
     }
 
     pub fn str(&self, key: &str) -> Option<String> {
-        self.map.get(key).and_then(|v| v.as_str().map(|s| s.to_string()))
+        self.map
+            .get(key)
+            .and_then(|v| v.as_str().map(|s| s.to_string()))
     }
 
     pub fn bool(&self, key: &str) -> Option<bool> {
@@ -264,7 +266,8 @@ mod tests {
     }
     #[test]
     fn parses_booleans_and_quotes() {
-        let block = "user-invocable: true\ndisable-model-invocation: false\ndescription: \"hello world\"\n";
+        let block =
+            "user-invocable: true\ndisable-model-invocation: false\ndescription: \"hello world\"\n";
         let fm = parse_block(block);
         assert_eq!(fm.bool("user-invocable"), Some(true));
         assert_eq!(fm.bool("disable-model-invocation"), Some(false));

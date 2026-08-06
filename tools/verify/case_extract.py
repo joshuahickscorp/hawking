@@ -10,8 +10,10 @@ Ledger generation defaults to HEAD (or --rev). --check re-extracts at the
 ledger's sealed_at_commit (or an explicit identical --rev), not the worktree.
 
     python3.12 tools/verify/case_extract.py --json
-    python3.12 tools/verify/case_extract.py --write control/ASSERTION_LEDGER.json
-    python3.12 tools/verify/case_extract.py --check control/ASSERTION_LEDGER.json
+    python3.12 tools/verify/case_extract.py --write \
+      workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json
+    python3.12 tools/verify/case_extract.py --check \
+      workspace/campaign/governance/control/catalog/manifests/ASSERTION_LEDGER.json
 """
 
 from __future__ import annotations
@@ -27,6 +29,12 @@ import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import resolve_workspace_path
 
 EXTRACTOR_VERSION = "hawking.case_extract.v2"
 SCHEMA = "hawking.assertion_ledger.v1"
@@ -51,6 +59,19 @@ def get_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def resolve_live_path(path: Path) -> Path:
+    """Resolve a user-supplied live path without breaking isolated git fixtures."""
+    if path.is_absolute():
+        return path
+    root = get_root()
+    # The layout bridge is authoritative for the real repository.  Tests and
+    # historical-revision extraction can point HAWKING_CASE_EXTRACT_ROOT at a
+    # tiny independent git repository, where the path must remain local.
+    if root.resolve() == ROOT.resolve():
+        return resolve_workspace_path(path)
+    return root / path
+
+
 def git(*args: str) -> str:
     return subprocess.run(
         ["git", "-C", str(get_root()), *args],
@@ -68,7 +89,7 @@ def tracked(rev: str, *suffixes: str) -> list[str]:
     files = [
         p
         for p in git("ls-tree", "-r", "--name-only", rev).splitlines()
-        if p and not p.startswith("vendor/")
+        if p and not p.startswith(("vendor/", "workspace/vendor/"))
     ]
     if not suffixes:
         return files
@@ -81,6 +102,22 @@ def read_text(rev: str, rel: str) -> str:
         return git("show", f"{rev}:{rel}")
     except subprocess.CalledProcessError:
         return ""
+
+
+def read_artifact(rev: str, name: str) -> str:
+    """Read a REBUILD_* artifact at `rev`, across the compact-layout move.
+
+    Live revisions store these records in
+    ``workspace/campaign/evidence/runtime/rebuild/``.  Older revisions used
+    ``evidence/rebuild/`` and the earliest ones placed them at the repository
+    root.  `read_text` returns "" for a missing blob, so retain every fallback
+    when reading an arbitrary historical revision.
+    """
+    return (
+        read_text(rev, f"workspace/campaign/evidence/runtime/rebuild/{name}")
+        or read_text(rev, f"evidence/rebuild/{name}")
+        or read_text(rev, name)
+    )
 
 
 def sha256_hex(data: str | bytes) -> str:
@@ -683,8 +720,8 @@ def extract_typescript(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 def extract_bb(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     bc_path = "REBUILD_BEHAVIOUR_CONSTITUTION.json"
     mx_path = "REBUILD_BLACKBOX_TEST_MATRIX.json"
-    bc = json.loads(read_text(rev, bc_path) or "{}")
-    mx = json.loads(read_text(rev, mx_path) or "{}")
+    bc = json.loads(read_artifact(rev, bc_path) or "{}")
+    mx = json.loads(read_artifact(rev, mx_path) or "{}")
     behaviours = {b["id"]: b for b in bc.get("behaviours", []) if "id" in b}
     checks = {c["behaviour_id"]: c for c in mx.get("checks", []) if "behaviour_id" in c}
     bc_ids = set(behaviours)
@@ -739,7 +776,7 @@ def extract_bb(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 
 def extract_mig(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     path = "REBUILD_DATA_MIGRATION_CONTRACT.json"
-    doc = json.loads(read_text(rev, path) or "{}")
+    doc = json.loads(read_artifact(rev, path) or "{}")
     out: list[dict[str, Any]] = []
     for item in doc.get("items", []):
         mid = item.get("id")
@@ -773,7 +810,7 @@ def extract_mig(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 
 def extract_perf(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
     path = "REBUILD_PERFORMANCE_BASELINE_MEASURED.json"
-    doc = json.loads(read_text(rev, path) or "{}")
+    doc = json.loads(read_artifact(rev, path) or "{}")
     out: list[dict[str, Any]] = []
     for metric in doc.get("metrics", []):
         name = metric.get("name")
@@ -989,9 +1026,7 @@ def main(argv: list[str] | None = None) -> int:
         args.summary = True
 
     if args.check:
-        path = Path(args.check)
-        if not path.is_absolute():
-            path = get_root() / path
+        path = resolve_live_path(Path(args.check))
         rc, msgs = check_ledger(path, args.rev)
         stream = sys.stdout if rc == 0 else sys.stderr
         for m in msgs:
@@ -1010,9 +1045,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = semantic_payload(doc)
 
     if args.write:
-        path = Path(args.write)
-        if not path.is_absolute():
-            path = get_root() / path
+        path = resolve_live_path(Path(args.write))
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(payload, encoding="utf-8")
         print(

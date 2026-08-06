@@ -5,7 +5,7 @@ import { runCommand, useStore } from "./store";
 import { type IntentAck } from "./wire";
 import { keyLabel } from "./surfaces/chat_actions";
 
-// Shared UI primitives still used by the VS Code shell. (The old doctrine primitives —
+// Shared UI primitives still used by the editor shell. (The old doctrine primitives —
 // Volume/Mark/LightEdge/ModeRail/StatusPill — were retired with the concrete design.)
 
 export function Display({ children, style, className }: { children: ReactNode; style?: CSSProperties; className?: string }) {
@@ -16,7 +16,7 @@ export function Display({ children, style, className }: { children: ReactNode; s
   );
 }
 
-// Primary (accent) button — VS Code button.background.
+// Primary (accent) button — the editor button background.
 export function Gate({
   children,
   onClick,

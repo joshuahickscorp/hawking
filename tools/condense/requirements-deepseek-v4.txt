@@ -1,0 +1,7 @@
+# Reproducible runtime for the bounded DeepSeek-V4 native codec/Xet fixture.
+# Install into tools/condense/.venv; this is intentionally separate from model
+# source storage and does not materialize checkpoint bodies.
+huggingface_hub==1.24.0
+hf_xet==1.5.2
+numpy==2.2.6
+tokenizers==0.22.2

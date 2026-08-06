@@ -1,0 +1,70 @@
+{
+  "schema": "hawking.tg.source_quant_gravity_receipt.v1",
+  "status": "SOURCE_PRESERVING_ARTIFACT_AND_MATCHED_DECODE_PASS_NONCERTIFYING",
+  "claim": "NO_TG_RUNG",
+  "rung": "TG10",
+  "model": "Mistral-Nemo-Instruct-2407-Q4_K_M",
+  "family": "mistral",
+  "source": {
+    "path": "models/tg-breadth/mistral-nemo/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "bytes": 7477208192,
+    "sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46",
+    "receipt": "evidence/tg/TG10_MISTRAL_SOURCE_RECEIPT.json"
+  },
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity",
+    "sha256": "f0795fc20396dd10a94af3a4e98629faa13eedd5fc894ac2eaeb0a663dac11b9",
+    "physical_bytes": 7469437982,
+    "payload_bytes": 7469322240,
+    "mapped_tensors": 363,
+    "packed_bpw": 4.87788955479452,
+    "complete_bpw": 4.878807931793432,
+    "lossy_fit": false,
+    "raw_quant_codecs": ["ggml.q4_k", "ggml.q6_k"],
+    "rope_layout": "interleaved",
+    "source_hash_verified": true,
+    "body_hash_verified": true
+  },
+  "matched_decode_gate": {
+    "prompt_token_ids": [1, 1784, 8961, 1307, 5498, 1395],
+    "source_reference": {
+      "implementation": "llama.cpp",
+      "protocol": "one-token sequential decode with one warmup token",
+      "generated_token_ids": [6993, 1046, 6993, 1395, 1278, 12347, 5970, 1294]
+    },
+    "gravity_default_token_ids": [6993, 1046, 6993, 1395, 1278, 12347, 5970, 1294],
+    "equal": true,
+    "gravity_prefill_ms": 204.06425,
+    "gravity_decode_tps": 50.36171197966947,
+    "gravity_decode_dispatches": 4176,
+    "parity_scope": "greedy token IDs only; full-logit tolerance and matched timing are not certified"
+  },
+  "resident_measurements": {
+    "runtime": "GravityLlamaGpu raw K-quant b9430 kernels with declared Mistral geometry",
+    "context_tokens": 32,
+    "decode_tps": 55.99120484555166,
+    "decode_ms_per_token_median": 17.641875,
+    "dispatches_per_token": 522,
+    "prefill_tps": 49.39876622691195,
+    "active_weight_bytes": 7469322240,
+    "device_resident_bytes": 7469322240
+  },
+  "rung_gates": {
+    "TG8_125_tps": false,
+    "TG5_200_tps": false,
+    "TG4_250_tps": false,
+    "TG3_333_tps": false,
+    "TG2_500_tps": false,
+    "TG1_1000_tps": false,
+    "ladder_status": "NO_CLAIM"
+  },
+  "roofline": {
+    "bandwidth_constant_bytes_per_second": 736000000000,
+    "tg2_max_active_weight_bytes": 1472000000,
+    "tg1_max_active_weight_bytes": 736000000,
+    "tg2_reduction_from_current_resident_payload": 0.8029272331943199,
+    "tg1_reduction_from_current_resident_payload": 0.9014636165971599,
+    "constraint": "The source-preserving 7.47 GB payload is far above the TG2/TG1 active-byte ceilings; a format-native reduction is required."
+  },
+  "next_gate": "Preserve the shared Llama-family adapter contract while producing a reduced Mistral artifact with the same matched decode gate before any rung claim."
+}

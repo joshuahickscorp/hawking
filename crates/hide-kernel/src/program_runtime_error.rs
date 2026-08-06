@@ -109,7 +109,11 @@ pub enum RuntimeError {
 
 impl RuntimeError {
     pub fn limit(kind: LimitKind, limit: u64, needed: u64) -> Self {
-        RuntimeError::LimitExceeded { kind, limit, needed }
+        RuntimeError::LimitExceeded {
+            kind,
+            limit,
+            needed,
+        }
     }
 
     /// The [`LimitKind`] this error carries, if it is a limit error.

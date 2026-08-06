@@ -26,36 +26,167 @@ fn run_pair(
 ) -> PairOut {
     run_predec_pair_combined(ctx, wg, wu, g_scales, u_scales, x, rows, cols, dispatch)
 }
-fn run_1r(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu).expect("1r");
-    })
+fn run_1r(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
+            .expect("1r");
+        },
+    )
 }
-fn run_2r(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu).expect("2r");
-    })
+fn run_2r(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
+            .expect("2r");
+        },
+    )
 }
-fn run_2r_inline(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_2r_inline_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu).expect("2r_inline");
-    })
+fn run_2r_inline(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_2r_inline_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
+            .expect("2r_inline");
+        },
+    )
 }
-fn run_2r_inline_nox(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_2r_inline_nox_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu)
+fn run_2r_inline_nox(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_2r_inline_nox_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
             .expect("2r_inline_nox");
-    })
+        },
+    )
 }
-fn run_3r(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_3r_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu).expect("3r");
-    })
+fn run_3r(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_3r_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
+            .expect("3r");
+        },
+    )
 }
-fn run_4r(ctx: &MetalContext, wg: &[u8], wu: &[u8], gs: &[f32], us: &[f32], x: &[f32], r: usize, c: usize) -> PairOut {
-    run_pair(ctx, wg, wu, gs, us, x, r, c, |tcb, m, wb, gsb, usb, xb, yg, yu| {
-        kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu).expect("4r");
-    })
+fn run_4r(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    gs: &[f32],
+    us: &[f32],
+    x: &[f32],
+    r: usize,
+    c: usize,
+) -> PairOut {
+    run_pair(
+        ctx,
+        wg,
+        wu,
+        gs,
+        us,
+        x,
+        r,
+        c,
+        |tcb, m, wb, gsb, usb, xb, yg, yu| {
+            kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+                tcb, m, 0, wb, gsb, 0, wb, wb, usb, 0, r, c, xb, yg, yu,
+            )
+            .expect("4r");
+        },
+    )
 }
 fn assert_bit_identical(
     label: &str,
@@ -74,15 +205,28 @@ fn assert_bit_identical(
         let (got_g, got_u) = candidate(ctx, &wg, &wu, &g_scales, &u_scales, &x, rows, cols);
         let diff_g = max_abs_diff(&ref_g, &got_g);
         let diff_u = max_abs_diff(&ref_u, &got_u);
-        assert_eq!(diff_g, 0.0, "{label} rows={rows} cols={cols}: gate max_diff={diff_g:.2e}");
-        assert_eq!(diff_u, 0.0, "{label} rows={rows} cols={cols}: up max_diff={diff_u:.2e}");
+        assert_eq!(
+            diff_g, 0.0,
+            "{label} rows={rows} cols={cols}: gate max_diff={diff_g:.2e}"
+        );
+        assert_eq!(
+            diff_u, 0.0,
+            "{label} rows={rows} cols={cols}: up max_diff={diff_u:.2e}"
+        );
     }
 }
 #[test]
 fn pair_2r_matches_pair_1r_multiple_shapes() {
     assert_bit_identical(
         "pair_2r",
-        &[(16, 256, 0xA701), (32, 512, 0xA702), (48, 256, 0xA703), (128, 512, 0xA704), (512, 2048, 0xA705), (1024, 512, 0xA706)],
+        &[
+            (16, 256, 0xA701),
+            (32, 512, 0xA702),
+            (48, 256, 0xA703),
+            (128, 512, 0xA704),
+            (512, 2048, 0xA705),
+            (1024, 512, 0xA706),
+        ],
         0xFFFF,
         0x1234,
         run_1r,
@@ -152,7 +296,14 @@ fn pair_3r_matches_pair_2r_multiple_shapes() {
 fn pair_4r_matches_pair_2r_multiple_shapes() {
     assert_bit_identical(
         "pair_4r",
-        &[(32, 256, 0xB201), (48, 256, 0xB202), (64, 512, 0xB203), (128, 512, 0xB204), (512, 2048, 0xB205), (1024, 512, 0xB206)],
+        &[
+            (32, 256, 0xB201),
+            (48, 256, 0xB202),
+            (64, 512, 0xB203),
+            (128, 512, 0xB204),
+            (512, 2048, 0xB205),
+            (1024, 512, 0xB206),
+        ],
         0xDEAD,
         0x5678,
         run_2r,

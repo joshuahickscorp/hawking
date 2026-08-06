@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.tg.large_family_terminal_floor.v2",
+  "status": "SEALED_AFTER_TWO_DISTINCT_SAME_ARTIFACT_ARCHITECTURE_FAILURES_NO_TG_RUNG",
+  "at": "2026-08-02T07:10:00Z",
+  "family": "mistral",
+  "model": {
+    "name": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+    "official_release": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "license": "Apache-2.0",
+    "source_bytes": 14333910496,
+    "source_sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "artifact_bytes": 14326142247,
+    "artifact_sha256": "0b3024670765f03cb1bb9d5a487c9ae09ab18a5543bb540ff9f0a0d0af85ddce"
+  },
+  "K0_first_dispatch": {
+    "prompt": "2 + 2 =",
+    "exact_prompt_token_ids": [1, 1050, 1867, 1032, 1050, 1376],
+    "llama_cpp_first_greedy_token": 1032,
+    "hawking_first_greedy_token": 1032,
+    "device": "Apple M3 Ultra",
+    "hawking_load_ms": 10156.548583,
+    "hawking_prefill_dispatches": 3132,
+    "hawking_decode_dispatches": 522,
+    "hawking_cpu_reference_fallback_total": 0,
+    "generated_tokens": 1,
+    "result": "PASS_BOUNDED_FIRST_DISPATCH_AND_FIRST_GREEDY_TOKEN_MATCH_ONLY"
+  },
+  "baseline": {
+    "receipt": "evidence/tg/TG24_MISTRAL_SMALL_NATIVE_Q4_128_COMPLETE_TOKEN_2026_08_02.json",
+    "complete_decode_tokens": 128,
+    "tps": 29.838791525232033,
+    "p50_ms": 33.27025,
+    "p95_ms": 37.429708,
+    "p99_ms": 37.729542,
+    "dispatches_per_token": 522,
+    "command_buffers_per_token": 1,
+    "continuation_sha256": "680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee",
+    "active_weight_bytes": 14326026240
+  },
+  "failed_architectures": [
+    {"change": "source QKV/RoPE/KV fusion", "receipt": "evidence/tg/TG24_MISTRAL_SMALL_FUSED_QKV_REJECTED_2026_08_02.json", "tps": 28.69449307136663, "p99_ms": 39.896833, "physical_dispatches_per_token": 362},
+    {"change": "Q4_K V3 eight-row geometry", "receipt": "evidence/tg/TG24_MISTRAL_SMALL_Q4V3_REJECTED_2026_08_02.json", "tps": 9.703349984791329, "p99_ms": 109.794791, "physical_dispatches_per_token": 522}
+  ],
+  "ladder": {
+    "deepest_honest_named_rung": null,
+    "first_failing_rung": "TG32",
+    "TG32_target_tps": 31.25,
+    "reason": "The 128-token source-packed baseline is 29.839 TPS with p99 37.730 ms; no CLEAN lease, full V2.1 parity, or whole-model capability gate exists."
+  },
+  "binding_roofline": "A complete source-packed decode reads 14.326 GB of resident weights through 522 dispatches per token. Command reduction alone was insufficient and worsened wall/p99; geometry alone was severely worse.",
+  "exact_next_representation_change": "Do not reattempt the source-packed Q4 baseline, fused-QKV selection, or Q4V3 geometry for a rung claim. The next Mistral attempt requires a capability-gated executable representation that materially lowers active bytes and physical work (for example, a layer-window basis/lookup or mean-plus-residual representation) while retaining source-bound full-logit and whole-model gates.",
+  "promotion_boundary": "This is a diagnostic same-model roofline only; it does not certify production GPU performance, a TG rung, capability, or a parent-restream action.",
+  "rotation": {"condition": "B", "ready_to_evict": true}
+}

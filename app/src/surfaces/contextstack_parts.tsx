@@ -1,8 +1,8 @@
 /*
-  parts.tsx: the primitives of the Context tree, folded into a VS Code-style Explorer sidebar.
+  parts.tsx: the primitives of the Context tree, folded into an Explorer-style sidebar.
   Each Stratum is a collapsible tree SECTION (a 22px header row with a twistie chevron, an uppercase
   section label, an optional count). Rows (Line) are compact ~22px tree rows. Flat + system-font +
-  VS Code-toned: no glows, no breathing, no bloom. Liveness is a small accent dot, nothing more.
+  Flat-toned: no glows, no breathing, no bloom. Liveness is a small accent dot, nothing more.
   These are LOCAL primitives (the surface owns them; ui.tsx is not touched). Every prop is preserved
   so ContextStack.tsx — and the steer logic — keep working unchanged.
 */
@@ -61,7 +61,7 @@ export function Line({ children, onClick, title }: { children: ReactNode; onClic
 }
 
 /*
-  HardwareToggle: a small labeled toggle that sits at the trailing edge of a tree row. Flat VS Code
+  HardwareToggle: a small labeled toggle that sits at the trailing edge of a tree row. Flat
   toning: dim uppercase label at rest, brighter on hover, accent (or a destructive red for `tone="bad"`)
   when engaged. No bloom, no depress bounce — just a quiet background + color shift.
 */
@@ -237,7 +237,7 @@ export function Stratum({
 }
 
 /*
-  NoteField: inject a note into context. A flat VS Code input that commits on Enter and clears.
+  NoteField: inject a note into context. A flat input that commits on Enter and clears.
   The already-committed value rests above it in a quiet card.
 */
 export function NoteField({ value, onCommit, placeholder }: { value?: string; onCommit: (text: string) => void; placeholder: string }) {

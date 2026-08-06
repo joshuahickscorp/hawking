@@ -5,6 +5,30 @@ use std::path::Path;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
+/// Build the optional Metal context shared by model loaders.
+///
+/// A traced run is an evidence run: silently switching it to CPU would make
+/// dispatch/device fields look like valid zeroes and can turn a shader compile
+/// failure into a multi-minute packed-weight scan.  Therefore trace mode (or
+/// the explicit `HAWKING_REQUIRE_METAL=1` guard) propagates initialization
+/// errors.  Ordinary untraced loads retain the portable CPU fallback, but make
+/// the reason visible on stderr.
+pub(crate) fn init_optional_metal(
+    config: &EngineConfig,
+) -> Result<Option<crate::metal::MetalContext>> {
+    if config.force_cpu || crate::env_on("HAWKING_FORCE_CPU") {
+        return Ok(None);
+    }
+    match crate::metal::MetalContext::new_with_trace(config.trace_dispatch) {
+        Ok(ctx) => Ok(Some(ctx)),
+        Err(error) if config.trace_dispatch || crate::env_on("HAWKING_REQUIRE_METAL") => Err(error),
+        Err(error) => {
+            eprintln!("hawking: Metal initialization failed ({error}); using CPU fallback");
+            Ok(None)
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct EngineConfig {
     pub max_seq_len: usize,
@@ -199,6 +223,11 @@ pub struct GenStats {
     pub completion_tokens: usize,
     pub prefill_ms: f64,
     pub decode_ms: f64,
+    /// Individual measured decode-step wall times in milliseconds. Empty for
+    /// ordinary generation; the matched Llama protocol opts in through
+    /// `HAWKING_LLAMA_MATCHED_WARMUP_TOKENS` so p50/p95/p99 are never inferred
+    /// from a five-run average.
+    pub decode_token_ms: Vec<f64>,
     pub draft_accepted: usize,
     pub draft_rejected: usize,
     pub profile_id: Option<String>,
@@ -219,9 +248,28 @@ pub struct GenStats {
     /// `trace_dispatch` is on OR `HAWKING_TRACE_DISPATCH=1`).
     /// Always 0 when trace is off to avoid any hot-path overhead.
     pub metal_dispatches: usize,
+    /// Sum of Metal dispatches across the measured decode suffix. Unlike
+    /// `metal_dispatches`, which is the final forward-step diagnostic, this is
+    /// suitable for an auditable dispatches-per-token calculation.
+    pub decode_metal_dispatches_total: usize,
+    /// Number of completed model decode forwards represented by the measured
+    /// suffix. This is distinct from emitted/sampled tokens so a sampling-only
+    /// timing can never be mistaken for complete-token throughput.
+    pub completed_decode_forwards: usize,
+    /// Physical command buffers committed by completed decode forwards.
+    pub decode_command_buffers_total: usize,
+    /// Physical dispatches and command buffers spent on prompt prefill.
+    pub prefill_metal_dispatches_total: usize,
+    pub prefill_command_buffers_total: usize,
     /// Track 3.1 alias matching the plan target label. Same value as
     /// `metal_dispatches`; both fields are populated together.
     pub dispatches_per_forward: usize,
+    /// Number of model primitives that used their CPU reference fallback in
+    /// the last measured forward. A K0/GPU-parity receipt requires this to be
+    /// zero; the value remains zero for engines that do not instrument it.
+    pub cpu_reference_fallback_count: usize,
+    /// Sum of CPU-reference fallbacks across the measured decode suffix.
+    pub decode_cpu_reference_fallback_total: usize,
     /// Track 0.2 (observability): total bytes read back from the GPU across the
     /// whole decode loop. Token-only greedy reads 4 B/step (argmax id); a
     /// full-logits path reads vocab*4 B/step. 0 when no GPU readback occurred.
@@ -242,7 +290,17 @@ pub struct GenStats {
 impl GenStats {
     /// Track 0.2 — derived decode throughput (tok/s; 0 when no decode elapsed).
     pub fn dec_tps(&self) -> f64 {
-        (self.completion_tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
+        // A nonzero completed-forward count is authoritative for a
+        // complete-token decode receipt.  This excludes completion token zero
+        // when it was sampled from prompt-prefill logits rather than produced
+        // by a decode forward.  Engines without this instrumentation retain
+        // the historical completion-token denominator.
+        let tokens = if self.completed_decode_forwards > 0 {
+            self.completed_decode_forwards
+        } else {
+            self.completion_tokens
+        };
+        (tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
     }
 
     /// Track 0.2 — derived draft accept rate (0.0 when no drafts proposed).
@@ -257,18 +315,25 @@ impl GenStats {
         }
     }
 
-    /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
-    /// small, parseable JSON object (omits the heavy `dispatch_samples` vec and
-    /// the raw trace counters). Needs no GPU/model/bench → unit-testable on a
-    /// busy machine via a hand-constructed `GenStats`.
+    /// Track 0.2 / 8.3 — serialize parseable observability fields while
+    /// omitting the heavy `dispatch_samples` vec and raw trace counters. The
+    /// matched Llama protocol may include its bounded per-token timing vector.
     pub fn stats_json(&self) -> serde_json::Value {
         serde_json::json!({
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
             "prefill_ms": self.prefill_ms,
             "decode_ms": self.decode_ms,
+            "decode_token_ms": self.decode_token_ms,
             "dec_tps": self.dec_tps(),
             "dispatches_per_forward": self.dispatches_per_forward,
+            "decode_metal_dispatches_total": self.decode_metal_dispatches_total,
+            "completed_decode_forwards": self.completed_decode_forwards,
+            "decode_command_buffers_total": self.decode_command_buffers_total,
+            "prefill_metal_dispatches_total": self.prefill_metal_dispatches_total,
+            "prefill_command_buffers_total": self.prefill_command_buffers_total,
+            "cpu_reference_fallback_count": self.cpu_reference_fallback_count,
+            "decode_cpu_reference_fallback_total": self.decode_cpu_reference_fallback_total,
             "draft_accepted": self.draft_accepted,
             "draft_rejected": self.draft_rejected,
             // P1.1: per-proposer accept rate (Phase 0/1 has UserNgram only).
@@ -652,12 +717,25 @@ mod gen_stats_observability_tests {
         assert!((s.dec_tps() - 32.0).abs() < 1e-9);
     }
     #[test]
+    fn dec_tps_prefers_completed_forwards_when_instrumented() {
+        let s = GenStats {
+            // Eight emitted tokens can include the first token sampled from
+            // prompt-prefill logits; only seven had decode forwards.
+            completion_tokens: 8,
+            completed_decode_forwards: 7,
+            decode_ms: 2000.0,
+            ..Default::default()
+        };
+        assert!((s.dec_tps() - 3.5).abs() < 1e-9);
+    }
+    #[test]
     fn stats_json_carries_observability_fields() {
         let s = GenStats {
             prompt_tokens: 14,
             completion_tokens: 64,
             decode_ms: 2000.0,
             dispatches_per_forward: 255,
+            cpu_reference_fallback_count: 3,
             readback_bytes: 256,
             logits_materialized_rows: 0,
             logits_materialized_vocab: 32000,
@@ -668,6 +746,7 @@ mod gen_stats_observability_tests {
         let j = s.stats_json();
         assert_eq!(j["dec_tps"].as_f64().unwrap().round(), 32.0);
         assert_eq!(j["dispatches_per_forward"], 255);
+        assert_eq!(j["cpu_reference_fallback_count"], 3);
         assert_eq!(j["readback_bytes"], 256);
         assert_eq!(j["token_only_path_used"], true);
         assert_eq!(j["lm_head_path"], "q4k-predec-f16s");

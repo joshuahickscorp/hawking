@@ -183,10 +183,7 @@ impl ToolPermissionGate {
 
     pub fn issue_receipt(&self, proposal: ToolProposal) -> ToolReceipt {
         let decision = self.decide(&proposal);
-        let id = format!(
-            "rcpt-{}",
-            self.next_receipt.fetch_add(1, Ordering::Relaxed)
-        );
+        let id = format!("rcpt-{}", self.next_receipt.fetch_add(1, Ordering::Relaxed));
         ToolReceipt {
             id,
             proposal,
@@ -224,14 +221,10 @@ pub fn execute_with_receipt(
         ));
     }
     if receipt.consumed {
-        return Err(HideError::InvalidState(
-            "receipt already consumed".into(),
-        ));
+        return Err(HideError::InvalidState("receipt already consumed".into()));
     }
     if receipt.decision != PermissionDecision::Allow {
-        return Err(HideError::PolicyDenied(
-            "receipt decision is deny".into(),
-        ));
+        return Err(HideError::PolicyDenied("receipt decision is deny".into()));
     }
     if tool.abi().permissions.requires_receipt {
         receipt.consumed = true;
@@ -403,7 +396,8 @@ fn all_tool_abis() -> Vec<PersonalToolAbi> {
         PersonalToolAbi {
             id: "task_lists".into(),
             title: "Task lists".into(),
-            description: "Create, list, complete, and remove personal tasks (fixture store).".into(),
+            description: "Create, list, complete, and remove personal tasks (fixture store)."
+                .into(),
             permissions: local_write_perms(),
             status: ToolStatus::Implemented,
             input_schema: json!({
@@ -717,9 +711,7 @@ impl PersonalTool for CalculatorTool {
     }
 
     fn rollback(&self, _token: &str) -> Result<()> {
-        Err(HideError::InvalidState(
-            "calculator has no rollback".into(),
-        ))
+        Err(HideError::InvalidState("calculator has no rollback".into()))
     }
 }
 
@@ -940,11 +932,23 @@ mod tests {
         ] {
             let abi = reg.get(id).expect(id);
             assert_eq!(abi.status, ToolStatus::Declared);
-            assert!(!abi.permissions.effects.is_empty(), "{id} must declare effects");
+            assert!(
+                !abi.permissions.effects.is_empty(),
+                "{id} must declare effects"
+            );
             assert!(reg.construct(id).is_err(), "{id} must refuse construct");
         }
-        for id in ["web_search", "email_drafting", "local_shell", "mcp_tools", "code_execution"] {
- assert!( reg.get(id).unwrap().permissions.requires_receipt, "{id} must require receipt" );
+        for id in [
+            "web_search",
+            "email_drafting",
+            "local_shell",
+            "mcp_tools",
+            "code_execution",
+        ] {
+            assert!(
+                reg.get(id).unwrap().permissions.requires_receipt,
+                "{id} must require receipt"
+            );
         }
     }
 }

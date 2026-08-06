@@ -1,0 +1,89 @@
+{
+  "schema": "hawking.tg.same_model_runtime_optimization_preregistration.v1",
+  "status": "PREREGISTERED_GRAVITY_NATIVE_GATE_UP_WAVE",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen14-gravity-native-gate-up-pair-v1",
+    "family": "qwen2_dense",
+    "hypothesis": "A native packed gate/up projection wave can replace two independent source Q4_K GEMV dispatches with one paired source-compatible dispatch per layer, reducing complete-token wall time without changing the executable Gravity bytes or token decisions.",
+    "mechanism": "Set HAWKING_GRAVITY_FUSE_GATE_UP=1; GravityLlamaGpu selects gemv_q4_k_m_llama_b9430_pair_pinned_tcb only when both exact source tensors have identical Q4_K geometry, otherwise it fails closed to the control path.",
+    "fallback": "If the source geometry is ineligible, if dispatch topology does not change, if parity changes, or if p50/p95/p99 or wall time regresses, retire the wave and keep the control representation.",
+    "reopen_condition": "A future retry requires a materially different geometry or kernel implementation; changing only the environment flag is not sufficient."
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-gate-up.gravity",
+    "expected_bytes": 8982325263,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "max_new_tokens": 32,
+    "temperature": 0.0,
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "complete_tokens_required": 32,
+    "runs_each_side": 2,
+    "device_required": "Apple M3 Ultra",
+    "cpu_reference_fallback_required": 0,
+    "continuation_hash_required": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "wall_win_required_percent": 3.0,
+    "p95_regression_allowed_percent": 0.0,
+    "p99_regression_allowed_percent": 0.0,
+    "physical_dispatch_topology_must_change": true
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_RESULT_2026_08_02.json",
+    "median_tps": 38.153345409910116,
+    "median_decode_ms": 812.522396,
+    "median_p50_ms": 25.373604,
+    "median_p95_ms": 26.495625,
+    "median_p99_ms": 26.89890625,
+    "dispatches_per_forward": 770,
+    "fallback_count": 0
+  },
+  "admission": {
+    "free_bytes_before": 369926090752,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "source_bytes": 8988110976,
+    "artifact_bytes": 8982325263,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "projected_free_after_source_artifact_scratch": 325045000049,
+    "projected_residual_above_floor_bytes": 125039110493,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true,
+    "runtime": {
+      "huggingface_hub": "1.24.0",
+      "hf_xet": "1.5.2"
+    }
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "promotion_boundary": "Same-model complete-token parity and CLEAN Metal timing are required before any TG claim; G2-G9 capability remains open."
+}

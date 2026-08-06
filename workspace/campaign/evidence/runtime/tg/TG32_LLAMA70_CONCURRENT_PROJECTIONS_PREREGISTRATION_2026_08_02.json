@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "llama3_dense",
+  "candidate": {
+    "id": "llama70-resident-concurrent-projections-v1",
+    "kind": "same_model_resident_projection_concurrency",
+    "hypothesis": "Overlapping independent Q/K/V projection waves in the resident Llama-70B Metal token graph will reduce serialized projection latency without changing the source continuation or resident KV state.",
+    "mechanism": "Keep the admitted source-fused QKV/RoPE/FlashAttention/residual configuration, disable the serial encoder, and enable HAWKING_LLAMA_RESIDENT_CONCURRENT=1 so disjoint Q/K/V GEMVs share concurrent Metal groups.",
+    "scope": "same exact Llama-3.3-70B-Instruct Q4_K_M body, same immutable revision, same M3 Ultra, same 8 complete-token prompt and resident profile",
+    "promotion_gate": {
+      "complete_tokens": 8,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32"
+    },
+    "reject_conditions": [
+      "any token-ID change",
+      "fallback > 0",
+      "concurrent projection group inactive",
+      "no complete-token wall win >= 3 percent",
+      "p95 or p99 regression > 2 percent",
+      "KV/state or source continuation parity failure"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "xet_hash": "9892b2dd07783188096407a0708e831805878231af6e239bdd6a60cca105d9d1"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "max_new_tokens": 8,
+    "temperature": 0
+  },
+  "control": {
+    "profile": "resident_b9430_fused_graph_q5_value_repair",
+    "measured_tps": 11.64468166294944,
+    "decode_ms": 601.132792,
+    "p50_ms": 85.966792,
+    "p95_ms": 86.2620545,
+    "p99_ms": 86.2867445,
+    "dispatches_per_forward": 962,
+    "metal_dispatches_total": 6734,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "source_window_generated_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925]
+  },
+  "runtime": {
+    "baseline_environment": [
+      "HAWKING_REQUIRE_METAL=1",
+      "HAWKING_LLAMA_RESIDENT_B9430=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_KV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_B9430_LONG_FATTN_FUSED_QKV_ROPE=1",
+      "HAWKING_LLAMA_RESIDENT_FUSED_RESIDUAL_NORM=1"
+    ],
+    "candidate_delta_environment": [
+      "HAWKING_LLAMA_RESIDENT_SERIAL_ENCODER=0",
+      "HAWKING_LLAMA_RESIDENT_CONCURRENT=1"
+    ],
+    "mechanical_assertion": "serial encoder is explicitly off; concurrent projection branch must be selected",
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "29e31614b078a773136f8f135d59e11faf51e998cee98d8beaa346a91e4fdb0c"
+}

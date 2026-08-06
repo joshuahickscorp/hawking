@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -144,7 +144,6 @@ pub(crate) fn walkdir_shallow(root: &Path) -> Vec<PathBuf> {
     out
 }
 
-
 #[path = "services_session.rs"]
 mod services_session;
 pub use services_session::*;
@@ -167,6 +166,7 @@ pub type DynMemoryStore = Arc<dyn MemoryStore>;
 pub struct BackendServices {
     pub config: HideConfig,
     pub event_log: DynEventLog,
+    pub(crate) verified_token_events: Arc<crate::classed_writers::VerifiedTokenEventLog>,
     /// Spine B: structured long-term memory (file-facts, decisions, test results,
     /// constraints, failed approaches) — the persistent Project Brain. Sqlite on
     /// disk via `open()`, RAM via `new()`/`with_stores()`.
@@ -220,6 +220,17 @@ pub(crate) fn discover_token_counter() -> TokenCounter {
 }
 
 impl BackendServices {
+    /// Mint a host sink bound to the product's opaque verified-token ingress.
+    pub fn verified_token_sinks(
+        &self,
+        session_id: hide_core::ids::SessionId,
+    ) -> crate::speculation_safety::HostDurableSinks {
+        crate::speculation_safety::HostDurableSinks::with_token_authority(
+            session_id,
+            self.verified_token_events.clone(),
+        )
+    }
+
     pub fn new(config: HideConfig, event_log: DynEventLog) -> Self {
         let memory = Arc::new(InMemoryCodeIndex::default());
         let workspace_id = config.workspace_root.display().to_string();
@@ -228,11 +239,15 @@ impl BackendServices {
         );
         // Mirror episodic memory off the durable event stream so any event a
         // client can read also lands in the classed store.
-        let event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                event_log,
+                classed_memory.clone(),
+            );
         Self {
             config,
             event_log,
+            verified_token_events,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
             classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
@@ -247,9 +262,7 @@ impl BackendServices {
             sqlite_index: None,
             capabilities: BackendCapabilities::wired(),
             sessions: Arc::new(SessionRegistry::default()),
-            repo_instructions: Arc::new(
-                crate::compat_instructions::ResolvedInstructions::empty(),
-            ),
+            repo_instructions: Arc::new(crate::compat_instructions::ResolvedInstructions::empty()),
             token_counter: discover_token_counter(),
         }
     }
@@ -269,11 +282,15 @@ impl BackendServices {
         let classed_memory: DynClassedMemory = Arc::new(
             ClassedMemorySystem::open_in_memory(workspace_id).expect("in-memory classed memory"),
         );
-        let event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                event_log,
+                classed_memory.clone(),
+            );
         Self {
             config,
             event_log,
+            verified_token_events,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
             classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
@@ -288,9 +305,7 @@ impl BackendServices {
             sqlite_index: None,
             capabilities: BackendCapabilities::wired(),
             sessions: Arc::new(SessionRegistry::default()),
-            repo_instructions: Arc::new(
-                crate::compat_instructions::ResolvedInstructions::empty(),
-            ),
+            repo_instructions: Arc::new(crate::compat_instructions::ResolvedInstructions::empty()),
             token_counter: discover_token_counter(),
         }
     }
@@ -354,9 +369,7 @@ impl BackendServices {
         ) {
             Ok(sys) => Arc::new(sys),
             Err(e) => {
-                eprintln!(
-                    "warning: classed memory open failed ({e}); using in-memory six classes"
-                );
+                eprintln!("warning: classed memory open failed ({e}); using in-memory six classes");
                 Arc::new(
                     ClassedMemorySystem::open_in_memory(workspace_id)
                         .expect("in-memory classed memory"),
@@ -378,8 +391,13 @@ impl BackendServices {
         );
         services.memory_store = memory_store;
         services.classed_memory = classed_memory.clone();
-        services.event_log =
-            crate::classed_writers::EpisodicEventMirror::wrap(raw_event_log, classed_memory);
+        let (event_log, verified_token_events) =
+            crate::classed_writers::EpisodicEventMirror::wrap_with_token_authority(
+                raw_event_log,
+                classed_memory,
+            );
+        services.event_log = event_log;
+        services.verified_token_events = verified_token_events;
         services.repo_instructions = Arc::new(repo_instructions);
 
         // W4: bind the real SqliteCodeIndex at workspace open. A failed open or
@@ -514,10 +532,10 @@ pub type SharedBackend = Arc<BackendServices>;
 
 mod tests {
     use super::*;
+    use crate::personalize::{PersonalizationRecord, TaskClass};
     use hawking_research::{ResearchRun, ResearchState};
     use hide_core::event::NewEvent;
     use hide_core::ids::now_ms;
-    use crate::personalize::{PersonalizationRecord, TaskClass};
     #[tokio::test]
     pub(crate) async fn open_workspace_wires_durable_stores() {
         let dir = std::env::temp_dir().join(format!("hide_backend_{}", now_ms()));
@@ -548,12 +566,23 @@ mod tests {
             .blob_store
             .put(b"backend blob".to_vec(), Some("text/plain".to_string()))
             .unwrap();
- assert_eq!( services.blob_store.get(&blob).unwrap().unwrap(), b"backend blob" );
+        assert_eq!(
+            services.blob_store.get(&blob).unwrap().unwrap(),
+            b"backend blob"
+        );
         services
             .projection_store
             .put_projection(&session, 1, serde_json::json!({ "view": "timeline" }))
             .unwrap();
-        assert_eq!(services .projection_store .latest_projection(&session) .unwrap() .unwrap() .1["view"], "timeline");
+        assert_eq!(
+            services
+                .projection_store
+                .latest_projection(&session)
+                .unwrap()
+                .unwrap()
+                .1["view"],
+            "timeline"
+        );
         services
             .key_value_store
             .put(
@@ -562,7 +591,14 @@ mod tests {
                 serde_json::json!({ "open": true }),
             )
             .unwrap();
-        assert_eq!(services .key_value_store .get("sessions", session.as_str()) .unwrap() .unwrap()["open"], true);
+        assert_eq!(
+            services
+                .key_value_store
+                .get("sessions", session.as_str())
+                .unwrap()
+                .unwrap()["open"],
+            true
+        );
         services
             .personalization_store
             .append(&PersonalizationRecord::accepted(

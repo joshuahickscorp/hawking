@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_CACHE_AND_TEMP_PURGED_FREE_BYTES_RECOVERED",
+  "at": "2026-08-01T21:16:08Z",
+  "family": "qwen",
+  "scope": "bounded Qwen first-dispatch probe only; this does not terminate the Qwen large-family campaign",
+  "terminal_receipt": "evidence/tg/QWEN0P5_K0_FIRST_DISPATCH_BOUNDED_PROBE_2026_08_01.json",
+  "removed": [
+    {"path": "models/qwen0p5-loader-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf", "bytes": 397808192, "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"},
+    {"path": "models/qwen0p5-loader-probe/.cache/huggingface", "classification": "source-local download metadata and lock"},
+    {"path": "two exact mktemp trace files", "bytes": 13041, "classification": "campaign-local runtime trace; selected evidence was transcribed into the terminal receipt before deletion"}
+  ],
+  "trash": {
+    "exact_items": [
+      "/Users/scammermike/.Trash/qwen0p5-loader-probe",
+      "/Users/scammermike/.Trash/hawking-qwen0p5-trace.oakyNYvg2D",
+      "/Users/scammermike/.Trash/hawking-qwen0p5-exact.sx5VyzbyPU"
+    ],
+    "other_trash_items_touched": false,
+    "purge_method": "Finder delete applied only to the three exact item names",
+    "exact_items_permanently_purged": true,
+    "postcondition": "each exact Trash path was absent after the Finder operation"
+  },
+  "filesystem": {
+    "free_before_bytes": 381001719808,
+    "free_after_bytes": 381386350592,
+    "recovered_bytes": 384630784,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 181380461036,
+    "recovery_interpretation": "the source staging tree and exact Trash item were absent and free space increased by 384630784 bytes; concurrent normal filesystem activity means this sample is a recovery proof, not a claim that every source byte appears in one df delta"
+  },
+  "postconditions": {
+    "source_staging_absent": true,
+    "source_body_absent": true,
+    "campaign_temp_absent": true,
+    "model_lane_contents": [],
+    "green_light_status_after_eviction": "STORAGE_GREEN",
+    "restream_started": false,
+    "owner_controlled_gates_changed": false
+  },
+  "cold_upload": {"performed": false, "reason": "no configured remote destination or owner upload authority"}
+}

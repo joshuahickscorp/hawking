@@ -1,8 +1,8 @@
-/* ide.css — VS Code editor / explorer / tabs / diff styling (Phase 3). Owned by the IDE restyle.
+/* ide.css — editor / explorer / tabs / diff styling (Phase 3). Owned by the IDE restyle.
    Imported after theme.css, so these rules win on equal specificity. */
 
 /* ========================================================================
-   Explorer — pure VS Code file tree
+   Explorer — a plain file tree
    ======================================================================== */
 .vsc-tree {
   height: 100%;
@@ -101,7 +101,7 @@
 }
 
 /* ========================================================================
-   Editor breadcrumb bar (VS Code style: thin, editor-bg, › separators)
+   Editor breadcrumb bar (thin, editor-bg, › separators)
    ======================================================================== */
 .vsc-breadcrumb {
   display: flex;

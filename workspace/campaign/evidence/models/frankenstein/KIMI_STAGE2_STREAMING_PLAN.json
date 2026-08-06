@@ -1,0 +1,27 @@
+{
+  "body_bytes_admitted": 159617149040,
+  "body_stays_resident_gib": 149,
+  "claim_boundary": {
+    "execution_authorized": false,
+    "kimi_bytes_streamed": false
+  },
+  "doc_bytes": 7788,
+  "doc_path": "workspace/campaign/evidence/models/frankenstein/KIMI_STAGE2_STREAMING_PLAN.md",
+  "doc_sha256": "109126c254b2ed0669ec5309dbcafa6c96b2e11163c6f4a0e748c2259b898a9b",
+  "floor_gib": 25,
+  "kimi_weight_shard_bytes": 1560936091448,
+  "reclaim_does_not_delete": [
+    "deepseek_body",
+    "proto_artifact",
+    "source_code"
+  ],
+  "reclaim_script": "workspace/campaign/records/runs/frankenstein/reclaim_storage_keep_proto.py",
+  "reclaim_targets": [
+    "glm-donor",
+    "hf-cache"
+  ],
+  "schema": "hawking.frankenstein.kimi_stage2_streaming_plan_pointer.v1",
+  "seal_sha256": "cb32a76abde350e923fc175931817e752abce2647382e123e08fc4914f704284",
+  "sealed_at": "2026-08-05T23:58:40Z",
+  "status": "KIMI_STAGE2_STREAMING_PLAN_SEALED_PLANNING_ONLY"
+}

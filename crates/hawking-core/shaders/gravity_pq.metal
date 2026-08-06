@@ -23,6 +23,364 @@ struct GravityPQParams {
     uint bits;     // index width, MSB-first in one contiguous stream
 };
 
+// Additive residual product quantization used by `llama.residual-pq.v1`.
+// Every (row, chunk) has one index per stage; codebook values add directly,
+// so execution never expands a dense row or a temporary residual tensor.
+struct GravityResidualPQParams {
+    uint dim;
+    uint stages;
+    uint card;
+    uint rows;
+    uint cols;
+    uint nchunk;
+    uint bits;
+    uint reserved;
+};
+
+// Exact source-layout legacy quant grammar for Qwen-family tensors which
+// retain Q5_0/Q8_0 blocks.  One SIMD group owns an output row, keeping the
+// source packed bytes on-device and reducing the row with simd_sum.  The
+// caller records this in the same token command buffer as the K-quant paths;
+// there is no decode-to-dense staging buffer.
+struct GravityRaw32Params {
+    uint rows;
+    uint cols;
+};
+
+static inline float gravity_fp16_at(const device uchar *p, uint64_t off) {
+    ushort bits = ushort(p[off]) | (ushort(p[off + 1u]) << 8u);
+    return float(as_type<half>(bits));
+}
+
+kernel void gravity_raw_q8_0_matvec(
+    const device uchar *weights [[buffer(0)]],
+    const device float *x        [[buffer(1)]],
+    device float *y              [[buffer(2)]],
+    constant GravityRaw32Params &p [[buffer(3)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) return;
+    uint blocks = p.cols / 32u;
+    uint64_t row_off = uint64_t(row) * uint64_t(blocks) * 34ul;
+    float sum = 0.0f;
+    for (uint c = lane; c < p.cols; c += 32u) {
+        uint64_t bo = row_off + uint64_t(c >> 5u) * 34ul;
+        int q = int(weights[bo + 2ul + uint64_t(c & 31u)]);
+        if (q >= 128) q -= 256;
+        sum = fma(gravity_fp16_at(weights, bo) * float(q), x[c], sum);
+    }
+    sum = simd_sum(sum);
+    if (lane == 0u) y[row] = sum;
+}
+
+kernel void gravity_raw_q5_0_matvec(
+    const device uchar *weights [[buffer(0)]],
+    const device float *x        [[buffer(1)]],
+    device float *y              [[buffer(2)]],
+    constant GravityRaw32Params &p [[buffer(3)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) return;
+    uint blocks = p.cols / 32u;
+    uint64_t row_off = uint64_t(row) * uint64_t(blocks) * 22ul;
+    float sum = 0.0f;
+    for (uint c = lane; c < p.cols; c += 32u) {
+        uint64_t bo = row_off + uint64_t(c >> 5u) * 22ul;
+        uint qh = uint(weights[bo + 2ul])
+                | (uint(weights[bo + 3ul]) << 8u)
+                | (uint(weights[bo + 4ul]) << 16u)
+                | (uint(weights[bo + 5ul]) << 24u);
+        uchar packed = weights[bo + 6ul + uint64_t(c & 15u)];
+        // `c` is absolute across the row.  The nibble selection is local to
+        // each 32-element GGML block; using `c < 16` accidentally selected
+        // the upper nibble for every lane after block zero.
+        uint in_block = c & 31u;
+        uint low = in_block < 16u ? (uint(packed) & 0x0fu) : (uint(packed) >> 4u);
+        int q = int(low | (((qh >> (c & 31u)) & 1u) << 4u)) - 16;
+        sum = fma(gravity_fp16_at(weights, bo) * float(q), x[c], sum);
+    }
+    sum = simd_sum(sum);
+    if (lane == 0u) y[row] = sum;
+}
+
+// Pair two exact source Q5_0 projections without materializing either tensor.
+// The two output waves share the activation and one command topology, while
+// each SIMD group retains the source row grammar and reduction order.
+static inline float gravity_raw_q5_0_dot_row(
+    const device uchar *weights,
+    const device float *x,
+    uint row,
+    uint cols,
+    uint lane);
+
+struct GravityRawQ5PairParams {
+    uint rows;
+    uint cols;
+};
+
+kernel void gravity_raw_q5_0_pair_matvec(
+    const device uchar *gate_weights [[buffer(0)]],
+    const device uchar *up_weights [[buffer(1)]],
+    const device float *x [[buffer(2)]],
+    device float *gate_out [[buffer(3)]],
+    device float *up_out [[buffer(4)]],
+    constant GravityRawQ5PairParams &p [[buffer(5)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg [[simdgroup_index_in_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    uint groups_per_wave = (p.rows + 7u) / 8u;
+    bool is_gate = tgid < groups_per_wave;
+    uint row = (is_gate ? tgid : tgid - groups_per_wave) * 8u + sg;
+    if (row >= p.rows) return;
+    float sum = gravity_raw_q5_0_dot_row(is_gate ? gate_weights : up_weights, x, row, p.cols, lane);
+    if (lane == 0u) {
+        (is_gate ? gate_out : up_out)[row] = sum;
+    }
+}
+
+// Source-preserving Qwen2 projection wave. Q and K use Q5_0; source V may
+// be either Q5_0 or Q8_0. One command encodes all three projections, applies
+// their native biases, rotates Q/K from the artifact's already-authoritative
+// table, and writes K/V directly into the current cache slot. This avoids a
+// dense staging buffer and replaces the decomposed Q/K/V, bias, RoPE, and
+// append wave only when the source grammar exactly admits it.
+struct GravityRawQ5Q5QvRopeAppendParams {
+    uint q_rows;
+    uint kv_rows;
+    uint cols;
+    uint kv_off;
+    uint head_dim;
+    uint has_q_bias;
+    uint has_k_bias;
+    uint has_v_bias;
+    uint v_is_q8;
+};
+
+static inline float gravity_raw_q5_0_dot_row(
+    const device uchar *weights,
+    const device float *x,
+    uint row,
+    uint cols,
+    uint lane)
+{
+    uint blocks = cols / 32u;
+    uint64_t row_off = uint64_t(row) * uint64_t(blocks) * 22ul;
+    float sum = 0.0f;
+    for (uint c = lane; c < cols; c += 32u) {
+        uint64_t bo = row_off + uint64_t(c >> 5u) * 22ul;
+        uint qh = uint(weights[bo + 2ul])
+                | (uint(weights[bo + 3ul]) << 8u)
+                | (uint(weights[bo + 4ul]) << 16u)
+                | (uint(weights[bo + 5ul]) << 24u);
+        uchar packed = weights[bo + 6ul + uint64_t(c & 15u)];
+        uint in_block = c & 31u;
+        uint low = in_block < 16u ? (uint(packed) & 0x0fu) : (uint(packed) >> 4u);
+        int q = int(low | (((qh >> in_block) & 1u) << 4u)) - 16;
+        sum = fma(gravity_fp16_at(weights, bo) * float(q), x[c], sum);
+    }
+    return simd_sum(sum);
+}
+
+static inline float gravity_raw_q8_0_dot_row(
+    const device uchar *weights,
+    const device float *x,
+    uint row,
+    uint cols,
+    uint lane)
+{
+    uint blocks = cols / 32u;
+    uint64_t row_off = uint64_t(row) * uint64_t(blocks) * 34ul;
+    float sum = 0.0f;
+    for (uint c = lane; c < cols; c += 32u) {
+        uint64_t bo = row_off + uint64_t(c >> 5u) * 34ul;
+        int q = int(weights[bo + 2ul + uint64_t(c & 31u)]);
+        if (q >= 128) q -= 256;
+        sum = fma(gravity_fp16_at(weights, bo) * float(q), x[c], sum);
+    }
+    return simd_sum(sum);
+}
+
+// Source-compatible llama.cpp b9430 geometry candidates.  These are opt-in
+// kernels: the existing raw kernels remain the Hawking default until a
+// same-model wall/p99 receipt promotes this topology.  Q5_0 uses two SIMD
+// groups, four rows per group; Q8_0 uses four SIMD groups, two rows per group
+// and a small cross-SIMD reduction, matching ggml-metal's N_R0/N_SG choices.
+// The arithmetic still reads the exact GGML bytes directly from the mmap.
+kernel void gravity_raw_q5_0_llama_matvec(
+    const device uchar *weights [[buffer(0)]],
+    const device float *x        [[buffer(1)]],
+    device float *y              [[buffer(2)]],
+    constant GravityRaw32Params &p [[buffer(3)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    const uint rows_per_sg = 4u;
+    const uint row0 = (tgid * sgs_per_tg + sg_in_tg) * rows_per_sg;
+    const uint blocks = p.cols / 32u;
+    // llama.cpp's Q5_0 path assigns two lanes to each 32-value block and
+    // lets each lane consume one half-block (16 values).  The loop below is
+    // the same assignment expressed in eight-value chunks.
+    const uint block0 = (lane >> 1u);
+    const uint in0 = (lane & 1u) * 8u;
+    for (uint r = 0u; r < rows_per_sg; ++r) {
+        uint row = row0 + r;
+        if (row >= p.rows) { continue; }
+        uint64_t row_off = uint64_t(row) * uint64_t(blocks) * 22ul;
+        float sum = 0.0f;
+        for (uint block = block0; block < blocks; block += 16u) {
+            uint64_t bo = row_off + uint64_t(block) * 22ul;
+            uint qh = uint(weights[bo + 2ul])
+                    | (uint(weights[bo + 3ul]) << 8u)
+                    | (uint(weights[bo + 4ul]) << 16u)
+                    | (uint(weights[bo + 5ul]) << 24u);
+            float d = gravity_fp16_at(weights, bo);
+            for (uint j = 0u; j < 8u; ++j) {
+                uint in_block = in0 + j;
+                uchar packed = weights[bo + 6ul + uint64_t(in_block & 15u)];
+                uint low = in_block < 16u
+                    ? (uint(packed) & 0x0fu)
+                    : (uint(packed) >> 4u);
+                int q = int(low | (((qh >> in_block) & 1u) << 4u)) - 16;
+                uint c = block * 32u + in_block;
+                sum = fma(d * float(q), x[c], sum);
+            }
+        }
+        sum = simd_sum(sum);
+        if (lane == 0u) { y[row] = sum; }
+    }
+}
+
+kernel void gravity_raw_q8_0_llama_matvec(
+    const device uchar *weights [[buffer(0)]],
+    const device float *x        [[buffer(1)]],
+    device float *y              [[buffer(2)]],
+    constant GravityRaw32Params &p [[buffer(3)]],
+    threadgroup float *shmem [[threadgroup(0)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    const uint rows_per_tg = 2u;
+    const uint row0 = tgid * rows_per_tg;
+    const uint blocks = p.cols / 32u;
+    const uint ix = lane >> 2u;       // four lanes per block
+    const uint il = (lane & 3u) * 8u; // eight Q8 values per lane
+    float partial[rows_per_tg] = { 0.0f, 0.0f };
+    for (uint block = sg_in_tg * 8u + ix; block < blocks; block += sgs_per_tg * 8u) {
+        uint64_t block_off = uint64_t(block) * 34ul;
+        uint c0 = block * 32u + il;
+        for (uint r = 0u; r < rows_per_tg; ++r) {
+            uint row = row0 + r;
+            if (row >= p.rows) { continue; }
+            uint64_t bo = uint64_t(row) * uint64_t(blocks) * 34ul + block_off;
+            float d = gravity_fp16_at(weights, bo);
+            for (uint j = 0u; j < 8u; ++j) {
+                int q = int(weights[bo + 2ul + uint64_t(il + j)]);
+                if (q >= 128) { q -= 256; }
+                partial[r] = fma(d * float(q), x[c0 + j], partial[r]);
+            }
+        }
+    }
+
+    // This is helper_mv_reduce_and_write from ggml-metal, specialized to two
+    // rows and four SIMD groups.  SG0 clears all reduction slots before the
+    // cross-SG barrier; every SG then contributes one partial value per row.
+    for (uint r = 0u; r < rows_per_tg; ++r) {
+        if (sg_in_tg == 0u) { shmem[r * 32u + lane] = 0.0f; }
+        partial[r] = simd_sum(partial[r]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint r = 0u; r < rows_per_tg; ++r) {
+        if (lane == 0u) { shmem[r * 32u + sg_in_tg] = partial[r]; }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint r = 0u; r < rows_per_tg; ++r) {
+        uint row = row0 + r;
+        if (row >= p.rows) { continue; }
+        float total = simd_sum(shmem[r * 32u + lane]);
+        if (lane == 0u && sg_in_tg == 0u) { y[row] = total; }
+    }
+}
+
+kernel void gravity_raw_q5q5qv_rope_append(
+    const device uchar *wq [[buffer(0)]],
+    const device uchar *wk [[buffer(1)]],
+    const device uchar *wv [[buffer(2)]],
+    const device float *x [[buffer(3)]],
+    device float *q_out [[buffer(4)]],
+    device float *k_cache [[buffer(5)]],
+    device float *v_cache [[buffer(6)]],
+    const device float *rope [[buffer(7)]],
+    const device float *q_bias [[buffer(8)]],
+    const device float *k_bias [[buffer(9)]],
+    const device float *v_bias [[buffer(10)]],
+    constant GravityRawQ5Q5QvRopeAppendParams &p [[buffer(11)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg [[simdgroup_index_in_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    uint half_dim = p.head_dim / 2u;
+    uint q_pairs = p.q_rows / 2u;
+    uint k_pairs = p.kv_rows / 2u;
+    uint q_tg = (q_pairs + 7u) / 8u;
+    uint k_tg = (k_pairs + 7u) / 8u;
+    if (tgid < q_tg) {
+        uint pair = tgid * 8u + sg;
+        if (pair >= q_pairs) return;
+        uint head = pair / half_dim;
+        uint within = pair - head * half_dim;
+        uint row0 = head * p.head_dim + within;
+        uint row1 = row0 + half_dim;
+        float a = gravity_raw_q5_0_dot_row(wq, x, row0, p.cols, lane);
+        float b = gravity_raw_q5_0_dot_row(wq, x, row1, p.cols, lane);
+        if (lane == 0u) {
+            if (p.has_q_bias != 0u) { a += q_bias[row0]; b += q_bias[row1]; }
+            float c = rope[within];
+            float s = rope[half_dim + within];
+            q_out[row0] = a * c - b * s;
+            q_out[row1] = a * s + b * c;
+        }
+    } else if (tgid < q_tg + k_tg) {
+        uint pair = (tgid - q_tg) * 8u + sg;
+        if (pair >= k_pairs) return;
+        uint head = pair / half_dim;
+        uint within = pair - head * half_dim;
+        uint row0 = head * p.head_dim + within;
+        uint row1 = row0 + half_dim;
+        float a = gravity_raw_q5_0_dot_row(wk, x, row0, p.cols, lane);
+        float b = gravity_raw_q5_0_dot_row(wk, x, row1, p.cols, lane);
+        if (lane == 0u) {
+            if (p.has_k_bias != 0u) { a += k_bias[row0]; b += k_bias[row1]; }
+            float c = rope[within];
+            float s = rope[half_dim + within];
+            k_cache[p.kv_off + row0] = a * c - b * s;
+            k_cache[p.kv_off + row1] = a * s + b * c;
+        }
+    } else {
+        uint row = (tgid - q_tg - k_tg) * 8u + sg;
+        if (row >= p.kv_rows) return;
+        float value = p.v_is_q8 != 0u
+            ? gravity_raw_q8_0_dot_row(wv, x, row, p.cols, lane)
+            : gravity_raw_q5_0_dot_row(wv, x, row, p.cols, lane);
+        if (lane == 0u) {
+            if (p.has_v_bias != 0u) value += v_bias[row];
+            v_cache[p.kv_off + row] = value;
+        }
+    }
+}
+
 // One index out of the packed stream. The stream is MSB-first, so value i occupies bit
 // range [i*bits, (i+1)*bits) counting from the high bit of byte 0. `codes` is uploaded
 // with four bytes of tail padding so this always has a whole word to read.
@@ -61,6 +419,36 @@ kernel void gravity_pq_matvec(
             const device half *entry = cb + pq_index(codes, flat, p.bits) * p.sub;
             const device float *xs = x + c * p.dim + xbase;
             for (uint j = 0; j < p.sub; ++j) {
+                acc = fma(float(entry[j]), xs[j], acc);
+            }
+        }
+    }
+    acc = simd_sum(acc);
+    if (lane == 0u) { y[row] = acc; }
+}
+
+kernel void gravity_residual_pq_matvec(
+    const device half                 *codebooks [[buffer(0)]],
+    const device uchar                *codes     [[buffer(1)]],
+    const device float                *x         [[buffer(2)]],
+    device float                      *y         [[buffer(3)]],
+    constant GravityResidualPQParams  &p         [[buffer(4)]],
+    uint  tgid                                   [[threadgroup_position_in_grid]],
+    uint  sg_in_tg                               [[simdgroup_index_in_threadgroup]],
+    uint  sgs_per_tg                             [[simdgroups_per_threadgroup]],
+    uint  lane                                   [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) { return; }
+
+    float acc = 0.0f;
+    for (uint c = lane; c < p.nchunk; c += 32u) {
+        const device float *xs = x + c * p.dim;
+        for (uint stage = 0; stage < p.stages; ++stage) {
+            uint flat = (row * p.nchunk + c) * p.stages + stage;
+            const device half *entry = codebooks
+                + (stage * p.card + pq_index(codes, flat, p.bits)) * p.dim;
+            for (uint j = 0; j < p.dim; ++j) {
                 acc = fma(float(entry[j]), xs[j], acc);
             }
         }
@@ -355,10 +743,12 @@ struct GravityRopeParams {
     uint offset;    // f32 element offset of head 0 within `x`
     uint n_heads;
     uint head_dim;
+    uint interleaved; // 1: adjacent pairs (Llama NORM), 0: split-half NeoX
 };
 
-// NeoX pairing: element i pairs with i + head_dim/2, not with i + 1.
-// `table` is head_dim/2 cosines followed by head_dim/2 sines.
+// `table` is head_dim/2 cosines followed by head_dim/2 sines.  The explicit
+// layout bit keeps the legacy Gravity PQ contract intact while allowing a
+// source-preserving Llama shard to use GGUF's normal adjacent pairing.
 kernel void gravity_rope_table_f32(
     device       float             *x     [[buffer(0)]],
     const device float             *table [[buffer(1)]],
@@ -369,13 +759,14 @@ kernel void gravity_rope_table_f32(
     if (id >= p.n_heads * half_dim) { return; }
     uint h = id / half_dim;
     uint i = id - h * half_dim;
-    uint b = p.offset + h * p.head_dim + i;
+    uint b = p.offset + h * p.head_dim + (p.interleaved != 0u ? 2u * i : i);
     float c = table[i];
     float s = table[half_dim + i];
     float x0 = x[b];
-    float x1 = x[b + half_dim];
+    uint b1 = p.interleaved != 0u ? b + 1u : b + half_dim;
+    float x1 = x[b1];
     x[b]            = x0 * c - x1 * s;
-    x[b + half_dim] = x0 * s + x1 * c;
+    x[b1]           = x0 * s + x1 * c;
 }
 
 // ---------------------------------------------------------------------------

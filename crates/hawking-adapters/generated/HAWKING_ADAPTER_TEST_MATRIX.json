@@ -113,15 +113,6 @@
           "status": "present"
         },
         {
-          "claim": "seed-c ArchAdapter::gemma2 is declarative plan-only",
-          "exists": true,
-          "is_test": false,
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs",
-          "role": "evidence",
-          "status": "present"
-        },
-        {
           "claim": "no SOURCE_HEADER_VALIDATED test registered for this family",
           "exists": false,
           "is_test": true,
@@ -177,7 +168,7 @@
         }
       ],
       "tests_missing": 6,
-      "tests_present": 3
+      "tests_present": 2
     },
     {
       "family": "glm",
@@ -188,7 +179,7 @@
           "exists": true,
           "is_test": false,
           "kind": "small_checkpoint_run",
-          "path": "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+          "path": "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
           "role": "evidence",
           "status": "present"
         },
@@ -202,11 +193,11 @@
           "status": "present"
         },
         {
-          "claim": "registry path for .gravity artifacts",
+          "claim": "committed .gravity artifact registry and integrity suite",
           "exists": true,
           "is_test": true,
           "kind": "description",
-          "path": "crates/hawking-core/tests/gravity_engine_registry.rs",
+          "path": "crates/hawking-core/tests/gravity_artifact_suite.rs",
           "role": "evidence",
           "status": "present"
         },
@@ -250,7 +241,7 @@
           "exists": true,
           "is_test": false,
           "kind": "synthetic_parity",
-          "path": "KIMI_K26_ADAPTER_TWIN.json",
+          "path": "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
           "role": "evidence",
           "status": "present"
         },
@@ -410,7 +401,7 @@
           "exists": true,
           "is_test": false,
           "kind": "description",
-          "path": "FABRIC_BRIDGE_ARCHAEOLOGY.md",
+          "path": "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
           "role": "evidence",
           "status": "present"
         },
@@ -513,15 +504,6 @@
           "status": "present"
         },
         {
-          "claim": "seed-c ArchAdapter::mixtral is declarative plan-only (does not execute)",
-          "exists": true,
-          "is_test": false,
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs",
-          "role": "evidence",
-          "status": "present"
-        },
-        {
           "claim": "no SYNTHETIC_PARITY test registered for this family",
           "exists": false,
           "is_test": true,
@@ -568,7 +550,7 @@
         }
       ],
       "tests_missing": 5,
-      "tests_present": 5
+      "tests_present": 4
     },
     {
       "family": "phi",
@@ -589,15 +571,6 @@
           "is_test": true,
           "kind": "description",
           "path": "crates/hawking-core/tests/phi3_smoke.rs",
-          "role": "evidence",
-          "status": "present"
-        },
-        {
-          "claim": "seed-c ArchAdapter::phi3 is declarative plan-only",
-          "exists": true,
-          "is_test": false,
-          "kind": "description",
-          "path": "crates/hawking-seed-c/src/providers/adapters.rs",
           "role": "evidence",
           "status": "present"
         },
@@ -657,7 +630,7 @@
         }
       ],
       "tests_missing": 6,
-      "tests_present": 3
+      "tests_present": 2
     },
     {
       "family": "qwen",

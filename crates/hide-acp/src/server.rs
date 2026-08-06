@@ -249,8 +249,10 @@ impl<T: Transport, H: TurnHandler, B: SessionBinder> AcpServer<T, H, B> {
                     .send(AcpServerMessage::InitializeResult(neg.response))?;
             }
             Err(e) => {
-                self.transport
-                    .send(AcpServerMessage::error("unsupported_version", e.to_string()))?;
+                self.transport.send(AcpServerMessage::error(
+                    "unsupported_version",
+                    e.to_string(),
+                ))?;
             }
         }
         Ok(())

@@ -141,9 +141,7 @@ pub enum SpeculationPermit {
         action: SuspensionAction,
     },
     /// May propose under a narrowed constraint set.
-    Constrained {
-        boundary: SuspensionBoundary,
-    },
+    Constrained { boundary: SuspensionBoundary },
 }
 
 impl SpeculationPermit {
@@ -216,7 +214,10 @@ mod tests {
         ];
         assert_eq!(SUSPENSION_POLICY.len(), all.len());
         for b in all {
-            let matches: Vec<_> = SUSPENSION_POLICY.iter().filter(|p| p.boundary == b).collect();
+            let matches: Vec<_> = SUSPENSION_POLICY
+                .iter()
+                .filter(|p| p.boundary == b)
+                .collect();
             assert_eq!(matches.len(), 1, "boundary {b} must appear exactly once");
             assert!(!matches[0].rationale.is_empty());
         }
@@ -239,49 +240,80 @@ mod tests {
     }
     #[test]
     fn suspension_tool_call_start() {
-        assert_eq!(action_for(SuspensionBoundary::ToolCallStart), SuspensionAction::Suspend);
+        assert_eq!(
+            action_for(SuspensionBoundary::ToolCallStart),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::ToolCallStart);
     }
     #[test]
     fn suspension_json_schema() {
-        assert_eq!(action_for(SuspensionBoundary::JsonSchema), SuspensionAction::Constrain);
+        assert_eq!(
+            action_for(SuspensionBoundary::JsonSchema),
+            SuspensionAction::Constrain
+        );
         assert_suspends(SuspensionBoundary::JsonSchema);
     }
     #[test]
     fn suspension_permission() {
-        assert_eq!(action_for(SuspensionBoundary::Permission), SuspensionAction::Suspend);
+        assert_eq!(
+            action_for(SuspensionBoundary::Permission),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::Permission);
     }
     #[test]
     fn suspension_edit_diff() {
-        assert_eq!(action_for(SuspensionBoundary::EditDiff), SuspensionAction::Suspend);
+        assert_eq!(
+            action_for(SuspensionBoundary::EditDiff),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::EditDiff);
     }
     #[test]
     fn suspension_citation_evidence() {
- assert_eq!( action_for(SuspensionBoundary::CitationEvidence), SuspensionAction::Suspend );
+        assert_eq!(
+            action_for(SuspensionBoundary::CitationEvidence),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::CitationEvidence);
     }
     #[test]
     fn suspension_user_interrupt() {
- assert_eq!( action_for(SuspensionBoundary::UserInterrupt), SuspensionAction::FlushThenContinue );
-        assert!(requires_flush(action_for(SuspensionBoundary::UserInterrupt)));
+        assert_eq!(
+            action_for(SuspensionBoundary::UserInterrupt),
+            SuspensionAction::FlushThenContinue
+        );
+        assert!(requires_flush(action_for(
+            SuspensionBoundary::UserInterrupt
+        )));
         assert_suspends(SuspensionBoundary::UserInterrupt);
     }
     #[test]
     fn suspension_context_compaction() {
-        assert_eq!(action_for(SuspensionBoundary::ContextCompaction), SuspensionAction::FlushThenContinue);
-        assert!(requires_flush(action_for(SuspensionBoundary::ContextCompaction)));
+        assert_eq!(
+            action_for(SuspensionBoundary::ContextCompaction),
+            SuspensionAction::FlushThenContinue
+        );
+        assert!(requires_flush(action_for(
+            SuspensionBoundary::ContextCompaction
+        )));
         assert_suspends(SuspensionBoundary::ContextCompaction);
     }
     #[test]
     fn suspension_model_profile_switch() {
- assert_eq!( action_for(SuspensionBoundary::ModelProfileSwitch), SuspensionAction::Suspend );
+        assert_eq!(
+            action_for(SuspensionBoundary::ModelProfileSwitch),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::ModelProfileSwitch);
     }
     #[test]
     fn suspension_fabric_migration() {
- assert_eq!( action_for(SuspensionBoundary::FabricMigration), SuspensionAction::Suspend );
+        assert_eq!(
+            action_for(SuspensionBoundary::FabricMigration),
+            SuspensionAction::Suspend
+        );
         assert_suspends(SuspensionBoundary::FabricMigration);
     }
     #[test]

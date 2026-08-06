@@ -1,4 +1,6 @@
 use crate::digest::compute_home_and_sessions;
+use crate::personalize::{DynPersonalizationStore, PersonalizationRecord, TaskClass};
+use crate::services::DynCodeIndex;
 use crate::services::{BackendServices, DynMemoryStore};
 use futures::future::BoxFuture;
 use hawking_context::compiler::CompileInput;
@@ -8,7 +10,6 @@ use hawking_context::{
     ClassBudgets, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryKind,
 };
 use hawking_index::{InMemoryCodeIndex, SearchQuery};
-use crate::services::DynCodeIndex;
 use hawking_orch::{RoleRegistry, Router, SimpleRouter};
 use hawking_research::{DynResearchLedger, ResearchRun, ResearchState};
 use hide_core::error::{HideError, Result};
@@ -16,7 +17,6 @@ use hide_core::persistence::{DynEventLog, DynProjectionStore};
 use hide_core::plugin::ExtensionContribution;
 use hide_core::runtime::{InferenceRequest, RolePurpose};
 use hide_core::types::Provenance;
-use crate::personalize::{DynPersonalizationStore, PersonalizationRecord, TaskClass};
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -347,7 +347,11 @@ impl Connector for HomeConnector {
                     // second code path; an expired grant reads as no lease, matching enforcement.
                     let lease = crate::tools::active_write_lease()
                         .filter(|l| l.within_ttl(hide_core::ids::now_ms()));
-                    let note = if lease.is_some() { "granted" } else { "no lease" };
+                    let note = if lease.is_some() {
+                        "granted"
+                    } else {
+                        "no lease"
+                    };
                     Ok(json!({
                         "home": home,
                         "sessions": sessions,
@@ -548,8 +552,7 @@ impl Connector for ContextConnector {
                         self.index.clone(),
                         search_limit,
                     ));
-                    let class_budgets =
-                        ClassBudgets::from_total((max_input_tokens / 8).max(64));
+                    let class_budgets = ClassBudgets::from_total((max_input_tokens / 8).max(64));
                     compiler.add_source(ClassedMemoryContextSource::new(
                         self.classed_memory.clone(),
                         class_budgets,
@@ -565,12 +568,11 @@ impl Connector for ContextConnector {
                     if let Some(ret) = self.classed_memory.last_retrieval() {
                         let lines = ret.budget_explanations();
                         if compiled.manifest.meter.is_none() {
-                            compiled.manifest.meter =
-                                Some(hawking_context::ContextMeter {
-                                    used_tokens: compiled.manifest.used_tokens,
-                                    explanations: lines,
-                                    ..Default::default()
-                                });
+                            compiled.manifest.meter = Some(hawking_context::ContextMeter {
+                                used_tokens: compiled.manifest.used_tokens,
+                                explanations: lines,
+                                ..Default::default()
+                            });
                         } else if let Some(meter) = compiled.manifest.meter.as_mut() {
                             meter.explanations.extend(lines);
                         }
@@ -959,9 +961,9 @@ impl Connector for StaticConnector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::personalize::{InMemoryPersonalizationStore, Outcome};
     use hawking_research::{InMemoryResearchLedger, ResearchRun};
     use hide_core::runtime::InferenceRequest;
-    use crate::personalize::{InMemoryPersonalizationStore, Outcome};
     use std::collections::BTreeMap;
     #[tokio::test]
     async fn registry_reports_connector_status() {
@@ -1112,7 +1114,13 @@ mod tests {
             )
             .await
             .unwrap();
- assert!(compiled["prompt"] .as_str() .unwrap() .contains("context bridge"));
- assert_eq!( compiled["manifest"]["retained"].as_array().unwrap().len(), 1 );
+        assert!(compiled["prompt"]
+            .as_str()
+            .unwrap()
+            .contains("context bridge"));
+        assert_eq!(
+            compiled["manifest"]["retained"].as_array().unwrap().len(),
+            1
+        );
     }
 }

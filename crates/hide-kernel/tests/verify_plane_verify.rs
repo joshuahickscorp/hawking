@@ -1,8 +1,8 @@
 use hide_kernel::verify_plane::{
-    apply_gate, all_profiles, invalidated_ids, invalidated_receipts, paths_intersect, profile_for,
-    probabilistic_can_override_deterministic, source_hash, CheckKind, GateDecision, Oracle,
-    OracleClass, ReviewRole, ReviewRoleProfile, Severity, SourceFile, StaticAnalysisOracle,
-    TieredVerdict, VerificationInput, VerificationReceipt, VerificationTier, Verdict,
+    all_profiles, apply_gate, invalidated_ids, invalidated_receipts, paths_intersect,
+    probabilistic_can_override_deterministic, profile_for, source_hash, CheckKind, GateDecision,
+    Oracle, OracleClass, ReviewRole, ReviewRoleProfile, Severity, SourceFile, StaticAnalysisOracle,
+    TieredVerdict, Verdict, VerificationInput, VerificationReceipt, VerificationTier,
 };
 fn dirty_fixture() -> String {
     let mut s = String::new();
@@ -33,7 +33,10 @@ fn clean_fixture() -> &'static str {
      \x20   }\n\
      }\n"
 }
-fn find<'a>(findings: &'a [hide_kernel::verify_plane::Finding], check: CheckKind) -> Vec<&'a hide_kernel::verify_plane::Finding> {
+fn find<'a>(
+    findings: &'a [hide_kernel::verify_plane::Finding],
+    check: CheckKind,
+) -> Vec<&'a hide_kernel::verify_plane::Finding> {
     findings.iter().filter(|f| f.check == check).collect()
 }
 #[test]
@@ -62,7 +65,10 @@ fn static_analysis_flags_dirty_fixture_with_correct_line_and_severity() {
 fn static_analysis_clean_fixture_yields_pass() {
     let oracle = StaticAnalysisOracle::new();
     let findings = oracle.analyze_source("lib.rs", clean_fixture());
- assert!( findings.is_empty(), "clean fixture must have no findings, got {findings:?}" );
+    assert!(
+        findings.is_empty(),
+        "clean fixture must have no findings, got {findings:?}"
+    );
     let input = VerificationInput::from_sources(vec![SourceFile::new("lib.rs", clean_fixture())]);
     let outcome = oracle.evaluate(&input);
     assert_eq!(outcome.verdict, Verdict::Pass);
@@ -72,7 +78,8 @@ fn static_analysis_clean_fixture_yields_pass() {
 #[test]
 fn dirty_fixture_evaluates_to_fail() {
     let oracle = StaticAnalysisOracle::new();
-    let input = VerificationInput::from_sources(vec![SourceFile::new("process.rs", dirty_fixture())]);
+    let input =
+        VerificationInput::from_sources(vec![SourceFile::new("process.rs", dirty_fixture())]);
     let outcome = oracle.evaluate(&input);
     assert!(outcome.verdict.is_fail());
     assert!(!outcome.verdict.reasons().is_empty());
@@ -113,7 +120,11 @@ fn unwrap_inside_test_is_not_flagged_but_outside_is() {
 #[test]
 fn static_analysis_walks_a_directory() {
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("a.rs"), "fn f() {\n    let x: Option<i32> = None;\n    let _ = x.unwrap();\n}\n").unwrap();
+    std::fs::write(
+        dir.path().join("a.rs"),
+        "fn f() {\n    let x: Option<i32> = None;\n    let _ = x.unwrap();\n}\n",
+    )
+    .unwrap();
     std::fs::write(dir.path().join("notes.txt"), "unwrap() everywhere").unwrap();
     let oracle = StaticAnalysisOracle::new();
     let findings = oracle.analyze_dir(dir.path()).unwrap();
@@ -146,7 +157,9 @@ fn rereview_invalidates_exactly_intersecting_receipts() {
     assert_eq!(invalidated, vec!["r1".to_string(), "r3".to_string()]);
     let refs = invalidated_receipts(&receipts, &changed);
     assert_eq!(refs.len(), 2);
-    assert!(refs.iter().all(|r| r.verification_id == "r1" || r.verification_id == "r3"));
+    assert!(refs
+        .iter()
+        .all(|r| r.verification_id == "r1" || r.verification_id == "r3"));
 }
 #[test]
 fn path_intersection_rules() {
@@ -167,7 +180,10 @@ fn selecting_a_review_role_returns_a_profile_not_a_verdict() {
     assert!(!profile.acceptance.is_empty());
     let profiles = all_profiles();
     assert_eq!(profiles.len(), 8);
-    let mut refs: Vec<String> = profiles.iter().map(|p| p.output_schema_ref.clone()).collect();
+    let mut refs: Vec<String> = profiles
+        .iter()
+        .map(|p| p.output_schema_ref.clone())
+        .collect();
     refs.sort();
     refs.dedup();
     assert_eq!(refs.len(), 8, "each role has a unique output schema ref");
@@ -210,8 +226,17 @@ fn verification_receipt_round_trips_with_stable_shape() {
 }
 #[test]
 fn verdict_shapes_serialize_stably() {
- assert_eq!( serde_json::to_string(&Verdict::Pass).unwrap(), r#"{"status":"pass"}"# );
-    assert_eq!(serde_json::to_string(&Verdict::Skipped { why: "no changes".to_string() }) .unwrap(), r#"{"status":"skipped","why":"no changes"}"#);
+    assert_eq!(
+        serde_json::to_string(&Verdict::Pass).unwrap(),
+        r#"{"status":"pass"}"#
+    );
+    assert_eq!(
+        serde_json::to_string(&Verdict::Skipped {
+            why: "no changes".to_string()
+        })
+        .unwrap(),
+        r#"{"status":"skipped","why":"no changes"}"#
+    );
 }
 #[test]
 fn deterministic_fail_outranks_probabilistic_pass() {
@@ -245,7 +270,11 @@ fn gate_accepts_when_deterministic_passes_and_review_clean() {
             "static_analysis",
             Verdict::Pass,
         ),
-        TieredVerdict::new(VerificationTier::Tier4Review, "scope_reviewer", Verdict::Pass),
+        TieredVerdict::new(
+            VerificationTier::Tier4Review,
+            "scope_reviewer",
+            Verdict::Pass,
+        ),
     ];
     assert_eq!(apply_gate(&verdicts), GateDecision::Accept);
 }

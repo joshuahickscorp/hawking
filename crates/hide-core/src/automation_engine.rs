@@ -23,16 +23,13 @@
 //!
 //! Model-free throughout. Deterministic under an injected [`Clock`].
 
-use crate::error::{HideError, Result};
-use crate::ids::now_ms;
-use crate::persistence::DynKeyValueStore;
-use parking_lot::{Mutex, RwLock};
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
 use super::*;
-
+use crate::error::{HideError, Result};
+use crate::persistence::DynKeyValueStore;
+use parking_lot::RwLock;
+use serde_json::{json, Value};
+use std::collections::BTreeMap;
+use std::sync::Arc;
 
 // ---------------------------------------------------------------------------
 // Job + engine
@@ -78,9 +75,9 @@ impl AutomationJob {
             });
             return Err(err);
         }
-        let fixture = registry.get(tool).ok_or_else(|| {
-            HideError::NotFound(format!("fixture tool '{tool}' not in registry"))
-        })?;
+        let fixture = registry
+            .get(tool)
+            .ok_or_else(|| HideError::NotFound(format!("fixture tool '{tool}' not in registry")))?;
         let result = fixture.invoke(&args);
         self.tokens_used += result.tokens_used;
         self.tool_attempts.push(ToolAttempt {
@@ -111,11 +108,7 @@ pub struct AutomationEngine {
 }
 
 impl AutomationEngine {
-    pub fn new(
-        kv: DynKeyValueStore,
-        clock: Arc<dyn Clock>,
-        registry: FixtureToolRegistry,
-    ) -> Self {
+    pub fn new(kv: DynKeyValueStore, clock: Arc<dyn Clock>, registry: FixtureToolRegistry) -> Self {
         Self {
             kv,
             clock,
@@ -412,10 +405,7 @@ impl AutomationEngine {
             stop_reason: result_stop,
             summary: if plan_ok {
                 format!("completed {} tool call(s)", job.tool_attempts.len())
-            } else if matches!(
-                job.halted,
-                Some(StopReason::AuthorityDenied { .. })
-            ) {
+            } else if matches!(job.halted, Some(StopReason::AuthorityDenied { .. })) {
                 "halted: authority denied".into()
             } else {
                 "failed".into()
@@ -470,4 +460,3 @@ fn notifications_for(policy: &NotificationPolicy, ok: bool) -> Vec<String> {
         _ => Vec::new(),
     }
 }
-

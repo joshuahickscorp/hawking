@@ -1,0 +1,328 @@
+{
+  "ablation_ag": {
+    "arms": [
+      {
+        "description": "Base DSV4F only; no donor inheritance",
+        "id": "A_BASE_DSV4F"
+      },
+      {
+        "description": "Base + LINEAR_SUBSPACE_INITIALIZATION (not inheritance)",
+        "id": "B_LINEAR_SUBSPACE_INIT"
+      },
+      {
+        "description": "Behavior distillation objectives (gated: training loop)",
+        "id": "C_BEHAVIOR_DISTILL"
+      },
+      {
+        "description": "Nonlinear reversible bridges (gated: training loop)",
+        "id": "D_NONLINEAR_BRIDGES"
+      },
+      {
+        "description": "Router/method adapters (gated: training loop; no GLM router copy)",
+        "id": "E_ROUTER_METHOD_ADAPTERS"
+      },
+      {
+        "description": "Verified expert iteration (gated: verifier + training)",
+        "id": "F_EXPERT_ITERATION"
+      },
+      {
+        "description": "Complete Proto-Frankenstein = full functional transfer stack",
+        "id": "G_COMPLETE_PROTO_FRANKENSTEIN"
+      }
+    ],
+    "catalog": {
+      "arms": [
+        {
+          "description": "Base DSV4F only; no donor inheritance",
+          "id": "A_BASE_DSV4F",
+          "index": 0
+        },
+        {
+          "description": "Base + LINEAR_SUBSPACE_INITIALIZATION (not inheritance)",
+          "id": "B_LINEAR_SUBSPACE_INIT",
+          "index": 1
+        },
+        {
+          "description": "Behavior distillation objectives (gated: training loop)",
+          "id": "C_BEHAVIOR_DISTILL",
+          "index": 2
+        },
+        {
+          "description": "Nonlinear reversible bridges (gated: training loop)",
+          "id": "D_NONLINEAR_BRIDGES",
+          "index": 3
+        },
+        {
+          "description": "Router/method adapters (gated: training loop; no GLM router copy)",
+          "id": "E_ROUTER_METHOD_ADAPTERS",
+          "index": 4
+        },
+        {
+          "description": "Verified expert iteration (gated: verifier + training)",
+          "id": "F_EXPERT_ITERATION",
+          "index": 5
+        },
+        {
+          "description": "Complete Proto-Frankenstein = full functional transfer stack",
+          "id": "G_COMPLETE_PROTO_FRANKENSTEIN",
+          "index": 6
+        }
+      ],
+      "g_requires_all_prior_plus_gates": true,
+      "linear_init_is_not_proto_complete": true,
+      "reject_rule": "REJECT any arm that regresses secondary capabilities beyond tolerance, or that improves imitation but fails proof/computation/repair/transfer/hidden eval. Math gain cannot override secondary REJECT.",
+      "schema": "hawking.frankenstein.functional_transfer_arm_catalog.v1"
+    },
+    "harness_seal_sha256": "a6366db22ccf682a801635a3f72f311906373698dae1af1d81473dee2cb299ee",
+    "harness_status": "FRAMEWORK_PENDING",
+    "harness_verdict": "PENDING"
+  },
+  "adapter_bank": {
+    "glm_router_weights_copied": false,
+    "schema": "hawking.frankenstein.adapter_bank.v1",
+    "seal_sha256": "6bc37210bfa3f7fd2d2b9f842c6ab55c313ea2992c9ea8aa99024ef69d85af49",
+    "total_parameter_bytes": 1518088,
+    "trained": false
+  },
+  "baseline_freeze": {
+    "receipts_bound": 5,
+    "schema": "hawking.frankenstein.base_dsv4f_baseline_freeze.v1",
+    "seal_sha256": "e29e3f8ed847a8e60dd2a4c9dccc71f81985e6e2974d378e5a8da798b18a516b"
+  },
+  "built_vs_gated": {
+    "built_now": [
+      "LINEAR_SUBSPACE_INITIALIZATION label + claim boundary",
+      "BASE_DSV4F baseline freeze descriptor (measurable fields)",
+      "paired evidence trace schema + membership manager",
+      "tokenizer-independent span/byte/action aligner",
+      "layer correspondence cartography (CKA/CCA/Procrustes) on synthetic",
+      "reversible nonlinear bridge + adapter module architectures",
+      "A–G ablation harness + reject rule extension",
+      "frozen promotion gate (returns PENDING honestly)",
+      "secondary non-regression suite framework",
+      "Gravity byte/TPS accounting hooks on adapters"
+    ],
+    "missing_infra": {
+      "DEEPSEEK_FORWARD_PENDING": "Student forward measurement gated or partial; full capability benches require a registered DeepSeek forward callable.",
+      "REQUIRES_BENCHMARK_CORPUS": "No frozen held-out math suite with disjoint train/calib/public/hidden memberships. Suite harness exists; corpus missing.",
+      "REQUIRES_GLM_RUNTIME": "No local GLM-5.2 runtime (≈1.5 TB donor not served). Cannot capture GLM trajectories, activations, or logits.",
+      "REQUIRES_TRAINING_LOOP": "No DSV4F training loop (forward-only runtime; no backward/optimizer). Cannot fit nonlinear bridges or adapters.",
+      "REQUIRES_VERIFIER": "No verifier / Lean / tool loop wired. Cannot run verified expert iteration (attempt→verify→critique→repair)."
+    },
+    "runtime_gated": {
+      "REQUIRES_BENCHMARK_CORPUS": [
+        "held-out math suite evaluation",
+        "promotion gate live scores",
+        "disjoint membership eval over real problems"
+      ],
+      "REQUIRES_GLM_RUNTIME": [
+        "stage2 paired GLM trajectory/activation capture",
+        "stage3 capture-side of alignment",
+        "stage4 real GLM×DSV4F correspondence matrix"
+      ],
+      "REQUIRES_TRAINING_LOOP": [
+        "stage5 fit nonlinear bridges",
+        "stage6 distill method/decomp/formal/repair adapters + value head",
+        "stage7 method-conditioned route-bias residual training"
+      ],
+      "REQUIRES_VERIFIER": [
+        "stage8 verified expert iteration loop"
+      ]
+    }
+  },
+  "claim_boundary": {
+    "capability_claim": false,
+    "forbidden_labels": [
+      "FUNCTIONAL_TRANSFER_COMPLETE",
+      "MATH_INHERITANCE_COMPLETE",
+      "PROTO_COMPLETE",
+      "PROTO_FRANKENSTEIN_COMPLETE",
+      "PROTO_FRANKENSTEIN_INHERITANCE_COMPLETE"
+    ],
+    "is_inheritance": false,
+    "is_proto_frankenstein": false,
+    "not_sufficient_for": [
+      "math_capability_claim",
+      "PROTO_FRANKENSTEIN_COMPLETE",
+      "promotion",
+      "held_out_math_gain"
+    ],
+    "promotion_pending": true,
+    "proto_complete_declared": false,
+    "role": "LINEAR_SUBSPACE_INITIALIZATION",
+    "scaffold_only": true,
+    "trained": false,
+    "use_for": [
+      "layer_cartography_init",
+      "bridge_weight_initialization",
+      "structural_apply_artifact"
+    ]
+  },
+  "directive": "The hardened linear GLM→DSV4F mapping is infrastructure and initialization, not sufficient inheritance. Do not declare PROTO_FRANKENSTEIN from projected weights.",
+  "fabricated_training_or_eval": false,
+  "linear_mapping": {
+    "claim_boundary": {
+      "capability_claim": false,
+      "forbidden_labels": [
+        "FUNCTIONAL_TRANSFER_COMPLETE",
+        "MATH_INHERITANCE_COMPLETE",
+        "PROTO_COMPLETE",
+        "PROTO_FRANKENSTEIN_COMPLETE",
+        "PROTO_FRANKENSTEIN_INHERITANCE_COMPLETE"
+      ],
+      "is_inheritance": false,
+      "is_proto_frankenstein": false,
+      "not_sufficient_for": [
+        "math_capability_claim",
+        "PROTO_FRANKENSTEIN_COMPLETE",
+        "promotion",
+        "held_out_math_gain"
+      ],
+      "proto_complete_declared": false,
+      "role": "LINEAR_SUBSPACE_INITIALIZATION",
+      "trained": false,
+      "use_for": [
+        "layer_cartography_init",
+        "bridge_weight_initialization",
+        "structural_apply_artifact"
+      ]
+    },
+    "not_for": [
+      "PROTO_FRANKENSTEIN_COMPLETE",
+      "math_capability_claim",
+      "promotion"
+    ],
+    "role": "LINEAR_SUBSPACE_INITIALIZATION",
+    "use_for": [
+      "layer_cartography_init",
+      "bridge_weight_initialization"
+    ]
+  },
+  "losses": {
+    "functional_output": "held-out functional output match (span/action level)",
+    "latent_cosine_alone": "FORBIDDEN as sole objective",
+    "method_classification": "method-family classification CE",
+    "route_behavior": "route histogram / load-balance match to distilled policy",
+    "token_action_kl": "KL on aligned tokens/actions (never raw mismatched token ids)",
+    "verifier_outcome": "verifier pass/fail CE on repair trajectories"
+  },
+  "missing_infra": {
+    "DEEPSEEK_FORWARD_PENDING": "Student forward measurement gated or partial; full capability benches require a registered DeepSeek forward callable.",
+    "REQUIRES_BENCHMARK_CORPUS": "No frozen held-out math suite with disjoint train/calib/public/hidden memberships. Suite harness exists; corpus missing.",
+    "REQUIRES_GLM_RUNTIME": "No local GLM-5.2 runtime (≈1.5 TB donor not served). Cannot capture GLM trajectories, activations, or logits.",
+    "REQUIRES_TRAINING_LOOP": "No DSV4F training loop (forward-only runtime; no backward/optimizer). Cannot fit nonlinear bridges or adapters.",
+    "REQUIRES_VERIFIER": "No verifier / Lean / tool loop wired. Cannot run verified expert iteration (attempt→verify→critique→repair)."
+  },
+  "name": "FUNCTIONAL_TRANSFER_PROGRAM",
+  "promotion_gate": {
+    "current_verdict": "PENDING",
+    "reason": "promotion evidence incomplete; gate returns PENDING honestly (gates: REQUIRES_BENCHMARK_CORPUS, REQUIRES_TRAINING_LOOP, DEEPSEEK_FORWARD_PENDING). Never fabricates ACCEPT.",
+    "seal_sha256": "eec836897d3a59f0327b935059117c32e0aa02fd24cc28c284fcc446f3f43c37",
+    "targets": {
+      "independent_challenge_required": true,
+      "math_gap_recovery_min": 0.7,
+      "note": "Targets frozen prior to evaluation.  Secondary search/retrieval/tool/formal-proof gains are measured separately from raw-model gains.",
+      "reject_imitation_without_proof": "REJECT any checkpoint that improves imitation but fails proof/computation/repair/transfer/hidden eval",
+      "require_exact_provenance": true,
+      "require_gravity_accounting": true,
+      "require_held_out_math_gains": true,
+      "require_hidden_eval": true,
+      "require_stable_routing": true,
+      "secondary_axes": [
+        "coding_and_repository_work",
+        "tool_use",
+        "agentic_planning",
+        "long_context_reasoning",
+        "repair_and_critique",
+        "hcli_protocols",
+        "general_knowledge_conversation",
+        "runtime_tps",
+        "routing_stability",
+        "context_behavior"
+      ],
+      "secondary_search_gains_measured_separately": true,
+      "secondary_tolerance_absolute": 0.02
+    }
+  },
+  "proto_frankenstein_complete": false,
+  "recorded_at": "2026-08-05T19:20:31.660333Z",
+  "schema": "hawking.frankenstein.functional_transfer_program.v1",
+  "seal_sha256": "ff56ba3eefe599b282fcdc9a6c555e1e2fba1ecbf3128aba6c1881a05c1c1cbd",
+  "secondary_non_regression": {
+    "seal_sha256": "1c991cef6ae905c9099ea2337182908b4333e92a46049e325071a19c562a64e9",
+    "status": "FRAMEWORK_ONLY"
+  },
+  "seven_layer_transfer": [
+    {
+      "description": "Freeze capability/runtime/routing/HCLI baseline",
+      "gates": [],
+      "layer": 1,
+      "name": "BASE_DSV4F_FREEZE",
+      "status": "BUILT"
+    },
+    {
+      "description": "Paired GLM/DSV4F traces on disjoint train/calib/public/hidden",
+      "gates": [
+        "REQUIRES_GLM_RUNTIME",
+        "REQUIRES_BENCHMARK_CORPUS"
+      ],
+      "layer": 2,
+      "name": "PAIRED_EVIDENCE",
+      "status": "FORMAT_BUILT_CAPTURE_GATED"
+    },
+    {
+      "description": "Align spans/bytes/actions/tools — never token IDs",
+      "gates": [],
+      "layer": 3,
+      "name": "TOKENIZER_INDEPENDENT_ALIGNMENT",
+      "status": "BUILT"
+    },
+    {
+      "description": "CKA/CCA/Procrustes/causal-trace functional phase map",
+      "gates": [
+        "REQUIRES_GLM_RUNTIME"
+      ],
+      "layer": 4,
+      "name": "LAYER_CARTOGRAPHY",
+      "status": "FRAMEWORK_BUILT_LIVE_GATED"
+    },
+    {
+      "description": "norm→proj→gatedMLP→low-rank residual; train gated",
+      "gates": [
+        "REQUIRES_TRAINING_LOOP"
+      ],
+      "layer": 5,
+      "name": "REVERSIBLE_NONLINEAR_BRIDGES",
+      "status": "ARCHITECTURE_BUILT_TRAIN_GATED"
+    },
+    {
+      "description": "METHOD/DECOMPOSITION/FORMALIZATION/REPAIR + VALUE_HEAD + route bias",
+      "gates": [
+        "REQUIRES_TRAINING_LOOP"
+      ],
+      "layer": 6,
+      "name": "DISTILLED_ADAPTERS",
+      "status": "ARCHITECTURE_BUILT_TRAIN_GATED"
+    },
+    {
+      "description": "Verifier loop + A–G ablation + frozen promotion gate",
+      "gates": [
+        "REQUIRES_VERIFIER",
+        "REQUIRES_TRAINING_LOOP",
+        "REQUIRES_BENCHMARK_CORPUS"
+      ],
+      "layer": 7,
+      "name": "VERIFIED_EXPERT_ITERATION_AND_PROMOTION",
+      "status": "HARNESS_BUILT_RUNTIME_GATED"
+    }
+  ],
+  "status": "SCAFFOLD_SEALED",
+  "trainer_interface": {
+    "seal_sha256": "0f4b3a6db1996db0f07b074939a384b6506580cb42442ca99c87e951b1e8faec",
+    "status": "INTERFACE_ONLY"
+  },
+  "verifier_loop": {
+    "seal_sha256": "0271e13d445d01e243350251e8cc6c61ed761b4e5d14ac59d03b356d4eb3a04f",
+    "status": "INTERFACE_ONLY"
+  }
+}

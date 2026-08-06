@@ -36,14 +36,12 @@
 //! no network, no Metal, no Odyssey fence, no adapter-grade changes.
 
 pub use agent::{AgentId, AgentReceipt, AgentSpec, OutputSchema, VerificationContract};
-pub use budget::{
-    BudgetAxis, BudgetUsage, ResourceBudget, StopCondition, StopReason, SwarmBudget,
-};
+pub use budget::{BudgetAxis, BudgetUsage, ResourceBudget, StopCondition, StopReason, SwarmBudget};
+pub use capability::{CapabilitySnapshot, SurfaceCapability, SurfacePermissionSet};
 pub use capsule::{
     Claim, DeliberateExclusion, HandoffCapsule, HandoffKind, OpenedCapsule, PermissionSnapshot,
     ProvenanceEntry, ReceivedHandoff, SurfaceSession,
 };
-pub use capability::{CapabilitySnapshot, SurfaceCapability, SurfacePermissionSet};
 pub use error::{Result, YouError};
 pub use evidence::EvidenceTier;
 pub use fixture::{FixtureProvider, FixtureReply};
@@ -53,9 +51,7 @@ pub use promotion::{
     Conclusion, ConclusionRisk, PromotionBoard, PromotionDecision, PromotionEvidence, VoteTally,
 };
 pub use roles::AgentRole;
-pub use session_graph::{
-    CapsuleView, LensView, OpenedCapsuleView, SurfaceGraph, SurfaceGraphView,
-};
+pub use session_graph::{CapsuleView, LensView, OpenedCapsuleView, SurfaceGraph, SurfaceGraphView};
 pub use surface::{Surface, SurfaceDefaults};
 pub use swarm::{Swarm, SwarmId, SwarmStatus};
 

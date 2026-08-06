@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.tg.exact_trash_purge.v1",
+  "status": "EXACT_ITEM_PURGED_LANE_EMPTY_RECOVERY_SAMPLE_CONFOUNDED",
+  "at": "2026-08-02T06:57:02Z",
+  "authorization": "User confirmed the exact permanent purge at action time, then asked to retry after unlocking the Mac.",
+  "target": {
+    "trash_path": "/Users/scammermike/.Trash/qwen0p5-v21",
+    "source_sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "artifact_sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59"
+  },
+  "finder_verification": {
+    "selected_exact_item": "qwen0p5-v21",
+    "delete_immediately_confirmation_accepted": true,
+    "trash_items_after": 0
+  },
+  "postconditions": {
+    "exact_path_absent": true,
+    "models_tg_active_bytes": 0,
+    "free_bytes_after": 364255232000
+  },
+  "recovery_accounting": {
+    "immediate_pre_delete_exact_df_sample": "UNAVAILABLE: the machine was locked during the prior attempt and unrelated disk activity occurred before it was unlocked.",
+    "verdict": "NOT_CLAIMED",
+    "reopen_condition": "A subsequent model lifecycle must record exact immediate pre/post df samples around its own exact Trash purge; this receipt proves the identity and deletion, not a byte-for-byte df delta."
+  }
+}

@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use axum::{
     body::Body,
     http::{header, Request, StatusCode},
@@ -14,6 +13,7 @@ use http_body_util::BodyExt;
 use parking_lot::Mutex;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
+use std::sync::Arc;
 use tower::ServiceExt; // for `oneshot`
 struct StubEngine {
     tokens: Vec<&'static str>,
@@ -149,13 +149,22 @@ async fn chat_completions_streaming_sse_ok() {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
- assert!( ct.starts_with("text/event-stream"), "expected SSE content-type, got {ct:?}" );
+    assert!(
+        ct.starts_with("text/event-stream"),
+        "expected SSE content-type, got {ct:?}"
+    );
     let body = body_bytes(resp).await;
     let text = std::str::from_utf8(&body).unwrap();
     assert!(text.contains("data:"), "no SSE data frames in:\n{text}");
- assert!( text.contains("chat.completion.chunk"), "missing chat chunk object in:\n{text}" );
+    assert!(
+        text.contains("chat.completion.chunk"),
+        "missing chat chunk object in:\n{text}"
+    );
     assert!(text.contains("Hello"), "missing streamed token in:\n{text}");
- assert!( text.contains("[DONE]"), "missing [DONE] sentinel in:\n{text}" );
+    assert!(
+        text.contains("[DONE]"),
+        "missing [DONE] sentinel in:\n{text}"
+    );
     for line in text.lines() {
         let Some(payload) = line.strip_prefix("data:") else {
             continue;
@@ -211,9 +220,15 @@ async fn completions_streaming_sse_ok() {
     assert_eq!(resp.status(), StatusCode::OK);
     let body = body_bytes(resp).await;
     let text = std::str::from_utf8(&body).unwrap();
- assert!( text.contains("text_completion"), "missing object in:\n{text}" );
+    assert!(
+        text.contains("text_completion"),
+        "missing object in:\n{text}"
+    );
     assert!(text.contains("Hello"), "missing streamed token in:\n{text}");
- assert!( text.contains("[DONE]"), "missing [DONE] sentinel in:\n{text}" );
+    assert!(
+        text.contains("[DONE]"),
+        "missing [DONE] sentinel in:\n{text}"
+    );
 }
 async fn assert_structured_error(
     resp: axum::response::Response,
@@ -227,13 +242,22 @@ async fn assert_structured_error(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
- assert!( ct.starts_with("application/json"), "error body should be JSON, got {ct:?}" );
+    assert!(
+        ct.starts_with("application/json"),
+        "error body should be JSON, got {ct:?}"
+    );
     let body = body_bytes(resp).await;
     let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
     let err = &v["error"];
     assert!(err.is_object(), "missing `error` object in {v}");
- assert!( err["message"].is_string(), "error.message must be a string in {v}" );
- assert!( err["type"].is_string(), "error.type must be a string in {v}" );
+    assert!(
+        err["message"].is_string(),
+        "error.message must be a string in {v}"
+    );
+    assert!(
+        err["type"].is_string(),
+        "error.type must be a string in {v}"
+    );
     assert_eq!(err["code"], code, "unexpected error.code in {v}");
     v
 }

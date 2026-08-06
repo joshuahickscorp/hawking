@@ -229,7 +229,10 @@ mod tests {
             ]
         );
         assert_eq!(driver.scheduler.slots[0].last_token, Some(1));
- assert_eq!( driver.scheduler.slots[1].state, crate::batch::SlotState::Finishing );
+        assert_eq!(
+            driver.scheduler.slots[1].state,
+            crate::batch::SlotState::Finishing
+        );
     }
     #[test]
     fn decode_ready_once_no_ready_slots_is_noop() {
@@ -251,6 +254,9 @@ mod tests {
             .expect("slot id");
         assert_eq!(slot_id, 0);
         assert_eq!(driver.scheduler.slots[0].prompt_ids, vec![b'x' as u32]);
- assert_eq!( driver.scheduler.slots[0].state, crate::batch::SlotState::Prefilling );
+        assert_eq!(
+            driver.scheduler.slots[0].state,
+            crate::batch::SlotState::Prefilling
+        );
     }
 }

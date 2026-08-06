@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.tg.gravity_adapter_receipt.v1",
+  "status": "ADAPTER_RUNTIME_READY_SOURCE_ORACLE_UNVERIFIED",
+  "rungs": ["TG20", "TG3"],
+  "family": "qwen",
+  "architectures": ["qwen2"],
+  "adapter": {
+    "runtime": "crates/hawking-core/src/model/gravity_engine.rs -> gravity_llama::gpu",
+    "shared_tensor_abi": "Qwen2 model.layers.* self_attn and mlp projection names",
+    "attention_contract": "full attention unless a positive sliding_window is declared",
+    "source_consulted_at_runtime": false
+  },
+  "verification": {
+    "cargo_check": "PASS",
+    "header_tests": "4 passed",
+    "raw_parent_forward": "UNVERIFIED — Qwen parents were evicted",
+    "gravity_oracle": "UNVERIFIED — no Qwen Gravity artifact is materialized",
+    "rung_measurement": "NO_CLAIM"
+  },
+  "reopen_condition": "Reacquire a sealed Qwen2 parent, pack the complete tensor map, and pass RAW_PARENT_FORWARD, STATE_ADVANCE, GRAVITY_ORACLE, and matched rung measurement for each target size.",
+  "tps_claim": null
+}

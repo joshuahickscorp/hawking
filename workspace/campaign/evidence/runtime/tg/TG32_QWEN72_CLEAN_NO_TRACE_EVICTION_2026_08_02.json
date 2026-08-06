@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "EVICTED_EXACT_TRASH_PURGED_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-clean-no-trace-k0-2026-08-02",
+  "result_receipt": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+  "source": {
+    "path": "models/tg-active/qwen72-clean-no-trace-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "lane": {
+    "directory": "models/tg-active/qwen72-clean-no-trace-2026-08-02",
+    "du_bytes_before_eviction": 47415721502,
+    "model_count_after": 0
+  },
+  "storage": {
+    "protected_floor_bytes": 200005889556,
+    "free_bytes_before_eviction": 261265096704,
+    "free_bytes_after_sync_and_exact_purge": 308680945664,
+    "observed_free_recovery_bytes": 47415848960,
+    "residual_above_floor_after_bytes": 108675056108,
+    "floor_preserved": true,
+    "trash_item": "qwen72-clean-no-trace-2026-08-02",
+    "trash_purge_command": "osascript -e 'tell application \"Finder\" to delete every item of trash whose name is \"qwen72-clean-no-trace-2026-08-02\"'",
+    "path_absent_after_purge": true,
+    "recoverable_trash_items_pending_exact_purge": []
+  },
+  "owner_fences_false": true,
+  "verdict": "Exact Qwen72 source body, local metadata/cache and benchmark lane were evicted; the exact Trash item was purged; free bytes recovered and the protected floor remained intact."
+}

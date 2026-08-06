@@ -3,7 +3,8 @@ use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
 use once_cell::sync::Lazy;
 fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> = Lazy::new(|| MetalContext::new().expect("Metal device required"));
+    static CTX: Lazy<MetalContext> =
+        Lazy::new(|| MetalContext::new().expect("Metal device required"));
     &CTX
 }
 fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> hawking_core::metal::PinnedBuffer {
@@ -67,7 +68,19 @@ fn run_fused(
     let qb_buf = q_bias.map(|b| new_f32_buf(ctx, b));
     let kb_buf = k_bias.map(|b| new_f32_buf(ctx, b));
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::rope_qk_f32_b1_bias_tcb(&mut tcb, &q_buf, &k_buf, qb_buf.as_ref(), kb_buf.as_ref(), n_q, n_k, hd, pos, base).unwrap();
+    kernels::rope_qk_f32_b1_bias_tcb(
+        &mut tcb,
+        &q_buf,
+        &k_buf,
+        qb_buf.as_ref(),
+        kb_buf.as_ref(),
+        n_q,
+        n_k,
+        hd,
+        pos,
+        base,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     (read_f32_buf(&q_buf, q.len()), read_f32_buf(&k_buf, k.len()))
 }
@@ -77,10 +90,40 @@ fn check(label: &str, n_q: usize, n_k: usize, hd: usize, pos: u32, with_bias: bo
     let k = rnd(n_k * hd, 0x1234 + pos);
     let qb = with_bias.then(|| rnd(n_q * hd, 0xDEAD));
     let kb = with_bias.then(|| rnd(n_k * hd, 0xBEEF));
-    let (rq, rk) = run_ref(ctx, &q, &k, qb.as_deref(), kb.as_deref(), n_q, n_k, hd, pos, 10000.0);
-    let (fq, fk) = run_fused(ctx, &q, &k, qb.as_deref(), kb.as_deref(), n_q, n_k, hd, pos, 10000.0);
-    let max_q = rq.iter().zip(&fq).map(|(a, b)| (a - b).abs()).fold(0.0f32, f32::max);
-    let max_k = rk.iter().zip(&fk).map(|(a, b)| (a - b).abs()).fold(0.0f32, f32::max);
+    let (rq, rk) = run_ref(
+        ctx,
+        &q,
+        &k,
+        qb.as_deref(),
+        kb.as_deref(),
+        n_q,
+        n_k,
+        hd,
+        pos,
+        10000.0,
+    );
+    let (fq, fk) = run_fused(
+        ctx,
+        &q,
+        &k,
+        qb.as_deref(),
+        kb.as_deref(),
+        n_q,
+        n_k,
+        hd,
+        pos,
+        10000.0,
+    );
+    let max_q = rq
+        .iter()
+        .zip(&fq)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    let max_k = rk
+        .iter()
+        .zip(&fk)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
     let rel_q = rq
         .iter()
         .zip(&fq)

@@ -282,7 +282,10 @@ fn helper() {}
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
- assert!( refs.contains(&"helper"), "expected ref to helper, got {refs:?}" );
+        assert!(
+            refs.contains(&"helper"),
+            "expected ref to helper, got {refs:?}"
+        );
     }
     #[test]
     fn scip_ids_are_stable_and_kind_scoped() {
@@ -290,7 +293,10 @@ fn helper() {}
         let id_struct = scip_symbol_id(LangId::Rust, "a.rs", "Foo", SymKind::Struct);
         assert!(id_fn.ends_with("foo()."));
         assert!(id_struct.ends_with("Foo#"));
- assert_eq!( id_fn, scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function) );
+        assert_eq!(
+            id_fn,
+            scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function)
+        );
     }
     #[test]
     fn typescript_extracts_defs_and_refs() {
@@ -312,16 +318,28 @@ const formatted = format("x");
         assert!(def_names.contains(&"greet"), "got defs {def_names:?}");
         assert!(def_names.contains(&"Greeter"), "got defs {def_names:?}");
         assert!(def_names.contains(&"render"), "got defs {def_names:?}");
- assert!( !out.symbols.is_empty(), "TS source must yield non-empty definitions" );
+        assert!(
+            !out.symbols.is_empty(),
+            "TS source must yield non-empty definitions"
+        );
         let refs: Vec<_> = out
             .occurrences
             .iter()
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
- assert!( !refs.is_empty(), "TS source must yield non-empty references, got {refs:?}" );
- assert!( refs.contains(&"greet"), "expected call ref to greet: {refs:?}" );
- assert!( refs.contains(&"format"), "expected call ref to format: {refs:?}" );
+        assert!(
+            !refs.is_empty(),
+            "TS source must yield non-empty references, got {refs:?}"
+        );
+        assert!(
+            refs.contains(&"greet"),
+            "expected call ref to greet: {refs:?}"
+        );
+        assert!(
+            refs.contains(&"format"),
+            "expected call ref to format: {refs:?}"
+        );
     }
     #[test]
     fn javascript_extracts_defs_and_refs() {
@@ -343,15 +361,24 @@ const square = (n) => add(n, n);
         assert!(def_names.contains(&"add"), "got defs {def_names:?}");
         assert!(def_names.contains(&"Calculator"), "got defs {def_names:?}");
         assert!(def_names.contains(&"run"), "got defs {def_names:?}");
- assert!( def_names.contains(&"square"), "arrow-fn const def: {def_names:?}" );
+        assert!(
+            def_names.contains(&"square"),
+            "arrow-fn const def: {def_names:?}"
+        );
         let refs: Vec<_> = out
             .occurrences
             .iter()
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
- assert!( !refs.is_empty(), "JS source must yield non-empty references, got {refs:?}" );
- assert!( refs.contains(&"compute"), "expected call ref to compute: {refs:?}" );
+        assert!(
+            !refs.is_empty(),
+            "JS source must yield non-empty references, got {refs:?}"
+        );
+        assert!(
+            refs.contains(&"compute"),
+            "expected call ref to compute: {refs:?}"
+        );
         assert!(refs.contains(&"add"), "expected call ref to add: {refs:?}");
     }
     #[test]
@@ -367,7 +394,10 @@ const square = (n) => add(n, n);
         let src = "pub fn good() {}\npub fn broken( {\n";
         let out = parse_source("x.rs", src);
         assert!(out.symbols.iter().any(|s| s.name == "good"));
- assert!( !out.error_spans.is_empty(), "expected an ERROR/MISSING span" );
+        assert!(
+            !out.error_spans.is_empty(),
+            "expected an ERROR/MISSING span"
+        );
     }
     #[test]
     fn unknown_language_is_unparseable() {

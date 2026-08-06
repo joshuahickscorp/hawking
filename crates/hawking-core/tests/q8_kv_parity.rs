@@ -34,18 +34,33 @@ fn kv_append_q8_gpu_matches_cpu_quantize() {
     let mut cpu_row = vec![0u8; row_bytes];
     quantize_q8_0(&c_kv_normed, &mut cpu_row).expect("cpu quantize");
     let gpu_row = &gpu_cache[seq_slot * row_bytes..(seq_slot + 1) * row_bytes];
-    let diff_bytes: Vec<usize> = gpu_row.iter().zip(cpu_row.iter()).enumerate().filter(|(_, (a, b))| a != b).map(|(i, _)| i).collect();
-    assert!(diff_bytes.is_empty(), "GPU/CPU Q8 quantize differ at byte offsets: {diff_bytes:?}");
+    let diff_bytes: Vec<usize> = gpu_row
+        .iter()
+        .zip(cpu_row.iter())
+        .enumerate()
+        .filter(|(_, (a, b))| a != b)
+        .map(|(i, _)| i)
+        .collect();
+    assert!(
+        diff_bytes.is_empty(),
+        "GPU/CPU Q8 quantize differ at byte offsets: {diff_bytes:?}"
+    );
     let gpu_pe = &gpu_kpe[seq_slot * qk_rope_head_dim..(seq_slot + 1) * qk_rope_head_dim];
     for (i, (a, b)) in gpu_pe.iter().zip(pe_src.iter()).enumerate() {
-        assert!((a - b).abs() < 1e-9, "k_pe element {i} mismatch: gpu={a} cpu={b}");
+        assert!(
+            (a - b).abs() < 1e-9,
+            "k_pe element {i} mismatch: gpu={a} cpu={b}"
+        );
     }
     for s in 0..max_seq {
         if s == seq_slot {
             continue;
         }
         let row = &gpu_cache[s * row_bytes..(s + 1) * row_bytes];
-        assert!(row.iter().all(|&b| b == 0), "slot {s} wasn't supposed to be written");
+        assert!(
+            row.iter().all(|&b| b == 0),
+            "slot {s} wasn't supposed to be written"
+        );
     }
 }
 const N_HEADS: usize = 16;
@@ -58,13 +73,30 @@ fn run_q8_vs_f32(label: &str, seq_len: usize, c_kv_scale: f32, atol: f32) {
     let q_head_dim = QK_NOPE + QK_ROPE;
     let scale = 1.0_f32 / (q_head_dim as f32).sqrt();
     let q = fixed_f32(N_HEADS * q_head_dim, 0xDEAD ^ seq_len as u64);
-    let c_kv: Vec<f32> = fixed_f32(seq_len * KV_LORA, 0xBEEF ^ seq_len as u64).into_iter().map(|x| x * c_kv_scale).collect();
+    let c_kv: Vec<f32> = fixed_f32(seq_len * KV_LORA, 0xBEEF ^ seq_len as u64)
+        .into_iter()
+        .map(|x| x * c_kv_scale)
+        .collect();
     let k_pe = fixed_f32(seq_len * QK_ROPE, 0xCAFE ^ seq_len as u64);
     let kv_b = fixed_f32(N_HEADS * (QK_NOPE + V_HEAD) * KV_LORA, 0xABCD);
     let kv_b_buf: PinnedBuffer = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&kv_b));
     let mut ref_out = vec![0.0f32; N_HEADS * V_HEAD];
-    kernels::mla_decode_metal(ctx, &q, &c_kv, &k_pe, &kv_b_buf, N_HEADS, QK_NOPE, QK_ROPE, V_HEAD, KV_LORA, seq_len, scale, &mut ref_out)
-        .expect("mla_decode_metal");
+    kernels::mla_decode_metal(
+        ctx,
+        &q,
+        &c_kv,
+        &k_pe,
+        &kv_b_buf,
+        N_HEADS,
+        QK_NOPE,
+        QK_ROPE,
+        V_HEAD,
+        KV_LORA,
+        seq_len,
+        scale,
+        &mut ref_out,
+    )
+    .expect("mla_decode_metal");
     let n_blocks_per_row = KV_LORA / Q8_0_BLOCK_ELEMS;
     let row_bytes = n_blocks_per_row * Q8_0_BLOCK_BYTES;
     let mut c_kv_q8 = vec![0u8; seq_len * row_bytes];

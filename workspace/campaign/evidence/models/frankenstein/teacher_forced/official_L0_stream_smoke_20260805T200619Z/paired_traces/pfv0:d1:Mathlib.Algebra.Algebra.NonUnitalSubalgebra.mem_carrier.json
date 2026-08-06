@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 207,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: mem_carrier\nStatement:\nmem_carrier {s : NonUnitalSubalgebra R A} {x : A} : x ∈ s.carrier ↔ x ∈ s\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: mem_carrier\nStatement:\nmem_carrier {s : NonUnitalSubalgebra R A} {x : A} : x ∈ s.carrier ↔ x ∈ s\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.855339Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "b97b8d4b64c45c3892ad83ba3a82df5d10b6b6fc40917bdbdb7978fcd90f4ea9",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.0185036659240723,
+          "rank": 0,
+          "token_id": 35
+        },
+        {
+          "logit": 1.498550534248352,
+          "rank": 1,
+          "token_id": 63
+        },
+        {
+          "logit": 1.1509066820144653,
+          "rank": 2,
+          "token_id": 2
+        },
+        {
+          "logit": 0.9979255795478821,
+          "rank": 3,
+          "token_id": 31
+        },
+        {
+          "logit": 0.9458127021789551,
+          "rank": 4,
+          "token_id": 43
+        },
+        {
+          "logit": 0.8986364603042603,
+          "rank": 5,
+          "token_id": 27
+        },
+        {
+          "logit": 0.4384706914424896,
+          "rank": 6,
+          "token_id": 13
+        },
+        {
+          "logit": 0.37339577078819275,
+          "rank": 7,
+          "token_id": 1
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17630578577518463,
+          "l2": 3.670147657394409,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "828022251ffb42c7dde8168aa566791a3538b7c9fd174586f1a0d99e5824111d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

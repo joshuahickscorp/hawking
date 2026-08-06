@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.one_mountain.model_selection.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "selection": {
+    "name": "Qwen2.5-72B-Instruct Q4_K_M GGUF",
+    "state": "frozen_one_mountain",
+    "source_path": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-q4km-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "source_bytes": 47415715488,
+    "source_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "source_hash_receipt": "raw/QWEN2P5_72B_Q4KM_SOURCE.sha256",
+    "artifact_repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "artifact_revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "base_repository": "Qwen/Qwen2.5-72B-Instruct",
+    "base_revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+    "license_status": "Upstream model-card API reported 'other'; full license text must be sealed before any release/promotion."
+  },
+  "selection_rationale": "The larger 235B Q2 candidate was actually downloaded and attempted, but failed in both a normal and minimized valid Metal compute graph. This 72B Q4 candidate is the largest selected candidate with a successful fresh execution admission under the current machine and storage contract.",
+  "execution_admission": {
+    "provider": "llama.cpp llama-cli b9430-d48a56eff with Metal and 999 GPU layers",
+    "command_shape": "context 128; batch 16; microbatch 16; temperature 0; seed 42; no warmup",
+    "prompt": "The capital of France is",
+    "completion_tokens_requested": 2,
+    "completion_observed": "The capital",
+    "reported_prompt_tps": 34.4,
+    "reported_generation_tps": 12.3,
+    "raw_stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_BASELINE.stdout",
+    "raw_stdout_sha256": "fccb9d40be5f1c2956d0476889e20d2d6ad92ff852ab132a65227df5171e8f3c",
+    "status": "executed",
+    "performance_scope": "A two-token shared-load provider observation only; it is not a clean benchmark, a Hawking capability claim, or a 100 TPS claim."
+  },
+  "shared_load_completion_observation": {
+    "prompt": "The capital of France is",
+    "completion_observed": "The capital of France is Paris.",
+    "completion_tokens_requested": 32,
+    "reported_prompt_tps": 34.3,
+    "reported_generation_tps": 14.0,
+    "wall_seconds": 4.59,
+    "maximum_resident_set_bytes": 47619866624,
+    "raw_stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_32TOK_SHARED.stdout",
+    "raw_stderr": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_32TOK_SHARED.stderr",
+    "stdout_sha256": "b2cf5571d6f34c1eb616b8e721e8838399736b105f6d5ed2fee39fde1c68278e",
+    "stderr_sha256": "ed20dbea880b0d1d7820874eff36fde71338003156a2a23f0b502d6e4d53a12d",
+    "performance_scope": "Observed under the current shared machine load. It is reproducible as a named command but does not establish a clean absolute or 100 TPS performance rung."
+  },
+  "rotation_policy": "No casual model rotation. Change is permitted only for source corruption, license blockage, architecture impossible to execute safely, or a new substrate allocation contract.",
+  "unmet_gates": ["Capability gates G0-G9", "fixed benchmark corpus", "deterministic replay and paired shared-load performance protocol", "Gravity artifact build and verification"]
+}

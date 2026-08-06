@@ -149,7 +149,10 @@ mod tests {
         }
         let candidates = vec![(0, 0.9), (1, 0.1)];
         let chosen = p.pick_ucb1(&candidates).expect("must return Some");
- assert_eq!( chosen, 0, "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup" );
+        assert_eq!(
+            chosen, 0,
+            "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup"
+        );
     }
     #[test]
     fn cold_arm_gets_explored() {
@@ -183,7 +186,10 @@ mod tests {
         p.update(0, 0.4);
         let expected = (0.8 + 0.4) / 2.0;
         let got = p.mu(0);
- assert!( (got - expected).abs() < 1e-12, "mu(0) = {got} expected {expected}" );
+        assert!(
+            (got - expected).abs() < 1e-12,
+            "mu(0) = {got} expected {expected}"
+        );
         assert_eq!(p.mu(1), 0.0);
     }
     #[test]

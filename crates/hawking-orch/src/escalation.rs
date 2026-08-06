@@ -206,6 +206,8 @@ impl EscalationCascade {
             final_stats.unwrap_or(GenerationStats {
                 input_tokens: 0,
                 output_tokens: 0,
+                decode_ms: None,
+                completed_decode_forwards: None,
                 decode_tokens_per_second: None,
             }),
         ))
@@ -451,7 +453,10 @@ mod tests {
         assert!(outcome.escalated());
         assert_eq!(outcome.final_role_id, hero_id);
         assert_eq!(outcome.trail.len(), 2);
- assert!(matches!( outcome.trail[0].escalated, Some(EscalationReason::VoteDisagreement { .. }) ));
+        assert!(matches!(
+            outcome.trail[0].escalated,
+            Some(EscalationReason::VoteDisagreement { .. })
+        ));
     }
     #[tokio::test]
     async fn top_role_cannot_escalate_even_if_uncertain() {

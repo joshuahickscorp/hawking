@@ -251,17 +251,14 @@ mod tests {
         assert_eq!(dual.provisional().draft_len(), 0);
         assert_eq!(dual.provisional().seq_len(), dual.committed().seq_len);
         dual.assert_invariant();
- assert!(gate .try_promote(DraftTokenId::id(99), 11) .is_err());
+        assert!(gate.try_promote(DraftTokenId::id(99), 11).is_err());
     }
     #[test]
     fn rebase_advances_committed_by_verified_prefix_only() {
         let gate = TargetVerification::gate();
         let mut dual = DualKv::new(CommittedKv::from_tokens(vec![1]));
         dual.speculate(&[2, 3, 4]);
-        let accepted = vec![
-            gate.emit_target(2u32),
-            gate.emit_target(3u32),
-        ];
+        let accepted = vec![gate.emit_target(2u32), gate.emit_target(3u32)];
         dual.rebase(&accepted);
         assert_eq!(dual.committed().token_ids(), &[1, 2, 3]);
         assert_eq!(dual.provisional().draft_len(), 0);

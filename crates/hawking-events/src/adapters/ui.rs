@@ -13,18 +13,13 @@ use hide_core::ids::SessionId;
 use serde_json::json;
 
 use crate::categories::Category;
-use crate::envelope::{
-    CanonicalEvent, ContentVerification, NewCanonical, Subsystem,
-};
+use crate::envelope::{CanonicalEvent, ContentVerification, NewCanonical, Subsystem};
 
 /// Elevate a UiEvent into a provisional canonical event.
 ///
 /// When `session_id` is missing on the UiEvent, the provided fallback is used.
 pub fn ui_event_to_canonical(event: &UiEvent, fallback_session: SessionId) -> CanonicalEvent {
-    let session = event
-        .session_id
-        .clone()
-        .unwrap_or(fallback_session);
+    let session = event.session_id.clone().unwrap_or(fallback_session);
     let (category, kind, payload, class) = match &event.kind {
         UiEventKind::TokenBatch { stream_id, text } => (
             Category::Text,

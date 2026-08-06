@@ -37,6 +37,8 @@
 
 use serde::Serialize;
 
+use crate::gguf::GgmlType;
+
 /// Schema id for V2.1 receipts and logs.
 pub const SCHEMA: &str = "hawking.numeric_parity.v2_1";
 
@@ -618,6 +620,197 @@ pub fn matvec_dense_f64_authority(
     Ok(out)
 }
 
+/// Independent FP64 matvec authority for the raw GGML quant grammars carried
+/// by source-preserving Gravity artifacts.  Values are reconstructed directly
+/// from their integer codes and f16 scales in f64; it does not call Hawking's
+/// f32 dequantizer and then re-promote its rounded values.
+///
+/// The current executable Qwen source grammar uses Q4_K, Q5_0, Q6_K and
+/// Q8_0. A caller must pass one full row-major matrix payload and a f64
+/// activation.
+pub fn matvec_ggml_quant_f64_authority(
+    dtype: GgmlType,
+    weights: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f64],
+) -> Result<Vec<f64>, String> {
+    if x.len() != cols || rows == 0 || cols == 0 {
+        return Err(format!(
+            "quant f64 matvec geometry rows={rows} cols={cols} x={}",
+            x.len()
+        ));
+    }
+    let (block_elems, block_bytes) = match dtype {
+        GgmlType::Q4_K => (256usize, 144usize),
+        GgmlType::Q5_0 => (32usize, 22usize),
+        GgmlType::Q8_0 => (32usize, 34usize),
+        GgmlType::Q6_K => (256usize, 210usize),
+        other => {
+            return Err(format!(
+                "quant f64 authority has no codec grammar for {other:?}"
+            ))
+        }
+    };
+    if cols % block_elems != 0 {
+        return Err(format!(
+            "quant f64 {dtype:?}: cols {cols} is not a multiple of {block_elems}"
+        ));
+    }
+    let row_bytes = (cols / block_elems)
+        .checked_mul(block_bytes)
+        .ok_or_else(|| "quant f64 row byte-size overflow".to_string())?;
+    if weights.len() != rows.saturating_mul(row_bytes) {
+        return Err(format!(
+            "quant f64 {dtype:?}: payload {} B != {} rows × {row_bytes} B",
+            weights.len(),
+            rows
+        ));
+    }
+    let f16_at = |bytes: &[u8]| -> f64 {
+        half::f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32() as f64
+    };
+    let mut out = vec![0.0f64; rows];
+    for row in 0..rows {
+        let bytes = &weights[row * row_bytes..(row + 1) * row_bytes];
+        let mut acc = 0.0f64;
+        match dtype {
+            GgmlType::Q4_K => {
+                for block in 0..cols / 256 {
+                    let payload = &bytes[block * 144..block * 144 + 144];
+                    let d = f16_at(&payload[..2]);
+                    let dmin = f16_at(&payload[2..4]);
+                    let scales = &payload[4..16];
+                    let quants = &payload[16..144];
+                    let mut scale = [0u8; 8];
+                    let mut minimum = [0u8; 8];
+                    for group in 0..4 {
+                        scale[group] = scales[group] & 0x3f;
+                        minimum[group] = scales[4 + group] & 0x3f;
+                    }
+                    for group in 0..4 {
+                        scale[4 + group] = (scales[8 + group] & 0x0f) | ((scales[group] >> 6) << 4);
+                        minimum[4 + group] =
+                            (scales[8 + group] >> 4) | ((scales[4 + group] >> 6) << 4);
+                    }
+                    for sub in 0..8 {
+                        let sub_scale = d * scale[sub] as f64;
+                        let sub_minimum = dmin * minimum[sub] as f64;
+                        let pair = sub / 2;
+                        let high_nibble = sub % 2 == 1;
+                        for lane in 0..32 {
+                            let packed = quants[pair * 32 + lane];
+                            let code = if high_nibble {
+                                (packed >> 4) & 0x0f
+                            } else {
+                                packed & 0x0f
+                            };
+                            let index = block * 256 + sub * 32 + lane;
+                            acc += (sub_scale * code as f64 - sub_minimum) * x[index];
+                        }
+                    }
+                }
+            }
+            GgmlType::Q5_0 => {
+                for block in 0..cols / 32 {
+                    let payload = &bytes[block * 22..block * 22 + 22];
+                    let d = f16_at(&payload[..2]);
+                    let high = u32::from_le_bytes(payload[2..6].try_into().unwrap());
+                    for i in 0..32 {
+                        let packed = payload[6 + (i & 15)];
+                        let low = if i < 16 { packed & 0x0f } else { packed >> 4 };
+                        let q = (low | ((((high >> i) & 1) as u8) << 4)) as i32 - 16;
+                        acc += d * q as f64 * x[block * 32 + i];
+                    }
+                }
+            }
+            GgmlType::Q8_0 => {
+                for block in 0..cols / 32 {
+                    let payload = &bytes[block * 34..block * 34 + 34];
+                    let d = f16_at(&payload[..2]);
+                    for i in 0..32 {
+                        acc += d * (payload[2 + i] as i8) as f64 * x[block * 32 + i];
+                    }
+                }
+            }
+            GgmlType::Q6_K => {
+                for block in 0..cols / 256 {
+                    let payload = &bytes[block * 210..block * 210 + 210];
+                    let d = f16_at(&payload[208..210]);
+                    for half in 0..2 {
+                        let ql = &payload[half * 64..half * 64 + 64];
+                        let qh = &payload[128 + half * 32..128 + half * 32 + 32];
+                        let scales = &payload[192 + half * 8..192 + half * 8 + 8];
+                        let base = block * 256 + half * 128;
+                        for lane in 0..32 {
+                            let hi = qh[lane];
+                            let values = [
+                                ((ql[lane] & 0x0f) | ((hi & 0x03) << 4)) as i32 - 32,
+                                ((ql[32 + lane] & 0x0f) | (((hi >> 2) & 0x03) << 4)) as i32 - 32,
+                                ((ql[lane] >> 4) | (((hi >> 4) & 0x03) << 4)) as i32 - 32,
+                                ((ql[32 + lane] >> 4) | (((hi >> 6) & 0x03) << 4)) as i32 - 32,
+                            ];
+                            let scale_index = lane / 16;
+                            for (part, value) in values.into_iter().enumerate() {
+                                let scale = scales[scale_index + part * 2] as i8 as f64;
+                                acc += d * scale * value as f64 * x[base + lane + part * 32];
+                            }
+                        }
+                    }
+                }
+            }
+            _ => unreachable!("codec was admitted above"),
+        }
+        out[row] = acc;
+    }
+    Ok(out)
+}
+
+/// Decode one Q8_0 source row directly into f64. This deliberately exists
+/// alongside the streaming matvec authority: token embedding lookup must not
+/// obtain its source values by running Hawking's f32 decoder and widening the
+/// result. Q8_0 is the raw embedding grammar admitted by the bounded Qwen
+/// source-preserving lane; other raw embedding grammars fail closed here until
+/// their exact source decoder is implemented.
+pub fn row_ggml_quant_f64_authority(
+    dtype: GgmlType,
+    weights: &[u8],
+    rows: usize,
+    cols: usize,
+    row: usize,
+) -> Result<Vec<f64>, String> {
+    if dtype != GgmlType::Q8_0 {
+        return Err(format!(
+            "quant f64 row authority has no embedding grammar for {dtype:?}"
+        ));
+    }
+    if row >= rows || cols == 0 || cols % 32 != 0 {
+        return Err(format!(
+            "quant f64 Q8_0 row geometry rows={rows} cols={cols} row={row}"
+        ));
+    }
+    let row_bytes = (cols / 32)
+        .checked_mul(34)
+        .ok_or_else(|| "quant f64 Q8_0 row byte-size overflow".to_string())?;
+    if weights.len() != rows.saturating_mul(row_bytes) {
+        return Err(format!(
+            "quant f64 Q8_0 row payload {} B != {} rows × {row_bytes} B",
+            weights.len(),
+            rows
+        ));
+    }
+    let source = &weights[row * row_bytes..(row + 1) * row_bytes];
+    let mut out = vec![0.0; cols];
+    for block in 0..cols / 32 {
+        let payload = &source[block * 34..block * 34 + 34];
+        let d = half::f16::from_bits(u16::from_le_bytes([payload[0], payload[1]])).to_f32() as f64;
+        for lane in 0..32 {
+            out[block * 32 + lane] = d * (payload[2 + lane] as i8) as f64;
+        }
+    }
+    Ok(out)
+}
+
 /// RMSNorm in f64: `x * rsqrt(mean(x²) + eps) * weight`.
 pub fn rmsnorm_f64(x: &[f64], weight: &[f64], eps: f64) -> Result<Vec<f64>, String> {
     if x.len() != weight.len() {
@@ -658,10 +851,13 @@ pub fn layernorm_f64(
     }
     let n = x.len() as f64;
     let mean = x.iter().sum::<f64>() / n;
-    let var = x.iter().map(|v| {
-        let d = v - mean;
-        d * d
-    }).sum::<f64>()
+    let var = x
+        .iter()
+        .map(|v| {
+            let d = v - mean;
+            d * d
+        })
+        .sum::<f64>()
         / n;
     let inv = 1.0 / (var + eps).sqrt();
     Ok(x.iter()
@@ -756,10 +952,7 @@ pub fn score_against_f64(
     if continuous.max_abs_near_zero > bounds.max_abs_near_zero && continuous.n_near_zero > 0 {
         failures.push(format!(
             "abs_near_zero {:.3e} > bound {:.3e} (cutoff={:.3e}, n={})",
-            continuous.max_abs_near_zero,
-            bounds.max_abs_near_zero,
-            cutoff,
-            continuous.n_near_zero
+            continuous.max_abs_near_zero, bounds.max_abs_near_zero, cutoff, continuous.n_near_zero
         ));
     }
     if continuous.relative_l2 > bounds.max_relative_l2 {
@@ -814,12 +1007,7 @@ pub fn score_against_f64(
 }
 
 /// Score host and device f32 outputs against the same FP64 reference.
-pub fn score_pair(
-    host: &[f32],
-    device: &[f32],
-    reference: &[f64],
-    bounds: &Bounds,
-) -> PairedScore {
+pub fn score_pair(host: &[f32], device: &[f32], reference: &[f64], bounds: &Bounds) -> PairedScore {
     let host_s = score_against_f64(host, reference, bounds, "host_f32");
     let device_s = score_against_f64(device, reference, bounds, "device_f32");
     let cutoff = absolute_error_cutoff(reference);
@@ -876,7 +1064,8 @@ mod tests {
     use super::*;
     #[test]
     fn identical_vectors_pass_with_zero_error() {
-        let c: Vec<f32> = (0..64).map(|i| (i as f32) * 0.1 - 3.0).collect(); let r: Vec<f64> = c.iter().map(|&v| v as f64).collect();
+        let c: Vec<f32> = (0..64).map(|i| (i as f32) * 0.1 - 3.0).collect();
+        let r: Vec<f64> = c.iter().map(|&v| v as f64).collect();
         let s = score_against_f64(&c, &r, &Bounds::logits(), "id");
         assert!(s.pass, "failures: {:?}", s.failures);
         assert_eq!(s.continuous.relative_l2, 0.0);
@@ -886,8 +1075,11 @@ mod tests {
     }
     #[test]
     fn denormal_scale_element_does_not_fail_relative_gate() {
-        let mut r: Vec<f64> = (0..128).map(|i| ((i as f64) - 64.0) * 0.05).collect(); r[3] = 1e-32;
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); r[3] = 1e-20; c[3] = 2e-20;
+        let mut r: Vec<f64> = (0..128).map(|i| ((i as f64) - 64.0) * 0.05).collect();
+        r[3] = 1e-32;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        r[3] = 1e-20;
+        c[3] = 2e-20;
         let s = score_against_f64(&c, &r, &Bounds::logits(), "denorm");
         assert!(
             s.continuous.diagnostic_max_scalar_rel_all > 1e-5,
@@ -904,22 +1096,28 @@ mod tests {
     }
     #[test]
     fn silu_mul_f64_authority_matches_formula() {
-        let g = [0.0f64, 1.0, -2.0, 0.5]; let u = [1.0f64, 2.0, 3.0, -1.0]; let y = silu_mul_f64_authority(&g, &u).unwrap();
+        let g = [0.0f64, 1.0, -2.0, 0.5];
+        let u = [1.0f64, 2.0, 3.0, -1.0];
+        let y = silu_mul_f64_authority(&g, &u).unwrap();
         for i in 0..g.len() {
             let expect = (g[i] / (1.0 + (-g[i]).exp())) * u[i];
             assert!((y[i] - expect).abs() < 1e-15, "i={i}");
         }
-        let gh: Vec<f32> = g.iter().map(|&v| v as f32).collect(); let uh: Vec<f32> = u.iter().map(|&v| v as f32).collect();
+        let gh: Vec<f32> = g.iter().map(|&v| v as f32).collect();
+        let uh: Vec<f32> = u.iter().map(|&v| v as f32).collect();
         let host = silu_mul_f32_host(&gh, &uh).unwrap();
         let ref64: Vec<f64> = g
             .iter()
-            .zip(u.iter()).map(|(&a, &b)| (a / (1.0 + (-a).exp())) * b) .collect();
+            .zip(u.iter())
+            .map(|(&a, &b)| (a / (1.0 + (-a).exp())) * b)
+            .collect();
         let s = score_against_f64(&host, &ref64, &Bounds::continuous_only(), "silu_host");
         assert!(s.pass, "host silu vs f64: {:?}", s.failures);
     }
     #[test]
     fn wrong_argmax_fails_with_no_tolerance() {
-        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 0.5]; let c: Vec<f32> = vec![1.0, 3.5, 3.0, 0.5];
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 0.5];
+        let c: Vec<f32> = vec![1.0, 3.5, 3.0, 0.5];
         let s = score_against_f64(&c, &r, &Bounds::logits(), "argmax");
         assert!(!s.pass);
         assert!(!s.discrete.greedy_match);
@@ -927,15 +1125,19 @@ mod tests {
     }
     #[test]
     fn wrong_topk_fails_with_no_tolerance() {
-        let r: Vec<f64> = vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]; let c: Vec<f32> = vec![5.0, 4.0, 0.5, 2.0, 1.0, 3.5];
-        let mut bounds = Bounds::logits(); bounds.top_k = 3; let s = score_against_f64(&c, &r, &bounds, "topk");
+        let r: Vec<f64> = vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0];
+        let c: Vec<f32> = vec![5.0, 4.0, 0.5, 2.0, 1.0, 3.5];
+        let mut bounds = Bounds::logits();
+        bounds.top_k = 3;
+        let s = score_against_f64(&c, &r, &bounds, "topk");
         assert!(!s.discrete.top_k_exact_match);
         assert!(!s.pass);
         assert!(s.failures.iter().any(|f| f.contains("top-")));
     }
     #[test]
     fn large_relative_l2_fails_headline_gate() {
-        let r: Vec<f64> = (0..32).map(|i| (i as f64) + 1.0).collect(); let c: Vec<f32> = r.iter().map(|&v| (v * 1.1) as f32).collect();
+        let r: Vec<f64> = (0..32).map(|i| (i as f64) + 1.0).collect();
+        let c: Vec<f32> = r.iter().map(|&v| (v * 1.1) as f32).collect();
         let s = score_against_f64(&c, &r, &Bounds::continuous_only(), "l2");
         assert!(!s.pass);
         assert!(s.continuous.relative_l2 > 1e-5);
@@ -943,11 +1145,13 @@ mod tests {
     }
     #[test]
     fn reduction_order_noise_passes() {
-        let r: Vec<f64> = (0..256).map(|i| ((i as f64) * 0.017 - 2.0).sin() * 1.5)
+        let r: Vec<f64> = (0..256)
+            .map(|i| ((i as f64) * 0.017 - 2.0).sin() * 1.5)
             .collect();
         let c: Vec<f32> = r
             .iter()
-            .enumerate().map(|(i, &v)| {
+            .enumerate()
+            .map(|(i, &v)| {
                 let noise = v * 1e-7 * if i % 2 == 0 { 1.0 } else { -1.0 };
                 (v + noise) as f32
             })
@@ -963,14 +1167,19 @@ mod tests {
     }
     #[test]
     fn abs_cutoff_is_data_derived_and_stated() {
-        let r: Vec<f64> = vec![-2.0, -1.0, 0.0, 1.0, 2.0]; let cut = absolute_error_cutoff(&r);
-        assert!((cut - 1e-6).abs() < 1e-12, "cut={cut}"); let r2: Vec<f64> = vec![1e3, 1e3, 1e3]; let cut2 = absolute_error_cutoff(&r2);
+        let r: Vec<f64> = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
+        let cut = absolute_error_cutoff(&r);
+        assert!((cut - 1e-6).abs() < 1e-12, "cut={cut}");
+        let r2: Vec<f64> = vec![1e3, 1e3, 1e3];
+        let cut2 = absolute_error_cutoff(&r2);
         assert!((cut2 - 1e-3).abs() < 1e-12, "cut2={cut2}");
     }
     #[test]
     fn ulp_distribution_reports_quartet_not_lone_max() {
-        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0]; let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        c[0] = f32::from_bits((1.0f32).to_bits() + 50); let u = ulp_distribution(&c, &r);
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        c[0] = f32::from_bits((1.0f32).to_bits() + 50);
+        let u = ulp_distribution(&c, &r);
         assert_eq!(u.n, 4);
         assert_eq!(u.median, 0.0);
         assert_eq!(u.max, 50.0);
@@ -979,31 +1188,121 @@ mod tests {
     }
     #[test]
     fn f64_authority_matvec_matches_manual_dot() {
-        let one = 0x3f80u16; let two = 0x4000u16; let mut bits = Vec::new(); bits.extend_from_slice(&one.to_le_bytes());
-        bits.extend_from_slice(&two.to_le_bytes()); let y = matvec_bf16_f64_authority(&bits, 2, &[3.0, 4.0]).unwrap();
+        let one = 0x3f80u16;
+        let two = 0x4000u16;
+        let mut bits = Vec::new();
+        bits.extend_from_slice(&one.to_le_bytes());
+        bits.extend_from_slice(&two.to_le_bytes());
+        let y = matvec_bf16_f64_authority(&bits, 2, &[3.0, 4.0]).unwrap();
         assert_eq!(y.len(), 1);
         assert!((y[0] - 11.0).abs() < 1e-12, "y={}", y[0]);
     }
     #[test]
+    fn raw_q4_k_f64_authority_decodes_scale_min_and_nibble_pairs() {
+        let mut q4 = vec![0u8; 144];
+        q4[..2].copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+        q4[2..4].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        // First 32-value sub-block: scale=2, min=3. All source codes are 1.
+        q4[4] = 2;
+        q4[8] = 3;
+        q4[16..48].fill(0x01);
+        let got = matvec_ggml_quant_f64_authority(GgmlType::Q4_K, &q4, 1, 256, &vec![1.0; 256])
+            .expect("Q4_K f64 authority");
+        // 32 × (0.5 × 2 × 1 - 0.25 × 3); all other sub-blocks are zero.
+        assert!((got[0] - 8.0).abs() < 1e-12, "got={}", got[0]);
+    }
+    #[test]
+    fn raw_q5_0_f64_authority_uses_each_block_local_nibble() {
+        let mut weights = vec![0u8; 44]; // one 64-column row, two blocks
+        for block in 0..2 {
+            let off = block * 22;
+            weights[off..off + 2]
+                .copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+            // element 0 = +1 (low nibble=17); element 16 = -1 (high nibble=15).
+            weights[off + 2..off + 6].copy_from_slice(&(1u32 << 0).to_le_bytes());
+            weights[off + 6] = 0xf1;
+        }
+        let x = vec![1.0f64; 64];
+        let got = matvec_ggml_quant_f64_authority(GgmlType::Q5_0, &weights, 1, 64, &x)
+            .expect("Q5_0 f64 authority");
+        // Every other source code is zero => -16; two explicit values replace
+        // those baseline codes in each block.
+        let expected = 0.5 * ((1.0 - 1.0) + 30.0 * -16.0) * 2.0;
+        assert!(
+            (got[0] - expected).abs() < 1e-12,
+            "got={} expected={expected}",
+            got[0]
+        );
+    }
+    #[test]
+    fn raw_q8_0_and_q6_k_f64_authority_decode_source_scalars() {
+        let mut q8 = vec![0u8; 34];
+        q8[..2].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        q8[2..].fill(4u8);
+        let q8_out = matvec_ggml_quant_f64_authority(GgmlType::Q8_0, &q8, 1, 32, &vec![1.0; 32])
+            .expect("Q8_0 f64 authority");
+        assert!((q8_out[0] - 32.0).abs() < 1e-12);
+
+        let mut q6 = vec![0u8; 210];
+        q6[..128].fill(1); // q = 1 - 32 = -31 in each of the four lanes.
+        q6[192..208].fill(1); // all per-16 scales = 1
+        q6[208..210].copy_from_slice(&half::f16::from_f32(1.0).to_bits().to_le_bytes());
+        let q6_out = matvec_ggml_quant_f64_authority(GgmlType::Q6_K, &q6, 1, 256, &vec![1.0; 256])
+            .expect("Q6_K f64 authority");
+        // ql low nibbles are one, high nibbles are zero: two of the four
+        // 32-wide streams decode to -31 and two to -32 per 128 half.
+        assert!((q6_out[0] + 8064.0).abs() < 1e-12);
+    }
+    #[test]
+    fn raw_q8_0_f64_row_authority_reads_only_the_requested_source_row() {
+        let mut q8 = vec![0u8; 68];
+        q8[..2].copy_from_slice(&half::f16::from_f32(0.5).to_bits().to_le_bytes());
+        q8[2..34].fill(2);
+        q8[34..36].copy_from_slice(&half::f16::from_f32(0.25).to_bits().to_le_bytes());
+        q8[36..68].fill(4);
+        let got = row_ggml_quant_f64_authority(GgmlType::Q8_0, &q8, 2, 32, 1)
+            .expect("Q8_0 f64 row authority");
+        assert_eq!(got, vec![1.0; 32]);
+    }
+    #[test]
     fn pair_scores_both_backends() {
-        let r: Vec<f64> = vec![0.1, 0.2, 0.5, -0.1]; let h: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        let d = h.clone(); let p = score_pair(&h, &d, &r, &Bounds::logits());
+        let r: Vec<f64> = vec![0.1, 0.2, 0.5, -0.1];
+        let h: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        let d = h.clone();
+        let p = score_pair(&h, &d, &r, &Bounds::logits());
         assert!(p.pass);
         assert_eq!(p.schema, SCHEMA);
         assert!(p.host.pass && p.device.pass);
     }
     #[test]
     fn format_score_line_names_max_meaningful_rel_not_mean_rel() {
-        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0]; let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); c[1] = 2.0 * (1.0 + 1e-4);
-        let s = score_against_f64(&c, &r, &Bounds::continuous_only(), "label"); let line = format_score_line(&s);
-        assert!(line.contains("max_meaningful_rel="), "score line must label the max, got: {line}");
-        assert!(!line.contains("mean_rel="), "score line must not mislabel max as mean_rel, got: {line}");
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        c[1] = 2.0 * (1.0 + 1e-4);
+        let s = score_against_f64(&c, &r, &Bounds::continuous_only(), "label");
+        let line = format_score_line(&s);
+        assert!(
+            line.contains("max_meaningful_rel="),
+            "score line must label the max, got: {line}"
+        );
+        assert!(
+            !line.contains("mean_rel="),
+            "score line must not mislabel max as mean_rel, got: {line}"
+        );
         assert!(s.continuous.max_meaningful_rel > 0.0);
     }
     #[test]
     fn full_forward_bounds_report_max_meaningful_rel_without_gating() {
-        let n = 4096usize; let mut r = vec![1.0f64; n]; r[0] = 100.0; r[1] = 90.0; r[2] = 80.0; r[3] = 70.0; r[4] = 60.0; r[100] = 0.01;
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); c[100] = 0.01 + 1e-4;
+        let n = 4096usize;
+        let mut r = vec![1.0f64; n];
+        r[0] = 100.0;
+        r[1] = 90.0;
+        r[2] = 80.0;
+        r[3] = 70.0;
+        r[4] = 60.0;
+        r[100] = 0.01;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        c[100] = 0.01 + 1e-4;
         let op_local = score_against_f64(&c, &r, &Bounds::logits(), "op_local");
         assert!(
             !op_local.pass,
@@ -1012,7 +1311,8 @@ mod tests {
         );
         assert!(op_local
             .failures
-            .iter() .any(|f| f.starts_with("meaningful_rel")));
+            .iter()
+            .any(|f| f.starts_with("meaningful_rel")));
         let full = score_against_f64(&c, &r, &Bounds::full_forward_logits(), "full_fwd");
         assert!(
             full.pass,
@@ -1022,14 +1322,22 @@ mod tests {
             format_score_line(&full)
         );
         assert!(full.continuous.max_meaningful_rel > 1e-5);
-        assert!(full.continuous.relative_l2 < 1e-5); let line = format_score_line(&full);
+        assert!(full.continuous.relative_l2 < 1e-5);
+        let line = format_score_line(&full);
         assert!(line.contains("max_meaningful_rel="));
     }
     #[test]
     fn v2_false_reject_reproduced_and_cleared() {
-        let mut r = vec![1.0f64; 64]; r[0] = 1e-32; r[1] = 1e10;
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); let tiny = c[0];
-        assert!(tiny > 0.0 && tiny < 1e-30, "expected tiny positive, got {tiny}"); c[0] = tiny * 2.0;
+        let mut r = vec![1.0f64; 64];
+        r[0] = 1e-32;
+        r[1] = 1e10;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        let tiny = c[0];
+        assert!(
+            tiny > 0.0 && tiny < 1e-30,
+            "expected tiny positive, got {tiny}"
+        );
+        c[0] = tiny * 2.0;
         for i in 1..64 {
             c[i] = r[i] as f32;
         }
@@ -1039,10 +1347,6 @@ mod tests {
             "V2 diagnostic should look catastrophic, got {}",
             s.continuous.diagnostic_max_scalar_rel_all
         );
-        assert!(
-            s.pass,
-            "V2.1 must clear the false reject: {:?}",
-            s.failures
-        );
+        assert!(s.pass, "V2.1 must clear the false reject: {:?}", s.failures);
     }
 }

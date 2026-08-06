@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "unfused-attn-rmsnorm-gemv",
+    "hypothesis": "The fused RMSNorm+f16-GEMV attention projection grammar may be the source of the broader prompt divergence; separating RMSNorm and projection should restore source parity, at the cost of an extra persistent-buffer dispatch.",
+    "mechanism": "HAWKING_DS_DISABLE_FUSED_RMSNORM_GEMV=1 separates attention RMSNorm and Q/KV projection GEMVs while keeping the promoted v2t_gu_v2 MoE waves, interleaved-concat RoPE, resident MLA, one TCB and token-only head unchanged.",
+    "scope": "same DeepSeek source/artifact/profile; no quantization, tokenizer, RoPE, MoE route, MLA or head changes",
+    "required_safety": [
+      "same source hash",
+      "complete 32-token sample",
+      "CPU fallback 0",
+      "device Apple M3 Ultra",
+      "first four source decisions unchanged",
+      "all separation outputs remain ordered and resident"
+    ]
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-2026-08-02.json",
+    "profile_sha256": "a3039c7e76d44847a6cafc63764543bf159cd54e03179fec8d328f5072bd19fb",
+    "runtime_sha256": "093a77f8202ba7f0a78ee3d1b68e83a8aed163d227b255b85574995994c80667",
+    "decode_tps": 41.32293880290225,
+    "decode_ms": 774.388292,
+    "p99_ms": 24.421125,
+    "dispatches_per_forward": 487,
+    "fallback": 0,
+    "prompt": "The capital of France is",
+    "source_window_ids": [8913, 13, 185, 185]
+  },
+  "promotion_gate": {
+    "minimum_complete_token_wall_win_percent": 3.0,
+    "capability": "first four source decisions must remain [8913,13,185,185] and the unrelated Jupiter probe must not lose its first-token match",
+    "reject_if": [
+      "any source-window token changes",
+      "fallback > 0",
+      "p99 regression > 2%",
+      "no complete-token wall win",
+      "resident dispatch or buffer failure"
+    ]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "4aea77622567ea7443e6c12287ee1d196f0b592c92442c99380c03174a56f0f1"
+}

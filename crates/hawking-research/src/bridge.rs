@@ -271,6 +271,10 @@ mod tests {
             created_at_ms: 1,
         };
         let rec = node_to_memory(&node, Provenance::trusted("kg"));
- assert!(rec .provenance .derived_from .iter() .any(|d| d == "kg:concept:x"));
+        assert!(rec
+            .provenance
+            .derived_from
+            .iter()
+            .any(|d| d == "kg:concept:x"));
     }
 }

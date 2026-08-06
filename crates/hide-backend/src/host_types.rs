@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,8 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
-
 
 /// A durable static-analysis verification receipt (Bible Book IX sec 29): the
 /// model-free [`VerificationReceipt`] (verification_id / tier / oracle / scope /
@@ -429,7 +428,10 @@ pub struct CheckpointInspection {
 
 /// Which covered references drift between a sealed coverage and a freshly
 /// recomputed one (field names, deterministic order).
-pub(crate) fn coverage_drift(sealed: &CheckpointCoverage, current: &CheckpointCoverage) -> Vec<String> {
+pub(crate) fn coverage_drift(
+    sealed: &CheckpointCoverage,
+    current: &CheckpointCoverage,
+) -> Vec<String> {
     let mut drift = Vec::new();
     if sealed.repo_state != current.repo_state {
         drift.push("repo_state".to_string());
@@ -456,11 +458,21 @@ pub(crate) struct DiffStore;
 impl DiffStore {
     const NAMESPACE: &'static str = "diffs";
 
-    pub(crate) fn put(kv: &hide_core::persistence::DynKeyValueStore, record: &DiffProposal) -> Result<()> {
-        kv.put(Self::NAMESPACE, &record.diff_id, serde_json::to_value(record)?)
+    pub(crate) fn put(
+        kv: &hide_core::persistence::DynKeyValueStore,
+        record: &DiffProposal,
+    ) -> Result<()> {
+        kv.put(
+            Self::NAMESPACE,
+            &record.diff_id,
+            serde_json::to_value(record)?,
+        )
     }
 
-    pub(crate) fn get(kv: &hide_core::persistence::DynKeyValueStore, diff_id: &str) -> Option<DiffProposal> {
+    pub(crate) fn get(
+        kv: &hide_core::persistence::DynKeyValueStore,
+        diff_id: &str,
+    ) -> Option<DiffProposal> {
         kv.get(Self::NAMESPACE, diff_id)
             .ok()
             .flatten()
@@ -532,4 +544,3 @@ pub(crate) const HANDLED_CUSTOM_NAMES: &[&str] = &[
     "handoff_create",
     "handoff_receive",
 ];
-

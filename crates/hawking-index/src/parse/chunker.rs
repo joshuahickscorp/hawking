@@ -342,7 +342,10 @@ mod tests {
         let chunks = chunk_file("m.rs", src);
         assert!(!chunks.is_empty());
         let with_sym: Vec<_> = chunks.iter().filter(|c| c.symbol.is_some()).collect();
- assert!( !with_sym.is_empty(), "expected at least one chunk tagged with its enclosing symbol" );
+        assert!(
+            !with_sym.is_empty(),
+            "expected at least one chunk tagged with its enclosing symbol"
+        );
         let parsed = parse_source("m.rs", src);
         let parsed_ids: std::collections::HashSet<&str> = parsed
             .symbols
@@ -354,7 +357,9 @@ mod tests {
             assert!(parsed_ids.contains(sym));
         }
         let alpha_id = scip_symbol_id(LangId::Rust, "m.rs", "alpha", SymKind::Function);
-        assert!(chunks .iter() .any(|c| c.symbol.as_deref() == Some(alpha_id.as_str())));
+        assert!(chunks
+            .iter()
+            .any(|c| c.symbol.as_deref() == Some(alpha_id.as_str())));
     }
     #[test]
     fn chunk_symbol_resolves_to_inner_method_not_class() {
@@ -362,7 +367,9 @@ mod tests {
         let src = format!("class Greeter {{\n    render() {{\n{body}    }}\n}}\n");
         let chunks = chunk_file("ui.ts", &src);
         let method_id = scip_symbol_id(LangId::TypeScript, "ui.ts", "render", SymKind::Method);
-        assert!(chunks .iter() .any(|c| c.symbol.as_deref() == Some(method_id.as_str())));
+        assert!(chunks
+            .iter()
+            .any(|c| c.symbol.as_deref() == Some(method_id.as_str())));
     }
     #[test]
     fn unknown_language_uses_window_fallback() {

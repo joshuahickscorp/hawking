@@ -1,0 +1,12 @@
+{
+  "schema": "hawking.tg.deepseek_stage_boundary.v1",
+  "status": "BOUNDARY_NARROWED_BEFORE_STAGE_READBACK",
+  "artifact": {"source_path": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf", "source_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"},
+  "authority": {"prompt_ids": [100000, 549, 6077, 280, 7239, 317], "source_first_greedy_token": 8913, "gravity_cpu_first_greedy_token": 8913, "native_metal_first_greedy_token": 244},
+  "f16w_projection_fixtures": {"basic": "PASS", "v2t": "PASS", "test": "v1g_rmsnorm_gemv_fusion_parity.rs", "geometry": "direct Q projection 3072x2048 and KV projection 576x2048"},
+  "decomposed_native_probe": {"env": "HAWKING_DS_DISABLE_FUSED_RMSNORM_GEMV=1", "dispatches_per_forward": 643, "cpu_fallback": 0, "generated_ids": [244, 244, 244, 244], "decode_tps": 34.820861076890665, "verdict": "SAME_FIRST_TOKEN_DIVERGENCE"},
+  "route_state_trace": {"env": "HAWKING_DS_TRACE=1", "seq_len_after_prompt": 6, "seq_len_after_decode": [7, 8, 9, 10], "route_ids_change_each_step": true, "example_prompt_last_routes": [2, 50, 57, 4, 11, 14], "example_first_decode_routes": [16, 29, 57, 14, 2, 58], "verdict": "STATE_AND_ROUTER_ADVANCE; NOT_A_FROZEN_KV_OR_ROUTER_FAILURE"},
+  "current_boundary": "The direct f16w RMSNorm/GEMV fusion is not the first proven divergence, and sequence length plus routed expert IDs advance. The remaining unlocalized boundary is MLA attention reconstruction/output or the downstream routed/shared expert/output/head path.",
+  "next_instrument": "Per-layer bounded stage readback against the CPU Gravity oracle for q, c_kv, k_pe, MLA attention output, residual, router logits, routed/shared MLP output, final norm and head. Do not claim native capability or a TG rung until that trace is exact.",
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false}
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "gravity_artifact_bytes": 10362253454,
+    "gravity_artifact_sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "decode_tps": 41.06909043843913,
+    "decode_ms": 779.174792,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "first_four_ids": [8913, 13, 185, 185],
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-flash-candidate-2026-08-02.json",
+    "change": "attn_block_schedule=flash",
+    "kernel": "flash_attn_decode_kernel",
+    "hypothesis": "Tiled online softmax removes the serial score/softmax loop and lowers MLA device time without changing source decisions.",
+    "required_tokens": 32,
+    "promotion_threshold_percent": 3.0,
+    "parity": "first four source decisions exact; broader G3-G9 remains open",
+    "fallback_must_be": 0,
+    "clean_lease_required_for_promotion": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  }
+}

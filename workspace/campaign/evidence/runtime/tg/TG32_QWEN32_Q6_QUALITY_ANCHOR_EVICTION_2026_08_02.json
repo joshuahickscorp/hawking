@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "EVICTED_SOURCE_ARTIFACT_CACHE_AND_EXACT_TRASH_ITEM_PURGED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct-Q6_K",
+  "source_path": "models/tg-active/qwen32-q6-anchor-2026-08-02/Qwen2.5-32B-Instruct-Q6_K.gguf",
+  "source_bytes": 26886155136,
+  "source_sha256": "3393e05b12396e0e6c786f5fb99837eb77ef9eb0b30d940e30d94c2f5506054a",
+  "result_receipt": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_RESULT_2026_08_02.json",
+  "source_admission": "evidence/tg/TG32_QWEN32_Q6_QUALITY_ANCHOR_SOURCE_ADMISSION_2026_08_02.json",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_Q6_2026_08_02.json",
+  "eviction": {
+    "trash_command": "/usr/bin/trash models/tg-active/qwen32-q6-anchor-2026-08-02",
+    "exact_trash_item": "qwen32-q6-anchor-2026-08-02",
+    "exact_trash_item_purge": "Finder delete of the exact named Trash item; unrelated Trash items retained",
+    "source_exists_after": false,
+    "model_lane_contents_after": [],
+    "cache_cleanup": "no Qwen32 Q6 body/cache retained in hawking model lane"
+  },
+  "storage": {
+    "free_bytes_before_eviction": 330345373696,
+    "free_bytes_after_eviction": 357230252032,
+    "free_bytes_recovered": 26884878336,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_eviction": 157224362476,
+    "model_lane_envelope_bytes": 110000000000
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

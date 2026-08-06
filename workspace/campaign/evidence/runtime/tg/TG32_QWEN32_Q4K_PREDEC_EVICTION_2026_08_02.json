@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "EVICTED_SOURCE_HASH_VERIFIED_TRASH_PURGED_FREE_RECOVERY_PROVEN",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "lane": "models/tg-active/qwen32-q4k-predec-2026-08-02",
+  "source_file": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+  "source_sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+  "source_hash_reverified_after_benchmark": true,
+  "source_bytes": 19851336576,
+  "allocated_lane_bytes_before": 19851336576,
+  "free_bytes_before_eviction": 337400750080,
+  "free_bytes_after_eviction": 357236977664,
+  "recovered_free_bytes": 19836227584,
+  "protected_floor_bytes": 200005889556,
+  "residual_above_floor_after_eviction": 157231088108,
+  "model_lane_envelope_bytes": 110000000000,
+  "model_lane_empty": true,
+  "trash": {
+    "move_command": "/usr/bin/trash <exact lane>",
+    "exact_trash_item_purged": true,
+    "purge_command": "Finder delete every item of trash whose name is qwen32-q4k-predec-2026-08-02",
+    "trash_search_note": "Finder purge returned success; direct ~/.Trash inspection is OS-protected"
+  },
+  "receipts": {
+    "transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json",
+    "preregistration": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_PREREGISTRATION_2026_08_02.json",
+    "source_admission": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_SOURCE_ADMISSION_2026_08_02.json",
+    "result": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_RESULT_2026_08_02.json"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

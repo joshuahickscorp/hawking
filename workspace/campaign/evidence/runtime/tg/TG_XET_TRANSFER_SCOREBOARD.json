@@ -1,0 +1,149 @@
+{
+  "at": "2026-08-01T05:00:00Z",
+  "claim_boundary": [
+    "bounded 64-MiB source ranges only",
+    "does not prove full-shard or full-model transfer throughput",
+    "does not admit a model body",
+    "requires a fresh byte admission immediately before any body materialization"
+  ],
+  "classification": "CLEAN_RANGE_TRANSFER_NO_HEAVY_GPU_OR_CPU_JOB",
+  "integrity": {
+    "all_trial_range_hashes_identical": true,
+    "application_body_file_writes_total": 0,
+    "client_visible_retries_total": 0,
+    "free_disk_delta_is_not_model_body_evidence": "observed filesystem deltas ranged from -4,222,976 to 12,083,200 bytes while the Xet cache was configured to zero; no model path was created"
+  },
+  "range": {
+    "application_body_file_writes": 0,
+    "bytes": 67108864,
+    "end": 67108864,
+    "in_memory_only": true,
+    "requested_xet_chunk_cache_bytes": 0,
+    "sha256": "640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168",
+    "start": 0
+  },
+  "runtime": {
+    "authenticated": false,
+    "hf_xet": "1.5.2",
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "huggingface_hub": "1.24.0"
+  },
+  "schema": "hawking.tg.xet_transfer_scoreboard.v1",
+  "seal_sha256": "5b4383a29f40ccd149c9afdc0c581d766b0b790b8ce54fc3b00b753dea932b9f",
+  "selection": {
+    "best_standard_measured_sealed_gb_per_hour_decimal": 253.76902760650503,
+    "effective_download_concurrency": {
+      "initial": 16,
+      "maximum": 124,
+      "minimum": 4
+    },
+    "median_sealed_gb_per_hour_decimal": 265.8049588857298,
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 1,
+    "selection_reason": "highest repeated high-performance range median; fixed-concurrency request is reported but overridden by the supported high-performance adaptive profile",
+    "stability_samples_sealed_gb_per_hour_decimal": [
+      291.86708593039634,
+      233.6225205538179,
+      265.8049588857298
+    ]
+  },
+  "source": {
+    "file_bytes": 3986869120,
+    "file_sha256": "3531a90691b5f4edb4bdf488246d72ce0b5d40cacfab1489718a662cec386e43",
+    "path": "qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf",
+    "repo": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+    "xet_file_hash": "d2bf6e805dfba78d0330915f28f2f9afb3b2eee4155ed8e4cd3283b97a6a51f5"
+  },
+  "status": "PASS_BOUNDED_RANGE_MATRIX_NO_BODY_PERSISTED",
+  "trials": [
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.077098,
+      "cpu_user_seconds": 0.082913,
+      "effective_initial_download_concurrency": 1,
+      "elapsed_seconds": 3.8353810410480946,
+      "free_disk_delta_bytes": -3457024,
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 1,
+      "sealed_gb_per_hour_decimal": 62.990328161496095
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.061908,
+      "cpu_user_seconds": 0.072063,
+      "effective_initial_download_concurrency": 2,
+      "elapsed_seconds": 1.58838883403223,
+      "free_disk_delta_bytes": 4096,
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 2,
+      "sealed_gb_per_hour_decimal": 152.09872118447407
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.089453,
+      "cpu_user_seconds": 0.083887,
+      "effective_initial_download_concurrency": 4,
+      "elapsed_seconds": 1.7012788749998435,
+      "free_disk_delta_bytes": 12083200,
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 4,
+      "sealed_gb_per_hour_decimal": 142.00606023514058
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.06132,
+      "cpu_user_seconds": 0.07428,
+      "effective_initial_download_concurrency": 8,
+      "elapsed_seconds": 0.9520149589516222,
+      "free_disk_delta_bytes": -49152,
+      "mode": "standard",
+      "requested_fixed_download_concurrency": 8,
+      "sealed_gb_per_hour_decimal": 253.76902760650503
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.063138,
+      "cpu_user_seconds": 0.073099,
+      "effective_initial_download_concurrency": 16,
+      "elapsed_seconds": 0.8277463340200484,
+      "free_disk_delta_bytes": -1331200,
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 1,
+      "sealed_gb_per_hour_decimal": 291.86708593039634
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.068443,
+      "cpu_user_seconds": 0.076795,
+      "effective_initial_download_concurrency": 16,
+      "elapsed_seconds": 0.9463025000877678,
+      "free_disk_delta_bytes": -1265664,
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 2,
+      "sealed_gb_per_hour_decimal": 255.3009321835172
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.06754,
+      "cpu_user_seconds": 0.077269,
+      "effective_initial_download_concurrency": 16,
+      "elapsed_seconds": 1.4290884590009227,
+      "free_disk_delta_bytes": -2121728,
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 4,
+      "sealed_gb_per_hour_decimal": 169.05315334286382
+    },
+    {
+      "client_visible_retries": 0,
+      "cpu_system_seconds": 0.060126,
+      "cpu_user_seconds": 0.072111,
+      "effective_initial_download_concurrency": 16,
+      "elapsed_seconds": 0.9565239159855992,
+      "free_disk_delta_bytes": -4222976,
+      "mode": "high_performance",
+      "requested_fixed_download_concurrency": 8,
+      "sealed_gb_per_hour_decimal": 252.57278606679108
+    }
+  ]
+}

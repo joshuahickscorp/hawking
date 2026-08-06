@@ -1,0 +1,10 @@
+{
+  "schema": "hawking.tg.rejected_experiment.v1",
+  "candidate": "resident direct f16-KV attention",
+  "context_tokens": 8192,
+  "protocol": "same Q4_K_M, 8128-token prefix, greedy, 64 warmup, planned 512 measured, trace enabled",
+  "result": "REJECTED_EARLY",
+  "cause": "The source-FATTN baseline completes the controlled 8K prefill/decode pass in roughly two minutes; this candidate had not finished prefill after more than four minutes and emitted zero completion bytes.",
+  "default_changed": false,
+  "reopen_condition": "Only reconsider with a dedicated packed prefill path and an exact 8K completion that beats the source-FATTN v2 baseline of 70.740725 TPS."
+}

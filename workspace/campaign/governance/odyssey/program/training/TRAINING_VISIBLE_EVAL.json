@@ -1,0 +1,9 @@
+{
+  "hidden_commitment_path": "workspace/campaign/governance/odyssey/program/evaluation/hidden/HIDDEN_MEMBERSHIP_COMMITMENT.json",
+  "hidden_commitment_sha256": "82e569d070f81217fb02bfa888ee759d11a28e7cbdac253ca3d8855278612bd4",
+  "hidden_item_ids_visible": false,
+  "n_hidden_committed": 5,
+  "note": "This file is the only eval membership surface training code may import.",
+  "public_selection_path": "workspace/campaign/governance/odyssey/program/t0/public_eval/selection_items.jsonl",
+  "schema": "hawking.odyssey.training_visible_eval.v1"
+}

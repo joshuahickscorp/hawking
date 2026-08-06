@@ -667,12 +667,20 @@ fn f32_slice_from_bytes(src: &[u8]) -> &[f32] {
 mod tests {
     use super::*;
     use tempfile::TempDir;
-    fn deterministic_kv(n_layers: usize, max_seq: usize, n_kv: usize, head_dim: usize, seq: usize) -> KvCache {
-        let mut kv = KvCache::new(n_layers, max_seq, n_kv, head_dim); let stride = n_kv * head_dim;
+    fn deterministic_kv(
+        n_layers: usize,
+        max_seq: usize,
+        n_kv: usize,
+        head_dim: usize,
+        seq: usize,
+    ) -> KvCache {
+        let mut kv = KvCache::new(n_layers, max_seq, n_kv, head_dim);
+        let stride = n_kv * head_dim;
         for li in 0..n_layers {
             for p in 0..seq {
                 for d in 0..stride {
-                    let val = ((li * 7919 + p * 31 + d) as i32 % 1024) as f32 * 0.001; kv.keys[li][p * stride + d] = val;
+                    let val = ((li * 7919 + p * 31 + d) as i32 % 1024) as f32 * 0.001;
+                    kv.keys[li][p * stride + d] = val;
                     kv.values[li][p * stride + d] = -val;
                 }
             }
@@ -682,11 +690,15 @@ mod tests {
     }
     #[test]
     fn round_trip_basic() {
-        let tmp = TempDir::new().unwrap(); let cache = PrefillDiskCache::open(tmp.path()).unwrap();
-        let key = PrefillKey::from_model_and_prompt("test-model", b"tok-sig", &[1, 2, 3, 4]); let kv = deterministic_kv(2, 16, 4, 8, 4);
+        let tmp = TempDir::new().unwrap();
+        let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+        let key = PrefillKey::from_model_and_prompt("test-model", b"tok-sig", &[1, 2, 3, 4]);
+        let kv = deterministic_kv(2, 16, 4, 8, 4);
         cache.store(&key, &kv).unwrap();
         let hit = cache
-            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 4, 5]).unwrap().expect("expected hit on prefix");
+            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 4, 5])
+            .unwrap()
+            .expect("expected hit on prefix");
         assert_eq!(hit.n_tokens, 4);
         assert_eq!(hit.tokens(), vec![1, 2, 3, 4]);
         for li in 0..kv.n_layers {
@@ -696,12 +708,17 @@ mod tests {
     }
     #[test]
     fn restore_round_trip() {
-        let tmp = TempDir::new().unwrap(); let cache = PrefillDiskCache::open(tmp.path()).unwrap();
-        let key = PrefillKey::from_model_and_prompt("m", b"t", &[1, 2, 3, 4]); let kv = deterministic_kv(3, 32, 2, 8, 4);
+        let tmp = TempDir::new().unwrap();
+        let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+        let key = PrefillKey::from_model_and_prompt("m", b"t", &[1, 2, 3, 4]);
+        let kv = deterministic_kv(3, 32, 2, 8, 4);
         cache.store(&key, &kv).unwrap();
         let hit = cache
-            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 4, 9]).unwrap().unwrap();
-        let mut restored = KvCache::new(3, 32, 2, 8); restore_hit_into_kv(&hit, &mut restored).unwrap();
+            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 4, 9])
+            .unwrap()
+            .unwrap();
+        let mut restored = KvCache::new(3, 32, 2, 8);
+        restore_hit_into_kv(&hit, &mut restored).unwrap();
         assert_eq!(restored.seq_len, 4);
         for li in 0..kv.n_layers {
             assert_eq!(restored.keys_for(li), kv.keys_for(li));
@@ -710,42 +727,64 @@ mod tests {
     }
     #[test]
     fn longest_prefix_picks_longest() {
-        let tmp = TempDir::new().unwrap(); let cache = PrefillDiskCache::open(tmp.path()).unwrap();
-        let kv_a = deterministic_kv(1, 16, 2, 4, 2); let kv_b = deterministic_kv(1, 16, 2, 4, 4);
+        let tmp = TempDir::new().unwrap();
+        let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+        let kv_a = deterministic_kv(1, 16, 2, 4, 2);
+        let kv_b = deterministic_kv(1, 16, 2, 4, 4);
         let key_a = PrefillKey::from_model_and_prompt("m", b"t", &[10, 11]);
-        let key_b = PrefillKey::from_model_and_prompt("m", b"t", &[10, 11, 12, 13]); cache.store(&key_a, &kv_a).unwrap();
+        let key_b = PrefillKey::from_model_and_prompt("m", b"t", &[10, 11, 12, 13]);
+        cache.store(&key_a, &kv_a).unwrap();
         cache.store(&key_b, &kv_b).unwrap();
         let hit = cache
-            .lookup_longest_prefix(&key_a.model_hash, &key_a.tokenizer_hash, &[10, 11, 12, 13, 14]).unwrap().unwrap();
+            .lookup_longest_prefix(
+                &key_a.model_hash,
+                &key_a.tokenizer_hash,
+                &[10, 11, 12, 13, 14],
+            )
+            .unwrap()
+            .unwrap();
         assert_eq!(hit.n_tokens, 4);
     }
     #[test]
     fn lookup_does_not_return_full_prompt() {
-        let tmp = TempDir::new().unwrap(); let cache = PrefillDiskCache::open(tmp.path()).unwrap();
-        let kv = deterministic_kv(1, 8, 1, 4, 3); let key = PrefillKey::from_model_and_prompt("m", b"t", &[1, 2, 3]);
+        let tmp = TempDir::new().unwrap();
+        let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+        let kv = deterministic_kv(1, 8, 1, 4, 3);
+        let key = PrefillKey::from_model_and_prompt("m", b"t", &[1, 2, 3]);
         cache.store(&key, &kv).unwrap();
         assert!(cache
-            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3]).unwrap() .is_none());
+            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3])
+            .unwrap()
+            .is_none());
         let hit = cache
-            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 99]).unwrap().unwrap();
+            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3, 99])
+            .unwrap()
+            .unwrap();
         assert_eq!(hit.n_tokens, 3);
     }
     #[test]
     fn tokenizer_change_invalidates() {
-        let tmp = TempDir::new().unwrap(); let cache = PrefillDiskCache::open(tmp.path()).unwrap();
-        let kv = deterministic_kv(1, 8, 1, 4, 2); let key = PrefillKey::from_model_and_prompt("m", b"tok-v1", &[5, 6]);
-        cache.store(&key, &kv).unwrap(); let key_v2 = PrefillKey::from_model_and_prompt("m", b"tok-v2", &[5, 6, 7]);
+        let tmp = TempDir::new().unwrap();
+        let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+        let kv = deterministic_kv(1, 8, 1, 4, 2);
+        let key = PrefillKey::from_model_and_prompt("m", b"tok-v1", &[5, 6]);
+        cache.store(&key, &kv).unwrap();
+        let key_v2 = PrefillKey::from_model_and_prompt("m", b"tok-v2", &[5, 6, 7]);
         let hit = cache
-            .lookup_longest_prefix(&key_v2.model_hash, &key_v2.tokenizer_hash, &[5, 6, 7]).unwrap();
+            .lookup_longest_prefix(&key_v2.model_hash, &key_v2.tokenizer_hash, &[5, 6, 7])
+            .unwrap();
         assert!(hit.is_none(), "tokenizer change should invalidate");
     }
     #[test]
     fn lru_eviction_respects_budget() {
-        let tmp = TempDir::new().unwrap(); let kv = deterministic_kv(1, 16, 2, 4, 4);
-        let cache = PrefillDiskCache::open(tmp.path()).unwrap()
+        let tmp = TempDir::new().unwrap();
+        let kv = deterministic_kv(1, 16, 2, 4, 4);
+        let cache = PrefillDiskCache::open(tmp.path())
+            .unwrap()
             .with_budget_bytes(900);
         for i in 0..5u32 {
-            let key = PrefillKey::from_model_and_prompt("m", b"t", &[i, i + 1, i + 2, i + 3]); cache.store(&key, &kv).unwrap();
+            let key = PrefillKey::from_model_and_prompt("m", b"t", &[i, i + 1, i + 2, i + 3]);
+            cache.store(&key, &kv).unwrap();
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
         let total: u64 = walkdir_size(tmp.path());
@@ -775,15 +814,18 @@ mod tests {
     }
     #[test]
     fn index_repopulates_on_reopen() {
-        let tmp = TempDir::new().unwrap(); let kv = deterministic_kv(1, 8, 1, 4, 2);
+        let tmp = TempDir::new().unwrap();
+        let kv = deterministic_kv(1, 8, 1, 4, 2);
         let key = PrefillKey::from_model_and_prompt("m", b"t", &[1, 2]);
         {
-            let cache = PrefillDiskCache::open(tmp.path()).unwrap(); cache.store(&key, &kv).unwrap();
+            let cache = PrefillDiskCache::open(tmp.path()).unwrap();
+            cache.store(&key, &kv).unwrap();
         }
         let cache = PrefillDiskCache::open(tmp.path()).unwrap();
         assert_eq!(cache.len_for_model(&key.model_hash), 1);
         let hit = cache
-            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3]).unwrap();
+            .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &[1, 2, 3])
+            .unwrap();
         assert!(hit.is_some());
     }
 }

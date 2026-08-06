@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.tg.model_lane_purge.v2",
+  "status": "PURGED_AND_RECOVERED",
+  "source_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_CANONICAL_ROUTE_ORDER_REJECTED_2026_08_02.json",
+  "lane": "models/tg-active/deepseek-v2-lite-2026-08-02-canonical-route",
+  "evicted": [
+    {
+      "name": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+      "bytes": 10364416320,
+      "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+    },
+    {
+      "name": ".hf-home",
+      "bytes": "bounded download metadata/cache; exact lane-only directory",
+      "sha256": null
+    }
+  ],
+  "eviction": {
+    "method": "macOS Finder Trash followed by exact-name permanent purge",
+    "trash_target": "deepseek-v2-lite-2026-08-02-canonical-route",
+    "exact_trash_target_absent": true,
+    "lane_empty": true,
+    "unrelated_trash_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+  },
+  "storage": {
+    "free_before_admission": 375894622208,
+    "free_before_eviction": 365523075072,
+    "free_after_exact_purge": 375887577088,
+    "observed_free_recovery": 10364502016,
+    "protected_floor_bytes": 200005889556,
+    "floor_preserved": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "0881e277c43e469b52606fa5e3d5b76f9cee30d0f8d7db06217d9c27d2cf2c78"
+}

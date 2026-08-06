@@ -27,14 +27,13 @@ pub use node::{
     AcceleratorClass, BandwidthClass, DiscoverySource, NodeCapabilities, NodeDiscovery, NodeId,
     OsNodeProbe, SimulatedNodeSet, FIXED_FAKE_MEMORY_BYTES,
 };
-pub use placement::{
-    reject_unlabelled_simulated, validate_placement_plan_schema, ContentHash,
-    KvOwnershipInvariant, KvRangeOwnership, ModelSection, PlacementPlan, PlacementRequest,
-    PlacementSimulator, PredictedCost, SectionPlacement, StageAssignment, WorkloadClass,
-    PLACEMENT_SCHEMA,
-};
 pub use pipeline::{
     MicrobatchState, PipelineScheduler, PipelineStatus, StageGraph, StageId, StageState,
+};
+pub use placement::{
+    reject_unlabelled_simulated, validate_placement_plan_schema, ContentHash, KvOwnershipInvariant,
+    KvRangeOwnership, ModelSection, PlacementPlan, PlacementRequest, PlacementSimulator,
+    PredictedCost, SectionPlacement, StageAssignment, WorkloadClass, PLACEMENT_SCHEMA,
 };
 pub use protocol::{AgentRequest, AgentResponse, PlacementAssignment};
 pub use qualification::{QualificationKind, HARDWARE_QUALIFICATION_PENDING, QUALIFICATION_SCHEMA};

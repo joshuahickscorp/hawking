@@ -248,7 +248,11 @@ impl Value {
                 a.iter()
                     .map(|(k, v)| (k, v.canonical_key()))
                     .collect::<Vec<_>>()
-                    .cmp(&b.iter().map(|(k, v)| (k, v.canonical_key())).collect::<Vec<_>>())
+                    .cmp(
+                        &b.iter()
+                            .map(|(k, v)| (k, v.canonical_key()))
+                            .collect::<Vec<_>>(),
+                    )
             }
             (a, b) => a.type_rank().cmp(&b.type_rank()),
         }
@@ -341,7 +345,12 @@ where
     K: Into<String>,
     V: Into<Value>,
 {
-    Value::Map(pairs.into_iter().map(|(k, v)| (k.into(), v.into())).collect())
+    Value::Map(
+        pairs
+            .into_iter()
+            .map(|(k, v)| (k.into(), v.into()))
+            .collect(),
+    )
 }
 
 // -- serde: emit plain JSON via a serde_json::Value bridge --------------------
@@ -386,9 +395,11 @@ impl Value {
             serde_json::Value::Array(a) => {
                 Value::List(a.into_iter().map(Value::from_json).collect())
             }
-            serde_json::Value::Object(o) => {
-                Value::Map(o.into_iter().map(|(k, v)| (k, Value::from_json(v))).collect())
-            }
+            serde_json::Value::Object(o) => Value::Map(
+                o.into_iter()
+                    .map(|(k, v)| (k, Value::from_json(v)))
+                    .collect(),
+            ),
         }
     }
 }
@@ -419,7 +430,10 @@ mod tests {
         let v = map_of([
             ("n", Value::Null),
             ("f", Value::Float(1.5)),
-            ("l", Value::List(vec![Value::Int(1), Value::Str("x".into())])),
+            (
+                "l",
+                Value::List(vec![Value::Int(1), Value::Str("x".into())]),
+            ),
         ]);
         let s = serde_json::to_string(&v).unwrap();
         let back: Value = serde_json::from_str(&s).unwrap();

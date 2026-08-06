@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.tg.student_probe_rejection.v1",
+  "status": "REJECTED_OFFLINE_CAPABILITY_GATE",
+  "parent_capture": "sealed 22028-pair resident final-FFN dataset, SHA-256 3eee1ff9f003cfb83721025b74b2650383645478ccd30fb150bbe1c14a2d3edd",
+  "student": {
+    "format": "trained_silu_bottleneck.v1",
+    "architecture": "4096 -> 128 -> SiLU -> 4096",
+    "fit_split_only": true,
+    "epochs": 4,
+    "batch": 256,
+    "learning_rate": 0.001,
+    "seed": 17,
+    "device": "mps",
+    "fit_normalized_rmse": 0.3994088660715357,
+    "heldout_normalized_rmse": 0.4176305222783365,
+    "promotion_limit_heldout_normalized_rmse": 0.1,
+    "physical": {
+      "stored_parameters": 1060992,
+      "prospective_fp16_artifact_bytes": 2121984,
+      "executed_macs_per_token": 1048576,
+      "sequential_matvecs_per_token": 2
+    }
+  },
+  "cause": "Learning the nonlinear basis improves on the fixed random feature result but width 128 and four fit-only epochs cannot approximate the source final FFN to the held-out capability limit.",
+  "reopen_condition": "A separately declared higher-capacity or multi-block trained architecture may be measured against the same frozen split. It must meet the 0.10 held-out gate before any generated-token or TPS claim.",
+  "tps_claim": null
+}

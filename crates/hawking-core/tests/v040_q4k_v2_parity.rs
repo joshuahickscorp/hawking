@@ -37,14 +37,19 @@ fn test_gemm_q4k_v2_small() {
     let w_bytes = synthetic_q4_k_bytes(n_blocks, 42);
     let x = fixed_input(cols, 0xDEAD_BEEF);
     let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32).expect("Q4_K dequant should succeed for synthetic bytes");
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed for synthetic bytes");
     let mut scalar_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
     let ctx = ctx().clone();
     let mut v2_out = vec![0.0_f32; rows];
-    kernels::gemv_q4_k_m_v2(&ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("gemv_q4_k_m_v2 should succeed");
+    kernels::gemv_q4_k_m_v2(&ctx, &w_bytes, rows, cols, &x, &mut v2_out)
+        .expect("gemv_q4_k_m_v2 should succeed");
     let diff = max_abs_diff(&scalar_out, &v2_out);
-    assert!(diff < ATOL, "gemm_q4_k_m_fused_v2 vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemm_q4_k_m_fused_v2 vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4k_v2_realistic() {
@@ -59,7 +64,11 @@ fn test_gemm_q4k_v2_realistic() {
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
     let ctx = ctx().clone();
     let mut v2_out = vec![0.0_f32; rows];
-    kernels::gemv_q4_k_m_v2(&ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("gemv_q4_k_m_v2 larger shape should succeed");
+    kernels::gemv_q4_k_m_v2(&ctx, &w_bytes, rows, cols, &x, &mut v2_out)
+        .expect("gemv_q4_k_m_v2 larger shape should succeed");
     let diff = max_abs_diff(&scalar_out, &v2_out);
-    assert!(diff < ATOL, "gemm_q4_k_m_fused_v2 vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemm_q4_k_m_fused_v2 vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }

@@ -59,7 +59,10 @@ fn main() -> Result<()> {
             goldens_source.join("protocol.d.ts"),
             hide_protocol::sdk::ts::protocol_typescript(),
         ),
-        (goldens_data.join("command_catalog.json"), catalog_json.clone()),
+        (
+            goldens_data.join("command_catalog.json"),
+            catalog_json.clone(),
+        ),
         (
             goldens_source.join("commands.d.ts"),
             hide_protocol::sdk::command::command_typescript(),

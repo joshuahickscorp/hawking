@@ -222,12 +222,7 @@ fn string_array(v: Option<&Json>) -> Vec<String> {
 pub fn load(layout: &Layout, cli: Option<RawSettings>) -> Result<ResolvedSettings> {
     let user = parse_file(&layout.home.join(".claude").join("settings.json"))?;
     let project = parse_file(&layout.repo_root.join(".claude").join("settings.json"))?;
-    let local = parse_file(
-        &layout
-            .repo_root
-            .join(".claude")
-            .join("settings.local.json"),
-    )?;
+    let local = parse_file(&layout.repo_root.join(".claude").join("settings.local.json"))?;
     let managed = match &layout.managed_settings {
         Some(p) => parse_file(p)?,
         None => RawSettings::default(),
@@ -320,7 +315,10 @@ mod tests {
         let managed = raw(json!({"model": "managed-model"}));
         let empty = RawSettings::default();
         let resolved = resolve(&user, &empty, &empty, &empty, &managed).unwrap();
- assert_eq!( resolved.values.get("model").and_then(|v| v.as_str()), Some("managed-model") );
+        assert_eq!(
+            resolved.values.get("model").and_then(|v| v.as_str()),
+            Some("managed-model")
+        );
     }
     #[test]
     fn instruction_layers_read_last_wins_managed_highest() {
@@ -329,8 +327,15 @@ mod tests {
         let user = raw(json!({"instructions": "user"}));
         let managed = raw(json!({"instructions": "managed"}));
         let resolved = resolve(&user, &project, &local, &RawSettings::default(), &managed).unwrap();
-        let order: Vec<Scope> = resolved.instruction_layers.iter().map(|(s, _)| *s).collect();
- assert_eq!( order, vec![Scope::Local, Scope::Project, Scope::User, Scope::Managed] );
+        let order: Vec<Scope> = resolved
+            .instruction_layers
+            .iter()
+            .map(|(s, _)| *s)
+            .collect();
+        assert_eq!(
+            order,
+            vec![Scope::Local, Scope::Project, Scope::User, Scope::Managed]
+        );
         assert_eq!(resolved.effective_instructions(), Some("managed"));
     }
     #[test]

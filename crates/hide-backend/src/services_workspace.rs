@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -364,11 +364,7 @@ impl WorkspaceStore {
     }
 
     /// Durably record the session's current environment id (after a switch).
-    pub fn set_current_env(
-        kv: &DynKeyValueStore,
-        session: &SessionId,
-        env_id: &str,
-    ) -> Result<()> {
+    pub fn set_current_env(kv: &DynKeyValueStore, session: &SessionId, env_id: &str) -> Result<()> {
         kv.put(
             Self::CURRENT_ENV_NAMESPACE,
             session.as_str(),

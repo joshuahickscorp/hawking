@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.tg.source_quant_gravity_receipt.v1",
+  "status": "SOURCE_PRESERVING_ARTIFACT_AND_MATCHED_CPU_DECODE_PASS_NONCERTIFYING",
+  "claim": "NO_TG_RUNG",
+  "rung": "TG4",
+  "model": "DeepSeek-V2-Lite-Chat-Q4_K_M",
+  "family": "deepseek",
+  "source": {
+    "path": "models/tg-breadth/deepseek-v2-lite/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "receipt": "evidence/tg/TG4_DEEPSEEK_TERMINAL_EVICTION.json"
+  },
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/deepseek-v2-lite-source-q4k.gravity",
+    "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+    "physical_bytes": 10362253454,
+    "payload_bytes": 10360420352,
+    "mapped_tensors": 5291,
+    "packed_bpw": 5.2710009682481385,
+    "complete_bpw": 5.27701563468619,
+    "lossy_fit": false,
+    "raw_quant_codecs": ["ggml.q4_k", "ggml.q5_0", "ggml.q6_k", "ggml.q8_0"],
+    "expert_planes_split": 64,
+    "source_hash_verified": true,
+    "body_hash_verified": true
+  },
+  "matched_decode_gate": {
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "source_reference": {
+      "implementation": "llama.cpp",
+      "protocol": "one-token sequential decode with one warmup token",
+      "generated_token_ids": [8913, 13, 185, 185]
+    },
+    "gravity_cpu_token_ids": [8913, 13, 185, 185],
+    "equal": true,
+    "runtime": "GravityDeepSeek CPU MLA/MoE raw-quant adapter",
+    "parity_scope": "greedy token IDs only; CPU timing and full-logit tolerance are not certified"
+  },
+  "architecture_contract": {
+    "model_type": "deepseek2",
+    "layers": 27,
+    "hidden": 2048,
+    "heads": 16,
+    "kv_lora_rank": 512,
+    "qk_nope_head_dim": 128,
+    "qk_rope_head_dim": 64,
+    "v_head_dim": 128,
+    "dense_layers": 1,
+    "routed_experts": 64,
+    "experts_per_token": 6,
+    "shared_experts": 2,
+    "router": "greedy softmax, n_group=1, topk_group=1, norm_topk_prob=false, routed_scaling_factor=1.0"
+  },
+  "rung_gates": {
+    "TG8_125_tps": false,
+    "TG5_200_tps": false,
+    "TG4_250_tps": false,
+    "TG3_333_tps": false,
+    "TG2_500_tps": false,
+    "TG1_1000_tps": false,
+    "ladder_status": "NO_CLAIM",
+    "metal_resident_backend": "NOT_IMPLEMENTED — CPU oracle only"
+  },
+  "roofline": {
+    "bandwidth_constant_bytes_per_second": 736000000000,
+    "tg2_max_active_weight_bytes": 1472000000,
+    "tg1_max_active_weight_bytes": 736000000,
+    "tg2_reduction_from_current_resident_payload": 0.8579208227091055,
+    "tg1_reduction_from_current_resident_payload": 0.9289604113545528,
+    "constraint": "The source-preserving MLA/MoE payload is far above TG2/TG1 active-byte ceilings; a resident format-native routed/MLA reduction is required."
+  },
+  "next_gate": "Promote the source-exact CPU contract to a resident Metal MLA/MoE backend, then measure it under the same matched protocol before any rung claim."
+}

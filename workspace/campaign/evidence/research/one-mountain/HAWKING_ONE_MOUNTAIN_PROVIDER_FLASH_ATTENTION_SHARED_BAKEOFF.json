@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.one_mountain.provider_flash_attention_shared_bakeoff.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "model": {
+    "name": "Qwen2.5-72B-Instruct Q4_K_M GGUF",
+    "source_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "provider": "llama.cpp llama-cli b9430-d48a56eff",
+    "backend": "Metal",
+    "gpu_layers": 999
+  },
+  "protocol": {
+    "measurement_mode": "shared_load_paired",
+    "same_load_invariant": "Same host, selected GGUF, Metal provider, context 128, batch 16, microbatch 16, prompt, temperature 0, seed 42, conversation single-turn mode, requested completion 32, and immediately alternating flash setting.",
+    "order": ["flash_on_r1", "flash_off_r1", "flash_on_r2", "flash_off_r2"],
+    "prompt": "The capital of France is",
+    "completion_observed_each_run": "The capital of France is Paris."
+  },
+  "runs": [
+    {"id": "flash_on_r1", "flash_attention": "on", "prompt_tps": 34.9, "generation_tps": 14.5, "stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_ON_SHARED_32TOK.stdout", "stdout_sha256": "bf443066a815202bbec2df64f25ecadc6772bfa202fb61a30718c0f91cbbe237", "stderr": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_ON_SHARED_32TOK.stderr", "stderr_sha256": "e9a9a8920814317797840e31c194e8966a2b1319c3647fec58a16aa49da073ca"},
+    {"id": "flash_off_r1", "flash_attention": "off", "prompt_tps": 33.9, "generation_tps": 13.2, "stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_OFF_SHARED_32TOK.stdout", "stdout_sha256": "c90f6653d2efb81b0d586abd8825de1468e8ad335c343ad45145cfcf236a4e49", "stderr": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_OFF_SHARED_32TOK.stderr", "stderr_sha256": "3b9cde86acb484da6c768cc80dc9e729da9c043c1f41e0d1b2505ede1c2c1989"},
+    {"id": "flash_on_r2", "flash_attention": "on", "prompt_tps": 34.8, "generation_tps": 14.2, "stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_ON_SHARED_32TOK_R2.stdout", "stdout_sha256": "45d4bb1bfbd55c43fcd1064e1c642a50842d69b1c046ce77fb06f60332d4b00f", "stderr": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_ON_SHARED_32TOK_R2.stderr", "stderr_sha256": "68f0518491e4966f0e2b1d83ec6ab31727e9b615e85a15f23ab0892c27aea7c3"},
+    {"id": "flash_off_r2", "flash_attention": "off", "prompt_tps": 35.1, "generation_tps": 14.1, "stdout": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_OFF_SHARED_32TOK_R2.stdout", "stdout_sha256": "952d774d5c8e5c0a29336772d0cf7761243f4eea21a2ac5b89d346096b521676", "stderr": "raw/QWEN2P5_72B_Q4KM_LLAMA_CPP_METAL_FA_OFF_SHARED_32TOK_R2.stderr", "stderr_sha256": "51da93b51547e7a3fe0edbe97f624ea834a9c8a276df1df95b7be30c5287037d"}
+  ],
+  "paired_result": {
+    "flash_on_generation_tps_mean": 14.35,
+    "flash_off_generation_tps_mean": 13.65,
+    "mean_relative_change_percent": 5.128,
+    "pair_generation_tps_deltas": [1.3, 0.1],
+    "selected_provider_default": "flash_attention=on",
+    "claim_scope": "A paired shared-load configuration preference only. It does not establish clean absolute throughput, a named capability rung, or BASE_TRUE_TPS >= 100."
+  }
+}

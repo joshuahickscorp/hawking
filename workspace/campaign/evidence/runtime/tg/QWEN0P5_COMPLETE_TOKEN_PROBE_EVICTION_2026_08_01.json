@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.tg.bounded_model_eviction.v1",
+  "status": "EVICTED_TO_MACOS_TRASH_PENDING_USER_AUTHORIZED_PERMANENT_PURGE",
+  "at": "2026-08-01T20:02:00-04:00",
+  "model_lane": "models/tg-active",
+  "evicted_directory": "qwen0p5-v21",
+  "source": {
+    "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653"
+  },
+  "artifact": {
+    "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+    "bytes": 391949867,
+    "sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59"
+  },
+  "directory_kib_before_move": 778176,
+  "destination": "/Users/scammermike/.Trash/qwen0p5-v21",
+  "model_lane_empty_after_move": true,
+  "free_kib_after_move": 365223596,
+  "free_byte_recovery_proven": false,
+  "reason_free_recovery_is_not_yet_proven": "Moving an item to macOS Trash is recoverable and does not reclaim filesystem blocks. Emptying the exact Trash item is irreversible and requires confirmation at action time.",
+  "next_required_action": "User explicitly confirms permanent purge of /Users/scammermike/.Trash/qwen0p5-v21; then remeasure free bytes before admitting the next large source."
+}

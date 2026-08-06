@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.tg.same_model_candidate_result.v1",
+  "status": "REJECTED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate_id": "paired-route-activation-preload-guv3",
+  "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_PAIRED_ROUTE_GUV3_PREREGISTRATION_2026_08_02.json",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "runtime": {
+    "device": "Apple M3 Ultra",
+    "fallback": 0,
+    "prompt": "The capital of France is",
+    "completion_tokens": 32,
+    "source_window_ids": [8913, 13, 185, 185],
+    "control_ids_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "candidate_ids_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "exact_token_match": true,
+    "control_profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-r3-2026-08-02.json",
+    "candidate_profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv3-paired-route-prereg-2026-08-02.json",
+    "control_profile_id": "control-deepseek-rope-v2t-guv2-route-residual-r3-2026-08-02",
+    "candidate_profile_id": "candidate-deepseek-rope-v2t-guv3-paired-route-2026-08-02",
+    "control_shader_hash": "4178883ad381bacf5ff0285f",
+    "candidate_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "control": {
+    "decode_tps": 41.03708626900145,
+    "decode_ms": 779.782458,
+    "p50_token_ms": 24.248375,
+    "p95_token_ms": 24.637958,
+    "p99_token_ms": 24.660583,
+    "dispatches_per_forward": 487,
+    "metal_dispatches": 15584,
+    "prefill_ms": 267.705541
+  },
+  "candidate": {
+    "decode_tps": 40.56027900848086,
+    "decode_ms": 788.949208,
+    "p50_token_ms": 24.237667,
+    "p95_token_ms": 27.703208,
+    "p99_token_ms": 27.844708,
+    "dispatches_per_forward": 487,
+    "metal_dispatches": 15584,
+    "prefill_ms": 322.934958
+  },
+  "delta_candidate_minus_control": {
+    "decode_tps_percent": -1.1618935550030907,
+    "decode_wall_percent": 1.1755522204886404,
+    "p50_percent": -0.04405709122362116,
+    "p95_percent": 12.425523299837506,
+    "p99_percent": 12.88210731856237,
+    "dispatch_percent": 0.0
+  },
+  "broader_capability_probe": {
+    "prompt": "The largest planet in our solar system is",
+    "candidate_output": "Jupiter. Jupiter is a gas giant,",
+    "candidate_ids": [39048, 13, 39048, 317, 245, 5817, 16310, 11],
+    "first_token_match": true,
+    "token_2_source_divergence": true,
+    "decode_tps": 41.320642228354465,
+    "fallback": 0,
+    "dispatches_per_forward": 487
+  },
+  "decision": {
+    "promoted": false,
+    "reason": "Candidate preserves the exact 32-token source window and real Metal execution, but is 1.162% slower in complete-token decode and regresses p95/p99 by 12.426%/12.882%; it fails the preregistered >=3% wall win and <=2% tail gate.",
+    "roofline_effect": "No new rung; TG32 floor remains 41.06909043843913 TPS on the promoted DeepSeek v2t_gu_v2 route-residual path.",
+    "reopen_condition": "Retry only with a materially different memory/topology mechanism that reduces the paired-route tail without sacrificing exact parity."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "d1cb29887c2f2d22c7b7c4d43f05ad2319a80d9a260844f5957034811119bb34"
+}

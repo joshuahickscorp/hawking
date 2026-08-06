@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.tg.prefill_candidate.v1",
+  "candidate": "llama-resident-packed-prefill-source-q4-batched",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_revision": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "device": "Apple M3 Ultra",
+  "runtime_gate": [
+    "HAWKING_LLAMA_RESIDENT_B9430_PACKED_PREFILL=1",
+    "HAWKING_LLAMA_RESIDENT_B9430_PACKED_PREFILL_UNSAFE_DIAGNOSTIC=1",
+    "HAWKING_LLAMA_PREFILL_BATCH=8"
+  ],
+  "implementation": {
+    "projection": "source-order Q4_K batch-grid kernel; Q6 remains source GEMV",
+    "kv_and_rope": "source f16 KV and source RoPE rounding",
+    "attention": "causal batch-major source FATTN",
+    "scope": "prefill only; base decode graph and default runtime are unchanged"
+  },
+  "correctness": {
+    "ctx2048_generated_tokens": 128,
+    "ctx2048_exact_token_trace_against_source_serial": true,
+    "ctx8192_generated_tokens": 1,
+    "ctx8192_packed_token_id": 29531,
+    "ctx8192_serial_token_id": 29531,
+    "ctx8192_exact_greedy_token": true,
+    "ctx32768_generated_tokens": 1,
+    "ctx32768_packed_token_id": 29531,
+    "ctx32768_cpu_reference_fallback_count": 0,
+    "cpu_reference_fallback_count": 0
+  },
+  "prefill_ms": {
+    "ctx2048_packed_runs": [13102.947292, 13080.7, 19026.3],
+    "ctx2048_serial_control": 26212.2,
+    "ctx8192_packed": 57325.471666,
+    "ctx8192_serial_control": 91054.28025,
+    "ctx32768_packed": 327627.756375
+  },
+  "paired_relative_to_serial": {
+    "ctx2048_control_vs_latest_packed": 1.377644207596185,
+    "ctx8192": 1.588374649078318
+  },
+  "verdict": "exact-diagnostic-candidate",
+  "limits": [
+    "Process-level prefill time varies materially with machine state, so this is not a stable throughput promotion.",
+    "The path remains opt-in behind the explicit unsafe diagnostic gate.",
+    "The 32K packed feasibility run completed in 327.63 seconds, but has no paired serial or strict-logits proof.",
+    "No decode TPS claim is included."
+  ],
+  "next_required_proof": "Use an independent long-context oracle or checkpoint/logits capture for the 32K continuation boundary, then replace the attention-prefill geometry; 327.63 seconds is feasibility-only and cannot be promoted."
+}

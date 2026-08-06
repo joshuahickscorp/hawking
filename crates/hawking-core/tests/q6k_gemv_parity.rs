@@ -13,7 +13,8 @@ fn q6k_gemv_matches_cpu_reference() {
     let mut w_q6 = vec![0u8; blocks * quant::Q6_K_BLOCK_BYTES];
     quant::quantize_q6_k(&w_f32, &mut w_q6).expect("Q6_K quant");
     let mut w_recon = vec![0.0f32; rows * cols];
-    quant::dequant_into(hawking_core::gguf::GgmlType::Q6_K, &w_q6, &mut w_recon).expect("Q6_K dequant");
+    quant::dequant_into(hawking_core::gguf::GgmlType::Q6_K, &w_q6, &mut w_recon)
+        .expect("Q6_K dequant");
     let x = fixed_f32(cols, 0xBEEFBEEF);
     let mut expected = vec![0.0f32; rows];
     for r in 0..rows {
@@ -30,7 +31,17 @@ fn q6k_gemv_matches_cpu_reference() {
     let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q6_k_pinned_tcb(&mut tcb, &model_buf, 0, w_q6.len(), rows, cols, &x_buf, &out_buf).expect("gemv_q6_k encode");
+        kernels::gemv_q6_k_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_q6.len(),
+            rows,
+            cols,
+            &x_buf,
+            &out_buf,
+        )
+        .expect("gemv_q6_k encode");
         tcb.commit_and_wait().expect("commit");
     }
     let actual = read_f32_buf(&out_buf, rows);

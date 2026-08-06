@@ -1,0 +1,55 @@
+{
+  "activations_captured": false,
+  "body_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+  "capability_measurement": false,
+  "claim_boundary": {
+    "capability_claim_requires_sealed_shard_scores": true,
+    "direct_weight_transplant": false,
+    "dry_run_does_not_validate_capability": true,
+    "forward_capability_measurement_requires_callable": true,
+    "full_model_bench_permitted": false,
+    "gradient_or_optimizer": false,
+    "gravity_compression_performed": false,
+    "kimi_consumed": false,
+    "kimi_simulated": false,
+    "kimi_strategic_bridge_preserved": true,
+    "lane_does_not_own": [
+      "C_FINAL_PROTO_KIMI",
+      "D_RAMANUJAN"
+    ],
+    "lane_owns": [
+      "A_BASE_DSV4F",
+      "B_PROTO_DSV4F_GLM"
+    ],
+    "odyssey_or_ramanujan": false,
+    "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+    "proto_output_raw_not_gravity": true,
+    "stage": 1,
+    "training_performed": false,
+    "weight_average_performed": false
+  },
+  "dry_run": true,
+  "gate": {
+    "name": "DEEPSEEK_FORWARD_PENDING",
+    "reason": "dry-run mode skips the student forward deliberately; no activations or capability scores are fabricated"
+  },
+  "module_seal_sha256": "dca95c8a9d301f4e58b0b372b62dc4f58a40469dc2248648ce9b62e743a8c286",
+  "recorded_at": "2026-08-05T18:20:14.575682Z",
+  "schema": "hawking.frankenstein.proto_forward_attempt.v1",
+  "seal_sha256": "d758ef7d956facd44545917d8c159abf50090409829d590aa90d11e0634d5554",
+  "status": "DEEPSEEK_FORWARD_PENDING",
+  "transplant_points_requested": [
+    "pre_norm_hidden_state",
+    "post_attention_hidden_state",
+    "pre_router_hidden_state",
+    "router_logits",
+    "selected_expert_ids",
+    "route_probabilities_and_margins",
+    "post_moe_hidden_state",
+    "mhc_state",
+    "attention_index_state",
+    "final_hidden_state",
+    "lm_head_logits",
+    "hcli_tool_action_decision"
+  ]
+}

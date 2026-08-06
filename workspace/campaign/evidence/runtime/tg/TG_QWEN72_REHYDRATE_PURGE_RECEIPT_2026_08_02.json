@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.tg.model_trash_purge_receipt.v1",
+  "status": "EXACT_MODEL_TARGET_PURGED_AND_RECOVERY_PROVEN",
+  "at_utc": "2026-08-02T10:12:11Z",
+  "source_receipt": "evidence/tg/TG32_QWEN72_K0_REPAIR_PHYSICAL_2026_08_02.json",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REHYDRATE_2026_08_02.json",
+  "target": {
+    "active_directory": "/Users/scammermike/Downloads/hawking/models/tg-active/qwen72-2026-08-02",
+    "trash_directory": "/Users/scammermike/.Trash/qwen72-2026-08-02",
+    "file": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "composite_target_bytes": 47415715804
+  },
+  "eviction": {
+    "active_path_absent": true,
+    "exact_trash_item_found": true,
+    "purge_operation": "shutil.rmtree on the explicit exact Trash directory only",
+    "broad_trash_empty": false,
+    "unrelated_targets_touched": false
+  },
+  "storage": {
+    "free_bytes_before_eviction": 327543877632,
+    "free_bytes_before_purge": 327543627776,
+    "free_bytes_after_purge": 374959599616,
+    "recovered_bytes": 47415971840,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after": 174953710060,
+    "model_lane_entries_after": [],
+    "target_absent": true
+  },
+  "claim_boundary": "This proves exact Qwen72 model-body eviction and byte recovery only; it does not promote a Hawking TG rung or authorize owner-gated work.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "c823c2dc1d48b0216dd604f3423b29c22a1f966486f9ab3edc5c10c5706b307b"
+}

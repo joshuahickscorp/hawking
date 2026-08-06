@@ -1,0 +1,188 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "final_child_layer": 2,
+  "final_child_retained": true,
+  "honesty": {
+    "deepest_attention_only_layer": 3,
+    "deepest_full_layer": 2,
+    "full_metal_multi_layer_forward": true,
+    "greedy_token_produced": false,
+    "layer_schedule_note": "only base layers 0 and 1 are ratio-0; even layers >=2 are ratio-4; odd layers >=3 are ratio-128",
+    "learned_bias_gate_status": "route_kernel_sealed_separately; full_p6_two_phase_moe_not_composed",
+    "ratio_0_layers": [
+      0,
+      1
+    ],
+    "ratio_128_bos_window_attention_only": true,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_128_status": "bos_window_attention_sealed_at_layer_3; full_layer_blocked_on_learned_bias_moe",
+    "ratio_4_bos_window_only": true,
+    "ratio_4_full_compressed_graph": false,
+    "serve_endpoint_flipped": false
+  },
+  "metal": {
+    "command_buffers": 26,
+    "cpu_visible_waits": 26,
+    "fallback": 0,
+    "host_intermediate_handoff_between_stages": false,
+    "metal_dispatches": 276
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false,
+    "reason": "composed multi-layer path inherits NumericParityV21Only until a sealed exact-storage e2e receipt is earned on the full residual chain"
+  },
+  "schema": "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_bos.v1",
+  "scope": {
+    "deepest_layer": 2,
+    "gate_mode_span": "hash_tid2eid_layers_0_1_2",
+    "layers": [
+      0,
+      1,
+      2
+    ],
+    "mhc_control_exp": "darwin_double_double_control_domain_general",
+    "requested_max_layer": 2,
+    "sparse_attention_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "stop_reason": "layer 3: BOS window attention sealed; MoE refused: learned-bias gate mode is not yet implemented in the P6 device graph; refuses cleanly",
+    "token_id": 0,
+    "token_position": 0
+  },
+  "stages": [
+    {
+      "command_buffers": 11,
+      "cpu_visible_waits": 11,
+      "metal_dispatches": 21,
+      "notes": {
+        "compression": "ratio_0",
+        "layer": 0,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l0_attention_p3a_p4a_growing_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "host_activation_handoff": false,
+        "layer": 0,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          254,
+          222,
+          245,
+          200,
+          53,
+          35
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l0_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": false,
+        "compression": "sliding_window_only",
+        "compression_ratio": 0,
+        "declared_dispatches": 22,
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "layer": 1,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l1_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "host_activation_handoff": false,
+        "layer": 1,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          163,
+          137,
+          158,
+          97,
+          184,
+          8
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l1_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_4_with_indexer",
+        "compression_ratio": 4,
+        "declared_dispatches": 22,
+        "gate_mode": "hash_token_id_to_expert_ids",
+        "layer": 2,
+        "sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "valid_kv_count": 1
+      },
+      "stage": "l2_attention_bos_window_kv"
+    },
+    {
+      "command_buffers": 4,
+      "cpu_visible_waits": 4,
+      "metal_dispatches": 63,
+      "notes": {
+        "host_activation_handoff": false,
+        "layer": 2,
+        "p6_dispatches": 60,
+        "p7_owned_dispatches": 3,
+        "route_ids_top_slot": [
+          108,
+          115,
+          43,
+          53,
+          132,
+          143
+        ],
+        "token_id": 0,
+        "token_position": 0
+      },
+      "stage": "l2_p7_mhc_ffn_p6_moe_mhc_post"
+    },
+    {
+      "command_buffers": 1,
+      "cpu_visible_waits": 1,
+      "metal_dispatches": 22,
+      "notes": {
+        "bos_window_only": true,
+        "compressed_topk_empty_at_bos": true,
+        "compression": "ratio_128",
+        "compression_ratio": 128,
+        "gate_mode": "learned_scores_with_selection_bias",
+        "layer": 3,
+        "moe_refusal": "learned-bias gate mode is not yet implemented in the P6 device graph; refuses cleanly",
+        "moe_status": "refused_learned_bias_two_phase_not_composed"
+      },
+      "stage": "l3_attention_bos_window_kv_moe_blocked"
+    }
+  ],
+  "status": "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L2",
+  "wall_time_ms": 22901.087333
+}

@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 283,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "There are 3 wolves and 4 sheep on one side of a river. A boat holds at most 2 animals. Wolves may never outnumber sheep on either side if sheep are present. Is the classic constraint about not leaving wolves outnumbering sheep on a side with sheep present? Reply with only YES or NO.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:halo:gr01_wolves",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "There are 3 wolves and 4 sheep on one side of a river. A boat holds at most 2 animals. Wolves may never outnumber sheep on either side if sheep are present. Is the classic constraint about not leaving wolves outnumbering sheep on a side with sheep present? Reply with only YES or NO.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.861832Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "019b7569e940fa3fafb35c134b30e3abb02d86d76c43e463d5a4758a268e1749",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 6.747095584869385,
+          "rank": 0,
+          "token_id": 23
+        },
+        {
+          "logit": 6.5490899085998535,
+          "rank": 1,
+          "token_id": 20
+        },
+        {
+          "logit": 6.350467681884766,
+          "rank": 2,
+          "token_id": 19
+        },
+        {
+          "logit": 6.106688499450684,
+          "rank": 3,
+          "token_id": 21
+        },
+        {
+          "logit": 5.782319068908691,
+          "rank": 4,
+          "token_id": 18
+        },
+        {
+          "logit": 5.568482875823975,
+          "rank": 5,
+          "token_id": 24
+        },
+        {
+          "logit": 5.534453868865967,
+          "rank": 6,
+          "token_id": 22
+        },
+        {
+          "logit": 4.873298645019531,
+          "rank": 7,
+          "token_id": 17
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17636950314044952,
+          "l2": 3.3487534523010254,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8b3d191b422f445966e0095698bf38f1950e606007ce931000e293fb50a33195",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

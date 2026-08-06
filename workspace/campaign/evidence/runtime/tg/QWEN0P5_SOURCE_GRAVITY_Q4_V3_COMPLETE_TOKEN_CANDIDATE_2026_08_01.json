@@ -1,0 +1,105 @@
+{
+  "artifact": "models/tg-active/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+  "continuation_sha256": "6d487d8c52a80ed020d03feb04b29c9e7536ce6ef9bb894767e5cb31a67c6218",
+  "decode_command_buffers": 16,
+  "decode_cpu_reference_fallback_total": 0,
+  "decode_dispatches": 6176,
+  "decode_max_ms": 5.860416,
+  "decode_min_ms": 5.408125,
+  "decode_ms": [
+    5.644083999999999,
+    5.4704999999999995,
+    5.469208,
+    5.463583,
+    5.450666,
+    5.860416,
+    5.479208,
+    5.408125,
+    5.519917,
+    5.441584,
+    5.551,
+    5.732958,
+    5.549791999999999,
+    5.713375,
+    5.503083,
+    5.592084
+  ],
+  "decode_p50_ms": 5.503083,
+  "decode_p95_ms": 5.860416,
+  "decode_p99_ms": 5.860416,
+  "decode_tps": 180.07962963652852,
+  "device": "Apple M3 Ultra",
+  "execution_representation": {
+    "artifact_grammar": "source-preserving packed Gravity",
+    "kv_precision": "source_parity_f32",
+    "q4_kernel": "q4_k_v3_8row_candidate"
+  },
+  "generated_tokens": 16,
+  "greedy_first_token": 220,
+  "greedy_generated_token_ids": [
+    220,
+    19,
+    198,
+    59,
+    2533,
+    54815,
+    11,
+    279,
+    897,
+    315,
+    17767,
+    64,
+    488,
+    293,
+    488,
+    272
+  ],
+  "inline_token_prefix": [
+    17,
+    488,
+    220,
+    17,
+    284
+  ],
+  "kv_bytes_at_final_position": 516096,
+  "load_ms": 214.98025,
+  "measurement_classification": {
+    "capability_gate": "NOT_RUN",
+    "clean_lease": "NOT_ATTESTED_BY_THIS_PROBE",
+    "complete_token": true,
+    "reason": "The probe records physical resident decode facts; a TG promotion additionally requires a capability-matched, CLEAN same-model before/after campaign.",
+    "same_model_candidate_only": true,
+    "tg_promotion_allowed": false
+  },
+  "prefill_command_buffers": 5,
+  "prefill_dispatches": 1930,
+  "prefill_ms": 40.959708,
+  "prefix_tokens": 5,
+  "resident_weight_bytes": 391859712,
+  "rope_freq_factors": null,
+  "rope_interleaved": false,
+  "schema": "hawking.gravity.llama_source_probe.v2",
+  "tokens_file": null,
+  "top5_after_prefix": [
+    {
+      "id": 220,
+      "logit": 20.045507431030273
+    },
+    {
+      "id": 1124,
+      "logit": 15.564509391784668
+    },
+    {
+      "id": 481,
+      "logit": 15.168298721313477
+    },
+    {
+      "id": 856,
+      "logit": 15.13283634185791
+    },
+    {
+      "id": 264,
+      "logit": 14.87472915649414
+    }
+  ]
+}

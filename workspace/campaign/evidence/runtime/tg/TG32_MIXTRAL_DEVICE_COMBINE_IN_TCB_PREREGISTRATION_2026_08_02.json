@@ -1,0 +1,57 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_AFTER_V1_REJECTION_BEFORE_V2_RUN",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "mixtral-device-resident-two-expert-combine-in-tcb-v2",
+    "kind": "same_model_device_resident_moe_combine_command_collapse",
+    "hypothesis": "The v1 device combine lost to an extra command buffer. Appending the identical two-expert weighted residual-add dispatch to the already-open expert TCB will preserve device residency without increasing command-buffer topology.",
+    "representation_change": "v1 separate combine TCB -> combine dispatch appended to existing expert-output TCB",
+    "scope": "same immutable Mixtral-8x7B-Instruct-v0.1 Q4_K_M source, same prompt, same Apple M3 Ultra, same tokenizer, same router and kernels",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "complete_token_wall_tps_improvement_percent": ">=3 versus v1 control",
+      "p99_regression_percent": "<=0",
+      "exact_continuation_hash": "must_match_v1_control",
+      "route_set_sequence": "must_match_v1_control",
+      "fallback_count": 0,
+      "metal_dispatches": ">0",
+      "command_buffers_per_forward": "<=97",
+      "complete_tokens": ">=16"
+    }
+  },
+  "source": {
+    "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_FRESH_2026_08_02.json"
+  },
+  "v1_failure": {
+    "receipt": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_RESULT_2026_08_02.json",
+    "candidate_tps": 16.41787879637794,
+    "control_tps": 16.927805508488703,
+    "tps_delta_percent": -3.0123615955715666,
+    "candidate_command_buffers_per_forward": 129,
+    "control_command_buffers_per_forward": 97,
+    "candidate_p99_ms": 64.13578862,
+    "control_p99_ms": 62.23867862
+  },
+  "candidate_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_MIXTRAL_CONVENTIONAL_DECODE_SEED": "1",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE": "0",
+    "HAWKING_MIXTRAL_DEVICE_COMBINE_IN_TCB": "1"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

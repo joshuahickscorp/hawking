@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.mistral_fused_qkv_candidate.v1",
+  "status": "REJECTED_SPEED_NON_PROMOTED",
+  "claim": "NO_TG_RUNG",
+  "model": "Mistral-Nemo-Instruct-2407-Q4_K_M",
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity",
+    "sha256": "f0795fc20396dd10a94af3a4e98629faa13eedd5fc894ac2eaeb0a663dac11b9",
+    "payload_bytes": 7469322240,
+    "source_preserving": true,
+    "rope_layout": "interleaved"
+  },
+  "candidate": {
+    "flag": "HAWKING_GRAVITY_FUSED_QKV=1",
+    "kernels": [
+      "gemm_q4k_predec_qkv_rope_append_4r",
+      "gemm_q4k_q4k_q6k_rope_append"
+    ],
+    "topology": "raw Q/K/V projections plus RoPE and KV append in one dispatch per layer",
+    "predecoded_scale_tables": true,
+    "matched_greedy_ids": [6993, 1046, 6993, 1395, 1278, 12347, 5970, 1294],
+    "matched_equal": true,
+    "decode_dispatches_per_token": 362.0,
+    "decode_tps_context32": 53.50397373511331,
+    "decode_ms_per_token_median": 18.648791,
+    "prefill_tps_context32": 48.28547279282005,
+    "receipt": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity-tps-fused-qkv-v2.json"
+  },
+  "baseline": {
+    "decode_dispatches_per_token": 522.0,
+    "decode_tps_context32": 57.65983938130992,
+    "decode_ms_per_token_median": 17.341833,
+    "receipt": "/tmp/hawking-tg-artifacts/mistral-nemo-source-q4k.gravity-tps-baseline-current.json"
+  },
+  "speed_delta": {
+    "decode_tps_ratio_candidate_over_baseline": 0.9279244324856079,
+    "decode_tps_change_percent": -7.207556751439215,
+    "dispatch_reduction_percent": 30.65134099616858
+  },
+  "verdict": "Exact continuation and interleaved-RoPE parity pass, but predecoded scale bandwidth and fused register pressure make the candidate 7.22% slower. Dispatch reduction alone is not a promotion signal; keep the source baseline active."
+}

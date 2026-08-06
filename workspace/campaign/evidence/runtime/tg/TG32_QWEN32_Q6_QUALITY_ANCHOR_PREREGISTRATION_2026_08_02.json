@@ -1,0 +1,72 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_QWEN32_Q6_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen32-direct-q6-quality-anchor-v1",
+    "kind": "same_model_quality_anchor_direct_q6",
+    "hypothesis": "A direct source-compatible Q6_K run provides a higher-quality same-model anchor for the existing Q4_K candidate; it is an anchor and cannot promote TPS or a TG rung without capability-matched source/reference evidence.",
+    "representation_change": "Q4_K_M source-compatible execution -> Q6_K source-compatible execution; same immutable Qwen2.5-32B-Instruct family, tokenizer, prompt and device",
+    "scope": "same Qwen2.5-32B-Instruct 32B family and revision, direct GGUF, complete-token decode on Apple M3 Ultra",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "role": "quality_anchor_only",
+      "complete_token_wall_tps": "record_only",
+      "exact_continuation_hash": "record_only; mismatch blocks capability promotion",
+      "fallback_count": 0,
+      "metal_dispatches": ">0",
+      "complete_tokens": ">=16",
+      "first_forward_must_complete": true,
+      "capability_match_to_Q4": "required before any performance promotion",
+      "tg_claim": "forbidden unless target >=31.25 TPS and all whole-model capability gates pass"
+    }
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q6_K.gguf",
+    "bytes": 26886155136,
+    "sha256": "3393e05b12396e0e6c786f5fb99837eb77ef9eb0b30d940e30d94c2f5506054a",
+    "xet_hash": "161adb1647553a6a03bbdb2f8fc7b1c439952071daf80300d194edaa030f7378",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_Q6_2026_08_02.json",
+    "transfer_selection": "high-performance fixed concurrency 8; two-repeat median 145.8084746830869 GB/h; standard c4 median 139.43345244193836 GB/h"
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 357228998656,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 53796809600,
+    "planned_headroom_above_floor_after_body": 103426299500,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "control_reference": {
+    "receipt": "evidence/tg/TG32_QWEN32_Q4K_PREDEC_RESULT_2026_08_02.json",
+    "representation": "Q4_K_M direct source-compatible with predecoded scale tables",
+    "control_tps": 14.048199372045488,
+    "target_named_rung": "TG32",
+    "capability_match_status": "NOT_ESTABLISHED_FOR_Q6"
+  },
+  "benchmark_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_QWEN_LOAD_TIMING": "1",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_Q4K_PREDEC": "0",
+    "HAWKING_QWEN_Q4K_LMHEAD": "0",
+    "HAWKING_QWEN_LMHEAD_PREDEC": "0",
+    "HAWKING_QWEN_BATCH_PREFILL": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

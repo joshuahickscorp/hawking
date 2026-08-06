@@ -15,7 +15,7 @@
 #   MODELS="<path> <path> ..."   models to eval (default: RWKV-7-SFT then Qwen-3B)
 #   TOK=96                        max_tokens per answer
 #   PORT=18450                    base serve port (incremented per model)
-#   OUT=<dir>                     report dir (default reports/ssm-quality-chat/<stamp>)
+#   OUT=<dir>                     report dir (default workspace/campaign/records/reports/ssm-quality-chat/<stamp>)
 set -u
 
 REPO="${REPO:-$HOME/Downloads/hawking}"; cd "$REPO" || exit 2
@@ -24,7 +24,7 @@ MODELS="${MODELS:-models/rwkv7-g1-04-sft-Q4_K_M.gguf models/qwen2.5-3b-instruct-
 TOK="${TOK:-96}"
 PORT="${PORT:-18450}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="${OUT:-reports/ssm-quality-chat/$STAMP}"
+OUT="${OUT:-workspace/campaign/records/reports/ssm-quality-chat/$STAMP}"
 mkdir -p "$OUT"
 SUMMARY="$OUT/summary.md"; LOG="$OUT/commands.log"; TSV="$OUT/results.tsv"
 

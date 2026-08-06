@@ -33,8 +33,12 @@ struct ArgbufRowsCols { uint rows; uint cols; };
 /// (hidden: u32, eps: f32) — used by rmsnorm_f32 TCB path.
 struct ArgbufRmsnorm { uint hidden; float eps; };
 
-/// (n_experts: u32, top_k: u32) — used by moe_topk_gate.
-struct ArgbufTopkGate { uint n_experts; uint top_k; };
+/// (n_experts: u32, top_k: u32, tie_epsilon: f32) — used by moe_topk_gate.
+struct ArgbufTopkGate {
+    uint n_experts;
+    uint top_k;
+    float tie_epsilon;
+};
 
 /// (n: u32) — used by silu_mul / moe_batched_silu_mul.
 struct ArgbufN { uint n; };
@@ -52,6 +56,19 @@ struct ArgbufRopeQ {
     uint q_head_dim;
     uint qk_nope_dim;
     uint qk_rope_dim;
+    uint pos;
+    float base;
+};
+
+/// DeepSeek source-compatible RoPE: adjacent input pairs are rotated and
+/// emitted as concatenated halves. The destination must not alias the source.
+/// This is intentionally separate from `rope_q_f32_inplace`, whose split-half
+/// layout is correct for the older llama-style callers but not for DeepSeek's
+/// MLA tensors.
+struct ArgbufRopeInterleaved {
+    uint src_offset;
+    uint dst_offset;
+    uint head_dim;
     uint pos;
     float base;
 };
@@ -114,6 +131,92 @@ kernel void rmsnorm_f32(
     float inv = 1.0f / rms;
     for (uint i = tid; i < args.hidden; i += tg_size) {
         out[i] = x[i] * inv * weight[i];
+    }
+}
+
+// Exact shape-specialized form of ggml Metal v0.13.1's
+// `kernel_rms_norm_f32_4` used by the frozen Llama authority.  The reference
+// processes float4 values with 1024 threads (32 simdgroups), stores one partial
+// per simdgroup, and reduces those 32 partials with `simd_sum`.
+kernel void rmsnorm_llama_b9430(
+    device const float* x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    device       float* out     [[buffer(2)]],
+    constant     uint& hidden   [[buffer(3)]],
+    constant     float& eps     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    ushort       lane           [[thread_index_in_simdgroup]],
+    ushort       simdgroup      [[simdgroup_index_in_threadgroup]],
+    ushort       tid            [[thread_position_in_threadgroup]],
+    ushort       threads        [[threads_per_threadgroup]])
+{
+    if (simdgroup == 0u) shmem[lane] = 0.0f;
+
+    device const float4* x4 = (device const float4*)x;
+    device const float4* weight4 = (device const float4*)weight;
+    device       float4* out4 = (device float4*)out;
+    const uint values4 = hidden / 4u;
+
+    float sumf = 0.0f;
+    for (uint i = (uint)tid; i < values4; i += (uint)threads) {
+        sumf += dot(x4[i], x4[i]);
+    }
+    sumf = simd_sum(sumf);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (lane == 0u) shmem[simdgroup] = sumf;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    sumf = shmem[lane];
+    sumf = simd_sum(sumf);
+    const float scale = 1.0f / sqrt(sumf / (float)hidden + eps);
+    for (uint i = (uint)tid; i < values4; i += (uint)threads) {
+        out4[i] = (x4[i] * scale) * weight4[i];
+    }
+}
+
+// Strict b9430 residual-add + RMSNorm fusion. The reduction and final
+// float4 multiply grammar are identical to rmsnorm_llama_b9430 above; only
+// the immediately preceding elementwise `x += delta` is folded into the
+// input load. This is eligible for K0 only after full-vector proof.
+kernel void add_rmsnorm_llama_b9430(
+    device       float* x       [[buffer(0)]],
+    device const float* delta   [[buffer(1)]],
+    device const float* weight  [[buffer(2)]],
+    device       float* out     [[buffer(3)]],
+    constant     uint& hidden   [[buffer(4)]],
+    constant     float& eps     [[buffer(5)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    ushort       lane           [[thread_index_in_simdgroup]],
+    ushort       simdgroup      [[simdgroup_index_in_threadgroup]],
+    ushort       tid            [[thread_position_in_threadgroup]],
+    ushort       threads        [[threads_per_threadgroup]])
+{
+    if (simdgroup == 0u) shmem[lane] = 0.0f;
+
+    device       float4* x4 = (device float4*)x;
+    device const float4* delta4 = (device const float4*)delta;
+    device const float4* weight4 = (device const float4*)weight;
+    device       float4* out4 = (device float4*)out;
+    const uint values4 = hidden / 4u;
+
+    float sumf = 0.0f;
+    for (uint i = (uint)tid; i < values4; i += (uint)threads) {
+        const float4 value = x4[i] + delta4[i];
+        x4[i] = value;
+        sumf += dot(value, value);
+    }
+    sumf = simd_sum(sumf);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (lane == 0u) shmem[simdgroup] = sumf;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    sumf = shmem[lane];
+    sumf = simd_sum(sumf);
+    const float scale = 1.0f / sqrt(sumf / (float)hidden + eps);
+    for (uint i = (uint)tid; i < values4; i += (uint)threads) {
+        out4[i] = (x4[i] * scale) * weight4[i];
     }
 }
 
@@ -403,6 +506,34 @@ kernel void silu_mul(
     out[id] = half(s * (float)up[id]);
 }
 
+// Exact f32 SwiGLU operation order of ggml Metal v0.13.1's
+// `kernel_swiglu_f32`.  Llama K0 must not use the host libm here: even a
+// one-ULP activation mismatch is amplified by the following Q6_K projection.
+kernel void swiglu_llama_b9430(
+    device const float* gate [[buffer(0)]],
+    device const float* up   [[buffer(1)]],
+    device       float* out  [[buffer(2)]],
+    constant     uint&  n    [[buffer(3)]],
+    uint id                  [[thread_position_in_grid]])
+{
+    if (id >= n) return;
+    const float x0 = gate[id];
+    const float x1 = up[id];
+    const float silu = x0 / (1.0f + exp(-x0));
+    out[id] = silu*x1;
+}
+
+// Matches the f32 -> f16 SET_ROWS cache conversion used by the pinned ggml
+// Metal graph, while retaining Hawking's temporary f32 materialized cache.
+kernel void round_f16_llama_b9430(
+    device float* x [[buffer(0)]],
+    constant uint& n [[buffer(1)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= n) return;
+    x[id] = (float)((half)x[id]);
+}
+
 // P1f: generic GPU memcpy of `n` f32 elements from src+src_off to dst+dst_off.
 // Offsets are in element units (not bytes). Used by GQA KV-cache append:
 // copy k_token / v_token into the per-layer K/V cache slice at the
@@ -437,6 +568,68 @@ kernel void memcpy_f32_to_f16_off(
 {
     if (id >= args.n) return;
     dst[args.dst_off + id] = half(src[args.src_off + id]);
+}
+
+// Resident Llama replay cache append.  The strict path keeps both the exact
+// f16 SET_ROWS image and its f32 expansion for the post-32-token generic MHA.
+// Co-locating those two independent stores makes an ICB replay possible while
+// preserving the byte-for-byte value produced by the existing copy sequence.
+kernel void llama_b9430_cache_append_f32_f16(
+    device const float*           src     [[buffer(0)]],
+    device       float*           dst_f32 [[buffer(1)]],
+    device       half*            dst_f16 [[buffer(2)]],
+    constant ArgbufMemcpyF32&     args    [[buffer(3)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    const float value = src[args.src_off + id];
+    dst_f32[args.dst_off + id] = value;
+    dst_f16[args.dst_off + id] = half(value);
+}
+
+// Source-style Llama long-attention cache append. That lane reads only the
+// f16 SET_ROWS cache image, so retaining an intermediate f32 expansion is
+// wasted work. Convert the newly RoPE'd K and V vectors directly to half and
+// append both in one dispatch; this matches the separate round-and-copy path.
+struct ArgbufLlamaB9430KvAppendF16 {
+    uint n;
+    uint dst_off;
+};
+
+kernel void llama_b9430_cache_append_kv_f16(
+    device const float*                   src_k [[buffer(0)]],
+    device const float*                   src_v [[buffer(1)]],
+    device       half*                    dst_k [[buffer(2)]],
+    device       half*                    dst_v [[buffer(3)]],
+    constant ArgbufLlamaB9430KvAppendF16& args  [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst_k[args.dst_off + id] = half(src_k[id]);
+    dst_v[args.dst_off + id] = half(src_v[id]);
+}
+
+// Offset variant used by resident Gravity caches whose f32 projection outputs
+// are written directly into the absolute position slot before conversion.
+// Keeping K+V in one dispatch avoids the two independent memcpy conversions,
+// while `src_off` prevents every position after K0 from rereading row zero.
+struct ArgbufLlamaB9430KvAppendF16Off {
+    uint n;
+    uint src_off;
+    uint dst_off;
+};
+
+kernel void llama_b9430_cache_append_kv_f16_off(
+    device const float*                   src_k [[buffer(0)]],
+    device const float*                   src_v [[buffer(1)]],
+    device       half*                    dst_k [[buffer(2)]],
+    device       half*                    dst_v [[buffer(3)]],
+    constant ArgbufLlamaB9430KvAppendF16Off& args [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst_k[args.dst_off + id] = half(src_k[args.src_off + id]);
+    dst_v[args.dst_off + id] = half(src_v[args.src_off + id]);
 }
 
 // R3 — batched KV scatter-append over B multi-seq decode slots. Each slot writes
@@ -489,6 +682,227 @@ kernel void rope_inplace(
     x[id + half_dim] = half(x0 * s + x1 * c);
 }
 
+// Field-for-field prefix of ggml_metal_kargs_rope from GGML v0.13.1.  Keeping
+// the runtime arguments and the upstream 128-thread grammar prevents the
+// compiler from changing the apparently trivial YaRN specialization.
+struct LlamaB9430RopeArgs {
+    int   ne00, ne01, ne02, ne03;
+    ulong nb00, nb01, nb02, nb03;
+    int   ne0, ne1, ne2, ne3;
+    ulong nb0, nb1, nb2, nb3;
+    int   n_past, n_dims, n_ctx_orig;
+    float freq_base, freq_scale, ext_factor, attn_factor, beta_fast, beta_slow;
+    int   sect_0, sect_1, sect_2, sect_3;
+    bool  src2;
+};
+
+static float llama_b9430_rope_yarn_ramp(const float low, const float high, const int i0) {
+    const float y = (i0 / 2 - low) / max(0.001f, high - low);
+    return 1.0f - min(1.0f, max(0.0f, y));
+}
+
+static float llama_b9430_rope_yarn_corr_factor(int n_dims, int n_ctx_orig, float n_rot, float base) {
+    return n_dims * log(n_ctx_orig / (n_rot * 2 * M_PI_F)) / (2 * log(base));
+}
+
+static void llama_b9430_rope_yarn_corr_dims(
+    int n_dims, int n_ctx_orig, float freq_base, float beta_fast, float beta_slow, thread float dims[2]
+) {
+    dims[0] = max(0.0f, floor(llama_b9430_rope_yarn_corr_factor(n_dims, n_ctx_orig, beta_fast, freq_base)));
+    dims[1] = min(n_dims - 1.0f, ceil(llama_b9430_rope_yarn_corr_factor(n_dims, n_ctx_orig, beta_slow, freq_base)));
+}
+
+static void llama_b9430_rope_yarn(
+    float theta_extrap, float freq_scale, thread float corr_dims[2], int i0, float ext_factor,
+    float mscale, thread float * cos_theta, thread float * sin_theta
+) {
+    float theta_interp = freq_scale * theta_extrap;
+    float theta = theta_interp;
+    if (ext_factor != 0.0f) {
+        const float ramp_mix = llama_b9430_rope_yarn_ramp(corr_dims[0], corr_dims[1], i0) * ext_factor;
+        theta = theta_interp * (1 - ramp_mix) + theta_extrap * ramp_mix;
+        mscale *= 1.0f + 0.1f * log(1.0f / freq_scale);
+    }
+    *cos_theta = cos(theta) * mscale;
+    *sin_theta = sin(theta) * mscale;
+}
+
+// Native reproduction of GGML v0.13.1's `kernel_rope_norm<float>` for the
+// frozen Llama authority. This is intentionally a separate-output operation:
+// it preserves the source operator's memory and dispatch contract.
+kernel void rope_norm_llama_b9430(
+    constant LlamaB9430RopeArgs & args [[buffer(0)]],
+    device const char * src0           [[buffer(1)]],
+    device const char * src1           [[buffer(2)]],
+    device const char * src2           [[buffer(3)]],
+    device       char * dst             [[buffer(4)]],
+    ushort tiitg                        [[thread_index_in_threadgroup]],
+    ushort3 tptg                        [[threads_per_threadgroup]],
+    uint3 tgpig                         [[threadgroup_position_in_grid]])
+{
+    const int i3 = tgpig[2];
+    const int i2 = tgpig[1];
+    const int i1 = tgpig[0];
+    float corr_dims[2];
+    llama_b9430_rope_yarn_corr_dims(
+        args.n_dims, args.n_ctx_orig, args.freq_base, args.beta_fast, args.beta_slow, corr_dims
+    );
+    device const int32_t * pos = (device const int32_t *) src1;
+    const float theta_base = (float) pos[i2];
+    const float inv_ndims = -1.f / args.n_dims;
+    float cos_theta;
+    float sin_theta;
+    for (int i0 = 2 * tiitg; i0 < args.ne0; i0 += 2 * tptg.x) {
+        if (i0 < args.n_dims) {
+            const int ic = i0 / 2;
+            const float theta = theta_base * pow(args.freq_base, inv_ndims * i0);
+            const float freq_factor = args.src2 ? ((device const float *) src2)[ic] : 1.0f;
+            llama_b9430_rope_yarn(
+                theta / freq_factor, args.freq_scale, corr_dims, i0, args.ext_factor,
+                args.attn_factor, &cos_theta, &sin_theta
+            );
+            device const float * const src = (device float *) (src0 + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+            device float * dst_data = (device float *) (dst + i3 * args.nb3 + i2 * args.nb2 + i1 * args.nb1 + i0 * args.nb0);
+            const float x0 = src[0];
+            const float x1 = src[1];
+            dst_data[0] = x0 * cos_theta - x1 * sin_theta;
+            dst_data[1] = fma(x0, sin_theta, x1 * cos_theta);
+        } else {
+            device const float * const src = (device float *) (src0 + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+            device float * dst_data = (device float *) (dst + i3 * args.nb3 + i2 * args.nb2 + i1 * args.nb1 + i0 * args.nb0);
+            dst_data[0] = src[0];
+            dst_data[1] = src[1];
+        }
+    }
+}
+
+// Source-arithmetic K-RoPE plus f16 K/V cache append for the Llama source
+// FlashAttention lane. The K values follow the exact rope_norm_llama_b9430
+// arithmetic and are rounded directly into the only cache representation that
+// this lane consumes; V uses the same f32-to-half conversion as the separate
+// cache append kernel.
+kernel void rope_norm_llama_b9430_cache_kv_f16(
+    constant LlamaB9430RopeArgs & args [[buffer(0)]],
+    device const char * src_k          [[buffer(1)]],
+    device const char * src_pos        [[buffer(2)]],
+    device const char * src_factors    [[buffer(3)]],
+    device const float * src_v         [[buffer(4)]],
+    device       half * dst_k          [[buffer(5)]],
+    device       half * dst_v          [[buffer(6)]],
+    constant uint & dst_off            [[buffer(7)]],
+    ushort tiitg                       [[thread_index_in_threadgroup]],
+    ushort3 tptg                       [[threads_per_threadgroup]],
+    uint3 tgpig                        [[threadgroup_position_in_grid]])
+{
+    const int i1 = tgpig[0];
+    const int i2 = tgpig[1];
+    const int i3 = tgpig[2];
+    float corr_dims[2];
+    llama_b9430_rope_yarn_corr_dims(
+        args.n_dims, args.n_ctx_orig, args.freq_base, args.beta_fast, args.beta_slow, corr_dims
+    );
+    device const int32_t * pos = (device const int32_t *) src_pos;
+    const float theta_base = (float) pos[i2];
+    const float inv_ndims = -1.f / args.n_dims;
+    float cos_theta;
+    float sin_theta;
+    for (int i0 = 2 * tiitg; i0 < args.ne0; i0 += 2 * tptg.x) {
+        const uint index = (uint)(i3 * args.ne01 * args.ne00 + i2 * args.ne01 * args.ne00 + i1 * args.ne00 + i0);
+        device const float * const src = (device float *) (src_k + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+        if (i0 < args.n_dims) {
+            const int ic = i0 / 2;
+            const float theta = theta_base * pow(args.freq_base, inv_ndims * i0);
+            const float freq_factor = args.src2 ? ((device const float *) src_factors)[ic] : 1.0f;
+            llama_b9430_rope_yarn(
+                theta / freq_factor, args.freq_scale, corr_dims, i0, args.ext_factor,
+                args.attn_factor, &cos_theta, &sin_theta
+            );
+            const float x0 = src[0];
+            const float x1 = src[1];
+            dst_k[dst_off + index + 0u] = half(x0 * cos_theta - x1 * sin_theta);
+            dst_k[dst_off + index + 1u] = half(fma(x0, sin_theta, x1 * cos_theta));
+        } else {
+            dst_k[dst_off + index + 0u] = half(src[0]);
+            dst_k[dst_off + index + 1u] = half(src[1]);
+        }
+        dst_v[dst_off + index + 0u] = half(src_v[index + 0u]);
+        dst_v[dst_off + index + 1u] = half(src_v[index + 1u]);
+    }
+}
+
+// Source-arithmetic Q-RoPE alongside the fused K-RoPE/f16 K/V cache append.
+// Q has more heads than K/V on grouped-query Llama, so every Q head writes its
+// normal f32 RoPE output while the leading K/V heads also append their f16
+// cache image. No arithmetic is shared between the two projections.
+kernel void rope_norm_llama_b9430_qkv_cache_f16(
+    constant LlamaB9430RopeArgs & args [[buffer(0)]],
+    device const char * src_q          [[buffer(1)]],
+    device const char * src_k          [[buffer(2)]],
+    device const char * src_pos        [[buffer(3)]],
+    device const char * src_factors    [[buffer(4)]],
+    device const float * src_v         [[buffer(5)]],
+    device       char * dst_q          [[buffer(6)]],
+    device       half * dst_k          [[buffer(7)]],
+    device       half * dst_v          [[buffer(8)]],
+    constant uint & dst_off            [[buffer(9)]],
+    constant uint & kv_heads           [[buffer(10)]],
+    ushort tiitg                       [[thread_index_in_threadgroup]],
+    ushort3 tptg                       [[threads_per_threadgroup]],
+    uint3 tgpig                        [[threadgroup_position_in_grid]])
+{
+    const int i1 = tgpig[0];
+    const int i2 = tgpig[1];
+    const int i3 = tgpig[2];
+    float corr_dims[2];
+    llama_b9430_rope_yarn_corr_dims(
+        args.n_dims, args.n_ctx_orig, args.freq_base, args.beta_fast, args.beta_slow, corr_dims
+    );
+    device const int32_t * pos = (device const int32_t *) src_pos;
+    const float theta_base = (float) pos[i2];
+    const float inv_ndims = -1.f / args.n_dims;
+    float cos_theta;
+    float sin_theta;
+    for (int i0 = 2 * tiitg; i0 < args.ne0; i0 += 2 * tptg.x) {
+        device const float * const q_src = (device float *) (src_q + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+        device float * q_dst = (device float *) (dst_q + i3 * args.nb3 + i2 * args.nb2 + i1 * args.nb1 + i0 * args.nb0);
+        if (i0 < args.n_dims) {
+            const int ic = i0 / 2;
+            const float theta = theta_base * pow(args.freq_base, inv_ndims * i0);
+            const float freq_factor = args.src2 ? ((device const float *) src_factors)[ic] : 1.0f;
+            llama_b9430_rope_yarn(
+                theta / freq_factor, args.freq_scale, corr_dims, i0, args.ext_factor,
+                args.attn_factor, &cos_theta, &sin_theta
+            );
+            const float q0 = q_src[0];
+            const float q1 = q_src[1];
+            q_dst[0] = q0 * cos_theta - q1 * sin_theta;
+            q_dst[1] = fma(q0, sin_theta, q1 * cos_theta);
+
+            if ((uint)i1 < kv_heads) {
+                const uint index = (uint)(i1 * args.ne00 + i0);
+                device const float * const k_src = (device float *) (src_k + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+                const float k0 = k_src[0];
+                const float k1 = k_src[1];
+                dst_k[dst_off + index + 0u] = half(k0 * cos_theta - k1 * sin_theta);
+                dst_k[dst_off + index + 1u] = half(fma(k0, sin_theta, k1 * cos_theta));
+                dst_v[dst_off + index + 0u] = half(src_v[index + 0u]);
+                dst_v[dst_off + index + 1u] = half(src_v[index + 1u]);
+            }
+        } else {
+            q_dst[0] = q_src[0];
+            q_dst[1] = q_src[1];
+            if ((uint)i1 < kv_heads) {
+                const uint index = (uint)(i1 * args.ne00 + i0);
+                device const float * const k_src = (device float *) (src_k + i3 * args.nb03 + i2 * args.nb02 + i1 * args.nb01 + i0 * args.nb00);
+                dst_k[dst_off + index + 0u] = half(k_src[0]);
+                dst_k[dst_off + index + 1u] = half(k_src[1]);
+                dst_v[dst_off + index + 0u] = half(src_v[index + 0u]);
+                dst_v[dst_off + index + 1u] = half(src_v[index + 1u]);
+            }
+        }
+    }
+}
+
 kernel void rope_q_f32_inplace(
     device       float* q              [[buffer(0)]],
     constant ArgbufRopeQ& args         [[buffer(1)]],
@@ -513,6 +927,32 @@ kernel void rope_q_f32_inplace(
     q[off1] = x0 * s + x1 * c;
 }
 
+kernel void rope_q_interleaved_concat(
+    device const float* src          [[buffer(0)]],
+    device       float* dst          [[buffer(1)]],
+    constant ArgbufRopeQ& args       [[buffer(2)]],
+    uint id                          [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.qk_rope_dim / 2u;
+    uint total_pairs = args.n_heads * pairs_per_head;
+    if (id >= total_pairs) return;
+
+    uint head = id / pairs_per_head;
+    uint pair = id - head * pairs_per_head;
+    uint half_dim = args.qk_rope_dim / 2u;
+    uint src_base = head * args.q_head_dim + args.qk_nope_dim;
+    uint dst_base = src_base;
+    uint src0 = src_base + 2u * pair;
+    uint src1 = src0 + 1u;
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.qk_rope_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = src[src0];
+    float x1 = src[src1];
+    dst[dst_base + pair] = x0 * c - x1 * s;
+    dst[dst_base + half_dim + pair] = x0 * s + x1 * c;
+}
+
 kernel void rope_slice_f32_inplace(
     device       float* x        [[buffer(0)]],
     constant     uint&  offset   [[buffer(1)]],
@@ -533,6 +973,27 @@ kernel void rope_slice_f32_inplace(
     float x1 = x[off1];
     x[off0] = x0 * c - x1 * s;
     x[off1] = x0 * s + x1 * c;
+}
+
+kernel void rope_slice_interleaved_concat(
+    device const float* src          [[buffer(0)]],
+    device       float* dst          [[buffer(1)]],
+    constant ArgbufRopeInterleaved& args [[buffer(2)]],
+    uint id                          [[thread_position_in_grid]])
+{
+    uint half_dim = args.head_dim / 2u;
+    if (id >= half_dim) return;
+    uint src0 = args.src_offset + 2u * id;
+    uint src1 = src0 + 1u;
+    uint dst0 = args.dst_offset + id;
+    uint dst1 = dst0 + half_dim;
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(id) / float(args.head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = src[src0];
+    float x1 = src[src1];
+    dst[dst0] = x0 * c - x1 * s;
+    dst[dst1] = x0 * s + x1 * c;
 }
 
 // R2 — batched RoPE over B multi-seq decode slots, each at its OWN position
@@ -829,6 +1290,24 @@ kernel void add_inplace(
 {
     if (gid >= n) return;
     a[gid] += b[gid];
+}
+
+// Offset variant for projection biases written into an absolute KV-cache row.
+// `dst_off` and `bias_off` are element offsets, not byte offsets.
+struct ArgbufAddInplaceOff {
+    uint n;
+    uint dst_off;
+    uint bias_off;
+};
+
+kernel void add_inplace_off(
+    device       float* a                 [[buffer(0)]],
+    device const float* b                 [[buffer(1)]],
+    constant ArgbufAddInplaceOff& args    [[buffer(2)]],
+    uint gid                              [[thread_position_in_grid]])
+{
+    if (gid >= args.n) return;
+    a[args.dst_off + gid] += b[args.bias_off + gid];
 }
 
 // Phase 7 Wedge 7b — fp16 rmsnorm.

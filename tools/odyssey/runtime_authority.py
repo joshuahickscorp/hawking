@@ -8,7 +8,7 @@ Full-model forward of the 92 GB Math-Preserve artifact is not feasible on a
 2. Runs a fixed-prompt CPU-authority path (RMSNorm + fixed projection) twice
    and requires bit-identical float32 logits.
 3. Additionally runs the documented functional-codec CPU authority twice
-   (tools/condense/gravity_functional_codec.execute) for organ-level
+   (lab/operators/gravity_functional_codec.execute) for organ-level
    bit-identity.
 
 What is NOT checked: full multi-layer GLM-5.2 forward, full vocab lm_head
@@ -146,8 +146,10 @@ def artifact_single_layer_authority(artifact: Path = MATH_ARTIFACT) -> dict[str,
 
 def functional_codec_authority() -> dict[str, Any]:
     """Documented CPU authority: gravity_functional_codec.execute, twice."""
-    sys.path.insert(0, str(ROOT / "tools" / "condense"))
-    import gravity_functional_codec as codec  # type: ignore
+    # This is the authoritative recomposed module.  The prior import pointed
+    # into the retired tools/condense tree, so T0's CPU authority could be
+    # described in a receipt while no longer being importable.
+    from lab.operators import gravity_functional_codec as codec
 
     # Minimal direct-map payload (hidden=0): left is [width, out_width] float16.
     width, out_width = 8, 4
@@ -191,7 +193,7 @@ def functional_codec_authority() -> dict[str, Any]:
     return {
         "status": "PASS" if identical else "FAIL",
         "path": path,
-        "module": "tools/condense/gravity_functional_codec.py",
+        "module": "lab/operators/gravity_functional_codec.py",
         "bit_identical_two_runs": identical,
         "output_sha256_run1": hashlib.sha256(np.ascontiguousarray(y1).tobytes()).hexdigest(),
         "output_sha256_run2": hashlib.sha256(np.ascontiguousarray(y2).tobytes()).hexdigest(),

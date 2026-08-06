@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG2",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503",
+  "terminal_gate": {
+    "name": "STATE_ADVANCE",
+    "result": "FAIL",
+    "evidence": "evidence/tg/TG2_MISTRAL_SMALL_ADAPTER_ORACLE.json",
+    "boundary": "The generic adapter did not emit a first token or accounting after 46 seconds, so the exact launched process was terminated."
+  },
+  "source": {
+    "workspace_path": "models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "source_receipt": "evidence/tg/TG2_MISTRAL_SMALL_SOURCE_RECEIPT.json"
+  },
+  "eviction": {
+    "command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "workspace_copy_absent_after_command": true,
+    "remaining_active_parent_bytes_under_models_tg_active": 28672,
+    "physical_space_reclaimed": "NOT_YET_PROVEN: macOS Trash is recoverable storage; empty it manually only if the recovery window is no longer wanted."
+  },
+  "rehydration_rule": "Do not retain this parent. A Mistral repair must re-download and verify this SHA-256, then make K0/watchdog accounting observable before a family tune matrix is considered."
+}

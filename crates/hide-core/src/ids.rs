@@ -121,7 +121,10 @@ mod tests {
         with_deterministic_ids(0, || {
             let x = EventId::new();
             let y = EventId::new();
- assert!( y.as_str() > x.as_str(), "a later id sorts after an earlier id" );
+            assert!(
+                y.as_str() > x.as_str(),
+                "a later id sorts after an earlier id"
+            );
         });
     }
     #[test]
@@ -132,7 +135,10 @@ mod tests {
             with_deterministic_ids(0, || (0..4).map(|_| EventId::new().0).collect::<Vec<_>>());
         assert_eq!(first, second, "same seed yields identical id sequence");
         for pair in first.windows(2) {
- assert!( pair[1] > pair[0], "deterministic ids are strictly increasing" );
+            assert!(
+                pair[1] > pair[0],
+                "deterministic ids are strictly increasing"
+            );
         }
     }
 }

@@ -515,7 +515,11 @@ mod tests {
             )
             .await
             .unwrap();
- assert_eq!( calls.load(Ordering::SeqCst), 0, "vector leg ran despite include_semantic=false" );
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            0,
+            "vector leg ran despite include_semantic=false"
+        );
         retriever
             .search_with_legs(
                 "q",
@@ -528,7 +532,11 @@ mod tests {
             )
             .await
             .unwrap();
- assert_eq!( calls.load(Ordering::SeqCst), 1, "vector leg should have embedded the query" );
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            1,
+            "vector leg should have embedded the query"
+        );
     }
     #[tokio::test]
     async fn full_search_fuses_and_reranks() {

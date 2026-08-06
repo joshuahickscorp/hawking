@@ -1,0 +1,107 @@
+{
+  "schema": "hawking.tg.storage_cleanup.v1",
+  "status": "RECEIPT_AWARE_RECOVERABLE_QUARANTINE",
+  "recorded_at": "2026-07-31",
+  "authority_note": "Operational storage ledger only; it does not promote a model, artifact, TG rung, or restream.",
+  "active_policy": {
+    "model_family": "qwen",
+    "model_path": "models/tg-breadth/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "model_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "model_bytes": 8988110976,
+    "active_artifacts": [
+      {
+        "path": "/tmp/hawking-tg-artifacts/qwen14-source-q4k.gravity",
+        "sha256": "128760939a27ea7beb4184310416385da3e5fb7f4c16e05e559a9e0f9ff80f36",
+        "bytes": 8982325113,
+        "receipt": "evidence/tg/TG20_QWEN_SOURCE_QUANT_GRAVITY.json"
+      },
+      {
+        "path": "/tmp/hawking-tg-artifacts/qwen14-source-q4k-interleaved.gravity",
+        "bytes": 8982325141,
+        "receipt": "evidence/tg/TG20_QWEN_SOURCE_QUANT_GRAVITY.json"
+      }
+    ],
+    "selection_receipt": "evidence/tg/TG_LIVE_RECEIPT_AUDIT_2026_07_31.json",
+    "selection_reason": "The live audit names Qwen as the next bounded primary instrument and requires one active model under a measured 90-GB ledger.",
+    "parallel_admission": "deny unless one measured ledger proves model + receipt-bound artifacts + bounded next metadata/ranges + scratch <= 90000000000 bytes and one heavy GPU lease is available"
+  },
+  "before": {
+    "models_bytes": 31850349544,
+    "gravity_artifacts_bytes": 46366029289,
+    "audit_combined_bytes": 78216378833,
+    "note": "The combined figure is the prior live audit observation before this quarantine; it excludes the additional unreferenced scratch trees listed below."
+  },
+  "quarantined_recoverable": {
+    "root": "/Users/scammermike/.Trash/hawking-cleanup-20260731",
+    "physical_space_reclaimed": false,
+    "reclaim_note": "Moving to macOS Trash preserves recovery. Empty Trash manually only after the evidence recovery window is no longer wanted.",
+    "items": [
+      {
+        "original": "models/tg-breadth/deepseek-v2-lite/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/models/tg-breadth/deepseek-v2-lite/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+        "bytes": 10364416320,
+        "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+        "receipt": "evidence/tg/TG4_DEEPSEEK_TERMINAL_EVICTION.json"
+      },
+      {
+        "original": "models/tg-breadth/mistral-nemo/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/models/tg-breadth/mistral-nemo/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+        "bytes": 7477208192,
+        "sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46",
+        "receipt": "evidence/tg/TG10_MISTRAL_TERMINAL_EVICTION.json"
+      },
+      {
+        "original": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+        "bytes": 4920739232,
+        "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+        "receipt": "evidence/tg/TG1_LLAMA_TERMINAL_EVICTION.json"
+      },
+      {
+        "original": "/tmp/hawking-llama-student-paired-chunked-20260731",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/tmp/hawking-llama-student-paired-chunked-20260731",
+        "bytes": 941313681,
+        "connection_check": "No receipt or adapter registry references the path or directory basename."
+      },
+      {
+        "original": "/tmp/hawking-llama-resident-student-raw-20260731",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/tmp/hawking-llama-resident-student-raw-20260731",
+        "bytes": 873574495,
+        "connection_check": "No receipt or adapter registry references the path or directory basename."
+      },
+      {
+        "original": "/tmp/hawking-llama-student-512-20260731",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/tmp/hawking-llama-student-512-20260731",
+        "bytes": 211267103,
+        "connection_check": "No receipt or adapter registry references the path or directory basename."
+      },
+      {
+        "original": "/tmp/hawking-llama-crossblock-l0-l31-smallchunks-20260731",
+        "quarantine": "/Users/scammermike/.Trash/hawking-cleanup-20260731/tmp/hawking-llama-crossblock-l0-l31-smallchunks-20260731",
+        "bytes": 164310008,
+        "connection_check": "No receipt or adapter registry references the path or directory basename."
+      }
+    ],
+    "total_bytes": 24952829031
+  },
+  "after_live_workspace": {
+    "models_tree_bytes": 9087985800,
+    "gravity_artifacts_bytes": 46366029289,
+    "receipt_bound_llama_proof_trees_bytes": 2066882918,
+    "active_ledger_bytes": 57520898007,
+    "active_ledger_gib": 53.57051082607359,
+    "recoverable_quarantine_bytes": 24952829031,
+    "workspace_plus_recoverable_quarantine_bytes": 82473727038,
+    "workspace_plus_recoverable_quarantine_under_90gb": true,
+    "remaining_large_model_payloads": [
+      "models/tg-breadth/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf"
+    ],
+    "preserved_receipt_bound_paths": [
+      "/tmp/hawking-llama-resident-binary-full-20260731/layer31-pairs.npz",
+      "/tmp/hawking-llama-crossblock-l0-l31-pty-20260731/l0-l31-pairs.npz",
+      "/tmp/hawking-tg-artifacts"
+    ],
+    "adapters_and_receipts": "preserved"
+  },
+  "next_rotation_rule": "Fetch only the next bounded family after the current Qwen gate seals or the explicit two-failure roofline rule fires; stream/shard large parents and retain only the current quant plus receipt-linked artifacts."
+}

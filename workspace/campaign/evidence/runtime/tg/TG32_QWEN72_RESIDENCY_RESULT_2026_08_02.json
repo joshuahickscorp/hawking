@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.tg.same_model_k3_result.v1",
+  "status": "RETIRED_RESIDENCY_NO_WALL_WIN_P99_REGRESSION",
+  "at_utc": "2026-08-02",
+  "campaign": "qwen72-residency-k3-2026-08-02",
+  "preregistration": "evidence/tg/TG32_QWEN72_RESIDENCY_PREREGISTRATION_2026_08_02.json",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "candidate": {
+    "environment_delta": "HAWKING_QWEN_RESIDENCY=1",
+    "device_id": "Apple M3 Ultra",
+    "tps": 2.858173926033475,
+    "prefill_ms": 1893.2394160000001,
+    "decode_ms": 5597.979834,
+    "p50_ms": 349.500354,
+    "p95_ms": 353.9689275,
+    "p99_ms": 355.3782519,
+    "dispatches_per_forward": 964,
+    "command_buffers_per_token": 1,
+    "metal_dispatches_total": 15424,
+    "complete_tokens": 16,
+    "fallback_count": 0,
+    "output_hash": "34ef0c9d0184dc0d5863cf5a4e67cc1c51aa0ad572d1009a9bb5f708eeb7a980",
+    "load_complete_ms": 18097.646,
+    "peak_resident_bytes": 8291336192
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN72_CLEAN_NO_TRACE_RESULT_2026_08_02.json",
+    "tps": 2.8601858696685474,
+    "p50_ms": 349.3680835,
+    "p95_ms": 350.694136,
+    "p99_ms": 351.5381608,
+    "dispatches_per_forward": 964,
+    "fallback_count": 0,
+    "output_hash": "34ef0c9d0184dc0d5863cf5a4e67cc1c51aa0ad572d1009a9bb5f708eeb7a980"
+  },
+  "delta": {
+    "tps_percent": -0.07034310799197696,
+    "p50_percent": 0.03785992660660931,
+    "p95_percent": 0.9338027539758986,
+    "p99_percent": 1.092368205847416,
+    "dispatch_delta": 0,
+    "output_hash_match": true
+  },
+  "promotion": {
+    "same_model": true,
+    "capability_match": "exact output hash match; full-logit V2.1 not claimed",
+    "physical_residency_engaged": true,
+    "named_rung": false,
+    "deepest_stable_rung": null,
+    "verdict": "RETIRE: residency set is physically engaged and clean but does not reduce dispatch topology, is 0.070 percent slower, and regresses p99 by 1.092 percent. The Qwen72 floor remains the clean no-trace native path at 2.860 TPS.",
+    "reopen_condition": "Only revisit with a different memory layout or llama.cpp-backed kernel that reduces physical Q5/Q8 work and clears the 3 percent same-model wall gate."
+  },
+  "owner_fences_false": true
+}

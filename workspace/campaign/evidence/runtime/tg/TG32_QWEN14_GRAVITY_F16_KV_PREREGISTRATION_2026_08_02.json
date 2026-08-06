@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v2",
+  "status": "PREREGISTERED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "hypothesis": "Using the existing executable source-preserving Q4_K Gravity representation with device-resident F16 KV images and flash attention will reduce decode bytes and complete-token wall time on the same M3 Ultra without changing token decisions.",
+  "mechanism": "Set HAWKING_GRAVITY_F16_KV=1. GravityLlamaGpu retains the source-preserving packed weights, appends each RoPE'd K/V row into persistent F16 cache images, and selects the F16-KV flash-attention grammar. No weight, tokenizer, prompt, sampling, or command-topology changes are admitted.",
+  "scope": "same exact source and executable Gravity artifact, same immutable revision, same device, same prompt and complete-token protocol",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-f16kv.gravity",
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "resume_hash_verified": true
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 32,
+    "runs_each_side": 2,
+    "max_seq_len": 64,
+    "control_env": "HAWKING_REQUIRE_METAL=1",
+    "candidate_env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_F16_KV=1",
+    "fallback_required": 0,
+    "clean_sequential_gpu_required": true
+  },
+  "promotion_gates": {
+    "all_complete_tokens": true,
+    "continuation_hash_equal": true,
+    "numeric_parity_v21": true,
+    "dispatch_count_positive": true,
+    "fallback_count_zero": true,
+    "candidate_wall_improvement_percent_min": 3.0,
+    "candidate_p99_not_regress_percent_max": 0.0,
+    "same_model_before_after": true,
+    "rung_claim_requires": "candidate median TPS clears TG20 or a higher named rung; otherwise retain the prior TG32 narrow floor"
+  },
+  "reopen_condition": "If F16 KV changes a token, fails source parity, regresses complete-token wall or tail, or cannot prove physical flash dispatches, retire this representation and require a materially different executable representation."
+}

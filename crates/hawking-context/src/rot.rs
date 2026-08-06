@@ -324,7 +324,13 @@ mod tests {
     #[test]
     fn critical_occupancy_forces_refresh() {
         let m = ContextManifest::new(4096);
-        let r = detect_context_rot(&m, Some(0.95), Some(WatermarkLevel::Critical), None, RotThresholds::default());
+        let r = detect_context_rot(
+            &m,
+            Some(0.95),
+            Some(WatermarkLevel::Critical),
+            None,
+            RotThresholds::default(),
+        );
         assert_eq!(r.severity, RotSeverity::Critical);
         assert!(r.should_refresh);
         assert!(r.explanations.iter().any(|e| e.contains("occupancy")));
@@ -333,7 +339,13 @@ mod tests {
     fn redundant_pack_is_degraded() {
         let mut m = ContextManifest::new(4096);
         m.retained = vec![span(0.8, false, 100), span(0.75, false, 100)];
-        let r = detect_context_rot(&m, Some(0.2), Some(WatermarkLevel::Normal), None, RotThresholds::default());
+        let r = detect_context_rot(
+            &m,
+            Some(0.2),
+            Some(WatermarkLevel::Normal),
+            None,
+            RotThresholds::default(),
+        );
         assert!(r.severity >= RotSeverity::Degraded);
         assert!(r.signals.iter().any(|s| s.code.starts_with("redundant")));
     }

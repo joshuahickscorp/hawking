@@ -3,7 +3,14 @@ use hawking_core::kernels;
 use hawking_core::metal::TokenCommandBuffer;
 mod common;
 use common::*;
-fn run_per_slot(x: &[f32], n_heads: usize, head_dim: usize, slot_dim: usize, positions: &[u32], theta: f32) -> Vec<f32> {
+fn run_per_slot(
+    x: &[f32],
+    n_heads: usize,
+    head_dim: usize,
+    slot_dim: usize,
+    positions: &[u32],
+    theta: f32,
+) -> Vec<f32> {
     let ctx = ctx();
     let buf = new_f32_buf(ctx, x);
     let b = positions.len();
@@ -27,7 +34,14 @@ fn run_per_slot(x: &[f32], n_heads: usize, head_dim: usize, slot_dim: usize, pos
     }
     read_f32_buf(&buf, b * slot_dim)
 }
-fn run_batched(x: &[f32], n_heads: usize, head_dim: usize, slot_dim: usize, positions: &[u32], theta: f32) -> Vec<f32> {
+fn run_batched(
+    x: &[f32],
+    n_heads: usize,
+    head_dim: usize,
+    slot_dim: usize,
+    positions: &[u32],
+    theta: f32,
+) -> Vec<f32> {
     let ctx = ctx();
     let buf = new_f32_buf(ctx, x);
     let b = positions.len();
@@ -35,8 +49,10 @@ fn run_batched(x: &[f32], n_heads: usize, head_dim: usize, slot_dim: usize, posi
     let pos_buf = ctx.new_buffer_with_bytes(&pos_bytes);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::rope_f32_batched_multiseq_tcb(&mut tcb, &buf, &pos_buf, n_heads, head_dim, slot_dim, b, theta)
-            .expect("batched rope encode");
+        kernels::rope_f32_batched_multiseq_tcb(
+            &mut tcb, &buf, &pos_buf, n_heads, head_dim, slot_dim, b, theta,
+        )
+        .expect("batched rope encode");
         tcb.commit_and_wait().expect("batched rope commit");
     }
     read_f32_buf(&buf, b * slot_dim)
@@ -54,13 +70,19 @@ fn rope_batched_multiseq_matches_per_slot() {
     let expected_q = run_per_slot(&xq, n_heads, head_dim, q_dim, &positions, theta);
     let actual_q = run_batched(&xq, n_heads, head_dim, q_dim, &positions, theta);
     let diff_q = max_abs_diff(&expected_q, &actual_q);
-    assert_eq!(diff_q, 0.0, "Q rope: batched != per-slot (max_abs_diff {diff_q})");
+    assert_eq!(
+        diff_q, 0.0,
+        "Q rope: batched != per-slot (max_abs_diff {diff_q})"
+    );
     let kv_dim = n_kv_heads * head_dim;
     let xk = fixed_f32(b * kv_dim, 0x6262_6262_6262_6262);
     let expected_k = run_per_slot(&xk, n_kv_heads, head_dim, kv_dim, &positions, theta);
     let actual_k = run_batched(&xk, n_kv_heads, head_dim, kv_dim, &positions, theta);
     let diff_k = max_abs_diff(&expected_k, &actual_k);
-    assert_eq!(diff_k, 0.0, "K rope: batched != per-slot (max_abs_diff {diff_k})");
+    assert_eq!(
+        diff_k, 0.0,
+        "K rope: batched != per-slot (max_abs_diff {diff_k})"
+    );
     let one = [777u32];
     let x1 = fixed_f32(q_dim, 0x7373_7373_7373_7373);
     let e1 = run_per_slot(&x1, n_heads, head_dim, q_dim, &one, theta);

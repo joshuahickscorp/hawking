@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.one_mountain.capability_g0.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "gate": "G0 bytes, coverage, hashes, provenance",
+  "status": "passed_for_retained_selected_source_body_only",
+  "selected_source": {
+    "path": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-q4km-2026-08-02/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "coverage": "A fresh SHA-256 pass streamed every byte of the retained source file.",
+    "fresh_rehash": "raw/QWEN2P5_72B_Q4KM_G0_SOURCE_REHASH.sha256",
+    "fresh_rehash_sha256": "1fc133a2a561d970ae5d9e4a95d6064c0b30fe501654ff13513ad945ba7b0eec"
+  },
+  "provenance": {
+    "selection_receipt": "HAWKING_ONE_MOUNTAIN_MODEL_SELECTION.json",
+    "selection_receipt_sha256": "602cfa2c013fe261fb5c7bc9760f552e3ff7a4126b871612122be818ec99b860",
+    "artifact_repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "artifact_revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "base_repository": "Qwen/Qwen2.5-72B-Instruct",
+    "base_revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+    "storage_authority_receipt": "HAWKING_ONE_MOUNTAIN_STORAGE_AUTHORITY.json",
+    "storage_authority_receipt_sha256": "3fae88a337945d9885dfa1a03ecfbdec1ef03ea3e7328e13414f8c2b10bd5e55"
+  },
+  "retention": {
+    "selected_source_body_present": true,
+    "duplicate_gravity_body_present": false,
+    "eviction_reason": "The format-verified duplicate Gravity body was retired after its CPU path exceeded the one-hour cutoff and storage needed to return above the substrate continuity floor."
+  },
+  "limits": "This passes G0 only. It establishes neither model quality nor source/provider/Gravity parity, a completed forward, any later capability gate, or throughput."
+}

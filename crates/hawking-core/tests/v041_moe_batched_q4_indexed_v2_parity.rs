@@ -32,17 +32,44 @@ fn run_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
     let mut model_bytes = vec![0xA5u8; 64];
     let base_offset = model_bytes.len();
     model_bytes.extend_from_slice(&fused);
-    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 2 + 1) % n_experts) as u32).collect();
+    let route_ids: Vec<u32> = (0..routes)
+        .map(|i| ((i * 2 + 1) % n_experts) as u32)
+        .collect();
     let x = fixed_input(cols, seed_base ^ 0xDEAD_BEEF);
     let mut scalar_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_raw(ctx(), false, &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut scalar_out)
-        .expect("scalar dispatch should succeed");
+    kernels::moe_batched_gemm_q4_indexed_raw(
+        ctx(),
+        false,
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut scalar_out,
+    )
+    .expect("scalar dispatch should succeed");
     let mut v2_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_raw(ctx(), true, &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut v2_out)
-        .expect("v2 dispatch should succeed");
+    kernels::moe_batched_gemm_q4_indexed_raw(
+        ctx(),
+        true,
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut v2_out,
+    )
+    .expect("v2 dispatch should succeed");
     let diff = max_abs_diff(&scalar_out, &v2_out);
     let _ = bytes_per_expert;
-    assert!(diff < ATOL, "moe_batched_gemm_q4_indexed_v2 vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "moe_batched_gemm_q4_indexed_v2 vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_indexed_q4k_v2_small() {

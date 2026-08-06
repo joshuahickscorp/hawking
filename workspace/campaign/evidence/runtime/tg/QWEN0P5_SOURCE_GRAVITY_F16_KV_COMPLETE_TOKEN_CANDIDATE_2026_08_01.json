@@ -1,0 +1,105 @@
+{
+  "artifact": "models/tg-active/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+  "continuation_sha256": "6d487d8c52a80ed020d03feb04b29c9e7536ce6ef9bb894767e5cb31a67c6218",
+  "decode_command_buffers": 16,
+  "decode_cpu_reference_fallback_total": 0,
+  "decode_dispatches": 6560,
+  "decode_max_ms": 5.918208,
+  "decode_min_ms": 5.347625,
+  "decode_ms": [
+    5.648917,
+    5.451292,
+    5.584708,
+    5.605458,
+    5.419917,
+    5.516166,
+    5.347625,
+    5.3586670000000005,
+    5.481916,
+    5.757333,
+    5.52575,
+    5.391083,
+    5.498083,
+    5.597,
+    5.561084,
+    5.918208
+  ],
+  "decode_p50_ms": 5.516166,
+  "decode_p95_ms": 5.918208,
+  "decode_p99_ms": 5.918208,
+  "decode_tps": 180.4581690802139,
+  "device": "Apple M3 Ultra",
+  "execution_representation": {
+    "artifact_grammar": "source-preserving packed Gravity",
+    "kv_precision": "explicit_f16_candidate",
+    "q4_kernel": "q4_k_b9430_parity_baseline"
+  },
+  "generated_tokens": 16,
+  "greedy_first_token": 220,
+  "greedy_generated_token_ids": [
+    220,
+    19,
+    198,
+    59,
+    2533,
+    54815,
+    11,
+    279,
+    897,
+    315,
+    17767,
+    64,
+    488,
+    293,
+    488,
+    272
+  ],
+  "inline_token_prefix": [
+    17,
+    488,
+    220,
+    17,
+    284
+  ],
+  "kv_bytes_at_final_position": 516096,
+  "load_ms": 214.641083,
+  "measurement_classification": {
+    "capability_gate": "NOT_RUN",
+    "clean_lease": "NOT_ATTESTED_BY_THIS_PROBE",
+    "complete_token": true,
+    "reason": "The probe records physical resident decode facts; a TG promotion additionally requires a capability-matched, CLEAN same-model before/after campaign.",
+    "same_model_candidate_only": true,
+    "tg_promotion_allowed": false
+  },
+  "prefill_command_buffers": 5,
+  "prefill_dispatches": 2050,
+  "prefill_ms": 42.444458,
+  "prefix_tokens": 5,
+  "resident_weight_bytes": 391859712,
+  "rope_freq_factors": null,
+  "rope_interleaved": false,
+  "schema": "hawking.gravity.llama_source_probe.v2",
+  "tokens_file": null,
+  "top5_after_prefix": [
+    {
+      "id": 220,
+      "logit": 20.05813217163086
+    },
+    {
+      "id": 1124,
+      "logit": 15.587569236755371
+    },
+    {
+      "id": 481,
+      "logit": 15.173406600952148
+    },
+    {
+      "id": 856,
+      "logit": 15.143941879272461
+    },
+    {
+      "id": 264,
+      "logit": 14.880316734313965
+    }
+  ]
+}

@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use hawking_orch::inference::StubInferenceClient;
 use hawking_orch::registry::RoleRegistry;
 use hawking_orch::router::SimpleRouter;
@@ -8,6 +7,7 @@ use hide_fleet::manager::{FleetConfig, FleetManager, KernelRunLauncher, RunLaunc
 use hide_fleet::queue::{AgentJob, JobStatus, PriorityClass};
 use hide_fleet::resources::{FixedResourceProbe, ResourceSnapshot, ThermalState};
 use hide_fleet::scheduler::{FleetGovernor, ResourceEnvelope};
+use std::sync::Arc;
 fn nominal_snapshot(slots: u32) -> ResourceSnapshot {
     ResourceSnapshot {
         free_memory_mb: 32_000,
@@ -69,11 +69,18 @@ async fn fleet_drives_a_real_kernel_run_to_done() {
     assert_eq!(plan.admit, vec![job_id.clone()]);
     manager.await_completions(1).await.unwrap();
     let folded = manager.queue().get(&job_id).unwrap();
- assert_eq!( folded.status, JobStatus::Done, "the real kernel run should reach Done" );
+    assert_eq!(
+        folded.status,
+        JobStatus::Done,
+        "the real kernel run should reach Done"
+    );
     assert!(folded.run_id.is_some(), "the kernel minted a run id");
     let events = log.scan(None, None, None).await.unwrap();
     assert!(events.iter().any(|e| e.kind == "user.intent"));
- assert!( events.iter().any(|e| e.kind == "agent.phase"), "kernel drove FSM phases" );
+    assert!(
+        events.iter().any(|e| e.kind == "agent.phase"),
+        "kernel drove FSM phases"
+    );
     assert!(events.iter().any(|e| e.kind == "job.completed"));
     let _ = std::fs::remove_dir_all(&dir);
 }

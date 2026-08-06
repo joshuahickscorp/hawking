@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.tg.source_receipt.v1",
+  "status": "SEALED",
+  "rung": "TG5",
+  "model": "Meta-Llama-3.1-8B-Instruct",
+  "family": "llama",
+  "source": {
+    "repository": "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+    "revision": "bf5b95e96dac0462e2a09145ec66cae9a3f12067",
+    "filename": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "bytes": 4920739232,
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c"
+  },
+  "acquisition": {
+    "method": "hf download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf --local-dir models/tg-active",
+    "preflight": "Hub dry run reported one 4.9G file; the verified artifact occupies 4.58 GiB and satisfies TG5's 6 GiB source budget.",
+    "immutable_revision_source": "models/tg-active/.cache/huggingface/download/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf.metadata",
+    "source_copy_policy": "This is the sole active ladder parent. It must be evicted after a terminal Gravity/measurement receipt before another rung is acquired."
+  },
+  "local_inspection": {
+    "architecture": "llama",
+    "layers": 32,
+    "hidden": 4096,
+    "kv_heads": 8,
+    "context_estimate": 4096,
+    "weights_plus_kv_estimate_bytes": 5994481056,
+    "doctor_command": "hawking doctor --weights models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
+  }
+}

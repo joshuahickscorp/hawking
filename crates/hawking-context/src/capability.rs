@@ -151,10 +151,7 @@ impl ContextCapability {
     ) -> Self {
         let (native, native_src_note) = match live_native {
             Some(n) if n > 0 => (
-                DeclaredNumber::measured(
-                    n,
-                    "native maximum from live engine /v1/hawking/context",
-                ),
+                DeclaredNumber::measured(n, "native maximum from live engine /v1/hawking/context"),
                 "native is measured live",
             ),
             _ => (
@@ -189,7 +186,8 @@ impl ContextCapability {
             ),
         };
 
-        let mut explanations = vec![
+        let mut explanations =
+            vec![
             format!(
                 "native_maximum={} ({})",
                 native.tokens.map(|t| t.to_string()).unwrap_or_else(|| "none".into()),
@@ -278,7 +276,10 @@ mod tests {
         assert!(cap.validated_agentic.tokens.is_none());
         assert!(cap.kv_curve.is_none());
         assert!(cap.prefill_curve.is_none());
- assert!(cap .explanations .iter() .any(|e| e.contains("do not raise native_maximum")));
+        assert!(cap
+            .explanations
+            .iter()
+            .any(|e| e.contains("do not raise native_maximum")));
     }
     #[test]
     fn unmeasured_validated_numbers_are_none_not_copied_native() {

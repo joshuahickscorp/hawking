@@ -1,0 +1,89 @@
+{
+  "schema": "hawking.tg.same_model_runtime_optimization_preregistration.v1",
+  "status": "PREREGISTERED_GRAVITY_Q4_V3_8R_KERNEL_WAVE",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen14-gravity-q4-v3-8r-v1",
+    "family": "qwen2_dense",
+    "hypothesis": "The llama.cpp-inspired packed Q4_K v3 eight-row threadgroup geometry will improve the Qwen-14B executable Gravity roofline for large projection rows by retaining source bytes while increasing row parallelism and reducing per-row scheduling overhead.",
+    "mechanism": "Set HAWKING_GRAVITY_Q4_V3=1; GravityLlamaGpu routes eligible raw Q4_K GEMVs through gemm_q4_k_m_v3_8r, with strict byte/shape guards. Non-Q4_K tensors remain on their source-authority kernels.",
+    "fallback": "Reject if any source tensor is ineligible, if topology does not change, if exact continuation parity changes, if fallback is nonzero, or if complete-token wall/p95/p99 regresses. This is not a quantization or capability shortcut.",
+    "reopen_condition": "Only a new Q4 geometry or kernel with a measured wall reduction may reopen this wave."
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-q4-v3.gravity",
+    "expected_payload_bytes": 8982142976,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "max_new_tokens": 32,
+    "complete_tokens_required": 32,
+    "runs_each_side": 2,
+    "device_required": "Apple M3 Ultra",
+    "cpu_reference_fallback_required": 0,
+    "continuation_hash_required": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "wall_win_required_percent": 3.0,
+    "p95_regression_allowed_percent": 0.0,
+    "p99_regression_allowed_percent": 0.0,
+    "dispatch_topology_must_change": true
+  },
+  "control": {
+    "receipt": "evidence/tg/TG32_QWEN14_GRAVITY_FUSED_QKV_RESULT_2026_08_02.json",
+    "median_tps": 38.091488052794695,
+    "median_decode_ms": 813.835833,
+    "median_p50_ms": 25.2305,
+    "median_p95_ms": 26.47173975,
+    "median_p99_ms": 27.30495225,
+    "dispatches_per_forward": 770,
+    "fallback_count": 0
+  },
+  "admission": {
+    "free_bytes_before": 369458073600,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "source_bytes": 8988110976,
+    "artifact_bytes": 8982325263,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "projected_free_after_source_artifact_scratch": 324576982897,
+    "projected_residual_above_floor_bytes": 124571093341,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true,
+    "runtime": {
+      "huggingface_hub": "1.24.0",
+      "hf_xet": "1.5.2"
+    }
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "promotion_boundary": "Only same-model complete-token parity plus CLEAN Metal timing can promote; existing TG32 remains narrow G0/G1 and G2-G9 remain open."
+}

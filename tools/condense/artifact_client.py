@@ -102,7 +102,8 @@ def iter_tensors(path):
         yield e, read_tensor(path, e["name"], verify_hash=False)
 
 def write_shard(path, payloads, *, model, compression, tokenizer=None,
-                architecture=None, shard=None, telemetry=None):
+                architecture=None, shard=None, telemetry=None,
+                gguf_metadata=None):
     path = os.fspath(path)
     tensors, lengths, blobs = [], [], []
     for d, blob in payloads:
@@ -113,7 +114,8 @@ def write_shard(path, payloads, *, model, compression, tokenizer=None,
     body = b"".join(blobs)
     meta = json.dumps({"model": model, "compression": compression,
                        "tokenizer": tokenizer or {}, "architecture": architecture or {},
-                       "shard": shard or {}, "tensors": tensors, "payload_lengths": lengths},
+                       "shard": shard or {}, "gguf_metadata": gguf_metadata or {},
+                       "tensors": tensors, "payload_lengths": lengths},
                       separators=(",", ":")).encode()
     mb = (ctypes.c_uint8 * len(meta)).from_buffer_copy(meta) if meta else (ctypes.c_uint8 * 0)()
     bb = (ctypes.c_uint8 * len(body)).from_buffer_copy(body) if body else (ctypes.c_uint8 * 0)()

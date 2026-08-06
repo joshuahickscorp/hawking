@@ -78,7 +78,10 @@ mod tests {
     fn ttl_blocks_after_expiry() {
         let r = RetentionPolicy::ttl_until(1000);
         assert!(r.check_readable(999, None).is_ok());
- assert!(matches!( r.check_readable(1000, None), Err(ObjectError::RetentionDenied { .. }) ));
+        assert!(matches!(
+            r.check_readable(1000, None),
+            Err(ObjectError::RetentionDenied { .. })
+        ));
     }
     #[test]
     fn session_requires_live() {

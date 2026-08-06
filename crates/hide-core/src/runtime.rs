@@ -147,6 +147,17 @@ pub enum StreamChunk {
 pub struct GenerationStats {
     pub input_tokens: usize,
     pub output_tokens: usize,
+    /// Decode wall time reported by the runtime, excluding prompt prefill.
+    /// `None` means the provider did not expose this metric.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decode_ms: Option<f64>,
+    /// Completed decode forwards represented by `decode_ms`. This is distinct
+    /// from emitted tokens because token zero can be sampled from prompt prefill.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_decode_forwards: Option<usize>,
+    /// Runtime-reported decode throughput. Consumers must pair it with
+    /// `completed_decode_forwards` when claiming complete-forward TPS.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub decode_tokens_per_second: Option<f32>,
 }
 

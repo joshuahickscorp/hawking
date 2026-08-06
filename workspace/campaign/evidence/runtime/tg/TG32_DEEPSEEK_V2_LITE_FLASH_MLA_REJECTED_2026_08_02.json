@@ -1,0 +1,76 @@
+{
+  "schema": "hawking.tg.same_model_schedule_rejection.v1",
+  "status": "RETIRED_BELOW_WALL_THRESHOLD",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "decode_tps": 41.06909043843913,
+    "decode_ms": 779.174792,
+    "p50_ms": 24.2556045,
+    "p95_ms": 24.8297917,
+    "p99_ms": 24.95775869,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "first_four_ids": [8913, 13, 185, 185],
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-flash-candidate-2026-08-02.json",
+    "change": "resident one-TCB Flash-MLA adapter using flash_attn_decode_kernel",
+    "profile_sha256": "96353f241de867e554d889300a335415e4bc83ab3aa79cb516e18a734f8c310a",
+    "kernel_adapter_sha256": "b1b5575ff8ec482574869c740c3d7958ff3a477a9b3b1e06e40a5e33821d6453",
+    "runtime_sha256": "4e046309777fedced2fb9dae2d595a8785ed9ecb5d34901471ea91c2e03493ae",
+    "shader_sha256": "683b8a40ff76b807b8dc121c14e5051d0ba820c2c5fa09a4916400e045e5eccf",
+    "decode_tps": 37.29751528615353,
+    "decode_ms": 857.966,
+    "complete_token_latency_ms": {"mean": 26.73438021875, "p50": 26.7228545, "p95": 27.11660015, "p99": 27.16966177, "min": 26.2245, "max": 27.179375},
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "first_four_ids": [8913, 13, 185, 185],
+    "cpu_reference_fallback_count": 0,
+    "prefill_ms": 286.41241699999995,
+    "gpu_trace": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FLASH_MLA_GPU_TRACE_2026_08_02.json",
+    "gpu_trace_sha256": "b19ae644748a89f1e5f0150923afed6aab20329ba6fa6ab4ddc49bb836cb881e"
+  },
+  "delta": {
+    "decode_tps_percent": -9.185,
+    "decode_ms_percent": 10.11,
+    "p99_percent": 8.86,
+    "dispatch_topology_percent": 0.0,
+    "capability_window": "unchanged first four source decisions"
+  },
+  "physical_trace": {
+    "flash_attn_decode_kernel_calls": 243,
+    "flash_attn_decode_kernel_gpu_us": 68418,
+    "legacy_mla_control_gpu_us": 45791,
+    "trace_verdict": "candidate_kernel_was_really_dispatched_but_is_slower"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "verdict": "RETIRE_FLASH_MLA; THE RESIDENT ADAPTER IS CORRECTLY WIRED AND SOURCE-WINDOW-PARITY-PASSING, BUT THE SERIAL MLA CONTROL IS 9.19 PERCENT FASTER AND HAS A BETTER P99",
+  "reopen_condition": "Only revisit with a materially different tile grammar that parallelizes score and value reductions without duplicating q_nope projection or adding extra synchronization."
+}

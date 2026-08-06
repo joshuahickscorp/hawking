@@ -42,10 +42,7 @@ pub enum ObjectError {
     RawBytesForbidden,
 
     #[error("derivative not available: {kind} for {content_hash}")]
-    DerivativeMissing {
-        kind: String,
-        content_hash: String,
-    },
+    DerivativeMissing { kind: String, content_hash: String },
 
     #[error("content address mismatch: expected {expected}, actual {actual}")]
     ContentAddressMismatch { expected: String, actual: String },

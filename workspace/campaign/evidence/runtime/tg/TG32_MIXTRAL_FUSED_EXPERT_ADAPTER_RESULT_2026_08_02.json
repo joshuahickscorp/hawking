@@ -1,0 +1,124 @@
+{
+  "schema": "hawking.tg.large_family_adapter_result.v1",
+  "status": "ADAPTER_REPAIRED_SOURCE_PARITY_BLOCKED",
+  "at_utc": "2026-08-02",
+  "family": "mistral_mixtral",
+  "model": {
+    "name": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+    "total_parameters": "46.7B",
+    "active_parameters": "12.9B",
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "license": "Apache-2.0",
+    "source_repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "source_revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "source_file": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "source_bytes": 28448468384,
+    "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44"
+  },
+  "source_reference": {
+    "engine": "llama.cpp",
+    "build": "b9430 / d48a56eff",
+    "device": "Apple M3 Ultra",
+    "complete_tokens_per_run": 128,
+    "samples_tps": [56.9647, 59.1265, 59.0961],
+    "mean_tps": 58.395754,
+    "fallback": 0,
+    "parity_prompt": "The capital of France is",
+    "parity_completion_text": "a city that is known for its beauty, culture, and history. It is a city that is full of life and energy, and there is always something to",
+    "source_load": "PASS"
+  },
+  "hawking_k0": {
+    "result": "PASS_LOAD_FIRST_FORWARD_AND_RESIDENT_METAL",
+    "device": "Apple M3 Ultra",
+    "tensor_count": 323,
+    "layers": 32,
+    "hidden": 4096,
+    "kv_heads": 8,
+    "fused_tensor_geometry": {
+      "gate_up_dims": [4096, 14336, 8],
+      "down_dims": [14336, 4096, 8],
+      "gate_up_dtype": "Q4_K",
+      "down_dtype": "Q6_K",
+      "router_dtype": "F32",
+      "expert_slice_alignment": "validated quant-block boundary"
+    },
+    "first_forward_dispatches": 675,
+    "first_forward_command_buffers": 97,
+    "cpu_reference_fallback": 0,
+    "conventional_decode_seed": true,
+    "tokenizer_prompt_tokens": 6,
+    "first_tokens": [264, 2990, 369, 349, 2651, 354, 871]
+  },
+  "representation_and_architecture_sweep": [
+    {
+      "id": "fused_expert_native_gpu_attention",
+      "status": "RETIRED_SOURCE_PARITY_FAILURE",
+      "measured_complete_token_tps": 15.89820396820484,
+      "dispatches_per_forward": 675,
+      "command_buffers_per_forward": 97,
+      "p50_inter_token_ms": 62.79875,
+      "p95_inter_token_ms": 65.8887495,
+      "p99_inter_token_ms": 66.8851711,
+      "fallback": 0,
+      "same_model_before_after": "adapter-load blocker -> resident fused expert path",
+      "rejection": "32-token source text diverged at emitted token 8: Hawking `fashion` versus llama.cpp `beauty`; exact continuation hash therefore fails",
+      "next_change": "source-shaped resident Mixtral graph with per-layer projection/attention/MoE fusion and a Numeric Parity V2.1 oracle"
+    },
+    {
+      "id": "fused_expert_cpu_attention_readback",
+      "status": "RETIRED_SOURCE_PARITY_FAILURE_AND_SLOWER",
+      "measured_complete_token_tps": 11.482814232188893,
+      "dispatches_per_forward": 579,
+      "command_buffers_per_forward": 97,
+      "fallback": 0,
+      "rejection": "same continuation mismatch; per-layer CPU attention readback retained and wall time regressed versus resident GQA"
+    }
+  ],
+  "parity": {
+    "status": "FAIL_NUMERIC_PARITY_V21",
+    "prompt": "The capital of France is",
+    "hawking_completion_text": "a city that is known for its fashion, art, gastronomy, haute cuisine, and culture. It is the most visited city in the world",
+    "first_divergent_emitted_token_index": 7,
+    "hawking_token_at_divergence": 8844,
+    "hawking_text_at_divergence": "fashion",
+    "source_text_at_divergence": "beauty",
+    "complete_tokens": 32,
+    "fallback": 0,
+    "clean_lease": "not a production lease; local M3 Ultra process was uncontended",
+    "quality_or_tg_promotion_allowed": false
+  },
+  "roofline": {
+    "deepest_honest_rung": "NONE",
+    "first_failing_rung": "TG32",
+    "source_reference_tps": 58.395754,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "binding_floor": "resident fused expert adapter executes on Metal but fails exact source continuation parity and remains far below the TG32 31.25 TPS threshold",
+    "physical_cost_vector": {
+      "bytes_per_token": "source Q4_K/Q5_K/Q6_K windows plus f32 activation/KV traffic; not sealed as a promoted representation",
+      "executed_ops_per_token": "32 layers x attention + router + 2 active experts; not sealed as a promoted representation",
+      "dependency_depth": "97 command buffers/forward",
+      "synchronization": "97 waits/forward",
+      "kv_state": "device-resident f32 K/V cache in the tested architecture"
+    }
+  },
+  "rotation": {
+    "condition": "B",
+    "result": "two materially different fused-expert execution architectures measured; both retired on same-model parity/floor evidence",
+    "eviction_required_before_next_family": true
+  },
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_2026_08_02.json",
+  "preregistration": "evidence/tg/TG32_MIXTRAL_FUSED_EXPERT_ADAPTER_PREREGISTRATION_2026_08_02.json",
+  "purge_receipt": "evidence/tg/TG_MIXTRAL_FUSED_EXPERT_ADAPTER_PURGE_RECEIPT_2026_08_02.json",
+  "claim_boundary": "The 58.395754 TPS number is SOURCE_REFERENCE_TPS only. Hawking records no TG rung and no capability promotion for this family.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

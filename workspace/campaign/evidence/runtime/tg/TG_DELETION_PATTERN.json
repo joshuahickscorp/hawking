@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.tg.deletion_pattern.v1",
+  "finding": "Three separate audits this campaign reported capability as ABSENT that had in fact been deleted days earlier, while the receipts describing that capability stayed in the tree and stayed accurate.",
+  "instances": [
+    {
+      "capability": "Q0 clean-container Lean/Mathlib proof replay",
+      "receipt_said": "Q0 ACHIEVED, replay with --network=none against image ramanujan-clean-replay:2ec0166b",
+      "tree_had": "no ramanujan/container directory at all",
+      "deleted_by": ["8b0c5405 Install counted verification and retire historical recovery executables", "aa7fa85c Condense the laboratory trees no lane had reached"],
+      "resolution": "12 files restored from f2bed147; image built; replay ran"
+    },
+    {
+      "capability": "roles, all seven stores, search, Forge, sovereignty, economics, limits, the train package, the whole ramanujan/data pipeline and six corpora",
+      "receipt_said": "RAMANUJAN_GOVERNANCE_STATUS.json names ramanujan/stores.py, ramanujan/ledger.py and the seven store names, all correctly",
+      "tree_had": "only __pycache__ for most of it",
+      "deleted_by": ["8b0c5405"],
+      "resolution": "restored from 8b0c5405^; 146 tests pass",
+      "cost_of_not_checking": "I wrote a fresh ramanujan/ledger.py and test_ledger.py because the audit said no ledger existed. The original was richer and three other modules import LedgerViolation from it. My duplicate is deleted."
+    },
+    {
+      "capability": "tools/condense/engine",
+      "looked_like": "the same pattern",
+      "actually": "eada2080 relocated it to lab/ deliberately and the files are all present there",
+      "resolution": "no action. Not every absence is a deletion, which is why the check is a check and not an assumption."
+    }
+  ],
+  "second_order_damage": {
+    "finding": "the same commit family broke the imports of five test files in tools/condense/tests, so they failed at collection and took the whole directory with them",
+    "consequence": "1575 logical cases stopped running, and nothing reported it because a collection error is not a test failure",
+    "what_it_was_hiding": [
+      "lab/spec.py rejects the status 'released_historical_non_invocable' that 8b0c5405 itself wrote into lab/campaigns.json, so three campaign specs have been unloadable since 2026-07-29",
+      "the Track V registry contract was globbing a directory that now holds two modules instead of the 53 it classifies",
+      "a three-way import cycle between glm52_state, glm52_xet_live and glm52_xet_autotune",
+      "tools/glm52_gravity.py has raised ModuleNotFoundError at import since the lab cutover",
+      "lab/operators/glm52_grounding.py imports a module that no longer exists",
+      "the science floor assertion had been firing correctly: 15021 against a required 25000"
+    ]
+  },
+  "method_change": "when an audit reports something absent, run `git log --diff-filter=D` for it before concluding it was never built. Three of four absences this campaign were deletions, and the fourth was a relocation.",
+  "note_on_the_deleting_commits": "these were not vandalism. 791ced2c consolidated 129 modules into 44 carefully, retiring each campaign with its specification, fixture, receipt, reproduction command and reopen condition. 8b0c5405 is the one that went too far, and its message -- retiring historical recovery executables -- reads as housekeeping rather than as the removal of the live Ramanujan system."
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "status": "PREREGISTERED_BEFORE_QWEN32_BODY_ADMISSION",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen32-direct-q4k-predec-v1",
+    "kind": "same_model_source_q4k_predecoded_scale_representation",
+    "hypothesis": "Materializing the Q4_K scale tables once and using the native predecode kernels will reduce repeated scale unpack and synchronization cost during complete-token decode while retaining exact source-compatible arithmetic.",
+    "representation_change": "direct source Q4_K inline scale unpack -> source-compatible Q4_K predecoded scale tables; no tokenizer, quant tier, prompt, or model change",
+    "scope": "same immutable Qwen2.5-32B-Instruct Q4_K_M source, same prompt, same Apple M3 Ultra, same exact tokenizer",
+    "target_named_rung": "TG32",
+    "promotion_gate": {
+      "complete_token_wall_tps_improvement_percent": ">=3 versus same-run direct-source control",
+      "p99_regression_percent": "<=0",
+      "exact_continuation_hash": "must_match_control",
+      "fallback_count": 0,
+      "metal_dispatches": ">0",
+      "complete_tokens": ">=8",
+      "first_forward_must_complete": true
+    }
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+    "filename": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_2026_08_02.json",
+    "transfer_selection": "high_performance fixed concurrency 2; three-repeat median 106.586106472637 GB/h; standard c8 median 106.38136061920811 GB/h"
+  },
+  "fresh_byte_preflight": {
+    "free_bytes_before_body": 354833444864,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 42836312064,
+    "planned_headroom_above_floor_after_body": 111991243244,
+    "model_lane_envelope_bytes": 110000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false
+  },
+  "control_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_Q4K_PREDEC": "0",
+    "HAWKING_QWEN_Q4K_LMHEAD": "0",
+    "HAWKING_QWEN_LMHEAD_PREDEC": "0",
+    "HAWKING_QWEN_BATCH_PREFILL": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1"
+  },
+  "candidate_environment": {
+    "HAWKING_REQUIRE_METAL": "1",
+    "HAWKING_TRACE_DISPATCH": "1",
+    "HAWKING_QWEN_PREFIX_CACHE": "0",
+    "HAWKING_QWEN_Q4K_PREDEC": "1",
+    "HAWKING_QWEN_Q4K_LMHEAD": "0",
+    "HAWKING_QWEN_LMHEAD_PREDEC": "0",
+    "HAWKING_QWEN_BATCH_PREFILL": "0",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "0",
+    "HAWKING_QWEN_FIRST_DISPATCH_TRACE": "1"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

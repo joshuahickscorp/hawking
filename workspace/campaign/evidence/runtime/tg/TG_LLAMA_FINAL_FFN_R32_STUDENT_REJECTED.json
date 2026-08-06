@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.tg.student_probe_rejection.v1",
+  "status": "REJECTED_OFFLINE_CAPABILITY_GATE",
+  "model": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c"
+  },
+  "teacher_capture": {
+    "kind": "resident_final_ffn_vectors_only",
+    "authority_check": "resident final-layer ffn_norm and ffn_out vectors were bit-identical to the CPU checkpoint authority on the three-prompt rehearsal",
+    "prompt_corpus": "local deterministic templates, 1024 source prompts, no external corpus or model completion",
+    "rows": 22028,
+    "fit_rows": 17392,
+    "heldout_rows": 4636,
+    "geometry": [4096, 4096]
+  },
+  "student": {
+    "format": "llama.low_rank_hidden_student.v1",
+    "basis": "ridge_whitened_cross_covariance",
+    "rank": 32,
+    "cg_iterations": 24,
+    "fit_normalized_rmse": 0.5394285532137447,
+    "heldout_normalized_rmse": 0.5510058397626947,
+    "promotion_limit_heldout_normalized_rmse": 0.1,
+    "physical": {
+      "stored_parameters": 270336,
+      "prospective_fp16_artifact_bytes": 540672,
+      "executed_macs_per_token": 262144,
+      "sequential_matvecs_per_token": 2
+    }
+  },
+  "cause": "A linear rank-32 shared hidden state cannot reproduce the source final FFN output on the sealed held-out teacher inputs.",
+  "reopen_condition": "A predeclared nonlinear or multi-block student must beat the same held-out gate, then pass generated-token capability, artifact/runtime parity, and matched same-model decode. This receipt contains no TPS claim.",
+  "tps_claim": null
+}

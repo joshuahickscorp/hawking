@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-private-immutable-gguf-image",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "protocol": {
+    "context_tokens": 2048,
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "baseline": "resident source-FATTN with the existing fused QKV RoPE/KV, residual-norm, and gate/up lane",
+    "candidate": "one-time Metal blit from the no-copy GGUF mmap to a same-size StorageModePrivate buffer, then bind the private image for all raw Q4_K/Q6_K projections"
+  },
+  "correctness": {
+    "exact_greedy_token_trace_against_source_baseline": false,
+    "first_baseline_token_id": 29531,
+    "first_candidate_token_id": 0,
+    "cpu_reference_fallback_count": 0,
+    "candidate_dispatches_per_forward": 386
+  },
+  "measurements": {
+    "candidate_decode_tps_unusable_due_to_parity_failure": 90.26803349244184,
+    "candidate_decode_ms_unusable_due_to_parity_failure": 1417.999208,
+    "private_weight_image_bytes": 4915133952
+  },
+  "verdict": "rejected",
+  "reason": "The private image diverges at the first generated token despite a completed load-time blit. It cannot be timed or promoted. The diagnostic implementation was removed after the failed exact trace.",
+  "runtime_status": "Removed; no private-weight runtime flag remains.",
+  "reopen_condition": "Only revisit after a byte-for-byte GPU readback/CRC of a small tensor window proves that a private copy preserves the GGUF address and offset contract; retain the source mmap binding as the authority until then."
+}

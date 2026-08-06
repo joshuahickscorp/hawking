@@ -1,0 +1,145 @@
+{
+  "doc_path": "workspace/docs/plans/POST_FINAL_GRAVITY_HCLI_PLAN.md",
+  "file_sha256_preseal": "17d6d7b9a5cc1faaa91bf5b655c1090efe689dc65bd18407e5cf21c2b44e1fc0",
+  "human_only_steps": [
+    "decide_final_is_the_final",
+    "cloud_upload_or_offbox_seal",
+    "remote_checksum_attestation",
+    "odyssey_research_authorization_stage3"
+  ],
+  "objective": "After Final Frankenstein is sealed: human cloud-seals Final; re-download clean DeepSeek-V4-Flash + Qwen3-Coder-30B; gravity them; apply to HCLI as Terra + Luna; continue kernel tuning on main OSS model brokers.",
+  "phases": [
+    {
+      "actor": "eng",
+      "exit": "FINAL_FRANKENSTEIN_LOCALLY_SEALED",
+      "id": "PF.0",
+      "title": "Local Final freeze"
+    },
+    {
+      "actor": "HUMAN_ONLY",
+      "automation": "forbidden_for_authorization_and_attestation",
+      "exit": "FINAL_FRANKENSTEIN_CLOUD_SEALED",
+      "id": "PF.1",
+      "notes": [
+        "No cron upload",
+        "No agent with cloud credentials in this plan",
+        "Tools may assist transfer; human confirms seal"
+      ],
+      "title": "Cloud seal / upload"
+    },
+    {
+      "actor": "eng",
+      "depends_on": [
+        "PF.1"
+      ],
+      "id": "PF.2",
+      "rules": [
+        "Never reclaim before human-attested remote checksum",
+        "Do not evict only verified source before independent successor"
+      ],
+      "title": "Storage reclaim"
+    },
+    {
+      "actor": "eng",
+      "downloads": [
+        {
+          "note": "Clean source for Gravity Terra; not Frankenstein adapter tree",
+          "repository": "deepseek-ai/DeepSeek-V4-Flash",
+          "revision_default": "60d8d70770c6776ff598c94bb586a859a38244f1",
+          "role": "Terra source"
+        },
+        {
+          "active_params": "3.3B",
+          "card": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct",
+          "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+          "revision": "PIN_AT_DOWNLOAD_TIME",
+          "role": "Luna source",
+          "total_params": "30.5B"
+        }
+      ],
+      "id": "PF.3",
+      "title": "Re-download clean parents"
+    },
+    {
+      "actor": "eng",
+      "bpw_rule": "Do not blindly recompress to 1.5 BPW; capability gates first (see RESIDENT_MEMORY_AND_BPW_PLAN)",
+      "exits": [
+        "TERRA_GRAVITY_SEALED",
+        "LUNA_GRAVITY_SEALED"
+      ],
+      "id": "PF.4",
+      "title": "Gravity pack Terra + Luna"
+    },
+    {
+      "actor": "eng",
+      "id": "PF.5",
+      "tiers": {
+        "Luna": {
+          "artifact": "Qwen Gravity",
+          "load": "default_resident"
+        },
+        "Sol": {
+          "artifact": "Final Frankenstein then Ramanujan",
+          "load": "on_demand"
+        },
+        "Terra": {
+          "artifact": "DeepSeek-V4-Flash Gravity",
+          "load": "on_demand"
+        }
+      },
+      "title": "Apply to HCLI"
+    },
+    {
+      "actor": "eng",
+      "id": "PF.6",
+      "note": "Most important kernels are the main open-source-model brokers.",
+      "ongoing": true,
+      "priority": [
+        "broker_correctness_load_route_expert_gather_decode",
+        "hot_expert_cache_and_fault_path",
+        "attention_decode_bandwidth",
+        "hcli_tool_loop_latency",
+        "exotic_quant_only_after_capability_gates"
+      ],
+      "title": "Kernel tuning"
+    },
+    {
+      "actor": "owner_gated",
+      "id": "PF.7",
+      "note": "Post-Final does not imply RAMANUJAN_RESEARCH_AUTHORIZED",
+      "title": "Hand-off to Stage-3 Ramanujan"
+    }
+  ],
+  "plan_kind": "executable_planning_only",
+  "risks": [
+    {
+      "mitigation": "never_reclaim_before_human_attested_remote_checksum",
+      "risk": "upload_incomplete_then_local_reclaim"
+    },
+    {
+      "mitigation": "pin_commit_refuse_floating_main",
+      "risk": "clean_redownload_revision_drift"
+    },
+    {
+      "mitigation": "separate_paths_terra_has_no_frankenstein_adapters",
+      "risk": "gravity_terra_confused_with_final"
+    },
+    {
+      "mitigation": "measure_do_not_assume",
+      "risk": "co_residency_assumed"
+    }
+  ],
+  "schema": "hawking.frankenstein.post_final_gravity_hcli_plan.v1",
+  "seal_note": "Planning seal: file_sha256_preseal is SHA-256 of the JSON body before this stamp field set was added; recompute on mutation.",
+  "seal_sha256": "448e4fcbe0ca05c5f3f59943d1da715ca0c444fff464ee34b52f4e58c5c7fe61",
+  "sealed_at": "2026-08-05T17:33:25Z",
+  "status": "PLAN_SEALED_POST_FINAL_ONLY",
+  "success_criteria": [
+    "Final identity receipt local AND durable off-box human attestation",
+    "Clean DSV4F + Qwen admitted and Gravity-packed",
+    "HCLI serves Luna default, Terra on demand, Sol path declared",
+    "Memory co-residency verdict sealed from measurement",
+    "Kernel broker backlog tracked; no claim kernels finished",
+    "Stage-3 only under separate Ramanujan authority"
+  ]
+}

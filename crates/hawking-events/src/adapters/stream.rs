@@ -16,16 +16,17 @@ use hide_core::ids::SessionId;
 use serde_json::json;
 
 use crate::categories::Category;
-use crate::envelope::{
-    CanonicalEvent, ContentVerification, NewCanonical, Subsystem,
-};
+use crate::envelope::{CanonicalEvent, ContentVerification, NewCanonical, Subsystem};
 
 /// Minimal view of hawking-core's `StreamEvent` (Token | Done).
 ///
 /// Mirrors `crates/hawking-core/src/engine.rs:188` without importing it.
 #[derive(Debug, Clone, PartialEq)]
 pub enum StreamEventView {
-    Token { id: u32, text: String },
+    Token {
+        id: u32,
+        text: String,
+    },
     Done {
         reason: String,
         prompt_tokens: usize,

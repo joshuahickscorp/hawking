@@ -1,0 +1,108 @@
+{
+  "schema": "hawking.tg.same_model_schedule_promotion.v2",
+  "status": "MEASURED_TG32_CLASS_NOT_PRODUCTION_CERTIFIED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "change": {
+    "id": "rope-v2t-guv2-routed-shared-rmsnorm",
+    "kind": "same_model_kernel_schedule",
+    "description": "Route Q4_K gate+up waves through the fused v2t_gu_v2 kernel; retain interleaved-concat RoPE, v2t Q5/Q6 down waves, MLA, resident buffers, and token-only head.",
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "profile_sha256": "e4ab30db83f1bf41eb3c7a13720f0f341830ac881af2639137e7e12c82d81748",
+    "shader_sha256": "682ba80cf7cba9869ae5e643ec4ee7e7a707131af69eca85be4f6d859d0415ae",
+    "model_runtime_sha256": "2107da81b225ec369555558cd5950372089df6f33d9c1e51f75d32afe7c277be",
+    "kernel_registry_sha256": "23c5cac03c45e2c1d2dcc95579b4dea86abeeace86a61865238b0642e66e1d1e"
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "gravity_artifact_bytes": 10362253454,
+    "gravity_artifact_sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788"
+  },
+  "before_after": {
+    "same_model_before": {
+      "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-candidate-2026-08-02.json",
+      "profile_sha256": "e599e394beca527ab549fc087d919c14baa9fb7779d4b7da60bd7c80d181b8d1",
+      "source_window_ids": [8913, 13, 185, 185],
+      "decode_tps_32": 35.20824092889242,
+      "decode_ms_32": 908.878125,
+      "dispatches_per_forward": 591,
+      "decode_metal_dispatches_total": 18912,
+      "decode_command_buffers_total": 32,
+      "cpu_reference_fallback_count": 0,
+      "device_id": "Apple M3 Ultra"
+    },
+    "same_model_after": {
+      "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+      "source_window_ids": [8913, 13, 185, 185],
+      "decode_tps_32": 41.06909043843913,
+      "decode_ms_32": 779.174792,
+      "complete_token_latency_ms": {
+        "mean": 24.2670156875,
+        "p50": 24.2556045,
+        "p95": 24.8297917,
+        "p99": 24.95775869,
+        "min": 23.770458,
+        "max": 24.983334
+      },
+      "dispatches_per_forward": 487,
+      "decode_metal_dispatches_total": 15584,
+      "decode_command_buffers_total": 32,
+      "cpu_reference_fallback_count": 0,
+      "prefill_ms": 269.588166,
+      "prefill_metal_dispatches_total": 2910,
+      "device_id": "Apple M3 Ultra",
+      "lm_head_path": "metal-argmax-token-only",
+      "completion_tokens": 32
+    },
+    "delta": {
+      "decode_tps_percent": 16.646,
+      "decode_ms_percent": -14.27,
+      "dispatches_per_forward_percent": -17.597,
+      "capability_window": "unchanged first four source decisions"
+    }
+  },
+  "authority": {
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "source_first_four_ids": [8913, 13, 185, 185],
+    "candidate_first_four_ids": [8913, 13, 185, 185],
+    "candidate_first_four_text": " Paris.\\n\\n",
+    "extended_generation_ids": [8913, 13, 185, 185, 11145, 207, 16, 25, 67870, 254, 2512, 1435, 3637, 549, 2512, 317, 8740, 327, 254, 6077, 3787, 280, 7239, 13, 185, 185, 11145, 207, 17, 25],
+    "extended_capability_verdict": "DIVERGES_AFTER_FOUR_TOKEN_SOURCE_WINDOW; G3-G9 remains open",
+    "numeric_parity_v21": "discrete source-window pass only",
+    "complete_token_profiler": true,
+    "gpu_dispatches_observed": true,
+    "cpu_reference_fallback": 0
+  },
+  "ladder": {
+    "measured_class": "TG32",
+    "target_tps_tg32": 31.25,
+    "target_tps_tg20": 50.0,
+    "measured_tps": 41.06909043843913,
+    "deepest_honest_rung": "TG32",
+    "tg32_margin": 9.81909043843913,
+    "tg20_status": "NOT_REACHED",
+    "claim_boundary": "No TG20 claim: 41.07 TPS is below the 50 TPS TG20 threshold and no CLEAN production lease is present."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "measurement": {
+    "command": "HAWKING_TRACE_DISPATCH=1 target/debug/hawking generate --weights /Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 32 --temperature 0 --kernel-profile profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json --trace-tokens --trace-dispatch",
+    "run_artifact": "/tmp/ds-guv2-exact-32.stderr",
+    "run_classification": "bounded resident Metal fixture; no production lease; no claim of whole-model capability",
+    "source_body_state": "recoverable macOS Trash item; active model lane remains empty"
+  },
+  "verdict": "PROMOTE_SAME_MODEL_SCHEDULE; TG32 CLASS IMPROVED; NO TG20 OR PRODUCTION CLAIM",
+  "reopen_condition": "Add a CLEAN owner-controlled lease and widen capability parity beyond the four-token source window; then attack the remaining 24.27 ms/token roofline through MLA/command-graph residency before attempting TG20."
+}

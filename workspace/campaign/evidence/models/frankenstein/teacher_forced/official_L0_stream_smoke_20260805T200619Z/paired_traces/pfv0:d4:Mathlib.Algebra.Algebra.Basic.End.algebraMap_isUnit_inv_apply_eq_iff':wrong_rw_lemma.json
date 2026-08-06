@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 1489,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [ThisLemmaDoesNotExist, H]\n    simpa using isUnit_apply_inv_apply_of_isUnit h (x • m') |>.symm\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [ThisLemmaDoesNotExist, H]\n    simpa using isUnit_apply_inv_apply_of_isUnit h (x • m') |>.symm\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.855982Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "313e9095282968f3075e5c4a8efbeda9354226850508ae081581d49ceb066bf2",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.4428324699401855,
+          "rank": 0,
+          "token_id": 31
+        },
+        {
+          "logit": 3.254948377609253,
+          "rank": 1,
+          "token_id": 63
+        },
+        {
+          "logit": 3.052884578704834,
+          "rank": 2,
+          "token_id": 33
+        },
+        {
+          "logit": 2.940481662750244,
+          "rank": 3,
+          "token_id": 40
+        },
+        {
+          "logit": 2.9381661415100098,
+          "rank": 4,
+          "token_id": 48
+        },
+        {
+          "logit": 2.8495302200317383,
+          "rank": 5,
+          "token_id": 51
+        },
+        {
+          "logit": 2.7646069526672363,
+          "rank": 6,
+          "token_id": 47
+        },
+        {
+          "logit": 2.6820716857910156,
+          "rank": 7,
+          "token_id": 60
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1903948187828064,
+          "l2": 3.3814070224761963,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "843f20b8aa86b716c5e152fb110504174e2e8d8ee18ca6dd726a7cc45fe3b2db",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

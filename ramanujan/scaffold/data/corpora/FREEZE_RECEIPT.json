@@ -1,0 +1,58 @@
+{
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "at": "2026-08-01T04:58:51Z",
+  "contamination": {
+    "barrier": {
+      "expected_support_halo_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+      "hidden_commitment_ok": true,
+      "jaccard_threshold_train_vs_eval": 0.25,
+      "n_eval_items_indexed": 33,
+      "rules": [
+        "training items are compared on extract_comparison_text (prompt/text/messages)",
+        "exact match: sha256(normalize_text(text)) equals any eval item hash \u2192 REJECT",
+        "near-duplicate: character shingles size=5, Jaccard \u2265 0.25 vs any eval item \u2192 REJECT",
+        "evaluation sources: support-halo (sealed), T0 hidden memberships, public selection",
+        "a naming convention is not a barrier; this index is mechanical",
+        "support-halo corpus and seal files are read-only; mutation is a contract violation"
+      ],
+      "schema": "hawking.odyssey.contamination_barrier.v1",
+      "shingle_size": 5,
+      "sources_loaded": [
+        "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+        "odyssey/evaluation/hidden/hidden_items.jsonl",
+        "odyssey/t0/public_eval/selection_items.jsonl"
+      ],
+      "support_halo_corpus_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+      "support_halo_seal_ok": true
+    },
+    "n_eval_items_indexed": 33,
+    "negative_control": {
+      "description": "sealed support-halo item (tl02_bpw) presented as training text",
+      "eval_id": "tl02_bpw",
+      "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+      "pass": true,
+      "probe_id": "tl02_bpw",
+      "ran": true,
+      "reason": "exact_match",
+      "rejected": true
+    },
+    "ran": true,
+    "support_halo_seal_ok": true,
+    "support_halo_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+    "total_corpus_items_checked": 16188,
+    "total_rejected_vs_eval": 0
+  },
+  "counts": {
+    "dev": 1639,
+    "test": 1658,
+    "total": 16188,
+    "train": 12891
+  },
+  "manifest_file_sha256": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+  "manifest_path": "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json",
+  "membership_seal_recomputed_ok": true,
+  "membership_sha256": "fec9f85e677921433df4761205c391a4733a358660e1effcfe9f1b8e7651fbc6",
+  "negative_control_pass": true,
+  "schema": "hawking.ramanujan.freeze_receipt.v1",
+  "status": "PASS"
+}

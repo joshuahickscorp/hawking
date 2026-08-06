@@ -128,7 +128,13 @@ mod tests {
         assert_eq!(loaded.len(), 1);
         assert_eq!(loaded[0].topic, "paged attention");
         assert_eq!(reopened.latest().unwrap().unwrap().docs_read, 2);
- assert_eq!( reopened .load_by_state(ResearchState::Complete) .unwrap() .len(), 1 );
+        assert_eq!(
+            reopened
+                .load_by_state(ResearchState::Complete)
+                .unwrap()
+                .len(),
+            1
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

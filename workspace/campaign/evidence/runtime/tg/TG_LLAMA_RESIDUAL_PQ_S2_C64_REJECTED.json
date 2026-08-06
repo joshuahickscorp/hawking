@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.llama_reduced_candidate_receipt.v1",
+  "status": "REJECTED_CONTINUATION_GATE",
+  "claim": "NO_TG_RUNG",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+  "source": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c"
+  },
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/llama-residualpq-s2-c64-interleaved.gravity",
+    "sha256": "8db2c38b34b6f22f5c1f44d17a2bc7ad0b648516d71bb6aaea13077fb71e1cdc",
+    "physical_bytes": 1507340425,
+    "payload_bytes": 1507166336,
+    "complete_bpw": 1.5014867282185835,
+    "geometry": {"D": 8, "stages": 2, "cardinality": 64, "fit_iterations": 4, "reservoir_rows": 65536},
+    "rope_layout": "interleaved",
+    "source_hash_verified": true,
+    "body_hash_verified": true
+  },
+  "matched_decode_gate": {
+    "prompt_token_ids": [128000, 29531],
+    "source_reference_next_token_ids": [29531, 29531, 29531, 29531],
+    "gravity_next_token_ids": [15416, 15416, 15416, 1272],
+    "equal": false,
+    "prefill_ms": 398.298,
+    "decode_tps": 5.880228561602878,
+    "parity_scope": "greedy token IDs; failure is decisive and no speed claim is promoted"
+  },
+  "roofline": {
+    "tg2_max_active_weight_bytes": 1472000000,
+    "tg1_max_active_weight_bytes": 736000000,
+    "tg2_payload_over_ceiling": 1.023116527173913,
+    "tg1_payload_over_ceiling": 2.047579804347826
+  },
+  "diagnosis": "The 1.50-bit nominal payload reaches the TG2 byte neighborhood but loses the source continuation immediately. This candidate is rejected; lower bytes require an architecture-aware student/distillation gate rather than blind residual-PQ substitution.",
+  "next_gate": "Try a quality-preserving architecture reduction or activation-aware allocation; do not promote this codec from storage or kernel timing alone."
+}

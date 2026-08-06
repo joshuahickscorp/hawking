@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.tg.qwen_same_model_representation_comparison.v1",
+  "status": "PASS_SOURCE_PRESERVING_CPU_DISCRETE_MATCH_METAL_KERNEL_COVERAGE_BLOCKED_NO_TG",
+  "at": "2026-08-01T21:35:11Z",
+  "scope": "bounded 0.5B Qwen source-compatible representation gate; no large-family, capability, clean-performance, or named-TG promotion",
+  "source": {
+    "repository": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "architecture": "qwen2",
+    "parameter_class": {"total_parameters": "0.5B", "active_parameters": "0.5B", "bounded_fixture": true}
+  },
+  "tokenizer": {
+    "base_repository": "Qwen/Qwen2.5-0.5B-Instruct",
+    "base_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "license": "apache-2.0",
+    "path": "models/qwen0p5-gravity-probe/tokenizer/tokenizer.json",
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "prompt": "2 + 2 =",
+    "gguf_token_ids": [17, 488, 220, 17, 284],
+    "sidecar_token_ids": [17, 488, 220, 17, 284],
+    "exact_match": true
+  },
+  "direct_q4_gguf_metal": {
+    "command_profile": "exact",
+    "completion_tokens": [220],
+    "completion_text": " ",
+    "device_id": "Apple M3 Ultra",
+    "dispatches_per_forward": 279,
+    "command_buffers_per_forward": 1,
+    "waits_per_forward": 1,
+    "cpu_reference_fallback_total": 0,
+    "first_command_commit_and_completion_us": 25540,
+    "prefill_ms": 63.5,
+    "single_decode_ms": 5.8,
+    "single_decode_tps": 171.42,
+    "tail_latency": "NOT_MEASURED; one-token bounded parity run is not a latency distribution"
+  },
+  "source_preserving_gravity": {
+    "artifact_path": "models/qwen0p5-gravity-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+    "artifact_bytes": 391949877,
+    "artifact_sha256": "be47e0835876b73b96042d1061eeabf75db74886cbd3e3a208109f897a550e20",
+    "payload_bytes": 391859712,
+    "tensor_coverage": {"mapped_tensors": 290, "skipped_source_tensors": [], "descriptor_hashes_verified": true},
+    "representation": "byte-preserving ggml.q4_k / ggml.q5_0 / ggml.q6_k / ggml.q8_0 plus native source tensors",
+    "lossy_fit": false,
+    "complete_bpw": 6.345485358574433,
+    "packed_bpw": 6.341769212909218,
+    "cpu_direct_execution": {
+      "prompt_tokens": 5,
+      "vocabulary_logits": 151936,
+      "greedy_token": 220,
+      "elapsed_ms_including_lazy_open_and_complete_prompt_forward": 62329,
+      "device_dispatches": 0,
+      "cpu_reference_fallback": "NOT_APPLICABLE; this is the artifact's declared CPU direct grammar",
+      "result": "PASS_FULL_FORWARD_FINITE_LOGITS"
+    },
+    "metal_execution": {
+      "result": "REFUSED_FAIL_CLOSED",
+      "exact_blocker": "GravityLlamaGpu rejects model.embed_tokens.weight codec ggml.q8_0; source also carries ggml.q5_0 tensors, and no native packed Q5_0/Q8_0 Gravity Metal execution grammar is implemented",
+      "dispatches": 0,
+      "fallback": 0
+    }
+  },
+  "same_model_comparison": {
+    "exact_prompt_ids": true,
+    "first_greedy_token_match": true,
+    "numeric_parity_v21": "NOT_RUN; first-token equality cannot replace full-logit or admitted checkpoint authority",
+    "capability": "NOT_PRODUCT_CAPABILITY_EVIDENCE",
+    "deepest_honest_tg_rung": null,
+    "source_reference_tps": null,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "promotion_allowed": false,
+    "reopen_condition": "implement direct packed Q5_0/Q8_0 Gravity Metal row/matvec kernels with full Qwen bias/rope/KV/head parity; then obtain CLEAN same-model multi-token tail and capability evidence"
+  },
+  "temporary_invalid_artifact": {
+    "sha256": "954c41f0bb1dfd3a08211486e89c9763fe01bb1118627b9be73067f30ef285a9",
+    "reason_retired": "missing hash-bound tokenizer sidecar caused GravityEngine refusal before any tensor execution",
+    "eviction": "moved as exact Trash item and permanently purged before final sidecar-bound artifact was written"
+  },
+  "eviction_required": {
+    "source": "models/qwen0p5-gravity-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "artifact": "models/qwen0p5-gravity-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+    "tokenizer_and_cache": "models/qwen0p5-gravity-probe/tokenizer and campaign-local Hub metadata",
+    "postcondition": "purge exact Trash item, prove free-byte recovery, and leave model lane empty"
+  }
+}

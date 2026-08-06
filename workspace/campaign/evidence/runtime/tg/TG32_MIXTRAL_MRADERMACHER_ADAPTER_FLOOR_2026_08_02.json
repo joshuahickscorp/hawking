@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.tg.large_family_adapter_floor.v1",
+  "status": "SOURCE_AUTHORITY_PASS_HAWKING_MIXTRAL_ADAPTER_BLOCKED",
+  "at_utc": "2026-08-02",
+  "family": "mistral_mixtral",
+  "model": {
+    "name": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+    "total_parameters": "46.7B",
+    "active_parameters": "12.9B",
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "license": "Apache-2.0",
+    "source_repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "source_revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "source_file": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "source_bytes": 28448468384,
+    "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44"
+  },
+  "source_reference": {
+    "engine": "llama.cpp",
+    "build": "b9430 / d48a56eff",
+    "device": "Apple M3 Ultra",
+    "command": "llama-bench -m models/tg-active/mixtral8x7b-mr/Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf -p 0 -n 128 -r 3 -ngl 99 -o json --no-warmup",
+    "complete_tokens_per_run": 128,
+    "samples_tps": [56.9647, 59.1265, 59.0961],
+    "mean_tps": 58.395754,
+    "stddev_tps": 1.239462,
+    "fallback": 0,
+    "source_load": "PASS"
+  },
+  "hawking_k0": {
+    "doctor": {
+      "result": "PASS_PARSE_AND_MMAP",
+      "architecture_header": "llama",
+      "tensor_count": 323,
+      "layers": 32,
+      "hidden": 4096,
+      "kv_heads": 8,
+      "weights_bytes": 28448468384
+    },
+    "first_forward": "NOT_REACHED",
+    "exact_failure_stage": "model adapter load",
+    "exact_error": "missing tensor `blk.0.ffn_gate.weight`",
+    "actual_source_grammar": [
+      "blk.0.ffn_gate_exps.weight",
+      "blk.0.ffn_up_exps.weight",
+      "blk.0.ffn_down_exps.weight",
+      "blk.0.ffn_gate_inp.weight"
+    ],
+    "gpu_dispatches": 0,
+    "generated_tokens": 0,
+    "cpu_reference_fallback": 0,
+    "named_tg_rung": null
+  },
+  "capability": {
+    "source_tokenizer": "not advanced to Hawking generation",
+    "numeric_parity_v21": "BLOCKED_BEFORE_FORWARD",
+    "whole_model_gates": "NOT_RUN",
+    "clean_lease": "NOT_RUN",
+    "gravity_representation": "NOT_RUN"
+  },
+  "roofline": {
+    "deepest_honest_rung": "NONE",
+    "first_failing_rung": "TG32",
+    "binding_floor": "Shipping runtime has no Mixtral MoE adapter; dense Llama loader requests ffn_gate.weight while this source exposes fused expert tensors.",
+    "next_representation_or_architecture_change": "hydrate the adapters-extra Mixtral graph or implement a first-class fused-expert Mixtral runtime with router, top-2 selection, expert waves, and source parity before any TPS claim"
+  },
+  "rotation": {
+    "condition": "B",
+    "result": "source/reference pass plus exact Hawking adapter blocker sealed",
+    "eviction_required_before_next_family": true
+  },
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_2026_08_02.json",
+  "claim_boundary": "The 58.395754 TPS number is SOURCE_REFERENCE_TPS only. It does not promote Hawking, a Gravity artifact, a TG rung, or production GPU capability.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

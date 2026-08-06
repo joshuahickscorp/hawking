@@ -24,11 +24,7 @@ pub struct Layout {
 
 impl Layout {
     /// Construct an explicit layout. Prefer this in tests.
-    pub fn new(
-        repo_root: impl AsRef<Path>,
-        cwd: impl AsRef<Path>,
-        home: impl AsRef<Path>,
-    ) -> Self {
+    pub fn new(repo_root: impl AsRef<Path>, cwd: impl AsRef<Path>, home: impl AsRef<Path>) -> Self {
         Layout {
             cwd: cwd.as_ref().to_path_buf(),
             repo_root: repo_root.as_ref().to_path_buf(),
@@ -121,7 +117,14 @@ mod tests {
     fn chain_is_root_first_and_inclusive() {
         let layout = Layout::new("/repo", "/repo/a/b", "/home/u");
         let chain = layout.dir_chain_root_first();
-        assert_eq!(chain, vec![ PathBuf::from("/repo"), PathBuf::from("/repo/a"), PathBuf::from("/repo/a/b"), ]);
+        assert_eq!(
+            chain,
+            vec![
+                PathBuf::from("/repo"),
+                PathBuf::from("/repo/a"),
+                PathBuf::from("/repo/a/b"),
+            ]
+        );
     }
     #[test]
     fn chain_when_cwd_equals_root() {
@@ -131,6 +134,9 @@ mod tests {
     #[test]
     fn chain_when_cwd_outside_root() {
         let layout = Layout::new("/repo", "/elsewhere/x", "/home/u");
- assert_eq!( layout.dir_chain_root_first(), vec![PathBuf::from("/elsewhere/x")] );
+        assert_eq!(
+            layout.dir_chain_root_first(),
+            vec![PathBuf::from("/elsewhere/x")]
+        );
     }
 }

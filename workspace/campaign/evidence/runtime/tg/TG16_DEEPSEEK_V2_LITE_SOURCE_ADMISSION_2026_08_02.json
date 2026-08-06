@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED_PENDING_MATERIALIZATION",
+  "at": "2026-08-02T07:20:00Z",
+  "family": "deepseek_v2_lite_moe_mla",
+  "attempt": "resident_metal_architecture_admission_after_mistral_direct_source_roofline",
+  "preregistered_hypothesis": "A DeepSeek-V2-Lite Q4_K_M source, with its MLA and routed-MoE architecture kept explicit, can establish a source-authoritative bounded CPU oracle and expose the precise resident-Metal dispatch gap. No historical generic dense adapter, synthetic lease, or CPU timing may supply a TG claim.",
+  "source": {
+    "official_release": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+    "official_release_license": "DeepSeek Model License",
+    "quant_repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "expected_bytes": 10364416320,
+    "expected_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "transfer": {
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "selected_path": "Official Hub/Xet high-performance path. The existing Xet matrix remains applicable because runtime, transfer profile, and network environment have not changed; this pinned-file dry run reported exactly one 10.4G object.",
+    "environment": {"HF_HUB_DISABLE_IMPLICIT_TOKEN": "1", "HF_HUB_DISABLE_TELEMETRY": "1", "HF_XET_HIGH_PERFORMANCE": "1", "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0"}
+  },
+  "unified_admission": {
+    "free_bytes": 363947421696,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 163941532140,
+    "live_restream_model_envelope_bytes": 90000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "model_bytes": 10364416320,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 37275070784,
+    "free_after_admission_bytes": 326672350912,
+    "active_model_count": 0,
+    "verdict": "PASS"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "promotion_boundary": "This admission authorizes one bounded independent model-family experiment only. It neither authorizes a parent restream nor makes a capability, CLEAN lease, production performance, or named TG-rung claim."
+}

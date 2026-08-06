@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v2",
+  "status": "PASS_EXACT_SOURCE_ARTIFACT_CACHE_TRASH_PURGED_FREE_BYTES_RECOVERED",
+  "at": "2026-08-02T07:10:47Z",
+  "terminal_receipt": "evidence/tg/TG24_MISTRAL_SMALL_NATIVE_ROOFLINE_TERMINAL_2026_08_02.json",
+  "terminal_receipt_sha256": "fe431a7eb928813d47afe175b60a4a53670029c7e128201b717f73f34f0e64c1",
+  "removed": [
+    {"kind": "source", "bytes": 14333910496, "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0"},
+    {"kind": "executable_source_preserving_gravity_artifact", "bytes": 14326142247, "sha256": "0b3024670765f03cb1bb9d5a487c9ae09ab18a5543bb540ff9f0a0d0af85ddce"},
+    {"kind": "exact_local_huggingface_download_cache_and_temp"}
+  ],
+  "method": {
+    "source_lane": "models/tg-active/mistral-small-24b",
+    "recoverable_stage": "/Users/scammermike/.Trash/mistral-small-24b-2026-08-02",
+    "permanent_action": "Finder Delete Immediately on exactly the named staged directory after the user granted current action-time model-lane purge authority.",
+    "unrelated_trash_items_deleted": 0
+  },
+  "free_space": {
+    "before_kib": 327476224,
+    "after_kib": 355451744,
+    "recovered_kib": 27975520,
+    "recovered_bytes": 28646932480,
+    "protected_floor_bytes": 200005889556,
+    "post_purge_free_bytes": 363982585856,
+    "verdict": "PASS_IMMEDIATE_DF_RECOVERY"
+  },
+  "postconditions": {"trash_item_absent": true, "trash_empty": true, "models_tg_active_bytes": 0, "owner_fences_changed": false}
+}

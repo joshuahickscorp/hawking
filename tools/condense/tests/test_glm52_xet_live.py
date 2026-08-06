@@ -918,7 +918,7 @@ def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dic
         )
 
 def test_module_has_no_destination_download_or_destructive_gc_surface() -> None:
-    source = (CONDENSE / "glm52_xet_live.py").read_text(encoding="utf-8")
+    source = pathlib.Path(live.__file__).read_text(encoding="utf-8")
     forbidden = (
         "start_download_file(",
         "download_files(",

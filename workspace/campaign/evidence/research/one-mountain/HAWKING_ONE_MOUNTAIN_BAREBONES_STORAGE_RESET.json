@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.one_mountain.barebones_storage_reset.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "authority": {
+    "handoff": "/Users/scammermike/Downloads/substrate/docs/tangible_sandbox/SHARED_STORAGE_HANDOFF.md",
+    "r2_continuity_floor_bytes": 200008355840
+  },
+  "user_requested_action": "Completely clear Hawking storage as much as possible while retaining a barebones source-and-evidence workspace.",
+  "permanently_deleted": [
+    {"path": "models/one-mountain-qwen2p5-72b-q4km-2026-08-02", "role": "selected Qwen2.5-72B Q4_K_M source body and local Hugging Face cache", "apparent_bytes_before_deletion": 47415715488},
+    {"path": "models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02", "role": "remaining tokenizer sidecar after Gravity artifact eviction", "apparent_bytes_before_deletion": 7038950},
+    {"path": "target", "role": "rebuildable Rust build output", "disk_kib_before_deletion": 3054208},
+    {"path": ".venv", "role": "rebuildable local Python environment", "disk_kib_before_deletion": 787076},
+    {"path": ".pytest_cache and top-level project Python __pycache__ directories", "role": "rebuildable caches"}
+  ],
+  "retained": [
+    "source code and tracked workspace content",
+    "compact one-mountain receipts and raw logs under evidence/one-mountain",
+    "existing reports and non-cache workspace material not created by this ascent"
+  ],
+  "live_measurement": {
+    "mount": "/System/Volumes/Data",
+    "available_bytes": 259766628352,
+    "residual_above_r2_continuity_floor_bytes": 59758272512,
+    "residual_above_r2_continuity_floor_gib": 55.65422821044922
+  },
+  "settled_post_purge_measurement": {
+    "available_bytes": 266476630016,
+    "residual_above_r2_continuity_floor_bytes": 66468274176,
+    "residual_above_r2_continuity_floor_gib": 61.903404235839844,
+    "note": "APFS reported additional reclaimed blocks after the immediate post-purge reading."
+  },
+  "state_after_reset": {
+    "selected_model_present": false,
+    "gravity_artifact_present": false,
+    "build_output_present": false,
+    "local_venv_present": false,
+    "active_provider_processes_present": false,
+    "campaign_note": "All retained Qwen/Gravity execution claims remain historical receipts only. No model is resident or available for further inference until an explicit re-materialization is authorized."
+  }
+}

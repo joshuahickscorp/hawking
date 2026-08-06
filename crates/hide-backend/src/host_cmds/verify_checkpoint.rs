@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
     pub async fn run_static_analysis(
@@ -77,8 +77,9 @@ impl BackendHost {
         scope.dedup();
 
         // Tie the verdict to an exact snapshot of the sources.
-        let source_hash =
-            hide_kernel::verify_plane::source_hash_of(sources.iter().map(|s| (s.path.as_str(), s.text.as_str())));
+        let source_hash = hide_kernel::verify_plane::source_hash_of(
+            sources.iter().map(|s| (s.path.as_str(), s.text.as_str())),
+        );
         let verification_id = format!(
             "va-{}-{started_ms}",
             &source_hash[..source_hash.len().min(16)]
@@ -259,7 +260,9 @@ impl BackendHost {
         let kv = &self.services.key_value_store;
         let mut proposal = DiffStore::get(kv, diff_id).ok_or_else(|| unknown_diff(diff_id))?;
         let (file, before, after) = {
-            let h = proposal.hunk(hunk_id).ok_or_else(|| unknown_hunk(hunk_id))?;
+            let h = proposal
+                .hunk(hunk_id)
+                .ok_or_else(|| unknown_hunk(hunk_id))?;
             (h.file.clone(), h.before.clone(), h.after.clone())
         };
         self.inverse_write(&proposal.session_id, &file, &before, &after)
@@ -294,12 +297,13 @@ impl BackendHost {
                 (h.file.clone(), h.before.clone(), h.after.clone())
             };
             self.inverse_write(&proposal.session_id, &file, &before, &after)
-            .await?;
+                .await?;
             proposal.hunks[i].status = HunkStatus::Rejected;
             reverted_files.push(file);
         }
         DiffStore::put(kv, &proposal)?;
-        self.record_diff_event(&proposal, "diff.reverted", None).await?;
+        self.record_diff_event(&proposal, "diff.reverted", None)
+            .await?;
         self.invalidate_verifications_for_files(&proposal.session_id, &reverted_files)
             .await?;
         self.publish_diff(&proposal);
@@ -373,7 +377,9 @@ impl BackendHost {
         verification_before: Vec<VerificationReceipt>,
         verification_after: Vec<VerificationReceipt>,
     ) -> Result<DiffReviewReceipt> {
-        let proposal = self.diff_get(diff_id).ok_or_else(|| unknown_diff(diff_id))?;
+        let proposal = self
+            .diff_get(diff_id)
+            .ok_or_else(|| unknown_diff(diff_id))?;
         let sealed_ms = hide_core::ids::now_ms();
         let body = json!({
             "diff_id": proposal.diff_id,
@@ -442,12 +448,8 @@ impl BackendHost {
         condition: impl Into<String>,
         acceptance: Vec<String>,
     ) -> Result<GoalRecord> {
-        let record = GoalRecord::active(
-            GoalStore::new_id(&session),
-            session,
-            condition,
-            acceptance,
-        );
+        let record =
+            GoalRecord::active(GoalStore::new_id(&session), session, condition, acceptance);
         GoalStore::put(&self.services.key_value_store, &record)?;
         self.publish_goal(&record, "goal_set");
         Ok(record)
@@ -553,7 +555,11 @@ impl BackendHost {
     /// state (folded from the log at the boundary), the goal in force, and the
     /// artifact references. Model-free: a live model-state capsule stays
     /// `DEFERRED_MODEL_REQUIRED` and is recorded as `None`.
-    pub(crate) async fn compute_coverage(&self, session: &SessionId, at_seq: u64) -> Result<CheckpointCoverage> {
+    pub(crate) async fn compute_coverage(
+        &self,
+        session: &SessionId,
+        at_seq: u64,
+    ) -> Result<CheckpointCoverage> {
         let events = self
             .services
             .event_log
@@ -565,17 +571,17 @@ impl BackendHost {
         let code = rewind::code_state(&events, Some(at_seq));
         let repo_items: Vec<String> = code.iter().map(|(f, h)| format!("{f}:{h}")).collect();
         let plan = match projection.plan.as_ref() {
-            Some(p) => StateRef::counted(
-                p.steps.len(),
-                &serde_json::to_string(p).unwrap_or_default(),
-            ),
+            Some(p) => {
+                StateRef::counted(p.steps.len(), &serde_json::to_string(p).unwrap_or_default())
+            }
             None => StateRef::default(),
         };
-        let goal = GoalStore::get(&self.services.key_value_store, session).map(|g| rewind::GoalRef {
-            goal_id: g.goal_id,
-            status: format!("{:?}", g.status),
-            condition: g.condition,
-        });
+        let goal =
+            GoalStore::get(&self.services.key_value_store, session).map(|g| rewind::GoalRef {
+                goal_id: g.goal_id,
+                status: format!("{:?}", g.status),
+                condition: g.condition,
+            });
         let artifacts = rewind::artifact_refs(&events, Some(at_seq));
         Ok(CheckpointCoverage {
             repo_state: StateRef::of(&repo_items),
@@ -614,9 +620,7 @@ impl BackendHost {
         Self::gated_effect("checkpoint_restore")?;
         let record = CheckpointStore::get(&self.services.key_value_store, checkpoint_id)
             .ok_or_else(|| {
-                hide_core::error::HideError::NotFound(format!(
-                    "unknown checkpoint {checkpoint_id}"
-                ))
+                hide_core::error::HideError::NotFound(format!("unknown checkpoint {checkpoint_id}"))
             })?;
         if !record.verify_integrity() {
             return Err(hide_core::error::HideError::InvalidState(format!(
@@ -644,7 +648,12 @@ impl BackendHost {
     }
 
     /// Publish a `checkpoint_created` UiEvent carrying the record, under its session.
-    pub(crate) fn fork_marker(&self, parent: &SessionId, inherited: usize, at_seq: u64) -> (ForkPoint, NewEvent) {
+    pub(crate) fn fork_marker(
+        &self,
+        parent: &SessionId,
+        inherited: usize,
+        at_seq: u64,
+    ) -> (ForkPoint, NewEvent) {
         let fp = ForkPoint::new(parent.clone(), inherited, at_seq);
         let marker = NewEvent::system(
             parent.clone(),
@@ -704,7 +713,9 @@ impl BackendHost {
         // reverted (the same exposure `revert_diff` already has). Add a staged
         // write-back if a partially reverted tree ever becomes a real problem.
         if target != RewindTarget::Conversation {
-            for (diff_id, hunk_id) in rewind::post_boundary_hunks(&events, at_seq).into_iter().rev()
+            for (diff_id, hunk_id) in rewind::post_boundary_hunks(&events, at_seq)
+                .into_iter()
+                .rev()
             {
                 let already_reverted = self.diff_get(&diff_id).is_some_and(|p| {
                     p.hunks
@@ -860,7 +871,9 @@ impl BackendHost {
                 hide_core::error::HideError::NotFound(format!("unknown checkpoint {checkpoint_id}"))
             })?;
         let integrity_ok = record.verify_integrity();
-        let current = self.compute_coverage(&record.session_id, record.at_seq).await?;
+        let current = self
+            .compute_coverage(&record.session_id, record.at_seq)
+            .await?;
         let drift = coverage_drift(&record.coverage, &current);
 
         let events = self

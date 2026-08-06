@@ -369,7 +369,10 @@ mod tests {
             )
             .await;
         assert!(r.ok, "create failed: {:?}", r.error);
- assert_eq!( std::fs::read_to_string(root.join("notes.md")).unwrap(), "a\nb\n" );
+        assert_eq!(
+            std::fs::read_to_string(root.join("notes.md")).unwrap(),
+            "a\nb\n"
+        );
         let v = tool
             .call(json!({ "command": "view", "path": "notes.md" }), ctx())
             .await;
@@ -386,7 +389,10 @@ mod tests {
             )
             .await;
         assert!(rep.ok, "replace failed: {:?}", rep.error);
- assert_eq!( std::fs::read_to_string(root.join("notes.md")).unwrap(), "A\nb\n" );
+        assert_eq!(
+            std::fs::read_to_string(root.join("notes.md")).unwrap(),
+            "A\nb\n"
+        );
         let _ = std::fs::remove_dir_all(root);
     }
     #[tokio::test]

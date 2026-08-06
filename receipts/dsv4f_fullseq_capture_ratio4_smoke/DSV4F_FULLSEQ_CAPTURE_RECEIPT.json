@@ -1,0 +1,80 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "capture_bytes_approx": 4128,
+  "honesty": {
+    "fabricated_activations": false,
+    "full_43_layer_fullseq": false,
+    "glm_side_present": false,
+    "hcli_decisions_captured": false,
+    "logits_captured": false,
+    "logits_note": "final lm_head requires full 43-layer body per token; not run under ratio-0-only default",
+    "serve_endpoint_flipped": false
+  },
+  "metal": {
+    "command_buffers": 63,
+    "cpu_visible_waits": 63,
+    "fallback": 0,
+    "metal_dispatches": 1044
+  },
+  "non_bos_forward": {
+    "blocker_ratio_128_full": "same empty-compressed specialization only",
+    "blocker_ratio_4_full": "indexer/compressor graph not implemented for non-empty compressed slots (layer_plan::require_empty_compressed_growing_kv_attention)",
+    "exact_storage": false,
+    "growing_kv_sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "parity": "NUMERIC_PARITY_V2_1_ONLY",
+    "ratios_covered": {
+      "ratio_0": true,
+      "ratio_128_empty_compressed_only": true,
+      "ratio_128_full_compressed_graph": false,
+      "ratio_4_empty_compressed_only": true,
+      "ratio_4_full_indexer_graph": false
+    }
+  },
+  "paired_traces": {
+    "dir": "receipts/dsv4f_fullseq_capture_ratio4_smoke/traces",
+    "n_traces": 1,
+    "rows": [
+      {
+        "example_id": "v0_math_01",
+        "path": "receipts/dsv4f_fullseq_capture_ratio4_smoke/traces/v0_math_01.json",
+        "seal_sha256": "1aa7446657b64d0a54fbc3d784af55778d02c30abfce819880be52eaa27c1042"
+      }
+    ],
+    "schema": "hawking.frankenstein.paired_functional_trace.v1"
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false
+  },
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture.v1",
+  "scope": {
+    "ladder": "L0",
+    "layer_blockers": [],
+    "layers_run": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "max_layer_requested": 3,
+    "max_seq_len": 3,
+    "sequences": 1,
+    "tokens_total": 3
+  },
+  "sites_captured": [
+    "embedding",
+    "mHC",
+    "pre_post_attn",
+    "pre_router",
+    "router_logits_top6_routes",
+    "post_MoE",
+    "late_hidden"
+  ],
+  "status": "PASS_FULLSEQ_CAPTURE_L0_1_LAYERS_0_TO_3",
+  "wall_time_ms": 8013.289542
+}

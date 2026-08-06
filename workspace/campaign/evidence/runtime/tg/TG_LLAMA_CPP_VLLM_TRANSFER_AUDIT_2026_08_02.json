@@ -1,0 +1,103 @@
+{
+  "schema": "hawking.tg.llama_cpp_vllm_transfer_audit.v1",
+  "at": "2026-08-02",
+  "scope": "operational transfer audit, not a cross-model TPS claim",
+  "external_authorities": {
+    "llama_cpp": {
+      "local_reference": "tools/llama_sequential_oracle.cpp",
+      "transferred_contracts": [
+        "mmap/pinned source weights with one-time metadata resolution",
+        "persistent Metal buffers and pipeline states",
+        "native quantized matvec and fused projection waves",
+        "complete-token wall timing with p99 rather than partial-forward timing",
+        "separate prefill and decode paths"
+      ],
+      "same_file_reference": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_LLAMA70.json"
+      ,"adoption_decision": "ADOPT_LLAMA_CPP_AS_THE_SOURCE_COMPATIBLE_BASELINE_SUBSTRATE"
+      ,"license_authority": "MIT (local Homebrew llama.cpp 9430 LICENSE verified)"
+      ,"integration_order": [
+        "link or vendor the pinned llama.cpp/ggml build behind one Hawking backend seam",
+        "use its GGUF/tokenizer/Metal graph as the initial source-compatible execution path",
+        "retain Hawking receipts, capability gates, Gravity format, foundry, range executor and owner fences outside the backend",
+        "port a kernel or graph node to Rust only after a same-model clean wall and parity win is sealed"
+      ]
+      ,"rust_reimplementation_policy": "deferred_until_after_TG2_or_TG1_frontier_or_a_measured_backend_reason"
+    },
+    "vllm": {
+      "runtime": "vllm-0.24.0",
+      "metal_runtime": "vllm-metal-0.3.0.dev20260713103604",
+      "external_receipts": [
+        {
+          "path": "/Users/scammermike/Downloads/merc/.artifacts/vllm-lab/m3-ultra-vllm-metal-sonnet-baseline-c1.json",
+          "sha256": "a97a8e8b5c62ba7ba68a6f10ac97192d9c9d8ec83bff87b70418b5a8afb96aa7",
+          "concurrency": 1,
+          "output_throughput_tps": 95.63885080566043,
+          "p50_tpot_ms": 10.182262164495272,
+          "p99_tpot_ms": 11.883260205361895,
+          "p99_itl_ms": 39.11600347812056
+        },
+        {
+          "path": "/Users/scammermike/Downloads/merc/.artifacts/vllm-lab/m3-ultra-vllm-metal-sonnet-baseline-c16.json",
+          "sha256": "e5cd1f8808272d0bf54a12555113c835e910d6f332d58c7be9c968cf396623df",
+          "concurrency": 16,
+          "output_throughput_tps": 700.476715718804,
+          "p50_tpot_ms": 17.691214063795496,
+          "p99_tpot_ms": 22.111077114065402,
+          "p99_itl_ms": 296.0941074657603
+        },
+        {
+          "path": "/Users/scammermike/Downloads/merc/.artifacts/vllm-lab/m3-ultra-vllm-metal-sonnet-ngram-k3-c1.json",
+          "sha256": "a292405913046d387570993a4502be7398d33ba7596e17067fdd30df648030fd",
+          "concurrency": 1,
+          "output_throughput_tps": 322.8276419355376,
+          "p50_tpot_ms": 2.411142057050082,
+          "p99_tpot_ms": 2.795333179792517,
+          "p99_itl_ms": 12.632204297050517
+        }
+      ],
+      "transferred_contracts": [
+        "continuous batching with bounded admission and per-slot KV state",
+        "prefix-affinity scheduling and exact prefix reuse",
+        "separate prefill/decode accounting",
+        "speculative acceptance accounting separated from base TPS",
+        "p99 interaction latency as a rejection floor"
+      ],
+      "claim_boundary": "these are a 1B vLLM control workload and do not promote any Hawking model rung"
+      ,"adoption_decision": "USE_VLLM_AS_SCHEDULER_AND_KV_CONTRACT_REFERENCE_NOT_AS_A_DIRECT_METAL_KERNEL_SOURCE"
+      ,"transferred_priority": [
+        "continuous batching",
+        "paged and prefix-affine KV admission",
+        "prefill/decode separation",
+        "speculative acceptance accounting",
+        "p99 interaction latency gates"
+      ]
+    }
+  },
+  "hawking_implementation": {
+    "serve_batch_tests": 56,
+    "speculation_tests": 56,
+    "implemented_seams": [
+      "crates/hawking-serve/src/batch/scheduler.rs",
+      "crates/hawking-serve/src/batch/driver.rs",
+      "crates/hawking-serve/src/system_kv_bank.rs",
+      "crates/hawking-speculate/src/governor.rs",
+      "crates/hawking-speculate/src/user_ngram.rs",
+      "crates/hawking-speculate/src/metrics_sep.rs",
+      "crates/hawking-core/src/metal/decode_arena.rs"
+    ],
+    "safety_contracts": [
+      "draft tokens cannot enter durable sinks before target verification",
+      "accepted-TPS accounting includes draft, verify and rollback wall time",
+      "speculation is disabled by measured acceptance or overhead floors",
+      "prefix reuse requires exact token identity and materialized KV",
+      "batch queues are bounded and long-prefill work is chunked"
+    ]
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "verdict": "BASELINE_PIVOT_ACCEPTED: llama.cpp is now the pinned source-compatible substrate/oracle to absorb or link first; vLLM remains the scheduler/KV contract reference. No external code was copied wholesale in this audit, no speculative result was promoted to base TPS, and no model rung was promoted by this audit."
+}

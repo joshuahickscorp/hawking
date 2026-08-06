@@ -1,0 +1,10 @@
+{
+  "schema": "hawking.ramanujan.container_build_receipt.v1",
+  "at": "2026-07-30T18:24:36Z",
+  "image": "ramanujan-clean-replay:2ec0166b",
+  "image_id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
+  "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+  "docker_host": "unix:///Users/scammermike/.colima/default/docker.sock",
+  "platform": "linux/arm64",
+  "status": "BUILT"
+}

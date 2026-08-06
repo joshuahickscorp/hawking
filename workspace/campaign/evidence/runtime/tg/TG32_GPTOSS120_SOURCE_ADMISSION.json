@@ -1,0 +1,57 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED",
+  "at": "2026-08-01T07:09:53Z",
+  "family": "gpt_oss",
+  "source": {
+    "repository": "openai/gpt-oss-120b",
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "representation": "original MXFP4 safetensors",
+    "source_root": "models/gpt-oss-120b/original",
+    "bytes": 65248869800,
+    "declared_total_parameters": "117B",
+    "declared_active_parameters": "5.1B",
+    "architecture": "MoE, 36 layers, 128 experts, top-k 4",
+    "shards": [
+      {"path":"original/model--00001-of-00007.safetensors","bytes":10544040680,"sha256":"68a8dc1f8e2e5996cb702f14332a25ddf3463daeab2df68e21ca09ef181203c3"},
+      {"path":"original/model--00002-of-00007.safetensors","bytes":10488721680,"sha256":"19b8f0d5c7dc3195c61a711d08384a1f85624f018186da541585c0f97ac61020"},
+      {"path":"original/model--00003-of-00007.safetensors","bytes":10488721688,"sha256":"0dbccd746d50e9543e8016d0a43ab4487c7f86d72349b1ef17abdfec509d0701"},
+      {"path":"original/model--00004-of-00007.safetensors","bytes":10488721672,"sha256":"bcc73cf6d18f96a2e62428758463157cc12768f410873152a50d3929a64cd049"},
+      {"path":"original/model--00005-of-00007.safetensors","bytes":10488721680,"sha256":"15fd69843e9cc6fdf2db0efe0cf0979b49a6ba84b3a38169b2fabc5479d04a7d"},
+      {"path":"original/model--00006-of-00007.safetensors","bytes":10433402600,"sha256":"3aedef2ee0a5a78a003b3f74fd6883033946b80097bf41e4f4715d95066f0588"},
+      {"path":"original/model--00007-of-00007.safetensors","bytes":2316539800,"sha256":"20d5dfcad1ed6c50aa3c0da7d3f08828dba72b5f58686a987bf3a8f01659cda6"}
+    ]
+  },
+  "unified_admission": {
+    "free_bytes": 407677067264,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 207671177708,
+    "model_lane_ceiling_bytes": 102000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "model_bytes": 65248869800,
+    "scratch_bytes": 26843545600,
+    "metadata_budget_bytes": 100000000,
+    "bounded_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 92259524264,
+    "lane_headroom_bytes": 9740475736,
+    "active_model_count": 0,
+    "failures": []
+  },
+  "transfer": {
+    "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2","cli":".venv/glm52/bin/hf"},
+    "selected_profile": "high_performance",
+    "environment": {"HF_HUB_DISABLE_IMPLICIT_TOKEN":"1","HF_HUB_DISABLE_TELEMETRY":"1","HF_XET_HIGH_PERFORMANCE":"1","HF_XET_CHUNK_CACHE_SIZE_BYTES":"0"},
+    "bounded_matrix_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_GPTOSS120.json",
+    "bounded_matrix_seal_sha256": "c5b559bc9d49b23f3b890e6783a7e1f35716dfdc7c35fe6db3e383d9dc5f06dc",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_GPTOSS120.json",
+    "resume_seal_sha256": "7d3251f385da6f0269043ac28def0cb337ef97018fb6b83a11c25a0fa9976023"
+  },
+  "live_reader_bindings": {
+    "provenance_manifest": "reports/condense/subbit_frontier/GRAVITY_120B_PROVENANCE.json",
+    "provenance_file_sha256": "ae54b72f06fee4101cb5679175c060acad986c4878b0838791f3b5ed0d135148",
+    "foundry_parent_evidence": "tools/foundry/evidence/f0_gpt_oss_120b.json",
+    "foundry_parent_evidence_sha256": "fc6bab3eeeb9ced67f12f955fcf78382a0dd0b9af3a6ae268c47ac6151fe9605",
+    "boundary": "the live provenance reader is CPU/reference Foundry machinery, not a Hawking Metal TG adapter"
+  },
+  "seal_sha256": "caf3c82e67f187d565edc66b5b157386335c5a0c8ba56499245d6248e8d6da86"
+}

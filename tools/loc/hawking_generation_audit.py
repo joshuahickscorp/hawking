@@ -35,7 +35,12 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRY = ROOT / "control" / "GENERATED_REGISTRY.json"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import CONTROL_ROOT
+
+REGISTRY = CONTROL_ROOT / "catalog/manifests/GENERATED_REGISTRY.json"
 MIN_AMPLIFICATION = 4.0
 
 # Kept in step with hawking_loc.py's SOURCE_SUFFIXES; a generated .json or .md is data,

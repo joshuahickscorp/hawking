@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.tg.adapter_oracle.v1",
+  "status": "TERMINAL_FOR_THIS_RUNG",
+  "rung": "TG10",
+  "model": "Mistral-Nemo-Instruct-2407",
+  "family": "mistral",
+  "source": {
+    "path": "models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+    "bytes": 7477208192,
+    "sha256": "7c1a10d202d8788dbe5628dc962254d10654c853cae6aaeca0618f05490d4a46",
+    "receipt": "evidence/tg/TG10_MISTRAL_SOURCE_RECEIPT.json"
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "new_tokens": 8,
+    "temperature": 0,
+    "external_command": "llama-completion -m models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf -p 'The capital of France is' -n 8 -ngl all --temp 0 --no-warmup -no-cnv --color off",
+    "hawking_command": "hawking generate --weights models/tg-active/Mistral-Nemo-Instruct-2407-Q4_K_M.gguf --prompt 'The capital of France is' --max-new-tokens 8 --max-seq-len 32 --temperature 0 --trace-tokens --trace-dispatch --max-stall-ms 30000"
+  },
+  "external_parent": {
+    "engine": "llama-completion",
+    "observed_completion_prefix": " Paris. Paris is the",
+    "verdict": "PASS"
+  },
+  "hawking": {
+    "engine": "hawking generate (generic llama/mistral adapter)",
+    "observed_completion_prefix": " Paris. Paris. Paris is the",
+    "matching_prefix_tokens": 3,
+    "first_divergent_token": 4,
+    "first_divergence": {
+      "external_text": " is",
+      "hawking_token_id": 1046,
+      "hawking_text": "."
+    },
+    "dispatch_accounting": "UNREPORTED: --trace-dispatch produced no device or dispatch count for this generic adapter.",
+    "verdict": "FAIL"
+  },
+  "gate_results": {
+    "RAW_PARENT_FORWARD": "PASS",
+    "STATE_ADVANCE": "FAIL",
+    "ADAPTER_ACCOUNTING": "FAIL",
+    "AUTOTUNE_PROFILE": "BLOCKED",
+    "GRAVITY_ADAPTER": "BLOCKED",
+    "GRAVITY_ORACLE": "BLOCKED",
+    "RUNG_MEASUREMENT": "BLOCKED"
+  },
+  "decision": {
+    "do_not_autotune": "No Mistral family tuning matrix is admissible until this generic adapter reaches multi-token agreement and emits hardware accounting.",
+    "do_not_pack_gravity": "Only the Llama-family Gravity forward is executable today; a Mistral tensor/header map remains a separately blocked adapter task.",
+    "next_step": "Seal eviction and proceed to the distinct Llama TG5 source. A future Mistral repair must rehydrate this SHA-256 and start at the fourth-token discrepancy."
+  }
+}

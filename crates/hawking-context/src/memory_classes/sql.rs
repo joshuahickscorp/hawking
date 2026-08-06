@@ -22,7 +22,10 @@ pub(super) fn table_for_class(class: MemoryClass) -> Result<&'static str> {
 // Ranking / packing helpers
 // ---------------------------------------------------------------------------
 
-pub(super) fn rank_for_query(task: &str, mut records: Vec<ClassMemoryRecord>) -> Vec<ClassMemoryRecord> {
+pub(super) fn rank_for_query(
+    task: &str,
+    mut records: Vec<ClassMemoryRecord>,
+) -> Vec<ClassMemoryRecord> {
     let task_l = task.to_lowercase();
     let terms: Vec<&str> = task_l.split_whitespace().filter(|t| t.len() > 2).collect();
     records.sort_by(|a, b| {
@@ -156,11 +159,7 @@ pub(super) fn init_workspace_schema(conn: &Connection) -> Result<()> {
             ("supersedes", "TEXT"),
         ],
     )?;
-    for table in [
-        "mem_semantic_project",
-        "mem_procedural",
-        "mem_verification",
-    ] {
+    for table in ["mem_semantic_project", "mem_procedural", "mem_verification"] {
         migrate_add_missing_columns(
             conn,
             table,
@@ -313,7 +312,10 @@ pub(super) fn insert_user(conn: &Mutex<Connection>, rec: &ClassMemoryRecord) -> 
     Ok(())
 }
 
-pub(super) fn list_workspace(conn: &Mutex<Connection>, table: &str) -> Result<Vec<ClassMemoryRecord>> {
+pub(super) fn list_workspace(
+    conn: &Mutex<Connection>,
+    table: &str,
+) -> Result<Vec<ClassMemoryRecord>> {
     debug_assert!(matches!(
         table,
         "mem_episodic" | "mem_semantic_project" | "mem_procedural" | "mem_verification"
@@ -362,19 +364,18 @@ pub(super) fn row_to_record(
     class: MemoryClass,
 ) -> rusqlite::Result<ClassMemoryRecord> {
     let provenance_json: String = row.get(5)?;
-    let provenance: ClassProvenance = serde_json::from_str(&provenance_json).unwrap_or_else(|_| {
-        ClassProvenance {
+    let provenance: ClassProvenance =
+        serde_json::from_str(&provenance_json).unwrap_or_else(|_| ClassProvenance {
             writer: "unknown".into(),
             written_at_ms: 0,
             turn_id: None,
             run_id: None,
             evidence: Vec::new(),
             authority: WriteAuthority::Turn,
-        }
-    });
+        });
     let scope_s: String = row.get(7)?;
-    let scope = PersonalScope::parse(&scope_s)
-        .unwrap_or_else(|| PersonalScope::default_for_class(class));
+    let scope =
+        PersonalScope::parse(&scope_s).unwrap_or_else(|| PersonalScope::default_for_class(class));
     Ok(ClassMemoryRecord {
         id: row.get(0)?,
         class,
@@ -387,10 +388,7 @@ pub(super) fn row_to_record(
         evidence_tier: row.get(6)?,
         pinned: row.get::<_, i64>(8)? != 0,
         expired: row.get::<_, i64>(9)? != 0,
-        expire_at_ms: row
-            .get::<_, Option<i64>>(10)?
-            .map(|v| v as u64),
+        expire_at_ms: row.get::<_, Option<i64>>(10)?.map(|v| v as u64),
         supersedes: row.get(11)?,
     })
 }
-

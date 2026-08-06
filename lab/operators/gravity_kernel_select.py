@@ -6,6 +6,7 @@ from lab.operators import gravity_forge as forge
 from lab.operators import gravity_metal
 from lab.operators import gravity_metal_lab_b as lb
 from lab.operators import gravity_real_fixtures as grf
+from lab.layout import REPORTS_ROOT
 import sys as _sys_a1
 from pathlib import Path as _Path_a1
 import argparse
@@ -22,7 +23,7 @@ _A1_REPO = _A1_CONDENSE.parents[1]
 if str(_A1_CONDENSE) not in _sys_a1.path:
     _sys_a1.path.insert(0, str(_A1_CONDENSE))
 sys.path.insert(0, str(_A1_CONDENSE))
-REPORT_DIR = _A1_REPO / 'reports' / 'condense' / 'breakthrough'
+REPORT_DIR = REPORTS_ROOT / 'condense' / 'breakthrough'
 REPORT_PATH = REPORT_DIR / 'GLM52_KERNEL_SELECTION_MATRIX.json'
 BASELINE_REPORT = 'reports/condense/breakthrough/GLM52_BREAKTHROUGH_BASELINE.json'
 TRACK_A_REPORT = 'reports/condense/breakthrough/GLM52_TRACK_A_BENCHMARK.json'

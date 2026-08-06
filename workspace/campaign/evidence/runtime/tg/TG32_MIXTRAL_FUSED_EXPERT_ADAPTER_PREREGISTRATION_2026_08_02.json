@@ -1,0 +1,76 @@
+{
+  "schema": "hawking.tg.large_family_adapter_preregistration.v1",
+  "status": "PREREGISTERED_FUSED_EXPERT_ADAPTER_REPAIR",
+  "at_utc": "2026-08-02",
+  "family": "mistral_mixtral",
+  "model": {
+    "name": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+    "total_parameters": "46.7B",
+    "active_parameters": "12.9B",
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "license": "Apache-2.0",
+    "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44"
+  },
+  "binding_failure": {
+    "prior_receipt": "evidence/tg/TG32_MIXTRAL_MRADERMACHER_ADAPTER_FLOOR_2026_08_02.json",
+    "stage": "model adapter load",
+    "prior_error": "missing tensor blk.0.ffn_gate.weight",
+    "actual_source_grammar": ["blk.0.ffn_gate_exps.weight", "blk.0.ffn_up_exps.weight", "blk.0.ffn_down_exps.weight", "blk.0.ffn_gate_inp.weight"],
+    "hypothesis": "The extracted Mixtral engine expects split per-expert tensors, while the immutable source stores each expert bank as a fused tensor. Slicing each fused bank into exact per-expert TensorRefs at quant-block boundaries should restore K0 without copying or changing source bytes."
+  },
+  "binding_change": {
+    "id": "mixtral-fused-expert-slice-adapter-v1",
+    "files": ["crates/hawking-core/src/model/mixtral.rs", "crates/hawking-core/src/model/mod.rs"],
+    "scope": "load and execute Mixtral GGUFs with fused *_exps expert banks; retain split-expert compatibility",
+    "mechanism": "detect fused expert tensor names, validate outer expert dimension and GGML block alignment, create bounded per-expert byte-range TensorRefs, and dispatch router top-2 expert waves",
+    "fallback": "No dense fallback and no guessed tensor names; reject malformed shapes or non-boundary slices.",
+    "speed_claim_allowed": false,
+    "reopen_condition": "Only a sealed source/tokenizer parity receipt and complete-token CLEAN run may reopen a speed/TG candidate."
+  },
+  "admission": {
+    "free_bytes_before": 370965483520,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "source_body_bytes": 28448468384,
+    "scratch_reserve_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "projected_free_after_source_and_scratch": 315606360672,
+    "projected_residual_above_floor_bytes": 115600471116,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_2026_08_02.json",
+    "conditions_unchanged": true,
+    "selected_mode": "high_performance",
+    "selected_requested_concurrency": 4,
+    "selected_stable_median_gb_per_hour_decimal": 111.8021349745316,
+    "range_hashes_verified": true,
+    "resume_hash_verified": true,
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"}
+  },
+  "protocol": {
+    "prompt": "The capital of France is",
+    "complete_tokens_required": 32,
+    "temperature": 0.0,
+    "fallback_required": 0,
+    "device_required": "Apple M3 Ultra",
+    "source_reference_authority": "llama.cpp b9430 source benchmark remains SOURCE_REFERENCE_TPS only until Hawking parity exists"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "b0e53a0c6b70d2282a10e427c2e923495fe9db9b8327d85df88da4e4ca238229"
+}

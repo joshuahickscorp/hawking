@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -128,13 +128,9 @@ impl Trigger {
             (Trigger::PrOpened, TriggerEvent::PrOpened) => true,
             (Trigger::IssueOpened, TriggerEvent::IssueOpened) => true,
             (Trigger::CiFailure, TriggerEvent::CiFailure) => true,
-            (Trigger::FileChange(glob), TriggerEvent::FileChange(path)) => {
-                glob_matches(glob, path)
-            }
+            (Trigger::FileChange(glob), TriggerEvent::FileChange(path)) => glob_matches(glob, path),
             (Trigger::DependencyAdvisory, TriggerEvent::DependencyAdvisory) => true,
-            (Trigger::MonitoringAlert(name), TriggerEvent::MonitoringAlert(fired)) => {
-                name == fired
-            }
+            (Trigger::MonitoringAlert(name), TriggerEvent::MonitoringAlert(fired)) => name == fired,
             (Trigger::Manual, TriggerEvent::Manual) => true,
             _ => false,
         }
@@ -380,4 +376,3 @@ impl JobStore {
             .collect()
     }
 }
-

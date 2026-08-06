@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG3",
+  "model": "Qwen2.5-32B-Instruct",
+  "terminal_gate": {
+    "name": "STATE_ADVANCE",
+    "result": "FAIL",
+    "evidence": "evidence/tg/TG3_QWEN32_ADAPTER_ORACLE.json",
+    "boundary": "The conservative Qwen adapter agrees with the external parent for two completion tokens and diverges at token three."
+  },
+  "source": {
+    "workspace_path": "models/tg-active/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "bytes": 19851336576,
+    "sha256": "2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e",
+    "source_receipt": "evidence/tg/TG3_QWEN32_SOURCE_RECEIPT.json"
+  },
+  "eviction": {
+    "command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+    "workspace_copy_absent_after_command": true,
+    "remaining_active_parent_bytes_under_models_tg_active": 24576,
+    "physical_space_reclaimed": "NOT_YET_PROVEN: macOS Trash is recoverable storage; empty it manually only if the recovery window is no longer wanted."
+  },
+  "rehydration_rule": "Do not retain this parent. A Qwen family repair may re-download the immutable revision and must make the recorded third-token cross-size parity test pass before any autotune sweep."
+}

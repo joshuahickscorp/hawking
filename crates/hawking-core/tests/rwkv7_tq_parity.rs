@@ -9,7 +9,8 @@ const FIXTURE_PROMPTS: [&str; 3] = [
 #[ignore = "stub — implement after TqPreparedGpu dispatch and CPU serving reference are wired"]
 fn rwkv7_tq_cpu_vs_metal_greedy_trajectory() {
     let model_path = std::env::var("RWKV7_TQ_MODEL").expect("RWKV7_TQ_MODEL must be set");
-    let _tokenizer_path = std::env::var("RWKV7_TOKENIZER").unwrap_or_else(|_| "tokenizer/rwkv_vocab_v20230424.txt".to_string());
+    let _tokenizer_path = std::env::var("RWKV7_TOKENIZER")
+        .unwrap_or_else(|_| "tokenizer/rwkv_vocab_v20230424.txt".to_string());
 }
 #[test]
 #[ignore = "stub — implement after TQ serving reference is wired and calibration corpus is available"]

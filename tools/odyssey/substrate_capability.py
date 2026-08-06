@@ -28,9 +28,9 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tools.odyssey._paths import EXPECTED_INDEX_SHA256, MATH_ARTIFACT, ODYSSEY
+from tools.odyssey._paths import EXPECTED_INDEX_SHA256, LAUNCH_DIR, MATH_ARTIFACT
 
-CAPABILITY = ODYSSEY / "launch" / "SUBSTRATE_CAPABILITY.json"
+CAPABILITY = LAUNCH_DIR / "SUBSTRATE_CAPABILITY.json"
 
 
 class SubstrateRefused(RuntimeError):

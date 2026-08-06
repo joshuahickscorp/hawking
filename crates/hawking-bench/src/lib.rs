@@ -6,6 +6,16 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
+/// Return an honest model-decode throughput measurement.
+///
+/// A completion's first emitted token may come from prompt-prefill logits, so
+/// `completion_tokens / decode_ms` can overstate decode TPS by one token. The
+/// engine records completed decode forwards separately; use that authoritative
+/// count whenever it is available.
+pub(crate) fn measured_decode_tps(stats: &hawking_core::GenStats) -> Option<f64> {
+    (stats.decode_ms > 0.0).then(|| stats.dec_tps())
+}
+
 #[derive(Debug, Clone)]
 pub struct BenchOptions {
     pub weights: PathBuf,
@@ -247,4 +257,20 @@ fn current_rss_mb() -> Option<f64> {
         .parse::<f64>()
         .ok()?;
     Some(kb / 1024.0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decode_measurement_excludes_prefill_seed_token() {
+        let stats = hawking_core::GenStats {
+            completion_tokens: 8,
+            completed_decode_forwards: 7,
+            decode_ms: 2_000.0,
+            ..Default::default()
+        };
+        assert_eq!(measured_decode_tps(&stats), Some(3.5));
+    }
 }

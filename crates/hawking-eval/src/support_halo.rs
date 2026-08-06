@@ -132,8 +132,13 @@ impl DimensionScore {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AggregateScore {
-    Measured { score: f64, measurable_dimensions: usize },
-    NotMeasurable { reason: String },
+    Measured {
+        score: f64,
+        measurable_dimensions: usize,
+    },
+    NotMeasurable {
+        reason: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -409,7 +414,9 @@ pub fn score_task_completion(
             None => (false, "execution not run".into()),
         },
         Oracle::ToolJson => score_tool_json(task, completion),
-        Oracle::ExpectAll | Oracle::Exact | Oracle::Needle => score_expect_or_exact(task, completion),
+        Oracle::ExpectAll | Oracle::Exact | Oracle::Needle => {
+            score_expect_or_exact(task, completion)
+        }
     };
     TaskScore {
         id: task.id.clone(),
@@ -513,7 +520,10 @@ pub fn aggregate_scores(
             if has_degenerate_repetition(c, DEGENERATE_REPEAT_TOKENS) {
                 disqualifications.push(Disqualification {
                     code: "DEGENERATE_REPETITION".into(),
-                    detail: format!("task {} has >= {DEGENERATE_REPEAT_TOKENS} identical consecutive tokens", s.id),
+                    detail: format!(
+                        "task {} has >= {DEGENERATE_REPEAT_TOKENS} identical consecutive tokens",
+                        s.id
+                    ),
                 });
             }
         }
@@ -563,7 +573,10 @@ pub fn compare_reports(a: &HaloReport, b: &HaloReport) -> i8 {
 
     // Rank 1: higher aggregate
     match (&a.aggregate, &b.aggregate) {
-        (AggregateScore::Measured { score: sa, .. }, AggregateScore::Measured { score: sb, .. }) => {
+        (
+            AggregateScore::Measured { score: sa, .. },
+            AggregateScore::Measured { score: sb, .. },
+        ) => {
             if (*sa - *sb).abs() > 1e-12 {
                 return if sa > sb { -1 } else { 1 };
             }
@@ -619,7 +632,10 @@ fn cmp_sha(a: &str, b: &str) -> i8 {
 }
 
 fn min_measurable(r: &HaloReport) -> Option<f64> {
-    r.dimensions.iter().filter_map(|d| d.pass_rate()).reduce(f64::min)
+    r.dimensions
+        .iter()
+        .filter_map(|d| d.pass_rate())
+        .reduce(f64::min)
 }
 
 fn dim_rate(r: &HaloReport, name: &str) -> Option<f64> {
@@ -641,10 +657,8 @@ pub fn regression_vs_baseline(candidate: &HaloReport, baseline: &HaloReport) -> 
     let mut dimension_regressions = Vec::new();
     let mut aggregate_regression = false;
 
-    if let (
-        AggregateScore::Measured { score: c, .. },
-        AggregateScore::Measured { score: b, .. },
-    ) = (&candidate.aggregate, &baseline.aggregate)
+    if let (AggregateScore::Measured { score: c, .. }, AggregateScore::Measured { score: b, .. }) =
+        (&candidate.aggregate, &baseline.aggregate)
     {
         if *c < *b - REGRESSION_AGGREGATE_EPS {
             aggregate_regression = true;
@@ -652,10 +666,7 @@ pub fn regression_vs_baseline(candidate: &HaloReport, baseline: &HaloReport) -> 
     }
 
     for dim in DIMENSIONS {
-        let c = candidate
-            .dimensions
-            .iter()
-            .find(|d| d.dimension() == dim);
+        let c = candidate.dimensions.iter().find(|d| d.dimension() == dim);
         let b = baseline.dimensions.iter().find(|d| d.dimension() == dim);
         if let (
             Some(DimensionScore::Measured {
@@ -853,15 +864,9 @@ mod tests {
     fn tool_json_scores_strict_object() {
         let tasks = sample_tasks();
         let t = tasks.iter().find(|t| t.id == "t5").unwrap();
-        let (ok, _) = score_tool_json(
-            t,
-            r#"{"name":"read_file","arguments":{"path":"x"}}"#,
-        );
+        let (ok, _) = score_tool_json(t, r#"{"name":"read_file","arguments":{"path":"x"}}"#);
         assert!(ok);
-        let (bad, _) = score_tool_json(
-            t,
-            r#"{"name":"read_file","arguments":{"path":"y"}}"#,
-        );
+        let (bad, _) = score_tool_json(t, r#"{"name":"read_file","arguments":{"path":"y"}}"#);
         assert!(!bad);
     }
     #[test]
@@ -875,7 +880,10 @@ mod tests {
     }
     #[test]
     fn degenerate_repetition_detects_loops() {
- assert!(has_degenerate_repetition( "settle settle settle settle settle settle settle settle", 8 ));
+        assert!(has_degenerate_repetition(
+            "settle settle settle settle settle settle settle settle",
+            8
+        ));
         assert!(!has_degenerate_repetition("a b c d e f g h", 8));
     }
     #[test]
@@ -956,18 +964,11 @@ mod tests {
             })
             .collect();
         let comps = BTreeMap::new();
-        let r = aggregate_scores(
-            &tasks,
-            &scores,
-            "r",
-            "c",
-            "art",
-            0,
-            false,
-            &comps,
-            vec![],
-        );
- assert!(r .disqualifications .iter() .any(|d| d.code == "HIDDEN_FALLBACK"));
+        let r = aggregate_scores(&tasks, &scores, "r", "c", "art", 0, false, &comps, vec![]);
+        assert!(r
+            .disqualifications
+            .iter()
+            .any(|d| d.code == "HIDDEN_FALLBACK"));
     }
     #[test]
     fn regression_blocks_t7_on_aggregate_drop() {
@@ -982,17 +983,7 @@ mod tests {
             })
             .collect();
         let comps = BTreeMap::new();
-        let baseline = aggregate_scores(
-            &tasks,
-            &scores,
-            "r",
-            "c",
-            "base",
-            0,
-            true,
-            &comps,
-            vec![],
-        );
+        let baseline = aggregate_scores(&tasks, &scores, "r", "c", "base", 0, true, &comps, vec![]);
         let mut candidate = baseline.clone();
         candidate.artifact_sha256 = "cand".into();
         if let AggregateScore::Measured { score, .. } = &mut candidate.aggregate {

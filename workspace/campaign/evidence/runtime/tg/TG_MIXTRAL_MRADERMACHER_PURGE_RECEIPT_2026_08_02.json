@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.model_trash_purge_receipt.v1",
+  "status": "EXACT_MODEL_TARGET_PURGED_AND_RECOVERY_PROVEN",
+  "at_utc": "2026-08-02",
+  "source_receipt": "evidence/tg/TG32_MIXTRAL_MRADERMACHER_ADAPTER_FLOOR_2026_08_02.json",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_2026_08_02.json",
+  "target": {
+    "active_directory": "/Users/scammermike/Downloads/hawking/models/tg-active/mixtral8x7b-mr",
+    "trash_directory": "/Users/scammermike/.Trash/mixtral8x7b-mr",
+    "file": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "bytes": 28448468384,
+    "sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+    "composite_target_sha256": "cd0c736f5967452b2f65ebcbd344853c8c3d4bcc2269c50a68257d954fa9abc0"
+  },
+  "eviction": {
+    "active_path_absent": true,
+    "exact_trash_item_found": true,
+    "purge_operation": "shutil.rmtree on the explicit exact Trash directory only",
+    "broad_trash_empty": false,
+    "unrelated_targets_touched": false
+  },
+  "storage": {
+    "free_bytes_before_purge": 352765546496,
+    "free_bytes_after_purge": 381214113792,
+    "recovered_bytes": 28448567296,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after": 181208224236,
+    "model_lane_entries_after": [],
+    "target_absent": true
+  },
+  "claim_boundary": "This proves exact model-body eviction and byte recovery only; it does not promote a Hawking TG rung or authorize owner-gated work.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

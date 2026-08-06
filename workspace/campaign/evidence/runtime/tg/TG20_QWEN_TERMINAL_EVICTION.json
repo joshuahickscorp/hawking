@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG20",
+  "model": "Qwen2.5-14B-Instruct",
+  "terminal_gate": {
+    "name": "STATE_ADVANCE",
+    "result": "FAIL",
+    "evidence": "evidence/tg/TG20_QWEN_ADAPTER_ORACLE.json",
+    "boundary": "The Hawking exact profile matches the external parent for two completion tokens and diverges at token three."
+  },
+  "source": {
+    "workspace_path": "models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "source_receipt": "evidence/tg/TG20_QWEN_SOURCE_RECEIPT.json"
+  },
+  "eviction": {
+    "command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "workspace_copy_absent_after_command": true,
+    "remaining_active_parent_bytes_under_models_tg_active": 12288,
+    "physical_space_reclaimed": "NOT_YET_PROVEN: macOS Trash is recoverable storage; empty it manually only if the recovery window is no longer wanted.",
+    "retained_evidence_only": [
+      "evidence/tg/TG20_QWEN_SOURCE_RECEIPT.json",
+      "evidence/tg/TG20_QWEN_ADAPTER_ORACLE.json",
+      "evidence/tg/TG20_QWEN_TERMINAL_EVICTION.json"
+    ]
+  },
+  "rehydration_rule": "Do not retain this parent. A deliberate future repair may download the same immutable revision and must verify the listed SHA-256 before beginning at the recorded third-token mismatch."
+}

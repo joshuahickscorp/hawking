@@ -22,7 +22,9 @@ fn make_q3k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn run_one(rows: usize, cols: usize, seed: u64) {
     let ctx = ctx();
@@ -33,15 +35,34 @@ fn run_one(rows: usize, cols: usize, seed: u64) {
     let y_v2_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q3_k_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_buf, &y_v2_buf).expect("q3_k fused_v2 encode");
+        kernels::gemv_q3_k_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_buf,
+            &y_v2_buf,
+        )
+        .expect("q3_k fused_v2 encode");
         tcb.commit_and_wait().expect("q3_k fused_v2 commit");
     }
     let y_v2 = read_f32_buf(&y_v2_buf, rows);
     let y_2r_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q3_k_fused_2r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_buf, &y_2r_buf)
-            .expect("q3_k fused_2r encode");
+        kernels::gemv_q3_k_fused_2r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_buf,
+            &y_2r_buf,
+        )
+        .expect("q3_k fused_2r encode");
         tcb.commit_and_wait().expect("q3_k fused_2r commit");
     }
     let y_2r = read_f32_buf(&y_2r_buf, rows);

@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.tg.model_lane_purge.v2",
+  "status": "PURGED_EXACT_TARGET_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "family": "mistral_mixtral",
+  "target": "/Users/scammermike/Downloads/hawking/models/tg-active/mixtral-fused-expert-adapter-2026-08-02",
+  "source_file": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+  "source_bytes": 28448468384,
+  "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+  "free_bytes_before_move": 341870510080,
+  "free_bytes_after_exact_finder_purge": 370316419072,
+  "free_bytes_recovered": 28445908992,
+  "recovery_basis": "shutil.disk_usage on the same protected filesystem; source plus Hugging Face metadata/cache moved as one exact lane target",
+  "lane_empty": true,
+  "trash_exact_target_count_after_purge": 0,
+  "unrelated_trash_archive_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip",
+  "unrelated_trash_archive_count": 1,
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 178,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Notes:\n- Primary gate is G5.\n- Secondary gate is G2.\n- Rollback token is QUARTZ.\nQuestion: Name the primary gate and the rollback token. Include both G5 and QUARTZ in the answer.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:halo:rt04_multi",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Notes:\n- Primary gate is G5.\n- Secondary gate is G2.\n- Rollback token is QUARTZ.\nQuestion: Name the primary gate and the rollback token. Include both G5 and QUARTZ in the answer.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.861537Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "77813e40dc1bc7381b8e289eb8d7d89f350a9c1355fa819dbd79bc2c0ee0cd41",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.619401454925537,
+          "rank": 0,
+          "token_id": 56
+        },
+        {
+          "logit": 2.599381923675537,
+          "rank": 1,
+          "token_id": 39
+        },
+        {
+          "logit": 2.5799593925476074,
+          "rank": 2,
+          "token_id": 62
+        },
+        {
+          "logit": 2.513094663619995,
+          "rank": 3,
+          "token_id": 5
+        },
+        {
+          "logit": 2.5125503540039062,
+          "rank": 4,
+          "token_id": 23
+        },
+        {
+          "logit": 2.328104019165039,
+          "rank": 5,
+          "token_id": 10
+        },
+        {
+          "logit": 2.256334066390991,
+          "rank": 6,
+          "token_id": 53
+        },
+        {
+          "logit": 2.2128028869628906,
+          "rank": 7,
+          "token_id": 31
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17435170710086823,
+          "l2": 3.4602150917053223,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "1f8a70dbb8020106a6d3c83eb38cf928a577250ae80cbf85d56667e1b9bc55c8",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

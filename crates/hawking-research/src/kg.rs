@@ -625,10 +625,19 @@ mod tests {
         });
         let claims = PetKnowledgeGraph::new().ingest_doc(&d);
         let claim = &claims[0];
- assert_eq!( claim.id, cas::composite_id("claim", &[&section_text, &d.id]) );
+        assert_eq!(
+            claim.id,
+            cas::composite_id("claim", &[&section_text, &d.id])
+        );
         let canon = cas::canonical_evidence_bytes(&section_text);
- assert_eq!( claim.provenance.content_hash.as_deref(), Some(cas::blake3_hex(&canon).as_str()) );
- assert_eq!( claim.provenance.content_hash.as_deref(), Some(hash.as_str()) );
+        assert_eq!(
+            claim.provenance.content_hash.as_deref(),
+            Some(cas::blake3_hex(&canon).as_str())
+        );
+        assert_eq!(
+            claim.provenance.content_hash.as_deref(),
+            Some(hash.as_str())
+        );
         assert_eq!(claim.provenance.evidence_blob.as_ref(), Some(&blob));
         let check = cas::verify_evidence(
             &cas,
@@ -658,7 +667,10 @@ mod tests {
             created_at_ms: 2,
         });
         assert_eq!(g.nodes_by_kind(NodeKind::Concept).len(), 1);
- assert_eq!( g.node("concept:a").unwrap().confidence, ConfidenceTier::Measured );
+        assert_eq!(
+            g.node("concept:a").unwrap().confidence,
+            ConfidenceTier::Measured
+        );
     }
     #[test]
     fn local_global_path_queries() {

@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.one_mountain.provider_bakeoff.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "provider": {
+    "name": "MLX-LM",
+    "entrypoint": "/Library/Frameworks/Python.framework/Versions/3.12/bin/mlx_lm.generate",
+    "model_repository": "mlx-community/Qwen2.5-72B-Instruct-4bit",
+    "model_revision": "36a74b07390031bb18c9f12fb7c06699bc6273c4",
+    "downloaded_bytes_including_metadata": 40912224113,
+    "source_shard_hash_manifest": "raw/QWEN2P5_72B_MLX4_SOURCE_SHARDS.sha256",
+    "source_shard_hash_manifest_sha256": "51cad1cbb4716b25bc6edc74d270ec161cf9648d8881c52c2cc509931f4d174f"
+  },
+  "test": {
+    "shared_load": true,
+    "clean_absolute_tps_claim": false,
+    "prompt": "The capital of France is",
+    "raw_prompt_mode": true,
+    "temperature": 0,
+    "seed": 42,
+    "max_completion_tokens": 32,
+    "generation_tps": 11.689,
+    "prompt_tps": 0.868,
+    "peak_memory_gb": 40.99,
+    "wall_seconds": 20.68,
+    "raw_stdout": "raw/QWEN2P5_72B_MLX4_SHARED_32TOK.stdout",
+    "raw_stderr": "raw/QWEN2P5_72B_MLX4_SHARED_32TOK.stderr",
+    "stdout_sha256": "0c17acfc44e47f967ebc4d6447fce50e4f1da8cefbec6654b7cca291ee0a44e3",
+    "stderr_sha256": "4fa04373fe8e2761892caf49950be99c8f949c8ab13f9a217056de042e6d2ede"
+  },
+  "comparison": {
+    "incumbent": "llama.cpp Metal against the frozen Q4_K_M source",
+    "incumbent_generation_tps": 14.0,
+    "decision": "reject_as_default_execution_spine",
+    "reason": "MLX-LM completed the same raw prompt but measured 16.5% lower generated-token rate under the shared-load observation. The raw continuation also diverged after the initial answer, so no capability equivalence is claimed."
+  },
+  "storage_action": {
+    "artifact_status": "sealed_for_eviction",
+    "reason": "A slower duplicate model body must not consume the one-mountain storage lane.",
+    "reopen_condition": "A materially different MLX execution path with a pinned artifact and a pre-registered capability-matched benchmark."
+  },
+  "source_metadata_evidence": [
+    {"path": "raw/MLX_QWEN2P5_72B_4BIT_MODEL_API.json", "sha256": "ac015a1ebddde88ef219000dd2cb2a15737c508ea32b790e47ffa0b20387985c"},
+    {"path": "raw/MLX_QWEN2P5_72B_4BIT_BLOBS_API.json", "sha256": "eb5d81ba9ab76668802e771da152688ed08f55d932f3ac79c55cdb5f6a08d895"}
+  ]
+}

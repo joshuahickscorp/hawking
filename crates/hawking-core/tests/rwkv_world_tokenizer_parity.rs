@@ -99,7 +99,10 @@ fn rwkv_world_tokenizer_parity_vs_llamacpp() {
     let tok = Tokenizer::from_gguf(&gguf).expect("rwkv world tokenizer must build from gguf");
     let with_special = tok.encode("Hello", true).expect("encode add_special");
     let without_special = tok.encode("Hello", false).expect("encode no special");
-    assert_eq!(with_special, without_special, "RWKV must not add BOS/EOS: encode(add_special=true) should equal encode(false)");
+    assert_eq!(
+        with_special, without_special,
+        "RWKV must not add BOS/EOS: encode(add_special=true) should equal encode(false)"
+    );
     let cases = corpus();
     let total = cases.len();
     let mut encode_match = 0usize;
@@ -119,11 +122,17 @@ fn rwkv_world_tokenizer_parity_vs_llamacpp() {
                 encode_match += 1;
             } else {
             }
-            assert_eq!(mine, oracle, "encode ids must be bit-identical to llama.cpp for {case:?}");
+            assert_eq!(
+                mine, oracle,
+                "encode ids must be bit-identical to llama.cpp for {case:?}"
+            );
         }
     }
     if have_oracle {
-        assert_eq!(encode_match, total, "all cases must match the oracle exactly");
+        assert_eq!(
+            encode_match, total,
+            "all cases must match the oracle exactly"
+        );
     } else {
         eprintln!(
             "rwkv world tokenizer parity (round-trip only): {roundtrip_ok}/{total} \

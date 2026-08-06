@@ -1,0 +1,21 @@
+[hawking] no --profile → default=fast (minus f16-scales, ~38-39 t/s); pass --profile exact for conservative levers, --profile fast for full ~42 t/s
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+[token] id=12095 text=" Paris"
+[token] id=13 text="."
+[token] id=39970 text=" Correct"
+[token] id=0 text="!"
+[token] id=576 text=" The"
+[token] id=6722 text=" capital"
+[token] id=315 text=" of"
+[token] id=9625 text=" France"
+[token] id=374 text=" is"
+[token] id=12824 text=" indeed"
+[token] id=12095 text=" Paris"
+[token] id=13 text="."
+[token] id=12095 text=" Paris"
+[token] id=374 text=" is"
+[token] id=3881 text=" known"
+[token] id=369 text=" for"
+
+[stats] reason=max_tokens prompt=5 completion=16 prefill_ms=456.4 decode_ms=668.0 dec_tps=22.46 dispatches_per_fwd=1026 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":15,"completion_tokens":16,"cpu_reference_fallback_count":0,"dec_tps":22.45511503194053,"decode_command_buffers_total":15,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":15390,"decode_ms":667.9992500000001,"decode_token_ms":[43.034625,42.855167,43.232959,44.141084,44.754667,44.143167,44.532584,44.993249999999996,45.335750000000004,44.024625,44.453708,44.442625,45.514542,44.601792,45.070541999999996],"device_id":"Apple M3 Ultra","dispatches_per_forward":1026,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":5,"prefill_metal_dispatches_total":5130,"prefill_ms":456.440416,"profile_id":null,"prompt_tokens":5,"readback_bytes":0,"token_only_path_used":false}

@@ -83,7 +83,17 @@ fn assert_q3_gemv_matches_scalar(rows: usize, cols: usize, w_bytes: &[u8], seed:
     let ctx = ctx();
     let model_buf = pin(ctx, w_bytes);
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_q3_k_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut metal_out).expect("Q3_K Metal GEMV");
+    kernels::gemv_q3_k_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut metal_out,
+    )
+    .expect("Q3_K Metal GEMV");
     let diff = max_abs_diff(&scalar_out, &metal_out);
     assert!(diff < ATOL, "Q3_K {label} diff {diff:.6e} >= atol {ATOL}");
 }

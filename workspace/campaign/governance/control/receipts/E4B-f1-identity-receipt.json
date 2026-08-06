@@ -1,0 +1,421 @@
+{
+  "schema": "hawking.coree.e4b.f1_identity_receipt.v1",
+  "rung": "E4b",
+  "base_commit": "7f9dcb00f2511665d2119465380a16f3b0c6160b",
+  "f1_ledger_path": "control/ASSERTION_LEDGER.json",
+  "f1_ledger_sha256": "5cd38adad4438db156086cacf49e405d0e9fdc050d95113c8e9cf359e3f12011",
+  "f1_ledger_unmodified": true,
+  "note": "E4b densify-in-place of lib.rs item-kind/sample fixture construction. All historical hide-protocol case ids retained with same symbol/path identities. No retired_subject/subject_deleted. Existing F2/C-HIST/TEST_CASE_MANIFEST rows untouched.",
+  "owned_historical_count": 44,
+  "current_executable_count": 45,
+  "disposition_all": "execute",
+  "identities": [
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::every_top_type_round_trips_through_serde_json",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::every_top_type_round_trips_through_serde_json",
+      "symbol": "every_top_type_round_trips_through_serde_json",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "407440919f55d512504bd2bbb680d3afe8e7448b07bf9fadf8e3c91f3d1e83af"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::json_schema_generates_for_the_core_wire_types",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::json_schema_generates_for_the_core_wire_types",
+      "symbol": "json_schema_generates_for_the_core_wire_types",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "ad4d79ae0d365a52cd79118c5f2fe47169938a535953f29f8f72744b6f163761"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::item_kind_covers_every_listed_kind",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::item_kind_covers_every_listed_kind",
+      "symbol": "item_kind_covers_every_listed_kind",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "20aa07338ebcec45df98252fe559ef0f64f2483df9e60a205cf4d9f169bb7744"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_request_matches_sec_15_3_shape",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_request_matches_sec_15_3_shape",
+      "symbol": "initialize_request_matches_sec_15_3_shape",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "8f67695dc4439fab9545ddfde9681ae092ce7d5c4a5dece09056155c281cbd30"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_result_carries_single_negotiated_version",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::initialize_result_carries_single_negotiated_version",
+      "symbol": "initialize_result_carries_single_negotiated_version",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "fb99b994009ac925cbfbb7f2df7c7517f61f486178c4279df2654efa82bbd518"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::version_negotiation_picks_the_highest_shared_by_server_preference",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::version_negotiation_picks_the_highest_shared_by_server_preference",
+      "symbol": "version_negotiation_picks_the_highest_shared_by_server_preference",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "7a1d2fa135167023a83b938ec7d2943d9a5c3971c5e53372adda13dbb6a94ac5"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::capability_negotiation_ands_shared_flags",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::capability_negotiation_ands_shared_flags",
+      "symbol": "capability_negotiation_ands_shared_flags",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "bab191aad3e12c98a66528a1557d4ed8d83022ef0a54fe3a9c2ff8df82d7790e"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::methods_cover_every_required_namespace",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::methods_cover_every_required_namespace",
+      "symbol": "methods_cover_every_required_namespace",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "80af21e60f6a45aa95ecf94ef19e36efd30554cd391479cdec66d3a68680766a"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::method_serializes_as_its_slash_string",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::method_serializes_as_its_slash_string",
+      "symbol": "method_serializes_as_its_slash_string",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "48cb03d6c8f94fc14e415191c06256d822e495f6c64c37970ade2fede95bb03b"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::plan_dag_validation_accepts_acyclic_rejects_cycles_and_dangling",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::plan_dag_validation_accepts_acyclic_rejects_cycles_and_dangling",
+      "symbol": "plan_dag_validation_accepts_acyclic_rejects_cycles_and_dangling",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "26323a0e880a5f578cc6f85348a78b9f603782b1d9adb0460a37025411d1147d"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::notification_method_tag_matches_serialized_form",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_lib::notification_method_tag_matches_serialized_form",
+      "symbol": "notification_method_tag_matches_serialized_form",
+      "source_path": "crates/hide-protocol/src/lib.rs",
+      "disposition": "execute",
+      "rewrite_kind": "densify_in_place",
+      "historical_content_fingerprint": "d1e6a74325ade19095cbfa5e516cdb0edf7cf4951b00c76c857b4ef9145d0fda"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_is_non_empty_with_unique_ids",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_is_non_empty_with_unique_ids",
+      "symbol": "catalog_is_non_empty_with_unique_ids",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "987a64c68a17efca649438bc6ab0c918c18409a49e6176e08cc76b1abc10e465"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_command_has_a_shortcut_or_lives_in_the_palette",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_command_has_a_shortcut_or_lives_in_the_palette",
+      "symbol": "every_command_has_a_shortcut_or_lives_in_the_palette",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "c75a20b767a77e0a79958a685b8f277df8445c7143fda5520f5b45626e739982"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::backend_bindings_resolve_to_real_targets",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::backend_bindings_resolve_to_real_targets",
+      "symbol": "backend_bindings_resolve_to_real_targets",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "a86a84f6e3b19b807ebf0b0e52cf81bf9de132744c76eb94d04ee56dead3fe68"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_live_custom_name_has_a_command",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_live_custom_name_has_a_command",
+      "symbol": "every_live_custom_name_has_a_command",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "e57c8dac7dcc28e0911115faf0de2d3f73518d15f086bb26d3677edbcaf3b9ac"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::wire_custom_names_mirror_wire_ts",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::wire_custom_names_mirror_wire_ts",
+      "symbol": "wire_custom_names_mirror_wire_ts",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "ae4c46cdb969a107b0789772649594797aaac68e1dfe1b75c41f0353236dbfe4"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_writing_command_declares_the_write_and_its_undo",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::every_writing_command_declares_the_write_and_its_undo",
+      "symbol": "every_writing_command_declares_the_write_and_its_undo",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "d5901c42e08963c9303a2a836f7786a741385d5cfff280d3099d5e4e75b5884a"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_covers_the_seven_priority_domains",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_covers_the_seven_priority_domains",
+      "symbol": "catalog_covers_the_seven_priority_domains",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "b1a9d83b9f4ba0d4f57f6e28ce8bd6fdb0a8459ad6208d7b60957a4fe120f8e3"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::specs_round_trip_through_serde_json",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::specs_round_trip_through_serde_json",
+      "symbol": "specs_round_trip_through_serde_json",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "fcd50ad38d0b9ac8ffc85e7b50e485e43972d57c1e2b9ac2e39600ba19ac5172"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_data_carries_no_en_or_em_dashes",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::catalog_data_carries_no_en_or_em_dashes",
+      "symbol": "catalog_data_carries_no_en_or_em_dashes",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "db87c0f6e63d7d5a68f25c1b081dff91dbec38f39dad34a925e984fcfe1b9df4"
+    },
+    {
+      "historical_case_id": null,
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_command::security_policies_match_s4_matrix",
+      "symbol": "security_policies_match_s4_matrix",
+      "source_path": "crates/hide-protocol/src/command.rs",
+      "disposition": "execute",
+      "rewrite_kind": "e4a_additive_retained",
+      "historical_content_fingerprint": null
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_maps_to_user_message_item",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_maps_to_user_message_item",
+      "symbol": "submit_turn_maps_to_user_message_item",
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "34be0b1ae63427f4e4e95b77bd826dc00c78ce98deda96fe35bc217190684f41"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_round_trips_through_the_bridge",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::submit_turn_round_trips_through_the_bridge",
+      "symbol": "submit_turn_round_trips_through_the_bridge",
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "707de7a8dcee13295048689e1546fa742fb775e7ed4054d01196e4ec30475b55"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::non_submit_intents_do_not_map_to_a_turn",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::non_submit_intents_do_not_map_to_a_turn",
+      "symbol": "non_submit_intents_do_not_map_to_a_turn",
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "5372829899893d614880aae2346e71a9608bbdbbc9592ed67f2f921a26154648"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::uievents_elevate_to_notifications",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_compat::uievents_elevate_to_notifications",
+      "symbol": "uievents_elevate_to_notifications",
+      "source_path": "crates/hide-protocol/src/compat.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "f22a5f2fe6d51a6ae37e55b27924bf078c4b4f25abe7c3ef8a12d103145290e8"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_serialize_transparently_as_bare_strings",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_serialize_transparently_as_bare_strings",
+      "symbol": "ids_serialize_transparently_as_bare_strings",
+      "source_path": "crates/hide-protocol/src/ids.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "4be7192c9bcff5e600b7535258e2e3149fde70098ff3530274c582a8513d5332"
+    },
+    {
+      "historical_case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_display_and_as_str_agree",
+      "current_case_id": "CASE.rust_unit.crates_hide_protocol_src_ids::ids_display_and_as_str_agree",
+      "symbol": "ids_display_and_as_str_agree",
+      "source_path": "crates/hide-protocol/src/ids.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "1dc355a80709fc468d1ef7a89e6ad937ba0207fb23e206f0ff2e36936c1b1008"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::session_start_sends_typed_method_and_parses_typed_result",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::session_start_sends_typed_method_and_parses_typed_result",
+      "symbol": "session_start_sends_typed_method_and_parses_typed_result",
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "20bf23f9b3dfbf14c4d3de1947ba54ca275f4ecb4d835e320ca7cf64748ccce4"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::turn_start_parses_a_typed_turn_and_mints_sequential_ids",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::turn_start_parses_a_typed_turn_and_mints_sequential_ids",
+      "symbol": "turn_start_parses_a_typed_turn_and_mints_sequential_ids",
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "d1863af313a909abb86a10e27cdff4da05bc22a2bf0242c899e751f04433fb31"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::rpc_error_envelope_surfaces_as_sdk_error",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::rpc_error_envelope_surfaces_as_sdk_error",
+      "symbol": "rpc_error_envelope_surfaces_as_sdk_error",
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "42a474bb31c24a9fe357d26d70584fd30d4405e81d81269ac24696914cfc04f8"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::unhandled_method_reports_a_missing_mock_handler",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::unhandled_method_reports_a_missing_mock_handler",
+      "symbol": "unhandled_method_reports_a_missing_mock_handler",
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "710badccb3be1ddc9d7529a614298a1a11cf726bb0204fd780e228a6a46b1a71"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::item_subscribe_acks_then_drains_notifications",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_client::item_subscribe_acks_then_drains_notifications",
+      "symbol": "item_subscribe_acks_then_drains_notifications",
+      "source_path": "crates/hide-protocol/tests/sdk_client.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "64455880c43b45d112a016529715add528f19ede1803268a21b86d595a815cec"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::item_fixtures_round_trip_through_serde",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::item_fixtures_round_trip_through_serde",
+      "symbol": "item_fixtures_round_trip_through_serde",
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "dcb7d7e660f93b7ca03a80f2fba57f0bd8a9c94f54191086d00fe9ffe9008db8"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::notification_fixtures_round_trip_through_serde",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::notification_fixtures_round_trip_through_serde",
+      "symbol": "notification_fixtures_round_trip_through_serde",
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "9f0d42b73a72c6f2c83eb0d53decd28081f9eff39027ed6bcef0355f8fabefd8"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::events_golden_is_stable_and_every_entry_reparses",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_fixtures::events_golden_is_stable_and_every_entry_reparses",
+      "symbol": "events_golden_is_stable_and_every_entry_reparses",
+      "source_path": "crates/hide-protocol/tests/sdk_fixtures.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "936fbf875e6821890ab2b7ad417b8e8fb8bd6f5413a81a363df04133dd642fac"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::json_schema_golden_is_stable",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::json_schema_golden_is_stable",
+      "symbol": "json_schema_golden_is_stable",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "148840e88b228721bd057b6ff7b64b2ec590af9e95e9a65c61f0feda8a79850a"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_golden_is_stable",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_golden_is_stable",
+      "symbol": "typescript_golden_is_stable",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "8443eab204d80d7c5996dac1e346ef53d210ae9a394ff10ec310e1e59d737111"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_catalog_json_golden_is_stable",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_catalog_json_golden_is_stable",
+      "symbol": "command_catalog_json_golden_is_stable",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "78cd4d1bb1f005b79578eb93f7e94049215ba7457372325b7fc23322e372527c"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_typescript_golden_is_stable",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::command_typescript_golden_is_stable",
+      "symbol": "command_typescript_golden_is_stable",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "bdf8c92c15e3863a801071fd16c40a1ab950f5899d3b97fa7f46d74aa691bc64"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generation_is_deterministic_across_runs",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generation_is_deterministic_across_runs",
+      "symbol": "generation_is_deterministic_across_runs",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "86653ec2a3afe056c8c1904acce453982bed76e81dfa8df9eef314dd65d337ae"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generated_artifacts_carry_no_en_or_em_dashes",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::generated_artifacts_carry_no_en_or_em_dashes",
+      "symbol": "generated_artifacts_carry_no_en_or_em_dashes",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "12ea38d769195558109a3e15cc485fcd2b78c29f4a699c722669e773b0b0a007"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_the_core_interfaces",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_the_core_interfaces",
+      "symbol": "typescript_covers_the_core_interfaces",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "b8a1dc0d0765c5c63ed32f731a11c6abb0fa9d591dc3aca82eac4952f18888eb"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_string_literal_union",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_string_literal_union",
+      "symbol": "typescript_covers_a_string_literal_union",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "5c0e0eea44959960f7bf963898aaa144488ae2e62b571e68a8a716ecda9d248c"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_tagged_union",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_a_tagged_union",
+      "symbol": "typescript_covers_a_tagged_union",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "d8633d2af352231836ae13dcc524b2345921c1477feaf6b89a45c754e238aa5d"
+    },
+    {
+      "historical_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_optionals_refs_maps_and_value",
+      "current_case_id": "CASE.rust_int.crates_hide_protocol_tests_sdk_golden::typescript_covers_optionals_refs_maps_and_value",
+      "symbol": "typescript_covers_optionals_refs_maps_and_value",
+      "source_path": "crates/hide-protocol/tests/sdk_golden.rs",
+      "disposition": "execute",
+      "rewrite_kind": "preserved",
+      "historical_content_fingerprint": "a2d311fabdef7c6f815623274c625ffe68ca270c06f91503bc69a46550f32f67"
+    }
+  ],
+  "unaccounted_historical": [],
+  "dual_owners": []
+}

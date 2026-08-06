@@ -1,4 +1,5 @@
 use super::{Competitor, Measurement};
+use crate::measured_decode_tps;
 use anyhow::{anyhow, Result};
 use hawking_core::{Engine, EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent};
 use std::path::{Path, PathBuf};
@@ -84,12 +85,7 @@ impl Competitor for HawkingBackend {
             .map_err(|e| anyhow!("hawking generate: {e}"))?;
         let stats = done_stats.unwrap_or_default();
 
-        let decode_secs = stats.decode_ms / 1000.0;
-        let decode_tps = if decode_secs > 0.0 {
-            Some(stats.completion_tokens as f64 / decode_secs)
-        } else {
-            None
-        };
+        let decode_tps = measured_decode_tps(&stats);
         let prefill_secs = stats.prefill_ms / 1000.0;
         let prefill_tps = if prefill_secs > 0.0 {
             Some(stats.prompt_tokens as f64 / prefill_secs)

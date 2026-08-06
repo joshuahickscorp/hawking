@@ -53,9 +53,7 @@ pub enum ConnectorError {
     InvalidWriteReceipt(String),
 
     #[error("memory write to scope `{target}` refused from connector scope; promotion required")]
-    SilentMemoryPromotion {
-        target: MemoryScope,
-    },
+    SilentMemoryPromotion { target: MemoryScope },
 
     #[error("promotion to user memory requires UserMemoryPromotionCap")]
     UserPromotionCapRequired,

@@ -2,14 +2,17 @@ use hide_backend::lenses::{
     AgentId, AgentRole, Claim, Conclusion, ConclusionRisk, DeliberateExclusion, EvidenceTier,
     FixtureProvider, FixtureReply, HandoffCapsule, HandoffKind, PermissionSnapshot, Project,
     ProjectMemberKind, ProjectState, PromotionBoard, PromotionEvidence, ProvenanceEntry,
-    StopReason, Surface, SurfaceDefaults, SurfacePermissionSet, SurfaceSession, Swarm,
-    SwarmMode, SwarmStatus, VoteTally,
+    StopReason, Surface, SurfaceDefaults, SurfacePermissionSet, SurfaceSession, Swarm, SwarmMode,
+    SwarmStatus, VoteTally,
 };
 use serde_json::json;
 #[test]
 fn capsule_carries_claim_never_capability() {
     let you = SurfaceSession::open(Surface::You, "ses_you_1");
- assert!( you.capability().allows_connector("gmail"), "YOU default holds personal connectors" );
+    assert!(
+        you.capability().allows_connector("gmail"),
+        "YOU default holds personal connectors"
+    );
     assert!(you.capability().allows_connector("personal_vault"));
     let you_snap = PermissionSnapshot::from_capability(Surface::You, you.capability());
     assert!(you_snap.connectors.iter().any(|c| c == "gmail"));
@@ -47,16 +50,33 @@ fn capsule_carries_claim_never_capability() {
     let use_err = capsule.try_use_creator_connector("gmail").unwrap_err();
     assert!(use_err.to_string().contains("does not grant"));
     let chat = SurfaceSession::open(Surface::Chat, "ses_chat_1");
- assert!( !chat.capability().allows_connector("gmail"), "CHAT default must not hold gmail" );
+    assert!(
+        !chat.capability().allows_connector("gmail"),
+        "CHAT default must not hold gmail"
+    );
     assert!(!chat.capability().allows_connector("personal_vault"));
     let received = chat.receive(&capsule).expect("receive");
- assert!( received.capability_unchanged(), "receive must not mutate CHAT capability" );
+    assert!(
+        received.capability_unchanged(),
+        "receive must not mutate CHAT capability"
+    );
     assert!(!received.opened.grants_capability());
     assert_eq!(received.opened.claims.len(), 1);
- assert_eq!( received.opened.claims[0].text, "implement email triage worker" );
- assert!( chat.require_connector("gmail").is_err(), "post-handoff CHAT still lacks gmail" );
+    assert_eq!(
+        received.opened.claims[0].text,
+        "implement email triage worker"
+    );
+    assert!(
+        chat.require_connector("gmail").is_err(),
+        "post-handoff CHAT still lacks gmail"
+    );
     assert!(chat.require_connector("personal_vault").is_err());
- assert!(received .opened .permissions_described .connectors .iter() .any(|c| c == "gmail"));
+    assert!(received
+        .opened
+        .permissions_described
+        .connectors
+        .iter()
+        .any(|c| c == "gmail"));
 }
 #[test]
 fn no_self_promotion_of_high_risk_conclusion() {
@@ -149,11 +169,10 @@ fn no_self_promotion_of_high_risk_conclusion() {
 }
 #[test]
 fn resource_economics_enforced() {
-    let perms = SurfacePermissionSet::new(
-        ["research.read", "write.draft"],
-        ["rss"],
+    let perms = SurfacePermissionSet::new(["research.read", "write.draft"], ["rss"]);
+    let budget = hide_backend::lenses::swarm::test_budget(
+        /* max_tokens */ 15, /* max_steps */ 100,
     );
-    let budget = hide_backend::lenses::swarm::test_budget(/* max_tokens */ 15, /* max_steps */ 100);
     let mut swarm = Swarm::declare(
         "map the literature",
         SwarmMode::ParallelResearch,
@@ -173,11 +192,23 @@ fn resource_economics_enforced() {
     let provider = FixtureProvider::new();
     let round = swarm.run_round(&provider, 100).unwrap();
     assert!(swarm.status == SwarmStatus::Halted);
-    assert!(matches!( &swarm.stop_reason, Some(StopReason::BudgetExhausted { axis }) if axis == "tokens" ));
- assert!( !round.is_empty(), "at least one agent should have run before halt" );
- assert!( swarm.usage.tokens >= 15, "usage must reflect spend: {}", swarm.usage.tokens );
+    assert!(
+        matches!( &swarm.stop_reason, Some(StopReason::BudgetExhausted { axis }) if axis == "tokens" )
+    );
+    assert!(
+        !round.is_empty(),
+        "at least one agent should have run before halt"
+    );
+    assert!(
+        swarm.usage.tokens >= 15,
+        "usage must reflect spend: {}",
+        swarm.usage.tokens
+    );
     let err = swarm.run_round(&provider, 200).unwrap_err();
-    assert!(err.to_string().contains("Halted") || matches!(err, hide_backend::lenses::YouError::InvalidState(_)));
+    assert!(
+        err.to_string().contains("Halted")
+            || matches!(err, hide_backend::lenses::YouError::InvalidState(_))
+    );
     let mut swarm2 = Swarm::declare(
         "tiny",
         SwarmMode::Debate,
@@ -205,7 +236,9 @@ fn resource_economics_enforced() {
         .unwrap();
     swarm2.run_round(&provider2, 0).unwrap();
     assert_eq!(swarm2.status, SwarmStatus::Halted);
-    assert!(matches!( &swarm2.stop_reason, Some(StopReason::BudgetExhausted { axis }) if axis == "steps" ));
+    assert!(
+        matches!( &swarm2.stop_reason, Some(StopReason::BudgetExhausted { axis }) if axis == "steps" )
+    );
 }
 #[test]
 fn capsule_carries_provenance_evidence_permissions_exclusions() {
@@ -267,20 +300,26 @@ fn capsule_carries_provenance_evidence_permissions_exclusions() {
     assert_eq!(capsule.origin_surface, Surface::You);
     assert_eq!(capsule.target_surface, Surface::Chat);
     assert_eq!(capsule.origin_session, "ses_you_meta");
-    assert!(capsule
-        .claims
-        .iter()
-        .all(|c| matches!(
-            c.evidence_tier,
-            EvidenceTier::Cited | EvidenceTier::IndependentlyVerified
-        )));
-    assert_eq!(capsule.claims[1].evidence_tier, EvidenceTier::IndependentlyVerified);
+    assert!(capsule.claims.iter().all(|c| matches!(
+        c.evidence_tier,
+        EvidenceTier::Cited | EvidenceTier::IndependentlyVerified
+    )));
+    assert_eq!(
+        capsule.claims[1].evidence_tier,
+        EvidenceTier::IndependentlyVerified
+    );
     assert_eq!(capsule.permissions_at_creation.surface, Surface::You);
     assert!(!capsule.permissions_at_creation.connectors.is_empty());
     assert_eq!(capsule.permissions_at_creation.connectors, perms.connectors);
     assert_eq!(capsule.deliberately_excludes.len(), 2);
- assert!(capsule .deliberately_excludes .iter() .any(|e| e.item.contains("vault")));
- assert!(capsule .deliberately_excludes .iter() .all(|e| !e.reason.is_empty()));
+    assert!(capsule
+        .deliberately_excludes
+        .iter()
+        .any(|e| e.item.contains("vault")));
+    assert!(capsule
+        .deliberately_excludes
+        .iter()
+        .all(|e| !e.reason.is_empty()));
     assert!(capsule.verify_hash());
     assert!(capsule.content_hash.starts_with("blake3:"));
     let chat_cap = SurfaceDefaults::chat_default()
@@ -374,7 +413,11 @@ fn project_unifies_members_and_states() {
     p.attach(ProjectMemberKind::Agent, "agt_1", None, 9);
     p.attach(ProjectMemberKind::Artifact, "art_1", None, 10);
     for kind in ProjectMemberKind::all() {
- assert_eq!( p.members_of(*kind).count(), 1, "missing member kind {kind:?}" );
+        assert_eq!(
+            p.members_of(*kind).count(),
+            1,
+            "missing member kind {kind:?}"
+        );
     }
     p.transition(ProjectState::Plan, 11).unwrap();
     p.transition(ProjectState::Execute, 12).unwrap();
@@ -391,7 +434,7 @@ fn adversarial_forged_capability_via_serde_and_handoff_is_dead() {
         "live": true
     }))
     .expect("shape deserializes");
- assert!( !forged.is_live(), "forged capability must not be live" );
+    assert!(!forged.is_live(), "forged capability must not be live");
     assert!(!forged.allows_connector("gmail"));
     assert!(forged.require_connector("gmail").is_err());
     assert!(forged.require_tool("shell.exec").is_err());
@@ -479,7 +522,11 @@ fn three_lenses_share_one_session_not_three() {
     assert_eq!(cap.origin_session, "ses_product");
     g.receive_handoff(&cap.id).unwrap();
     assert_eq!(g.session_id(), "ses_product");
- assert!(g .lens(Surface::Chat) .unwrap() .require_connector("gmail") .is_err());
+    assert!(g
+        .lens(Surface::Chat)
+        .unwrap()
+        .require_connector("gmail")
+        .is_err());
 }
 #[test]
 fn all_roles_and_modes_exist() {

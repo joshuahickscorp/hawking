@@ -111,7 +111,10 @@ fn all_greedy_batch_routes_token_only_and_charges_b_times_4() {
     assert_eq!(driver.lane_stats.greedy_steps, 1, "one greedy step");
     assert_eq!(driver.lane_stats.logits_steps, 0, "no logits step");
     let b = 2u64;
-    assert_eq!(driver.lane_stats.readback_bytes, b * std::mem::size_of::<u32>() as u64);
+    assert_eq!(
+        driver.lane_stats.readback_bytes,
+        b * std::mem::size_of::<u32>() as u64
+    );
     assert_eq!(engine.forward_calls, 1);
 }
 #[test]
@@ -123,11 +126,18 @@ fn rep_penalty_batch_routes_full_logits_and_charges_b_times_vocab_times_4() {
         .decode_ready_once(&mut engine, 4)
         .expect("decode once");
     let toks: Vec<u32> = out.iter().map(|o| o.token).collect();
- assert_eq!( toks, vec![1, 2], "logits lane argmax tokens (temp=0 → argmax)" );
+    assert_eq!(
+        toks,
+        vec![1, 2],
+        "logits lane argmax tokens (temp=0 → argmax)"
+    );
     assert_eq!(driver.lane_stats.greedy_steps, 0, "no greedy step");
     assert_eq!(driver.lane_stats.logits_steps, 1, "one logits step");
     let b = 2u64;
-    assert_eq!(driver.lane_stats.readback_bytes, b * VOCAB as u64 * std::mem::size_of::<f32>() as u64);
+    assert_eq!(
+        driver.lane_stats.readback_bytes,
+        b * VOCAB as u64 * std::mem::size_of::<f32>() as u64
+    );
     assert_eq!(engine.forward_calls, 1);
 }
 #[test]
@@ -148,9 +158,15 @@ fn one_sampling_slot_forces_full_logits_for_the_batch() {
         .decode_ready_once(&mut engine, 4)
         .expect("decode once");
     assert_eq!(driver.lane_stats.greedy_steps, 0);
- assert_eq!( driver.lane_stats.logits_steps, 1, "mixed batch → full logits" );
+    assert_eq!(
+        driver.lane_stats.logits_steps, 1,
+        "mixed batch → full logits"
+    );
     let b = 2u64;
-    assert_eq!(driver.lane_stats.readback_bytes, b * VOCAB as u64 * std::mem::size_of::<f32>() as u64);
+    assert_eq!(
+        driver.lane_stats.readback_bytes,
+        b * VOCAB as u64 * std::mem::size_of::<f32>() as u64
+    );
 }
 #[test]
 fn greedy_and_logits_lanes_produce_identical_tokens() {
@@ -170,5 +186,8 @@ fn greedy_and_logits_lanes_produce_identical_tokens() {
     assert_eq!(logits_driver.lane_stats.logits_steps, 1);
     let g: Vec<(u32, u32)> = greedy_out.iter().map(|o| (o.slot_id, o.token)).collect();
     let l: Vec<(u32, u32)> = logits_out.iter().map(|o| (o.slot_id, o.token)).collect();
- assert_eq!( g, l, "greedy lane and full-logits lane must yield same tokens" );
+    assert_eq!(
+        g, l,
+        "greedy lane and full-logits lane must yield same tokens"
+    );
 }

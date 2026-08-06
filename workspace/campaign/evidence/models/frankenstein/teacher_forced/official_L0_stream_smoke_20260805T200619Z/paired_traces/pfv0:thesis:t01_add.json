@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 210,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `add(a, b)` that returns the sum of two integers. Return only the function in a code block.\n\nTests (must pass):\n```\nassert add(2, 3) == 5\nassert add(-1, 1) == 0\nassert add(0, 0) == 0\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t01_add",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `add(a, b)` that returns the sum of two integers. Return only the function in a code block.\n\nTests (must pass):\n```\nassert add(2, 3) == 5\nassert add(-1, 1) == 0\nassert add(0, 0) == 0\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.858349Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "5bf2eee710f15ff1fc41bd0eb35bfc60593eda48029e5b4a8b860159c9c3c2d6",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.4494521617889404,
+          "rank": 0,
+          "token_id": 1
+        },
+        {
+          "logit": 3.274839162826538,
+          "rank": 1,
+          "token_id": 5
+        },
+        {
+          "logit": 3.237161159515381,
+          "rank": 2,
+          "token_id": 6
+        },
+        {
+          "logit": 2.79818058013916,
+          "rank": 3,
+          "token_id": 26
+        },
+        {
+          "logit": 2.700775384902954,
+          "rank": 4,
+          "token_id": 63
+        },
+        {
+          "logit": 2.6671712398529053,
+          "rank": 5,
+          "token_id": 16
+        },
+        {
+          "logit": 1.9855320453643799,
+          "rank": 6,
+          "token_id": 60
+        },
+        {
+          "logit": 1.9115599393844604,
+          "rank": 7,
+          "token_id": 30
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.19928163290023804,
+          "l2": 3.4191157817840576,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "beb0ea9150571ade0f1767c98d3f8a2f6d801e7b4ad1037c2195bddd573a0d0f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

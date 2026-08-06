@@ -11,7 +11,9 @@ fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn hawking_core::En
     let mut cfg = EngineConfig::default();
     cfg.speculate = speculate_mode != SpeculateMode::Off;
     cfg.speculate_mode = speculate_mode;
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    let profile_path = PathBuf::from(
+        "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
+    );
     if profile_path.exists() {
         if let Ok(profile) = hawking_core::profile::KernelProfile::load(&profile_path) {
             cfg.kernel_profile = Some(profile);
@@ -25,7 +27,11 @@ fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn hawking_core::En
         }
     }
 }
-fn collect_tokens(engine: &mut Box<dyn hawking_core::Engine>, prompt: &str, max_new_tokens: usize) -> Vec<u32> {
+fn collect_tokens(
+    engine: &mut Box<dyn hawking_core::Engine>,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> Vec<u32> {
     let req = GenerateRequest {
         prompt: prompt.to_string(),
         max_new_tokens,
@@ -56,14 +62,23 @@ fn lm_head_fold_is_deterministic() {
     let Some(mut engine) = load_engine(SpeculateMode::Off) else {
         return;
     };
-    let prompts = ["The quick brown fox", "Explain how speculative decoding works:"];
+    let prompts = [
+        "The quick brown fox",
+        "Explain how speculative decoding works:",
+    ];
     for prompt in &prompts {
         engine.reset_kv_for_test();
         let run1 = collect_tokens(&mut engine, prompt, 16);
         engine.reset_kv_for_test();
         let run2 = collect_tokens(&mut engine, prompt, 16);
-        assert_eq!(run1, run2, "prompt={prompt:?}: Phase 5B.1 fold not deterministic\nrun1={run1:?}\nrun2={run2:?}");
-        assert!(!run1.is_empty(), "prompt={prompt:?}: fold produced no tokens");
+        assert_eq!(
+            run1, run2,
+            "prompt={prompt:?}: Phase 5B.1 fold not deterministic\nrun1={run1:?}\nrun2={run2:?}"
+        );
+        assert!(
+            !run1.is_empty(),
+            "prompt={prompt:?}: fold produced no tokens"
+        );
     }
 }
 #[test]
@@ -78,12 +93,18 @@ fn spec_exact_mode_with_lm_head_fold() {
         let prompt = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
         let ref_ids = collect_tokens(&mut ref_engine, prompt, 16);
         let spec_ids = collect_tokens(&mut spec_engine, prompt, 16);
-        assert_eq!(ref_ids, spec_ids, "repetitive: spec+5B.1 differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}");
+        assert_eq!(
+            ref_ids, spec_ids,
+            "repetitive: spec+5B.1 differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}"
+        );
     }
     {
         let prompt = "Explain how speculative decoding works:";
         let ref_ids = collect_tokens(&mut ref_engine, prompt, 12);
         let spec_ids = collect_tokens(&mut spec_engine, prompt, 12);
-        assert_eq!(ref_ids, spec_ids, "natural: spec+5B.1 differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}");
+        assert_eq!(
+            ref_ids, spec_ids,
+            "natural: spec+5B.1 differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}"
+        );
     }
 }

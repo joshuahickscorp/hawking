@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.tg.bounded_model_eviction.v1",
+  "status": "EVICTED_TO_MACOS_TRASH_PENDING_USER_AUTHORIZED_PERMANENT_PURGE",
+  "at": "2026-08-01T20:31:00-04:00",
+  "trigger_receipt": "evidence/tg/QWEN0P5_SOURCE_GRAVITY_Q5Q5QV_F16KV_REJECTED_2026_08_01.json",
+  "model_lane": "models/tg-active",
+  "model_lane_empty": true,
+  "trash_directory": "/Users/scammermike/.Trash/qwen0p5-v21",
+  "source_sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+  "artifact_sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59",
+  "f16kv_v21_log_sha256": "d6fb926b698919cc7d8806b7b257b93336db98f9d8337b6b1b039329fb7f6b65",
+  "free_kib_after_eviction": 365464800,
+  "free_byte_recovery_proven": false,
+  "reason": "The exact model directory remains recoverable in macOS Trash. Do not use its occupied bytes for any new model admission until the user explicitly authorizes its permanent purge and free bytes are remeasured."
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.ramanujan.hawking_completion_gate.v1",
+  "status": "BLOCKED_ON_HAWKING_COMPLETION",
+  "authority": {
+    "ramanujan_research_authorized": false,
+    "production_authority": false,
+    "self_promotion_forbidden": true
+  },
+  "dependency": {
+    "system": "Hawking",
+    "handoff_contract": {
+      "path": "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json",
+      "status": "PREPARED_NOT_EXECUTED",
+      "trigger": "HAWKING_EVOLUTION_COMPLETE"
+    },
+    "required_condition": "A validated Hawking completion milestone, together with the owner and production evidence required by the active Ramanujan contracts.",
+    "may_not_be_satisfied_by": [
+      "Ramanujan scaffold tests",
+      "local fixture or corpus checks",
+      "a status-file edit",
+      "a Ramanujan controller or launcher"
+    ]
+  },
+  "safe_before_completion": [
+    "fixture-only scaffold development",
+    "local deterministic data checks",
+    "static contract and provenance verification",
+    "local status check-ins"
+  ],
+  "blocked_until_completion": [
+    "live Ramanujan research",
+    "parent-model restream",
+    "teacher-trace acquisition or production launch",
+    "any claim of research or production authority"
+  ],
+  "transition_rule": "Only validated Hawking completion evidence and explicit owner approval may replace this blocked state; Ramanujan code must never promote it itself."
+}

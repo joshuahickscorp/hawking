@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.capability_probe.v1",
+  "status": "G3_NARROW_PROMPT_DEPENDENCE_PARTIAL",
+  "family": "deepseek_v2_lite_moe_mla",
+  "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "bytes": 10364416320
+  },
+  "probe": {
+    "prompt": "The largest planet in our solar system is",
+    "prompt_tokens": 9,
+    "completion_tokens": 8,
+    "device_id": "Apple M3 Ultra",
+    "candidate_ids": [39048, 13, 39048, 317, 245, 5817, 16310, 11],
+    "candidate_text": " Jupiter. Jupiter is a gas giant,",
+    "candidate_decode_tps": 41.449855426013016,
+    "candidate_p50_ms": 24.074437,
+    "candidate_p99_ms": 24.178167,
+    "dispatches_per_forward": 487,
+    "cpu_reference_fallback_count": 0
+  },
+  "comparison": {
+    "source_reference_prefix_text": " Jupiter. It is\\n\\n",
+    "first_token_matches": true,
+    "second_token_matches": false,
+    "capability_scope": "semantic unrelated prompt reaches the correct first decision but diverges at token two; no G3-G9 promotion"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "reopen_condition": "Repair broader attention/MLA or source/runtime parity, then rerun unrelated, structured-output, context, and adversarial prompts before any production capability approval."
+}

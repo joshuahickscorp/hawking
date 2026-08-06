@@ -24,7 +24,11 @@ fn run_generate(weights: &PathBuf, prompt: &str) -> (Vec<u32>, f64) {
     let req = hawking_core::GenerateRequest {
         prompt: prompt.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -67,10 +71,16 @@ fn cache_miss_matches_no_cache() {
     std::env::remove_var("HAWKING_PREFIX_CACHE_DIR");
     let (ids_nocache, _) = run_generate(&weights, &prompt);
     let tmp = tempfile::TempDir::new().unwrap();
-    std::env::set_var("HAWKING_PREFIX_CACHE_DIR", tmp.path().to_string_lossy().as_ref());
+    std::env::set_var(
+        "HAWKING_PREFIX_CACHE_DIR",
+        tmp.path().to_string_lossy().as_ref(),
+    );
     let (ids_miss, _) = run_generate(&weights, &prompt);
     std::env::remove_var("HAWKING_PREFIX_CACHE_DIR");
-    assert_eq!(ids_nocache, ids_miss, "cache-miss path must produce same tokens as no-cache path");
+    assert_eq!(
+        ids_nocache, ids_miss,
+        "cache-miss path must produce same tokens as no-cache path"
+    );
 }
 #[test]
 fn cache_hit_matches_no_cache_and_speeds_prefill() {
@@ -86,13 +96,22 @@ fn cache_hit_matches_no_cache_and_speeds_prefill() {
     let (ids_t2_nocache, t2_nocache_ms) = run_generate(&weights, &prompt_t2);
     let (ids_t3_nocache, t3_nocache_ms) = run_generate(&weights, &prompt_t3);
     let tmp = tempfile::TempDir::new().unwrap();
-    std::env::set_var("HAWKING_PREFIX_CACHE_DIR", tmp.path().to_string_lossy().as_ref());
+    std::env::set_var(
+        "HAWKING_PREFIX_CACHE_DIR",
+        tmp.path().to_string_lossy().as_ref(),
+    );
     let (_ids_t1, t1_warm_ms) = run_generate(&weights, &prompt_t1);
     let (ids_t2_cache, t2_warm_ms) = run_generate(&weights, &prompt_t2);
     let (ids_t3_cache, t3_warm_ms) = run_generate(&weights, &prompt_t3);
     std::env::remove_var("HAWKING_PREFIX_CACHE_DIR");
-    assert_eq!(ids_t2_nocache, ids_t2_cache, "turn-2 cache-hit output must match no-cache");
-    assert_eq!(ids_t3_nocache, ids_t3_cache, "turn-3 cache-hit output must match no-cache");
+    assert_eq!(
+        ids_t2_nocache, ids_t2_cache,
+        "turn-2 cache-hit output must match no-cache"
+    );
+    assert_eq!(
+        ids_t3_nocache, ids_t3_cache,
+        "turn-3 cache-hit output must match no-cache"
+    );
     assert!(
         t2_warm_ms < 0.85 * t2_nocache_ms,
         "turn-2 cache hit should reduce prefill by >15%; got warm={:.1} vs no-cache={:.1}",

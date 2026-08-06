@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.tg.code_topology_exit.v1",
+  "status": "PASS_ALL_BINDING_DIMENSIONS_AT_OR_BELOW_ENTRY",
+  "sampled_at": "2026-08-01T16:26:07Z",
+  "entry": {
+    "commit": "be1e25e241408534acd420bdbc5fa1728fa13b3f",
+    "topology_receipt": "evidence/hawking/HAWKING_TOPOLOGY_BASELINE.json",
+    "topology_receipt_file_sha256": "5120a4a1a7d90d8eac21c2128c3b16496a70ff5bed8c1584247f8abccaf491ac",
+    "combined_active_monorepo_LOC": 430284,
+    "active_files_LOC_policy": 1363,
+    "directories_all": 179,
+    "directories_leaf": 138,
+    "source_files": 1227,
+    "rust_crates": 33,
+    "hide_crates": 20,
+    "hide_files": 349,
+    "hide_directories": 59,
+    "public_symbols": 9412,
+    "functions": 14587
+  },
+  "exit": {
+    "working_tree_head": "9dc880cf3f235c2571680b0620b00306890615a5",
+    "non_ignored_untracked_source_included": true,
+    "combined_active_monorepo_LOC": 376064,
+    "active_files_LOC_policy": 987,
+    "directories_all": 121,
+    "directories_leaf": 96,
+    "source_files": 950,
+    "rust_crates": 19,
+    "hide_crates": 7,
+    "hide_files": 311,
+    "hide_directories": 25,
+    "public_symbols": 8253,
+    "functions": 12946
+  },
+  "delta_exit_minus_entry": {
+    "combined_active_monorepo_LOC": -54220,
+    "active_files_LOC_policy": -376,
+    "directories_all": -58,
+    "directories_leaf": -42,
+    "source_files": -277,
+    "rust_crates": -14,
+    "hide_crates": -13,
+    "hide_files": -38,
+    "hide_directories": -34,
+    "public_symbols": -1159,
+    "functions": -1641
+  },
+  "authority": {
+    "loc_command_entry": ".venv/glm52/bin/python tools/loc/hawking_loc.py --rev be1e25e241408534acd420bdbc5fa1728fa13b3f --json",
+    "loc_command_exit": ".venv/glm52/bin/python tools/loc/hawking_loc.py --include-untracked --json",
+    "topology_command_entry": ".venv/glm52/bin/python tools/loc/hawking_topology.py --rev be1e25e241408534acd420bdbc5fa1728fa13b3f --json",
+    "topology_command_exit": ".venv/glm52/bin/python tools/loc/hawking_topology.py --include-untracked --json",
+    "loc_authority_sha256": "d449d3a9b90855e2c0cfd3e780f2cb320b54b23ac4787bf5a8beac3a2e9f345a",
+    "topology_authority_sha256": "0bd83f52a828c9f90d2e9185984f4721eb09119fea064a96c12cf1b6099270c5",
+    "policy": "Physical lines and all non-ignored tracked or untracked active source are counted; moving or leaving experiment code untracked cannot improve the exit result."
+  },
+  "verdict": {
+    "loc_at_or_below_entry": true,
+    "directories_at_or_below_entry": true,
+    "files_at_or_below_entry": true,
+    "public_apis_at_or_below_entry": true,
+    "functions_at_or_below_entry": true,
+    "all_binding_dimensions_at_or_below_entry": true
+  },
+  "seal_sha256": "3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989"
+}

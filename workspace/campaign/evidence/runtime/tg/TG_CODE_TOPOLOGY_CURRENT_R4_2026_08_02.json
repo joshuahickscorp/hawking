@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.tg.code_topology_current.v1",
+  "status": "WORKING_TREE_BELOW_ENTRY_TOPOLOGY",
+  "at": "2026-08-02",
+  "measurement": {
+    "include_untracked_active_source": true,
+    "combined_active_monorepo_LOC": 384071,
+    "runtime_LOC": 323856,
+    "active_files_LOC_policy": 992,
+    "directories_all": 121,
+    "source_files": 955,
+    "public_symbols": 8319,
+    "functions": 13118,
+    "languages": {
+      "lean": 22,
+      "markdown": 4233,
+      "python": 92196,
+      "rust": 249945,
+      "shader": 18160,
+      "shell": 2510,
+      "typescript": 17005
+    }
+  },
+  "entry_reference": {
+    "combined_active_monorepo_LOC": 430284,
+    "active_files_LOC_policy": 1363,
+    "directories_all": 179,
+    "source_files": 1227,
+    "public_symbols": 9412,
+    "functions": 14587
+  },
+  "delta_vs_entry": {
+    "combined_active_monorepo_LOC": -46281,
+    "active_files_LOC_policy": -371,
+    "directories_all": -58,
+    "source_files": -272,
+    "public_symbols": -1094,
+    "functions": -1471
+  },
+  "large_files_over_1500_lines": 22,
+  "single_file_directories": 23,
+  "tiny_forwarders": 17,
+  "generation_audit": {
+    "receipt": "tools/loc/hawking_generation_audit.py",
+    "generated_files": 0,
+    "earned_files": 0,
+    "unearned_files": 0,
+    "findings": []
+  },
+  "recent_change": "DeepSeek route-tie epsilon diagnostics added a guarded masked best-of-K policy, localized one native/CPU route-order boundary, rejected all three epsilon windows on route-set or residual-mismatch gates, and purged the exact 20.742 GB source+Gravity lane; the Qwen14 F16-KV flash-attention representation was then preregistered, physically dispatched, rejected below the wall gate, and purged; the Mistral-Small-3.1-24B F16-KV flash-attention representation was likewise preregistered, physically dispatched, rejected below TG32 and the wall gate with prefill/dispatch regression, and purged; the Qwen14 combined fused-QKV plus F16-KV representation physically reduced dispatches and proved fused waves but regressed complete-token wall and tails, then was purged without adding a controller or per-model framework.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

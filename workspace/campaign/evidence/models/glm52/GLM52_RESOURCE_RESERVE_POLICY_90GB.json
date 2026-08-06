@@ -1,0 +1,29 @@
+{
+  "authoritative": false,
+  "input_seals": {
+    "dependency_graph": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9",
+    "official_manifest": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
+    "streaming_schedule": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86"
+  },
+  "policy": {
+    "active_model_limit": 1,
+    "admission_law": "free_bytes - resident_incremental_bytes >= protected_filesystem_floor_bytes",
+    "all_model_source_artifact_temp_cache_bytes_evicted_after_terminal_receipt": true,
+    "incremental_accounting_components": [
+      "source_range_rounded_bytes",
+      "source_scratch_bytes",
+      "retained_artifact_bytes",
+      "teacher_evidence_bytes",
+      "metadata_bytes",
+      "carry_bytes",
+      "prefetch_bytes"
+    ],
+    "incremental_storage_ceiling_bytes": 90000000000,
+    "protected_filesystem_floor_bytes": 200005889556,
+    "recompute_free_bytes_before_every_window": true,
+    "rollback_scratch_reserve_bytes": 17179869184
+  },
+  "schema": "hawking.glm52.resource_reserve_policy_90gb.v1",
+  "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
+  "status": "SEALED_POLICY_LIVE_SAMPLE_REQUIRED"
+}

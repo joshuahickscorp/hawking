@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
     pub async fn handle_intent(&self, intent: Intent) -> Result<IntentAck> {
@@ -199,23 +199,20 @@ impl BackendHost {
         // PauseRun route to Abort/Pause) and persist a durable `turn.steer` event.
         let steer_action: Option<(RunId, String, Option<SessionId>)> = match &intent {
             Intent::Custom { name, payload } if name == "redirect_run" || name == "steer" => {
-                payload
-                    .get("run_id")
-                    .and_then(|v| v.as_str())
-                    .map(|run| {
-                        let text = payload
-                            .get("text")
-                            .or_else(|| payload.get("instruction"))
-                            .or_else(|| payload.get("directive"))
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .to_string();
-                        let session = payload
-                            .get("session_id")
-                            .and_then(|v| v.as_str())
-                            .map(SessionId::from);
-                        (RunId::from(run), text, session)
-                    })
+                payload.get("run_id").and_then(|v| v.as_str()).map(|run| {
+                    let text = payload
+                        .get("text")
+                        .or_else(|| payload.get("instruction"))
+                        .or_else(|| payload.get("directive"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string();
+                    let session = payload
+                        .get("session_id")
+                        .and_then(|v| v.as_str())
+                        .map(SessionId::from);
+                    (RunId::from(run), text, session)
+                })
             }
             _ => None,
         };
@@ -375,9 +372,7 @@ impl BackendHost {
                 "the task was cancelled",
                 LeaseRevokeScope::Run(run_id.as_str().to_string()),
             )),
-            Intent::ForkSession { .. } => {
-                Some(("the session was forked", LeaseRevokeScope::Any))
-            }
+            Intent::ForkSession { .. } => Some(("the session was forked", LeaseRevokeScope::Any)),
             Intent::Custom { name, payload } => match name.as_str() {
                 "revoke_write_lease" => Some(("revoked by the user", LeaseRevokeScope::Any)),
                 "new_session" | "open_session" => {
@@ -632,7 +627,10 @@ impl BackendHost {
         // method (never duplicates its logic); a failure refuses the ack, exactly like
         // the goal/checkpoint path.
         if let (true, Some((name, payload))) = (effect_ok, memory_workspace_env_action) {
-            if let Err(err) = self.handle_memory_workspace_env_intent(&name, &payload).await {
+            if let Err(err) = self
+                .handle_memory_workspace_env_intent(&name, &payload)
+                .await
+            {
                 self.effect_failed(&mut ack, &name, err.to_string());
             }
         }
@@ -677,7 +675,9 @@ impl BackendHost {
                 ("reject", Some(h)) => self.reject_hunk(&diff_id, h).await.map(|_| ()),
                 // The whole-diff revert. Reached only with `effect_ok`, which `effect_command`
                 // clears for both of the shapes that ask for it, so neither one runs ungated.
-                ("reject", None) | ("revert_diff", _) => self.revert_diff(&diff_id).await.map(|_| ()),
+                ("reject", None) | ("revert_diff", _) => {
+                    self.revert_diff(&diff_id).await.map(|_| ())
+                }
                 _ => Ok(()),
             };
             // The reject/revert arms WRITE (the inverse write that puts the pre-image back), so on

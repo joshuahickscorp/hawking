@@ -38,7 +38,7 @@ impl std::fmt::Display for Surface {
 }
 
 /// Default permission profile for a surface, matching
-/// `HIDE_YOU_SURFACE_AUTHORITY.json`.
+/// `workspace/campaign/evidence/systems/hide/HIDE_YOU_SURFACE_AUTHORITY.json`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SurfaceDefaults {
     pub surface: Surface,
@@ -62,7 +62,12 @@ impl SurfaceDefaults {
             network_policy: "explicit per session type".into(),
             // YOU may hold personal connectors (mail, calendar, vault) — read.
             permissions: SurfacePermissionSet::new(
-                ["connector.read", "memory.read", "research.read", "object.read"],
+                [
+                    "connector.read",
+                    "memory.read",
+                    "research.read",
+                    "object.read",
+                ],
                 ["gmail", "calendar", "personal_vault", "rss"],
             ),
         }

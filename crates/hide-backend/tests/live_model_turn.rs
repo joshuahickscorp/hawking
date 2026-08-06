@@ -2,6 +2,8 @@ use hide_backend::BackendHost;
 use hide_core::api::{Intent, UiEventKind};
 use hide_core::ids::now_ms;
 use hide_core::runtime::RuntimeSupervisorState;
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -49,7 +51,11 @@ fn resolve_weights() -> Option<PathBuf> {
                 }
             }
             candidates.sort_by_key(|p| {
-                let n = p.file_name().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                let n = p
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("")
+                    .to_lowercase();
                 if n.contains("0.5b") || n.contains("05b") {
                     0
                 } else if n.contains("qwen") {
@@ -76,7 +82,11 @@ fn first_preferred_gguf(dir: &Path) -> Option<PathBuf> {
         return None;
     }
     ggufs.sort_by_key(|p| {
-        let n = p.file_name().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+        let n = p
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_lowercase();
         if n.contains("qwen") && (n.contains("0.5b") || n.contains("05b")) {
             0
         } else if n.contains("qwen") {
@@ -123,6 +133,26 @@ async fn ephemeral_bind() -> String {
     drop(listener);
     addr.to_string()
 }
+fn metric_value(bind: &str, metric: &str) -> u64 {
+    let mut stream = TcpStream::connect(bind).expect("connect Hawking metrics");
+    stream
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .expect("metrics read timeout");
+    stream
+        .write_all(b"GET /metrics HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .expect("request Hawking metrics");
+    let mut response = String::new();
+    stream
+        .read_to_string(&mut response)
+        .expect("read Hawking metrics");
+    response
+        .split("\r\n\r\n")
+        .nth(1)
+        .and_then(|body| body.lines().find(|line| line.starts_with(metric)))
+        .and_then(|line| line.split_whitespace().nth(1))
+        .and_then(|value| value.parse().ok())
+        .expect("metric must be present and numeric")
+}
 struct LiveEnvGuard {
     keys: Vec<String>,
 }
@@ -161,15 +191,19 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
         );
         return;
     };
-    std::env::remove_var("HIDE_KERNEL_TURN");
+    // Product SubmitTurn is sole run_turn_core; HIDE_KERNEL_TURN is not read.
     let bind = ephemeral_bind().await;
     let dir = unique_dir("hide_live_model_turn");
+    let max_output_tokens = std::env::var("HIDE_MAX_OUTPUT_TOKENS")
+        .ok()
+        .filter(|value| value.parse::<usize>().is_ok_and(|n| n > 0))
+        .unwrap_or_else(|| "24".to_string());
     let _env = LiveEnvGuard::apply(&[
         ("HIDE_MODEL_WEIGHTS", weights.display().to_string()),
         ("HIDE_HAWKING_BIN", hawking_bin.display().to_string()),
         ("HIDE_MODEL_ADDR", bind.clone()),
         ("HIDE_MODEL_BOOT_TIMEOUT_SECS", "600".to_string()),
-        ("HIDE_MAX_OUTPUT_TOKENS", "24".to_string()),
+        ("HIDE_MAX_OUTPUT_TOKENS", max_output_tokens),
     ]);
     eprintln!(
         "live_model_turn: weights={} hawking={} addr={}",
@@ -178,7 +212,10 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
         bind
     );
     let host = BackendHost::open_workspace(&dir).expect("open_workspace");
- assert!( host.runtime_state().is_some(), "HIDE_MODEL_WEIGHTS must install a RuntimeSupervisor" );
+    assert!(
+        host.runtime_state().is_some(),
+        "HIDE_MODEL_WEIGHTS must install a RuntimeSupervisor"
+    );
     let ready_deadline = tokio::time::Instant::now() + Duration::from_secs(600);
     loop {
         match host.runtime_state() {
@@ -218,9 +255,7 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
     let gen_deadline = tokio::time::Instant::now() + Duration::from_secs(600);
     loop {
         if tokio::time::Instant::now() >= gen_deadline {
-            panic!(
-                "timed out waiting for streamed tokens / completion (got so far: {streamed:?})"
-            );
+            panic!("timed out waiting for streamed tokens / completion (got so far: {streamed:?})");
         }
         match tokio::time::timeout(Duration::from_secs(5), rx.recv()).await {
             Ok(Ok(ev)) => match ev.kind {
@@ -294,12 +329,15 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
             None
         }
     });
-    let assistant_1 = assistant_1.expect(
-        "turn 1 must persist a non-empty agent.message assistant turn on the event log",
-    );
+    let assistant_1 = assistant_1
+        .expect("turn 1 must persist a non-empty agent.message assistant turn on the event log");
     assert!(!assistant_1.trim().is_empty());
     if !streamed.trim().is_empty() {
-        assert!(streamed.contains(assistant_1.trim()) || assistant_1.contains(streamed.trim()) || streamed.chars().any(|c| !c.is_whitespace()));
+        assert!(
+            streamed.contains(assistant_1.trim())
+                || assistant_1.contains(streamed.trim())
+                || streamed.chars().any(|c| !c.is_whitespace())
+        );
     }
     let turn2_prompt = "What single word did you just say? Answer briefly.";
     let ack2 = host
@@ -369,9 +407,21 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
             _ => {}
         }
     }
-    assert!(history_roles .iter() .any(|(r, c)| r == "assistant" && c == &assistant_1));
-    assert!(history_roles .iter() .filter(|(r, _)| r == "user") .count() >= 2);
-    assert!(history_roles .iter() .filter(|(r, _)| r == "assistant") .count() >= 2);
+    assert!(history_roles
+        .iter()
+        .any(|(r, c)| r == "assistant" && c == &assistant_1));
+    assert!(history_roles.iter().filter(|(r, _)| r == "user").count() >= 2);
+    assert!(
+        history_roles
+            .iter()
+            .filter(|(r, _)| r == "assistant")
+            .count()
+            >= 2
+    );
+    assert!(
+        metric_value(&bind, "hawking_prefix_reuse_total") >= 1,
+        "the second real HIDE turn must reuse an exact materialized KV prefix"
+    );
     eprintln!(
         "live_model_turn: OK — streamed_len={} assistant_1_len={} history_msgs={}",
         streamed.len(),

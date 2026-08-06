@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 mod common;
 use common::argmax;
 use common::weights_path_qwen as weights_path;
@@ -20,7 +22,10 @@ fn load_q4k_lmhead() -> Option<QwenDense> {
     }
     std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1"); // env_on => exact "1"; full-vocab Q4_K head
     let profile = fresh_test_profile(&w).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     Some(QwenDense::load(&w, cfg).expect("load qwen-3b (q4k lm-head)"))
 }
 #[test]
@@ -38,10 +43,17 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
     assert!(b <= 8, "B must be <= MAX_MULTISEQ_SLOTS (8)");
     for &s in &seeds {
         engine.kv.reset();
-        let single = engine.forward_token_greedy_tcb(s, 0).expect("single-stream fwd");
+        let single = engine
+            .forward_token_greedy_tcb(s, 0)
+            .expect("single-stream fwd");
         engine.multiseq_arena = None;
-        let ms = engine.forward_tokens_multiseq(&[s], &[0], max_seq).expect("B=1 multiseq fused-tail")[0];
-        assert_eq!(single, ms, "anchor: B=1 fused-tail multiseq token {ms} != single-stream {single} (seed {s})");
+        let ms = engine
+            .forward_tokens_multiseq(&[s], &[0], max_seq)
+            .expect("B=1 multiseq fused-tail")[0];
+        assert_eq!(
+            single, ms,
+            "anchor: B=1 fused-tail multiseq token {ms} != single-stream {single} (seed {s})"
+        );
     }
     let mut solo_logits: Vec<Vec<Vec<f32>>> = Vec::with_capacity(b); // [slot][step][vocab]
     for &s in &seeds {
@@ -49,7 +61,9 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
         let mut cur = s;
         let mut steps: Vec<Vec<f32>> = Vec::with_capacity(n);
         for pos in 0..n {
-            let l = engine.forward_tokens_multiseq_logits(&[cur], &[pos], &[0], max_seq).expect("solo fused-tail logits");
+            let l = engine
+                .forward_tokens_multiseq_logits(&[cur], &[pos], &[0], max_seq)
+                .expect("solo fused-tail logits");
             assert_eq!(l[0].len(), vocab, "solo logits must be full-vocab");
             cur = argmax(&l[0]);
             steps.push(l.into_iter().next().unwrap());
@@ -62,7 +76,9 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
     let mut batched_logits: Vec<Vec<Vec<f32>>> = vec![Vec::with_capacity(n); b]; // [slot][step][vocab]
     for pos in 0..n {
         let positions = vec![pos; b];
-        let l = engine.forward_tokens_multiseq_logits(&cur, &positions, &regions, max_seq).expect("batched fused-tail logits");
+        let l = engine
+            .forward_tokens_multiseq_logits(&cur, &positions, &regions, max_seq)
+            .expect("batched fused-tail logits");
         assert_eq!(l.len(), b, "batched returns B logit rows");
         let mut next = Vec::with_capacity(b);
         for (bi, row) in l.into_iter().enumerate() {
@@ -77,7 +93,11 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
         for step in 0..n {
             let solo = &solo_logits[bi][step];
             let batch = &batched_logits[bi][step];
-            assert_eq!(solo.len(), batch.len(), "slot {bi} step {step}: logit length differs");
+            assert_eq!(
+                solo.len(),
+                batch.len(),
+                "slot {bi} step {step}: logit length differs"
+            );
             for (i, (&sv, &bv)) in solo.iter().zip(batch.iter()).enumerate() {
                 assert_eq!(
                     sv.to_bits(),
@@ -91,13 +111,26 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
     }
     engine.multiseq_arena = None;
     let positions0 = vec![0usize; b];
-    let rerun = engine.forward_tokens_multiseq_logits(&seeds, &positions0, &regions, max_seq).expect("rerun fused-tail logits");
+    let rerun = engine
+        .forward_tokens_multiseq_logits(&seeds, &positions0, &regions, max_seq)
+        .expect("rerun fused-tail logits");
     for bi in 0..b {
         let first = &batched_logits[bi][0];
-        assert_eq!(rerun[bi].len(), first.len(), "slot {bi}: rerun length differs");
+        assert_eq!(
+            rerun[bi].len(),
+            first.len(),
+            "slot {bi}: rerun length differs"
+        );
         for (i, (&rv, &fv)) in rerun[bi].iter().zip(first.iter()).enumerate() {
-            assert_eq!(rv.to_bits(), fv.to_bits(), "slot {bi} logit[{i}]: fused-tail commit not deterministic ({rv} vs {fv})");
+            assert_eq!(
+                rv.to_bits(),
+                fv.to_bits(),
+                "slot {bi} logit[{i}]: fused-tail commit not deterministic ({rv} vs {fv})"
+            );
         }
     }
-    let batched_tokens: Vec<Vec<u32>> = batched_logits.iter().map(|slot| slot.iter().map(|l| argmax(l)).collect()).collect();
+    let batched_tokens: Vec<Vec<u32>> = batched_logits
+        .iter()
+        .map(|slot| slot.iter().map(|l| argmax(l)).collect())
+        .collect();
 }

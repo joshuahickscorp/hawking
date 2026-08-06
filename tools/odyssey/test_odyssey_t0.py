@@ -26,7 +26,7 @@ from tools.odyssey import (  # noqa: E402
     substrate_verify,
     tournament,
 )
-from tools.odyssey._paths import FENCE, ODYSSEY  # noqa: E402
+from tools.odyssey._paths import CHECKPOINTS, FENCE, TRAINING_DIR  # noqa: E402
 
 
 class TestFenceUntouched(unittest.TestCase):
@@ -36,16 +36,22 @@ class TestFenceUntouched(unittest.TestCase):
 
 
 class TestSubstrate(unittest.TestCase):
-    def test_static_checks(self):
+    def test_static_checks_refuse_the_evicted_substrate(self):
         result = substrate_verify.static_checks()
-        self.assertTrue(result["ok"], msg=json.dumps(result["checks"], indent=2))
+        # The sealed index/manifest remain on disk, while body shards were
+        # deliberately evicted under the 90-GB storage law.  Never allow the
+        # historical receipt/progress file to turn this into a current pass.
+        self.assertFalse(result["ok"], msg=json.dumps(result["checks"], indent=2))
         self.assertEqual(result["decision_count"], 59585)
+        present = next(c for c in result["checks"] if c["check"] == "shards_present_on_disk")
+        self.assertFalse(present["ok"])
+        self.assertIn("/282", present["detail"])
 
-    def test_verify_one_shard(self):
+    def test_verify_one_shard_refuses_before_body_hashing(self):
         result = substrate_verify.verify_shards(max_shards=1, resume=True)
-        self.assertIn(result["status"], ("PASS", "PARTIAL"))
-        self.assertTrue(result["static"]["ok"])
-        self.assertGreaterEqual(result["shard_verification"]["shards_verified"], 1)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertFalse(result["static"]["ok"])
+        self.assertIsNone(result["shard_verification"])
 
 
 class TestData(unittest.TestCase):
@@ -134,7 +140,7 @@ class TestContracts(unittest.TestCase):
     def test_checkpoint_controller(self):
         ckpt = contracts.create_checkpoint(stage="T0", step=0)
         self.assertTrue(contracts.validate_checkpoint(ckpt))
-        self.assertTrue((ODYSSEY / "checkpoints" / "CURRENT").is_file())
+        self.assertTrue((CHECKPOINTS / "CURRENT").is_file())
 
     def test_resume(self):
         contracts.create_checkpoint(stage="T0", step=3)
@@ -147,7 +153,7 @@ class TestContracts(unittest.TestCase):
         b = contracts.create_checkpoint(stage="T0", step=2, parent_sha256=a["checkpoint_id"])
         r = contracts.rollback_to(a["checkpoint_id"])
         self.assertEqual(r["status"], "RUNNABLE")
-        self.assertEqual((ODYSSEY / "checkpoints" / "CURRENT").read_text().strip(), a["checkpoint_id"])
+        self.assertEqual((CHECKPOINTS / "CURRENT").read_text().strip(), a["checkpoint_id"])
         # silence unused
         self.assertTrue(b["checkpoint_id"])
 
@@ -172,7 +178,7 @@ class TestRunnerRefusesTraining(unittest.TestCase):
         import subprocess
 
         proc = subprocess.run(
-            [sys.executable, str(ODYSSEY / "training" / "run.py")],
+            [sys.executable, str(TRAINING_DIR / "run.py")],
             capture_output=True,
             text=True,
             cwd=str(ROOT),
@@ -207,13 +213,13 @@ class TestSubstrateCapabilityGate(unittest.TestCase):
     def test_runner_refuses_even_when_the_fence_is_true(self):
         """The whole point: the two gates are independent."""
         import subprocess, sys
-        from tools.odyssey._paths import FENCE, ROOT
+        from tools.odyssey._paths import FENCE, ROOT, TRAINING_DIR
 
         original = FENCE.read_text()
         try:
             FENCE.write_text("true")
             r = subprocess.run(
-                [sys.executable, str(ROOT / "odyssey/training/run.py"), "T1"],
+                [sys.executable, str(TRAINING_DIR / "run.py"), "T1"],
                 capture_output=True, text=True, cwd=str(ROOT),
             )
             self.assertEqual(r.returncode, 5, f"expected SUBSTRATE_REFUSED, got {r.returncode}: {r.stderr}")

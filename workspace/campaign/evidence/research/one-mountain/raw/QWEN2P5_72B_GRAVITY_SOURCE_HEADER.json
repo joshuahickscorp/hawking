@@ -1,0 +1,19 @@
+{
+  "format_version": 1,
+  "integrity": {
+    "body_sha256": "d978e6c422abb6d94999a703cdf59f6f7b0b92b4816691913e0dc4d335ea04c1",
+    "tensor_count": 963
+  },
+  "model": {
+    "family": "qwen2",
+    "source_gguf_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "schema": "hawking.gravity.shard_header.v1",
+  "tensor_count": 963,
+  "tokenizer": {
+    "dir": "/Users/scammermike/Downloads/hawking/models/one-mountain-qwen2p5-72b-gravity-source-2026-08-02/tokenizer",
+    "kind": "tokenizer-json",
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "source": "tokenizer.json"
+  }
+}

@@ -14,7 +14,10 @@ fn notification_fixtures_round_trip_through_serde() {
         let json = serde_json::to_value(&notification).expect("serialize notification fixture");
         let back: Notification =
             serde_json::from_value(json).expect("deserialize notification fixture");
-        assert_eq!(back, notification, "notification fixture `{name}` must round-trip");
+        assert_eq!(
+            back, notification,
+            "notification fixture `{name}` must round-trip"
+        );
     }
 }
 #[test]
@@ -27,7 +30,10 @@ fn events_golden_is_stable_and_every_entry_reparses() {
         serde_json::from_value::<Item>(value.clone())
             .unwrap_or_else(|e| panic!("item golden `{name}` must parse: {e}"));
     }
-    for (name, value) in bundle["notifications"].as_object().expect("notifications object") {
+    for (name, value) in bundle["notifications"]
+        .as_object()
+        .expect("notifications object")
+    {
         serde_json::from_value::<Notification>(value.clone())
             .unwrap_or_else(|e| panic!("notification golden `{name}` must parse: {e}"));
     }

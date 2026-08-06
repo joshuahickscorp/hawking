@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-packed-prefill-generic-q4-batch-gemm",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "protocol": {
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "context_limit": 2560,
+    "baseline": "resident source-FATTN serial prefill",
+    "candidate": "layer-first B<=8 generic Q4 batch GEMM, source RoPE/f16-KV/FATTN"
+  },
+  "correctness": {
+    "b8_exact_greedy_token_trace": true,
+    "b2_exact_greedy_token_trace": true,
+    "decode_cpu_reference_fallback_total": 0
+  },
+  "prefill_ms": {
+    "serial": 20319.177917,
+    "packed_b8": 34161.159291,
+    "packed_b2": 89715.043833
+  },
+  "relative_to_serial": {
+    "packed_b8": 1.681233963354666,
+    "packed_b2": 4.415275700404868
+  },
+  "verdict": "rejected",
+  "reason": "The causal packed graph is exact but its generic Q4 batch GEMM geometry is slower than the source per-token Q4 kernels. It remains available only behind HAWKING_LLAMA_RESIDENT_B9430_PACKED_PREFILL_UNSAFE_DIAGNOSTIC as a correctness scaffold.",
+  "next_wave": "Replace generic Q4 batch GEMMs with source-compatible b9430 batched Q4 kernels, retaining this graph as the exact layer-first integration harness."
+}

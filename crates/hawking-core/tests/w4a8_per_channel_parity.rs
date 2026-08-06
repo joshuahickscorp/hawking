@@ -29,7 +29,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x_typical(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn make_channel_scales_calibrated(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
@@ -60,7 +62,8 @@ fn cosine_and_nrmse(a: &[f32], b: &[f32]) -> (f32, f32) {
     let na: f32 = a.iter().map(|&x| x * x).sum::<f32>().sqrt();
     let nb: f32 = b.iter().map(|&x| x * x).sum::<f32>().sqrt();
     let cosine = dot / (na * nb);
-    let rmse: f32 = (a.iter().zip(b).map(|(&x, &y)| (x - y).powi(2)).sum::<f32>() / a.len() as f32).sqrt();
+    let rmse: f32 =
+        (a.iter().zip(b).map(|(&x, &y)| (x - y).powi(2)).sum::<f32>() / a.len() as f32).sqrt();
     let mean_abs_a = a.iter().map(|x| x.abs()).sum::<f32>() / a.len() as f32;
     let nrmse = rmse / mean_abs_a;
     (cosine, nrmse)
@@ -77,8 +80,17 @@ fn w4a8_per_channel_typical_activations() {
     let y_baseline_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_f32_buf, &y_baseline_buf)
-            .expect("baseline encode");
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -107,7 +119,10 @@ fn w4a8_per_channel_typical_activations() {
     }
     let y_w4a8 = read_f32_buf(&y_w4a8_buf, rows);
     let (cosine, nrmse) = cosine_and_nrmse(&y_baseline, &y_w4a8);
-    assert!(cosine > 0.9999 && nrmse < 0.02, "per-channel out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}");
+    assert!(
+        cosine > 0.9999 && nrmse < 0.02,
+        "per-channel out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}"
+    );
 }
 #[test]
 fn w4a8_per_channel_beats_per_block_on_outliers() {
@@ -126,7 +141,17 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     let y_baseline_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_f32_buf, &y_baseline_buf).unwrap();
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .unwrap();
         tcb.commit_and_wait().unwrap();
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -174,7 +199,16 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     let y_pc = read_f32_buf(&y_pc_buf, rows);
     let (cos_pb, nrmse_pb) = cosine_and_nrmse(&y_baseline, &y_pb);
     let (cos_pc, nrmse_pc) = cosine_and_nrmse(&y_baseline, &y_pc);
-    assert!(cos_pc >= cos_pb, "per-channel cosine {cos_pc:.6} should be >= per-block {cos_pb:.6} in outlier regime");
-    assert!(nrmse_pc <= nrmse_pb, "per-channel nrmse {nrmse_pc:.4e} should be <= per-block {nrmse_pb:.4e} in outlier regime");
-    assert!(cos_pc > 0.999 && nrmse_pc < 0.05, "per-channel absolute tolerance: cosine={cos_pc:.6} nrmse={nrmse_pc:.4e}");
+    assert!(
+        cos_pc >= cos_pb,
+        "per-channel cosine {cos_pc:.6} should be >= per-block {cos_pb:.6} in outlier regime"
+    );
+    assert!(
+        nrmse_pc <= nrmse_pb,
+        "per-channel nrmse {nrmse_pc:.4e} should be <= per-block {nrmse_pb:.4e} in outlier regime"
+    );
+    assert!(
+        cos_pc > 0.999 && nrmse_pc < 0.05,
+        "per-channel absolute tolerance: cosine={cos_pc:.6} nrmse={nrmse_pc:.4e}"
+    );
 }

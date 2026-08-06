@@ -25,7 +25,11 @@ fn gen_on(engine: &mut dyn hawking_core::Engine, prompt: &str) -> (Vec<u32>, f64
     let req = hawking_core::GenerateRequest {
         prompt: prompt.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -94,5 +98,8 @@ fn ram_cache_miss_is_bit_identical() {
         gen_on(e.as_mut(), &prompt_b).0 // no shared prefix → miss
     };
     std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
-    assert_eq!(ref_ids, miss_ids, "cache-miss path must match the no-cache path on the same engine");
+    assert_eq!(
+        ref_ids, miss_ids,
+        "cache-miss path must match the no-cache path on the same engine"
+    );
 }

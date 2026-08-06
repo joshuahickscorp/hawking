@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.tg.same_model_stage_diagnostic_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "candidate": {
+    "id": "native-metal-stage-vs-cpu-gravity-oracle",
+    "hypothesis": "The broader token-two divergence is downstream of the already source-matched first token; comparing named per-layer MLA, router, routed/shared MLP, residual and head boundaries against the exact source-preserving CPU Gravity oracle will identify the first mismatching stage.",
+    "mechanism": "Pack the exact Q4_K GGUF losslessly into the existing executable Gravity source ABI, emit CPU forward_with_stage_trace summaries for the fixed prompt, and compare them to the native HAWKING_DS_STAGE_TRACE records from the same artifact/hash and prompt.",
+    "scope": "diagnostic only; no quantization, tokenizer, route, prompt, profile, or performance change; no TG promotion from this receipt",
+    "required_safety": [
+      "immutable source revision and full SHA-256",
+      "CPU Gravity source-preserving artifact verification",
+      "exact prompt IDs [100000,549,6077,280,7239,317]",
+      "same first-decode token and position",
+      "native Metal dispatches > 0",
+      "CPU/reference fallback = 0 on native trace",
+      "first mismatch named by layer and boundary",
+      "artifact/source/cache evicted after comparison"
+    ]
+  },
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "fixed_prompt": {
+    "token_ids": [100000, 549, 6077, 280, 7239, 317],
+    "first_decode_token_expected": 8913,
+    "first_decode_position": 6,
+    "source_window": [8913, 13, 185, 185]
+  },
+  "comparison_contract": {
+    "cpu_oracle": "GravityDeepSeek::forward_with_stage_trace",
+    "native_trace_env": "HAWKING_DS_STAGE_TRACE=1",
+    "native_trace_path_env": "HAWKING_DS_STAGE_TRACE_PATH",
+    "boundaries": ["input", "attn_norm", "q", "kv_a", "c_kv", "k_pe", "context", "attn_out", "after_attention", "ffn_norm", "router_logits", "routes", "route_weights", "ffn_out", "output", "final_norm", "logits"],
+    "comparison": "SHA-256/length/finite-first-eight plus route IDs and greedy token; first mismatch is diagnostic authority",
+    "promotion": "none; a later code change requires a separate same-model preregistration and CLEAN complete-token A/B"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "0c7f08c5924cd1c12f77512bb0a0784c2c49c837e9d25ac361837cbaee40ccf2"
+}

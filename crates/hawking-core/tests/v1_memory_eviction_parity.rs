@@ -4,7 +4,9 @@ const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 8;
 fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
     let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    let profile_path = PathBuf::from(
+        "../../workspace/campaign/config/profiles/deepseek-v2-lite/baseline/deepseek-v2-lite-q4.m3pro18.json",
+    );
     let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = hawking_core::EngineConfig {
         kernel_profile: Some(profile),
@@ -15,7 +17,11 @@ fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 60_000,

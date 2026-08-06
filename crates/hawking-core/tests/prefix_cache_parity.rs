@@ -34,8 +34,18 @@ fn assert_kv_eq(a: &KvCache, b: &KvCache) {
     assert_eq!(a.n_kv_heads, b.n_kv_heads);
     assert_eq!(a.head_dim, b.head_dim);
     for li in 0..a.n_layers {
-        assert_eq!(a.keys_for(li), b.keys_for(li), "keys mismatch on layer {}", li);
-        assert_eq!(a.values_for(li), b.values_for(li), "values mismatch on layer {}", li);
+        assert_eq!(
+            a.keys_for(li),
+            b.keys_for(li),
+            "keys mismatch on layer {}",
+            li
+        );
+        assert_eq!(
+            a.values_for(li),
+            b.values_for(li),
+            "values mismatch on layer {}",
+            li
+        );
     }
 }
 #[test]
@@ -58,7 +68,10 @@ fn cold_vs_warm_prefill_byte_identical() {
         .lookup_longest_prefix(&key_t2.model_hash, &key_t2.tokenizer_hash, &turn2)
         .unwrap()
         .expect("expected prefix hit on turn 2");
-    assert_eq!(hit.n_tokens, 50, "should hit the 50-token cached system prefix");
+    assert_eq!(
+        hit.n_tokens, 50,
+        "should hit the 50-token cached system prefix"
+    );
     let mut kv_warm = KvCache::new(n_layers, turn2.len() + 8, n_kv, head_dim);
     restore_hit_into_kv(&hit, &mut kv_warm).unwrap();
     assert_eq!(kv_warm.seq_len, 50);
@@ -80,7 +93,10 @@ fn store_then_load_byte_exact() {
     cache.store(&key, &kv).unwrap();
     let mut probe = prompt.clone();
     probe.push(999);
-    let hit = cache.lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &probe).unwrap().unwrap();
+    let hit = cache
+        .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &probe)
+        .unwrap()
+        .unwrap();
     assert_eq!(hit.n_tokens, 20);
     let mut restored = KvCache::new(n_layers, prompt.len() + 4, n_kv, head_dim);
     restore_hit_into_kv(&hit, &mut restored).unwrap();
@@ -97,7 +113,9 @@ fn cache_miss_falls_back_to_full_prefill() {
     let cache = PrefillDiskCache::open(tmp.path()).unwrap();
     let prompt: Vec<u32> = (10..30u32).collect();
     let key = PrefillKey::from_model_and_prompt("m", b"sig", &prompt);
-    let hit = cache.lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &prompt).unwrap();
+    let hit = cache
+        .lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &prompt)
+        .unwrap();
     assert!(hit.is_none(), "fresh cache must miss");
     let kv_a = cold_prefill(&prompt, 2, 2, 8);
     let kv_b = cold_prefill(&prompt, 2, 2, 8);

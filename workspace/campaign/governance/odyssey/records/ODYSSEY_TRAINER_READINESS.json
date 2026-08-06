@@ -1,0 +1,44 @@
+{
+  "all_apparatus_surfaces_pass": true,
+  "at": "2026-07-29T17:32:55Z",
+  "evidence": {
+    "failure_injection_pass": true,
+    "qat_kind": "fake_simulation",
+    "resume_bit_identical": true,
+    "rollback_status": "PROVEN",
+    "trajectory_traces": 0
+  },
+  "launch_authorized": false,
+  "never_trained_anything_real": true,
+  "pass_map": {
+    "content_addressed": true,
+    "failure_injection": true,
+    "objectives": true,
+    "qat": true,
+    "resume_bit_identity": true,
+    "rollback": true,
+    "scheduler": true,
+    "t0_unit": true,
+    "tournament": true,
+    "training_receipts": true,
+    "trajectory": true
+  },
+  "plain_statement": "The Odyssey trainer apparatus has been exercised on pure-numpy toy models (a few thousand parameters). It has NEVER trained anything real. Every fixture is labelled a fixture. Content-addressed checkpoints, kill/resume bit-identity, rollback with entry-gate re-run, objective registry refusal, FakeUniformQuantizer, trajectory-loss interface, tournament with injected regressions, failure injection, resource declarations, and content-addressed receipts are proven on fixtures only.",
+  "schema": "hawking.odyssey.trainer_readiness.v1",
+  "status": "APPARATUS_PROVEN_ON_FIXTURES",
+  "substrate_capability": "Math-Preserve remains REFUSED; no APPROVED substrate",
+  "toy_model": {
+    "backend": "numpy",
+    "fixture_label": "FIXTURE: pure-numpy toy MLP; not a real student; never trained anything real",
+    "gpu": false,
+    "n_params": 1120,
+    "torch": false
+  },
+  "what_this_does_not_establish": [
+    "That any real corpus was trained on",
+    "That Math-Preserve or any parent improved",
+    "That QAT was measured on a substrate",
+    "That T3 trajectory stabilization ran against parent traces",
+    "That ODYSSEY_LAUNCH_AUTHORIZED may be flipped"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.gravity_pack_blocker.v1",
+  "status": "BLOCKED_AND_ABORTED_BEFORE_ARTIFACT_PUBLICATION",
+  "at_utc": "2026-08-02",
+  "candidate": "llama70-resident-q4-v3-dual-geometry-v1",
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664"
+  },
+  "operation": {
+    "command": "tools/llama_q4k_gravity_pack.py --write",
+    "intended_output": "models/tg-active/llama70-v3-dual-2026-08-02/llama70-v3-dual.gravity",
+    "source_preserving": true,
+    "artifact_published": false,
+    "partial_artifact_present": false,
+    "termination": "SIGTERM after SIGINT did not promptly interrupt paging loop",
+    "elapsed_seconds_approx": 407,
+    "reason": "packer retains every tensor payload in a Python list before writing; macOS swap reached approximately 53.8 GiB and the operation entered uninterruptible paging",
+    "reopen_condition": "replace payload-list accumulation with bounded streaming or shard-at-a-time writer, then rerun under an explicit memory/swap budget"
+  },
+  "safety": {
+    "protected_floor_bytes": 200005889556,
+    "free_bytes_after_abort": 266724600832,
+    "residual_above_floor_bytes": 66718811276,
+    "model_lane_contents": [
+      "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      ".cache/huggingface metadata only"
+    ],
+    "second_full_model_body": false,
+    "owner_fences": {
+      "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+      "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+      "ODYSSEY_LAUNCH_AUTHORIZED": false,
+      "D5": false,
+      "D8": false,
+      "D9": false,
+      "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+    }
+  }
+}

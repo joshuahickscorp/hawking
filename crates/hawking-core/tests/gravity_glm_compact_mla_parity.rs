@@ -45,18 +45,30 @@ fn fixture() -> Fixture {
         query_rope: deterministic_f32(0x3141_5926, HEADS * ROPE, 0.5),
         key_weight: deterministic_f32(0x2718_2818, HEADS * NOPE * LATENT, 0.35),
         value_weight: deterministic_f32(0xdead_beef, HEADS * VALUE * LATENT, 0.4),
-        index_scores: vec![0.31, -0.20, 0.88, 0.31, 0.05, 0.74, 0.99, -0.50, 0.44, 0.66, 0.12],
+        index_scores: vec![
+            0.31, -0.20, 0.88, 0.31, 0.05, 0.74, 0.99, -0.50, 0.44, 0.66, 0.12,
+        ],
     }
 }
 fn stable_topk_f32(values: &[f32], k: usize) -> Vec<usize> {
     let mut indices: Vec<usize> = (0..values.len()).collect();
-    indices.sort_by(|&a, &b| values[b].partial_cmp(&values[a]).unwrap_or(std::cmp::Ordering::Equal).then(a.cmp(&b)));
+    indices.sort_by(|&a, &b| {
+        values[b]
+            .partial_cmp(&values[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.cmp(&b))
+    });
     indices.truncate(k.min(indices.len()));
     indices
 }
 fn stable_topk_f64(values: &[f64], k: usize) -> Vec<usize> {
     let mut indices: Vec<usize> = (0..values.len()).collect();
-    indices.sort_by(|&a, &b| values[b].partial_cmp(&values[a]).unwrap_or(std::cmp::Ordering::Equal).then(a.cmp(&b)));
+    indices.sort_by(|&a, &b| {
+        values[b]
+            .partial_cmp(&values[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.cmp(&b))
+    });
     indices.truncate(k.min(indices.len()));
     indices
 }
@@ -131,18 +143,31 @@ fn expanded_f32(f: &Fixture, selected_ranked: &[usize]) -> F32Attention {
         for slot in canonical_slots.iter().copied() {
             let probability = probabilities[slot];
             for value_dim in 0..VALUE {
-                context[head * VALUE + value_dim] += probability * expanded_values[slot * VALUE + value_dim];
+                context[head * VALUE + value_dim] +=
+                    probability * expanded_values[slot * VALUE + value_dim];
             }
         }
     }
     F32Attention { logits, context }
 }
-fn compact_absorbed_f32(f: &Fixture, selected_ranked: &[usize], accumulate_in_rank_order: bool) -> F32Attention {
+fn compact_absorbed_f32(
+    f: &Fixture,
+    selected_ranked: &[usize],
+    accumulate_in_rank_order: bool,
+) -> F32Attention {
     let selected = selected_ascending(selected_ranked);
-    let accumulation_positions = if accumulate_in_rank_order { selected_ranked.to_vec() } else { selected.clone() };
+    let accumulation_positions = if accumulate_in_rank_order {
+        selected_ranked.to_vec()
+    } else {
+        selected.clone()
+    };
     let accumulation_slots: Vec<usize> = accumulation_positions
         .iter()
-        .map(|position| selected.binary_search(position).expect("ranked selection must exist in ascending selection"))
+        .map(|position| {
+            selected
+                .binary_search(position)
+                .expect("ranked selection must exist in ascending selection")
+        })
         .collect();
     let scale = ((NOPE + ROPE) as f32).powf(-0.5);
     let mut logits = vec![0.0f32; HEADS * selected.len()];
@@ -207,7 +232,8 @@ fn expanded_f64_authority(f: &Fixture, selected_ranked: &[usize]) -> F64Attentio
                 dot += f.query_nope[head * NOPE + key_dim] as f64 * key;
             }
             for rope_dim in 0..ROPE {
-                dot += f.query_rope[head * ROPE + rope_dim] as f64 * f.rope_keys[token * ROPE + rope_dim] as f64;
+                dot += f.query_rope[head * ROPE + rope_dim] as f64
+                    * f.rope_keys[token * ROPE + rope_dim] as f64;
             }
             logits[head * selected.len() + slot] = dot * scale;
             for value_dim in 0..VALUE {
@@ -223,7 +249,8 @@ fn expanded_f64_authority(f: &Fixture, selected_ranked: &[usize]) -> F64Attentio
         let probabilities = softmax_f64(head_logits, &canonical_slots);
         for slot in canonical_slots.iter().copied() {
             for value_dim in 0..VALUE {
-                context[head * VALUE + value_dim] += probabilities[slot] * expanded_values[slot * VALUE + value_dim];
+                context[head * VALUE + value_dim] +=
+                    probabilities[slot] * expanded_values[slot * VALUE + value_dim];
             }
         }
     }
@@ -249,7 +276,8 @@ fn compact_absorbed_f64(f: &Fixture, selected_ranked: &[usize]) -> F64Attention 
                 dot += query_latent[latent_dim] * f.latents[token * LATENT + latent_dim] as f64;
             }
             for rope_dim in 0..ROPE {
-                dot += f.query_rope[head * ROPE + rope_dim] as f64 * f.rope_keys[token * ROPE + rope_dim] as f64;
+                dot += f.query_rope[head * ROPE + rope_dim] as f64
+                    * f.rope_keys[token * ROPE + rope_dim] as f64;
             }
             logits[head * selected.len() + slot] = dot * scale;
         }
@@ -259,7 +287,8 @@ fn compact_absorbed_f64(f: &Fixture, selected_ranked: &[usize]) -> F64Attention 
         for slot in canonical_slots.iter().copied() {
             let token = selected[slot];
             for latent_dim in 0..LATENT {
-                weighted_latent[latent_dim] += probabilities[slot] * f.latents[token * LATENT + latent_dim] as f64;
+                weighted_latent[latent_dim] +=
+                    probabilities[slot] * f.latents[token * LATENT + latent_dim] as f64;
             }
         }
         for value_dim in 0..VALUE {
@@ -272,9 +301,16 @@ fn compact_absorbed_f64(f: &Fixture, selected_ranked: &[usize]) -> F64Attention 
     F64Attention { logits, context }
 }
 fn max_abs_f64(a: &[f64], b: &[f64]) -> f64 {
-    a.iter().zip(b).map(|(&x, &y)| (x - y).abs()).fold(0.0f64, f64::max)
+    a.iter()
+        .zip(b)
+        .map(|(&x, &y)| (x - y).abs())
+        .fold(0.0f64, f64::max)
 }
-fn score_attention(expanded: &F32Attention, compact: &F32Attention, authority: &F64Attention) -> (Vec<PairedScore>, PairedScore) {
+fn score_attention(
+    expanded: &F32Attention,
+    compact: &F32Attention,
+    authority: &F64Attention,
+) -> (Vec<PairedScore>, PairedScore) {
     let mut score_bounds = Bounds::logits();
     score_bounds.top_k = 3;
     let mut score_pairs = Vec::with_capacity(HEADS);
@@ -289,7 +325,12 @@ fn score_attention(expanded: &F32Attention, compact: &F32Attention, authority: &
     }
     let mut context_bounds = Bounds::continuous_only();
     context_bounds.top_k = 5;
-    let context_pair = score_pair(&expanded.context, &compact.context, &authority.context, &context_bounds);
+    let context_pair = score_pair(
+        &expanded.context,
+        &compact.context,
+        &authority.context,
+        &context_bounds,
+    );
     (score_pairs, context_pair)
 }
 #[test]
@@ -302,36 +343,67 @@ fn compact_absorbed_mla_requires_ranked_selected_accumulation_under_v2_1() {
     assert_eq!(selected_authority, vec![6, 2, 5, 9, 8, 0, 3]);
     assert_eq!(selected_expanded, selected_authority);
     assert_eq!(selected_compact, selected_authority);
-    assert_eq!(selected_ascending(&selected_authority), vec![0, 2, 3, 5, 6, 8, 9]);
+    assert_eq!(
+        selected_ascending(&selected_authority),
+        vec![0, 2, 3, 5, 6, 8, 9]
+    );
     let mut index_bounds = Bounds::logits();
     index_bounds.top_k = SELECTED_K;
-    let index_pair = score_pair(&f.index_scores, &f.index_scores, &index_authority, &index_bounds);
+    let index_pair = score_pair(
+        &f.index_scores,
+        &f.index_scores,
+        &index_authority,
+        &index_bounds,
+    );
     assert!(index_pair.pass, "index decision gate: {index_pair:?}");
     let authority_expanded = expanded_f64_authority(&f, &selected_authority);
     let authority_compact = compact_absorbed_f64(&f, &selected_authority);
     let f64_logits_abs = max_abs_f64(&authority_expanded.logits, &authority_compact.logits);
     let f64_context_abs = max_abs_f64(&authority_expanded.context, &authority_compact.context);
-    assert!(f64_logits_abs <= 1e-15, "absorbed K is not algebraically equivalent in f64: {f64_logits_abs:.3e}");
-    assert!(f64_context_abs <= 1e-15, "absorbed V is not algebraically equivalent in f64: {f64_context_abs:.3e}");
+    assert!(
+        f64_logits_abs <= 1e-15,
+        "absorbed K is not algebraically equivalent in f64: {f64_logits_abs:.3e}"
+    );
+    assert!(
+        f64_context_abs <= 1e-15,
+        "absorbed V is not algebraically equivalent in f64: {f64_context_abs:.3e}"
+    );
     let expanded = expanded_f32(&f, &selected_authority);
     let compact_source_order = compact_absorbed_f32(&f, &selected_authority, false);
     let compact_rank_order = compact_absorbed_f32(&f, &selected_authority, true);
-    let (score_pairs, context_pair) = score_attention(&expanded, &compact_source_order, &authority_expanded);
-    let (_, rank_order_context_pair) = score_attention(&expanded, &compact_rank_order, &authority_expanded);
+    let (score_pairs, context_pair) =
+        score_attention(&expanded, &compact_source_order, &authority_expanded);
+    let (_, rank_order_context_pair) =
+        score_attention(&expanded, &compact_rank_order, &authority_expanded);
     for (head, pair) in score_pairs.iter().enumerate() {}
-    assert!(score_pairs.iter().all(|pair| pair.pass), "attention-score V2.1 gate failed: {score_pairs:#?}");
     assert!(
-        !context_pair.pass && context_pair.device.failures.iter().any(|failure| failure.contains("meaningful_rel")),
+        score_pairs.iter().all(|pair| pair.pass),
+        "attention-score V2.1 gate failed: {score_pairs:#?}"
+    );
+    assert!(
+        !context_pair.pass
+            && context_pair
+                .device
+                .failures
+                .iter()
+                .any(|failure| failure.contains("meaningful_rel")),
         "ascending-position compact accumulation is the expected negative witness: \
          {context_pair:#?}"
     );
-    assert!(rank_order_context_pair.pass, "DSA-rank compact accumulation must pass V2.1: {rank_order_context_pair:#?}");
     assert!(
-        score_pairs.iter().all(|pair| pair.host.discrete.top_k_exact_match && pair.device.discrete.top_k_exact_match),
+        rank_order_context_pair.pass,
+        "DSA-rank compact accumulation must pass V2.1: {rank_order_context_pair:#?}"
+    );
+    assert!(
+        score_pairs
+            .iter()
+            .all(|pair| pair.host.discrete.top_k_exact_match
+                && pair.device.discrete.top_k_exact_match),
         "attention top-k decisions must be exact"
     );
     assert!(
-        rank_order_context_pair.device.discrete.greedy_match && rank_order_context_pair.device.discrete.top_k_exact_match,
+        rank_order_context_pair.device.discrete.greedy_match
+            && rank_order_context_pair.device.discrete.top_k_exact_match,
         "rank-order context decisions must be exact"
     );
     assert_ne!(compact_source_order.context, expanded.context);

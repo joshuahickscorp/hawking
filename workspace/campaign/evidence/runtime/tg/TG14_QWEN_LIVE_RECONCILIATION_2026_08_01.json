@@ -1,0 +1,107 @@
+{
+  "schema": "hawking.tg.live_reconciliation.v1",
+  "status": "SEALED_SOURCE_TCB_NUMERICAL_FLOOR_GRAVITY_ORACLE_MATCH_NONPROMOTIONAL",
+  "claim": "NO_TG_RUNG",
+  "model": {
+    "family": "qwen",
+    "name": "Qwen2.5-14B-Instruct-Q4_K_M",
+    "source": {
+      "path": "models/tg-active/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "bytes": 8988110976,
+      "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+    },
+    "gravity": {
+      "path": "models/tg-active/qwen14/Qwen2.5-14B-Instruct-Q4_K_M.gravity",
+      "bytes": 8982325212,
+      "sha256": "efc2cc3304bf2fc023caf8bf872e8383ae44244eafa74cbda7e019f891664db6",
+      "representation": "source-preserving raw ggml.q4_k and ggml.q6_k executable Gravity"
+    },
+    "tokenizer": {
+      "path": "models/tg-active/qwen14/tokenizer/tokenizer.json",
+      "bytes": 7031645,
+      "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+    }
+  },
+  "protocol": {
+    "prompt_utf8": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "greedy": true,
+    "temperature": 0,
+    "completion_tokens": 8,
+    "device": "Apple M3 Ultra",
+    "reference": {
+      "implementation": "llama.cpp b9430 sequential API oracle",
+      "warmup_tokens": 1,
+      "measured_token_ids_after_warmup": [13, 576, 6722, 315, 17689, 374, 24081],
+      "full_completion_token_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081],
+      "decode_tps_after_warmup": 55.955403096089199
+    }
+  },
+  "representations": {
+    "direct_source_q4_q6_tcb": {
+      "execution": "native mmap Q4_K/Q6_K kernels; source-native Q4_K embedding lookup; conservative canonical controls",
+      "completion_token_ids": [12095, 13, 12095, 374, 279, 6722, 323, 1429],
+      "matching_prefix_tokens": 2,
+      "first_divergent_completion_token": 3,
+      "cpu_reference_fallback_count": 0,
+      "metal_dispatches_per_forward": 604,
+      "decode_tps": 31.20032518226918,
+      "verdict": "FAIL_STATE_ADVANCE"
+    },
+    "executable_gravity_raw_quant": {
+      "completion_token_ids": [12095, 13, 576, 6722, 315, 17689, 374, 24081],
+      "continuation_sha256": "5ac3d1c5bf766be79dcdbe9c756461c367e4c557c097e8322fe54c5f00784c18",
+      "matches_independent_llama": true,
+      "cpu_reference_fallback_count": 0,
+      "metal_dispatches_per_forward": 770,
+      "decode_tps": 39.81303638859769,
+      "decode_token_ms": [23.346458, 22.842209, 23.483083, 24.662667, 25.003083, 24.707375, 24.107791, 24.989375],
+      "verdict": "TOKEN_ORACLE_PASS_ONLY"
+    }
+  },
+  "diagnosis": {
+    "bounded_first_dispatch": {
+      "gpu_dispatches": 555,
+      "command_buffers": 1,
+      "fallback": 0,
+      "result": "Qwen14 reaches a real Metal first dispatch; the historical Qwen72 failure is not reproduced or repaired by this bounded result"
+    },
+    "native_embedding_fixture": {
+      "result": "PASS",
+      "authority": "independent FP64 Q4_K packed decoder against one Metal dispatch",
+      "scope": "kernel fixture only; not a full-model capability claim"
+    },
+    "source_tcb_floor": "The source-TCB path stays wrong after two completion tokens with both the normal packed grammar and a conservative canonical Q4_K/Q6_K configuration. The native Q4_K embedding repair changes the physical lookup but does not repair the complete continuation.",
+    "next_representation_change": "Use the source-preserving executable Gravity raw-quant grammar as the Qwen exact path; any direct GGUF promotion requires a new full-state numerical repair receipt, not further speed tuning."
+  },
+  "promotion_gates": {
+    "same_model_comparison": true,
+    "complete_token_measurement": true,
+    "independent_reference": true,
+    "clean_lease": false,
+    "multi_prompt_capability_g0_g9": false,
+    "tail_latency_harness": false,
+    "tg32": false,
+    "reason": "The Gravity token oracle is a bounded single-prompt, non-CLEAN run. The direct source path fails state advance. Neither representation may claim a Temporal Gravity rung."
+  },
+  "rotation": {
+    "condition": "B",
+    "result": "two material direct-source configurations sealed at the same state-advance floor; executable Gravity is the exact next representation",
+    "eviction_required_before_next_family": true,
+    "required_proof": "hash-bound source and artifact receipt, removal of source/artifact/cache, exact Trash purge, and recovered free-byte sample"
+  },
+  "eviction": {
+    "active_lane_path": "models/tg-active/qwen14",
+    "active_lane_absent_after_eviction": true,
+    "trash_item_identity": "file:///Users/scammermike/.Trash/qwen14/",
+    "trash_item_purged": true,
+    "unrelated_trash_items_preserved": [
+      "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+    ],
+    "free_bytes_before": 369922867200,
+    "free_bytes_after": 387916595200,
+    "recovered_bytes": 17993728000,
+    "source_artifact_tokenizer_lane_bytes_before": 17977467833,
+    "recovery_verdict": "PASS"
+  }
+}

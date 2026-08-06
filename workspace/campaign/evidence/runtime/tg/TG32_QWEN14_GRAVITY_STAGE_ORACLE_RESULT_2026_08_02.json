@@ -1,0 +1,121 @@
+{
+  "schema": "hawking.tg.same_model_stage_oracle_result.v1",
+  "status": "STAGE_ORACLE_LOCALIZED_AND_REPAIRED",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_STAGE_ORACLE_PREREGISTRATION_2026_08_02.json",
+  "preregistration_seal_sha256": "0db299340fd5fd176075548a76a5e8099a98f7c3c80a1b4cc35cb28a2d3032ca",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "format": "source-preserving executable Gravity",
+    "path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/qwen14-stage.gravity",
+    "bytes": 8982325252,
+    "payload_bytes": 8982142976,
+    "sha256": "e2bbc738f07fbc33c359e2f1dc1dc07c7182e794cd2954bb1ffa287da2b81adb",
+    "mapped_tensors": 579,
+    "skipped_source_tensors": 0
+  },
+  "tokenizer": {
+    "repository": "Qwen/Qwen2.5-14B-Instruct",
+    "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "run": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "trace_positions": [4, 7],
+    "trace_rows_each": 48,
+    "native_trace_stage": "post_projection_pre_bias",
+    "gravity_trace_stage": "post_projection_post_bias",
+    "metal_dispatches": ">0",
+    "cpu_reference_fallback_count": 0,
+    "trace_instrumentation_repair": "When HAWKING_QWEN_CAPTURE_FFN_PATH is enabled, native Qwen disables the normal fused SwiGLU down path so ffn_act_buf is materialized before capture; this removes a stale-buffer false mismatch and does not change the default path."
+  },
+  "stage_comparison": {
+    "position_4_layer_0": {
+      "attn_norm_sum_abs_diff": 0.0,
+      "ffn_input_sum_abs_diff": 0.000020063715055584908,
+      "ffn_norm_sum_abs_diff": 0.000015919809811748564,
+      "ffn_gate_sum_abs_diff": 0.0007083658128976822,
+      "ffn_up_sum_abs_diff": 0.00012578768655657768,
+      "ffn_swiglu_sum_abs_diff": 0.000003230111630614374,
+      "ffn_out_sum_abs_diff": 0.00000010896474121973099,
+      "layer_out_sum_abs_diff": 0.00001907115802168846,
+      "q_rope_sum_abs_diff": 0.0001476046600146219,
+      "k_rope_sum_abs_diff": 0.00004541066300589591
+    },
+    "position_4_all_48_layers_max_abs_sum_diff": {
+      "attn_norm": 0.00023978260833246168,
+      "ffn_input": 0.0021189823746681213,
+      "ffn_norm": 0.00026234482356812805,
+      "gate": 0.011103358119726181,
+      "up": 0.00312073715031147,
+      "swiglu": 0.0002814112169744476,
+      "ffn_out": 0.0004205666482448578,
+      "layer_out": 0.002038314938545227,
+      "q_rope": 0.0008623235335107893,
+      "k_rope": 0.0001797518925741315
+    },
+    "position_4_all_48_layers_max_abs_head_diff": {
+      "ffn_norm": 0.0000009238719940185547,
+      "gate": 0.00000286102294921875,
+      "up": 0.0000019073486328125,
+      "swiglu": 0.0000019073486328125,
+      "ffn_out": 0.0000040531158447265625,
+      "layer_out": 0.00001049041748046875
+    },
+    "first_large_stage_mismatch": null,
+    "interpretation": "Native Qwen and executable Gravity stage surfaces remain numerically close through all 48 layers at the traced prompt positions. The prior apparent SwiGLU mismatch was diagnostic capture of a stale buffer, not a kernel result."
+  },
+  "default_path_failure": {
+    "native_exact_trace": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/native_full.log",
+    "gravity_exact_trace": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/gravity_full.log",
+    "native_default_continuation_hash": "893f26580dc72c149f59fac0966fedb9976485ccb4301debd5deb8f1b983502d",
+    "gravity_default_continuation_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "first_divergent_completion_index_zero_based": 2,
+    "historical_fast_control_first_divergent_completion_index_zero_based": 1,
+    "binding_failure": "Qwen TCB prefill computed the greedy decision for the final prompt token, but plain decode discarded it and re-fed the final prompt token at prompt_len, inserting an extra KV position. This is runtime seed/position bookkeeping, not a first-layer packed-kernel mismatch."
+  },
+  "repair": {
+    "preregistration": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_PREREGISTRATION_2026_08_02.json",
+    "preregistration_seal_sha256": "8be12db328f6c26cef5522df34395c69c9bd32ce3912f2b4f07afcc4298afa12",
+    "env": "HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "scope": "plain greedy temperature-zero TCB decode only; opt-in, JSON/speculative/sampling/default paths unchanged",
+    "mechanism": "retain and emit the final prefill greedy ID, then begin the first decode forward with that emitted token at position prompt_len",
+    "result": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_RESULT_2026_08_02.json"
+  },
+  "evidence": {
+    "native_pos4_v3": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/native_pos4_v3.json", "bytes": 112034, "sha256": "f6ad8b1b1077b7cf9e5af1dd4e5371a8a8b914b1be5f1502102578e6eba358bb"},
+    "gravity_pos4_v3": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/gravity_pos4_v3.json", "bytes": 171550, "sha256": "7accb452013690f4e26e2ef9a2490da6a3c278c8508c1f7990c352962e1ea3f2"},
+    "native_pos7_v1": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/native_pos7_v1.json", "bytes": 112001, "sha256": "37cc25144470761a60aa5d30d14030002a6a700b3e3067b6862afdd955fa4733"},
+    "gravity_pos6_v2": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/gravity_pos6_v2.json", "bytes": 171698, "sha256": "c6f21a3e0da9e0e38b810fd816a456bfc0a4391aeec6659e1eb6f0e363bece02"},
+    "native_conventional_log": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/native_conventional.log", "bytes": 2529, "sha256": "e3dc6157d4764f19d1caad10b45b7e44e73f5aa573c43e31cdc9e56eae2bc327"},
+    "gravity_conventional_log": {"path": "models/tg-active/qwen14-gravity-stage-oracle-2026-08-02/gravity_conventional.log", "bytes": 2564, "sha256": "26c840a2cf266bec44a72cc113e53deb92ed343af3327d5bf82ae9d61f0b4065"}
+  },
+  "promotion": {
+    "stage_localization_complete": true,
+    "capability_repair_complete": true,
+    "speed_claim_allowed": false,
+    "tg_rung": null,
+    "reason": "Parity is repaired and hash-bound, but this diagnostic/representation comparison is not a preregistered clean same-model before/after kernel speed promotion."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "537cd42b1f54d1964796ecfca455089366472d7a889969218f20f5af30f61f7f"
+}

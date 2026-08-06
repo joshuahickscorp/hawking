@@ -1,0 +1,144 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 408,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nalgebraMap.coe_smul' [Monoid A] [MulDistribMulAction A C] [SMulDistribClass A B C] :\n    (a • b : B) = a • (b : C)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- Algebra.algebraMap_eq_smul_one\n- smul_distrib_smul\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nalgebraMap.coe_smul' [Monoid A] [MulDistribMulAction A C] [SMulDistribClass A B C] :\n    (a • b : B) = a • (b : C)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- Algebra.algebraMap_eq_smul_one\n- smul_distrib_smul\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-05T20:06:55.853094Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "3c1d6fef042a96afd2401ffe0b1c9b4f06e6beb637b8e2bcf3a30b7fe17ce463",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 5.354610919952393,
+          "rank": 0,
+          "token_id": 4
+        },
+        {
+          "logit": 4.838330268859863,
+          "rank": 1,
+          "token_id": 23
+        },
+        {
+          "logit": 4.802175045013428,
+          "rank": 2,
+          "token_id": 21
+        },
+        {
+          "logit": 4.125472545623779,
+          "rank": 3,
+          "token_id": 0
+        },
+        {
+          "logit": 4.1078267097473145,
+          "rank": 4,
+          "token_id": 16
+        },
+        {
+          "logit": 3.544872283935547,
+          "rank": 5,
+          "token_id": 24
+        },
+        {
+          "logit": 3.3947012424468994,
+          "rank": 6,
+          "token_id": 15
+        },
+        {
+          "logit": 3.337636947631836,
+          "rank": 7,
+          "token_id": 3
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1881340742111206,
+          "l2": 3.7710111141204834,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "6dc7caba11d16e8ff5cab67ca5bc8fd66a180437b454b26591f0395a21a61a4d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": null,
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

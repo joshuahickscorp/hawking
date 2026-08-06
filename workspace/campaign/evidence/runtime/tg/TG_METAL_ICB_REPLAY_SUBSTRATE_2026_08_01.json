@@ -1,0 +1,47 @@
+{
+  "device": {
+    "identity": "Apple M3 Ultra",
+    "runtime": "Metal"
+  },
+  "encode_benchmark_ns": {
+    "direct_15": { "p50": 21000, "p95": 24000 },
+    "fused_15": { "p50": 6334, "p95": 7583 },
+    "grouped_9_6": { "p50": 7542, "p95": 9125 },
+    "samples": 257,
+    "split_9_6": { "p50": 9250, "p95": 11375 }
+  },
+  "measured_at": "2026-08-01",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "physical_topology": {
+    "direct_15": { "command_buffers": 1, "encoders": 15 },
+    "fused_15": { "command_buffers": 1, "encoders": 1 },
+    "grouped_9_6": { "command_buffers": 1, "encoders": 1 }
+  },
+  "promotion": {
+    "reason": "Llama resident ICB replay remains quarantined by its separate Q6/RoPE full-model parity failure; this receipt proves only generic fixed-address graph mechanics.",
+    "whole_model_tg_claim": false
+  },
+  "qwen_fixture": {
+    "deepest_tg_rung": "NONE",
+    "device_v21_parity": true,
+    "dispatches_per_token": 2,
+    "fallback": 0
+  },
+  "schema": "hawking.tg.metal_icb_replay_substrate.v1",
+  "seal_sha256": "6e1d66085efe93d297e5af53337eeaf268ca9cc68792259526c45949eab58f9a",
+  "source": {
+    "llama_resident_sha256": "4b7f4d26358db1c4639317bc84c59ff3271ccaa5c55671dcc3d47ac9597a85fa",
+    "metal_mod_sha256": "c5cf55e71da0f0c4ccd2becffd30c0e1d5b9025578221c2ae8dfd6e94e419263"
+  },
+  "status": "PASS_FIXTURE_REPLAY_SUBSTRATE_NOT_PROMOTED",
+  "tests": {
+    "icb_cross_graph_dependency": "PASS",
+    "icb_fifteen_command_encode_benchmark": "PASS",
+    "icb_replay_address_reuse_one_submit": "PASS",
+    "qwen_direct_q4_q5_gravity_fixture": "PASS"
+  }
+}

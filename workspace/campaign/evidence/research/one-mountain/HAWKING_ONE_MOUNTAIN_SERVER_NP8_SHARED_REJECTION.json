@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.one_mountain.server_np8_shared_rejection.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "model": {
+    "source_gguf_sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "provider": "llama.cpp llama-server b9430-d48a56eff",
+    "backend": "Metal",
+    "gpu_layers": 999,
+    "flash_attention": "on"
+  },
+  "server_configuration": {
+    "context": 1024,
+    "parallel_slots": 8,
+    "batch": 64,
+    "microbatch": 64,
+    "server_log": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2.log",
+    "server_log_sha256": "3a2ecef6ebb6d0cbb0b5b97b30eab29618969a52311055e4b7d327f4247d5617"
+  },
+  "workload": {
+    "mode": "eight concurrent /completion requests",
+    "prompt": "The capital of France is",
+    "prompt_cache": false,
+    "temperature": 0,
+    "seed": 42,
+    "requested_tokens_each": 16,
+    "completed_requests": 8,
+    "completed_tokens": 128,
+    "completion_each": " Paris. What is the capital of Italy? The capital of Italy is Rome."
+  },
+  "result": {
+    "max_client_wall_seconds": 9.875445,
+    "aggregate_generated_tokens_per_second": 12.96144123125591,
+    "per_request_predicted_tokens_per_second_range": [1.891342603827912, 1.9493407755915244],
+    "server_log_confirms_all_eight_slots": true,
+    "status": "rejected_for_aggregate_throughput",
+    "reason": "The observed aggregate is far below 100 TPS and below the selected provider's single-stream shared-load observation."
+  },
+  "raw_responses": [
+    {"id": 1, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_1.json", "json_sha256": "45560b00fabec91fdecad5cec3d3c0bc5d4989093a7beafa8bd8f5d63ebf0c9a", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_1.seconds", "seconds_sha256": "7a9b5b6ece02942b7fe46b9102c3f99cf421f2acf1b2838cfb990f70fea7546f"},
+    {"id": 2, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_2.json", "json_sha256": "8fe26f7812d214f2aa846c94c5974b1b9fb63d5d5278ad886e0a95d51cb48db0", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_2.seconds", "seconds_sha256": "d1e2df1b71dbd5392d892d83cb6ce62e960925fa7a675e7bc93d31716021f5c1"},
+    {"id": 3, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_3.json", "json_sha256": "82c62410399952c8b52ed2a565d5caedd141d1b2572be88823ac0d16aadf0498", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_3.seconds", "seconds_sha256": "f1df383632884c7b86c0cca34582e51264847f1ea0c3b02c78f9f9de1d3cee90"},
+    {"id": 4, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_4.json", "json_sha256": "425c684d7aa6a11a2b65d009d0fa312685f013c5f49e39f9e7d2d0b2ec142d5f", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_4.seconds", "seconds_sha256": "a7e2e343fe7043fb74482e8c45727b9e2b8dd7a3746d4708f95040a818ed4990"},
+    {"id": 5, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_5.json", "json_sha256": "62ac5fa49f54e8a475c9e8b59588018cfdeca058b87c4d225060fa5595be23f4", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_5.seconds", "seconds_sha256": "98011c2a79f63b02405f33961833aa72e72d52d158cc202ffa91a6c11d716f03"},
+    {"id": 6, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_6.json", "json_sha256": "a846d68fa09683bbb9651984b5a6570be8ab5db2560b5ae938f55bed9ac8225f", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_6.seconds", "seconds_sha256": "c8d30a0cf2a494489cea8b7a7c422523fa577015fb6b45b18ed31fdd67b60659"},
+    {"id": 7, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_7.json", "json_sha256": "f3b3458f5767137dd3678881f73e13be87a0d8e5ce6c07fefba5be92d14688d3", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_7.seconds", "seconds_sha256": "8f35252c9bacd4936a4759188825d8151757bdb35c945454a2db1c34f72f03fc"},
+    {"id": 8, "json": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_8.json", "json_sha256": "0e697a6b8b084cb00f9b9cf3c176901d7eb4e6deb7ab2bff4fd8c432215cf508", "seconds": "raw/QWEN2P5_72B_LLAMA_SERVER_NP8_SHARED_R2_RESPONSE_8.seconds", "seconds_sha256": "beaa7678f186b5c8a4d4b5735c1aa79df5ab321c53760dd1536c8a3c70294060"}
+  ],
+  "limits": "This is a dirty shared-load provider experiment. It is not a clean benchmark, capability result, deterministic replay certification, or 100-TPS claim."
+}

@@ -442,8 +442,12 @@ mod tests {
     #[test]
     fn gated_neural_slot_denied_without_go() {
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
-        let denied = r.enable_neural_slot(ProposerId::CrossTokenizer, 16, 0.35, true, false, "NO-GO");
- assert!( denied.is_err(), "hidden slot must be refused without an oracle GO" );
+        let denied =
+            r.enable_neural_slot(ProposerId::CrossTokenizer, 16, 0.35, true, false, "NO-GO");
+        assert!(
+            denied.is_err(),
+            "hidden slot must be refused without an oracle GO"
+        );
         let ok = r.enable_neural_slot(ProposerId::CrossTokenizer, 16, 0.35, true, false, "GO");
         assert!(ok.is_ok());
     }
@@ -462,7 +466,14 @@ mod tests {
                 },
             );
         }
-        assert_eq!(r.plan(&RouterCtx { target_ns_per_token: 100.0, context_confidence: 1.0, hidden_available: false, }), RouterPlan::NoSpec);
+        assert_eq!(
+            r.plan(&RouterCtx {
+                target_ns_per_token: 100.0,
+                context_confidence: 1.0,
+                hidden_available: false,
+            }),
+            RouterPlan::NoSpec
+        );
     }
     #[test]
     fn measured_verifier_curve_is_injectable() {

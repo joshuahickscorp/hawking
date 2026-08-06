@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.tg.same_model_schedule_rejection.v1",
+  "seal_sha256": "06924d3bb75fdb7c0167332e76523f8d16be8130ab18432d44360b14a0b82ed9",
+  "status": "RETIRED_BELOW_PREREGISTERED_WALL_WIN",
+  "at": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "test": {
+    "prompt": "The capital of France is",
+    "prompt_tokens": 6,
+    "max_new_tokens": 32,
+    "max_seq_len": 64,
+    "temperature": 0,
+    "candidate_configuration": "HAWKING_DS_FUSED_ROUTE_RESIDUAL=1",
+    "preregistration": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTE_RESIDUAL_PREREGISTRATION_2026_08_02.json",
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-route-residual-control-2026-08-02.json",
+    "profile_sha256": "a3039c7e76d44847a6cafc63764543bf159cd54e03179fec8d328f5072bd19fb",
+    "candidate_output_path": "/tmp/ds-fused-route-candidate-2026-08-02.txt",
+    "control_output_path": "/tmp/ds-fused-route-control-2026-08-02.txt",
+    "complete_tokens": 32,
+    "token_id_sequence_sha256": "9ce36cd6476809ad2dba2b18552e84964b3476a717fa4a0d6bf4096281fc3352",
+    "output_match": true
+  },
+  "control": {
+    "decode_tps": 41.32293880290225,
+    "decode_ms": 774.388292,
+    "p50_ms": 24.1311665,
+    "p95_ms": 24.41375,
+    "p99_ms": 24.421125,
+    "dispatches_per_forward": 487,
+    "decode_metal_dispatches_total": 15584,
+    "decode_command_buffers_total": 32,
+    "prefill_ms": 267.464166,
+    "cpu_reference_fallback_count": 0
+  },
+  "candidate": {
+    "decode_tps": 41.37599314941819,
+    "decode_ms": 773.395333,
+    "p50_ms": 24.0783955,
+    "p95_ms": 24.48875,
+    "p99_ms": 24.511667,
+    "dispatches_per_forward": 461,
+    "decode_metal_dispatches_total": 14752,
+    "decode_command_buffers_total": 32,
+    "prefill_ms": 302.386208,
+    "cpu_reference_fallback_count": 0
+  },
+  "delta": {
+    "decode_tps_percent": 0.128,
+    "decode_ms_percent": -0.128,
+    "p50_percent": -0.219,
+    "p95_percent": 0.307,
+    "p99_percent": 0.371,
+    "dispatches_per_forward_percent": -5.339,
+    "complete_token_wall_win": false,
+    "promotion_threshold_percent": 3.0,
+    "capability_window": "32-token continuation exact; broader G3-G9 remains open"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "tg32_target_tps": 31.25,
+    "tg20_target_tps": 50.0,
+    "tg20_status": "NOT_REACHED",
+    "promoted_control_tps": 41.06909043843913
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  },
+  "verdict": "RETAIN_GUARDED_DIAGNOSTIC_ONLY; route-residual fusion removes 26 dispatches but does not clear the 3 percent complete-token wall gate and slightly regresses p99",
+  "reopen_condition": "Revisit only with a fused route/residual kernel that also improves complete-token wall and p99 by the preregistered threshold; default remains ordered"
+}

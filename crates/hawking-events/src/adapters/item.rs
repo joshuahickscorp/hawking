@@ -12,9 +12,7 @@ use hide_protocol::item::{Item, ItemKind};
 use serde_json::{json, Value};
 
 use crate::categories::Category;
-use crate::envelope::{
-    CanonicalEvent, ContentVerification, NewCanonical, Subsystem,
-};
+use crate::envelope::{CanonicalEvent, ContentVerification, NewCanonical, Subsystem};
 
 /// Map a protocol Item into a provisional canonical event under `session`.
 pub fn item_to_canonical(session_id: SessionId, item: &Item) -> CanonicalEvent {

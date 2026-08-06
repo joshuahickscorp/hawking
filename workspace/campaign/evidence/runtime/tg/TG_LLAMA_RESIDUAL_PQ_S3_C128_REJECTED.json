@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.tg.llama_reduced_candidate_receipt.v1",
+  "status": "REJECTED_CONTINUATION_GATE",
+  "claim": "NO_TG_RUNG",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+  "source": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c"
+  },
+  "artifact": {
+    "path": "/tmp/hawking-tg-artifacts/llama-residualpq-s3-c128-interleaved.gravity",
+    "sha256": "1bd82ab0e7691f0a8f9ee19e7b6d8ee566fa7551341a657660ed2187fccc7924",
+    "physical_bytes": 2637484742,
+    "payload_bytes": 2637310080,
+    "complete_bpw": 2.6273716369134,
+    "geometry": {"D": 8, "stages": 3, "cardinality": 128, "fit_iterations": 4, "reservoir_rows": 65536},
+    "rope_layout": "interleaved",
+    "source_hash_verified": true,
+    "body_hash_verified": true
+  },
+  "matched_decode_gate": {
+    "prompt_token_ids": [128000, 29531],
+    "source_reference_next_token_ids": [198, 86071, 287, 374],
+    "gravity_next_token_ids": [198, 198, 198, 198],
+    "equal": false,
+    "prefill_ms": 537.419875,
+    "decode_tps": 4.399883204660344,
+    "parity_scope": "greedy token IDs; first-token agreement does not waive continuation failure"
+  },
+  "roofline": {
+    "tg2_max_active_weight_bytes": 1472000000,
+    "tg1_max_active_weight_bytes": 736000000,
+    "tg2_payload_over_ceiling": 1.7911054347826087,
+    "tg1_payload_over_ceiling": 3.5832653260869565
+  },
+  "diagnosis": "Additional residual-PQ stages recover the first next token but still collapse the continuation, and the 2.63-bit payload is 1.79x above the TG2 active-byte ceiling. Blind uniform residual-PQ is not a route to TG2/TG1.",
+  "next_gate": "Use activation-aware mixed precision or a distilled architecture reduction with a full continuation/logit gate."
+}

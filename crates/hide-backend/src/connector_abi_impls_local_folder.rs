@@ -85,11 +85,7 @@ impl LocalFolderConnector {
             .unwrap_or(path)
             .to_string_lossy()
             .replace('\\', "/");
-        let id = if rel.is_empty() {
-            ".".to_string()
-        } else {
-            rel
-        };
+        let id = if rel.is_empty() { ".".to_string() } else { rel };
         let name = path
             .file_name()
             .map(|s| s.to_string_lossy().into_owned())

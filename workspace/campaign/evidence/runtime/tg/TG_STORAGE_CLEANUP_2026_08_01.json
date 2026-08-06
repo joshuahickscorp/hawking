@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.storage.cleanup.v1",
+  "date": "2026-08-01",
+  "scope": "repo-owned disposable model payloads and rebuildable artifacts",
+  "policy": "preserve receipts, adapters, source, tests, and the pinned .venv/glm52 runtime",
+  "deleted": [
+    {
+      "path": "models/",
+      "bytes_before": 9087985800,
+      "reason": "all repo-owned model payloads, model metadata, and download locks; no active model lease"
+    },
+    {
+      "path": "target/debug/",
+      "bytes_before": 15340503096,
+      "reason": "rebuildable Rust debug output; no active compiler or runtime handle"
+    },
+    {
+      "path": "target/release/",
+      "bytes_before": 2300953566,
+      "reason": "rebuildable Rust release output; no active compiler or runtime handle"
+    },
+    {
+      "path": ".venv/glm52-isolated/",
+      "bytes_before": 439210800,
+      "reason": "obsolete duplicate environment with no current references"
+    },
+    {
+      "path": ".venv/glm52-system-site-backup-20260721/",
+      "bytes_before": 66235053,
+      "reason": "obsolete environment backup; pinned runtime is .venv/glm52"
+    }
+  ],
+  "preserved": [
+    "evidence/",
+    "adapters/",
+    "src and crates source",
+    "tests and receipts",
+    "target/hide_receipts/first_model_free_receipt.json",
+    ".venv/glm52/"
+  ],
+  "global_external_storage_not_touched": [
+    "~/.ollama/",
+    "~/.cache/huggingface/",
+    "~/.cache/merc-models/"
+  ],
+  "bytes_before_total": 27234888315,
+  "note": "Deleted items are not recoverable from this workspace; model and build artifacts can be regenerated from receipts and source when authorized."
+}

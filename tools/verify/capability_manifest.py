@@ -7,13 +7,18 @@ replace repeated controllers with typed specs run by one engine. So a spec-drive
 fails the capability gate by construction: 77 modules with `__main__` become 77 rows in a
 spec table, and the counter sees 76 capabilities vanish.
 
-The rule (control/REBUILD_ACCOUNTING_RULES.json, `capability_equivalence_for_spec_driven_designs`)
+The rule (workspace/campaign/governance/control/catalog/manifests/REBUILD_ACCOUNTING_RULES.json,
+`capability_equivalence_for_spec_driven_designs`)
 is that a spec may replace an entrypoint only if the replacement is **invocable and proven**.
 This runs that proof.
 
     capability_manifest.py --check
-    capability_manifest.py --gate --before control/rungs/pre-s2 --after control/rungs/post-s2
-    capability_manifest.py --scaffold --before control/rungs/pre-s2 --after control/rungs/post-s2
+    capability_manifest.py --gate \
+      --before workspace/campaign/governance/control/rungs/before/pre-s2 \
+      --after workspace/campaign/governance/control/rungs/after/post-s2b
+    capability_manifest.py --scaffold \
+      --before workspace/campaign/governance/control/rungs/before/pre-s2 \
+      --after workspace/campaign/governance/control/rungs/after/post-s2b
 
 `--scaffold` writes a manifest skeleton listing every entrypoint that disappeared between
 two inventory snapshots, so the lane that retired them has to fill in how each is reached
@@ -35,16 +40,29 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / "control" / "CAPABILITY_MANIFEST.json"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from lab.layout import CONTROL_ROOT, resolve_workspace_path
+
+MANIFEST = CONTROL_ROOT / "catalog/manifests/CAPABILITY_MANIFEST.json"
 TIMEOUT = 120
 
 RELEASE_DISPOSITIONS = frozenset({"retired", "released"})
 
 
-def load_caps(snapshot: str) -> set[str]:
+def resolve_snapshot(snapshot: str) -> Path:
+    """Resolve a live or historical inventory name to its physical caps file."""
     p = Path(snapshot)
     if not p.suffix:
         p = p.with_suffix(".caps.json")
+    if not p.is_absolute() and p.parts and p.parts[0] in {"control", "workspace"}:
+        return resolve_workspace_path(p)
+    return p
+
+
+def load_caps(snapshot: str) -> set[str]:
+    p = resolve_snapshot(snapshot)
     d = json.loads(p.read_text(encoding="utf-8"))
     return set(d.get("python_entrypoint_list", [])) | {
         b if isinstance(b, str) else b.get("name", str(b)) for b in d.get("rust_binaries", [])
@@ -120,7 +138,8 @@ def check() -> dict:
     if not MANIFEST.exists():
         return {"schema": "hawking.capability_manifest_report.v1",
                 "entries": [], "passed": 0, "released": 0, "failed": 0,
-                "note": "control/CAPABILITY_MANIFEST.json does not exist; nothing claimed"}
+                "note": "workspace/campaign/governance/control/catalog/manifests/"
+                        "CAPABILITY_MANIFEST.json does not exist; nothing claimed"}
     man = json.loads(MANIFEST.read_text(encoding="utf-8"))
     results = [classify_entry(e) for e in man.get("entries", [])]
     return {

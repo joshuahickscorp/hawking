@@ -110,7 +110,9 @@ pub trait ConnectorWrite: ConnectorRead {
         let guard = InFlightGuard::begin(store, handle, self.family_id())?;
         let kind = kind;
         let effect = match kind {
-            crate::connector_abi::effects::WriteKind::Delete => crate::connector_abi::abi::EffectClass::Delete,
+            crate::connector_abi::effects::WriteKind::Delete => {
+                crate::connector_abi::abi::EffectClass::Delete
+            }
             _ => crate::connector_abi::abi::EffectClass::Write,
         };
         let proposal = crate::connector_abi::effects::ConnectorWriteProposal {

@@ -1,0 +1,142 @@
+{
+  "schema": "hawking.broker_kernel_costs.v1",
+  "device_noted": "Apple M3 Ultra",
+  "sources": {
+    "p4b_position1": "receipts/DSV4F_P4B_POSITION1_COMPLETE_ATTENTION_METAL-v1-reseal-darwin-dd.json",
+    "l0_l1": "receipts/dsv4f_multi_layer_gpu_forward_l0_l1_receipt.json",
+    "l0_l2": "receipts/dsv4f_multi_layer_gpu_forward_bos_l0_l2_receipt.json",
+    "learned_bias_route": "receipts/dsv4f_learned_bias_route_metal_receipt.json",
+    "runtime_accounting": "workspace/campaign/evidence/models/deepseek-v4/DEEPSEEK_V4_RUNTIME_ACCOUNTING.json"
+  },
+  "layer_wall": {
+    "l0_l1_wall_time_ms": 17984.399292,
+    "l0_l1_layers": 2,
+    "l0_l1_ms_per_layer": 8992.199646,
+    "l0_l1_metal_dispatches": 169,
+    "l0_l1_command_buffers": 20,
+    "l0_l2_wall_time_ms": 22901.087333,
+    "l0_l2_metal_dispatches": 276,
+    "l0_l2_command_buffers": 26,
+    "parity_classification": "NUMERIC_PARITY_V2_1_ONLY"
+  },
+  "p6_per_full_layer": {
+    "p6_dispatches": 60,
+    "p7_owned_dispatches": 3,
+    "attention_dispatches_approx": 21,
+    "fp4_expert_matvec_dispatches": 18,
+    "fp8_shared_matvec_dispatches": 3,
+    "act_quant_dispatches": 8,
+    "bf16_cast_dispatches": 21,
+    "swiglu_dispatches": 7,
+    "gate_route_dispatches": 2,
+    "combine_dispatches": 1,
+    "command_buffers_p6_p7_stage": 4,
+    "note": "Per-kernel GPU us not present on multi-layer receipts; dispatch inventory from p6_device execute graph matching receipt p6_dispatches=60"
+  },
+  "p4b_attention_kernel_gpu": {
+    "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority": {
+      "dispatches": 2,
+      "gpu_ms": 76.608,
+      "cpu_ms": 82.517,
+      "bytes_read": 3211264,
+      "bytes_written": 16384
+    },
+    "deepseek_v4_act_quant_bf16_ue8m0_authority": {
+      "dispatches": 5,
+      "gpu_ms": 17.463,
+      "cpu_ms": 18.946,
+      "bytes_read": 43008,
+      "bytes_written": 21672
+    },
+    "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority": {
+      "dispatches": 2,
+      "gpu_ms": 3.413,
+      "cpu_ms": 3.962,
+      "bytes_read": 2048,
+      "bytes_written": 2958
+    },
+    "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority": {
+      "dispatches": 5,
+      "gpu_ms": 1.671,
+      "cpu_ms": 3.649,
+      "bytes_read": 75523752,
+      "bytes_written": 155648
+    },
+    "deepseek_v4_p3a_rmsnorm_bf16_authority": {
+      "dispatches": 5,
+      "gpu_ms": 1.534,
+      "cpu_ms": 3.016,
+      "bytes_read": 40960,
+      "bytes_written": 20480
+    },
+    "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority": {
+      "dispatches": 1,
+      "gpu_ms": 0.618,
+      "cpu_ms": 1.177,
+      "bytes_read": 33622016,
+      "bytes_written": 16384
+    },
+    "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority": {
+      "dispatches": 1,
+      "gpu_ms": 0.103,
+      "cpu_ms": 0.335,
+      "bytes_read": 65536,
+      "bytes_written": 65536
+    },
+    "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority": {
+      "dispatches": 1,
+      "gpu_ms": 0.096,
+      "cpu_ms": 0.347,
+      "bytes_read": 67840,
+      "bytes_written": 66304
+    },
+    "deepseek_v4_p3a_fp32_to_bf16_authority": {
+      "dispatches": 5,
+      "gpu_ms": 0.018,
+      "cpu_ms": 1.159,
+      "bytes_read": 155648,
+      "bytes_written": 77824
+    },
+    "deepseek_v4_p4b_rope_position1_bf16_authority": {
+      "dispatches": 3,
+      "gpu_ms": 0.017,
+      "cpu_ms": 0.74,
+      "bytes_read": 133632,
+      "bytes_written": 132096
+    },
+    "deepseek_v4_p4b_kv_cache_write_bf16_authority": {
+      "dispatches": 2,
+      "gpu_ms": 0.008,
+      "cpu_ms": 0.477,
+      "bytes_read": 2048,
+      "bytes_written": 2048
+    },
+    "deepseek_v4_p4a_hc_attn_post_authority": {
+      "dispatches": 1,
+      "gpu_ms": 0.005,
+      "cpu_ms": 0.233,
+      "bytes_read": 16464,
+      "bytes_written": 32768
+    }
+  },
+  "p4b_attention_total_gpu_ms": 101.554,
+  "learned_bias_route": {
+    "kernel": "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority",
+    "metal_dispatches": 1,
+    "command_buffers": 1,
+    "wall_time_ms": 6556.298083,
+    "note": "Wall includes process/setup; 1 dispatch only. Not a steady-state decode cost."
+  },
+  "act_quant_authority_fixed_gpu_us": 5967,
+  "act_quant_authority_source": "crates/hawking-core/examples/gravity_deepseek_v4_act_quant_simdgroup_sweep.rs FIXED_AUTHORITY_GPU_US",
+  "thread_defaults": {
+    "fp4": 256,
+    "fp8": 256,
+    "cast": 256,
+    "qat": 32,
+    "route": 1,
+    "gate": "simdgroup_exact_32",
+    "p7_post": 256,
+    "p7_pre_norm": 1
+  }
+}

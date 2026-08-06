@@ -516,7 +516,10 @@ mod tests {
         let prefix_hex = hex32(&prefix_hash);
         assert_eq!(key.prefix_hex(), prefix_hex);
         assert_eq!(key.prefix_hex().len(), 64);
- assert_eq!( format!("{model_hex}/{prefix_hex}.kv").len(), 64 + 1 + 64 + 3 );
+        assert_eq!(
+            format!("{model_hex}/{prefix_hex}.kv").len(),
+            64 + 1 + 64 + 3
+        );
         let empty = PrefixKey::from_model_and_prompt(model, tok_sig, &[]);
         assert_eq!(empty.n_tokens, 0);
         let empty_prefix: [u8; 32] = {

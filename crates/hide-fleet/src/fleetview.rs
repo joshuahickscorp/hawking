@@ -239,6 +239,10 @@ mod tests {
         .unwrap();
         let events = log.scan(None, None, None).await.unwrap();
         let view = FleetView::project(&events);
- assert!(view .breaker_banner .as_deref() .unwrap() .contains("spawn rate"));
+        assert!(view
+            .breaker_banner
+            .as_deref()
+            .unwrap()
+            .contains("spawn rate"));
     }
 }

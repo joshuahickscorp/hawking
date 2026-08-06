@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.model_eviction.v2",
+  "status": "EVICTED_SOURCE_HASH_VERIFIED_TRASH_PURGED_FREE_RECOVERY_PROVEN",
+  "at_utc": "2026-08-02",
+  "model": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+  "family": "mistral_mixtral_sparse_moe",
+  "lane": "models/tg-active/mixtral8x7b-device-combine-2026-08-02",
+  "source_file": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+  "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+  "source_hash_reverified_after_benchmark": true,
+  "source_bytes": 28448468384,
+  "allocated_lane_bytes_before": 28448468384,
+  "free_bytes_before_eviction": 328285368320,
+  "free_bytes_after_eviction": 356733636608,
+  "recovered_free_bytes": 28448268288,
+  "protected_floor_bytes": 200005889556,
+  "residual_above_floor_after_eviction": 156727747052,
+  "model_lane_envelope_bytes": 110000000000,
+  "model_lane_empty": true,
+  "trash": {
+    "move_command": "/usr/bin/trash <exact lane>",
+    "exact_trash_item_purged": true,
+    "purge_command": "Finder delete every item of trash whose name is mixtral8x7b-device-combine-2026-08-02",
+    "trash_search_note": "Finder purge returned success; direct ~/.Trash inspection is OS-protected"
+  },
+  "receipts": {
+    "transfer": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_FRESH_2026_08_02.json",
+    "source_admission": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_SOURCE_ADMISSION_2026_08_02.json",
+    "v1_result": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_RESULT_2026_08_02.json",
+    "v2_preregistration": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_PREREGISTRATION_2026_08_02.json",
+    "v2_result": "evidence/tg/TG32_MIXTRAL_DEVICE_COMBINE_IN_TCB_RESULT_2026_08_02.json"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

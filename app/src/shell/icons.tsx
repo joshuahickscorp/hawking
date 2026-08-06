@@ -1,5 +1,5 @@
 /*
-  icons.tsx — a small inline-SVG icon set (Feather/Codicon-style line icons) for the VS Code shell
+  icons.tsx — a small inline-SVG icon set (Feather-style line icons) for the editor shell
   chrome. No icon-font dependency; every glyph inherits currentColor and a shared 24x24 viewBox.
 */
 import type { CSSProperties } from "react";

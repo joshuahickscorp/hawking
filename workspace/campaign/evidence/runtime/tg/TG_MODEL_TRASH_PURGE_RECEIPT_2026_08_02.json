@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.tg.model_trash_purge.v1",
+  "at": "2026-08-02",
+  "operation": "permanent deletion of two exact validated model bodies",
+  "targets": [
+    {
+      "path": "/Users/scammermike/.Trash/tg-active-llama70-2026-08-02",
+      "kind": "file",
+      "bytes": 42520398816,
+      "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+      "source_receipt": "evidence/tg/TG32_LLAMA70_REHYDRATED_FLOOR_2026_08_02.json"
+    },
+    {
+      "path": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02",
+      "kind": "directory",
+      "bytes": 20726670091,
+      "directory_content_sha256": "f70c4b02f838f5e24cd243d8ad0ba2dbcb6a1b65bb24123425d65d8d77da4fd6",
+      "gravity_artifact_sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+      "source_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_GUV2_PROMOTION_2026_08_02.json"
+    }
+  ],
+  "free_space": {
+    "before_bytes": 317972226048,
+    "after_bytes": 381328166912,
+    "recovered_bytes": 63355940864,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_bytes": 181322277356
+  },
+  "postconditions": {
+    "exact_targets_absent": true,
+    "active_model_lane_empty": true,
+    "deletion_scope": "exact paths only; no wildcard and no broad Trash empty",
+    "unrelated_trash_targets_requested": false
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "verdict": "MODEL_BYTES_EVICTED_AND_FREE_SPACE_RECOVERED"
+}

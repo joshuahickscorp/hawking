@@ -1,0 +1,110 @@
+{
+  "schema": "hawking.ramanujan.toolchain_selftest.v1",
+  "at": "2026-08-01T21:20:15Z",
+  "host": {
+    "platform": "darwin",
+    "python": "3.12.6"
+  },
+  "resource_mode_when_run": "LIGHT_ONLY",
+  "binaries": {
+    "elan": {
+      "status": "INSTALLED",
+      "path": "/Users/scammermike/.elan/bin/elan",
+      "version": "elan 4.2.3 (b6cec7e10 2026-06-08)",
+      "needed_for": "Lean toolchain manager; pins the Lean version"
+    },
+    "lean": {
+      "status": "INSTALLED",
+      "path": "/Users/scammermike/.elan/bin/lean",
+      "version": "Lean (version 4.32.2, arm64-apple-darwin24.6.0, commit f3b06c705e6c85f5314019d5d3baab0fec5b580c, Release)",
+      "needed_for": "the proof assistant; Tier 3 machine checks run here"
+    },
+    "lake": {
+      "status": "INSTALLED",
+      "path": "/Users/scammermike/.elan/bin/lake",
+      "version": "Lake version 5.0.0-src+f3b06c7 (Lean version 4.32.2)",
+      "needed_for": "Lean build tool; fetches and builds Mathlib"
+    },
+    "z3": {
+      "status": "INSTALLED",
+      "path": "/opt/homebrew/bin/z3",
+      "version": "Z3 version 4.16.0 - 64 bit",
+      "needed_for": "SMT solver; counterexample and constraint search"
+    },
+    "cvc5": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "second SMT solver; disagreement between solvers is a signal"
+    },
+    "gp": {
+      "status": "INSTALLED",
+      "path": "/opt/homebrew/bin/gp",
+      "version": "GP/PARI CALCULATOR Version 2.17.4 (released)",
+      "needed_for": "PARI/GP; number-theoretic computation"
+    },
+    "gap": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "group theory and combinatorics"
+    },
+    "cadical": {
+      "status": "INSTALLED",
+      "path": "/opt/homebrew/bin/cadical",
+      "version": "3.0.1",
+      "needed_for": "SAT solver"
+    }
+  },
+  "python_modules": {
+    "sympy": {
+      "status": "INSTALLED",
+      "version": "1.13.1",
+      "where": "current interpreter",
+      "needed_for": "symbolic algebra; the informal-to-formal bridge"
+    },
+    "numpy": {
+      "status": "INSTALLED",
+      "version": "2.2.6",
+      "where": "current interpreter",
+      "needed_for": "numeric computation; already present for the Hawking oracle"
+    },
+    "scipy": {
+      "status": "INSTALLED",
+      "version": "1.18.0",
+      "where": "current interpreter",
+      "needed_for": "numeric computation"
+    },
+    "z3": {
+      "status": "INSTALLED",
+      "version": "unknown",
+      "where": "current interpreter",
+      "needed_for": "Z3 Python bindings"
+    },
+    "pysat": {
+      "status": "INSTALLED",
+      "version": "1.9.dev7",
+      "where": "current interpreter",
+      "needed_for": "SAT interfaces"
+    }
+  },
+  "missing": [
+    "cvc5",
+    "gap"
+  ],
+  "verdict": "TOOLCHAIN_INCOMPLETE",
+  "q0_reproducibility": {
+    "status": "PROVEN_OFFLINE_HASH_BOUND",
+    "why": "Current REPLAY_OK --network=none leaf matches the Q0 evidence bundle and closure seal."
+  },
+  "authority": {
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "fixture_execution_only": true,
+    "note": "A host-tool probe is not Ramanujan research authorization or Math-Frozen evidence."
+  },
+  "host_convenience_gap": {
+    "status": "INCOMPLETE",
+    "why": "Host solver coverage is operationally incomplete; it is not the Q0 clean-container authority."
+  },
+  "honest_note": "This probes; it does not install. Installing Lean plus Mathlib is a multi-gigabyte download and a long CPU-heavy build, which is precisely what HAWKING_RESOURCE_MODE=LIGHT_ONLY forbids while MOP owns the machine."
+}

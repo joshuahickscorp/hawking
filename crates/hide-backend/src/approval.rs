@@ -99,7 +99,10 @@ mod tests {
         let step = StepId::new();
         hub.decide(run.clone(), Some(step.clone()), ApprovalDecision::Approve);
         assert!(hub.is_pending(&run));
- assert_eq!( hub.take(&run), Some((Some(step), ApprovalDecision::Approve)) );
+        assert_eq!(
+            hub.take(&run),
+            Some((Some(step), ApprovalDecision::Approve))
+        );
         assert!(!hub.is_pending(&run));
         assert!(hub.take(&run).is_none());
     }

@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-b9430-f16kv-fattn-nwg16",
+  "scope": "same model, same Q4_K_M GGUF, 2K prompt smoke comparison",
+  "baseline": {
+    "geometry": "source-compatible nwg32",
+    "decode_tps": 94.23948568659327,
+    "metal_dispatches_per_forward": 386,
+    "decode_cpu_reference_fallback_total": 0
+  },
+  "candidate_result": {
+    "geometry": "nwg16 two-pass f16-KV FATTN",
+    "decode_tps": 90.65201281034471,
+    "relative_tps": 0.9619323805715664,
+    "metal_dispatches_per_forward": 386,
+    "decode_cpu_reference_fallback_total": 0,
+    "exact_token_trace_for_128_generated_tokens": true
+  },
+  "verdict": "rejected",
+  "reason": "The geometry preserves this short greedy token trace but loses 3.81% TPS in the paired smoke test. It is not eligible for the five-trial matched protocol or promotion.",
+  "notes": [
+    "Both commands used the resident source-FATTN lane, serial encoder, fused Q/K/V RoPE plus f16 KV append, fused residual norm, and fused gate/up.",
+    "The smoke run is a bounded rejection measurement, not a parity or performance claim against llama.cpp."
+  ]
+}

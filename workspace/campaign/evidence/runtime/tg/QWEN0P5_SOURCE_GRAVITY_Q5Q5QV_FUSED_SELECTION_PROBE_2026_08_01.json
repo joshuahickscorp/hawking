@@ -1,0 +1,108 @@
+{
+  "artifact": "models/tg-active/qwen0p5-v21/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity",
+  "continuation_sha256": "6d487d8c52a80ed020d03feb04b29c9e7536ce6ef9bb894767e5cb31a67c6218",
+  "decode_command_buffers": 16,
+  "decode_cpu_reference_fallback_total": 0,
+  "decode_dispatches": 3488,
+  "decode_fused_qkv_dispatches": 384,
+  "decode_max_ms": 4.797499999999999,
+  "decode_min_ms": 4.291292,
+  "decode_ms": [
+    4.351375,
+    4.294083,
+    4.291292,
+    4.485,
+    4.3595,
+    4.485666999999999,
+    4.4479999999999995,
+    4.6111249999999995,
+    4.531041,
+    4.549416,
+    4.521332999999999,
+    4.54625,
+    4.550292,
+    4.797499999999999,
+    4.523041999999999,
+    4.606
+  ],
+  "decode_p50_ms": 4.521332999999999,
+  "decode_p95_ms": 4.797499999999999,
+  "decode_p99_ms": 4.797499999999999,
+  "decode_tps": 222.37381939654531,
+  "device": "Apple M3 Ultra",
+  "execution_representation": {
+    "artifact_grammar": "source-preserving packed Gravity",
+    "kv_precision": "source_parity_f32",
+    "q4_kernel": "q4_k_b9430_parity_baseline",
+    "qkv_rope_kv_append": "fused_source_candidate"
+  },
+  "generated_tokens": 16,
+  "greedy_first_token": 220,
+  "greedy_generated_token_ids": [
+    220,
+    19,
+    198,
+    59,
+    2533,
+    54815,
+    11,
+    279,
+    897,
+    315,
+    17767,
+    64,
+    488,
+    293,
+    488,
+    272
+  ],
+  "inline_token_prefix": [
+    17,
+    488,
+    220,
+    17,
+    284
+  ],
+  "kv_bytes_at_final_position": 516096,
+  "load_ms": 216.771917,
+  "measurement_classification": {
+    "capability_gate": "NOT_RUN",
+    "clean_lease": "NOT_ATTESTED_BY_THIS_PROBE",
+    "complete_token": true,
+    "reason": "The probe records physical resident decode facts; a TG promotion additionally requires a capability-matched, CLEAN same-model before/after campaign.",
+    "same_model_candidate_only": true,
+    "tg_promotion_allowed": false
+  },
+  "prefill_command_buffers": 5,
+  "prefill_dispatches": 1090,
+  "prefill_fused_qkv_dispatches": 120,
+  "prefill_ms": 61.065792,
+  "prefix_tokens": 5,
+  "resident_weight_bytes": 391859712,
+  "rope_freq_factors": null,
+  "rope_interleaved": false,
+  "schema": "hawking.gravity.llama_source_probe.v2",
+  "tokens_file": null,
+  "top5_after_prefix": [
+    {
+      "id": 220,
+      "logit": 20.045509338378906
+    },
+    {
+      "id": 1124,
+      "logit": 15.5645112991333
+    },
+    {
+      "id": 481,
+      "logit": 15.168302536010742
+    },
+    {
+      "id": 856,
+      "logit": 15.13283634185791
+    },
+    {
+      "id": 264,
+      "logit": 14.874731063842773
+    }
+  ]
+}

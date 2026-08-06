@@ -1,0 +1,99 @@
+{
+  "schema": "hawking.tg.same_model_representation_result.v2",
+  "status": "REJECTED_F16_KV_BELOW_TG32_AND_SUB_3_PERCENT_WALL_GATE",
+  "at_utc": "2026-08-02",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+  "family": "mistral_dense",
+  "preregistration": "evidence/tg/TG24_MISTRAL_SMALL_GRAVITY_F16_KV_PREREGISTRATION_2026_08_02.json",
+  "preregistration_sha256": "32a827a9d03ce5069520d67236f63d15f798d04d102ae37e9f75dbb76c2b5681",
+  "source": {
+    "official_release": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "quant_repository": "bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF",
+    "revision": "f73dfd9e812922fb503a993e3fa5671424f486d3",
+    "filename": "mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "sha256_verified": true,
+    "license": "Apache-2.0"
+  },
+  "artifact": {
+    "filename": "mistral-small-f16kv.gravity",
+    "bytes": 14326142375,
+    "payload_bytes": 14326026240,
+    "sha256": "cacdf195b02be61103b1f236a263a70c901f5c2d250244c4c763a62145c3305f",
+    "mapped_tensors": 363,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py"
+  },
+  "tokenizer": {
+    "repository": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "filename": "tokenizer.json",
+    "bytes": 17078037,
+    "sha256": "b76085f9923309d873994d444989f7eb6ec074b06f25b58f1e8d7b7741070949"
+  },
+  "transfer": {
+    "scoreboard": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MISTRAL_SMALL_REHYDRATE_2026_08_02.json",
+    "scoreboard_sha256": "a4827ed5586a1679bc0ba2696302a3ad4d30f40165f1feeadadfa4b3e5a8a43e",
+    "selected_mode": "high_performance",
+    "selected_concurrency": 8
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "2 + 2 =",
+    "prompt_token_ids": [1, 1050, 1867, 1032, 1050, 1376],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 128,
+    "completed_decode_forwards_each_run": 127,
+    "runs_each_side": 2,
+    "max_seq_len": 256,
+    "clean_sequential_gpu": true,
+    "fallback_required": 0,
+    "continuation_hash": "680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee",
+    "hash_algorithm": "sha256(concat(token_id.to_le_bytes::<u32>()))"
+  },
+  "control": {
+    "env": "HAWKING_REQUIRE_METAL=1",
+    "runs": [
+      {"tps":30.219770005539793,"decode_ms":4202.546875,"prefill_ms":266.13662500000004,"p50_ms":33.231333,"p95_ms":36.051791,"p99_ms":36.736542,"dispatches_per_forward":522,"command_buffers_per_forward":1,"metal_dispatches_total":66294,"fallback_count":0,"continuation_hash":"680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee"},
+      {"tps":30.430536078954187,"decode_ms":4173.439458,"prefill_ms":269.620292,"p50_ms":32.649666,"p95_ms":36.115416,"p99_ms":36.817875,"dispatches_per_forward":522,"command_buffers_per_forward":1,"metal_dispatches_total":66294,"fallback_count":0,"continuation_hash":"680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee"}
+    ],
+    "median": {"tps":30.32515304224699,"decode_ms":4187.9931665,"prefill_ms":267.8784585,"p50_ms":32.9404995,"p95_ms":36.0836035,"p99_ms":36.7772085}
+  },
+  "candidate": {
+    "env": "HAWKING_REQUIRE_METAL=1 HAWKING_GRAVITY_F16_KV=1",
+    "representation": "source-preserving Q4_K weights + persistent F16 KV images + F16-KV flash attention",
+    "runs": [
+      {"tps":30.48262790247425,"decode_ms":4166.307459000001,"prefill_ms":272.775958,"p50_ms":32.584083,"p95_ms":35.727375,"p99_ms":36.076541,"dispatches_per_forward":562,"command_buffers_per_forward":1,"metal_dispatches_total":71374,"fallback_count":0,"continuation_hash":"680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee"},
+      {"tps":30.543798973425222,"decode_ms":4157.963458,"prefill_ms":280.557334,"p50_ms":32.641542,"p95_ms":35.824417,"p99_ms":36.285084,"dispatches_per_forward":562,"command_buffers_per_forward":1,"metal_dispatches_total":71374,"fallback_count":0,"continuation_hash":"680e13f3c253e1aa8051a51a16995772b9366c1689589429b450734f8b78a0ee"}
+    ],
+    "median": {"tps":30.513213437949737,"decode_ms":4162.1354585,"prefill_ms":276.666646,"p50_ms":32.6128125,"p95_ms":35.775896,"p99_ms":36.1808125}
+  },
+  "deltas": {
+    "tps_percent":0.6201465675729836,
+    "decode_wall_percent":-0.6174247896782105,
+    "prefill_percent":3.280662263479462,
+    "p50_percent":-0.9947845508535913,
+    "p95_percent":-0.8527626682296277,
+    "p99_percent":-1.6216456450195194,
+    "dispatches_per_forward_delta":40,
+    "command_buffers_per_forward_delta":0,
+    "same_model":true,
+    "same_prompt_ids":true,
+    "complete_token_protocol_equal":true,
+    "token_id_sequence_match":true,
+    "continuation_hash_match":true,
+    "cpu_reference_fallback_delta":0
+  },
+  "rung": {
+    "target":"TG32",
+    "target_tps":31.25,
+    "candidate_median_tps":30.513213437949737,
+    "deepest_stable_rung":null,
+    "first_failing_rung":"TG32",
+    "scope":"same-model source-window runtime only; no capability expansion"
+  },
+  "verdict":"RETIRED: F16-KV flash attention physically dispatched and preserved all 128 source-bound tokens, but median TPS improved only 0.620 percent, prefill regressed 3.281 percent, dispatches increased 522 to 562, and 30.513 TPS remains below TG32. The sealed Mistral floor remains below the first named rung.",
+  "reopen_condition":"A Mistral-specific executable representation must lower active bytes or physical work enough to clear 31.25 TPS with full source-bound parity and no tail regression; retrying source-packed F16 KV alone is closed."
+}

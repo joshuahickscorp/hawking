@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.tg.same_model_experiment.v1",
+  "status": "PREREGISTERED",
+  "family": "deepseek_v2_lite_moe_mla",
+  "artifact_sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+  "baseline": "TG16_DEEPSEEK_V2_LITE_PROFILE_REFRESH_2026_08_02.jsonl and current native probe: direct Metal MLA/MoE, 589 dispatches/forward, fallback=0, first greedy token 244 rather than source-authoritative 8913.",
+  "hypothesis": "Changing the routed/shared expert down-wave grammar to v2t and enabling the v2t RMSNorm-attention wave may change a faulty packed execution stage. The result only promotes if it has exact greedy continuation parity, fallback=0, real dispatches, and complete-token latency improvement.",
+  "single_bounded_change": "Kernel profile only: routed_down_schedule=V2T, shared_down_schedule=V2T, rmsnorm_attn_schedule=V2T; all source, tokenizer, prompts, device, GPU residency, attention grammar, and model bytes unchanged.",
+  "rejection_conditions": ["first greedy token differs", "CPU fallback", "zero dispatch", "any tail/wall regression", "profile hash/layout/device mismatch"],
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false}
+}

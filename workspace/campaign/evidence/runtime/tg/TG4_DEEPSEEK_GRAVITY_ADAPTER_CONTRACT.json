@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.tg.gravity_adapter_receipt.v1",
+  "status": "CPU_ORACLE_RUNTIME_READY_METAL_PROMOTION_UNVERIFIED",
+  "rung": "TG4",
+  "family": "deepseek",
+  "architecture": ["deepseek2", "deepseek_v2"],
+  "adapter": {
+    "contract": "crates/hawking-core/src/gravity_deepseek.rs",
+    "runtime": "GravityDeepSeek::open/open_dir -> stateful MLA/MoE CPU forward/forward_at",
+    "attention": "multi-head latent attention (MLA) with compressed KV state",
+    "routing": "DeepSeek-V2 softmax top-k routing with explicit normalization/scaling fields, groups, and shared experts",
+    "layer_schedule": "first_k_dense_replace followed by routed sparse layers",
+    "tensor_abi": "canonical model.layers.* self_attn q_a/q_b (or direct q_proj)/kv_a/kv_b/o plus dense or routed/shared MLP names",
+    "source_consulted_at_runtime": false
+  },
+  "verification": {
+    "cargo_check": "PASS",
+    "focused_tests": "10 passed",
+    "tests": [
+      "parses_mla_and_moe_geometry_without_defaults",
+      "wrong_architecture_is_refused",
+      "missing_routing_field_is_refused_instead_of_guessed",
+      "non_softmax_router_is_refused_by_the_v2_runtime",
+      "canonical_tensor_map_distinguishes_dense_and_sparse_layers",
+      "null_query_rank_selects_the_direct_query_tensor_abi",
+      "tensor_presence_check_reports_missing_without_claiming_runtime",
+      "route_scale_is_applied_once_when_topk_is_not_normalized",
+      "tiny_gravity_artifact_matches_incremental_stateful_forward"
+    ],
+    "raw_parent_forward": "UNVERIFIED — DeepSeek parent is evicted",
+    "gravity_oracle": "UNVERIFIED — no DeepSeek Gravity artifact is materialized",
+    "synthetic_artifact_execution": "PASS — tiny native.f32 direct-query fixture with one dense and one routed/shared-MoE layer agrees between full prefill and incremental forward_at",
+    "executable_backend": "CPU correctness-first path present; resident Metal MLA/MoE path still needs source-authoritative implementation",
+    "rung_measurement": "NO_CLAIM"
+  },
+  "registry_behavior": "DeepSeek headers are parsed and malformed contracts are rejected; valid artifacts use the CPU MLA/MoE runtime rather than falling through to the dense Llama adapter.",
+  "reopen_condition": "Reacquire the sealed DeepSeek-V2 parent, pack the canonical tensor ABI, pass raw/state and Gravity oracle parity, then add and verify a resident Metal MLA/MoE path before any matched rung benchmark.",
+  "tps_claim": null
+}

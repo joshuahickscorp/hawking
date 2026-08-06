@@ -1,4 +1,5 @@
-"""Semantic graph model matching control/SEMANTIC_GRAPH_SCHEMA.json exactly.
+"""Semantic graph model matching
+workspace/campaign/governance/control/catalog/manifests/SEMANTIC_GRAPH_SCHEMA.json exactly.
 
 No node types, edge types, attribute names, or id formats may be added,
 renamed, or dropped relative to that contract.
@@ -13,6 +14,10 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Iterator
+
+
+_VENDOR_PATH_PREFIXES = ("vendor/", "workspace/vendor/")
+_TEST_PATH_PREFIXES = ("tests/", "workspace/quality/tests/")
 
 NODE_TYPES = frozenset({
     "repository", "crate", "directory", "file", "type", "function",
@@ -120,7 +125,7 @@ def default_edge_attrs() -> dict[str, Any]:
 
 def classify_path(path: str) -> tuple[bool, bool]:
     """Return (vendored, generated) flags."""
-    vendored = path.startswith("vendor/")
+    vendored = path.startswith(_VENDOR_PATH_PREFIXES)
     generated = (
         "/generated/" in path
         or path.endswith(".generated.rs")
@@ -138,7 +143,7 @@ def subsystem_for(path: str | None) -> str:
         return "hawking"
     if path.startswith("tools/") or path.startswith("ramanujan/"):
         return "laboratory"
-    if path.startswith("vendor/"):
+    if path.startswith(_VENDOR_PATH_PREFIXES):
         return "vendor"
     return "shared"
 
@@ -148,7 +153,7 @@ def is_test_path(path: str | None) -> bool:
         return False
     return (
         "/tests/" in path
-        or path.startswith("tests/")
+        or path.startswith(_TEST_PATH_PREFIXES)
         or Path(path).name.startswith("test_")
         or Path(path).name.endswith("_test.rs")
         or "/benches/" in path

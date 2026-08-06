@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.tg.source_eviction.v1",
+  "at": "2026-07-30",
+  "reason": "Post-repair raw Llama remains wrong at K0 and has zero device dispatch accounting; retaining its parent would violate the one-active-source policy without enabling a TG or custom-format claim.",
+  "source": {
+    "path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "bytes": 4920739232,
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c"
+  },
+  "evidence": "evidence/tg/TG_LLAMA_SHARED_ADAPTER_REPAIR.json",
+  "action": {
+    "method": "/usr/bin/trash",
+    "workspace_source_exists_after": false,
+    "active_model_directory": "models/tg-active",
+    "active_parent_count_after": 0,
+    "note": "macOS Trash is recoverable. The reported free space intentionally does not count Trash reclamation until the user elects to empty it."
+  },
+  "free_space_after_bytes": 493728169984,
+  "free_space_after_gib": 459.82,
+  "verdict": "EVICTED_FROM_ACTIVE_WORKSPACE"
+}

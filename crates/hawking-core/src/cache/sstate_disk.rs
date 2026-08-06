@@ -81,21 +81,33 @@ mod tests {
     #[test]
     fn store_then_load_roundtrips_bit_identical() {
         let dir = std::env::temp_dir().join(format!("hawking_sstate_{}", std::process::id()));
-        let cache = SstateDiskCache::new(&dir); let s = sample(); let k = SstateDiskCache::key("rwkv7-0.4b", &[10, 20, 30]);
-        assert!(!cache.contains(&k)); cache.store(&k, &s).expect("store");
-        assert!(cache.contains(&k)); let back = cache.load(&k).expect("load");
-        assert_eq!(back.to_bytes(), s.to_bytes(), "instant-resume must be exact"); let _ = std::fs::remove_dir_all(&dir);
+        let cache = SstateDiskCache::new(&dir);
+        let s = sample();
+        let k = SstateDiskCache::key("rwkv7-0.4b", &[10, 20, 30]);
+        assert!(!cache.contains(&k));
+        cache.store(&k, &s).expect("store");
+        assert!(cache.contains(&k));
+        let back = cache.load(&k).expect("load");
+        assert_eq!(
+            back.to_bytes(),
+            s.to_bytes(),
+            "instant-resume must be exact"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
     }
     #[test]
     fn key_is_deterministic_and_sequence_sensitive() {
-        let a = SstateDiskCache::key("m", &[1, 2, 3]); let b = SstateDiskCache::key("m", &[1, 2, 3]);
+        let a = SstateDiskCache::key("m", &[1, 2, 3]);
+        let b = SstateDiskCache::key("m", &[1, 2, 3]);
         let c = SstateDiskCache::key("m", &[1, 2, 4]);
-        assert_eq!(a, b, "same inputs -> same key"); assert_ne!(a, c, "different tokens -> different key");
+        assert_eq!(a, b, "same inputs -> same key");
+        assert_ne!(a, c, "different tokens -> different key");
         assert_eq!(a.len(), 64, "sha256 hex");
     }
     #[test]
     fn missing_key_loads_none() {
-        let dir = std::env::temp_dir().join(format!("hawking_sstate_none_{}", std::process::id())); let cache = SstateDiskCache::new(&dir);
+        let dir = std::env::temp_dir().join(format!("hawking_sstate_none_{}", std::process::id()));
+        let cache = SstateDiskCache::new(&dir);
         assert!(cache.load("deadbeef").is_none());
     }
 }

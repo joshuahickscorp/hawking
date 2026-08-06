@@ -1,11 +1,15 @@
 use crate::security::SecurityServices;
+use crate::speculation_safety::VerifiedEffectPermit;
+use futures::future::BoxFuture;
+use hawking_speculate::TargetVerification;
 use hide_core::config::HideConfig;
+use hide_core::error::HideError;
 use hide_core::permission::{PermissionEngine, PermissionRequest, PermissionVerdict};
-use hide_core::tool::ToolDispatcher;
-use hide_core::tool::ToolRegistry;
+use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult};
 use hide_core::types::{Decision, EffectKind};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
 pub fn build_default_tool_registry() -> ToolRegistry {
@@ -39,6 +43,63 @@ tokio::task_local! {
 pub struct DispatchContext {
     pub session_id: hide_core::ids::SessionId,
     pub run_id: Option<hide_core::ids::RunId>,
+    pub origin: DispatchOrigin,
+}
+
+/// Causal class for a tool-dispatch span. Model-origin dispatch is denied for
+/// any effect unless a preceding durable target-verified token supplied the
+/// opaque permit below. Human/system dispatch stays distinct: user approval is
+/// represented by the existing permission and gate machinery, not by a model
+/// token.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DispatchOrigin {
+    HumanOrSystem,
+    UnverifiedModel,
+    TargetVerifiedModel {
+        token_id: u32,
+        canonical_event_id: hide_core::ids::EventId,
+    },
+}
+
+impl DispatchContext {
+    pub fn human_or_system(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+    ) -> Self {
+        Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::HumanOrSystem,
+        }
+    }
+
+    pub fn unverified_model(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+    ) -> Self {
+        Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::UnverifiedModel,
+        }
+    }
+
+    fn target_verified_model(
+        session_id: hide_core::ids::SessionId,
+        run_id: Option<hide_core::ids::RunId>,
+        permit: VerifiedEffectPermit,
+        call: &ToolCall,
+    ) -> hide_core::Result<Self> {
+        let (token_id, canonical_event_id) = permit.consume_for(&session_id, &run_id, call)?;
+        Ok(Self {
+            session_id,
+            run_id,
+            origin: DispatchOrigin::TargetVerifiedModel {
+                token_id,
+                canonical_event_id,
+            },
+        })
+    }
 }
 
 /// Attribute every dispatch inside `fut` to this session and run.
@@ -48,14 +109,90 @@ pub async fn with_dispatch_context<T>(
     fut: impl std::future::Future<Output = T>,
 ) -> T {
     DISPATCH_CTX
-        .scope(
-            DispatchContext {
-                session_id,
-                run_id,
-            },
-            fut,
-        )
+        .scope(DispatchContext::human_or_system(session_id, run_id), fut)
         .await
+}
+
+/// Run one model-origin tool effect with an opaque permit minted after a
+/// durable target-verified token event. The permit is checked against, and
+/// consumed by, this exact call before the dispatcher can observe it.
+pub async fn dispatch_verified_model_tool_effect(
+    session_id: hide_core::ids::SessionId,
+    run_id: Option<hide_core::ids::RunId>,
+    permit: VerifiedEffectPermit,
+    call: ToolCall,
+    dispatcher: &ToolDispatcher,
+) -> hide_core::Result<ToolResult> {
+    let context = DispatchContext::target_verified_model(session_id, run_id, permit, &call)?;
+    Ok(DISPATCH_CTX
+        .scope(context, dispatcher.dispatch(call))
+        .await?)
+}
+
+/// Host-owned model-tool authority for a completed direct-target decode.
+///
+/// This is deliberately not a `ToolDispatcher` wrapper: it first persists a
+/// target-verified canonical token and mints a one-use permit bound to the
+/// exact call, session, and run. Only then does the shared host dispatcher see
+/// the call under [`DispatchOrigin::TargetVerifiedModel`]. The shared dispatcher
+/// is important: per-turn dispatchers are deliberately bound to
+/// `UnverifiedModel` and must remain unable to execute effects.
+pub struct DirectTargetModelToolExecutor {
+    services: crate::services::SharedBackend,
+    dispatcher: Arc<ToolDispatcher>,
+    next_token_id: AtomicU32,
+}
+
+impl DirectTargetModelToolExecutor {
+    pub fn new(services: crate::services::SharedBackend, dispatcher: Arc<ToolDispatcher>) -> Self {
+        Self {
+            services,
+            dispatcher,
+            // Zero is reserved as an invalid / absent ordinal in surrounding
+            // receipts. Never wrap: a long-lived executor fails closed instead.
+            next_token_id: AtomicU32::new(1),
+        }
+    }
+
+    fn next_token_id(&self) -> Option<u32> {
+        self.next_token_id
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+            .ok()
+    }
+}
+
+impl hide_kernel::tools::VerifiedModelToolExecutor for DirectTargetModelToolExecutor {
+    fn dispatch<'a>(
+        &'a self,
+        session_id: hide_core::ids::SessionId,
+        run_id: hide_core::ids::RunId,
+        call: ToolCall,
+    ) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
+        let Some(token_id) = self.next_token_id() else {
+            return Box::pin(async {
+                Err(HideError::PolicyDenied(
+                    "target-verified model-tool token sequence exhausted".to_string(),
+                ))
+            });
+        };
+        let services = self.services.clone();
+        let dispatcher = self.dispatcher.clone();
+        Box::pin(async move {
+            // This executor is called only by AgentKernel after its target
+            // runtime `generate` future completed successfully. Persist the
+            // direct-target token before issuing the exact-call permit.
+            let mut sinks = services.verified_token_sinks(session_id.clone());
+            let permit = sinks
+                .authorize_verified_tool_effect(
+                    TargetVerification::gate().emit_target(token_id),
+                    Some(run_id.clone()),
+                    &call,
+                )
+                .await?;
+            dispatch_verified_model_tool_effect(session_id, Some(run_id), permit, call, &dispatcher)
+                .await
+        })
+    }
 }
 
 /// The attribution in force on this task, if any.
@@ -332,15 +469,24 @@ struct GateReleaseAware<E> {
 
 impl<E: PermissionEngine> PermissionEngine for GateReleaseAware<E> {
     fn evaluate(&self, request: &PermissionRequest) -> PermissionVerdict {
+        let context = self.bound.clone().or_else(dispatch_context);
+        if matches!(
+            context.as_ref().map(|item| &item.origin),
+            Some(DispatchOrigin::UnverifiedModel)
+        ) && (!request.effects.is_empty() || request.risk == hide_core::types::RiskLevel::High)
+        {
+            return PermissionVerdict {
+                decision: Decision::Deny,
+                reason: "effectful model-origin dispatch refused: no durable target-verified token cause"
+                    .to_string(),
+                grant_id: None,
+            };
+        }
         let verdict = self.inner.evaluate(request);
         if verdict.decision != Decision::Ask {
             return verdict;
         }
-        let session = self
-            .bound
-            .clone()
-            .or_else(dispatch_context)
-            .map(|c| c.session_id.as_str().to_string());
+        let session = context.map(|c| c.session_id.as_str().to_string());
         let granted_by = if GATE_RELEASED.try_with(|_| ()).is_ok() {
             "approved at the security gate".to_string()
         } else if let Some(lease) = lease_covering(request, session.as_deref()) {
@@ -408,6 +554,8 @@ pub fn build_task_tool_dispatcher(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::services::BackendServices;
+    use hide_core::event::InMemoryEventLog;
     use hide_core::tool::ToolCall;
     use hide_core::types::Decision;
     use serde_json::json;
@@ -443,6 +591,116 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "allowed");
         let _ = std::fs::remove_dir_all(dir);
     }
+
+    #[tokio::test]
+    async fn unverified_model_dispatch_is_refused_even_under_an_allow_policy() {
+        let dir = std::env::temp_dir().join(format!(
+            "hide_unverified_model_{}",
+            hide_core::ids::now_ms()
+        ));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let dispatcher = build_task_tool_dispatcher(
+            &config,
+            Arc::new(build_default_tool_registry()),
+            Some(DispatchContext::unverified_model(
+                hide_core::ids::SessionId::from("model-session"),
+                None,
+            )),
+        );
+        let denied = dispatcher
+            .dispatch(ToolCall::new(
+                "fs.write",
+                json!({
+                    "path": dir.join("blocked.txt").to_string_lossy(),
+                    "content": "must not write",
+                    "create_dirs": true,
+                }),
+            ))
+            .await;
+        assert!(denied.is_err());
+        assert!(!dir.join("blocked.txt").exists());
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn target_verified_model_permit_allows_a_causally_bound_effect() {
+        let dir =
+            std::env::temp_dir().join(format!("hide_verified_model_{}", hide_core::ids::now_ms()));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let services = BackendServices::new(config.clone(), Arc::new(InMemoryEventLog::new()));
+        let session = hide_core::ids::SessionId::from("verified-model-session");
+        let mut sinks = services.verified_token_sinks(session.clone());
+        let target = dir.join("allowed.txt");
+        let call = ToolCall::new(
+            "fs.write",
+            json!({
+                "path": target.to_string_lossy(),
+                "content": "target verified",
+                "create_dirs": true,
+            }),
+        );
+        let permit = sinks
+            .authorize_verified_tool_effect(
+                crate::speculation_safety::HostDurableSinks::target_gate().emit_target(9),
+                None,
+                &call,
+            )
+            .await
+            .unwrap();
+        let dispatcher =
+            build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
+        let result = dispatch_verified_model_tool_effect(session, None, permit, call, &dispatcher)
+            .await
+            .unwrap();
+        assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "target verified");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn verified_model_permit_rejects_a_substituted_call() {
+        let dir = std::env::temp_dir().join(format!(
+            "hide_verified_model_substitution_{}",
+            hide_core::ids::now_ms()
+        ));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.security.workspace_write_default = Decision::Allow;
+        let services = BackendServices::new(config.clone(), Arc::new(InMemoryEventLog::new()));
+        let session = hide_core::ids::SessionId::from("verified-model-substitution");
+        let mut sinks = services.verified_token_sinks(session.clone());
+        let admitted = ToolCall::new("fs.read", json!({"path": "safe.txt"}));
+        let permit = sinks
+            .authorize_verified_tool_effect(
+                crate::speculation_safety::HostDurableSinks::target_gate().emit_target(10),
+                None,
+                &admitted,
+            )
+            .await
+            .unwrap();
+        let substituted = ToolCall::new(
+            "fs.write",
+            json!({
+                "path": dir.join("blocked.txt").to_string_lossy(),
+                "content": "substitution must fail",
+                "create_dirs": true,
+            }),
+        );
+        let dispatcher =
+            build_default_tool_dispatcher(&config, Arc::new(build_default_tool_registry()));
+        assert!(dispatch_verified_model_tool_effect(
+            session,
+            None,
+            permit,
+            substituted,
+            &dispatcher
+        )
+        .await
+        .is_err());
+        assert!(!dir.join("blocked.txt").exists());
+        let _ = std::fs::remove_dir_all(dir);
+    }
     fn lease(scopes: Vec<PathBuf>) -> WriteLease {
         WriteLease {
             lease_id: "lease-test".to_string(),
@@ -476,11 +734,26 @@ mod tests {
     fn lease_covers_only_paths_inside_a_declared_scope() {
         let l = lease(vec![PathBuf::from("/repo/app")]);
         assert!(l.covers("/repo/app/src/main.rs"), "inside the scope");
-        assert!(l.covers("/repo/app/./new/file.rs"), "a file that does not exist yet");
-        assert!(!l.covers("/repo/other/x.rs"), "a sibling directory is outside");
-        assert!(!l.covers("/repo/application/x.rs"), "a name prefix is not containment");
-        assert!(!l.covers("/repo/app/../../etc/passwd"), "a parent walk cannot escape");
-        assert!(!l.covers("relative/path.rs"), "a relative target is not provably in scope");
+        assert!(
+            l.covers("/repo/app/./new/file.rs"),
+            "a file that does not exist yet"
+        );
+        assert!(
+            !l.covers("/repo/other/x.rs"),
+            "a sibling directory is outside"
+        );
+        assert!(
+            !l.covers("/repo/application/x.rs"),
+            "a name prefix is not containment"
+        );
+        assert!(
+            !l.covers("/repo/app/../../etc/passwd"),
+            "a parent walk cannot escape"
+        );
+        assert!(
+            !l.covers("relative/path.rs"),
+            "a relative target is not provably in scope"
+        );
     }
     async fn as_session<T>(session: &str, fut: impl std::future::Future<Output = T>) -> T {
         with_dispatch_context(hide_core::ids::SessionId::from(session), None, fut).await
@@ -502,7 +775,9 @@ mod tests {
             blind.effects.clear();
             assert!(lease_covering_here(&blind).is_none());
             let mut mixed = write_request("/repo/a.rs");
-            mixed.effects.push(write_request("/elsewhere/b.rs").effects.remove(0));
+            mixed
+                .effects
+                .push(write_request("/elsewhere/b.rs").effects.remove(0));
             assert!(lease_covering_here(&mixed).is_none());
         })
         .await;
@@ -518,14 +793,24 @@ mod tests {
             })
             .await
         );
-        assert!(as_session("another-session", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
+        assert!(
+            as_session("another-session", async {
+                lease_covering_here(&write_request("/repo/a.rs")).is_none()
+            })
+            .await
+        );
         assert!(lease_covering_here(&write_request("/repo/a.rs")).is_none());
         let expired = WriteLease {
             granted_ms: hide_core::ids::now_ms() - LEASE_TTL_MS - 1,
             ..lease(vec![PathBuf::from("/repo")])
         };
         install_write_lease(expired);
-        assert!(as_session("sess", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
+        assert!(
+            as_session("sess", async {
+                lease_covering_here(&write_request("/repo/a.rs")).is_none()
+            })
+            .await
+        );
         revoke_write_lease("end of test");
     }
     #[test]
@@ -541,7 +826,8 @@ mod tests {
     }
     #[test]
     fn a_symlink_inside_the_scope_does_not_escape_it() {
-        let dir = std::env::temp_dir().join(format!("hide_lease_link_{}", hide_core::ids::now_ms()));
+        let dir =
+            std::env::temp_dir().join(format!("hide_lease_link_{}", hide_core::ids::now_ms()));
         let scope = dir.join("repo");
         let outside = dir.join("outside");
         std::fs::create_dir_all(&scope).unwrap();
@@ -549,7 +835,10 @@ mod tests {
         #[cfg(unix)]
         std::os::unix::fs::symlink(&outside, scope.join("link")).unwrap();
         let l = lease(vec![scope.clone()]);
-        assert!(l.covers(&scope.join("in.rs").to_string_lossy()), "an ordinary path inside");
+        assert!(
+            l.covers(&scope.join("in.rs").to_string_lossy()),
+            "an ordinary path inside"
+        );
         #[cfg(unix)]
         assert!(!l.covers(&scope.join("link/escaped.rs").to_string_lossy()));
         let _ = std::fs::remove_dir_all(dir);
@@ -572,7 +861,10 @@ mod tests {
             inner: AlwaysDeny,
             bound: None,
         };
-        assert_eq!(engine.evaluate(&write_request("/repo/a.rs")).decision, Decision::Deny);
+        assert_eq!(
+            engine.evaluate(&write_request("/repo/a.rs")).decision,
+            Decision::Deny
+        );
         assert!(!gate_released(), "a lease is not a released gate");
         revoke_write_lease("end of test");
     }
@@ -583,7 +875,11 @@ mod tests {
         assert_eq!(active_write_lease().as_ref(), Some(&granted));
         assert!(!serde_json::to_string(&granted).unwrap().is_empty());
         revoke_write_lease("restart");
-        assert_eq!(active_write_lease(), None, "a restart leaves no lease behind");
+        assert_eq!(
+            active_write_lease(),
+            None,
+            "a restart leaves no lease behind"
+        );
     }
     #[test]
     fn scoped_revokes_only_fire_for_their_own_lease() {
@@ -591,7 +887,10 @@ mod tests {
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
         assert!(revoke_write_lease_for_run("other-run", None).is_none());
         assert!(revoke_write_lease_for_repo("other-repo").is_none());
-        assert!(active_write_lease().is_some(), "another task's end is not this one's");
+        assert!(
+            active_write_lease().is_some(),
+            "another task's end is not this one's"
+        );
         assert!(revoke_write_lease_for_run("run", None).is_some());
         assert_eq!(active_write_lease(), None);
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
@@ -618,13 +917,22 @@ mod tests {
                 )),
             )
         };
- assert!( write(scope.join("a.rs")).await.is_err(), "with no lease the write is refused" );
+        assert!(
+            write(scope.join("a.rs")).await.is_err(),
+            "with no lease the write is refused"
+        );
         install_write_lease(lease(vec![scope.clone()]));
-        assert_eq!(write(scope.join("a.rs")).await.unwrap().status, hide_core::tool::ToolStatus::Ok);
+        assert_eq!(
+            write(scope.join("a.rs")).await.unwrap().status,
+            hide_core::tool::ToolStatus::Ok
+        );
         assert_eq!(std::fs::read_to_string(scope.join("a.rs")).unwrap(), "x");
         assert!(write(dir.join("out.rs")).await.is_err());
         revoke_write_lease("end of test");
- assert!( write(scope.join("b.rs")).await.is_err(), "after revocation the write asks again" );
+        assert!(
+            write(scope.join("b.rs")).await.is_err(),
+            "after revocation the write asks again"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

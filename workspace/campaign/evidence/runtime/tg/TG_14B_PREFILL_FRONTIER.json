@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.tg.prefill_frontier.v1",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+  "device": "Apple M3 Ultra",
+  "note": "no kernel profile (profile=none) on either side; every number below is same-model before/after on the same box in the same session",
+  "external_reference": {
+    "tool": "llama-bench (ggml 0.13.1, build d48a56eff)",
+    "same_file": true,
+    "pp422_tok_s": 523.18,
+    "pp422_ms_per_token": 1.91,
+    "tg8_tok_s": 51.73,
+    "tg8_ms_per_token": 19.33
+  },
+  "hawking": {
+    "decode_ms_per_token": 33.6,
+    "prefill_ms_per_token_per_token_path": {"prompt_43": 62.6, "prompt_422": 41.1},
+    "prefill_ms_per_token_batched_b8": {"prompt_43": 40.8, "prompt_422": 36.2}
+  },
+  "gap_to_llama_cpp": {
+    "decode": "1.74x slower",
+    "prefill": "19.0x slower at the best measured batched setting"
+  },
+  "tg_rungs": {
+    "hawking_decode": "33.6 ms/token — fails TG20, deepest passed rung is TG40",
+    "llama_cpp_decode": "19.33 ms/token — reaches TG20, fails TG10",
+    "statement": "TG is absolute latency for THIS model. Nothing here transfers to GLM."
+  },
+  "batch_ceiling": {
+    "measured": "B=16 and B=32 are refused, not slow",
+    "error": "ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb supports batch in 1..=8; got 16",
+    "already_widened": "gemm_q4_k_m_batched_v3w_mma_n32 lifted the projection GEMM to 32 and is parity-tested, and the prefill path already calls it above B=8. The wall that remains is the fused FFN-down/SwiGLU/add/RMSNorm kernel plus three more 1..=8 guards in kernels/mod.rs."
+  },
+  "fixed_cost_found_and_moved": {
+    "symptom": "with batched prefill on, decode reported 3.30 tok/s against 29.76 on the per-token path",
+    "measurement": "decode_ms was 1212 at 4 tokens and 1747 at 20 tokens, so the marginal rate was 33.4 ms/token — identical to the per-token path's 33.6. The whole difference was a single fixed ~1076 ms charged to the first decode token.",
+    "why_not_the_kv_mirror": "the cost was the same for a 43-token and a 422-token prompt. The KV mirror scales with prompt length (17 MB vs 166 MB); a fixed set of kernels does not.",
+    "cause": "batched prefill and decode use disjoint kernel sets. forward_tokens_batch_tcb never touches the decode pipelines, so they were all created lazily at the first decode token. The per-token prefill path never had this because it IS forward_token_greedy_tcb.",
+    "fix": "prefill now batches prompt_ids[..n-1] and runs the final token through forward_token_greedy_tcb. KV is unchanged: the token still lands once at pos n-1 and decode still re-feeds it at pos n.",
+    "honest_effect": "this does NOT reduce total wall clock. It moves ~1076 ms out of decode and into prefill, and costs about 115 ms net at a 43-token prompt. What it buys is that dec_tps stops lying: 29.09 after the fix against a reported 3.30 before, for the same marginal rate.",
+    "measured_after": {"prompt_43": {"prefill_ms": 2943.3, "decode_tok_s": 29.09}, "prompt_422": {"prefill_ms": 16406.2, "decode_tok_s": 22.81}}
+  },
+  "crossover": {
+    "prompt_43": {"per_token_total_ms": 2828, "batched_total_ms": 3081, "winner": "per-token"},
+    "prompt_422": {"per_token_total_ms": 17515, "batched_total_ms": 16581, "winner": "batched, by 5.3%"},
+    "reading": "batched prefill's advantage shrinks with prompt length (1.54x at 43 tokens, 1.13x at 422) because attention grows quadratically while the weight-read amortization is constant. It is default-off and that remains the right default at short prompts."
+  },
+  "parity": "' Paris. Paris is located in the northern part of France,' from both paths on the same prompt; 241 core tests pass"
+}

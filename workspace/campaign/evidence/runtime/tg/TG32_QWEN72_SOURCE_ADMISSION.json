@@ -1,0 +1,73 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED_AWAITING_CLEAN_ACQUISITION",
+  "family": "qwen",
+  "rung": "TG32",
+  "parameter_class": {
+    "total_parameters": "72B",
+    "active_parameters": "72B",
+    "architecture": "dense"
+  },
+  "source": {
+    "kind": "single_file_derivative_of_public_official_base",
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "quantization": "Q4_K_M",
+    "repository_visibility": "PUBLIC",
+    "hub_token_mode": "EXPLICIT_TOKEN_FALSE",
+    "declared_base_model": "Qwen/Qwen2.5-72B-Instruct",
+    "declared_license": "qwen",
+    "quantized_by": "bartowski"
+  },
+  "official_reference": {
+    "repository": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+    "q4_k_m_parts": 12,
+    "q4_k_m_total_bytes": 44010465472,
+    "largest_q4_k_m_part_bytes": 3995005888,
+    "reason_not_materialized_as_a_retained_merge": "Every official part is an indexed GGUF file. A conventional retained source-plus-output merge peaks at 88020930944 model bytes and violates both the 82-GB normal artifact cap and the 102-GB in-envelope total with the required scratch reserve."
+  },
+  "storage_contract": {
+    "protected_filesystem_floor_bytes": 200005889556,
+    "model_lane_ceiling_bytes": 102000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "scratch_reserve_bytes": 26843545600,
+    "single_file_incremental_lane_bytes": 74259261088,
+    "official_split_streaming_merge_incremental_peak_bytes": 74849016960,
+    "active_model_limit": 1,
+    "live_preflight_required_immediately_before_any_body_transfer": true
+  },
+  "transfer_selection": {
+    "scoreboard": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD.json",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT.json",
+    "selected_profile": "high_performance",
+    "selection_reason": "Repeated bounded-range median was 265.805 GB/hour versus the best standard profile at 253.769 GB/hour; exact final-file SHA-256 remains mandatory.",
+    "environment": {
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+      "HF_HUB_DISABLE_TELEMETRY": "1",
+      "HF_XET_HIGH_PERFORMANCE": "1",
+      "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0"
+    },
+    "bounded_next_metadata_or_ranges_only": false
+  },
+  "clean_benchmark_boundary": {
+    "required": true,
+    "observed_blockers": [
+      "two non-campaign Python processes are currently consuming approximately one CPU core each",
+      "a substrate longitudinal supervisor is live",
+      "the process inventory has not established an exclusive clean GPU lease"
+    ],
+    "law": "Acquisition may be retried only after a fresh byte admission. K0 or contended measurements are diagnostic-only; no TG promotion is valid without a clean same-model run."
+  },
+  "required_before_promotion": [
+    "verify the complete source SHA-256",
+    "capture K0 exact tokens under V2.1 with device identity, dispatches greater than zero, and fallback equal to zero",
+    "run a clean same-model source/reference comparison and roofline",
+    "run the Gravity representation path with its own complete-BPW and parity receipt",
+    "seal terminal eviction and free-byte recovery before admitting another family"
+  ],
+  "seal_sha256": "222945431abcf0d859abf8841f56085f388c45dacdc9c77f9e00bbe9ccd8f29c"
+}

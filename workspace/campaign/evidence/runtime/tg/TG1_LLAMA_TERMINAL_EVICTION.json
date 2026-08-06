@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.terminal_eviction.v1",
+  "status": "TRASHED_RECOVERABLE",
+  "rung": "TG1",
+  "model": "Meta-Llama-3.1-8B-Instruct (rehydrated)",
+  "terminal_gate": {
+    "name": "STATE_ADVANCE",
+    "result": "FAIL",
+    "evidence": "evidence/tg/TG1_LLAMA_REHYDRATION_ORACLE.json",
+    "boundary": "The newly acquired, same-SHA parent reproduces the TG5 first-token mismatch and zero-dispatch result."
+  },
+  "source": {
+    "workspace_path": "models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "bytes": 4920739232,
+    "sha256": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+    "rehydration_receipt": "evidence/tg/TG1_LLAMA_REHYDRATION_RECEIPT.json"
+  },
+  "eviction": {
+    "command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "workspace_copy_absent_after_command": true,
+    "remaining_active_parent_bytes_under_models_tg_active": 28672,
+    "physical_space_reclaimed": "NOT_YET_PROVEN: macOS Trash is recoverable storage; empty it manually only if the recovery window is no longer wanted."
+  },
+  "campaign_completion": "All TG20→TG1 source trials have a terminal receipt. Retain evidence only; any repair rehydrates its exact source deliberately."
+}

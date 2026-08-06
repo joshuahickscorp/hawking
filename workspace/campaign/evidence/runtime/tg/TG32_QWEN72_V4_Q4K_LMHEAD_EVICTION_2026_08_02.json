@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.tg.model_eviction_receipt.v1",
+  "status": "EVICTED_SOURCE_CACHE_AND_EXACT_TRASH_PURGED",
+  "at_utc": "2026-08-02",
+  "candidate_result": "evidence/tg/TG32_QWEN72_V4_Q4K_LMHEAD_RESULT_2026_08_02.json",
+  "lane": "/Users/scammermike/Downloads/hawking/models/tg-active/qwen72-v4-lmhead-2026-08-02",
+  "contents_before": {
+    "allocated_bytes": 47415730176,
+    "source_bytes": 47415715488,
+    "full_model_bodies": 1,
+    "artifact_published": false,
+    "cache": "Hugging Face metadata only",
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545"
+  },
+  "actions": [
+    "moved exact lane directory to macOS Trash",
+    "purged only the Trash item named qwen72-v4-lmhead-2026-08-02",
+    "verified exact lane path absent",
+    "verified no model files remain below models/tg-active"
+  ],
+  "verification": {
+    "free_bytes_before": 306352181248,
+    "free_bytes_after": 353766490112,
+    "recovered_bytes": 47414308864,
+    "exact_trash_item_remaining": false,
+    "model_lane_empty": true,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 153760600556,
+    "second_full_model_body": false
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

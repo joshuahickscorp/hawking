@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.tg.same_model_roofline.v1",
+  "status": "SEALED_AFTER_TWO_DISTINCT_NATIVE_GRAMMAR_FAILURES_NO_TG_RUNG",
+  "family": "deepseek_v2_lite_moe_mla",
+  "source": {"repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF", "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f", "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf", "bytes": 10364416320, "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"},
+  "architecture": {"layers": 27, "mla_kv_lora_rank": 512, "routed_experts": 64, "active_experts_per_token": 6, "leading_dense_layers": 1},
+  "source_authority": {
+    "reference": "llama.cpp direct non-conversation greedy decode",
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "generated_ids": [8913, 13, 185, 185],
+    "text": " Paris.\\n\\n"
+  },
+  "same_model_representations": [
+    {"id": "direct-source-gguf-q4_k_m", "physical_bytes": 10364416320, "result": "llama.cpp source authority pass"},
+    {"id": "source-preserving-gravity-mla-moe", "physical_bytes": 10362253454, "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788", "mapped_tensors": 5291, "result": "CPU greedy exact match [8913,13,185,185]; non-performance reference only"}
+  ],
+  "native_metal_attempts": [
+    {"id": "refreshed-profile-basic-waves", "profile": "kp-dd459d9edd1b014528cabda0", "dispatches_per_forward": 589, "cpu_fallback": 0, "first_greedy_token": 244, "source_first_greedy_token": 8913, "decode_tps": 34.023068542082854, "prefill_ms": 341.478834, "decode_ms": 117.567291, "verdict": "REJECTED_CAPABILITY_FIRST_TOKEN_DIVERGENCE"},
+    {"id": "v2t-routed-shared-rmsnorm-waves", "profile": "candidate-deepseek-v2t-2026-08-02", "dispatches_per_forward": 589, "cpu_fallback": 0, "first_greedy_token": 244, "source_first_greedy_token": 8913, "decode_tps": 34.68660461949957, "prefill_ms": 377.699291, "decode_ms": 115.318292, "verdict": "REJECTED_CAPABILITY_FIRST_TOKEN_DIVERGENCE"}
+  ],
+  "pre_forward_repair": {"stale_profile_shader_hash": "22c0481bb01990703d665bd5", "current_shader_hash": "340cc12f9163e9260578524d", "unprofiled_blocker": "Wedge C preconditions not met; no decode arena", "repair": "new exact-layout/current-shader profile kp-dd459d9edd1b014528cabda0 allocated the persistent decode arena and reached dispatch"},
+  "honest_ladder": {"named_rung": null, "source_reference_tps": null, "gravity_base_true_tps": null, "accelerated_accepted_tps": null, "reason": "No native output is capability matched, so neither the ~34 TPS native result nor CPU reference timing is eligible for TG."},
+  "binding_roofline": "The first discrete decision diverges before either alternative expert-down grammar changes the result. Throughput is therefore non-promotable; the immediate roof is numerics/stage authority, not a bandwidth or command-topology limit.",
+  "exact_next_representation_or_architecture_change": "Do not repeat direct source-GGUF Wedge-C schedules. Build a bounded, independently parity-checked resident Metal `.gravity` MLA/MoE fixture with stage readback for q/latent-KV/attention/residual/router/output, identify the first deviating stage against the now-proven CPU Gravity oracle, then carry only that corrected grammar to the full body.",
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false, "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"}
+}

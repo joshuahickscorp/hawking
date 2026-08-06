@@ -1,8 +1,3 @@
-use hide_core::api::{UiEvent, UiEventKind};
-use hide_core::ids::{with_deterministic_ids, SessionId};
-use hide_protocol::ids::{ItemId, ToolCallId, ToolId};
-use hide_protocol::item::{Item, ItemKind, ToolCall, ToolResult};
-use serde_json::json;
 use hawking_events::adapters::{
     item_to_canonical, seed_event_to_canonical, stream_event_to_canonical, ui_event_to_canonical,
     SeedFsmEvent, StreamEventView,
@@ -11,6 +6,11 @@ use hawking_events::{
     all_categories, kind_for_category, CanonicalEvent, Category, ContentVerification, NewCanonical,
     Subsystem, COMPETING_MODELS,
 };
+use hide_core::api::{UiEvent, UiEventKind};
+use hide_core::ids::{with_deterministic_ids, SessionId};
+use hide_protocol::ids::{ItemId, ToolCallId, ToolId};
+use hide_protocol::item::{Item, ItemKind, ToolCall, ToolResult};
+use serde_json::json;
 #[test]
 fn round_trip_every_category() {
     with_deterministic_ids(100, || {
@@ -155,7 +155,15 @@ fn tool_result_item_is_observation_class() {
 #[test]
 fn six_competing_models_enumerated() {
     assert_eq!(COMPETING_MODELS.len(), 6);
-    assert_eq!(COMPETING_MODELS .iter() .filter(|m| m.name.contains("Event") || m.name.contains("Item") || m.name.contains("ledger")) .count(), 6);
+    assert_eq!(
+        COMPETING_MODELS
+            .iter()
+            .filter(|m| m.name.contains("Event")
+                || m.name.contains("Item")
+                || m.name.contains("ledger"))
+            .count(),
+        6
+    );
     let canonical = COMPETING_MODELS
         .iter()
         .filter(|m| matches!(m.status, hawking_events::MigrationStatus::Canonical))

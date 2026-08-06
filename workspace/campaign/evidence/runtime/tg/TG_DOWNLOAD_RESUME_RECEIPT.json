@@ -1,0 +1,48 @@
+{
+  "at": "2026-08-01T05:00:00Z",
+  "claim_boundary": [
+    "two fresh in-memory sessions only",
+    "the resumed half-open interval begins exactly at the interruption boundary",
+    "does not prove full-body resume or create a model body"
+  ],
+  "measurement": {
+    "elapsed_seconds": 2.2298984579974785,
+    "free_disk_delta_bytes": 13139968,
+    "process_cpu_system_seconds": 0.089592,
+    "process_cpu_user_seconds": 0.112918,
+    "sealed_gb_per_hour_decimal": 108.34211285878793
+  },
+  "range": {
+    "combined_bytes": 67108864,
+    "combined_sha256": "640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168",
+    "end": 67108864,
+    "hash_matches_uninterrupted": true,
+    "interruption_boundary": 8388608,
+    "start": 0,
+    "uninterrupted_reference_sha256": "640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168"
+  },
+  "runtime": {
+    "application_body_file_writes": 0,
+    "client_visible_retries": 0,
+    "effective_download_concurrency": {
+      "initial": 16,
+      "maximum": 124,
+      "minimum": 4
+    },
+    "hf_xet": "1.5.2",
+    "huggingface_hub": "1.24.0",
+    "mode": "high_performance",
+    "requested_xet_chunk_cache_bytes": 0
+  },
+  "schema": "hawking.tg.download_resume_receipt.v1",
+  "seal_sha256": "a9401760a407296a8445e468c7bbb7793cd9e6561dca442463960dd33240919c",
+  "source": {
+    "file_bytes": 3986869120,
+    "file_sha256": "3531a90691b5f4edb4bdf488246d72ce0b5d40cacfab1489718a662cec386e43",
+    "path": "qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf",
+    "repo": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+    "xet_file_hash": "d2bf6e805dfba78d0330915f28f2f9afb3b2eee4155ed8e4cd3283b97a6a51f5"
+  },
+  "status": "PASS_FRESH_SESSION_EXACT_RANGE_RESUME"
+}

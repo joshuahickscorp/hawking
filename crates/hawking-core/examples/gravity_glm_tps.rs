@@ -188,8 +188,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let model = GravityGlmGpu::open_dir(&dir, verify_hash)?;
     let open_ms = t_open.elapsed().as_secs_f64() * 1e3;
     eprintln!(
-        "opened in {open_ms:.0} ms | layers={} hidden={} experts={} vocab={}",
-        model.arch.n_layers, model.arch.hidden, model.arch.n_routed_experts, model.arch.vocab_size
+        "opened in {open_ms:.0} ms on {} | layers={} hidden={} experts={} vocab={}",
+        model.device_name(),
+        model.arch.n_layers,
+        model.arch.hidden,
+        model.arch.n_routed_experts,
+        model.arch.vocab_size
     );
     {
         let c = model.cache_stats();
@@ -226,13 +230,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
         let mut decode_ms_each = Vec::with_capacity(decode);
+        // A resident GLM step emits several physical command buffers.  Count
+        // the completed waits directly from the resident session, rather than
+        // reporting an invented fixed dispatch count.  This remains enabled
+        // in the untraced benchmark path, so it does not turn the speed run
+        // into a per-dispatch tracing run.
+        let mut command_buffer_waits_each = Vec::with_capacity(decode);
         let mut curve = Vec::with_capacity(decode);
         let mut output_modes = std::collections::BTreeSet::new();
         for (i, &t) in tokens[context..].iter().enumerate() {
+            let waits_before = model.last_resident_waits();
             let t0 = Instant::now();
             let (logits, trace) = model.forward_at(&[t], context + i)?;
             let ms = t0.elapsed().as_secs_f64() * 1e3;
             decode_ms_each.push(ms);
+            let command_buffer_waits = match (waits_before, model.last_resident_waits()) {
+                (Some(before), Some(after)) => Some(after.saturating_sub(before)),
+                _ => None,
+            };
+            command_buffer_waits_each.push(command_buffer_waits);
             let output = decode_output(&logits, &trace, model.arch.vocab_size)?;
             output_modes.insert(output["mode"].as_str().unwrap_or("unknown").to_string());
 
@@ -247,6 +263,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "high_water_bytes": cache.high_water_bytes,
                 "entries": cache.entries,
                 "evictions": cache.evictions,
+                "command_buffer_waits": command_buffer_waits,
                 "output": output,
             });
             if token_curve {
@@ -296,6 +313,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "decode_ms_per_token_min": sorted.first().copied().unwrap_or(0.0),
             "decode_ms_per_token_max": sorted.last().copied().unwrap_or(0.0),
             "decode_ms_per_token_all": decode_ms_each,
+            "device_execution": {
+                "backend": "metal",
+                "device_name": model.device_name(),
+                "resident_state": model.resident_state_enabled(),
+                "command_buffer_waits_per_token_all": command_buffer_waits_each,
+                "command_buffer_waits_metric": "completed commit_and_wait calls during each decode token; null means the resident path was not active",
+            },
             "output_modes": output_modes,
         });
         if token_curve {
@@ -325,6 +349,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         "verify_hash": verify_hash,
         "token_curve": token_curve,
+        "device": {
+            "backend": "metal",
+            "name": model.device_name(),
+            "resident_state": model.resident_state_enabled(),
+        },
         "run_configuration": {
             "raw_environment": env_snapshot(),
             "resolved": {

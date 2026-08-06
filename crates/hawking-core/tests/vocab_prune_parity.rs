@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{profile::fresh_test_profile, EngineConfig, GenerateRequest, SamplingParams, StreamEvent};
+use hawking_core::{
+    profile::fresh_test_profile, EngineConfig, GenerateRequest, SamplingParams, StreamEvent,
+};
 use std::path::PathBuf;
 mod common;
 use common::weights_path_deepseek as weights_path;
@@ -25,7 +27,11 @@ fn run_greedy(prune: Option<PathBuf>) -> Option<Vec<u32>> {
     let req = GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: SamplingParams { temperature: 0.0, seed: Some(SEED), ..Default::default() },
+        sampling: SamplingParams {
+            temperature: 0.0,
+            seed: Some(SEED),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -49,11 +55,15 @@ fn vocab_prune_matches_full_vocab_greedy() {
     };
     let pruned_path = whitelist_path();
     if !pruned_path.exists() {
-        eprintln!("skipping vocab_prune_parity: whitelist missing at {:?}", pruned_path);
+        eprintln!(
+            "skipping vocab_prune_parity: whitelist missing at {:?}",
+            pruned_path
+        );
         return;
     }
     let whitelist_bytes = std::fs::read(&pruned_path).expect("read vocab_whitelist_995.json");
-    let raw: serde_json::Value = serde_json::from_slice(&whitelist_bytes).expect("parse whitelist json");
+    let raw: serde_json::Value =
+        serde_json::from_slice(&whitelist_bytes).expect("parse whitelist json");
     let keep: std::collections::HashSet<u32> = raw["keep_token_ids"]
         .as_array()
         .expect("keep_token_ids array")

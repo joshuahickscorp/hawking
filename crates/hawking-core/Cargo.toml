@@ -26,7 +26,7 @@ cargo-clippy = []
 [dependencies]
 # strand-quant — the absorbed codec backing TQ: owner of the wire format (STR2) + the
 # integer-deterministic Q12 decode. Optional + behind the `tq` feature.
-strand-quant = { path = "../../vendor/strand-quant", optional = true }
+strand-quant = { path = "../../workspace/vendor/strand-quant", optional = true }
 hawking-speculate = { path = "../hawking-speculate" }
 thiserror = { workspace = true }
 serde = { workspace = true }

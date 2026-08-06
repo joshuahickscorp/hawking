@@ -137,12 +137,21 @@ mod routing_tests {
     use super::*;
     #[test]
     fn classifies_query_shapes() {
- assert_eq!( classify_query_shape("CodeIndex::search"), QueryShape::ExactSymbol );
+        assert_eq!(
+            classify_query_shape("CodeIndex::search"),
+            QueryShape::ExactSymbol
+        );
         assert_eq!(classify_query_shape("foo_bar"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parseTree"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parse tree"), QueryShape::Identifier);
- assert_eq!( classify_query_shape("where do we handle retries?"), QueryShape::NaturalLanguage );
- assert_eq!( classify_query_shape("how does compaction work"), QueryShape::NaturalLanguage );
+        assert_eq!(
+            classify_query_shape("where do we handle retries?"),
+            QueryShape::NaturalLanguage
+        );
+        assert_eq!(
+            classify_query_shape("how does compaction work"),
+            QueryShape::NaturalLanguage
+        );
     }
     #[test]
     fn routed_sets_tier_flags() {
@@ -155,8 +164,12 @@ mod routing_tests {
     }
     #[test]
     fn precise_sources_outrank_similar_code() {
- assert!( source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic) );
- assert!( source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic) );
+        assert!(
+            source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic)
+        );
+        assert!(
+            source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic)
+        );
     }
 }
 
@@ -660,11 +673,7 @@ impl SqliteCodeIndex {
         if want_semantic {
             // Clone the Arc under the lock so we don't hold it across await.
             // Wrap in ArcEmbedder (Sized) so HybridRetriever's type param is happy.
-            let embedder = self
-                .embedder
-                .read()
-                .clone()
-                .expect("has_embedder was true");
+            let embedder = self.embedder.read().clone().expect("has_embedder was true");
             let wrapped = ArcEmbedder(embedder);
             return self
                 .search_with_embedder(query, k_final, &wrapped, true)
@@ -1040,7 +1049,9 @@ mod tests {
             .hybrid_search_opts("alpha_target", 5, true)
             .await
             .expect("search without embedder must not error on stub refusal");
-        assert!(hits.iter().any(|h| h.file.contains("a.rs") || h.snippet.contains("alpha")));
+        assert!(hits
+            .iter()
+            .any(|h| h.file.contains("a.rs") || h.snippet.contains("alpha")));
         let refuse = crate::semantic::StubEmbeddingClient::default();
         let err = index
             .search_with_embedder("alpha_target", 5, &refuse, true)

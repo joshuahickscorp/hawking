@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.tg.download_resume_receipt.v1",
+  "status": "PASS_FRESH_SESSION_EXACT_RANGE_RESUME",
+  "at": "2026-08-01T07:04:44Z",
+  "source": {
+    "repo": "openai/gpt-oss-120b",
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "path": "original/model--00001-of-00007.safetensors",
+    "file_bytes": 10544040680,
+    "file_sha256": "68a8dc1f8e2e5996cb702f14332a25ddf3463daeab2df68e21ca09ef181203c3",
+    "xet_file_hash": "7d3f9bc2388826d7e84f9aaf4dccb69627c73034973b336c0a4cfbf507a86612"
+  },
+  "runtime": {
+    "huggingface_hub": "1.24.0",
+    "hf_xet": "1.5.2",
+    "mode": "high_performance",
+    "requested_stream_concurrency": 1,
+    "effective_download_concurrency": {"adaptive":true,"initial":16,"minimum":4,"maximum":124},
+    "requested_xet_chunk_cache_bytes": 0,
+    "client_visible_retries": 0,
+    "application_body_file_writes": 0
+  },
+  "range": {
+    "start": 0,
+    "interruption_boundary": 8388608,
+    "end": 67108864,
+    "combined_bytes": 67108864,
+    "combined_sha256": "19b1f99d2beaa60b38339fe360779d4b6b340d2ae8a91998fdd80b4fd3295ebe",
+    "uninterrupted_reference_sha256": "19b1f99d2beaa60b38339fe360779d4b6b340d2ae8a91998fdd80b4fd3295ebe",
+    "hash_matches_uninterrupted": true,
+    "parts": [
+      {"start":0,"end":8388608,"bytes":8388608,"sha256":"3c8934ab6b26d1047125b98dd8f91f786ef1d1753bd7a8f04b4296d9a7ff0e2a"},
+      {"start":8388608,"end":67108864,"bytes":58720256,"sha256":"3024311eb349f5471c0153fba9fc2f5db84b4d6878a33448b3d2343ccd8e6771"}
+    ]
+  },
+  "measurement": {
+    "elapsed_seconds": 1.0400069589959458,
+    "sealed_gb_per_hour_decimal": 232.2983594583253
+  },
+  "claim_boundary": [
+    "fresh in-memory Xet sessions with two exact half-open intervals",
+    "the second interval begins exactly at the interruption boundary",
+    "does not prove full-body resume or create a model body"
+  ],
+  "seal_sha256": "7d3251f385da6f0269043ac28def0cb337ef97018fb6b83a11c25a0fa9976023"
+}

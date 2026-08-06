@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "SOURCE_ADMITTED_BEFORE_RUNTIME_SWEEP",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-32B-Instruct",
+  "family": "Qwen dense",
+  "repository": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+  "revision": "2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6",
+  "filename": "Qwen2.5-32B-Instruct-Q6_K.gguf",
+  "license": "apache-2.0",
+  "source_bytes": 26886155136,
+  "source_sha256": "3393e05b12396e0e6c786f5fb99837eb77ef9eb0b30d940e30d94c2f5506054a",
+  "xet_file_hash": "161adb1647553a6a03bbdb2f8fc7b1c439952071daf80300d194edaa030f7378",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN32_Q6_2026_08_02.json",
+  "transfer_selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 8,
+    "stable_median_gb_per_hour_decimal": 145.8084746830869,
+    "range_hashes_identical": true,
+    "resume_complete": true,
+    "client_visible_retries": 0
+  },
+  "admission": {
+    "lane": "models/tg-active/qwen32-q6-anchor-2026-08-02",
+    "source_path": "models/tg-active/qwen32-q6-anchor-2026-08-02/Qwen2.5-32B-Instruct-Q6_K.gguf",
+    "free_bytes_before_body": 357228998656,
+    "free_bytes_after_body": 330340462592,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_body": 130334573036,
+    "model_lane_envelope_bytes": 110000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "source_hash_verified": true,
+    "source_size_verified": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

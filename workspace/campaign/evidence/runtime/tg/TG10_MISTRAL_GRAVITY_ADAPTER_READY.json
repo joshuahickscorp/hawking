@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.tg.gravity_adapter_receipt.v1",
+  "status": "ADAPTER_RUNTIME_READY_SOURCE_ORACLE_UNVERIFIED",
+  "rung": "TG10",
+  "family": "mistral",
+  "architecture": "mistral",
+  "adapter": {
+    "runtime": "crates/hawking-core/src/model/gravity_engine.rs -> gravity_llama::gpu",
+    "shared_tensor_abi": "Llama/Mistral model.layers.* self_attn and mlp projection names",
+    "attention_contract": "explicit architecture.sliding_window; K/V cache writes remain absolute and attention receives a window-relative offset",
+    "supported_window": "positive sliding_window value; absent means full attention",
+    "source_consulted_at_runtime": false
+  },
+  "verification": {
+    "cargo_check": "PASS",
+    "header_tests": "3 passed",
+    "tests": [
+      "mistral_header_is_admitted_with_explicit_window",
+      "llama_header_keeps_full_attention_default",
+      "unrelated_architecture_is_refused"
+    ],
+    "raw_parent_forward": "UNVERIFIED — Mistral source was evicted",
+    "gravity_oracle": "UNVERIFIED — no Mistral Gravity artifact is materialized",
+    "rung_measurement": "NO_CLAIM"
+  },
+  "reopen_condition": "Reacquire the sealed Mistral-Nemo parent under the storage contract, pack a complete Gravity artifact, then pass RAW_PARENT_FORWARD, STATE_ADVANCE, GRAVITY_ORACLE, and matched rung measurement.",
+  "tps_claim": null
+}

@@ -19,16 +19,39 @@ fn llama_cli_bin() -> Option<String> {
         .map(|_| bin)
 }
 fn continuation(raw: &str) -> String {
-    raw.rsplit_once(PROMPT).map(|(_, after)| after).unwrap_or(raw).split('[').next().unwrap_or("").trim().to_string()
+    raw.rsplit_once(PROMPT)
+        .map(|(_, after)| after)
+        .unwrap_or(raw)
+        .split('[')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_string()
 }
 fn first_word(s: &str) -> String {
-    s.trim_start().chars().take_while(|c| c.is_alphanumeric()).flat_map(|c| c.to_lowercase()).collect()
+    s.trim_start()
+        .chars()
+        .take_while(|c| c.is_alphanumeric())
+        .flat_map(|c| c.to_lowercase())
+        .collect()
 }
 fn llama_greedy(bin: &str, model: &PathBuf) -> String {
     use std::io::Read;
     use std::time::{Duration, Instant};
     let mut child = Command::new(bin)
-        .args(["-m", model.to_str().unwrap(), "-p", PROMPT, "-n", &N.to_string(), "--temp", "0", "-ngl", "99", "--log-disable"])
+        .args([
+            "-m",
+            model.to_str().unwrap(),
+            "-p",
+            PROMPT,
+            "-n",
+            &N.to_string(),
+            "--temp",
+            "0",
+            "-ngl",
+            "99",
+            "--log-disable",
+        ])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
@@ -64,7 +87,11 @@ fn hawking_greedy(model: &PathBuf) -> String {
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: N,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(0), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(0),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,

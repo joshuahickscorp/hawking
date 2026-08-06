@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.tg.model_eviction_receipt.v1",
+  "seal_sha256": "3a335126d18f82b4ad925276db310fe292645423c1e29bc76429f1877f3fc6a7",
+  "status": "SOURCE_ARTIFACT_TEMP_AND_EXACT_TRASH_PURGED",
+  "at": "2026-08-02",
+  "source_receipt": "evidence/tg/TG32_DEEPSEEK_V2_LITE_FUSED_ROUTE_RESIDUAL_REJECTED_2026_08_02.json",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a",
+    "active_allocated_bytes": 10364416636
+  },
+  "eviction": {
+    "active_path": "/Users/scammermike/Downloads/hawking/models/tg-active/deepseek-v2-lite-2026-08-02-fused",
+    "trash_item": "/Users/scammermike/.Trash/deepseek-v2-lite-2026-08-02-fused",
+    "trash_allocated_bytes_before_purge": 10364416636,
+    "purge_method": "/usr/bin/trash followed by exact validated Trash path purge",
+    "exact_trash_item_purged": true,
+    "source_body_absent": true,
+    "artifact_temp_cache_absent": true,
+    "model_lane_contents": []
+  },
+  "storage": {
+    "free_bytes_before_admission": 375511789568,
+    "free_bytes_after_purge_observed": 376573739008,
+    "protected_floor_bytes": 200005889556,
+    "residual_bytes_after_purge": 176567849452,
+    "floor_preserved": true,
+    "free_bytes_note": "The exact source body and matching Trash allocation were removed; aggregate free space is sampled live because OS compression/background pressure can move between observations."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "verdict": "DEEPSEEK_ROUTE_RESIDUAL_CANDIDATE_EVICTED_AND_EXACT_TRASH_PURGED; MODEL_LANE_EMPTY"
+}

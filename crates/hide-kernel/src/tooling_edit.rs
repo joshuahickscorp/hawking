@@ -731,7 +731,9 @@ mod tests {
             )
             .await;
         assert!(r.ok);
- assert!(std::fs::read_to_string(&file) .unwrap() .contains("let x = 2;"));
+        assert!(std::fs::read_to_string(&file)
+            .unwrap()
+            .contains("let x = 2;"));
         let _ = std::fs::remove_dir_all(dir);
     }
     #[tokio::test]
@@ -749,8 +751,14 @@ mod tests {
                 ctx(),
             )
             .await;
- assert!( r.ok, "whitespace-normalized match should succeed: {:?}", r.error );
- assert!(std::fs::read_to_string(&file) .unwrap() .contains("let x = 2;"));
+        assert!(
+            r.ok,
+            "whitespace-normalized match should succeed: {:?}",
+            r.error
+        );
+        assert!(std::fs::read_to_string(&file)
+            .unwrap()
+            .contains("let x = 2;"));
         let _ = std::fs::remove_dir_all(dir);
     }
     #[tokio::test]

@@ -74,6 +74,8 @@ pub mod unified_diff;
 #[cfg(feature = "backend")]
 pub mod backend_host;
 
+#[cfg(feature = "backend")]
+pub use backend_host::{BackendTurnHandler, HostSessionBinder};
 pub use capability::{negotiate, Degradation, EffectiveCapabilities, HideExposure, Negotiation};
 pub use content::{ContentBlock, ResourceContents};
 pub use error::{AcpError, Result};
@@ -93,12 +95,10 @@ pub use server::{
     AcpServer, CountingBinder, DeferredTurnHandler, MintedSession, ScriptedTurnHandler,
     SessionBinder, TurnEvent, TurnHandler,
 };
-#[cfg(feature = "backend")]
-pub use backend_host::{BackendTurnHandler, HostSessionBinder};
 pub use session::{
     AcpLoadSessionRequest, AcpNewSessionRequest, AcpNewSessionResponse, AcpPlan, AcpPromptRequest,
-    AcpPromptResponse, McpServer, PlanEntry, PlanEntryPriority, PlanEntryStatus, SessionNotification,
-    SessionUpdate, StopReason,
+    AcpPromptResponse, McpServer, PlanEntry, PlanEntryPriority, PlanEntryStatus,
+    SessionNotification, SessionUpdate, StopReason,
 };
 pub use tool_call::{
     ToolCall, ToolCallContent, ToolCallLocation, ToolCallStatus, ToolCallUpdate, ToolKind,

@@ -8,8 +8,8 @@ use tempfile::tempdir;
 fn test_host() -> (tempfile::TempDir, BackendHost) {
     let dir = tempdir().expect("tempdir");
     let config = HideConfig::for_workspace(dir.path());
-    let host = BackendHost::from_services(BackendServices::open(config).expect("services"))
-        .expect("host");
+    let host =
+        BackendHost::from_services(BackendServices::open(config).expect("services")).expect("host");
     (dir, host)
 }
 

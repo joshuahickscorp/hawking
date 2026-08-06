@@ -11,7 +11,7 @@ cd "$REPO" || exit 2
 
 MODEL="${1:-${MODEL:-models/rwkv7-g1-04-sft-Q4_K_M.gguf}}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="${OUT:-reports/serve-smoke/$STAMP}"
+OUT="${OUT:-workspace/campaign/records/reports/serve-smoke/$STAMP}"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-$((18080 + ($$ % 1000)))}"
 ADDR="${HOST}:${PORT}"

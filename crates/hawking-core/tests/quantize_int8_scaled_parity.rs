@@ -15,7 +15,15 @@ fn read_f32(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
 }
 fn make_smoothing(n: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128 ^ 0xA_5BAEu128);
-    (0..n).map(|i| if i % 20 == 0 { rng.gen_range(2.0..5.0) } else { rng.gen_range(0.3..1.6) }).collect()
+    (0..n)
+        .map(|i| {
+            if i % 20 == 0 {
+                rng.gen_range(2.0..5.0)
+            } else {
+                rng.gen_range(0.3..1.6)
+            }
+        })
+        .collect()
 }
 fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     let mut rng = Pcg64Mcg::new(seed as u128);
@@ -28,12 +36,23 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     let scales_buf = ctx.new_buffer((n / 256) * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_scaled_tcb(&mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, n).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            n,
+        )
+        .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_int8 = read_i8(&int8_buf, n);
     let gpu_scales = read_f32(&scales_buf, n / 256);
-    assert_eq!(cpu_scales, gpu_scales, "scales mismatch at n={n} seed={seed}");
+    assert_eq!(
+        cpu_scales, gpu_scales,
+        "scales mismatch at n={n} seed={seed}"
+    );
     let mut diffs = 0usize;
     let mut first_bad = None;
     for i in 0..n {
@@ -44,7 +63,11 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
             }
         }
     }
-    assert_eq!(diffs, 0, "int8 mismatch at n={n} seed={seed}: {diffs} elems differ; first bad: {:?}", first_bad,);
+    assert_eq!(
+        diffs, 0,
+        "int8 mismatch at n={n} seed={seed}: {diffs} elems differ; first bad: {:?}",
+        first_bad,
+    );
 }
 #[test]
 fn quantize_int8_scaled_kernel_matches_cpu_small() {
@@ -73,7 +96,15 @@ fn quantize_int8_scaled_kernel_handles_all_zero_block() {
     let scales_buf = ctx.new_buffer(8 * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_scaled_tcb(&mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, 2048).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            2048,
+        )
+        .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     assert_eq!(cpu_scales, read_f32(&scales_buf, 8), "scales");
@@ -96,7 +127,15 @@ fn quantize_int8_scaled_kernel_handles_zero_smoothing_channels() {
     let scales_buf = ctx.new_buffer((n / 256) * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_scaled_tcb(&mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, n).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            n,
+        )
+        .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     assert_eq!(cpu_scales, read_f32(&scales_buf, n / 256), "scales");

@@ -1,0 +1,114 @@
+{
+  "schema": "hawking.tg.large_family_floor_result.v2",
+  "status": "K0_PASS_EXACT_TOKENS_METAL_NO_FALLBACK_FLOOR_RERUN_NO_NAMED_RUNG",
+  "at_utc": "2026-08-02",
+  "model": "Llama-3.3-70B-Instruct-Q4_K_M",
+  "family": "llama_dense",
+  "preregistration": "evidence/tg/TG32_LLAMA70_K0_RERUN_PREREGISTRATION_2026_08_02.json",
+  "source_admission": "evidence/tg/TG32_LLAMA70_K0_RERUN_SOURCE_ADMISSION_2026_08_02.json",
+  "raw_logs": {
+    "stderr": "evidence/tg/raw/TG32_LLAMA70_K0_RERUN_2026_08_02.stderr",
+    "stdout": "evidence/tg/raw/TG32_LLAMA70_K0_RERUN_2026_08_02.stdout"
+  },
+  "prompt": {
+    "text": "2+2=",
+    "prompt_token_ids": [
+      20,
+      25,
+      2650,
+      311
+    ],
+    "max_new_tokens": 4,
+    "temperature": 0,
+    "top_k": 1,
+    "top_p": 1,
+    "max_seq_len": 64
+  },
+  "runtime": {
+    "representation": "direct source-compatible Q4_K_M Metal path with packed Q5_K value projections",
+    "complete_tokens": 4,
+    "generated_token_ids": [
+      20,
+      25,
+      2650,
+      311
+    ],
+    "continuation_hash_sha256_compact_json": "1e62b736926b3871f3b88471bfdbc28a88a9dfde1bcb8ae79ea28eb80eaf8f80",
+    "tps": 2.73770275255479,
+    "prefill_ms": 2830.195042,
+    "decode_ms": 1461.079,
+    "measured_forward_token_ms": [
+      487.996041,
+      485.59754100000004,
+      487.481084
+    ],
+    "p50_ms": 487.481084,
+    "p95_ms": 487.94454529999996,
+    "p99_ms": 487.98574185999996,
+    "metal_dispatches_total": 3129,
+    "dispatches_per_forward": 1043,
+    "measured_decode_forwards": 3,
+    "command_buffers_in_stats": 0,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "fallback": 0
+  },
+  "source_reference": {
+    "receipt": "evidence/tg/TG32_LLAMA70_K0_ROOFLINE_TERMINAL.json",
+    "runtime": "llama.cpp build 9430-d48a56eff",
+    "source_tps": 17.28145440720291,
+    "source_tokens": [
+      20,
+      25,
+      2650,
+      311
+    ],
+    "source_token_match": true,
+    "parity_claim": "token-ID match only; llama.cpp remains source-reference throughput, not a Hawking promotion"
+  },
+  "comparison_to_previous_floor": {
+    "previous_receipt": "evidence/tg/TG32_LLAMA70_K0_ROOFLINE_TERMINAL.json",
+    "previous_hawking_forward_tps": 2.964252148527709,
+    "current_tps": 2.73770275255479,
+    "tps_delta_percent": -7.642716767041624,
+    "interpretation": "same source and exact continuation remain valid; run-to-run floor variation is recorded, not promoted"
+  },
+  "promotion": {
+    "same_model_before_after": false,
+    "capability_parity": "PASS exact prompt and continuation against prior source-bound token authority",
+    "clean_gpu": "PASS physical Apple M3 Ultra dispatches >0 and fallback =0; production lease not claimed",
+    "named_rung_earned": false,
+    "target_named_rung": "TG32",
+    "target_tps": 31.25,
+    "deepest_stable_rung": null,
+    "first_failing_rung": "TG32",
+    "current_honest_floor_tps": 2.73770275255479
+  },
+  "roofline": {
+    "binding": "command/state movement and host-device boundaries dominate; 1043 dispatches per forward and only three measured decode forwards",
+    "next_representation_change": "resident strict-b9430 runtime with device-resident activations/KV/head/sampling and command collapse toward <=8, <=3, then one graph",
+    "reopen_condition": "reopen only with a preregistered resident representation and same-model exact-token wall/p99 improvement"
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664",
+    "hash_reverified_before_run": true,
+    "parameter_class": {
+      "total_parameters": "70B",
+      "active_parameters": "70B",
+      "architecture": "dense"
+    }
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

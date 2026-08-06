@@ -3,6 +3,7 @@ from __future__ import annotations
 from lab.operators import hawking_null_metric as metric
 from lab.operators import glm52_moe_student as student
 from lab.operators import glm52_teacher_capture as capture
+from lab.layout import REPORTS_ROOT
 import sys as _sys_a1
 from pathlib import Path as _Path_a1
 import json
@@ -20,7 +21,7 @@ CONDENSE = _A1_CONDENSE
 ROOT = _A1_REPO
 SUPPORT = Path(os.environ.get('GLM52_SUPPORT_ROOT', '/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity'))
 CAPSULES = SUPPORT / 'source_fetch' / 'teacher' / 'capsules_generation_b'
-OUT = ROOT / 'reports' / 'condense' / 'glm52_generation_b'
+OUT = REPORTS_ROOT / 'condense' / 'glm52_generation_b'
 LEDGER = OUT / 'GLM52_FUNCTIONAL_EXPERIMENT_LEDGER.jsonl'
 FIT_SPLITS = ('teacher_fit', 'teacher_router', 'teacher_doctor')
 SCORE_SPLIT = 'teacher_score'

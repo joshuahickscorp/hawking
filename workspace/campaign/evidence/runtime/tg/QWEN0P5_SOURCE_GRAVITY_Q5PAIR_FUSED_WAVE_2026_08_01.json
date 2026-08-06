@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.tg.same_artifact_fused_ffn_wave.v1",
+  "status": "PASS_NUMERIC_AND_COMPLETE_TOKEN_SPEEDUP_NON_PROMOTIONAL",
+  "at": "2026-08-01T20:43:00-04:00",
+  "scope": "Same Qwen2.5-0.5B source-preserving Gravity artifact, exact 5-token prefix and 128 complete greedy decode tokens on Apple M3 Ultra. Bounded fixture only; no CLEAN lease or product capability gate.",
+  "source": {
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "artifact_sha256": "fdf91cb72acb96e8e91156d7cd90e69fb3391f8aae9b8cf2693d9c55602d6f59",
+    "ffn_gate_up_grammar": "Q5_0/Q5_0 in all 24 layers"
+  },
+  "change": {
+    "kernel": "gravity_raw_q5_0_pair_matvec",
+    "selection": "HAWKING_GRAVITY_FUSE_GATE_UP=1",
+    "work": "One source-packed Q5_0 pair wave replaces the separate gate and up GEMVs without dense reconstruction.",
+    "fallback": "Only matched Q5_0 pairs select this kernel; Q4_K pairs retain the existing pair kernel and all other grammars retain decomposed source kernels."
+  },
+  "numeric_parity_v21": {
+    "result": "PASS",
+    "independent_authority": "full FP64 transformer over packed source GGML bytes",
+    "gpu_relative_l2": 1.61e-6,
+    "gpu_kl": 1.438e-12,
+    "exact_greedy_and_top5": true,
+    "gpu_prefill_dispatches": 970,
+    "cpu_reference_fallback_total": 0,
+    "log_sha256": "22cef9b9fdffc096ee1c912a72028b56675df86f88b0620cb59436959f089602"
+  },
+  "isolated_metal_contract": {
+    "test": "cargo test -p hawking-core --test gravity_raw32_metal_parity --quiet",
+    "result": "4 passed",
+    "coverage": "Two distinct source-packed Q5_0 weight waves share one activation and one dispatch, with independent CPU Q5_0 matvec authority for both outputs."
+  },
+  "complete_token_128": {
+    "baseline_receipt_sha256": "79284f98f67d43b7566e9e1ac948956f565319fa98db6643401c1a0f9c60464b",
+    "candidate_receipt_sha256": "a62f08b879a79f69a8d217040539550ded9e413389247fe4bb6ffbf0e276789d",
+    "continuation_sha256_equal": true,
+    "baseline": { "tps": 166.1629585864153, "p99_ms": 7.636083, "dispatches": 27904 },
+    "candidate": {
+      "tps": 173.76849123120894,
+      "p50_ms": 6.128417,
+      "p95_ms": 7.157667,
+      "p99_ms": 7.444458,
+      "dispatches": 24832,
+      "physical_fused_qkv_dispatches": 3072,
+      "physical_fused_gate_up_dispatches": 3072,
+      "command_buffers": 128,
+      "cpu_reference_fallback_total": 0
+    },
+    "delta": { "tps_percent": 4.5771528802180494, "p99_percent": -2.5094672229204473, "dispatches_percent": -11.009746588693957 }
+  },
+  "promotion_boundary": {
+    "named_tg_rung": null,
+    "why_not_promoted": "The numeric result is a 0.5B fixture without CLEAN lease or whole-model capability evidence; it cannot promote a larger Qwen artifact."
+  },
+  "next_roof": "At 128 tokens, source-parity attention and remaining output/down projection waves dominate after QKV and gate/up collapse."
+}

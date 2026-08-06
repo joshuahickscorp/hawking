@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.one_mountain.admission_failure.v1",
+  "recorded_at": "2026-08-02T00:00:00-04:00",
+  "candidate": {
+    "name": "Qwen3-235B-A22B-Instruct-2507 q2_k GGUF",
+    "artifact_repository": "John1604/Qwen3-235B-A22B-Instruct-2507-gguf",
+    "artifact_revision": "8e92091d948f5303ee2c16d618ccc8d948ef4edc",
+    "remote_lfs_sha256": "8e564d50a64b4bc2d78b08478ef65f538570efe9da99c56a269ee6402d6bf714",
+    "downloaded_bytes": 85690999136,
+    "base_repository": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "base_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e"
+  },
+  "provider": {
+    "engine": "llama.cpp llama-cli",
+    "build": "b9430-d48a56eff",
+    "backend": "Metal",
+    "gpu_layers": 999
+  },
+  "result": {
+    "status": "rejected_architecture_impossible_to_execute_safely",
+    "full_baseline": "Failed at first compute with kIOGPUCommandBufferCallbackErrorOutOfMemory.",
+    "minimum_valid_graph": "Context 32, batch 8, microbatch 8 also failed at first compute with the same Metal out-of-memory error.",
+    "completion_tokens": 0,
+    "base_tps_claim": false,
+    "rotation_allowed_by_one_mountain_policy": true,
+    "artifact_evicted_after_evidence": true
+  },
+  "raw_evidence": [
+    {"path": "raw/QWEN3_235B_Q2K_LLAMA_CPP_METAL_BASELINE.stdout", "sha256": "1bacb55ced7310d48893125ecfc26da5e9e679baf90f5b2de4960cad326bbdac"},
+    {"path": "raw/QWEN3_235B_Q2K_LLAMA_CPP_METAL_BASELINE.stderr", "sha256": "6349454e361ee76eef30d8dfe3148d456f0928b49b22da10907b503c52d58b14"},
+    {"path": "raw/QWEN3_235B_Q2K_LLAMA_CPP_METAL_MIN_VALID_GRAPH.stdout", "sha256": "82a07fefeef2984da8e324943baf0cb5e45eb440473a78dc3ab0b4ef6642fd00"},
+    {"path": "raw/QWEN3_235B_Q2K_LLAMA_CPP_METAL_MIN_VALID_GRAPH.stderr", "sha256": "05c38accb29b4b571d9863a60475f3f2b70953ceb186d8a0c3925346dd3e653c"}
+  ]
+}

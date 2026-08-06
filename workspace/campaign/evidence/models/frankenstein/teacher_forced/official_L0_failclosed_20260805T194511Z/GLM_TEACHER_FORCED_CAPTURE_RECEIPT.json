@@ -1,0 +1,10 @@
+{
+  "at": "2026-08-05T19:45:11.220125Z",
+  "corpus_level": "L0",
+  "error": "config.json absent at /Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source/config.json",
+  "fabricated": false,
+  "mode": "official",
+  "schema": "hawking.frankenstein.glm_teacher_forced_capture.v1",
+  "seal_sha256": "4d2ca265e77aefbfdc4ba1c9166919acbce8e2d7b914841968eccb3dbcadd9f8",
+  "status": "FAIL_CLOSED"
+}

@@ -1,0 +1,93 @@
+{
+  "capability_claim_permitted": false,
+  "deadline": "2026-08-07",
+  "executor": {
+    "cli": "tools/condense/glm52_teacher_forced_executor.py",
+    "kind": "teacher_forced_layer_major",
+    "module": "lab.operators.glm52_teacher_forced_executor",
+    "not": [
+      "chat_server",
+      "autoregressive_decode",
+      "api"
+    ]
+  },
+  "fabricated": false,
+  "official_body": {
+    "blocker_file_line": "lab/operators/glm52_teacher_forced_executor.py:_load_config (config.json absent under GLM52Gravity/source); weight shards also absent — deepest official verified layer: none this run. Historical metadata-only capsules claim 0..77 under teacher/capsules but npz payloads were evicted.",
+    "fail_closed_error": "config.json absent at /Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source/config.json",
+    "fail_closed_receipt": "workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_failclosed_20260805T194511Z/GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json",
+    "fail_closed_status": "FAIL_CLOSED",
+    "never_faked": true,
+    "resident": false
+  },
+  "recorded_at": "2026-08-05T19:45:44.871979Z",
+  "remaining_work": [
+    "Stream official BF16 windows via GLM52_STREAMING_SCHEDULE_90GB (live gates currently refuse unauthorized restream)",
+    "Run L0=32 then L1=128 over all 78 official layers with per-window hash verify + eviction",
+    "Pair DSV4F side on the same frozen corpus (sibling worktree dsv4f-fullseq-capture)",
+    "Do not claim PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED until official 78-layer path seals"
+  ],
+  "schema": "hawking.frankenstein.glm_teacher_forced_campaign_summary.v1",
+  "seal_sha256": "7fa0b929bcd44c21cdb8ab8d969498289971c6045a5fe4f8baa7c91482332399",
+  "status": "MECHANISM_PROVEN_SYNTHETIC_OFFICIAL_BODY_ABSENT",
+  "synthetic_proof": {
+    "L0": {
+      "bytes_captured": 1253374,
+      "bytes_reclaimed": 3686224,
+      "evictions": 2,
+      "final_status": "CAPTURED_BOUNDED",
+      "floor_preserved": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "n_sequences": 32,
+      "receipt": "workspace/campaign/evidence/models/frankenstein/teacher_forced/synthetic_L0_20260805T194510Z/GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json",
+      "seal_sha256": "06b692f7e5a2ef93eff2bb0aa48c27775ddc7ae04fda8a0b5efbbc74a72aeb26",
+      "status": "PASS_SYNTHETIC_FULL_STACK"
+    },
+    "L1": {
+      "bytes_captured": 4675326,
+      "floor_preserved": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "n_sequences": 128,
+      "receipt": "workspace/campaign/evidence/models/frankenstein/teacher_forced/synthetic_L1_20260805T194524Z/GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json",
+      "seal_sha256": "04b5d1fcf7b5861058c23e860bfc1e0a39e76f0e0b9f8e241e672c1ebe5628a7",
+      "status": "PASS_SYNTHETIC_FULL_STACK"
+    },
+    "geometry": {
+      "hidden_size": 32,
+      "note": "architecture-preserving miniature twin; same decoder_layer ops as official",
+      "num_hidden_layers": 7
+    }
+  },
+  "target_geometry": {
+    "hidden_size": 6144,
+    "index_share_sparse_attn": true,
+    "moe": {
+      "first_k_dense_replace": 3,
+      "n_routed": 256,
+      "top_k": 8
+    },
+    "num_hidden_layers": 78
+  },
+  "target_repo": "zai-org/GLM-5.2",
+  "target_revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "tests": {
+    "path": "tools/condense/tests/test_glm52_teacher_forced_executor.py",
+    "result": "9 passed"
+  }
+}

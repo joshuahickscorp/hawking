@@ -605,6 +605,15 @@ def provenance(loaded: dict[str, Any]) -> dict[str, Any]:
 def machine() -> dict[str, Any]:
     return {**lab.MACHINE_FACTS, 'platform': platform.platform(), 'python': sys.version.split()[0]}
 
+def write_report(name: str, payload: Any) -> Path:
+    """Write one derived report below the declared report root only."""
+    if not isinstance(name, str) or not name or Path(name).name != name:
+        raise MoeLayerError('report name must be a simple file name')
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPORT_DIR / name
+    path.write_text(json.dumps(payload, indent=2, default=str), encoding='utf-8')
+    return path
+
 def selftest() -> int:
     """CPU-only: the graph ledger, the plan and the parity composition on a tiny fake layer."""
     geom = LayerGeometry(rows_a=64, cols_a=128, rows_b=128, cols_b=64, D=8, k=128)

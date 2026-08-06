@@ -379,7 +379,12 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(resp.headers() .get("access-control-allow-origin") .and_then(|v| v.to_str().ok()), Some("tauri://localhost"));
+        assert_eq!(
+            resp.headers()
+                .get("access-control-allow-origin")
+                .and_then(|v| v.to_str().ok()),
+            Some("tauri://localhost")
+        );
         let resp = router(host_for_test())
             .oneshot(
                 Request::builder()
@@ -429,7 +434,8 @@ mod tests {
             ("context", "compile"),
         ] {
             let app = router(host_for_test());
-            let body = serde_json::to_vec(&json!({ "id": id, "method": method, "params": {} })).unwrap();
+            let body =
+                serde_json::to_vec(&json!({ "id": id, "method": method, "params": {} })).unwrap();
             let resp = app
                 .oneshot(
                     Request::builder()
@@ -467,7 +473,10 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert!(value["roles"] .as_array() .map(|a| !a.is_empty()) .unwrap_or(false));
+        assert!(value["roles"]
+            .as_array()
+            .map(|a| !a.is_empty())
+            .unwrap_or(false));
     }
     #[tokio::test]
     async fn unknown_connector_surfaces_an_error() {
@@ -604,10 +613,13 @@ mod tests {
         );
         assert!(
             customs.iter().any(|d| d["kind"] == "checkpoint_created"
-                && d["record"]["checkpoint_id"].as_str().is_some_and(|id| id.starts_with("ckpt_"))),
+                && d["record"]["checkpoint_id"]
+                    .as_str()
+                    .is_some_and(|id| id.starts_with("ckpt_"))),
             "the catch-up must carry the sealed checkpoint id: {customs:?}"
         );
-        let body = serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
+        let body =
+            serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
         let resp = router(host.clone())
             .oneshot(
                 Request::builder()
@@ -623,10 +635,14 @@ mod tests {
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let digest: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(digest["status"]["write_lease"]["active"], json!(true));
-        assert_eq!(digest["status"]["write_lease"]["lease_id"], json!("gr_reload"));
+        assert_eq!(
+            digest["status"]["write_lease"]["lease_id"],
+            json!("gr_reload")
+        );
         assert_eq!(digest["home"]["digest"]["favorite_model"], json!("unknown"));
         hide_backend::tools::revoke_write_lease("test");
-        let body = serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
+        let body =
+            serde_json::to_vec(&json!({ "id": "home", "method": "digest", "params": {} })).unwrap();
         let resp = router(host.clone())
             .oneshot(
                 Request::builder()
@@ -670,7 +686,11 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert_eq!(value["status"], json!("ok"), "goal/set is a typed Ok result");
+        assert_eq!(
+            value["status"],
+            json!("ok"),
+            "goal/set is a typed Ok result"
+        );
         assert_eq!(value["method"], json!("goal/set"));
         let body = serde_json::to_vec(&json!({
             "id": "req_2",
@@ -692,7 +712,11 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
- assert_eq!( value["status"], json!("not_implemented"), "a deferred method is typed, not a 500" );
+        assert_eq!(
+            value["status"],
+            json!("not_implemented"),
+            "a deferred method is typed, not a 500"
+        );
     }
     #[tokio::test]
     async fn initialize_route_records_capabilities_on_the_host() {
@@ -724,8 +748,12 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
-        assert!(value["user_agent"] .as_str() .is_some_and(|s| s.starts_with("hide-backend/")));
+        assert!(value["user_agent"]
+            .as_str()
+            .is_some_and(|s| s.starts_with("hide-backend/")));
         assert!(host.connections().experimental_api("conn-serve-1"));
-        assert!(host.connections() .is_notification_suppressed("conn-serve-1", "runtime/status"));
+        assert!(host
+            .connections()
+            .is_notification_suppressed("conn-serve-1", "runtime/status"));
     }
 }

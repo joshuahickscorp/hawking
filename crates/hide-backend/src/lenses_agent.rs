@@ -14,7 +14,10 @@ pub struct AgentId(pub String);
 
 impl AgentId {
     pub fn new() -> Self {
-        Self(format!("agt_{}", ulid::Ulid::new().to_string().to_ascii_lowercase()))
+        Self(format!(
+            "agt_{}",
+            ulid::Ulid::new().to_string().to_ascii_lowercase()
+        ))
     }
 
     pub fn as_str(&self) -> &str {

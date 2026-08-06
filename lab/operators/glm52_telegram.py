@@ -1084,3 +1084,32 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser('discover-private-chat', help='store one unambiguous private chat')
     subparsers.add_parser('configure-hmac-key', help='generate a receipt HMAC key in Keychain')
     return parser
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    keychain: Keychain | None = None,
+    transport: TelegramTransport | None = None,
+    hidden_prompt: Callable[[str], str] = getpass.getpass,
+    random_bytes: Callable[[int], bytes] = secrets.token_bytes,
+) -> int:
+    """Run the redacted Telegram CLI with injectable dependencies for fixtures."""
+    args = build_parser().parse_args(argv)
+    store = keychain or MacOSKeychain()
+    network = transport or UrllibTelegramTransport()
+    try:
+        if args.command == 'status':
+            result = credential_status(store)
+        elif args.command == 'configure-token':
+            result = configure_token(store, network, hidden_prompt=hidden_prompt)
+        elif args.command == 'discover-private-chat':
+            result = discover_private_chat(store, network)
+        elif args.command == 'configure-hmac-key':
+            result = configure_hmac_key(store, random_bytes=random_bytes)
+        else:  # pragma: no cover - argparse owns the command choices
+            raise AssertionError('unreachable command')
+    except TelegramSecurityError as exc:
+        print(f'GLM52_TELEGRAM_REFUSED: {exc}', file=sys.stderr)
+        return 2
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0

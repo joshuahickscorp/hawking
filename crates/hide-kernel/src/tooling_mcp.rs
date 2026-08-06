@@ -665,10 +665,17 @@ mod tests {
         let results = register_mcp_servers(&[good, bad], &registry).await;
         assert_eq!(results.len(), 2);
         let good_r = results.iter().find(|r| r.server_id == "good").unwrap();
- assert!( good_r.error.is_none(), "good server errored: {:?}", good_r.error );
+        assert!(
+            good_r.error.is_none(),
+            "good server errored: {:?}",
+            good_r.error
+        );
         assert!(good_r.tools.contains(&"mcp:good/echo".to_string()));
         let bad_r = results.iter().find(|r| r.server_id == "bad").unwrap();
- assert!( bad_r.error.is_some(), "bad server should have recorded an error" );
+        assert!(
+            bad_r.error.is_some(),
+            "bad server should have recorded an error"
+        );
         assert!(registry.get("mcp:good/echo").is_some());
     }
     #[tokio::test]
@@ -690,7 +697,11 @@ mod tests {
         let results = register_mcp_servers(&[mk("dup"), mk("dup")], &registry).await;
         assert_eq!(results.len(), 2);
         assert!(results[0].error.is_none());
- assert!(results[1] .error .as_deref() .unwrap_or("") .contains("duplicate"));
+        assert!(results[1]
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("duplicate"));
     }
     #[tokio::test]
     async fn http_client_lists_and_calls_tools_against_an_inprocess_server() {

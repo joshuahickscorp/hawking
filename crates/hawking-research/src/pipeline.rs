@@ -592,7 +592,10 @@ mod tests {
         assert!(!run.claims.is_empty());
         assert!(!run.sub_questions.is_empty());
         assert!(run.report.is_some());
- assert!(run .verifications .iter() .any(|v| v.status == crate::verify::ClaimStatus::Supported));
+        assert!(run
+            .verifications
+            .iter()
+            .any(|v| v.status == crate::verify::ClaimStatus::Supported));
         assert!(!run.findings.is_empty());
         assert!(!graph.nodes_by_kind(NodeKind::Note).is_empty());
     }
@@ -647,7 +650,10 @@ mod tests {
             assert_eq!(v.citation_check, CitationCheck::Intact);
             checked += 1;
         }
- assert!( checked > 0, "expected at least one pinned claim to re-verify" );
+        assert!(
+            checked > 0,
+            "expected at least one pinned claim to re-verify"
+        );
         let target = run
             .claims
             .iter()

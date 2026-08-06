@@ -7,7 +7,9 @@ pub enum ProtocolError {
     #[error("unknown method: {0}")]
     UnknownMethod(String),
 
-    #[error("no compatible protocol version; client offered {offered:?}, server supports {supported:?}")]
+    #[error(
+        "no compatible protocol version; client offered {offered:?}, server supports {supported:?}"
+    )]
     VersionMismatch {
         offered: Vec<String>,
         supported: Vec<String>,

@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.tg.large_family_terminal_eviction.v1",
+  "status": "PASS_EXACT_SOURCE_ARTIFACT_TOKENIZER_CACHE_AND_TEMP_PURGED_FREE_BYTES_RECOVERED",
+  "at": "2026-08-01T21:40:00Z",
+  "family": "qwen",
+  "scope": "bounded same-model Qwen source-preserving Gravity representation comparison; this is not a large-family completion, TG promotion, or product-capability claim",
+  "terminal_receipt": "evidence/tg/QWEN0P5_SOURCE_PRESERVING_GRAVITY_COMPARISON_2026_08_01.json",
+  "removed": [
+    {"path": "models/qwen0p5-gravity-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf", "bytes": 397808192, "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653", "classification": "official Qwen source body"},
+    {"path": "models/qwen0p5-gravity-probe/Qwen2.5-0.5B-Instruct-Q4_K_M.source.gravity", "bytes": 391949877, "sha256": "be47e0835876b73b96042d1061eeabf75db74886cbd3e3a208109f897a550e20", "classification": "source-preserving Gravity artifact"},
+    {"path": "models/qwen0p5-gravity-probe/tokenizer/tokenizer.json", "bytes": 7031645, "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539", "classification": "hash-bound Qwen tokenizer"},
+    {"path": "models/qwen0p5-gravity-probe/.cache/huggingface", "classification": "campaign-local Hub metadata and cache"},
+    {"path": "four exact /tmp campaign logs and two exact mktemp Gravity-engine traces", "bytes": 667, "classification": "campaign-local pack, CPU/GPU comparison, and refusal diagnostics; selected measurements were transcribed into the terminal receipt before deletion"}
+  ],
+  "trash": {
+    "exact_items": [
+      "/Users/scammermike/.Trash/qwen0p5-gravity-probe",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-pack-result.json",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-pack-final.json",
+      "/Users/scammermike/.Trash/qwen0p5-gravity-live-test.log",
+      "/Users/scammermike/.Trash/qwen0p5-direct-exact-gravity-compare.log",
+      "/Users/scammermike/.Trash/hawking-qwen0p5-gravity-engine.ML3arESl7R",
+      "/Users/scammermike/.Trash/hawking-qwen0p5-gravity-engine-final.oc1KfJTo05"
+    ],
+    "other_trash_items_touched": false,
+    "purge_method": "Finder delete applied only to the seven exact item names",
+    "exact_items_permanently_purged": true,
+    "postcondition": "each exact Trash path was absent after the Finder operation"
+  },
+  "filesystem": {
+    "free_before_bytes": 380096241664,
+    "free_after_bytes": 380901752832,
+    "recovered_bytes": 804487168,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 180895863276,
+    "recovery_interpretation": "the source staging tree and exact Trash item were absent and free space increased by 804487168 bytes in the before/after samples. Later ordinary filesystem activity changed the current value; the recovery proof is the immediate measured pair."
+  },
+  "postconditions": {
+    "source_staging_absent": true,
+    "source_body_absent": true,
+    "artifact_absent": true,
+    "tokenizer_and_campaign_cache_absent": true,
+    "campaign_temp_absent": true,
+    "model_lane_contents": [],
+    "green_light_status_after_eviction": "STORAGE_GREEN",
+    "current_free_bytes_after_status": 380897492992,
+    "restream_started": false,
+    "owner_controlled_gates_changed": false
+  },
+  "cold_upload": {"performed": false, "reason": "no configured remote destination or owner upload authority"}
+}

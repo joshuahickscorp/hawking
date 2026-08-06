@@ -7,7 +7,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
-from lab.receipts import _sha256_hex as sha256_hex, _utc_now as utc_now
+from lab.layout import resolve_workspace_path
+from lab.receipts import (
+    GateEvidence,
+    _sha256_hex as sha256_hex,
+    _utc_now as utc_now,
+    verify as verify_receipt,
+)
 from lab.spec import BurialRule, ExperimentSpec, PromotionRule
 
 LEDGER_SCHEMA = "hawking.lab.governance_ledger.v1"
@@ -77,6 +83,7 @@ def apply_governance(
     ledger: GovernanceLedger,
     verdict: str,
     gate_results: Mapping[str, bool],
+    gate_evidence: Mapping[str, GateEvidence] | None = None,
     author: str = "",
     admitter: str = "",
     measurement_kind: str = "real",
@@ -107,12 +114,53 @@ def apply_governance(
         for gate in rule.require_gates:
             if not gate_results.get(gate):
                 raise GovernanceError(f"tier promotion refused: gate {gate!r} failed")
+            evidence = (gate_evidence or {}).get(gate)
+            if evidence is None:
+                raise GovernanceError(
+                    f"tier promotion refused: gate {gate!r} has no sealed evidence"
+                )
+            if evidence.gate_id != gate or evidence.result != "PASS":
+                raise GovernanceError(
+                    f"tier promotion refused: gate {gate!r} evidence is not a PASS for that gate"
+                )
+            try:
+                # Re-parse the envelope at this boundary so a direct caller
+                # cannot hand governance a mutable/unsealed object that the
+                # runtime handler would otherwise have persisted and checked.
+                normalized = GateEvidence.from_dict(evidence.to_dict())
+                receipt_path = Path(normalized.receipt_path)
+                if not receipt_path.is_absolute():
+                    workspace_receipt = resolve_workspace_path(receipt_path)
+                    receipt_path = (
+                        workspace_receipt
+                        if workspace_receipt.exists()
+                        else (ledger.path.parent / receipt_path).resolve()
+                    )
+                raw_receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                verified_receipt = verify_receipt(
+                    raw_receipt, label=f"gate receipt {receipt_path}"
+                )
+                if verified_receipt.get("seal_sha256") != normalized.receipt_sha256:
+                    raise GovernanceError(
+                        f"tier promotion refused: gate {gate!r} receipt seal does not match"
+                    )
+            except GovernanceError:
+                raise
+            except (OSError, ValueError, TypeError) as exc:
+                raise GovernanceError(
+                    f"tier promotion refused: gate {gate!r} receipt binding is invalid: {exc}"
+                ) from exc
         event = ledger.append(
             "promote",
             {
                 "campaign_id": spec.campaign_id,
                 "verdict": verdict,
                 "gates": dict(gate_results),
+                "gate_evidence": {
+                    gate: evidence.to_dict()
+                    for gate, evidence in (gate_evidence or {}).items()
+                    if gate in rule.require_gates
+                },
                 "admitter": admitter,
             },
         )
@@ -123,12 +171,16 @@ def apply_governance(
         arts = list(artifacts or [])
         recs = list(receipts or [])
         if rule_b.retain_artifacts:
+            if not arts:
+                missing.append("at least one retained artifact")
             for p in arts:
-                if not Path(p).exists():
+                if not Path(p).is_file() or Path(p).stat().st_size == 0:
                     missing.append(str(p))
         if rule_b.retain_receipts:
+            if not recs:
+                missing.append("at least one retained receipt")
             for p in recs:
-                if not Path(p).exists():
+                if not Path(p).is_file() or Path(p).stat().st_size == 0:
                     missing.append(str(p))
         if missing:
             raise GovernanceError(

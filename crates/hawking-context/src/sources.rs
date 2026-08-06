@@ -7,9 +7,7 @@
 use crate::compiler::{CompileInput, ContextCandidate, ContextSource};
 use crate::manifest::{ContextSourceKind, PinState};
 use crate::memory::{MemoryKind, MemoryStore};
-use crate::memory_classes::{
-    ClassBudgets, ClassedMemorySystem, MemoryClass, WriteAuthority,
-};
+use crate::memory_classes::{ClassBudgets, ClassedMemorySystem, MemoryClass, WriteAuthority};
 use futures::future::BoxFuture;
 use hawking_index::{CodeIndex, SearchQuery, SearchResultSource};
 use hide_core::error::Result;
@@ -342,10 +340,7 @@ impl ContextSource for ClassedMemoryContextSource {
                     c.importance = Some(hit.importance);
                     c.recency_ms = Some(hit.provenance.written_at_ms);
                     // User prefs + verification claims float above ambient code.
-                    if matches!(
-                        hit.class,
-                        MemoryClass::User | MemoryClass::Verification
-                    ) {
+                    if matches!(hit.class, MemoryClass::User | MemoryClass::Verification) {
                         c.pin = PinState::UserPinned;
                     }
                     out.push(c);
@@ -617,7 +612,9 @@ mod tests {
         assert!(mem_spans.len() >= 2);
         let titles: Vec<&str> = mem_spans.iter().map(|s| s.title.as_str()).collect();
         assert!(titles.iter().any(|t| t.contains("semantic_project")));
-        assert!(titles .iter() .any(|t| t.contains("user") || t.contains("verification")));
+        assert!(titles
+            .iter()
+            .any(|t| t.contains("user") || t.contains("verification")));
         let ret = sys.last_retrieval().expect("retrieval recorded");
         assert_eq!(ret.slices.len(), 6);
         let sem = ret.slice(MemoryClass::SemanticProject).unwrap();
@@ -628,7 +625,11 @@ mod tests {
         assert!(sem.used_tokens <= sem.budget_tokens);
         assert!(ver.used_tokens <= ver.budget_tokens);
         let lines = ret.budget_explanations();
-        assert!(lines.iter().any(|l| l.contains("memory_class.semantic_project")));
-        assert!(lines.iter().any(|l| l.contains("memory_class.verification")));
+        assert!(lines
+            .iter()
+            .any(|l| l.contains("memory_class.semantic_project")));
+        assert!(lines
+            .iter()
+            .any(|l| l.contains("memory_class.verification")));
     }
 }

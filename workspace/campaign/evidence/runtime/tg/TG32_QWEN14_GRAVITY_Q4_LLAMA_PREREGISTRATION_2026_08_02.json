@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.tg.same_model_runtime_optimization_preregistration.v1",
+  "status": "PREREGISTERED_GRAVITY_Q4_LLAMA_SUMY_GEOMETRY_WAVE",
+  "at_utc": "2026-08-02",
+  "candidate": {
+    "id": "qwen14-gravity-q4-v3-llama-v1",
+    "family": "qwen2_dense",
+    "hypothesis": "The llama.cpp-style Q4_K sum-y geometry (four rows per simdgroup and shared activation correction) will reduce Qwen-14B GEMV work while retaining source Q4_K bytes and exact token decisions.",
+    "mechanism": "Set HAWKING_GRAVITY_Q4_SCHEDULE=v3_llama; eligible raw Q4_K matvecs use gemm_q4_k_m_v3_llama with 64-thread groups and strict shape/byte guards.",
+    "fallback": "Reject on Numeric Parity V2.1 failure, changed continuation, CPU fallback, absent topology change, complete-token wall regression, or p95/p99 regression.",
+    "reopen_condition": "Only a materially different Q4 representation, geometry, or graph-level change may reopen this lane."
+  },
+  "source": {"repository": "bartowski/Qwen2.5-14B-Instruct-GGUF", "revision": "05244aa5d871c661c80082a15d3bce44714d068d", "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf", "bytes": 8988110976, "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"},
+  "artifact": {"filename": "qwen14-q4-v3-dual.gravity", "source_quant_bytes_preserved": true, "lossy_fit": false, "packer": "tools/llama_q4k_gravity_pack.py"},
+  "tokenizer": {"revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8", "filename": "tokenizer.json", "bytes": 7031645, "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"},
+  "protocol": {"device_id": "Apple M3 Ultra", "prompt_token_ids": [785, 6722, 315, 9625, 374], "temperature": 0.0, "complete_tokens_each_run": 32, "runs_each_side": 2, "fallback_required": 0, "continuation_hash_required": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c", "wall_win_required_percent": 3.0, "p95_regression_allowed_percent": 0.0, "p99_regression_allowed_percent": 0.0},
+  "control": {"representation": "same artifact, strict b9430 schedule", "median_tps": 41.802757628642, "median_decode_ms": 765.5026045, "median_p50_ms": 24.0139375, "median_p95_ms": 25.3714375, "median_p99_ms": 25.6352915, "dispatches_per_forward": 770, "fallback_count": 0},
+  "admission": {"free_bytes_before": 368761905152, "protected_floor_bytes": 200005889556, "model_lane_envelope_bytes": 90000000000, "normal_artifact_cap_bytes": 82000000000, "active_model_count_before": 1, "verdict": "PASS_EXISTING_ACTIVE_BODY"},
+  "owner_fences": {"HAWKING_PARENT_RESTREAM_AUTHORIZED": false, "RAMANUJAN_RESEARCH_AUTHORIZED": false, "ODYSSEY_LAUNCH_AUTHORIZED": false, "D5": false, "D8": false, "D9": false, "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"},
+  "promotion_boundary": "Same-model parity-clean CLEAN timing only; no capability or TG claim from this preregistration."
+}

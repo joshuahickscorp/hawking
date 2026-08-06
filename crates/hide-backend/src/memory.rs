@@ -1,5 +1,11 @@
 //! Outcome-governed durable memory + revalidation (bible sec 21-22, sec 78.1 #16).
 //!
+//! **Authority boundary (D-SEAM-COLLAPSE-V1):** this host [`MemoryLedger`] is an
+//! **intent/KV projection only** — it stores bible-ledger claims and outcome
+//! scores for host intents. Six-class **forget/export** authority lives solely
+//! in `hawking_context::ClassedMemorySystem`; host classed writes go through
+//! [`crate::classed_writers`]. Do not add a second forget/export path here.
+//!
 //! A [`MemoryRecord`] is a durable, provenance-carrying CLAIM about a workspace
 //! (a decision, a file fact, a constraint, a failed approach). Unlike the Spine B
 //! Project Brain (the `hawking_context::MemoryStore` sqlite store), these records
@@ -395,10 +401,11 @@ fn mint_memory_id(scope: &MemoryScope, claim: &str) -> String {
     format!("mem_{}", &hex.as_str()[..24])
 }
 
-/// Durable persistence for [`MemoryRecord`]s over the KV store (bible sec 21-22).
-/// A stateless facade over the `memory` namespace keyed by `memory_id`, mirroring
-/// how [`crate::services::GoalStore`] / [`crate::services::CheckpointStore`] wrap
-/// their namespaces.
+/// Durable KV projection for [`MemoryRecord`]s (bible sec 21-22).
+/// Intent/ledger surface only — not the six-class forget/export authority
+/// (that is `ClassedMemorySystem` via [`crate::classed_writers`]). Stateless
+/// facade over the `memory` namespace keyed by `memory_id`, mirroring
+/// [`crate::services::GoalStore`] / [`crate::services::CheckpointStore`].
 pub struct MemoryLedger;
 
 impl MemoryLedger {

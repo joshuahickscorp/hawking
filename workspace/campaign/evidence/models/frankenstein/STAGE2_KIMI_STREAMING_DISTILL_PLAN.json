@@ -1,0 +1,192 @@
+{
+  "citations": {
+    "dsv_admission": "workspace/campaign/evidence/models/deepseek-v4/DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json",
+    "fusion_operation": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_FUSION_OPERATION.json",
+    "kimi_admission": "workspace/campaign/evidence/models/kimi-k3/KIMI_K3_SOURCE_ADMISSION.json",
+    "pilot_schedule": "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_DIRECT_STREAMING_SCHEDULE_PILOT.json"
+  },
+  "default_transplant_point": "post_moe_hidden_state",
+  "depends_on": {
+    "bridge": "KIMI_STRATEGIC_BRIDGE",
+    "fusion_operation": "block_wise_streaming_distillation_via_latent_bridge",
+    "stage1": "PROTO_FRANKENSTEIN",
+    "storage": "CLEAR_GLM_WINDOWS_AND_DONOR_CACHES"
+  },
+  "doc_path": "workspace/docs/plans/STAGE2_KIMI_STREAMING_DISTILL_PLAN.md",
+  "donor": {
+    "active_params": "104B",
+    "admission_seal_sha256": "597ac05752f84c8fffc175255e64d0c56b976ef3c389a59cebabf322b4fa30b0",
+    "admission_status": "KIMI_K3_OFFICIAL_SOURCE_ADMITTED_METADATA_ONLY",
+    "card": "https://huggingface.co/moonshotai/Kimi-K3",
+    "context_length": 1048576,
+    "hidden_size": 7168,
+    "inheritance_targets": [
+      "long_horizon_strategy",
+      "knowledge_work",
+      "coding_breadth",
+      "context_management",
+      "agent_orchestration",
+      "critique_and_synthesis"
+    ],
+    "n_experts_card": 896,
+    "n_shared_experts_card": 2,
+    "num_hidden_layers": 93,
+    "repository": "moonshotai/Kimi-K3",
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "selected_experts_per_token_card": 16,
+    "total_params": "2.8T",
+    "weight_shard_bytes": 1560936091448,
+    "weight_shard_count": 96,
+    "weights_materialized_at_admission": false
+  },
+  "double_stream_law": {
+    "density_mechanism": {
+      "active_bytes_per_token": "Decode cost tracks top-k experts + attention; inheritance aims to raise capability while active-bytes/token stay near the existing DeepSeek MoE roofline.",
+      "bounded_memory": "At most one donor window resident; Kimi full body ~1.56TB never fully resident.",
+      "expert_specialization": "Residual adapters and route-aware targets push different token classes toward different expert coalitions without pasting donor expert matrices.",
+      "reversibility": "Stage-2 adapters are separately content-addressed and removable without erasing Stage-1.",
+      "router_capacity": "Teach one coherent specialisation (math), seal, then teach a second (strategic/agentic) to avoid dual-donor gradient conflict."
+    },
+    "meaning": "Two sequential inheritance streams over one small student body; never simultaneous dual-donor residency or elementwise weight averaging.",
+    "stream_a": "GLM_MATH_BRIDGE -> PROTO",
+    "stream_b": "KIMI_STRATEGIC_BRIDGE -> FINAL"
+  },
+  "file_sha256_preseal": "ca6a0e7ea761d5c00e24f5fa58982411883a88c93e51cccbcd9653a7f61b81fb",
+  "layer_map": {
+    "donor_layers": 93,
+    "examples": {
+      "student_0": 0,
+      "student_42": 92
+    },
+    "formula": "round(student_layer * (donor_L-1) / (student_L-1))",
+    "student_layers": 43
+  },
+  "lifecycle_per_block": [
+    "disk_floor_check",
+    "stream_one_donor_window",
+    "verify_range_identity_and_provenance",
+    "project_donor_activations_or_PENDING",
+    "student_forward_or_DEEPSEEK_FORWARD_PENDING",
+    "fit_residual_adapter_or_stub",
+    "seal_output_block_raw_no_gravity",
+    "evict_donor_window_and_scratch",
+    "append_progress_cursor"
+  ],
+  "objective": "After Proto shards are sealed and storage is cleared, stream Kimi-K3 the same bounded-evicting way GLM was streamed, and distill strategic/agentic inheritance into Proto via KIMI_STRATEGIC_BRIDGE to produce Final Frankenstein.",
+  "phases": [
+    {
+      "human": false,
+      "id": "S2.0",
+      "title": "Proto seal inventory + free-disk report"
+    },
+    {
+      "human": "operator_confirm",
+      "id": "S2.1",
+      "title": "Clear storage of GLM windows/caches"
+    },
+    {
+      "human": false,
+      "id": "S2.2",
+      "title": "Freeze Stage-2 streaming schedule JSON"
+    },
+    {
+      "gate": "DEEPSEEK_FORWARD",
+      "human": false,
+      "id": "S2.3",
+      "title": "Open DeepSeek forward / activation capture"
+    },
+    {
+      "human": false,
+      "id": "S2.4",
+      "title": "Bounded Kimi window stream + fit residuals"
+    },
+    {
+      "human": false,
+      "id": "S2.5",
+      "title": "Stage-2 archive seal"
+    },
+    {
+      "human": false,
+      "id": "S2.6",
+      "title": "Capability probes Proto vs Final"
+    },
+    {
+      "human": false,
+      "id": "S2.7",
+      "title": "Mark Final Frankenstein candidate"
+    }
+  ],
+  "plan_kind": "executable_planning_only",
+  "produces": "FINAL_FRANKENSTEIN",
+  "prohibited": [
+    "hold_two_donors_resident",
+    "direct_weight_transplant",
+    "elementwise_average_misaligned_tensors",
+    "retain_raw_donor_weights_logits_kv_as_inheritance",
+    "claim_final_equals_2.8T_or_104B_active",
+    "start_while_glm_windows_occupy_floor",
+    "treat_metadata_admission_as_stream_authorization"
+  ],
+  "projection": {
+    "dtype": "bfloat16",
+    "math": "a_d_prime = a_d @ W_proj + b_proj",
+    "name": "project_kimi_k3_to_student",
+    "weight_shape": [
+      7168,
+      4096
+    ]
+  },
+  "residual_adapter": {
+    "apply": "a_out = a_s + A(a_s)",
+    "weight_shape": [
+      4096,
+      4096
+    ],
+    "zero_init": true
+  },
+  "schema": "hawking.frankenstein.stage2_kimi_streaming_distill_plan.v1",
+  "seal_note": "Planning seal: file_sha256_preseal is SHA-256 of the JSON body before this stamp field set was added; recompute on mutation.",
+  "seal_sha256": "56ccbbbd057191cc29cbecd5257ac06da64d34d38891ffe4748ef88fdf2d05de",
+  "sealed_at": "2026-08-05T17:33:25Z",
+  "status": "PLAN_SEALED_NOT_AUTHORIZING_STREAM",
+  "storage_contract": {
+    "clear_storage_before_start": true,
+    "donor_window_budget_bytes_planning": 34359738368,
+    "gravity_compress_stage2_output": false,
+    "hard_free_floor_bytes": 16106127360,
+    "kimi_full_body_resident": false,
+    "max_simultaneous_donor_models": 1,
+    "working_set_invariant": "DeepSeek body (read-only) + at most ONE Kimi donor window + current output block + scratch"
+  },
+  "student_body": {
+    "active_params": "13B",
+    "card": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash",
+    "context_length": 1048576,
+    "hidden_size": 4096,
+    "n_routed_experts": 256,
+    "n_shared_experts": 1,
+    "num_experts_per_tok": 6,
+    "num_hidden_layers": 43,
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "source_gb_from_blobs_admission": 159.6,
+    "total_params": "284B"
+  },
+  "transplant_priority": [
+    "post_moe_hidden_state",
+    "final_hidden_state",
+    "lm_head_logits",
+    "hcli_tool_action_decision",
+    "pre_router_hidden_state",
+    "router_logits",
+    "selected_expert_ids",
+    "route_probabilities_and_margins"
+  ],
+  "unknowns_measure_do_not_assume": [
+    "peak_resident_ram_one_kimi_window_plus_student_forward",
+    "optimal_window_size_shard_count",
+    "router_point_adapters_vs_post_moe_only",
+    "wall_clock_full_43_layer_kimi_residual_fit",
+    "multimodal_inheritance_value_on_this_mac"
+  ]
+}

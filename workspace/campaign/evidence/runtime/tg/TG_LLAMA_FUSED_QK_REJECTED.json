@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.tg.candidate_rejection.v1",
+  "candidate": "llama-resident-source-q4-qk-pair",
+  "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+  "source_revision": "7b064f5842bf9532c91456deda288a1b672397a54fa729aa665952863033557c",
+  "protocol": {
+    "context_tokens": 2048,
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "baseline": "resident source-FATTN with fused QKV RoPE/KV, residual-norm, and gate/up",
+    "candidate": "one source-order Q4_K Q/K pair dispatch per layer; V remains unchanged"
+  },
+  "correctness": {
+    "exact_greedy_token_trace_against_source_baseline": true,
+    "cpu_reference_fallback_count": 0,
+    "baseline_dispatches_per_forward": 386,
+    "candidate_dispatches_per_forward": 354
+  },
+  "measurements": {
+    "traced_adjacent_candidate_tps": 92.42312405739831,
+    "traced_adjacent_baseline_tps": 92.67480199335303,
+    "untraced_alternating_control_tps": [84.40, 84.40],
+    "untraced_alternating_candidate_tps": [89.29, 93.43]
+  },
+  "verdict": "rejected",
+  "reason": "The candidate is exact and removes 32 dispatches/token, but does not establish a stable complete-token TPS gain. The clean adjacent measurement is slightly slower and the later thermal-drifting sequence cannot reverse that result.",
+  "runtime_status": "Requires both HAWKING_LLAMA_RESIDENT_B9430_FUSED_QK=1 and HAWKING_LLAMA_RESIDENT_B9430_FUSED_QK_UNSAFE_DIAGNOSTIC=1; never selected by the default lane.",
+  "reopen_condition": "Profile source Q/K separately under production GPU counters and redesign only if launch overhead, rather than the fused kernel's occupancy/cache cost, is proven to dominate."
+}

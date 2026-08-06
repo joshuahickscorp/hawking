@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "seal_sha256": "9f5f4b7d3ba0fa873cab785894d9e47771b2c7dda79f660aa98d32c4e84a3c2d",
+  "status": "PREREGISTERED",
+  "at": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "candidate": {
+    "id": "serial-routed-expert-weight-stream",
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-serial-candidate-2026-08-02.json",
+    "profile_sha256": "1c8834534a36462bfd5311db75eb6f39c6472455360e04821bc8dff28df19cc6",
+    "change": "Set gemm_q4_k_schedule=v2t_gu_serial so routed expert gate/up and down GEMVs are encoded serially per expert; all other kernels, representation, KV, MLA, RoPE, routing, tokenizer, and one-command-buffer topology remain unchanged.",
+    "mechanism": "A single expert's gate+up and down slabs are streamed sequentially to reduce concurrent routed-expert L2 thrash; this changes physical ordering and memory residency, not model decisions.",
+    "hypothesis": "The promoted v2t_gu_v2 path can be memory-bound by simultaneous routed expert slabs. Serial expert streams may reduce cache eviction enough to lower complete-token wall time by at least 3 percent without changing source-window decisions.",
+    "promotion_threshold_percent": 3.0,
+    "required_safety": ["same pinned DeepSeek source SHA", "same prompt and 32 complete tokens", "same Apple M3 Ultra device", "CPU/reference fallback 0", "first four source decisions equal", "p99 non-regression"]
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "promoted_tps": 41.06909043843913,
+    "promoted_target_tg20_tps": 50.0,
+    "promoted_dispatches_per_forward": 487,
+    "promoted_cpu_reference_fallback_count": 0
+  },
+  "claim_boundary": "This receipt authorizes one bounded same-model diagnostic only; it cannot promote a TG rung, production performance, capability, lease, or owner gate.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  }
+}

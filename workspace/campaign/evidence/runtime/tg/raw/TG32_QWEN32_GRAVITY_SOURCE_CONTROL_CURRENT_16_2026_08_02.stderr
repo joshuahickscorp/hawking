@@ -1,0 +1,21 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+[token] id=12095 text=" Paris"
+[token] id=13 text="."
+[token] id=39970 text=" Correct"
+[token] id=0 text="!"
+[token] id=576 text=" The"
+[token] id=6722 text=" capital"
+[token] id=315 text=" of"
+[token] id=9625 text=" France"
+[token] id=374 text=" is"
+[token] id=12824 text=" indeed"
+[token] id=12095 text=" Paris"
+[token] id=13 text="."
+[token] id=12095 text=" Paris"
+[token] id=374 text=" is"
+[token] id=3881 text=" known"
+[token] id=369 text=" for"
+
+[stats] reason=max_tokens prompt=5 completion=16 prefill_ms=6513.4 decode_ms=2198.9 dec_tps=6.82 dispatches_per_fwd=740 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":15,"completion_tokens":16,"cpu_reference_fallback_count":0,"dec_tps":6.821619371716349,"decode_command_buffers_total":15,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":11100,"decode_ms":2198.891375,"decode_token_ms":[146.868417,146.8715,146.68925,146.62366600000001,146.92791599999998,145.58416699999998,146.23737500000001,146.750584,146.529833,146.039375,147.317459,145.722708,146.406666,145.80974999999998,146.90491699999998],"device_id":"Apple M3 Ultra","dispatches_per_forward":740,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"raw-q6k","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":5,"prefill_metal_dispatches_total":3700,"prefill_ms":6513.388166000001,"profile_id":null,"prompt_tokens":5,"readback_bytes":0,"token_only_path_used":false}

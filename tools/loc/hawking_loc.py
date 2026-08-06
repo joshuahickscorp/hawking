@@ -29,6 +29,13 @@ from pathlib import Path
 SCHEMA = "hawking.loc.authority.v1"
 REPO = Path(__file__).resolve().parents[2]
 
+# Keep historical revisions measurable while recognizing the current workspace
+# shelf.  The old roots remain here intentionally: ``--rev`` can still inspect a
+# commit from before the physical-layout change.
+VENDORED_ROOTS = ("vendor/", "workspace/vendor/")
+DOC_ARCHIVE_ROOTS = ("docs/archive/", "workspace/docs/archive/")
+TEST_ROOTS = ("tests/", "workspace/quality/tests/")
+
 # Extension -> language bucket. Anything not listed is not code and is not counted.
 LANGS = {
     ".rs": "rust",
@@ -48,7 +55,7 @@ LANGS = {
 # from the headline combined number.
 def classify(path: str) -> str:
     p = path
-    if p.startswith("vendor/"):
+    if p.startswith(VENDORED_ROOTS):
         return "vendored"
     if "/generated/" in p or p.endswith(".generated.rs") or p.endswith(".generated.ts"):
         return "generated"
@@ -58,7 +65,7 @@ def classify(path: str) -> str:
     # headline dropped 86,211 without a line being eliminated. Renaming a directory is
     # not archiving, and the campaign counts neither packs, archives nor relocation as
     # condensation. Executable code is active wherever it sits.
-    if p.startswith("docs/archive/") and not p.endswith((".py", ".rs", ".sh", ".ts", ".tsx")):
+    if p.startswith(DOC_ARCHIVE_ROOTS) and not p.endswith((".py", ".rs", ".sh", ".ts", ".tsx")):
         return "archived"
     if "/target/" in p or p.startswith("target/"):
         return "build"
@@ -80,7 +87,7 @@ def subsystem(path: str) -> str:
 def is_test(path: str) -> bool:
     return (
         "/tests/" in path
-        or path.startswith("tests/")
+        or path.startswith(TEST_ROOTS)
         or Path(path).name.startswith("test_")
         or Path(path).name.endswith("_test.rs")
         or "/benches/" in path
@@ -110,10 +117,14 @@ def line_count(rev: str | None, path: str) -> int:
     return len(blob.split(b"\n")) - 1
 
 
-def measure(rev: str | None) -> dict:
+def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
     if rev is None:
         files = git(["ls-files"]).splitlines()
+        if include_untracked:
+            files = sorted(set(files) | set(git(["ls-files", "--others", "--exclude-standard"]).splitlines()))
     else:
+        if include_untracked:
+            raise ValueError("include_untracked is only defined for the working tree")
         files = git(["ls-tree", "-r", "--name-only", rev]).splitlines()
 
     buckets: dict[str, int] = {}
@@ -163,7 +174,11 @@ def measure(rev: str | None) -> dict:
         "vendored_LOC": buckets.get("vendored", 0),
         "active_files": n_active,
         "policy": {
-            "counts": "physical lines of tracked source files",
+            "counts": (
+                "physical lines of tracked and non-ignored untracked source files"
+                if include_untracked else "physical lines of tracked source files"
+            ),
+            "include_untracked_active_source": include_untracked,
             "languages": sorted(set(LANGS.values())),
             "excluded_buckets": ["vendored", "generated", "archived", "build"],
             "no_gaming": (
@@ -180,9 +195,10 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="emit JSON only")
     ap.add_argument("--ledger", default=None, help="append the result to this jsonl ledger")
     ap.add_argument("--note", default="", help="note recorded in the ledger row")
+    ap.add_argument("--include-untracked", action="store_true", help="include non-ignored untracked source in a working-tree audit")
     args = ap.parse_args()
 
-    result = measure(args.rev)
+    result = measure(args.rev, include_untracked=args.include_untracked)
     if args.ledger:
         row = dict(result)
         row["note"] = args.note
@@ -209,14 +225,17 @@ def main() -> int:
 
 def _selfcheck() -> None:
     """Smallest check that fails if the policy drifts."""
+    assert classify("workspace/vendor/strand-quant/src/lib.rs") == "vendored"
     assert classify("vendor/strand-quant/src/lib.rs") == "vendored"
     assert classify("crates/hawking-adapters/generated/abi.rs") == "generated"
+    assert classify("workspace/docs/archive/old.md") == "archived"
     assert classify("docs/archive/old.md") == "archived"
     assert classify("crates/hawking-core/src/lib.rs") == "active"
     assert subsystem("crates/hide-core/src/lib.rs") == "hide"
     assert subsystem("crates/hawking-core/src/lib.rs") == "hawking"
     assert subsystem("tools/condense/glm52_state.py") == "laboratory"
     assert is_test("crates/hawking-core/tests/parity.rs")
+    assert is_test("workspace/quality/tests/fixtures/test_x.py")
     assert is_test("tools/condense/tests/test_x.py")
     assert not is_test("crates/hawking-core/src/lib.rs")
     print("selfcheck ok")

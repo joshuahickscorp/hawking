@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v2",
+  "status": "SOURCE_HASH_VERIFIED_ONE_BODY_ACTIVE",
+  "at_utc": "2026-08-02",
+  "family": "qwen",
+  "parameter_class": {
+    "total_parameters": "72B",
+    "active_parameters": "72B",
+    "architecture": "dense"
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "filename": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "license": "Qwen license",
+    "hash_verified_after_download": true
+  },
+  "transfer": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REHYDRATE_2026_08_02.json",
+    "selected_mode": "standard",
+    "selected_requested_concurrency": 8,
+    "selected_stable_median_gb_per_hour_decimal": 137.06093012763125,
+    "range_hashes_verified": true,
+    "resume_hash_verified": true,
+    "body_writes_are_campaign_download_only": true
+  },
+  "admission": {
+    "free_bytes_before_body": 358377455616,
+    "protected_floor_bytes": 200005889556,
+    "planned_source_scratch_metadata_bytes": 69964293792,
+    "free_bytes_after_source": 310662336512,
+    "residual_above_floor_after_source": 110656446956,
+    "model_lane_envelope_bytes": 110000000000,
+    "active_model_bodies": 1,
+    "second_full_model_body": false,
+    "lane": "models/tg-active/qwen72-v4-lmhead-2026-08-02"
+  },
+  "next_action": "run same-model direct-source control and Q4K output-head candidate; evict exact body after receipt",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

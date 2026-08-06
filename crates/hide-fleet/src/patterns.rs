@@ -246,6 +246,8 @@ mod tests {
         );
         assert_eq!(jobs.len(), 4);
         assert!(jobs.iter().all(|j| j.dependencies.is_empty()));
- assert!(jobs .iter() .all(|j| j.spec.pattern.as_deref() == Some("tournament")));
+        assert!(jobs
+            .iter()
+            .all(|j| j.spec.pattern.as_deref() == Some("tournament")));
     }
 }

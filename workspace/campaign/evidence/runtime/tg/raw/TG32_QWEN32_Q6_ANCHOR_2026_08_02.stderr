@@ -1,0 +1,45 @@
+[hawking] profile=exact: conservative path. Forces OFF f16-scales / Q4K-FFN-down / vocab-prune. profile-level quality trades: off. source parity: requires a current model-specific oracle receipt. J/tok: baseline.
+QWEN_LOAD_STAGE stage=weights_path_admission api=QwenDense::load monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 source_file_bytes=Some(26886155136) bytes_read=None bytes_written=None resident_bytes=Some(34619392) peak_resident_bytes=Some(40386560) fallback=0 restart_safe=true status=BEGIN
+QWEN_LOAD_STAGE stage=gguf_open_mmap api=GgufFile::open monotonic_start_us=0 monotonic_end_us=41874 elapsed_us=41874 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(40861696) peak_resident_bytes=Some(40861696) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=metadata_parse api=QwenConfig::from_gguf monotonic_start_us=41874 monotonic_end_us=42024 elapsed_us=149 bytes_read=None bytes_written=None resident_bytes=Some(41107456) peak_resident_bytes=Some(41107456) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=tokenizer api=Tokenizer::from_file_or_gguf monotonic_start_us=42024 monotonic_end_us=401403 elapsed_us=359378 bytes_read=None bytes_written=None resident_bytes=Some(101908480) peak_resident_bytes=Some(101908480) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=tensor_directory_quant_admission_layout_conversion api=tensor_ref+dequant_f16+dequant_f32 monotonic_start_us=401403 monotonic_end_us=18222957 elapsed_us=17821554 bytes_read=None bytes_written=None resident_bytes=Some(7621525504) peak_resident_bytes=Some(7621525504) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=host_kv_allocation api=KvCache::new monotonic_start_us=18222957 monotonic_end_us=18223098 elapsed_us=141 bytes_read=Some(0) bytes_written=Some(33554432) resident_bytes=Some(7621705728) peak_resident_bytes=Some(7621705728) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=metal_device_discovery api=init_optional_metal monotonic_start_us=18223098 monotonic_end_us=18242029 elapsed_us=18931 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(7636123648) peak_resident_bytes=Some(7636123648) fallback=0 restart_safe=true status=PASS
+QWEN_LOAD_STAGE stage=load_complete api=QwenDense::load monotonic_start_us=18242029 monotonic_end_us=18427445 elapsed_us=185415 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(10758733824) peak_resident_bytes=Some(10758733824) fallback=0 restart_safe=true status=PASS
+[hawking] qwen_dense load timing:
+  gguf_open+config                              42.10 ms
+  tokenizer                                    359.43 ms
+  weight_extract+layers+kv                   17821.65 ms
+  metal_ctx_init                                18.96 ms
+  metal_pinning+lm_head+vocab_prune+warmup     185.31 ms
+  TOTAL                                      18427.55 ms
+QWEN_FIRST_DISPATCH_STAGE stage=entry api=QwenDense::forward_token_greedy_tcb monotonic_start_us=0 monotonic_end_us=0 elapsed_us=0 bytes_read=0 bytes_written=0 resident_bytes=Some(10763993088) peak_resident_bytes=Some(10763993088) fallback=0 restart_safe=true status=BEGIN
+QWEN_FIRST_DISPATCH_STAGE stage=representation_admission api=ensure_tq_cache+Q4K_predecode_guard+Q4K_FAST/AWQ_sidecars monotonic_start_us=0 monotonic_end_us=75 elapsed_us=75 bytes_read=None bytes_written=None resident_bytes=Some(10763993088) peak_resident_bytes=Some(10763993088) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=device_and_buffer_binding api=MetalContext+weights_mmap_buf+embed_buf+final_norm_buf+lm_head_buf monotonic_start_us=75 monotonic_end_us=145 elapsed_us=70 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(10764009472) peak_resident_bytes=Some(10764009472) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=arena_allocation_and_prefill_bridge api=DenseDecodeArena::new+request_residency+KV_bridge+optional_KV/W4A8_scratch monotonic_start_us=145 monotonic_end_us=424 elapsed_us=278 bytes_read=Some(0) bytes_written=Some(38328356) resident_bytes=Some(10764058624) peak_resident_bytes=Some(10764058624) fallback=0 restart_safe=true status=PASS
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+QWEN_FIRST_DISPATCH_STAGE stage=command_buffer_creation api=TokenCommandBuffer::new/MTLCommandQueue::commandBuffer monotonic_start_us=424 monotonic_end_us=587 elapsed_us=163 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(10764206080) peak_resident_bytes=Some(10764206080) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=graph_encode_first_encoder_and_dispatches api=TokenCommandBuffer::dispatch_threads/MTLComputeCommandEncoder monotonic_start_us=587 monotonic_end_us=58914 elapsed_us=58326 bytes_read=None bytes_written=Some(0) resident_bytes=Some(10772955136) peak_resident_bytes=Some(10772955136) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_STAGE stage=first_command_commit_and_completion api=MTLCommandBuffer::commit+waitUntilCompleted monotonic_start_us=58914 monotonic_end_us=461407 elapsed_us=402493 bytes_read=Some(0) bytes_written=Some(0) resident_bytes=Some(10773135360) peak_resident_bytes=Some(10773135360) fallback=0 restart_safe=true status=PASS
+QWEN_FIRST_DISPATCH_PHYSICAL device=Apple M3 Ultra dispatches=643 command_buffers=1 waits=1 fallback=0
+QWEN_FIRST_DISPATCH_STAGE stage=first_token_readback api=MTLBuffer::contents(token_u32) monotonic_start_us=461407 monotonic_end_us=461562 elapsed_us=155 bytes_read=Some(4) bytes_written=Some(0) resident_bytes=Some(10773135360) peak_resident_bytes=Some(10773135360) fallback=0 restart_safe=true status=PASS
+[token] id=12095 text=" Paris"
+[token] id=13 text="."
+[token] id=576 text=" The"
+[token] id=6722 text=" capital"
+[token] id=315 text=" of"
+[token] id=279 text=" the"
+[token] id=3639 text=" United"
+[token] id=15072 text=" Kingdom"
+[token] id=374 text=" is"
+[token] id=7148 text=" London"
+[token] id=13 text="."
+[token] id=576 text=" The"
+[token] id=6722 text=" capital"
+[token] id=315 text=" of"
+[token] id=15344 text=" Italy"
+[token] id=374 text=" is"
+
+[stats] reason=max_tokens prompt=5 completion=16 prefill_ms=796.2 decode_ms=1301.0 dec_tps=12.30 dispatches_per_fwd=643 draft_accepted=0 draft_rejected=0 profile=none
+[stats-json] {"completed_decode_forwards":16,"completion_tokens":16,"cpu_reference_fallback_count":0,"dec_tps":12.297937517433814,"decode_command_buffers_total":16,"decode_cpu_reference_fallback_total":0,"decode_metal_dispatches_total":10288,"decode_ms":1301.031167,"decode_token_ms":[83.039125,81.91762499999999,80.366833,80.837833,80.10237500000001,80.351875,80.848625,81.537417,82.79,82.623958,80.782667,80.939125,80.93312499999999,80.973625,80.94483299999999,80.35329200000001],"device_id":"Apple M3 Ultra","dispatches_per_forward":643,"draft_accepted":0,"draft_rejected":0,"lm_head_path":"raw-q6k","logits_materialized_rows":0,"logits_materialized_vocab":0,"ngram_accept_rate":0.0,"prefill_command_buffers_total":5,"prefill_metal_dispatches_total":3215,"prefill_ms":796.158458,"profile_id":null,"prompt_tokens":5,"readback_bytes":0,"token_only_path_used":false}

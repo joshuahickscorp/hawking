@@ -76,19 +76,33 @@ async fn trace_f_search_symbol_thread_receipt_attach_and_open_provenance() {
             )
             .await
             .unwrap();
-        assert_eq!(result.status, ToolStatus::Ok, "code search runs: {result:?}");
+        assert_eq!(
+            result.status,
+            ToolStatus::Ok,
+            "code search runs: {result:?}"
+        );
         let body = result.structured_content.clone().unwrap();
         let matches = body["matches"].as_array().unwrap();
         assert_eq!(matches.len(), 1, "the symbol matches exactly once: {body}");
-        assert_eq!(body["truncated"].as_bool(), Some(false), "result is bounded");
+        assert_eq!(
+            body["truncated"].as_bool(),
+            Some(false),
+            "result is bounded"
+        );
         code_hit_path = matches[0]["path"].as_str().unwrap().to_string();
         code_hit_line = matches[0]["line"].as_u64().unwrap() as u32;
         assert!(code_hit_path.ends_with("net.rs"));
         assert_eq!(code_hit_line, 1, "the symbol is on line 1");
         let after_search = scan(&host, &session).await;
-        assert!(after_search .iter() .any(|e| e.kind == "tool.result" && serde_json::to_string(&e.payload).unwrap().contains(CODE_SYMBOL)));
+        assert!(after_search.iter().any(|e| e.kind == "tool.result"
+            && serde_json::to_string(&e.payload)
+                .unwrap()
+                .contains(CODE_SYMBOL)));
         for (role, text) in [
-            ("assistant", format!("{CODE_SYMBOL} referenced in {THREAD_TOKEN} boot path")),
+            (
+                "assistant",
+                format!("{CODE_SYMBOL} referenced in {THREAD_TOKEN} boot path"),
+            ),
             ("user", format!("where is {THREAD_TOKEN} discussed")),
         ] {
             log.append(NewEvent::system(
@@ -111,7 +125,10 @@ async fn trace_f_search_symbol_thread_receipt_attach_and_open_provenance() {
         assert_eq!(results["query"].as_str(), Some(THREAD_TOKEN));
         let count = results["count"].as_u64().unwrap();
         assert_eq!(count, 2, "literal search hits both items: {results}");
-        assert!(count <= 10, "the result honors the caller's limit (bounded)");
+        assert!(
+            count <= 10,
+            "the result honors the caller's limit (bounded)"
+        );
         let ack = host
             .handle_intent(Intent::Custom {
                 name: "run_search".to_string(),
@@ -134,7 +151,10 @@ async fn trace_f_search_symbol_thread_receipt_attach_and_open_provenance() {
         assert_eq!(hits.len(), 1, "one assistant hit to cite");
         transcript_event_id = hits[0].event_id.as_str().to_string();
         let transcript_link = EvidenceLink::from_hit(&hits[0]);
-        assert_eq!(transcript_link.event_id.as_deref(), Some(transcript_event_id.as_str()));
+        assert_eq!(
+            transcript_link.event_id.as_deref(),
+            Some(transcript_event_id.as_str())
+        );
         let receipt = host
             .run_static_analysis(
                 session.clone(),
@@ -184,12 +204,16 @@ async fn trace_f_search_symbol_thread_receipt_attach_and_open_provenance() {
     }
     let reopened = BackendHost::open_workspace(&dir).unwrap();
     let receipts = reopened.verification_receipts(&session).await.unwrap();
-    assert!(receipts.iter().any(|r| r.receipt.verification_id == verification_id));
+    assert!(receipts
+        .iter()
+        .any(|r| r.receipt.verification_id == verification_id));
     let hits = reopened
         .search_transcript(&TranscriptQuery::literal(THREAD_TOKEN).in_session(session.clone()))
         .await
         .unwrap();
-    assert!(hits.iter().any(|h| h.event_id.as_str() == transcript_event_id));
+    assert!(hits
+        .iter()
+        .any(|h| h.event_id.as_str() == transcript_event_id));
     assert_provenance_resolves(
         &reopened,
         &session,
@@ -216,10 +240,17 @@ async fn assert_provenance_resolves(
         .iter()
         .find(|e| e.kind == "context.attach")
         .expect("the attachment survives on the durable log");
-    assert_eq!(attach.payload["attached_to_run"].as_str(), Some(run.as_str()));
+    assert_eq!(
+        attach.payload["attached_to_run"].as_str(),
+        Some(run.as_str())
+    );
     let links: Vec<EvidenceLink> =
         serde_json::from_value(attach.payload["links"].clone()).expect("links are typed");
-    assert_eq!(links.len(), 2, "a bounded, typed attachment (two cited links)");
+    assert_eq!(
+        links.len(),
+        2,
+        "a bounded, typed attachment (two cited links)"
+    );
     let transcript_link = links
         .iter()
         .find(|l| l.event_id.is_some())

@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.tg.source_receipt.v1",
+  "status": "SEALED",
+  "rung": "TG2",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503",
+  "family": "mistral",
+  "source": {
+    "repository": "bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF",
+    "revision": "f73dfd9e812922fb503a993e3fa5671424f486d3",
+    "filename": "mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "path": "models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0",
+    "sha256_provenance": "Hugging Face LFS content hash recorded beside the completed local download in models/tg-active/.cache/huggingface/download/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf.metadata"
+  },
+  "acquisition": {
+    "method": "hf download bartowski/mistralai_Mistral-Small-3.1-24B-Instruct-2503-GGUF mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf --local-dir models/tg-active",
+    "preflight": "Hub dry run reported one 14.3G file; the verified artifact occupies 13.35 GiB and satisfies TG2's 18 GiB source budget.",
+    "immutable_revision_source": "models/tg-active/.cache/huggingface/download/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf.metadata",
+    "source_copy_policy": "This is the sole active ladder parent. It must be evicted after a terminal Gravity/measurement receipt before another rung is acquired."
+  },
+  "local_inspection": {
+    "architecture": "llama",
+    "layers": 40,
+    "hidden": 5120,
+    "kv_heads": 8,
+    "context_estimate": 4096,
+    "weights_plus_kv_estimate_bytes": 16011632096,
+    "doctor_command": "hawking doctor --weights models/tg-active/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf"
+  }
+}

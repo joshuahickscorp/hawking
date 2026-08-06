@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v1",
+  "status": "PURGED_EXACT_TRASH_TARGET_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "candidate_rejection": "evidence/tg/TG32_QWEN14_QKV_ROPE_APPEND_4R_REJECTED_2026_08_02.json",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "file_bytes": 8988110976
+  },
+  "lane": {
+    "path": "models/tg-active/qwen14-fused-candidate-2026-08-02",
+    "allocated_bytes_before_move": 8988147712,
+    "allocated_bytes_recovered": 8988147712,
+    "body_and_artifact_count_after": 0
+  },
+  "storage": {
+    "free_bytes_before_move": 365875240960,
+    "free_bytes_after_exact_purge": 374863388672,
+    "observed_recovery_bytes": 8988147712,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_contents": [],
+    "residual_above_floor_bytes": 174857499116
+  },
+  "trash": {
+    "exact_target": "qwen14-fused-candidate-2026-08-02",
+    "target_count_before_purge": 1,
+    "target_present_after_purge": false,
+    "unrelated_item_preserved": "SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "324eeb78554223a675b1943a8532e8369eb9e0ccc6ab881703b0368d09fce29b"
+}

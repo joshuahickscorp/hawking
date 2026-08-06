@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.tg.llama_candidate_rejection.v1",
+  "candidate": "llama.residual-pq.v1 four-stage D8 K128 direct Metal grammar",
+  "status": "rejected_before_full_artifact_bake",
+  "hardware": "Apple M3 Ultra",
+  "measurement": {
+    "test": "cargo test -p hawking-core residual_pq_four_stage_ffn_gate_geometry_roofline --test gravity_residual_pq_metal -- --ignored --nocapture",
+    "geometry": {"rows": 14336, "columns": 4096, "D": 8, "stages": 4, "cardinality": 128, "index_bits": 7},
+    "residency": "codebooks and indices uploaded once; only x/y activation buffers are per matvec",
+    "warmup_iterations": 4,
+    "timed_iterations": 12,
+    "median_microseconds_per_gate_projection": 672.625,
+    "implied_max_gate_projections_per_second": 1486.711
+  },
+  "token_floor": {
+    "layers": 32,
+    "gate_and_up_projections_per_token": 64,
+    "gate_up_only_milliseconds_per_token_lower_bound": 43.048,
+    "gate_up_only_tokens_per_second_upper_bound": 23.23
+  },
+  "single_stage_control": {
+    "geometry": {"rows": 14336, "columns": 4096, "D": 32, "stages": 1, "cardinality": 256, "index_bits": 8},
+    "median_microseconds_per_gate_projection": 460.041,
+    "gate_up_only_32_layer_milliseconds_per_token_lower_bound": 29.443,
+    "gate_up_only_tokens_per_second_upper_bound": 33.96,
+    "finding": "Removing additive stages improves the projection by only 1.46x, still leaving direct codebook execution far outside the source-model token budget."
+  },
+  "cause": "Additive stages multiply compact decode FMAs and index reads. The representation meets only an analytic byte condition; its direct execution cost makes the FFN pair alone slower than the complete source-model decode budget.",
+  "reopen_condition": "A materially different execution grammar must demonstrate a resident real-geometry gate/up pair at <=0.5 ms combined while also passing complete-artifact capability gates. Direct one-codebook-per-chunk lookup is rejected too; shared tables alone do not satisfy this condition.",
+  "source_evidence": "evidence/tg/TG_LLAMA_GRAVITY_RESIDUAL_PQ_SLICE_PROBE.json"
+}

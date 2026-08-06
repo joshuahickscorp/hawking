@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.tg.source_admission.v2",
+  "status": "SOURCE_ADMITTED_BEFORE_RUNTIME_SWEEP",
+  "at_utc": "2026-08-02",
+  "model": "Mixtral-8x7B-Instruct-v0.1-Q4_K_M",
+  "family": "mistral_mixtral_sparse_moe",
+  "repository": "mradermacher/Mixtral-8x7B-Instruct-v0.1-GGUF",
+  "official_base": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+  "revision": "92bb790b153033f0594934ee23bb0e12ba897f4e",
+  "filename": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+  "license": "apache-2.0",
+  "total_parameters": "46.7B",
+  "active_parameters": "12.9B",
+  "experts": 8,
+  "active_experts_per_token": 2,
+  "source_bytes": 28448468384,
+  "source_sha256": "9f8d778c2eb8fd7f8426d03496aec30c46cf4076e98758818cc73d020ed01d44",
+  "xet_file_hash": "0aa43c812562a739239fed16ea0d74f997fe0841c524848093d2717c808b8ba5",
+  "transfer_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_MIXTRAL_MRADERMACHER_FRESH_2026_08_02.json",
+  "transfer_selection": {
+    "mode": "high_performance",
+    "requested_fixed_download_concurrency": 4,
+    "stable_median_gb_per_hour_decimal": 314.6901258306453,
+    "range_hashes_identical": true,
+    "resume_complete": true,
+    "client_visible_retries": 0
+  },
+  "admission": {
+    "lane": "models/tg-active/mixtral8x7b-device-combine-2026-08-02",
+    "source_path": "models/tg-active/mixtral8x7b-device-combine-2026-08-02/Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+    "free_bytes_before_body": 357233774592,
+    "free_bytes_after_body": 328406753280,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_after_body": 128400863724,
+    "model_lane_envelope_bytes": 110000000000,
+    "active_full_model_bodies_before": 0,
+    "second_full_model_body_admitted": false,
+    "source_hash_verified": true,
+    "source_size_verified": true
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

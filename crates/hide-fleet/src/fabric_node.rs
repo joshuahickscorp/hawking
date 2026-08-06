@@ -63,7 +63,9 @@ pub enum AcceleratorClass {
 pub enum DiscoverySource {
     OsProbe,
     /// Injected test/sim profile. Name is required and must contain "sim".
-    Simulated { profile_name: String },
+    Simulated {
+        profile_name: String,
+    },
 }
 
 impl DiscoverySource {

@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.tg.large_family_source_admission.v1",
+  "status": "ADMITTED",
+  "at": "2026-08-01T06:08:40Z",
+  "family": "qwen",
+  "attempt": "same_source_after_metal_representation_repair",
+  "source": {
+    "repository": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+    "revision": "d43fd973131bce821f41e2df3c78c6fe15c5627a",
+    "path": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+    "bytes": 47415715488,
+    "sha256": "e4c8fad16946be8cf0bbf67eb8f4e18fc7415a5a6d2854b4cda453edb4082545",
+    "declared_base": "Qwen/Qwen2.5-72B-Instruct"
+  },
+  "unified_admission": {
+    "free_bytes": 413220134912,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_bytes": 213214245356,
+    "model_lane_ceiling_bytes": 102000000000,
+    "normal_model_artifact_cap_bytes": 82000000000,
+    "model_bytes": 47415715488,
+    "scratch_bytes": 26843545600,
+    "metadata_and_ranges_bytes": 67108864,
+    "incremental_lane_bytes": 74326369952,
+    "active_model_count": 0,
+    "failures": []
+  },
+  "transfer": {
+    "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2","cli":".venv/glm52/bin/hf"},
+    "selected_profile": "high_performance",
+    "environment": {"HF_HUB_DISABLE_IMPLICIT_TOKEN":"1","HF_HUB_DISABLE_TELEMETRY":"1","HF_XET_HIGH_PERFORMANCE":"1","HF_XET_CHUNK_CACHE_SIZE_BYTES":"0"},
+    "bounded_matrix_receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REPROBE.json",
+    "bounded_matrix_seal_sha256": "a6e5d8f98b884ade0a5de4a6df23ce11494592afe5b4e3daae7f471a14d02c13",
+    "resume_receipt": "evidence/tg/TG_DOWNLOAD_RESUME_RECEIPT_QWEN72_REPROBE.json",
+    "resume_seal_sha256": "0a8d3da1f60eefcf6c4bcedc5664c01ef32750df7fc122e1490bf808604bc1e2"
+  },
+  "representation_repair": {
+    "receipt": "evidence/tg/TG_METAL_PREFLIGHT_CORRECTION.json",
+    "seal_sha256": "a094dd3ac172cbf8bd84a53cd49851093ed29fe73ff03514ebc1c0ede4599b35",
+    "metal_registry_preflight": "PASS"
+  },
+  "seal_sha256": "25f7f4013422c5f77c64ea82d8b7974fe2ea0a2776fba47af2b5702366eddeab"
+}

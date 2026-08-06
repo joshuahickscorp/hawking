@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "llama3_dense",
+  "candidate": {
+    "id": "llama70-resident-fused-gate-up-v1",
+    "kind": "same_model_native_packed_gate_up_wave",
+    "hypothesis": "Fusing the independent Q4 gate and up projections into one resident packed pair kernel will reduce the 962-dispatch Llama-70B token graph while preserving the exact source continuation.",
+    "mechanism": "Keep the serial resident B9430 Q5-value repair graph and enable HAWKING_LLAMA_RESIDENT_B9430_FUSED_GATE_UP=1; only the gate/up launch grammar changes.",
+    "scope": "same exact Llama-3.3-70B-Instruct Q4_K_M body, same immutable revision, same M3 Ultra, same 8 complete-token prompt and resident profile",
+    "promotion_gate": {
+      "complete_tokens": 8,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32"
+    },
+    "reject_conditions": [
+      "any token-ID change",
+      "fallback > 0",
+      "fused gate/up kernel inactive",
+      "no complete-token wall win >= 3 percent",
+      "p95 or p99 regression > 2 percent",
+      "FFN or source continuation parity failure"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+    "revision": "b6c5c9f176f3279204034e1d16d393105e95cb88",
+    "filename": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+    "bytes": 42520398816,
+    "sha256": "32df3baccb556f9840059b2528b2dee4d3d516b24afdfb9d0c56ff5f63e3a664"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [128000, 791, 6864, 315, 9822, 374],
+    "max_new_tokens": 8,
+    "temperature": 0
+  },
+  "control": {
+    "profile": "resident_b9430_fused_graph_q5_value_repair",
+    "measured_tps": 11.594967100506606,
+    "decode_ms": 603.710208,
+    "p50_ms": 86.104,
+    "p95_ms": 87.0098786,
+    "p99_ms": 87.16820852000001,
+    "dispatches_per_forward": 962,
+    "metal_dispatches_total": 6734,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "source_window_generated_ids": [264, 3363, 430, 374, 32366, 291, 304, 3925]
+  },
+  "runtime": {
+    "opt_in": "HAWKING_LLAMA_RESIDENT_B9430_FUSED_GATE_UP=1",
+    "implementation": "gemv_q4_k_m_llama_b9430_pair_pinned_tcb",
+    "expected_topology_change": "one gate/up dispatch instead of two per layer",
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "2453aad7312782270acdb06b2f1bb557696a5a11c5f3cf9d0621a643844b4fe9"
+}

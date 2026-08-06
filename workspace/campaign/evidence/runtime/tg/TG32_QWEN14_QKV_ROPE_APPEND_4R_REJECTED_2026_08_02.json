@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.tg.same_model_candidate_rejection.v1",
+  "status": "REJECTED_SHAPE_GUARD_INACTIVE_NO_WALL_WIN",
+  "at_utc": "2026-08-02",
+  "family": "qwen2_dense",
+  "candidate": {
+    "id": "qwen14-qkv-rope-append-4r-v1",
+    "preregistration": "evidence/tg/TG32_QWEN14_QKV_ROPE_APPEND_4R_PREREGISTRATION_2026_08_02.json",
+    "opt_in": "HAWKING_QWEN_QKV_ROPE_APPEND_4R=1",
+    "shape_guard_result": "INACTIVE_OR_NO_ALTERNATE_DISPATCH",
+    "dispatches_per_forward": 436,
+    "metal_dispatches_total": 13952,
+    "cpu_reference_fallback_count": 0,
+    "device": "Apple M3 Ultra"
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 32,
+    "temperature": 0,
+    "token_id_sequence_match": true
+  },
+  "control": {
+    "profile": "default fast-minus-f16-scales",
+    "tps": 29.393150844731597,
+    "decode_ms": 1088.689,
+    "p50_ms": 33.979,
+    "p95_ms": 34.367125,
+    "p99_ms": 34.665209000000004,
+    "prefill_ms": 346.89329200000003
+  },
+  "candidate_measurement": {
+    "tps": 29.39375044334043,
+    "decode_ms": 1088.666792,
+    "p50_ms": 33.962125,
+    "p95_ms": 34.490083999999996,
+    "p99_ms": 34.60325,
+    "prefill_ms": 291.327084,
+    "delta_tps_percent": 0.0020399262807835328,
+    "delta_decode_wall_percent": -0.0020398846686364713,
+    "delta_p95_percent": 0.35778087343645293,
+    "delta_p99_percent": -0.17873540009524236
+  },
+  "decision": {
+    "promote": false,
+    "deepest_stable_rung": "none",
+    "first_failing_rung": "TG32",
+    "binding_finding": "The 4R flag did not alter physical dispatch topology for this Qwen-14B shape; its measured wall change was noise-level and it remained below TG32.",
+    "reopen_condition": "A Qwen-14B-specific QKV geometry with a physically distinct dispatch and exact full-vector parity may reopen the seam.",
+    "capability_claim": "No new capability or TG claim."
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "49ce1550a939abcccdb9731eef6c667d02417b93b7d88295f405d40feb7b852a"
+}

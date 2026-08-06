@@ -5,10 +5,15 @@ mod common;
 use common::*;
 fn make_q4k_predec_hi(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) {
     let bpr = cols / 256;
-    let w: Vec<u8> = (0..rows * bpr * 144).map(|i| ((i as u32).wrapping_mul(2246822519u32).wrapping_add(seed)) as u8).collect();
+    let w: Vec<u8> = (0..rows * bpr * 144)
+        .map(|i| ((i as u32).wrapping_mul(2246822519u32).wrapping_add(seed)) as u8)
+        .collect();
     let s: Vec<f32> = (0..rows * bpr * 16)
         .map(|i| {
-            let v = ((i as u32).wrapping_mul(2654435761u32).wrapping_add(seed ^ 0xAB)) as f32 / u32::MAX as f32;
+            let v = ((i as u32)
+                .wrapping_mul(2654435761u32)
+                .wrapping_add(seed ^ 0xAB)) as f32
+                / u32::MAX as f32;
             0.1 + v * 1.9
         })
         .collect();
@@ -56,7 +61,13 @@ enum Variant {
     F32_4r,
     F16s_4r,
 }
-fn run(ctx: &MetalContext, shape: &Shape, w: &Q4kWeights, x: &[f32], variant: Variant) -> (Vec<f32>, Vec<f32>, Vec<f32>) {
+fn run(
+    ctx: &MetalContext,
+    shape: &Shape,
+    w: &Q4kWeights,
+    x: &[f32],
+    variant: Variant,
+) -> (Vec<f32>, Vec<f32>, Vec<f32>) {
     let q_rows = shape.n_q * shape.hd;
     let kv_rows = shape.n_k * shape.hd;
     let model_bytes = [&w.q_w[..], &w.k_w[..], &w.v_w[..]].concat();
@@ -65,10 +76,16 @@ fn run(ctx: &MetalContext, shape: &Shape, w: &Q4kWeights, x: &[f32], variant: Va
     let v_off = w.q_w.len() + w.k_w.len();
     let model = ctx.new_buffer_with_bytes(&model_bytes);
     let (q_sc, k_sc, v_sc): (PinnedBuffer, PinnedBuffer, PinnedBuffer) = match variant {
-        Variant::F32_2r | Variant::F32_4r => (new_f32_buf(ctx, &w.q_sc_f32), new_f32_buf(ctx, &w.k_sc_f32), new_f32_buf(ctx, &w.v_sc_f32)),
-        Variant::F16s_2r | Variant::F16s_4r => {
-            (ctx.new_buffer_with_bytes(&w.q_sc_f16), ctx.new_buffer_with_bytes(&w.k_sc_f16), ctx.new_buffer_with_bytes(&w.v_sc_f16))
-        }
+        Variant::F32_2r | Variant::F32_4r => (
+            new_f32_buf(ctx, &w.q_sc_f32),
+            new_f32_buf(ctx, &w.k_sc_f32),
+            new_f32_buf(ctx, &w.v_sc_f32),
+        ),
+        Variant::F16s_2r | Variant::F16s_4r => (
+            ctx.new_buffer_with_bytes(&w.q_sc_f16),
+            ctx.new_buffer_with_bytes(&w.k_sc_f16),
+            ctx.new_buffer_with_bytes(&w.v_sc_f16),
+        ),
     };
     let x_buf = new_f32_buf(ctx, x);
     let q_buf = ctx.new_buffer(q_rows * 4);
@@ -201,7 +218,15 @@ fn run(ctx: &MetalContext, shape: &Shape, w: &Q4kWeights, x: &[f32], variant: Va
     let v = read_f32_buf(&v_cache, cache_len)[shape.kv_off..shape.kv_off + kv_rows].to_vec();
     (q, k, v)
 }
-fn check_rel_l2(label: &str, ref_q: &[f32], ref_k: &[f32], ref_v: &[f32], got_q: &[f32], got_k: &[f32], got_v: &[f32]) {
+fn check_rel_l2(
+    label: &str,
+    ref_q: &[f32],
+    ref_k: &[f32],
+    ref_v: &[f32],
+    got_q: &[f32],
+    got_k: &[f32],
+    got_v: &[f32],
+) {
     const MAX_REL_L2: f64 = 1e-2;
     let rq = rel_l2(ref_q, got_q);
     let rk = rel_l2(ref_k, got_k);
@@ -211,7 +236,10 @@ fn check_rel_l2(label: &str, ref_q: &[f32], ref_k: &[f32], ref_v: &[f32], got_q:
     assert!(rv < MAX_REL_L2, "{label} V: rel_L2={rv:.4e}");
 }
 fn shape_x(shape: &Shape, seed: u32) -> (Q4kWeights, Vec<f32>) {
-    (make_weights(shape, seed), lcg_f32(shape.cols, seed, -1.0, 1.0))
+    (
+        make_weights(shape, seed),
+        lcg_f32(shape.cols, seed, -1.0, 1.0),
+    )
 }
 #[test]
 fn qkv_rope_append_f16s_2r_quality_gate() {
@@ -223,11 +251,26 @@ fn qkv_rope_append_f16s_2r_quality_gate() {
         (8, 4, 128, 2048, 17, 5, 0xD310),
     ];
     for &(n_q, n_k, hd, cols, pos, kv_off, seed) in cases {
-        let shape = Shape { n_q, n_k, hd, cols, pos, kv_off };
+        let shape = Shape {
+            n_q,
+            n_k,
+            hd,
+            cols,
+            pos,
+            kv_off,
+        };
         let (w, x) = shape_x(&shape, seed);
         let (ref_q, ref_k, ref_v) = run(ctx, &shape, &w, &x, Variant::F32_2r);
         let (got_q, got_k, got_v) = run(ctx, &shape, &w, &x, Variant::F16s_2r);
-        check_rel_l2(&format!("2r nq={n_q} nk={n_k} cols={cols} pos={pos} off={kv_off}"), &ref_q, &ref_k, &ref_v, &got_q, &got_k, &got_v);
+        check_rel_l2(
+            &format!("2r nq={n_q} nk={n_k} cols={cols} pos={pos} off={kv_off}"),
+            &ref_q,
+            &ref_k,
+            &ref_v,
+            &got_q,
+            &got_k,
+            &got_v,
+        );
     }
 }
 #[test]
@@ -240,18 +283,40 @@ fn qkv_rope_append_f16s_4r_quality_gate() {
         (8, 4, 128, 2048, 17, 5, 0xD410),
     ];
     for &(n_q, n_k, hd, cols, pos, kv_off, seed) in cases {
-        let shape = Shape { n_q, n_k, hd, cols, pos, kv_off };
+        let shape = Shape {
+            n_q,
+            n_k,
+            hd,
+            cols,
+            pos,
+            kv_off,
+        };
         assert!((n_q * hd) % 4 == 0 && (n_k * hd) % 4 == 0);
         let (w, x) = shape_x(&shape, seed);
         let (ref_q, ref_k, ref_v) = run(ctx, &shape, &w, &x, Variant::F32_4r);
         let (got_q, got_k, got_v) = run(ctx, &shape, &w, &x, Variant::F16s_4r);
-        check_rel_l2(&format!("4r nq={n_q} nk={n_k} cols={cols} pos={pos} off={kv_off}"), &ref_q, &ref_k, &ref_v, &got_q, &got_k, &got_v);
+        check_rel_l2(
+            &format!("4r nq={n_q} nk={n_k} cols={cols} pos={pos} off={kv_off}"),
+            &ref_q,
+            &ref_k,
+            &ref_v,
+            &got_q,
+            &got_k,
+            &got_v,
+        );
     }
 }
 #[test]
 fn qkv_rope_append_f16s_2r_vs_4r_agree() {
     let ctx = ctx();
-    let shape = Shape { n_q: 16, n_k: 8, hd: 128, cols: 2048, pos: 42, kv_off: 13 };
+    let shape = Shape {
+        n_q: 16,
+        n_k: 8,
+        hd: 128,
+        cols: 2048,
+        pos: 42,
+        kv_off: 13,
+    };
     let (w, x) = shape_x(&shape, 0xD500);
     let (q2, k2, v2) = run(ctx, &shape, &w, &x, Variant::F16s_2r);
     let (q4, k4, v4) = run(ctx, &shape, &w, &x, Variant::F16s_4r);

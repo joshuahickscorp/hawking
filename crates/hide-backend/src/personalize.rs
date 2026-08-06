@@ -229,10 +229,25 @@ mod tests {
     #[test]
     fn all_four_outcome_ctors_exist() {
         let p = "system+user";
-        assert_eq!(PersonalizationRecord::accepted(TaskClass::EditCode, p, "d").outcome, Outcome::Accepted);
-        assert_eq!(PersonalizationRecord::modified(TaskClass::Refactor, p, "a", "b", 3).outcome, Outcome::Modified { edit_distance_chars: 3 });
-        assert_eq!(PersonalizationRecord::rejected(TaskClass::WriteTest, p, "d", Some("nope".into())) .outcome, Outcome::Rejected);
-        assert_eq!(PersonalizationRecord::abandoned(TaskClass::Diagnose, p, "d").outcome, Outcome::Abandoned);
+        assert_eq!(
+            PersonalizationRecord::accepted(TaskClass::EditCode, p, "d").outcome,
+            Outcome::Accepted
+        );
+        assert_eq!(
+            PersonalizationRecord::modified(TaskClass::Refactor, p, "a", "b", 3).outcome,
+            Outcome::Modified {
+                edit_distance_chars: 3
+            }
+        );
+        assert_eq!(
+            PersonalizationRecord::rejected(TaskClass::WriteTest, p, "d", Some("nope".into()))
+                .outcome,
+            Outcome::Rejected
+        );
+        assert_eq!(
+            PersonalizationRecord::abandoned(TaskClass::Diagnose, p, "d").outcome,
+            Outcome::Abandoned
+        );
         let r1 = PersonalizationRecord::accepted(TaskClass::EditCode, p, "x");
         let r2 = PersonalizationRecord::rejected(TaskClass::EditCode, p, "y", None);
         assert_eq!(r1.prompt_hash, r2.prompt_hash);
@@ -496,8 +511,8 @@ impl PersonalLayout {
 
 #[cfg(test)]
 mod store_tests {
-    use super::*;
     use super::TaskClass;
+    use super::*;
     #[test]
     fn jsonl_personalization_store_roundtrips_records() {
         let dir = tempfile::tempdir().unwrap();

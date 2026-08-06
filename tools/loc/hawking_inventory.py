@@ -23,6 +23,8 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+VENDORED_ROOTS = ("vendor/", "workspace/vendor/")
+TEST_ROOTS = ("tests/", "workspace/quality/tests/")
 
 RS_TEST = re.compile(r"^\s*(?:#\[(?:tokio::)?test\][\s\S]{0,200}?)?\s*(?:async\s+)?fn\s+([a-z_][a-z0-9_]*)", re.M)
 RS_TEST_ATTR = re.compile(r"#\[(?:tokio::)?test\]")
@@ -46,6 +48,16 @@ def read(p: str) -> str:
         return ""
 
 
+def is_vendored(path: str) -> bool:
+    """Exclude both the legacy and current physical vendor shelves."""
+    return path.startswith(VENDORED_ROOTS)
+
+
+def is_test_path(path: str) -> bool:
+    """Recognize tests after the root suite moved under ``workspace/quality``."""
+    return path.startswith(TEST_ROOTS) or "/tests/" in path
+
+
 def logical_tests() -> dict:
     """Count logical cases, not test functions.
 
@@ -55,7 +67,7 @@ def logical_tests() -> dict:
     """
     rows: list[dict] = []
     for p in tracked(".rs"):
-        if p.startswith("vendor/"):
+        if is_vendored(p):
             continue
         src = read(p)
         if not RS_TEST_ATTR.search(src):
@@ -64,10 +76,10 @@ def logical_tests() -> dict:
         ignored = src.count("#[ignore")
         rows.append({"file": p, "lang": "rust", "cases": n, "ignored": ignored})
     for p in tracked(".py"):
-        if p.startswith("vendor/"):
+        if is_vendored(p):
             continue
         name = Path(p).name
-        if not (name.startswith("test_") or "/tests/" in p):
+        if not (name.startswith("test_") or is_test_path(p)):
             continue
         src = read(p)
         fns = PY_TEST.findall(src)
@@ -113,9 +125,9 @@ def capabilities() -> dict:
     py_cli = [
         {"kind": "python_cli", "name": p}
         for p in tracked(".py")
-        if not p.startswith("vendor/") and PY_MAIN.search(read(p))
+        if not is_vendored(p) and PY_MAIN.search(read(p))
     ]
-    sh = [{"kind": "shell", "name": p} for p in tracked(".sh") if not p.startswith("vendor/")]
+    sh = [{"kind": "shell", "name": p} for p in tracked(".sh") if not is_vendored(p)]
 
     members = re.findall(r'"(crates/[^"]+|tools/[^"]+)"', read("Cargo.toml"))
     default_members = []

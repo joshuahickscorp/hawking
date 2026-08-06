@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.tg.adapter_investigation.v1",
+  "status": "NOT_A_REGRESSION_GATE_WAS_UNSOUND",
+  "hawking_commit": "68ec1a333fa12c21aa7ca1936f93af6844665209",
+  "question": "why do the llama and deepseek2 adapters return degenerate tokens",
+  "bisect": {
+    "method": "generate exactly one token, which separates the forward pass from the decode loop, KV reuse and sampling",
+    "qwen2.5-14b": "' Paris' \u2014 correct",
+    "llama-3.2-1b": "' a' \u2014 wrong",
+    "deepseek-v2-lite": "' is' \u2014 wrong",
+    "conclusion": "both failing families are already wrong at the first forward, so the defect is upstream of decode"
+  },
+  "false_lead_1": {
+    "claim": "dispatches_per_forward == 0 shows Metal is never reached",
+    "status": "RETRACTED",
+    "why": "the counter is assigned only in qwen_dense.rs:2207; deepseek_v2.rs has 136 Metal call sites and llama.rs 24"
+  },
+  "false_lead_2": {
+    "claim": "the llama golden hash mismatch is a code regression",
+    "status": "WITHDRAWN",
+    "found": "the smoke test failed with golden b349ac717a98318a against a measured ee12bbd4b09c558f, pinned at 34c31541 'fix(rope): interleaved -> NEOX pairing'",
+    "commits_examined": {
+      "9463d333 (my rustfmt)": "CLEARED, the llama.rs diff is import reordering and line joining only",
+      "dee10fde share model helpers": "CLEARED, rmsnorm_dispatch and gemv_f16_dispatch are faithful to the inline code they replaced",
+      "40f39757, d6f3d7d2": "not reached"
+    },
+    "why_withdrawn": "the control I nearly skipped: the golden pins no input identity. It records a token hash with no publisher, sha256 or quant level, while the finder accepts any models/*llama-3.2-1b*.gguf. Two publishers' Q4_K_M of one model give different tokens for reasons that are nobody's bug, so the mismatch cannot distinguish a regression from a different file."
+  },
+  "real_finding": {
+    "defect": "the golden gate is unsound as written: it pins an output without pinning the input",
+    "consequence": "it can neither prove a regression nor rule one out, and it has been skipping since 2026-06-22 for want of weights, so nothing noticed",
+    "fix": "the baseline key now carries the weights sha256 prefix and byte size, so drift on a given file is real drift and a different file gets its own entry instead of a false failure",
+    "new_entry": "llama-3.2-1b-instruct/in:3f5a22426976ab26:807694368 -> ee12bbd4b09c558f"
+  },
+  "still_unexplained": "why llama and deepseek2 are wrong at the first forward. The bisect narrows it to the forward pass; the cause is not identified and is not guessed at here.",
+  "lesson": "two inferences in one investigation rested on an unpinned default: a counter only one adapter sets, and a golden that does not name its input. Both looked like evidence."
+}

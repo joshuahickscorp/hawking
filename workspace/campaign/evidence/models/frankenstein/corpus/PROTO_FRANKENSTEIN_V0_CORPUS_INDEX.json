@@ -1,0 +1,166 @@
+{
+  "L0_size": 32,
+  "L0_subset_of_L1": true,
+  "L1_size": 128,
+  "all_families_required": [
+    "math_method",
+    "multi_step",
+    "formalization",
+    "proof_repair",
+    "counterexample",
+    "symbolic",
+    "coding",
+    "repo",
+    "tools",
+    "agent",
+    "long_ctx",
+    "general"
+  ],
+  "artifacts": {
+    "L0_jsonl": "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl",
+    "L0_sha256": "342430cff2a76926bf975f9192e36b21950c5ef59ad431c98a6e386d39cb9e64",
+    "L1_jsonl": "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl",
+    "L1_sha256": "6b64c17e1584359574af678f1f0623742115ab393a1199888239acdf203fd72a",
+    "membership_json": "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_MEMBERSHIP.json"
+  },
+  "capability_families_covered_L0": [
+    "agent",
+    "coding",
+    "counterexample",
+    "formalization",
+    "general",
+    "long_ctx",
+    "math_method",
+    "multi_step",
+    "proof_repair",
+    "repo",
+    "symbolic",
+    "tools"
+  ],
+  "capability_families_covered_L1": [
+    "agent",
+    "coding",
+    "counterexample",
+    "formalization",
+    "general",
+    "long_ctx",
+    "math_method",
+    "multi_step",
+    "proof_repair",
+    "repo",
+    "symbolic",
+    "tools"
+  ],
+  "claim_boundary": {
+    "activations_captured": false,
+    "corpus_only": true,
+    "correspondence_numbers": false,
+    "transfer_trained": false
+  },
+  "fabricated": false,
+  "family_counts_L0": {
+    "agent": 2,
+    "coding": 4,
+    "counterexample": 2,
+    "formalization": 3,
+    "general": 3,
+    "long_ctx": 2,
+    "math_method": 3,
+    "multi_step": 3,
+    "proof_repair": 3,
+    "repo": 2,
+    "symbolic": 2,
+    "tools": 3
+  },
+  "family_counts_L1": {
+    "agent": 20,
+    "coding": 14,
+    "counterexample": 10,
+    "formalization": 14,
+    "general": 12,
+    "long_ctx": 2,
+    "math_method": 12,
+    "multi_step": 12,
+    "proof_repair": 12,
+    "repo": 8,
+    "symbolic": 2,
+    "tools": 10
+  },
+  "membership_freeze_seal_sha256": "3ee20da8995a30bce13b7325dd04acc27fdc2e522909c463af643396781a314a",
+  "missing_families_L1": [],
+  "recorded_at": "2026-08-05T19:46:04.871599Z",
+  "schema": "hawking.frankenstein.proto_v0_corpus_index.v1",
+  "seal_sha256": "62c78d23cf8cde5b674216d48278478eefdcb59e102fe534262302a8218ed2ad",
+  "source_counts_L1": {
+    "odyssey.support_halo_corpus_v0": 21,
+    "ramanujan.d1_proof_traces": 20,
+    "ramanujan.d2_state_transitions": 6,
+    "ramanujan.d3_premise_pairs": 12,
+    "ramanujan.d4_repair_pairs": 12,
+    "ramanujan.d6_counterexamples": 10,
+    "ramanujan.d7_tool_use_traces": 26,
+    "ramanujan.expert_iteration_math": 2,
+    "tools.eval.thesis_rust_corpus_v0": 8,
+    "tools.eval.thesis_smoke_corpus_v0": 11
+  },
+  "split_by_family": {
+    "calibration": {
+      "agent": 2,
+      "coding": 2,
+      "counterexample": 3,
+      "formalization": 2,
+      "general": 2,
+      "math_method": 2,
+      "multi_step": 2,
+      "proof_repair": 2
+    },
+    "hidden_test": {
+      "agent": 5,
+      "coding": 1,
+      "formalization": 4,
+      "math_method": 2,
+      "multi_step": 2,
+      "proof_repair": 2
+    },
+    "public_test": {
+      "agent": 2,
+      "coding": 3,
+      "counterexample": 2,
+      "formalization": 2,
+      "general": 2,
+      "math_method": 2,
+      "multi_step": 2,
+      "proof_repair": 2
+    },
+    "retention": {
+      "agent": 5,
+      "coding": 2,
+      "general": 2,
+      "repo": 2,
+      "tools": 5
+    },
+    "train": {
+      "agent": 6,
+      "coding": 6,
+      "counterexample": 5,
+      "formalization": 6,
+      "general": 6,
+      "long_ctx": 2,
+      "math_method": 6,
+      "multi_step": 6,
+      "proof_repair": 6,
+      "repo": 6,
+      "symbolic": 2,
+      "tools": 5
+    }
+  },
+  "split_counts": {
+    "calibration": 17,
+    "hidden_test": 16,
+    "public_test": 17,
+    "retention": 16,
+    "train": 62
+  },
+  "synthetic_gaussian": false,
+  "verified_only": true
+}

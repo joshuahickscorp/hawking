@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.tg.code_topology_current.v1",
+  "status": "WORKING_TREE_BELOW_ENTRY_TOPOLOGY",
+  "at": "2026-08-02",
+  "measurement": {
+    "include_untracked_active_source": true,
+    "combined_active_monorepo_LOC": 381938,
+    "runtime_LOC": 321723,
+    "active_files_LOC_policy": 991,
+    "directories_all": 121,
+    "source_files": 954,
+    "public_symbols": 8299,
+    "functions": 13069,
+    "languages": {
+      "lean": 22,
+      "markdown": 4233,
+      "python": 92193,
+      "rust": 247826,
+      "shader": 18149,
+      "shell": 2510,
+      "typescript": 17005
+    }
+  },
+  "entry_reference": {
+    "combined_active_monorepo_LOC": 430284,
+    "active_files_LOC_policy": 1363,
+    "directories_all": 179,
+    "source_files": 1227,
+    "public_symbols": 9412,
+    "functions": 14587
+  },
+  "delta_vs_entry": {
+    "combined_active_monorepo_LOC": -48346,
+    "active_files_LOC_policy": -372,
+    "directories_all": -58,
+    "source_files": -273,
+    "public_symbols": -1113,
+    "functions": -1518
+  },
+  "large_files_over_1500_lines": 21,
+  "single_file_directories": 23,
+  "tiny_forwarders": 17,
+  "recent_change": "Qwen72 row-safe first-dispatch repair and multiple exact-source DeepSeek same-model experiments remain sealed; the paired-route v2t_gu_v3 512-threadgroup activation-preload candidate preserved 32-token parity but regressed complete-token wall and p95/p99, so it was retired; no permanent per-model framework or duplicate controller added; model body and exact Trash item purged.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  }
+}

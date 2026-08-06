@@ -133,7 +133,8 @@ mod tests {
     use super::*;
     #[test]
     fn greedy_picks_argmax() {
-        let mut s = Sampler::new(42); let mut logits = vec![1.0, 5.0, 2.0, 0.0];
+        let mut s = Sampler::new(42);
+        let mut logits = vec![1.0, 5.0, 2.0, 0.0];
         let p = SamplingParams {
             temperature: 0.0,
             ..SamplingParams::default()

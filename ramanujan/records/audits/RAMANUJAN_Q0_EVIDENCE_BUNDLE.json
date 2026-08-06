@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.ramanujan.q0_evidence_bundle.v1",
+  "status": "PROVEN_OFFLINE_LEAF_CHAIN_HASH_BOUND",
+  "production_authority": false,
+  "research_authority": false,
+  "image": {
+    "tag": "ramanujan-clean-replay:2ec0166b",
+    "id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
+    "size_bytes": 4644372611,
+    "inspection_authority": "docker image inspect .Id and .Size; live read-only recheck required before any new replay claim"
+  },
+  "leaf_sha256": {
+    "ramanujan/RAMANUJAN_ENVIRONMENT_LOCK.json": "711ab502295aaee88922566b7877965ba00b3004a6e5e992568176bb68e4f924",
+    "ramanujan/container/BUILD_RECEIPT.json": "87b46b64be275ff78e8c6370837f28c4160cb71a8ed2c9907b68119e7bc102a6",
+    "ramanujan/container/Dockerfile": "8e54b0a307a017f1edb725cdd0970d8aae2a488723b9affd3521c6ee40d24e5b",
+    "ramanujan/container/REPLAY_RECEIPT.json": "e9a617c30e39b4f3952c9eb01be6f287da57a2935e0baa99f5131019e65e0ae6",
+    "ramanujan/container/build.sh": "ad5951b29a4b3634fa9dbd9a68c7bd8eaf0b6039125bab757e8b11beb0d9cdb7",
+    "ramanujan/container/capsules/two_plus_two.capsule.json": "716015d5e7a19aa3bc5add04a1d4217c1a88ccfda44d2c6f57e058ee647610c6",
+    "ramanujan/container/pins.json": "ae586bfa583693e68054a936088e54d7a81231cf65ee22e068455f033f880c85",
+    "ramanujan/container/probe/RamanujanProbe.lean": "359041b5d37d7a88a86150630a0f07dcfc375273bc9ba421a246ca141d74bdca",
+    "ramanujan/container/probe/lakefile.lean": "dff8e864e036e6729b4b1e0b4435cf88b2d639303386197799bc20b603a38ca0",
+    "ramanujan/container/probe/lean-toolchain": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+    "ramanujan/container/replay_capsule.sh": "bc10b8a635a48f298a389c24c5ff42ed8231c5c72476a951eb47e743625785d8",
+    "ramanujan/container/scripts/container_replay.sh": "b5005a28c24defa1a01a81e8bf3ccb5bbccbecd7ff42b67c58318bba3f9b7720"
+  },
+  "tamper_policy": "Any leaf-byte drift refuses Q0 until an independent offline rebuild/replay emits a new bundle.",
+  "seal_sha256": "b143a875eff1bbf4f9e67f3d4bce5ebb4f16769ee79b99984f66f6db6b85485f"
+}

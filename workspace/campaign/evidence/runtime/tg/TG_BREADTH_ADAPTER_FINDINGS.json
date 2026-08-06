@@ -1,0 +1,89 @@
+{
+  "schema": "hawking.tg.breadth_adapter_findings.v1",
+  "status": "COMPLETE_NO_QUALIFYING_TUNING_CANDIDATE",
+  "purpose": "The storage-bounded TG20→TG1 traversal. Each source was materialized alone, compared with an independent parent, receipted, then evicted. These are adapter findings, not latency claims.",
+  "rung_results": [
+    {
+      "rung": "TG20",
+      "family": "qwen",
+      "model": "Qwen2.5-14B-Instruct Q4_K_M",
+      "source_gib": 8.37,
+      "state_result": "matches 2 completion tokens, diverges at token 3",
+      "accounting": "Apple M3 Ultra, 339 dispatches/forward on exact path",
+      "evidence": "evidence/tg/TG20_QWEN_ADAPTER_ORACLE.json"
+    },
+    {
+      "rung": "TG10",
+      "family": "mistral",
+      "model": "Mistral-Nemo-Instruct-2407 Q4_K_M",
+      "source_gib": 6.96,
+      "state_result": "matches 3 completion tokens, diverges at token 4",
+      "accounting": "not reported by generic adapter",
+      "evidence": "evidence/tg/TG10_MISTRAL_ADAPTER_ORACLE.json"
+    },
+    {
+      "rung": "TG5",
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct Q4_K_M",
+      "source_gib": 4.58,
+      "state_result": "K0 mismatch: external ' Paris', Hawking ' the'",
+      "accounting": "null device, 0 dispatches/forward",
+      "evidence": "evidence/tg/TG5_LLAMA_ADAPTER_ORACLE.json"
+    },
+    {
+      "rung": "TG4",
+      "family": "deepseek",
+      "model": "DeepSeek-V2-Lite-Chat Q4_K_M",
+      "source_gib": 9.65,
+      "state_result": "K0 mismatch and repetition: Hawking ' t t t …'; independent llama.cpp reads the same source correctly",
+      "accounting": "Apple M3 Ultra, 589 dispatches/forward",
+      "evidence": "evidence/tg/TG_MOE_BISECT.json"
+    },
+    {
+      "rung": "TG3",
+      "family": "qwen",
+      "model": "Qwen2.5-32B-Instruct Q4_K_M",
+      "source_gib": 18.49,
+      "state_result": "matches 2 completion tokens, diverges at token 3",
+      "accounting": "Apple M3 Ultra, 451 dispatches/forward on exact path",
+      "evidence": "evidence/tg/TG3_QWEN32_ADAPTER_ORACLE.json"
+    },
+    {
+      "rung": "TG2",
+      "family": "mistral",
+      "model": "Mistral-Small-3.1-24B-Instruct-2503 Q4_K_M",
+      "source_gib": 13.35,
+      "state_result": "no K0 token or stats after 46 seconds; exact launched process terminated",
+      "accounting": "not reported",
+      "evidence": "evidence/tg/TG2_MISTRAL_SMALL_ADAPTER_ORACLE.json"
+    },
+    {
+      "rung": "TG1",
+      "family": "llama",
+      "model": "Meta-Llama-3.1-8B-Instruct Q4_K_M (fresh rehydration)",
+      "source_gib": 4.58,
+      "state_result": "reproduces TG5 K0 mismatch on the same SHA: external ' Paris', Hawking ' the'",
+      "accounting": "null device, 0 dispatches/forward",
+      "evidence": "evidence/tg/TG1_LLAMA_REHYDRATION_ORACLE.json"
+    }
+  ],
+  "cross_family_conclusions": [
+    "Qwen 14B and 32B have the same two-token state-advance boundary, independent of source size. Treat the prefill→decode cache/position handoff as the Qwen repair target; do not sweep Qwen schedules first.",
+    "The generic Llama/Mistral adapter has both correctness and observability gaps. The Llama reference evaluated six prompt tokens while Hawking reported five, making prompt-special-token and cache initialization the first repair surface.",
+    "Mistral Small proves --max-stall-ms currently does not bound the no-token prefill condition. Repair the guard before another large generic-adapter invocation.",
+    "DeepSeek's dedicated MLA/MoE defect remains independent and already has a per-layer llama.cpp oracle. It should be repaired from that oracle, not from latency output.",
+    "No raw adapter passed state advance, so every AUTOTUNE_PROFILE, GRAVITY_ADAPTER, GRAVITY_ORACLE, and RUNG_MEASUREMENT gate remains blocked. This is the intended fail-closed outcome: no false TG claim and no resident GGUF kept merely for speculative tuning."
+  ],
+  "repair_order": [
+    "Add a compact, source-SHA-bound multi-token parity fixture for Qwen, generic Llama/Mistral, and DeepSeek. It must gate any autotune invocation.",
+    "Fix the generic Llama/Mistral prompt token/BOS and initial KV/position contract; add nonzero device and dispatch accounting before a Mistral profile surface is introduced.",
+    "Fix Qwen's prefill-to-decode state handoff against both existing Qwen receipts, then run its existing autotune controls on the repaired 14B source only.",
+    "Make the forward watchdog cover prefill as well as decode, then repair DeepSeek from the existing per-layer oracle.",
+    "Only after a raw family passes parity should a family-specific Gravity header/tensor map, artifact oracle, and lower-rung pack be built."
+  ],
+  "storage_end_state": {
+    "active_parent_files_under_models_tg_active": 0,
+    "active_parent_directory_bytes": 28672,
+    "note": "Each parent was moved to macOS Trash after its terminal receipt. The working directory is clear; physical reclaim requires manually emptying Trash if the recovery window is no longer needed."
+  }
+}

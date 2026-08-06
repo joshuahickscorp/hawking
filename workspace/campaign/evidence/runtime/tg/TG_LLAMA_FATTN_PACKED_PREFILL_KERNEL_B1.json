@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.tg.kernel_probe.v1",
+  "candidate": "llama-b9430-f16kv-fattn-packed-prefill",
+  "scope": "B=1 source-arithmetic bridge at 2K context; not a packed-prefill performance receipt",
+  "protocol": {
+    "model": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+    "prompt_tokens": 1984,
+    "generated_tokens": 128,
+    "context_limit": 2560,
+    "source_lane": "resident source FATTN, fused Q/K/V RoPE and f16 KV append"
+  },
+  "result": {
+    "metal_pipeline_compiled_and_executed": true,
+    "exact_token_trace_against_nwg32_source_fattn": true,
+    "decode_tps": 94.0976829899667,
+    "decode_cpu_reference_fallback_total": 0,
+    "metal_dispatches_per_forward": 386
+  },
+  "verdict": "kernel-seam-validated",
+  "limits": [
+    "This proves only B=1 equivalence of the batch-major Q/output and scratch indexing.",
+    "It does not prove B>1 causal prefill, projection batching, 32K prefill, or a performance promotion."
+  ],
+  "next_required_proof": "Wire layer-first B>1 Q4 projection, source RoPE/KV append, and this causal FATTN primitive into Llama prefill; then compare exact prompt continuation before measuring prefill throughput."
+}

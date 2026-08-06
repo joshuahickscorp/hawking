@@ -83,7 +83,6 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     evidence: [
       { path: "packs/hawking-adapters-extra.json", claim: "gemma2 extracted off-tree", kind: "description" },
       { path: "crates/hawking-core/tests/gemma2_smoke.rs", claim: "smoke test remains but load_engine rejects unknown gemma2 arch without pack", kind: "description" },
-      { path: "crates/hawking-seed-c/src/providers/adapters.rs", claim: "seed-c ArchAdapter::gemma2 is declarative plan-only", kind: "description" },
     ],
     module: "packs/hawking-adapters-extra (gemma2)",
     executes: false,
@@ -100,9 +99,9 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "GLM (gravity glm_moe_dsa)",
     level: "SMALL_REAL_CHECKPOINT",
     evidence: [
-      { path: "GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: "small_checkpoint_run" },
+      { path: "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: "small_checkpoint_run" },
       { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: "description" },
-      { path: "crates/hawking-core/tests/gravity_engine_registry.rs", claim: "registry path for .gravity artifacts", kind: "description" },
+      { path: "crates/hawking-core/tests/gravity_artifact_suite.rs", claim: "committed .gravity artifact registry and integrity suite", kind: "description" },
       { path: "crates/hawking-core/tests/gravity_glm_forward.rs", claim: "unconditional: real .gravity container decoded, complete token executed, matches numpy oracle reading the same container (3 passed, 0.04s)", kind: "real_tensor_decode" },
     ],
     module: "crates/hawking-core/src/model/gravity_engine.rs",
@@ -120,7 +119,7 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "Kimi K2.x",
     level: "SYNTHETIC_PARITY",
     evidence: [
-      { path: "KIMI_K26_ADAPTER_TWIN.json", claim: "synthetic CPU reference + bound real-source metal K1 twin", kind: "synthetic_parity" },
+      { path: "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json", claim: "synthetic CPU reference + bound real-source metal K1 twin", kind: "synthetic_parity" },
       { path: "crates/hawking-core/src/model/mod.rs", claim: "load_engine has no kimi arch arm (not serve-registered)", kind: "description" },
     ],
     module: "KIMI_K26_ADAPTER_TWIN.json (reference twin; no in-tree serve module)",
@@ -151,6 +150,8 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
       "no standing PRODUCTION parity receipt",
       "smoke and gravity_llama_forward skip when weights/artifacts are absent",
       "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents",
+      "executes on CPU only: dispatches_per_forward=0 and device_id=null, so no Metal path is reached",
+      "output is degenerate on both a raw prompt and a correct Llama-3 chat template, while llama.cpp reads the same GGUF at 338 tok/s against our 3.63",
     ],
   },
   {
@@ -159,7 +160,7 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "MiniMax",
     level: "DECLARED",
     evidence: [
-      { path: "FABRIC_BRIDGE_ARCHAEOLOGY.md", claim: "family listed in bridge archaeology; no serve path found", kind: "description" },
+      { path: "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md", claim: "family listed in bridge archaeology; no serve path found", kind: "description" },
     ],
     module: "(none — declared only)",
     executes: false,
@@ -180,7 +181,6 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
       { path: "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json", claim: "Stage A: official config/tokenizer/safetensors header parsed and mapped", kind: "source_header" },
       { path: "crates/hawking-core/tests/llama32_smoke.rs", claim: "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)", kind: "small_checkpoint_run" },
       { path: "packs/hawking-adapters-extra.json", claim: "mixtral extracted off-tree to adapters-extra pack", kind: "description" },
-      { path: "crates/hawking-seed-c/src/providers/adapters.rs", claim: "seed-c ArchAdapter::mixtral is declarative plan-only (does not execute)", kind: "description" },
     ],
     module: "crates/hawking-core/src/model/llama.rs (+ pack mixtral)",
     executes: true,
@@ -200,7 +200,6 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     evidence: [
       { path: "packs/hawking-adapters-extra.json", claim: "phi3 extracted off-tree", kind: "description" },
       { path: "crates/hawking-core/tests/phi3_smoke.rs", claim: "smoke test remains; arch not in shipping load_engine", kind: "description" },
-      { path: "crates/hawking-seed-c/src/providers/adapters.rs", claim: "seed-c ArchAdapter::phi3 is declarative plan-only", kind: "description" },
     ],
     module: "packs/hawking-adapters-extra (phi3)",
     executes: false,

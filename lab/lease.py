@@ -2,18 +2,25 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import secrets
 import stat
 import threading
+import time
 from pathlib import Path
-from typing import Any, Sequence, TextIO, Type
+from typing import Any, Iterable, Mapping, Sequence, TextIO, Type
 from lab.receipts import seal as _seal_doc
 from lab.receipts import _sha256_hex as sha256_hex, _utc_now as utc_now
 LEASE_SCHEMA = 'hawking.lab.controller_lease.v1'
+FIXTURE_HEAVY_LEASE_SCHEMA = 'hawking.lab.fixture_heavy_lease.v1'
 _PROCESS_LEASES: set[str] = set()
 _PROCESS_LEASES_LOCK = threading.Lock()
 
 class LeaseError(RuntimeError):
     pass
+
+
+class FixtureLeaseError(LeaseError):
+    """A fixture-only heavy lease was not clean, fresh, or exclusive."""
 
 def _verify_sealed(value: dict[str, Any]) -> bool:
     if not isinstance(value, dict):
@@ -55,6 +62,20 @@ class SingletonLease:
     def assert_held(self) -> None:
         if not self.held:
             self._fail('controller mutation refused: singleton lease is not held')
+
+    def assert_path_bound(self) -> None:
+        """Prove the locked descriptor is still the file named by ``path``."""
+        self.assert_held()
+        assert self._handle is not None
+        try:
+            descriptor = os.fstat(self._handle.fileno())
+            named = os.lstat(os.path.abspath(os.path.expanduser(os.fspath(self.path))))
+        except OSError as exc:
+            raise self.error_type(f'singleton lease path changed while held: {exc}') from exc
+        self._require_safe_lease_file(descriptor, label='held singleton lease descriptor')
+        self._require_safe_lease_file(named, label='held singleton lease path')
+        if self._identity(descriptor) != self._identity(named):
+            self._fail('singleton lease path was replaced while the locked descriptor remained held')
 
     @staticmethod
     def _identity(metadata: os.stat_result) -> tuple[int, int, int]:
@@ -375,6 +396,259 @@ class SingletonLease:
         }
 
     def __enter__(self) -> 'SingletonLease':
+        return self.acquire()
+
+    def __exit__(self, *_exc: object) -> None:
+        self.release()
+
+
+class FixtureHeavyLease:
+    """Heartbeat-backed wrapper around the sole hardened ``SingletonLease``.
+
+    It is deliberately incapable of authorizing production work.  Callers
+    must label their resource state CLEAN, CONTENDED, or INVALID and present
+    the known foreign-process set before beginning a fixture heavy operation.
+    A non-empty foreign set changes the label to CONTENDED and refuses work.
+    Recovery never breaks a live lock: it only records that an *unlocked*
+    stale owner record was replaced by a new exclusive holder.
+    """
+
+    _LABELS = frozenset({'CLEAN', 'CONTENDED', 'INVALID'})
+
+    def __init__(
+        self,
+        path: str | os.PathLike[str],
+        *,
+        campaign_id: str,
+        owner: str='fixture-window-operator',
+        heartbeat_timeout_seconds: float=30.0,
+        wall_clock_ns: Any=time.time_ns,
+        monotonic_clock_ns: Any=time.monotonic_ns,
+    ) -> None:
+        if (
+            isinstance(heartbeat_timeout_seconds, bool)
+            or not isinstance(heartbeat_timeout_seconds, (int, float))
+            or heartbeat_timeout_seconds <= 0
+        ):
+            raise FixtureLeaseError('heartbeat_timeout_seconds must be positive')
+        self._lease = SingletonLease(
+            path,
+            campaign_id=campaign_id,
+            controller_epoch='fixture-heavy-v1',
+            owner=owner,
+            lease_schema=FIXTURE_HEAVY_LEASE_SCHEMA,
+            error_type=FixtureLeaseError,
+            seal_owner=True,
+        )
+        self.path = Path(path)
+        self.campaign_id = campaign_id
+        self.owner = owner
+        self.heartbeat_timeout_seconds = float(heartbeat_timeout_seconds)
+        if not callable(wall_clock_ns) or not callable(monotonic_clock_ns):
+            raise FixtureLeaseError('fixture lease clocks must be callable')
+        self._wall_clock_ns = wall_clock_ns
+        self._monotonic_clock_ns = monotonic_clock_ns
+        self._process_identity = secrets.token_hex(32)
+        self.lease_id = secrets.token_hex(32)
+        self._record: dict[str, Any] | None = None
+
+    @property
+    def held(self) -> bool:
+        return self._lease.held
+
+    @staticmethod
+    def _foreign_rows(foreign_processes: Iterable[Mapping[str, Any]] | None) -> list[dict[str, Any]]:
+        if foreign_processes is None:
+            return []
+        if isinstance(foreign_processes, (str, bytes)):
+            raise FixtureLeaseError('foreign_processes must be mappings, not text')
+        rows: list[dict[str, Any]] = []
+        for number, value in enumerate(foreign_processes):
+            if not isinstance(value, Mapping):
+                raise FixtureLeaseError(f'foreign process {number} is not a mapping')
+            pid = value.get('pid')
+            label = value.get('label')
+            if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
+                raise FixtureLeaseError(f'foreign process {number} pid is invalid')
+            if not isinstance(label, str) or not label or label != label.strip():
+                raise FixtureLeaseError(f'foreign process {number} label is invalid')
+            rows.append({'pid': pid, 'label': label})
+        return rows
+
+    def _validate_label(self, label: str) -> str:
+        if label not in self._LABELS:
+            raise FixtureLeaseError(f'contention label must be one of {sorted(self._LABELS)!r}')
+        return label
+
+    def _write_record(self, *, contention_label: str, foreign_processes: list[dict[str, Any]], recovered: bool) -> None:
+        self._lease.assert_held()
+        self._lease.assert_path_bound()
+        handle = self._lease._handle
+        if handle is None:
+            raise FixtureLeaseError('fixture lease handle disappeared')
+        now_ns = self._wall_clock_ns()
+        monotonic_ns = self._monotonic_clock_ns()
+        value = _seal_doc({
+            'schema': FIXTURE_HEAVY_LEASE_SCHEMA,
+            'campaign_id': self.campaign_id,
+            'controller_epoch': 'fixture-heavy-v1',
+            'owner': self.owner,
+            'pid': os.getpid(),
+            'process_identity': self._process_identity,
+            'acquired_at': (self._record or {}).get('acquired_at', utc_now()),
+            'lease_id': self.lease_id,
+            'fixture_only': True,
+            'production_authority': False,
+            'contention_label': contention_label,
+            'foreign_processes': foreign_processes,
+            'heartbeat_unix_ns': now_ns,
+            'heartbeat_monotonic_ns': monotonic_ns,
+            'heartbeat_timeout_seconds': self.heartbeat_timeout_seconds,
+            'recovered_unlocked_stale_record': recovered,
+        })
+        encoded = (json.dumps(value, sort_keys=True, separators=(',', ':')) + '\n').encode('utf-8')
+        descriptor = handle.fileno()
+        os.ftruncate(descriptor, 0)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        view = memoryview(encoded)
+        while view:
+            written = os.write(descriptor, view)
+            if written <= 0:
+                raise FixtureLeaseError('short fixture heartbeat write')
+            view = view[written:]
+        os.fsync(descriptor)
+        self._lease.assert_path_bound()
+        self._record = value
+
+    def _classify_prior_unlocked_record(self, prior: dict[str, Any] | None) -> bool:
+        """Return whether a valid prior record is stale enough to recover.
+
+        An unlocked file is not itself proof of staleness: a fresh owner record
+        can result from accidental lock loss, PID reuse, or an attacker swapping
+        lock state.  Only an authenticated, expired fixture heartbeat is
+        recoverable.  Any malformed or fresh record fails closed.
+        """
+        if prior is None:
+            return False
+        if (
+            not _verify_sealed(prior)
+            or prior.get('schema') != FIXTURE_HEAVY_LEASE_SCHEMA
+            or prior.get('campaign_id') != self.campaign_id
+            or prior.get('fixture_only') is not True
+            or prior.get('production_authority') is not False
+        ):
+            raise FixtureLeaseError('unlocked fixture lease owner record is invalid; explicit quarantine is required')
+        heartbeat = prior.get('heartbeat_unix_ns')
+        if isinstance(heartbeat, bool) or not isinstance(heartbeat, int):
+            raise FixtureLeaseError('unlocked fixture lease owner heartbeat is invalid')
+        age_ns = self._wall_clock_ns() - heartbeat
+        if age_ns < 0:
+            raise FixtureLeaseError('unlocked fixture lease owner heartbeat is from the future')
+        recorded_timeout = prior.get('heartbeat_timeout_seconds')
+        if (
+            isinstance(recorded_timeout, bool)
+            or not isinstance(recorded_timeout, (int, float))
+            or recorded_timeout <= 0
+        ):
+            raise FixtureLeaseError('unlocked fixture lease owner timeout is invalid')
+        # The prior owner's authenticated timeout is the recovery contract;
+        # a new claimant may neither shorten it nor retroactively lengthen it.
+        timeout_ns = int(float(recorded_timeout) * 1_000_000_000)
+        if age_ns <= timeout_ns:
+            raise FixtureLeaseError('unlocked fixture lease owner record is still fresh; recovery refused')
+        return True
+
+    def acquire(
+        self,
+        *,
+        contention_label: str='CLEAN',
+        foreign_processes: Iterable[Mapping[str, Any]] | None=None,
+    ) -> 'FixtureHeavyLease':
+        if os.environ.get('HAWKING_PARENT_RESTREAM_AUTHORIZED') == 'YES':
+            raise FixtureLeaseError('fixture-only lease cannot accompany parent-restream authorization')
+        label = self._validate_label(contention_label)
+        foreign = self._foreign_rows(foreign_processes)
+        if foreign:
+            label = 'CONTENDED'
+        prior = self._lease.read_owner()
+        probe = self._lease.probe()
+        if probe['live_lock_held']:
+            raise FixtureLeaseError('fixture heavy lease is already held; recovery may not break a live lock')
+        recovered = self._classify_prior_unlocked_record(prior)
+        self._lease.acquire()
+        self._write_record(
+            contention_label=label,
+            foreign_processes=foreign,
+            recovered=recovered,
+        )
+        if foreign:
+            self.release()
+            raise FixtureLeaseError('foreign-process protection refused a contended fixture lease')
+        if label != 'CLEAN':
+            self.release()
+            raise FixtureLeaseError('fixture heavy work requires an explicit CLEAN contention label')
+        return self
+
+    def heartbeat(
+        self,
+        *,
+        contention_label: str='CLEAN',
+        foreign_processes: Iterable[Mapping[str, Any]] | None=None,
+    ) -> None:
+        label = self._validate_label(contention_label)
+        foreign = self._foreign_rows(foreign_processes)
+        if foreign:
+            label = 'CONTENDED'
+        self._write_record(contention_label=label, foreign_processes=foreign, recovered=False)
+        if foreign or label != 'CLEAN':
+            raise FixtureLeaseError('fixture heartbeat reports contention; operation must roll back')
+
+    def assert_clean(self) -> None:
+        self._lease.assert_held()
+        try:
+            self._lease.assert_path_bound()
+        except FixtureLeaseError as exc:
+            raise FixtureLeaseError(f'fixture lease record was replaced or tampered while held: {exc}') from exc
+        record = self._record
+        if record is None or record.get('fixture_only') is not True or record.get('production_authority') is not False:
+            raise FixtureLeaseError('fixture-only lease record is malformed')
+        if record.get('contention_label') != 'CLEAN' or record.get('foreign_processes') != []:
+            raise FixtureLeaseError('fixture heavy operation is not CLEAN')
+        on_disk = self._lease.read_owner()
+        if (
+            on_disk is None
+            or not _verify_sealed(on_disk)
+            or on_disk != record
+            or on_disk.get('lease_id') != self.lease_id
+            or on_disk.get('process_identity') != self._process_identity
+        ):
+            raise FixtureLeaseError('fixture lease record was replaced or tampered while held')
+        heartbeat = record.get('heartbeat_unix_ns')
+        monotonic = record.get('heartbeat_monotonic_ns')
+        if any(isinstance(value, bool) or not isinstance(value, int) for value in (heartbeat, monotonic)):
+            raise FixtureLeaseError('fixture heartbeat is invalid')
+        now_wall = self._wall_clock_ns()
+        now_monotonic = self._monotonic_clock_ns()
+        wall_age = now_wall - heartbeat
+        monotonic_age = now_monotonic - monotonic
+        if wall_age < 0 or monotonic_age < 0:
+            raise FixtureLeaseError('fixture heartbeat clock regressed; reacquire before work')
+        timeout_ns = int(self.heartbeat_timeout_seconds * 1_000_000_000)
+        if max(wall_age, monotonic_age) > timeout_ns:
+            raise FixtureLeaseError('fixture heartbeat is stale; recover or reacquire before work')
+
+    def receipt(self) -> dict[str, Any]:
+        self.assert_clean()
+        assert self._record is not None
+        return dict(self._record)
+
+    def release(self) -> None:
+        self._lease.release()
+        self._record = None
+
+    close = release
+
+    def __enter__(self) -> 'FixtureHeavyLease':
         return self.acquire()
 
     def __exit__(self, *_exc: object) -> None:

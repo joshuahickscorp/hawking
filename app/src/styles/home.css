@@ -26,7 +26,7 @@
   box-shadow: inset -1px 0 0 var(--line);
 }
 
-/* Chat/Code segmented at the rail top (Claude Code's Home/Code) */
+/* Chat/Code segmented control at the top of the rail */
 .home-switch {
   display: flex;
   gap: 2px;
@@ -452,7 +452,7 @@
   color: var(--light);
   box-shadow: var(--hairline-strong), var(--light-bloom);
 }
-/* Create PR sits at the far right of the branch row (Claude Code geometry). */
+/* Create PR sits at the far right of the branch row. */
 .hc__chip--pr {
   margin-left: auto;
   color: var(--text-1);
@@ -569,7 +569,7 @@
   background: var(--surface-3);
 }
 
-/* Add-context popover on the composer plus button (folder / files, Claude Code style) */
+/* Add-context popover on the composer plus button (working folder / file attachments) */
 .hc__add {
   position: relative;
   display: inline-flex;
@@ -647,7 +647,7 @@
   cursor: default;
 }
 
-/* ---- Active chat: conversation + Terminal/Diff/Preview side panel (Claude Code active-chat) ---- */
+/* ---- Active chat: conversation + Terminal/Diff/Preview side panel ---- */
 .home-stage--live {
   flex-direction: row;
 }

@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.tg.same_model_preregistration.v1",
+  "seal_sha256": "1b998e426685e2e2269ee34301a206c650164c373e51ebd41266da394edd55ed",
+  "status": "PREREGISTERED",
+  "at": "2026-08-02",
+  "family": "deepseek_v2_lite_moe_mla",
+  "device": "Apple M3 Ultra",
+  "candidate": {
+    "id": "moe-route-accumulate-residual-fused",
+    "configuration": "HAWKING_DS_FUSED_ROUTE_RESIDUAL=1",
+    "change": "Replace the separate moe_route_accumulate output write plus next-layer add_inplace with one moe_route_accumulate_add dispatch that preserves x residual and adds weighted routed/shared expert output in place.",
+    "mechanism": "The MoE output is consumed only by the next layer's residual add (or final epilogue); the fused kernel computes the identical fp32 accumulation directly into x_buf. Routing, expert weights, KV, MLA, RoPE, tokenizer, and command-buffer ordering remain unchanged.",
+    "hypothesis": "Removing one hidden-width memory pass and one dispatch per routed layer lowers complete-token wall time by at least 3 percent without changing the 32-token source continuation.",
+    "promotion_threshold_percent": 3.0,
+    "required_safety": ["same pinned DeepSeek source SHA", "same promoted kernel profile", "same prompt and 32 complete tokens", "CPU/reference fallback 0", "token ID sequence exact", "p99 non-regression", "default flag remains off"]
+  },
+  "control": {
+    "profile": "profiles/deepseek-v2-lite-q4.m3ultra-rope-v2t-guv2-candidate-2026-08-02.json",
+    "promoted_tps": 41.06909043843913,
+    "control_dispatches_per_forward": 487,
+    "cpu_reference_fallback_count": 0
+  },
+  "claim_boundary": "One bounded same-model runtime experiment only; no TG, capability, CLEAN lease, production, or owner authorization claim.",
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED",
+    "physical_glm52_operator_approval": false
+  }
+}

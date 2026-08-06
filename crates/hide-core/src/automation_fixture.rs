@@ -23,16 +23,9 @@
 //!
 //! Model-free throughout. Deterministic under an injected [`Clock`].
 
-use crate::error::{HideError, Result};
-use crate::ids::now_ms;
-use crate::persistence::DynKeyValueStore;
-use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
-use super::*;
-
+use std::collections::BTreeMap;
 
 // ---------------------------------------------------------------------------
 // Fixture tool registry (no real execution)
@@ -137,8 +130,5 @@ pub fn standard_fixture_registry() -> FixtureToolRegistry {
             "shell.run",
             json!({"exit": 0, "stdout": "ok"}),
         ))
-        .with(FixtureTool::new(
-            "notify.send",
-            json!({"delivered": true}),
-        ))
+        .with(FixtureTool::new("notify.send", json!({"delivered": true})))
 }

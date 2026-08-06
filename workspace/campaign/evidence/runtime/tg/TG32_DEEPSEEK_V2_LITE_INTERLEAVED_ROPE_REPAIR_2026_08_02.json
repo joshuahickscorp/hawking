@@ -1,0 +1,115 @@
+{
+  "schema": "hawking.tg.same_model_before_after.v2",
+  "status": "PROMOTED_TG32_WITH_NARROW_SOURCE_MATCH_AND_EXPLICIT_CAPABILITY_LIMIT",
+  "family": "deepseek_v2_lite_moe_mla",
+  "source": {
+    "repository": "second-state/DeepSeek-V2-Lite-Chat-GGUF",
+    "revision": "fbba16c9ee1ba016b0ab083938acb7be061f970f",
+    "filename": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "sha256": "30b4fb4ab1fbe1c6a827303ea898296c9faf8f54d6cdf8b9fbdda7a7ebfb292a"
+  },
+  "artifact": {
+    "representation": "source-preserving-gravity-mla-moe",
+    "bytes": 10362253454,
+    "sha256": "171a36fb069f62163bd7e8bf77d0763178e5c66950a62da2bb6e825dd6603788",
+    "mapped_tensors": 5291,
+    "packed_payload_bytes": 10360420352
+  },
+  "source_authority": {
+    "runtime": "llama.cpp direct non-conversation greedy decode",
+    "prompt": "The capital of France is",
+    "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+    "first_four_ids": [8913, 13, 185, 185],
+    "first_four_text": " Paris.\\n\\n",
+    "extended_32_text": " Paris.\\n\\nThe official language is French.\\n\\nThe currency is the Euro (€).\\n\\nFrance is a member of the European Union and the\\n"
+  },
+  "same_model_before_after": [
+    {
+      "id": "direct-q4-legacy-split-half-rope",
+      "profile_id": "kp-dd459d9edd1b014528cabda0",
+      "environment": "HAWKING_DS_LEGACY_SPLIT_ROPE=1",
+      "device": "Apple M3 Ultra",
+      "dispatches_per_forward": 589,
+      "cpu_reference_fallback": 0,
+      "first_four_ids": [244, 244, 244, 244],
+      "decode_tps": 34.023068542082854,
+      "verdict": "REJECTED_CAPABILITY_FIRST_TOKEN_DIVERGENCE"
+    },
+    {
+      "id": "direct-q4-interleaved-concat-rope",
+      "profile_id": "kp-ab924fa5924b5250ce526f66",
+      "shader_hash": "1e4d0614bddbbf77202b9914",
+      "device": "Apple M3 Ultra",
+      "environment": "default; legacy negative control disabled",
+      "dispatches_per_forward": 589,
+      "cpu_reference_fallback": 0,
+      "first_four_ids": [8913, 13, 185, 185],
+      "decode_tps_4_token": 34.541270341569984,
+      "prefill_ms_4_token": 304.05575,
+      "verdict": "CLEAN_SAME_MODEL_CAPABILITY_MATCH_IN_FOUR_TOKEN_WINDOW"
+    }
+  ],
+  "long_tail": {
+    "completion_tokens": 32,
+    "decode_tps": 34.131914938374315,
+    "decode_ms": 937.538959,
+    "prefill_ms": 303.0235,
+    "complete_token_latency_ms": {
+      "p50": 29.2,
+      "p95": 29.5,
+      "p99": 29.5,
+      "min": 28.6,
+      "max": 29.5
+    },
+    "dispatches_per_forward": 589,
+    "cpu_reference_fallback": 0,
+    "verdict": "STABLE_COMPLETE_TOKEN_TAIL_ABOVE_TG32"
+  },
+  "ladder": {
+    "deepest_honest_rung": "TG32",
+    "target_tps": 31.25,
+    "measured_tps": 34.131914938374315,
+    "claim_scope": "complete-token performance with a four-token source-matched capability window; not a product-capability approval"
+  },
+  "representation_change": {
+    "root_cause": "DeepSeek MLA RoPE source uses adjacent input pairs and concatenated rotated halves; the previous Metal kernels used split-half in-place pairing",
+    "repair": "out-of-place rope_q_interleaved_concat and rope_slice_interleaved_concat with persistent DecodeArena rope_tmp_buf and same-TCB blit copies",
+    "default": true,
+    "legacy_negative_control": "HAWKING_DS_LEGACY_SPLIT_ROPE=1",
+    "profile_refresh_required": true
+  },
+  "stage_readback": {
+    "metal_trace": "evidence/tg/TG32_DEEPSEEK_V2_LITE_STAGE_TRACE_V2_2026_08_02.jsonl",
+    "metal_trace_bytes": 735811,
+    "metal_trace_sha256": "542bfd4b78ec8757f6bc23fede01f17364ca1e123c04bbb43f48e0793ae771d3",
+    "cpu_oracle_trace": "/tmp/hawking-deepseek-cpu-stage-2026-08-02.json",
+    "records": 189,
+    "device": "Apple M3 Ultra",
+    "dispatches": ">0",
+    "route_ids": "match CPU oracle for observed layers",
+    "k_pe_layout": "repaired to concatenated-half layout; first values now numerically aligned",
+    "numeric_hash_parity": "not bit-identical because native f16/Q4 arithmetic differs from the CPU dequant oracle; capability is judged by exact discrete decisions and source window"
+  },
+  "capability_limits": {
+    "extended_32_source_match": false,
+    "extended_32_hawking_ids": [8913, 13, 185, 185, 11145, 207, 161, 25, 67870, 254, 2512, 1435, 3637, 13, 185, 549, 2512, 317, 8740, 327, 254, 6077, 3787, 280, 7239, 13, 185, 185, 11145, 207, 17, 25],
+    "unrelated_prompt": {
+      "prompt": "The largest planet in our solar system is",
+      "source_text": " Jupiter. It is\\n\\n",
+      "hawking_ids": [39048, 13, 39048, 317],
+      "verdict": "coherent_and_first_two_decisions_match; broader G3 parity remains open"
+    },
+    "product_capability": "not approved from a single prompt; continue G3-G9 capability gates"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "next_reopen_condition": "Run the same corrected grammar through unrelated/adversarial G3-G9 prompts and a bounded resident .gravity fixture; do not claim TG20 or product capability from the four-token source window alone."
+}

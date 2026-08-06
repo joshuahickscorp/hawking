@@ -1,0 +1,136 @@
+{
+  "schema": "hawking.tg.same_model_representation_result.v2",
+  "status": "PROMOTED_TG32_NARROW_CAPABILITY_SCOPE",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_PREREGISTRATION_2026_08_02.json",
+  "preregistration_seal_sha256": "ee1d4f01d638c47b1a9adbea69d32d019ba5646e4b7ea5e12d1d624473770af6",
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "artifact": {
+    "filename": "qwen14-final-forward.gravity",
+    "bytes": 8982325263,
+    "payload_bytes": 8982142976,
+    "sha256": "fb35fb5cdb970570e75264881bb6b8dae7a88b0399011abf48daf6fb16c9c1af",
+    "mapped_tensors": 579,
+    "skipped_source_tensors": 0,
+    "source_quant_bytes_preserved": true,
+    "lossy_fit": false,
+    "packer": "tools/llama_q4k_gravity_pack.py",
+    "pack_receipt_sha256": "87645aebe839eaeafb4df3a9d264bf0ca1f10d7c6701224bb677595dce724e86"
+  },
+  "tokenizer": {
+    "repository": "Qwen/Qwen2.5-14B-Instruct",
+    "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+    "bytes": 7031645,
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  "protocol": {
+    "device_id": "Apple M3 Ultra",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "temperature": 0.0,
+    "complete_tokens_each_run": 32,
+    "runs_each_side": 2,
+    "native_env": "HAWKING_REQUIRE_METAL=1 HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "gravity_env": "HAWKING_REQUIRE_METAL=1",
+    "clean_sequential_gpu": true,
+    "cpu_reference_fallback_required": 0
+  },
+  "continuation": {
+    "native_run_1_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "native_run_2_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "gravity_run_1_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "gravity_run_2_hash": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c",
+    "all_ids_equal": true,
+    "all_complete_token_counts_equal": true
+  },
+  "native_control": {
+    "runs": [
+      {"tps": 14.765902397943394, "decode_ms": 2099.431458, "prefill_ms": 496.856334, "p50_ms": 67.572625, "p95_ms": 68.07035450000001, "p99_ms": 68.14189129999998, "completed_decode_forwards": 31, "dispatches_per_forward": 556, "metal_dispatches_total": 17236, "fallback_count": 0, "log": "models/tg-active/qwen14-gravity-final-forward-elision-2026-08-02/native_elision.log"},
+      {"tps": 14.735213557452465, "decode_ms": 2103.803917, "prefill_ms": 458.83104099999997, "p50_ms": 67.652333, "p95_ms": 68.1801045, "p99_ms": 68.236334, "completed_decode_forwards": 31, "dispatches_per_forward": 556, "metal_dispatches_total": 17236, "fallback_count": 0, "log": "models/tg-active/qwen14-gravity-final-forward-elision-2026-08-02/native_elision_r2.log"}
+    ],
+    "median_tps": 14.75055797769793,
+    "median_decode_ms": 2101.6176875,
+    "median_p50_ms": 67.612479,
+    "median_p95_ms": 68.12522949999999,
+    "median_p99_ms": 68.18911265,
+    "device_id": "Apple M3 Ultra",
+    "fallback_count": 0
+  },
+  "gravity_candidate": {
+    "runs": [
+      {"tps": 38.29832511231988, "decode_ms": 809.434875, "prefill_ms": 173.473875, "p50_ms": 25.283458000000003, "p95_ms": 26.151896, "p99_ms": 26.5471332, "completed_decode_forwards": 31, "dispatches_per_forward": 770, "metal_dispatches_total": 23870, "fallback_count": 0, "log": "models/tg-active/qwen14-gravity-final-forward-elision-2026-08-02/gravity_elision.log"},
+      {"tps": 38.008365707500346, "decode_ms": 815.609917, "prefill_ms": 240.554666, "p50_ms": 25.46375, "p95_ms": 26.839354, "p99_ms": 27.2506793, "completed_decode_forwards": 31, "dispatches_per_forward": 770, "metal_dispatches_total": 23870, "fallback_count": 0, "log": "models/tg-active/qwen14-gravity-final-forward-elision-2026-08-02/gravity_elision_r2.log"}
+    ],
+    "median_tps": 38.153345409910116,
+    "median_decode_ms": 812.5223960000001,
+    "median_p50_ms": 25.373604000000002,
+    "median_p95_ms": 26.495625,
+    "median_p99_ms": 26.898906250000003,
+    "device_id": "Apple M3 Ultra",
+    "fallback_count": 0
+  },
+  "deltas": {
+    "median_tps_percent": 158.6569638083927,
+    "median_decode_wall_percent": -61.338239546006854,
+    "median_p95_percent": -61.107470470980196,
+    "median_p99_percent": -60.55249114610673,
+    "candidate_dispatches_removed_by_final_forward_elision": 770,
+    "candidate_command_buffers_removed_by_final_forward_elision": 1,
+    "same_model": true,
+    "same_prompt_ids": true,
+    "complete_token_protocol_equal": true,
+    "token_id_sequence_match": true,
+    "cpu_reference_fallback_delta": 0
+  },
+  "rung": {
+    "target": "TG32",
+    "target_tps": 31.25,
+    "candidate_median_tps": 38.153345409910116,
+    "candidate_clears_target": true,
+    "deepest_stable_rung": "TG32",
+    "first_failing_lower_latency_rung": "TG20",
+    "scope": "NARROW_SOURCE_WINDOW_RUNTIME_SCOPE_ONLY",
+    "capability_boundary": "G0/G1 source coverage, exact tokenizer/prompt IDs, Numeric Parity V2.1 continuation and real Metal are sealed. G2-G9 whole-model/product capability gates remain open and are not claimed."
+  },
+  "final_forward_elision": {
+    "prior_parity_repaired_gravity_result": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_RESULT_2026_08_02.json",
+    "prior_gravity_decode_forwards": 32,
+    "prior_gravity_decode_metal_dispatches": 24640,
+    "current_gravity_decode_forwards": 31,
+    "current_gravity_decode_metal_dispatches": 23870,
+    "interpretation": "The change removes an unused final forward and makes source and Gravity completion accounting equal. Direct wall timing versus the prior 32-forward run is within run noise; the promotion is based on the preregistered same-model source-versus-executable-Gravity gate, not an inflated self-comparison."
+  },
+  "promotion": {
+    "capability_parity": true,
+    "speed_gate": true,
+    "clean_gpu": true,
+    "promoted_representation": true,
+    "promoted_default_native_qwen_path": false,
+    "promoted_claim": "Qwen2.5-14B Q4_K_M executable source-preserving Gravity clears TG32 at 38.153 median TPS in this exact source-window scope.",
+    "not_claimed": ["TG20", "G2-G9 product capability", "production GPU lease", "owner authorization", "final parent restream"]
+  },
+  "evidence": {
+    "preregistration": "evidence/tg/TG32_QWEN14_GRAVITY_FINAL_FORWARD_ELISION_PREREGISTRATION_2026_08_02.json",
+    "stage_oracle": "evidence/tg/TG32_QWEN14_GRAVITY_STAGE_ORACLE_RESULT_2026_08_02.json",
+    "parity_repair": "evidence/tg/TG32_QWEN14_CONVENTIONAL_DECODE_SEED_RESULT_2026_08_02.json",
+    "pack_receipt": "models/tg-active/qwen14-gravity-final-forward-elision-2026-08-02/pack_receipt.json"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "83d1d0f452c0992b5f73eb0bbdf5eecebc9eb8d4501ddfd0f367521d72e07ce4"
+}

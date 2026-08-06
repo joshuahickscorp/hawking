@@ -1,0 +1,132 @@
+{
+  "free_bytes_observed": 494623252480,
+  "gates": {
+    "ARTIFACT_ASSEMBLY": {
+      "artifact_dir": null,
+      "detail": "expected exactly one readable custom-format index in a present artifact directory",
+      "status": "BLOCKED",
+      "supported_indexes": [
+        "model.gravity.index.json",
+        "model.activation_aware.index.json"
+      ]
+    },
+    "DECODE_PERFORMANCE": {
+      "checked_rows": [
+        {
+          "context_tokens": 4,
+          "decode_p99_ms": 7841.024958,
+          "decode_tokens": 12,
+          "decode_tps": 0.14872440141865914,
+          "device_execution_proven": false,
+          "token_only_device_head": false
+        },
+        {
+          "context_tokens": 128,
+          "decode_p99_ms": 7066.555834,
+          "decode_tokens": 12,
+          "decode_tps": 0.15061880984743498,
+          "device_execution_proven": false,
+          "token_only_device_head": false
+        }
+      ],
+      "detail": "no index-bound GPU decode row meets all throughput, tail-latency, context, and sample-size requirements",
+      "status": "BLOCKED",
+      "timing_error": null
+    },
+    "GPU_FAST_DECODE": {
+      "checked_rows": [
+        {
+          "context_tokens": 4,
+          "decode_p99_ms": 7841.024958,
+          "decode_tokens": 12,
+          "decode_tps": 0.14872440141865914,
+          "device_execution_proven": false,
+          "token_only_device_head": false
+        },
+        {
+          "context_tokens": 128,
+          "decode_p99_ms": 7066.555834,
+          "decode_tokens": 12,
+          "decode_tps": 0.15061880984743498,
+          "device_execution_proven": false,
+          "token_only_device_head": false
+        }
+      ],
+      "detail": "speed evidence must be index-bound and prove real resident Metal decode; configuration names alone do not qualify",
+      "full_logits_readback": null,
+      "live_index_sha256": null,
+      "measurement_index_sha256": null,
+      "missing_fast_flags": [
+        "resident_state",
+        "compact_mla",
+        "device_dsa",
+        "compact_attention_icb",
+        "device_router",
+        "gpu_native_bf16_head",
+        "gpu_lm_head_icb",
+        "expert_wave",
+        "expert_wave_concurrent",
+        "expert_table_hit",
+        "expert_table_icb"
+      ],
+      "status": "BLOCKED",
+      "verify_hash": null
+    },
+    "HIDE_HANDOFF": {
+      "detail": "Hide may not expose a custom-format artifact until all runtime evidence gates pass",
+      "status": "BLOCKED"
+    },
+    "ORACLE_PARITY": {
+      "detail": "parity must be a source-parent PASS receipt bound to this exact index; synthetic or unbound historical evidence is insufficient",
+      "live_index_sha256": null,
+      "receipt_index_sha256": null,
+      "receipt_source_revision": null,
+      "receipt_status": "PASS_SYNTHETIC_MAIN_AND_MTP_SELF_CONSISTENCY_SOURCE_PARENT_PENDING",
+      "required_source_revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+      "status": "BLOCKED"
+    },
+    "RAMANUJAN_SANDBOX": {
+      "detail": "no Ramanujan sandbox launch: it needs both a fast-qualified runtime and explicit research authorization",
+      "research_authorized": false,
+      "status": "BLOCKED"
+    },
+    "SOURCE_AND_PACK_PATH": {
+      "blockers": [
+        "Xet throughput/autotune has not run",
+        "GLM synthetic twin and official bounded reference parity are not green",
+        "physical compact writer/reader/direct execution is not green",
+        "crash-safe fetch/verify/capture/pack/seal/evict integration is not green"
+      ],
+      "body_stream_admitted": false,
+      "complete_source_resident": false,
+      "detail": "a full GLM source rehydrate/pack path has not been re-admitted; do not infer it from historical receipts",
+      "logical_source_bytes": 1506693036946,
+      "status": "BLOCKED"
+    },
+    "TARGET_CONTRACT": {
+      "detail": "speed target must be supplied by the operator; 'godly' is not a measurable threshold",
+      "missing": [
+        "min_decode_tps",
+        "max_decode_p99_ms",
+        "min_context_tokens"
+      ],
+      "status": "BLOCKED"
+    }
+  },
+  "inputs": {
+    "artifact_dir": null,
+    "measurement": "/Users/scammermike/Downloads/hawking/evidence/glm52/GLM52_MATH_PRESERVE_BASE_TPS.json",
+    "parity": "/Users/scammermike/Downloads/hawking/evidence/glm52/GLM52_REFERENCE_PARITY.json",
+    "ramanujan_lock": "/Users/scammermike/Downloads/hawking/ramanujan/RAMANUJAN_ENVIRONMENT_LOCK.json",
+    "source_admission": "/Users/scammermike/Downloads/hawking/evidence/glm52/GLM52_SOURCE_ADMISSION.json"
+  },
+  "intent": "fast custom-format GLM admission; this command never fetches weights, packs artifacts, starts Hide, or starts Ramanujan",
+  "schema": "hawking.glm52.fast_intake.v1",
+  "status": "BLOCKED",
+  "target": {
+    "max_decode_p99_ms": null,
+    "min_context_tokens": null,
+    "min_decode_tokens": 32,
+    "min_decode_tps": null
+  }
+}

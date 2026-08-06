@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.tg.download_resume_receipt.v1",
+  "status": "PASS_FRESH_SESSION_EXACT_RANGE_RESUME",
+  "at": "2026-08-01T06:07:30Z",
+  "source": {"repo":"Qwen/Qwen2.5-72B-Instruct-GGUF","revision":"7ca3bc388f97b264c4283bc9bf1055e2abc38441","path":"qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf","file_bytes":3986869120,"file_sha256":"3531a90691b5f4edb4fdf488246d72ce0b5d40cacfab1489718a662cec386e43","xet_file_hash":"d2bf6e805dfba78d0330915f28f2f9afb3b2eee4155ed8e4cd3283b97a6a51f5"},
+  "runtime": {"huggingface_hub":"1.24.0","hf_xet":"1.5.2","mode":"high_performance","requested_fixed_download_concurrency":2,"effective_download_concurrency":{"initial":16,"minimum":4,"maximum":124},"requested_xet_chunk_cache_bytes":0,"client_visible_retries":0,"application_body_file_writes":0},
+  "range": {
+    "start":0,"interruption_boundary":8388608,"end":67108864,"combined_bytes":67108864,
+    "combined_sha256":"640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168",
+    "uninterrupted_reference_sha256":"640b628200f1ac8c0ce2c6c795081b0d96c4c0094df336498d21a962a1696168",
+    "hash_matches_uninterrupted":true,
+    "parts":[{"start":0,"end":8388608,"bytes":8388608,"sha256":"59ed495d0e0a186685e2d8133914b29d7bf7088d1b22599c9978f00471ebb8f4"},{"start":8388608,"end":67108864,"bytes":58720256,"sha256":"eeb2b0dd91fb2b8423cca84d3040588c60863b665b05828a160bf9be42f51196"}]
+  },
+  "measurement": {"elapsed_seconds":1.134034208,"process_cpu_user_seconds":0.111772,"process_cpu_system_seconds":0.086992,"sealed_gb_per_hour_decimal":213.03758625242457},
+  "claim_boundary": ["fresh in-memory Xet session with two exact half-open intervals","the second interval begins exactly at the interruption boundary","does not prove full-body resume or create a model body"],
+  "seal_sha256": "0a8d3da1f60eefcf6c4bcedc5664c01ef32750df7fc122e1490bf808604bc1e2"
+}

@@ -16,6 +16,13 @@ use tokenizers::Tokenizer as HfTokenizer;
 
 pub struct Tokenizer {
     inner: HfTokenizer,
+    /// `tokenizer.ggml.add_bos_token`. The SPM path takes this as a constructor
+    /// argument, but the BPE path delegates to the `tokenizers` crate, and a
+    /// GGUF-converted BPE tokenizer carries no post-processor, so nothing would
+    /// prepend BOS. Llama-3 and DeepSeek both declare it true and are trained
+    /// with it at position 0; without it the first forward sees a distribution
+    /// the model never saw in training.
+    add_bos: bool,
     bos_id: Option<u32>,
     eos_id: Option<u32>,
     pad_id: Option<u32>,
@@ -128,6 +135,9 @@ impl Tokenizer {
             build_special_sets(&id_ordered_vocab(&inner), None, None, None, None);
         Ok(Self {
             inner,
+            // A standalone tokenizer.json carries its own post-processor, so
+            // whatever BOS policy it declares is already applied by the encoder.
+            add_bos: false,
             bos_id: None,
             eos_id: None,
             pad_id: None,
@@ -187,11 +197,21 @@ impl Tokenizer {
             .metadata
             .get("tokenizer.ggml.unknown_token_id")
             .and_then(|v| v.as_u32());
+        // llama.cpp's `llama-bpe` vocabulary defaults to BOS even when an
+        // older GGUF omits `tokenizer.ggml.add_bos_token`.  Llama-3 and
+        // current Mistral GGUFs use that spelling; treating an absent key as
+        // universally false silently shifts every RoPE/KV position by one.
+        // Keep the explicit field authoritative so Qwen's declared false
+        // remains false.
+        let tokenizer_pre = gguf
+            .metadata
+            .get("tokenizer.ggml.pre")
+            .and_then(|v| v.as_str());
         let add_bos = gguf
             .metadata
             .get("tokenizer.ggml.add_bos_token")
             .and_then(|v| v.as_bool())
-            .unwrap_or(false);
+            .unwrap_or_else(|| default_add_bos_for_pre(tokenizer_pre));
         let add_eos = gguf
             .metadata
             .get("tokenizer.ggml.add_eos_token")
@@ -206,6 +226,7 @@ impl Tokenizer {
 
         Ok(Self {
             inner,
+            add_bos,
             bos_id,
             eos_id,
             pad_id,
@@ -228,7 +249,18 @@ impl Tokenizer {
             .inner
             .encode(text, add_special_tokens)
             .map_err(|e| Error::Model(format!("encode: {e}")))?;
-        Ok(enc.get_ids().to_vec())
+        let mut ids = enc.get_ids().to_vec();
+        // Prepend BOS when the GGUF asks for it and the inner encoder did not
+        // already do so. The guard matters: some tokenizer.json files do carry
+        // a post-processor, and a doubled BOS is its own corruption.
+        if add_special_tokens && self.add_bos {
+            if let Some(bos) = self.bos_id {
+                if ids.first() != Some(&bos) {
+                    ids.insert(0, bos);
+                }
+            }
+        }
+        Ok(ids)
     }
 
     pub fn decode(&self, ids: &[u32], skip_special: bool) -> Result<String> {
@@ -325,6 +357,10 @@ impl Tokenizer {
         }
         Ok(raw.replace('▁', " "))
     }
+}
+
+fn default_add_bos_for_pre(tokenizer_pre: Option<&str>) -> bool {
+    matches!(tokenizer_pre, Some("llama-bpe"))
 }
 
 #[derive(Clone)]
@@ -903,6 +939,18 @@ fn build_tokenizer(
 }
 
 #[cfg(test)]
+mod tokenizer_defaults_tests {
+    use super::default_add_bos_for_pre;
+
+    #[test]
+    fn llama_bpe_uses_llama_cpp_bos_default_when_flag_is_absent() {
+        assert!(default_add_bos_for_pre(Some("llama-bpe")));
+        assert!(!default_add_bos_for_pre(Some("qwen2")));
+        assert!(!default_add_bos_for_pre(None));
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     #[test]
@@ -919,7 +967,18 @@ mod tests {
             "<0x21>".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, -10.0, -10.0, 0.0, -10.0, 0.0, -1.0];
-        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
+        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer(
+            "llama",
+            &tokens,
+            &[],
+            &scores,
+            Some(1),
+            Some(2),
+            Some(0),
+            false,
+            false,
+        )
+        .unwrap();
         assert_eq!(mode, DecodeOneMode::SentencePiece);
         let enc = tokenizer.encode("Once upon", false).unwrap();
         assert_eq!(enc.get_ids(), &[5, 7]);
@@ -935,9 +994,21 @@ mod tests {
             "▁upon".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, 0.0, 0.0];
-        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
+            "llama",
+            &tokens,
+            &[],
+            &scores,
+            Some(1),
+            Some(2),
+            Some(0),
+            false,
+            false,
+        )
+        .unwrap();
         let tokenizer = Tokenizer {
             inner,
+            add_bos: false,
             bos_id: Some(1),
             eos_id: Some(2),
             pad_id: None,

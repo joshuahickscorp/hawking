@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.tg.qwen_same_model_representation_reprobe.v1",
+  "status": "PHYSICAL_METAL_EXECUTION_PASS_NUMERIC_PARITY_FAIL_NO_PROMOTION",
+  "at": "2026-08-01T22:00:00Z",
+  "scope": "bounded 0.5B Qwen source-preserving Gravity representation only; no large-family completion, capability, CLEAN performance, or named-TG promotion",
+  "source": {
+    "repository": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    "bytes": 397808192,
+    "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+    "architecture": "qwen2",
+    "bounded_fixture": true
+  },
+  "artifact": {
+    "representation": "source-preserving packed ggml.q4_k / ggml.q5_0 / ggml.q6_k / ggml.q8_0 plus native tensors",
+    "bytes": 391949878,
+    "sha256": "0ddec965e7b25cf012dea1f4bc1bc20dab176494cc15606d9e6dbeee92a78c42",
+    "tensor_coverage": {"mapped": 290, "skipped": [], "payload_bytes": 391859712, "descriptor_hashes_verified": true},
+    "lossy_fit": false,
+    "complete_bpw": 6.345485358574433,
+    "packed_bpw": 6.341769212909218
+  },
+  "new_kernel_grammar": {
+    "direct_packed_q5_0": "one SIMD group per output row; source bytes stay device-resident; no dense staging",
+    "direct_packed_q8_0": "one SIMD group per output row; source bytes stay device-resident; no dense staging",
+    "independent_metal_tests": {
+      "gravity_raw_q5_0_stays_packed_and_matches_cpu": "PASS",
+      "gravity_raw_q8_0_stays_packed_and_matches_cpu": "PASS",
+      "dispatches_per_test": 1,
+      "cpu_authority": "same raw GGML source-block dequantization and matvec"
+    }
+  },
+  "complete_forward_same_prompt": {
+    "prompt": "2 + 2 =",
+    "exact_token_ids": [17, 488, 220, 17, 284],
+    "cpu_direct_artifact": {
+      "prompt_tokens": 5,
+      "vocabulary_logits": 151936,
+      "greedy_token": 220,
+      "elapsed_ms": 62286,
+      "finite_logits": true,
+      "metal_dispatches": 0,
+      "status": "PASS_COMPLETE_SOURCE_GRAMMAR"
+    },
+    "gpu_direct_artifact": {
+      "device_id": "Apple M3 Ultra",
+      "prompt_tokens": 5,
+      "completion_token": 99321,
+      "completion_text": "往",
+      "prefill_ms": 43.029333,
+      "decode_ms": 6.702583,
+      "single_decode_tps": 149.19621286301117,
+      "dispatches_per_forward": 386,
+      "prefill_metal_dispatches_total": 1930,
+      "decode_metal_dispatches_total": 386,
+      "prefill_command_buffers_total": 5,
+      "decode_command_buffers_total": 1,
+      "cpu_reference_fallback_total": 0,
+      "readback_bytes": 0,
+      "status": "PASS_PHYSICAL_COMPLETE_METAL_FORWARD"
+    },
+    "parity": {
+      "first_discrete_decision_matches": false,
+      "numeric_parity_v21": "FAIL; full-logit authority was not admitted after the first greedy decision mismatch",
+      "capability": "NOT_RUN_AFTER_PARITY_FAILURE",
+      "promotion_allowed": false
+    }
+  },
+  "metrics": {
+    "source_reference_tps": null,
+    "gravity_base_true_tps": null,
+    "accelerated_accepted_tps": null,
+    "prefill_tps": null,
+    "ttft": null,
+    "p50_p95_p99_complete_token_latency": null,
+    "named_tg_rung": null,
+    "reason": "one-token bounded diagnostic has no tail distribution and fails same-model discrete parity"
+  },
+  "root_cause_state": {
+    "resolved": "the prior Q5_0/Q8_0 GPU-admission refusal is resolved by direct packed kernels",
+    "open": "whole-forward Qwen GPU/CPU divergence remains; localize the first divergent layer/surface under Numeric Parity V2.1 before any performance sweep",
+    "reopen_condition": "hash-bound CPU/GPU full-logit and exact-decision parity, then a CLEAN multi-token same-model tail/capability run"
+  }
+}

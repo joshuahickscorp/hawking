@@ -1,0 +1,1524 @@
+{
+  "active_model_limit": 1,
+  "authoritative": false,
+  "incremental_accounting_contract": {
+    "alignment_bytes": 65536,
+    "components": [
+      "source_range_rounded_bytes",
+      "source_scratch_bytes",
+      "retained_artifact_bytes",
+      "teacher_evidence_bytes",
+      "metadata_bytes",
+      "carry_bytes",
+      "prefetch_bytes"
+    ],
+    "envelope_bytes": 90000000000,
+    "logical_source_bytes_are_not_allocated_byte_authority": true,
+    "peak_incremental_bytes": 58885799936
+  },
+  "inputs": {
+    "dependency_graph_path": "evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+    "dependency_graph_seal_sha256": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9",
+    "manifest_path": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791"
+  },
+  "lifecycle": {
+    "artifact_retention": "CURRENT_WINDOW_ONLY",
+    "next_window_refused_until_predecessor_receipt_is_sealed": true,
+    "one_heavy_lease": true,
+    "one_pass_multi_artifact_pack": true,
+    "order": "N-1 seal/hash/evict -> N stream/process/one-pass-pack -> N+1 bounded prefetch",
+    "receipt_requires_exact_source_artifact_temp_cache_eviction": true,
+    "rollback_scratch_reserve_bytes": 17179869184
+  },
+  "live_execution_authorized": false,
+  "partition": {
+    "algorithm": "organ_execution_order.v1",
+    "physical_range_fetch_implemented": true,
+    "prefetch_contract": "next_organ_source_payload_bytes",
+    "range_count": 59585,
+    "source_ranges_rebuilt_from_sealed_inputs_at_execution": true,
+    "window_count": 81,
+    "window_partition_sha256": "ecff939ad471cbe324c4dc7a8ee99beea0e29082abfb22ed0ee4c38107f76772"
+  },
+  "repo": "zai-org/GLM-5.2",
+  "required_live_gates": [
+    "OWNER_PARENT_RESTREAM_AUTHORIZATION",
+    "CLEAN_GPU_LEASE",
+    "FRESH_FREE_BYTES_MINUS_WINDOW_PEAK_AT_OR_ABOVE_PROTECTED_FLOOR",
+    "PINNED_XET_RUNTIME",
+    "TESTED_WINDOW_OPERATOR",
+    "LIVE_ALLOCATION_AND_CAPABILITY_RECEIPT"
+  ],
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.streaming_range_schedule.v1",
+  "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
+  "source_accounting": {
+    "exact_once": true,
+    "logical_payload_bytes": 1506659919872,
+    "range_count": 59585,
+    "rounded_payload_bytes": 1506686271488,
+    "window_count": 81
+  },
+  "status": "OFFLINE_ADMITTED_LIVE_ALLOCATION_AND_CAPABILITY_REQUIRED",
+  "windows": [
+    {
+      "execution_order": 0,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 801832960,
+        "resident_incremental_bytes": 22099460096,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 1903165440,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "d4bd40f650e5ce88d9617dd8c5621ca00c6bd2234f6036b58e44a11418a6ceb1",
+      "predecessor_gate": "GENESIS",
+      "predecessor_window_id": null,
+      "range_count": 1,
+      "window_id": "global_input"
+    },
+    {
+      "execution_order": 1,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 801832960,
+        "resident_incremental_bytes": 20998455296,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 802160640,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "ae03164fa3b6b65e228e6fbf46759257c033f0a9dcdcff7dda49e550daeb0409",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "global_input",
+      "range_count": 17,
+      "window_id": "text_layer_00"
+    },
+    {
+      "execution_order": 2,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 801832960,
+        "resident_incremental_bytes": 20998455296,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 802160640,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "a3aefa64572aa358951f234123aaa25148cfe3cc592ad932fae0dae787c6d5b9",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_00",
+      "range_count": 17,
+      "window_id": "text_layer_01"
+    },
+    {
+      "execution_order": 3,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 39932723200,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 802160640,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "1fa9804f87ed0c0c640c52e49b3fe7c5eeeb4c9ad4a39bf181eec4f1d251856e",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_01",
+      "range_count": 17,
+      "window_id": "text_layer_02"
+    },
+    {
+      "execution_order": 4,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8d4eedaceb4fecab28d5caa7649cb8e0d3de65d578cc3c8ae3e9af3546910dc2",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_02",
+      "range_count": 782,
+      "window_id": "text_layer_03"
+    },
+    {
+      "execution_order": 5,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "bbcad16466a068052dfe5b0f6aee7caa15d386e992e3cb1b55261c19e960b673",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_03",
+      "range_count": 782,
+      "window_id": "text_layer_04"
+    },
+    {
+      "execution_order": 6,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "57a812846e752efec007e24693986049c2fbb815e5d6ba21202fdb58aa82e361",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_04",
+      "range_count": 782,
+      "window_id": "text_layer_05"
+    },
+    {
+      "execution_order": 7,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "5a0e3e440428efa3af772904a41d0ccafc266f83656d5d5ad88d3d82174a111e",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_05",
+      "range_count": 787,
+      "window_id": "text_layer_06"
+    },
+    {
+      "execution_order": 8,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "902bda84aebb5f1d58a59cc739fa555cb8589d97452321b908794ab6b9e61981",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_06",
+      "range_count": 782,
+      "window_id": "text_layer_07"
+    },
+    {
+      "execution_order": 9,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "7946a3da036cf57ec529ba874ad9938e8670e7b6da6c10408297646bbf5e3cce",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_07",
+      "range_count": 782,
+      "window_id": "text_layer_08"
+    },
+    {
+      "execution_order": 10,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "4639f154330232e7208b196c84624dc3152393a86dde85776c89eb2079b0ecb8",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_08",
+      "range_count": 782,
+      "window_id": "text_layer_09"
+    },
+    {
+      "execution_order": 11,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "d6a3a28c187c661e2c367c65fceec4fde436fc57a53fb0ebbd7a0beaec8595e3",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_09",
+      "range_count": 787,
+      "window_id": "text_layer_10"
+    },
+    {
+      "execution_order": 12,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "020b68dfdd085c30d159c348720ffe65dcc5fdd643f8a1289f4fd60ef37934a0",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_10",
+      "range_count": 782,
+      "window_id": "text_layer_11"
+    },
+    {
+      "execution_order": 13,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "4edbce771f5fecdce51997f3da47b72f59439de047a93dfd2945e808500280e6",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_11",
+      "range_count": 782,
+      "window_id": "text_layer_12"
+    },
+    {
+      "execution_order": 14,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "6f1889f1d7aff80e00bd242a8c2d82a7ee7936da4098fbb9442845d7dca54a4d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_12",
+      "range_count": 782,
+      "window_id": "text_layer_13"
+    },
+    {
+      "execution_order": 15,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "55b941a0ca0569d621073e09fb7dc4f8db41d6cd0c8b6aa88d25f1625f8c503d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_13",
+      "range_count": 787,
+      "window_id": "text_layer_14"
+    },
+    {
+      "execution_order": 16,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "7f91e941243633d298859cf44331998b22577fddb47c04ec0124af4c1a89e94d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_14",
+      "range_count": 782,
+      "window_id": "text_layer_15"
+    },
+    {
+      "execution_order": 17,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "771e8cceb78c59cbe6a9e420c31643d7691809f98b1d10f5a6fe260f98624004",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_15",
+      "range_count": 782,
+      "window_id": "text_layer_16"
+    },
+    {
+      "execution_order": 18,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "63fc0356a73bb745abf3aca96119fefafd1a21653b491bf82a4cde3dd65d4e52",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_16",
+      "range_count": 782,
+      "window_id": "text_layer_17"
+    },
+    {
+      "execution_order": 19,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "91312a11a6530abccd0725d0feda959aa8093ca09054070a0869f74c31455272",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_17",
+      "range_count": 787,
+      "window_id": "text_layer_18"
+    },
+    {
+      "execution_order": 20,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "290dd4f78922b654883d5228de3ff90806ed213a120bcf9d4d6e7be618ceedc6",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_18",
+      "range_count": 782,
+      "window_id": "text_layer_19"
+    },
+    {
+      "execution_order": 21,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8afe9b258718e25e66f068a77b22fd82a2452966884cea0ea3382b97a346beca",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_19",
+      "range_count": 782,
+      "window_id": "text_layer_20"
+    },
+    {
+      "execution_order": 22,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e44ef8afedcd30e9e5d9b624247ad7c17a300d5136e7690f7d4da0c96ce285e7",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_20",
+      "range_count": 782,
+      "window_id": "text_layer_21"
+    },
+    {
+      "execution_order": 23,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "afa64df9ac0141c4c14e9114e80beca114dee9728e41deccbecf371de2b3c23f",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_21",
+      "range_count": 787,
+      "window_id": "text_layer_22"
+    },
+    {
+      "execution_order": 24,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "314635904381268069e7a92aa0216b5b24da328033343d7690bffe934133ae1d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_22",
+      "range_count": 782,
+      "window_id": "text_layer_23"
+    },
+    {
+      "execution_order": 25,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "621d5366a5462fdc524e392fc7a8550b19508cc836d269d87194011eaf6dcfd2",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_23",
+      "range_count": 782,
+      "window_id": "text_layer_24"
+    },
+    {
+      "execution_order": 26,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "3f99dcc9d78787cc24fb79c02afde0336da9d7eebfd424b0986c4991040ce733",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_24",
+      "range_count": 782,
+      "window_id": "text_layer_25"
+    },
+    {
+      "execution_order": 27,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "6b7e7582e05d37e8a3740b4eaff281300b2d9e225f58419807975d662a1c41fe",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_25",
+      "range_count": 787,
+      "window_id": "text_layer_26"
+    },
+    {
+      "execution_order": 28,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "4b9338af06eda0b2ad70192e77dcb329cd2bdc0c9587d50ab1c4eab383dab465",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_26",
+      "range_count": 782,
+      "window_id": "text_layer_27"
+    },
+    {
+      "execution_order": 29,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "f0c255abaac9c84c05c31acece4d7f83099870078fea4d5b678731db632063c5",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_27",
+      "range_count": 782,
+      "window_id": "text_layer_28"
+    },
+    {
+      "execution_order": 30,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "dab00f6af2bfe4293d1a7b075e7a48948cb470a93362706e9fbb8add8ccc5063",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_28",
+      "range_count": 782,
+      "window_id": "text_layer_29"
+    },
+    {
+      "execution_order": 31,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8e9854ae7105bc3a903f7d7d40f1223e30fb59664d3f98abba53a828416c6371",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_29",
+      "range_count": 787,
+      "window_id": "text_layer_30"
+    },
+    {
+      "execution_order": 32,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e62e038a606753d5866b7ce59cab6e9dd10dd989feebc1e91e8cba3fce3f8afe",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_30",
+      "range_count": 782,
+      "window_id": "text_layer_31"
+    },
+    {
+      "execution_order": 33,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "08c565904274f36215970ce4c1d5b160a360c9b9896867908ef7d501f1ea9b9d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_31",
+      "range_count": 782,
+      "window_id": "text_layer_32"
+    },
+    {
+      "execution_order": 34,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "2f70781fd6844aef4bf4d0f523d9b2b6da584d29c044f812069dbbfd02defd41",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_32",
+      "range_count": 782,
+      "window_id": "text_layer_33"
+    },
+    {
+      "execution_order": 35,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "5396ec6592f61f725df8b6db9584cfc2d0ca6e3b21a56f2e7da348cb8c9f8e84",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_33",
+      "range_count": 787,
+      "window_id": "text_layer_34"
+    },
+    {
+      "execution_order": 36,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "0ca8f7d070f092013865eecbd16a70cfd70eeab9435a933307ce56733c544e1f",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_34",
+      "range_count": 782,
+      "window_id": "text_layer_35"
+    },
+    {
+      "execution_order": 37,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "7471ee7d038b2ff85ca86a58f69fd8cbf34c8b81318d398f2000b64dcba15a56",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_35",
+      "range_count": 782,
+      "window_id": "text_layer_36"
+    },
+    {
+      "execution_order": 38,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "2d6cbb1faf03138c24487ff48b5db5bad504bf0d9c0d23920dd041e94626611d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_36",
+      "range_count": 782,
+      "window_id": "text_layer_37"
+    },
+    {
+      "execution_order": 39,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "6ff2a8cee6b9403c5313d0932072e9a199093780e06dc8cb3518ec903e01e213",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_37",
+      "range_count": 787,
+      "window_id": "text_layer_38"
+    },
+    {
+      "execution_order": 40,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "879aee6fecd441deeaa1fbdc8d0b5da4bc2b23d5ced317d38c1b0d1e3e90c284",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_38",
+      "range_count": 782,
+      "window_id": "text_layer_39"
+    },
+    {
+      "execution_order": 41,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8f4849f14d52c7cadbc40bd9ed367fb9eb830988ba0ad55d27aed1e827ec192e",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_39",
+      "range_count": 782,
+      "window_id": "text_layer_40"
+    },
+    {
+      "execution_order": 42,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "27b5027b2b75563dcd34417943d00edb276eecc50ecc486dd949ceece6f323fe",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_40",
+      "range_count": 782,
+      "window_id": "text_layer_41"
+    },
+    {
+      "execution_order": 43,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "fe46c3ef550f5493b25001b8d60993da52fa81f01f816a45fb53de7b81019940",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_41",
+      "range_count": 787,
+      "window_id": "text_layer_42"
+    },
+    {
+      "execution_order": 44,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "97b8d7d0925143885e4a560b08e35d0bf373095c4480512112fc994641193d09",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_42",
+      "range_count": 782,
+      "window_id": "text_layer_43"
+    },
+    {
+      "execution_order": 45,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e5eff0dbb3febe4657224cd773ed7840ceb1da125bfb065c462b783d1dc8dc6f",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_43",
+      "range_count": 782,
+      "window_id": "text_layer_44"
+    },
+    {
+      "execution_order": 46,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "f1d7b28ea08b7a727eebfe0c719e22887261fc673fc54510f5a3bd2928cf3a7e",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_44",
+      "range_count": 782,
+      "window_id": "text_layer_45"
+    },
+    {
+      "execution_order": 47,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "80a24fd7fd97d4bc3443b283da6d8b9e0f13a51eadb92a53f4f45ba727991a44",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_45",
+      "range_count": 787,
+      "window_id": "text_layer_46"
+    },
+    {
+      "execution_order": 48,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "a87d0e82b82a326946c80e85a73168d857fcc472fbdefd9193d3f9f1520de14a",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_46",
+      "range_count": 782,
+      "window_id": "text_layer_47"
+    },
+    {
+      "execution_order": 49,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "47eddcaaca90d130d6306099813afdb749f8b5ce43e945908ebd65132b4140c1",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_47",
+      "range_count": 782,
+      "window_id": "text_layer_48"
+    },
+    {
+      "execution_order": 50,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "1bb65b11b00f44f926d9fca13afa46cd6fc3324e0713ba39cf2c808d23fd5067",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_48",
+      "range_count": 782,
+      "window_id": "text_layer_49"
+    },
+    {
+      "execution_order": 51,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "61e743fe3f2f7647e4bc1fab40fc04580c5e7142eb17d51d792503c804ffaf97",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_49",
+      "range_count": 787,
+      "window_id": "text_layer_50"
+    },
+    {
+      "execution_order": 52,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8a51b5d77b5182a91343f5dad673294f8fd87f16a7f02ba0554d7a9826315d11",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_50",
+      "range_count": 782,
+      "window_id": "text_layer_51"
+    },
+    {
+      "execution_order": 53,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "0deab3da61febbd27b5132377326fa52a678b3a3012e5a41112ba5c4ead487b0",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_51",
+      "range_count": 782,
+      "window_id": "text_layer_52"
+    },
+    {
+      "execution_order": 54,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8f5520916cfe441d2167ac92a87d206c68fe5c9af77f1072208e48a26d41de7e",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_52",
+      "range_count": 782,
+      "window_id": "text_layer_53"
+    },
+    {
+      "execution_order": 55,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "efc1e2f434d7303e6f0b46a08071580982f7eae8fd4b87f4be05c360680d81cb",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_53",
+      "range_count": 787,
+      "window_id": "text_layer_54"
+    },
+    {
+      "execution_order": 56,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e3dc57a17814c3137b9d26d6d66d09fce229103e3db00b758ebc755274c71f08",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_54",
+      "range_count": 782,
+      "window_id": "text_layer_55"
+    },
+    {
+      "execution_order": 57,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "4fa0a8e247551474ca9fe9fffc6f4bcbd6e7083e82fee0f2014de461d5ef8fde",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_55",
+      "range_count": 782,
+      "window_id": "text_layer_56"
+    },
+    {
+      "execution_order": 58,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "4f0e7741ff739296536a667717aa2585dbcdcee041483bb44b3f2c3137890628",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_56",
+      "range_count": 782,
+      "window_id": "text_layer_57"
+    },
+    {
+      "execution_order": 59,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "cbd134742855990a4c1b18bfe62217c0500590e82e53ccc63d9ef357b608d144",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_57",
+      "range_count": 787,
+      "window_id": "text_layer_58"
+    },
+    {
+      "execution_order": 60,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "d3215a5e60cf1bf5ddb3c24b9e552a93e4204f4cc0475b7b900dc5aa77d50dd2",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_58",
+      "range_count": 782,
+      "window_id": "text_layer_59"
+    },
+    {
+      "execution_order": 61,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "6e559a576e4812a9e76e3f8c71159212f9333d24140e9b3ec795f5569f497367",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_59",
+      "range_count": 782,
+      "window_id": "text_layer_60"
+    },
+    {
+      "execution_order": 62,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "fc08922c83132722a4efd3fbd394fa5dc4ed75342633efe2ca335c7fe684d6a0",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_60",
+      "range_count": 782,
+      "window_id": "text_layer_61"
+    },
+    {
+      "execution_order": 63,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8f8c6b7c58dc20404da9b4e227a8d596d8c8c063a71f5c252e4c613c008c33f0",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_61",
+      "range_count": 787,
+      "window_id": "text_layer_62"
+    },
+    {
+      "execution_order": 64,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "c653e2d96d410c8a536fa63dec55a50959d42db3f5e365c8d6825acd774a8e20",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_62",
+      "range_count": 782,
+      "window_id": "text_layer_63"
+    },
+    {
+      "execution_order": 65,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8cb866985db53be63b72a1f6579e5347136cdc356220c9467d27da3ed79d8eda",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_63",
+      "range_count": 782,
+      "window_id": "text_layer_64"
+    },
+    {
+      "execution_order": 66,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "2baff4d7f5a32153b991c7fee0e2ec7879ffddf065c8245e2c2d379bccc10c95",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_64",
+      "range_count": 782,
+      "window_id": "text_layer_65"
+    },
+    {
+      "execution_order": 67,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e3e7d349b764cfb06c9400fd4819bfc1b89b7470578ff655d65f2dfc7f56e8a8",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_65",
+      "range_count": 787,
+      "window_id": "text_layer_66"
+    },
+    {
+      "execution_order": 68,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "e6dc2a288accaed7a3e568005356dbfdb3e6c55467970ee6f4cdcd699e381839",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_66",
+      "range_count": 782,
+      "window_id": "text_layer_67"
+    },
+    {
+      "execution_order": 69,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "cba1484d7724339faa27c00f153625cf47d69480207d534d119e14e861f5a6c1",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_67",
+      "range_count": 782,
+      "window_id": "text_layer_68"
+    },
+    {
+      "execution_order": 70,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "3cfef1797ecd8ab11a90201621a7aff5fd91af0c6f877b2bc77ac782936daf67",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_68",
+      "range_count": 782,
+      "window_id": "text_layer_69"
+    },
+    {
+      "execution_order": 71,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "2d63b44ee006c03a7424e93dc8b1bf23a46798c8fe4d2729fc8c38810df8280d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_69",
+      "range_count": 787,
+      "window_id": "text_layer_70"
+    },
+    {
+      "execution_order": 72,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "7ddf378b70ed629847d490218322989ba28bdc86da5d52f590ba89939d24c5ec",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_70",
+      "range_count": 782,
+      "window_id": "text_layer_71"
+    },
+    {
+      "execution_order": 73,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "1bfdb87b7a826dc45c8e93801cc38bae68acffdf20fbb18d8c29475daec8825b",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_71",
+      "range_count": 782,
+      "window_id": "text_layer_72"
+    },
+    {
+      "execution_order": 74,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19754844160,
+        "resident_incremental_bytes": 58885668864,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "1055555ade2fc7090765f95414f046b3669e3b88844c0f317975652b5a423ef3",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_72",
+      "range_count": 782,
+      "window_id": "text_layer_73"
+    },
+    {
+      "execution_order": 75,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58885799936,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19755237376,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "64a10c27430eea7736347bd4c5ab0d7bbe2e61831ab30bccd3fb1bf4d4e97f6d",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_73",
+      "range_count": 787,
+      "window_id": "text_layer_74"
+    },
+    {
+      "execution_order": 76,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "f322909ba466c3fc91ec60bec17e66741f16c8119d2cb2a30bff85ed33156a08",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_74",
+      "range_count": 782,
+      "window_id": "text_layer_75"
+    },
+    {
+      "execution_order": 77,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19736100864,
+        "resident_incremental_bytes": 58866925568,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "c350fc9e02f92489af5e93889e0017942aa76282d687d2de81c29f6aaa8586f8",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_75",
+      "range_count": 782,
+      "window_id": "text_layer_76"
+    },
+    {
+      "execution_order": 78,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 1903230976,
+        "resident_incremental_bytes": 41034055680,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19736363008,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "ba1a888e56d75adf06bd1c7bbf62c825a12943fa99e769a86f13fc217140a786",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_76",
+      "range_count": 782,
+      "window_id": "text_layer_77"
+    },
+    {
+      "execution_order": 79,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 19905904640,
+        "resident_incremental_bytes": 41203597312,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 1903230976,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "03b63852a8e06cb6025040be3e1cf4afa2f381ce943602c93798f00343794276",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "text_layer_77",
+      "range_count": 2,
+      "window_id": "global_output"
+    },
+    {
+      "execution_order": 80,
+      "incremental_accounting": {
+        "carry_bytes": 0,
+        "metadata_bytes": 67108864,
+        "prefetch_bytes": 0,
+        "resident_incremental_bytes": 39300890624,
+        "retained_artifact_bytes": 2147483648,
+        "source_range_rounded_bytes": 19906428928,
+        "source_scratch_bytes": 17179869184,
+        "teacher_evidence_bytes": 0
+      },
+      "ordered_range_ids_sha256": "8c4b38561a64a29ca6e06476c88d452572cdcc06658430e9e36bc538ca54e9ff",
+      "predecessor_gate": "SEALED_ARTIFACT_HASH_AND_EXACT_SOURCE_ARTIFACT_TEMP_EVICTION_RECEIPT",
+      "predecessor_window_id": "global_output",
+      "range_count": 791,
+      "window_id": "mtp_layer_78"
+    }
+  ]
+}

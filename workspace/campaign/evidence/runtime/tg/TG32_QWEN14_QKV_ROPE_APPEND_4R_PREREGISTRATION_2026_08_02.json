@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_candidate_preregistration.v1",
+  "status": "PREREGISTERED",
+  "family": "qwen2_dense",
+  "candidate": {
+    "id": "qwen14-qkv-rope-append-4r-v1",
+    "kind": "same_model_qkv_geometry",
+    "hypothesis": "Using the 4-row-per-simdgroup QKV/RoPE/append geometry will reduce Q/K/V threadgroup overhead on the Qwen-14B decode path without changing the Q4 arithmetic or KV state contract.",
+    "mechanism": "Enable HAWKING_QWEN_QKV_ROPE_APPEND_4R=1 on the existing default fast-minus-f16-scales path; all tensors, tokenizer, quantization and prompt remain unchanged.",
+    "scope": "same exact Qwen2.5-14B-Instruct Q4_K_M body, same immutable revision, same M3 Ultra, same complete-token prompt and profile",
+    "promotion_gate": {
+      "complete_tokens": 32,
+      "source_prompt_token_ids_exact": true,
+      "generated_token_ids_exact": true,
+      "cpu_reference_fallback": 0,
+      "metal_dispatches": ">0",
+      "wall_tps_improvement_percent": ">=3",
+      "p95_regression_percent": "<=2",
+      "p99_regression_percent": "<=2",
+      "same_model_before_after": true,
+      "target_named_rung": "TG32"
+    },
+    "reject_conditions": [
+      "shape guard leaves candidate inactive",
+      "any token-ID change",
+      "fallback > 0",
+      "no complete-token wall win >= 3 percent",
+      "p95 or p99 regression > 2 percent",
+      "KV state or rope parity failure"
+    ]
+  },
+  "source": {
+    "repository": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "05244aa5d871c661c80082a15d3bce44714d068d",
+    "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+    "bytes": 8988110976,
+    "sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008"
+  },
+  "fixed_prompt": {
+    "text": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "max_new_tokens": 32,
+    "temperature": 0
+  },
+  "control": {
+    "profile": "default fast-minus-f16-scales",
+    "measured_tps": 29.393150844731597,
+    "decode_ms": 1088.689,
+    "p50_ms": 33.979,
+    "p95_ms": 34.367125,
+    "p99_ms": 34.665209,
+    "dispatches_per_forward": 436,
+    "metal_dispatches_total": 13952,
+    "cpu_reference_fallback_count": 0,
+    "device_id": "Apple M3 Ultra",
+    "source_window_generated_prefix": [12095, 624, 32, 13]
+  },
+  "runtime": {
+    "opt_in": "HAWKING_QWEN_QKV_ROPE_APPEND_4R=1",
+    "qkv_rope_append": "default-on unless trace localization is active",
+    "shape_guard": "q_dim % 4 == 0 and kv_dim % 4 == 0",
+    "candidate_profile_shader_hash": "4178883ad381bacf5ff0285f"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "becf34dea5ecb9ee22984ee966519c830eb4d568710eeea46906717cf688ebf4"
+}

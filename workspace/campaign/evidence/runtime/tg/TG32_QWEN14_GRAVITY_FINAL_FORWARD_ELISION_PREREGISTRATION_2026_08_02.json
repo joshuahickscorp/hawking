@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.tg.same_model_runtime_optimization_preregistration.v1",
+  "status": "PREREGISTERED_FINAL_UNUSED_FORWARD_ELISION",
+  "at_utc": "2026-08-02",
+  "model": "Qwen2.5-14B-Instruct-Q4_K_M",
+  "family": "qwen2_dense",
+  "hypothesis": "GravityModel::generate currently executes forward_at for the final emitted token even though the next logits are never consumed when max_new_tokens is reached. Breaking immediately after emitting the requested final token will remove one complete decode forward, preserve exact continuation IDs, and make the repaired source control and Gravity candidate use the same 31-forward completion accounting.",
+  "binding_change": {
+    "id": "gravity-final-forward-elision-v1",
+    "file": "crates/hawking-core/src/model/gravity_engine.rs",
+    "scope": "all Gravity generate requests; only the unused forward after the final requested completion token is removed",
+    "mechanism": "after emitting a non-EOG token and incrementing completion, break with MaxTokens when completion reaches req.max_new_tokens before calling forward_at",
+    "fallback": "none; no quantization, tokenizer, sampling, or representation change",
+    "reopen_condition": "Retire if any 32-token continuation, stop-string behavior, EOG behavior, parity, or complete-token wall metric regresses."
+  },
+  "control": {
+    "source": "Qwen2.5-14B-Instruct-Q4_K_M GGUF with HAWKING_QWEN_CONVENTIONAL_DECODE_SEED=1",
+    "artifact_sha256": "e2bbc738f07fbc33c359e2f1dc1dc07c7182e794cd2954bb1ffa287da2b81adb",
+    "source_sha256": "e47ad95dad6ff848b431053b375adb5d39321290ea2c638682577dafca87c008",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [785, 6722, 315, 9625, 374],
+    "complete_tokens": 32,
+    "expected_decode_forwards": 31,
+    "temperature": 0.0,
+    "device_required": "Apple M3 Ultra",
+    "fallback_required": 0,
+    "continuation_hash_required": "cd74e768e7d9606ed59d7992cf2873ef4895c8d2e9fdf8917a3e78cdd020856c"
+  },
+  "admission": {
+    "free_bytes_before": 370943426560,
+    "protected_floor_bytes": 200005889556,
+    "model_lane_envelope_bytes": 90000000000,
+    "normal_artifact_cap_bytes": 82000000000,
+    "source_body_bytes": 8988110976,
+    "artifact_bytes": 8982325252,
+    "scratch_reserve_bytes": 26843545600,
+    "projected_free_after_source_artifact_scratch": 326129444732,
+    "projected_residual_above_floor_bytes": 126123555176,
+    "active_model_count_before": 0,
+    "verdict": "PASS"
+  },
+  "transfer_authority": {
+    "receipt": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN14_REHYDRATE_2026_08_02.json",
+    "runtime": {"huggingface_hub": "1.24.0", "hf_xet": "1.5.2"},
+    "conditions_unchanged": true,
+    "selected_mode": "standard",
+    "selected_concurrency": 2,
+    "representative_range_hash_verified": true,
+    "resume_hash_verified": true
+  },
+  "speed_gate": {
+    "same_model": true,
+    "same_prompt_ids": true,
+    "complete_tokens": 32,
+    "capability_parity_before_speed": true,
+    "candidate_must_have_metal_dispatches": true,
+    "candidate_cpu_reference_fallback_count": 0,
+    "wall_win_required_percent": 3.0,
+    "p95_must_not_regress_percent": 0.0,
+    "p99_must_not_regress_percent": 0.0,
+    "tg32_target_tps": 31.25,
+    "speed_claim_allowed": "true_only_if_all_gates_pass"
+  },
+  "owner_fences": {
+    "HAWKING_PARENT_RESTREAM_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "D5": false,
+    "D8": false,
+    "D9": false,
+    "production_gpu_lease": "OWNER_CONTROLLED_UNCLAIMED"
+  },
+  "seal_sha256": "ee1d4f01d638c47b1a9adbea69d32d019ba5646e4b7ea5e12d1d624473770af6"
+}

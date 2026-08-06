@@ -7,7 +7,9 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum AcpError {
     /// The client offered a protocol version the agent cannot speak at all.
-    #[error("unsupported ACP protocol version: client offered {offered}, agent speaks 1..={agent_max}")]
+    #[error(
+        "unsupported ACP protocol version: client offered {offered}, agent speaks 1..={agent_max}"
+    )]
     UnsupportedVersion { offered: u16, agent_max: u16 },
 
     /// An ACP session id has no HIDE session/thread binding. The client must run

@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.tg.model_lane_purge_receipt.v2",
+  "status": "EVICTED_EXACT_TRASH_PURGED_MODEL_LANE_EMPTY",
+  "at_utc": "2026-08-02",
+  "model": "Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M",
+  "campaign": "mistral-small-f16kv-2026-08-02",
+  "source": {
+    "path": "models/tg-active/mistral-small-f16kv-2026-08-02/mistralai_Mistral-Small-3.1-24B-Instruct-2503-Q4_K_M.gguf",
+    "bytes": 14333910496,
+    "sha256": "c5743c1bf39db0ae8a5ade5df0374b8e9e492754a199cfdad7ef393c1590f7c0"
+  },
+  "artifact": {
+    "path": "models/tg-active/mistral-small-f16kv-2026-08-02/mistral-small-f16kv.gravity",
+    "bytes": 14326142375,
+    "sha256": "cacdf195b02be61103b1f236a263a70c901f5c2d250244c4c763a62145c3305f"
+  },
+  "tokenizer": {
+    "path": "models/tg-active/mistral-small-f16kv-2026-08-02/tokenizer/tokenizer.json",
+    "bytes": 17078037,
+    "sha256": "b76085f9923309d873994d444989f7eb6ec074b06f25b58f1e8d7b7741070949"
+  },
+  "lane_accounting": {
+    "logical_bytes_before_move": 28677171598,
+    "allocated_bytes_before_move": 28677210112,
+    "free_bytes_before_move": 335565406208,
+    "free_bytes_after_exact_purge": 364242497536,
+    "observed_free_recovery": 28677091328,
+    "protected_floor_bytes": 200005889556,
+    "residual_above_floor_before": 135559516652,
+    "residual_above_floor_after": 164236607980,
+    "model_lane_empty": true
+  },
+  "eviction": {
+    "move_command": "/usr/bin/trash /Users/scammermike/Downloads/hawking/models/tg-active/mistral-small-f16kv-2026-08-02",
+    "exact_trash_purge_command": "osascript -e 'tell application \"Finder\" to delete every item of trash whose name is \"mistral-small-f16kv-2026-08-02\"'",
+    "trash_target_purged": true,
+    "unrelated_trash_preserved": ["SUBSTRATE_R2_EXACT_RESTORE_AND_ODYSSEY_7D.zip"]
+  },
+  "verdict": "All Mistral source, executable artifact, tokenizer, benchmark logs and download metadata were evicted and the exact Trash item was permanently purged; the protected floor was not crossed."
+}

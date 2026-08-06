@@ -20,6 +20,7 @@ CONDENSE = pathlib.Path(__file__).resolve().parents[1]
 
 from lab.operators import glm52_state as gs  # noqa: E402
 from lab.operators.glm52_common import atomic_json, seal  # noqa: E402
+from lab.layout import evidence_dir  # noqa: E402
 
 REVISION = "b4734de4facf877f85769a911abafc5283eab3d9"
 CAMPAIGN = "glm52-bf16-xet-gravity-test"
@@ -49,8 +50,11 @@ def test_evidence_policies_bind_actual_validator_module_bytes() -> None:
     implementation_sha256 = hashlib.sha256(
         pathlib.Path(gs.__file__).resolve().read_bytes()
     ).hexdigest()
+    # The load-bearing validator was moved under lab/operators during the
+    # authority cutover.  Bind the receipt to the module that the state spine
+    # actually imports, not to the retired tools/condense path.
     terminal_sha256 = hashlib.sha256(
-        CONDENSE.joinpath("glm52_terminal_proofs.py").read_bytes()
+        pathlib.Path(gs.terminal_proofs.__file__).resolve().read_bytes()
     ).hexdigest()
     assert gs.EVIDENCE_VALIDATOR_SOURCE_SHA256["terminal_semantic_proof_v1"] == (
         terminal_sha256
@@ -236,7 +240,7 @@ def _wrap_xet_raw_result(raw, contract):
     return gs.seal_producer_authenticated_evidence(body, auth=_evidence_auth())
 
 def _xet_result_for_plan(plan, contract):
-    import glm52_xet_live as live
+    from lab.operators import glm52_xet_live as live
     trial_ids = [row["trial_id"] for row in plan["trial_matrix"]]
     selected_trial = plan["trial_matrix"][0]
     tid = selected_trial["trial_id"]
@@ -532,7 +536,8 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
 ):
     repo_root = CONDENSE.parents[1]
     plan = json.loads(
-        (repo_root / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
+        (evidence_dir("glm52") / "GLM52_XET_AUTOTUNE_PLAN.json")
+        .read_text(encoding="utf-8")
     )
     plan_policy = {
         "path": "GLM52_XET_AUTOTUNE_PLAN.json",

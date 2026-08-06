@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
     pub async fn call_connector(&self, id: &str, method: &str, params: Value) -> Result<Value> {
@@ -156,7 +156,10 @@ impl BackendHost {
 
     /// Preserve a process's captured output as a durable blob-store artifact.
     pub fn capture_process_artifact(&self, id: &str) -> Result<hide_core::types::BlobRef> {
-        match self.processes.capture_artifact(id, &self.services.blob_store) {
+        match self
+            .processes
+            .capture_artifact(id, &self.services.blob_store)
+        {
             Some(res) => res,
             None => Err(hide_core::error::HideError::NotFound(format!(
                 "unknown process {id}"
@@ -199,6 +202,27 @@ impl BackendHost {
     ) -> Result<ToolResult> {
         crate::tools::with_dispatch_context(session_id, run_id, self.dispatcher.dispatch(call))
             .await
+    }
+
+    /// Dispatch one effect proposed by a model only after a durable,
+    /// target-verified token event minted its opaque causal permit. This is
+    /// deliberately separate from [`Self::dispatch_tool`], which is the
+    /// human/system path and continues to use normal permission approvals.
+    pub async fn dispatch_verified_model_tool(
+        &self,
+        session_id: SessionId,
+        run_id: Option<RunId>,
+        permit: crate::speculation_safety::VerifiedEffectPermit,
+        call: ToolCall,
+    ) -> Result<ToolResult> {
+        crate::tools::dispatch_verified_model_tool_effect(
+            session_id,
+            run_id,
+            permit,
+            call,
+            &self.dispatcher,
+        )
+        .await
     }
 
     /// Schedule a parallel kernel run via `hide_fleet::FleetManager` and drive it
@@ -535,7 +559,10 @@ impl BackendHost {
         let (decision, reason) = derive_policy_decision(&effects, &verdict);
         let record = PolicyDecisionRecord {
             tool: tool_id.to_string(),
-            effects: effects.iter().map(|effect| effect.as_str().to_string()).collect(),
+            effects: effects
+                .iter()
+                .map(|effect| effect.as_str().to_string())
+                .collect(),
             decision,
             reason,
         };
@@ -555,10 +582,7 @@ impl BackendHost {
     /// target extracted from the call args, and a risk keyed on the spec's
     /// `destructive` annotation. Consulted by [`Self::evaluate_tool_policy`] for
     /// the write path. Model-free.
-    pub async fn policy_decisions(
-        &self,
-        session: &SessionId,
-    ) -> Result<Vec<PolicyDecisionRecord>> {
+    pub async fn policy_decisions(&self, session: &SessionId) -> Result<Vec<PolicyDecisionRecord>> {
         let events = self
             .services
             .event_log
