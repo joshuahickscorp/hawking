@@ -1317,6 +1317,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hide-gateway"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hide-kernel"
 version = "0.2.2"
 dependencies = [

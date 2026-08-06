@@ -34,6 +34,10 @@ members = [
     # by a compat bridge. Model-free; model-dependent legs are marked
     # DEFERRED_MODEL_REQUIRED in doc comments.
     "crates/hide-protocol",
+    # HCLI Retrieval Gateway + Tool Gateway scaffold (ascension bible §§15–16).
+    # Model-free typed indexes, ranking, tool-bundle retrieval, defect taxonomy.
+    # Not wired to live MCP/indexes or models; plan+scaffold only until Proto-Frankenstein offload.
+    "crates/hide-gateway",
     # HIDE sandboxed programmatic tool runtime (Bible Book V, sec 18-19): a
     # deterministic in-crate interpreter over a small program AST with NO ambient
     # authority. Programs call only granted read-oriented host handles and may
