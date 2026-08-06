@@ -1,0 +1,48 @@
+{
+  "corpus_seal_sha256": "6ee4032689816467f23680cf0c077052ef9c3826b46d140733e753ff27653fed",
+  "extra": {
+    "layers_captured_so_far": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ]
+  },
+  "hidden_sha256": "2d87e9280f56ec97e8d84c3d146dc4a2101ff2aa4612a562888dcabc02822dcb",
+  "hidden_shape": [
+    32,
+    32,
+    6144
+  ],
+  "layer_completed": 20,
+  "membership_sha256": "a318f866624c8a3cb352d381d28a00740d821f52cf74e477263735fa8fa26b68",
+  "next_layer": 21,
+  "npz_bytes": 25297448,
+  "npz_sha256": "7b1e393b2fbcab6a707e2d56c1bc26d4bf0944360ec2d6857a7eb60bc623094b",
+  "schema": "hawking.frankenstein.glm_carry_state.v1",
+  "seal_sha256": "3aa2040441d6c0175c1751e0250f6e0047800e752c9fc43180a51395593dc9b5",
+  "sealed_at": "2026-08-06T02:20:50.354168Z",
+  "topk_sha256": "5938327c0f5cdaddd4b55039944fe5c1dea7d0ce21873e85298a7f1c0f5c7821",
+  "topk_shape": [
+    32,
+    32,
+    32
+  ]
+}

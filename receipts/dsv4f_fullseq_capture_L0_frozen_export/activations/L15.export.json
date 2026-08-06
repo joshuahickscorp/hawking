@@ -1,0 +1,15 @@
+{
+  "dtype": "float32",
+  "example_ids_path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/example_ids.json",
+  "host_activation_handoff_permitted": false,
+  "layer": 15,
+  "mode": "offline_analysis_diagnostic",
+  "note": "Post-execute host copy for correspondence only; device graph still no-host.",
+  "npy": "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L15.npy",
+  "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export.v1",
+  "shape": [
+    32,
+    4096
+  ],
+  "site": "late_hidden"
+}

@@ -84,6 +84,9 @@ mod macos {
         "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl";
     const DEFAULT_FROZEN_L1: &str =
         "workspace/campaign/evidence/models/frankenstein/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl";
+    /// Official GLM L0 freeze used as the correspondence identity oracle.
+    const CANONICAL_FROZEN_L0_JSON: &str =
+        "workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_full_20260805T200728Z/FROZEN_CORPUS_L0.json";
 
     type ProbeResult<T> = Result<T, Box<dyn Error>>;
 
@@ -145,7 +148,7 @@ mod macos {
             .into());
         }
 
-        let corpus = build_v0_corpus(
+        let (corpus, corpus_provenance) = build_v0_corpus(
             &args.ladder,
             args.limit,
             &args.corpus_mode,
@@ -589,7 +592,11 @@ mod macos {
                 "corpus_mode": args.corpus_mode,
                 "corpus_path": args.corpus_path.as_ref().map(|p| p.display().to_string()),
                 "export_host_activations": args.export_host_activations,
+                "empty_compressed_fullseq_note": "ratio-4 layers only admit positions 0..2 (end_pos//4==0); ratio-128 admit 0..126; ratio-0 admit 0..127. All-43-layer capture requires max_seq_len<=3.",
             },
+            // Provenance gap fix: prior receipts omitted corpus identity, so the
+            // synthetic v0_math_* table went undetected against GLM's pfv0:* freeze.
+            "corpus_provenance": corpus_provenance,
             "non_bos_forward": {
                 "ratios_covered": ratios_covered,
                 "growing_kv_sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
@@ -681,7 +688,7 @@ mod macos {
         limit: Option<usize>,
         corpus_mode: &str,
         corpus_path: Option<&Path>,
-    ) -> ProbeResult<Vec<CorpusExample>> {
+    ) -> ProbeResult<(Vec<CorpusExample>, serde_json::Value)> {
         match corpus_mode {
             "frozen" | "proto" | "pfv0" => {
                 let path = match corpus_path {
@@ -701,13 +708,22 @@ mod macos {
                 if out.is_empty() {
                     return Err(format!("frozen corpus empty: {}", path.display()).into());
                 }
+                let provenance = seal_corpus_provenance("frozen", &path, ladder, &out)?;
                 println!(
-                    "corpus_mode=frozen path={} n={} id0={}",
+                    "corpus_mode=frozen path={} n={} id0={} file_sha256={} identical_to_canonical={}",
                     path.display(),
                     out.len(),
-                    out[0].example_id
+                    out[0].example_id,
+                    provenance
+                        .get("file_sha256")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("?"),
+                    provenance
+                        .get("identical_to_canonical")
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false)
                 );
-                Ok(out)
+                Ok((out, provenance))
             }
             "synthetic" | "legacy_short" => {
                 // Legacy short prompts (v0_math_*/v0_code_*). NOT the frozen V0
@@ -718,13 +734,133 @@ mod macos {
                     "corpus_mode=synthetic n={} WARNING: not PROTO_FRANKENSTEIN_V0; correspondence ID intersection with GLM will be empty",
                     out.len()
                 );
-                Ok(out)
+                let provenance = json!({
+                    "schema": "hawking.gravity.deepseek_v4.fullseq_corpus_provenance.v1",
+                    "mode": "synthetic",
+                    "path": null,
+                    "file_sha256": null,
+                    "n_sequences": out.len(),
+                    "example_ids": out.iter().map(|e| e.example_id.clone()).collect::<Vec<_>>(),
+                    "identical_to_canonical": false,
+                    "warning": "legacy v0_math_*/v0_code_* table; zero content-hash overlap with PROTO_FRANKENSTEIN_V0 / GLM freeze",
+                });
+                Ok((out, provenance))
             }
             other => Err(format!(
                 "unknown --corpus-mode {other}; use frozen (default) or synthetic"
             )
             .into()),
         }
+    }
+
+    /// Hash the corpus source file and prove identity vs the official GLM freeze
+    /// (example_id set + per-row prompt_text_sha256). Prior receipts lacked this
+    /// field, which is how the synthetic-prompt bug went undetected.
+    fn seal_corpus_provenance(
+        mode: &str,
+        path: &Path,
+        ladder: &str,
+        examples: &[CorpusExample],
+    ) -> ProbeResult<serde_json::Value> {
+        let bytes = fs::read(path)
+            .map_err(|e| format!("read corpus for provenance {}: {e}", path.display()))?;
+        let file_sha256 = format!("{:x}", Sha256::digest(&bytes));
+        let example_ids: Vec<String> = examples.iter().map(|e| e.example_id.clone()).collect();
+        let prompt_text_sha256: BTreeMap<String, String> = examples
+            .iter()
+            .map(|e| {
+                (
+                    e.example_id.clone(),
+                    format!("{:x}", Sha256::digest(e.prompt_text.as_bytes())),
+                )
+            })
+            .collect();
+
+        let mut identical_to_canonical = false;
+        let mut canonical_path: Option<String> = None;
+        let mut canonical_seal_sha256: Option<String> = None;
+        let mut canonical_membership_sha256: Option<String> = None;
+        let mut identity_detail = json!({"checked": false});
+
+        if ladder == "L0" {
+            let frozen_path = PathBuf::from(CANONICAL_FROZEN_L0_JSON);
+            if frozen_path.is_file() {
+                let frozen_raw = fs::read_to_string(&frozen_path).map_err(|e| {
+                    format!("read canonical freeze {}: {e}", frozen_path.display())
+                })?;
+                let frozen: serde_json::Value = serde_json::from_str(&frozen_raw).map_err(|e| {
+                    format!("parse canonical freeze {}: {e}", frozen_path.display())
+                })?;
+                canonical_path = Some(frozen_path.display().to_string());
+                canonical_seal_sha256 = frozen
+                    .get("seal_sha256")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                canonical_membership_sha256 = frozen
+                    .get("membership_sha256")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+
+                let mut frozen_ids: Vec<String> = Vec::new();
+                let mut frozen_hashes: BTreeMap<String, String> = BTreeMap::new();
+                if let Some(seqs) = frozen.get("sequences").and_then(|v| v.as_array()) {
+                    for s in seqs {
+                        if let Some(id) = s.get("example_id").and_then(|v| v.as_str()) {
+                            frozen_ids.push(id.to_string());
+                            if let Some(h) = s.get("prompt_text_sha256").and_then(|v| v.as_str()) {
+                                frozen_hashes.insert(id.to_string(), h.to_string());
+                            }
+                        }
+                    }
+                }
+                let id_set_equal = {
+                    let a: std::collections::BTreeSet<_> = example_ids.iter().collect();
+                    let b: std::collections::BTreeSet<_> = frozen_ids.iter().collect();
+                    a == b
+                };
+                let order_equal = example_ids == frozen_ids;
+                let mut hash_mismatches: Vec<String> = Vec::new();
+                for (id, h) in &prompt_text_sha256 {
+                    match frozen_hashes.get(id) {
+                        Some(fh) if fh == h => {}
+                        Some(_) => hash_mismatches.push(id.clone()),
+                        None => hash_mismatches.push(format!("{id}:missing_in_freeze")),
+                    }
+                }
+                identical_to_canonical = id_set_equal && hash_mismatches.is_empty();
+                identity_detail = json!({
+                    "checked": true,
+                    "id_set_equal": id_set_equal,
+                    "order_equal": order_equal,
+                    "prompt_text_sha256_mismatches": hash_mismatches.len(),
+                    "mismatch_example_ids_head": hash_mismatches.iter().take(8).cloned().collect::<Vec<_>>(),
+                    "n_local": example_ids.len(),
+                    "n_canonical": frozen_ids.len(),
+                });
+            } else {
+                identity_detail = json!({
+                    "checked": false,
+                    "reason": format!("canonical freeze missing: {}", frozen_path.display()),
+                });
+            }
+        }
+
+        Ok(json!({
+            "schema": "hawking.gravity.deepseek_v4.fullseq_corpus_provenance.v1",
+            "mode": mode,
+            "path": path.display().to_string(),
+            "file_sha256": file_sha256,
+            "file_bytes": bytes.len(),
+            "n_sequences": examples.len(),
+            "example_ids": example_ids,
+            "prompt_text_sha256": prompt_text_sha256,
+            "canonical_frozen_corpus_path": canonical_path,
+            "canonical_seal_sha256": canonical_seal_sha256,
+            "canonical_membership_sha256": canonical_membership_sha256,
+            "identical_to_canonical": identical_to_canonical,
+            "identity_basis": "example_id set equality + per-row prompt_text_sha256 match against official GLM FROZEN_CORPUS_L0",
+            "identity_detail": identity_detail,
+        }))
     }
 
     fn load_frozen_proto_corpus(path: &Path) -> ProbeResult<Vec<CorpusExample>> {
