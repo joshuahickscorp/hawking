@@ -1,0 +1,618 @@
+{
+  "actions": [
+    {
+      "action": "PREFLIGHT_SAMPLE",
+      "at": "2026-08-06T16:09:09.171296Z",
+      "sample": {
+        "cpu_percent": 0.0,
+        "free_disk_bytes": 178020257792,
+        "monotonic_s": 86128.6258345,
+        "pid": null,
+        "process_rss_bytes": 0,
+        "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+        "swap_used_bytes": 0,
+        "transfer_bytes": 159780523958
+      }
+    },
+    {
+      "action": "LAUNCH_CANDIDATE",
+      "argv": [
+        "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+        "/Users/scammermike/Downloads/hawking/tools/condense/deepseek_v4_gravity.py",
+        "build-full",
+        "--artifact-dir",
+        "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        "--workspace-root",
+        "/Users/scammermike/Downloads/hawking",
+        "--xet-root",
+        "/tmp/hawking-detached-2026-08-04/xet-root-restream",
+        "--protected-floor-bytes",
+        "26843545600",
+        "--parallel-workers",
+        "32"
+      ],
+      "at": "2026-08-06T16:09:09.171533Z",
+      "reason": "RAMP_STEP",
+      "workers": 32
+    },
+    {
+      "action": "CHILD_STARTED",
+      "at": "2026-08-06T16:09:09.173138Z",
+      "pid": 5125,
+      "workers": 32
+    },
+    {
+      "action": "CHILD_EXIT_OBSERVED",
+      "at": "2026-08-06T16:11:02.954344Z",
+      "exit_code": 0,
+      "reason": "CHILD_EXITED_ZERO",
+      "workers": 32
+    },
+    {
+      "action": "ACCEPT_CANDIDATE",
+      "at": "2026-08-06T16:11:02.954451Z",
+      "observed_cpu_percent_mean": 68.81111111111112,
+      "throughput_bytes_per_second": 0.0,
+      "workers": 32
+    },
+    {
+      "action": "RAMP_COMPLETE",
+      "at": "2026-08-06T16:11:02.954454Z",
+      "recommended_workers": 32
+    }
+  ],
+  "baseline_swap_used_bytes": 0,
+  "candidates": [
+    {
+      "actions": [
+        {
+          "action": "LAUNCH_CANDIDATE",
+          "argv": [
+            "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+            "/Users/scammermike/Downloads/hawking/tools/condense/deepseek_v4_gravity.py",
+            "build-full",
+            "--artifact-dir",
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+            "--workspace-root",
+            "/Users/scammermike/Downloads/hawking",
+            "--xet-root",
+            "/tmp/hawking-detached-2026-08-04/xet-root-restream",
+            "--protected-floor-bytes",
+            "26843545600",
+            "--parallel-workers",
+            "32"
+          ],
+          "at": "2026-08-06T16:09:09.171533Z",
+          "reason": "RAMP_STEP",
+          "workers": 32
+        },
+        {
+          "action": "CHILD_STARTED",
+          "at": "2026-08-06T16:09:09.173138Z",
+          "pid": 5125,
+          "workers": 32
+        },
+        {
+          "action": "CHILD_EXIT_OBSERVED",
+          "at": "2026-08-06T16:11:02.954344Z",
+          "exit_code": 0,
+          "reason": "CHILD_EXITED_ZERO",
+          "workers": 32
+        }
+      ],
+      "argv": [
+        "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+        "/Users/scammermike/Downloads/hawking/tools/condense/deepseek_v4_gravity.py",
+        "build-full",
+        "--artifact-dir",
+        "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        "--workspace-root",
+        "/Users/scammermike/Downloads/hawking",
+        "--xet-root",
+        "/tmp/hawking-detached-2026-08-04/xet-root-restream",
+        "--protected-floor-bytes",
+        "26843545600",
+        "--parallel-workers",
+        "32"
+      ],
+      "duration_seconds": 113.78239133300667,
+      "exit_code": 0,
+      "observed_cpu_percent_mean": 68.81111111111112,
+      "peak_rss_bytes": 635666432,
+      "reasons": [
+        "CHILD_EXITED_ZERO"
+      ],
+      "samples": [
+        {
+          "cpu_percent": 0.0,
+          "free_disk_bytes": 178020261888,
+          "monotonic_s": 86129.090716375,
+          "pid": 5125,
+          "process_rss_bytes": 7831552,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.2,
+          "free_disk_bytes": 178020257792,
+          "monotonic_s": 86131.581722708,
+          "pid": 5125,
+          "process_rss_bytes": 564674560,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 71.5,
+          "free_disk_bytes": 178020179968,
+          "monotonic_s": 86134.191540416,
+          "pid": 5125,
+          "process_rss_bytes": 570015744,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 73.3,
+          "free_disk_bytes": 178020159488,
+          "monotonic_s": 86136.800708916,
+          "pid": 5125,
+          "process_rss_bytes": 574636032,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 72.9,
+          "free_disk_bytes": 178020155392,
+          "monotonic_s": 86139.415753875,
+          "pid": 5125,
+          "process_rss_bytes": 579026944,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 73.0,
+          "free_disk_bytes": 178020134912,
+          "monotonic_s": 86142.015249125,
+          "pid": 5125,
+          "process_rss_bytes": 591577088,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 75.8,
+          "free_disk_bytes": 178020130816,
+          "monotonic_s": 86144.565193708,
+          "pid": 5125,
+          "process_rss_bytes": 593854464,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 76.2,
+          "free_disk_bytes": 178020110336,
+          "monotonic_s": 86147.186554625,
+          "pid": 5125,
+          "process_rss_bytes": 603766784,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 78.1,
+          "free_disk_bytes": 178020110336,
+          "monotonic_s": 86149.765573541,
+          "pid": 5125,
+          "process_rss_bytes": 603947008,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 77.0,
+          "free_disk_bytes": 178022752256,
+          "monotonic_s": 86152.380690541,
+          "pid": 5125,
+          "process_rss_bytes": 607305728,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 75.4,
+          "free_disk_bytes": 178023137280,
+          "monotonic_s": 86154.948928,
+          "pid": 5125,
+          "process_rss_bytes": 611254272,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 73.3,
+          "free_disk_bytes": 178023129088,
+          "monotonic_s": 86157.582372541,
+          "pid": 5125,
+          "process_rss_bytes": 615170048,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 73.4,
+          "free_disk_bytes": 178023059456,
+          "monotonic_s": 86160.200173333,
+          "pid": 5125,
+          "process_rss_bytes": 615366656,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 72.9,
+          "free_disk_bytes": 178022965248,
+          "monotonic_s": 86162.80665325,
+          "pid": 5125,
+          "process_rss_bytes": 615563264,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 71.5,
+          "free_disk_bytes": 178022940672,
+          "monotonic_s": 86165.420079083,
+          "pid": 5125,
+          "process_rss_bytes": 615825408,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.5,
+          "free_disk_bytes": 178022907904,
+          "monotonic_s": 86167.976304,
+          "pid": 5125,
+          "process_rss_bytes": 616022016,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.0,
+          "free_disk_bytes": 178022903808,
+          "monotonic_s": 86170.543341625,
+          "pid": 5125,
+          "process_rss_bytes": 612057088,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.7,
+          "free_disk_bytes": 178022887424,
+          "monotonic_s": 86173.097975125,
+          "pid": 5125,
+          "process_rss_bytes": 618364928,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.8,
+          "free_disk_bytes": 178022883328,
+          "monotonic_s": 86175.658303791,
+          "pid": 5125,
+          "process_rss_bytes": 616497152,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 71.1,
+          "free_disk_bytes": 178022854656,
+          "monotonic_s": 86178.2163295,
+          "pid": 5125,
+          "process_rss_bytes": 616677376,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.9,
+          "free_disk_bytes": 178022780928,
+          "monotonic_s": 86180.784273125,
+          "pid": 5125,
+          "process_rss_bytes": 621051904,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.1,
+          "free_disk_bytes": 178022707200,
+          "monotonic_s": 86183.340066375,
+          "pid": 5125,
+          "process_rss_bytes": 623362048,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 76.9,
+          "free_disk_bytes": 178022764544,
+          "monotonic_s": 86185.902906541,
+          "pid": 5125,
+          "process_rss_bytes": 627818496,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.9,
+          "free_disk_bytes": 178022731776,
+          "monotonic_s": 86188.501696708,
+          "pid": 5125,
+          "process_rss_bytes": 627998720,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 72.1,
+          "free_disk_bytes": 178022715392,
+          "monotonic_s": 86191.016115583,
+          "pid": 5125,
+          "process_rss_bytes": 628195328,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.6,
+          "free_disk_bytes": 178022686720,
+          "monotonic_s": 86193.611823333,
+          "pid": 5125,
+          "process_rss_bytes": 628375552,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.3,
+          "free_disk_bytes": 178022686720,
+          "monotonic_s": 86196.182971916,
+          "pid": 5125,
+          "process_rss_bytes": 628572160,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.7,
+          "free_disk_bytes": 178022678528,
+          "monotonic_s": 86198.740210583,
+          "pid": 5125,
+          "process_rss_bytes": 628768768,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.9,
+          "free_disk_bytes": 178022662144,
+          "monotonic_s": 86201.304419041,
+          "pid": 5125,
+          "process_rss_bytes": 628948992,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.1,
+          "free_disk_bytes": 178022658048,
+          "monotonic_s": 86203.861072583,
+          "pid": 5125,
+          "process_rss_bytes": 629145600,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.7,
+          "free_disk_bytes": 178022649856,
+          "monotonic_s": 86206.418443708,
+          "pid": 5125,
+          "process_rss_bytes": 629342208,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.7,
+          "free_disk_bytes": 178022633472,
+          "monotonic_s": 86208.979618833,
+          "pid": 5125,
+          "process_rss_bytes": 629522432,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.0,
+          "free_disk_bytes": 178022850560,
+          "monotonic_s": 86211.545824,
+          "pid": 5125,
+          "process_rss_bytes": 625541120,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.4,
+          "free_disk_bytes": 178020782080,
+          "monotonic_s": 86214.105289333,
+          "pid": 5125,
+          "process_rss_bytes": 629915648,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 73.2,
+          "free_disk_bytes": 178020753408,
+          "monotonic_s": 86216.62728975,
+          "pid": 5125,
+          "process_rss_bytes": 625950720,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 75.7,
+          "free_disk_bytes": 178024927232,
+          "monotonic_s": 86219.235965208,
+          "pid": 5125,
+          "process_rss_bytes": 630308864,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 75.1,
+          "free_disk_bytes": 178024894464,
+          "monotonic_s": 86221.847573875,
+          "pid": 5125,
+          "process_rss_bytes": 630489088,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 75.8,
+          "free_disk_bytes": 178024787968,
+          "monotonic_s": 86224.454087791,
+          "pid": 5125,
+          "process_rss_bytes": 630669312,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 76.0,
+          "free_disk_bytes": 178024706048,
+          "monotonic_s": 86227.021451583,
+          "pid": 5125,
+          "process_rss_bytes": 630833152,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.7,
+          "free_disk_bytes": 178024677376,
+          "monotonic_s": 86229.631422375,
+          "pid": 5125,
+          "process_rss_bytes": 631062528,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.9,
+          "free_disk_bytes": 178024665088,
+          "monotonic_s": 86232.194998666,
+          "pid": 5125,
+          "process_rss_bytes": 631242752,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 70.1,
+          "free_disk_bytes": 178024562688,
+          "monotonic_s": 86234.763248666,
+          "pid": 5125,
+          "process_rss_bytes": 631439360,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.9,
+          "free_disk_bytes": 178024550400,
+          "monotonic_s": 86237.324078625,
+          "pid": 5125,
+          "process_rss_bytes": 631635968,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 69.2,
+          "free_disk_bytes": 178024480768,
+          "monotonic_s": 86239.882400083,
+          "pid": 5125,
+          "process_rss_bytes": 635666432,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        },
+        {
+          "cpu_percent": 0.0,
+          "free_disk_bytes": 178024484864,
+          "monotonic_s": 86242.375014833,
+          "pid": null,
+          "process_rss_bytes": 0,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 0,
+          "transfer_bytes": 159780523958
+        }
+      ],
+      "status": "CHILD_SUCCESS",
+      "throughput_bytes_per_second": 0.0,
+      "workers": 32
+    }
+  ],
+  "created_at": "2026-08-06T16:11:02.954460Z",
+  "notes": [
+    "Observed CPU utilization is reported per candidate; this supervisor does not promise or attempt zero CPU idle.",
+    "Each candidate is launched through the existing build-full CLI so the sealed journal permits resumption after a measured stop."
+  ],
+  "policy": {
+    "allow_swap_growth": false,
+    "invocation_floor_example_bytes": 26843545600,
+    "invocation_floor_example_note": "25 GiB is an invocation policy example only; the caller protected_floor_bytes value is the hard floor used here.",
+    "max_parallel_workers_ceiling": 32,
+    "measure_window_seconds": 3600.0,
+    "min_throughput_gain": 0.05,
+    "protected_floor_bytes": 26843545600,
+    "rss_budget_bytes": 5368709120,
+    "rss_enforcement": "sample_and_terminate_not_ulimit",
+    "sample_interval_seconds": 2.0,
+    "worker_ramp": [
+      32
+    ],
+    "zero_cpu_idle_promised": false
+  },
+  "recommended_workers": 32,
+  "schema": "hawking.gravity.deepseek_v4.build_full_resource_supervisor.v1",
+  "status": "COMPLETED",
+  "stop_reason": "RAMP_COMPLETE",
+  "target": {
+    "artifact_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "changes_source_range_limits": false,
+    "downloads_model_objects_directly": false,
+    "gravity_cli": "/Users/scammermike/Downloads/hawking/tools/condense/deepseek_v4_gravity.py",
+    "launch_path": "tools/condense/deepseek_v4_gravity.py build-full",
+    "python_executable": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+    "range_bytes": null,
+    "workspace_root": "/Users/scammermike/Downloads/hawking",
+    "xet_root": "/tmp/hawking-detached-2026-08-04/xet-root-restream"
+  }
+}

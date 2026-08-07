@@ -177,10 +177,10 @@
     "total_gain": 0.0
   },
   "reason": "all secondary gates held; math deltas recorded as optimization signal",
-  "recorded_at": "2026-08-06T11:16:12.140203Z",
+  "recorded_at": "2026-08-06T19:13:03.133156Z",
   "reject_rule_fired": false,
   "schema": "hawking.frankenstein.stage1_avb_ablation.v1",
-  "seal_sha256": "eaff086c6b914721afd8d374f5375323e694b0bff16296d8b37a852b98ddc92f",
+  "seal_sha256": "b66aff3a5843e52884dbed8a0f371f274f2f7282c9a519831a8abe47a82c7ede",
   "secondary": {
     "domains": [
       {

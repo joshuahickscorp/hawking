@@ -427,6 +427,112 @@ def try_load_real_pairs(
     }
 
 
+def load_glm_fullwidth_teacher(
+    capture_dir: Path,
+    layer: int,
+    *,
+    site: str = "block_output",
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Load full-width GLM teacher vectors for L_latent (real capture only).
+
+    Preference order (never fabricates values):
+      1. ``carry/after_L{nn}.npz`` → ``carry_hidden`` last token  ``[N, 6144]``
+      2. ``layers/L{nn}.npz`` → ``{site}/mean``                  ``[N, 6144]``
+      3. ``layers/L{nn}.npz`` → ``{site}/samples`` last slot     ``[N, W≤64]``
+
+    Path (1)/(2) fix a real bug: the sample arrays store only the first
+    ``DEFAULT_SAMPLE_HIDDEN`` dims; zero-padding them to 6144 for the teacher
+    projector made L_latent compare a full student residual against a nearly
+    all-zero teacher, which latent-bridge arms cannot beat linear-init on.
+    """
+
+    capture_dir = Path(capture_dir)
+    layer = int(layer)
+    meta: dict[str, Any] = {
+        "layer": layer,
+        "site": site,
+        "capture_dir": str(capture_dir),
+        "fabrication": False,
+    }
+
+    carry_path = capture_dir / "carry" / f"after_L{layer:02d}.npz"
+    if carry_path.is_file():
+        with np.load(carry_path) as z:
+            if "carry_hidden" in z.files:
+                ch = np.asarray(z["carry_hidden"], dtype=np.float32)
+                # [N, T, D] → last token; [N, D] already pooled
+                if ch.ndim == 3:
+                    mat = ch[:, -1, :]
+                    source = "carry_hidden_last_token"
+                elif ch.ndim == 2:
+                    mat = ch
+                    source = "carry_hidden_2d"
+                else:
+                    mat = None
+                    source = None
+                if mat is not None and mat.shape[-1] >= 64:
+                    meta.update(
+                        {
+                            "source": source,
+                            "path": str(carry_path),
+                            "shape": list(mat.shape),
+                            "full_width": bool(mat.shape[-1] == int(GLM_5_2["hidden_size"])),
+                        }
+                    )
+                    return mat, meta
+
+    npz_path = capture_dir / "layers" / f"L{layer:02d}.npz"
+    if npz_path.is_file():
+        with np.load(npz_path) as z:
+            mean_key = f"{site}/mean"
+            if mean_key in z.files:
+                mat = np.asarray(z[mean_key], dtype=np.float32)
+                if mat.ndim == 2 and mat.shape[-1] >= 64:
+                    meta.update(
+                        {
+                            "source": mean_key,
+                            "path": str(npz_path),
+                            "shape": list(mat.shape),
+                            "full_width": bool(
+                                mat.shape[-1] == int(GLM_5_2["hidden_size"])
+                            ),
+                            "note": (
+                                "Sequence-mean activation over tokens; real full-width "
+                                "statistic from teacher-forced capture (not samples)."
+                            ),
+                        }
+                    )
+                    return mat, meta
+            sample_key = f"{site}/samples"
+            if sample_key in z.files:
+                samples = np.asarray(z[sample_key], dtype=np.float32)
+                # [B, 3, W] → last slot
+                if samples.ndim == 3:
+                    mat = samples[:, -1, :]
+                elif samples.ndim == 2:
+                    mat = samples
+                else:
+                    mat = None
+                if mat is not None:
+                    meta.update(
+                        {
+                            "source": sample_key,
+                            "path": str(npz_path),
+                            "shape": list(mat.shape),
+                            "full_width": bool(
+                                mat.shape[-1] == int(GLM_5_2["hidden_size"])
+                            ),
+                            "note": "Legacy narrow sample width; caller may pad.",
+                        }
+                    )
+                    return mat, meta
+
+    raise BridgeTrainRealError(
+        f"no GLM teacher vectors for layer {layer} under {capture_dir} "
+        f"(checked carry + layers/{site}/mean + layers/{site}/samples)"
+    )
+
+
 def build_real_training_tensors(
     *,
     glm_mat: np.ndarray,
@@ -435,12 +541,13 @@ def build_real_training_tensors(
     n_eval: int = 8,
     n_experts: int = 16,
     seed: int = 0,
+    teacher_source_meta: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, Any]]:
     """Build latent_v0 batch dicts from real [N,D] matrices.
 
-    Teacher is padded/projected to full GLM geometry when samples are width-64:
-    we place the real sample dims in the leading slice and zero-pad the rest,
-    labelling the pad explicitly (not a fabricated capability claim).
+    Prefer full-width teacher (6144) from carry last-token or ``*/mean``.
+    Only when the teacher matrix is still the legacy narrow sample (W≪6144)
+    do we zero-pad into full GLM geometry, and we label that pad explicitly.
     Student uses full DSV4F 4096 from host export.
     """
 
@@ -462,32 +569,61 @@ def build_real_training_tensors(
             f"DSV4F hidden {d_s} != expected {d_student}"
         )
 
-    # Pad/truncate teacher samples into full geometry (real dims only in prefix).
-    teacher_full = np.zeros((n, d_teacher_full), dtype=np.float32)
-    w = min(d_g, d_teacher_full)
-    teacher_full[:, :w] = g[:, :w]
-    teacher_pad_note = {
-        "real_sample_width": d_g,
-        "full_hidden": d_teacher_full,
-        "real_dims_placed_at": f"0:{w}",
-        "padded_zeros": d_teacher_full - w,
-        "fabrication": False,
-        "note": (
-            "Teacher-forced NPZ retains first sample_width dims only. "
-            "Trailing dims are structural zeros for projector geometry — "
-            "not invented activations."
-        ),
-    }
+    if d_g == d_teacher_full:
+        # Honest full-width teacher (carry last-token or sequence mean).
+        teacher_full = np.asarray(g, dtype=np.float32)
+        teacher_pad_note = {
+            "real_sample_width": d_g,
+            "full_hidden": d_teacher_full,
+            "real_dims_placed_at": f"0:{d_g}",
+            "padded_zeros": 0,
+            "fabrication": False,
+            "source": (teacher_source_meta or {}).get("source", "full_width_input"),
+            "note": (
+                "Teacher is real full-width GLM activations (carry last-token "
+                "or sequence-mean). No zero-pad. Required for L_latent to be a "
+                "fair shared-space objective against full student residuals."
+            ),
+        }
+    elif d_g > d_teacher_full:
+        teacher_full = np.asarray(g[:, :d_teacher_full], dtype=np.float32)
+        teacher_pad_note = {
+            "real_sample_width": d_g,
+            "full_hidden": d_teacher_full,
+            "real_dims_placed_at": f"0:{d_teacher_full}",
+            "padded_zeros": 0,
+            "truncated": True,
+            "fabrication": False,
+            "source": (teacher_source_meta or {}).get("source", "truncated_input"),
+            "note": "Teacher wider than GLM hidden; truncated to 6144.",
+        }
+    else:
+        # Legacy narrow samples: pad into projector geometry (labelled).
+        teacher_full = np.zeros((n, d_teacher_full), dtype=np.float32)
+        w = min(d_g, d_teacher_full)
+        teacher_full[:, :w] = g[:, :w]
+        teacher_pad_note = {
+            "real_sample_width": d_g,
+            "full_hidden": d_teacher_full,
+            "real_dims_placed_at": f"0:{w}",
+            "padded_zeros": d_teacher_full - w,
+            "fabrication": False,
+            "source": (teacher_source_meta or {}).get("source", "narrow_sample_pad"),
+            "note": (
+                "LEGACY FALLBACK: teacher-forced NPZ sample arrays retain only "
+                "the first sample_width dims. Trailing dims are structural zeros "
+                "for projector geometry — not invented activations. Prefer "
+                "carry last-token or */mean full-width when available."
+            ),
+        }
 
-    # Functional target in student space via closed-form map
+    # Functional target in student space via closed-form map on the same
+    # teacher matrix used for L_latent (recompute if W width mismatches).
     W = np.asarray(procrustes["W"], dtype=np.float32)
-    # W maps teacher_centered → student; apply to (possibly padded) teacher sample
-    t_for_map = teacher_full[:, : W.shape[0]] if W.shape[0] != d_teacher_full else teacher_full
+    t_for_map = teacher_full
     if W.shape[0] != t_for_map.shape[1]:
-        # recompute on actual widths used
-        cf = closed_form_procrustes(s, g)
+        cf = closed_form_procrustes(s, t_for_map)
         W = cf["W"]
-        t_for_map = g
         procrustes = cf
     t_c = t_for_map - t_for_map.mean(axis=0, keepdims=True)
     s_c = s - s.mean(axis=0, keepdims=True)
@@ -549,6 +685,7 @@ def build_real_training_tensors(
         "teacher_sample_shape": list(g.shape),
         "teacher_full_shape": [n, d_teacher_full],
         "teacher_pad": teacher_pad_note,
+        "teacher_source": dict(teacher_source_meta or {}),
         "procrustes": {
             k: v for k, v in procrustes.items() if k != "W"
         },
@@ -1024,14 +1161,37 @@ def run_real_first(
         best = max(pairs, key=lambda p: float(p["score"]))
         gL = int(best["glm_layer"])
         dL = int(best["dsv4f_layer"])
-        g_mat = loaded["glm_layers"][gL]
+        # Prefer full-width teacher (carry last-token / sequence mean) over the
+        # legacy 64-dim sample arrays that correspondence_loader returns.
+        teacher_source_meta: dict[str, Any] = {
+            "source": "correspondence_loader_samples",
+            "full_width": False,
+        }
+        try:
+            g_mat, teacher_source_meta = load_glm_fullwidth_teacher(
+                glm_capture, gL, site="block_output"
+            )
+        except BridgeTrainRealError:
+            g_mat = loaded["glm_layers"][gL]
+            teacher_source_meta = {
+                "source": "correspondence_loader_samples_fallback",
+                "full_width": bool(
+                    int(np.asarray(g_mat).shape[-1]) == int(GLM_5_2["hidden_size"])
+                ),
+                "layer": gL,
+            }
         d_mat = loaded["dsv4f_layers"][dL]
+        # Align N if full-width teacher and DSV differ slightly
+        n_pair = min(int(np.asarray(g_mat).shape[0]), int(np.asarray(d_mat).shape[0]))
+        g_mat = np.asarray(g_mat, dtype=np.float32)[:n_pair]
+        d_mat = np.asarray(d_mat, dtype=np.float32)[:n_pair]
         cf = closed_form_procrustes(d_mat, g_mat)
         train_t, eval_t, tmeta = build_real_training_tensors(
             glm_mat=g_mat,
             dsv_mat=d_mat,
             procrustes=cf,
             seed=seed,
+            teacher_source_meta=teacher_source_meta,
         )
         (out_dir / "PAIRED_TENSOR_META.json").write_text(
             json.dumps(

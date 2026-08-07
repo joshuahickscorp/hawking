@@ -191,11 +191,11 @@
     "secondary_tolerance_absolute": 0.02,
     "training_free": true
   },
-  "recorded_at": "2026-08-06T11:16:12.139810Z",
+  "recorded_at": "2026-08-06T19:13:03.132489Z",
   "reject_rule_fired": false,
   "requires": "REQUIRES_PAIRED_CAPTURE",
   "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
-  "seal_sha256": "ea5a8861f761e11017d192c37aa18aa9bc7a341769ad11206ada89c965cae934",
+  "seal_sha256": "18710e8481849589e676ca22d2263ea58b869f5113377b3e8a045c41aa5861a0",
   "status": "FRAMEWORK_PENDING_REAL_CAPTURE",
   "verdict": "PENDING"
 }

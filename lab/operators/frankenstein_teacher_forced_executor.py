@@ -23,6 +23,7 @@ that ship a miniature twin).
 from __future__ import annotations
 
 import argparse
+import ctypes
 import hashlib
 import io
 import json
@@ -35,6 +36,21 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
+
+try:
+    _libsystem = ctypes.CDLL("/usr/lib/libSystem.B.dylib")
+    _malloc_pressure_relief = _libsystem.malloc_zone_pressure_relief
+    _malloc_pressure_relief.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+    _malloc_pressure_relief.restype = ctypes.c_size_t
+except (AttributeError, OSError):  # Non-Darwin test/runtime hosts.
+    _malloc_pressure_relief = None
+
+
+def _release_allocator_pages() -> int:
+    """Ask Darwin malloc zones to return currently free pages to the OS."""
+    if _malloc_pressure_relief is None:
+        return 0
+    return int(_malloc_pressure_relief(None, 0))
 
 from lab.layout import EVIDENCE_ROOT, REPO_ROOT
 from lab.operators import glm52_reference as reference
@@ -803,6 +819,48 @@ class LayerScopedSource:
         self.read_calls = self.reader.read_calls
         return value
 
+    def matvec(self, name: str, x: np.ndarray) -> np.ndarray:
+        """Execute ``weight @ x`` from bounded contiguous row blocks.
+
+        The reference forward calls this hook for every linear projection.
+        Keeping only a small decoded row block resident avoids allocator/RSS
+        growth from repeatedly materialising official-scale float32 weights,
+        while each output row retains the same float32 dot-product semantics.
+        """
+        record = self.plan.inventory.tensors.get(name)
+        if record is None:
+            raise TeacherForcedError(f"tensor absent from inventory: {name!r}")
+        if record.shard not in self.admitted_shards:
+            raise TeacherForcedError(
+                f"tensor {name!r} lives in non-admitted shard {record.shard}"
+            )
+        if not (self.plan.root / record.shard).is_file():
+            raise TeacherForcedError(f"shard not resident for {name}: {record.shard}")
+        if len(record.spec.shape) != 2:
+            raise TeacherForcedError(f"matvec requires a 2-D tensor: {name}")
+        rows, columns = record.spec.shape
+        values = np.asarray(x, dtype=np.float32)
+        if values.ndim != 2 or values.shape[0] != columns:
+            raise TeacherForcedError(
+                f"matvec shape mismatch for {name}: weight={record.spec.shape} x={values.shape}"
+            )
+        output = np.empty((rows, values.shape[1]), dtype=np.float32)
+        block_rows = 256
+        for start in range(0, rows, block_rows):
+            stop = min(rows, start + block_rows)
+            weight = self.reader.row_range(
+                name,
+                start,
+                stop,
+                max_bytes=8 * 1024 * 1024,
+            )
+            output[start:stop] = np.matmul(weight, values, dtype=np.float32)
+        del weight
+        _release_allocator_pages()
+        self.payload_bytes_read = self.reader.payload_bytes_read
+        self.read_calls = self.reader.read_calls
+        return output
+
     def rows(self, name: str, ids: Iterable[int]) -> np.ndarray:
         """Row gather for 2-D tables (embed / lm_head)."""
         record = self.plan.inventory.tensors.get(name)
@@ -1277,7 +1335,8 @@ class ExecutorConfig:
     seq_end: int | None = None  # exclusive; None = full corpus after freeze
     worker_id: str | None = None
     # Explicit opt-in to the DANGEROUS pattern: N stream workers each re-fetch
-    # the same ~1.5 TB donor body (network bytes × N). Default refuse.
+    # the same ~1.5 TB donor body (network bytes × N), or retained stream-root
+    # resident shards across an official stream run (disk × N). Default refuse.
     allow_weight_stream_amplification: bool = False
     # Model architecture binding. Defaults to GLM-5.2 so existing callers and
     # sealed 78-layer capture paths stay byte-identical.
@@ -1477,6 +1536,16 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
     # Official streaming path: control plane + direct hf_hub layer-major body.
     use_stream = bool(cfg.stream) and profile == PROFILE_OFFICIAL
 
+    # Hard stop: --no-evict + --stream keeps full donor source resident and can
+    # dead-end the 25 GiB floor recovery model.
+    if use_stream and not cfg.allow_eviction and not cfg.allow_weight_stream_amplification:
+        raise TeacherForcedError(
+            "official --stream cannot be combined with --no-evict without explicit "
+            "override. Official stream mode relies on per-window eviction to preserve "
+            "disk headroom; rerun with default eviction behavior or pass "
+            "--allow-weight-stream-amplification intentionally."
+        )
+
     # Fail closed: sequence multi-worker + independent weight re-stream multiplies
     # network bytes by N. Sealed full-stack runs already sit at ~95–119% of the
     # 194 MiB/s public-path ceiling — more concurrent re-streams cannot help and
@@ -1533,10 +1602,13 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
         try:
             if cfg.require_floor:
                 floor_records.append(assert_floor(out, label="pre_stream_L00"))
+            _release_allocator_pages()
             streamer.ensure(need0)
+            _release_allocator_pages()
             if cfg.prefetch and n_layers > 1:
                 streamer.prefetch(streamer.shards_for_layer(1, include_global=False))
             inventory = streamer.admit_inventory()
+            _release_allocator_pages()
         except LayerStreamError as exc:
             raise TeacherForcedError(f"stream ensure L0 failed: {exc}") from exc
         plan = _build_plan_from_streamer(streamer, inventory)
@@ -1691,8 +1763,11 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
                     db_row["prefetch_status"] = f"SUBMITTED_L{db.n_plus_1:02d}"
                 else:
                     db_row["prefetch_status"] = "NONE"
+                _release_allocator_pages()
                 streamer.ensure(need)
+                _release_allocator_pages()
                 inventory = streamer.admit_inventory()
+                _release_allocator_pages()
                 plan.inventory = inventory
                 plan.shard_hashes.update(streamer.verified_hashes)
                 source = LayerScopedSource(
@@ -1869,8 +1944,11 @@ def run_teacher_forced(cfg: ExecutorConfig) -> dict[str, Any]:
     if len(layers_captured) == n_layers:
         try:
             if use_stream and streamer is not None:
+                _release_allocator_pages()
                 streamer.ensure(streamer.global_shards)
+                _release_allocator_pages()
                 inventory = streamer.admit_inventory()
+                _release_allocator_pages()
                 plan.inventory = inventory
                 plan.shard_hashes.update(streamer.verified_hashes)
                 source = LayerScopedSource(
@@ -2186,7 +2264,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--microbatch", type=int, default=DEFAULT_MICROBATCH)
     parser.add_argument("--sample-hidden", type=int, default=DEFAULT_SAMPLE_HIDDEN)
     parser.add_argument("--max-layers", type=int, default=None)
-    parser.add_argument("--no-evict", action="store_true")
+    parser.add_argument(
+        "--no-evict",
+        action="store_true",
+        help=(
+            "Skip source-weight eviction. Do not use with official --stream. "
+            "That mode keeps shard cache resident and can exhaust the 25 GiB "
+            "headroom during restarts; this is intentionally fail-closed for safety."
+        ),
+    )
     parser.add_argument("--no-floor", action="store_true")
     parser.add_argument(
         "--stream",
@@ -2241,8 +2327,10 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help=(
             "DANGEROUS: permit --seq-start/--seq-end together with --stream "
-            "(each worker re-downloads the same ~1.5 TB donor body). Default is "
-            "fail-closed because the official path is already link-ceiling-bound."
+            "(each worker re-downloads the same ~1.5 TB donor body). Also permits "
+            "official --stream with --no-evict when explicitly requested. "
+            "Default is fail-closed because the official path is already "
+            "link-ceiling-bound."
         ),
     )
     parser.add_argument(

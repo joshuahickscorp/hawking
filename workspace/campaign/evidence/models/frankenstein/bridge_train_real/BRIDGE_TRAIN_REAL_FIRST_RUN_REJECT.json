@@ -1,16 +1,15 @@
 {
   "capability_claim": false,
   "note": "First real bridge-train attempt did NOT promote. No PROTO_FRANKENSTEIN_V0 artifact assembled.",
-  "promotion_verdict": "HOLD_REQUIRES_PAIRED_CAPTURE",
+  "promotion_verdict": "HOLD",
   "reason": [
-    "GLM teacher NPZ floats missing \u2014 cannot form real paired activations for L_latent / L_function bridge fit (inventory blocker: GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.)",
-    "promotion_gate=HOLD_REQUIRES_PAIRED_CAPTURE failed=['real_glm_activations_from_78_layer_path', 'nonlinear_latent_bridges_trained', 'complete_intended_bridge_classes', 'held_out_math_improves_over_base', 'complete_v0_beats_linear_init', 'method_decomp_repair_improve']"
+    "promotion_gate=HOLD failed=['complete_v0_beats_linear_init']"
   ],
-  "recorded_at": "2026-08-06T11:16:12.141572Z",
-  "run_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN.json",
-  "run_seal_sha256": "d82190fad2b4731d779d06dfb139c3981498a9ba943e3bfeac349d1ad0ccd12f",
+  "recorded_at": "2026-08-06T19:13:41.389693Z",
+  "run_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN.json",
+  "run_seal_sha256": "8b250bdf1de2103e30f1545c7650870ea8efd87f21ee93af6d476ebea77d2360",
   "schema": "hawking.frankenstein.bridge_train_real_desktop_receipt.v1",
-  "seal_sha256": "05531db8c354284aa4ef18c2528d54149a84a555970caf673379939107057a0d",
+  "seal_sha256": "cf795f4b1aef41e92957f8d6037473bfaae5e8b1d630991e79faf5a864173417",
   "sealed_artifact": false,
-  "status": "REJECT_NO_TEACHER_FLOATS"
+  "status": "REJECT_PROMOTION_GATES"
 }

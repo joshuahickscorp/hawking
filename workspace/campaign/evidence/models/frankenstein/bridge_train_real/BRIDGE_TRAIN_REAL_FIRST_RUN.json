@@ -4,60 +4,71 @@
       {
         "arm": "A_BASE_DSV4F",
         "description": "Base DSV4F only; no donor inheritance",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "status": "BASE",
+        "verdict": "BASE"
       },
       {
+        "ablation_seal_sha256": "0ddaade9a4c177ef373a06c318506f4dec4618831fad0e2e4396a31ee6afa7e6",
         "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
         "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.09061695874386866,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       },
       {
+        "ablation_seal_sha256": "10df3ced2553b3fd97389fdbb97789142317276e137d92781f79bc99ef480850",
         "arm": "C_LATENT_BRIDGES",
         "description": "Latent bridges only (projectors + interventions)",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       },
       {
+        "ablation_seal_sha256": "e1aa712a6f5abc843b6d2a9240af55dcaf95e234434eb72b57df62bf1f274714",
         "arm": "D_BEHAVIOR_HEADS",
         "description": "Behavior heads only (method/decomp/formal/repair/value)",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.09510065235638365,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       },
       {
+        "ablation_seal_sha256": "97f40525ad0c5fe916a1cf3c884f3c538431137267d8f90e1922b364a5f03d81",
         "arm": "E_LATENT_BEHAVIOR",
         "description": "Latent bridges + behavior heads",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       },
       {
+        "ablation_seal_sha256": "c65fd9cff79b566d99c3568aa4f052cba1bbf92c47da3462833c04c456ee6286",
         "arm": "F_LATENT_ROUTE_RESIDUAL",
         "description": "Latent bridges + semantic route residual",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       },
       {
+        "ablation_seal_sha256": "c6f93fc7af19be001f6800d2867856d2c5b4af483b679730d683b2097a11ee15",
         "arm": "G_COMPLETE_V0",
         "description": "Complete V0 (latent + behavior + route + retention)",
-        "fabricated": false,
-        "reason": "awaiting real paired capture scores",
-        "status": "PENDING",
-        "verdict": null
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
       }
     ],
+    "base_arm": "A_BASE_DSV4F",
     "capability_claim": false,
     "catalog": {
       "arms": [
@@ -192,321 +203,23 @@
       "secondary_tolerance_absolute": 0.02,
       "training_free": true
     },
-    "recorded_at": "2026-08-06T11:16:12.139810Z",
+    "recorded_at": "2026-08-06T19:13:41.384604Z",
     "reject_rule_fired": false,
-    "requires": "REQUIRES_PAIRED_CAPTURE",
     "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
-    "seal_sha256": "ea5a8861f761e11017d192c37aa18aa9bc7a341769ad11206ada89c965cae934",
-    "status": "FRAMEWORK_PENDING_REAL_CAPTURE",
-    "verdict": "PENDING"
-  },
-  "avb_untrained": {
-    "additive_not_subtractive": true,
-    "bench_scope": "BOUNDED_FIXTURE",
-    "bodies": {
-      "math_donor": {
-        "family": "mathematical_donor",
-        "hidden_size": 6144,
-        "num_hidden_layers": 78,
-        "repository": "zai-org/GLM-5.2",
-        "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
-      },
-      "strategic_donor_stage2": "kimi_k3 (out of scope for stage 1)",
-      "student": {
-        "family": "student_body",
-        "hidden_size": 4096,
-        "num_hidden_layers": 43,
-        "repository": "deepseek-ai/DeepSeek-V4-Flash",
-        "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
-      }
-    },
-    "bridges_in_play": {
-      "active_stage1": "GLM_MATH_BRIDGE",
-      "all_declared": [
-        "KIMI_STRATEGIC_BRIDGE",
-        "GLM_MATH_BRIDGE"
-      ],
-      "preserved_untouched_for_stage2": "KIMI_STRATEGIC_BRIDGE"
-    },
-    "claim_boundary": {
-      "capability_claim_requires_sealed_shard_scores": true,
-      "direct_weight_transplant": false,
-      "full_model_bench_permitted": false,
-      "gradient_or_optimizer": false,
-      "gravity_compression_performed": false,
-      "kimi_consumed": false,
-      "kimi_simulated": false,
-      "lane_does_not_own": [
-        "C_FINAL_PROTO_KIMI",
-        "D_RAMANUJAN"
-      ],
-      "lane_owns": [
-        "A_BASE_DSV4F",
-        "B_PROTO_DSV4F_GLM"
-      ],
-      "odyssey_or_ramanujan": false,
-      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
-      "stage": 1,
-      "training_performed": false,
-      "weight_average_performed": false
-    },
-    "comparison": {
-      "A": "A_BASE_DSV4F",
-      "B": "B_PROTO_DSV4F_GLM",
-      "C_later": "C_FINAL_PROTO_KIMI",
-      "D_later": "D_RAMANUJAN",
-      "lane_owns": [
-        "A_BASE_DSV4F",
-        "B_PROTO_DSV4F_GLM"
-      ]
-    },
-    "extra": {},
-    "fixture_id": "real-run-no-teacher-untrained",
-    "gate_policy": {
-      "accept_rule": {
-        "all_secondaries_non_regressing": true,
-        "bench_scope_must_be_shard_or_fixture": true,
-        "statement": "ACCEPT only when every secondary is \u2265 base \u2212 tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
-      },
-      "claim_boundary": {
-        "capability_claim_requires_sealed_shard_scores": true,
-        "direct_weight_transplant": false,
-        "full_model_bench_permitted": false,
-        "gradient_or_optimizer": false,
-        "gravity_compression_performed": false,
-        "kimi_consumed": false,
-        "kimi_simulated": false,
-        "lane_does_not_own": [
-          "C_FINAL_PROTO_KIMI",
-          "D_RAMANUJAN"
-        ],
-        "lane_owns": [
-          "A_BASE_DSV4F",
-          "B_PROTO_DSV4F_GLM"
-        ],
-        "odyssey_or_ramanujan": false,
-        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
-        "stage": 1,
-        "training_performed": false,
-        "weight_average_performed": false
-      },
-      "kimi_out_of_scope": true,
-      "math_domains": [
-        "method_selection",
-        "mathematical_decomposition",
-        "formalization",
-        "proof_repair",
-        "value_ranking"
-      ],
-      "math_gain_advisory_min": 0.0,
-      "name": "additive_not_subtractive_stage1",
-      "optimization_target": "maximize_glm_mathematical_inheritance",
-      "reject_rule": {
-        "context_behavior_is_secondary": true,
-        "math_gain_cannot_override": true,
-        "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
-        "routing_stability_is_secondary": true,
-        "runtime_tps_is_secondary": true,
-        "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
-      },
-      "schema": "hawking.frankenstein.stage1_gate_policy.v1",
-      "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
-      "secondary_capabilities": [
-        "coding_and_repository_work",
-        "tool_use",
-        "agentic_planning",
-        "long_context_reasoning",
-        "repair_and_critique",
-        "hcli_protocols",
-        "general_knowledge_conversation",
-        "runtime_tps",
-        "bridge_compatibility",
-        "routing_stability",
-        "context_behavior"
-      ],
-      "secondary_tolerance_absolute": 0.02,
-      "training_free": true
-    },
-    "math": {
-      "advisory_min_gain": 0.0,
-      "any_gain": false,
-      "domains": [
-        {
-          "advisory": "OK",
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "method_selection",
-          "gain": false,
-          "proto": 0.7
-        },
-        {
-          "advisory": "OK",
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "mathematical_decomposition",
-          "gain": false,
-          "proto": 0.7
-        },
-        {
-          "advisory": "OK",
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "formalization",
-          "gain": false,
-          "proto": 0.7
-        },
-        {
-          "advisory": "OK",
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "proof_repair",
-          "gain": false,
-          "proto": 0.7
-        },
-        {
-          "advisory": "OK",
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "value_ranking",
-          "gain": false,
-          "proto": 0.7
-        }
-      ],
-      "hard_reject_on_math": false,
-      "mean_gain": 0.0,
-      "note": "Math domains are the optimization target.  They never override a secondary REJECT.",
-      "optimization_target": "maximize_glm_mathematical_inheritance",
-      "total_gain": 0.0
-    },
-    "reason": "all secondary gates held; math deltas recorded as optimization signal",
-    "recorded_at": "2026-08-06T11:16:12.140203Z",
-    "reject_rule_fired": false,
-    "schema": "hawking.frankenstein.stage1_avb_ablation.v1",
-    "seal_sha256": "eaff086c6b914721afd8d374f5375323e694b0bff16296d8b37a852b98ddc92f",
-    "secondary": {
-      "domains": [
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "coding_and_repository_work",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "tool_use",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "agentic_planning",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "long_context_reasoning",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "repair_and_critique",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "hcli_protocols",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "general_knowledge_conversation",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "runtime_tps",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "bridge_compatibility",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "routing_stability",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        },
-        {
-          "base": 0.7,
-          "delta": 0.0,
-          "domain": "context_behavior",
-          "floor": 0.6799999999999999,
-          "gate": "PASS",
-          "hard": true,
-          "proto": 0.7,
-          "tolerance": 0.02
-        }
-      ],
-      "regressions": [],
-      "reject_rule": "any secondary proto < base \u2212 tolerance \u2192 REJECT (math gain cannot override)",
-      "reject_rule_fired": false,
-      "tolerance": 0.02,
-      "verdict": "PASS"
-    },
-    "stage": 1,
-    "transfer_module_id": "UNTRAINED_NO_GLM_TEACHER",
+    "seal_sha256": "c893d83a8632a62b60c962253e970f611881a7b0c9d0f346b41cc7f5b23553e5",
+    "status": "EVALUATED",
+    "synthetic_proxy_scores": true,
     "verdict": "ACCEPT"
   },
-  "bridges_trained": [],
+  "avb_untrained": null,
+  "bridges_trained": [
+    "B_LINEAR_SUBSPACE_INITIALIZATION",
+    "C_LATENT_BRIDGES",
+    "D_BEHAVIOR_HEADS",
+    "E_LATENT_BEHAVIOR",
+    "F_LATENT_ROUTE_RESIDUAL",
+    "G_COMPLETE_V0"
+  ],
   "claim_boundary": {
     "capability_claim": false,
     "fabricated": false,
@@ -514,76 +227,17 @@
     "full_model_bench": false,
     "kimi_consumed": false,
     "odyssey": false,
-    "training_on_real_pairs": false
+    "training_on_real_pairs": true
   },
   "cpu_only": true,
-  "desktop_copy_hint": "cp /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json /Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
-  "desktop_reject_receipt": null,
-  "desktop_reject_seal_sha256": "05531db8c354284aa4ef18c2528d54149a84a555970caf673379939107057a0d",
-  "desktop_target": "/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
-  "desktop_write_error": "PermissionError: [Errno 1] Operation not permitted: '/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json'",
-  "desktop_write_ok": false,
+  "desktop_reject_receipt": "/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
+  "desktop_reject_seal_sha256": "cf795f4b1aef41e92957f8d6037473bfaae5e8b1d630991e79faf5a864173417",
+  "desktop_write_ok": true,
   "device": "cpu",
-  "dsv4f_solo": {
-    "blockers": [],
-    "example_ids_head": [
-      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
-      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
-      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
-      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
-      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply"
-    ],
-    "hidden": 4096,
-    "layers_loaded": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42
-    ],
-    "n_sequences": 32
-  },
+  "dsv4f_solo": null,
   "gpu_used": false,
   "inventory": {
-    "blocker": "GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.",
+    "blocker": null,
     "bridge_contract_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
     "capability_claim": false,
     "contracts": {
@@ -651,7 +305,7 @@
         4096
       ]
     },
-    "dsv4f_export_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export",
+    "dsv4f_export_dir": "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export",
     "fabricated": false,
     "geometry": {
       "dsv4f_hidden": 4096,
@@ -660,20 +314,20 @@
       "note": "Teacher-forced capture stores first N=64 dims of hidden samples (DEFAULT_SAMPLE_HIDDEN); full 6144 not retained in sample NPZ."
     },
     "glm": {
-      "json_receipts": 78,
-      "note": "Layer NPZs are gitignored (*.npz). Correspondence was measured when NPZs existed in recapture worktree; they are absent here.",
+      "json_receipts": 14,
+      "note": "GLM sample NPZs present.",
       "npz_claim_sample": {
         "layer_id": "L13",
-        "npz_bytes_claimed": 11419354,
-        "npz_present_on_disk": false,
-        "npz_sha256_claimed": "1828e8b3d59aeaf6de40f0e36f5b86973556031fac2fe8aefb11f3afcbaf7509"
+        "npz_bytes_claimed": 11882202,
+        "npz_present_on_disk": true,
+        "npz_sha256_claimed": "189ffb4a5d29ae676aac027aa16f6258e072110da5b0b983deb2b75e6e133f13"
       },
-      "npz_on_disk": 0,
-      "ready": false
+      "npz_on_disk": 14,
+      "ready": true
     },
-    "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
-    "layer_correspondence_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_LAYER_CORRESPONDENCE.json",
-    "paired_ready": false,
+    "glm_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/run",
+    "layer_correspondence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_LAYER_CORRESPONDENCE.json",
+    "paired_ready": true,
     "phase_alignment": {
       "dsv4f_sources": [
         0,
@@ -731,27 +385,24 @@
       "score_max": 0.5652091246747242,
       "score_min": 0.33186852781400145
     },
-    "phase_alignment_path": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_PHASE_ALIGNMENT.json",
-    "recorded_at": "2026-08-06T11:16:11.538924Z",
+    "phase_alignment_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_PHASE_ALIGNMENT.json",
+    "recorded_at": "2026-08-06T19:13:37.451574Z",
     "schema": "hawking.frankenstein.bridge_train_real_inventory.v1",
-    "seal_sha256": "e9c8f108d5bf9ef5f91069b443ad4fa2e46a23e4f9bb4a3f5f2983c7f41423b5",
+    "seal_sha256": "8745dad83cf3e9eb4828baffb0f0ccb0911a33e348f0115226ebffaf8f2669cf",
     "transplant_points_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json"
   },
-  "local_reject_receipt": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
+  "local_reject_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN_REJECT.json",
   "name": "V0_BRIDGE_TRAIN_REAL_FIRST_RUN",
   "next_required": [
-    "Restore GLM teacher-forced layer NPZs under /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers (or re-run teacher-forced capture with NPZ retention; *.npz is gitignored and was not preserved after recapture merge).",
-    "Re-run this operator: train-real --device cpu",
-    "Then frankenstein_v0_seal assemble + verify if promotion_gate=PROMOTE"
+    "If promotion PROMOTE: frankenstein_v0_seal assemble + verify",
+    "If REJECT: inspect ablation regressions / math gain"
   ],
-  "out_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/bridge_train_real",
-  "paired_load_gate": "REQUIRES_PAIRED_CAPTURE",
-  "paired_load_status": "FAIL_CLOSED",
+  "out_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real",
+  "paired_load_gate": null,
+  "paired_load_status": "LOADED",
   "paired_report": {
     "alignment": "intersection",
-    "blockers": [
-      "All requested GLM layer NPZ payloads are missing. JSON receipts remain (capture ran; bytes_captured\u2248892MB claimed) but *.npz is gitignored and not on disk under /Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers. Restore layer NPZs (or re-run teacher-forced capture with NPZ retention) before correspondence can measure CKA/CCA/Procrustes."
-    ],
+    "blockers": [],
     "dsv4f_example_ids": [
       "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
       "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
@@ -838,7 +489,7 @@
       42
     ],
     "dsv4f_receipts": [
-      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export"
+      "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export"
     ],
     "dsv4f_shapes": [
       [
@@ -1015,7 +666,7 @@
       ]
     ],
     "dsv4f_trace_dirs": [
-      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces"
+      "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces"
     ],
     "dsv4f_vector_sites_found": [
       "npy:L00.npy:late_hidden",
@@ -1063,7 +714,7 @@
       "npy:L42.npy:late_hidden"
     ],
     "fabricated": false,
-    "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
+    "glm_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/run",
     "glm_example_ids": [
       "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
       "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
@@ -1103,15 +754,23 @@
       "n": 2,
       "start": 13
     },
-    "glm_layers_loaded": [],
-    "glm_npz_missing": [
-      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers/L13.npz",
-      "/Users/scammermike/.claude-grok/worktrees/v0-bridge-train-real-20260806-070610/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z/layers/L14.npz"
+    "glm_layers_loaded": [
+      13
     ],
-    "glm_npz_present": [],
-    "glm_shapes": [],
-    "n_sequences": 0,
-    "ok": false,
+    "glm_npz_missing": [
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/run/layers/L14.npz"
+    ],
+    "glm_npz_present": [
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/run/layers/L13.npz"
+    ],
+    "glm_shapes": [
+      [
+        32,
+        64
+      ]
+    ],
+    "n_sequences": 32,
+    "ok": true,
     "shared_example_ids": [
       "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
       "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
@@ -1146,55 +805,46 @@
       "pfv0:halo:gr01_wolves",
       "pfv0:halo:rt03_table"
     ],
-    "warnings": [
-      "L13.json present but L13.npz absent (gitignored *.npz not in worktree)",
-      "L14.json present but L14.npz absent (gitignored *.npz not in worktree)"
-    ]
+    "warnings": []
   },
   "phase_pairs_n": 43,
   "promotion_gate": {
     "capability_claim": false,
     "checks": {
-      "complete_intended_bridge_classes": false,
+      "complete_intended_bridge_classes": true,
       "complete_v0_beats_linear_init": false,
-      "held_out_math_improves_over_base": false,
+      "held_out_math_improves_over_base": true,
       "kimi_strategic_bridge_intact": true,
-      "method_decomp_repair_improve": false,
+      "method_decomp_repair_improve": true,
       "no_material_secondary_regression": true,
-      "nonlinear_latent_bridges_trained": false,
-      "real_glm_activations_from_78_layer_path": false,
+      "nonlinear_latent_bridges_trained": true,
+      "real_glm_activations_from_78_layer_path": true,
       "reversible_and_loadable": true,
       "routing_stable": true
     },
     "failed": [
-      "real_glm_activations_from_78_layer_path",
-      "nonlinear_latent_bridges_trained",
-      "complete_intended_bridge_classes",
-      "held_out_math_improves_over_base",
-      "complete_v0_beats_linear_init",
-      "method_decomp_repair_improve"
+      "complete_v0_beats_linear_init"
     ],
     "note": "Promotion requires real capture. Fixture runs never promote.",
-    "recorded_at": "2026-08-06T11:16:12.140562Z",
+    "recorded_at": "2026-08-06T19:13:41.384679Z",
     "schema": "hawking.frankenstein.latent_v0_promotion_gate.v1",
-    "seal_sha256": "e9dfe08670ac7f672c17f086a67a2d45771404558a1cf95485657d5bab0b27b3",
-    "verdict": "HOLD_REQUIRES_PAIRED_CAPTURE"
+    "seal_sha256": "80559dc7a9a06114947b330615899be9c44abab978046963392c5a8026bd7569",
+    "verdict": "HOLD"
   },
-  "promotion_verdict": "HOLD_REQUIRES_PAIRED_CAPTURE",
+  "promotion_verdict": "HOLD",
   "real_data_used": {
     "behavior_labels": false,
     "correspondence_sealed": true,
     "dsv4f_floats": true,
-    "glm_floats": false,
+    "glm_floats": true,
     "phase_alignment": true
   },
-  "recorded_at": "2026-08-06T11:16:12.140581Z",
+  "recorded_at": "2026-08-06T19:13:41.387100Z",
   "reject_reasons": [
-    "GLM teacher NPZ floats missing \u2014 cannot form real paired activations for L_latent / L_function bridge fit (inventory blocker: GLM layer NPZ float payloads missing on disk (78 JSON receipts, 0 NPZ). DSV4F real floats present (43 npy, hash_only=False). Cannot form real (teacher, student) pairs for bridge fit.)",
-    "promotion_gate=HOLD_REQUIRES_PAIRED_CAPTURE failed=['real_glm_activations_from_78_layer_path', 'nonlinear_latent_bridges_trained', 'complete_intended_bridge_classes', 'held_out_math_improves_over_base', 'complete_v0_beats_linear_init', 'method_decomp_repair_improve']"
+    "promotion_gate=HOLD failed=['complete_v0_beats_linear_init']"
   ],
   "schema": "hawking.frankenstein.bridge_train_real_run.v1",
-  "seal_sha256": "d82190fad2b4731d779d06dfb139c3981498a9ba943e3bfeac349d1ad0ccd12f",
+  "seal_sha256": "8b250bdf1de2103e30f1545c7650870ea8efd87f21ee93af6d476ebea77d2360",
   "sealed_to_desktop": false,
   "site_map": {
     "GLM_DECOMPOSITION_BRIDGE": {
@@ -1262,15 +912,15 @@
       "transplant_point": "final_hidden_state"
     }
   },
-  "status": "REJECT_NO_TEACHER_FLOATS",
+  "status": "REJECT_PROMOTION_GATES",
   "student_reverse_probe": {
     "all_reverse_ok": true,
     "capability_claim": false,
     "inheritance_claim": false,
     "note": "Student-side reverse probe on real DSV4F floats only. Does not claim GLM math inheritance.",
-    "recorded_at": "2026-08-06T11:16:12.139223Z",
+    "recorded_at": "2026-08-06T19:13:37.973850Z",
     "schema": "hawking.frankenstein.student_only_reverse_probe.v1",
-    "seal_sha256": "58ecf7aa2e8aa40424bc69b6dfe4d3e79baf12b7c7cf1328441de866416059a0",
+    "seal_sha256": "466f98e378be31992e48bdbc5535ebb245a6b6695cab35f151a381939fdf2976",
     "sites": {
       "GLM_DECOMPOSITION_BRIDGE": {
         "dsv4f_layer": 15,
@@ -1306,7 +956,7 @@
         "note": "untrained residual \u22480; reverse exact on real student activations",
         "phase_score": 0.4021373589065593,
         "reverse_ok": true,
-        "reverse_recon_error": 1.1920928955078125e-07,
+        "reverse_recon_error": 2.384185791015625e-07,
         "status": "OK",
         "trained": false,
         "transplant_point": "post_moe_hidden_state"
@@ -1332,7 +982,7 @@
         "note": "untrained residual \u22480; reverse exact on real student activations",
         "phase_score": 0.5652091246747242,
         "reverse_ok": true,
-        "reverse_recon_error": 7.450580596923828e-09,
+        "reverse_recon_error": 1.4901161193847656e-08,
         "status": "OK",
         "trained": false,
         "transplant_point": "post_attention_hidden_state"
@@ -1371,7 +1021,7 @@
         "note": "untrained residual \u22480; reverse exact on real student activations",
         "phase_score": 0.37975650110355375,
         "reverse_ok": true,
-        "reverse_recon_error": 2.9802322387695312e-08,
+        "reverse_recon_error": 2.384185791015625e-07,
         "status": "OK",
         "trained": false,
         "transplant_point": "final_hidden_state"
@@ -1379,6 +1029,2588 @@
     },
     "status": "STUDENT_REVERSE_PROBE"
   },
-  "train": null,
-  "wall_ms": 604.0348749957047
+  "train": {
+    "ablation": {
+      "arms": [
+        {
+          "arm": "A_BASE_DSV4F",
+          "description": "Base DSV4F only; no donor inheritance",
+          "status": "BASE",
+          "verdict": "BASE"
+        },
+        {
+          "ablation_seal_sha256": "0ddaade9a4c177ef373a06c318506f4dec4618831fad0e2e4396a31ee6afa7e6",
+          "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+          "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+          "math_mean_gain": 0.09061695874386866,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        },
+        {
+          "ablation_seal_sha256": "10df3ced2553b3fd97389fdbb97789142317276e137d92781f79bc99ef480850",
+          "arm": "C_LATENT_BRIDGES",
+          "description": "Latent bridges only (projectors + interventions)",
+          "math_mean_gain": 0.020000000000000018,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        },
+        {
+          "ablation_seal_sha256": "e1aa712a6f5abc843b6d2a9240af55dcaf95e234434eb72b57df62bf1f274714",
+          "arm": "D_BEHAVIOR_HEADS",
+          "description": "Behavior heads only (method/decomp/formal/repair/value)",
+          "math_mean_gain": 0.09510065235638365,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        },
+        {
+          "ablation_seal_sha256": "97f40525ad0c5fe916a1cf3c884f3c538431137267d8f90e1922b364a5f03d81",
+          "arm": "E_LATENT_BEHAVIOR",
+          "description": "Latent bridges + behavior heads",
+          "math_mean_gain": 0.020000000000000018,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        },
+        {
+          "ablation_seal_sha256": "c65fd9cff79b566d99c3568aa4f052cba1bbf92c47da3462833c04c456ee6286",
+          "arm": "F_LATENT_ROUTE_RESIDUAL",
+          "description": "Latent bridges + semantic route residual",
+          "math_mean_gain": 0.020000000000000018,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        },
+        {
+          "ablation_seal_sha256": "c6f93fc7af19be001f6800d2867856d2c5b4af483b679730d683b2097a11ee15",
+          "arm": "G_COMPLETE_V0",
+          "description": "Complete V0 (latent + behavior + route + retention)",
+          "math_mean_gain": 0.020000000000000018,
+          "reject_rule_fired": false,
+          "status": "EVALUATED",
+          "synthetic_proxy": false,
+          "verdict": "ACCEPT"
+        }
+      ],
+      "base_arm": "A_BASE_DSV4F",
+      "capability_claim": false,
+      "catalog": {
+        "arms": [
+          {
+            "description": "Base DSV4F only; no donor inheritance",
+            "id": "A_BASE_DSV4F",
+            "index": 0
+          },
+          {
+            "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+            "id": "B_LINEAR_SUBSPACE_INITIALIZATION",
+            "index": 1
+          },
+          {
+            "description": "Latent bridges only (projectors + interventions)",
+            "id": "C_LATENT_BRIDGES",
+            "index": 2
+          },
+          {
+            "description": "Behavior heads only (method/decomp/formal/repair/value)",
+            "id": "D_BEHAVIOR_HEADS",
+            "index": 3
+          },
+          {
+            "description": "Latent bridges + behavior heads",
+            "id": "E_LATENT_BEHAVIOR",
+            "index": 4
+          },
+          {
+            "description": "Latent bridges + semantic route residual",
+            "id": "F_LATENT_ROUTE_RESIDUAL",
+            "index": 5
+          },
+          {
+            "description": "Complete V0 (latent + behavior + route + retention)",
+            "id": "G_COMPLETE_V0",
+            "index": 6
+          }
+        ],
+        "linear_init_is_not_proto_complete": true,
+        "loss_portfolio": [
+          "L_latent",
+          "L_function",
+          "L_span",
+          "L_method",
+          "L_decomposition",
+          "L_formal",
+          "L_repair",
+          "L_value",
+          "L_route",
+          "L_retention",
+          "L_runtime"
+        ],
+        "reject_rule": "REJECT any arm that regresses secondary capabilities beyond tolerance. Math gain cannot override. Complete V0 must beat linear init.",
+        "schema": "hawking.frankenstein.latent_v0_arm_catalog.v1",
+        "v0_modules": [
+          "GLM_EARLY_CONTEXT_BRIDGE",
+          "GLM_METHOD_BRIDGE",
+          "GLM_DECOMPOSITION_BRIDGE",
+          "GLM_PRE_ROUTER_BRIDGE",
+          "GLM_POST_MOE_BRIDGE",
+          "GLM_FORMALIZATION_BRIDGE",
+          "GLM_REPAIR_BRIDGE",
+          "GLM_LATE_CONSOLIDATION_BRIDGE",
+          "GLM_VALUE_HEAD",
+          "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+        ]
+      },
+      "fabricated_scores": false,
+      "gate_policy": {
+        "accept_rule": {
+          "all_secondaries_non_regressing": true,
+          "bench_scope_must_be_shard_or_fixture": true,
+          "statement": "ACCEPT only when every secondary is \u2265 base \u2212 tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
+        },
+        "claim_boundary": {
+          "capability_claim_requires_sealed_shard_scores": true,
+          "direct_weight_transplant": false,
+          "full_model_bench_permitted": false,
+          "gradient_or_optimizer": false,
+          "gravity_compression_performed": false,
+          "kimi_consumed": false,
+          "kimi_simulated": false,
+          "lane_does_not_own": [
+            "C_FINAL_PROTO_KIMI",
+            "D_RAMANUJAN"
+          ],
+          "lane_owns": [
+            "A_BASE_DSV4F",
+            "B_PROTO_DSV4F_GLM"
+          ],
+          "odyssey_or_ramanujan": false,
+          "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+          "stage": 1,
+          "training_performed": false,
+          "weight_average_performed": false
+        },
+        "kimi_out_of_scope": true,
+        "math_domains": [
+          "method_selection",
+          "mathematical_decomposition",
+          "formalization",
+          "proof_repair",
+          "value_ranking"
+        ],
+        "math_gain_advisory_min": 0.0,
+        "name": "additive_not_subtractive_stage1",
+        "optimization_target": "maximize_glm_mathematical_inheritance",
+        "reject_rule": {
+          "context_behavior_is_secondary": true,
+          "math_gain_cannot_override": true,
+          "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
+          "routing_stability_is_secondary": true,
+          "runtime_tps_is_secondary": true,
+          "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
+        },
+        "schema": "hawking.frankenstein.stage1_gate_policy.v1",
+        "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
+        "secondary_capabilities": [
+          "coding_and_repository_work",
+          "tool_use",
+          "agentic_planning",
+          "long_context_reasoning",
+          "repair_and_critique",
+          "hcli_protocols",
+          "general_knowledge_conversation",
+          "runtime_tps",
+          "bridge_compatibility",
+          "routing_stability",
+          "context_behavior"
+        ],
+        "secondary_tolerance_absolute": 0.02,
+        "training_free": true
+      },
+      "recorded_at": "2026-08-06T19:13:41.384604Z",
+      "reject_rule_fired": false,
+      "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
+      "seal_sha256": "c893d83a8632a62b60c962253e970f611881a7b0c9d0f346b41cc7f5b23553e5",
+      "status": "EVALUATED",
+      "synthetic_proxy_scores": true,
+      "verdict": "ACCEPT"
+    },
+    "arm_results": {
+      "B_LINEAR_SUBSPACE_INITIALIZATION": {
+        "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 737328,
+          "approx_flops_per_token": 0,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "c31d8076376b6f151227a96bd13eb8519fcd1e2be8d9de91185e73a6c9ed6fe5",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "linear_init": {
+              "ablatable": true,
+              "hash_bound": "1a9c976a29b35ca425b12845fbef1ca7b84f50346f710a62eddd94894e0621b6",
+              "is_inheritance": false,
+              "name": "LINEAR_SUBSPACE_INITIALIZATION",
+              "parameter_bytes": 540672,
+              "parameter_count": 135168,
+              "reversible": true
+            }
+          },
+          "runtime_parameter_bytes": 737328,
+          "steps": 18,
+          "total_parameter_bytes": 737328,
+          "total_parameter_count": 184333,
+          "tps_proxy_at_1gflops": null,
+          "training_only_parameter_bytes": 0,
+          "wall_train_ms": 507.6704169914592
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "72e18e7ef068f3f4d2ebb2ef3a080b90dd9e79802bdefb3dce806ccaa1dc5d8a",
+            "metrics": {
+              "balanced_proxy": 0.9999999280496378,
+              "balanced_score": 0.9999999280496378,
+              "eval_loss": 7.195036744178651e-08,
+              "math_proxy": 0.9999999280496378,
+              "train_loss": 1.6595048180079175e-07
+            },
+            "parameter_bytes": 737328,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_BALANCED.pt",
+            "phase": "B",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "72e18e7ef068f3f4d2ebb2ef3a080b90dd9e79802bdefb3dce806ccaa1dc5d8a",
+            "metrics": {
+              "balanced_proxy": 0.9999999280496378,
+              "eval_loss": 7.195036744178651e-08,
+              "math_proxy": 0.9999999280496378,
+              "math_score": 0.9999999280496378,
+              "train_loss": 1.6595048180079175e-07
+            },
+            "parameter_bytes": 737328,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_MATH.pt",
+            "phase": "B",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "c31d8076376b6f151227a96bd13eb8519fcd1e2be8d9de91185e73a6c9ed6fe5",
+            "metrics": {
+              "balanced_proxy": 0.9999338623690953,
+              "eval_loss": 0.10354619473218918,
+              "math_proxy": 0.9999338623690953,
+              "train_loss": 0.07039728636542956
+            },
+            "parameter_bytes": 737328,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "22931f61e6f9c3cb63ade61ab2b853df698c8586ae8d2c87fe82fe50b3210950",
+            "metrics": {
+              "balanced_proxy": 0.9999997840330406,
+              "eval_loss": 2.1596700605641672e-07,
+              "math_proxy": 0.9999997840330406,
+              "math_score": 0.9999997840330406,
+              "train_loss": 2.2130744525838963e-07
+            },
+            "parameter_bytes": 737328,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_MATH.pt",
+            "phase": "B",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 0.10354619473218918,
+        "final_train_loss": 0.07039728636542956,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_function": 2.1596700605641672e-07,
+            "eval_L_runtime": 0.0,
+            "eval_loss": 2.1596700605641672e-07,
+            "phase": "B",
+            "train_loss": 2.2130744525838963e-07
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 7.195036744178651e-08,
+            "eval_L_runtime": 0.0,
+            "eval_loss": 7.195036744178651e-08,
+            "phase": "B",
+            "train_loss": 1.6595048180079175e-07
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 7.195036744178651e-08,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.3002883791923523,
+            "eval_loss": 0.07507213205099106,
+            "phase": "C",
+            "train_loss": 0.0337537070736289
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 7.195036744178651e-08,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.204386368393898,
+            "eval_loss": 0.05109662935137749,
+            "phase": "C",
+            "train_loss": 0.09833621606230736
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 3.3459782571299e-05,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.16919326782226562,
+            "eval_loss": 0.0846300944685936,
+            "phase": "E",
+            "train_loss": 0.075679000467062
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 6.614200538024306e-05,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.20696011185646057,
+            "eval_loss": 0.10354619473218918,
+            "phase": "E",
+            "train_loss": 0.07039728636542956
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "note": "arm has no trainable modules in this phase",
+            "status": "SKIP_NO_PARAMS"
+          },
+          "B": {
+            "epochs": 2,
+            "final_eval_loss": 7.195036744178651e-08,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 1.0,
+              "L_latent": 0.5,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.25,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 0.05109662935137749,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 0.10354619473218918,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 2.9802322387695312e-08,
+        "steps": 18,
+        "wall_ms": 507.6704169914592
+      },
+      "C_LATENT_BRIDGES": {
+        "arm": "C_LATENT_BRIDGES",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 6963280,
+          "approx_flops_per_token": 2293760,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "e488dec2a50874935be10aca35f08f09d3a81c4d332f74bf65036be8033eb7e2",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "GLM_DECOMPOSITION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "795365005e72a32b2b9c12ab525084dde5f3737aaf4bd3e3aa8c768a23840b9b",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_DECOMPOSITION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_EARLY_CONTEXT_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "fe9b8227afeff7b146335a428c25d33b40088a41f2b5f245011fabb1de54e854",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_EARLY_CONTEXT_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_FORMALIZATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "42e14b6f84cfe45592e0712ce03b8f2b06d0e27cbba26d13409ad1d8f99a6f7f",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_FORMALIZATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_LATE_CONSOLIDATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "5437470719deb7451485b7d9e5ad92bdb25cddbf658ac74ce07f034b5a786a37",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_METHOD_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "2ceb1e3e8baca0b4a9893f714a5008c2e8d933c33d08f0bc32ea59a8c81b6a18",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_METHOD_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_POST_MOE_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "329628bee724ab41b3ea38d2bffcdbcbd3c2f9c692bc8c9621993611e0d5db55",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_POST_MOE_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_PRE_ROUTER_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "35602c0488d902dd19aab1eb3b50ac48ff32d764942d90c1a64c5ce88933b9dd",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_PRE_ROUTER_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_REPAIR_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "04eaca4b8167f0435f66a8caa4d0208568fa0d4f1b8699fd57bee15887ade1f9",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_REPAIR_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "student_observer": {
+              "ablatable": true,
+              "hash_bound": "1f45006daf687bef3c9419f80b618aaac56bd3857910780a27b1f831aa877979",
+              "name": "STUDENT_OBSERVER",
+              "parameter_bytes": 2113536,
+              "parameter_count": 528384,
+              "runtime_resident": true
+            },
+            "teacher_projector": {
+              "ablatable": true,
+              "hash_bound": "c3145de54c80bd71c12b6e6f5d0b0e83233da161f72fa17774be49f5f52e0231",
+              "name": "TEACHER_PROJECTOR",
+              "parameter_bytes": 3170304,
+              "parameter_count": 792576,
+              "runtime_resident": false,
+              "training_only": true
+            }
+          },
+          "runtime_parameter_bytes": 6963280,
+          "steps": 24,
+          "total_parameter_bytes": 10133584,
+          "total_parameter_count": 2533397,
+          "tps_proxy_at_1gflops": 435.9654017857143,
+          "training_only_parameter_bytes": 3170304,
+          "wall_train_ms": 2080.5976670089876
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "1910257e3ea3375b6f442c9d0a6ce72cdf7b2a1770e31a6c79248bfacbe154bb",
+            "metrics": {
+              "balanced_proxy": 0.25408734661591126,
+              "balanced_score": 0.25408734661591126,
+              "eval_loss": 0.7902355790138245,
+              "math_proxy": 0.25408734661591126,
+              "train_loss": 0.6766995191574097
+            },
+            "parameter_bytes": 10133584,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_C_LATENT_BRIDGES/BEST_BALANCED.pt",
+            "phase": "C",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "1910257e3ea3375b6f442c9d0a6ce72cdf7b2a1770e31a6c79248bfacbe154bb",
+            "metrics": {
+              "balanced_proxy": 0.25408734661591126,
+              "eval_loss": 0.7902355790138245,
+              "math_proxy": 0.25408734661591126,
+              "math_score": 0.25408734661591126,
+              "train_loss": 0.6766995191574097
+            },
+            "parameter_bytes": 10133584,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_C_LATENT_BRIDGES/BEST_MATH.pt",
+            "phase": "C",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "e488dec2a50874935be10aca35f08f09d3a81c4d332f74bf65036be8033eb7e2",
+            "metrics": {
+              "balanced_proxy": 0.05975556640804425,
+              "eval_loss": 16.359703063964844,
+              "math_proxy": 0.05975556640804425,
+              "train_loss": 25.507416407267254
+            },
+            "parameter_bytes": 10133584,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_C_LATENT_BRIDGES/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "c26d1b56419ed50f048fedc934a6328b4579e5767e517dac444e8c66f974e7f6",
+            "metrics": {
+              "balanced_proxy": 0.19480823159715663,
+              "eval_loss": 1.0850985050201416,
+              "math_proxy": 0.19480823159715663,
+              "math_score": 0.19480823159715663,
+              "train_loss": 1.1541647513707478
+            },
+            "parameter_bytes": 10133584,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_C_LATENT_BRIDGES/BEST_MATH.pt",
+            "phase": "C",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 16.359703063964844,
+        "final_train_loss": 25.507416407267254,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_latent": 20.182645797729492,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 20.18437957763672,
+            "phase": "A",
+            "train_loss": 7.6642982959747314
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_latent": 9.006219863891602,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 9.007952690124512,
+            "phase": "A",
+            "train_loss": 17.736016591389973
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.00012989036622457206,
+            "eval_L_latent": 10.249248504638672,
+            "eval_L_runtime": 0.17236165702342987,
+            "eval_loss": 5.133371829986572,
+            "phase": "B",
+            "train_loss": 4.3216785589853925
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.0005132374935783446,
+            "eval_L_latent": 6.727289199829102,
+            "eval_L_runtime": 0.1715601086616516,
+            "eval_loss": 3.3727359771728516,
+            "phase": "B",
+            "train_loss": 5.124070485432942
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.007574295625090599,
+            "eval_L_latent": 4.125679016113281,
+            "eval_L_runtime": 0.17107129096984863,
+            "eval_L_span": 0.1653517186641693,
+            "eval_loss": 1.0850985050201416,
+            "phase": "C",
+            "train_loss": 1.1541647513707478
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.007120433263480663,
+            "eval_L_latent": 2.9285340309143066,
+            "eval_L_runtime": 0.1705935001373291,
+            "eval_L_span": 0.18404865264892578,
+            "eval_loss": 0.7902355790138245,
+            "phase": "C",
+            "train_loss": 0.6766995191574097
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.03760717064142227,
+            "eval_L_latent": 24.482864379882812,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.17040365934371948,
+            "eval_L_span": 1.0607092380523682,
+            "eval_loss": 25.05934715270996,
+            "phase": "E",
+            "train_loss": 13.719845016797384
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.14449438452720642,
+            "eval_L_latent": 15.590348243713379,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.17012804746627808,
+            "eval_L_span": 1.2327066659927368,
+            "eval_loss": 16.359703063964844,
+            "phase": "E",
+            "train_loss": 25.507416407267254
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "epochs": 2,
+            "final_eval_loss": 9.007952690124512,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 0.0,
+              "L_latent": 1.0,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.0,
+              "L_route": 0.0,
+              "L_runtime": 0.01,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "B": {
+            "epochs": 2,
+            "final_eval_loss": 3.3727359771728516,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 1.0,
+              "L_latent": 0.5,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.25,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 0.7902355790138245,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 16.359703063964844,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 1.7881393432617188e-07,
+        "steps": 24,
+        "wall_ms": 2080.5976670089876
+      },
+      "D_BEHAVIOR_HEADS": {
+        "arm": "D_BEHAVIOR_HEADS",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 622744,
+          "approx_flops_per_token": 0,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "311399b8516f148ec0da4ab3d79681a6dd742b4288dc13e389cebf1ad27792c1",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "decomp_head": {
+              "ablatable": true,
+              "hash_bound": "69ad81563e223479eb68bda27dbd0df0b83d1abf1cdaf2bd3290d514d8036596",
+              "name": "GLM_DECOMPOSITION_HEAD",
+              "parameter_bytes": 98328,
+              "parameter_count": 24582,
+              "runtime_resident": true
+            },
+            "formal_head": {
+              "ablatable": true,
+              "hash_bound": "8ef5d207cdaf66fcf8ec1c5a8ac56721ee8720ca23f9846bab2bdb5b3fe10985",
+              "name": "GLM_FORMALIZATION_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "method_head": {
+              "ablatable": true,
+              "hash_bound": "74e11420529b05d229b986c0fc85e0a9dd9cfdea6208af0e695b235367b3187f",
+              "name": "GLM_METHOD_HEAD",
+              "parameter_bytes": 180268,
+              "parameter_count": 45067,
+              "runtime_resident": true
+            },
+            "repair_head": {
+              "ablatable": true,
+              "hash_bound": "a99f2fe55dfb8bf35d14ff1791ee2695e48dce5614479ff4ce9c942ebb36eca8",
+              "name": "GLM_REPAIR_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "value_head": {
+              "ablatable": true,
+              "copy_glm_router_weights": false,
+              "hash_bound": "f52eacee14fe025b93f1d8b98db250ced1d068be6888b9a89a26d6454579fa5e",
+              "name": "GLM_VALUE_HEAD",
+              "parameter_bytes": 16388,
+              "parameter_count": 4097,
+              "reversible": false
+            }
+          },
+          "runtime_parameter_bytes": 622744,
+          "steps": 12,
+          "total_parameter_bytes": 622744,
+          "total_parameter_count": 155687,
+          "tps_proxy_at_1gflops": null,
+          "training_only_parameter_bytes": 0,
+          "wall_train_ms": 539.491999996244
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "311399b8516f148ec0da4ab3d79681a6dd742b4288dc13e389cebf1ad27792c1",
+            "metrics": {
+              "balanced_proxy": 0.9999440688114114,
+              "balanced_score": 0.9999440688114114,
+              "eval_loss": 0.05151749774813652,
+              "math_proxy": 0.9999440688114114,
+              "train_loss": 0.09238090366125107
+            },
+            "parameter_bytes": 622744,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_D_BEHAVIOR_HEADS/BEST_BALANCED.pt",
+            "phase": "E",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "311399b8516f148ec0da4ab3d79681a6dd742b4288dc13e389cebf1ad27792c1",
+            "metrics": {
+              "balanced_proxy": 0.9999440688114114,
+              "eval_loss": 0.05151749774813652,
+              "math_proxy": 0.9999440688114114,
+              "math_score": 0.9999440688114114,
+              "train_loss": 0.09238090366125107
+            },
+            "parameter_bytes": 622744,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_D_BEHAVIOR_HEADS/BEST_MATH.pt",
+            "phase": "E",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "311399b8516f148ec0da4ab3d79681a6dd742b4288dc13e389cebf1ad27792c1",
+            "metrics": {
+              "balanced_proxy": 0.9999440688114114,
+              "eval_loss": 0.05151749774813652,
+              "math_proxy": 0.9999440688114114,
+              "train_loss": 0.09238090366125107
+            },
+            "parameter_bytes": 622744,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_D_BEHAVIOR_HEADS/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "8d6398a28248dfce6e79330cb81c558f4deab8d8ffbd8ac13089f0e1ee448aab",
+            "metrics": {
+              "balanced_proxy": 0.9997777876561573,
+              "eval_loss": 0.051991671323776245,
+              "math_proxy": 0.9997777876561573,
+              "math_score": 0.9997777876561573,
+              "train_loss": 0.06968244910240173
+            },
+            "parameter_bytes": 622744,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_D_BEHAVIOR_HEADS/BEST_MATH.pt",
+            "phase": "E",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 0.05151749774813652,
+        "final_train_loss": 0.09238090366125107,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 0.02937593124806881,
+            "eval_L_formal": 0.019580688327550888,
+            "eval_L_function": 5.846803207704826e-16,
+            "eval_L_method": 0.07867801934480667,
+            "eval_L_repair": 0.027468279004096985,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.0998394712805748,
+            "eval_L_value": 0.07651087641716003,
+            "eval_loss": 0.2565736770629883,
+            "phase": "C",
+            "train_loss": 3.850039482116699
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 0.0007104871910996735,
+            "eval_L_formal": 0.0005117604159750044,
+            "eval_L_function": 5.846803207704826e-16,
+            "eval_L_method": 0.0017450617160648108,
+            "eval_L_repair": 0.0006421497673727572,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.052468426525592804,
+            "eval_L_value": 0.00791257619857788,
+            "eval_loss": 0.02463914267718792,
+            "phase": "C",
+            "train_loss": 0.17028315116961798
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 7.945934339659289e-05,
+            "eval_L_formal": 5.472772318171337e-05,
+            "eval_L_function": 5.846803207704826e-16,
+            "eval_L_method": 0.00022226173314265907,
+            "eval_L_repair": 7.138509681681171e-05,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.10270658135414124,
+            "eval_L_value": 0.001780092716217041,
+            "eval_loss": 0.051991671323776245,
+            "phase": "E",
+            "train_loss": 0.06968244910240173
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 1.873020300990902e-05,
+            "eval_L_formal": 1.2740224519802723e-05,
+            "eval_L_function": 5.846803207704826e-16,
+            "eval_L_method": 5.593431706074625e-05,
+            "eval_L_repair": 1.680810055404436e-05,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.0,
+            "eval_L_span": 0.10268908739089966,
+            "eval_L_value": 0.0005027055740356445,
+            "eval_loss": 0.05151749774813652,
+            "phase": "E",
+            "train_loss": 0.09238090366125107
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "note": "arm has no trainable modules in this phase",
+            "status": "SKIP_NO_PARAMS"
+          },
+          "B": {
+            "note": "arm has no trainable modules in this phase",
+            "status": "SKIP_NO_PARAMS"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 0.02463914267718792,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 0.05151749774813652,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 0.0,
+        "steps": 12,
+        "wall_ms": 539.491999996244
+      },
+      "E_LATENT_BEHAVIOR": {
+        "arm": "E_LATENT_BEHAVIOR",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 7389368,
+          "approx_flops_per_token": 2293760,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "697f28decd1d631f98d205c64d752a5369abd1d7eac8c2c507d57c5938edc5f0",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "GLM_DECOMPOSITION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "c07e195f44768d0f9b1430ad26c6f08481f7446000d1681414b8fdaf49b5575a",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_DECOMPOSITION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_EARLY_CONTEXT_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "a6747cb5a21a00b7b89c6867a2f563abb9a512364f2e56b017c40b9a2927ba3b",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_EARLY_CONTEXT_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_FORMALIZATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "ffb856cdcd86f57a53e70cfebfda772465f55030efd5704f844b9b7bcb3ce842",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_FORMALIZATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_LATE_CONSOLIDATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "c0a4b609496259b566208efdc5b31f494e5260451dc07631e4ebe5fca8e198d3",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_METHOD_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "ca577ffccdc165b35f3634d95109f4753c1d407dec719df5c2855523c1fc1959",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_METHOD_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_POST_MOE_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "5dd1ea1a31b6e6a9be534db42d2572a6ee7ca9c4d7bdbd60bd79873a2848fe09",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_POST_MOE_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_PRE_ROUTER_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "07ab9e290fa560a0011ed7da8de4d35484977e6562e158101b5f517c35c837d1",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_PRE_ROUTER_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_REPAIR_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "0523db151f8144080b9d600de49124565da68a6367a437bb2ef1cb1d88fb75b7",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_REPAIR_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "decomp_head": {
+              "ablatable": true,
+              "hash_bound": "705a27e67002a07caae58f19bc4824ad39640a994eba2cd8647c298fa4380ab8",
+              "name": "GLM_DECOMPOSITION_HEAD",
+              "parameter_bytes": 98328,
+              "parameter_count": 24582,
+              "runtime_resident": true
+            },
+            "formal_head": {
+              "ablatable": true,
+              "hash_bound": "b0b17d70cdad3fcc3f7160bd1555c96fdf94dd5f2005f30af1402ce19526a1b0",
+              "name": "GLM_FORMALIZATION_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "method_head": {
+              "ablatable": true,
+              "hash_bound": "770aa9609246c54aa5d6228e4a406be466ca10faa5c60163bfac499ab29500bb",
+              "name": "GLM_METHOD_HEAD",
+              "parameter_bytes": 180268,
+              "parameter_count": 45067,
+              "runtime_resident": true
+            },
+            "repair_head": {
+              "ablatable": true,
+              "hash_bound": "477fb434b3c33a28d906f1df84c69b6bdb27f0524b1849d5e838d789180f7ec0",
+              "name": "GLM_REPAIR_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "student_observer": {
+              "ablatable": true,
+              "hash_bound": "5fe3c4a0b8ea3a7feaddaa53f606a96d8317d14d4e7f43edf73c3da640db0fa6",
+              "name": "STUDENT_OBSERVER",
+              "parameter_bytes": 2113536,
+              "parameter_count": 528384,
+              "runtime_resident": true
+            },
+            "teacher_projector": {
+              "ablatable": true,
+              "hash_bound": "6318bd8e7ade4eeb3e1ec6f4b688a5b48ea71cd8f67c6531d0567acd0c4ed25a",
+              "name": "TEACHER_PROJECTOR",
+              "parameter_bytes": 3170304,
+              "parameter_count": 792576,
+              "runtime_resident": false,
+              "training_only": true
+            },
+            "value_head": {
+              "ablatable": true,
+              "copy_glm_router_weights": false,
+              "hash_bound": "1854398f63d4bc55b2de34106b6bf6041ae185ac3fecd48f2526d6ceca771769",
+              "name": "GLM_VALUE_HEAD",
+              "parameter_bytes": 16388,
+              "parameter_count": 4097,
+              "reversible": false
+            }
+          },
+          "runtime_parameter_bytes": 7389368,
+          "steps": 24,
+          "total_parameter_bytes": 10559672,
+          "total_parameter_count": 2639919,
+          "tps_proxy_at_1gflops": 435.9654017857143,
+          "training_only_parameter_bytes": 3170304,
+          "wall_train_ms": 2089.209750003647
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "9dbc6d749162583b41af9b15ba48e82b44002506ef6fb8670d77c5979440261b",
+            "metrics": {
+              "balanced_proxy": 0.1710235065619138,
+              "balanced_score": 0.1710235065619138,
+              "eval_loss": 2.399057626724243,
+              "math_proxy": 0.17317749852589345,
+              "train_loss": 2.907358725865682
+            },
+            "parameter_bytes": 10559672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_E_LATENT_BEHAVIOR/BEST_BALANCED.pt",
+            "phase": "B",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "3ca590fa5b4edb759212708866b4e45c16d6577ce4fad5a7e61ed285c0fa37be",
+            "metrics": {
+              "balanced_proxy": 0.16301953230755734,
+              "eval_loss": 1.261076807975769,
+              "math_proxy": 0.17326527687040483,
+              "math_score": 0.17326527687040483,
+              "train_loss": 0.7790892918904623
+            },
+            "parameter_bytes": 10559672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_E_LATENT_BEHAVIOR/BEST_MATH.pt",
+            "phase": "C",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "697f28decd1d631f98d205c64d752a5369abd1d7eac8c2c507d57c5938edc5f0",
+            "metrics": {
+              "balanced_proxy": 0.12664457746312952,
+              "eval_loss": 6.607916831970215,
+              "math_proxy": 0.13313050593705494,
+              "train_loss": 7.401581446329753
+            },
+            "parameter_bytes": 10559672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_E_LATENT_BEHAVIOR/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "9dbc6d749162583b41af9b15ba48e82b44002506ef6fb8670d77c5979440261b",
+            "metrics": {
+              "balanced_proxy": 0.1710235065619138,
+              "eval_loss": 2.399057626724243,
+              "math_proxy": 0.17317749852589345,
+              "math_score": 0.17317749852589345,
+              "train_loss": 2.907358725865682
+            },
+            "parameter_bytes": 10559672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_E_LATENT_BEHAVIOR/BEST_MATH.pt",
+            "phase": "B",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 6.607916831970215,
+        "final_train_loss": 7.401581446329753,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_latent": 11.903726577758789,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 11.9054594039917,
+            "phase": "A",
+            "train_loss": 10.984491189320883
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_latent": 8.787030220031738,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 8.788763046264648,
+            "phase": "A",
+            "train_loss": 14.486055692036947
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.0002758154587354511,
+            "eval_L_latent": 5.2529401779174805,
+            "eval_L_retention": 0.013239526189863682,
+            "eval_L_runtime": 0.17264148592948914,
+            "eval_loss": 2.638688087463379,
+            "phase": "B",
+            "train_loss": 6.495993932088216
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.00017698388546705246,
+            "eval_L_latent": 4.774245262145996,
+            "eval_L_retention": 0.012594712898135185,
+            "eval_L_runtime": 0.17218536138534546,
+            "eval_loss": 2.399057626724243,
+            "phase": "B",
+            "train_loss": 2.907358725865682
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 0.007490377873182297,
+            "eval_L_formal": 0.004446668550372124,
+            "eval_L_function": 0.0028665584977716208,
+            "eval_L_latent": 4.881751537322998,
+            "eval_L_method": 0.011178363114595413,
+            "eval_L_repair": 0.004651119001209736,
+            "eval_L_retention": 0.061246875673532486,
+            "eval_L_runtime": 0.172031432390213,
+            "eval_L_span": 0.11676063388586044,
+            "eval_L_value": 0.02954089641571045,
+            "eval_loss": 1.3475936651229858,
+            "phase": "C",
+            "train_loss": 4.889545996983846
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 5.796515324618667e-06,
+            "eval_L_formal": 4.634236574929673e-06,
+            "eval_L_function": 0.014446203596889973,
+            "eval_L_latent": 4.757045269012451,
+            "eval_L_method": 5.379284175432986e-06,
+            "eval_L_repair": 5.125973984831944e-06,
+            "eval_L_retention": 0.06284979730844498,
+            "eval_L_runtime": 0.17195817828178406,
+            "eval_L_span": 0.09680718183517456,
+            "eval_L_value": 0.00034689903259277344,
+            "eval_loss": 1.261076807975769,
+            "phase": "C",
+            "train_loss": 0.7790892918904623
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 0.00032537951483391225,
+            "eval_L_formal": 0.0002081924758385867,
+            "eval_L_function": 0.00032822141656652093,
+            "eval_L_latent": 7.257288455963135,
+            "eval_L_method": 0.00048953847726807,
+            "eval_L_repair": 0.00019978753698524088,
+            "eval_L_retention": 0.08238283544778824,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.171637624502182,
+            "eval_L_span": 0.1641092300415039,
+            "eval_L_value": 0.002142488956451416,
+            "eval_loss": 7.41111421585083,
+            "phase": "E",
+            "train_loss": 24.62699007987976
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 0.0016315552638843656,
+            "eval_L_formal": 0.0009326156578026712,
+            "eval_L_function": 0.0028982404619455338,
+            "eval_L_latent": 6.505478858947754,
+            "eval_L_method": 0.003049323568120599,
+            "eval_L_repair": 0.0008307987591251731,
+            "eval_L_retention": 0.05121362954378128,
+            "eval_L_route": 0.0,
+            "eval_L_runtime": 0.17108403146266937,
+            "eval_L_span": 0.09663078188896179,
+            "eval_L_value": 0.005509823560714722,
+            "eval_loss": 6.607916831970215,
+            "phase": "E",
+            "train_loss": 7.401581446329753
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "epochs": 2,
+            "final_eval_loss": 8.788763046264648,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 0.0,
+              "L_latent": 1.0,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.0,
+              "L_route": 0.0,
+              "L_runtime": 0.01,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "B": {
+            "epochs": 2,
+            "final_eval_loss": 2.399057626724243,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 1.0,
+              "L_latent": 0.5,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.25,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 1.261076807975769,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 6.607916831970215,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 8.940696716308594e-08,
+        "steps": 24,
+        "wall_ms": 2089.209750003647
+      },
+      "F_LATENT_ROUTE_RESIDUAL": {
+        "arm": "F_LATENT_ROUTE_RESIDUAL",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 6964368,
+          "approx_flops_per_token": 2293760,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "28399ea61f0202a625ec2bda050af1a319344b3b52552860a6a3ff4183f58740",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "GLM_DECOMPOSITION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "3527c6eaeb5624f471c0658055416d0451dcee1b4da2207248dd6203ba440a36",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_DECOMPOSITION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_EARLY_CONTEXT_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "2e91f577db4a7b0e43cadfbaaf4c1a5fe2aa24f752246b1f4c15dc8ae69e9423",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_EARLY_CONTEXT_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_FORMALIZATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "40126ded5ffe7fb8b9aeaf5da6d30ed512af6bbd0028750ee7b99b97d79dc6bc",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_FORMALIZATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_LATE_CONSOLIDATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "4debca881d3f096cfa000b2052a46821062107ef8f440a2c4460502c0dddaee2",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_METHOD_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "0751598858474c5cf2ddcdbcd2a742f2d06c7485dce19456f118015f0f3c880f",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_METHOD_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_POST_MOE_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "558508f2686b49b383830195b6c159a6c8ce7106bb0510fc0e8099e925d26f94",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_POST_MOE_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_PRE_ROUTER_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "e06adc7656766c5ec30dab2c2131593e1b05c1faadaa338308de8d1a1f830f45",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_PRE_ROUTER_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_REPAIR_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "50e8d0bb8a913dc19f293ef5422d28a912b75baaca4aaae962d1a86212b0a682",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_REPAIR_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "route_residual": {
+              "ablatable": true,
+              "copy_glm_router_weights": false,
+              "hash_bound": "9432bbd11d903a4b9ad6577300697eff9e78b8b1b9b6d71d1df6a9663db32cee",
+              "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+              "parameter_bytes": 1088,
+              "parameter_count": 272,
+              "reversible": true
+            },
+            "student_observer": {
+              "ablatable": true,
+              "hash_bound": "def86f0d5d5085211fedc281e616f22ca3df8954527ad9bf89c3ae6ffd599c39",
+              "name": "STUDENT_OBSERVER",
+              "parameter_bytes": 2113536,
+              "parameter_count": 528384,
+              "runtime_resident": true
+            },
+            "teacher_projector": {
+              "ablatable": true,
+              "hash_bound": "5f2169bc339b1fb23fadefbb6aadc241a854273b3d707c7ef6c5ce0be2cf3886",
+              "name": "TEACHER_PROJECTOR",
+              "parameter_bytes": 3170304,
+              "parameter_count": 792576,
+              "runtime_resident": false,
+              "training_only": true
+            }
+          },
+          "runtime_parameter_bytes": 6964368,
+          "steps": 24,
+          "total_parameter_bytes": 10134672,
+          "total_parameter_count": 2533669,
+          "tps_proxy_at_1gflops": 435.9654017857143,
+          "training_only_parameter_bytes": 3170304,
+          "wall_train_ms": 1621.3041250011884
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "2b4696746971d616bd90bfed95a28d458c8ea4d3ba2ee4dea6927e8eb0306010",
+            "metrics": {
+              "balanced_proxy": 0.1528177566463619,
+              "balanced_score": 0.1528177566463619,
+              "eval_loss": 5.545475006103516,
+              "math_proxy": 0.1528177566463619,
+              "train_loss": 8.334603309631348
+            },
+            "parameter_bytes": 10134672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_BALANCED.pt",
+            "phase": "A",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "2b4696746971d616bd90bfed95a28d458c8ea4d3ba2ee4dea6927e8eb0306010",
+            "metrics": {
+              "balanced_proxy": 0.1528177566463619,
+              "eval_loss": 5.545475006103516,
+              "math_proxy": 0.1528177566463619,
+              "math_score": 0.1528177566463619,
+              "train_loss": 8.334603309631348
+            },
+            "parameter_bytes": 10134672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_MATH.pt",
+            "phase": "A",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "28399ea61f0202a625ec2bda050af1a319344b3b52552860a6a3ff4183f58740",
+            "metrics": {
+              "balanced_proxy": 0.0388327484924754,
+              "eval_loss": 18.90300941467285,
+              "math_proxy": 0.051744542883754296,
+              "train_loss": 20.086313883463543
+            },
+            "parameter_bytes": 10134672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "c4f630f81508e52a91aad2f0f148607709bcf737363ca87f0e4e01317436a60f",
+            "metrics": {
+              "balanced_proxy": 0.10811893189743377,
+              "eval_loss": 8.25080680847168,
+              "math_proxy": 0.10811893189743377,
+              "math_score": 0.10811893189743377,
+              "train_loss": 10.382175127665201
+            },
+            "parameter_bytes": 10134672,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_MATH.pt",
+            "phase": "A",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 18.90300941467285,
+        "final_train_loss": 20.086313883463543,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_latent": 8.24907398223877,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 8.25080680847168,
+            "phase": "A",
+            "train_loss": 10.382175127665201
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_latent": 5.5437421798706055,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 5.545475006103516,
+            "phase": "A",
+            "train_loss": 8.334603309631348
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.00039203482447192073,
+            "eval_L_latent": 8.280255317687988,
+            "eval_L_retention": 0.018680285662412643,
+            "eval_L_runtime": 0.17244035005569458,
+            "eval_loss": 4.153811931610107,
+            "phase": "B",
+            "train_loss": 5.780375878016154
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.0014888022560626268,
+            "eval_L_latent": 9.488954544067383,
+            "eval_L_retention": 0.019694969058036804,
+            "eval_L_runtime": 0.1719033569097519,
+            "eval_loss": 4.759484767913818,
+            "phase": "B",
+            "train_loss": 3.9918848673502603
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.0002685081562958658,
+            "eval_L_latent": 8.86473274230957,
+            "eval_L_retention": 0.06127362325787544,
+            "eval_L_runtime": 0.17109136283397675,
+            "eval_L_span": 0.1220102310180664,
+            "eval_loss": 2.286011219024658,
+            "phase": "C",
+            "train_loss": 1.1338302095731099
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.0007742854068055749,
+            "eval_L_latent": 8.285744667053223,
+            "eval_L_retention": 0.09323730319738388,
+            "eval_L_runtime": 0.17051909863948822,
+            "eval_L_span": 0.18492603302001953,
+            "eval_loss": 2.173199415206909,
+            "phase": "C",
+            "train_loss": 1.169323444366455
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.0010268143378198147,
+            "eval_L_latent": 22.653057098388672,
+            "eval_L_retention": 0.3039824664592743,
+            "eval_L_route": -7.450580596923828e-08,
+            "eval_L_runtime": 0.1700727492570877,
+            "eval_L_span": 0.6059113144874573,
+            "eval_loss": 23.19352912902832,
+            "phase": "E",
+            "train_loss": 10.386019508043924
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.013049205765128136,
+            "eval_L_latent": 18.312660217285156,
+            "eval_L_retention": 0.33249756693840027,
+            "eval_L_route": -8.940696716308594e-08,
+            "eval_L_runtime": 0.16958177089691162,
+            "eval_L_span": 0.6388967037200928,
+            "eval_loss": 18.90300941467285,
+            "phase": "E",
+            "train_loss": 20.086313883463543
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "epochs": 2,
+            "final_eval_loss": 5.545475006103516,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 0.0,
+              "L_latent": 1.0,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.0,
+              "L_route": 0.0,
+              "L_runtime": 0.01,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "B": {
+            "epochs": 2,
+            "final_eval_loss": 4.759484767913818,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 1.0,
+              "L_latent": 0.5,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.25,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 2.173199415206909,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 18.90300941467285,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 1.1920928955078125e-07,
+        "steps": 24,
+        "wall_ms": 1621.3041250011884
+      },
+      "G_COMPLETE_V0": {
+        "arm": "G_COMPLETE_V0",
+        "bytes_account": {
+          "active_bytes_per_token_proxy": 7390456,
+          "approx_flops_per_token": 2293760,
+          "bytes_per_param": 4,
+          "glm_router_weights_copied": false,
+          "hash_bound": "49f614d89f6810f91fe69261433ff1bddaf8dbdaa8b5a8ef9573f73bc0b31e57",
+          "kimi_bridge_compatible": true,
+          "parts": {
+            "GLM_DECOMPOSITION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "174191ce4b98ff471a87c7ace62840ce2740fb8ff960a17591cc1be31378961d",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_DECOMPOSITION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_EARLY_CONTEXT_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "89a56b498b2d96de0a7f88d0e510ba837200512a3a6497beaa54bee0102b2efc",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_EARLY_CONTEXT_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_FORMALIZATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "5e3cf42208107b54b5da9a92f952cdb5652cd45a3c74576e1d2c3d5bf5649a1b",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_FORMALIZATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_LATE_CONSOLIDATION_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "5f46c6f51e526fde4916e3998ca36f1706d4b04f655edcc562b574dd4d3b086a",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_METHOD_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "63abccb9ebf6340bfdddfb4526b398ade84ab8764ade8117760c112d100bc08b",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_METHOD_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_POST_MOE_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "c09d2a551e2b5f6a276aeb17a18b463d00ccc874b9ebbf8210680dba07b4da74",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_POST_MOE_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_PRE_ROUTER_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "ae35ea4faf035750f1e50275e7fa78165943e70500851fae02af660e8b37b2be",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_PRE_ROUTER_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "GLM_REPAIR_BRIDGE": {
+              "ablatable": true,
+              "approx_flops_per_token": 286720,
+              "bypassable": true,
+              "gravity_accounted": true,
+              "hash_bound": "c2fe5660c8663091670dc44818db27365b82cb9718acaba51a8493a05f00c159",
+              "kimi_bridge_compatible": true,
+              "name": "GLM_REPAIR_BRIDGE",
+              "parameter_bytes": 581636,
+              "parameter_count": 145409,
+              "reversible": true,
+              "runtime_resident": true
+            },
+            "action_proj": {
+              "name": "action_proj",
+              "parameter_bytes": 196656,
+              "parameter_count": 49164
+            },
+            "decomp_head": {
+              "ablatable": true,
+              "hash_bound": "e2ae6b1cc5c40ffabcec7c60bd3b7d0938f8e62acccd0db4f488ca3071894b44",
+              "name": "GLM_DECOMPOSITION_HEAD",
+              "parameter_bytes": 98328,
+              "parameter_count": 24582,
+              "runtime_resident": true
+            },
+            "formal_head": {
+              "ablatable": true,
+              "hash_bound": "994f3426276e1451e41d4ce5325b9ab5df8268d42d7447c2b059899c72b35a12",
+              "name": "GLM_FORMALIZATION_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "method_head": {
+              "ablatable": true,
+              "hash_bound": "6e3aea73cce9a8e769f811f97bf519b78bcf7ef0b5534ec52e617924b3c75993",
+              "name": "GLM_METHOD_HEAD",
+              "parameter_bytes": 180268,
+              "parameter_count": 45067,
+              "runtime_resident": true
+            },
+            "repair_head": {
+              "ablatable": true,
+              "hash_bound": "5e5b5e850a6bdb57e375c114503dc4690f373f0487d7fb41f7cd90c8f42cca36",
+              "name": "GLM_REPAIR_HEAD",
+              "parameter_bytes": 65552,
+              "parameter_count": 16388,
+              "runtime_resident": true
+            },
+            "route_residual": {
+              "ablatable": true,
+              "copy_glm_router_weights": false,
+              "hash_bound": "502a2194043149c52b01d3d1560aeb8b4c25306a6935a29eec2e572f9c76e61a",
+              "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+              "parameter_bytes": 1088,
+              "parameter_count": 272,
+              "reversible": true
+            },
+            "student_observer": {
+              "ablatable": true,
+              "hash_bound": "b952006597247ae4fa136156caf92368424921ee6211eb082bd87186191cd455",
+              "name": "STUDENT_OBSERVER",
+              "parameter_bytes": 2113536,
+              "parameter_count": 528384,
+              "runtime_resident": true
+            },
+            "teacher_projector": {
+              "ablatable": true,
+              "hash_bound": "a99689bbba4b205d19540efa44f67c39972e1faa6c89c588eb8bf969d18b8998",
+              "name": "TEACHER_PROJECTOR",
+              "parameter_bytes": 3170304,
+              "parameter_count": 792576,
+              "runtime_resident": false,
+              "training_only": true
+            },
+            "value_head": {
+              "ablatable": true,
+              "copy_glm_router_weights": false,
+              "hash_bound": "847c4feabbcd0c05a1ec36976d7545e3b4b659016896b891908000f3295a4e7e",
+              "name": "GLM_VALUE_HEAD",
+              "parameter_bytes": 16388,
+              "parameter_count": 4097,
+              "reversible": false
+            }
+          },
+          "runtime_parameter_bytes": 7390456,
+          "steps": 24,
+          "total_parameter_bytes": 10560760,
+          "total_parameter_count": 2640191,
+          "tps_proxy_at_1gflops": 435.9654017857143,
+          "training_only_parameter_bytes": 3170304,
+          "wall_train_ms": 1924.098709001555
+        },
+        "capability_claim": false,
+        "checkpoints": {
+          "BEST_BALANCED": {
+            "content_hash": "84da2c5d5347d2ceb6adb0268172154bd67226ea46546ae6c9e8e4ce0895c777",
+            "metrics": {
+              "balanced_proxy": 0.13244402964554583,
+              "balanced_score": 0.13244402964554583,
+              "eval_loss": 1.5117851495742798,
+              "math_proxy": 0.16701546294620775,
+              "train_loss": 1.7440982659657795
+            },
+            "parameter_bytes": 10560760,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_G_COMPLETE_V0/BEST_BALANCED.pt",
+            "phase": "C",
+            "slot": "BEST_BALANCED"
+          },
+          "BEST_MATH": {
+            "content_hash": "84da2c5d5347d2ceb6adb0268172154bd67226ea46546ae6c9e8e4ce0895c777",
+            "metrics": {
+              "balanced_proxy": 0.13244402964554583,
+              "eval_loss": 1.5117851495742798,
+              "math_proxy": 0.16701546294620775,
+              "math_score": 0.16701546294620775,
+              "train_loss": 1.7440982659657795
+            },
+            "parameter_bytes": 10560760,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_G_COMPLETE_V0/BEST_MATH.pt",
+            "phase": "C",
+            "slot": "BEST_MATH"
+          },
+          "CURRENT": {
+            "content_hash": "49f614d89f6810f91fe69261433ff1bddaf8dbdaa8b5a8ef9573f73bc0b31e57",
+            "metrics": {
+              "balanced_proxy": 0.11724060101887945,
+              "eval_loss": 6.489099502563477,
+              "math_proxy": 0.1398216470506478,
+              "train_loss": 10.532074133555094
+            },
+            "parameter_bytes": 10560760,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_G_COMPLETE_V0/CURRENT.pt",
+            "phase": "E",
+            "slot": "CURRENT"
+          },
+          "ROLLBACK": {
+            "content_hash": "7fab6305ede7e3bb4c68168ec4ca19760fedeaae389aad33e7c453e23814b906",
+            "metrics": {
+              "balanced_proxy": 0.0890344006279438,
+              "eval_loss": 2.104915142059326,
+              "math_proxy": 0.13624333248922985,
+              "math_score": 0.13624333248922985,
+              "train_loss": 4.756612221399943
+            },
+            "parameter_bytes": 10560760,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_G_COMPLETE_V0/BEST_MATH.pt",
+            "phase": "C",
+            "slot": "ROLLBACK"
+          }
+        },
+        "data_kind": "REAL_PAIRED_CAPTURE",
+        "final_eval_loss": 6.489099502563477,
+        "final_train_loss": 10.532074133555094,
+        "history": [
+          {
+            "epoch": 0.0,
+            "eval_L_latent": 11.707979202270508,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 11.709712028503418,
+            "phase": "A",
+            "train_loss": 9.187134265899658
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_latent": 14.127025604248047,
+            "eval_L_runtime": 0.1732867956161499,
+            "eval_loss": 14.128758430480957,
+            "phase": "A",
+            "train_loss": 11.284375508626303
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_function": 0.00011006329441443086,
+            "eval_L_latent": 16.217899322509766,
+            "eval_L_retention": 0.015279448591172695,
+            "eval_L_runtime": 0.17231185734272003,
+            "eval_loss": 8.12149429321289,
+            "phase": "B",
+            "train_loss": 4.254497051239014
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_function": 0.0040624914690852165,
+            "eval_L_latent": 7.616369247436523,
+            "eval_L_retention": 0.02047944813966751,
+            "eval_L_runtime": 0.17204861342906952,
+            "eval_loss": 3.8259692192077637,
+            "phase": "B",
+            "train_loss": 9.396598815917969
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 3.021660086233169e-05,
+            "eval_L_formal": 1.5377230738522485e-05,
+            "eval_L_function": 0.07888559252023697,
+            "eval_L_latent": 6.260890007019043,
+            "eval_L_method": 3.312158878543414e-05,
+            "eval_L_repair": 2.093468174280133e-05,
+            "eval_L_retention": 0.5302324891090393,
+            "eval_L_runtime": 0.17253807187080383,
+            "eval_L_span": 0.9026937484741211,
+            "eval_L_value": 0.000733494758605957,
+            "eval_loss": 2.104915142059326,
+            "phase": "C",
+            "train_loss": 4.756612221399943
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 1.735960177029483e-05,
+            "eval_L_formal": 1.2859567505074665e-05,
+            "eval_L_function": 0.022423747926950455,
+            "eval_L_latent": 4.965025901794434,
+            "eval_L_method": 1.9907645764760673e-05,
+            "eval_L_repair": 1.3321474398253486e-05,
+            "eval_L_retention": 0.2610267400741577,
+            "eval_L_runtime": 0.1723419427871704,
+            "eval_L_span": 0.4772059917449951,
+            "eval_L_value": 0.0008211731910705566,
+            "eval_loss": 1.5117851495742798,
+            "phase": "C",
+            "train_loss": 1.7440982659657795
+          },
+          {
+            "epoch": 0.0,
+            "eval_L_decomposition": 5.8870551583822817e-05,
+            "eval_L_formal": 4.699581768363714e-05,
+            "eval_L_function": 0.022748351097106934,
+            "eval_L_latent": 16.232566833496094,
+            "eval_L_method": 8.512156637152657e-05,
+            "eval_L_repair": 3.829460183624178e-05,
+            "eval_L_retention": 0.45715171098709106,
+            "eval_L_route": -4.470348358154297e-08,
+            "eval_L_runtime": 0.17163734138011932,
+            "eval_L_span": 0.8688067197799683,
+            "eval_L_value": 0.0004994869232177734,
+            "eval_loss": 17.041385650634766,
+            "phase": "E",
+            "train_loss": 34.23794460296631
+          },
+          {
+            "epoch": 1.0,
+            "eval_L_decomposition": 2.4854072762536816e-05,
+            "eval_L_formal": 1.9802975657512434e-05,
+            "eval_L_function": 0.008543465286493301,
+            "eval_L_latent": 6.143383026123047,
+            "eval_L_method": 4.189899118500762e-05,
+            "eval_L_repair": 1.5094503396539949e-05,
+            "eval_L_retention": 0.19260431826114655,
+            "eval_L_route": -1.341104507446289e-07,
+            "eval_L_runtime": 0.17124706506729126,
+            "eval_L_span": 0.3681217133998871,
+            "eval_L_value": 0.00020432472229003906,
+            "eval_loss": 6.489099502563477,
+            "phase": "E",
+            "train_loss": 10.532074133555094
+          }
+        ],
+        "learned": true,
+        "phase_results": {
+          "A": {
+            "epochs": 2,
+            "final_eval_loss": 14.128758430480957,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 0.0,
+              "L_latent": 1.0,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.0,
+              "L_route": 0.0,
+              "L_runtime": 0.01,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "B": {
+            "epochs": 2,
+            "final_eval_loss": 3.8259692192077637,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.0,
+              "L_formal": 0.0,
+              "L_function": 1.0,
+              "L_latent": 0.5,
+              "L_method": 0.0,
+              "L_repair": 0.0,
+              "L_retention": 0.25,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.0,
+              "L_value": 0.0
+            },
+            "status": "TRAINED"
+          },
+          "C": {
+            "epochs": 2,
+            "final_eval_loss": 1.5117851495742798,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 1.0,
+              "L_formal": 1.0,
+              "L_function": 0.5,
+              "L_latent": 0.25,
+              "L_method": 1.0,
+              "L_repair": 1.0,
+              "L_retention": 0.5,
+              "L_route": 0.0,
+              "L_runtime": 0.05,
+              "L_span": 0.25,
+              "L_value": 1.0
+            },
+            "status": "TRAINED"
+          },
+          "E": {
+            "epochs": 2,
+            "final_eval_loss": 6.489099502563477,
+            "history_len": 2,
+            "loss_weights": {
+              "L_decomposition": 0.4,
+              "L_formal": 0.4,
+              "L_function": 1.0,
+              "L_latent": 1.0,
+              "L_method": 0.5,
+              "L_repair": 0.4,
+              "L_retention": 0.75,
+              "L_route": 0.5,
+              "L_runtime": 0.05,
+              "L_span": 0.5,
+              "L_value": 0.25
+            },
+            "status": "TRAINED"
+          }
+        },
+        "reverse_ok": true,
+        "reverse_recon_error": 1.1920928955078125e-07,
+        "steps": 24,
+        "wall_ms": 1924.098709001555
+      }
+    },
+    "arms_trained": [
+      "B_LINEAR_SUBSPACE_INITIALIZATION",
+      "C_LATENT_BRIDGES",
+      "D_BEHAVIOR_HEADS",
+      "E_LATENT_BEHAVIOR",
+      "F_LATENT_ROUTE_RESIDUAL",
+      "G_COMPLETE_V0"
+    ],
+    "capability_claim": false,
+    "claim_boundary": {
+      "behavior_labels_real": false,
+      "capability_claim": false,
+      "full_model_math_bench": false,
+      "kimi_consumed": false,
+      "training_performed_on_real_activations": true
+    },
+    "complete_beats_linear": false,
+    "d_student": 4096,
+    "d_teacher": 6144,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "device": "cpu",
+    "loss_portfolio": [
+      "L_latent",
+      "L_function",
+      "L_span",
+      "L_method",
+      "L_decomposition",
+      "L_formal",
+      "L_repair",
+      "L_value",
+      "L_route",
+      "L_retention",
+      "L_runtime"
+    ],
+    "n_eval": 8,
+    "n_train": 24,
+    "parallelism": {
+      "backend": "process",
+      "cpu_count": 28,
+      "cpu_only": true,
+      "gpu_used": false,
+      "n_units": 6,
+      "n_workers": 6,
+      "parallel": true,
+      "threads_per_worker": 4,
+      "total_threads_budget": 24,
+      "unit": "arm",
+      "wall_ms": 3380.0589159945957,
+      "why_safe": "Each A\u2013G arm builds its own LatentV0Stack with independent params/optimizer; no shared state across arms."
+    },
+    "promotion_gate": {
+      "capability_claim": false,
+      "checks": {
+        "complete_intended_bridge_classes": true,
+        "complete_v0_beats_linear_init": false,
+        "held_out_math_improves_over_base": true,
+        "kimi_strategic_bridge_intact": true,
+        "method_decomp_repair_improve": true,
+        "no_material_secondary_regression": true,
+        "nonlinear_latent_bridges_trained": true,
+        "real_glm_activations_from_78_layer_path": true,
+        "reversible_and_loadable": true,
+        "routing_stable": true
+      },
+      "failed": [
+        "complete_v0_beats_linear_init"
+      ],
+      "note": "Promotion requires real capture. Fixture runs never promote.",
+      "recorded_at": "2026-08-06T19:13:41.384679Z",
+      "schema": "hawking.frankenstein.latent_v0_promotion_gate.v1",
+      "seal_sha256": "80559dc7a9a06114947b330615899be9c44abab978046963392c5a8026bd7569",
+      "verdict": "HOLD"
+    },
+    "real_glm_dsv4f_capture": true,
+    "recorded_at": "2026-08-06T19:13:41.384689Z",
+    "retention_gate": {
+      "capability_claim": false,
+      "domains": [
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "coding_and_repository_work",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "tool_use",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "agentic_planning",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "long_context_reasoning",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "repair_and_critique",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "hcli_protocols",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "general_knowledge_conversation",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "runtime_tps",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "bridge_compatibility",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "routing_stability",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        },
+        {
+          "base": 0.7,
+          "delta": 0.0,
+          "domain": "context_behavior",
+          "floor": 0.6799999999999999,
+          "gate": "PASS",
+          "hard": true,
+          "proto": 0.7,
+          "tolerance": 0.02
+        }
+      ],
+      "recorded_at": "2026-08-06T19:13:41.384652Z",
+      "regressions": [],
+      "reject_rule_fired": false,
+      "schema": "hawking.frankenstein.latent_v0_retention_gate.v1",
+      "seal_sha256": "8886cc9e89047a9aeb4278fdbea231d333325caeee8aef9c0a36121efb14801d",
+      "tolerance": 0.02,
+      "verdict": "PASS"
+    },
+    "schema": "hawking.frankenstein.bridge_train_real_ag.v1",
+    "seal_sha256": "8cc8d0704a04c0b91272f37abdab40f86156374ebb7426a5d52e4d69479b7f69",
+    "site_map": {
+      "GLM_DECOMPOSITION_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 15,
+        "glm_layer": 13,
+        "phase_score": 0.5566583814057259,
+        "site": "GLM_DECOMPOSITION_BRIDGE",
+        "transplant_point": "pre_router_hidden_state"
+      },
+      "GLM_EARLY_CONTEXT_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 7,
+        "glm_layer": 13,
+        "phase_score": 0.5652091246747242,
+        "site": "GLM_EARLY_CONTEXT_BRIDGE",
+        "transplant_point": "pre_norm_hidden_state"
+      },
+      "GLM_FORMALIZATION_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 25,
+        "glm_layer": 13,
+        "phase_score": 0.4021373589065593,
+        "site": "GLM_FORMALIZATION_BRIDGE",
+        "transplant_point": "post_moe_hidden_state"
+      },
+      "GLM_LATE_CONSOLIDATION_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 37,
+        "glm_layer": 13,
+        "phase_score": 0.366099523022149,
+        "site": "GLM_LATE_CONSOLIDATION_BRIDGE",
+        "transplant_point": "final_hidden_state"
+      },
+      "GLM_METHOD_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 7,
+        "glm_layer": 13,
+        "phase_score": 0.5652091246747242,
+        "site": "GLM_METHOD_BRIDGE",
+        "transplant_point": "post_attention_hidden_state"
+      },
+      "GLM_POST_MOE_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 16,
+        "glm_layer": 13,
+        "phase_score": 0.5609983617853487,
+        "site": "GLM_POST_MOE_BRIDGE",
+        "transplant_point": "post_moe_hidden_state"
+      },
+      "GLM_PRE_ROUTER_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 16,
+        "glm_layer": 13,
+        "phase_score": 0.5609983617853487,
+        "site": "GLM_PRE_ROUTER_BRIDGE",
+        "transplant_point": "pre_router_hidden_state"
+      },
+      "GLM_REPAIR_BRIDGE": {
+        "bridge": "GLM_MATH_BRIDGE",
+        "dsv4f_layer": 34,
+        "glm_layer": 13,
+        "phase_score": 0.37975650110355375,
+        "site": "GLM_REPAIR_BRIDGE",
+        "transplant_point": "final_hidden_state"
+      }
+    },
+    "status": "REAL_AG_TRAIN_COMPLETE",
+    "v0_modules": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "GLM_VALUE_HEAD",
+      "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+    ]
+  },
+  "wall_ms": 3937.1417090005707
 }

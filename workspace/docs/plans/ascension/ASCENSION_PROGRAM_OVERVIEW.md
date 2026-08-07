@@ -53,7 +53,7 @@ Paths are under `workspace/docs/plans/ascension/` unless noted.
 | § | Topic | Plan / tracker | Owner lane |
 |---|-------|----------------|------------|
 | 0 | Canonical project definition | this overview + master schedule | ascension-master-schedule |
-| 1 | Platform decision (Apple Tier 1; CUDA future Tier 1B) | overview §CUDA; gravity research | ascension-gravity-research / master-schedule |
+| 1 | Platform decision (Apple Tier 1; CUDA future Tier 1B) | `ASCENSION_PLATFORM_DECISION_PLAN.md`; `ASCENSION_PLATFORM_DECISION_CONTRACT.md` | ascension-platform-decision |
 | 2 | Human and controller authority | completion states + governance plans | ascension-governance-scaffold |
 | 3 | Governing physical model | `ASCENSION_GRAVITY_RESEARCH_REGISTRY.md` | ascension-gravity-research — **pending companion lane** |
 
@@ -74,12 +74,16 @@ Paths are under `workspace/docs/plans/ascension/` unless noted.
 
 ### Dual-Qwen bootstrap, TG, profiler (bible §8–11)
 
+`ASCENSION_BLOCKED_STATE_REGISTRY.json` is the canonical machine-readable
+download gate for both bootstrap families. Its current `BLOCKED` state is
+intentional: planning documents do not authorize a model-body acquisition.
+
 | § | Topic | Plan / tracker | Owner lane |
 |---|-------|----------------|------------|
-| 8 | Bootstrap model 1 — Qwen3-Coder-30B | `ASCENSION_30B_PARITY_LADDER_PLAN.md` | ascension-bootstrap-parity — **pending companion lane** |
-| 9 | Bootstrap model 2 — Qwen3-Coder-Next 80B | `ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md` | ascension-bootstrap-parity — **pending companion lane** |
+| 8 | Bootstrap model 1 — Qwen3-Coder-30B | `ASCENSION_30B_PARITY_LADDER_PLAN.md`; blocked-state registry | ascension-bootstrap-parity — **pending companion lane** |
+| 9 | Bootstrap model 2 — Qwen3-Coder-Next 80B | `ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md`; blocked-state registry | ascension-bootstrap-parity — **pending companion lane** |
 | 10 | Self-TG gauntlets before sandbox admission | `ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md` | ascension-bootstrap-parity — **pending companion lane** |
-| 11 | Complete-token profiler and FLOPS ledger | TG harness + 30B/80B parity plans | ascension-bootstrap-parity — **pending companion lane** |
+| 11 | Complete-token profiler and FLOPS ledger | `ASCENSION_COMPLETE_TOKEN_PROFILER_PLAN.md`; `ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.md` (+ TG / 30B / 80B plans) | ascension-profiler-ledger |
 
 ### HCLI Agent OS (bible §12–22)
 
@@ -117,9 +121,9 @@ Paths are under `workspace/docs/plans/ascension/` unless noted.
 
 | § | Topic | Plan / tracker | Owner lane |
 |---|-------|----------------|------------|
-| 29 | Family kernel architecture | 30B/80B plans + TG harness; schedule steps 28–29 | bootstrap-parity + gravity-research — **pending companion lane** |
-| 30 | Wider autonomous model ladder | TG harness + self-evolution plan; completion state `HAWKING_SELF_CONTAINED_MODEL_LADDER_ACTIVE` | bootstrap-parity + evolution-optionc — **pending companion lane** |
-| 31 | Rotation rule | TG harness + research registry; schedule step 30 | bootstrap-parity + acquisition-registry — **pending companion lane** |
+| 29 | Family kernel architecture | `ASCENSION_FAMILY_KERNEL_ARCHITECTURE_PLAN.md`; `ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md` | ascension-family-rotation |
+| 30 | Wider autonomous model ladder | `ASCENSION_MODEL_LADDER_PLAN.md`; `ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md` | ascension-family-rotation |
+| 31 | Rotation rule | `ASCENSION_ROTATION_RULE_PLAN.md`; `ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md` | ascension-family-rotation |
 
 ### Product tests, CUDA, schedule, completion (bible §33–36) — this lane
 

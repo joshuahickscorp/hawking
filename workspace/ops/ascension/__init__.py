@@ -36,6 +36,15 @@ from .pressure_governor import (
     PressureGovernor,
     evaluate_pressure,
 )
+from .after_proto_monitor import (
+    MONITOR_SCHEMA,
+    AfterProtoMonitorResult,
+    ProtoOffloadCheck,
+    PROTO_OFFLOAD_ENDPOINT,
+    PROTO_FLOOR_GIB,
+    monitor_after_proto,
+    validate_proto_offload_receipt,
+)
 from .signals import HostSignals, collect_host_signals
 
 __all__ = [
@@ -50,6 +59,13 @@ __all__ = [
     "PressureGovernor",
     "PressureLevel",
     "PressureSample",
+    "AfterProtoMonitorResult",
+    "ProtoOffloadCheck",
+    "monitor_after_proto",
+    "validate_proto_offload_receipt",
+    "PROTO_OFFLOAD_ENDPOINT",
+    "PROTO_FLOOR_GIB",
+    "MONITOR_SCHEMA",
     "build_notification",
     "classify_object",
     "collect_host_signals",

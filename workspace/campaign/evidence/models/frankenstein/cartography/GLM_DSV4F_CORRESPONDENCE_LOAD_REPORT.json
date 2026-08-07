@@ -1,52 +1,47 @@
 {
-  "blockers": [],
-  "dsv4f_receipt": "/Users/scammermike/.claude-grok/worktrees/recapture-fixed-corpus-20260805-214429/receipts/dsv4f_fullseq_capture_L0_frozen_export/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
   "fabricated": false,
-  "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/recapture-fixed-corpus-20260805-214429/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
-  "n_shared_sequences": 32,
   "name": "GLM_DSV4F_CORRESPONDENCE_LOAD_REPORT",
-  "ok": true,
   "report": {
-    "alignment": "intersection",
+    "alignment": "index",
     "blockers": [],
     "dsv4f_example_ids": [
-      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
       "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
       "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
-      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
-      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
-      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
-      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
-      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
-      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
       "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
       "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
       "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
-      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
       "pfv0:d6:enum:83:9578a4c57d",
-      "pfv0:expert:fix:two_plus_two",
-      "pfv0:expert:fix:power",
-      "pfv0:thesis:t09_flatten",
-      "pfv0:halo:cd04_gcd",
-      "pfv0:thesis:t01_add",
-      "pfv0:thesis:t15_word_count",
-      "pfv0:thesis:r04_reverse_words",
-      "pfv0:thesis:r11_count_words",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "pfv0:d7:checkpoint:extra2",
       "pfv0:d7:checkpoint:extra5",
+      "pfv0:d7:checkpoint:extra8",
       "pfv0:d7:checkpoint:extra9",
       "pfv0:d7:search:extra19:7621061d:ea73",
-      "pfv0:d7:checkpoint:extra2",
-      "pfv0:d7:checkpoint:extra8",
-      "pfv0:halo:lc02_needle",
-      "pfv0:halo:lc01_needle",
-      "pfv0:halo:rt04_multi",
+      "pfv0:expert:fix:power",
+      "pfv0:expert:fix:two_plus_two",
+      "pfv0:halo:cd04_gcd",
       "pfv0:halo:gr01_wolves",
-      "pfv0:halo:rt03_table"
+      "pfv0:halo:lc01_needle",
+      "pfv0:halo:lc02_needle",
+      "pfv0:halo:rt03_table",
+      "pfv0:halo:rt04_multi",
+      "pfv0:thesis:r04_reverse_words",
+      "pfv0:thesis:r11_count_words",
+      "pfv0:thesis:t01_add",
+      "pfv0:thesis:t09_flatten",
+      "pfv0:thesis:t15_word_count"
     ],
     "dsv4f_hash_only": false,
     "dsv4f_layer_range": {
-      "end": 43,
-      "n": 43,
+      "end": 44,
+      "n": 44,
       "start": 0
     },
     "dsv4f_layers_loaded": [
@@ -95,7 +90,7 @@
       42
     ],
     "dsv4f_receipts": [
-      "/Users/scammermike/.claude-grok/worktrees/recapture-fixed-corpus-20260805-214429/receipts/dsv4f_fullseq_capture_L0_frozen_export/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json"
+      "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export"
     ],
     "dsv4f_shapes": [
       [
@@ -272,7 +267,7 @@
       ]
     ],
     "dsv4f_trace_dirs": [
-      "/Users/scammermike/.claude-grok/worktrees/recapture-fixed-corpus-20260805-214429/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces"
+      "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces"
     ],
     "dsv4f_vector_sites_found": [
       "npy:L00.npy:late_hidden",
@@ -320,7 +315,7 @@
       "npy:L42.npy:late_hidden"
     ],
     "fabricated": false,
-    "glm_capture_dir": "/Users/scammermike/.claude-grok/worktrees/recapture-fixed-corpus-20260805-214429/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_stream_reexport_20260805T214500Z",
+    "glm_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z",
     "glm_example_ids": [
       "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
       "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
@@ -355,36 +350,45 @@
       "pfv0:halo:gr01_wolves",
       "pfv0:halo:rt03_table"
     ],
-    "glm_layer_range": null,
+    "glm_layer_range": {
+      "end": 14,
+      "n": 14,
+      "start": 0
+    },
     "glm_layers_loaded": [
+      0,
+      1,
+      2,
+      3,
+      4,
       5,
       6,
       7,
       8,
       9,
       10,
-      35,
-      38,
-      40,
-      42,
-      45,
-      70,
-      72,
-      74,
-      76,
-      77
+      11,
+      12,
+      13
     ],
     "glm_npz_missing": [],
-    "glm_npz_present": [],
+    "glm_npz_present": [
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L00.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L01.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L02.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L03.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L04.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L05.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L06.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L07.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L08.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L09.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L10.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L11.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L12.npz",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L13_under5g_http3x_noprefetch_final_20260806T185000Z/layers/L13.npz"
+    ],
     "glm_shapes": [
-      [
-        32,
-        64
-      ],
-      [
-        32,
-        64
-      ],
       [
         32,
         64
@@ -445,83 +449,43 @@
     "n_sequences": 32,
     "ok": true,
     "shared_example_ids": [
-      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
-      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
-      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
-      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
-      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
-      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
-      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
-      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
-      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
-      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
-      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
-      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
-      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
-      "pfv0:d6:enum:83:9578a4c57d",
-      "pfv0:expert:fix:two_plus_two",
-      "pfv0:expert:fix:power",
-      "pfv0:thesis:t09_flatten",
-      "pfv0:halo:cd04_gcd",
-      "pfv0:thesis:t01_add",
-      "pfv0:thesis:t15_word_count",
-      "pfv0:thesis:r04_reverse_words",
-      "pfv0:thesis:r11_count_words",
-      "pfv0:d7:checkpoint:extra5",
-      "pfv0:d7:checkpoint:extra9",
-      "pfv0:d7:search:extra19:7621061d:ea73",
-      "pfv0:d7:checkpoint:extra2",
-      "pfv0:d7:checkpoint:extra8",
-      "pfv0:halo:lc02_needle",
-      "pfv0:halo:lc01_needle",
-      "pfv0:halo:rt04_multi",
-      "pfv0:halo:gr01_wolves",
-      "pfv0:halo:rt03_table"
+      "index:0",
+      "index:1",
+      "index:2",
+      "index:3",
+      "index:4",
+      "index:5",
+      "index:6",
+      "index:7",
+      "index:8",
+      "index:9",
+      "index:10",
+      "index:11",
+      "index:12",
+      "index:13",
+      "index:14",
+      "index:15",
+      "index:16",
+      "index:17",
+      "index:18",
+      "index:19",
+      "index:20",
+      "index:21",
+      "index:22",
+      "index:23",
+      "index:24",
+      "index:25",
+      "index:26",
+      "index:27",
+      "index:28",
+      "index:29",
+      "index:30",
+      "index:31"
     ],
-    "warnings": []
-  },
-  "sample_glm_layers": [
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    35,
-    38,
-    40,
-    42,
-    45,
-    70,
-    72,
-    74,
-    76,
-    77
-  ],
-  "sample_phases": {
-    "early": [
-      5,
-      6,
-      7,
-      8,
-      9,
-      10
-    ],
-    "late_consolidation": [
-      70,
-      72,
-      74,
-      76,
-      77
-    ],
-    "middle_routing": [
-      35,
-      38,
-      40,
-      42,
-      45
+    "warnings": [
+      "align=index: GLM and DSV4F example_id sequences differ; pairing is positional only"
     ]
   },
   "schema": "hawking.frankenstein.correspondence_load_report.v1",
-  "seal_sha256": "3e9c45cc02c8369f3fd4ea1876e586d9e59c87a34bf4c3f7e4dc4729d06d2492"
+  "seal_sha256": "9ce1a300b3f447f486e2c9dd675f80e4b4cd5dcf3ddbd7417fbe887ff37bbaff"
 }

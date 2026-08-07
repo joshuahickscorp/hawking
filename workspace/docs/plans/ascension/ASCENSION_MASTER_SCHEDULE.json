@@ -211,9 +211,12 @@
       "produces_completion_state": null,
       "companion_lanes": ["ascension-bootstrap-parity"],
       "companion_docs": [
-        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md"
+        "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION.json",
+        "workspace/docs/plans/ascension/ASCENSION_BLOCKED_STATE_REGISTRY.json"
       ],
-      "notes": "Apple/Metal production backend is Tier 1.",
+      "notes": "Apple/Metal production backend is Tier 1 (bible §1). Qwen3-Coder-30B remains BLOCKED in the blocked-state registry until required gates clear.",
       "status": "NOT_STARTED"
     },
     {
@@ -224,9 +227,11 @@
       "companion_lanes": ["ascension-bootstrap-parity"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
-        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.json"
       ],
-      "notes": "Complete-token profiler and FLOPS ledger (bible §11).",
+      "notes": "Complete-token profiler and FLOPS ledger (bible §11). No live Qwen values exist; do not invent performance claims.",
       "status": "NOT_STARTED"
     },
     {
@@ -312,9 +317,12 @@
       "companion_lanes": ["ascension-bootstrap-parity"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
-        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md"
+        "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.json",
+        "workspace/docs/plans/ascension/ASCENSION_BLOCKED_STATE_REGISTRY.json"
       ],
-      "notes": null,
+      "notes": "Complete-token profiler and FLOPS ledger (bible §11) for Qwen3-Coder-Next-80B. Registry remains BLOCKED; no live Qwen values.",
       "status": "NOT_STARTED"
     },
     {
@@ -421,9 +429,11 @@
       "companion_lanes": ["ascension-bootstrap-parity", "ascension-gravity-research"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
-        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md"
+        "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_BLOCKED_STATE_REGISTRY.json"
       ],
-      "notes": "Family kernel architecture (bible §29).",
+      "notes": "Family kernel architecture (bible §29). Exact-model success required before family graphs; bootstrap models stay BLOCKED until registry gates clear.",
       "status": "NOT_STARTED"
     },
     {
@@ -434,9 +444,11 @@
       "companion_lanes": ["ascension-bootstrap-parity", "hcli-evolution-optionc"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
-        "workspace/docs/plans/ascension/HCLI_SELF_EVOLUTION_PLAN.md"
+        "workspace/docs/plans/ascension/HCLI_SELF_EVOLUTION_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_BLOCKED_STATE_REGISTRY.json"
       ],
-      "notes": "Wider autonomous model ladder (bible §30).",
+      "notes": "Wider autonomous model ladder (bible §30). Completion state remains CANDIDATE until controller-certified; registry honesty forbids treating bootstrap models as unblocked from planning alone.",
       "status": "NOT_STARTED"
     },
     {
@@ -447,9 +459,11 @@
       "companion_lanes": ["ascension-bootstrap-parity", "ascension-acquisition-registry"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
-        "workspace/docs/plans/ascension/ASCENSION_RESEARCH_REGISTRY_PLAN.md"
+        "workspace/docs/plans/ascension/ASCENSION_RESEARCH_REGISTRY_PLAN.md",
+        "workspace/docs/plans/ascension/ASCENSION_FAMILY_KERNEL_LADDER_ROTATION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_BLOCKED_STATE_REGISTRY.json"
       ],
-      "notes": "Rotation rule (bible §31).",
+      "notes": "Rotation rule (bible §31). Freeze winning kernel grammars by geometry before source eviction.",
       "status": "NOT_STARTED"
     },
     {
@@ -474,9 +488,11 @@
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_PROGRAM_OVERVIEW.md",
         "workspace/docs/plans/ascension/ASCENSION_HCLI_PRODUCT_TEST_PLAN.md",
-        "workspace/docs/plans/ascension/ASCENSION_COMPLETION_STATES.json"
+        "workspace/docs/plans/ascension/ASCENSION_COMPLETION_STATES.json",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION.json"
       ],
-      "notes": "Terminal Apple production state. Controller/human certification only.",
+      "notes": "Terminal Apple production state. Controller/human certification only. Platform decision (bible §1) remains the Tier-1 Metal authority; not ready until certified.",
       "status": "NOT_STARTED"
     },
     {
@@ -487,9 +503,11 @@
       "companion_lanes": ["ascension-master-schedule", "ascension-gravity-research"],
       "companion_docs": [
         "workspace/docs/plans/ascension/ASCENSION_PROGRAM_OVERVIEW.md",
-        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md"
+        "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION_CONTRACT.md",
+        "workspace/docs/plans/ascension/ASCENSION_PLATFORM_DECISION.json"
       ],
-      "notes": "Deferred programme (bible §34). Reuses preserved backend-neutral contracts; Apple claims stay Apple-specific.",
+      "notes": "Deferred programme (bible §34 / platform contract). Reuses portable Tier-2 contracts only; no LCD kernel mandate; Apple claims stay Apple-specific.",
       "status": "NOT_STARTED"
     }
   ],
