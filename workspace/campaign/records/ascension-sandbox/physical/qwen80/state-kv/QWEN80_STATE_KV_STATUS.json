@@ -1,0 +1,185 @@
+{
+  "claim_boundary": {
+    "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+    "no_complete_model_layer_graph_executed": true,
+    "no_model_capability_claim": true,
+    "no_native_full_runtime_or_hcli_endpoint": true,
+    "no_tokenizer_or_prompt_template_executed": true,
+    "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+    "not_a_tournament_candidate_or_selection_action": true
+  },
+  "heartbeat": 1,
+  "model": "qwen80",
+  "outcome": {
+    "artifact_count": 8,
+    "component_count": 2,
+    "deltanet_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_STATE_CODEC_RECEIPT.json",
+    "deltanet_receipt_seal_sha256": "e9afb14ce4c81755ce4ea4e48465c4e13084f20ef71053272231d722bb2bd707",
+    "geometry": {
+      "attention_kv": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session": 196992,
+            "bytes_per_token_amortized_at_declared_session": 24624.0,
+            "per_layer_state_array_bytes": 16416
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session": 58512,
+            "bytes_per_token_amortized_at_declared_session": 7314.0,
+            "per_layer_state_array_bytes": 4876
+          },
+          "q4_group64": {
+            "bytes_per_session": 52608,
+            "bytes_per_token_amortized_at_declared_session": 6576.0,
+            "per_layer_state_array_bytes": 4384
+          },
+          "q8_group64": {
+            "bytes_per_session": 101760,
+            "bytes_per_token_amortized_at_declared_session": 12720.0,
+            "per_layer_state_array_bytes": 8480
+          }
+        },
+        "head_dim": 256,
+        "key_value_heads": 2,
+        "kind": "growing_attention_kv_cache",
+        "layer_count": 12,
+        "session_tokens": 8,
+        "values_per_layer_per_token": 1024,
+        "values_per_layer_session": 8192,
+        "values_per_session": 98304
+      },
+      "attention_layers": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47
+      ],
+      "combined": {
+        "codecs": {
+          "fp16_reference": {
+            "attention_kv_bytes_per_session": 196992,
+            "combined_bytes_per_session": 37946880,
+            "combined_bytes_per_token_amortized_at_declared_session": 4743360.0,
+            "deltanet_growth_bytes_per_additional_token": 0,
+            "deltanet_recurrent_bytes_per_session": 37749888
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "attention_kv_bytes_per_session": 58512,
+            "combined_bytes_per_session": 11219160,
+            "combined_bytes_per_token_amortized_at_declared_session": 1402395.0,
+            "deltanet_growth_bytes_per_additional_token": 0,
+            "deltanet_recurrent_bytes_per_session": 11160648
+          },
+          "q4_group64": {
+            "attention_kv_bytes_per_session": 52608,
+            "combined_bytes_per_session": 10080768,
+            "combined_bytes_per_token_amortized_at_declared_session": 1260096.0,
+            "deltanet_growth_bytes_per_additional_token": 0,
+            "deltanet_recurrent_bytes_per_session": 10028160
+          },
+          "q8_group64": {
+            "attention_kv_bytes_per_session": 101760,
+            "combined_bytes_per_session": 19567104,
+            "combined_bytes_per_token_amortized_at_declared_session": 2445888.0,
+            "deltanet_growth_bytes_per_additional_token": 0,
+            "deltanet_recurrent_bytes_per_session": 19465344
+          }
+        },
+        "session_tokens": 8
+      },
+      "deltanet_recurrent_state": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each DeltaNet layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session_resident_state": 37749888,
+            "bytes_per_token_amortized_at_declared_session": 4718736.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 1048608
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session_resident_state": 11160648,
+            "bytes_per_token_amortized_at_declared_session": 1395081.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 310018
+          },
+          "q4_group64": {
+            "bytes_per_session_resident_state": 10028160,
+            "bytes_per_token_amortized_at_declared_session": 1253520.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 278560
+          },
+          "q8_group64": {
+            "bytes_per_session_resident_state": 19465344,
+            "bytes_per_token_amortized_at_declared_session": 2433168.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 540704
+          }
+        },
+        "heads": 32,
+        "key_head_dim": 128,
+        "kind": "fixed_size_deltanet_recurrent_state",
+        "layer_count": 36,
+        "session_tokens_for_amortization_only": 8,
+        "value_head_dim": 128,
+        "values_per_layer": 524288,
+        "values_per_session_resident_state": 18874368
+      },
+      "linear_attention_layers": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        24,
+        25,
+        26,
+        28,
+        29,
+        30,
+        32,
+        33,
+        34,
+        36,
+        37,
+        38,
+        40,
+        41,
+        42,
+        44,
+        45,
+        46
+      ]
+    },
+    "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_ATTENTION_KV_STATE_CODEC_RECEIPT.json",
+    "receipt_seal_sha256": "ba4ed4e00c6ea8aa3a59e0b458cf122790116f03cf1e2fd75e3f87c5e0d21b53"
+  },
+  "phase": "COMPLETE_SOURCE_BOUND_COMPONENT_STATE_CODEC_RESEARCH",
+  "recorded_at": "2026-08-08T07:15:05.778055Z",
+  "schema": "hawking.ascension.qwen_state_kv_status.v1",
+  "seal_sha256": "7a4e061f5304e8d3b57fad81a4f2ac5f2c66f29eb40d118ba76884bde388e36a",
+  "session_tokens": 8
+}
