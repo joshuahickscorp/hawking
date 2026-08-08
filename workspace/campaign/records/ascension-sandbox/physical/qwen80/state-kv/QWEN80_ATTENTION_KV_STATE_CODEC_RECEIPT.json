@@ -212,9 +212,9 @@
     "architecture": "Qwen3NextForCausalLM",
     "id": "Qwen3-Coder-Next-80B"
   },
-  "recorded_at": "2026-08-08T07:15:05.585779Z",
+  "recorded_at": "2026-08-08T07:31:44.678351Z",
   "schema": "hawking.ascension.qwen_state_kv_component_receipt.v1",
-  "seal_sha256": "ba4ed4e00c6ea8aa3a59e0b458cf122790116f03cf1e2fd75e3f87c5e0d21b53",
+  "seal_sha256": "97a1f1fa1cde732ed6a7ad3c50a5be2c872c248f61c922c4c1d1127937779a74",
   "source_projection_bindings": [
     {
       "decoded_float32_sha256": "fd3c150684483dd42d0e945e25a855b209f733c10f94e29c7335b13e1690841d",
@@ -249,8 +249,13 @@
     "sealed_source_body_audit": {
       "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
       "schema": "hawking.ascension.qwen80_source_body_audit_candidate.v1",
-      "seal_sha256": "f404a50b242360c3de26a1d0df24c933402d1912368e765ba96c843a601d947a",
+      "seal_sha256": "9e8aa8ae4625097cb7265d9a05b039b8c19e00ec47a5e75d38e9f40e90d69d2e",
       "status": "CANDIDATE_FULL_PINNED_SOURCE_BODY_VERIFIED"
     }
+  },
+  "state_traffic_evidence": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_ATTENTION_KV_TRAFFIC_RECEIPT.json",
+    "regime_count": 3,
+    "seal_sha256": "467be55e58bba1d9a5650b209cbd5228256f92e1414a53834afa5d7fe5c8f328"
   }
 }

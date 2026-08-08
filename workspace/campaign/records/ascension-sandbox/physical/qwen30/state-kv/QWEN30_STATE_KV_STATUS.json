@@ -8,7 +8,7 @@
     "no_tps_measurement_or_100_tps_or_tg3_claim": true,
     "not_a_tournament_candidate_or_selection_action": true
   },
-  "heartbeat": 1,
+  "heartbeat": 5,
   "model": "qwen30",
   "outcome": {
     "artifact_count": 4,
@@ -100,11 +100,23 @@
       }
     },
     "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_ATTENTION_KV_STATE_CODEC_RECEIPT.json",
-    "receipt_seal_sha256": "35bcdd5bab2aefda0b71edfd4d6855e4d5bd437907aa30a8bff885bb7b9f22b8"
+    "receipt_seal_sha256": "f13c563994806e42f7df9001bbec6d2b36ab6f49f60b8dc75b2bae30b07b033e",
+    "state_traffic": {
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_ATTENTION_KV_TRAFFIC_RECEIPT.json",
+      "regime_count": 3,
+      "seal_sha256": "96973e38a74b3a672a47f590970a12ba559576d4b54180bbe3f7ff9737d5bc55"
+    }
   },
-  "phase": "COMPLETE_SOURCE_BOUND_COMPONENT_STATE_CODEC_RESEARCH",
-  "recorded_at": "2026-08-08T07:15:01.427041Z",
+  "phase": "COMPLETE_SOURCE_BOUND_STATE_TRAFFIC_AND_SEALED_RESTART_RECOVERY_VERIFIED",
+  "recorded_at": "2026-08-08T07:31:54.487584Z",
   "schema": "hawking.ascension.qwen_state_kv_status.v1",
-  "seal_sha256": "eb4f7751fc0d2a84735708e378a0fbc4f364365270a247f7753b8739364b09d6",
+  "seal_sha256": "268b4fdf4662d85fb7735d901dafc2ff8c4aad6b528ac41538baf5470f38ff6f",
+  "sealed_restart_recovery": {
+    "manifest_count": 12,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_STATE_KV_RECOVERY_STATUS.json",
+    "recovery_pid": 53375,
+    "seal_sha256": "4dafeb6579869cb72a5f52f14ef613b6e5799af887046db873610b31da7258cc",
+    "verification_process": "separate CLI recovery invocation reopened physical artifacts from sealed manifests"
+  },
   "session_tokens": 8
 }

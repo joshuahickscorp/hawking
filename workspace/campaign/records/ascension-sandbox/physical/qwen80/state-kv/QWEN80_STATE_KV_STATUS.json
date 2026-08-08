@@ -8,13 +8,13 @@
     "no_tps_measurement_or_100_tps_or_tg3_claim": true,
     "not_a_tournament_candidate_or_selection_action": true
   },
-  "heartbeat": 1,
+  "heartbeat": 5,
   "model": "qwen80",
   "outcome": {
     "artifact_count": 8,
     "component_count": 2,
     "deltanet_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_STATE_CODEC_RECEIPT.json",
-    "deltanet_receipt_seal_sha256": "e9afb14ce4c81755ce4ea4e48465c4e13084f20ef71053272231d722bb2bd707",
+    "deltanet_receipt_seal_sha256": "f6637568ec8950627e0080c07ad5e3bef2bba725bf03dfdd3209279a3e46cb90",
     "geometry": {
       "attention_kv": {
         "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
@@ -175,11 +175,30 @@
       ]
     },
     "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_ATTENTION_KV_STATE_CODEC_RECEIPT.json",
-    "receipt_seal_sha256": "ba4ed4e00c6ea8aa3a59e0b458cf122790116f03cf1e2fd75e3f87c5e0d21b53"
+    "receipt_seal_sha256": "97a1f1fa1cde732ed6a7ad3c50a5be2c872c248f61c922c4c1d1127937779a74",
+    "state_traffic": {
+      "attention_kv": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_ATTENTION_KV_TRAFFIC_RECEIPT.json",
+        "regime_count": 3,
+        "seal_sha256": "467be55e58bba1d9a5650b209cbd5228256f92e1414a53834afa5d7fe5c8f328"
+      },
+      "deltanet_recurrent_state": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_RECURRENT_STATE_TRAFFIC_RECEIPT.json",
+        "regime_count": 3,
+        "seal_sha256": "12113924f52e93b027ca0b0830c502fa0938d126f17b4f8d5531da24d25a665f"
+      }
+    }
   },
-  "phase": "COMPLETE_SOURCE_BOUND_COMPONENT_STATE_CODEC_RESEARCH",
-  "recorded_at": "2026-08-08T07:15:05.778055Z",
+  "phase": "COMPLETE_SOURCE_BOUND_STATE_TRAFFIC_AND_SEALED_RESTART_RECOVERY_VERIFIED",
+  "recorded_at": "2026-08-08T07:31:54.677100Z",
   "schema": "hawking.ascension.qwen_state_kv_status.v1",
-  "seal_sha256": "7a4e061f5304e8d3b57fad81a4f2ac5f2c66f29eb40d118ba76884bde388e36a",
+  "seal_sha256": "565298b8fbb63541efea16227d85825c0d127f6b69c7597148afb2565ddaa489",
+  "sealed_restart_recovery": {
+    "manifest_count": 24,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_STATE_KV_RECOVERY_STATUS.json",
+    "recovery_pid": 53376,
+    "seal_sha256": "d77414fa209fc48ef6891fe93b53914b1039b2cc65f7c3ac0721cc021fb73294",
+    "verification_process": "separate CLI recovery invocation reopened physical artifacts from sealed manifests"
+  },
   "session_tokens": 8
 }

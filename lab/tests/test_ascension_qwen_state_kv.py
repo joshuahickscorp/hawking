@@ -4,15 +4,22 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pytest
 
 from lab.operators.ascension_qwen_state_kv import (
+    CONTEXT_REGIMES,
     HEADER_BYTES,
+    StateKVError,
+    _artifact_descriptor,
+    _write_recovery_manifest,
     codec_storage_bytes,
     codec_suite,
+    deserialize_codec,
     deterministic_component_input,
     growing_kv_ledger,
     recurrent_state_ledger,
     serialize_codec,
+    verify_recovery_manifest,
 )
 
 
@@ -83,3 +90,41 @@ def test_qwen80_recurrent_geometry_is_fixed_per_session_not_a_growing_kv_cache()
     for codec in ledger["codecs"].values():
         assert codec["growth_bytes_per_additional_token"] == 0
         assert codec["bytes_per_session_resident_state"] > 0
+
+
+def test_every_state_codec_can_be_reopened_and_rehydrated_from_its_binary_payload() -> None:
+    values = np.linspace(-0.9, 0.7, 257, dtype=np.float32).reshape(1, 257)
+
+    for codec in codec_suite(values):
+        rehydrated, parsed = deserialize_codec(serialize_codec(codec), shape=values.shape)
+        assert parsed["codec"] == codec.name
+        assert np.array_equal(rehydrated, codec.reconstruction)
+
+
+def test_sealed_recovery_manifest_binds_a_durable_component_artifact(tmp_path) -> None:
+    values = np.arange(96, dtype=np.float32).reshape(3, 32) / 10.0
+    codec = codec_suite(values)[2]
+    payload = serialize_codec(codec)
+    artifact = tmp_path / "q4.hkv"
+    artifact.write_bytes(payload)
+    manifest = tmp_path / "manifest.json"
+    _write_recovery_manifest(
+        path=manifest,
+        model="unit",
+        component="state",
+        context_tokens=8,
+        codec_name=codec.name,
+        artifact=_artifact_descriptor(artifact, payload),
+        source_values=values,
+        rehydrated_values=codec.reconstruction,
+    )
+
+    verified = verify_recovery_manifest(manifest)
+
+    assert verified["status"] == "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    assert verified["codec"] == codec.name
+    assert CONTEXT_REGIMES == (8, 32, 128)
+
+    artifact.write_bytes(payload + b"tamper")
+    with pytest.raises(StateKVError, match="byte/hash binding failed"):
+        verify_recovery_manifest(manifest)

@@ -27,10 +27,11 @@ import os
 import re
 import struct
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 
@@ -43,6 +44,9 @@ SCHEMA = "hawking.ascension.qwen_state_kv_physical_research.v1"
 COMPONENT_RECEIPT_SCHEMA = "hawking.ascension.qwen_state_kv_component_receipt.v1"
 STATUS_SCHEMA = "hawking.ascension.qwen_state_kv_status.v1"
 FORMAT_SCHEMA = "hawking.ascension.qwen_state_kv_codec_format.v1"
+TRAFFIC_RECEIPT_SCHEMA = "hawking.ascension.qwen_state_kv_traffic_receipt.v1"
+RECOVERY_MANIFEST_SCHEMA = "hawking.ascension.qwen_state_kv_recovery_manifest.v1"
+RECOVERY_STATUS_SCHEMA = "hawking.ascension.qwen_state_kv_recovery_status.v1"
 
 MAGIC = b"HAWKKV1\0"
 FORMAT_VERSION = 1
@@ -51,6 +55,9 @@ HEADER_BYTES = HEADER.size
 GROUP_SIZE = 64
 RESIDUAL_RATIO = 0.01
 DEFAULT_SESSION_TOKENS = 8
+CONTEXT_REGIMES = (8, 32, 128)
+COW_REFERENCE = struct.Struct("<8sII")
+COW_REFERENCE_MAGIC = b"HAWKCOW1"
 HASH_CHUNK_BYTES = 8 * 1024 * 1024
 
 DEFAULT_QWEN30_MODEL_DIR = (
@@ -431,6 +438,86 @@ def serialize_codec(codec: CodecResult) -> bytes:
     return header + codec.body
 
 
+def _codec_for_name(values: np.ndarray, name: str) -> CodecResult:
+    if name == "fp16_reference":
+        return _fp16_codec(values)
+    if name == "q8_group64":
+        return _group_codec(values, name=name, code=2, bits=8)
+    if name == "q4_group64":
+        return _group_codec(values, name=name, code=3, bits=4)
+    if name == "protected_residual_q4_group64_top1pct_fp16":
+        return _protected_residual_codec(values)
+    raise StateKVError(f"unknown state codec {name!r}")
+
+
+def deserialize_codec(payload: bytes, *, shape: Sequence[int]) -> tuple[np.ndarray, dict[str, Any]]:
+    """Decode a physical HAWKKV1 artifact into a rehydrated float32 array.
+
+    The decoder is intentionally a storage-format verifier, not a model runtime.
+    It is used by the restart evidence path to prove that an encoded component
+    state can be reopened from durable bytes without retaining the source array.
+    """
+
+    if len(payload) < HEADER_BYTES:
+        raise StateKVError("state codec payload is shorter than its fixed header")
+    magic, version, code, group_size, elements, groups, residual_count, body_bytes, reserved = HEADER.unpack(
+        payload[:HEADER_BYTES]
+    )
+    if magic != MAGIC or version != FORMAT_VERSION or reserved != 0:
+        raise StateKVError("state codec header is not a supported HAWKKV1 artifact")
+    dimensions = tuple(int(value) for value in shape)
+    if not dimensions or any(value <= 0 for value in dimensions):
+        raise StateKVError("rehydration shape must contain positive dimensions")
+    if math.prod(dimensions) != elements:
+        raise StateKVError("state codec header element count differs from recovery manifest shape")
+    body = payload[HEADER_BYTES:]
+    if len(body) != body_bytes:
+        raise StateKVError("state codec body length differs from fixed header")
+    if code == 1:
+        if group_size or groups or residual_count or len(body) != elements * 2:
+            raise StateKVError("invalid FP16 state codec layout")
+        restored = np.frombuffer(body, dtype="<f2").astype(np.float32).reshape(dimensions)
+        return np.ascontiguousarray(restored), {"codec": "fp16_reference", "bits": 16}
+    codec_by_code = {
+        2: ("q8_group64", 8),
+        3: ("q4_group64", 4),
+        4: ("protected_residual_q4_group64_top1pct_fp16", 4),
+    }
+    try:
+        codec_name, bits = codec_by_code[code]
+    except KeyError as exc:
+        raise StateKVError(f"unsupported state codec code {code}") from exc
+    if group_size <= 0 or groups != math.ceil(elements / group_size):
+        raise StateKVError("invalid grouped state codec geometry")
+    code_bytes = math.ceil(elements * bits / 8)
+    scale_bytes = groups * 2
+    extra_bytes = residual_count * 6 if code == 4 else 0
+    if len(body) != code_bytes + scale_bytes + extra_bytes:
+        raise StateKVError("state codec body does not match its grouped layout")
+    max_code = (1 << (bits - 1)) - 1
+    codes = _unpack_signed_codes(body[:code_bytes], elements=elements, bits=bits, max_code=max_code)
+    scales = np.frombuffer(body[code_bytes : code_bytes + scale_bytes], dtype="<f2").astype(np.float32)
+    padded = np.zeros(groups * group_size, dtype=np.float32)
+    padded[:elements] = codes.astype(np.float32)
+    restored = (padded.reshape(groups, group_size) * scales[:, None]).reshape(-1)[:elements]
+    if code == 4:
+        offset = code_bytes + scale_bytes
+        indexes = np.frombuffer(body[offset : offset + residual_count * 4], dtype="<u4")
+        residuals = np.frombuffer(body[offset + residual_count * 4 :], dtype="<f2").astype(np.float32)
+        if indexes.size != residual_count or residuals.size != residual_count:
+            raise StateKVError("protected residual state codec is truncated")
+        if np.any(indexes >= elements) or np.unique(indexes).size != indexes.size:
+            raise StateKVError("protected residual state codec indexes are invalid")
+        restored[indexes] += residuals
+    return np.ascontiguousarray(restored.reshape(dimensions), dtype=np.float32), {
+        "codec": codec_name,
+        "bits": bits,
+        "group_size": group_size,
+        "groups": groups,
+        "residual_count": residual_count,
+    }
+
+
 def _metrics(reference: np.ndarray, reconstruction: np.ndarray) -> dict[str, Any]:
     source = np.ascontiguousarray(reference, dtype=np.float32).reshape(-1)
     restored = np.ascontiguousarray(reconstruction, dtype=np.float32).reshape(-1)
@@ -633,6 +720,7 @@ def _deltanet_state_proxy(
     value_heads: int,
     key_dim: int,
     value_dim: int,
+    initial_state: np.ndarray | None = None,
 ) -> tuple[np.ndarray, dict[str, Any]]:
     """Create a bounded source-projection state witness, not a DeltaNet runtime.
 
@@ -662,7 +750,15 @@ def _deltanet_state_proxy(
     keys_per_value_head = np.repeat(keys, value_heads // key_heads, axis=1)
     query_per_value_head = np.repeat(queries, value_heads // key_heads, axis=1)
     decay = np.exp(-np.exp(np.clip(np.asarray(a_log, dtype=np.float32).reshape(-1), -20.0, 10.0)))
-    state = np.zeros((value_heads, key_dim, value_dim), dtype=np.float32)
+    expected_state_shape = (value_heads, key_dim, value_dim)
+    if initial_state is None:
+        state = np.zeros(expected_state_shape, dtype=np.float32)
+    else:
+        if initial_state.shape != expected_state_shape:
+            raise StateKVError(
+                f"DeltaNet initial state shape {initial_state.shape} does not match {expected_state_shape}"
+            )
+        state = np.ascontiguousarray(initial_state, dtype=np.float32).copy()
     for token in range(hidden.shape[0]):
         write = np.einsum("hi,hj->hij", keys_per_value_head[token], values[token] * gates[token], optimize=True)
         # Q is not required to form the state, but source-derived Q participates
@@ -673,6 +769,7 @@ def _deltanet_state_proxy(
         "projected_partition_widths": {"q": q_width, "k": k_width, "v": v_width, "z": z_width},
         "state_shape": [value_heads, key_dim, value_dim],
         "update": "decayed_grouped_outer_product_proxy_from_real_qkvz_projections",
+        "initial_state": "zero" if initial_state is None else "rehydrated_component_state",
         "proxy_exclusions": ["conv1d", "dt_path", "normalization", "complete_deltanet_layer", "full_model_runtime"],
     }
 
@@ -719,6 +816,492 @@ def _write_receipt(path: Path, payload: Mapping[str, Any]) -> dict[str, Any]:
     return document
 
 
+def _artifact_descriptor(path: Path, payload: bytes) -> dict[str, Any]:
+    return {"path": str(path), "bytes": len(payload), "sha256": _sha256_bytes(payload)}
+
+
+def _write_codec_snapshot(values: np.ndarray, *, codec_name: str, path: Path) -> tuple[np.ndarray, dict[str, Any]]:
+    """Persist one state snapshot, then reopen it from its physical bytes."""
+
+    codec = _codec_for_name(values, codec_name)
+    payload = serialize_codec(codec)
+    _atomic_bytes(path, payload)
+    reopened = path.read_bytes()
+    rehydrated, parsed = deserialize_codec(reopened, shape=values.shape)
+    if parsed["codec"] != codec_name:
+        raise StateKVError(f"state artifact re-opened as {parsed['codec']}, expected {codec_name}")
+    return rehydrated, _artifact_descriptor(path, payload)
+
+
+def _write_recovery_manifest(
+    *,
+    path: Path,
+    model: str,
+    component: str,
+    context_tokens: int,
+    codec_name: str,
+    artifact: Mapping[str, Any],
+    source_values: np.ndarray,
+    rehydrated_values: np.ndarray,
+) -> dict[str, Any]:
+    return _write_receipt(
+        path,
+        {
+            "schema": RECOVERY_MANIFEST_SCHEMA,
+            "recorded_at": _utc_now(),
+            "writer_pid": os.getpid(),
+            "model": model,
+            "component": component,
+            "context_tokens": context_tokens,
+            "codec": codec_name,
+            "artifact": dict(artifact),
+            "expected": {
+                "shape": list(source_values.shape),
+                "source_projection_output_float32_sha256": _sha256_array(source_values),
+                "rehydrated_float32_sha256": _sha256_array(rehydrated_values),
+            },
+            "claim_boundary": _common_claim_boundary(),
+        },
+    )
+
+
+def verify_recovery_manifest(path: Path) -> dict[str, Any]:
+    """Validate a sealed artifact manifest in a separate recovery invocation."""
+
+    document = _read_json(path)
+    if document is None:
+        raise StateKVError(f"missing recovery manifest: {path}")
+    try:
+        manifest = verify(document, label=str(path))
+    except SealIntegrityError as exc:
+        raise StateKVError(f"recovery manifest seal failed: {exc}") from exc
+    if manifest.get("schema") != RECOVERY_MANIFEST_SCHEMA:
+        raise StateKVError(f"unexpected recovery manifest schema: {manifest.get('schema')!r}")
+    artifact = manifest.get("artifact")
+    expected = manifest.get("expected")
+    if not isinstance(artifact, Mapping) or not isinstance(expected, Mapping):
+        raise StateKVError("recovery manifest lacks artifact/expected bindings")
+    artifact_path = Path(str(artifact.get("path", "")))
+    if not artifact_path.is_file():
+        raise StateKVError(f"recovery artifact is missing: {artifact_path}")
+    payload = artifact_path.read_bytes()
+    if len(payload) != artifact.get("bytes") or _sha256_bytes(payload) != artifact.get("sha256"):
+        raise StateKVError(f"recovery artifact byte/hash binding failed: {artifact_path}")
+    raw_shape = expected.get("shape")
+    if not isinstance(raw_shape, Sequence) or isinstance(raw_shape, (str, bytes)):
+        raise StateKVError("recovery manifest has no valid shape")
+    values, parsed = deserialize_codec(payload, shape=tuple(int(value) for value in raw_shape))
+    observed_hash = _sha256_array(values)
+    if observed_hash != expected.get("rehydrated_float32_sha256"):
+        raise StateKVError(f"recovery rehydration hash mismatch: {artifact_path}")
+    return {
+        "manifest_path": str(path),
+        "manifest_seal_sha256": manifest["seal_sha256"],
+        "artifact_path": str(artifact_path),
+        "artifact_sha256": artifact["sha256"],
+        "codec": parsed["codec"],
+        "context_tokens": manifest.get("context_tokens"),
+        "rehydrated_float32_sha256": observed_hash,
+        "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED",
+    }
+
+
+def _roundtrip_traffic_codec(
+    *,
+    root: Path,
+    model: str,
+    component: str,
+    context_tokens: int,
+    codec_name: str,
+    values: np.ndarray,
+) -> dict[str, Any]:
+    """Encode, fsync, reopen, decode, and bind one component traffic snapshot."""
+
+    artifact_path = root / "traffic" / component / f"context-{context_tokens:03d}" / f"{codec_name}.hkv"
+    manifest_path = (
+        root
+        / "traffic"
+        / "recovery-manifests"
+        / f"{model}_{component}_context-{context_tokens:03d}_{codec_name}.json"
+    )
+    started = time.perf_counter_ns()
+    codec = _codec_for_name(values, codec_name)
+    payload = serialize_codec(codec)
+    encode_elapsed_ns = time.perf_counter_ns() - started
+    started = time.perf_counter_ns()
+    _atomic_bytes(artifact_path, payload)
+    write_elapsed_ns = time.perf_counter_ns() - started
+    started = time.perf_counter_ns()
+    reopened = artifact_path.read_bytes()
+    read_elapsed_ns = time.perf_counter_ns() - started
+    started = time.perf_counter_ns()
+    rehydrated, parsed = deserialize_codec(reopened, shape=values.shape)
+    decode_elapsed_ns = time.perf_counter_ns() - started
+    if parsed["codec"] != codec_name:
+        raise StateKVError(f"traffic artifact re-opened as {parsed['codec']}, expected {codec_name}")
+    if _sha256_array(rehydrated) != _sha256_array(codec.reconstruction):
+        raise StateKVError("traffic artifact rehydration differs from encoder reconstruction")
+    artifact = _artifact_descriptor(artifact_path, payload)
+    manifest = _write_recovery_manifest(
+        path=manifest_path,
+        model=model,
+        component=component,
+        context_tokens=context_tokens,
+        codec_name=codec_name,
+        artifact=artifact,
+        source_values=values,
+        rehydrated_values=rehydrated,
+    )
+    return {
+        "codec": codec_name,
+        "physical_artifact": artifact,
+        "bytes": {"written": len(payload), "read": len(reopened)},
+        "timing_ns": {
+            "encode": encode_elapsed_ns,
+            "physical_write_and_fsync": write_elapsed_ns,
+            "physical_read": read_elapsed_ns,
+            "decode_and_rehydrate": decode_elapsed_ns,
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+        },
+        "reconstruction": _metrics(values, rehydrated),
+        "recovery_manifest": {"path": str(manifest_path), "seal_sha256": manifest["seal_sha256"]},
+    }
+
+
+def _write_cow_reference(path: Path, *, prefix_tokens: int, suffix_tokens: int) -> dict[str, Any]:
+    payload = COW_REFERENCE.pack(COW_REFERENCE_MAGIC, prefix_tokens, suffix_tokens)
+    _atomic_bytes(path, payload)
+    return _artifact_descriptor(path, payload)
+
+
+def _attention_copy_on_write_exercise(
+    *,
+    root: Path,
+    model: str,
+    component: str,
+    context_tokens: int,
+    sample: Callable[[int, str], tuple[np.ndarray, np.ndarray]],
+) -> dict[str, Any]:
+    """Physically compare duplicated branches with shared-prefix COW snapshots."""
+
+    prefix_tokens = context_tokens // 2
+    suffix_tokens = context_tokens - prefix_tokens
+    prefix_input, prefix_values = sample(prefix_tokens, f"{component}-cow-prefix-{context_tokens}")
+    suffix_a_input, suffix_a_values = sample(suffix_tokens, f"{component}-cow-branch-a-{context_tokens}")
+    suffix_b_input, suffix_b_values = sample(suffix_tokens, f"{component}-cow-branch-b-{context_tokens}")
+    branch_a_values = np.concatenate((prefix_values, suffix_a_values), axis=0)
+    branch_b_values = np.concatenate((prefix_values, suffix_b_values), axis=0)
+    root_path = root / "traffic" / "copy-on-write" / component / f"context-{context_tokens:03d}"
+    rows: list[dict[str, Any]] = []
+    for codec_name in _codec_names():
+        full_a, full_a_artifact = _write_codec_snapshot(
+            branch_a_values, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-a.hkv"
+        )
+        full_b, full_b_artifact = _write_codec_snapshot(
+            branch_b_values, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-b.hkv"
+        )
+        prefix, prefix_artifact = _write_codec_snapshot(
+            prefix_values, codec_name=codec_name, path=root_path / codec_name / "shared-prefix.hkv"
+        )
+        suffix_a, suffix_a_artifact = _write_codec_snapshot(
+            suffix_a_values, codec_name=codec_name, path=root_path / codec_name / "branch-a-suffix.hkv"
+        )
+        suffix_b, suffix_b_artifact = _write_codec_snapshot(
+            suffix_b_values, codec_name=codec_name, path=root_path / codec_name / "branch-b-suffix.hkv"
+        )
+        reference_a = _write_cow_reference(
+            root_path / codec_name / "branch-a-prefix.ref", prefix_tokens=prefix_tokens, suffix_tokens=suffix_tokens
+        )
+        reference_b = _write_cow_reference(
+            root_path / codec_name / "branch-b-prefix.ref", prefix_tokens=prefix_tokens, suffix_tokens=suffix_tokens
+        )
+        rehydrated_a = np.ascontiguousarray(np.concatenate((prefix, suffix_a), axis=0), dtype=np.float32)
+        rehydrated_b = np.ascontiguousarray(np.concatenate((prefix, suffix_b), axis=0), dtype=np.float32)
+        full_copy_bytes = full_a_artifact["bytes"] + full_b_artifact["bytes"]
+        cow_bytes = (
+            prefix_artifact["bytes"]
+            + suffix_a_artifact["bytes"]
+            + suffix_b_artifact["bytes"]
+            + reference_a["bytes"]
+            + reference_b["bytes"]
+        )
+        rows.append(
+            {
+                "codec": codec_name,
+                "prefix_tokens": prefix_tokens,
+                "suffix_tokens_per_branch": suffix_tokens,
+                "branches": 2,
+                "full_copy": {"bytes": full_copy_bytes, "branch_a": full_a_artifact, "branch_b": full_b_artifact},
+                "copy_on_write": {
+                    "bytes": cow_bytes,
+                    "shared_prefix": prefix_artifact,
+                    "branch_a_suffix": suffix_a_artifact,
+                    "branch_b_suffix": suffix_b_artifact,
+                    "branch_reference_bytes": reference_a["bytes"] + reference_b["bytes"],
+                    "bytes_avoided_vs_full_copy": full_copy_bytes - cow_bytes,
+                },
+                "rehydrated_branches": {
+                    "branch_a": _metrics(branch_a_values, rehydrated_a),
+                    "branch_b": _metrics(branch_b_values, rehydrated_b),
+                    "full_copy_branch_a": _metrics(branch_a_values, full_a),
+                    "full_copy_branch_b": _metrics(branch_b_values, full_b),
+                },
+            }
+        )
+    return {
+        "kind": "attention_kv_prefix_branch_copy_on_write",
+        "deterministic_component_inputs": {
+            "prefix": _sha256_array(prefix_input),
+            "branch_a_suffix": _sha256_array(suffix_a_input),
+            "branch_b_suffix": _sha256_array(suffix_b_input),
+        },
+        "compaction": {
+            "status": "NOT_VALID_FOR_LOSSLESS_ATTENTION_KV_WITHOUT_A_WINDOWING_SEMANTIC",
+            "reason": "this lane observed use_sliding_window=false; dropping retained K/V would change attention inputs",
+        },
+        "codec_rows": rows,
+    }
+
+
+def _deltanet_copy_on_write_exercise(
+    *,
+    root: Path,
+    model: str,
+    component: str,
+    context_tokens: int,
+    input_width: int,
+    state_from_input: Callable[[np.ndarray, np.ndarray | None], np.ndarray],
+) -> dict[str, Any]:
+    """Exercise COW/checkpoint compaction for a fixed-size recurrent state."""
+
+    prefix_tokens = context_tokens // 2
+    suffix_tokens = context_tokens - prefix_tokens
+    prefix_input = deterministic_component_input(prefix_tokens, input_width, label=f"{component}-cow-prefix-{context_tokens}")
+    suffix_a_input = deterministic_component_input(suffix_tokens, input_width, label=f"{component}-cow-branch-a-{context_tokens}")
+    suffix_b_input = deterministic_component_input(suffix_tokens, input_width, label=f"{component}-cow-branch-b-{context_tokens}")
+    prefix_state = state_from_input(prefix_input, None)
+    branch_a_state = state_from_input(suffix_a_input, prefix_state)
+    branch_b_state = state_from_input(suffix_b_input, prefix_state)
+    root_path = root / "traffic" / "copy-on-write" / component / f"context-{context_tokens:03d}"
+    rows: list[dict[str, Any]] = []
+    for codec_name in _codec_names():
+        full_prefix_a, full_prefix_a_artifact = _write_codec_snapshot(
+            prefix_state, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-a-prefix.hkv"
+        )
+        full_prefix_b, full_prefix_b_artifact = _write_codec_snapshot(
+            prefix_state, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-b-prefix.hkv"
+        )
+        full_a, full_a_artifact = _write_codec_snapshot(
+            branch_a_state, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-a-current.hkv"
+        )
+        full_b, full_b_artifact = _write_codec_snapshot(
+            branch_b_state, codec_name=codec_name, path=root_path / codec_name / "full-copy-branch-b-current.hkv"
+        )
+        shared_prefix, shared_prefix_artifact = _write_codec_snapshot(
+            prefix_state, codec_name=codec_name, path=root_path / codec_name / "shared-prefix-state.hkv"
+        )
+        shared_a, shared_a_artifact = _write_codec_snapshot(
+            branch_a_state, codec_name=codec_name, path=root_path / codec_name / "branch-a-current.hkv"
+        )
+        shared_b, shared_b_artifact = _write_codec_snapshot(
+            branch_b_state, codec_name=codec_name, path=root_path / codec_name / "branch-b-current.hkv"
+        )
+        reference_a = _write_cow_reference(
+            root_path / codec_name / "branch-a-prefix.ref", prefix_tokens=prefix_tokens, suffix_tokens=suffix_tokens
+        )
+        reference_b = _write_cow_reference(
+            root_path / codec_name / "branch-b-prefix.ref", prefix_tokens=prefix_tokens, suffix_tokens=suffix_tokens
+        )
+        # A state journal may discard only superseded snapshots.  Keeping the
+        # newest encoded state is valid at the codec's own rehydrated semantics;
+        # it does not assert a lossless native DeltaNet implementation.
+        prefix_payload = (root_path / codec_name / "shared-prefix-state.hkv").read_bytes()
+        current_payload = (root_path / codec_name / "branch-a-current.hkv").read_bytes()
+        journal_path = root_path / codec_name / "branch-a-superseded-state.journal"
+        _atomic_bytes(journal_path, prefix_payload + current_payload)
+        compacted, compacted_artifact = _write_codec_snapshot(
+            branch_a_state, codec_name=codec_name, path=root_path / codec_name / "branch-a-compacted-current.hkv"
+        )
+        recovered_branch_a = state_from_input(suffix_a_input, shared_prefix)
+        recovered_branch_b = state_from_input(suffix_b_input, shared_prefix)
+        full_copy_bytes = (
+            full_prefix_a_artifact["bytes"]
+            + full_prefix_b_artifact["bytes"]
+            + full_a_artifact["bytes"]
+            + full_b_artifact["bytes"]
+        )
+        cow_bytes = (
+            shared_prefix_artifact["bytes"]
+            + shared_a_artifact["bytes"]
+            + shared_b_artifact["bytes"]
+            + reference_a["bytes"]
+            + reference_b["bytes"]
+        )
+        rows.append(
+            {
+                "codec": codec_name,
+                "prefix_tokens": prefix_tokens,
+                "suffix_tokens_per_branch": suffix_tokens,
+                "branches": 2,
+                "full_copy": {
+                    "bytes": full_copy_bytes,
+                    "prefix_branch_a": full_prefix_a_artifact,
+                    "prefix_branch_b": full_prefix_b_artifact,
+                    "current_branch_a": full_a_artifact,
+                    "current_branch_b": full_b_artifact,
+                },
+                "copy_on_write": {
+                    "bytes": cow_bytes,
+                    "shared_prefix": shared_prefix_artifact,
+                    "branch_a_current": shared_a_artifact,
+                    "branch_b_current": shared_b_artifact,
+                    "branch_reference_bytes": reference_a["bytes"] + reference_b["bytes"],
+                    "bytes_avoided_vs_full_copy": full_copy_bytes - cow_bytes,
+                },
+                "rehydrated_branch_state": {
+                    "branch_a_vs_full_precision_prefix": _metrics(branch_a_state, recovered_branch_a),
+                    "branch_b_vs_full_precision_prefix": _metrics(branch_b_state, recovered_branch_b),
+                    "full_copy_branch_a": _metrics(branch_a_state, full_a),
+                    "full_copy_branch_b": _metrics(branch_b_state, full_b),
+                },
+                "compaction": {
+                    "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION",
+                    "journal": _artifact_descriptor(journal_path, prefix_payload + current_payload),
+                    "compacted_current": compacted_artifact,
+                    "bytes_reclaimed": len(prefix_payload + current_payload) - compacted_artifact["bytes"],
+                    "rehydrated_current_sha256": _sha256_array(compacted),
+                    "expected_current_codec_sha256": _sha256_array(shared_a),
+                    "preserves_latest_codec_rehydrated_state": _sha256_array(compacted) == _sha256_array(shared_a),
+                    "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+                },
+            }
+        )
+    return {
+        "kind": "deltanet_recurrent_state_prefix_branch_copy_on_write",
+        "deterministic_component_inputs": {
+            "prefix": _sha256_array(prefix_input),
+            "branch_a_suffix": _sha256_array(suffix_a_input),
+            "branch_b_suffix": _sha256_array(suffix_b_input),
+        },
+        "codec_rows": rows,
+    }
+
+
+def _attention_traffic_receipt(
+    *,
+    root: Path,
+    model: str,
+    component: str,
+    sample: Callable[[int, str], tuple[np.ndarray, np.ndarray]],
+    ledger_for_context: Callable[[int], Mapping[str, Any]],
+    source_summary: Mapping[str, Any],
+    source_bindings: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    regimes: list[dict[str, Any]] = []
+    for context_tokens in CONTEXT_REGIMES:
+        hidden, values = sample(context_tokens, f"{component}-traffic-{context_tokens}")
+        codecs = [
+            _roundtrip_traffic_codec(
+                root=root,
+                model=model,
+                component=component,
+                context_tokens=context_tokens,
+                codec_name=codec_name,
+                values=values,
+            )
+            for codec_name in _codec_names()
+        ]
+        regimes.append(
+            {
+                "context_tokens": context_tokens,
+                "deterministic_component_input": {"shape": list(hidden.shape), "float32_sha256": _sha256_array(hidden)},
+                "source_projection_output": {"shape": list(values.shape), "float32_sha256": _sha256_array(values)},
+                "exact_geometry_ledger": dict(ledger_for_context(context_tokens)),
+                "codec_roundtrips": codecs,
+                "copy_on_write": _attention_copy_on_write_exercise(
+                    root=root, model=model, component=component, context_tokens=context_tokens, sample=sample
+                ),
+            }
+        )
+    path = root / f"{model.upper()}_{component.upper()}_TRAFFIC_RECEIPT.json"
+    document = _write_receipt(
+        path,
+        {
+            "schema": TRAFFIC_RECEIPT_SCHEMA,
+            "recorded_at": _utc_now(),
+            "model": model,
+            "component": component,
+            "context_regimes": list(CONTEXT_REGIMES),
+            "source_verification": dict(source_summary),
+            "source_projection_bindings": [dict(row) for row in source_bindings],
+            "regimes": regimes,
+            "claim_boundary": _common_claim_boundary(),
+        },
+    )
+    return {"path": str(path), "seal_sha256": document["seal_sha256"], "regime_count": len(regimes)}
+
+
+def _deltanet_traffic_receipt(
+    *,
+    root: Path,
+    model: str,
+    component: str,
+    input_width: int,
+    state_from_input: Callable[[np.ndarray, np.ndarray | None], np.ndarray],
+    ledger_for_context: Callable[[int], Mapping[str, Any]],
+    source_summary: Mapping[str, Any],
+    source_bindings: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    regimes: list[dict[str, Any]] = []
+    for context_tokens in CONTEXT_REGIMES:
+        hidden = deterministic_component_input(context_tokens, input_width, label=f"{component}-traffic-{context_tokens}")
+        values = state_from_input(hidden, None)
+        codecs = [
+            _roundtrip_traffic_codec(
+                root=root,
+                model=model,
+                component=component,
+                context_tokens=context_tokens,
+                codec_name=codec_name,
+                values=values,
+            )
+            for codec_name in _codec_names()
+        ]
+        regimes.append(
+            {
+                "context_tokens": context_tokens,
+                "deterministic_component_input": {"shape": list(hidden.shape), "float32_sha256": _sha256_array(hidden)},
+                "source_projection_output": {"shape": list(values.shape), "float32_sha256": _sha256_array(values)},
+                "exact_geometry_ledger": dict(ledger_for_context(context_tokens)),
+                "codec_roundtrips": codecs,
+                "copy_on_write": _deltanet_copy_on_write_exercise(
+                    root=root,
+                    model=model,
+                    component=component,
+                    context_tokens=context_tokens,
+                    input_width=input_width,
+                    state_from_input=state_from_input,
+                ),
+            }
+        )
+    path = root / f"{model.upper()}_{component.upper()}_TRAFFIC_RECEIPT.json"
+    document = _write_receipt(
+        path,
+        {
+            "schema": TRAFFIC_RECEIPT_SCHEMA,
+            "recorded_at": _utc_now(),
+            "model": model,
+            "component": component,
+            "context_regimes": list(CONTEXT_REGIMES),
+            "source_verification": dict(source_summary),
+            "source_projection_bindings": [dict(row) for row in source_bindings],
+            "regimes": regimes,
+            "claim_boundary": _common_claim_boundary(),
+        },
+    )
+    return {"path": str(path), "seal_sha256": document["seal_sha256"], "regime_count": len(regimes)}
+
+
 def _common_claim_boundary() -> dict[str, bool]:
     return {
         "deterministic_component_vectors_are_not_prompts_or_tokens": True,
@@ -749,14 +1332,18 @@ def _run_qwen30(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
     value_name = f"model.layers.{layer}.self_attn.v_proj.weight"
     key_weights = load_tensor(spec.model_dir, weight_map, key_name)
     value_weights = load_tensor(spec.model_dir, weight_map, value_name)
-    hidden = deterministic_component_input(session_tokens, hidden_size, label="qwen30-attention-kv")
-    state_values = _projection_kv_sample(
-        hidden=hidden,
-        key_weights=key_weights,
-        value_weights=value_weights,
-        key_value_heads=key_value_heads,
-        head_dim=head_dim,
-    )
+
+    def attention_sample(tokens: int, label: str) -> tuple[np.ndarray, np.ndarray]:
+        hidden_values = deterministic_component_input(tokens, hidden_size, label=label)
+        return hidden_values, _projection_kv_sample(
+            hidden=hidden_values,
+            key_weights=key_weights,
+            value_weights=value_weights,
+            key_value_heads=key_value_heads,
+            head_dim=head_dim,
+        )
+
+    hidden, state_values = attention_sample(session_tokens, "qwen30-attention-kv")
     source_bindings = [
         _raw_tensor_binding(spec.model_dir, weight_map, key_name, key_weights, audit),
         _raw_tensor_binding(spec.model_dir, weight_map, value_name, value_weights, audit),
@@ -768,6 +1355,21 @@ def _run_qwen30(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
         session_tokens=session_tokens,
     )
     artifacts = _write_component_artifacts(root=spec.root, model=spec.identifier, component="attention_kv", values=state_values)
+    source_summary = _source_summary(spec, audit, config)
+    traffic = _attention_traffic_receipt(
+        root=spec.root,
+        model=spec.identifier,
+        component="attention_kv",
+        sample=attention_sample,
+        ledger_for_context=lambda tokens: growing_kv_ledger(
+            layer_count=layer_count,
+            key_value_heads=key_value_heads,
+            head_dim=head_dim,
+            session_tokens=tokens,
+        ),
+        source_summary=source_summary,
+        source_bindings=source_bindings,
+    )
     receipt_path = spec.root / "QWEN30_ATTENTION_KV_STATE_CODEC_RECEIPT.json"
     receipt = _write_receipt(
         receipt_path,
@@ -775,7 +1377,7 @@ def _run_qwen30(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             "schema": COMPONENT_RECEIPT_SCHEMA,
             "recorded_at": _utc_now(),
             "model": {"id": "Qwen3-Coder-30B-A3B-Instruct", "architecture": spec.architecture},
-            "source_verification": _source_summary(spec, audit, config),
+            "source_verification": source_summary,
             "source_projection_bindings": source_bindings,
             "component": {
                 "kind": "attention_kv_projection_output",
@@ -792,6 +1394,7 @@ def _run_qwen30(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             },
             "exact_geometry_ledger": ledger,
             "codec_results": artifacts,
+            "state_traffic_evidence": traffic,
             "claim_boundary": _common_claim_boundary(),
         },
     )
@@ -800,6 +1403,7 @@ def _run_qwen30(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
         "receipt_seal_sha256": receipt["seal_sha256"],
         "component_count": 1,
         "artifact_count": len(artifacts),
+        "state_traffic": traffic,
         "geometry": {"attention_layers": list(attention_layers), "ledger": ledger},
     }
 
@@ -822,19 +1426,23 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
     linear_layers = _linear_attention_layers(weight_map)
     if len(attention_layers) + len(linear_layers) != total_layers or set(attention_layers) & set(linear_layers):
         raise StateKVError("qwen80 local index does not describe one attention/DeltaNet operator per layer")
-    hidden_attention = deterministic_component_input(session_tokens, hidden_size, label="qwen80-attention-kv")
     attention_layer = attention_layers[0]
     key_name = f"model.layers.{attention_layer}.self_attn.k_proj.weight"
     value_name = f"model.layers.{attention_layer}.self_attn.v_proj.weight"
     key_weights = load_tensor(spec.model_dir, weight_map, key_name)
     value_weights = load_tensor(spec.model_dir, weight_map, value_name)
-    attention_values = _projection_kv_sample(
-        hidden=hidden_attention,
-        key_weights=key_weights,
-        value_weights=value_weights,
-        key_value_heads=key_value_heads,
-        head_dim=attention_head_dim,
-    )
+
+    def attention_sample(tokens: int, label: str) -> tuple[np.ndarray, np.ndarray]:
+        hidden_values = deterministic_component_input(tokens, hidden_size, label=label)
+        return hidden_values, _projection_kv_sample(
+            hidden=hidden_values,
+            key_weights=key_weights,
+            value_weights=value_weights,
+            key_value_heads=key_value_heads,
+            head_dim=attention_head_dim,
+        )
+
+    hidden_attention, attention_values = attention_sample(session_tokens, "qwen80-attention-kv")
     attention_ledger = growing_kv_ledger(
         layer_count=len(attention_layers),
         key_value_heads=key_value_heads,
@@ -844,6 +1452,25 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
     attention_artifacts = _write_component_artifacts(
         root=spec.root, model=spec.identifier, component="attention_kv", values=attention_values
     )
+    source_summary = _source_summary(spec, audit, config)
+    attention_source_bindings = [
+        _raw_tensor_binding(spec.model_dir, weight_map, key_name, key_weights, audit),
+        _raw_tensor_binding(spec.model_dir, weight_map, value_name, value_weights, audit),
+    ]
+    attention_traffic = _attention_traffic_receipt(
+        root=spec.root,
+        model=spec.identifier,
+        component="attention_kv",
+        sample=attention_sample,
+        ledger_for_context=lambda tokens: growing_kv_ledger(
+            layer_count=len(attention_layers),
+            key_value_heads=key_value_heads,
+            head_dim=attention_head_dim,
+            session_tokens=tokens,
+        ),
+        source_summary=source_summary,
+        source_bindings=attention_source_bindings,
+    )
     attention_receipt_path = spec.root / "QWEN80_ATTENTION_KV_STATE_CODEC_RECEIPT.json"
     attention_receipt = _write_receipt(
         attention_receipt_path,
@@ -851,11 +1478,8 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             "schema": COMPONENT_RECEIPT_SCHEMA,
             "recorded_at": _utc_now(),
             "model": {"id": "Qwen3-Coder-Next-80B", "architecture": spec.architecture},
-            "source_verification": _source_summary(spec, audit, config),
-            "source_projection_bindings": [
-                _raw_tensor_binding(spec.model_dir, weight_map, key_name, key_weights, audit),
-                _raw_tensor_binding(spec.model_dir, weight_map, value_name, value_weights, audit),
-            ],
+            "source_verification": source_summary,
+            "source_projection_bindings": attention_source_bindings,
             "component": {
                 "kind": "gated_attention_kv_projection_output",
                 "source_layer": attention_layer,
@@ -872,16 +1496,31 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             },
             "exact_geometry_ledger": attention_ledger,
             "codec_results": attention_artifacts,
+            "state_traffic_evidence": attention_traffic,
             "claim_boundary": _common_claim_boundary(),
         },
     )
 
-    hidden_linear = deterministic_component_input(session_tokens, hidden_size, label="qwen80-deltanet-state")
     linear_layer = linear_layers[0]
     qkvz_name = f"model.layers.{linear_layer}.linear_attn.in_proj_qkvz.weight"
     a_log_name = f"model.layers.{linear_layer}.linear_attn.A_log"
     qkvz_weights = load_tensor(spec.model_dir, weight_map, qkvz_name)
     a_log = load_tensor(spec.model_dir, weight_map, a_log_name)
+
+    def recurrent_state_from_input(hidden_values: np.ndarray, initial_state: np.ndarray | None) -> np.ndarray:
+        state, _ = _deltanet_state_proxy(
+            hidden=hidden_values,
+            qkvz_weights=qkvz_weights,
+            a_log=a_log,
+            key_heads=linear_key_heads,
+            value_heads=linear_value_heads,
+            key_dim=linear_key_dim,
+            value_dim=linear_value_dim,
+            initial_state=initial_state,
+        )
+        return state
+
+    hidden_linear = deterministic_component_input(session_tokens, hidden_size, label="qwen80-deltanet-state")
     recurrent_values, proxy_details = _deltanet_state_proxy(
         hidden=hidden_linear,
         qkvz_weights=qkvz_weights,
@@ -901,6 +1540,26 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
     recurrent_artifacts = _write_component_artifacts(
         root=spec.root, model=spec.identifier, component="deltanet_recurrent_state", values=recurrent_values
     )
+    recurrent_source_bindings = [
+        _raw_tensor_binding(spec.model_dir, weight_map, qkvz_name, qkvz_weights, audit),
+        _raw_tensor_binding(spec.model_dir, weight_map, a_log_name, a_log, audit),
+    ]
+    recurrent_traffic = _deltanet_traffic_receipt(
+        root=spec.root,
+        model=spec.identifier,
+        component="deltanet_recurrent_state",
+        input_width=hidden_size,
+        state_from_input=recurrent_state_from_input,
+        ledger_for_context=lambda tokens: recurrent_state_ledger(
+            layer_count=len(linear_layers),
+            heads=linear_value_heads,
+            key_dim=linear_key_dim,
+            value_dim=linear_value_dim,
+            session_tokens=tokens,
+        ),
+        source_summary=source_summary,
+        source_bindings=recurrent_source_bindings,
+    )
     recurrent_receipt_path = spec.root / "QWEN80_DELTANET_STATE_CODEC_RECEIPT.json"
     recurrent_receipt = _write_receipt(
         recurrent_receipt_path,
@@ -908,11 +1567,8 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             "schema": COMPONENT_RECEIPT_SCHEMA,
             "recorded_at": _utc_now(),
             "model": {"id": "Qwen3-Coder-Next-80B", "architecture": spec.architecture},
-            "source_verification": _source_summary(spec, audit, config),
-            "source_projection_bindings": [
-                _raw_tensor_binding(spec.model_dir, weight_map, qkvz_name, qkvz_weights, audit),
-                _raw_tensor_binding(spec.model_dir, weight_map, a_log_name, a_log, audit),
-            ],
+            "source_verification": source_summary,
+            "source_projection_bindings": recurrent_source_bindings,
             "component": {
                 "kind": "gated_deltanet_recurrent_state_proxy",
                 "source_layer": linear_layer,
@@ -930,6 +1586,7 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
             },
             "exact_geometry_ledger": recurrent_ledger,
             "codec_results": recurrent_artifacts,
+            "state_traffic_evidence": recurrent_traffic,
             "claim_boundary": _common_claim_boundary(),
         },
     )
@@ -953,6 +1610,7 @@ def _run_qwen80(spec: ModelSpec, *, session_tokens: int) -> dict[str, Any]:
         "deltanet_receipt_seal_sha256": recurrent_receipt["seal_sha256"],
         "component_count": 2,
         "artifact_count": len(attention_artifacts) + len(recurrent_artifacts),
+        "state_traffic": {"attention_kv": attention_traffic, "deltanet_recurrent_state": recurrent_traffic},
         "geometry": {
             "attention_layers": list(attention_layers),
             "linear_attention_layers": list(linear_layers),
@@ -1009,6 +1667,61 @@ def run_model(
     return status
 
 
+def verify_model_recovery(model: str, *, root: Path | None = None) -> dict[str, Any]:
+    """Perform a fresh-process durable recovery pass over all traffic manifests."""
+
+    if model not in SPECS:
+        raise StateKVError(f"unknown model {model!r}; expected one of {sorted(SPECS)}")
+    spec = SPECS[model]
+    resolved_root = (root or spec.root).expanduser().resolve()
+    manifest_root = resolved_root / "traffic" / "recovery-manifests"
+    manifests = tuple(sorted(manifest_root.glob("*.json")))
+    if not manifests:
+        raise StateKVError(f"no sealed recovery manifests found at {manifest_root}")
+    recovered = [verify_recovery_manifest(path) for path in manifests]
+    recovery_name = "QWEN30_STATE_KV_RECOVERY_STATUS.json" if model == "qwen30" else "QWEN80_STATE_KV_RECOVERY_STATUS.json"
+    recovery_path = resolved_root / recovery_name
+    recovery = _write_receipt(
+        recovery_path,
+        {
+            "schema": RECOVERY_STATUS_SCHEMA,
+            "recorded_at": _utc_now(),
+            "recovery_pid": os.getpid(),
+            "model": model,
+            "manifest_count": len(recovered),
+            "recoveries": recovered,
+            "status": "SEALED_RESTART_EQUIVALENT_DURABLE_COMPONENT_STATE_RECOVERY_VERIFIED",
+            "claim_boundary": _common_claim_boundary(),
+        },
+    )
+    status_name = "QWEN30_STATE_KV_STATUS.json" if model == "qwen30" else "QWEN80_STATE_KV_STATUS.json"
+    status_path = resolved_root / status_name
+    prior = _read_json(status_path)
+    if prior is None:
+        raise StateKVError(f"cannot attach recovery evidence; primary state-KV status is missing: {status_path}")
+    try:
+        verify(prior, label=str(status_path))
+    except SealIntegrityError as exc:
+        raise StateKVError(f"cannot attach recovery evidence; primary status seal failed: {exc}") from exc
+    updated = {key: value for key, value in prior.items() if key != "seal_sha256"}
+    updated.update(
+        {
+            "recorded_at": _utc_now(),
+            "heartbeat": int(prior.get("heartbeat", 0)) + 1,
+            "phase": "COMPLETE_SOURCE_BOUND_STATE_TRAFFIC_AND_SEALED_RESTART_RECOVERY_VERIFIED",
+            "sealed_restart_recovery": {
+                "path": str(recovery_path),
+                "seal_sha256": recovery["seal_sha256"],
+                "manifest_count": len(recovered),
+                "verification_process": "separate CLI recovery invocation reopened physical artifacts from sealed manifests",
+                "recovery_pid": os.getpid(),
+            },
+        }
+    )
+    _write_receipt(status_path, updated)
+    return recovery
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model", choices=("qwen30", "qwen80", "both"))
@@ -1016,12 +1729,26 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--model-dir", type=Path, help="override only when running one model")
     parser.add_argument("--root", type=Path, help="override only when running one model")
     parser.add_argument("--audit-path", type=Path, help="override only when running one model")
+    parser.add_argument(
+        "--verify-recovery",
+        action="store_true",
+        help="fresh-process verification of sealed traffic artifacts; does not load source projections",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    if args.model == "both":
+    if args.verify_recovery:
+        if args.model_dir or args.audit_path:
+            raise StateKVError("source/audit overrides are not used by recovery verification")
+        if args.model == "both":
+            if args.root:
+                raise StateKVError("root override requires a single model recovery verification")
+            results = {model: verify_model_recovery(model) for model in ("qwen30", "qwen80")}
+        else:
+            results = {args.model: verify_model_recovery(args.model, root=args.root)}
+    elif args.model == "both":
         if args.model_dir or args.root or args.audit_path:
             raise StateKVError("model/root/audit overrides require a single model run")
         results = {model: run_model(model, session_tokens=args.session_tokens) for model in ("qwen30", "qwen80")}

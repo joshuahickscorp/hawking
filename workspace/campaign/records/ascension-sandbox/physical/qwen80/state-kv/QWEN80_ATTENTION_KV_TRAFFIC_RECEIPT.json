@@ -1,0 +1,1456 @@
+{
+  "claim_boundary": {
+    "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+    "no_complete_model_layer_graph_executed": true,
+    "no_model_capability_claim": true,
+    "no_native_full_runtime_or_hcli_endpoint": true,
+    "no_tokenizer_or_prompt_template_executed": true,
+    "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+    "not_a_tournament_candidate_or_selection_action": true
+  },
+  "component": "attention_kv",
+  "context_regimes": [
+    8,
+    32,
+    128
+  ],
+  "model": "qwen80",
+  "recorded_at": "2026-08-08T07:31:44.676703Z",
+  "regimes": [
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 16416,
+            "written": 16416
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 16416,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/fp16_reference.hkv",
+            "sha256": "53374639ec3b64277643bdd924ff7eabd9d9ef13cbf488e75e969972a85737a4"
+          },
+          "reconstruction": {
+            "cosine": 0.9999998807907104,
+            "finite": true,
+            "max_abs": 3.0353665351867676e-05,
+            "relative_l2": 0.00020466564456000924,
+            "rmse": 4.857393378188135e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_fp16_reference.json",
+            "seal_sha256": "ed07e37fd0eae52d971e7837ea7bddb96bc3980caad5027f3a1f50b9d468e9ea"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 20291,
+            "encode": 33250,
+            "physical_read": 28791,
+            "physical_write_and_fsync": 431083
+          }
+        },
+        {
+          "bytes": {
+            "read": 8480,
+            "written": 8480
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 8480,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/q8_group64.hkv",
+            "sha256": "5698e19007347bf87b6e9d1ecb3f4f65b4e05a9388383a30ec39b6ed6d282f9a"
+          },
+          "reconstruction": {
+            "cosine": 0.9999825358390808,
+            "finite": true,
+            "max_abs": 0.00037948787212371826,
+            "relative_l2": 0.00589491194114089,
+            "rmse": 0.0001399057946400717
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_q8_group64.json",
+            "seal_sha256": "48916eb57e61343b6dbee0830312b734b0a3a7fc8ded5799947ec5853ed87b31"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 125583,
+            "encode": 363958,
+            "physical_read": 25459,
+            "physical_write_and_fsync": 291041
+          }
+        },
+        {
+          "bytes": {
+            "read": 4384,
+            "written": 4384
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 4384,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/q4_group64.hkv",
+            "sha256": "02f73fb9cc204db8527febec0115a675327e1ec2131ea46e440b42aff67426e4"
+          },
+          "reconstruction": {
+            "cosine": 0.9943557381629944,
+            "finite": true,
+            "max_abs": 0.006860697641968727,
+            "relative_l2": 0.10665156692266464,
+            "rmse": 0.0025311950594186783
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_q4_group64.json",
+            "seal_sha256": "5ba31e48ca7cc8e99f582ca3b215b643d47dd665cee7d479143e0e66414cf50d"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 108708,
+            "encode": 211042,
+            "physical_read": 40250,
+            "physical_write_and_fsync": 383292
+          }
+        },
+        {
+          "bytes": {
+            "read": 4876,
+            "written": 4876
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 4876,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "47999f2a4e13840c514ca89fc775cd48d031bda1fa73c977ad28153539cc87b1"
+          },
+          "reconstruction": {
+            "cosine": 0.9946527481079102,
+            "finite": true,
+            "max_abs": 0.005311588756740093,
+            "relative_l2": 0.10380284488201141,
+            "rmse": 0.002463585464283824
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "0aaa1705030f17080d21cc496dc3c249e9c0d14e7bb24387aa354bc531cb0849"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 143125,
+            "encode": 623375,
+            "physical_read": 26250,
+            "physical_write_and_fsync": 358459
+          }
+        }
+      ],
+      "context_tokens": 8,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 8224,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/fp16_reference/branch-a-suffix.hkv",
+                "sha256": "fa993599495affcd0b99f83d77c371b721ef7041daad272b903a1cb844359bc0"
+              },
+              "branch_b_suffix": {
+                "bytes": 8224,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/fp16_reference/branch-b-suffix.hkv",
+                "sha256": "47a40f956ed3b2b208e369f7736d562fb22e531f8fb409a535205d68cc436944"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 24704,
+              "bytes_avoided_vs_full_copy": 8128,
+              "shared_prefix": {
+                "bytes": 8224,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/fp16_reference/shared-prefix.hkv",
+                "sha256": "7ddfa25700b4f1b1abe15f1bf0c69db5eed31dbd7b8c3d20453b5d2e7bb3716c"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 16416,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/fp16_reference/full-copy-branch-a.hkv",
+                "sha256": "330f86ecfd4a284ed35a2cfac6529e8c51ffc7cc85256c39a4720a7c73d82ac1"
+              },
+              "branch_b": {
+                "bytes": 16416,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/fp16_reference/full-copy-branch-b.hkv",
+                "sha256": "822b7271707d93273c6032c0c546af9b79e58c1559f3919b436c2eb42ea9cdd3"
+              },
+              "bytes": 32832
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9999998807907104,
+                "finite": true,
+                "max_abs": 3.0085444450378418e-05,
+                "relative_l2": 0.00020453857723623514,
+                "rmse": 4.965078005625401e-06
+              },
+              "branch_b": {
+                "cosine": 1.0000001192092896,
+                "finite": true,
+                "max_abs": 3.0085444450378418e-05,
+                "relative_l2": 0.00020949987811036408,
+                "rmse": 5.081503331894055e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999998807907104,
+                "finite": true,
+                "max_abs": 3.0085444450378418e-05,
+                "relative_l2": 0.00020453857723623514,
+                "rmse": 4.965078005625401e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 1.0000001192092896,
+                "finite": true,
+                "max_abs": 3.0085444450378418e-05,
+                "relative_l2": 0.00020949987811036408,
+                "rmse": 5.081503331894055e-06
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 4256,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q8_group64/branch-a-suffix.hkv",
+                "sha256": "46be2315fd7a9a4dcd599fa95f154f27a7cbedd9adb270d5b508353a16b41ef4"
+              },
+              "branch_b_suffix": {
+                "bytes": 4256,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q8_group64/branch-b-suffix.hkv",
+                "sha256": "4220bc5a39257b2a5be4e08d5abe74f0a2fd72490ad94f90ea08f457574a8670"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 12800,
+              "bytes_avoided_vs_full_copy": 4160,
+              "shared_prefix": {
+                "bytes": 4256,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q8_group64/shared-prefix.hkv",
+                "sha256": "abc71ab86a2a82b40e5d61a868925c9b7d9b4f49713b157530c4c764e957fd06"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 8480,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q8_group64/full-copy-branch-a.hkv",
+                "sha256": "6377de40ba47b6171fdfa6cf17340961d689739df658b43ee1f03be95f2b2ae5"
+              },
+              "branch_b": {
+                "bytes": 8480,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q8_group64/full-copy-branch-b.hkv",
+                "sha256": "cbbf7a6afb5feb37843d163dca12713165bfc68ecda61c02fbe16be767d20faf"
+              },
+              "bytes": 16960
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9999834299087524,
+                "finite": true,
+                "max_abs": 0.00033226795494556427,
+                "relative_l2": 0.0057563153095543385,
+                "rmse": 0.00013973185559734702
+              },
+              "branch_b": {
+                "cosine": 0.9999833106994629,
+                "finite": true,
+                "max_abs": 0.00033954717218875885,
+                "relative_l2": 0.005790195893496275,
+                "rmse": 0.0001404435170115903
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999834299087524,
+                "finite": true,
+                "max_abs": 0.00033226795494556427,
+                "relative_l2": 0.0057563153095543385,
+                "rmse": 0.00013973185559734702
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999833106994629,
+                "finite": true,
+                "max_abs": 0.00033954717218875885,
+                "relative_l2": 0.005790195893496275,
+                "rmse": 0.0001404435170115903
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 2208,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q4_group64/branch-a-suffix.hkv",
+                "sha256": "7e579a076b1f7cca9c64fdf51ed5fb28370d293f3cf72130b4787de08bba47ca"
+              },
+              "branch_b_suffix": {
+                "bytes": 2208,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q4_group64/branch-b-suffix.hkv",
+                "sha256": "6ffd434027a1eecc919b4843c87fa15f0ebc898c859aa6886395b0ad120b747f"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 6656,
+              "bytes_avoided_vs_full_copy": 2112,
+              "shared_prefix": {
+                "bytes": 2208,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q4_group64/shared-prefix.hkv",
+                "sha256": "300d35ca2c3874bb80aa956540d7657c44aecffe50bf18a9551fc858061db165"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 4384,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q4_group64/full-copy-branch-a.hkv",
+                "sha256": "368d0fa18953a1a3555452d18b3409909975a35551bac056eb518f83436ca2b8"
+              },
+              "branch_b": {
+                "bytes": 4384,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/q4_group64/full-copy-branch-b.hkv",
+                "sha256": "5fc7c339b493bd69284e63d3958f373824ca90049b059c317e106e906c34d1ed"
+              },
+              "bytes": 8768
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9946858286857605,
+                "finite": true,
+                "max_abs": 0.006093701347708702,
+                "relative_l2": 0.103543721139431,
+                "rmse": 0.0025134750176221132
+              },
+              "branch_b": {
+                "cosine": 0.9947066307067871,
+                "finite": true,
+                "max_abs": 0.006202901713550091,
+                "relative_l2": 0.10336412489414215,
+                "rmse": 0.002507138065993786
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9946858286857605,
+                "finite": true,
+                "max_abs": 0.006093701347708702,
+                "relative_l2": 0.103543721139431,
+                "rmse": 0.0025134750176221132
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9947066307067871,
+                "finite": true,
+                "max_abs": 0.006202901713550091,
+                "relative_l2": 0.10336412489414215,
+                "rmse": 0.002507138065993786
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 2454,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16/branch-a-suffix.hkv",
+                "sha256": "15b1c13d8667d4faab497a23b9432328135fa6af1b1e7f6780de71a748187c30"
+              },
+              "branch_b_suffix": {
+                "bytes": 2454,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16/branch-b-suffix.hkv",
+                "sha256": "5f097a4f0d2090923424f5a500023e1fe49426dafff42e80732d988f9e41bae5"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 7394,
+              "bytes_avoided_vs_full_copy": 2358,
+              "shared_prefix": {
+                "bytes": 2454,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16/shared-prefix.hkv",
+                "sha256": "508801351d58732668c8cdb2de05988b07d106187b1b227cb9298a68ee836cff"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 4876,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a.hkv",
+                "sha256": "06633a828240f5d2a8b271ff64436a63c92664b3ba59874ceeab978fbd67cac0"
+              },
+              "branch_b": {
+                "bytes": 4876,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b.hkv",
+                "sha256": "511456405f12547b3d8127a86cbaead1112a19ee5edd930178503ef8a6b50592"
+              },
+              "bytes": 9752
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.994922935962677,
+                "finite": true,
+                "max_abs": 0.004987342283129692,
+                "relative_l2": 0.10116342455148697,
+                "rmse": 0.0024556946009397507
+              },
+              "branch_b": {
+                "cosine": 0.9949520230293274,
+                "finite": true,
+                "max_abs": 0.005065407603979111,
+                "relative_l2": 0.10087693482637405,
+                "rmse": 0.00244681048206985
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.994922935962677,
+                "finite": true,
+                "max_abs": 0.004987342283129692,
+                "relative_l2": 0.10116342455148697,
+                "rmse": 0.0024556946009397507
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.994953453540802,
+                "finite": true,
+                "max_abs": 0.005019381642341614,
+                "relative_l2": 0.10087602585554123,
+                "rmse": 0.002446788363158703
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          }
+        ],
+        "compaction": {
+          "reason": "this lane observed use_sliding_window=false; dropping retained K/V would change attention inputs",
+          "status": "NOT_VALID_FOR_LOSSLESS_ATTENTION_KV_WITHOUT_A_WINDOWING_SEMANTIC"
+        },
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "5f2d2c17ced7a8d1945ddf4bb42df05d40eb7391e055f37223349951ff93a76b",
+          "branch_b_suffix": "5f36f4ffbc5cb91eddabf7d37959110c75b62eb70b90edf2933ff8247ad01e38",
+          "prefix": "1554d9dcf54c152be2a8204d85c40bc13e4f00cf4e07e72284df98b594d6b4fd"
+        },
+        "kind": "attention_kv_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "dc240cefda87f257177cb2ba63097aa3c011e6e7ec333ed5d1a7f8e7b4254cb0",
+        "shape": [
+          8,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session": 196992,
+            "bytes_per_token_amortized_at_declared_session": 24624.0,
+            "per_layer_state_array_bytes": 16416
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session": 58512,
+            "bytes_per_token_amortized_at_declared_session": 7314.0,
+            "per_layer_state_array_bytes": 4876
+          },
+          "q4_group64": {
+            "bytes_per_session": 52608,
+            "bytes_per_token_amortized_at_declared_session": 6576.0,
+            "per_layer_state_array_bytes": 4384
+          },
+          "q8_group64": {
+            "bytes_per_session": 101760,
+            "bytes_per_token_amortized_at_declared_session": 12720.0,
+            "per_layer_state_array_bytes": 8480
+          }
+        },
+        "head_dim": 256,
+        "key_value_heads": 2,
+        "kind": "growing_attention_kv_cache",
+        "layer_count": 12,
+        "session_tokens": 8,
+        "values_per_layer_per_token": 1024,
+        "values_per_layer_session": 8192,
+        "values_per_session": 98304
+      },
+      "source_projection_output": {
+        "float32_sha256": "63c08270312479a4894a1dbfc32d3dc1dab92d4b770d38f2c97ccf3dfe3b01b2",
+        "shape": [
+          8,
+          2,
+          2,
+          256
+        ]
+      }
+    },
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 65568,
+            "written": 65568
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 65568,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/fp16_reference.hkv",
+            "sha256": "be32ff0ed15f9293234e4c0024bd3d63a13f0c924a87156311581fa60f62e6a4"
+          },
+          "reconstruction": {
+            "cosine": 1.0000001192092896,
+            "finite": true,
+            "max_abs": 3.049522638320923e-05,
+            "relative_l2": 0.00020898175716865808,
+            "rmse": 4.903582976112375e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_fp16_reference.json",
+            "seal_sha256": "42f789f5813ce8279fbef0e4bf0cdb382238036d1ef37b8af04e9ace01e643f9"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 41250,
+            "encode": 98000,
+            "physical_read": 33459,
+            "physical_write_and_fsync": 327375
+          }
+        },
+        {
+          "bytes": {
+            "read": 33824,
+            "written": 33824
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 33824,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/q8_group64.hkv",
+            "sha256": "2f0fa7ea00c65b0b338290a2e3ab8bb1c1ef06365da95e487d97ab7e1e2cc4f8"
+          },
+          "reconstruction": {
+            "cosine": 0.9999819993972778,
+            "finite": true,
+            "max_abs": 0.0004206928424537182,
+            "relative_l2": 0.005981754511594772,
+            "rmse": 0.00014035690401215106
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_q8_group64.json",
+            "seal_sha256": "8859cf2556eae55750c31e0da92cc1cd1208f1f31ea41b1c799d3bdd51cb48fd"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 432083,
+            "encode": 1032792,
+            "physical_read": 26625,
+            "physical_write_and_fsync": 305292
+          }
+        },
+        {
+          "bytes": {
+            "read": 17440,
+            "written": 17440
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 17440,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/q4_group64.hkv",
+            "sha256": "616860a9be2eef0b1bdc4211ad29f2bcc6bbb918c3a7ddae84488c70b22205ef"
+          },
+          "reconstruction": {
+            "cosine": 0.9941225051879883,
+            "finite": true,
+            "max_abs": 0.007692387327551842,
+            "relative_l2": 0.10900898277759552,
+            "rmse": 0.002557805273681879
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_q4_group64.json",
+            "seal_sha256": "2beee67354905bcd4089d9252ab832319f3f04bdde3fc883ea01803383c3e8d0"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 363000,
+            "encode": 884666,
+            "physical_read": 23792,
+            "physical_write_and_fsync": 258916
+          }
+        },
+        {
+          "bytes": {
+            "read": 19408,
+            "written": 19408
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 19408,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "a99e70c12d53514517e290d81f527ff94ad8ed452b85643c2292e75287f72d4d"
+          },
+          "reconstruction": {
+            "cosine": 0.9944535493850708,
+            "finite": true,
+            "max_abs": 0.005540609359741211,
+            "relative_l2": 0.10584235191345215,
+            "rmse": 0.0024835029616951942
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "d906b786a5edddede04af039379d998dc1979b4d70a94bbe005a7ffc431a2c44"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 387333,
+            "encode": 2698000,
+            "physical_read": 59375,
+            "physical_write_and_fsync": 291667
+          }
+        }
+      ],
+      "context_tokens": 32,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 32800,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/fp16_reference/branch-a-suffix.hkv",
+                "sha256": "202a8f7227baba15e6d226dc7a90c555cc3da9ea2d5e8aa366432da01db323ad"
+              },
+              "branch_b_suffix": {
+                "bytes": 32800,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/fp16_reference/branch-b-suffix.hkv",
+                "sha256": "bc1c17523be5cff68c714bf4c041419da40f6ae188ac7ba0253c08909e008ed9"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 98432,
+              "bytes_avoided_vs_full_copy": 32704,
+              "shared_prefix": {
+                "bytes": 32800,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/fp16_reference/shared-prefix.hkv",
+                "sha256": "c93b1e64885bb4ba0dec4db86c8e886f5422111d66fd637e2f518985c41f44d4"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 65568,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/fp16_reference/full-copy-branch-a.hkv",
+                "sha256": "98667d382e2fec04a4782b7e35279adf5b0c0ddbd2cf453a4315739b90e0ad5e"
+              },
+              "branch_b": {
+                "bytes": 65568,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/fp16_reference/full-copy-branch-b.hkv",
+                "sha256": "8165f57aae632dc83c6aff53c54bd294a2997b036586fa6d736d72e193d11b6a"
+              },
+              "bytes": 131136
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 1.0,
+                "finite": true,
+                "max_abs": 3.0465424060821533e-05,
+                "relative_l2": 0.0002067756577162072,
+                "rmse": 4.875536887993803e-06
+              },
+              "branch_b": {
+                "cosine": 0.9999998807907104,
+                "finite": true,
+                "max_abs": 3.048032522201538e-05,
+                "relative_l2": 0.00020734766440000385,
+                "rmse": 4.890405307378387e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 1.0,
+                "finite": true,
+                "max_abs": 3.0465424060821533e-05,
+                "relative_l2": 0.0002067756577162072,
+                "rmse": 4.875536887993803e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999998807907104,
+                "finite": true,
+                "max_abs": 3.048032522201538e-05,
+                "relative_l2": 0.00020734766440000385,
+                "rmse": 4.890405307378387e-06
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 16928,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q8_group64/branch-a-suffix.hkv",
+                "sha256": "ef17f97d54507ec17e89cb126224845d59d2f396a26b7f2cfe468c989f1a9918"
+              },
+              "branch_b_suffix": {
+                "bytes": 16928,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q8_group64/branch-b-suffix.hkv",
+                "sha256": "886ec59708bc90c7dcdf9160a1c47b81f512408f6907476453b2db89745eaaac"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 50816,
+              "bytes_avoided_vs_full_copy": 16832,
+              "shared_prefix": {
+                "bytes": 16928,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q8_group64/shared-prefix.hkv",
+                "sha256": "705501012fa1ff47eb1107cfbd97ccd0a15120b4440c8e4526ce8cf1d6d32dc1"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 33824,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q8_group64/full-copy-branch-a.hkv",
+                "sha256": "1f80e2506e11ebb38fbe130a387dee25cf8631adf078bb0f0a0f9467f6a4500a"
+              },
+              "branch_b": {
+                "bytes": 33824,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q8_group64/full-copy-branch-b.hkv",
+                "sha256": "e8ed617aa0a53f717a4cab8c5a827aa794bf3a271b90c6a71863b85fc14ea57d"
+              },
+              "bytes": 67648
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9999822974205017,
+                "finite": true,
+                "max_abs": 0.0003798501566052437,
+                "relative_l2": 0.005939264316111803,
+                "rmse": 0.0001400411711074412
+              },
+              "branch_b": {
+                "cosine": 0.9999822378158569,
+                "finite": true,
+                "max_abs": 0.0003797486424446106,
+                "relative_l2": 0.005973057821393013,
+                "rmse": 0.00014087777526583523
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999822974205017,
+                "finite": true,
+                "max_abs": 0.0003798501566052437,
+                "relative_l2": 0.005939264316111803,
+                "rmse": 0.0001400411711074412
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999822378158569,
+                "finite": true,
+                "max_abs": 0.0003797486424446106,
+                "relative_l2": 0.005973057821393013,
+                "rmse": 0.00014087777526583523
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 8736,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q4_group64/branch-a-suffix.hkv",
+                "sha256": "0ad9b6ba22462a1df43179ca42f2cdb678302ab6fcbb9ce81500457b93b2e85b"
+              },
+              "branch_b_suffix": {
+                "bytes": 8736,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q4_group64/branch-b-suffix.hkv",
+                "sha256": "c6a8d55a603bf8c6709953b077f9b93c5401ea8d749e5b7906994398de4f96d3"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 26240,
+              "bytes_avoided_vs_full_copy": 8640,
+              "shared_prefix": {
+                "bytes": 8736,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q4_group64/shared-prefix.hkv",
+                "sha256": "00d91a9b8ae34c00b0b1132fde865e6381f893391cb11f154c5e249a13573865"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 17440,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q4_group64/full-copy-branch-a.hkv",
+                "sha256": "d42d723d39f4f4797480ee0b7ed63ff42845faa191bf43a429930a0bf98f982b"
+              },
+              "branch_b": {
+                "bytes": 17440,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/q4_group64/full-copy-branch-b.hkv",
+                "sha256": "ae523e268bd1151ef0d630a4dbf8837aafd587fd9cec991bcd7fd8772fa2fca2"
+              },
+              "bytes": 34880
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9942575097084045,
+                "finite": true,
+                "max_abs": 0.006986049935221672,
+                "relative_l2": 0.1077345609664917,
+                "rmse": 0.0025402598548680544
+              },
+              "branch_b": {
+                "cosine": 0.9941892623901367,
+                "finite": true,
+                "max_abs": 0.006986049935221672,
+                "relative_l2": 0.10837240517139435,
+                "rmse": 0.0025560210924595594
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9942575097084045,
+                "finite": true,
+                "max_abs": 0.006986049935221672,
+                "relative_l2": 0.1077345609664917,
+                "rmse": 0.0025402598548680544
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9941892623901367,
+                "finite": true,
+                "max_abs": 0.006986049935221672,
+                "relative_l2": 0.10837240517139435,
+                "rmse": 0.0025560210924595594
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 9720,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16/branch-a-suffix.hkv",
+                "sha256": "bbd0fe6e727cac49edfd33e5fed999211c512ca6e3fc8456df7abb3f44f401e4"
+              },
+              "branch_b_suffix": {
+                "bytes": 9720,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16/branch-b-suffix.hkv",
+                "sha256": "d2e880f0996fe7fa3ace9d2b90c13f37902995a6ca05784f0e046d272f1ad6a7"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 29192,
+              "bytes_avoided_vs_full_copy": 9624,
+              "shared_prefix": {
+                "bytes": 9720,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16/shared-prefix.hkv",
+                "sha256": "af1564d161e6e6f4823391951e4b6931e316e26735c127cbcb1a0991c211a5ed"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 19408,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a.hkv",
+                "sha256": "38e5f07feedef4cc10ac15ebbab54a5e8888f857db0fedadd181a57845c1b2b7"
+              },
+              "branch_b": {
+                "bytes": 19408,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b.hkv",
+                "sha256": "0c78a0840c0946296add0c3d52b9fbcaeee92362e1bb4f845d6663d65f8e97e5"
+              },
+              "bytes": 38816
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9945592880249023,
+                "finite": true,
+                "max_abs": 0.005454767495393753,
+                "relative_l2": 0.10482954978942871,
+                "rmse": 0.002471762942150235
+              },
+              "branch_b": {
+                "cosine": 0.994490385055542,
+                "finite": true,
+                "max_abs": 0.005426332354545593,
+                "relative_l2": 0.10549435764551163,
+                "rmse": 0.0024881409481167793
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9945593476295471,
+                "finite": true,
+                "max_abs": 0.005415921099483967,
+                "relative_l2": 0.1048288568854332,
+                "rmse": 0.0024717466440051794
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9944900274276733,
+                "finite": true,
+                "max_abs": 0.005410358309745789,
+                "relative_l2": 0.10549404472112656,
+                "rmse": 0.0024881332647055387
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          }
+        ],
+        "compaction": {
+          "reason": "this lane observed use_sliding_window=false; dropping retained K/V would change attention inputs",
+          "status": "NOT_VALID_FOR_LOSSLESS_ATTENTION_KV_WITHOUT_A_WINDOWING_SEMANTIC"
+        },
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "7b8cdd2bce50870c557755bf9d5e23bcd750affa6a8a71ca0aff816725428d80",
+          "branch_b_suffix": "9d54b5b460582b737c5af48ece8acb5e20a0b3fcaa8197c763490efc24c54b87",
+          "prefix": "e5683701dd5f798ca85819a6b576f05bc66cb3cf015860cb12a1fd2e4e7b86e6"
+        },
+        "kind": "attention_kv_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "062f44f468e8174b87245945828c1884c222e741004e7c729cbe093799099a52",
+        "shape": [
+          32,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session": 786816,
+            "bytes_per_token_amortized_at_declared_session": 24588.0,
+            "per_layer_state_array_bytes": 65568
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session": 232896,
+            "bytes_per_token_amortized_at_declared_session": 7278.0,
+            "per_layer_state_array_bytes": 19408
+          },
+          "q4_group64": {
+            "bytes_per_session": 209280,
+            "bytes_per_token_amortized_at_declared_session": 6540.0,
+            "per_layer_state_array_bytes": 17440
+          },
+          "q8_group64": {
+            "bytes_per_session": 405888,
+            "bytes_per_token_amortized_at_declared_session": 12684.0,
+            "per_layer_state_array_bytes": 33824
+          }
+        },
+        "head_dim": 256,
+        "key_value_heads": 2,
+        "kind": "growing_attention_kv_cache",
+        "layer_count": 12,
+        "session_tokens": 32,
+        "values_per_layer_per_token": 1024,
+        "values_per_layer_session": 32768,
+        "values_per_session": 393216
+      },
+      "source_projection_output": {
+        "float32_sha256": "e3de6cb96281e089ab3b33fc8e6fe800bb9191e822f3f985f47392d2bf661764",
+        "shape": [
+          32,
+          2,
+          2,
+          256
+        ]
+      }
+    },
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 262176,
+            "written": 262176
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 262176,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/fp16_reference.hkv",
+            "sha256": "81e0d52f5537969ac057f529a7ba55552d8ece5d24e36574882bec6bd416d246"
+          },
+          "reconstruction": {
+            "cosine": 0.9999995827674866,
+            "finite": true,
+            "max_abs": 3.0517578125e-05,
+            "relative_l2": 0.00020674742700066417,
+            "rmse": 4.805109256267315e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_fp16_reference.json",
+            "seal_sha256": "16a36cde1f1fb1d00eec1839b1071a558fe58892728f84639e63b6d2b4cbbf54"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 168125,
+            "encode": 452833,
+            "physical_read": 79458,
+            "physical_write_and_fsync": 681125
+          }
+        },
+        {
+          "bytes": {
+            "read": 135200,
+            "written": 135200
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 135200,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/q8_group64.hkv",
+            "sha256": "d400c96f98a8085762af5183306eedd4f61b96ee792549ee8eb5ec2867a9d799"
+          },
+          "reconstruction": {
+            "cosine": 0.9999818801879883,
+            "finite": true,
+            "max_abs": 0.0004397444427013397,
+            "relative_l2": 0.006014724262058735,
+            "rmse": 0.00013979092182125896
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_q8_group64.json",
+            "seal_sha256": "3234d8b15468602027e06b7af08555e97321c7a3526748340d8f0c566686485b"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1924792,
+            "encode": 3460709,
+            "physical_read": 39625,
+            "physical_write_and_fsync": 337166
+          }
+        },
+        {
+          "bytes": {
+            "read": 69664,
+            "written": 69664
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 69664,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/q4_group64.hkv",
+            "sha256": "e89ee4f58cf480cd9edb45db2d87a6f3a221e7e790fa05d7714e321b169d2d38"
+          },
+          "reconstruction": {
+            "cosine": 0.9941302537918091,
+            "finite": true,
+            "max_abs": 0.007986695505678654,
+            "relative_l2": 0.10892770439386368,
+            "rmse": 0.002531637903302908
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_q4_group64.json",
+            "seal_sha256": "370272ddf23d37ea4ad652a765f6e778e68de8bae294de32a66b14f021f46342"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1529250,
+            "encode": 2534667,
+            "physical_read": 24792,
+            "physical_write_and_fsync": 248458
+          }
+        },
+        {
+          "bytes": {
+            "read": 77530,
+            "written": 77530
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 77530,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "0e74f2426888faa9ade3cccd32d31d50c586b68ff9aa34d25ad62313eaf3905c"
+          },
+          "reconstruction": {
+            "cosine": 0.9944396018981934,
+            "finite": true,
+            "max_abs": 0.005337676033377647,
+            "relative_l2": 0.10599659383296967,
+            "rmse": 0.002463514916598797
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "fc88900b360058bc27ee8062e0caa971fc30cb076eb6c42264c3f00f813d7b2d"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1657833,
+            "encode": 10914834,
+            "physical_read": 34291,
+            "physical_write_and_fsync": 331541
+          }
+        }
+      ],
+      "context_tokens": 128,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 131104,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/fp16_reference/branch-a-suffix.hkv",
+                "sha256": "7b22a4c9b7e0d84d63c9c1644f1823c5beef99ee29c577dfb66bdbab62112893"
+              },
+              "branch_b_suffix": {
+                "bytes": 131104,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/fp16_reference/branch-b-suffix.hkv",
+                "sha256": "9c6ddc28dbf89cdea7a061acf630dc6061569d951da34573c3e0605ec0510332"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 393344,
+              "bytes_avoided_vs_full_copy": 131008,
+              "shared_prefix": {
+                "bytes": 131104,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/fp16_reference/shared-prefix.hkv",
+                "sha256": "b7dcd6ad0ef1681f76a50286592aa38adef2917b15d9c15d2cfbd52ef43ebe2a"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 262176,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/fp16_reference/full-copy-branch-a.hkv",
+                "sha256": "5e3a8eb415665b4da398456f83009d9df32ef3bfed5a523efedd1a7e47d5e45a"
+              },
+              "branch_b": {
+                "bytes": 262176,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/fp16_reference/full-copy-branch-b.hkv",
+                "sha256": "ba3434347a577a1a48b051c5714e89f6544ce369cad2658b552ed98498f91f65"
+              },
+              "bytes": 524352
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9999997615814209,
+                "finite": true,
+                "max_abs": 3.0517578125e-05,
+                "relative_l2": 0.00020667891658376902,
+                "rmse": 4.814961812371621e-06
+              },
+              "branch_b": {
+                "cosine": 0.9999995827674866,
+                "finite": true,
+                "max_abs": 3.0487775802612305e-05,
+                "relative_l2": 0.00020646613847929984,
+                "rmse": 4.8132324081962e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999997615814209,
+                "finite": true,
+                "max_abs": 3.0517578125e-05,
+                "relative_l2": 0.00020667891658376902,
+                "rmse": 4.814961812371621e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999995827674866,
+                "finite": true,
+                "max_abs": 3.0487775802612305e-05,
+                "relative_l2": 0.00020646613847929984,
+                "rmse": 4.8132324081962e-06
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 67616,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q8_group64/branch-a-suffix.hkv",
+                "sha256": "4ad1c31e274bcdaa5c9931508b0b6b730ef9cf1291169fa567df970854ba27e5"
+              },
+              "branch_b_suffix": {
+                "bytes": 67616,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q8_group64/branch-b-suffix.hkv",
+                "sha256": "c59fe66b1e3fbffd3402b02c9d370a9caad7b6ff20cf98e7344ca24030701066"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 202880,
+              "bytes_avoided_vs_full_copy": 67520,
+              "shared_prefix": {
+                "bytes": 67616,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q8_group64/shared-prefix.hkv",
+                "sha256": "2bfa311fe71fa8f52a8bec30ff38c177cf9875d0685b88fddff63597a50c48dc"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 135200,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q8_group64/full-copy-branch-a.hkv",
+                "sha256": "0695afa8512115278a778eb05443d9f4a6810f4bf2c8f66ad79d866e5045e7bd"
+              },
+              "branch_b": {
+                "bytes": 135200,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q8_group64/full-copy-branch-b.hkv",
+                "sha256": "077d8a60a3eb934ac6a4a3bad2e52166dee623500fc6a514f20a4d10a5f71ba1"
+              },
+              "bytes": 270400
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9999818801879883,
+                "finite": true,
+                "max_abs": 0.0004106219857931137,
+                "relative_l2": 0.0059891860000789165,
+                "rmse": 0.00013952901645097882
+              },
+              "branch_b": {
+                "cosine": 0.9999819993972778,
+                "finite": true,
+                "max_abs": 0.00040413998067379,
+                "relative_l2": 0.005970024038106203,
+                "rmse": 0.00013917595788370818
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999818801879883,
+                "finite": true,
+                "max_abs": 0.0004106219857931137,
+                "relative_l2": 0.0059891860000789165,
+                "rmse": 0.00013952901645097882
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999819993972778,
+                "finite": true,
+                "max_abs": 0.00040413998067379,
+                "relative_l2": 0.005970024038106203,
+                "rmse": 0.00013917595788370818
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 34848,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q4_group64/branch-a-suffix.hkv",
+                "sha256": "cb88cf5cf2dad6853cc4a5cde266d80c6b1d25ace975497303504e129d938d4f"
+              },
+              "branch_b_suffix": {
+                "bytes": 34848,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q4_group64/branch-b-suffix.hkv",
+                "sha256": "9d2929e7df779920d37deb00873665d63720b9c2367aabf1440c87e95fc9d900"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 104576,
+              "bytes_avoided_vs_full_copy": 34752,
+              "shared_prefix": {
+                "bytes": 34848,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q4_group64/shared-prefix.hkv",
+                "sha256": "ba78c1523f0cf530a8a1c506741f1ff42173a52c220ac86bbbda7de23d0961ce"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 69664,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q4_group64/full-copy-branch-a.hkv",
+                "sha256": "aad61f0a571714065a6f14dc357fe10d0dba8e80f1335ac9c840cea7d26607fe"
+              },
+              "branch_b": {
+                "bytes": 69664,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/q4_group64/full-copy-branch-b.hkv",
+                "sha256": "a043e9db2146fd14c5b35ca84f6644cf6a9e88fe58e07ba0b5c1225a13d065f9"
+              },
+              "bytes": 139328
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9941762685775757,
+                "finite": true,
+                "max_abs": 0.007647048681974411,
+                "relative_l2": 0.10847508907318115,
+                "rmse": 0.0025271251797676086
+              },
+              "branch_b": {
+                "cosine": 0.9941747784614563,
+                "finite": true,
+                "max_abs": 0.007627623155713081,
+                "relative_l2": 0.1084316149353981,
+                "rmse": 0.0025278080720454454
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9941762685775757,
+                "finite": true,
+                "max_abs": 0.007647048681974411,
+                "relative_l2": 0.10847508907318115,
+                "rmse": 0.0025271251797676086
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9941747784614563,
+                "finite": true,
+                "max_abs": 0.007627623155713081,
+                "relative_l2": 0.1084316149353981,
+                "rmse": 0.0025278080720454454
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "copy_on_write": {
+              "branch_a_suffix": {
+                "bytes": 38784,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16/branch-a-suffix.hkv",
+                "sha256": "f0a13a6070980eee6fb35c475d54aff9c8ac895d4aad9090da584cf563372a15"
+              },
+              "branch_b_suffix": {
+                "bytes": 38784,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16/branch-b-suffix.hkv",
+                "sha256": "ca2919cfff3fa547d2b590e51c2136391b5e42e9f9a6b352be80c9c069e85bf3"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 116384,
+              "bytes_avoided_vs_full_copy": 38676,
+              "shared_prefix": {
+                "bytes": 38784,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16/shared-prefix.hkv",
+                "sha256": "dc5f7e79db419647e1082db293a55c7b44b15e08a4fc8b390182c2ff733d44d8"
+              }
+            },
+            "full_copy": {
+              "branch_a": {
+                "bytes": 77530,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a.hkv",
+                "sha256": "ebf5009c2789b70a5b60a0c5b76835c2c391e6957935d5bd8435107c3efa1d14"
+              },
+              "branch_b": {
+                "bytes": 77530,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b.hkv",
+                "sha256": "1c17df230ef93ab836191ae20aeb6db37667023de0ba3279e24ca942e8761c58"
+              },
+              "bytes": 155060
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branches": {
+              "branch_a": {
+                "cosine": 0.9944855570793152,
+                "finite": true,
+                "max_abs": 0.005385799799114466,
+                "relative_l2": 0.10552061349153519,
+                "rmse": 0.002458295552060008
+              },
+              "branch_b": {
+                "cosine": 0.9944837689399719,
+                "finite": true,
+                "max_abs": 0.005374174565076828,
+                "relative_l2": 0.10548865050077438,
+                "rmse": 0.0024592000991106033
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9944852590560913,
+                "finite": true,
+                "max_abs": 0.005364730954170227,
+                "relative_l2": 0.10552186518907547,
+                "rmse": 0.0024583246558904648
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9944832921028137,
+                "finite": true,
+                "max_abs": 0.005355546250939369,
+                "relative_l2": 0.10549018532037735,
+                "rmse": 0.002459235955029726
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          }
+        ],
+        "compaction": {
+          "reason": "this lane observed use_sliding_window=false; dropping retained K/V would change attention inputs",
+          "status": "NOT_VALID_FOR_LOSSLESS_ATTENTION_KV_WITHOUT_A_WINDOWING_SEMANTIC"
+        },
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "a11e88fc9fae686315533f82e54559e6af29cefc0c28c265805f6e44efb4e1cd",
+          "branch_b_suffix": "e7e7bc650e22923f58553b2e2629467d11e75fc8f8fbc971805537a839cb267f",
+          "prefix": "14eecbce6774b1740a924eff672f72ad34cf52374dd0137cccc6f4a6d05ec9c2"
+        },
+        "kind": "attention_kv_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "cb1ea1a2639e951e180cf016d0a4705affa65ac403de157ddb9a80300016db29",
+        "shape": [
+          128,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session": 3146112,
+            "bytes_per_token_amortized_at_declared_session": 24579.0,
+            "per_layer_state_array_bytes": 262176
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session": 930360,
+            "bytes_per_token_amortized_at_declared_session": 7268.4375,
+            "per_layer_state_array_bytes": 77530
+          },
+          "q4_group64": {
+            "bytes_per_session": 835968,
+            "bytes_per_token_amortized_at_declared_session": 6531.0,
+            "per_layer_state_array_bytes": 69664
+          },
+          "q8_group64": {
+            "bytes_per_session": 1622400,
+            "bytes_per_token_amortized_at_declared_session": 12675.0,
+            "per_layer_state_array_bytes": 135200
+          }
+        },
+        "head_dim": 256,
+        "key_value_heads": 2,
+        "kind": "growing_attention_kv_cache",
+        "layer_count": 12,
+        "session_tokens": 128,
+        "values_per_layer_per_token": 1024,
+        "values_per_layer_session": 131072,
+        "values_per_session": 1572864
+      },
+      "source_projection_output": {
+        "float32_sha256": "5a03edcdad001e473e3ae01c3bcbdce87bfeb82f079b63898eb6b7161b0f2fe3",
+        "shape": [
+          128,
+          2,
+          2,
+          256
+        ]
+      }
+    }
+  ],
+  "schema": "hawking.ascension.qwen_state_kv_traffic_receipt.v1",
+  "seal_sha256": "467be55e58bba1d9a5650b209cbd5228256f92e1414a53834afa5d7fe5c8f328",
+  "source_projection_bindings": [
+    {
+      "decoded_float32_sha256": "fd3c150684483dd42d0e945e25a855b209f733c10f94e29c7335b13e1690841d",
+      "decoded_float32_shape": [
+        512,
+        2048
+      ],
+      "raw_tensor_bf16_bytes": 2097152,
+      "raw_tensor_bf16_sha256": "672bdd4cabeadedb505d55684355a6c23bdfc5c0fc0d1814ba7e2939bf291ba0",
+      "source_shard": "model-00003-of-00040.safetensors",
+      "source_shard_bytes_matched_to_sealed_audit": 3999515608,
+      "tensor_name": "model.layers.3.self_attn.k_proj.weight"
+    },
+    {
+      "decoded_float32_sha256": "2073d7a87ebd28d1da22b2c6675b618193231d690508a8b64562c04901133069",
+      "decoded_float32_shape": [
+        512,
+        2048
+      ],
+      "raw_tensor_bf16_bytes": 2097152,
+      "raw_tensor_bf16_sha256": "7747093da5c8717c186e4d5eedc0e3c639a02cbca47bd122ad120ea2ae22a601",
+      "source_shard": "model-00003-of-00040.safetensors",
+      "source_shard_bytes_matched_to_sealed_audit": 3999515608,
+      "tensor_name": "model.layers.3.self_attn.v_proj.weight"
+    }
+  ],
+  "source_verification": {
+    "architecture": "Qwen3NextForCausalLM",
+    "config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "model_type": "qwen3_next",
+    "sealed_source_body_audit": {
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
+      "schema": "hawking.ascension.qwen80_source_body_audit_candidate.v1",
+      "seal_sha256": "9e8aa8ae4625097cb7265d9a05b039b8c19e00ec47a5e75d38e9f40e90d69d2e",
+      "status": "CANDIDATE_FULL_PINNED_SOURCE_BODY_VERIFIED"
+    }
+  }
+}

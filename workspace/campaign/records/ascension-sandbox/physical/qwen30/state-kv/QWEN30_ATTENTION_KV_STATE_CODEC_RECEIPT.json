@@ -198,9 +198,9 @@
     "architecture": "Qwen3MoeForCausalLM",
     "id": "Qwen3-Coder-30B-A3B-Instruct"
   },
-  "recorded_at": "2026-08-08T07:15:01.425618Z",
+  "recorded_at": "2026-08-08T07:31:44.350748Z",
   "schema": "hawking.ascension.qwen_state_kv_component_receipt.v1",
-  "seal_sha256": "35bcdd5bab2aefda0b71edfd4d6855e4d5bd437907aa30a8bff885bb7b9f22b8",
+  "seal_sha256": "f13c563994806e42f7df9001bbec6d2b36ab6f49f60b8dc75b2bae30b07b033e",
   "source_projection_bindings": [
     {
       "decoded_float32_sha256": "7d1559efa77cfceee2eb99bc7d5c8851bb5bc2274fbbb20ddb0fd81d8eb54fa6",
@@ -238,5 +238,10 @@
       "seal_sha256": "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
       "status": "CANDIDATE_SOURCE_BODY_VERIFIED"
     }
+  },
+  "state_traffic_evidence": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_ATTENTION_KV_TRAFFIC_RECEIPT.json",
+    "regime_count": 3,
+    "seal_sha256": "96973e38a74b3a672a47f590970a12ba559576d4b54180bbe3f7ff9737d5bc55"
   }
 }
