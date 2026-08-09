@@ -29,7 +29,12 @@ const STATUS_STRUCTURE: &str =
     "PREPARED_QWEN80_MULTI_LAYER_CHAIN_CPU_ORACLE_STRUCTURE_NOT_NUMERIC_WITHOUT_LAYER_RECEIPTS";
 const STATUS_COMPOSED: &str =
     "COMPOSED_QWEN80_MULTI_LAYER_CHAIN_CPU_ORACLE_FROM_PER_LAYER_RECEIPTS_NOT_DEVICE";
+/// Numeric chain with per-layer top-10 routes and second-residual identities.
+/// Device parity must be checked against these CPU references, never device-vs-device.
+const STATUS_NUMERIC: &str =
+    "NUMERIC_QWEN80_MULTI_LAYER_CHAIN_CPU_ORACLE_FROM_PER_LAYER_RECEIPTS_NOT_DEVICE";
 const MAX_JSON_BYTES: u64 = 100_000_000;
+const TOP_K: usize = 10;
 
 #[derive(Debug)]
 struct Args {
@@ -258,6 +263,12 @@ fn read_json(path: &Path) -> Result<Value, String> {
 /// - `layer`, `mixer`, `state_slot`
 /// - `input_f32le_sha256`, `second_residual_f32le_sha256`
 /// - optional `second_residual_f32` array for exact handoff check
+/// - optional `route_ids` (len 10) + `route_weights` (len 10) for numeric top-10
+///   route bridges used by the multi-layer Metal encode path
+///
+/// When every layer carries top-10 route ids/weights the status becomes
+/// [`STATUS_NUMERIC`] so device parity is checked against a real CPU
+/// reference rather than against itself.
 fn compose_from_receipts(layer_count: usize, path: &Path) -> Result<Value, String> {
     let value = read_json(path)?;
     let receipts = value
@@ -286,6 +297,7 @@ fn compose_from_receipts(layer_count: usize, path: &Path) -> Result<Value, Strin
     let mut previous_output_sha: Option<String> = None;
     let mut previous_output_vector: Option<Vec<f32>> = None;
     let mut max_abs_handoff_error: f64 = 0.0;
+    let mut all_layers_have_routes = true;
 
     for (index, receipt) in receipts.iter().enumerate() {
         let object = receipt
@@ -361,19 +373,88 @@ fn compose_from_receipts(layer_count: usize, path: &Path) -> Result<Value, Strin
                 }
                 max_abs_handoff_error = max_abs_handoff_error.max(local_max as f64);
             }
-            // Next layer's input should match this output — checked via sha;
-            // keep vector for optional next comparison if next receipt has input vector.
             previous_output_vector = Some(values);
         }
+
+        // Optional numeric top-10 route bridge (CPU oracle, not device).
+        let route_block = match (
+            object.get("route_ids").and_then(Value::as_array),
+            object.get("route_weights").and_then(Value::as_array),
+        ) {
+            (Some(ids), Some(weights)) => {
+                if ids.len() != TOP_K {
+                    return Err(format!(
+                        "receipt[{index}].route_ids len observed={}, expected={TOP_K}",
+                        ids.len()
+                    ));
+                }
+                if weights.len() != TOP_K {
+                    return Err(format!(
+                        "receipt[{index}].route_weights len observed={}, expected={TOP_K}",
+                        weights.len()
+                    ));
+                }
+                let mut route_ids = Vec::with_capacity(TOP_K);
+                for (i, id) in ids.iter().enumerate() {
+                    let v = id.as_u64().ok_or_else(|| {
+                        format!("receipt[{index}].route_ids[{i}] must be unsigned integer")
+                    })?;
+                    if v > u16::MAX as u64 {
+                        return Err(format!(
+                            "receipt[{index}].route_ids[{i}] observed={v}, exceeds u16::MAX"
+                        ));
+                    }
+                    route_ids.push(v);
+                }
+                let mut route_weights = Vec::with_capacity(TOP_K);
+                for (i, w) in weights.iter().enumerate() {
+                    let v = w.as_f64().filter(|x| x.is_finite()).ok_or_else(|| {
+                        format!("receipt[{index}].route_weights[{i}] must be finite f64")
+                    })?;
+                    route_weights.push(v);
+                }
+                let weight_sum: f64 = route_weights.iter().sum();
+                if !(0.99..=1.01).contains(&weight_sum) {
+                    return Err(format!(
+                        "receipt[{index}].route_weights sum observed={weight_sum}, expected approximately 1.0 within [0.99, 1.01]"
+                    ));
+                }
+                Some(json!({
+                    "route_ids": route_ids,
+                    "route_weights": route_weights,
+                    "top_k": TOP_K,
+                    "source": "cpu_oracle_not_device",
+                }))
+            }
+            (None, None) => {
+                all_layers_have_routes = false;
+                None
+            }
+            _ => {
+                return Err(format!(
+                    "receipt[{index}] must publish both route_ids and route_weights together, or neither (observed partial route bridge)"
+                ));
+            }
+        };
+
         previous_output_sha = Some(output_sha.clone());
-        composed_layers.push(json!({
+        let mut layer_entry = json!({
             "layer": index,
             "mixer": mixer,
             "state_slot": slot,
             "input_f32le_sha256": input_sha,
             "second_residual_f32le_sha256": output_sha,
-            "handoff_from_previous_exact": index == 0 || true,
-        }));
+            "handoff_from_previous_exact": true,
+            "exclusive_caller_owned_slot": true,
+            "rollback_buffers_required": schedule.state_slot.rollback_buffers_required_before_execution,
+        });
+        if let Some(route) = route_block {
+            layer_entry
+                .as_object_mut()
+                .expect("layer entry object")
+                .insert("top10_route_bridge".into(), route);
+        }
+        composed_layers.push(layer_entry);
     }
 
     let trace = qwen80_multi_layer_structural_kernel_trace(layer_count, false).map_err(|e| {
@@ -382,9 +463,15 @@ fn compose_from_receipts(layer_count: usize, path: &Path) -> Result<Value, Strin
         )
     })?;
 
+    let status = if all_layers_have_routes {
+        STATUS_NUMERIC
+    } else {
+        STATUS_COMPOSED
+    };
+
     let mut document = json!({
         "schema": SCHEMA,
-        "status": STATUS_COMPOSED,
+        "status": status,
         "source_authority": {
             "source_revision": QWEN80_SOURCE_REVISION,
             "gravity_manifest_seal_sha256": QWEN80_GRAVITY_MANIFEST_SEAL_SHA256,
@@ -396,9 +483,12 @@ fn compose_from_receipts(layer_count: usize, path: &Path) -> Result<Value, Strin
         "structural_kernel_trace": trace,
         "total_dispatches": qwen80_multi_layer_total_dispatches(layer_count, false)?,
         "numeric_layer_outputs_composed": true,
+        "per_layer_top10_route_bridges_present": all_layers_have_routes,
+        "device_parity_reference": "cpu_oracle_not_device_self",
         "claim_boundary": {
             "cpu_oracle_structure_only": false,
             "numeric_chain_composed": true,
+            "numeric_top10_routes_composed": all_layers_have_routes,
             "device_parity": false,
             "metal_device_or_dispatch_performed": false,
             "artifact_payload_open_or_scan_performed": false,
@@ -541,5 +631,75 @@ mod tests {
         assert_eq!(doc["status"], STATUS_COMPOSED);
         assert_eq!(doc["total_dispatches"], 46);
         assert_eq!(doc["chain_final_second_residual_f32le_sha256"], sha_c);
+    }
+
+    #[test]
+    fn compose_numeric_with_top10_routes_for_l0_l2() {
+        let sha = |c: char| c.to_string().repeat(64);
+        let route_ids: Vec<u64> = (0..10).collect();
+        let route_weights: Vec<f64> = vec![0.1; 10];
+        let receipts = json!([
+            {
+                "layer": 0,
+                "mixer": "delta_net",
+                "state_slot": 0,
+                "input_f32le_sha256": sha('a'),
+                "second_residual_f32le_sha256": sha('b'),
+                "route_ids": route_ids,
+                "route_weights": route_weights,
+            },
+            {
+                "layer": 1,
+                "mixer": "delta_net",
+                "state_slot": 1,
+                "input_f32le_sha256": sha('b'),
+                "second_residual_f32le_sha256": sha('c'),
+                "route_ids": route_ids,
+                "route_weights": route_weights,
+            },
+            {
+                "layer": 2,
+                "mixer": "delta_net",
+                "state_slot": 2,
+                "input_f32le_sha256": sha('c'),
+                "second_residual_f32le_sha256": sha('d'),
+                "route_ids": route_ids,
+                "route_weights": route_weights,
+            },
+        ]);
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("numeric.json");
+        fs::write(&path, serde_json::to_vec(&receipts).unwrap()).unwrap();
+        let abs = fs::canonicalize(&path).unwrap();
+        let doc = compose_from_receipts(3, &abs).unwrap();
+        assert_eq!(doc["status"], STATUS_NUMERIC);
+        assert_eq!(doc["total_dispatches"], 69);
+        assert_eq!(doc["per_layer_top10_route_bridges_present"], true);
+        assert_eq!(doc["device_parity_reference"], "cpu_oracle_not_device_self");
+        assert_eq!(
+            doc["layers"][2]["top10_route_bridge"]["top_k"],
+            10
+        );
+        assert_eq!(doc["claim_boundary"]["numeric_top10_routes_composed"], true);
+    }
+
+    #[test]
+    fn compose_refuses_partial_route_bridge_with_values() {
+        let sha = |c: char| c.to_string().repeat(64);
+        let receipts = json!([{
+            "layer": 0,
+            "mixer": "delta_net",
+            "state_slot": 0,
+            "input_f32le_sha256": sha('a'),
+            "second_residual_f32le_sha256": sha('b'),
+            "route_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            // missing route_weights
+        }]);
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("partial.json");
+        fs::write(&path, serde_json::to_vec(&receipts).unwrap()).unwrap();
+        let abs = fs::canonicalize(&path).unwrap();
+        let err = compose_from_receipts(1, &abs).unwrap_err();
+        assert!(err.contains("both route_ids and route_weights"), "{err}");
     }
 }

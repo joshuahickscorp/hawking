@@ -137,6 +137,16 @@ const QWEN80_SOURCE_TOKEN_L1_MOE_SUFFIX_KERNELS: [&str; 14] = [
     "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
 ];
 
+/// Multi-layer same-runtime DeltaNet chain encode (L0..L2+).
+#[cfg(target_os = "macos")]
+#[path = "qwen80_multi_layer_same_runtime_encode.rs"]
+mod multi_layer_same_runtime_encode;
+#[cfg(target_os = "macos")]
+pub use multi_layer_same_runtime_encode::{
+    Qwen80MultiLayerSuffixWitness, Qwen80SameRuntimeDeltaNetLayerPrefixEncoder,
+    Qwen80SameRuntimeMultiLayerChainParity,
+};
+
 #[cfg(target_os = "macos")]
 fn qwen80_require_exact_structural_kernel_trace(
     observed: Option<&[String]>,
