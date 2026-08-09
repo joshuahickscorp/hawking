@@ -20,9 +20,7 @@ use crate::gravity_deepseek_v4::{
     DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_bos_layer_attention_device::expected_bos_compress_ratio;
-use crate::gravity_deepseek_v4_layer0_continuation::{
-    yarn_rope_table_for_position, WINDOW_SIZE,
-};
+use crate::gravity_deepseek_v4_layer0_continuation::{yarn_rope_table_for_position, WINDOW_SIZE};
 use crate::gravity_deepseek_v4_layer0_prefix::{
     EMBED_WEIGHT, HC_EPS, HC_MIX_WIDTH, HC_MULT, HC_SINKHORN_ITERS, HIDDEN_SIZE, RMS_NORM_EPS,
     VOCAB_SIZE,
@@ -100,8 +98,7 @@ impl DeepSeekV4FullseqLayerKvCache {
             layer,
             capacity,
             filled: 0,
-            buffer: metal
-                .new_buffer_checked(capacity * DSV4F_FULLSEQ_KV_ROW_BF16_BYTES)?,
+            buffer: metal.new_buffer_checked(capacity * DSV4F_FULLSEQ_KV_ROW_BF16_BYTES)?,
         })
     }
 
@@ -301,8 +298,7 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             denominators: metal.new_buffer_checked(NUM_HEADS * size_of::<f32>())?,
             wo_a: metal.new_buffer_checked(WO_A_ROWS * size_of::<u16>())?,
             wo_b: new_linear_scratch(metal, WO_B_COLS, WO_B_ROWS)?,
-            attention_hc_state_bf16: metal
-                .new_buffer_checked(DSV4F_FULLSEQ_HC_STATE_BF16_BYTES)?,
+            attention_hc_state_bf16: metal.new_buffer_checked(DSV4F_FULLSEQ_HC_STATE_BF16_BYTES)?,
             rope_cos: metal.new_buffer_checked((ROPE_HEAD_DIM / 2) * size_of::<f32>())?,
             rope_sin: metal.new_buffer_checked((ROPE_HEAD_DIM / 2) * size_of::<f32>())?,
         })
@@ -337,7 +333,9 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             ));
         }
         if kv_cache.layer != self.layer {
-            return Err(fullseq_error("KV cache layer does not match executor layer"));
+            return Err(fullseq_error(
+                "KV cache layer does not match executor layer",
+            ));
         }
         let catalog = DeepSeekV4LayerDeviceCatalog::admit(reader)?;
         catalog
@@ -356,7 +354,9 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
         match self.input_kind {
             DeepSeekV4FullseqInputKind::Embedding => {
                 if input.length() != (HIDDEN_SIZE * size_of::<u16>()) as u64 {
-                    return Err(fullseq_error("layer-0 fullseq input must be BF16[4096] embed"));
+                    return Err(fullseq_error(
+                        "layer-0 fullseq input must be BF16[4096] embed",
+                    ));
                 }
             }
             DeepSeekV4FullseqInputKind::PredecessorHc => {
@@ -658,8 +658,8 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             )));
         }
         kv_cache.filled = valid_kv;
-        let empty_compressed = self.compress_ratio == 0
-            || (token_position + 1) / self.compress_ratio == 0;
+        let empty_compressed =
+            self.compress_ratio == 0 || (token_position + 1) / self.compress_ratio == 0;
         Ok(DeepSeekV4FullseqAttentionDeviceOutput {
             attention_hc_state_bf16: self.attention_hc_state_bf16.to_owned(),
             layer: self.layer,
@@ -757,7 +757,11 @@ impl LayerControls {
     }
 }
 
-fn read_tensor(reader: &DeepSeekV4FullStreamReader, name: &str, dtype: &str) -> Result<VerifiedTensor> {
+fn read_tensor(
+    reader: &DeepSeekV4FullStreamReader,
+    name: &str,
+    dtype: &str,
+) -> Result<VerifiedTensor> {
     let meta = reader.tensor_metadata(name)?;
     if meta.dtype != dtype {
         return Err(fullseq_error(format!(
@@ -1249,5 +1253,4 @@ mod tests {
         assert_eq!(DSV4F_FULLSEQ_KV_CAPACITY, 128);
         assert!(SPARSE_KERNEL.contains("growing_kv"));
     }
-
 }

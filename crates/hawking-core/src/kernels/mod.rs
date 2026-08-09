@@ -12620,6 +12620,62 @@ mod metal_dispatch {
         )
     }
 
+    /// Source-order Qwen3-Next top-10 routed-expert plus shared-expert
+    /// accumulation into a 2048-wide second residual.  Router weights are
+    /// produced and normalized on device; the host may inspect only their
+    /// completed values to select the exact admitted expert payloads for the
+    /// next command buffer.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_route_accumulate_shared_add_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        routed_out: &PinnedBuffer,
+        route_weights: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        hidden: usize,
+        routes: usize,
+    ) -> Result<()> {
+        const QWEN_NEXT_HIDDEN: usize = 2048;
+        const QWEN_NEXT_TOP_K: usize = 10;
+        if hidden != QWEN_NEXT_HIDDEN || routes != QWEN_NEXT_TOP_K {
+            return Err(Error::Kernel(format!(
+                "qwen_next_route_accumulate_shared_add requires hidden={QWEN_NEXT_HIDDEN}, routes={QWEN_NEXT_TOP_K}; got hidden={hidden}, routes={routes}"
+            )));
+        }
+        let routed_elements = hidden
+            .checked_mul(routes)
+            .ok_or_else(|| Error::Kernel("Qwen-Next routed output geometry overflowed".into()))?;
+        let routed_bytes = routed_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next routed output byte count overflowed".into()))?;
+        let hidden_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next hidden byte count overflowed".into()))?;
+        let route_weight_bytes = routes
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next route weight byte count overflowed".into()))?;
+        if routed_out.length() < routed_bytes as u64
+            || route_weights.length() < route_weight_bytes as u64
+            || shared_out.length() < hidden_bytes as u64
+            || residual.length() < hidden_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_route_accumulate_shared_add received a truncated route/shared/residual buffer"
+                    .into(),
+            ));
+        }
+        encode_route_accumulate_add_tcb(
+            tcb,
+            routed_out,
+            route_weights,
+            shared_out,
+            residual,
+            hidden,
+            routes,
+            true,
+        )
+    }
+
     /// Mixtral K6 bounded top-2 combine: weighted expert outputs and the
     /// residual update stay device-resident.  Route selection remains the
     /// source-authoritative CPU decision and the two scalar weights are bound
@@ -12675,6 +12731,837 @@ mod metal_dispatch {
             enc.set_buffer(2, Some(route_weights_buf), 0);
             enc.set_buffer(3, Some(ab.handle()), 0);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// Qwen3-Next exact cached-decode Gated DeltaNet recurrence for the
+    /// official 32×128×128 head geometry.  This is intentionally a parity
+    /// baseline (one thread owns one head) so a future tiled kernel has a
+    /// concrete native oracle.  It does not invoke projections, convolution,
+    /// gated RMSNorm, MoE, or a complete decoder token.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_gated_delta_decode_single_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        state: &PinnedBuffer,
+        query_l2_scaled: &PinnedBuffer,
+        key_l2: &PinnedBuffer,
+        value: &PinnedBuffer,
+        decay_exp_g: &PinnedBuffer,
+        beta_sigmoid_b: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: usize,
+        key_dim: usize,
+        value_dim: usize,
+    ) -> Result<()> {
+        if heads != 32 || key_dim != 128 || value_dim != 128 {
+            return Err(Error::Kernel(format!(
+                "qwen_next_gated_delta_decode_single requires Qwen3-Next 32x128x128, got {heads}x{key_dim}x{value_dim}"
+            )));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_gated_delta_decode_single",
+            (heads as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(state), 0);
+                enc.set_buffer(1, Some(query_l2_scaled), 0);
+                enc.set_buffer(2, Some(key_l2), 0);
+                enc.set_buffer(3, Some(value), 0);
+                enc.set_buffer(4, Some(decay_exp_g), 0);
+                enc.set_buffer(5, Some(beta_sigmoid_b), 0);
+                enc.set_buffer(6, Some(output), 0);
+                enc.set_u32(7, heads as u32);
+                enc.set_u32(8, key_dim as u32);
+                enc.set_u32(9, value_dim as u32);
+            },
+        )
+    }
+
+    /// Offset-aware form of [`qwen_next_gated_delta_decode_single_tcb`] for a
+    /// source-scheduled DeltaNet state slot inside a shared arena.  The
+    /// original helper deliberately remains the slot-zero convenience path;
+    /// callers that advance to another source layer must make the selected
+    /// slot explicit rather than silently reusing the first 32x128x128 state
+    /// elements.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_gated_delta_decode_single_at_state_offset_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        state: &PinnedBuffer,
+        state_offset_elements: usize,
+        query_l2_scaled: &PinnedBuffer,
+        key_l2: &PinnedBuffer,
+        value: &PinnedBuffer,
+        decay_exp_g: &PinnedBuffer,
+        beta_sigmoid_b: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: usize,
+        key_dim: usize,
+        value_dim: usize,
+    ) -> Result<()> {
+        if heads != 32 || key_dim != 128 || value_dim != 128 {
+            return Err(Error::Kernel(format!(
+                "qwen_next_gated_delta_decode_single_at_state_offset requires Qwen3-Next 32x128x128, got {heads}x{key_dim}x{value_dim}"
+            )));
+        }
+        let state_elements = heads
+            .checked_mul(key_dim)
+            .and_then(|value| value.checked_mul(value_dim))
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "qwen_next_gated_delta_decode_single_at_state_offset state geometry overflowed"
+                        .into(),
+                )
+            })?;
+        let state_offset_bytes = state_offset_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "qwen_next_gated_delta_decode_single_at_state_offset state offset overflowed"
+                        .into(),
+                )
+            })?;
+        let required_state_bytes = state_offset_bytes
+            .checked_add(
+                state_elements
+                    .checked_mul(std::mem::size_of::<f32>())
+                    .ok_or_else(|| {
+                        Error::Kernel(
+                            "qwen_next_gated_delta_decode_single_at_state_offset state byte count overflowed"
+                                .into(),
+                        )
+                    })?,
+            )
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "qwen_next_gated_delta_decode_single_at_state_offset state end overflowed"
+                        .into(),
+                )
+            })?;
+        let value_elements = heads.checked_mul(value_dim).ok_or_else(|| {
+            Error::Kernel(
+                "qwen_next_gated_delta_decode_single_at_state_offset value geometry overflowed"
+                    .into(),
+            )
+        })?;
+        let vector_bytes = value_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "qwen_next_gated_delta_decode_single_at_state_offset vector byte count overflowed"
+                        .into(),
+                )
+            })?;
+        let control_bytes = heads
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "qwen_next_gated_delta_decode_single_at_state_offset control byte count overflowed"
+                        .into(),
+                )
+            })?;
+        if state.length() < required_state_bytes as u64
+            || query_l2_scaled.length() < vector_bytes as u64
+            || key_l2.length() < vector_bytes as u64
+            || value.length() < vector_bytes as u64
+            || decay_exp_g.length() < control_bytes as u64
+            || beta_sigmoid_b.length() < control_bytes as u64
+            || output.length() < vector_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_gated_delta_decode_single_at_state_offset received a truncated buffer"
+                    .into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_gated_delta_decode_single",
+            (heads as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(state), state_offset_bytes as u64);
+                enc.set_buffer(1, Some(query_l2_scaled), 0);
+                enc.set_buffer(2, Some(key_l2), 0);
+                enc.set_buffer(3, Some(value), 0);
+                enc.set_buffer(4, Some(decay_exp_g), 0);
+                enc.set_buffer(5, Some(beta_sigmoid_b), 0);
+                enc.set_buffer(6, Some(output), 0);
+                enc.set_u32(7, heads as u32);
+                enc.set_u32(8, key_dim as u32);
+                enc.set_u32(9, value_dim as u32);
+            },
+        )
+    }
+
+    /// Convert a direct-packed Qwen3-Next `in_proj_ba` result into the exact
+    /// DeltaNet recurrence controls on Metal.  `A_log` and `dt_bias` remain in
+    /// their admitted sign/FP16-group-scale form; callers must not decode
+    /// those source controls through a BF16 or host production path.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_ba_to_decay_beta_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        projected_ba: &PinnedBuffer,
+        a_log_signs: &PinnedBuffer,
+        a_log_scales_f16: &PinnedBuffer,
+        dt_bias_signs: &PinnedBuffer,
+        dt_bias_scales_f16: &PinnedBuffer,
+        decay: &PinnedBuffer,
+        beta: &PinnedBuffer,
+        key_heads: usize,
+        values_per_key_head: usize,
+        group_size: usize,
+    ) -> Result<()> {
+        const QWEN_NEXT_KEY_HEADS: usize = 16;
+        const QWEN_NEXT_VALUES_PER_KEY_HEAD: usize = 2;
+        const QWEN_NEXT_GROUP_SIZE: usize = 128;
+        if key_heads != QWEN_NEXT_KEY_HEADS
+            || values_per_key_head != QWEN_NEXT_VALUES_PER_KEY_HEAD
+            || group_size != QWEN_NEXT_GROUP_SIZE
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_ba_to_decay_beta requires 16 key heads, 2 value heads/key head, and group 128; got {key_heads}, {values_per_key_head}, {group_size}"
+            )));
+        }
+        let value_heads = key_heads.checked_mul(values_per_key_head).ok_or_else(|| {
+            Error::Kernel("qwen_next_ba_to_decay_beta value-head overflow".into())
+        })?;
+        let required_ba_bytes = key_heads
+            .checked_mul(values_per_key_head)
+            .and_then(|value| value.checked_mul(2))
+            .and_then(|value| value.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel("qwen_next_ba_to_decay_beta BA byte overflow".into()))?;
+        let required_vector_sign_bytes = group_size / 8;
+        let required_vector_scale_bytes = std::mem::size_of::<f16>();
+        let required_output_bytes = value_heads
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("qwen_next_ba_to_decay_beta output byte overflow".into())
+            })?;
+        if projected_ba.length() < required_ba_bytes as u64
+            || a_log_signs.length() < required_vector_sign_bytes as u64
+            || a_log_scales_f16.length() < required_vector_scale_bytes as u64
+            || dt_bias_signs.length() < required_vector_sign_bytes as u64
+            || dt_bias_scales_f16.length() < required_vector_scale_bytes as u64
+            || decay.length() < required_output_bytes as u64
+            || beta.length() < required_output_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_ba_to_decay_beta received truncated direct-packed control buffers"
+                    .into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_ba_to_decay_beta",
+            (value_heads as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(projected_ba), 0);
+                enc.set_buffer(1, Some(a_log_signs), 0);
+                enc.set_buffer(2, Some(a_log_scales_f16), 0);
+                enc.set_buffer(3, Some(dt_bias_signs), 0);
+                enc.set_buffer(4, Some(dt_bias_scales_f16), 0);
+                enc.set_buffer(5, Some(decay), 0);
+                enc.set_buffer(6, Some(beta), 0);
+                enc.set_u32(7, key_heads as u32);
+                enc.set_u32(8, values_per_key_head as u32);
+                enc.set_u32(9, group_size as u32);
+            },
+        )
+    }
+
+    /// Direct-packed Qwen3-Next source input RMSNorm for the 2048-wide
+    /// hidden stream. The compact source weight is interpreted as `1+w`, not
+    /// as a conventional already-materialized RMSNorm scale.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_direct_packed_input_rmsnorm_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        weight_signs: &PinnedBuffer,
+        weight_scales_f16: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        group_size: usize,
+        eps: f32,
+    ) -> Result<()> {
+        const HIDDEN: usize = 2048;
+        const GROUP_SIZE: usize = 128;
+        if hidden != HIDDEN || group_size != GROUP_SIZE || !eps.is_finite() || eps <= 0.0 {
+            return Err(Error::Kernel(format!(
+                "qwen_next_direct_packed_input_rmsnorm requires hidden={HIDDEN}, group={GROUP_SIZE}, finite positive eps; got hidden={hidden}, group={group_size}, eps={eps}"
+            )));
+        }
+        let vector_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next input RMSNorm vector bytes overflow".into()))?;
+        let groups = hidden.div_ceil(group_size);
+        let sign_bytes = groups
+            .checked_mul(group_size / 8)
+            .ok_or_else(|| Error::Kernel("Qwen-Next input RMSNorm sign bytes overflow".into()))?;
+        let scale_bytes = groups
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next input RMSNorm scale bytes overflow".into()))?;
+        if input.length() < vector_bytes as u64
+            || output.length() < vector_bytes as u64
+            || weight_signs.length() < sign_bytes as u64
+            || weight_scales_f16.length() < scale_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_direct_packed_input_rmsnorm received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_direct_packed_input_rmsnorm",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight_signs), 0);
+                enc.set_buffer(2, Some(weight_scales_f16), 0);
+                enc.set_buffer(3, Some(output), 0);
+                enc.set_u32(4, hidden as u32);
+                enc.set_u32(5, group_size as u32);
+                enc.set_f32(6, eps);
+                enc.set_threadgroup_memory_length(
+                    0,
+                    u64::from(TG_SIZE) * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )
+    }
+
+    /// Source-exact Qwen3-Next QKVZ per-key-head rearrangement, causal
+    /// depthwise SiLU convolution and repeated Q/K L2 normalization. It
+    /// reads the convolution weight directly from the compact sign/scale
+    /// format and updates only the caller-selected linear-state slice.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_qkvz_rearrange_conv_l2_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        projected_qkvz: &PinnedBuffer,
+        conv_signs: &PinnedBuffer,
+        conv_scales_f16: &PinnedBuffer,
+        conv_state: &PinnedBuffer,
+        conv_state_offset_elements: usize,
+        repeated_query: &PinnedBuffer,
+        repeated_key: &PinnedBuffer,
+        convolved_value: &PinnedBuffer,
+        z: &PinnedBuffer,
+        key_heads: usize,
+        values_per_key_head: usize,
+        key_head_dim: usize,
+        value_head_dim: usize,
+        conv_kernel: usize,
+        group_size: usize,
+        eps: f32,
+    ) -> Result<()> {
+        const KEY_HEADS: usize = 16;
+        const VALUES_PER_KEY_HEAD: usize = 2;
+        const KEY_HEAD_DIM: usize = 128;
+        const VALUE_HEAD_DIM: usize = 128;
+        const CONV_KERNEL: usize = 4;
+        const GROUP_SIZE: usize = 128;
+        if key_heads != KEY_HEADS
+            || values_per_key_head != VALUES_PER_KEY_HEAD
+            || key_head_dim != KEY_HEAD_DIM
+            || value_head_dim != VALUE_HEAD_DIM
+            || conv_kernel != CONV_KERNEL
+            || group_size != GROUP_SIZE
+            || !eps.is_finite()
+            || eps <= 0.0
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_qkvz_rearrange_conv_l2 requires 16x2x128x128 kernel=4 group=128 and finite positive eps; got {key_heads}x{values_per_key_head}x{key_head_dim}x{value_head_dim} kernel={conv_kernel} group={group_size} eps={eps}"
+            )));
+        }
+        let value_heads = key_heads
+            .checked_mul(values_per_key_head)
+            .ok_or_else(|| Error::Kernel("Qwen-Next QKVZ value-head geometry overflowed".into()))?;
+        let key_elements = key_heads
+            .checked_mul(key_head_dim)
+            .ok_or_else(|| Error::Kernel("Qwen-Next QKVZ key geometry overflowed".into()))?;
+        let value_elements = value_heads
+            .checked_mul(value_head_dim)
+            .ok_or_else(|| Error::Kernel("Qwen-Next QKVZ value geometry overflowed".into()))?;
+        let qkvz_elements = key_elements
+            .checked_mul(2)
+            .and_then(|value| value.checked_add(value_elements.checked_mul(2)?))
+            .ok_or_else(|| Error::Kernel("Qwen-Next QKVZ projection geometry overflowed".into()))?;
+        let conv_channels = key_elements
+            .checked_mul(2)
+            .and_then(|value| value.checked_add(value_elements))
+            .ok_or_else(|| Error::Kernel("Qwen-Next convolution geometry overflowed".into()))?;
+        let conv_state_elements = conv_channels.checked_mul(conv_kernel - 1).ok_or_else(|| {
+            Error::Kernel("Qwen-Next convolution state geometry overflowed".into())
+        })?;
+        let projected_bytes = qkvz_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen-Next QKVZ projection byte count overflowed".into())
+            })?;
+        let value_bytes = value_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next QKVZ value byte count overflowed".into()))?;
+        let state_offset_bytes = conv_state_offset_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen-Next convolution state byte offset overflowed".into())
+            })?;
+        let required_state_bytes = state_offset_bytes
+            .checked_add(
+                conv_state_elements
+                    .checked_mul(std::mem::size_of::<f32>())
+                    .ok_or_else(|| {
+                        Error::Kernel("Qwen-Next convolution state byte count overflowed".into())
+                    })?,
+            )
+            .ok_or_else(|| Error::Kernel("Qwen-Next convolution state end overflowed".into()))?;
+        let conv_elements = conv_channels.checked_mul(conv_kernel).ok_or_else(|| {
+            Error::Kernel("Qwen-Next convolution weight geometry overflowed".into())
+        })?;
+        let conv_groups = conv_elements.div_ceil(group_size);
+        let conv_sign_bytes = conv_groups.checked_mul(group_size / 8).ok_or_else(|| {
+            Error::Kernel("Qwen-Next convolution sign byte count overflowed".into())
+        })?;
+        let conv_scale_bytes = conv_groups
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen-Next convolution scale byte count overflowed".into())
+            })?;
+        if projected_qkvz.length() < projected_bytes as u64
+            || conv_signs.length() < conv_sign_bytes as u64
+            || conv_scales_f16.length() < conv_scale_bytes as u64
+            || conv_state.length() < required_state_bytes as u64
+            || repeated_query.length() < value_bytes as u64
+            || repeated_key.length() < value_bytes as u64
+            || convolved_value.length() < value_bytes as u64
+            || z.length() < value_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_qkvz_rearrange_conv_l2 received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_qkvz_rearrange_conv_l2",
+            (TG_SIZE, key_heads as u32, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(projected_qkvz), 0);
+                enc.set_buffer(1, Some(conv_signs), 0);
+                enc.set_buffer(2, Some(conv_scales_f16), 0);
+                enc.set_buffer(3, Some(conv_state), state_offset_bytes as u64);
+                enc.set_buffer(4, Some(repeated_query), 0);
+                enc.set_buffer(5, Some(repeated_key), 0);
+                enc.set_buffer(6, Some(convolved_value), 0);
+                enc.set_buffer(7, Some(z), 0);
+                enc.set_u32(8, key_heads as u32);
+                enc.set_u32(9, values_per_key_head as u32);
+                enc.set_u32(10, key_head_dim as u32);
+                enc.set_u32(11, value_head_dim as u32);
+                enc.set_u32(12, conv_kernel as u32);
+                enc.set_u32(13, group_size as u32);
+                enc.set_f32(14, eps);
+                enc.set_threadgroup_memory_length(
+                    0,
+                    4 * u64::from(TG_SIZE) * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )
+    }
+
+    /// Qwen3-Next source gated RMSNorm after the recurrent DeltaNet output.
+    /// The 128-wide direct-packed weight remains compressed on device and is
+    /// broadcast across the 32 value heads.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_deltanet_gated_rmsnorm_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        z: &PinnedBuffer,
+        weight_signs: &PinnedBuffer,
+        weight_scales_f16: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: usize,
+        value_head_dim: usize,
+        group_size: usize,
+        eps: f32,
+    ) -> Result<()> {
+        const HEADS: usize = 32;
+        const VALUE_HEAD_DIM: usize = 128;
+        const GROUP_SIZE: usize = 128;
+        if heads != HEADS
+            || value_head_dim != VALUE_HEAD_DIM
+            || group_size != GROUP_SIZE
+            || !eps.is_finite()
+            || eps <= 0.0
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_deltanet_gated_rmsnorm requires heads={HEADS}, value_dim={VALUE_HEAD_DIM}, group={GROUP_SIZE}, finite positive eps; got heads={heads}, value_dim={value_head_dim}, group={group_size}, eps={eps}"
+            )));
+        }
+        let elements = heads
+            .checked_mul(value_head_dim)
+            .ok_or_else(|| Error::Kernel("Qwen-Next gated RMSNorm geometry overflowed".into()))?;
+        let vector_bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen-Next gated RMSNorm vector byte count overflowed".into())
+            })?;
+        let sign_bytes = group_size / 8;
+        let scale_bytes = std::mem::size_of::<f16>();
+        if input.length() < vector_bytes as u64
+            || z.length() < vector_bytes as u64
+            || output.length() < vector_bytes as u64
+            || weight_signs.length() < sign_bytes as u64
+            || weight_scales_f16.length() < scale_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_deltanet_gated_rmsnorm received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_deltanet_gated_rmsnorm",
+            (TG_SIZE, heads as u32, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(z), 0);
+                enc.set_buffer(2, Some(weight_signs), 0);
+                enc.set_buffer(3, Some(weight_scales_f16), 0);
+                enc.set_buffer(4, Some(output), 0);
+                enc.set_u32(5, heads as u32);
+                enc.set_u32(6, value_head_dim as u32);
+                enc.set_u32(7, group_size as u32);
+                enc.set_f32(8, eps);
+                enc.set_threadgroup_memory_length(
+                    0,
+                    u64::from(TG_SIZE) * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )
+    }
+
+    /// First Qwen3-Next DeltaNet residual boundary after a direct-packed
+    /// output projection. This is deliberately a simple source-order add;
+    /// post-attention norm and MoE remain outside the bounded stage.
+    pub fn qwen_next_add_residual_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        mixer: &PinnedBuffer,
+        output: &PinnedBuffer,
+        elements: usize,
+    ) -> Result<()> {
+        if elements == 0 || elements > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "qwen_next_add_residual requires a non-zero u32-sized element count".into(),
+            ));
+        }
+        let bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next residual byte count overflowed".into()))?;
+        if input.length() < bytes as u64
+            || mixer.length() < bytes as u64
+            || output.length() < bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_add_residual received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_add_residual",
+            (elements as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(mixer), 0);
+                enc.set_buffer(2, Some(output), 0);
+                enc.set_u32(3, elements as u32);
+            },
+        )
+    }
+
+    /// Source Qwen3-Next shared-expert sigmoid gate.  The scalar gate logit
+    /// and vector MLP output stay on device; this wrapper only accepts the
+    /// exact 2048-wide layer boundary used by the admitted Qwen80 body.
+    pub fn qwen_next_shared_expert_sigmoid_gate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        shared_output: &PinnedBuffer,
+        gate_logit: &PinnedBuffer,
+        gated_output: &PinnedBuffer,
+        elements: usize,
+    ) -> Result<()> {
+        const HIDDEN: usize = 2048;
+        if elements != HIDDEN {
+            return Err(Error::Kernel(format!(
+                "qwen_next_shared_expert_sigmoid_gate requires {HIDDEN} elements, got {elements}"
+            )));
+        }
+        let hidden_bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen-Next shared output byte count overflowed".into()))?;
+        if shared_output.length() < hidden_bytes as u64
+            || gated_output.length() < hidden_bytes as u64
+            || gate_logit.length() < std::mem::size_of::<f32>() as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_shared_expert_sigmoid_gate received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_shared_expert_sigmoid_gate",
+            (elements as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(shared_output), 0);
+                enc.set_buffer(1, Some(gate_logit), 0);
+                enc.set_buffer(2, Some(gated_output), 0);
+                enc.set_u32(3, elements as u32);
+            },
+        )
+    }
+
+    /// Normalize a top-k Qwen route vector on-device.  This is intentionally
+    /// separate from host route inspection: route ids can cross the host
+    /// boundary for artifact selection, but source `norm_topk_prob=true`
+    /// arithmetic remains a native Metal operation.
+    pub fn qwen_complete_normalize_route_weights_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        route_weights: &PinnedBuffer,
+        count: usize,
+    ) -> Result<()> {
+        if count == 0 || count > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "qwen_complete_normalize_route_weights requires a non-zero u32 count".into(),
+            ));
+        }
+        let required_bytes = count
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("route weight byte count overflow".into()))?;
+        if route_weights.length() < required_bytes as u64 {
+            return Err(Error::Kernel(
+                "qwen_complete_normalize_route_weights received a truncated route buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_complete_normalize_route_weights",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(route_weights), 0);
+                enc.set_u32(1, count as u32);
+            },
+        )
+    }
+
+    /// Direct Metal packed-binary sign + FP16 group-scale matvec component.
+    ///
+    /// The sign stream is row-major, least-significant-bit first, and contains
+    /// exactly `ceil(rows * cols / 8)` bytes. Each row has
+    /// `ceil(cols / group_size)` FP16 scales. This typed dispatch is shared by
+    /// the Qwen30 and Qwen80 component probes, but deliberately has no model
+    /// loader, decoder, token loop, or TPS semantics.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_binary_sign_scale_matvec_component_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        signs: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        group_size: usize,
+    ) -> Result<()> {
+        if rows == 0 || cols == 0 || group_size == 0 {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component requires non-zero rows, cols, and group_size"
+                    .into(),
+            ));
+        }
+        if rows > u32::MAX as usize || cols > u32::MAX as usize || group_size > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component dimensions exceed Metal uint ABI".into(),
+            ));
+        }
+        let groups_per_row = cols.div_ceil(group_size);
+        if groups_per_row > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component group count exceeds Metal uint ABI".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_binary_sign_scale_matvec",
+            (rows as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(signs), 0);
+                enc.set_buffer(1, Some(scales_f16), 0);
+                enc.set_buffer(2, Some(input), 0);
+                enc.set_buffer(3, Some(output), 0);
+                enc.set_u32(4, rows as u32);
+                enc.set_u32(5, cols as u32);
+                enc.set_u32(6, group_size as u32);
+                enc.set_u32(7, groups_per_row as u32);
+            },
+        )
+    }
+
+    /// Direct packed-binary sign/FP16-scale matvec with activation/output
+    /// slices selected by element offsets.  The compact matrix body itself is
+    /// never offset or materialized.  This is used by source-routed Qwen3-Next
+    /// expert waves so each device-selected expert writes into its exact
+    /// route-major workspace slice without a host f32 weight path.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_binary_sign_scale_matvec_component_offset_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        signs: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        input: &PinnedBuffer,
+        input_offset_elements: usize,
+        output: &PinnedBuffer,
+        output_offset_elements: usize,
+        rows: usize,
+        cols: usize,
+        group_size: usize,
+    ) -> Result<()> {
+        if rows == 0 || cols == 0 || group_size == 0 {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component_offset requires non-zero rows, cols, and group_size"
+                    .into(),
+            ));
+        }
+        if rows > u32::MAX as usize || cols > u32::MAX as usize || group_size > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component_offset dimensions exceed Metal uint ABI"
+                    .into(),
+            ));
+        }
+        let groups_per_row = cols.div_ceil(group_size);
+        let groups = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel("Qwen binary compact group count overflowed".into()))?;
+        let sign_bytes = groups.checked_mul(group_size / 8).ok_or_else(|| {
+            Error::Kernel("Qwen binary compact sign byte count overflowed".into())
+        })?;
+        let scale_bytes = groups
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen binary compact scale byte count overflowed".into())
+            })?;
+        let input_end = input_offset_elements
+            .checked_add(cols)
+            .ok_or_else(|| Error::Kernel("Qwen binary input slice offset overflowed".into()))?;
+        let output_end = output_offset_elements
+            .checked_add(rows)
+            .ok_or_else(|| Error::Kernel("Qwen binary output slice offset overflowed".into()))?;
+        let input_end_bytes = input_end
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen binary input slice byte count overflowed".into()))?;
+        let output_end_bytes = output_end
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Qwen binary output slice byte count overflowed".into())
+            })?;
+        let input_offset_bytes = input_offset_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen binary input byte offset overflowed".into()))?;
+        let output_offset_bytes = output_offset_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Qwen binary output byte offset overflowed".into()))?;
+        if signs.length() < sign_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || input.length() < input_end_bytes as u64
+            || output.length() < output_end_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_binary_sign_scale_matvec_component_offset received a truncated compact or activation buffer"
+                    .into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_binary_sign_scale_matvec",
+            (rows as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(signs), 0);
+                enc.set_buffer(1, Some(scales_f16), 0);
+                enc.set_buffer(2, Some(input), input_offset_bytes as u64);
+                enc.set_buffer(3, Some(output), output_offset_bytes as u64);
+                enc.set_u32(4, rows as u32);
+                enc.set_u32(5, cols as u32);
+                enc.set_u32(6, group_size as u32);
+                enc.set_u32(7, groups_per_row as u32);
+            },
+        )
+    }
+
+    /// Direct Metal uniform-Q4 + FP16 group-scale matvec component with the
+    /// fixed Ascension layout: 64 source weights per group, 32 packed code
+    /// bytes per group, and one FP16 scale. Each code byte stores the even
+    /// local value in its low nibble and the odd local value in its high
+    /// nibble; a nibble decodes as signed offset-binary `q = code - 8`.
+    ///
+    /// This typed dispatch is deliberately bounded to the packed component.
+    /// It has no model loader, decoder, token loop, HCLI, TG, or TPS semantics.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_matvec_component_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str = "qwen_uniform_q4_group64_matvec";
+        if rows == 0 || cols == 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero rows and cols"
+            )));
+        }
+        if rows > u32::MAX as usize || cols > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let groups_per_row = cols.div_ceil(GROUP_SIZE);
+        if groups_per_row > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} group count exceeds Metal uint ABI"
+            )));
+        }
+        let group_count = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let input_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input byte count overflows usize")))?;
+        let output_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output byte count overflows usize")))?;
+        if codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || input.length() < input_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} buffer sizes: codes={} expected>={code_bytes} scales={} expected>={scale_bytes} input={} expected>={input_bytes} output={} expected>={output_bytes}",
+                codes.length(),
+                scales_f16.length(),
+                input.length(),
+                output.length(),
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (rows as u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(codes), 0);
+            enc.set_buffer(1, Some(scales_f16), 0);
+            enc.set_buffer(2, Some(input), 0);
+            enc.set_buffer(3, Some(output), 0);
+            enc.set_u32(4, rows as u32);
+            enc.set_u32(5, cols as u32);
+            enc.set_u32(6, groups_per_row as u32);
         })
     }
 
@@ -14774,6 +15661,170 @@ pub use metal_dispatch::*;
 mod tests {
     use super::*;
     use half::f16;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn qwen_binary_sign_scale_component_metal_matches_packed_cpu_oracle() {
+        let (rows, cols, group_size) = (3usize, 256usize, 128usize);
+        let groups_per_row = cols.div_ceil(group_size);
+        let mut signs = vec![0u8; (rows * cols).div_ceil(8)];
+        let scales = vec![
+            f16::from_f32(0.03125).to_bits(),
+            f16::from_f32(0.0625).to_bits(),
+            f16::from_f32(0.125).to_bits(),
+            f16::from_f32(0.25).to_bits(),
+            f16::from_f32(0.5).to_bits(),
+            f16::from_f32(1.0).to_bits(),
+        ];
+        for flat in 0..rows * cols {
+            if (flat * 17 + 11) % 5 >= 2 {
+                signs[flat >> 3] |= 1u8 << (flat & 7);
+            }
+        }
+        let input = (0..cols)
+            .map(|index| ((index * 37 % 251) as f32 - 125.0) / 251.0)
+            .collect::<Vec<_>>();
+        let mut expected = vec![0.0f32; rows];
+        for row in 0..rows {
+            for col in 0..cols {
+                let flat = row * cols + col;
+                let scale =
+                    f16::from_bits(scales[row * groups_per_row + col / group_size]).to_f32();
+                expected[row] += if ((signs[flat >> 3] >> (flat & 7)) & 1) != 0 {
+                    scale * input[col]
+                } else {
+                    -scale * input[col]
+                };
+            }
+        }
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let signs_buffer = ctx
+            .new_buffer_with_bytes_checked(&signs)
+            .expect("sign buffer");
+        let scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&scales))
+            .expect("scale buffer");
+        let input_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&input))
+            .expect("input buffer");
+        let output_buffer = ctx
+            .new_buffer_checked(rows * std::mem::size_of::<f32>())
+            .expect("output buffer");
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        qwen_binary_sign_scale_matvec_component_tcb(
+            &mut tcb,
+            &signs_buffer,
+            &scales_buffer,
+            &input_buffer,
+            &output_buffer,
+            rows,
+            cols,
+            group_size,
+        )
+        .expect("packed binary component dispatch");
+        assert_eq!(tcb.dispatch_count(), 1);
+        tcb.commit_and_wait()
+            .expect("packed binary component commit");
+        let actual = unsafe {
+            std::slice::from_raw_parts(output_buffer.contents() as *const f32, rows).to_vec()
+        };
+        for (row, (expected, actual)) in expected.iter().zip(actual).enumerate() {
+            let error = (expected - actual).abs();
+            assert!(
+                error <= 2e-5,
+                "row {row}: expected={expected}, actual={actual}, error={error}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn qwen_uniform_q4_group64_component_metal_matches_exact_packed_cpu_oracle() {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        // Deliberately use a short final group, so the test covers the fixed
+        // 32-byte-per-group layout rather than assuming all source rows divide
+        // evenly by 64. (The source-bound Qwen lanes do divide evenly.)
+        let (rows, cols) = (3usize, 129usize);
+        let groups_per_row = cols.div_ceil(GROUP_SIZE);
+        let mut codes = vec![0u8; rows * groups_per_row * CODE_BYTES_PER_GROUP];
+        let mut scales = vec![0u16; rows * groups_per_row];
+        for row in 0..rows {
+            for group in 0..groups_per_row {
+                scales[row * groups_per_row + group] =
+                    f16::from_f32(0.03125 * (1 + row * groups_per_row + group) as f32).to_bits();
+                let local_len = (cols - group * GROUP_SIZE).min(GROUP_SIZE);
+                let code_base = (row * groups_per_row + group) * CODE_BYTES_PER_GROUP;
+                for local_col in 0..local_len {
+                    let code = ((row * 13 + group * 7 + local_col * 5 + 3) % 16) as u8;
+                    let byte = &mut codes[code_base + local_col / 2];
+                    if local_col & 1 == 0 {
+                        *byte |= code;
+                    } else {
+                        *byte |= code << 4;
+                    }
+                }
+            }
+        }
+        let input = (0..cols)
+            .map(|index| ((index * 37 % 251) as f32 - 125.0) / 251.0)
+            .collect::<Vec<_>>();
+        let mut expected = vec![0.0f32; rows];
+        for row in 0..rows {
+            for group in 0..groups_per_row {
+                let scale = f16::from_bits(scales[row * groups_per_row + group]).to_f32();
+                let local_len = (cols - group * GROUP_SIZE).min(GROUP_SIZE);
+                let code_base = (row * groups_per_row + group) * CODE_BYTES_PER_GROUP;
+                for local_col in 0..local_len {
+                    let packed = codes[code_base + local_col / 2];
+                    let code = if local_col & 1 == 0 {
+                        packed & 0x0f
+                    } else {
+                        packed >> 4
+                    };
+                    let q = code as i32 - 8;
+                    expected[row] += q as f32 * scale * input[group * GROUP_SIZE + local_col];
+                }
+            }
+        }
+        let ctx = crate::metal::MetalContext::new().expect("Metal context");
+        let codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("uniform Q4 code buffer");
+        let scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&scales))
+            .expect("uniform Q4 scale buffer");
+        let input_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&input))
+            .expect("input buffer");
+        let output_buffer = ctx
+            .new_buffer_checked(rows * std::mem::size_of::<f32>())
+            .expect("output buffer");
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        qwen_uniform_q4_group64_matvec_component_tcb(
+            &mut tcb,
+            &codes_buffer,
+            &scales_buffer,
+            &input_buffer,
+            &output_buffer,
+            rows,
+            cols,
+        )
+        .expect("packed uniform-Q4 component dispatch");
+        assert_eq!(tcb.dispatch_count(), 1);
+        tcb.commit_and_wait()
+            .expect("packed uniform-Q4 component commit");
+        let actual = unsafe {
+            std::slice::from_raw_parts(output_buffer.contents() as *const f32, rows).to_vec()
+        };
+        for (row, (expected, actual)) in expected.iter().zip(actual).enumerate() {
+            let error = (expected - actual).abs();
+            assert!(
+                error <= 2e-5,
+                "row {row}: expected={expected}, actual={actual}, error={error}"
+            );
+        }
+    }
 
     #[cfg(target_os = "macos")]
     #[test]

@@ -36,9 +36,9 @@ use crate::gravity_deepseek_v4_expert_cache::{
 use crate::gravity_deepseek_v4_layer0_moe::{
     ACTIVATED_EXPERTS, MOE_INTER_DIM, ROUTED_EXPERTS, ROUTE_SCALE,
 };
+use crate::gravity_deepseek_v4_layer0_prefix::HIDDEN_SIZE;
 use crate::gravity_deepseek_v4_layer_plan::DeepSeekV4LayerDeviceCatalog;
 use crate::gravity_deepseek_v4_layer_source_anchors::DeepSeekV4LayerGateMode;
-use crate::gravity_deepseek_v4_layer0_prefix::HIDDEN_SIZE;
 use crate::gravity_deepseek_v4_p7_composition::{
     DeepSeekV4P7FfnSourceContract, DeepSeekV4P7P6DeviceExecutor, DeepSeekV4P7P6DeviceInput,
     DeepSeekV4P7P6DeviceOutput, DSV4F_P7_FFN_NORM_BF16_BYTES,
@@ -761,9 +761,7 @@ impl DeepSeekV4Layer0P6MetalExecutor {
         let mut sorted = selected;
         sorted.sort_unstable();
         if sorted.windows(2).any(|w| w[0] == w[1]) {
-            return Err(p6_error(
-                "P6 learned route produced duplicate expert IDs",
-            ));
+            return Err(p6_error("P6 learned route produced duplicate expert IDs"));
         }
 
         self.load_learned_experts(input.metal, &selected)?;
@@ -804,9 +802,8 @@ impl DeepSeekV4Layer0P6MetalExecutor {
         let mut hot_bytes = 0u64;
         for &expert_id in selected_top_slot {
             let key = ExpertBundleKey::new(self.controls.layer as u16, expert_id as u16);
-            let desc = crate::gravity_deepseek_v4_expert_cache::resolve_expert_bundle(
-                &reader, key,
-            )?;
+            let desc =
+                crate::gravity_deepseek_v4_expert_cache::resolve_expert_bundle(&reader, key)?;
             hot_bytes = hot_bytes
                 .checked_add(desc.payload_bytes)
                 .ok_or_else(|| p6_error("P6 learned hot capacity overflow"))?;

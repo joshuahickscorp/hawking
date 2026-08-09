@@ -8,6 +8,7 @@ import os
 import re
 import stat
 import struct
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
@@ -661,6 +662,8 @@ def verify_streaming_window(control_root: Path, hydrated_root: Path, window_cont
 class BoundedSafetensorsReader:
     """Read one validated tensor at a time using its exact shard-local range."""
 
+    _DECODE_CHUNK_BYTES = 2 * 1024 * 1024
+
     def __init__(self, inventory: Inventory, *, max_tensor_bytes: int=DEFAULT_MAX_TENSOR_BYTES) -> None:
         if not isinstance(max_tensor_bytes, int) or isinstance(max_tensor_bytes, bool) or max_tensor_bytes <= 0:
             raise Glm52AdapterError('max_tensor_bytes must be a positive integer')
@@ -670,6 +673,7 @@ class BoundedSafetensorsReader:
         self.read_calls = 0
         self.peak_payload_request_bytes = 0
         self._revalidated_shards: set[str] = set()
+        self._accounting_lock = threading.Lock()
 
     def _open_validated_shard(self, shard: ShardRecord) -> int:
         fd = _open_regular_no_follow(shard.path)
@@ -679,12 +683,13 @@ class BoundedSafetensorsReader:
         if observed != expected:
             os.close(fd)
             raise Glm52AdapterError(f'shard identity changed after validation: {shard.name}: expected={expected} actual={observed}')
-        if shard.name not in self._revalidated_shards:
-            raw = _pread_exact(fd, 8 + shard.header_bytes, 0, context=f'{shard.name} header revalidation')
-            if hashlib.sha256(raw).hexdigest() != shard.header_sha256:
-                os.close(fd)
-                raise Glm52AdapterError(f'shard header changed after validation: {shard.name}')
-            self._revalidated_shards.add(shard.name)
+        with self._accounting_lock:
+            if shard.name not in self._revalidated_shards:
+                raw = _pread_exact(fd, 8 + shard.header_bytes, 0, context=f'{shard.name} header revalidation')
+                if hashlib.sha256(raw).hexdigest() != shard.header_sha256:
+                    os.close(fd)
+                    raise Glm52AdapterError(f'shard header changed after validation: {shard.name}')
+                self._revalidated_shards.add(shard.name)
         return fd
 
     def raw(self, name: str, *, max_bytes: int | None=None) -> bytes:
@@ -703,25 +708,95 @@ class BoundedSafetensorsReader:
             payload = _pread_exact(fd, record.byte_count, record.absolute_start, context=f'tensor {name}')
         finally:
             os.close(fd)
-        self.payload_bytes_read += len(payload)
-        self.read_calls += 1
-        self.peak_payload_request_bytes = max(self.peak_payload_request_bytes, len(payload))
+        with self._accounting_lock:
+            self.payload_bytes_read += len(payload)
+            self.read_calls += 1
+            self.peak_payload_request_bytes = max(self.peak_payload_request_bytes, len(payload))
         return payload
 
-    def tensor(self, name: str, *, max_bytes: int | None=None) -> np.ndarray:
-        """Return one BF16/F32 source tensor decoded to an owned float32 array."""
+    def _decode_range(self, name: str, *, payload_offset: int, byte_count: int) -> np.ndarray:
         record = self.inventory.tensors.get(name)
         if record is None:
             raise Glm52AdapterError(f'tensor is absent from validated inventory: {name!r}')
-        payload = self.raw(name, max_bytes=max_bytes)
-        if record.spec.dtype == 'BF16':
-            words = np.frombuffer(payload, dtype='<u2')
-            values = (words.astype(np.uint32) << np.uint32(16)).view(np.float32)
-        elif record.spec.dtype == 'F32':
-            values = np.frombuffer(payload, dtype='<f4')
-        else:
+        if record.spec.dtype not in {'BF16', 'F32'}:
             raise Glm52AdapterError(f'unsupported validated dtype: {record.spec.dtype}')
-        return values.reshape(record.spec.shape).copy()
+        item_bytes = DTYPE_BYTES[record.spec.dtype]
+        if payload_offset < 0 or byte_count < 0 or payload_offset + byte_count > record.byte_count:
+            raise Glm52AdapterError(f'tensor range out of bounds for {name}')
+        if payload_offset % item_bytes or byte_count % item_bytes:
+            raise Glm52AdapterError(f'unaligned tensor range for {name}')
+        element_count = byte_count // item_bytes
+        values = np.empty(element_count, dtype=np.float32)
+        destination_words = values.view(np.uint32)
+        chunk_bytes = max(item_bytes, self._DECODE_CHUNK_BYTES // item_bytes * item_bytes)
+        shard = self.inventory.shards[record.shard]
+        fd = self._open_validated_shard(shard)
+        try:
+            range_offset = 0
+            element_offset = 0
+            while range_offset < byte_count:
+                request = min(chunk_bytes, byte_count - range_offset)
+                payload = _pread_exact(
+                    fd,
+                    request,
+                    record.absolute_start + payload_offset + range_offset,
+                    context=f'tensor {name} chunk',
+                )
+                count = request // item_bytes
+                target = values[element_offset:element_offset + count]
+                if record.spec.dtype == 'BF16':
+                    target_words = destination_words[element_offset:element_offset + count]
+                    target_words[:] = np.frombuffer(payload, dtype='<u2').astype(np.uint32)
+                    np.left_shift(target_words, np.uint32(16), out=target_words)
+                else:
+                    target[:] = np.frombuffer(payload, dtype='<f4')
+                range_offset += request
+                element_offset += count
+                with self._accounting_lock:
+                    self.payload_bytes_read += request
+                    self.peak_payload_request_bytes = max(self.peak_payload_request_bytes, request)
+        finally:
+            os.close(fd)
+        with self._accounting_lock:
+            self.read_calls += 1
+        return values
+
+    def tensor(self, name: str, *, max_bytes: int | None=None) -> np.ndarray:
+        """Return one BF16/F32 source tensor decoded to an owned float32 array.
+
+        Decode directly into the owned destination in bounded chunks.  The old
+        whole-payload path briefly retained the input bytes plus multiple
+        full-sized uint32/float32 temporaries, which could exceed the executor's
+        hard RSS limit even though an individual tensor respected its read cap.
+        """
+        record = self.inventory.tensors.get(name)
+        if record is None:
+            raise Glm52AdapterError(f'tensor is absent from validated inventory: {name!r}')
+        if max_bytes is not None and (not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0):
+            raise Glm52AdapterError('max_bytes must be a positive integer')
+        limit = self.max_tensor_bytes if max_bytes is None else min(self.max_tensor_bytes, max_bytes)
+        if record.byte_count > limit:
+            raise Glm52AdapterError(f'bounded read refused {name}: tensor={record.byte_count} limit={limit}')
+        values = self._decode_range(name, payload_offset=0, byte_count=record.byte_count)
+        return values.reshape(record.spec.shape)
+
+    def row_range(self, name: str, start: int, stop: int, *, max_bytes: int | None=None) -> np.ndarray:
+        """Decode a contiguous row range without materialising the full matrix."""
+        record = self.inventory.tensors.get(name)
+        if record is None:
+            raise Glm52AdapterError(f'tensor is absent from validated inventory: {name!r}')
+        if len(record.spec.shape) != 2:
+            raise Glm52AdapterError(f'row range requires a 2-D tensor: {name}')
+        rows, columns = record.spec.shape
+        if not isinstance(start, int) or not isinstance(stop, int) or start < 0 or stop <= start or stop > rows:
+            raise Glm52AdapterError(f'invalid row range for {name}: [{start}, {stop})')
+        item_bytes = DTYPE_BYTES[record.spec.dtype]
+        stride = columns * item_bytes
+        byte_count = (stop - start) * stride
+        if max_bytes is not None and byte_count > max_bytes:
+            raise Glm52AdapterError(f'bounded row read refused {name}: range={byte_count} limit={max_bytes}')
+        values = self._decode_range(name, payload_offset=start * stride, byte_count=byte_count)
+        return values.reshape(stop - start, columns)
 
 def expert_gate_up_names(layer: int, expert: int) -> tuple[str, str]:
     base = f'model.layers.{layer}.mlp.experts.{expert}.'

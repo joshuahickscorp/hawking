@@ -117,6 +117,149 @@ fn fold_native_turn_prompt(
     }
 }
 
+// This is deliberately an opt-in, trace-only forensic hook.  The ordinary HCLI
+// path never writes a raw folded prompt or selected context bodies.  When the
+// two environment controls below are explicitly set, it records the exact
+// pre-provider compilation boundary and then *refuses* before a model request
+// can be constructed.  That lets a bounded diagnostic prove what an HCLI turn
+// would send without claiming a generation, HCLI pass, or performance result.
+const HCLI_COMPILER_TRACE_PATH_ENV: &str = "HAWKING_HCLI_COMPILER_TRACE_PATH";
+const HCLI_COMPILER_TRACE_MODE_ENV: &str = "HAWKING_HCLI_COMPILER_TRACE_MODE";
+const HCLI_COMPILER_TRACE_MODE: &str = "NEW_DIAGNOSTIC_NOT_HISTORICAL";
+
+fn hcli_compiler_trace_document(
+    manifest: &hawking_context::manifest::ContextManifest,
+    compiled_prompt: &str,
+    folded_prompt: &str,
+    history_message_count: usize,
+    requested_output_cap: usize,
+) -> Value {
+    let selected_spans = manifest
+        .retained
+        .iter()
+        .map(|span| {
+            json!({
+                "content_id": span.id,
+                "source": format!("{:?}", span.source).to_lowercase(),
+                "title": span.title,
+                "text": span.text,
+                "token_count": span.token_count,
+                "order_index": span.order_index,
+                "compacted_from": span.compacted_from,
+            })
+        })
+        .collect::<Vec<_>>();
+    json!({
+        "schema": "hawking.ascension.hcli_compiler_pre_execution_trace.v1",
+        "status": HCLI_COMPILER_TRACE_MODE,
+        "capture_timing": "AFTER_CONTEXT_COMPILATION_BEFORE_PROVIDER_OR_MODEL_EXECUTION",
+        "model_execution_started": false,
+        "process_id": std::process::id(),
+        "compiled_context_manifest": manifest,
+        "selected_context_spans": selected_spans,
+        "compiled_context_prompt_utf8": compiled_prompt,
+        "compiled_context_prompt_blake3": blake3::hash(compiled_prompt.as_bytes()).to_hex().to_string(),
+        "folded_native_prompt_utf8": folded_prompt,
+        "folded_native_prompt_blake3": blake3::hash(folded_prompt.as_bytes()).to_hex().to_string(),
+        "history_message_count": history_message_count,
+        "requested_output_cap": requested_output_cap,
+        "claim_boundary": {
+            "new_diagnostic_not_historical": true,
+            "does_not_contact_provider_or_execute_a_model": true,
+            "does_not_claim_generation_hcli_tps_tg_capability_or_tournament": true,
+        },
+    })
+}
+
+fn maybe_capture_hcli_compiler_pre_execution_trace(
+    manifest: &hawking_context::manifest::ContextManifest,
+    compiled_prompt: &str,
+    folded_prompt: &str,
+    history_message_count: usize,
+    requested_output_cap: usize,
+) -> Result<bool> {
+    let Some(path) = std::env::var_os(HCLI_COMPILER_TRACE_PATH_ENV) else {
+        return Ok(false);
+    };
+    if std::env::var(HCLI_COMPILER_TRACE_MODE_ENV).ok().as_deref() != Some(HCLI_COMPILER_TRACE_MODE)
+    {
+        return Err(hide_core::error::HideError::Config(format!(
+            "{HCLI_COMPILER_TRACE_PATH_ENV} requires {HCLI_COMPILER_TRACE_MODE_ENV}={HCLI_COMPILER_TRACE_MODE}"
+        )));
+    }
+    let destination = PathBuf::from(path);
+    if !destination.is_absolute() {
+        return Err(hide_core::error::HideError::Config(
+            "HCLI compiler trace destination must be an absolute path".into(),
+        ));
+    }
+    let parent = destination.parent().ok_or_else(|| {
+        hide_core::error::HideError::Config("HCLI compiler trace destination has no parent".into())
+    })?;
+    if !parent.is_dir() {
+        return Err(hide_core::error::HideError::Config(format!(
+            "HCLI compiler trace parent does not exist: {}",
+            parent.display()
+        )));
+    }
+    if destination.exists() {
+        return Err(hide_core::error::HideError::Config(format!(
+            "refusing to overwrite existing HCLI compiler trace: {}",
+            destination.display()
+        )));
+    }
+    let raw = serde_json::to_vec_pretty(&hcli_compiler_trace_document(
+        manifest,
+        compiled_prompt,
+        folded_prompt,
+        history_message_count,
+        requested_output_cap,
+    ))
+    .map_err(|error| {
+        hide_core::error::HideError::Config(format!("serialize HCLI compiler trace: {error}"))
+    })?;
+    let file_name = destination
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| {
+            hide_core::error::HideError::Config(
+                "HCLI compiler trace destination has no UTF-8 filename".into(),
+            )
+        })?;
+    let temporary = parent.join(format!(".{file_name}.{}.tmp", std::process::id()));
+    let mut output = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .map_err(|error| {
+            hide_core::error::HideError::Config(format!(
+                "create HCLI compiler trace temporary file {}: {error}",
+                temporary.display()
+            ))
+        })?;
+    use std::io::Write;
+    let write_result = (|| -> std::io::Result<()> {
+        output.write_all(&raw)?;
+        output.write_all(b"\n")?;
+        output.sync_all()
+    })();
+    if let Err(error) = write_result {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(hide_core::error::HideError::Config(format!(
+            "write HCLI compiler trace {}: {error}",
+            temporary.display()
+        )));
+    }
+    if let Err(error) = std::fs::rename(&temporary, &destination) {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(hide_core::error::HideError::Config(format!(
+            "publish HCLI compiler trace {}: {error}",
+            destination.display()
+        )));
+    }
+    Ok(true)
+}
+
 /// Accounting for a complete explicit-evidence block against a compact live
 /// native prompt. This remains metadata-only: it proves the admission decision
 /// without serializing any derivative text into a durable receipt.
@@ -432,6 +575,18 @@ pub(crate) async fn run_turn_core(
         .filter(|cap| *cap > 0)
         .map(|cap| out_budget.min(cap))
         .unwrap_or(out_budget);
+
+    if maybe_capture_hcli_compiler_pre_execution_trace(
+        &compiled.manifest,
+        &compiled.prompt,
+        &folded_prompt,
+        messages.len(),
+        out_budget,
+    )? {
+        return Err(hide_core::error::HideError::PolicyDenied(
+            "HCLI compiler trace captured before provider/model execution; trace-only mode intentionally refuses generation".into(),
+        ));
+    }
 
     // Durable marker: compile stats + honest capability / rot / meter.
     // The compile receipt lives on the event log (not a pre-token Wire-B patch)
@@ -1179,6 +1334,28 @@ mod tests {
         assert!(
             !compiled.payload.to_string().contains(selected_fact),
             "the receipt records admission metadata, never derivative text"
+        );
+    }
+
+    #[test]
+    fn compiler_trace_document_is_explicitly_pre_execution_and_marks_raw_prompt_scope() {
+        let manifest = hawking_context::manifest::ContextManifest::new(256);
+        let trace = hcli_compiler_trace_document(
+            &manifest,
+            "selected context",
+            "selected context\n\nuser: diagnostic prompt",
+            1,
+            8,
+        );
+        assert_eq!(trace["status"], HCLI_COMPILER_TRACE_MODE);
+        assert_eq!(trace["model_execution_started"], false);
+        assert_eq!(
+            trace["folded_native_prompt_utf8"],
+            "selected context\n\nuser: diagnostic prompt"
+        );
+        assert_eq!(
+            trace["claim_boundary"]["does_not_contact_provider_or_execute_a_model"],
+            true
         );
     }
 }

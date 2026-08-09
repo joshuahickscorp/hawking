@@ -87,7 +87,10 @@ impl RegionKind {
 
     /// Tables/charts/diagrams escalate to selective parse; plain text stays cheap.
     pub fn prefers_structured_parse(self) -> bool {
-        matches!(self, Self::Table | Self::Chart | Self::Diagram | Self::Equation)
+        matches!(
+            self,
+            Self::Table | Self::Chart | Self::Diagram | Self::Equation
+        )
     }
 }
 

@@ -21,10 +21,10 @@
 
 use crate::memory_classes::{MemoryClass, PersonalScope};
 use hide_core::ids::now_ms;
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicU64, Ordering};
-use parking_lot::RwLock;
 
 // ---------------------------------------------------------------------------
 // L0–L5 tiers (bible §17)
@@ -93,7 +93,9 @@ impl MemoryTier {
             Self::L1Session => "session-bound; evicted with session unless promoted",
             Self::L2Project => "workspace-durable; supersede/retire explicit",
             Self::L3Skills => "verified procedures only; admitted via Skill Foundry",
-            Self::L4Graveyard => "failed mechanisms retained with reopen conditions; never auto-promoted to L2/L3",
+            Self::L4Graveyard => {
+                "failed mechanisms retained with reopen conditions; never auto-promoted to L2/L3"
+            }
             Self::L5Archive => "compressed history; retrieval opt-in; not default context",
         }
     }
@@ -303,11 +305,7 @@ pub struct MemoryItemDraft {
 }
 
 impl MemoryItemDraft {
-    pub fn new(
-        text: impl Into<String>,
-        source: impl Into<String>,
-        tier: MemoryTier,
-    ) -> Self {
+    pub fn new(text: impl Into<String>, source: impl Into<String>, tier: MemoryTier) -> Self {
         Self {
             text: text.into(),
             source: source.into(),
@@ -439,7 +437,11 @@ pub trait MemoryOs: Send + Sync {
     fn store(&self, draft: MemoryItemDraft) -> Result<MemoryItem, MemoryOsError>;
     fn retrieve(&self, query: MemoryOsQuery) -> Result<Vec<MemoryItem>, MemoryOsError>;
     fn update(&self, id: &str, patch: MemoryItemPatch) -> Result<MemoryItem, MemoryOsError>;
-    fn consolidate(&self, ids: &[String], into_text: &str) -> Result<ConsolidateResult, MemoryOsError>;
+    fn consolidate(
+        &self,
+        ids: &[String],
+        into_text: &str,
+    ) -> Result<ConsolidateResult, MemoryOsError>;
     fn invalidate(&self, id: &str, reason: &str) -> Result<MemoryItem, MemoryOsError>;
     fn archive(&self, id: &str) -> Result<MemoryItem, MemoryOsError>;
     fn forget(&self, id: &str) -> Result<bool, MemoryOsError>;
@@ -675,7 +677,9 @@ impl MemoryOs for InMemoryMemoryOs {
         into_text: &str,
     ) -> Result<ConsolidateResult, MemoryOsError> {
         if ids.is_empty() {
-            return Err(MemoryOsError::Invalid("consolidate requires at least one id".into()));
+            return Err(MemoryOsError::Invalid(
+                "consolidate requires at least one id".into(),
+            ));
         }
         let now = self.now();
         // Snapshot sources before mutation.
@@ -784,7 +788,11 @@ impl MemoryOs for InMemoryMemoryOs {
             .ok_or_else(|| MemoryOsError::NotFound(id.into()))?;
         let eligible = item.is_eligible_default(now);
         let mut reasons = Vec::new();
-        reasons.push(format!("tier={} ({})", item.tier.as_str(), item.tier.retention_rule()));
+        reasons.push(format!(
+            "tier={} ({})",
+            item.tier.as_str(),
+            item.tier.retention_rule()
+        ));
         reasons.push(format!(
             "verification_state={}",
             item.verification_state.as_str()
@@ -870,9 +878,13 @@ mod tests {
         os.set_clock_ms(1_000);
         let a = os
             .store(
-                MemoryItemDraft::new("repo uses hawking-context for memory", "audit", MemoryTier::L2Project)
-                    .with_confidence(0.9)
-                    .with_verification(VerificationState::Asserted),
+                MemoryItemDraft::new(
+                    "repo uses hawking-context for memory",
+                    "audit",
+                    MemoryTier::L2Project,
+                )
+                .with_confidence(0.9)
+                .with_verification(VerificationState::Asserted),
             )
             .unwrap();
         let hits = os
@@ -882,7 +894,10 @@ mod tests {
         assert_eq!(hits[0].id, a.id);
         assert!(os.forget(&a.id).unwrap());
         assert!(os.get(&a.id).unwrap().is_none());
-        assert!(os.retrieve(MemoryOsQuery::new(5).with_text("hawking-context")).unwrap().is_empty());
+        assert!(os
+            .retrieve(MemoryOsQuery::new(5).with_text("hawking-context"))
+            .unwrap()
+            .is_empty());
     }
 
     #[test]
@@ -1009,10 +1024,14 @@ mod tests {
         let os = InMemoryMemoryOs::new();
         os.set_clock_ms(1);
         let a = os
-            .store(MemoryItemDraft::new("fact one", "s", MemoryTier::L2Project).with_confidence(0.4))
+            .store(
+                MemoryItemDraft::new("fact one", "s", MemoryTier::L2Project).with_confidence(0.4),
+            )
             .unwrap();
         let b = os
-            .store(MemoryItemDraft::new("fact two", "s", MemoryTier::L2Project).with_confidence(0.8))
+            .store(
+                MemoryItemDraft::new("fact two", "s", MemoryTier::L2Project).with_confidence(0.8),
+            )
             .unwrap();
         let res = os
             .consolidate(&[a.id.clone(), b.id.clone()], "fact one+two merged")

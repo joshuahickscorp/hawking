@@ -1,0 +1,593 @@
+{
+  "decision_sha256": "be256163c83b72d3b5699c750178d9aa813975b959b8044c5beeac8a4c0de101",
+  "launch_gate": {
+    "derived_only_from_controller_state": true,
+    "launch_exception_permitted": false,
+    "missing_states": [
+      "MANAGER_TOURNAMENT",
+      "SANDBOX_ACTIVATION",
+      "FAMILY_QWEN",
+      "FAMILY_LLAMA",
+      "FAMILY_MISTRAL",
+      "FAMILY_DEEPSEEK",
+      "FAMILY_GLM",
+      "FAMILY_KIMI",
+      "FAMILY_GEMMA",
+      "FAMILY_HYBRID",
+      "GLOBAL_LAUNCH_AUDIT",
+      "EXTERNAL_REVIEW",
+      "APPLE_RELEASE"
+    ],
+    "required_states": [
+      "MANAGER_TOURNAMENT",
+      "SANDBOX_ACTIVATION",
+      "FAMILY_QWEN",
+      "FAMILY_LLAMA",
+      "FAMILY_MISTRAL",
+      "FAMILY_DEEPSEEK",
+      "FAMILY_GLM",
+      "FAMILY_KIMI",
+      "FAMILY_GEMMA",
+      "FAMILY_HYBRID",
+      "GLOBAL_LAUNCH_AUDIT",
+      "EXTERNAL_REVIEW",
+      "APPLE_RELEASE"
+    ],
+    "status": "BLOCKED"
+  },
+  "no_drift_enforced": {
+    "family_without_exact_model": "REFUSE",
+    "generic_fallback_core_family": "REFUSE",
+    "hidden_second_reviewer": "REFUSE",
+    "manager_above_1_5_bpw": "REFUSE",
+    "manager_below_tg3": "REFUSE",
+    "model_self_promotion": "REFUSE",
+    "sandbox_before_tournament": "REFUSE",
+    "timeline_completion": "REFUSE",
+    "unverified_deletion": "REFUSE"
+  },
+  "recorded_at": "2026-08-09T17:44:43.494800Z",
+  "schema": "hawking.ascension.v3_gate_matrix.v1",
+  "seal_sha256": "7784df4a98218f5042f249583601fc9559bcb7bb8444e67326070fabb10eccc7",
+  "states": [
+    {
+      "blockers": [],
+      "completion_states": [
+        "ASCENSION_V3_ADOPTED"
+      ],
+      "description": "Adopt the supplied Ascension V3 Bible as the sole canonical programme.",
+      "evidence": [
+        {
+          "artifact_id": "ASCENSION_V3_ADOPTED",
+          "issues": [],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_ADOPTED.json",
+          "seal_sha256": "22bafc309aeafc507dc57716767cc89048d4f43db86ce010d9fb978d020647d8",
+          "status": "PASS"
+        }
+      ],
+      "id": "V3_ADOPT",
+      "prerequisites": [],
+      "resource_class": "CONTROLLER",
+      "status": "CERTIFIED"
+    },
+    {
+      "blockers": [
+        "sealed JSON evidence file is absent or unreadable",
+        "sealed JSONL evidence ledger is absent or empty",
+        "required file artifact is absent, symlinked, or not regular"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_SEED_ARCHIVE_SEALED"
+      ],
+      "description": "Archive live state, protected objects, prior evidence, and restoration proof.",
+      "evidence": [
+        {
+          "artifact_id": "ASCENSION_V3_SEED_ARCHIVE",
+          "issues": [
+            "sealed JSON evidence file is absent or unreadable"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_SEED_ARCHIVE.json",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_PROTECTED_OBJECTS",
+          "issues": [
+            "sealed JSON evidence file is absent or unreadable"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_PROTECTED_OBJECTS.json",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_PROCESS_AUDIT",
+          "issues": [
+            "sealed JSON evidence file is absent or unreadable"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_PROCESS_AUDIT.json",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_GRAVEYARD_IMPORT",
+          "issues": [
+            "sealed JSONL evidence ledger is absent or empty"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_GRAVEYARD_IMPORT.jsonl",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_KERNEL_GENOME_IMPORT",
+          "issues": [
+            "sealed JSONL evidence ledger is absent or empty"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_KERNEL_GENOME_IMPORT.jsonl",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_REPRESENTATION_GENOME_IMPORT",
+          "issues": [
+            "sealed JSONL evidence ledger is absent or empty"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_REPRESENTATION_GENOME_IMPORT.jsonl",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_RESTORE",
+          "issues": [
+            "required file artifact is absent, symlinked, or not regular"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_RESTORE.sh",
+          "status": "MISSING_OR_UNREADABLE"
+        },
+        {
+          "artifact_id": "ASCENSION_V3_STORAGE_RECOVERY_RECEIPT",
+          "issues": [
+            "sealed JSON evidence file is absent or unreadable"
+          ],
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence/ASCENSION_V3_STORAGE_RECOVERY_RECEIPT.json",
+          "status": "MISSING_OR_UNREADABLE"
+        }
+      ],
+      "id": "V3_SEED_ARCHIVE",
+      "prerequisites": [
+        "V3_ADOPT"
+      ],
+      "resource_class": "DISK_HEAVY",
+      "status": "BLOCKED"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_SEED_ARCHIVE"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_AUTHORITY_FROZEN"
+      ],
+      "description": "Freeze authorities, hidden memberships, rollback, and deletion policy.",
+      "evidence": [],
+      "id": "V3_AUTHORITY_FREEZE",
+      "prerequisites": [
+        "V3_SEED_ARCHIVE"
+      ],
+      "resource_class": "CONTROLLER",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_AUTHORITY_FREEZE"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_GROK_BUILD_FABRIC_READY",
+        "ASCENSION_V3_RESOURCE_GOVERNOR_READY"
+      ],
+      "description": "Install isolated build lanes plus resource/thermal governance.",
+      "evidence": [],
+      "id": "V3_GROK_BUILD_FABRIC",
+      "prerequisites": [
+        "V3_AUTHORITY_FREEZE"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_GROK_BUILD_FABRIC"
+      ],
+      "completion_states": [
+        "HCLI_AGENT_OS_V3_READY"
+      ],
+      "description": "Wire scheduler, context, tools, memory, recovery, and HCLI into the live product path.",
+      "evidence": [],
+      "id": "V3_AGENT_OS",
+      "prerequisites": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_AGENT_OS"
+      ],
+      "completion_states": [
+        "ASCENSION_KNOWLEDGE_PLANE_READY"
+      ],
+      "description": "Build reusable Kernel, Representation, Scheduler, and negative-science knowledge planes.",
+      "evidence": [],
+      "id": "V3_KNOWLEDGE_PLANE",
+      "prerequisites": [
+        "V3_AGENT_OS"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_KNOWLEDGE_PLANE"
+      ],
+      "completion_states": [
+        "GRAVITY_V3_READY"
+      ],
+      "description": "Establish the evolutionary Gravity frontier and Doctor/QAT evidence discipline.",
+      "evidence": [],
+      "id": "V3_GRAVITY",
+      "prerequisites": [
+        "V3_KNOWLEDGE_PLANE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_GRAVITY"
+      ],
+      "completion_states": [
+        "METAL_EXACT_MODEL_COMPILER_V3_READY"
+      ],
+      "description": "Establish family semantics and exact-model Metal generation.",
+      "evidence": [],
+      "id": "V3_METAL_COMPILER",
+      "prerequisites": [
+        "V3_GRAVITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_METAL_COMPILER"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_DENSITY_GATE_READY"
+      ],
+      "description": "Freeze the Qwen 30B source/capability anchor and earn <=1.5 complete BPW.",
+      "evidence": [],
+      "id": "MANAGER_30B_DENSITY",
+      "prerequisites": [
+        "V3_METAL_COMPILER"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_DENSITY"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_TG3_GATE_READY"
+      ],
+      "description": "Earn Qwen 30B TG3 on a CLEAN, real-Metal, no-fallback runtime.",
+      "evidence": [],
+      "id": "MANAGER_30B_TG",
+      "prerequisites": [
+        "MANAGER_30B_DENSITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_TG"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_CANDIDATE"
+      ],
+      "description": "Qualify Qwen 30B's HCLI/Agent OS, residency, recovery, and unattended campaign behaviour.",
+      "evidence": [],
+      "id": "MANAGER_30B_AGENT",
+      "prerequisites": [
+        "MANAGER_30B_TG"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_DENSITY_GATE_READY"
+      ],
+      "description": "Freeze the Qwen Next 80B source/capability anchor and earn <=1.5 complete BPW.",
+      "evidence": [],
+      "id": "MANAGER_80B_DENSITY",
+      "prerequisites": [
+        "MANAGER_30B_AGENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_80B_DENSITY"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_TG3_GATE_READY"
+      ],
+      "description": "Earn Qwen Next 80B TG3 on its exact hybrid runtime.",
+      "evidence": [],
+      "id": "MANAGER_80B_TG",
+      "prerequisites": [
+        "MANAGER_80B_DENSITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_80B_TG"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_CANDIDATE"
+      ],
+      "description": "Qualify Qwen Next 80B's HCLI/Agent OS, residency, recovery, and unattended campaign behaviour.",
+      "evidence": [],
+      "id": "MANAGER_80B_AGENT",
+      "prerequisites": [
+        "MANAGER_80B_TG"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT",
+        "requires certified state MANAGER_80B_AGENT"
+      ],
+      "completion_states": [
+        "ASCENSION_MANAGER_TOURNAMENT_READY",
+        "ASCENSION_MANAGER_SEALED",
+        "ASCENSION_ALTERNATE_OFFLOADED"
+      ],
+      "description": "Run the fixed, protected two-manager tournament, seal its winner, and offload the alternate.",
+      "evidence": [],
+      "id": "MANAGER_TOURNAMENT",
+      "prerequisites": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_TOURNAMENT"
+      ],
+      "completion_states": [
+        "ASCENSION_SANDBOX_ACTIVE"
+      ],
+      "description": "Activate the production Ascension sandbox only under the sealed winner.",
+      "evidence": [],
+      "id": "SANDBOX_ACTIVATION",
+      "prerequisites": [
+        "MANAGER_TOURNAMENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "QWEN_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the QWEN semantic family.",
+      "evidence": [],
+      "id": "FAMILY_QWEN",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "LLAMA_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the LLAMA semantic family.",
+      "evidence": [],
+      "id": "FAMILY_LLAMA",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "MISTRAL_MIXTRAL_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the MISTRAL_MIXTRAL semantic family.",
+      "evidence": [],
+      "id": "FAMILY_MISTRAL",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "DEEPSEEK_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the DEEPSEEK semantic family.",
+      "evidence": [],
+      "id": "FAMILY_DEEPSEEK",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "GLM_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the GLM semantic family.",
+      "evidence": [],
+      "id": "FAMILY_GLM",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "KIMI_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the KIMI semantic family.",
+      "evidence": [],
+      "id": "FAMILY_KIMI",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "GEMMA_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the GEMMA semantic family.",
+      "evidence": [],
+      "id": "FAMILY_GEMMA",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "HYBRID_V3_LAUNCH_READY"
+      ],
+      "description": "Qualify an exact production representative for the STATE_SPACE_OR_LINEAR_ATTENTION_HYBRID semantic family.",
+      "evidence": [],
+      "id": "FAMILY_HYBRID",
+      "prerequisites": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state FAMILY_QWEN",
+        "requires certified state FAMILY_LLAMA",
+        "requires certified state FAMILY_MISTRAL",
+        "requires certified state FAMILY_DEEPSEEK",
+        "requires certified state FAMILY_GLM",
+        "requires certified state FAMILY_KIMI",
+        "requires certified state FAMILY_GEMMA",
+        "requires certified state FAMILY_HYBRID"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_CORE_FAMILY_MATRIX_READY",
+        "ASCENSION_V3_ALL_ADVERTISED_MODELS_QUALIFIED"
+      ],
+      "description": "Complete all family, model, density, TG, resource, recovery, and product matrices.",
+      "evidence": [],
+      "id": "GLOBAL_LAUNCH_AUDIT",
+      "prerequisites": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "resource_class": "CONTROLLER",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state GLOBAL_LAUNCH_AUDIT"
+      ],
+      "completion_states": [
+        "HAWKING_ASCENSION_V3_REVIEW_REQUIRED"
+      ],
+      "description": "Publish a compact V3 review packet and receive independent external review.",
+      "evidence": [],
+      "id": "EXTERNAL_REVIEW",
+      "prerequisites": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ],
+      "resource_class": "CONTROLLER",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state EXTERNAL_REVIEW"
+      ],
+      "completion_states": [
+        "HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY"
+      ],
+      "description": "Seal the Apple-first production release only after every launch gate and review pass.",
+      "evidence": [],
+      "id": "APPLE_RELEASE",
+      "prerequisites": [
+        "EXTERNAL_REVIEW"
+      ],
+      "resource_class": "CONTROLLER",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "blockers": [
+        "requires certified state APPLE_RELEASE"
+      ],
+      "completion_states": [
+        "HAWKING_TG2_TG1_FRONTIER_ACTIVE"
+      ],
+      "description": "Open post-release TG2/TG1 research without delaying launch completion.",
+      "evidence": [],
+      "id": "TG2_TG1_FRONTIER",
+      "prerequisites": [
+        "APPLE_RELEASE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "status": "PENDING_PREREQUISITES"
+    }
+  ]
+}

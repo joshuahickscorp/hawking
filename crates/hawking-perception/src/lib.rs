@@ -43,8 +43,8 @@ pub use service::DocumentService;
 pub use stubs::StubDocumentService;
 pub use tools::{DocumentTool, DocumentToolName, ToolRequest, ToolResponse};
 pub use types::{
-    ChartParse, Citation, DocumentHandle, DocumentMeta, EvidenceStrength, PageContent,
-    PageRef, ParsedRegion, Region, RegionId, StructuredEvidence, StructureReport, TableParse,
+    ChartParse, Citation, DocumentHandle, DocumentMeta, EvidenceStrength, PageContent, PageRef,
+    ParsedRegion, Region, RegionId, StructureReport, StructuredEvidence, TableParse,
 };
 
 /// Schema / identity markers for receipts and capability surfaces.

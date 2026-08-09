@@ -1,0 +1,230 @@
+{
+  "architecture": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "config_captured": true,
+    "config_sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62",
+    "hidden_size": 2048,
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "num_hidden_layers": 48,
+    "torch_dtype": "bfloat16",
+    "vocab_size": 151936
+  },
+  "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",
+  "authentication": {
+    "authenticated": true,
+    "credential_source": "huggingface_local_credential_store",
+    "token_export_forbidden": true,
+    "token_material_recorded": false
+  },
+  "authority_level": "candidate",
+  "claim_boundary": {
+    "metadata_only": true,
+    "no_model_body_downloaded": true,
+    "no_model_loaded": true,
+    "no_token_material_recorded": true,
+    "not_controller_certified": true,
+    "not_permission_to_stream_model_body": true,
+    "token_never_exposed_to_model": true
+  },
+  "inventory": {
+    "file_count": 28,
+    "files": [
+      {
+        "bytes": 1519,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": ".gitattributes"
+      },
+      {
+        "bytes": 11343,
+        "kind": "license",
+        "lfs_sha256": null,
+        "path": "LICENSE"
+      },
+      {
+        "bytes": 5425,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "README.md"
+      },
+      {
+        "bytes": 6211,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "chat_template.jinja"
+      },
+      {
+        "bytes": 963,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "config.json"
+      },
+      {
+        "bytes": 180,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "generation_config.json"
+      },
+      {
+        "bytes": 1671839,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "merges.txt"
+      },
+      {
+        "bytes": 3998893112,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00001-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999974192,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00002-of-00016.safetensors"
+      },
+      {
+        "bytes": 3997360832,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00003-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975056,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00004-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975400,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00005-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975400,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00006-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975472,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00007-of-00016.safetensors"
+      },
+      {
+        "bytes": 3997362064,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00008-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975408,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00009-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975400,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00010-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975408,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00011-of-00016.safetensors"
+      },
+      {
+        "bytes": 3987924896,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00012-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975088,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00013-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975400,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00014-of-00016.safetensors"
+      },
+      {
+        "bytes": 3999975400,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00015-of-00016.safetensors"
+      },
+      {
+        "bytes": 1085307128,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00016-of-00016.safetensors"
+      },
+      {
+        "bytes": 1699758,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "model.safetensors.index.json"
+      },
+      {
+        "bytes": 31613,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "qwen3coder_tool_parser.py"
+      },
+      {
+        "bytes": 7032399,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "tokenizer.json"
+      },
+      {
+        "bytes": 13055,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "tokenizer_config.json"
+      },
+      {
+        "bytes": 2776833,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "vocab.json"
+      }
+    ],
+    "known_weight_bytes": 61066575656,
+    "unknown_size_count": 0,
+    "weight_file_count": 16
+  },
+  "recorded_at": "2026-08-09T06:16:04.474778Z",
+  "schema": "hawking.ascension.source_admission_candidate.v1",
+  "seal_sha256": "6312846a38e868f4f8cb6af5c9ada2f15aacb926183908c1f96ade202665d5e7",
+  "source": {
+    "gated": false,
+    "license_card_value": null,
+    "license_file": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab",
+    "license_file_sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+    "official_namespace_expected": true,
+    "private": false,
+    "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "revision_requested": "main"
+  },
+  "status": "CANDIDATE_METADATA_CAPTURED",
+  "target": {
+    "family": "QWEN3_MOE",
+    "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+    "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "role": "executor"
+  }
+}

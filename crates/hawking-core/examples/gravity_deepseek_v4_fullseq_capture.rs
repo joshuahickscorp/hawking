@@ -40,14 +40,12 @@
 
 #[cfg(not(target_os = "macos"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Err(std::io::Error::other(
-        "gravity_deepseek_v4_fullseq_capture requires macOS Metal",
-    )
-    .into())
+    Err(std::io::Error::other("gravity_deepseek_v4_fullseq_capture requires macOS Metal").into())
 }
 
 #[cfg(target_os = "macos")]
 mod macos {
+    use half::bf16;
     use hawking_core::gravity_deepseek_v4::DeepSeekV4FullStreamReader;
     use hawking_core::gravity_deepseek_v4_expert_cache::{
         resolve_expert_bundle, DeepSeekV4ExpertBundleCache, ExpertBundleKey,
@@ -72,7 +70,6 @@ mod macos {
         DSV4F_P7_OWNED_COMMAND_BUFFERS, DSV4F_P7_OWNED_DEVICE_DISPATCHES,
     };
     use hawking_core::gravity_deepseek_v4_runtime_spine::DeepSeekV4StagedTensor;
-    use half::bf16;
     use hawking_core::metal::MetalContext;
     use serde_json::json;
     use sha2::{Digest, Sha256};
@@ -189,11 +186,9 @@ mod macos {
         let corpus_len_before_shard = corpus_full.len();
         let seq_end = args.seq_end.unwrap_or(corpus_len_before_shard);
         if args.seq_start > seq_end {
-            return Err(format!(
-                "--seq-start ({}) > --seq-end ({})",
-                args.seq_start, seq_end
-            )
-            .into());
+            return Err(
+                format!("--seq-start ({}) > --seq-end ({})", args.seq_start, seq_end).into(),
+            );
         }
         if args.seq_start > corpus_len_before_shard {
             return Err(format!(
@@ -234,7 +229,10 @@ mod macos {
                 obj.insert("n_sequences".into(), json!(corpus.len()));
                 obj.insert(
                     "example_ids".into(),
-                    json!(corpus.iter().map(|e| e.example_id.clone()).collect::<Vec<_>>()),
+                    json!(corpus
+                        .iter()
+                        .map(|e| e.example_id.clone())
+                        .collect::<Vec<_>>()),
                 );
             }
             p
@@ -338,14 +336,8 @@ mod macos {
                     accounting.cpu_visible_waits += attn_out.actual_cpu_visible_waits;
 
                     let attention = attn_out.p7_attention_state(&metal, &kv_caches[li])?;
-                    let (child, p7_disp, p7_cbs, route_ids, route_scores_sha) = run_p7_p6(
-                        &metal,
-                        &reader,
-                        layer,
-                        tid,
-                        pos,
-                        attention,
-                    )?;
+                    let (child, p7_disp, p7_cbs, route_ids, route_scores_sha) =
+                        run_p7_p6(&metal, &reader, layer, tid, pos, attention)?;
                     accounting.metal_dispatches += p7_disp;
                     accounting.command_buffers += p7_cbs;
                     accounting.cpu_visible_waits += p7_cbs;
@@ -395,24 +387,27 @@ mod macos {
                             "late_hidden_export_mode".into(),
                             json!("offline_analysis_diagnostic"),
                         );
-                        sites.as_object_mut().unwrap().insert(
-                            "late_hidden_dtype".into(),
-                            json!("f32"),
-                        );
-                        sites.as_object_mut().unwrap().insert(
-                            "late_hidden_shape".into(),
-                            json!([vec.len()]),
-                        );
+                        sites
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("late_hidden_dtype".into(), json!("f32"));
+                        sites
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("late_hidden_shape".into(), json!([vec.len()]));
                         // Stash on sites for last-pos promotion after the token loop.
-                        sites.as_object_mut().unwrap().insert(
-                            "_late_hidden_f32_tmp".into(),
-                            json!(vec),
-                        );
+                        sites
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("_late_hidden_f32_tmp".into(), json!(vec));
                     }
                     // Approximate capture payload (hashes + route ids, not full tensors).
                     total_capture_bytes += 6 * 32 + 6 * 4 + 128;
                     if late_hidden_export.is_some() {
-                        total_capture_bytes += late_hidden_export.as_ref().map(|v| v.len() * 4).unwrap_or(0) as u64;
+                        total_capture_bytes += late_hidden_export
+                            .as_ref()
+                            .map(|v| v.len() * 4)
+                            .unwrap_or(0) as u64;
                     }
                     for key in [
                         "embedding",
@@ -619,10 +614,7 @@ mod macos {
                 let n = rows.len();
                 let d = rows[0].len();
                 if rows.iter().any(|r| r.len() != d) {
-                    return Err(format!(
-                        "export layer {layer}: inconsistent hidden widths"
-                    )
-                    .into());
+                    return Err(format!("export layer {layer}: inconsistent hidden widths").into());
                 }
                 let mut flat: Vec<f32> = Vec::with_capacity(n * d);
                 for r in rows {
@@ -820,9 +812,7 @@ mod macos {
                     None => PathBuf::from(match ladder {
                         "L0" => DEFAULT_FROZEN_L0,
                         "L1" => DEFAULT_FROZEN_L1,
-                        other => {
-                            return Err(format!("unknown ladder {other}; use L0 or L1").into())
-                        }
+                        other => return Err(format!("unknown ladder {other}; use L0 or L1").into()),
                     }),
                 };
                 let mut out = load_frozen_proto_corpus(&path)?;
@@ -909,9 +899,8 @@ mod macos {
         if ladder == "L0" {
             let frozen_path = PathBuf::from(CANONICAL_FROZEN_L0_JSON);
             if frozen_path.is_file() {
-                let frozen_raw = fs::read_to_string(&frozen_path).map_err(|e| {
-                    format!("read canonical freeze {}: {e}", frozen_path.display())
-                })?;
+                let frozen_raw = fs::read_to_string(&frozen_path)
+                    .map_err(|e| format!("read canonical freeze {}: {e}", frozen_path.display()))?;
                 let frozen: serde_json::Value = serde_json::from_str(&frozen_raw).map_err(|e| {
                     format!("parse canonical freeze {}: {e}", frozen_path.display())
                 })?;
@@ -988,8 +977,8 @@ mod macos {
     }
 
     fn load_frozen_proto_corpus(path: &Path) -> ProbeResult<Vec<CorpusExample>> {
-        let file = File::open(path)
-            .map_err(|e| format!("open frozen corpus {}: {e}", path.display()))?;
+        let file =
+            File::open(path).map_err(|e| format!("open frozen corpus {}: {e}", path.display()))?;
         let reader = BufReader::new(file);
         let mut out = Vec::new();
         for (lineno, line) in reader.lines().enumerate() {
@@ -1116,8 +1105,8 @@ mod macos {
 
     fn load_dsv4f_tokenizer(reader: &DeepSeekV4FullStreamReader) -> ProbeResult<Tokenizer> {
         let bytes = reader.read_verified_metadata_asset("tokenizer.json", 16 * 1024 * 1024)?;
-        let tok = Tokenizer::from_bytes(&bytes)
-            .map_err(|e| format!("tokenizer load failed: {e}"))?;
+        let tok =
+            Tokenizer::from_bytes(&bytes).map_err(|e| format!("tokenizer load failed: {e}"))?;
         Ok(tok)
     }
 
@@ -1155,7 +1144,8 @@ mod macos {
             )?
         };
 
-        let p6 = DeepSeekV4Layer0P6MetalExecutor::prepare_for_p7(metal, reader, &mut cache, &source)?;
+        let p6 =
+            DeepSeekV4Layer0P6MetalExecutor::prepare_for_p7(metal, reader, &mut cache, &source)?;
         let mut p7 = DeepSeekV4P7BoundedDeviceExecutor::prepare(
             metal,
             source,
@@ -1205,7 +1195,8 @@ mod macos {
             source_parent_retained: false,
             source_upload_required_before_execution: true,
             host_activation_handoff_permitted: false,
-            runtime_boundary: "fullseq multi-token GPU capture P7 controls; no Engine/HCLI/serve/TPS",
+            runtime_boundary:
+                "fullseq multi-token GPU capture P7 controls; no Engine/HCLI/serve/TPS",
         };
         Ok((source, ffn_norm, [hc_fn, hc_base, hc_scale]))
     }
@@ -1338,10 +1329,7 @@ mod macos {
             }
             Ok(acc)
         } else {
-            Ok(bits
-                .iter()
-                .map(|b| bf16::from_bits(*b).to_f32())
-                .collect())
+            Ok(bits.iter().map(|b| bf16::from_bits(*b).to_f32()).collect())
         }
     }
 
@@ -1371,8 +1359,7 @@ mod macos {
         if total % 64 != 0 {
             return Err("npy header alignment bug".into());
         }
-        let header_len = u16::try_from(header.len())
-            .map_err(|_| "npy header exceeds u16")?;
+        let header_len = u16::try_from(header.len()).map_err(|_| "npy header exceeds u16")?;
         let mut f = File::create(path)?;
         f.write_all(b"\x93NUMPY")?;
         f.write_all(&[1u8, 0u8])?; // v1.0
@@ -1496,13 +1483,10 @@ mod macos {
                     worker_id = Some(args.next().ok_or("--worker-id needs value")?);
                 }
                 "--corpus-mode" => {
-                    corpus_mode = args
-                        .next()
-                        .ok_or("--corpus-mode needs frozen|synthetic")?;
+                    corpus_mode = args.next().ok_or("--corpus-mode needs frozen|synthetic")?;
                 }
                 "--corpus" => {
-                    corpus_path =
-                        Some(PathBuf::from(args.next().ok_or("--corpus needs path")?));
+                    corpus_path = Some(PathBuf::from(args.next().ok_or("--corpus needs path")?));
                 }
                 "--export-host-activations" => {
                     export_host_activations = true;

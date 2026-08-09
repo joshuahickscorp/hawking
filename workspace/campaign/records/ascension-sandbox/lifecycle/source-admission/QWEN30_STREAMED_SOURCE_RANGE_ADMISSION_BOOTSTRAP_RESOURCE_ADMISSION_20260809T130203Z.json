@@ -1,0 +1,83 @@
+{
+  "blockers": [],
+  "bootstrap_binary": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_BINARY_BINDING_20260809T130203Z.json",
+    "raw_document_sha256": "85103de9332adf0d228a8b5ea27354fe3a820fe6076c7c49f70cfbb0317e9c11",
+    "seal_sha256": "f340ff41b3c0a856cb4db5692f74e97a9caf1628c0c6bf034c004c06280b7c57"
+  },
+  "bootstrap_binary_sha256": "d94d199df8f1525f9e558e95d381445066fc4cfec207bf218314f7ed42ba8df7",
+  "bootstrap_preflight": {
+    "raw_document_sha256": "66dfe09c1e29a44ea6ab1d428630eb052696f71a9d7d16e0ca2232643c0e406c",
+    "seal_sha256": "c29eb276920a9afd38c15e3eead031d5885e3378faaa7a7f8c6aebd78cce66ea"
+  },
+  "bounded_one_source_hash_scan_resource_profile": {
+    "exactly_one_future_non_inference_hash_scan_child": true,
+    "maximum_cached_raw_bf16_bytes": 1048576,
+    "maximum_concurrent_source_hash_scan_children": 1,
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "maximum_shards": 16,
+    "maximum_tensors": 18867,
+    "minimum_reclaimable_bytes_required": 2147483648,
+    "model_gpu_server_hcli_or_tps_allowed": false,
+    "source_model_residency_allowed": false,
+    "source_root_statted_or_opened": false,
+    "source_teacher_or_logits_allowed": false
+  },
+  "child_started": false,
+  "claim_boundary": "Read-only resource admission only. A successful observation is not a lease, child launch, source scan, runtime admission, source-teacher, model, GPU, server, HCLI, TPS, TG, or tournament result.",
+  "exclusive_clean_window": true,
+  "execution_boundary": {
+    "capture_child_spawned": false,
+    "gpu_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed_or_released": false,
+    "q30_or_q80_capture_child_started": false,
+    "source_model_loaded": false,
+    "source_payload_opened": false,
+    "source_root_argument_or_stat_performed": false
+  },
+  "fresh_observation": true,
+  "gpu_server_hcli_or_tps_action": false,
+  "lease_issued_or_consumed": false,
+  "minimum_reclaimable_bytes_required": 2147483648,
+  "prepared": true,
+  "read_only_observation": {
+    "after": {
+      "backend": "darwin-vm_stat-sysctl-ps",
+      "q30_capture_child_count": 0,
+      "q30_capture_child_fingerprints": [],
+      "q80_capture_child_count": 0,
+      "q80_capture_child_fingerprints": [],
+      "reclaimable_bytes": 44004950016,
+      "swap_used_bytes": 0,
+      "swapouts_pages": 0
+    },
+    "before": {
+      "backend": "darwin-vm_stat-sysctl-ps",
+      "q30_capture_child_count": 0,
+      "q30_capture_child_fingerprints": [],
+      "q80_capture_child_count": 0,
+      "q80_capture_child_fingerprints": [],
+      "reclaimable_bytes": 44005359616,
+      "swap_used_bytes": 0,
+      "swapouts_pages": 0
+    },
+    "captures_observed_before_and_after": true,
+    "sample_count": 2,
+    "source_root_or_payload_observed": false,
+    "swapouts_pages_delta": 0
+  },
+  "reclaimable_bytes": 44004950016,
+  "recorded_at": "2026-08-09T13:02:35.846121Z",
+  "resource_admitted_for_one_future_child": true,
+  "resource_window_identity_sha256": "4121a43a5f7d3c2b6345520528766e99c3d7a4fbd768c36cef718739070a08ef",
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_resource_admission.v1",
+  "seal_sha256": "3c8ca165a5661eb13f2f3f8c4472cdff7a19311ec6a40a4d508d9c2383b1e63e",
+  "source_model_loaded": false,
+  "source_payload_opened": false,
+  "status": "ADMITTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_ZERO_SWAP_RESOURCE_WINDOW",
+  "swap_used_bytes": 0,
+  "swapouts_pages_delta": 0,
+  "zero_swap": true,
+  "zero_swapouts": true
+}

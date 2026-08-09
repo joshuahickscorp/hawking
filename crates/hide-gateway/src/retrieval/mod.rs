@@ -9,7 +9,7 @@ mod hit;
 mod rank;
 
 pub use domain::{
-    DomainIndex, ExperienceRecord, IndexDomain, InMemoryDomainIndex, RepositoryRecord,
+    DomainIndex, ExperienceRecord, InMemoryDomainIndex, IndexDomain, RepositoryRecord,
     SkillIndexRecord, ToolIndexRecord, WebRecord,
 };
 pub use gateway::{CrossCheckReport, RetrievalError, RetrievalGateway};
@@ -142,7 +142,9 @@ mod tests {
         let web_hits = web.search(&q);
         let repo_hits = repo.search(&q);
         assert!(web_hits.iter().all(|h| h.domain == IndexDomain::Web));
-        assert!(repo_hits.iter().all(|h| h.domain == IndexDomain::Repository));
+        assert!(repo_hits
+            .iter()
+            .all(|h| h.domain == IndexDomain::Repository));
         assert!(!repo_hits.is_empty(), "repo should match ToolSpec");
         assert!(
             web_hits.is_empty() || web_hits[0].id != "repo-1",
@@ -180,7 +182,9 @@ mod tests {
 
         // Broad query hits multiple domains; hard limit proves smallest-set trim.
         let ranked = gw
-            .retrieve(&RetrievalQuery::new("retrieval parity kernel schema ToolSpec serde").with_limit(2))
+            .retrieve(
+                &RetrievalQuery::new("retrieval parity kernel schema ToolSpec serde").with_limit(2),
+            )
             .expect("retrieve");
         assert!(ranked.hits.len() <= 2, "must respect limit");
         assert!(ranked.hits.len() >= 1);
@@ -192,10 +196,10 @@ mod tests {
             ranked.hits.len()
         );
         // injection-blocked hits never surface
-        assert!(ranked.hits.iter().all(|e| !matches!(
-            e.hit.injection_status,
-            InjectionStatus::Blocked { .. }
-        )));
+        assert!(ranked
+            .hits
+            .iter()
+            .all(|e| !matches!(e.hit.injection_status, InjectionStatus::Blocked { .. })));
     }
 
     #[test]
@@ -256,13 +260,7 @@ mod tests {
         let set = RankedSet {
             hits: vec![
                 RankedEvidence {
-                    hit: RetrievalHit::synthetic(
-                        "a",
-                        IndexDomain::Web,
-                        "docs.rs",
-                        "body a",
-                        0.9,
-                    ),
+                    hit: RetrievalHit::synthetic("a", IndexDomain::Web, "docs.rs", "body a", 0.9),
                     final_score: 0.9,
                 },
                 RankedEvidence {

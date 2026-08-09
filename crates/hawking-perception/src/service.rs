@@ -17,11 +17,7 @@ pub trait DocumentService: Send + Sync {
     fn inspect(&self, handle: &DocumentHandle) -> Result<DocumentMeta>;
 
     /// Retrieve a subset of pages (text layer preferred; raster optional).
-    fn retrieve_pages(
-        &self,
-        handle: &DocumentHandle,
-        pages: &[u32],
-    ) -> Result<Vec<PageContent>>;
+    fn retrieve_pages(&self, handle: &DocumentHandle, pages: &[u32]) -> Result<Vec<PageContent>>;
 
     /// Detect regions on already-retrieved pages. Cheap heuristics first.
     fn detect_regions(

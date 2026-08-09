@@ -1,0 +1,96 @@
+{
+  "blockers": [],
+  "child_spawned": false,
+  "claim_boundary": "CPU/file-only issuer/outer preflight. It does not create a lease or directory, invoke a child, open a source root/payload, run source teacher/native/model/GPU/server/HCLI/TPS work, or claim a scan result.",
+  "current_no_lease_outer_preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_OUTER_PREFLIGHT_20260809T144045Z.json",
+    "raw_document_sha256": "d5a3bc55152265ae73336351279de4bcab082320c292efd58963e59e6b55c7d2",
+    "seal_sha256": "db4be3d096aa369ec4307bb84a38d8724455377b05d2834a698bd7ecdfe7ea7b"
+  },
+  "execute_mode_required_before_lease_issue": true,
+  "execution_boundary": {
+    "child_reaped": false,
+    "child_spawned": false,
+    "gpu_server_hcli_or_tps_action": false,
+    "launch_replay_or_capture_directory_created": false,
+    "lease_issued_or_consumed": false,
+    "native_phase_started": false,
+    "release_receipt_written": false,
+    "source_payload_opened": false,
+    "source_root_opened_or_statted": false,
+    "source_teacher_or_logits_executed": false,
+    "terminal_receipt_written": false
+  },
+  "future_one_scan_plan": {
+    "directories": {
+      "new_child_capture_directory_created_by_bound_scanner": true,
+      "new_launch_directory": true,
+      "new_outer_capture_directory": true,
+      "new_replay_directory": true
+    },
+    "exact_child_command": [
+      "BOUND_PRODUCTION_SCANNER_BINARY",
+      "--mode",
+      "production-scan",
+      "--range-authority",
+      "AUTHORITY_BOUND_METADATA_JSON",
+      "--semantics-attester",
+      "AUTHORITY_BOUND_SEMANTICS_JSON",
+      "--runtime-admission-authority",
+      "AUTHORITY_BOUND_RUNTIME_PREFLIGHT_JSON",
+      "--interface-authority",
+      "SEALED_PRODUCTION_INTERFACE_JSON",
+      "--production-scan-authority",
+      "SEALED_PRODUCTION_AUTHORITY_JSON",
+      "--bootstrap-lease",
+      "NEW_ONE_SHOT_LEASE_JSON",
+      "--source-root",
+      "EXPLICIT_FUTURE_Q30_SOURCE_ROOT",
+      "--capture-dir",
+      "NEW_CHILD_CAPTURE_DIRECTORY",
+      "--out",
+      "NEW_CHILD_RECEIPT_JSON"
+    ],
+    "lease": {
+      "one_shot": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_quiet_lease.v1",
+      "status": "GRANTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_HASH_SCAN_ONE_SHOT"
+    },
+    "resources": {
+      "maximum_live_raw_bf16_windows": 1,
+      "maximum_positioned_read_bytes": 1048576,
+      "source_shards": 16,
+      "source_teacher_native_gpu_server_hcli_forbidden": true,
+      "source_tensors": 18867
+    },
+    "terminal_order": [
+      "create-new replay reservation",
+      "issue fresh lease in execute mode",
+      "invoke exactly one bound scanner child",
+      "reap child",
+      "validate child receipt if successful",
+      "write outer terminal receipt last",
+      "write one-shot release receipt after terminal"
+    ]
+  },
+  "lease_issued": false,
+  "prepared": true,
+  "production_authority": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_AUTHORITY_20260809T144027Z.json",
+    "raw_document_sha256": "d3d6d7de3e089632054fd25b4a1548b3bb4e4d6a96ab8de592e55d6d56821a12",
+    "seal_sha256": "be00aeb41007b114851553ef351cc3bb759ca8b4528aeb1d3526d5612d358969"
+  },
+  "production_binary": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_BINARY_BINDING_20260809T143958Z.json",
+    "raw_document_sha256": "bd0dfe8ad751c638f936cba4a5004a777001f42646f1be3eb05b203dba88b0ea",
+    "seal_sha256": "45774c6a37d2338d27ce756534ea300cadb508ef04c65f6946a3ce2ff7028d9b"
+  },
+  "production_resource": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_RESOURCE_ADMISSION_20260809T144015Z.json",
+    "raw_document_sha256": "55dd800639a151097a39776c4310cf3465a164acb793db15e9ff53dcbd8031b0",
+    "seal_sha256": "3373a297da5c375bb48c94f259de31a6b56ea597df0a10367f9bf8e60a48e52e"
+  },
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_lease_outer_reaper.v1",
+  "seal_sha256": "b79933b175e849baacce74a374f302da9956d2f21ae6de8b945da128b1bfc9ef",
+  "status": "PREPARED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_LEASE_ISSUER_AND_OUTER_REAPER_NOT_EXECUTED"
+}

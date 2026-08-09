@@ -126,11 +126,7 @@ pub struct ModelResidency {
 }
 
 impl ModelResidency {
-    pub fn new(
-        id: impl Into<String>,
-        role_label: impl Into<String>,
-        max_batch_slots: u32,
-    ) -> Self {
+    pub fn new(id: impl Into<String>, role_label: impl Into<String>, max_batch_slots: u32) -> Self {
         Self {
             id: ModelResidencyId::new(id),
             role_label: role_label.into(),
@@ -222,18 +218,29 @@ pub enum SchedEvent {
     Enqueue,
     Admit,
     BeginGenerate,
-    SuspendToolWait { tool_name: String },
+    SuspendToolWait {
+        tool_name: String,
+    },
     ResumeFromTool,
-    Checkpoint { reason: String },
+    Checkpoint {
+        reason: String,
+    },
     ResumeFromCheckpoint,
-    Preempt { victim_of: String },
+    Preempt {
+        victim_of: String,
+    },
     Complete,
-    Fail { reason: String },
+    Fail {
+        reason: String,
+    },
     Cancel,
     /// Fairness quantum expired; agent re-queued to prevent monopoly.
     FairnessYield,
     /// Starvation boost applied (priority temporarily elevated).
-    StarvationBoost { from: String, to: String },
+    StarvationBoost {
+        from: String,
+        to: String,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -409,9 +416,7 @@ impl AgentScheduler {
         }
         if !matches!(
             agent.state,
-            AgentSchedState::Registered
-                | AgentSchedState::Checkpointed
-                | AgentSchedState::Queued
+            AgentSchedState::Registered | AgentSchedState::Checkpointed | AgentSchedState::Queued
         ) {
             return Err(SchedError::IllegalTransition {
                 from: agent.state,
@@ -456,8 +461,7 @@ impl AgentScheduler {
             .agents
             .iter()
             .filter(|(_, a)| {
-                a.state == AgentSchedState::Queued
-                    && a.residency_id.as_ref() == Some(residency_id)
+                a.state == AgentSchedState::Queued && a.residency_id.as_ref() == Some(residency_id)
             })
             .map(|(id, _)| id.clone())
             .collect();
@@ -587,12 +591,7 @@ impl AgentScheduler {
         }
         let name = tool_name.into();
         agent.state = AgentSchedState::ToolWaiting;
-        agent.push(
-            SchedEvent::SuspendToolWait {
-                tool_name: name,
-            },
-            at_ms,
-        );
+        agent.push(SchedEvent::SuspendToolWait { tool_name: name }, at_ms);
         Ok(())
     }
 
@@ -615,8 +614,7 @@ impl AgentScheduler {
         // Account tool wait against metrics.
         let waited = at_ms.saturating_sub(agent.last_transition_ms);
         agent.tool_wait_ms = agent.tool_wait_ms.saturating_add(waited);
-        self.metrics.total_tool_wait_ms =
-            self.metrics.total_tool_wait_ms.saturating_add(waited);
+        self.metrics.total_tool_wait_ms = self.metrics.total_tool_wait_ms.saturating_add(waited);
         agent.state = AgentSchedState::Queued;
         agent.queued_at_ms = Some(at_ms);
         agent.push(SchedEvent::ResumeFromTool, at_ms);
@@ -694,7 +692,12 @@ impl AgentScheduler {
     }
 
     pub fn complete(&mut self, agent_id: &LogicalAgentId, at_ms: u64) -> Result<(), SchedError> {
-        self.finish(agent_id, AgentSchedState::Completed, SchedEvent::Complete, at_ms)
+        self.finish(
+            agent_id,
+            AgentSchedState::Completed,
+            SchedEvent::Complete,
+            at_ms,
+        )
     }
 
     pub fn fail(
@@ -714,7 +717,12 @@ impl AgentScheduler {
     }
 
     pub fn cancel(&mut self, agent_id: &LogicalAgentId, at_ms: u64) -> Result<(), SchedError> {
-        self.finish(agent_id, AgentSchedState::Cancelled, SchedEvent::Cancel, at_ms)
+        self.finish(
+            agent_id,
+            AgentSchedState::Cancelled,
+            SchedEvent::Cancel,
+            at_ms,
+        )
     }
 
     /// Snapshot of free batch slots on a residency (admitted + generating count).
@@ -725,9 +733,7 @@ impl AgentScheduler {
         let held = self
             .agents
             .values()
-            .filter(|a| {
-                a.residency_id.as_ref() == Some(residency_id) && a.state.holds_batch_slot()
-            })
+            .filter(|a| a.residency_id.as_ref() == Some(residency_id) && a.state.holds_batch_slot())
             .count() as u32;
         res.max_batch_slots.saturating_sub(held)
     }
@@ -804,11 +810,7 @@ impl AgentScheduler {
         Ok(())
     }
 
-    fn fairness_yield(
-        &mut self,
-        agent_id: &LogicalAgentId,
-        at_ms: u64,
-    ) -> Result<(), SchedError> {
+    fn fairness_yield(&mut self, agent_id: &LogicalAgentId, at_ms: u64) -> Result<(), SchedError> {
         let agent = self
             .agents
             .get_mut(agent_id)
@@ -1078,9 +1080,7 @@ mod tests {
             run_id: RunId::from("run_1"),
             seq: 42,
         };
-        sched
-            .checkpoint(&a, cp.clone(), "phase_unload", 4)
-            .unwrap();
+        sched.checkpoint(&a, cp.clone(), "phase_unload", 4).unwrap();
         assert_eq!(sched.agents[&a].state, AgentSchedState::Checkpointed);
         assert_eq!(sched.agents[&a].checkpoint.as_ref().unwrap().seq, 42);
         assert_eq!(sched.free_batch_slots(&rid), 2);
@@ -1113,14 +1113,8 @@ mod tests {
         let plan2 = sched.schedule_tick(&rid, 40).unwrap();
         assert_eq!(plan2.preempt, vec![batch.clone()]);
         assert_eq!(plan2.admit, vec![interactive.clone()]);
-        assert_eq!(
-            sched.agents[&batch].state,
-            AgentSchedState::Checkpointed
-        );
-        assert_eq!(
-            sched.agents[&interactive].state,
-            AgentSchedState::Admitted
-        );
+        assert_eq!(sched.agents[&batch].state, AgentSchedState::Checkpointed);
+        assert_eq!(sched.agents[&interactive].state, AgentSchedState::Admitted);
         assert_eq!(sched.metrics.preemptions, 1);
     }
 
@@ -1200,7 +1194,10 @@ mod tests {
         ));
         sched.enqueue(&a, &rid, 1).unwrap();
         sched.complete(&a, 2).unwrap();
-        assert!(matches!(sched.enqueue(&a, &rid, 3), Err(SchedError::Terminal)));
+        assert!(matches!(
+            sched.enqueue(&a, &rid, 3),
+            Err(SchedError::Terminal)
+        ));
     }
 
     #[test]

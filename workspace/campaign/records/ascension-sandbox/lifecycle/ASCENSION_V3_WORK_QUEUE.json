@@ -1,0 +1,909 @@
+{
+  "claim_boundary": {
+    "no_deletion_or_eviction_by_controller": true,
+    "no_manager_promotion_by_model": true,
+    "no_model_body_action_by_controller": true,
+    "no_timeline_completion": true
+  },
+  "items": [
+    {
+      "action_id": "intake-v3_seed_archive",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "sealed JSON evidence file is absent or unreadable",
+        "sealed JSONL evidence ledger is absent or empty",
+        "required file artifact is absent, symlinked, or not regular"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_SEED_ARCHIVE_SEALED"
+      ],
+      "goal": "Archive live state, protected objects, prior evidence, and restoration proof.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_SEED_ARCHIVE",
+      "required_artifacts": [
+        "ASCENSION_V3_SEED_ARCHIVE",
+        "ASCENSION_V3_PROTECTED_OBJECTS",
+        "ASCENSION_V3_PROCESS_AUDIT",
+        "ASCENSION_V3_GRAVEYARD_IMPORT",
+        "ASCENSION_V3_KERNEL_GENOME_IMPORT",
+        "ASCENSION_V3_REPRESENTATION_GENOME_IMPORT",
+        "ASCENSION_V3_RESTORE",
+        "ASCENSION_V3_STORAGE_RECOVERY_RECEIPT"
+      ],
+      "requires": [
+        "V3_ADOPT"
+      ],
+      "resource_class": "DISK_HEAVY",
+      "state": "V3_SEED_ARCHIVE",
+      "status": "READY_FOR_EVIDENCE"
+    },
+    {
+      "action_id": "intake-v3_authority_freeze",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_SEED_ARCHIVE"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_AUTHORITY_FROZEN"
+      ],
+      "goal": "Freeze authorities, hidden memberships, rollback, and deletion policy.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_AUTHORITY_FREEZE",
+      "required_artifacts": [
+        "ASCENSION_V3_AUTHORITY_FROZEN"
+      ],
+      "requires": [
+        "V3_SEED_ARCHIVE"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "V3_AUTHORITY_FREEZE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-v3_grok_build_fabric",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_AUTHORITY_FREEZE"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_GROK_BUILD_FABRIC_READY",
+        "ASCENSION_V3_RESOURCE_GOVERNOR_READY"
+      ],
+      "goal": "Install isolated build lanes plus resource/thermal governance.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_GROK_BUILD_FABRIC",
+      "required_artifacts": [
+        "ASCENSION_V3_GROK_BUILD_FABRIC_READY",
+        "ASCENSION_V3_RESOURCE_GOVERNOR_READY"
+      ],
+      "requires": [
+        "V3_AUTHORITY_FREEZE"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_GROK_BUILD_FABRIC",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-v3_agent_os",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_GROK_BUILD_FABRIC"
+      ],
+      "completion_states": [
+        "HCLI_AGENT_OS_V3_READY"
+      ],
+      "goal": "Wire scheduler, context, tools, memory, recovery, and HCLI into the live product path.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_AGENT_OS",
+      "required_artifacts": [
+        "HCLI_AGENT_OS_V3_STATUS",
+        "HCLI_CONTEXT_COMPILER_RECEIPT",
+        "HCLI_KV_STATE_MANAGER_RECEIPT",
+        "HCLI_CONTINUOUS_BATCHING_SCOREBOARD",
+        "HCLI_VERIFIED_TASKS_PER_HOUR",
+        "HCLI_RESTART_AND_RECOVERY"
+      ],
+      "requires": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_AGENT_OS",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-v3_knowledge_plane",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_AGENT_OS"
+      ],
+      "completion_states": [
+        "ASCENSION_KNOWLEDGE_PLANE_READY"
+      ],
+      "goal": "Build reusable Kernel, Representation, Scheduler, and negative-science knowledge planes.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_KNOWLEDGE_PLANE",
+      "required_artifacts": [
+        "ASCENSION_KERNEL_GENOME",
+        "ASCENSION_REPRESENTATION_GENOME",
+        "ASCENSION_SCHEDULER_GENOME",
+        "ASCENSION_NEGATIVE_SCIENCE",
+        "ASCENSION_TRANSFER_MATRIX",
+        "ASCENSION_MECHANISM_INDEX"
+      ],
+      "requires": [
+        "V3_AGENT_OS"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_KNOWLEDGE_PLANE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-v3_gravity",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_KNOWLEDGE_PLANE"
+      ],
+      "completion_states": [
+        "GRAVITY_V3_READY"
+      ],
+      "goal": "Establish the evolutionary Gravity frontier and Doctor/QAT evidence discipline.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_GRAVITY",
+      "required_artifacts": [
+        "GRAVITY_V3_FRONTIER",
+        "GRAVITY_V3_QAT_DOCTOR_INDEX"
+      ],
+      "requires": [
+        "V3_KNOWLEDGE_PLANE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "V3_GRAVITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-v3_metal_compiler",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_GRAVITY"
+      ],
+      "completion_states": [
+        "METAL_EXACT_MODEL_COMPILER_V3_READY"
+      ],
+      "goal": "Establish family semantics and exact-model Metal generation.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_METAL_COMPILER",
+      "required_artifacts": [
+        "METAL_FAMILY_PLUGIN_MATRIX",
+        "METAL_EXACT_MODEL_COMPILER_STATUS"
+      ],
+      "requires": [
+        "V3_GRAVITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "V3_METAL_COMPILER",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_30b_density",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state V3_METAL_COMPILER"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_DENSITY_GATE_READY"
+      ],
+      "goal": "Freeze the Qwen 30B source/capability anchor and earn <=1.5 complete BPW.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_30B_DENSITY",
+      "required_artifacts": [
+        "QWEN30_MANAGER_SOURCE",
+        "QWEN30_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN30_MANAGER_GRAVITY"
+      ],
+      "requires": [
+        "V3_METAL_COMPILER"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_DENSITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_30b_tg",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_30B_DENSITY"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_TG3_GATE_READY"
+      ],
+      "goal": "Earn Qwen 30B TG3 on a CLEAN, real-Metal, no-fallback runtime.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_30B_TG",
+      "required_artifacts": [
+        "QWEN30_MANAGER_TG3"
+      ],
+      "requires": [
+        "MANAGER_30B_DENSITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_TG",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_30b_agent",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_30B_TG"
+      ],
+      "completion_states": [
+        "QWEN30_MANAGER_CANDIDATE"
+      ],
+      "goal": "Qualify Qwen 30B's HCLI/Agent OS, residency, recovery, and unattended campaign behaviour.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_30B_AGENT",
+      "required_artifacts": [
+        "QWEN30_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN30_MANAGER_AGENT_OS"
+      ],
+      "requires": [
+        "MANAGER_30B_TG"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_AGENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_80b_density",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_DENSITY_GATE_READY"
+      ],
+      "goal": "Freeze the Qwen Next 80B source/capability anchor and earn <=1.5 complete BPW.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_80B_DENSITY",
+      "required_artifacts": [
+        "QWEN80_MANAGER_SOURCE",
+        "QWEN80_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN80_MANAGER_GRAVITY"
+      ],
+      "requires": [
+        "MANAGER_30B_AGENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_DENSITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_80b_tg",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_80B_DENSITY"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_TG3_GATE_READY"
+      ],
+      "goal": "Earn Qwen Next 80B TG3 on its exact hybrid runtime.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_80B_TG",
+      "required_artifacts": [
+        "QWEN80_MANAGER_TG3"
+      ],
+      "requires": [
+        "MANAGER_80B_DENSITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_TG",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_80b_agent",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_80B_TG"
+      ],
+      "completion_states": [
+        "QWEN80_MANAGER_CANDIDATE"
+      ],
+      "goal": "Qualify Qwen Next 80B's HCLI/Agent OS, residency, recovery, and unattended campaign behaviour.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_80B_AGENT",
+      "required_artifacts": [
+        "QWEN80_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN80_MANAGER_AGENT_OS"
+      ],
+      "requires": [
+        "MANAGER_80B_TG"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_AGENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-manager_tournament",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT",
+        "requires certified state MANAGER_80B_AGENT"
+      ],
+      "completion_states": [
+        "ASCENSION_MANAGER_TOURNAMENT_READY",
+        "ASCENSION_MANAGER_SEALED",
+        "ASCENSION_ALTERNATE_OFFLOADED"
+      ],
+      "goal": "Run the fixed, protected two-manager tournament, seal its winner, and offload the alternate.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_TOURNAMENT",
+      "required_artifacts": [
+        "ASCENSION_MANAGER_TOURNAMENT",
+        "ASCENSION_MANAGER_WINNER",
+        "ASCENSION_ALTERNATE_OFFLOAD"
+      ],
+      "requires": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_TOURNAMENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-sandbox_activation",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state MANAGER_TOURNAMENT"
+      ],
+      "completion_states": [
+        "ASCENSION_SANDBOX_ACTIVE"
+      ],
+      "goal": "Activate the production Ascension sandbox only under the sealed winner.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage SANDBOX_ACTIVATION",
+      "required_artifacts": [
+        "ASCENSION_SANDBOX_ACTIVE"
+      ],
+      "requires": [
+        "MANAGER_TOURNAMENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "SANDBOX_ACTIVATION",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_qwen",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "QWEN_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the QWEN semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_QWEN",
+      "required_artifacts": [
+        "QWEN_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_QWEN",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_llama",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "LLAMA_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the LLAMA semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_LLAMA",
+      "required_artifacts": [
+        "LLAMA_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_LLAMA",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_mistral",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "MISTRAL_MIXTRAL_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the MISTRAL_MIXTRAL semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_MISTRAL",
+      "required_artifacts": [
+        "MISTRAL_MIXTRAL_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_MISTRAL",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_deepseek",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "DEEPSEEK_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the DEEPSEEK semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_DEEPSEEK",
+      "required_artifacts": [
+        "DEEPSEEK_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_DEEPSEEK",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_glm",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "GLM_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the GLM semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_GLM",
+      "required_artifacts": [
+        "GLM_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_GLM",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_kimi",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "KIMI_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the KIMI semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_KIMI",
+      "required_artifacts": [
+        "KIMI_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_KIMI",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_gemma",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "GEMMA_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the GEMMA semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_GEMMA",
+      "required_artifacts": [
+        "GEMMA_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_GEMMA",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-family_hybrid",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "completion_states": [
+        "HYBRID_V3_LAUNCH_READY"
+      ],
+      "goal": "Qualify an exact production representative for the STATE_SPACE_OR_LINEAR_ATTENTION_HYBRID semantic family.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage FAMILY_HYBRID",
+      "required_artifacts": [
+        "HYBRID_V3_LAUNCH_READY"
+      ],
+      "requires": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_HYBRID",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-global_launch_audit",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state FAMILY_QWEN",
+        "requires certified state FAMILY_LLAMA",
+        "requires certified state FAMILY_MISTRAL",
+        "requires certified state FAMILY_DEEPSEEK",
+        "requires certified state FAMILY_GLM",
+        "requires certified state FAMILY_KIMI",
+        "requires certified state FAMILY_GEMMA",
+        "requires certified state FAMILY_HYBRID"
+      ],
+      "completion_states": [
+        "ASCENSION_V3_CORE_FAMILY_MATRIX_READY",
+        "ASCENSION_V3_ALL_ADVERTISED_MODELS_QUALIFIED"
+      ],
+      "goal": "Complete all family, model, density, TG, resource, recovery, and product matrices.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage GLOBAL_LAUNCH_AUDIT",
+      "required_artifacts": [
+        "GENERIC_HF_REFERENCE_READY",
+        "ASCENSION_V3_FAMILY_MATRIX",
+        "ASCENSION_V3_MODEL_MATRIX",
+        "ASCENSION_V3_DENSITY_MATRIX",
+        "ASCENSION_V3_TG_MATRIX",
+        "ASCENSION_V3_RESOURCE_ATLAS",
+        "ASCENSION_V3_POWER_PROFILES",
+        "ASCENSION_V3_STORAGE_LEASES",
+        "ASCENSION_V3_GARBAGE_AUDIT",
+        "ASCENSION_V3_RECOVERY_TEST",
+        "HAWKING_APPLE_V3_INSTALL_TEST",
+        "HAWKING_APPLE_V3_UPDATE_TEST",
+        "HAWKING_APPLE_V3_HCLI_PRODUCT_TEST",
+        "HAWKING_APPLE_V3_RELEASE_AUDIT",
+        "ASCENSION_V3_CORE_FAMILY_MATRIX_READY",
+        "ASCENSION_V3_ALL_ADVERTISED_MODELS_QUALIFIED"
+      ],
+      "requires": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "GLOBAL_LAUNCH_AUDIT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-external_review",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state GLOBAL_LAUNCH_AUDIT"
+      ],
+      "completion_states": [
+        "HAWKING_ASCENSION_V3_REVIEW_REQUIRED"
+      ],
+      "goal": "Publish a compact V3 review packet and receive independent external review.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage EXTERNAL_REVIEW",
+      "required_artifacts": [
+        "HAWKING_ASCENSION_V3_REVIEW_REQUIRED",
+        "HAWKING_ASCENSION_V3_EXTERNAL_REVIEW_ACCEPTED"
+      ],
+      "requires": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "EXTERNAL_REVIEW",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-apple_release",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state EXTERNAL_REVIEW"
+      ],
+      "completion_states": [
+        "HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY"
+      ],
+      "goal": "Seal the Apple-first production release only after every launch gate and review pass.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage APPLE_RELEASE",
+      "required_artifacts": [
+        "HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY"
+      ],
+      "requires": [
+        "EXTERNAL_REVIEW"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "APPLE_RELEASE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "intake-tg2_tg1_frontier",
+      "authority": {
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "sealed candidate evidence only",
+        "model_may_not_self_promote": true
+      },
+      "auto_dispatch": "monitor_and_validate_only",
+      "blockers": [
+        "requires certified state APPLE_RELEASE"
+      ],
+      "completion_states": [
+        "HAWKING_TG2_TG1_FRONTIER_ACTIVE"
+      ],
+      "goal": "Open post-release TG2/TG1 research without delaying launch completion.",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage TG2_TG1_FRONTIER",
+      "required_artifacts": [
+        "HAWKING_TG2_TG1_FRONTIER_ACTIVE"
+      ],
+      "requires": [
+        "APPLE_RELEASE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "TG2_TG1_FRONTIER",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "action_id": "protected-manager-tournament",
+      "authority": {
+        "auto_select_winner": false,
+        "certification_required_from": [
+          "human_operator",
+          "protected_controller"
+        ],
+        "model_may_emit": "candidate reports and bounded task outputs"
+      },
+      "comparison_dimensions": [
+        "hard_gate_compliance",
+        "manager_capability",
+        "solo_manager_capability",
+        "manager_as_orchestrator_capability",
+        "verified_tasks_per_hour",
+        "architecture_kernel_research",
+        "gravity_research_quality",
+        "long_horizon_reliability",
+        "tool_recovery",
+        "search_retrieval",
+        "memory_context",
+        "hcli_latency",
+        "multi_agent_throughput",
+        "resident_memory",
+        "active_bytes_per_token",
+        "energy_per_verified_task",
+        "thermal_stability",
+        "error_rate",
+        "receipt_quality",
+        "adversarial_review_quality",
+        "failure_recovery",
+        "benchmark_honesty",
+        "security_effect_discipline",
+        "release_integration"
+      ],
+      "goal": "run the fixed protected manager tournament only after both candidates qualify",
+      "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage MANAGER_TOURNAMENT",
+      "requires": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_TOURNAMENT",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    }
+  ],
+  "recorded_at": "2026-08-09T17:44:43.494293Z",
+  "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle",
+  "schema": "hawking.ascension.v3_work_queue.v1",
+  "seal_sha256": "7951457b10ba4d4f8669d043ea09c332d18c235de034ede711cd6f7251b1d0ca"
+}

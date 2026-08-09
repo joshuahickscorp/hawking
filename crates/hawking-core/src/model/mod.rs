@@ -10,6 +10,17 @@ pub mod expert_cache;
 pub mod gravity_engine;
 pub mod llama;
 pub mod mixtral;
+/// Direct, admitted Qwen3-Coder-30B complete-binary Metal baseline.  It is an
+/// explicit artifact runtime rather than a GGUF architecture dispatch.
+pub mod qwen30_complete_runtime;
+/// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
+/// all-layer diagnostic.  It is not an Engine or endpoint selection.
+pub mod qwen30_quality_repack_diagnostic;
+/// Strict Qwen3-Coder-Next complete-binary hybrid catalog and native-state
+/// bootstrap.  It deliberately is not an Engine dispatch until its full token
+/// graph has real capability evidence.
+pub mod qwen80_complete_runtime;
+pub mod qwen_complete_binary;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;

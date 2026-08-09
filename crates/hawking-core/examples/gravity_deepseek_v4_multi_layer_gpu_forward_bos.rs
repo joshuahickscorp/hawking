@@ -43,16 +43,16 @@ mod macos {
     use hawking_core::gravity_deepseek_v4_expert_cache::{
         resolve_expert_bundle, DeepSeekV4ExpertBundleCache, ExpertBundleKey,
     };
+    use hawking_core::gravity_deepseek_v4_final_head::{
+        host_greedy_lm_head, host_merge_final_head_from_hc_bf16, read_hc_bf16_from_buffer,
+    };
     use hawking_core::gravity_deepseek_v4_layer0_prefix::PREFIX_TOKEN_ID;
     use hawking_core::gravity_deepseek_v4_layer_plan::DeepSeekV4LayerDeviceCatalog;
     use hawking_core::gravity_deepseek_v4_layer_scheduler::{
         DeepSeekV4LayerPreparationScheduler, DeepSeekV4LayerPreparationStage,
     };
-    use hawking_core::gravity_deepseek_v4_p3a_stage_sink::DeepSeekV4P3aMetalStageSink;
-    use hawking_core::gravity_deepseek_v4_final_head::{
-        host_greedy_lm_head, host_merge_final_head_from_hc_bf16, read_hc_bf16_from_buffer,
-    };
     use hawking_core::gravity_deepseek_v4_layer_source_anchors::DeepSeekV4LayerGateMode;
+    use hawking_core::gravity_deepseek_v4_p3a_stage_sink::DeepSeekV4P3aMetalStageSink;
     use hawking_core::gravity_deepseek_v4_p6_device::{
         DeepSeekV4Layer0P6MetalExecutor, DSV4F_P6_DEVICE_COMMAND_BUFFERS,
         DSV4F_P6_DEVICE_DISPATCHES, DSV4F_P6_LEARNED_DEVICE_COMMAND_BUFFERS,
@@ -63,8 +63,8 @@ mod macos {
         DeepSeekV4P7SourceTensorBinding,
     };
     use hawking_core::gravity_deepseek_v4_p7_device::{
-        DeepSeekV4P7BoundedDeviceExecutor, DeepSeekV4P7DeviceOutput, DSV4F_P7_OWNED_COMMAND_BUFFERS,
-        DSV4F_P7_OWNED_DEVICE_DISPATCHES,
+        DeepSeekV4P7BoundedDeviceExecutor, DeepSeekV4P7DeviceOutput,
+        DSV4F_P7_OWNED_COMMAND_BUFFERS, DSV4F_P7_OWNED_DEVICE_DISPATCHES,
     };
     use hawking_core::gravity_deepseek_v4_runtime_spine::{
         DeepSeekV4ControlProjection, DeepSeekV4StagedTensor,
@@ -129,9 +129,9 @@ mod macos {
         }
         let wall = Instant::now();
 
-        let catalog = DeepSeekV4LayerDeviceCatalog::admit(
-            &DeepSeekV4FullStreamReader::admit(&args.artifact)?,
-        )?;
+        let catalog = DeepSeekV4LayerDeviceCatalog::admit(&DeepSeekV4FullStreamReader::admit(
+            &args.artifact,
+        )?)?;
 
         // Admit every layer we intend to run under the BOS full-layer contract.
         let mut layers_run = Vec::new();
@@ -254,10 +254,8 @@ mod macos {
                 )
                 .into());
             }
-            let input = DeepSeekV4BosLayerChildDeviceInput::from_p7_position0_child(
-                metal,
-                &prev_child,
-            )?;
+            let input =
+                DeepSeekV4BosLayerChildDeviceInput::from_p7_position0_child(metal, &prev_child)?;
             let attn_out = attn.execute(metal, input)?;
             attn_out.validate()?;
             accounting.record(
@@ -342,8 +340,12 @@ mod macos {
         } else {
             format!("PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L{deepest}")
         };
-        let has_ratio4 = layers_run.iter().any(|&l| expected_bos_compress_ratio(l) == 4);
-        let has_ratio128 = layers_run.iter().any(|&l| expected_bos_compress_ratio(l) == 128);
+        let has_ratio4 = layers_run
+            .iter()
+            .any(|&l| expected_bos_compress_ratio(l) == 4);
+        let has_ratio128 = layers_run
+            .iter()
+            .any(|&l| expected_bos_compress_ratio(l) == 128);
         let receipt = json!({
             "schema": RECEIPT_SCHEMA,
             "status": status,
@@ -485,7 +487,8 @@ mod macos {
             )?
         };
 
-        let p6 = DeepSeekV4Layer0P6MetalExecutor::prepare_for_p7(metal, reader, &mut cache, &source)?;
+        let p6 =
+            DeepSeekV4Layer0P6MetalExecutor::prepare_for_p7(metal, reader, &mut cache, &source)?;
         if !learned {
             let route_ids_u32 = if let Some(routes) = pinned_routes {
                 routes
@@ -496,10 +499,7 @@ mod macos {
                 read_tid2eid_row_u16(&bytes, token_id as usize)?.map(u32::from)
             };
             if p6.source_bindings().selected_expert_ids_top_slot_order != route_ids_u32 {
-                return Err(format!(
-                    "L{layer} P6 tid2eid plan differs from source BOS row"
-                )
-                .into());
+                return Err(format!("L{layer} P6 tid2eid plan differs from source BOS row").into());
             }
         } else if !p6.source_bindings().host_route_id_readback_for_residency {
             return Err(format!(
@@ -592,7 +592,8 @@ mod macos {
             source_parent_retained: false,
             source_upload_required_before_execution: true,
             host_activation_handoff_permitted: false,
-            runtime_boundary: "multi-layer BOS GPU forward static P7 controls; no Engine/HCLI/serve/TPS claim",
+            runtime_boundary:
+                "multi-layer BOS GPU forward static P7 controls; no Engine/HCLI/serve/TPS claim",
         };
         Ok((source, ffn_norm, [hc_fn, hc_base, hc_scale]))
     }

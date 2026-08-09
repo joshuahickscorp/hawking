@@ -256,6 +256,56 @@ def test_router_matches_pinned_transformers_after_canonicalization() -> None:
             atol=2e-6,
         )
 
+def test_parallel_expert_execution_is_byte_identical(monkeypatch) -> None:
+    rng = np.random.default_rng(2201)
+    hidden = rng.normal(size=(1, 6, 4)).astype(np.float32)
+    prefix = "model.layers.0.mlp"
+    source = {
+        f"{prefix}.gate.weight": rng.normal(size=(4, 4)).astype(np.float32),
+        f"{prefix}.gate.e_score_correction_bias": np.array(
+            [-0.03, -0.01, 0.02, 0.05], dtype=np.float32
+        ),
+    }
+    for expert in range(4):
+        stem = f"{prefix}.experts.{expert}"
+        source[f"{stem}.gate_proj.weight"] = rng.normal(size=(3, 4)).astype(np.float32)
+        source[f"{stem}.up_proj.weight"] = rng.normal(size=(3, 4)).astype(np.float32)
+        source[f"{stem}.down_proj.weight"] = rng.normal(size=(4, 3)).astype(np.float32)
+    shared = f"{prefix}.shared_experts"
+    source[f"{shared}.gate_proj.weight"] = rng.normal(size=(3, 4)).astype(np.float32)
+    source[f"{shared}.up_proj.weight"] = rng.normal(size=(3, 4)).astype(np.float32)
+    source[f"{shared}.down_proj.weight"] = rng.normal(size=(4, 3)).astype(np.float32)
+    config = {
+        "num_experts_per_tok": 2,
+        "n_group": 2,
+        "topk_group": 2,
+        "norm_topk_prob": True,
+        "routed_scaling_factor": 2.5,
+    }
+
+    monkeypatch.setenv("FRANK_EXPERT_WORKERS", "1")
+    expected, expected_trace = ref.routed_moe(
+        hidden, source, prefix, config, retain_per_expert=True
+    )
+    monkeypatch.setenv("FRANK_EXPERT_WORKERS", "3")
+    actual, actual_trace = ref.routed_moe(
+        hidden, source, prefix, config, retain_per_expert=True
+    )
+
+    assert np.array_equal(actual, expected)
+    for key in ("router_logits", "topk_weights", "topk_indices", "routed_output", "shared_output"):
+        assert np.array_equal(actual_trace[key], expected_trace[key])
+    assert actual_trace["per_expert"].keys() == expected_trace["per_expert"].keys()
+    for expert in actual_trace["per_expert"]:
+        assert np.array_equal(
+            actual_trace["per_expert"][expert]["tokens"],
+            expected_trace["per_expert"][expert]["tokens"],
+        )
+        assert np.array_equal(
+            actual_trace["per_expert"][expert]["weighted_output"],
+            expected_trace["per_expert"][expert]["weighted_output"],
+        )
+
 def test_indexer_indices_match_pinned_transformers() -> None:
     torch = pytest.importorskip("torch")
     from transformers import GlmMoeDsaConfig

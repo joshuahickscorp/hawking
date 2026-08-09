@@ -224,29 +224,23 @@ pub fn device_greedy_lm_head(
     }
     let expected_head_bytes = DSV4F_VOCAB_SIZE * HIDDEN_SIZE * size_of::<u16>();
     if head_weight_bf16.length() < expected_head_bytes as u64 {
-        return Err(head_error("device head.weight buffer is smaller than BF16[vocab,4096]"));
+        return Err(head_error(
+            "device head.weight buffer is smaller than BF16[vocab,4096]",
+        ));
     }
-    let residual_bytes: Vec<u8> = residual_f32
-        .iter()
-        .flat_map(|v| v.to_le_bytes())
-        .collect();
+    let residual_bytes: Vec<u8> = residual_f32.iter().flat_map(|v| v.to_le_bytes()).collect();
     let residual_buf = metal.new_buffer_with_bytes_checked(&residual_bytes)?;
     let logits_buf = metal.new_buffer_checked(DSV4F_VOCAB_SIZE * size_of::<f32>())?;
     let n_rows = DSV4F_VOCAB_SIZE as u32;
     let n_cols = HIDDEN_SIZE as u32;
     metal.dispatch_batch(|batch| {
-        batch.dispatch_threads(
-            GEMV_KERNEL,
-            (n_rows, 1, 1),
-            (1, 1, 1),
-            |encoder| {
-                encoder.set_buffer(0, Some(head_weight_bf16), 0);
-                encoder.set_buffer(1, Some(&residual_buf), 0);
-                encoder.set_buffer(2, Some(&logits_buf), 0);
-                set_u32(encoder, 3, &n_rows);
-                set_u32(encoder, 4, &n_cols);
-            },
-        )
+        batch.dispatch_threads(GEMV_KERNEL, (n_rows, 1, 1), (1, 1, 1), |encoder| {
+            encoder.set_buffer(0, Some(head_weight_bf16), 0);
+            encoder.set_buffer(1, Some(&residual_buf), 0);
+            encoder.set_buffer(2, Some(&logits_buf), 0);
+            set_u32(encoder, 3, &n_rows);
+            set_u32(encoder, 4, &n_cols);
+        })
     })?;
 
     // Host argmax over device logits (single readback of vocab f32).
@@ -258,9 +252,11 @@ pub fn device_greedy_lm_head(
     let mut best_id = 0u32;
     let mut best_logit = f32::NEG_INFINITY;
     for i in 0..DSV4F_VOCAB_SIZE {
-        let logit = f32::from_le_bytes(bytes[i * 4..i * 4 + 4].try_into().map_err(|_| {
-            head_error("logit byte slice")
-        })?);
+        let logit = f32::from_le_bytes(
+            bytes[i * 4..i * 4 + 4]
+                .try_into()
+                .map_err(|_| head_error("logit byte slice"))?,
+        );
         if logit > best_logit || (logit == best_logit && (i as u32) < best_id) {
             best_logit = logit;
             best_id = i as u32;
@@ -355,10 +351,7 @@ fn set_u32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: &u32) {
 }
 
 fn head_error(message: impl Into<String>) -> Error {
-    Error::Gravity(format!(
-        "DeepSeek-V4 final head: {}",
-        message.into()
-    ))
+    Error::Gravity(format!("DeepSeek-V4 final head: {}", message.into()))
 }
 
 #[cfg(test)]

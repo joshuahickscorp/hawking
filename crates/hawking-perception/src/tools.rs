@@ -176,12 +176,7 @@ impl DocumentTool {
                 quote,
                 region_id,
             } => Ok(ToolResponse::CiteCoordinates {
-                citation: service.cite_coordinates(
-                    &handle,
-                    box_,
-                    &quote,
-                    region_id.as_ref(),
-                )?,
+                citation: service.cite_coordinates(&handle, box_, &quote, region_id.as_ref())?,
             }),
         }
     }

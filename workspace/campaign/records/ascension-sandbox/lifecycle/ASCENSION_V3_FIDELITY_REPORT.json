@@ -1,0 +1,3950 @@
+{
+  "bible": {
+    "path": "/Users/scammermike/Downloads/bible.md",
+    "sha256": "f3617881ecae08e52dc9ea3727b47d6a9bcfaaab7b73b5b84b9f3554c37026a3",
+    "state_machine_matches": true
+  },
+  "bible_execution_sequence": {
+    "audit": {
+      "exists": true,
+      "expected_count": 48,
+      "issues": [],
+      "matches": true,
+      "observed_count": 48,
+      "path": "/Users/scammermike/Downloads/bible.md"
+    },
+    "steps": [
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Read V3 and adopt it as the sole canonical Ascension programme.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": true,
+        "id": 0,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_ADOPT": "CERTIFIED"
+        },
+        "states": [
+          "V3_ADOPT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": true,
+        "description": "Audit live state, processes, repo, storage, cloud, receipts and active lanes.",
+        "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+        "evidence_complete": false,
+        "id": 1,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_SEED_ARCHIVE": "BLOCKED"
+        },
+        "states": [
+          "V3_SEED_ARCHIVE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": true,
+        "description": "Build and verify the V3 Seed Archive.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 2,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_SEED_ARCHIVE": "BLOCKED"
+        },
+        "states": [
+          "V3_SEED_ARCHIVE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": true,
+        "description": "Offload protected custom bodies and verify restoration.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 3,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_SEED_ARCHIVE": "BLOCKED"
+        },
+        "states": [
+          "V3_SEED_ARCHIVE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Freeze authority, benchmarks, hidden memberships, rollback and deletion policy.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 4,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_AUTHORITY_FREEZE": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_AUTHORITY_FREEZE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Install maximum-Grok lane scheduler and isolated worktree contracts.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 5,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_GROK_BUILD_FABRIC"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Install energy/resource telemetry and critical-path scheduling.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 6,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_GROK_BUILD_FABRIC"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Integrate HCLI Agent OS V3 into the live product path.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 7,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_AGENT_OS": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_AGENT_OS"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Build the Ascension Knowledge Plane and import all prior evidence.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 8,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_KNOWLEDGE_PLANE": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_KNOWLEDGE_PLANE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Build/upgrade Evolutionary Gravity V3.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 9,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_GRAVITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_GRAVITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Build/upgrade architecture fingerprinting, family plugins and exact-model Metal compiler.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 10,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "V3_METAL_COMPILER": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_METAL_COMPILER"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Freeze Qwen3-Coder-30B official source and Manager Capability Anchor.",
+        "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+        "evidence_complete": false,
+        "id": 11,
+        "notes": "Source metadata may refresh through the credential broker, but a candidate metadata record is not the required controller-certified source/anchor evidence.",
+        "state_statuses": {
+          "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_30B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Evolve Qwen30 Gravity until complete_bpw <=1.5.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 12,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_30B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Evolve Qwen30 runtime until TG3.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 13,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_30B_TG"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Pass Qwen30 HCLI/Agent OS/residency/manager gates.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 14,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_30B_AGENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_30B_AGENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Seal QWEN30_MANAGER_CANDIDATE.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 15,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_30B_AGENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_30B_AGENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Freeze Qwen3-Coder-Next 80B official source and Manager Capability Anchor.",
+        "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+        "evidence_complete": false,
+        "id": 16,
+        "notes": "Source metadata may refresh through the credential broker, but a candidate metadata record is not the required controller-certified source/anchor evidence.",
+        "state_statuses": {
+          "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Port every compatible Qwen30 mechanism.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 17,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Build missing hybrid/DeltaNet/shared-expert semantics.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 18,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Evolve Qwen80 Gravity until complete_bpw <=1.5.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 19,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_DENSITY"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Evolve Qwen80 runtime until TG3.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 20,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_TG"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Pass Qwen80 HCLI/Agent OS/residency/manager gates.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 21,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_AGENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_AGENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Seal QWEN80_MANAGER_CANDIDATE.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 22,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "MANAGER_80B_AGENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_80B_AGENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Run the protected Manager Tournament.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 23,
+        "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+        "state_statuses": {
+          "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_TOURNAMENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Seal ASCENSION_MANAGER.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 24,
+        "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+        "state_statuses": {
+          "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_TOURNAMENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Offload and evict the alternate manager body.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 25,
+        "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+        "state_statuses": {
+          "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "MANAGER_TOURNAMENT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Activate the Ascension sandbox.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 26,
+        "notes": "Sandbox activation requires the sealed winner and alternate-offload evidence.",
+        "state_statuses": {
+          "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "SANDBOX_ACTIVATION"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process Qwen family launch matrix.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 27,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_QWEN": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_QWEN"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process Llama family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 28,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_LLAMA": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_LLAMA"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process Mistral/Mixtral family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 29,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_MISTRAL": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_MISTRAL"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process DeepSeek family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 30,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_DEEPSEEK"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process GLM family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 31,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_GLM": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_GLM"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process Kimi family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 32,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_KIMI": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_KIMI"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process Gemma family launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 33,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_GEMMA": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_GEMMA"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Process state-space/linear-attention hybrid launch representative.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 34,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_HYBRID": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_HYBRID"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Verify generic HF reference intake.",
+        "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+        "evidence_complete": false,
+        "id": 35,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "For every launch model, enforce <=1.5 complete BPW and TG3.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 36,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+          "FAMILY_GEMMA": "PENDING_PREREQUISITES",
+          "FAMILY_GLM": "PENDING_PREREQUISITES",
+          "FAMILY_HYBRID": "PENDING_PREREQUISITES",
+          "FAMILY_KIMI": "PENDING_PREREQUISITES",
+          "FAMILY_LLAMA": "PENDING_PREREQUISITES",
+          "FAMILY_MISTRAL": "PENDING_PREREQUISITES",
+          "FAMILY_QWEN": "PENDING_PREREQUISITES",
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_QWEN",
+          "FAMILY_LLAMA",
+          "FAMILY_MISTRAL",
+          "FAMILY_DEEPSEEK",
+          "FAMILY_GLM",
+          "FAMILY_KIMI",
+          "FAMILY_GEMMA",
+          "FAMILY_HYBRID",
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Integrate every accepted clue into the cross-family Knowledge Plane.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 37,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES",
+          "V3_KNOWLEDGE_PLANE": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_KNOWLEDGE_PLANE",
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Run complete HCLI/Agent OS product gauntlet.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 38,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES",
+          "V3_AGENT_OS": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "V3_AGENT_OS",
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Run storage/cleanup/recovery/foreground-user gauntlet.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 39,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Run Apple packaging, install, update, restore and diagnostics.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 40,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Generate the V3 Global Launch Audit.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 41,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "GLOBAL_LAUNCH_AUDIT"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Submit the sealed review packet to Claude/Codex/human.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 42,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "EXTERNAL_REVIEW": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "EXTERNAL_REVIEW"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Repair every rejected launch condition.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 43,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "EXTERNAL_REVIEW": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "EXTERNAL_REVIEW"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Certify HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 44,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "APPLE_RELEASE": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "APPLE_RELEASE"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Only after launch certification, continue system-wide TG2/TG1 frontier research.",
+        "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+        "evidence_complete": false,
+        "id": 45,
+        "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+        "state_statuses": {
+          "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "TG2_TG1_FRONTIER"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Restore Proto-Frankenstein later through the mature DeepSeek path.",
+        "dispatch_class": "POST_RELEASE_SEPARATE_PROGRAMME",
+        "evidence_complete": false,
+        "id": 46,
+        "notes": "Explicitly outside the launch critical path and never auto-dispatched.",
+        "state_statuses": {
+          "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+          "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "FAMILY_DEEPSEEK",
+          "TG2_TG1_FRONTIER"
+        ]
+      },
+      {
+        "admissible_for_evidence_intake": false,
+        "description": "Begin CUDA only as a separate funded programme.",
+        "dispatch_class": "POST_RELEASE_SEPARATE_PROGRAMME",
+        "evidence_complete": false,
+        "id": 47,
+        "notes": "Explicitly outside the launch critical path and never auto-dispatched.",
+        "state_statuses": {
+          "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+        },
+        "states": [
+          "TG2_TG1_FRONTIER"
+        ]
+      }
+    ]
+  },
+  "claim_boundary": {
+    "controller_coverage_is_not_receipt_completion": true,
+    "does_not_substitute_plans_for_measurements": true,
+    "scaffolds_are_not_runtime_qualification": true
+  },
+  "fidelity": {
+    "bible_execution_sequence": {
+      "covered": 48,
+      "receipt_complete": 1,
+      "receipt_completion_is_not_wiring_coverage": true,
+      "required": 48,
+      "text_matches_bible": true
+    },
+    "bible_heading_routing": {
+      "controller_contract_covered": 108,
+      "headings_found": 108,
+      "mapped": 108,
+      "rows": [
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "0",
+          "evidence_complete": true,
+          "heading": "0. Constitutional doctrine",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "0"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "0.1",
+          "evidence_complete": false,
+          "heading": "0.1 No-timeline law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "0.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "1",
+          "evidence_complete": false,
+          "heading": "1. V3 launch contract",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "1.1",
+          "evidence_complete": false,
+          "heading": "1.1 Exact meaning of complete BPW",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "1.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "1.2",
+          "evidence_complete": false,
+          "heading": "1.2 Exact meaning of TG3",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "1.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "1.3",
+          "evidence_complete": false,
+          "heading": "1.3 Capability cannot be traded for the launch numbers",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "1.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "2",
+          "evidence_complete": false,
+          "heading": "2. Preserve and reconcile the current state",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3. Pre-sandbox Manager Tournament",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.1 Tournament rule",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.2 Candidate A — Qwen3-Coder-30B first",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.3 Candidate B — Qwen3-Coder-Next 80B second",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.4 Manager Capability Contract",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.5 Manager HCLI performance gate",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.6 Manager residency gate",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.7 Tournament comparison",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "3",
+          "evidence_complete": false,
+          "heading": "3.8 Sandbox-start gate",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "3.8"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4. Maximum Grok build doctrine",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4.1 Grok lane classes",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4.2 Lane contract",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4.3 Grok concurrency scheduler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4.4 Anti-resistance law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "4",
+          "evidence_complete": false,
+          "heading": "4.5 Grok quality law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "4.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5. Energy and resource efficiency constitution",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.1 Telemetry",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.2 Critical-path scheduler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.3 Power-aware concurrency",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.4 Thermal stability",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.5 User coexistence",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "5",
+          "evidence_complete": false,
+          "heading": "5.6 Energy evidence outputs",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "5.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6. HCLI Agent OS V3 — the manager must not outrun its operating system",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.1 Agent roles",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.2 Agent scheduler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.3 Context compiler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.4 KV/state system",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.5 Retrieval gateway",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.6 Tool gateway",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.7 Memory OS",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.8 Skill Foundry",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.8"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.9 Perception",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.9"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.10 Agent communication",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.10"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.11 Worktree and effect control",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.11"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.12 Agent OS performance gates",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.12"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "6",
+          "evidence_complete": false,
+          "heading": "6.13 Product-level benchmark",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "6.13"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7. Evolutionary Gravity V3",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.1 Gravity components",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.2 Candidate genome",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.3 Representation tournament",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.4 MoE treatment",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.5 QAT and Doctor",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.6 Direct-execution law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.7 Incremental repacking",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "7",
+          "evidence_complete": false,
+          "heading": "7.8 Gravity hard endpoint for launch models",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "7.8"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8. Exact-model Apple compiler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8.1 Architecture fingerprint",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8.2 Shared primitives",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8.3 Required family plugins",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8.4 Exact-model generation",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "8",
+          "evidence_complete": false,
+          "heading": "8.5 Model overrides",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "8.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9. Ascension Knowledge Plane — every clue must benefit every model",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.1 Kernel Genome",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.2 Representation Genome",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.3 Scheduler Genome",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.4 Negative Science Graveyard",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.5 Cross-family transfer matrix",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.6 Mechanism inheritance law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "9",
+          "evidence_complete": false,
+          "heading": "9.7 Knowledge Plane outputs",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "9.7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10. Protected hierarchical verification",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.1 V0 source gate",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.2 V1 geometry sample",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.3 V2 architecture-complete mini path",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.4 V3 mini generation",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.5 V4 full representative model gate",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.6 V5 CLEAN production benchmark",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.7 V6 external review",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.7"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "10",
+          "evidence_complete": false,
+          "heading": "10.8 Sampling integrity",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "10.8"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "11",
+          "evidence_complete": false,
+          "heading": "11. Fluid acquisition and storage — no partition",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "11"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "11",
+          "evidence_complete": false,
+          "heading": "11.1 Acquisition modes",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "11.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "11",
+          "evidence_complete": false,
+          "heading": "11.2 Xet/public transfer tuner",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "11.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "11",
+          "evidence_complete": false,
+          "heading": "11.3 Storage classes",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "11.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12. Sandbox activation and lifecycle",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.1 Per-model loop",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.2 Per-family production representative",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.3 Core family launch matrix",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.4 All advertised models law",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.4"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.5 Rotation",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.5"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "12",
+          "evidence_complete": false,
+          "heading": "12.6 Manager self-improvement inside sandbox",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "12.6"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "13",
+          "evidence_complete": false,
+          "heading": "13. Family-specific starting doctrines",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "13"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "14",
+          "evidence_complete": false,
+          "heading": "14. Complete-token and system profiler",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "14"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "15",
+          "evidence_complete": false,
+          "heading": "15. Temporal Gravity gauntlet",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "15"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "16",
+          "evidence_complete": false,
+          "heading": "16. Notifications and review packets",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "16"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "17",
+          "evidence_complete": false,
+          "heading": "17. Restart-safe continuation protocol",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "17"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "17",
+          "evidence_complete": false,
+          "heading": "17.1 Canonical state machine",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "17.1"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "17",
+          "evidence_complete": false,
+          "heading": "17.2 Exact continuation outputs",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "17.2"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "17",
+          "evidence_complete": false,
+          "heading": "17.3 No-drift policy tests",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "17.3"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "18",
+          "evidence_complete": false,
+          "heading": "18. Canonical execution sequence",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "18"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "19",
+          "evidence_complete": false,
+          "heading": "19. Required artifacts and tests",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "19"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "20",
+          "evidence_complete": false,
+          "heading": "20. Completion states",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "20"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "21",
+          "evidence_complete": false,
+          "heading": "21. Global launch review packet",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "21"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "22",
+          "evidence_complete": false,
+          "heading": "22. Final directive",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "22"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix A",
+          "evidence_complete": false,
+          "heading": "Appendix A — Manager Capability Contract test catalogue",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix A"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix B",
+          "evidence_complete": false,
+          "heading": "Appendix B — Grok builder templates",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix B"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix C",
+          "evidence_complete": false,
+          "heading": "Appendix C — Agent OS performance and context engineering",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix C"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix D",
+          "evidence_complete": false,
+          "heading": "Appendix D — Energy-optimal campaign scheduling",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix D"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix E",
+          "evidence_complete": false,
+          "heading": "Appendix E — Per-family qualification manifest",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix E"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix F",
+          "evidence_complete": false,
+          "heading": "Appendix F — Evolutionary search algorithm",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix F"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix G",
+          "evidence_complete": false,
+          "heading": "Appendix G — Apple product launch hardening",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix G"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix H",
+          "evidence_complete": false,
+          "heading": "Appendix H — V3 self-review and relaunch contract",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix H"
+        },
+        {
+          "controller_contract_covered": true,
+          "controller_trace_section": "Appendix I",
+          "evidence_complete": false,
+          "heading": "Appendix I — V3 launch checklist",
+          "scope": "hierarchical contract route; not runtime measurement",
+          "section_key": "Appendix I"
+        }
+      ],
+      "scope": "every Markdown # heading is routed to a direct or parent controller contract; routing coverage is not a claim that the behavior has been measured",
+      "source_path": "/Users/scammermike/Downloads/bible.md",
+      "unmapped": []
+    },
+    "bible_section_controller_coverage": {
+      "covered": 36,
+      "fraction": 1.0,
+      "required": 36,
+      "scope": "direct controller contracts for top-level sections and appendices; subheadings are reported separately"
+    },
+    "canonical_state_machine": {
+      "covered": 28,
+      "exact_order": true,
+      "fraction": 1.0,
+      "required": 28
+    },
+    "continuation_outputs": {
+      "covered": 5,
+      "required": 5
+    },
+    "legacy_master_schedule_transition_coverage": {
+      "covered": 34,
+      "fraction": 1.0,
+      "not_the_authoritative_v3_execution_sequence": true,
+      "required": 34
+    },
+    "live_receipt_completion": {
+      "certified_states": 1,
+      "fraction": 0.03571428571428571,
+      "is_not_implementation_coverage": true,
+      "required_states": 28
+    },
+    "overall_status": "CONTROLLER_WIRED_EVIDENCE_INCOMPLETE",
+    "required_artifact_contract": {
+      "mapped": 79,
+      "required": 79,
+      "unmapped": []
+    }
+  },
+  "legacy_master_schedule": [
+    {
+      "controller_wired": true,
+      "description": "Finish, seal, offload and remove Proto-Frankenstein from active storage.",
+      "evidence_complete": false,
+      "id": 0,
+      "mapped_state_statuses": {
+        "V3_SEED_ARCHIVE": "BLOCKED"
+      },
+      "mapped_states": [
+        "V3_SEED_ARCHIVE"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Freeze protected Hawking authorities and stable binaries.",
+      "evidence_complete": false,
+      "id": 1,
+      "mapped_state_statuses": {
+        "V3_AUTHORITY_FREEZE": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_AUTHORITY_FREEZE"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Install report-only model authority.",
+      "evidence_complete": false,
+      "id": 2,
+      "mapped_state_statuses": {
+        "V3_AUTHORITY_FREEZE": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_AUTHORITY_FREEZE"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Install garbage ownership and pressure governor.",
+      "evidence_complete": false,
+      "id": 3,
+      "mapped_state_statuses": {
+        "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Install credential broker.",
+      "evidence_complete": false,
+      "id": 4,
+      "mapped_state_statuses": {
+        "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Build research registry and Graveyard retrieval.",
+      "evidence_complete": false,
+      "id": 5,
+      "mapped_state_statuses": {
+        "V3_KNOWLEDGE_PLANE": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_KNOWLEDGE_PLANE"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Audit both Qwen architectures and representative tensor geometries.",
+      "evidence_complete": false,
+      "id": 6,
+      "mapped_state_statuses": {
+        "V3_METAL_COMPILER": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_METAL_COMPILER"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Prototype B/F/U/R/D/S/K mechanisms on bounded fixtures and source windows.",
+      "evidence_complete": false,
+      "id": 7,
+      "mapped_state_statuses": {
+        "V3_GRAVITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_GRAVITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Classify every mechanism as Gravity/runtime/kernel/deferred/rejected.",
+      "evidence_complete": false,
+      "id": 8,
+      "mapped_state_statuses": {
+        "V3_GRAVITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_GRAVITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Build HCLI Agent OS foundations: scheduler, planning diagnostic, retrieval gateway, tool gateway, memory OS, Skill Foundry, perception service, execution sandbox, verification authority, observability.",
+      "evidence_complete": false,
+      "id": 9,
+      "mapped_state_statuses": {
+        "V3_AGENT_OS": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_AGENT_OS"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Design Gravity direct-execution layouts from admitted findings.",
+      "evidence_complete": false,
+      "id": 10,
+      "mapped_state_statuses": {
+        "V3_GRAVITY": "PENDING_PREREQUISITES",
+        "V3_METAL_COMPILER": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Stream and Gravity Qwen3-Coder-30B.",
+      "evidence_complete": false,
+      "id": 11,
+      "mapped_state_statuses": {
+        "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_DENSITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Build exact-model 30B production path.",
+      "evidence_complete": false,
+      "id": 12,
+      "mapped_state_statuses": {
+        "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_DENSITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Run parity, capability and complete-token profiler.",
+      "evidence_complete": false,
+      "id": 13,
+      "mapped_state_statuses": {
+        "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Run 30B self-TG gauntlet.",
+      "evidence_complete": false,
+      "id": 14,
+      "mapped_state_statuses": {
+        "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Stop at TG3 for review.",
+      "evidence_complete": false,
+      "id": 15,
+      "mapped_state_statuses": {
+        "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Promote approved 30B executor.",
+      "evidence_complete": false,
+      "id": 16,
+      "mapped_state_statuses": {
+        "MANAGER_30B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_30B_AGENT"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Stream and Gravity Qwen3-Coder-Next 80B.",
+      "evidence_complete": false,
+      "id": 17,
+      "mapped_state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_DENSITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Build exact-model Qwen3-Next hybrid path.",
+      "evidence_complete": false,
+      "id": 18,
+      "mapped_state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_DENSITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Port applicable 30B wins.",
+      "evidence_complete": false,
+      "id": 19,
+      "mapped_state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_DENSITY"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Run 80B parity, capability and profiler.",
+      "evidence_complete": false,
+      "id": 20,
+      "mapped_state_statuses": {
+        "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Run 80B self-TG gauntlet.",
+      "evidence_complete": false,
+      "id": 21,
+      "mapped_state_statuses": {
+        "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Stop at TG3 for review.",
+      "evidence_complete": false,
+      "id": 22,
+      "mapped_state_statuses": {
+        "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_TG"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Promote approved 80B reviewer.",
+      "evidence_complete": false,
+      "id": 23,
+      "mapped_state_statuses": {
+        "MANAGER_80B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_80B_AGENT"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Enable Option-C HCLI sandbox.",
+      "evidence_complete": false,
+      "id": 24,
+      "mapped_state_statuses": {
+        "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES",
+        "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Test dual-resident, executor-resident and phase-separated modes.",
+      "evidence_complete": false,
+      "id": 25,
+      "mapped_state_statuses": {
+        "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Enable production retrieval, memory, skills and selective perception.",
+      "evidence_complete": false,
+      "id": 26,
+      "mapped_state_statuses": {
+        "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Begin isolated same-model latent communication experiments.",
+      "evidence_complete": false,
+      "id": 27,
+      "mapped_state_statuses": {
+        "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "SANDBOX_ACTIVATION"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Generalize exact-model paths into Qwen family graphs.",
+      "evidence_complete": false,
+      "id": 28,
+      "mapped_state_statuses": {
+        "FAMILY_QWEN": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "FAMILY_QWEN"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Launch autonomous wider model ladder.",
+      "evidence_complete": false,
+      "id": 29,
+      "mapped_state_statuses": {
+        "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+        "FAMILY_GEMMA": "PENDING_PREREQUISITES",
+        "FAMILY_GLM": "PENDING_PREREQUISITES",
+        "FAMILY_HYBRID": "PENDING_PREREQUISITES",
+        "FAMILY_KIMI": "PENDING_PREREQUISITES",
+        "FAMILY_LLAMA": "PENDING_PREREQUISITES",
+        "FAMILY_MISTRAL": "PENDING_PREREQUISITES",
+        "FAMILY_QWEN": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Rotate across increasingly difficult families.",
+      "evidence_complete": false,
+      "id": 30,
+      "mapped_state_statuses": {
+        "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+        "FAMILY_GEMMA": "PENDING_PREREQUISITES",
+        "FAMILY_GLM": "PENDING_PREREQUISITES",
+        "FAMILY_HYBRID": "PENDING_PREREQUISITES",
+        "FAMILY_KIMI": "PENDING_PREREQUISITES",
+        "FAMILY_LLAMA": "PENDING_PREREQUISITES",
+        "FAMILY_MISTRAL": "PENDING_PREREQUISITES",
+        "FAMILY_QWEN": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Continue TG2/TG1 research under human/controller authority.",
+      "evidence_complete": false,
+      "id": 31,
+      "mapped_state_statuses": {
+        "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "TG2_TG1_FRONTIER"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Seal Apple production release.",
+      "evidence_complete": false,
+      "id": 32,
+      "mapped_state_statuses": {
+        "APPLE_RELEASE": "PENDING_PREREQUISITES",
+        "EXTERNAL_REVIEW": "PENDING_PREREQUISITES",
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    },
+    {
+      "controller_wired": true,
+      "description": "Begin CUDA only as a separately funded post-release backend.",
+      "evidence_complete": false,
+      "id": 33,
+      "mapped_state_statuses": {
+        "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+      },
+      "mapped_states": [
+        "TG2_TG1_FRONTIER"
+      ],
+      "schedule_declared_status": "NOT_STARTED"
+    }
+  ],
+  "recorded_at": "2026-08-09T17:44:43.523353Z",
+  "requirements": [
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": true,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT"
+      ],
+      "section": "0",
+      "states": [
+        "V3_ADOPT"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Constitutional doctrine"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "0.1",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "No-timeline law"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "section": "1",
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Conjunctive launch contract"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_parity_ladder.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_parity_ladder.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "section": "1.1",
+      "states": [
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_parity_ladder_scaffold.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_parity_ladder_scaffold.py"
+      ],
+      "title": "Complete-BPW accounting"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG"
+      ],
+      "section": "1.2",
+      "states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "title": "TG3 floor"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tournament_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tournament_workflow.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "section": "1.3",
+      "states": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Capability cannot be traded for launch numbers"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "workspace/ops/ascension/after_proto_monitor.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "workspace/ops/ascension/after_proto_monitor.py"
+      ],
+      "represented_states": [
+        "V3_SEED_ARCHIVE"
+      ],
+      "section": "2",
+      "states": [
+        "V3_SEED_ARCHIVE"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "workspace/ops/ascension/tests/test_after_proto_monitor.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "workspace/ops/ascension/tests/test_after_proto_monitor.py"
+      ],
+      "title": "Seed Archive and state reconciliation"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_source_admission.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_source_admission.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT"
+      ],
+      "section": "3",
+      "states": [
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_source_admission.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_source_admission.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Pre-sandbox Manager Tournament"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "represented_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "section": "4",
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Maximum-Grok build doctrine"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "workspace/ops/ascension/pressure_governor.py",
+        "workspace/ops/ascension/bounded_process_runner.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "implementation_paths_present": [
+        "workspace/ops/ascension/pressure_governor.py",
+        "workspace/ops/ascension/bounded_process_runner.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "represented_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "section": "5",
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "test_paths": [
+        "workspace/ops/ascension/tests/test_pressure_governor.py",
+        "workspace/ops/ascension/tests/test_bounded_process_runner.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "workspace/ops/ascension/tests/test_pressure_governor.py",
+        "workspace/ops/ascension/tests/test_bounded_process_runner.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Energy and resource efficiency"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/hcli/option_c.py",
+        "lab/hcli/residency.py",
+        "lab/hcli/self_evolution.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "implementation_paths_present": [
+        "lab/hcli/option_c.py",
+        "lab/hcli/residency.py",
+        "lab/hcli/self_evolution.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_foundation_contracts.py"
+      ],
+      "represented_states": [
+        "V3_AGENT_OS",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "section": "6",
+      "states": [
+        "V3_AGENT_OS",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "test_paths": [
+        "lab/tests/test_option_c.py",
+        "lab/tests/test_residency_modes.py",
+        "lab/tests/test_self_evolution.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_option_c.py",
+        "lab/tests/test_residency_modes.py",
+        "lab/tests/test_self_evolution.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "HCLI Agent OS"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/qwen30b_gravity_pack.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/qwen30b_gravity_pack.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "represented_states": [
+        "V3_GRAVITY",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY"
+      ],
+      "section": "7",
+      "states": [
+        "V3_GRAVITY",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Evolutionary Gravity"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "represented_states": [
+        "V3_METAL_COMPILER"
+      ],
+      "section": "8",
+      "states": [
+        "V3_METAL_COMPILER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Exact-model Apple compiler"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/research_registry.py",
+        "lab/operators/ascension_graveyard.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_knowledge_contract.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/research_registry.py",
+        "lab/operators/ascension_graveyard.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_knowledge_contract.py"
+      ],
+      "represented_states": [
+        "V3_KNOWLEDGE_PLANE"
+      ],
+      "section": "9",
+      "states": [
+        "V3_KNOWLEDGE_PLANE"
+      ],
+      "test_paths": [
+        "lab/tests/test_research_registry.py",
+        "lab/tests/test_ascension_graveyard.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_research_registry.py",
+        "lab/tests/test_ascension_graveyard.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Knowledge Plane"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/verification_authority.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/verification_authority.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "10",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_verification_authority.py",
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_verification_authority.py",
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Protected hierarchical verification"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/credential_broker/lifecycle.py",
+        "lab/operators/ascension_source_admission.py",
+        "workspace/ops/ascension/garbage_ecosystem.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/credential_broker/lifecycle.py",
+        "lab/operators/ascension_source_admission.py",
+        "workspace/ops/ascension/garbage_ecosystem.py"
+      ],
+      "represented_states": [
+        "V3_SEED_ARCHIVE",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY"
+      ],
+      "section": "11",
+      "states": [
+        "V3_SEED_ARCHIVE",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_80B_DENSITY"
+      ],
+      "test_paths": [
+        "lab/tests/test_credential_broker.py",
+        "lab/tests/test_ascension_source_admission.py",
+        "workspace/ops/ascension/tests/test_garbage_ecosystem.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_credential_broker.py",
+        "lab/tests/test_ascension_source_admission.py",
+        "workspace/ops/ascension/tests/test_garbage_ecosystem.py"
+      ],
+      "title": "Fluid acquisition and storage"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_sandbox.py",
+        "lab/operators/ascension_family_workflow.py",
+        "lab/operators/ascension_tournament_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_sandbox.py",
+        "lab/operators/ascension_family_workflow.py",
+        "lab/operators/ascension_tournament_workflow.py"
+      ],
+      "represented_states": [
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "section": "12",
+      "states": [
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_sandbox.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_sandbox.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Sandbox lifecycle and family matrix"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_parity_ladder.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_kernel_registry.py"
+      ],
+      "represented_states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "section": "13",
+      "states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_parity_ladder_scaffold.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Family-specific starting doctrines"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG"
+      ],
+      "section": "14",
+      "states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "title": "Complete-token profiler"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_tg_gauntlet.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "15",
+      "states": [
+        "MANAGER_30B_TG",
+        "MANAGER_80B_TG",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_tg_gauntlet_scaffold.py"
+      ],
+      "title": "Temporal Gravity gauntlet"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "workspace/ops/ascension/notifications.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tournament_workflow.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "workspace/ops/ascension/notifications.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_tournament_workflow.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "represented_states": [
+        "MANAGER_TOURNAMENT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "section": "16",
+      "states": [
+        "MANAGER_TOURNAMENT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "test_paths": [
+        "workspace/ops/ascension/tests/test_notifications.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "workspace/ops/ascension/tests/test_notifications.py",
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Notifications and review packets"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "17",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Restart-safe continuation"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_execution_plan.py",
+        "lab/operators/ascension_campaign.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_execution_plan.py",
+        "lab/operators/ascension_campaign.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "18",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_campaign.py",
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_campaign.py",
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Canonical execution sequence"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "19",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Required artifacts and tests"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "20",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py"
+      ],
+      "title": "Completion states"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "represented_states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "section": "21",
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Global launch review packet"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "22",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Final directive"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_manager_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_manager_workflow.py"
+      ],
+      "represented_states": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "section": "Appendix A",
+      "states": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Manager Capability Contract test catalogue"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "lab/operators/ascension_campaign.py"
+      ],
+      "represented_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "section": "Appendix B",
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Grok builder templates"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "lab/hcli/option_c.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "lab/hcli/option_c.py"
+      ],
+      "represented_states": [
+        "V3_AGENT_OS"
+      ],
+      "section": "Appendix C",
+      "states": [
+        "V3_AGENT_OS"
+      ],
+      "test_paths": [
+        "lab/tests/test_option_c.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_option_c.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Agent OS performance and context engineering"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "workspace/ops/ascension/pressure_governor.py",
+        "workspace/ops/ascension/bounded_process_runner.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_foundation_contracts.py",
+        "workspace/ops/ascension/pressure_governor.py",
+        "workspace/ops/ascension/bounded_process_runner.py"
+      ],
+      "represented_states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "section": "Appendix D",
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_campaign.py",
+        "workspace/ops/ascension/tests/test_pressure_governor.py",
+        "workspace/ops/ascension/tests/test_bounded_process_runner.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_campaign.py",
+        "workspace/ops/ascension/tests/test_pressure_governor.py",
+        "workspace/ops/ascension/tests/test_bounded_process_runner.py"
+      ],
+      "title": "Energy-optimal campaign scheduling"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_family_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_family_workflow.py"
+      ],
+      "represented_states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "section": "Appendix E",
+      "states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Per-family qualification manifest"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_kernel_registry.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_parity_ladder.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_kernel_registry.py",
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_parity_ladder.py"
+      ],
+      "represented_states": [
+        "V3_GRAVITY"
+      ],
+      "section": "Appendix F",
+      "states": [
+        "V3_GRAVITY"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_parity_ladder_scaffold.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_parity_ladder_scaffold.py"
+      ],
+      "title": "Evolutionary search algorithm"
+    },
+    {
+      "certified_states": [],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_release_workflow.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_release_workflow.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "APPLE_RELEASE"
+      ],
+      "section": "Appendix G",
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT",
+        "APPLE_RELEASE"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "Apple product launch hardening"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_campaign.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_campaign.py",
+        "lab/operators/ascension_lifecycle.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "Appendix H",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "V3 self-review and relaunch contract"
+    },
+    {
+      "certified_states": [
+        "V3_ADOPT"
+      ],
+      "controller_contract_covered": true,
+      "coverage_scope": "implementation-path presence plus receipt-state linkage only; it is not a claim that the runtime behavior has been measured",
+      "evidence_complete": false,
+      "implementation_paths": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "implementation_paths_present": [
+        "lab/operators/ascension_lifecycle.py",
+        "lab/operators/ascension_release_workflow.py"
+      ],
+      "represented_states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "section": "Appendix I",
+      "states": [
+        "V3_ADOPT",
+        "V3_SEED_ARCHIVE",
+        "V3_AUTHORITY_FREEZE",
+        "V3_GROK_BUILD_FABRIC",
+        "V3_AGENT_OS",
+        "V3_KNOWLEDGE_PLANE",
+        "V3_GRAVITY",
+        "V3_METAL_COMPILER",
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT",
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE",
+        "TG2_TG1_FRONTIER"
+      ],
+      "test_paths": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "test_paths_present": [
+        "lab/tests/test_ascension_lifecycle.py",
+        "lab/tests/test_ascension_campaign.py"
+      ],
+      "title": "V3 launch checklist"
+    }
+  ],
+  "runtime": {
+    "launch_gate": {
+      "derived_only_from_controller_state": true,
+      "launch_exception_permitted": false,
+      "missing_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "required_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "status": "BLOCKED"
+    },
+    "tournament": {
+      "armed_at": "2026-08-09T06:16:03.096010Z",
+      "blockers": [
+        "requires certified MANAGER_30B_AGENT",
+        "requires certified MANAGER_80B_AGENT"
+      ],
+      "candidate_order": [
+        "Qwen30-Gravity-Manager-Artifact",
+        "Qwen80-Gravity-Manager-Artifact"
+      ],
+      "claim_boundary": {
+        "does_not_activate_sandbox": true,
+        "does_not_run_candidate_models": true,
+        "does_not_select_a_winner": true
+      },
+      "dimensions": [
+        "hard_gate_compliance",
+        "manager_capability",
+        "solo_manager_capability",
+        "manager_as_orchestrator_capability",
+        "verified_tasks_per_hour",
+        "architecture_kernel_research",
+        "gravity_research_quality",
+        "long_horizon_reliability",
+        "tool_recovery",
+        "search_retrieval",
+        "memory_context",
+        "hcli_latency",
+        "multi_agent_throughput",
+        "resident_memory",
+        "active_bytes_per_token",
+        "energy_per_verified_task",
+        "thermal_stability",
+        "error_rate",
+        "receipt_quality",
+        "adversarial_review_quality",
+        "failure_recovery",
+        "benchmark_honesty",
+        "security_effect_discipline",
+        "release_integration"
+      ],
+      "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+      "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+      "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    }
+  },
+  "schema": "hawking.ascension.v3_fidelity_report.v1",
+  "seal_sha256": "d168fd55efb1a8164a3569c015e3dbc13660b4184490fb950d85023e33ab72c5"
+}

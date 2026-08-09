@@ -1,0 +1,10 @@
+{
+  "claim_boundary": "Pointer to a separately sealed one-shot outer terminal/release only.",
+  "outer_terminal_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/outer-terminal-receipt.json",
+  "outer_terminal_seal_sha256": "d98087cc70d11248711d3a25842fa2ad0eb14c2a331dbef94fac987c486ec53a",
+  "release_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_LAUNCH_20260809T144246Z/quiet-lease-release.json",
+  "release_seal_sha256": "9bec78a9a7b4e417be859278e178293921f52e1dd03363bf3417e53add2579a5",
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_lease_outer_reaper.v1",
+  "seal_sha256": "9262df8d22912e528a4bbbbf262d98be224e7daa9f31b202bd4d9a873175d8fb",
+  "status": "CAPTURED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_OUTER_TERMINAL_NOT_SOURCE_TEACHER"
+}

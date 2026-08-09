@@ -413,7 +413,10 @@ impl SkillFoundry {
             if ok {
                 (
                     true,
-                    format!("hidden_validation: {} tests declared well-formed", spec.tests.len()),
+                    format!(
+                        "hidden_validation: {} tests declared well-formed",
+                        spec.tests.len()
+                    ),
                 )
             } else {
                 (false, "hidden_validation: malformed test".into())
@@ -727,7 +730,10 @@ mod tests {
         foundry.set_clock_ms(100);
         let sandbox = SandboxProposeCap::mint();
         let rec = foundry
-            .propose(&sandbox, example_skill_spec("optimize_qwen_moe_projection_wave"))
+            .propose(
+                &sandbox,
+                example_skill_spec("optimize_qwen_moe_projection_wave"),
+            )
             .unwrap();
         assert_eq!(rec.status, SkillStatus::Proposed);
         assert!(foundry.list_retrievable().is_empty());
@@ -745,7 +751,10 @@ mod tests {
         let sandbox = SandboxProposeCap::mint();
         let ctrl = ProtectedControllerCap::mint();
         let rec = foundry
-            .propose(&sandbox, example_skill_spec("optimize_qwen_moe_projection_wave"))
+            .propose(
+                &sandbox,
+                example_skill_spec("optimize_qwen_moe_projection_wave"),
+            )
             .unwrap();
         let admitted = foundry
             .run_admission_pipeline(&ctrl, &rec.id, "protected-controller-1")
@@ -758,11 +767,7 @@ mod tests {
         assert!(admitted.admitted_at_ms.is_some());
         assert_eq!(foundry.list_retrievable().len(), 1);
         // Stage receipts cover full pipeline.
-        let stages: Vec<_> = admitted
-            .stage_receipts
-            .iter()
-            .map(|r| r.stage)
-            .collect();
+        let stages: Vec<_> = admitted.stage_receipts.iter().map(|r| r.stage).collect();
         for expected in AdmissionStage::pipeline() {
             assert!(
                 stages.contains(&expected),
@@ -815,7 +820,10 @@ mod tests {
         foundry.hidden_validate(&b.id).unwrap();
         let after = foundry.compatibility_test(&b.id).unwrap();
         assert_eq!(after.status, SkillStatus::Rejected);
-        assert!(foundry.list_retrievable().iter().all(|r| r.spec.name != "skill_b"));
+        assert!(foundry
+            .list_retrievable()
+            .iter()
+            .all(|r| r.spec.name != "skill_b"));
     }
 
     #[test]
@@ -854,10 +862,7 @@ mod tests {
         let foundry = SkillFoundry::new();
         foundry.set_clock_ms(1);
         let rec = foundry
-            .propose(
-                &SandboxProposeCap::mint(),
-                example_skill_spec("ordered"),
-            )
+            .propose(&SandboxProposeCap::mint(), example_skill_spec("ordered"))
             .unwrap();
         // Skip replay → hidden_validate fails.
         let err = foundry.hidden_validate(&rec.id).unwrap_err();

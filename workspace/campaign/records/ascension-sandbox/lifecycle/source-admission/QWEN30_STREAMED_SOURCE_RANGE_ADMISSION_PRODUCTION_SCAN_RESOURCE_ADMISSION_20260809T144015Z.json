@@ -1,0 +1,86 @@
+{
+  "blockers": [],
+  "bootstrap_resource_ancestry": {
+    "raw_document_sha256": "bdb1b3d783812f9239090479642a7e424669d66bb36f71cf5ff12a0b45874be6",
+    "seal_sha256": "3c8ca165a5661eb13f2f3f8c4472cdff7a19311ec6a40a4d508d9c2383b1e63e"
+  },
+  "bounded_one_source_hash_scan_resource_profile": {
+    "exactly_one_future_non_inference_hash_scan_child": true,
+    "maximum_cached_raw_bf16_bytes": 1048576,
+    "maximum_concurrent_source_hash_scan_children": 1,
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "maximum_shards": 16,
+    "maximum_tensors": 18867,
+    "minimum_reclaimable_bytes_required": 2147483648,
+    "model_gpu_server_hcli_or_tps_allowed": false,
+    "source_model_residency_allowed": false,
+    "source_root_statted_or_opened": false,
+    "source_teacher_or_logits_allowed": false
+  },
+  "child_started": false,
+  "claim_boundary": "Read-only production-binary-bound resource observation only. A successful record is not a lease, child launch, source scan, source-teacher, runtime admission, native phase, model, GPU, server, HCLI, TPS, TG, or tournament result.",
+  "exclusive_clean_window": true,
+  "execution_boundary": {
+    "capture_child_spawned": false,
+    "gpu_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed_or_released": false,
+    "q30_or_q80_capture_child_started": false,
+    "source_model_loaded": false,
+    "source_payload_opened": false,
+    "source_root_argument_or_stat_performed": false
+  },
+  "fresh_observation": true,
+  "gpu_server_hcli_or_tps_action": false,
+  "lease_issued_or_consumed": false,
+  "minimum_reclaimable_bytes_required": 2147483648,
+  "native_phase_started": false,
+  "no_active_q30_or_q80_capture_child": true,
+  "observed_after_production_binary_binding": true,
+  "prepared": true,
+  "production_binary_binding": {
+    "raw_document_sha256": "bd0dfe8ad751c638f936cba4a5004a777001f42646f1be3eb05b203dba88b0ea",
+    "seal_sha256": "45774c6a37d2338d27ce756534ea300cadb508ef04c65f6946a3ce2ff7028d9b"
+  },
+  "production_binary_sha256": "6f34ae834c8fe892d847f13aad92000e4098fa2f1ead6e1891f8931e11e1876b",
+  "production_resource_window_identity_sha256": "bbd7706e21bf57fdfa1e4b565486b231bfbdfbf0ad84366e2e41d580d6d218f5",
+  "read_only_observation": {
+    "after": {
+      "backend": "darwin-vm_stat-sysctl-ps",
+      "q30_capture_child_count": 0,
+      "q30_capture_child_fingerprints": [],
+      "q80_capture_child_count": 0,
+      "q80_capture_child_fingerprints": [],
+      "reclaimable_bytes": 54598795264,
+      "swap_used_bytes": 0,
+      "swapouts_pages": 0
+    },
+    "before": {
+      "backend": "darwin-vm_stat-sysctl-ps",
+      "q30_capture_child_count": 0,
+      "q30_capture_child_fingerprints": [],
+      "q80_capture_child_count": 0,
+      "q80_capture_child_fingerprints": [],
+      "reclaimable_bytes": 54602645504,
+      "swap_used_bytes": 0,
+      "swapouts_pages": 0
+    },
+    "captures_observed_before_and_after": true,
+    "sample_count": 2,
+    "source_root_or_payload_observed": false,
+    "swapouts_pages_delta": 0
+  },
+  "reclaimable_bytes": 54598795264,
+  "recorded_at": "2026-08-09T14:40:25.134213Z",
+  "resource_admitted_for_one_future_child": true,
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_resource_admission.v1",
+  "seal_sha256": "3373a297da5c375bb48c94f259de31a6b56ea597df0a10367f9bf8e60a48e52e",
+  "source_model_loaded": false,
+  "source_payload_opened": false,
+  "source_teacher_or_logits_executed": false,
+  "status": "ADMITTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_ZERO_SWAP_RESOURCE_WINDOW",
+  "swap_used_bytes": 0,
+  "swapouts_pages_delta": 0,
+  "zero_swap": true,
+  "zero_swapouts": true
+}

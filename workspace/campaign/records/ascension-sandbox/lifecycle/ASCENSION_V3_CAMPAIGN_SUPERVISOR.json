@@ -1,0 +1,256 @@
+{
+  "bible_step_coverage": {
+    "all_bible_steps_wired": true,
+    "bible_step_rows": 48,
+    "receipt_complete_rows": 1,
+    "receipt_completion_is_not_wiring_coverage": true,
+    "required_bible_step_rows": 48
+  },
+  "claim_boundary": {
+    "no_automatic_deletion_or_eviction": true,
+    "no_automatic_promotion": true,
+    "no_model_body_downloads": true,
+    "no_model_runtime": true,
+    "supervisor_liveness_is_not_manager_qualification": true,
+    "supervisor_liveness_is_not_sandbox_activation": true,
+    "supervisor_liveness_is_not_tournament_completion": true
+  },
+  "dual_manager_workflow": {
+    "configuration_only": true,
+    "handoff": {
+      "post_tournament": [
+        "ASCENSION_MANAGER_WINNER protected certification",
+        "ASCENSION_ALTERNATE_OFFLOAD remote hash + restore + local eviction proof",
+        "SANDBOX_ACTIVATION only under sealed winner"
+      ],
+      "qwen30_candidate_certified": false,
+      "qwen80_candidate_certified": false,
+      "qwen80_may_begin_after_qwen30_agent_certified": false,
+      "tournament_phase": "WAITING_FOR_BOTH_QUALIFIED_MANAGERS",
+      "tournament_requires": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ]
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_DUAL_MANAGER_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "family_campaign_workflow": {
+    "configuration_only": true,
+    "matrix_handoff": {
+      "all_required_family_states_certified": false,
+      "global_audit_status": "PENDING_PREREQUISITES",
+      "required_global_artifacts": [
+        "ASCENSION_V3_FAMILY_MATRIX",
+        "ASCENSION_V3_MODEL_MATRIX",
+        "ASCENSION_V3_DENSITY_MATRIX",
+        "ASCENSION_V3_TG_MATRIX",
+        "ASCENSION_V3_RESOURCE_ATLAS",
+        "ASCENSION_V3_POWER_PROFILES",
+        "ASCENSION_V3_STORAGE_LEASES",
+        "ASCENSION_V3_GARBAGE_AUDIT",
+        "ASCENSION_V3_RECOVERY_TEST"
+      ]
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_FAMILY_CAMPAIGN_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "foundation_contracts": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_FOUNDATION_CONTRACTS.json",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "global_release_workflow": {
+    "configuration_only": true,
+    "derived_launch_gate": {
+      "derived_only_from_controller_state": true,
+      "launch_exception_permitted": false,
+      "missing_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "required_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "status": "BLOCKED"
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_GLOBAL_RELEASE_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "heartbeat": 2214,
+  "kernel_compiler_contract": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KERNEL_COMPILER_CONTRACT.json",
+    "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "knowledge_plane_contract": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KNOWLEDGE_PLANE_CONTRACT.json",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "lifecycle": {
+    "first_unmet_state": "V3_SEED_ARCHIVE",
+    "launch_gate": {
+      "derived_only_from_controller_state": true,
+      "launch_exception_permitted": false,
+      "missing_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "required_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "status": "BLOCKED"
+    },
+    "state_counts": {
+      "blocked": 1,
+      "certified": 1,
+      "pending_prerequisites": 26
+    },
+    "tournament": {
+      "armed_at": "2026-08-09T06:16:03.096010Z",
+      "blockers": [
+        "requires certified MANAGER_30B_AGENT",
+        "requires certified MANAGER_80B_AGENT"
+      ],
+      "candidate_order": [
+        "Qwen30-Gravity-Manager-Artifact",
+        "Qwen80-Gravity-Manager-Artifact"
+      ],
+      "claim_boundary": {
+        "does_not_activate_sandbox": true,
+        "does_not_run_candidate_models": true,
+        "does_not_select_a_winner": true
+      },
+      "dimensions": [
+        "hard_gate_compliance",
+        "manager_capability",
+        "solo_manager_capability",
+        "manager_as_orchestrator_capability",
+        "verified_tasks_per_hour",
+        "architecture_kernel_research",
+        "gravity_research_quality",
+        "long_horizon_reliability",
+        "tool_recovery",
+        "search_retrieval",
+        "memory_context",
+        "hcli_latency",
+        "multi_agent_throughput",
+        "resident_memory",
+        "active_bytes_per_token",
+        "energy_per_verified_task",
+        "thermal_stability",
+        "error_rate",
+        "receipt_quality",
+        "adversarial_review_quality",
+        "failure_recovery",
+        "benchmark_honesty",
+        "security_effect_discipline",
+        "release_integration"
+      ],
+      "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+      "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+      "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    }
+  },
+  "manager_tournament_workflow": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_WORKFLOW.json",
+    "runtime_phase": "ARMED_WAITING_FOR_QUALIFICATIONS",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "metadata_refresh": {
+    "candidate_metadata_only": true,
+    "interval_seconds": 86400.0,
+    "performed": false,
+    "refresh_error": null
+  },
+  "paths": {
+    "lifecycle_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle",
+    "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_EXECUTION_MANIFEST.json",
+    "status": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_CAMPAIGN_SUPERVISOR.json"
+  },
+  "process": {
+    "parent_pid": 1,
+    "pid": 61438,
+    "process_group": 61438,
+    "python_executable": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python"
+  },
+  "recorded_at": "2026-08-09T17:44:43.593240Z",
+  "schema": "hawking.ascension.v3_campaign_supervisor.v1",
+  "seal_sha256": "9ce612113107268958c3b88d44ce1884f667c7c2352f1b8d618edf01f357411c",
+  "source_metadata": {
+    "candidate_only": true,
+    "not_lifecycle_certification": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/SOURCE_ADMISSION_STATUS.json",
+    "present": true,
+    "recorded_at": "2026-08-09T06:16:04.580869Z",
+    "records": [
+      {
+        "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",
+        "no_model_body_downloaded": true,
+        "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+        "status": "CANDIDATE_METADATA_CAPTURED"
+      },
+      {
+        "artifact_id": "QWEN80_SOURCE_METADATA_CANDIDATE",
+        "no_model_body_downloaded": true,
+        "repository": "Qwen/Qwen3-Coder-Next",
+        "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+        "status": "CANDIDATE_METADATA_CAPTURED"
+      }
+    ],
+    "status": "ALL_METADATA_CAPTURED"
+  },
+  "state": "RUNNING"
+}

@@ -6,9 +6,7 @@
 use crate::coords::RegionKind;
 use crate::error::{PerceptionError, Result};
 use crate::service::DocumentService;
-use crate::types::{
-    CostTier, DocumentHandle, StructuredEvidence, TableParse,
-};
+use crate::types::{CostTier, DocumentHandle, StructuredEvidence, TableParse};
 use serde::{Deserialize, Serialize};
 
 /// Ordered stages of the default path (bible §19).
@@ -119,7 +117,9 @@ impl<S: DocumentService> PerceptionPipeline<S> {
         mut query: PerceptionQuery,
     ) -> Result<StructuredEvidence> {
         // 1. Cheap inspect
-        query.budget.charge(PipelineStage::Inspect.as_str(), CostTier::Metadata)?;
+        query
+            .budget
+            .charge(PipelineStage::Inspect.as_str(), CostTier::Metadata)?;
         let meta = self.service.inspect(handle)?;
         let mut evidence = StructuredEvidence::empty(handle.clone());
         evidence.max_cost_tier = CostTier::Metadata;
@@ -219,10 +219,7 @@ impl<S: DocumentService> PerceptionPipeline<S> {
                 }
                 RegionKind::Chart => {
                     if let Ok(chart) = self.service.parse_chart(handle, &region) {
-                        let quote = chart
-                            .title
-                            .clone()
-                            .unwrap_or_else(|| "chart".into());
+                        let quote = chart.title.clone().unwrap_or_else(|| "chart".into());
                         let cite = self.service.cite_coordinates(
                             handle,
                             chart.box_,
@@ -255,11 +252,9 @@ impl<S: DocumentService> PerceptionPipeline<S> {
         evidence.tables = tables;
 
         // 7. Verify structure
-        let report = self.service.verify_structure(
-            handle,
-            &evidence.regions,
-            &evidence.tables,
-        )?;
+        let report = self
+            .service
+            .verify_structure(handle, &evidence.regions, &evidence.tables)?;
         if !report.ok {
             for issue in report.issues {
                 evidence.notes.push(format!("structure: {issue}"));
@@ -277,10 +272,7 @@ fn select_pages(meta: &crate::types::DocumentMeta, need: &str) -> Vec<u32> {
     if meta.page_summaries.is_empty() {
         return (0..meta.page_count.min(4)).collect();
     }
-    let terms: Vec<&str> = need
-        .split_whitespace()
-        .filter(|t| t.len() > 2)
-        .collect();
+    let terms: Vec<&str> = need.split_whitespace().filter(|t| t.len() > 2).collect();
     let cheap = meta.cheap_text.as_deref().unwrap_or("");
     let mut scored: Vec<(u32, i64)> = meta
         .page_summaries
@@ -356,7 +348,10 @@ mod tests {
         let err = pipe.run(&handle, q).unwrap_err();
         assert!(matches!(
             err,
-            PerceptionError::BudgetExhausted { stage: "inspect", .. }
+            PerceptionError::BudgetExhausted {
+                stage: "inspect",
+                ..
+            }
         ));
     }
 }

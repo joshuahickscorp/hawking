@@ -1,0 +1,17 @@
+{
+  "artifacts_deleted_or_evicted": false,
+  "child_capture_seal_sha256": null,
+  "claim_boundary": "Receipt-last quiet release for one consumed production hash-scan lease only. It cannot authorize retry, source teacher, native/model/GPU/server/HCLI, TPS, TG, or tournament work.",
+  "lease_id": "02c9cf898fa3ea9af8fac5c13090cb37e991bb122ec6a2cc6988c8844eeaff14",
+  "native_or_gpu_server_hcli_authorized": false,
+  "one_shot_lease_finalized": true,
+  "outer_terminal_seal_sha256": "f7ea50a6061c411b764e98e9f7069e914affd6f5c291325ee9afcc6ab32476c9",
+  "outer_terminal_status": "REFUSED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_OUTER_TERMINAL_CHILD_FAILED_OR_INVALID",
+  "recorded_at": "2026-08-09T14:36:44.869431Z",
+  "release_after_outer_terminal": true,
+  "retry_or_relaunch_forbidden": true,
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_quiet_lease_release.v1",
+  "seal_sha256": "c8556fe63e5ef2dd741882dc5afb90fcfe27ba78b979f7cf39c2466c02f38d12",
+  "source_teacher_or_logits_authorized": false,
+  "status": "RELEASED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_LEASE_AFTER_OUTER_TERMINAL"
+}

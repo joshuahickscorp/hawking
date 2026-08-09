@@ -49,9 +49,7 @@ pub enum ModelFailureKind {
 #[serde(rename_all = "snake_case", tag = "class")]
 pub enum FailureClass {
     /// Tool layer returned ok; any exit_code is data for the model to handle.
-    SuccessWithData {
-        exit_code: Option<i32>,
-    },
+    SuccessWithData { exit_code: Option<i32> },
     ToolDefect {
         kind: ToolDefectKind,
         detail: String,

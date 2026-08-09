@@ -150,10 +150,10 @@ mod tests {
             .expect("kernel bundle");
         assert_eq!(granted.bundle.id, "kernel");
         assert_eq!(granted.tools.len(), 6);
-        assert!(granted
-            .tools
+        assert!(granted.tools.iter().all(|t| t
+            .effects
             .iter()
-            .all(|t| t.effects.iter().all(|e| e.rank() <= EffectBoundary::Execute.rank())));
+            .all(|e| e.rank() <= EffectBoundary::Execute.rank())));
     }
 
     #[test]
@@ -304,7 +304,13 @@ mod tests {
         };
         let class = classify_outcome(&tool, &obs);
         assert!(
-            matches!(class, FailureClass::ToolDefect { kind: ToolDefectKind::SchemaViolation, .. }),
+            matches!(
+                class,
+                FailureClass::ToolDefect {
+                    kind: ToolDefectKind::SchemaViolation,
+                    ..
+                }
+            ),
             "{class:?}"
         );
     }

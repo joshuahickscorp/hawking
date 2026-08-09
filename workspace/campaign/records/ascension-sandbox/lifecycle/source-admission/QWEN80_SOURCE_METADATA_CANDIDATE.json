@@ -1,0 +1,374 @@
+{
+  "architecture": {
+    "architectures": [
+      "Qwen3NextForCausalLM"
+    ],
+    "config_captured": true,
+    "config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "hidden_size": 2048,
+    "model_type": "qwen3_next",
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "num_hidden_layers": 48,
+    "torch_dtype": "bfloat16",
+    "vocab_size": 151936
+  },
+  "artifact_id": "QWEN80_SOURCE_METADATA_CANDIDATE",
+  "authentication": {
+    "authenticated": true,
+    "credential_source": "huggingface_local_credential_store",
+    "token_export_forbidden": true,
+    "token_material_recorded": false
+  },
+  "authority_level": "candidate",
+  "claim_boundary": {
+    "metadata_only": true,
+    "no_model_body_downloaded": true,
+    "no_model_loaded": true,
+    "no_token_material_recorded": true,
+    "not_controller_certified": true,
+    "not_permission_to_stream_model_body": true,
+    "token_never_exposed_to_model": true
+  },
+  "inventory": {
+    "file_count": 52,
+    "files": [
+      {
+        "bytes": 1519,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": ".gitattributes"
+      },
+      {
+        "bytes": 7600,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "README.md"
+      },
+      {
+        "bytes": 6068,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "chat_template.jinja"
+      },
+      {
+        "bytes": 1178,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "config.json"
+      },
+      {
+        "bytes": 214,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "generation_config.json"
+      },
+      {
+        "bytes": 1671839,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "merges.txt"
+      },
+      {
+        "bytes": 3999619288,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00001-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999841816,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00002-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999515608,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00003-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999842032,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00004-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999842240,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00005-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999853248,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00006-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999841944,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00007-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999842032,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00008-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843224,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00009-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517840,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00010-of-00040.safetensors"
+      },
+      {
+        "bytes": 4000181328,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00011-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00012-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517504,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00013-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999844016,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00014-of-00040.safetensors"
+      },
+      {
+        "bytes": 4000181768,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00015-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517280,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00016-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00017-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00018-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999844120,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00019-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999855064,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00020-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843824,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00021-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00022-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517496,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00023-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999844296,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00024-of-00040.safetensors"
+      },
+      {
+        "bytes": 4000181328,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00025-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517504,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00026-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00027-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999844016,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00028-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999855352,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00029-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843704,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00030-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00031-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843912,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00032-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517720,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00033-of-00040.safetensors"
+      },
+      {
+        "bytes": 4000181528,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00034-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843824,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00035-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999517504,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00036-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999843904,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00037-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999844296,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00038-of-00040.safetensors"
+      },
+      {
+        "bytes": 3999854920,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00039-of-00040.safetensors"
+      },
+      {
+        "bytes": 3365572528,
+        "kind": "weight",
+        "lfs_sha256": null,
+        "path": "model-00040-of-00040.safetensors"
+      },
+      {
+        "bytes": 6759619,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "model.safetensors.index.json"
+      },
+      {
+        "bytes": 19855,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "qwen3_coder_detector_sgl.py"
+      },
+      {
+        "bytes": 31680,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "qwen3coder_tool_parser_vllm.py"
+      },
+      {
+        "bytes": 7032399,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "tokenizer.json"
+      },
+      {
+        "bytes": 11681,
+        "kind": "control",
+        "lfs_sha256": null,
+        "path": "tokenizer_config.json"
+      },
+      {
+        "bytes": 2776833,
+        "kind": "other",
+        "lfs_sha256": null,
+        "path": "vocab.json"
+      }
+    ],
+    "known_weight_bytes": 159358031480,
+    "unknown_size_count": 0,
+    "weight_file_count": 40
+  },
+  "recorded_at": "2026-08-09T06:16:04.578707Z",
+  "schema": "hawking.ascension.source_admission_candidate.v1",
+  "seal_sha256": "2d1c9cdd0db5e5bdb7fd8b59cf2e0c674ba77077df5d0bf415640858f8aff4a5",
+  "source": {
+    "gated": false,
+    "license_card_value": null,
+    "license_file": null,
+    "license_file_sha256": null,
+    "official_namespace_expected": true,
+    "private": false,
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "revision_requested": "main"
+  },
+  "status": "CANDIDATE_METADATA_CAPTURED",
+  "target": {
+    "family": "QWEN3_NEXT",
+    "model_id": "Qwen3-Coder-Next-80B",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "role": "reviewer"
+  }
+}

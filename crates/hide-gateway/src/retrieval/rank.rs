@@ -129,8 +129,8 @@ impl RetrievalRanker for MinimalSetRanker {
             })
             .filter(|h| !matches!(h.injection_status, InjectionStatus::Blocked { .. }))
             .map(|h| {
-                let mut final_score =
-                    h.score * self.weights.relevance + h.authority_rank.value() * self.weights.authority;
+                let mut final_score = h.score * self.weights.relevance
+                    + h.authority_rank.value() * self.weights.authority;
                 if matches!(h.injection_status, InjectionStatus::Suspected { .. }) {
                     final_score *= 1.0 - self.weights.injection_penalty;
                 }

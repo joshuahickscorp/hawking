@@ -1,0 +1,171 @@
+{
+  "claim_boundary": "Prepared non-fixture production hash-scan interface only. It neither opens a source root nor earns a production map, hash coverage, capture, source-teacher execution attestation, runtime admission, logits, model/GPU/server/HCLI/lease, TPS, or tournament result.",
+  "execution_authorized": false,
+  "execution_boundary": {
+    "child_started": false,
+    "gpu_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed": false,
+    "source_model_loaded": false,
+    "source_payload_opened": false,
+    "source_root_opened_or_statted": false,
+    "source_teacher_or_logits_executed": false
+  },
+  "future_bounded_hash_scan": {
+    "future_flat_runtime_range_map": {
+      "all_records_must_match_metadata_authority": true,
+      "full_shard_or_model_residency_forbidden": true,
+      "maximum_live_raw_bf16_windows": 1,
+      "maximum_positioned_read_bytes": 1048576,
+      "maximum_window_bytes": 1048576,
+      "schema": "hawking.ascension.qwen30_source_bf16_range_map.v1",
+      "schema_must_not_be_fixture_renamed_or_synthetic": true,
+      "shard_fields": [
+        "shard_id",
+        "relative_path",
+        "bytes",
+        "sha256",
+        "safetensors_header_sha256",
+        "safetensors_prefix_sha256"
+      ],
+      "source_index": {
+        "format": "huggingface.safetensors.index.json",
+        "relative_path": "metadata-bound",
+        "sha256": "metadata-bound"
+      },
+      "source_model_id": "Qwen3-Coder-30B-A3B-Instruct",
+      "source_revision": "metadata-bound-40-lowercase-hex",
+      "source_shards": 16,
+      "source_tensor_count": 18867,
+      "source_tensors": 18867,
+      "tensor_fields": [
+        "tensor_name",
+        "shard_id",
+        "dtype=BF16",
+        "shape",
+        "data_offset",
+        "data_bytes",
+        "raw_bf16_sha256"
+      ]
+    },
+    "future_hash_coverage_attestation": {
+      "binds_full_shard_and_every_declared_bf16_range_hash": true,
+      "not_operator_execution_attestation": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_production_hash_coverage_attestation.v1",
+      "status": "EARNED_QWEN30_STREAMED_SOURCE_PRODUCTION_HASH_COVERAGE_ATTESTED_NOT_SOURCE_TEACHER"
+    },
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "receipt_last_capture": {
+      "must_bind_map_hash_coverage_authority_lease_and_replay": true,
+      "not_source_teacher": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_capture.v1",
+      "status": "CAPTURED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_NOT_SOURCE_TEACHER",
+      "written_only_after_reader_close_cache_zero_and_hash_coverage": true
+    },
+    "regular_non_symlink_root_and_files_only": true,
+    "replay_reservation": {
+      "create_new_before_any_source_root_open": true,
+      "one_child_maximum": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_replay_reservation.v1",
+      "status": "RESERVED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_ONE_SHOT_NOT_SPAWNED"
+    },
+    "source_root_open_allowed_only_after_all_authorities_validate": true,
+    "source_shards": 16,
+    "source_tensors": 18867
+  },
+  "future_command": [
+    "ascension_qwen30_streamed_source_range_admission_production_scan_interface",
+    "--mode",
+    "production-scan",
+    "--range-authority",
+    "ABSOLUTE_METADATA_RANGE_AUTHORITY_JSON",
+    "--semantics-attester",
+    "ABSOLUTE_NON_FIXTURE_SEMANTICS_ATTESTER_JSON",
+    "--runtime-admission-authority",
+    "ABSOLUTE_SEALED_RUNTIME_PRODUCER_AUTHORITY_JSON",
+    "--interface-authority",
+    "ABSOLUTE_SEALED_PRODUCTION_INTERFACE_JSON",
+    "--production-scan-authority",
+    "ABSOLUTE_SEALED_FRESH_PRODUCTION_SCAN_AUTHORITY_JSON",
+    "--bootstrap-lease",
+    "ABSOLUTE_SEALED_FRESH_BOOTSTRAP_LEASE_JSON",
+    "--source-root",
+    "ABSOLUTE_CANONICAL_QWEN30_SOURCE_ROOT",
+    "--capture-dir",
+    "NEW_ABSOLUTE_CAPTURE_DIRECTORY",
+    "--out",
+    "NEW_ABSOLUTE_PRE_EXECUTION_OR_TERMINAL_RECEIPT_JSON"
+  ],
+  "future_fresh_bootstrap_lease": {
+    "must_be_sealed_fresh_one_shot_and_bind_production_scan_authority": true,
+    "no_source_teacher_model_gpu_server_hcli_or_tps_authority": true,
+    "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_quiet_lease.v1",
+    "status": "GRANTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_HASH_SCAN_ONE_SHOT"
+  },
+  "future_production_scan_authority": {
+    "fixture_only": false,
+    "fresh_one_shot_non_inference_only": true,
+    "must_be_sealed_and_bind_this_interface_and_all_three_inputs": true,
+    "production_adapter_forbidden": false,
+    "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_authority.v1",
+    "status": "ADMITTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_ONE_SHOT",
+    "synthetic_fixture_only": false
+  },
+  "input_authorities": {
+    "independent_non_fixture_semantics_attester": {
+      "canonical_document_sha256": "0dab1e41c901569ad0b5b5680a35f09ea2499a25a3f906f9a648a9f162bb5732",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1b840daef95fa6b444ce0dc5e46142214f02963359c5fb2d53c863d8f236f96b",
+      "seal_sha256": null
+    },
+    "metadata_authority_content_sha256": "a17d7014150d8a54ccaa850fa69a76321109b9816860c0193ef055e7ab394a78",
+    "metadata_range_authority": {
+      "canonical_document_sha256": "d78be55bdd6aca732ae8ab9109b60a05bb98a9fa69f29ceb7f56f1ac15227eb3",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_ORACLE_METADATA_ONLY_RANGE_MAP_AUTHORITY_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589",
+      "seal_sha256": null
+    },
+    "runtime_admission_producer_authority": {
+      "canonical_document_sha256": "2231df0076f5e1930f38d9d294813842291400c30acc576004e3b386f10db89f",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RUNTIME_RANGE_ADMISSION_PRODUCER_PREFLIGHT_20260809T140324Z.json",
+      "raw_document_sha256": "fc928f4bd74c805442e4a9bc2d6df1d0d865e0c86d0541e56a8064659da7f716",
+      "seal_sha256": "2b513c388723a3479057c3d1c42e60f83a75c53f7ebadbd9cd79d57175541845"
+    }
+  },
+  "prepared": true,
+  "production_hash_scan_earned": false,
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_interface.v1",
+  "seal_sha256": "26fe5f46544cc0dd203f3c1663bcd34f12d752fc93c33cfae5188f701d6fbda2",
+  "separate_source_teacher_follow_on": {
+    "hash_scan_must_not_claim_source_semantic_forward_or_logits": true,
+    "must_use_a_distinct_source_teacher_lease": true,
+    "required_later_not_emitted_by_hash_scan": [
+      {
+        "schema": "hawking.ascension.qwen30_layer_streamed_source_operator_accumulation_execution_attestation.v1",
+        "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_ATTESTED"
+      },
+      {
+        "schema": "hawking.ascension.qwen30_layer_streamed_source_bf16_exact_semantics_attestation.v1",
+        "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_BF16_EXACT_SEMANTICS_ATTESTED"
+      },
+      {
+        "schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+        "status": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY"
+      }
+    ]
+  },
+  "status": "PREPARED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_INTERFACE_NOT_EXECUTED",
+  "strict_non_fixture_boundary": {
+    "before_source_root_access": true,
+    "reject_schema_or_status_containing": [
+      "fixture",
+      "synthetic"
+    ],
+    "reject_true_flags": [
+      "fixture_only",
+      "synthetic_fixture_only",
+      "production_adapter_forbidden"
+    ],
+    "renamed_or_resealed_fixture_evidence_is_not_accepted_without_full_non_fixture_provenance": true
+  }
+}

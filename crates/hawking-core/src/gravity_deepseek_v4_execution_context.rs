@@ -605,9 +605,10 @@ impl DeepSeekV4ExecutionContext {
         )?;
         let layer_source_anchors = verify_deepseek_v4_layer_source_anchors(spine.reader())?;
         let verified_tensor_cache = match config.verified_tensor_cache {
-            Some(cache_config) => {
-                Some(DeepSeekV4VerifiedTensorCache::new(spine.reader(), cache_config)?)
-            }
+            Some(cache_config) => Some(DeepSeekV4VerifiedTensorCache::new(
+                spine.reader(),
+                cache_config,
+            )?),
             None => None,
         };
         let decode_state = DeepSeekV4DecodeState::new(config.max_context_tokens, &spine)?;
@@ -714,7 +715,10 @@ impl DeepSeekV4ExecutionContext {
         let pair = if self.verified_tensor_cache.is_some() {
             let binding = self.spine.topology().layer(layer)?;
             let weight_name = binding.control_weight_name(projection);
-            self.stage_native_pair_cached(&weight_name, crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn)?
+            self.stage_native_pair_cached(
+                &weight_name,
+                crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn,
+            )?
         } else {
             self.spine.stage_control_pair(layer, projection)?
         };
@@ -732,7 +736,10 @@ impl DeepSeekV4ExecutionContext {
         let pair = if self.verified_tensor_cache.is_some() {
             let binding = self.spine.topology().layer(layer)?;
             let weight_name = binding.shared_expert_weight_name(projection);
-            self.stage_native_pair_cached(&weight_name, crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn)?
+            self.stage_native_pair_cached(
+                &weight_name,
+                crate::gravity_deepseek_v4::NativeScalePairKind::Fp8E4M3fn,
+            )?
         } else {
             self.spine.stage_shared_expert_pair(layer, projection)?
         };

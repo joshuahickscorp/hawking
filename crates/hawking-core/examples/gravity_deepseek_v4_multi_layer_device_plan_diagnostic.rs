@@ -36,8 +36,7 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 
 const RECEIPT_SCHEMA: &str = "hawking.gravity.deepseek_v4.multi_layer_device_plan_diagnostic.v1";
-const RECEIPT_STATUS: &str =
-    "PASS_MULTI_LAYER_DEVICE_PLAN_AND_STAGING_NOT_FULL_METAL_FORWARD";
+const RECEIPT_STATUS: &str = "PASS_MULTI_LAYER_DEVICE_PLAN_AND_STAGING_NOT_FULL_METAL_FORWARD";
 const ONE_EXPERT_BUNDLE_BYTES: u64 = 13_369_344;
 
 type ExampleResult<T> = Result<T, Box<dyn Error>>;
@@ -64,9 +63,7 @@ impl DeepSeekV4NativeStageSink for CountingStagingSink {
         match stage {
             DeepSeekV4NativeStage::Control { payload, .. } => {
                 self.control_bytes += match payload {
-                    DeepSeekV4ControlPayload::EmbeddingRow { bf16_bits, .. } => {
-                        bf16_bits.len() * 2
-                    }
+                    DeepSeekV4ControlPayload::EmbeddingRow { bf16_bits, .. } => bf16_bits.len() * 2,
                     DeepSeekV4ControlPayload::Tensor(tensor) => tensor.bytes.len(),
                     DeepSeekV4ControlPayload::NativePair(pair) => {
                         pair.weight.bytes.len() + pair.scale.bytes.len()
@@ -140,8 +137,7 @@ fn main() -> ExampleResult<()> {
         // Only stage layers the scheduler can accept topologically. The
         // scheduler itself is layer-general; MoE/attention device support is
         // recorded separately above.
-        let mut scheduler =
-            DeepSeekV4LayerPreparationScheduler::new(&context, layer, route_set)?;
+        let mut scheduler = DeepSeekV4LayerPreparationScheduler::new(&context, layer, route_set)?;
         let mut sink = CountingStagingSink::default();
         while scheduler
             .execute_next_with_sink(&mut context, &mut sink)?

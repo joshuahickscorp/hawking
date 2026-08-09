@@ -1,0 +1,1042 @@
+{
+  "bible_execution_sequence": {
+    "exists": true,
+    "expected_count": 48,
+    "issues": [],
+    "matches": true,
+    "observed_count": 48,
+    "path": "/Users/scammermike/Downloads/bible.md"
+  },
+  "claim_boundary": {
+    "manifest_is_not_receipt_certification": true,
+    "no_alternate_evicted_by_supervisor": true,
+    "no_model_body_downloaded_by_supervisor": true,
+    "no_model_runtime_started_by_supervisor": true,
+    "no_production_sandbox_activated_by_supervisor": true,
+    "no_winner_auto_selected": true,
+    "token_material_is_never_recorded": true
+  },
+  "coverage": {
+    "all_bible_steps_wired": true,
+    "bible_step_rows": 48,
+    "receipt_complete_rows": 1,
+    "receipt_completion_is_not_wiring_coverage": true,
+    "required_bible_step_rows": 48
+  },
+  "dual_manager_workflow": {
+    "configuration_only": true,
+    "handoff": {
+      "post_tournament": [
+        "ASCENSION_MANAGER_WINNER protected certification",
+        "ASCENSION_ALTERNATE_OFFLOAD remote hash + restore + local eviction proof",
+        "SANDBOX_ACTIVATION only under sealed winner"
+      ],
+      "qwen30_candidate_certified": false,
+      "qwen80_candidate_certified": false,
+      "qwen80_may_begin_after_qwen30_agent_certified": false,
+      "tournament_phase": "WAITING_FOR_BOTH_QUALIFIED_MANAGERS",
+      "tournament_requires": [
+        "MANAGER_30B_AGENT",
+        "MANAGER_80B_AGENT"
+      ]
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_DUAL_MANAGER_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "family_campaign_workflow": {
+    "configuration_only": true,
+    "matrix_handoff": {
+      "all_required_family_states_certified": false,
+      "global_audit_status": "PENDING_PREREQUISITES",
+      "required_global_artifacts": [
+        "ASCENSION_V3_FAMILY_MATRIX",
+        "ASCENSION_V3_MODEL_MATRIX",
+        "ASCENSION_V3_DENSITY_MATRIX",
+        "ASCENSION_V3_TG_MATRIX",
+        "ASCENSION_V3_RESOURCE_ATLAS",
+        "ASCENSION_V3_POWER_PROFILES",
+        "ASCENSION_V3_STORAGE_LEASES",
+        "ASCENSION_V3_GARBAGE_AUDIT",
+        "ASCENSION_V3_RECOVERY_TEST"
+      ]
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_FAMILY_CAMPAIGN_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "foundation_contracts": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_FOUNDATION_CONTRACTS.json",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "global_release_workflow": {
+    "configuration_only": true,
+    "derived_launch_gate": {
+      "derived_only_from_controller_state": true,
+      "launch_exception_permitted": false,
+      "missing_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "required_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "status": "BLOCKED"
+    },
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_GLOBAL_RELEASE_WORKFLOW.json",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "kernel_compiler_contract": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KERNEL_COMPILER_CONTRACT.json",
+    "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "knowledge_plane_contract": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KNOWLEDGE_PLANE_CONTRACT.json",
+    "status": "CONTROLLER_CONFIGURATION_ONLY"
+  },
+  "lifecycle": {
+    "first_unmet_state": "V3_SEED_ARCHIVE",
+    "launch_gate": {
+      "derived_only_from_controller_state": true,
+      "launch_exception_permitted": false,
+      "missing_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "required_states": [
+        "MANAGER_TOURNAMENT",
+        "SANDBOX_ACTIVATION",
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT",
+        "EXTERNAL_REVIEW",
+        "APPLE_RELEASE"
+      ],
+      "status": "BLOCKED"
+    },
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle",
+    "state_counts": {
+      "blocked": 1,
+      "certified": 1,
+      "pending_prerequisites": 26
+    },
+    "tournament": {
+      "armed_at": "2026-08-09T06:16:03.096010Z",
+      "blockers": [
+        "requires certified MANAGER_30B_AGENT",
+        "requires certified MANAGER_80B_AGENT"
+      ],
+      "candidate_order": [
+        "Qwen30-Gravity-Manager-Artifact",
+        "Qwen80-Gravity-Manager-Artifact"
+      ],
+      "claim_boundary": {
+        "does_not_activate_sandbox": true,
+        "does_not_run_candidate_models": true,
+        "does_not_select_a_winner": true
+      },
+      "dimensions": [
+        "hard_gate_compliance",
+        "manager_capability",
+        "solo_manager_capability",
+        "manager_as_orchestrator_capability",
+        "verified_tasks_per_hour",
+        "architecture_kernel_research",
+        "gravity_research_quality",
+        "long_horizon_reliability",
+        "tool_recovery",
+        "search_retrieval",
+        "memory_context",
+        "hcli_latency",
+        "multi_agent_throughput",
+        "resident_memory",
+        "active_bytes_per_token",
+        "energy_per_verified_task",
+        "thermal_stability",
+        "error_rate",
+        "receipt_quality",
+        "adversarial_review_quality",
+        "failure_recovery",
+        "benchmark_honesty",
+        "security_effect_discipline",
+        "release_integration"
+      ],
+      "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+      "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+      "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    }
+  },
+  "manager_tournament_workflow": {
+    "configuration_only": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_WORKFLOW.json",
+    "runtime_phase": "ARMED_WAITING_FOR_QUALIFICATIONS",
+    "status": "CONTROLLER_WORKFLOW_ONLY"
+  },
+  "recorded_at": "2026-08-09T17:44:43.566439Z",
+  "safe_automatic_lanes": [
+    {
+      "action": "re-evaluate sealed controller intake and derive continuation outputs",
+      "lane": "lifecycle-reconciliation",
+      "status": "RUNNING"
+    },
+    {
+      "action": "authenticated metadata refresh only; never model-body transfer",
+      "lane": "source-metadata-admission",
+      "status": "ALL_METADATA_CAPTURED"
+    },
+    {
+      "action": "preserve fixed candidates/dimensions; never auto-score or select a winner",
+      "lane": "manager-tournament-controller",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    },
+    {
+      "action": "preserve every required family plugin and Gravity representation class; never call declaration a compiled kernel",
+      "lane": "exact-model-kernel-registry",
+      "status": "CONTROLLER_CONFIGURATION_ONLY"
+    },
+    {
+      "action": "preserve 30B then 80B qualification order and protected tournament handoff",
+      "lane": "dual-manager-handoff",
+      "status": "WAITING_FOR_BOTH_QUALIFIED_MANAGERS"
+    },
+    {
+      "action": "preserve all eight families and generic reference as distinct launch obligations",
+      "lane": "family-matrix-workflow",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "action": "preserve frozen dimensions, winner authority, alternate offload, and sandbox-start fence",
+      "lane": "protected-tournament-post-winner-workflow",
+      "status": "ARMED_WAITING_FOR_QUALIFICATIONS"
+    },
+    {
+      "action": "preserve all audit, external review, release, and post-release requirements without exceptions",
+      "lane": "global-review-and-apple-release-workflow",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "action": "preserve full lane, resource, and Agent OS contracts for measured evidence intake",
+      "lane": "build-fabric-resource-agent-os-contracts",
+      "status": "CONTROLLER_CONFIGURATION_ONLY"
+    },
+    {
+      "action": "preserve Kernel, Representation, Scheduler, negative-science, transfer, and index schemas",
+      "lane": "knowledge-plane-contract",
+      "status": "CONTROLLER_CONFIGURATION_ONLY"
+    }
+  ],
+  "schema": "hawking.ascension.v3_execution_manifest.v1",
+  "seal_sha256": "e2d676f2e683af549fd2050f67ae49303bc705cfc730bbc075bcb3954f7611b7",
+  "source_metadata": {
+    "candidate_only": true,
+    "not_lifecycle_certification": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/SOURCE_ADMISSION_STATUS.json",
+    "present": true,
+    "recorded_at": "2026-08-09T06:16:04.580869Z",
+    "records": [
+      {
+        "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",
+        "no_model_body_downloaded": true,
+        "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+        "status": "CANDIDATE_METADATA_CAPTURED"
+      },
+      {
+        "artifact_id": "QWEN80_SOURCE_METADATA_CANDIDATE",
+        "no_model_body_downloaded": true,
+        "repository": "Qwen/Qwen3-Coder-Next",
+        "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+        "status": "CANDIDATE_METADATA_CAPTURED"
+      }
+    ],
+    "status": "ALL_METADATA_CAPTURED"
+  },
+  "steps": [
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Read V3 and adopt it as the sole canonical Ascension programme.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": true,
+      "id": 0,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "EVIDENCE_COMPLETE",
+      "state_statuses": {
+        "V3_ADOPT": "CERTIFIED"
+      },
+      "states": [
+        "V3_ADOPT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": true,
+      "description": "Audit live state, processes, repo, storage, cloud, receipts and active lanes.",
+      "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+      "evidence_complete": false,
+      "id": 1,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "SAFE_CONTROLLER_MAINTENANCE_ONLY",
+      "state_statuses": {
+        "V3_SEED_ARCHIVE": "BLOCKED"
+      },
+      "states": [
+        "V3_SEED_ARCHIVE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": true,
+      "description": "Build and verify the V3 Seed Archive.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 2,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "READY_FOR_PROTECTED_EVIDENCE",
+      "state_statuses": {
+        "V3_SEED_ARCHIVE": "BLOCKED"
+      },
+      "states": [
+        "V3_SEED_ARCHIVE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": true,
+      "description": "Offload protected custom bodies and verify restoration.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 3,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "READY_FOR_PROTECTED_EVIDENCE",
+      "state_statuses": {
+        "V3_SEED_ARCHIVE": "BLOCKED"
+      },
+      "states": [
+        "V3_SEED_ARCHIVE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Freeze authority, benchmarks, hidden memberships, rollback and deletion policy.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 4,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_AUTHORITY_FREEZE": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_AUTHORITY_FREEZE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Install maximum-Grok lane scheduler and isolated worktree contracts.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 5,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Install energy/resource telemetry and critical-path scheduling.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 6,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_GROK_BUILD_FABRIC": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_GROK_BUILD_FABRIC"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Integrate HCLI Agent OS V3 into the live product path.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 7,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_AGENT_OS": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_AGENT_OS"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Build the Ascension Knowledge Plane and import all prior evidence.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 8,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_KNOWLEDGE_PLANE": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_KNOWLEDGE_PLANE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Build/upgrade Evolutionary Gravity V3.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 9,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_GRAVITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_GRAVITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Build/upgrade architecture fingerprinting, family plugins and exact-model Metal compiler.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 10,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "V3_METAL_COMPILER": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_METAL_COMPILER"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Freeze Qwen3-Coder-30B official source and Manager Capability Anchor.",
+      "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+      "evidence_complete": false,
+      "id": 11,
+      "notes": "Source metadata may refresh through the credential broker, but a candidate metadata record is not the required controller-certified source/anchor evidence.",
+      "operating_status": "SAFE_CONTROLLER_MAINTENANCE_ONLY",
+      "state_statuses": {
+        "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_30B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Evolve Qwen30 Gravity until complete_bpw <=1.5.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 12,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_30B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Evolve Qwen30 runtime until TG3.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 13,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_30B_TG"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Pass Qwen30 HCLI/Agent OS/residency/manager gates.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 14,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_30B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_30B_AGENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Seal QWEN30_MANAGER_CANDIDATE.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 15,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_30B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_30B_AGENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Freeze Qwen3-Coder-Next 80B official source and Manager Capability Anchor.",
+      "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+      "evidence_complete": false,
+      "id": 16,
+      "notes": "Source metadata may refresh through the credential broker, but a candidate metadata record is not the required controller-certified source/anchor evidence.",
+      "operating_status": "SAFE_CONTROLLER_MAINTENANCE_ONLY",
+      "state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Port every compatible Qwen30 mechanism.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 17,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Build missing hybrid/DeltaNet/shared-expert semantics.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 18,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Evolve Qwen80 Gravity until complete_bpw <=1.5.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 19,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_DENSITY"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Evolve Qwen80 runtime until TG3.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 20,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_TG"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Pass Qwen80 HCLI/Agent OS/residency/manager gates.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 21,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_AGENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Seal QWEN80_MANAGER_CANDIDATE.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 22,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_80B_AGENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_80B_AGENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Run the protected Manager Tournament.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 23,
+      "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_TOURNAMENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Seal ASCENSION_MANAGER.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 24,
+      "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_TOURNAMENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Offload and evict the alternate manager body.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 25,
+      "notes": "The tournament may be armed persistently; it cannot execute, select a winner, or evict an alternate until both candidate receipts qualify.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "MANAGER_TOURNAMENT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "MANAGER_TOURNAMENT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Activate the Ascension sandbox.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 26,
+      "notes": "Sandbox activation requires the sealed winner and alternate-offload evidence.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "SANDBOX_ACTIVATION": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "SANDBOX_ACTIVATION"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process Qwen family launch matrix.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 27,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_QWEN": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_QWEN"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process Llama family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 28,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_LLAMA": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_LLAMA"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process Mistral/Mixtral family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 29,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_MISTRAL": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_MISTRAL"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process DeepSeek family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 30,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_DEEPSEEK"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process GLM family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 31,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_GLM": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_GLM"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process Kimi family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 32,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_KIMI": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_KIMI"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process Gemma family launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 33,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_GEMMA": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_GEMMA"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Process state-space/linear-attention hybrid launch representative.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 34,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_HYBRID": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_HYBRID"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Verify generic HF reference intake.",
+      "dispatch_class": "SAFE_CONTROLLER_AUDIT_OR_METADATA",
+      "evidence_complete": false,
+      "id": 35,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "SAFE_CONTROLLER_MAINTENANCE_ONLY",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "For every launch model, enforce <=1.5 complete BPW and TG3.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 36,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+        "FAMILY_GEMMA": "PENDING_PREREQUISITES",
+        "FAMILY_GLM": "PENDING_PREREQUISITES",
+        "FAMILY_HYBRID": "PENDING_PREREQUISITES",
+        "FAMILY_KIMI": "PENDING_PREREQUISITES",
+        "FAMILY_LLAMA": "PENDING_PREREQUISITES",
+        "FAMILY_MISTRAL": "PENDING_PREREQUISITES",
+        "FAMILY_QWEN": "PENDING_PREREQUISITES",
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_QWEN",
+        "FAMILY_LLAMA",
+        "FAMILY_MISTRAL",
+        "FAMILY_DEEPSEEK",
+        "FAMILY_GLM",
+        "FAMILY_KIMI",
+        "FAMILY_GEMMA",
+        "FAMILY_HYBRID",
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Integrate every accepted clue into the cross-family Knowledge Plane.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 37,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES",
+        "V3_KNOWLEDGE_PLANE": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_KNOWLEDGE_PLANE",
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Run complete HCLI/Agent OS product gauntlet.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 38,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES",
+        "V3_AGENT_OS": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "V3_AGENT_OS",
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Run storage/cleanup/recovery/foreground-user gauntlet.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 39,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Run Apple packaging, install, update, restore and diagnostics.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 40,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Generate the V3 Global Launch Audit.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 41,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "GLOBAL_LAUNCH_AUDIT": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "GLOBAL_LAUNCH_AUDIT"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Submit the sealed review packet to Claude/Codex/human.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 42,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "EXTERNAL_REVIEW": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "EXTERNAL_REVIEW"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Repair every rejected launch condition.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 43,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "EXTERNAL_REVIEW": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "EXTERNAL_REVIEW"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Certify HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 44,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "APPLE_RELEASE": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "APPLE_RELEASE"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Only after launch certification, continue system-wide TG2/TG1 frontier research.",
+      "dispatch_class": "CERTIFIED_EVIDENCE_GATED",
+      "evidence_complete": false,
+      "id": 45,
+      "notes": "Receipt-bound; a running controller, plan, or elapsed time cannot complete it.",
+      "operating_status": "WAITING_FOR_UPSTREAM_CERTIFICATION",
+      "state_statuses": {
+        "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "TG2_TG1_FRONTIER"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Restore Proto-Frankenstein later through the mature DeepSeek path.",
+      "dispatch_class": "POST_RELEASE_SEPARATE_PROGRAMME",
+      "evidence_complete": false,
+      "id": 46,
+      "notes": "Explicitly outside the launch critical path and never auto-dispatched.",
+      "operating_status": "OUTSIDE_LAUNCH_CRITICAL_PATH",
+      "state_statuses": {
+        "FAMILY_DEEPSEEK": "PENDING_PREREQUISITES",
+        "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "FAMILY_DEEPSEEK",
+        "TG2_TG1_FRONTIER"
+      ]
+    },
+    {
+      "admissible_for_evidence_intake": false,
+      "description": "Begin CUDA only as a separate funded programme.",
+      "dispatch_class": "POST_RELEASE_SEPARATE_PROGRAMME",
+      "evidence_complete": false,
+      "id": 47,
+      "notes": "Explicitly outside the launch critical path and never auto-dispatched.",
+      "operating_status": "OUTSIDE_LAUNCH_CRITICAL_PATH",
+      "state_statuses": {
+        "TG2_TG1_FRONTIER": "PENDING_PREREQUISITES"
+      },
+      "states": [
+        "TG2_TG1_FRONTIER"
+      ]
+    }
+  ]
+}

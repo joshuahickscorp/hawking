@@ -228,7 +228,11 @@ impl LatentPacket {
     }
 
     /// Check expiry + payload hash. Still does **not** bind into a runtime.
-    pub fn validate_for_acceptance(&self, now_unix_ms: u64, payload_bytes: Option<&[u8]>) -> Result<()> {
+    pub fn validate_for_acceptance(
+        &self,
+        now_unix_ms: u64,
+        payload_bytes: Option<&[u8]>,
+    ) -> Result<()> {
         self.validate_sealed()?;
         self.seal.check_not_expired(now_unix_ms)?;
         if let Some(bytes) = payload_bytes {
@@ -266,9 +270,7 @@ mod tests {
         assert_eq!(pkt.seal_status(), SealStatus::Sealed);
         pkt.validate_sealed().unwrap();
         // Acceptance still refuses live transfer.
-        let err = pkt
-            .validate_for_acceptance(1_000, Some(bytes))
-            .unwrap_err();
+        let err = pkt.validate_for_acceptance(1_000, Some(bytes)).unwrap_err();
         assert!(matches!(err, CommsError::Deferred(_)));
 
         let env = BusEnvelope::from_latent(pkt).unwrap();

@@ -1,0 +1,88 @@
+{
+  "admission_order": [
+    "prepared dual-attestation bridge",
+    "fresh distinct bootstrap lease",
+    "one bounded non-inference hash/range scan",
+    "bootstrap receipt last",
+    "two attestation seals and earned runtime admission",
+    "unchanged source-teacher admission-before-open validation"
+  ],
+  "claim_boundary": "Prepared CPU/build reservation only; it does not fabricate flat-map/hash/attestation/runtime-admission evidence or execute any source, model, GPU, server, lease, or tournament action.",
+  "execution_authorized": false,
+  "execution_boundary": {
+    "flat_runtime_range_map_emitted": false,
+    "lease_issued_or_consumed": false,
+    "model_gpu_server_hcli_or_tps_action": false,
+    "runtime_admission_earned": false,
+    "source_root_opened_or_statted": false,
+    "source_teacher_started": false,
+    "source_tensor_payload_opened": false,
+    "two_attestations_emitted": false
+  },
+  "future_bootstrap_lease": {
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "model_server_gpu_hcli_or_tps_allowed": false,
+    "non_inference_only": true,
+    "one_shot": true,
+    "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_quiet_lease.v1",
+    "separate_from_source_teacher_lease": true,
+    "status": "GRANTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_HASH_SCAN_ONE_SHOT"
+  },
+  "future_child_command": [
+    "ascension_qwen30_streamed_source_range_admission_bootstrap",
+    "--mode",
+    "bootstrap-scan",
+    "--range-authority",
+    "ABSOLUTE_METADATA_RANGE_AUTHORITY_JSON",
+    "--semantics",
+    "ABSOLUTE_METADATA_SEMANTICS_JSON",
+    "--bootstrap-lease",
+    "ABSOLUTE_FRESH_ONE_SHOT_BOOTSTRAP_LEASE_JSON",
+    "--source-root",
+    "ABSOLUTE_CANONICAL_QWEN30_SOURCE_ROOT",
+    "--capture-dir",
+    "NEW_ABSOLUTE_BOOTSTRAP_CAPTURE_DIR",
+    "--out",
+    "NEW_ABSOLUTE_BOOTSTRAP_CAPTURE_RECEIPT_JSON"
+  ],
+  "future_outputs_required_before_source_teacher": {
+    "bootstrap_capture": {
+      "non_inference_only": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_capture.v1",
+      "source_teacher_or_logits_allowed": false,
+      "status": "CAPTURED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_HASH_SCAN_NOT_SOURCE_TEACHER"
+    },
+    "flat_runtime_range_map": {
+      "per_shard_raw_sha256_required": true,
+      "per_tensor_raw_bf16_sha256_required": true,
+      "schema": "hawking.ascension.qwen30_source_bf16_range_map.v1",
+      "shards": 16,
+      "tensors": 18867
+    },
+    "operator_accumulation_attestation": {
+      "schema": "hawking.ascension.qwen30_layer_streamed_source_operator_accumulation_execution_attestation.v1",
+      "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_ATTESTED"
+    },
+    "range_reader_attestation": {
+      "schema": "hawking.ascension.qwen30_layer_streamed_source_bf16_exact_semantics_attestation.v1",
+      "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_BF16_EXACT_SEMANTICS_ATTESTED"
+    },
+    "runtime_admission": {
+      "issued_by_distinct_controller_after_capture": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+      "status": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY"
+    }
+  },
+  "metadata_bindings": {
+    "maximum_declared_bf16_window_bytes": 1048576,
+    "range_authority_content_sha256": "a17d7014150d8a54ccaa850fa69a76321109b9816860c0193ef055e7ab394a78",
+    "range_authority_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589",
+    "source_index_sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c",
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+  },
+  "prepared": true,
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_preflight.v1",
+  "seal_sha256": "c29eb276920a9afd38c15e3eead031d5885e3378faaa7a7f8c6aebd78cce66ea",
+  "status": "PREPARED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_NOT_EXECUTED"
+}

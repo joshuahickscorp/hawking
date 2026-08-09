@@ -36,12 +36,7 @@ impl StubDocumentService {
     }
 
     /// Register a multi-page text document.
-    pub fn insert_text_doc(
-        &self,
-        id: &str,
-        title: &str,
-        pages: Vec<String>,
-    ) -> DocumentHandle {
+    pub fn insert_text_doc(&self, id: &str, title: &str, pages: Vec<String>) -> DocumentHandle {
         let mut hasher = blake3::Hasher::new();
         for p in &pages {
             hasher.update(p.as_bytes());
@@ -82,14 +77,10 @@ impl StubDocumentService {
                 2,
                 (
                     vec!["batch".into(), "tok_s".into()],
-                    vec![
-                        vec!["1".into(), "42".into()],
-                        vec!["4".into(), "38".into()],
-                    ],
+                    vec![vec!["1".into(), "42".into()], vec!["4".into(), "38".into()]],
                 ),
             );
-            doc.charts
-                .insert(1, "tokens/s vs batch (synthetic)".into());
+            doc.charts.insert(1, "tokens/s vs batch (synthetic)".into());
         }
         s
     }
@@ -131,18 +122,17 @@ impl DocumentService for StubDocumentService {
         })
     }
 
-    fn retrieve_pages(
-        &self,
-        handle: &DocumentHandle,
-        pages: &[u32],
-    ) -> Result<Vec<PageContent>> {
+    fn retrieve_pages(&self, handle: &DocumentHandle, pages: &[u32]) -> Result<Vec<PageContent>> {
         let doc = self.get(handle)?;
         let mut out = Vec::with_capacity(pages.len());
         for &page in pages {
-            let text = doc.pages.get(page as usize).ok_or(PerceptionError::PageOutOfRange {
-                page,
-                pages: doc.pages.len() as u32,
-            })?;
+            let text = doc
+                .pages
+                .get(page as usize)
+                .ok_or(PerceptionError::PageOutOfRange {
+                    page,
+                    pages: doc.pages.len() as u32,
+                })?;
             out.push(PageContent {
                 page,
                 text: text.clone(),
@@ -177,7 +167,9 @@ impl DocumentService for StubDocumentService {
             }
 
             if doc.tables.contains_key(&page.page)
-                && kinds.map(|k| k.contains(&RegionKind::Table)).unwrap_or(true)
+                && kinds
+                    .map(|k| k.contains(&RegionKind::Table))
+                    .unwrap_or(true)
             {
                 let box_ = CoordBox::new(page.page, 0.1, 0.4, 0.9, 0.75);
                 regions.push(Region {
@@ -191,7 +183,9 @@ impl DocumentService for StubDocumentService {
             }
 
             if doc.charts.contains_key(&page.page)
-                && kinds.map(|k| k.contains(&RegionKind::Chart)).unwrap_or(true)
+                && kinds
+                    .map(|k| k.contains(&RegionKind::Chart))
+                    .unwrap_or(true)
             {
                 let box_ = CoordBox::new(page.page, 0.15, 0.2, 0.85, 0.55);
                 regions.push(Region {
@@ -210,11 +204,7 @@ impl DocumentService for StubDocumentService {
     fn parse_region(&self, handle: &DocumentHandle, region: &Region) -> Result<ParsedRegion> {
         let doc = self.get(handle)?;
         let page = region.box_.page;
-        let text = doc
-            .pages
-            .get(page as usize)
-            .cloned()
-            .unwrap_or_default();
+        let text = doc.pages.get(page as usize).cloned().unwrap_or_default();
         let content_hash = Some(format!("blake3:{}", blake3::hash(text.as_bytes()).to_hex()));
         Ok(ParsedRegion {
             region: region.clone(),
@@ -227,9 +217,10 @@ impl DocumentService for StubDocumentService {
     fn parse_table(&self, handle: &DocumentHandle, region: &Region) -> Result<TableParse> {
         let doc = self.get(handle)?;
         let page = region.box_.page;
-        let (headers, rows) = doc.tables.get(&page).cloned().ok_or_else(|| {
-            PerceptionError::InvalidRequest(format!("no table on page {page}"))
-        })?;
+        let (headers, rows) =
+            doc.tables.get(&page).cloned().ok_or_else(|| {
+                PerceptionError::InvalidRequest(format!("no table on page {page}"))
+            })?;
         let body = format!("{headers:?}\n{rows:?}");
         Ok(TableParse {
             region_id: region.id.clone(),
@@ -243,9 +234,10 @@ impl DocumentService for StubDocumentService {
     fn parse_chart(&self, handle: &DocumentHandle, region: &Region) -> Result<ChartParse> {
         let doc = self.get(handle)?;
         let page = region.box_.page;
-        let title = doc.charts.get(&page).cloned().ok_or_else(|| {
-            PerceptionError::InvalidRequest(format!("no chart on page {page}"))
-        })?;
+        let title =
+            doc.charts.get(&page).cloned().ok_or_else(|| {
+                PerceptionError::InvalidRequest(format!("no chart on page {page}"))
+            })?;
         let mut series = BTreeMap::new();
         series.insert(
             "tok_s".into(),

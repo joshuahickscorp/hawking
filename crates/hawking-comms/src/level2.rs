@@ -84,9 +84,8 @@ impl StructuredState {
                 // kind field should match payload tag
             }
         }
-        let body = serde_json::to_vec(&self.payload).map_err(|e| {
-            CommsError::Invalid(format!("structured payload serialize: {e}"))
-        })?;
+        let body = serde_json::to_vec(&self.payload)
+            .map_err(|e| CommsError::Invalid(format!("structured payload serialize: {e}")))?;
         let expected = format!("blake3:{}", blake3::hash(&body).to_hex());
         if self.content_hash != expected {
             return Err(CommsError::HashMismatch {
@@ -188,8 +187,7 @@ impl EvidenceGraph {
         if self.nodes.is_empty() {
             return Err(CommsError::Invalid("evidence graph has no nodes".into()));
         }
-        let ids: std::collections::BTreeSet<_> =
-            self.nodes.iter().map(|n| n.id.as_str()).collect();
+        let ids: std::collections::BTreeSet<_> = self.nodes.iter().map(|n| n.id.as_str()).collect();
         for e in &self.edges {
             if !ids.contains(e.from.as_str()) || !ids.contains(e.to.as_str()) {
                 return Err(CommsError::Invalid(format!(
@@ -299,7 +297,8 @@ mod tests {
                 relation: EvidenceRelation::Supports,
             }],
         };
-        let state = StructuredState::from_payload("ses_1", "agent_a", StructuredPayload::EvidenceGraph(g));
+        let state =
+            StructuredState::from_payload("ses_1", "agent_a", StructuredPayload::EvidenceGraph(g));
         state.validate().unwrap();
     }
 }

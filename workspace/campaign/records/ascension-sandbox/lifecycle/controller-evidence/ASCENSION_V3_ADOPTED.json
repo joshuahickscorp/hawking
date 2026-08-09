@@ -1,0 +1,19 @@
+{
+  "adopted_as_sole_canonical_programme": true,
+  "artifact_id": "ASCENSION_V3_ADOPTED",
+  "authority_level": "human",
+  "bible_sha256": "f3617881ecae08e52dc9ea3727b47d6a9bcfaaab7b73b5b84b9f3554c37026a3",
+  "certified_by": "human_operator",
+  "claim_boundary": {
+    "attests_only_human_constitutional_adoption": true,
+    "does_not_certify_any_model_measurement": true,
+    "does_not_select_a_manager_or_activate_sandbox": true,
+    "does_not_waive_any_v3_gate": true
+  },
+  "evidence_basis": "explicit_human_instruction",
+  "instruction_sha256": "08d43944f3250f162def9196b440284d77e4efb711acb4db4123eec92595b1c4",
+  "recorded_at": "2026-08-08T05:06:47.488436Z",
+  "schema": "hawking.ascension.human_adoption_attestation.v1",
+  "seal_sha256": "22bafc309aeafc507dc57716767cc89048d4f43db86ce010d9fb978d020647d8",
+  "status": "CONTROLLER_CERTIFIED"
+}

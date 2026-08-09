@@ -164,10 +164,7 @@ fn lexical_score(query: &str, text: &str) -> f32 {
         return 0.0;
     }
     let hay = text.to_lowercase();
-    let hits = q
-        .iter()
-        .filter(|t| hay.contains(&t.to_lowercase()))
-        .count() as f32;
+    let hits = q.iter().filter(|t| hay.contains(&t.to_lowercase())).count() as f32;
     hits / q.len() as f32
 }
 
@@ -222,12 +219,11 @@ impl DomainIndex for InMemoryDomainIndex {
                     if score <= 0.0 {
                         continue;
                     }
-                    let channel = if r.symbol.as_ref().is_some_and(|s| {
-                        query
-                            .text
-                            .to_lowercase()
-                            .contains(&s.to_lowercase())
-                    }) {
+                    let channel = if r
+                        .symbol
+                        .as_ref()
+                        .is_some_and(|s| query.text.to_lowercase().contains(&s.to_lowercase()))
+                    {
                         RetrievalChannel::Symbol
                     } else {
                         RetrievalChannel::Lexical

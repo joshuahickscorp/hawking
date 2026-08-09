@@ -109,9 +109,8 @@ impl BusEnvelope {
 
     pub fn from_latent(packet: LatentPacket) -> Result<Self> {
         packet.validate_sealed()?;
-        let body = serde_json::to_vec(&packet).map_err(|e| {
-            CommsError::Invalid(format!("serialize latent packet: {e}"))
-        })?;
+        let body = serde_json::to_vec(&packet)
+            .map_err(|e| CommsError::Invalid(format!("serialize latent packet: {e}")))?;
         let hash = format!("blake3:{}", blake3::hash(&body).to_hex());
         Ok(Self::Latent {
             id: PacketId::new(CommLevel::Latent, &hash),
@@ -123,7 +122,9 @@ impl BusEnvelope {
     /// Validate envelope invariants. Latent always requires a complete seal.
     pub fn validate(&self) -> Result<()> {
         match self {
-            Self::Text { message, schema, .. } => {
+            Self::Text {
+                message, schema, ..
+            } => {
                 if schema != crate::TEXT_MESSAGE_SCHEMA {
                     return Err(CommsError::Invalid(format!(
                         "unexpected text schema {schema}"

@@ -14,10 +14,7 @@ pub enum CommsError {
     LatentGateClosed(String),
 
     #[error("cross-model latent transfer refused: sender={sender} receiver={receiver}")]
-    CrossModelLatent {
-        sender: String,
-        receiver: String,
-    },
+    CrossModelLatent { sender: String, receiver: String },
 
     #[error("latent packet expired at {expiry_unix_ms} (now {now_unix_ms})")]
     Expired {

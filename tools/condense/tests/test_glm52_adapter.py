@@ -169,6 +169,27 @@ def test_bounded_reader_decodes_bf16_and_f32_and_counts_exact_bytes(fixture: S.S
         fixture.full_inventory.tensors[f32_name].byte_count,
     )
 
+def test_bounded_reader_chunked_decode_is_exact_and_bounds_each_pread(fixture: S.SyntheticFixture):
+    bf16_name = "model.layers.3.mlp.experts.9.gate_proj.weight"
+    f32_name = "model.layers.3.mlp.gate.e_score_correction_bias"
+    baseline = fixture.full_reader(max_tensor_bytes=8_192)
+    expected_bf16 = baseline.tensor(bf16_name)
+    expected_f32 = baseline.tensor(f32_name)
+
+    chunked = fixture.full_reader(max_tensor_bytes=8_192)
+    chunked._DECODE_CHUNK_BYTES = 64
+    actual_bf16 = chunked.tensor(bf16_name)
+    actual_f32 = chunked.tensor(f32_name)
+
+    assert np.array_equal(actual_bf16, expected_bf16)
+    assert np.array_equal(actual_f32, expected_f32)
+    assert chunked.read_calls == 2
+    assert chunked.payload_bytes_read == (
+        fixture.full_inventory.tensors[bf16_name].byte_count
+        + fixture.full_inventory.tensors[f32_name].byte_count
+    )
+    assert chunked.peak_payload_request_bytes == 64
+
 def test_bounded_reader_refuses_over_limit_and_unknown(fixture: S.SyntheticFixture):
     reader = fixture.full_reader(max_tensor_bytes=128)
     with pytest.raises(A.Glm52AdapterError, match="bounded read refused"):

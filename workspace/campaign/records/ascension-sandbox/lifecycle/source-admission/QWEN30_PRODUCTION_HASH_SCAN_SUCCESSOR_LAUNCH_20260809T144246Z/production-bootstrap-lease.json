@@ -1,0 +1,67 @@
+{
+  "baseline_outer_preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_OUTER_PREFLIGHT_20260809T144045Z.json",
+    "raw_document_sha256": "d5a3bc55152265ae73336351279de4bcab082320c292efd58963e59e6b55c7d2",
+    "seal_sha256": "db4be3d096aa369ec4307bb84a38d8724455377b05d2834a698bd7ecdfe7ea7b"
+  },
+  "bootstrap_resource_ancestry": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_RESOURCE_ADMISSION_20260809T130203Z.json",
+    "raw_document_sha256": "bdb1b3d783812f9239090479642a7e424669d66bb36f71cf5ff12a0b45874be6",
+    "seal_sha256": "3c8ca165a5661eb13f2f3f8c4472cdff7a19311ec6a40a4d508d9c2383b1e63e"
+  },
+  "claim_boundary": "Fresh one-shot non-inference production hash-scan lease only. It authorizes neither source-teacher semantics/logits nor native/model/GPU/server/HCLI/TPS/TG/tournament work, and is usable only by the receipt-last outer reaper.",
+  "existing_output_reuse_forbidden": true,
+  "fixture_only": false,
+  "fresh_for_this_exact_launch": true,
+  "fresh_production_resource_observation": {
+    "child_started": false,
+    "exclusive_clean_window": true,
+    "gpu_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed": false,
+    "minimum_reclaimable_bytes_required": 2147483648,
+    "no_active_q30_or_q80_capture_child": true,
+    "observed_after_production_binary_binding": true,
+    "reclaimable_bytes": 54598795264,
+    "source_model_loaded": false,
+    "source_payload_opened": false,
+    "swap_used_bytes": 0,
+    "swapouts_pages_delta": 0,
+    "zero_swap": true,
+    "zero_swapouts": true
+  },
+  "lease_consumed_by_this_preflight": false,
+  "lease_id": "b1dea44dd7183f185018e917b193edf9d640213d99660152a058b517494afd0e",
+  "model_gpu_server_hcli_or_tps_authorized": false,
+  "new_capture_root_required": true,
+  "non_inference_only": true,
+  "one_shot": true,
+  "production_adapter_forbidden": false,
+  "production_binary_binding": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_BINARY_BINDING_20260809T143958Z.json",
+    "raw_document_sha256": "bd0dfe8ad751c638f936cba4a5004a777001f42646f1be3eb05b203dba88b0ea",
+    "seal_sha256": "45774c6a37d2338d27ce756534ea300cadb508ef04c65f6946a3ce2ff7028d9b"
+  },
+  "production_binary_sha256": "6f34ae834c8fe892d847f13aad92000e4098fa2f1ead6e1891f8931e11e1876b",
+  "production_resource_admission": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_RESOURCE_ADMISSION_20260809T144015Z.json",
+    "raw_document_sha256": "55dd800639a151097a39776c4310cf3465a164acb793db15e9ff53dcbd8031b0",
+    "seal_sha256": "3373a297da5c375bb48c94f259de31a6b56ea597df0a10367f9bf8e60a48e52e"
+  },
+  "production_resource_window_identity_sha256": "bbd7706e21bf57fdfa1e4b565486b231bfbdfbf0ad84366e2e41d580d6d218f5",
+  "production_scan_authority": {
+    "canonical_document_sha256": "bc464f1c495e73d211f6e0a568565aa44881fc3896949bb147b7d081629e072c",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_AUTHORITY_20260809T144027Z.json",
+    "raw_document_sha256": "d3d6d7de3e089632054fd25b4a1548b3bb4e4d6a96ab8de592e55d6d56821a12",
+    "seal_sha256": "be00aeb41007b114851553ef351cc3bb759ca8b4528aeb1d3526d5612d358969"
+  },
+  "production_source_hash_scan_only": true,
+  "recorded_at": "2026-08-09T14:43:29.830710Z",
+  "replay_or_relaunch_forbidden": true,
+  "resource_window_identity_sha256": "4121a43a5f7d3c2b6345520528766e99c3d7a4fbd768c36cef718739070a08ef",
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_bootstrap_quiet_lease.v1",
+  "seal_sha256": "9cf81bd894e5c89ef647e6037707a014828f742ef67e8fe6308268a8e030bcac",
+  "separate_from_source_teacher_lease": true,
+  "source_teacher_or_logits_authorized": false,
+  "status": "GRANTED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_HASH_SCAN_ONE_SHOT",
+  "synthetic_fixture_only": false
+}

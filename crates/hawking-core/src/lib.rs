@@ -2,6 +2,9 @@
 pub mod artifact;
 pub mod attn;
 pub mod backend;
+/// Broker-kernel A/B promotion gate + receipt-backed cost registry.
+/// Planning/groundwork only; does not touch the DeepSeek-V4 forward lane.
+pub mod broker_kernel_ab;
 pub mod cache;
 pub mod cost_ledger;
 pub mod gguf;
@@ -15,6 +18,14 @@ pub mod gravity_deepseek_v4;
 /// quantization and the bounded layer-0 WQ-A checkpoint.  This has no engine,
 /// Metal, forward, or serving integration.
 pub mod gravity_deepseek_v4_act_quant;
+/// Parameterized ratio-zero attention device plan (layer/position/growing KV).
+/// Resolves source tensor names and refuses ratio-4/128 cleanly.
+pub mod gravity_deepseek_v4_attention_device;
+/// Parameterized BOS/position-0 attention device graph for any base layer
+/// 1..42. Window-KV only (compressed slots empty at BOS). Not a full causal
+/// compressed graph, Engine, HCLI, serve, or TPS claim.
+#[cfg(target_os = "macos")]
+pub mod gravity_deepseek_v4_bos_layer_attention_device;
 /// Bounded, source-backed preparation context for a future DeepSeek-V4 native
 /// causal loop. It stages real source rows/operators and cache residency but
 /// intentionally has no Engine, Metal dispatch, forward, or serving surface.
@@ -22,6 +33,13 @@ pub mod gravity_deepseek_v4_execution_context;
 /// Bounded source-chunk-backed routed-expert cache for the admitted
 /// DeepSeek-V4 full stream.  Storage only; no runtime or execution surface.
 pub mod gravity_deepseek_v4_expert_cache;
+/// Final mHC-head merge, RMSNorm, and greedy LM-head (host authority + optional
+/// device gemv). Not an Engine, serve path, or exact-storage parity claim.
+pub mod gravity_deepseek_v4_final_head;
+/// Multi-token / non-BOS growing-KV attention (empty-compressed specialization
+/// for ratio-4/128). Capture path for PROTO_FRANKENSTEIN_V0 bridge sites.
+#[cfg(target_os = "macos")]
+pub mod gravity_deepseek_v4_fullseq_attention_device;
 /// CPU-only, source-algorithm-derived DeepSeek-V4 layer-0 position-zero
 /// attention checkpoint.  It is not an Engine, upstream-runtime parity, or
 /// runtime/TPS evidence.
@@ -46,27 +64,15 @@ pub mod gravity_deepseek_v4_layer0_prefix;
 /// forward, Engine, HCLI endpoint, parity receipt, or TPS result.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_layer1_attention_device;
-/// Parameterized BOS/position-0 attention device graph for any base layer
-/// 1..42. Window-KV only (compressed slots empty at BOS). Not a full causal
-/// compressed graph, Engine, HCLI, serve, or TPS claim.
-#[cfg(target_os = "macos")]
-pub mod gravity_deepseek_v4_bos_layer_attention_device;
+/// General per-layer device plan resolved from source anchors: compression
+/// mode, gate mode, and honest refusal for unimplemented ratio-4/128 paths.
+pub mod gravity_deepseek_v4_layer_plan;
 /// Incremental bounded source-staging scheduler for the future DeepSeek-V4
 /// native layer loop. It has no default device encoder or causal runtime.
 pub mod gravity_deepseek_v4_layer_scheduler;
 /// Compact, source-bound per-layer tensor anchors for every DeepSeek-V4-Flash
 /// base layer (0..42). Metadata-only; no Engine, Metal, or forward surface.
 pub mod gravity_deepseek_v4_layer_source_anchors;
-/// General per-layer device plan resolved from source anchors: compression
-/// mode, gate mode, and honest refusal for unimplemented ratio-4/128 paths.
-pub mod gravity_deepseek_v4_layer_plan;
-/// Parameterized ratio-zero attention device plan (layer/position/growing KV).
-/// Resolves source tensor names and refuses ratio-4/128 cleanly.
-pub mod gravity_deepseek_v4_attention_device;
-/// Multi-token / non-BOS growing-KV attention (empty-compressed specialization
-/// for ratio-4/128). Capture path for PROTO_FRANKENSTEIN_V0 bridge sites.
-#[cfg(target_os = "macos")]
-pub mod gravity_deepseek_v4_fullseq_attention_device;
 /// Bounded verifier for the opt-in, source-bound Torch F32 Gate calibration
 /// target used by the position-zero diagnostic. It has no Metal, runtime,
 /// route-default, or TPS surface.
@@ -94,9 +100,6 @@ pub mod gravity_deepseek_v4_p7_composition;
 /// has no decoder-runtime, endpoint, or TPS claim.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_p7_device;
-/// Final mHC-head merge, RMSNorm, and greedy LM-head (host authority + optional
-/// device gemv). Not an Engine, serve path, or exact-storage parity claim.
-pub mod gravity_deepseek_v4_final_head;
 /// Immutable source-hash-bound ABI, storage, kernel-slot, residency, and
 /// bridge-point sidecar for a future DeepSeek-V4 runtime. It cannot alter the
 /// sealed stream, register an Engine, expose HCLI, or claim TPS.
@@ -114,9 +117,6 @@ pub mod gravity_glm;
 pub mod gravity_glm_resident;
 pub mod gravity_llama;
 pub mod json_constrain;
-/// Broker-kernel A/B promotion gate + receipt-backed cost registry.
-/// Planning/groundwork only; does not touch the DeepSeek-V4 forward lane.
-pub mod broker_kernel_ab;
 pub mod kernel_bench;
 pub mod kernels;
 pub mod metal;

@@ -1,0 +1,225 @@
+{
+  "agent_os": {
+    "context_compiler_inputs": [
+      "current_goal",
+      "relevant_source_slices",
+      "architecture_graph",
+      "active_hypotheses",
+      "latest_receipts",
+      "negative_science",
+      "tool_outputs",
+      "unresolved_decisions"
+    ],
+    "context_compiler_properties": [
+      "content_addressed",
+      "source_linked",
+      "versioned",
+      "cacheable",
+      "reconstructable",
+      "preserves_critical_constraints",
+      "preserves_file_identities",
+      "preserves_claim_status",
+      "preserves_measurement_provenance"
+    ],
+    "kv_state_capabilities": [
+      "paged_or_segmented_state",
+      "prefix_sharing",
+      "readonly_prefix_deduplication",
+      "session_checkpoint",
+      "cold_session_eviction",
+      "rehydration",
+      "context_compaction",
+      "state_integrity_hashes",
+      "model_revision_binding",
+      "no_mutable_prompt_state_sharing"
+    ],
+    "memory_tiers": [
+      "L0_ACTIVE",
+      "L1_SESSION",
+      "L2_PROJECT",
+      "L3_SKILLS",
+      "L4_GRAVEYARD",
+      "L5_ARCHIVE",
+      "L6_KERNEL_GENOME",
+      "L7_REPRESENTATION_GENOME"
+    ],
+    "performance_gates": [
+      "one_session_hcli_ge_95_percent_raw_decode",
+      "two_four_six_eight_session_tests",
+      "verified_tasks_per_hour_improves_with_useful_concurrency",
+      "no_starvation",
+      "tool_waits_release_inference_capacity",
+      "session_checkpoint_restart",
+      "endpoint_restart",
+      "context_compaction",
+      "kv_state_fits_manager_residency",
+      "search_tool_retrieval_does_not_flood_context",
+      "agent_os_overhead_measured_and_attributed",
+      "no_unexplained_agent_os_latency_bucket_above_5_percent"
+    ],
+    "retrieval_indexes": [
+      "current_papers",
+      "official_docs",
+      "source_repositories",
+      "hawking_symbols",
+      "commits",
+      "receipts",
+      "kernel_genome",
+      "representation_genome",
+      "negative_science",
+      "tools",
+      "skills",
+      "models",
+      "datasets"
+    ],
+    "roles": [
+      "campaign_director",
+      "researcher",
+      "kernel_engineer",
+      "gravity_engineer",
+      "runtime_engineer",
+      "profiling_analyst",
+      "test_author",
+      "integrator",
+      "storage_steward",
+      "security_adversary",
+      "documentation_curator",
+      "replicator"
+    ],
+    "scheduler_capabilities": [
+      "session_queues",
+      "priorities",
+      "budgets",
+      "continuous_batching",
+      "tool_wait_suspension",
+      "checkpoint_resume",
+      "prefix_groups",
+      "kv_state_allocation",
+      "fairness",
+      "starvation",
+      "worktree_ownership",
+      "model_residency",
+      "agent_count_frontier_by_verified_tasks_per_hour"
+    ],
+    "tool_gateway_capabilities": [
+      "credentials",
+      "versions",
+      "health",
+      "schemas",
+      "effect_permissions",
+      "session_affinity",
+      "timeouts",
+      "rollback"
+    ]
+  },
+  "bible_sha256": "f3617881ecae08e52dc9ea3727b47d6a9bcfaaab7b73b5b84b9f3554c37026a3",
+  "claim_boundary": {
+    "configuration_is_not_energy_measurement": true,
+    "configuration_is_not_grok_lane_completion": true,
+    "configuration_is_not_live_hcli_agent_os": true,
+    "only_direct_receipts_can_certify_foundation_states": true
+  },
+  "grok_build_fabric": {
+    "lane_classes": [
+      "architecture_reconnaissance",
+      "paper_and_source_research",
+      "family_adapters",
+      "kernel_prototypes",
+      "gravity_representation_prototypes",
+      "qat_doctor_scaffolding",
+      "hcli_wiring",
+      "agent_os_subsystems",
+      "retrieval_tool_gateways",
+      "memory_and_skills",
+      "storage_cleanup_tooling",
+      "tests",
+      "benchmarks",
+      "fixtures",
+      "documentation",
+      "migration",
+      "code_generation",
+      "profiling_analysis",
+      "adversarial_review"
+    ],
+    "lane_contract_fields": [
+      "goal",
+      "owned_files",
+      "forbidden_files",
+      "input_receipts",
+      "acceptance_tests",
+      "expected_outputs",
+      "resource_class",
+      "merge_dependencies",
+      "rollback"
+    ],
+    "resource_classes": [
+      "GPU_HEAVY",
+      "CPU_HEAVY",
+      "NETWORK_HEAVY",
+      "DISK_HEAVY",
+      "LIGHT_CODE",
+      "RESEARCH",
+      "TEST",
+      "DOCS"
+    ],
+    "scheduler_rules": [
+      "one_exclusive_gpu_owner_by_default",
+      "cpu_research_docs_may_overlap_gpu",
+      "network_prefetch_overlaps_compute",
+      "disk_compaction_avoids_source_critical_io",
+      "tests_run_against_sealed_commits",
+      "no_lane_competes_with_active_full_model_benchmark",
+      "concurrent_gpu_requires_measured_aggregate_progress",
+      "lanes_are_isolated_branch_worktree_no_shared_dirty_files",
+      "no_lane_auto_merges",
+      "controller_independently_reviews_and_integrates"
+    ]
+  },
+  "recorded_at": "2026-08-09T17:44:43.539121Z",
+  "resource_governor": {
+    "energy_evidence_outputs": [
+      "ASCENSION_V3_RESOURCE_ATLAS",
+      "ASCENSION_V3_POWER_PROFILES",
+      "ASCENSION_V3_CONCURRENCY_FRONTIER",
+      "ASCENSION_V3_VERIFIED_WORK_PER_JOULE"
+    ],
+    "pressure_modes": [
+      "GREEN",
+      "YELLOW",
+      "RED",
+      "CRITICAL"
+    ],
+    "selection_objectives": [
+      "critical_path_reduction",
+      "information_gain",
+      "expected_reuse",
+      "marginal_progress_per_watt",
+      "risk_of_invalidation"
+    ],
+    "task_scheduler_fields": [
+      "resource_class",
+      "dependency",
+      "expected_scientific_value",
+      "critical_path_status",
+      "preemptibility",
+      "checkpoint_cost"
+    ],
+    "telemetry_fields": [
+      "cpu_utilization_and_frequency",
+      "gpu_utilization",
+      "gpu_counters",
+      "memory_bandwidth",
+      "memory_pressure",
+      "swap_and_swap_growth",
+      "disk_throughput_and_latency",
+      "network_throughput_and_retries",
+      "thermal_state",
+      "power_energy",
+      "process_ownership",
+      "foreground_user_activity"
+    ]
+  },
+  "schema": "hawking.ascension.v3_foundation_contracts.v1",
+  "seal_sha256": "744da5ba081f6d1dc2e4d715af1ecc66af9c23b6231d31d872176dcbf4b24574",
+  "status": "CONTROLLER_CONFIGURATION_ONLY"
+}

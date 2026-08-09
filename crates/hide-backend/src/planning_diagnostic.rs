@@ -157,12 +157,7 @@ impl StageReceipt {
         }
     }
 
-    pub fn finish(
-        mut self,
-        status: StageStatus,
-        summary: impl Into<String>,
-        at_ms: u64,
-    ) -> Self {
+    pub fn finish(mut self, status: StageStatus, summary: impl Into<String>, at_ms: u64) -> Self {
         self.status = status;
         self.summary = summary.into();
         self.finished_ms = Some(at_ms);
@@ -278,8 +273,7 @@ impl KernelResearchContract {
                 return Err(ContractError::EmptyField(name));
             }
         }
-        if self.required_tools.is_empty()
-            || self.required_tools.iter().all(|t| t.trim().is_empty())
+        if self.required_tools.is_empty() || self.required_tools.iter().all(|t| t.trim().is_empty())
         {
             return Err(ContractError::NoTools);
         }
@@ -420,11 +414,7 @@ pub enum DiagnosticError {
 }
 
 impl PlanningDiagnosticRun {
-    pub fn start(
-        session_id: SessionId,
-        goal: impl Into<String>,
-        mode: PlanningMode,
-    ) -> Self {
+    pub fn start(session_id: SessionId, goal: impl Into<String>, mode: PlanningMode) -> Self {
         let now = now_ms();
         Self {
             id: format!("pdiag_{}", ulid::Ulid::new()),
@@ -482,9 +472,7 @@ impl PlanningDiagnosticRun {
             return Ok(());
         }
 
-        self.receipts[idx] = self.receipts[idx]
-            .clone()
-            .finish(status, summary, at_ms);
+        self.receipts[idx] = self.receipts[idx].clone().finish(status, summary, at_ms);
 
         if let Some(n) = next {
             self.transition_to(n)?;
@@ -525,14 +513,9 @@ impl PlanningDiagnosticRun {
         // Ensure we have an open receipt.
         self.begin_stage(at_ms)?;
         if self.mode == PlanningMode::KernelResearch {
-            let prop = self
-                .proposal
-                .as_ref()
-                .ok_or_else(|| {
-                    DiagnosticError::ChallengeBlocked(
-                        "no proposal attached for kernel research".into(),
-                    )
-                })?;
+            let prop = self.proposal.as_ref().ok_or_else(|| {
+                DiagnosticError::ChallengeBlocked("no proposal attached for kernel research".into())
+            })?;
             prop.validate(PlanningMode::KernelResearch)?;
         }
         if accepted {
@@ -549,17 +532,15 @@ impl PlanningDiagnosticRun {
                 .receipts
                 .iter()
                 .rposition(|r| {
-                    r.stage == DiagnosticStage::PlanChallenge
-                        && r.status == StageStatus::Running
+                    r.stage == DiagnosticStage::PlanChallenge && r.status == StageStatus::Running
                 })
                 .ok_or(DiagnosticError::NoOpenReceipt(
                     DiagnosticStage::PlanChallenge,
                 ))?;
-            let mut receipt = self.receipts[idx].clone().finish(
-                StageStatus::Blocked,
-                summary,
-                at_ms,
-            );
+            let mut receipt =
+                self.receipts[idx]
+                    .clone()
+                    .finish(StageStatus::Blocked, summary, at_ms);
             receipt.error = Some("plan challenge rejected".into());
             self.receipts[idx] = receipt;
             self.transition_to(DiagnosticStage::Plan)?;
@@ -608,7 +589,9 @@ impl PlanningDiagnosticRun {
                 if self
                     .receipts
                     .last()
-                    .map(|r| r.stage == DiagnosticStage::Execution && r.status == StageStatus::Running)
+                    .map(|r| {
+                        r.stage == DiagnosticStage::Execution && r.status == StageStatus::Running
+                    })
                     .unwrap_or(false)
                 {
                     self.complete_stage(
@@ -766,10 +749,7 @@ impl PlanningDiagnosticRun {
                 DiagnosticStage::Observation | DiagnosticStage::Verification
             ) && next == DiagnosticStage::Replan)
             || (from == DiagnosticStage::Replan
-                && matches!(
-                    next,
-                    DiagnosticStage::Plan | DiagnosticStage::PlanChallenge
-                ));
+                && matches!(next, DiagnosticStage::Plan | DiagnosticStage::PlanChallenge));
         if !legal {
             return Err(DiagnosticError::IllegalTransition { from, to: next });
         }
@@ -876,7 +856,8 @@ mod tests {
 
     #[test]
     fn rejects_unbounded_try_optimizations_language() {
-        let err = reject_unbounded_language("we should try optimizations on the kernel").unwrap_err();
+        let err =
+            reject_unbounded_language("we should try optimizations on the kernel").unwrap_err();
         assert!(matches!(err, ContractError::UnboundedLanguage(_)));
     }
 
@@ -1008,11 +989,8 @@ mod tests {
 
     #[test]
     fn replan_requires_observation_and_respects_budget() {
-        let mut run = PlanningDiagnosticRun::start(
-            SessionId::from("ses_r"),
-            "goal",
-            PlanningMode::General,
-        );
+        let mut run =
+            PlanningDiagnosticRun::start(SessionId::from("ses_r"), "goal", PlanningMode::General);
         run.max_replans = 1;
         let prop = DiagnosticPlanProposal {
             title: "t".into(),
@@ -1026,20 +1004,24 @@ mod tests {
         ));
 
         // Seed an observation receipt and allow replan.
-        run.receipts.push(
-            StageReceipt::open(DiagnosticStage::Observation, 2)
-                .finish(StageStatus::Passed, "saw failure", 3),
-        );
+        run.receipts
+            .push(StageReceipt::open(DiagnosticStage::Observation, 2).finish(
+                StageStatus::Passed,
+                "saw failure",
+                3,
+            ));
         run.current_stage = DiagnosticStage::Replan;
         run.replan(prop.clone(), "adjust steps", 4).unwrap();
         assert_eq!(run.replan_count, 1);
         assert_eq!(run.current_stage, DiagnosticStage::PlanChallenge);
 
         // Budget exhausted.
-        run.receipts.push(
-            StageReceipt::open(DiagnosticStage::Observation, 5)
-                .finish(StageStatus::Passed, "still failing", 6),
-        );
+        run.receipts
+            .push(StageReceipt::open(DiagnosticStage::Observation, 5).finish(
+                StageStatus::Passed,
+                "still failing",
+                6,
+            ));
         run.current_stage = DiagnosticStage::Replan;
         assert!(matches!(
             run.replan(prop, "again", 7),
@@ -1049,11 +1031,8 @@ mod tests {
 
     #[test]
     fn illegal_stage_skip_rejected() {
-        let mut run = PlanningDiagnosticRun::start(
-            SessionId::from("ses_i"),
-            "goal",
-            PlanningMode::General,
-        );
+        let mut run =
+            PlanningDiagnosticRun::start(SessionId::from("ses_i"), "goal", PlanningMode::General);
         // Cannot jump GoalInterpretation → Execution.
         assert!(matches!(
             run.transition_to(DiagnosticStage::Execution),

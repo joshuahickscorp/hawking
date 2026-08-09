@@ -249,7 +249,8 @@ impl DeepSeekV4BosLayerAttentionDeviceOutput {
     pub fn p7_attention_state<'a>(
         &'a self,
         metal: &'a MetalContext,
-    ) -> Result<crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState<'a>> {
+    ) -> Result<crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState<'a>>
+    {
         self.validate()?;
         crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState::position0(
             metal,
@@ -309,7 +310,9 @@ struct LayerControls {
 impl LayerControls {
     fn load(reader: &DeepSeekV4FullStreamReader, layer: usize) -> Result<Self> {
         if layer == 0 || layer >= 43 {
-            return Err(bos_error("BOS layer attention executor targets base layers 1..42 only"));
+            return Err(bos_error(
+                "BOS layer attention executor targets base layers 1..42 only",
+            ));
         }
         let name = |suffix: &str| format!("layers.{layer}.{suffix}");
         Ok(Self {
@@ -580,7 +583,8 @@ impl DeepSeekV4BosLayerAttentionDeviceExecutor {
             denominators: metal.new_buffer_checked(NUM_HEADS * size_of::<f32>())?,
             wo_a: metal.new_buffer_checked(WO_A_ROWS * size_of::<u16>())?,
             wo_b: new_linear_scratch(metal, WO_B_COLS, WO_B_ROWS)?,
-            attention_hc_state_bf16: metal.new_buffer_checked(DSV4F_BOS_LAYER_HC_STATE_BF16_BYTES)?,
+            attention_hc_state_bf16: metal
+                .new_buffer_checked(DSV4F_BOS_LAYER_HC_STATE_BF16_BYTES)?,
         })
     }
 
@@ -1051,7 +1055,9 @@ fn new_hc_scratch(metal: &MetalContext) -> Result<HcScratch> {
 
 fn new_linear_scratch(metal: &MetalContext, cols: usize, rows: usize) -> Result<LinearScratch> {
     if cols == 0 || rows == 0 || cols % ACT_QUANT_BLOCK != 0 {
-        return Err(bos_error("BOS layer FP8 scratch geometry is not block-128 aligned"));
+        return Err(bos_error(
+            "BOS layer FP8 scratch geometry is not block-128 aligned",
+        ));
     }
     Ok(LinearScratch {
         activation: metal.new_buffer_checked(cols)?,
@@ -1151,7 +1157,9 @@ fn dispatch_qat(
     cols: u32,
 ) -> Result<()> {
     if cols == 0 || cols % ACT_QUANT_BLOCK as u32 != 0 {
-        return Err(bos_error("BOS layer activation quantization width is invalid"));
+        return Err(bos_error(
+            "BOS layer activation quantization width is invalid",
+        ));
     }
     batch.dispatch_threads(
         QAT_KERNEL,
@@ -1264,7 +1272,9 @@ fn dispatch_cache_write(
     capacity: u32,
 ) -> Result<()> {
     if position != 0 || head_dim != HEAD_DIM as u32 || capacity != 1 {
-        return Err(bos_error("BOS layer causal cache write must target only slot zero"));
+        return Err(bos_error(
+            "BOS layer causal cache write must target only slot zero",
+        ));
     }
     batch.dispatch_threads(CACHE_KERNEL, (head_dim, 1, 1), (256, 1, 1), |encoder| {
         encoder.set_buffer(0, Some(input), 0);
@@ -1335,7 +1345,9 @@ fn dispatch_wo_a(
         || scale_cols != (WO_A_COLS / ACT_QUANT_BLOCK) as u32
         || ranks != O_LORA_RANK as u32
     {
-        return Err(bos_error("BOS layer WO-A converted-einsum geometry is invalid"));
+        return Err(bos_error(
+            "BOS layer WO-A converted-einsum geometry is invalid",
+        ));
     }
     batch.dispatch_threads(WO_A_KERNEL, (rows, 1, 1), (256, 1, 1), |encoder| {
         encoder.set_buffer(0, Some(weight), 0);

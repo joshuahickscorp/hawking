@@ -282,6 +282,71 @@ pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
+/// Exact single-token Gated DeltaNet recurrence for Qwen3-Next.  The initial
+/// implementation is a device-resident parity baseline; it is not a complete
+/// Qwen decoder or a throughput claim.
+pub const SHADER_QWEN_NEXT: &str = include_str!("../../shaders/qwen_next.metal");
+/// Bounded Qwen3-Coder-Next layer-3 direct-packed GQA parity kernels. They
+/// are compiled only for an isolated attention-stage probe and do not select
+/// a generic runtime or serving path.
+pub const SHADER_QWEN80_DIRECT_PACKED_ATTENTION_STAGE: &str =
+    include_str!("../../shaders/qwen80_direct_packed_attention_stage.metal");
+/// Isolated Qwen3-Coder-Next layer-0 post-attention RMSNorm/router/top-10
+/// component kernels.  They are compiled only for an explicitly leased,
+/// strict-math, non-timed parity capture; no generic runtime or serving path
+/// selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_POSTNORM_ROUTER_TOP10: &str =
+    include_str!("../../shaders/qwen80_postnorm_router_top10.metal");
+/// Isolated Qwen3-Coder-Next layer-0 route-0/expert-65 gate/up/SwiGLU/down
+/// component kernels.  They are available only to the explicit strict-math,
+/// non-timed parity probe; no generic runtime or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_ROUTED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_routed_expert_wave.metal");
+/// Isolated Qwen3-Coder-Next layer-0 shared-expert body kernels. They are
+/// compiled only for an explicitly leased strict-math, non-timed component
+/// parity capture; no generic runtime or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_SHARED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_shared_expert_wave.metal");
+/// Isolated Qwen3-Coder-Next layer-0 MoE aggregation/shared-add/second
+/// residual kernels. They are compiled only for a separately leased,
+/// non-timed materialized-vector component parity capture; no generic runtime
+/// or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE: &str =
+    include_str!("../../shaders/qwen80_moe_wave_aggregate_second_residual.metal");
+/// Isolated Qwen3-Coder-Next layer-0 source-selected all-ten routed-expert
+/// body kernels.  They are only reachable from the explicitly leased,
+/// strict-math, non-timed true-input component capture; no generic runtime,
+/// watcher, or serving path selects them.
+pub const SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_all_ten_routed_expert_wave.metal");
+/// Packed binary sign + FP16 group-scale Qwen component matvec. This is a
+/// bounded operator primitive, not a complete decoder or model TPS surface.
+pub const SHADER_QWEN_BINARY: &str = include_str!("../../shaders/qwen_binary.metal");
+/// Device-side glue for the admitted Qwen30 complete-binary runtime.  It
+/// retains the packed sign/scale body through embedding, Q/K RMSNorm, and
+/// routed-expert control operations; it is not a generic BF16 fallback.
+pub const SHADER_QWEN_COMPLETE_RUNTIME: &str =
+    include_str!("../../shaders/qwen_complete_runtime.metal");
+/// Isolated direct-packed Qwen30 routed-expert gate/up/SwiGLU fusion
+/// candidate.  It is compiled into the shared library so a separately named
+/// diagnostic runtime path can establish all-layer parity; no generic engine
+/// or serving endpoint selects it by default.
+pub const SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED: &str =
+    include_str!("../../shaders/qwen_direct_packed_gate_up_swiglu_fused.metal");
+/// Distinct Qwen30 gate/up paired-topology diagnostic that preserves the
+/// scalar control's non-FMA accumulation order.  It is not selected by a
+/// generic runtime or endpoint.
+pub const SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER: &str =
+    include_str!("../../shaders/qwen_direct_packed_gate_up_swiglu_paired_scalar_order.metal");
+/// Isolated HQ30GR2 direct-base-plus-sparse-residual Qwen30 gate/up kernel.
+/// It is available only to a typed, non-serving candidate diagnostic and is
+/// not a generic engine or endpoint selection.
+pub const SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP: &str =
+    include_str!("../../shaders/qwen30_quality_repack_sparse_gate_up.metal");
+/// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
+/// fixed group-64 layout is a bounded operator primitive, not a complete
+/// decoder or model TPS surface.
+pub const SHADER_QWEN_UNIFORM_Q4: &str = include_str!("../../shaders/qwen_uniform_q4.metal");
 /// RWKV-7 WKV-7 single-step decode recurrence (`rwkv7_wkv_decode`). The novel,
 /// tps-critical kernel of the RWKV-7 GPU decode path — threadgroup-per-head with
 /// the fixed `head_size×head_size` recurrent state in a persistent GPU buffer
@@ -327,6 +392,19 @@ pub fn all_shader_sources() -> String {
         SHADER_MATMUL,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
+        SHADER_QWEN_NEXT,
+        SHADER_QWEN80_DIRECT_PACKED_ATTENTION_STAGE,
+        SHADER_QWEN80_DIRECT_PACKED_POSTNORM_ROUTER_TOP10,
+        SHADER_QWEN80_DIRECT_PACKED_ROUTED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_SHARED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE,
+        SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE,
+        SHADER_QWEN_BINARY,
+        SHADER_QWEN_COMPLETE_RUNTIME,
+        SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED,
+        SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER,
+        SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
+        SHADER_QWEN_UNIFORM_Q4,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
         SHADER_DEEPSEEK_V4_P7,
@@ -657,10 +735,13 @@ mod imp {
 
     /// v2.2.0-L7: counter-sample tracer used by `ProdCbGpu` mode.
     ///
-    /// One sample buffer per `TokenCommandBuffer`; `sample_count` is sized
-    /// for 2 samples per dispatch × MAX_DISPATCHES. Each dispatch occupies
-    /// indices `[2*n, 2*n+1]`. After CB completes, the sample buffer holds
-    /// raw GPU timestamps (ns); `gpu_us = (ts[2n+1] - ts[2n]) / 1000`.
+    /// A recyclable sample buffer leased to one `TokenCommandBuffer` at a
+    /// time; `sample_count` is sized for 2 samples per dispatch ×
+    /// MAX_DISPATCHES. Each dispatch occupies indices `[2*n, 2*n+1]`. After
+    /// that CB completes, the sample buffer holds raw GPU timestamps (ns);
+    /// `gpu_us = (ts[2n+1] - ts[2n]) / 1000`. Recycling avoids exhausting
+    /// Metal's small per-device CounterSampleBuffer limit during a complete
+    /// multi-command-buffer token profile.
     struct ProdCbTracer {
         sample_buf: ::metal::CounterSampleBuffer,
         /// Index of the next pair (so the start of the next dispatch's
@@ -748,7 +829,7 @@ mod imp {
                 .load(Ordering::Relaxed)
                 .min(self.capacity_pairs);
             if pair_count == 0 {
-                return pending
+                let samples = pending
                     .into_iter()
                     .map(|p| super::DispatchSample {
                         kernel_name: p.kernel_name,
@@ -759,6 +840,8 @@ mod imp {
                         gpu_end_ns: None,
                     })
                     .collect();
+                self.next_pair.store(0, Ordering::Relaxed);
+                return samples;
             }
             // Resolve the [0, 2*pair_count) sample range. Returns NSData.
             // SAFETY: CB has committed + waited before this is called;
@@ -783,7 +866,7 @@ mod imp {
             // Per Apple, an "absent" sample is encoded as MTLCounterErrorValue
             // (0xFFFFFFFFFFFFFFFF). If we see one we leave gpu_us=None.
             const ERR: u64 = u64::MAX;
-            pending
+            let samples = pending
                 .into_iter()
                 .map(|p| {
                     let i0 = p.pair_index * 2;
@@ -810,7 +893,12 @@ mod imp {
                         gpu_end_ns,
                     }
                 })
-                .collect()
+                .collect();
+            // This tracer is returned to a context-local pool only after its
+            // command buffer has completed and timestamps have been resolved.
+            // The next lease overwrites the same sample indices safely.
+            self.next_pair.store(0, Ordering::Relaxed);
+            samples
         }
     }
 
@@ -891,6 +979,11 @@ mod imp {
         /// Mirrors `EngineConfig::trace_dispatch`; env var `HAWKING_TRACE_DISPATCH`
         /// acts as a fallback when this is false.
         pub trace_dispatch: bool,
+        /// Reusable diagnostic counter-sample buffers. A complete token may
+        /// commit dozens of serial command buffers; leasing and returning a
+        /// tracer prevents the hardware sample-buffer quota from silently
+        /// truncating a gpu_prod profile after its first few stages.
+        prod_cb_tracer_pool: Arc<Mutex<Vec<ProdCbTracer>>>,
     }
 
     /// One command buffer that can encode several compute kernels before
@@ -934,6 +1027,29 @@ mod imp {
             "moe_route_accumulate" => "moe_route_accumulate",
             "moe_route_accumulate_add" => "moe_route_accumulate_add",
             "sample_argmax_f32" => "sample_argmax_f32",
+            // Admitted Qwen30 complete-binary runtime.  These labels remain
+            // per-stage so a future complete-token profile can distinguish
+            // packed decode, state, and routed-expert time rather than fold
+            // it into an opaque "other" bucket.
+            "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_simdgroup_candidate" => {
+                "qwen_binary_sign_scale_matvec_simdgroup_candidate"
+            }
+            "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
+            "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
+            "qwen_complete_rmsnorm_rows_f32" => "qwen_complete_rmsnorm_rows_f32",
+            "qwen_complete_normalize_route_weights" => "qwen_complete_normalize_route_weights",
+            "qwen_complete_silu_mul_offset" => "qwen_complete_silu_mul_offset",
+            "qwen_direct_packed_gate_up_swiglu_fused_candidate" => {
+                "qwen_direct_packed_gate_up_swiglu_fused_candidate"
+            }
+            "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate" => {
+                "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate"
+            }
+            "qwen_complete_weighted_expert_add" => "qwen_complete_weighted_expert_add",
+            "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
+            "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",
+            "qwen_next_ba_to_decay_beta" => "qwen_next_ba_to_decay_beta",
             // attn / rope / embed kernels
             "rope_inplace" => "rope_inplace",
             "rope_norm_llama_b9430" => "rope_norm_llama_b9430",
@@ -1594,6 +1710,7 @@ mod imp {
                 trace: Arc::new(DispatchTrace::new()),
                 stats: Arc::new(MetalContextStats::new()),
                 trace_dispatch: effective,
+                prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
             })
         }
 
@@ -1623,6 +1740,7 @@ mod imp {
                 trace: Arc::new(DispatchTrace::new()),
                 stats: Arc::new(MetalContextStats::new()),
                 trace_dispatch: effective,
+                prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
             })
         }
 
@@ -3211,9 +3329,19 @@ mod imp {
         mode: TcbTraceMode,
         /// Accumulated per-dispatch samples; only populated when `mode` is on.
         tcb_samples: Vec<super::DispatchSample>,
-        /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
-        /// when the device doesn't support the timestamp counter set.
+        /// An opt-in, non-timing structural trace of the exact kernel labels
+        /// accepted by `dispatch_threads` in this command buffer.  Component
+        /// parity captures use this to seal dispatch order without enabling
+        /// CPU/GPU timing or changing the single-command-buffer execution
+        /// shape.  It stays `None` on ordinary runtime paths.
+        structural_kernel_names: Option<Vec<String>>,
+        /// Live in `ProdCbGpu` mode. `None` in other modes or when the device
+        /// doesn't support the timestamp counter set. It is leased from the
+        /// context-local pool and returned only after commit/wait + resolve.
         prod_cb_tracer: Option<ProdCbTracer>,
+        /// Pool paired with `prod_cb_tracer`; kept optional so off/CPU modes
+        /// retain their historical zero-allocation trace path.
+        prod_cb_tracer_pool: Option<Arc<Mutex<Vec<ProdCbTracer>>>>,
         /// Physical-evidence identity for the pending Metal command buffer.
         physical_trace: Option<PhysicalCommandIdentity>,
         /// P0.1 spike: active concurrent encoder. When `Some`, dispatches
@@ -3251,8 +3379,16 @@ mod imp {
                 cmd.set_label(label);
             }
             let mode = TcbTraceMode::from_env();
+            let prod_cb_tracer_pool = if mode == TcbTraceMode::ProdCbGpu {
+                Some(ctx.prod_cb_tracer_pool.clone())
+            } else {
+                None
+            };
+            let pooled_tracer = prod_cb_tracer_pool
+                .as_ref()
+                .and_then(|pool| pool.lock().pop());
             let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
-                ProdCbTracer::try_new(&ctx.inner.device)
+                pooled_tracer.or_else(|| ProdCbTracer::try_new(&ctx.inner.device))
             } else {
                 None
             };
@@ -3261,7 +3397,9 @@ mod imp {
                 cmd: Some(cmd),
                 mode,
                 tcb_samples: Vec::new(),
+                structural_kernel_names: None,
                 prod_cb_tracer,
+                prod_cb_tracer_pool,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 dispatch_count: 0,
@@ -3275,6 +3413,41 @@ mod imp {
         /// Valid both before and after `commit_and_wait`.
         pub fn dispatch_count(&self) -> usize {
             self.dispatch_count
+        }
+
+        /// Enable a capture-only structural trace for this fresh command
+        /// buffer.  The trace records only successful kernel encodes in
+        /// order; it never records timestamps or submits additional command
+        /// buffers.  Diagnostic callers must opt in before their first
+        /// dispatch so a partial historical trace cannot be mistaken for a
+        /// full graph.
+        pub fn enable_structural_kernel_trace(&mut self) -> Result<()> {
+            if self.dispatch_count != 0 {
+                return Err(Error::Metal(
+                    "structural kernel trace must be enabled before the first dispatch".into(),
+                ));
+            }
+            if self.structural_kernel_names.is_some() {
+                return Err(Error::Metal(
+                    "structural kernel trace was already enabled for this command buffer".into(),
+                ));
+            }
+            if self.mode != TcbTraceMode::Off {
+                return Err(Error::Metal(
+                    "structural kernel trace requires non-timed TokenCommandBuffer mode".into(),
+                ));
+            }
+            self.structural_kernel_names = Some(Vec::new());
+            Ok(())
+        }
+
+        /// Return the exact successful dispatch labels recorded by
+        /// [`Self::enable_structural_kernel_trace`].  The slice remains
+        /// available before and after the common fence so a failure receipt
+        /// can distinguish "encoded" from "committed" without inventing a
+        /// timing result.
+        pub fn structural_kernel_names(&self) -> Option<&[String]> {
+            self.structural_kernel_names.as_deref()
         }
 
         /// P0.1 spike (Q/K/V concurrent-encoder).
@@ -3560,6 +3733,11 @@ mod imp {
                 *slot = slot.saturating_add(1);
             }
             let result = self.dispatch_threads_inner(fn_name, grid, tg, encode);
+            if result.is_ok() {
+                if let Some(names) = self.structural_kernel_names.as_mut() {
+                    names.push(fn_name.to_owned());
+                }
+            }
             if let Some(t0) = ledger_t0 {
                 self.ledger_encode_ns = self
                     .ledger_encode_ns
@@ -3832,6 +4010,37 @@ mod imp {
             Ok(())
         }
 
+        /// Resolve a completed production-CB tracer, publish its ordered
+        /// samples, then return the now-reset buffer to the context pool.
+        /// This must run only after `wait_until_completed`; callers below
+        /// satisfy that fence before invoking it.
+        fn flush_prod_cb_trace_and_recycle(&mut self) {
+            if let Some(tracer) = self.prod_cb_tracer.take() {
+                for sample in tracer.drain() {
+                    self.ctx.trace.samples.lock().push(sample);
+                }
+                if let Some(pool) = self.prod_cb_tracer_pool.as_ref() {
+                    pool.lock().push(tracer);
+                }
+            }
+            // Out-of-capacity samples (if a single CB exceeds the fixed
+            // 1024-pair buffer) retain their explicit gpu_us=None boundary.
+            for sample in self.tcb_samples.drain(..) {
+                self.ctx.trace.samples.lock().push(sample);
+            }
+        }
+
+        /// Return an unused diagnostic tracer without resolving timestamps.
+        /// No command buffer has been committed in this branch, so its pair
+        /// counter is necessarily zero and the buffer is safe to reuse.
+        fn recycle_unused_prod_cb_tracer(&mut self) {
+            if let Some(tracer) = self.prod_cb_tracer.take() {
+                if let Some(pool) = self.prod_cb_tracer_pool.as_ref() {
+                    pool.lock().push(tracer);
+                }
+            }
+        }
+
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
         ///
@@ -3925,12 +4134,7 @@ mod imp {
                             }
                         }
                         TcbTraceMode::ProdCbGpu => {
-                            if let Some(tracer) = self.prod_cb_tracer.as_ref() {
-                                for s in tracer.drain() {
-                                    self.ctx.trace.samples.lock().push(s);
-                                }
-                            }
-                            self.tcb_samples.clear();
+                            self.flush_prod_cb_trace_and_recycle();
                         }
                     }
                 } else {
@@ -3986,16 +4190,7 @@ mod imp {
                     // the CB has completed. `drain()` reads the raw
                     // timestamps and pairs them with the recorded
                     // dispatch metadata to populate `gpu_us`.
-                    if let Some(tracer) = self.prod_cb_tracer.as_ref() {
-                        for s in tracer.drain() {
-                            self.ctx.trace.samples.lock().push(s);
-                        }
-                    }
-                    // Any out-of-capacity dispatches were pushed straight
-                    // to `tcb_samples` with gpu_us=None.
-                    for s in self.tcb_samples.drain(..) {
-                        self.ctx.trace.samples.lock().push(s);
-                    }
+                    self.flush_prod_cb_trace_and_recycle();
                 }
             }
         }
@@ -4013,6 +4208,7 @@ mod imp {
             if !self.has_encoded_work {
                 let _ = self.cmd.take();
                 let _ = self.concurrent_encoder.take();
+                self.recycle_unused_prod_cb_tracer();
                 return;
             }
             if let Some(cmd) = self.cmd.take() {

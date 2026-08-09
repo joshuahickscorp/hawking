@@ -1,0 +1,658 @@
+{
+  "all_advertised_models_law": {
+    "each_advertised_exact_model_requires": [
+      "official_high_precision_source",
+      "complete_bpw_le_1_5",
+      "tg3",
+      "capability",
+      "parity",
+      "hcli_integration_when_applicable",
+      "restore"
+    ],
+    "permitted_non_launch_labels": [
+      "DECLARED",
+      "REFERENCE",
+      "EXPERIMENTAL",
+      "UNVERIFIED"
+    ]
+  },
+  "claim_boundary": {
+    "workflow_does_not_claim_generic_reference_is_production_support": true,
+    "workflow_does_not_start_downloads_or_model_bodies": true,
+    "workflow_is_not_exact_model_qualification": true,
+    "workflow_is_not_family_source_selection": true
+  },
+  "families": [
+    {
+      "completion_state": "QWEN_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "QWEN",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "reuse_manager_kernel_evidence",
+        "moe_hybrid_plugins",
+        "expert_shared_expert_representations",
+        "deltanet_state_for_next"
+      ],
+      "state": "FAMILY_QWEN",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "LLAMA_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "LLAMA",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "exact_tokenizer_bos_rope",
+        "dense_gqa",
+        "reference_parity",
+        "generated_dense_kernels"
+      ],
+      "state": "FAMILY_LLAMA",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "MISTRAL_MIXTRAL_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "MISTRAL_MIXTRAL",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "sliding_window_semantics",
+        "gqa",
+        "moe_routing",
+        "shared_expert_where_present"
+      ],
+      "state": "FAMILY_MISTRAL",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "DEEPSEEK_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "DEEPSEEK",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "mla_latent_attention",
+        "moe",
+        "dsa_indexed_variants",
+        "mhc_state",
+        "native_fp4_fp8_when_required",
+        "proto_frankenstein_later"
+      ],
+      "state": "FAMILY_DEEPSEEK",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "GLM_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "GLM",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "moe",
+        "dsa",
+        "indexshare_indexed_attention",
+        "long_context",
+        "mtp_control",
+        "streamed_source"
+      ],
+      "state": "FAMILY_GLM",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "KIMI_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "KIMI",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "bind_released_architecture_live",
+        "large_moe",
+        "delta_latent_sparse_attention_when_present",
+        "long_context",
+        "streamed_source"
+      ],
+      "state": "FAMILY_KIMI",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "GEMMA_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "GEMMA",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "dense_portability",
+        "attention_variants",
+        "exact_model_codegen"
+      ],
+      "state": "FAMILY_GEMMA",
+      "state_status": "PENDING_PREREQUISITES"
+    },
+    {
+      "completion_state": "HYBRID_V3_LAUNCH_READY",
+      "failure_handling": [
+        "seal_failure",
+        "classify_failure",
+        "query_graveyard",
+        "choose_materially_different_mutation",
+        "continue"
+      ],
+      "family": "STATE_SPACE_OR_LINEAR_ATTENTION_HYBRID",
+      "generic_fallback_forbidden": true,
+      "metadata_only_support_forbidden": true,
+      "operation_status": "WAITING_FOR_SEALED_MANAGER_SANDBOX",
+      "per_model_loop": [
+        "DISCOVER",
+        "METADATA_PREFLIGHT",
+        "FINGERPRINT",
+        "SCIENTIFIC_DISTINCTION",
+        "QUERY_KNOWLEDGE_PLANE",
+        "CHOOSE_ACQUISITION_MODE",
+        "REPRESENTATIVE_RESEARCH",
+        "GRAVITY_POPULATION",
+        "MINI_PACK",
+        "SAMPLE_VERIFY",
+        "DOCTOR_QAT",
+        "FULL_PACK",
+        "EXACT_MODEL_CODEGEN",
+        "COMPLETE_RUNTIME",
+        "PROFILE",
+        "KERNEL_MUTATE",
+        "GRAVITY_MUTATE",
+        "SCHEDULER_MUTATE",
+        "TG_ASCENT",
+        "CAPABILITY",
+        "SEAL",
+        "NOTIFY",
+        "OFFLOAD_EVICT",
+        "ROTATE"
+      ],
+      "representative_launch_gates": [
+        "official_high_precision_source",
+        "complete_bpw_le_1_5",
+        "tg3",
+        "capability",
+        "parity",
+        "hcli_integration_when_applicable",
+        "restore"
+      ],
+      "rotation_states": [
+        "ACTIVE",
+        "PAUSED_FOR_MECHANISM",
+        "WAITING_FOR_EXTERNAL_REVIEW",
+        "WAITING_FOR_STORAGE"
+      ],
+      "selection_criteria": [
+        "family_semantic_coverage",
+        "capability",
+        "source_availability",
+        "license",
+        "architecture_distinction",
+        "gravity_feasibility",
+        "tg_feasibility",
+        "local_runtime_value"
+      ],
+      "starting_doctrine": [
+        "deltanet",
+        "linear_attention",
+        "recurrent_state",
+        "state_checkpoint_restart"
+      ],
+      "state": "FAMILY_HYBRID",
+      "state_status": "PENDING_PREREQUISITES"
+    }
+  ],
+  "generic_hf_reference": {
+    "completion_state": "GENERIC_HF_REFERENCE_READY",
+    "is_not_core_family_substitute": true,
+    "owned_by_global_audit_state": "GLOBAL_LAUNCH_AUDIT",
+    "required": true
+  },
+  "manager_replacement_rule": {
+    "cannot_replace_active_manager_automatically": true,
+    "replacement_requires": [
+      "manager_source",
+      "complete_bpw_le_1_5",
+      "tg3",
+      "capability",
+      "agent_os",
+      "tournament_comparison",
+      "external_review"
+    ],
+    "separate_candidate_lane": true
+  },
+  "matrix_handoff": {
+    "all_required_family_states_certified": false,
+    "global_audit_status": "PENDING_PREREQUISITES",
+    "required_global_artifacts": [
+      "ASCENSION_V3_FAMILY_MATRIX",
+      "ASCENSION_V3_MODEL_MATRIX",
+      "ASCENSION_V3_DENSITY_MATRIX",
+      "ASCENSION_V3_TG_MATRIX",
+      "ASCENSION_V3_RESOURCE_ATLAS",
+      "ASCENSION_V3_POWER_PROFILES",
+      "ASCENSION_V3_STORAGE_LEASES",
+      "ASCENSION_V3_GARBAGE_AUDIT",
+      "ASCENSION_V3_RECOVERY_TEST"
+    ]
+  },
+  "recorded_at": "2026-08-09T17:44:43.548520Z",
+  "sandbox_dependency": {
+    "only_sealed_manager_may_be_active": true,
+    "state": "SANDBOX_ACTIVATION",
+    "status": "PENDING_PREREQUISITES"
+  },
+  "schema": "hawking.ascension.family_campaign_workflow.v1",
+  "seal_sha256": "4fffe4b3d955b66abf9ceaaf7a6360a1c7a51e216fd0293eda30673b4fe643a7",
+  "status": "CONTROLLER_WORKFLOW_ONLY"
+}

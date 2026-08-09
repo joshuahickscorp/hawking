@@ -68,13 +68,12 @@ impl TextMessage {
 
     pub fn validate(&self) -> Result<()> {
         if self.schema != crate::TEXT_MESSAGE_SCHEMA {
-            return Err(CommsError::Invalid(format!(
-                "text schema {}",
-                self.schema
-            )));
+            return Err(CommsError::Invalid(format!("text schema {}", self.schema)));
         }
         if self.session_id.trim().is_empty() {
-            return Err(CommsError::Invalid("text message missing session_id".into()));
+            return Err(CommsError::Invalid(
+                "text message missing session_id".into(),
+            ));
         }
         if self.sender.trim().is_empty() {
             return Err(CommsError::Invalid("text message missing sender".into()));
