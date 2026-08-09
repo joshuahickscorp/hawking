@@ -166,3 +166,4 @@ tools/sovereignty/__pycache__/
 workspace/campaign/records/ascension-sandbox/physical/**/selected-payloads/
 workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01
 workspace/campaign/records/ascension-sandbox/physical/**/tensors/
+workspace/campaign/records/ascension-sandbox/physical/**/capture-result.json
