@@ -1,0 +1,112 @@
+{
+  "capture_intent": {
+    "blocked_until": [
+      "gqa_full_layer_same_runtime_encode",
+      "broad_activation_capture_binary"
+    ],
+    "bounded_storage": {
+      "default_max_hidden_tokens_per_layer": 1024,
+      "full_route_membership_all_tokens_all_layers": true,
+      "raw_hidden_strategy": "stratified_token_subsample"
+    },
+    "require_all_layer": true,
+    "target_layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ]
+  },
+  "claim_boundary": {
+    "all_layer_intent": true,
+    "diagnostic_activation_pricing_only": true,
+    "does_not_claim_coherence_hcli_tps_or_capability": true,
+    "model_execution_started": false,
+    "new_diagnostic_not_historical": true,
+    "not_hcli_compiler_trace_bound": true,
+    "production_server_not_used": true,
+    "reuse_of_q30_token_ids_requires_identical_tokenizer_sha": true,
+    "source_tokenizer_one_user_native_prompts": true
+  },
+  "corpus_summary": {
+    "domain_counts": {
+      "code": 7,
+      "dialogue": 1,
+      "instruction": 3,
+      "list": 1,
+      "long_context": 2,
+      "math": 3,
+      "mixed": 2,
+      "multi_turn": 3,
+      "prose": 5,
+      "structured": 5
+    },
+    "max_tokens": 1459,
+    "mean_tokens": 122.78,
+    "min_tokens": 22,
+    "probe_count": 32,
+    "total_tokens": 3929
+  },
+  "input_path": "/Users/scammermike/.claude-grok/worktrees/q80-gravity-coherence-20260809-170134/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1/requests/QWEN80_BROAD_ACTIVATION_ALL_LAYER_ROUTE_CAPTURE_INPUT_84acbf66b6b8da35.json",
+  "input_sha256": "148e1c99b5535a1ee340b0ff6b666cf27948366d362e584c4c267cb26baa4dcd",
+  "note": "Input only. Capture binary cannot run until GQA full-layer same-runtime encode is ready. Do not disturb live servers.",
+  "prepared_at": "2026-08-09T21:10:46.210972Z",
+  "provenance": {
+    "q30_input_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/requests/QWEN30_BROAD_ACTIVATION_L0_ROUTE_CAPTURE_INPUT_901a24bdcfc6c1d2.json",
+    "q30_input_schema": "hawking.ascension.qwen30_broad_activation_layer0_route_capture_input.v1",
+    "q30_input_sha256": "8c5ff2d8490f716b1a14fe04c3606472dca5d0da9df20356abe804dedde3151c",
+    "reuse_policy": "identical_tokenizer_sha_token_id_reuse"
+  },
+  "schema": "hawking.ascension.qwen80_broad_activation_capture_prepare.v1",
+  "tokenizer_binding": {
+    "identical_to_q30_tokenizer": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/tokenizer.json",
+    "q30_tokenizer_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/tokenizer.json",
+    "q30_tokenizer_sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d",
+    "sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d"
+  }
+}

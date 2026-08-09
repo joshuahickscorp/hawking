@@ -1,0 +1,40 @@
+# Q80 all-layer activation capture — owner commands
+# Worktree: q80-gravity-coherence-20260809-170134
+# Status: BLOCKED on GQA full-layer same-runtime encode (0/12 ready).
+# Do not take a Metal lease until the capture body is wired past this refusal.
+
+set -euo pipefail
+WT="/Users/scammermike/.claude-grok/worktrees/q80-gravity-coherence-20260809-170134"
+MAIN="/Users/scammermike/Downloads/hawking"
+DIAG="$WT/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1"
+INPUT="$DIAG/requests/QWEN80_BROAD_ACTIVATION_ALL_LAYER_ROUTE_CAPTURE_INPUT_84acbf66b6b8da35.json"
+SCHED="$MAIN/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_48_LAYER_EXECUTION_SCHEDULE_AUTHORITY_20260809T192559Z.json"
+GQA_GAP="$MAIN/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MULTI_LAYER_GQA_ENCODE_GAP_20260809T210000Z.json"
+RUN="$DIAG/runs/refusal_$(date -u +%Y%m%dT%H%M%SZ)"
+
+cd "$WT"
+cargo build -p hawking-core --example ascension_qwen80_broad_activation_all_layer_route_capture
+mkdir -p "$RUN"
+./target/debug/examples/ascension_qwen80_broad_activation_all_layer_route_capture \
+  --output-dir "$RUN" \
+  --input-json "$INPUT" \
+  --schedule-authority "$SCHED" \
+  --gqa-gap "$GQA_GAP"
+# Expected: exit 3, $RUN/capture-refusal.json, no Metal lease.
+
+# --- After GQA encode is ready AND multi-token capture body is implemented ---
+# Serialize against other Metal residents. Then:
+# RUN_OK=$DIAG/runs/main_$(date -u +%Y%m%dT%H%M%SZ)
+# ./target/release/examples/ascension_qwen80_broad_activation_all_layer_route_capture \
+#   --manifest $MAIN/.../complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json \
+#   --expected-manifest-seal-sha256 14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b \
+#   --expected-source-audit-seal-sha256 <from SOURCE_BODY_AUDIT> \
+#   --expected-source-revision a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb \
+#   --input-json $INPUT --output-dir $RUN_OK --max-seq-len 2048
+#
+# python3 -m lab.operators.q80_activation_null_first_report \
+#   --capture-run $RUN_OK --label q80-all-layer-broad \
+#   --out-json $DIAG/null-first/NULL_ALL_LAYER.json
+#
+# python3 -m lab.operators.ascension_qwen80_activation_weighted_svd_repack \
+#   --capture-run $RUN_OK
