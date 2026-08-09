@@ -1367,6 +1367,12 @@ def _outer_terminal_document(
             # conforming real capture could not be bound by an assessor that
             # requires ``fixture_or_synthetic`` on both halves of the pair.
             "fixture_or_synthetic": test_only,
+            # This terminal is written by the reaping lifecycle from the child's
+            # observed exit and its sealed inner receipt, never attested by the
+            # child about itself.  Hoist the lease identity to the root as well;
+            # it is already carried under "lease", and the assessor reads it here.
+            "self_asserted": False,
+            "lease_id": lease_id,
             "production_lifecycle_wrapper_required": True,
             "host_preflight": _evidence(context.host_preflight),
             "outer_preflight": _evidence(context.outer_preflight),
@@ -1418,6 +1424,20 @@ def _release_document(
             "one_shot_lease_finalized": True,
             "retry_or_relaunch_forbidden": True,
             "exactly_one_release_for_this_lease": True,
+            # The same facts above, restated under the names the consuming
+            # completion assessor reads.  No new claim is made here: a release
+            # is only written after a real reaped outer terminal, this lifecycle
+            # finalizes the one-shot lease exactly once, retry/relaunch is
+            # forbidden, and a release never authorizes a watcher restart.
+            # The producer and the assessor were written against each other's
+            # intended shapes and never executed together, so the names drifted
+            # (note release_after_ vs released_after_).
+            "actual_release_performed": True,
+            "released_after_outer_terminal": True,
+            "lease_released": True,
+            "automatic_retry_prohibited": True,
+            "fresh_lease_required_for_any_future_gpu_work": True,
+            "watcher_restart_or_transition_authorized": False,
             "lease_id": lease_id,
             "lease": _evidence(lease),
             "outer_terminal": _evidence(terminal),
