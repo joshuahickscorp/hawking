@@ -122,6 +122,9 @@ _ONE_LAYER_KERNELS = (
     "qwen80_moe_wave_aggregate_second_residual_route_sum",
     "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
 )
+# Only valid while every layer in the chain is DeltaNet. GQA layers have the same
+# dispatch count but different kernel names, so the expected order is derived from
+# the schedule authority's per-layer full_layer_kernel_names for layers 0..N-1.
 EXACT_KERNELS = _ONE_LAYER_KERNELS * LAYER_COUNT
 
 
@@ -312,15 +315,29 @@ def _validate_route_authority(authority: BoundDocument) -> tuple[list[int], list
     return [int(value) for value in ids], [float(value) for value in weights]
 
 
-def _kernel_names_from_host(host: Mapping[str, Any], expected_dispatches: int) -> tuple[str, ...]:
+def _kernel_names_from_host(
+    host: Mapping[str, Any], expected_dispatches: int, expected_kernels: tuple[str, ...]
+) -> tuple[str, ...]:
     trace = _mapping(host.get("structural_kernel_trace"), "host structural_kernel_trace")
     names = _array(trace.get("kernel_names"), "host structural_kernel_trace.kernel_names")
     if len(names) != expected_dispatches or any(not isinstance(name, str) or not name for name in names):
         raise MultiLayerOuterError(
             f"host structural kernel names must be exactly {expected_dispatches} non-empty strings"
         )
-    if tuple(names) != EXACT_KERNELS:
-        raise MultiLayerOuterError("host structural kernel names are not the frozen L0..L2 order")
+    if tuple(names) != expected_kernels:
+        first_bad = next(
+            (i for i, (a, b) in enumerate(zip(names, expected_kernels)) if a != b), None
+        )
+        detail = (
+            f" first divergence at index {first_bad}: observed={names[first_bad]!r} "
+            f"expected={expected_kernels[first_bad]!r}"
+            if first_bad is not None
+            else ""
+        )
+        raise MultiLayerOuterError(
+            "host structural kernel names are not the frozen schedule order for this chain"
+            + detail
+        )
     return tuple(str(name) for name in names)
 
 
@@ -339,6 +356,7 @@ def _capture_body_wired(host: Mapping[str, Any]) -> bool:
 def _validate_host_preflight(
     layer_count: int,
     expected_dispatches: int,
+    expected_kernels: tuple[str, ...],
     host: BoundDocument,
     host_binary: Mapping[str, Any],
     schedule: BoundDocument,
@@ -404,7 +422,7 @@ def _validate_host_preflight(
         raise MultiLayerOuterError(
             "host preflight.execution_policy.per_layer_dispatch_count must be an int or a list"
         )
-    names = _kernel_names_from_host(root, expected_dispatches)
+    names = _kernel_names_from_host(root, expected_dispatches, expected_kernels)
     schemas = _mapping(root.get("future_capture_schemas"), "host preflight.future_capture_schemas")
     _text(schemas, "inner", INNER_SCHEMA, "host preflight.future_capture_schemas")
     _text(schemas, "inner_status", INNER_STATUS, "host preflight.future_capture_schemas")
@@ -532,9 +550,24 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
     if joint.document.get("earned_component_only") is not True:
         raise MultiLayerOuterError("joint assessment did not earn L0+L1 component")
     ids, weights = _validate_route_authority(route)
+    schedule_layers = _array(schedule.document.get("layers"), "schedule.layers")
+    expected_kernels = tuple(
+        name
+        for layer in schedule_layers[:layer_count]
+        for name in _array(
+            _mapping(layer, "schedule layer").get("full_layer_kernel_names"),
+            "schedule layer.full_layer_kernel_names",
+        )
+    )
+    if len(expected_kernels) != expected_dispatches:
+        raise MultiLayerOuterError(
+            f"schedule kernel names for layers 0..{layer_count - 1} total "
+            f"{len(expected_kernels)}, chain oracle says {expected_dispatches}"
+        )
     capture_body_wired, kernel_names = _validate_host_preflight(
         layer_count,
         expected_dispatches,
+        expected_kernels,
         host, host_binary, schedule, oracle, assessment, joint
     )
     return seal(
