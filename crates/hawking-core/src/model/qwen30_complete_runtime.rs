@@ -1383,13 +1383,27 @@ impl Qwen30CompleteNativeRuntime {
                 options.max_seq_len
             )));
         }
+        // The exact HGRAVS01 organ count is already cross-checked at admission
+        // against the manifest's `representation.selected_organs` authority, so
+        // re-asserting a literal here only pins this path to one artifact. What
+        // the runtime still owes is that the catalog is COMPLETE: every source
+        // tensor verified, and the mixed split accounting for all of them.
+        let organs = mixed.selected_hgravs_organs.len();
         if mixed.verified_payload_count() != QWEN30_COMPLETE_TENSOR_COUNT
             || !mixed.has_complete_verified_payload_cache()
-            || mixed.selected_hgravs_organs.len() != 327
+            || organs == 0
+            || organs > QWEN30_COMPLETE_TENSOR_COUNT
         {
-            return Err(model_error(
-                "activation-weighted admission did not retain a complete mixed catalog (18540 direct + 327 HGRAVS01)",
-            ));
+            return Err(model_error(format!(
+                "activation-weighted admission did not retain a complete mixed catalog: \
+                 verified_payload_count={} expected={QWEN30_COMPLETE_TENSOR_COUNT}, \
+                 complete_verified_payload_cache={}, HGRAVS01 organs={organs} \
+                 (expected 1..={QWEN30_COMPLETE_TENSOR_COUNT}), \
+                 implied direct={}",
+                mixed.verified_payload_count(),
+                mixed.has_complete_verified_payload_cache(),
+                QWEN30_COMPLETE_TENSOR_COUNT.saturating_sub(organs),
+            )));
         }
         let direct = mixed.direct_base_view_for_runtime()?;
         // Config/tokenizer bind through the same source paths as the direct

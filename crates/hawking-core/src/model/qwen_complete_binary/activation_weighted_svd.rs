@@ -42,9 +42,6 @@ pub const QWEN30_ACTIVATION_WEIGHTED_SVD_MODEL_ID: &str =
     "Qwen3-Coder-30B-A3B-Instruct-activation-weighted-svd-v1";
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_ARTIFACT_PREFIX: &str = "QWEN30_ACTIVATION_WEIGHTED_SVD_V1";
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_TENSOR_COUNT: usize = 18_867;
-pub const QWEN30_ACTIVATION_WEIGHTED_SVD_SELECTED_COUNT: usize = 327;
-pub const QWEN30_ACTIVATION_CAPTURE_SHA256: &str =
-    "4c721dc855ad3fbe0699e41244106da277c5983e1404ea6dafa9d43b90865037";
 const QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS: usize = 4;
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_PAYLOAD_VERIFY_MODE: &str =
     "bounded_parallel_source_shard_lanes_ordered_reconciliation_v1";
@@ -84,6 +81,8 @@ pub struct Hgravs01Header {
 
 /// Protected bindings for the activation-weighted SVD candidate. Every seal is
 /// supplied by the sealed handoff; a self-consistent replacement is refused.
+/// The activation-capture SHA is operator-supplied so a forged manifest cannot
+/// name its own capture and pass.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Qwen30ActivationWeightedSvdAdmission {
     pub expected_manifest_seal_sha256: String,
@@ -97,6 +96,7 @@ pub struct Qwen30ActivationWeightedSvdAdmission {
     pub expected_source_snapshot_seal_sha256: String,
     pub expected_terminal_path: PathBuf,
     pub expected_terminal_seal_sha256: String,
+    pub expected_activation_capture_sha256: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -713,10 +713,12 @@ fn declared_tensor_shape_local(row: &Map<String, Value>, label: &str) -> Result<
         .collect()
 }
 
+/// Validates manifest source/representation bindings and returns the
+/// authority selected-organ count from `representation.selected_organs`.
 fn validate_aw_manifest_source(
     manifest: &Map<String, Value>,
     source: &super::SourceChain,
-) -> Result<()> {
+) -> Result<usize> {
     let label = "activation-weighted SVD manifest";
     let manifest_source = required_object(manifest, "source", label)?;
     require_exact_string(
@@ -775,17 +777,84 @@ fn validate_aw_manifest_source(
             "activation-weighted representation must retain physical direct-layout accounting",
         ));
     }
+    // Authority count is representation.selected_organs.len(). Callers must
+    // require selection and branch changed_organs to match this same N.
     let selected = required_array(representation, "selected_organs", label)?;
-    if selected.len() != QWEN30_ACTIVATION_WEIGHTED_SVD_SELECTED_COUNT {
+    let authority_count = selected.len();
+    if authority_count == 0 {
         return Err(model_error(
             label,
-            "representation selected_organs count is not 327",
+            "representation selected_organs count is 0; expected > 0",
+        ));
+    }
+    // Coverage floor preserves the anti-partial-coverage property the old
+    // fixed organ count stood in for. Fields live on the sealed selection
+    // receipt and are mirrored on the manifest; validate the manifest copy
+    // here and re-check the sealed selection receipt after it is bound.
+    let coverage = required_object(representation, "coverage", label)?;
+    validate_aw_coverage_floor(coverage, label)?;
+    Ok(authority_count)
+}
+
+/// Anti-partial-coverage floor: selected set must be non-empty (checked by
+/// caller), must not claim layer0-only coverage, and must cover every model
+/// layer.
+fn validate_aw_coverage_floor(coverage: &Map<String, Value>, label: &str) -> Result<()> {
+    if required_bool(coverage, "layer0_only", label)? {
+        return Err(model_error(
+            label,
+            "coverage.layer0_only is true; full-model activation-weighted coverage is required",
+        ));
+    }
+    let n_layers_covered = required_u64(coverage, "n_layers_covered", label)?;
+    let model_layers = required_u64(coverage, "model_layers", label)?;
+    if model_layers == 0 {
+        return Err(model_error(
+            label,
+            "coverage.model_layers is 0; expected a positive model layer count",
+        ));
+    }
+    if n_layers_covered != model_layers {
+        return Err(model_error(
+            label,
+            format!(
+                "coverage.n_layers_covered is {n_layers_covered}, expected coverage.model_layers={model_layers}"
+            ),
         ));
     }
     Ok(())
 }
 
-fn aw_selection_organs(selection: &Value) -> Result<BTreeMap<String, Map<String, Value>>> {
+/// Expert gate/up/down organs on any decoder layer (not layer-0 only).
+fn is_aw_expert_gate_up_down_organ(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix("model.layers.") else {
+        return false;
+    };
+    let Some((layer, rest)) = rest.split_once('.') else {
+        return false;
+    };
+    if layer.is_empty() || !layer.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    let Some(rest) = rest.strip_prefix("mlp.experts.") else {
+        return false;
+    };
+    let Some((expert, proj)) = rest.split_once('.') else {
+        return false;
+    };
+    if expert.is_empty() || !expert.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    matches!(
+        proj,
+        "gate_proj.weight" | "up_proj.weight" | "down_proj.weight"
+    )
+}
+
+fn aw_selection_organs(
+    selection: &Value,
+    authority_selected_count: usize,
+) -> Result<BTreeMap<String, Map<String, Value>>> {
     let label = "activation-weighted SVD selection receipt";
     let root = selection
         .as_object()
@@ -805,10 +874,14 @@ fn aw_selection_organs(selection: &Value) -> Result<BTreeMap<String, Map<String,
     let selected = required_object(root, "selected_representation", label)?;
     require_exact_string(selected, "family", HGRAVS01_REPRESENTATION, label)?;
     let organs = required_array(selected, "organs", label)?;
-    if organs.len() != QWEN30_ACTIVATION_WEIGHTED_SVD_SELECTED_COUNT {
+    if organs.len() != authority_selected_count {
         return Err(model_error(
             label,
-            "selection must contain exactly 327 surplus-selected organs",
+            format!(
+                "selection selected_representation.organs count is {}, expected {} (representation.selected_organs authority)",
+                organs.len(),
+                authority_selected_count
+            ),
         ));
     }
     let mut output = BTreeMap::new();
@@ -817,14 +890,12 @@ fn aw_selection_organs(selection: &Value) -> Result<BTreeMap<String, Map<String,
             .as_object()
             .ok_or_else(|| model_error(label, "selected organ must be an object"))?;
         let name = required_string(organ, "tensor_name", label)?;
-        if !name.starts_with("model.layers.0.mlp.experts.")
-            || !(name.ends_with(".gate_proj.weight")
-                || name.ends_with(".up_proj.weight")
-                || name.ends_with(".down_proj.weight"))
-        {
+        if !is_aw_expert_gate_up_down_organ(name) {
             return Err(model_error(
                 label,
-                format!("selected organ {name:?} is outside the L0 expert gate/up/down policy"),
+                format!(
+                    "selected organ {name:?} is outside the expert gate/up/down policy (model.layers.<N>.mlp.experts.<E>.{{gate,up,down}}_proj.weight)"
+                ),
             ));
         }
         if required_string(organ, "family", label)? != HGRAVS01_REPRESENTATION {
@@ -879,6 +950,7 @@ fn validate_aw_selection_and_snapshot(
     admission: &Qwen30ActivationWeightedSvdAdmission,
     expected_revalidation_path: &Path,
     expected_revalidation_raw_sha256: &str,
+    authority_selected_count: usize,
 ) -> Result<BTreeMap<String, Map<String, Value>>> {
     let label = "activation-weighted SVD manifest";
     let expected_selection_path = canonical_expected_regular_path(
@@ -936,17 +1008,25 @@ fn validate_aw_selection_and_snapshot(
         "activation-weighted manifest selection binding",
     )?;
     let changed = required_array(branch, "changed_organs", label)?;
-    if changed.len() != QWEN30_ACTIVATION_WEIGHTED_SVD_SELECTED_COUNT {
+    if changed.len() != authority_selected_count {
         return Err(model_error(
             label,
-            "branch changed_organs count is not 327",
+            format!(
+                "branch changed_organs count is {}, expected {} (representation.selected_organs authority)",
+                changed.len(),
+                authority_selected_count
+            ),
         ));
     }
     let capture = required_object(branch, "activation_capture", label)?;
-    if required_sha256(capture, "sha256", label)? != QWEN30_ACTIVATION_CAPTURE_SHA256 {
+    let observed_capture = required_sha256(capture, "sha256", label)?;
+    if observed_capture != admission.expected_activation_capture_sha256 {
         return Err(model_error(
             label,
-            "branch activation capture sha256 differs from the sealed broad capture",
+            format!(
+                "branch activation_capture.sha256 is {observed_capture}, expected {} (operator --expected-activation-capture-sha256)",
+                admission.expected_activation_capture_sha256
+            ),
         ));
     }
 
@@ -989,6 +1069,17 @@ fn validate_aw_selection_and_snapshot(
     let selection_root = selection
         .as_object()
         .ok_or_else(|| model_error("activation-weighted selection receipt", "root must be an object"))?;
+    // Sealed selection coverage is the binding authority for the anti-partial
+    // floor (mirrors representation.coverage already checked on the manifest).
+    let selection_coverage = required_object(
+        selection_root,
+        "coverage",
+        "activation-weighted selection receipt",
+    )?;
+    validate_aw_coverage_floor(
+        selection_coverage,
+        "activation-weighted selection receipt",
+    )?;
     let selection_snapshot = required_object(
         selection_root,
         "source_binding_snapshot",
@@ -1001,7 +1092,7 @@ fn validate_aw_selection_and_snapshot(
         &snapshot_seal,
         "activation-weighted selection source snapshot binding",
     )?;
-    aw_selection_organs(&selection)
+    aw_selection_organs(&selection, authority_selected_count)
 }
 
 fn validate_aw_terminal(
@@ -1116,6 +1207,7 @@ fn validate_aw_tensor_row(
     source: &super::SourceChain,
     selected_organs: &BTreeMap<String, Map<String, Value>>,
     selection_path: &Path,
+    expected_activation_capture_sha256: &str,
 ) -> Result<(Qwen30ActivationWeightedTensor, Arc<[u8]>)> {
     let label = "activation-weighted SVD manifest tensor";
     let tensor_name = required_string(row, "tensor_name", label)?;
@@ -1237,13 +1329,16 @@ fn validate_aw_tensor_row(
                 "selected organ layout rank/bits differ from physical HGRAVS01 header",
             ));
         }
-        if required_sha256(layout, "activation_capture_sha256", label)?
-            != parsed.activation_capture_sha256
-            || parsed.activation_capture_sha256 != QWEN30_ACTIVATION_CAPTURE_SHA256
+        let layout_capture = required_sha256(layout, "activation_capture_sha256", label)?;
+        if layout_capture != parsed.activation_capture_sha256
+            || parsed.activation_capture_sha256 != expected_activation_capture_sha256
         {
             return Err(model_error(
                 label,
-                "selected organ activation capture binding differs from sealed capture",
+                format!(
+                    "selected organ activation capture binding differs from operator expectation: layout={layout_capture} payload={} expected={expected_activation_capture_sha256}",
+                    parsed.activation_capture_sha256
+                ),
             ));
         }
         if required_u64(selected, "rank", label)? != u64::try_from(parsed.rank).unwrap_or(u64::MAX)
@@ -1356,6 +1451,7 @@ fn validate_aw_tensor_rows_bounded_parallel(
     source: &super::SourceChain,
     selected_organs: &BTreeMap<String, Map<String, Value>>,
     selection_path: &Path,
+    expected_activation_capture_sha256: &str,
 ) -> Result<(Vec<(Qwen30ActivationWeightedTensor, Arc<[u8]>)>, usize)> {
     let (lanes, workers) = quality_payload_verification_lanes(rows);
     let workers = workers.min(QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS);
@@ -1383,6 +1479,7 @@ fn validate_aw_tensor_rows_bounded_parallel(
                                 source,
                                 selected_organs,
                                 selection_path,
+                                expected_activation_capture_sha256,
                             )
                         });
                     lane_outcomes.push((ordinal, outcome));
@@ -1445,6 +1542,10 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         (
             "expected terminal seal",
             admission.expected_terminal_seal_sha256.as_str(),
+        ),
+        (
+            "expected activation capture",
+            admission.expected_activation_capture_sha256.as_str(),
         ),
     ] {
         if !is_sha256(value) {
@@ -1579,12 +1680,13 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         &standard_admission,
         &manifest_audit_seal,
     )?;
-    validate_aw_manifest_source(manifest_object, &source)?;
+    let authority_selected_count = validate_aw_manifest_source(manifest_object, &source)?;
     let selected_organs = validate_aw_selection_and_snapshot(
         manifest_object,
         admission,
         &expected_revalidation_path,
         &sha256_hex(&receipt_raw),
+        authority_selected_count,
     )?;
 
     let terminal_raw =
@@ -1647,6 +1749,7 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
             &source,
             &selected_organs,
             &expected_selection_path,
+            &admission.expected_activation_capture_sha256,
         )?;
     let mut tensors = BTreeMap::new();
     let mut verified_payloads = BTreeMap::new();
@@ -1673,13 +1776,17 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
             ));
         }
     }
-    if selected_hgravs_organs.len() != QWEN30_ACTIVATION_WEIGHTED_SVD_SELECTED_COUNT
+    if selected_hgravs_organs.len() != authority_selected_count
+        || selected_hgravs_organs.len() != selected_organs.len()
         || selected_hgravs_organs
             != selected_organs.keys().cloned().collect::<BTreeSet<_>>()
     {
-        return Err(Error::Model(
-            "activation-weighted SVD selected HGRAVS01 set differs from sealed selection".into(),
-        ));
+        return Err(Error::Model(format!(
+            "activation-weighted SVD selected HGRAVS01 set differs from sealed selection: observed_hgravs={} selection={} authority={}",
+            selected_hgravs_organs.len(),
+            selected_organs.len(),
+            authority_selected_count
+        )));
     }
     if tensors.keys().ne(source.weight_map.keys()) {
         return Err(Error::Model(
@@ -1860,10 +1967,14 @@ mod tests {
             "right_body_bytes".into(),
             Value::from(right_body.len() as u64),
         );
+        // Synthetic fixture capture pin (unit tests only; production uses the
+        // operator-supplied admission expectation).
+        const FIXTURE_ACTIVATION_CAPTURE_SHA256: &str =
+            "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
         let mut capture = Map::new();
         capture.insert(
             "sha256".into(),
-            Value::String(QWEN30_ACTIVATION_CAPTURE_SHA256.into()),
+            Value::String(FIXTURE_ACTIVATION_CAPTURE_SHA256.into()),
         );
         capture.insert(
             "fit_kind".into(),
