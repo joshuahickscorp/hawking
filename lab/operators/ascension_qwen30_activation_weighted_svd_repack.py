@@ -1393,6 +1393,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Refuse to pack unless the bound capture is an all-layer activation capture.",
     )
     parser.add_argument(
+        "--min-tokens",
+        type=int,
+        default=MIN_TOKENS,
+        help=(
+            "minimum captured rows for a (layer, expert) organ to be eligible. "
+            "The default 32 predates the rank cap: an organ with few rows now gets "
+            "a low-rank WELL-POSED fit rather than an ill-posed one, and the "
+            "surplus-over-null gate still rejects any fit that fails to beat "
+            "baseline, so lowering this trades no correctness for coverage."
+        ),
+    )
+    parser.add_argument(
         "--selection-only",
         action="store_true",
         help="Seal selection receipt only; do not materialize the full candidate catalog.",
@@ -1402,6 +1414,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.min_tokens != MIN_TOKENS:
+        if args.min_tokens < 1:
+            raise ActivationWeightedRepackError("--min-tokens must be >= 1")
+        globals()["MIN_TOKENS"] = int(args.min_tokens)
     packer = ActivationWeightedSvdRepack(
         model_dir=args.model_dir,
         baseline_root=args.baseline_root,
