@@ -16,6 +16,9 @@ pub mod qwen30_complete_runtime;
 /// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
 /// all-layer diagnostic.  It is not an Engine or endpoint selection.
 pub mod qwen30_quality_repack_diagnostic;
+/// Exact 48-layer execution schedule (mixer assignment, state slots, kernel
+/// sequences). CPU/build authority only — not an Engine dispatch.
+pub mod qwen80_48_layer_execution_schedule;
 /// Strict Qwen3-Coder-Next complete-binary hybrid catalog and native-state
 /// bootstrap.  It deliberately is not an Engine dispatch until its full token
 /// graph has real capability evidence.
