@@ -83,6 +83,9 @@ L1_ROUTE_AUTHORITY_STATUS = (
     "SAME_RUNTIME_MOE_SUFFIX"
 )
 
+# Default kept at the first validated chain length. The chain is parameterised, so
+# this is a default rather than a law: --layer-count must agree with the host
+# preflight and the chain oracle, and all three are checked against each other.
 LAYER_COUNT = 3
 PER_LAYER_DISPATCHES = 23
 TOTAL_DISPATCHES = 69
@@ -142,6 +145,7 @@ class OuterInputs:
     joint_assessment: Path
     l0_source_outer_preflight: Path
     original_l1_route_authority: Path
+    layer_count: int = LAYER_COUNT
 
 
 def _sha_bytes(payload: bytes) -> str:
@@ -329,6 +333,7 @@ def _capture_body_wired(host: Mapping[str, Any]) -> bool:
 
 
 def _validate_host_preflight(
+    layer_count: int,
     host: BoundDocument,
     host_binary: Mapping[str, Any],
     schedule: BoundDocument,
@@ -344,7 +349,7 @@ def _validate_host_preflight(
         or recorded_binary.get("sha256") != host_binary["sha256"]
     ):
         raise MultiLayerOuterError("host preflight is not bound to the supplied current binary")
-    _int(root, "layer_count", LAYER_COUNT, "host preflight")
+    _int(root, "layer_count", layer_count, "host preflight")
     _int(root, "source_token_id", SOURCE_TOKEN_ID, "host preflight")
     layers = _mapping(root.get("layers_inclusive_range"), "host preflight.layers_inclusive_range")
     _int(layers, "first", 0, "host preflight.layers_inclusive_range")
@@ -396,9 +401,9 @@ def _validate_host_preflight(
     return _capture_body_wired(root), names
 
 
-def _validate_chain_oracle(oracle: BoundDocument) -> None:
+def _validate_chain_oracle(oracle: BoundDocument, layer_count: int) -> None:
     root = oracle.document
-    _int(root, "layer_count", LAYER_COUNT, "chain cpu oracle")
+    _int(root, "layer_count", layer_count, "chain cpu oracle")
     if root.get("includes_unready_gqa") is True:
         raise MultiLayerOuterError(
             "chain cpu oracle includes_unready_gqa=true; multi-layer outer requires a DeltaNet-only L0..L2 chain"
@@ -436,6 +441,7 @@ def _validate_schedule(schedule: BoundDocument) -> None:
 
 
 def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
+    layer_count = inputs.layer_count
     """Validate current CPU/static authority files and seal an outer preflight.
 
     This has no subprocess or artifact/catalog operation.  The supplied host
@@ -486,13 +492,14 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
         (L1_ROUTE_AUTHORITY_STATUS,),
     )
     _validate_schedule(schedule)
-    _validate_chain_oracle(oracle)
+    _validate_chain_oracle(oracle, layer_count)
     if assessment.document.get("earned_complete_l1_component_only") is not True:
         raise MultiLayerOuterError("L1 assessment did not earn complete L1 component")
     if joint.document.get("earned_component_only") is not True:
         raise MultiLayerOuterError("joint assessment did not earn L0+L1 component")
     ids, weights = _validate_route_authority(route)
     capture_body_wired, kernel_names = _validate_host_preflight(
+        layer_count,
         host, host_binary, schedule, oracle, assessment, joint
     )
     return seal(
@@ -509,7 +516,7 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
             "original_l1_route_authority": _bound_evidence(route),
             "exact_component_scope": {
                 "source_token_id": SOURCE_TOKEN_ID,
-                "layer_count": LAYER_COUNT,
+                "layer_count": layer_count,
                 "layers_first": 0,
                 "layers_last": LAYER_COUNT - 1,
                 "per_layer_dispatches": PER_LAYER_DISPATCHES,
@@ -593,6 +600,7 @@ def _parse_args(arguments: Sequence[str]) -> tuple[OuterInputs, Path]:
     parser.add_argument("--joint-assessment", required=True, type=Path)
     parser.add_argument("--l0-source-outer-preflight", required=True, type=Path)
     parser.add_argument("--original-l1-route-authority", required=True, type=Path)
+    parser.add_argument("--layer-count", type=int, default=LAYER_COUNT)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args(arguments)
     return (
@@ -605,6 +613,7 @@ def _parse_args(arguments: Sequence[str]) -> tuple[OuterInputs, Path]:
             joint_assessment=args.joint_assessment,
             l0_source_outer_preflight=args.l0_source_outer_preflight,
             original_l1_route_authority=args.original_l1_route_authority,
+            layer_count=args.layer_count,
         ),
         args.out,
     )
