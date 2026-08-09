@@ -946,7 +946,9 @@ fn validate_feasibility(
 #[derive(Clone, Debug)]
 struct RawSixVectorBinding {
     evidence: Value,
-    source_teacher_currently_blocked: bool,
+    /// STREAMED_TEACHER mode gate only.  Never derived from the co-resident
+    /// `source_teacher_capture_is_currently_blocked` legacy boolean.
+    streamed_teacher_resource_blocked: bool,
 }
 
 fn expected_payloads() -> Vec<Value> {
@@ -1059,23 +1061,62 @@ fn validate_raw_six_vector(
         true,
         "raw six-vector requires receipt-last persistence",
     )?;
-    let gate = object(
+    // STREAMED authority reads execution_mode_gates.STREAMED_TEACHER only.
+    // The legacy co-resident boolean in source_memory_and_eviction_gate must
+    // not block or authorize this path.
+    let modes = object(
         required(
             root,
-            "source_memory_and_eviction_gate",
+            "execution_mode_gates",
             "raw six-vector contract",
         )?,
-        "raw six-vector contract.source_memory_and_eviction_gate",
+        "raw six-vector contract.execution_mode_gates",
     )?;
+    require_bool(
+        required(
+            modes,
+            "streamed_authority_must_read_STREAMED_TEACHER_not_co_resident_flag",
+            "raw six-vector contract.execution_mode_gates",
+        )?,
+        true,
+        "raw six-vector must declare STREAMED authority independence",
+    )?;
+    let streamed = object(
+        required(
+            modes,
+            "STREAMED_TEACHER",
+            "raw six-vector contract.execution_mode_gates",
+        )?,
+        "raw six-vector contract.execution_mode_gates.STREAMED_TEACHER",
+    )?;
+    let streamed_blocked = required(
+        streamed,
+        "streamed_teacher_capture_is_currently_blocked",
+        "raw six-vector contract.execution_mode_gates.STREAMED_TEACHER",
+    )?
+    .as_bool()
+    .ok_or_else(|| {
+        "raw six-vector STREAMED_TEACHER block flag must be boolean".to_owned()
+    })?;
+    let streamed_verdict = string(
+        required(
+            streamed,
+            "verdict",
+            "raw six-vector contract.execution_mode_gates.STREAMED_TEACHER",
+        )?,
+        "raw six-vector STREAMED_TEACHER verdict",
+    )?;
+    if streamed_verdict != "READY" && streamed_verdict != "BLOCKED" {
+        return Err("raw six-vector STREAMED_TEACHER verdict must be READY or BLOCKED".to_owned());
+    }
+    if (streamed_verdict == "BLOCKED") != streamed_blocked {
+        return Err(
+            "raw six-vector STREAMED_TEACHER verdict/block flag disagree".to_owned(),
+        );
+    }
     Ok(RawSixVectorBinding {
         evidence: document_evidence(document),
-        source_teacher_currently_blocked: required(
-            gate,
-            "source_teacher_capture_is_currently_blocked",
-            "raw six-vector contract.source_memory_and_eviction_gate",
-        )?
-        .as_bool()
-        .ok_or_else(|| "raw six-vector source-teacher block flag must be boolean".to_owned())?,
+        streamed_teacher_resource_blocked: streamed_blocked,
     })
 }
 
@@ -1518,9 +1559,9 @@ fn prepared_document(
             "sealed_dual_attestation_runtime_admission_bridge_absent".to_owned(),
         ));
     }
-    if raw.source_teacher_currently_blocked {
+    if raw.streamed_teacher_resource_blocked {
         blockers.push(Value::String(
-            "current_raw_six_vector_contract_marks_source_teacher_capture_blocked".to_owned(),
+            "current_raw_six_vector_STREAMED_TEACHER_resource_gate_blocked".to_owned(),
         ));
     }
     blockers.extend([
@@ -1852,7 +1893,26 @@ mod tests {
                     "required_payloads": expected_payloads(),
                     "receipt_must_be_written_after_all_six_payloads_and_fsyncs": true,
                 },
-                "source_memory_and_eviction_gate": {"source_teacher_capture_is_currently_blocked": true},
+                "source_memory_and_eviction_gate": {
+                    "source_teacher_capture_is_currently_blocked": true,
+                    "source_teacher_capture_is_currently_blocked_applies_only_to_co_resident_teacher": true,
+                    "streamed_path_must_use_execution_mode_gates_STREAMED_TEACHER": true,
+                },
+                "execution_mode_gates": {
+                    "modes_are_independent": true,
+                    "streamed_authority_must_read_STREAMED_TEACHER_not_co_resident_flag": true,
+                    "co_resident_authority_must_read_CO_RESIDENT_TEACHER": true,
+                    "CO_RESIDENT_TEACHER": {
+                        "execution_mode": "CO_RESIDENT_TEACHER",
+                        "verdict": "BLOCKED",
+                        "source_teacher_capture_is_currently_blocked": true,
+                    },
+                    "STREAMED_TEACHER": {
+                        "execution_mode": "STREAMED_TEACHER",
+                        "verdict": "BLOCKED",
+                        "streamed_teacher_capture_is_currently_blocked": true,
+                    },
+                },
             })),
             true,
         )

@@ -14,13 +14,18 @@
 //! embedding -> layers 0 through 47 -> final norm -> all-row lm_head ->
 //! tail mask -> deterministic sample -> feedback.
 //!
-//! The built-in current-evidence mode is intentionally incomplete. It records
-//! current component evidence without promoting it to a decoder token,
-//! HCLI, BASE_TRUE_TPS, TG, capability, or tournament result.
+//! Production assessment requires `--input ABSOLUTE_PATH`: the file is bound by
+//! absolute path + content SHA-256, and a present top-level `seal_sha256` is
+//! verified before evaluation. There is no silent on-disk discovery layout for
+//! per-layer physical receipts yet, so the former `--current-evidence` flag is
+//! not a measurement path. Use `--empty-template` only to emit a clearly labeled
+//! fixture-derived incomplete document for wiring tests; never treat that output
+//! as a state assessment.
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -281,11 +286,25 @@ struct StateSlotReport {
     reasons: Vec<String>,
 }
 
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+struct BoundInputIdentity {
+    absolute_path: String,
+    content_sha256: String,
+    seal_sha256: Option<String>,
+}
+
 #[derive(Serialize)]
 struct Report {
     schema: &'static str,
     status: &'static str,
     command_graph_ready: bool,
+    /// Machine-readable: true only when the readiness input was read and bound
+    /// from a regular file on disk (absolute path + content SHA-256).
+    inputs_bound_from_disk: bool,
+    /// Machine-readable: true only for the explicit `--empty-template` path.
+    /// Fixture-derived reports are never measurements of campaign evidence.
+    fixture_derived: bool,
+    bound_input_identity: Option<BoundInputIdentity>,
     decoder_readiness_contract_schema_valid: bool,
     terminal_head_contract_schema_valid: bool,
     exact_48_layer_schedule_valid: bool,
@@ -312,14 +331,29 @@ struct Report {
     unsealed_preimage_sha256: String,
 }
 
+/// How the readiness input was obtained. Production CLI uses disk binding only.
+#[derive(Clone, Debug)]
+enum InputProvenance {
+    BoundFromDisk(BoundInputIdentity),
+    EmptyTemplateFixture,
+    /// Unit-test / library-style evaluation with no file binding.
+    InMemoryUnbound,
+}
+
 enum InputMode {
     Input(PathBuf),
-    CurrentEvidence,
+    EmptyTemplate,
 }
 
 struct Args {
     input_mode: InputMode,
     out: PathBuf,
+}
+
+#[derive(Debug)]
+struct BoundInput {
+    identity: BoundInputIdentity,
+    input: ReadinessInput,
 }
 
 fn is_lower_sha256(value: &str) -> bool {
@@ -693,8 +727,19 @@ fn validate_command_order(steps: &[CommandStep], blockers: &mut Vec<String>) -> 
     }
 }
 
-fn evaluate(input: ReadinessInput) -> Report {
+fn evaluate(input: ReadinessInput, provenance: InputProvenance) -> Report {
     let mut blockers = Vec::new();
+    let (inputs_bound_from_disk, fixture_derived, bound_input_identity) = match &provenance {
+        InputProvenance::BoundFromDisk(identity) => (true, false, Some(identity.clone())),
+        InputProvenance::EmptyTemplateFixture => {
+            blockers.push(
+                "empty-template fixture: inputs were synthesised in-process and were not bound from disk evidence"
+                    .into(),
+            );
+            (false, true, None)
+        }
+        InputProvenance::InMemoryUnbound => (false, false, None),
+    };
     let input_schema_valid = input.schema == INPUT_SCHEMA;
     if !input_schema_valid {
         blockers.push("input schema drifted".into());
@@ -752,7 +797,9 @@ fn evaluate(input: ReadinessInput) -> Report {
     let decoder_contract_is_context_not_circular_promotion = true;
     let exact_48_layer_schedule_valid =
         exact_schedule_from_layer_evidence(&input.physical_command_graph.layers);
-    let command_graph_ready = input_schema_valid
+    // Fixture-derived documents can never earn ready: they are not measurements.
+    let command_graph_ready = !fixture_derived
+        && input_schema_valid
         && decoder_readiness_contract_schema_valid
         && terminal_head_contract_schema_valid
         && physical_graph_schema_valid
@@ -764,36 +811,57 @@ fn evaluate(input: ReadinessInput) -> Report {
         && command_order_valid
         && graph_receipt_sealed
         && input.physical_command_graph.physical_capture;
-    let status = if command_graph_ready {
+    let status = if fixture_derived {
+        "FIXTURE_TEMPLATE_QWEN80_48_LAYER_COMMAND_GRAPH_SYNTHESISED_NOT_A_MEASUREMENT"
+    } else if command_graph_ready {
         "READY_QWEN80_48_LAYER_COMMAND_GRAPH_PHYSICAL_FULL_PATH_EVIDENCE_CONTRACT_ONLY"
     } else {
         "INCOMPLETE_QWEN80_48_LAYER_COMMAND_GRAPH_NOT_RUNTIME_NO_TOKEN_NO_HCLI_NO_TPS"
     };
-    let current_component_evidence_is_incomplete =
-        input.terminal_head_contract.component_contract_only
-            || !input
-                .terminal_head_contract
-                .future_device_dispatch_ledger
-                .dispatch_authorized_now
-            || !input
-                .terminal_head_contract
-                .future_device_dispatch_ledger
-                .actual_all_layer_hidden_input_available
-            || !input
-                .terminal_head_contract
-                .future_device_dispatch_ledger
-                .actual_device_parity_available
-            || input
-                .terminal_head_contract
-                .terminal_head_cpu_components
-                .raw_component_receipts_are_unsealed
-            || !input
-                .decoder_readiness_contract
-                .complete_decoder_readiness_earned;
+    let current_component_evidence_is_incomplete = fixture_derived
+        || input.terminal_head_contract.component_contract_only
+        || !input
+            .terminal_head_contract
+            .future_device_dispatch_ledger
+            .dispatch_authorized_now
+        || !input
+            .terminal_head_contract
+            .future_device_dispatch_ledger
+            .actual_all_layer_hidden_input_available
+        || !input
+            .terminal_head_contract
+            .future_device_dispatch_ledger
+            .actual_device_parity_available
+        || input
+            .terminal_head_contract
+            .terminal_head_cpu_components
+            .raw_component_receipts_are_unsealed
+        || !input
+            .decoder_readiness_contract
+            .complete_decoder_readiness_earned;
+    let mut claim_boundary = vec![
+        "This target consumes only supplied JSON evidence descriptors. It does not open a Qwen80 artifact, source shard, tensor payload, state buffer, server, watcher, HCLI endpoint, or Metal device.",
+        "A ready result requires separately sealed physical full-path device evidence for all 48 layers, session state, terminal path, and command order.",
+        "Even a ready contract is command-graph evidence only. It is not a model execution, generated token, HCLI result, BASE_TRUE_TPS/TG measurement, capability result, or tournament action.",
+    ];
+    if fixture_derived {
+        claim_boundary.insert(
+            0,
+            "FIXTURE-DERIVED: this document was synthesised by --empty-template and is not bound to any on-disk evidence file. It is not a campaign state assessment.",
+        );
+    } else if inputs_bound_from_disk {
+        claim_boundary.insert(
+            0,
+            "DISK-BOUND: inputs were read from a regular file and bound by absolute path + content SHA-256 (and seal_sha256 when present).",
+        );
+    }
     let mut report = Report {
         schema: RESULT_SCHEMA,
         status,
         command_graph_ready,
+        inputs_bound_from_disk,
+        fixture_derived,
+        bound_input_identity,
         decoder_readiness_contract_schema_valid,
         terminal_head_contract_schema_valid,
         exact_48_layer_schedule_valid,
@@ -819,11 +887,7 @@ fn evaluate(input: ReadinessInput) -> Report {
         model_execution_performed: false,
         hcli_execution_performed: false,
         tps_or_tg_measurement_performed: false,
-        claim_boundary: vec![
-            "This target consumes only supplied JSON evidence descriptors. It does not open a Qwen80 artifact, source shard, tensor payload, state buffer, server, watcher, HCLI endpoint, or Metal device.",
-            "Current component evidence is deliberately incomplete. A ready result requires separately sealed physical full-path device evidence for all 48 layers, session state, terminal path, and command order.",
-            "Even a ready contract is command-graph evidence only. It is not a model execution, generated token, HCLI result, BASE_TRUE_TPS/TG measurement, capability result, or tournament action.",
-        ],
+        claim_boundary,
         unsealed_preimage_sha256: String::new(),
     };
     report.unsealed_preimage_sha256 =
@@ -972,7 +1036,8 @@ fn complete_input_fixture() -> ReadinessInput {
     }
 }
 
-fn current_evidence_input() -> ReadinessInput {
+/// Explicit fixture template only. Never used as a silent stand-in for disk evidence.
+fn empty_template_input() -> ReadinessInput {
     let mut input = complete_input_fixture();
     input.physical_command_graph.physical_capture = false;
     input.physical_command_graph.layers = expected_layer_evidence(false);
@@ -985,16 +1050,152 @@ fn current_evidence_input() -> ReadinessInput {
     input
 }
 
-fn read_input(path: &Path) -> Result<ReadinessInput, Box<dyn Error>> {
+fn canonical_json_into(value: &Value, output: &mut String) -> Result<(), String> {
+    match value {
+        Value::Null => output.push_str("null"),
+        Value::Bool(flag) => output.push_str(if *flag { "true" } else { "false" }),
+        Value::Number(number) => output.push_str(&number.to_string()),
+        Value::String(text) => {
+            output.push_str(
+                &serde_json::to_string(text).map_err(|error| format!("string canonicalize: {error}"))?,
+            );
+        }
+        Value::Array(values) => {
+            output.push('[');
+            for (index, entry) in values.iter().enumerate() {
+                if index != 0 {
+                    output.push(',');
+                }
+                canonical_json_into(entry, output)?;
+            }
+            output.push(']');
+        }
+        Value::Object(map) => {
+            let mut ordered = BTreeMap::new();
+            for (key, entry) in map {
+                ordered.insert(key.as_str(), entry);
+            }
+            output.push('{');
+            for (index, (key, entry)) in ordered.into_iter().enumerate() {
+                if index != 0 {
+                    output.push(',');
+                }
+                output.push_str(
+                    &serde_json::to_string(key)
+                        .map_err(|error| format!("key canonicalize: {error}"))?,
+                );
+                output.push(':');
+                canonical_json_into(entry, output)?;
+            }
+            output.push('}');
+        }
+    }
+    Ok(())
+}
+
+fn json_sha(value: &Value) -> Result<String, String> {
+    let mut rendered = String::new();
+    canonical_json_into(value, &mut rendered)?;
+    Ok(sha256_hex(rendered.as_bytes()))
+}
+
+fn verify_optional_seal(document: &Value, label: &str) -> Result<Option<String>, String> {
+    let Some(root) = document.as_object() else {
+        return Err(format!("{label} must be a JSON object"));
+    };
+    let Some(seal_value) = root.get("seal_sha256") else {
+        return Ok(None);
+    };
+    let Some(seal) = seal_value.as_str() else {
+        return Err(format!("{label}.seal_sha256 must be a string"));
+    };
+    if !is_lower_sha256(seal) {
+        return Err(format!("{label}.seal_sha256 must be a lowercase SHA-256"));
+    }
+    let mut unsigned = root.clone();
+    unsigned.remove("seal_sha256");
+    let observed = json_sha(&Value::Object(unsigned))?;
+    if observed != seal {
+        return Err(format!(
+            "{label} seal mismatch: declared seal_sha256 does not bind document content (refusing tampered evidence)"
+        ));
+    }
+    Ok(Some(seal.to_owned()))
+}
+
+fn seal_document(document: &mut Value) -> Result<String, String> {
+    let root = document
+        .as_object()
+        .ok_or_else(|| "document must be a JSON object".to_string())?;
+    if root.contains_key("seal_sha256") {
+        return Err("document already contains seal_sha256".into());
+    }
+    let seal = json_sha(document)?;
+    document
+        .as_object_mut()
+        .expect("checked object")
+        .insert("seal_sha256".into(), Value::String(seal.clone()));
+    Ok(seal)
+}
+
+/// Bind a readiness input from disk: absolute path + content SHA-256 + optional seal.
+fn bind_input_file(path: &Path) -> Result<BoundInput, Box<dyn Error>> {
     if !path.is_absolute() {
-        return Err("--input must be an absolute path".into());
+        return Err(format!(
+            "missing or invalid evidence path: --input must be an absolute path (got {})",
+            path.display()
+        )
+        .into());
     }
-    let metadata = fs::symlink_metadata(path)?;
-    if !metadata.file_type().is_file() || metadata.file_type().is_symlink() {
-        return Err("--input must be a regular non-symlink JSON file".into());
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) => {
+            return Err(format!(
+                "missing evidence file {}: {error}",
+                path.display()
+            )
+            .into());
+        }
+    };
+    if metadata.file_type().is_symlink() || !metadata.file_type().is_file() {
+        return Err(format!(
+            "invalid evidence path {}: must be a regular non-symlink JSON file",
+            path.display()
+        )
+        .into());
     }
-    let bytes = fs::read(path)?;
-    Ok(serde_json::from_slice(&bytes)?)
+    let absolute = path
+        .canonicalize()
+        .map_err(|error| format!("cannot canonicalize evidence path {}: {error}", path.display()))?;
+    let bytes = fs::read(&absolute).map_err(|error| {
+        format!(
+            "cannot read evidence file {}: {error}",
+            absolute.display()
+        )
+    })?;
+    let content_sha256 = sha256_hex(&bytes);
+    let document: Value = serde_json::from_slice(&bytes).map_err(|error| {
+        format!(
+            "evidence file {} is not valid JSON: {error}",
+            absolute.display()
+        )
+    })?;
+    let seal_sha256 = verify_optional_seal(&document, &format!("evidence file {}", absolute.display()))
+        .map_err(|error| -> Box<dyn Error> { error.into() })?;
+    let input: ReadinessInput = serde_json::from_value(document).map_err(|error| {
+        format!(
+            "evidence file {} failed readiness-input schema decode: {error}",
+            absolute.display()
+        )
+    })?;
+    Ok(BoundInput {
+        identity: BoundInputIdentity {
+            absolute_path: absolute.display().to_string(),
+            content_sha256,
+            seal_sha256,
+        },
+        input,
+    })
 }
 
 fn write_report_atomic(path: &Path, report: &Report) -> Result<(), Box<dyn Error>> {
@@ -1010,12 +1211,12 @@ fn write_report_atomic(path: &Path, report: &Report) -> Result<(), Box<dyn Error
 
 fn usage() -> &'static str {
     "usage: ascension_qwen80_48_layer_command_graph_readiness_contract \
---current-evidence --out ABSOLUTE_PATH | --input ABSOLUTE_PATH --out ABSOLUTE_PATH"
+--input ABSOLUTE_PATH --out ABSOLUTE_PATH | --empty-template --out ABSOLUTE_PATH"
 }
 
 fn parse_args() -> Result<Args, Box<dyn Error>> {
     let mut input = None;
-    let mut current_evidence = false;
+    let mut empty_template = false;
     let mut out = None;
     let mut values = env::args().skip(1);
     while let Some(flag) = values.next() {
@@ -1026,11 +1227,19 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
                     return Err("--input repeated".into());
                 }
             }
-            "--current-evidence" => {
-                if current_evidence {
-                    return Err("--current-evidence repeated".into());
+            "--empty-template" => {
+                if empty_template {
+                    return Err("--empty-template repeated".into());
                 }
-                current_evidence = true;
+                empty_template = true;
+            }
+            "--current-evidence" => {
+                return Err(
+                    "--current-evidence was removed because it silently synthesised a fixture \
+while looking like a measurement. Use --input ABSOLUTE_PATH to bind real evidence, or \
+--empty-template for an explicitly fixture-derived incomplete document."
+                        .into(),
+                );
             }
             "--out" => {
                 let value = values.next().ok_or("missing path after --out")?;
@@ -1041,9 +1250,9 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
             _ => return Err(format!("unsupported option {flag:?}; {}", usage()).into()),
         }
     }
-    let input_mode = match (input, current_evidence) {
+    let input_mode = match (input, empty_template) {
         (Some(path), false) => InputMode::Input(path),
-        (None, true) => InputMode::CurrentEvidence,
+        (None, true) => InputMode::EmptyTemplate,
         _ => return Err(usage().into()),
     };
     let out = out.ok_or(usage())?;
@@ -1054,11 +1263,18 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
 }
 
 fn run(args: Args) -> Result<(), Box<dyn Error>> {
-    let input = match args.input_mode {
-        InputMode::Input(path) => read_input(&path)?,
-        InputMode::CurrentEvidence => current_evidence_input(),
+    let report = match args.input_mode {
+        InputMode::Input(path) => {
+            let bound = bind_input_file(&path)?;
+            evaluate(
+                bound.input,
+                InputProvenance::BoundFromDisk(bound.identity),
+            )
+        }
+        InputMode::EmptyTemplate => {
+            evaluate(empty_template_input(), InputProvenance::EmptyTemplateFixture)
+        }
     };
-    let report = evaluate(input);
     write_report_atomic(&args.out, &report)
 }
 
@@ -1075,6 +1291,29 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_dir() -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let dir = env::temp_dir().join(format!(
+            "qwen80-command-graph-readiness-{}-{}",
+            std::process::id(),
+            nanos
+        ));
+        fs::create_dir_all(&dir).expect("temp dir");
+        dir
+    }
+
+    fn write_input_file(dir: &Path, name: &str, input: &ReadinessInput) -> PathBuf {
+        let path = dir.join(name);
+        let mut document = serde_json::to_value(input).expect("serialize input");
+        seal_document(&mut document).expect("seal input");
+        fs::write(&path, serde_json::to_vec_pretty(&document).expect("encode")).expect("write");
+        path.canonicalize().expect("canonicalize written input")
+    }
 
     #[test]
     fn exact_schedule_has_36_deltanet_and_12_gqa_layers() {
@@ -1100,9 +1339,16 @@ mod tests {
     }
 
     #[test]
-    fn current_component_evidence_is_incomplete_without_physical_layers() {
-        let report = evaluate(current_evidence_input());
+    fn empty_template_is_fixture_derived_and_never_a_measurement() {
+        let report = evaluate(empty_template_input(), InputProvenance::EmptyTemplateFixture);
         assert!(!report.command_graph_ready);
+        assert!(report.fixture_derived);
+        assert!(!report.inputs_bound_from_disk);
+        assert!(report.bound_input_identity.is_none());
+        assert_eq!(
+            report.status,
+            "FIXTURE_TEMPLATE_QWEN80_48_LAYER_COMMAND_GRAPH_SYNTHESISED_NOT_A_MEASUREMENT"
+        );
         assert!(report.current_component_evidence_is_incomplete);
         assert!(!report.exact_48_layer_schedule_valid);
         assert!(!report.physical_full_path_device_evidence_valid_for_every_layer);
@@ -1111,13 +1357,20 @@ mod tests {
         assert!(report
             .blockers
             .iter()
+            .any(|blocker| blocker.contains("empty-template fixture")));
+        assert!(report
+            .blockers
+            .iter()
             .any(|blocker| blocker.contains("physical full-path/device evidence")));
+        assert!(report.claim_boundary[0].contains("FIXTURE-DERIVED"));
     }
 
     #[test]
     fn complete_declared_physical_ledger_satisfies_contract_semantics() {
-        let report = evaluate(complete_input_fixture());
+        let report = evaluate(complete_input_fixture(), InputProvenance::InMemoryUnbound);
         assert!(report.command_graph_ready);
+        assert!(!report.fixture_derived);
+        assert!(!report.inputs_bound_from_disk);
         assert!(report.exact_48_layer_schedule_valid);
         assert!(report.per_session_state_slots_valid);
         assert!(report.physical_full_path_device_evidence_valid_for_every_layer);
@@ -1127,10 +1380,120 @@ mod tests {
     }
 
     #[test]
+    fn two_different_evidence_files_produce_different_bound_identities() {
+        let dir = temp_dir();
+        let mut input_a = complete_input_fixture();
+        input_a.physical_command_graph.graph_receipt_seal_sha256 = test_sha256('a');
+        input_a.physical_command_graph.session_state.session_id = "session-evidence-a".into();
+        let mut input_b = complete_input_fixture();
+        input_b.physical_command_graph.graph_receipt_seal_sha256 = test_sha256('b');
+        input_b.physical_command_graph.session_state.session_id = "session-evidence-b".into();
+        // Distinct layer receipt seals so the bound content hashes cannot collide.
+        input_b.physical_command_graph.layers[0].receipt_seal_sha256 = test_sha256('9');
+
+        let path_a = write_input_file(&dir, "evidence-a.json", &input_a);
+        let path_b = write_input_file(&dir, "evidence-b.json", &input_b);
+        let bound_a = bind_input_file(&path_a).expect("bind a");
+        let bound_b = bind_input_file(&path_b).expect("bind b");
+
+        assert_ne!(
+            bound_a.identity.content_sha256, bound_b.identity.content_sha256,
+            "distinct evidence documents must bind distinct content identities"
+        );
+        assert_ne!(
+            bound_a.identity.absolute_path, bound_b.identity.absolute_path,
+            "distinct evidence paths must bind distinct path identities"
+        );
+        assert_ne!(
+            bound_a.identity.seal_sha256, bound_b.identity.seal_sha256,
+            "distinct sealed evidence documents must bind distinct seals"
+        );
+
+        let report_a = evaluate(
+            bound_a.input,
+            InputProvenance::BoundFromDisk(bound_a.identity.clone()),
+        );
+        let report_b = evaluate(
+            bound_b.input,
+            InputProvenance::BoundFromDisk(bound_b.identity.clone()),
+        );
+
+        assert!(report_a.inputs_bound_from_disk);
+        assert!(report_b.inputs_bound_from_disk);
+        assert!(!report_a.fixture_derived);
+        assert!(!report_b.fixture_derived);
+        assert!(report_a.command_graph_ready);
+        assert!(report_b.command_graph_ready);
+        let identity_a = report_a.bound_input_identity.expect("bound a");
+        let identity_b = report_b.bound_input_identity.expect("bound b");
+        assert_eq!(identity_a, bound_a.identity);
+        assert_eq!(identity_b, bound_b.identity);
+        assert_ne!(identity_a.content_sha256, identity_b.content_sha256);
+        assert_ne!(identity_a.absolute_path, identity_b.absolute_path);
+        assert_ne!(identity_a.seal_sha256, identity_b.seal_sha256);
+        assert_eq!(
+            identity_a.content_sha256,
+            sha256_hex(&fs::read(&path_a).expect("read a"))
+        );
+        assert_eq!(
+            identity_b.content_sha256,
+            sha256_hex(&fs::read(&path_b).expect("read b"))
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn tampered_evidence_file_is_refused() {
+        let dir = temp_dir();
+        let path = write_input_file(&dir, "sealed.json", &complete_input_fixture());
+        let mut document: Value =
+            serde_json::from_slice(&fs::read(&path).expect("read")).expect("parse");
+        *document
+            .pointer_mut("/physical_command_graph/session_state/session_id")
+            .expect("session_id pointer") = Value::String("tampered-session-id".into());
+        // Keep the original seal so content no longer matches — classic tamper.
+        fs::write(&path, serde_json::to_vec_pretty(&document).expect("encode")).expect("rewrite");
+
+        let error = bind_input_file(&path).expect_err("tampered seal must be refused");
+        let message = error.to_string();
+        assert!(
+            message.contains("seal mismatch") || message.contains("tampered"),
+            "expected seal-mismatch refusal, got: {message}"
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn missing_evidence_file_produces_named_blocker_not_fixture() {
+        let dir = temp_dir();
+        let absolute = dir
+            .canonicalize()
+            .expect("dir")
+            .join(format!("does-not-exist-{}.json", std::process::id()));
+        assert!(!absolute.exists());
+        let error = bind_input_file(&absolute).expect_err("missing file must fail");
+        let message = error.to_string();
+        assert!(
+            message.contains("missing evidence file"),
+            "expected named missing-file blocker, got: {message}"
+        );
+        assert!(
+            message.contains(absolute.file_name().unwrap().to_str().unwrap()),
+            "blocker must name the missing artifact path, got: {message}"
+        );
+        // Contrast: empty-template is explicit fixture, never a silent substitute for missing files.
+        let fixture_report =
+            evaluate(empty_template_input(), InputProvenance::EmptyTemplateFixture);
+        assert!(fixture_report.fixture_derived);
+        assert!(!fixture_report.inputs_bound_from_disk);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
     fn wrong_hybrid_schedule_is_rejected_layer_by_layer() {
         let mut input = complete_input_fixture();
         input.physical_command_graph.layers[3].mixer = Mixer::DeltaNet;
-        let report = evaluate(input);
+        let report = evaluate(input, InputProvenance::InMemoryUnbound);
         assert!(!report.command_graph_ready);
         assert_eq!(report.missing_or_invalid_layers, vec![3]);
         assert!(report.layer_coverage[3]
@@ -1144,7 +1507,7 @@ mod tests {
         let mut input = complete_input_fixture();
         input.physical_command_graph.layers[17].component_only = true;
         input.physical_command_graph.layers[17].complete_token_path = false;
-        let report = evaluate(input);
+        let report = evaluate(input, InputProvenance::InMemoryUnbound);
         assert!(!report.command_graph_ready);
         assert_eq!(report.missing_or_invalid_layers, vec![17]);
         assert!(!report.layer_coverage[17].physical_full_path_device_evidence_valid);
@@ -1155,7 +1518,7 @@ mod tests {
         let mut input = complete_input_fixture();
         input.physical_command_graph.session_state.deltanet_slots[2].slot = 0;
         input.physical_command_graph.session_state.gqa_slots[0].device_resident = false;
-        let report = evaluate(input);
+        let report = evaluate(input, InputProvenance::InMemoryUnbound);
         assert!(!report.command_graph_ready);
         assert!(!report.per_session_state_slots_valid);
         assert!(report
@@ -1178,7 +1541,7 @@ mod tests {
             .physical_command_graph
             .command_steps
             .swap(final_index, final_index + 2);
-        let report = evaluate(input);
+        let report = evaluate(input, InputProvenance::InMemoryUnbound);
         assert!(!report.command_graph_ready);
         assert!(!report.command_order_valid);
         assert!(report
@@ -1196,7 +1559,7 @@ mod tests {
             .lm_head_abi
             .shape = vec![LM_HEAD_VOCAB - 1, HIDDEN];
         input.decoder_readiness_contract.schema = "wrong.schema".into();
-        let report = evaluate(input);
+        let report = evaluate(input, InputProvenance::InMemoryUnbound);
         assert!(!report.command_graph_ready);
         assert!(!report.decoder_readiness_contract_schema_valid);
         assert!(!report.terminal_head_contract_schema_valid);

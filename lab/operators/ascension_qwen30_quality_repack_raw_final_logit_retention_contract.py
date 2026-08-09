@@ -23,6 +23,7 @@ from typing import Any, Mapping, Sequence
 
 from lab.operators import ascension_qwen30_quality_repack_source_bf16_memory_lease_preflight as memory_preflight
 from lab.operators import ascension_qwen30_quality_repack_source_oracle_three_way_contract as oracle_contract
+from lab.operators import ascension_qwen30_streamed_teacher_resource_preflight as streamed_resource
 from lab.receipts import SealIntegrityError, seal, verify
 
 
@@ -119,6 +120,12 @@ def _text(value: object, *, label: str, sha256: bool = False) -> str:
     return value
 
 
+def _integer(value: object, *, label: str, minimum: int = 0) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
+        raise RawFinalLogitRetentionContractError(f"{label} must be an integer >= {minimum}")
+    return value
+
+
 def _evidence(path: Path, document: Mapping[str, Any]) -> dict[str, Any]:
     try:
         stat_result = path.stat()
@@ -190,7 +197,174 @@ def _expected_native_hashes(three_way: Mapping[str, Any]) -> dict[str, dict[str,
     return result
 
 
-def build_contract(*, three_way_contract_path: Path, memory_preflight_path: Path) -> dict[str, Any]:
+CO_RESIDENT_TEACHER_MODE = "CO_RESIDENT_TEACHER"
+STREAMED_TEACHER_MODE = "STREAMED_TEACHER"
+
+
+def _snapshot_from_memory_preflight(memory: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the sealed host counters used by both mode gates."""
+    measured = memory.get("measured_system_snapshot")
+    if isinstance(measured, Mapping) and measured:
+        snapshot = dict(measured)
+        vm = _object(snapshot.get("vm_stat"), label="memory preflight vm_stat")
+        swap = _object(snapshot.get("swap"), label="memory preflight swap")
+        if "reclaimable_bytes" not in vm:
+            headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
+            vm = {
+                **vm,
+                "reclaimable_bytes": _integer(
+                    headroom.get("measured_reclaimable_bytes"),
+                    label="measured reclaimable bytes",
+                ),
+                "swapouts_pages": _integer(vm.get("swapouts_pages", 0), label="swapouts pages"),
+            }
+            snapshot["vm_stat"] = vm
+        if "used_bytes" not in swap:
+            headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
+            snapshot["swap"] = {
+                **swap,
+                "used_bytes": _integer(
+                    headroom.get("measured_swap_used_bytes"),
+                    label="measured swap used bytes",
+                ),
+            }
+        if "physical_memory_bytes" not in snapshot:
+            headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
+            snapshot["physical_memory_bytes"] = _integer(
+                headroom.get("physical_memory_bytes", 96 * 1024**3),
+                label="physical memory bytes",
+                minimum=1,
+            )
+        return snapshot
+    headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
+    return {
+        "physical_memory_bytes": _integer(
+            headroom.get("physical_memory_bytes", 96 * 1024**3),
+            label="physical memory bytes",
+            minimum=1,
+        ),
+        "vm_stat": {
+            "reclaimable_bytes": _integer(
+                headroom.get("measured_reclaimable_bytes"),
+                label="measured reclaimable bytes",
+            ),
+            "swapouts_pages": _integer(headroom.get("measured_swapouts_pages", 0), label="swapouts"),
+        },
+        "swap": {
+            "used_bytes": _integer(
+                headroom.get("measured_swap_used_bytes"),
+                label="measured swap used bytes",
+            ),
+        },
+    }
+
+
+def build_execution_mode_gates(
+    *,
+    memory: Mapping[str, Any],
+    three_way: Mapping[str, Any],
+    source_weight_bytes: int,
+    observed_executor_sha256: str | None = None,
+    expected_executor_sha256: str = streamed_resource.EXPECTED_EXECUTOR_SHA256,
+    bounded_stream_window_bytes: int = streamed_resource.MAX_STREAM_WINDOW_BYTES,
+    live_stream_windows: int = streamed_resource.MAX_LIVE_STREAM_WINDOWS,
+    measured_or_declared_child_rss_bytes: int | None = None,
+) -> dict[str, Any]:
+    """Build independent per-mode resource verdicts; never cross-inherit status."""
+    headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
+    co_resident_blocked = memory.get("status") == memory_preflight.BLOCKED_STATUS
+    co_resident_required = _integer(
+        headroom.get("minimum_reclaimable_bytes_required_before_source_load"),
+        label="co-resident required reclaimable bytes",
+        minimum=1,
+    )
+    co_resident_measured = _integer(
+        headroom.get("measured_reclaimable_bytes"),
+        label="co-resident measured reclaimable bytes",
+    )
+    co_resident_swap = _integer(
+        headroom.get("measured_swap_used_bytes"),
+        label="co-resident measured swap used bytes",
+    )
+    source_pin = _text(three_way.get("seal_sha256"), label="source three-way seal", sha256=True)
+    snapshot = _snapshot_from_memory_preflight(memory)
+    streamed = streamed_resource.assess_streamed_resources(
+        snapshot,
+        source_weight_bytes=source_weight_bytes,
+        expected_source_pin_sha256=source_pin,
+        observed_source_pin_sha256=source_pin,
+        expected_executor_sha256=expected_executor_sha256,
+        observed_executor_sha256=observed_executor_sha256,
+        bounded_stream_window_bytes=bounded_stream_window_bytes,
+        live_stream_windows=live_stream_windows,
+        measured_or_declared_child_rss_bytes=measured_or_declared_child_rss_bytes,
+    )
+    return {
+        CO_RESIDENT_TEACHER_MODE: {
+            "execution_mode": CO_RESIDENT_TEACHER_MODE,
+            "verdict": "BLOCKED" if co_resident_blocked else "READY",
+            "status": memory.get("status"),
+            "teacher_weights_resident_bytes": source_weight_bytes,
+            "reserve_bytes": memory_preflight.MIN_RUNTIME_RESERVE_BYTES,
+            "minimum_reclaimable_bytes_required": co_resident_required,
+            "measured_reclaimable_bytes": co_resident_measured,
+            "measured_reclaimable_deficit_bytes": headroom.get("measured_reclaimable_deficit_bytes"),
+            "measured_swap_used_bytes": co_resident_swap,
+            "zero_swap_required": True,
+            "exact_source_pin_sha256": source_pin,
+            "source_teacher_capture_is_currently_blocked": co_resident_blocked,
+            "does_not_authorize_streamed_teacher": True,
+        },
+        STREAMED_TEACHER_MODE: {
+            "execution_mode": STREAMED_TEACHER_MODE,
+            "verdict": streamed["verdict"],
+            "status": streamed["status"],
+            "bounded_stream_window_bytes": streamed["bounded_stream_window_bytes"],
+            "bounded_stream_window_bytes_ceiling": streamed["bounded_stream_window_bytes_ceiling"],
+            "live_stream_windows": streamed["live_stream_windows"],
+            "maximum_live_stream_windows": streamed["maximum_live_stream_windows"],
+            "runtime_working_set_bytes": streamed["runtime_working_set_bytes"],
+            "minimum_reclaimable_bytes_required": streamed[
+                "minimum_reclaimable_bytes_required_immediately_before_source_child"
+            ],
+            "measured_reclaimable_bytes": streamed["measured_reclaimable_bytes"],
+            "measured_reclaimable_deficit_bytes": streamed["measured_reclaimable_deficit_bytes"],
+            "measured_swap_used_bytes": streamed["measured_swap_used_bytes"],
+            "measured_swapouts_pages": streamed["measured_swapouts_pages"],
+            "zero_swap_required": True,
+            "zero_swapouts_required": True,
+            "exact_source_pin_sha256": streamed["observed_source_pin_sha256"],
+            "source_pin_matches": streamed["source_pin_matches"],
+            "exact_executor_child_sha256": streamed["expected_executor_child_sha256"],
+            "observed_executor_child_sha256": streamed["observed_executor_child_sha256"],
+            "executor_pin_matches": streamed["executor_pin_matches"],
+            "maximum_child_rss_bytes_non_residency_ceiling": streamed[
+                "maximum_child_rss_bytes_non_residency_ceiling"
+            ],
+            "measured_or_declared_child_rss_bytes": streamed[
+                "measured_or_declared_child_rss_bytes"
+            ],
+            "non_residency_proof": streamed["non_residency_proof"],
+            "blockers": streamed["blockers"],
+            "does_not_inherit_co_resident_verdict": True,
+            "streamed_teacher_capture_is_currently_blocked": streamed["verdict"] == "BLOCKED",
+        },
+        "modes_are_independent": True,
+        "streamed_authority_must_read_STREAMED_TEACHER_not_co_resident_flag": True,
+        "co_resident_authority_must_read_CO_RESIDENT_TEACHER": True,
+    }
+
+
+def build_contract(
+    *,
+    three_way_contract_path: Path,
+    memory_preflight_path: Path,
+    observed_executor_sha256: str | None = None,
+    expected_executor_sha256: str = streamed_resource.EXPECTED_EXECUTOR_SHA256,
+    bounded_stream_window_bytes: int = streamed_resource.MAX_STREAM_WINDOW_BYTES,
+    live_stream_windows: int = streamed_resource.MAX_LIVE_STREAM_WINDOWS,
+    measured_or_declared_child_rss_bytes: int | None = None,
+) -> dict[str, Any]:
     """Build one unrun successor contract from sealed prerequisite evidence."""
     three_way = _sealed(three_way_contract_path, label="source-BF16 three-way contract")
     _assert_schema_status(
@@ -219,7 +393,27 @@ def build_contract(*, three_way_contract_path: Path, memory_preflight_path: Path
     expected_hashes = _expected_native_hashes(three_way)
     plan = raw_vector_plan()
     headroom = _object(memory.get("headroom_assessment"), label="memory headroom assessment")
-    memory_blocked = memory.get("status") == memory_preflight.BLOCKED_STATUS
+    resource = _object(
+        three_way.get("resource_and_capture_requirements"),
+        label="three-way resource requirements",
+    )
+    source_weight_bytes = _integer(
+        resource.get("source_weights_static_lower_bound_bytes"),
+        label="contract source weights",
+        minimum=1,
+    )
+    # CO_RESIDENT arithmetic is owned exclusively by the strict memory preflight.
+    co_resident_blocked = memory.get("status") == memory_preflight.BLOCKED_STATUS
+    execution_mode_gates = build_execution_mode_gates(
+        memory=memory,
+        three_way=three_way,
+        source_weight_bytes=source_weight_bytes,
+        observed_executor_sha256=observed_executor_sha256,
+        expected_executor_sha256=expected_executor_sha256,
+        bounded_stream_window_bytes=bounded_stream_window_bytes,
+        live_stream_windows=live_stream_windows,
+        measured_or_declared_child_rss_bytes=measured_or_declared_child_rss_bytes,
+    )
     return seal(
         {
             "schema": SCHEMA,
@@ -254,13 +448,22 @@ def build_contract(*, three_way_contract_path: Path, memory_preflight_path: Path
                 "does_not_write_the_two_source_teacher_vectors": True,
             },
             "six_vector_retention_contract": plan,
+            # Per-mode authority.  STREAMED consumers must read
+            # execution_mode_gates.STREAMED_TEACHER; the legacy boolean below
+            # is CO_RESIDENT_TEACHER only and must not authorize the streamed
+            # child path.
+            "execution_mode_gates": execution_mode_gates,
             "source_memory_and_eviction_gate": {
                 "current_memory_preflight_status": memory.get("status"),
                 "current_reclaimable_bytes": headroom.get("measured_reclaimable_bytes"),
                 "current_required_reclaimable_bytes": headroom.get("minimum_reclaimable_bytes_required_before_source_load"),
                 "current_reclaimable_deficit_bytes": headroom.get("measured_reclaimable_deficit_bytes"),
                 "current_swap_used_bytes": headroom.get("measured_swap_used_bytes"),
-                "source_teacher_capture_is_currently_blocked": memory_blocked,
+                # Legacy field retained as CO_RESIDENT_TEACHER authority only.
+                # Streamed path authority is execution_mode_gates.STREAMED_TEACHER.
+                "source_teacher_capture_is_currently_blocked": co_resident_blocked,
+                "source_teacher_capture_is_currently_blocked_applies_only_to_co_resident_teacher": True,
+                "streamed_path_must_use_execution_mode_gates_STREAMED_TEACHER": True,
                 "must_repeat_strict_preflight_immediately_before_future_source_load": True,
                 "must_record_backend_specific_resident_allocation_before_source_load": True,
                 "must_record_pre_post_swap_and_swapouts": True,
@@ -268,9 +471,10 @@ def build_contract(*, three_way_contract_path: Path, memory_preflight_path: Path
                 "source_and_native_model_bodies_must_not_be_resident_concurrently": True,
             },
             "future_safe_sequence": [
-                "Do not run while the strict source-BF16 preflight is BLOCKED.",
-                "After a new independently approved source-memory lease, re-run the preflight and capture only the two source F32LE vectors for the sealed trace; fsync and seal a source-teacher terminal receipt.",
-                "Evict the source body, confirm zero swap growth and released source residency, and preserve the two source vectors immutable on disk.",
+                "Choose an execution mode.  CO_RESIDENT_TEACHER requires the strict source-BF16 memory preflight READY; STREAMED_TEACHER requires execution_mode_gates.STREAMED_TEACHER READY and must not read the co-resident blocked boolean as authority.",
+                "Do not run CO_RESIDENT_TEACHER while the strict source-BF16 preflight is BLOCKED.",
+                "After a new independently approved source-memory lease (or streamed resource window), re-run the matching mode preflight and capture only the two source F32LE vectors for the sealed trace; fsync and seal a source-teacher terminal receipt.",
+                "Evict the source body (or drop the streamed window cache), confirm zero swap growth and released source residency, and preserve the two source vectors immutable on disk.",
                 "Under a distinct new native quiet lease, run the raw-final-logit-retention successor once; it emits four direct-packed raw F32LE vectors and refuses unless all four hashes replay 98db exactly.",
                 "Only a six-vector aggregator may read the immutable payloads, calculate the preregistered F64 relative-L2 values at both endpoints, and report a numerical diagnostic. A metric result is never coherence/HCLI/TPS/capability/tournament evidence.",
             ],
@@ -282,6 +486,7 @@ def build_contract(*, three_way_contract_path: Path, memory_preflight_path: Path
                 "does_not_take_or_grant_gpu_or_memory_lease": True,
                 "does_not_touch_live_qwen30_server_watcher_adapter_or_hcli": True,
                 "does_not_emit_a_quality_coherence_oracle_result": True,
+                "does_not_conflate_co_resident_and_streamed_teacher_resource_contracts": True,
             },
         }
     )
