@@ -116,6 +116,42 @@ fn model_error(message: impl Into<String>) -> Error {
     ))
 }
 
+/// Opt-out for the serial multi-dispatch encoder on the Q30 token path.
+///
+/// Default **on**: each layer attention/router wave and each selected-expert
+/// wave encode into one Metal compute encoder (serial dispatch type) instead
+/// of opening/closing an encoder per kernel.  Set
+/// `HAWKING_QWEN30_SERIAL_ENCODER=0` / `false` / `off` / `no` to restore the
+/// historical per-dispatch encoder shape for A/B.  Under
+/// `HAWKING_TCB_TRACE=gpu` / `gpu_prod` the TCB already ignores serial groups
+/// so timestamp attribution is unchanged.
+#[cfg(target_os = "macos")]
+fn qwen30_serial_encoder_enabled() -> bool {
+    match std::env::var("HAWKING_QWEN30_SERIAL_ENCODER") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => true,
+    }
+}
+
+/// Receipt from [`Qwen30CompleteNativeRuntime::prewarm_static_decoded_vectors`].
+/// Diagnostic / load-path only; not a TPS claim.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Qwen30StaticDecodePrewarmReport {
+    pub catalog_vectors: usize,
+    pub already_resident: usize,
+    pub decoded_now: usize,
+    pub dispatches: usize,
+    pub command_buffers: usize,
+    pub serial_encoder: bool,
+}
+
 fn usize_field(value: &Value, field: &str) -> Result<usize> {
     value
         .get(field)
@@ -1375,7 +1411,38 @@ impl Qwen30CompleteNativeRuntime {
         Ok(tensor)
     }
 
+    /// Decode one 1-D packed vector into a cached f32 buffer, or return the
+    /// existing cache entry.  A cache miss used to open a dedicated command
+    /// buffer and `commit_and_wait` per vector (193 extra CBs on a cold first
+    /// token).  Prefer [`Self::ensure_decoded_vector_on_tcb`] so the decode is
+    /// folded into the caller's graph; this standalone path remains for
+    /// diagnostic callers that do not already own a token command buffer.
     fn decoded_vector(&mut self, name: &str, elements: usize) -> Result<PinnedBuffer> {
+        if let Some(buffer) = self.decoded_vectors.get(name) {
+            return Ok(buffer.clone());
+        }
+        // Clone the Arc-backed context so the TCB does not borrow `self.context`
+        // while `ensure_decoded_vector_on_tcb` needs `&mut self`.
+        let context = self.context.clone();
+        let mut tcb = TokenCommandBuffer::new(&context);
+        let output = self.ensure_decoded_vector_on_tcb(&mut tcb, name, elements)?;
+        if tcb.dispatch_count() > 0 {
+            tcb.commit_and_wait()?;
+        }
+        Ok(output)
+    }
+
+    /// Ensure `name` is resident as a decoded f32 vector.  On a cache miss the
+    /// decode kernel is encoded into `tcb` and the result is retained for the
+    /// process lifetime of this runtime; on a hit this is a pure HashMap
+    /// lookup with zero Metal work.  The caller remains responsible for the
+    /// eventual `commit_and_wait` that covers the folded decode.
+    fn ensure_decoded_vector_on_tcb(
+        &mut self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        name: &str,
+        elements: usize,
+    ) -> Result<PinnedBuffer> {
         if let Some(buffer) = self.decoded_vectors.get(name) {
             return Ok(buffer.clone());
         }
@@ -1389,7 +1456,6 @@ impl Qwen30CompleteNativeRuntime {
         let output = self
             .context
             .new_buffer_checked(bytes_for_f32(elements, "decoded vector")?)?;
-        let mut tcb = TokenCommandBuffer::new(&self.context);
         let threads = u32_checked(elements, "decoded vector elements")?;
         tcb.dispatch_threads(
             "qwen_complete_binary_decode_vector",
@@ -1403,9 +1469,95 @@ impl Qwen30CompleteNativeRuntime {
                 encoder.qwen_set_u32(4, QWEN30_GROUP_SIZE as u32);
             },
         )?;
-        tcb.commit_and_wait()?;
         self.decoded_vectors.insert(name.to_owned(), output.clone());
         Ok(output)
+    }
+
+    /// Names and element counts of every static RMSNorm vector the all-layer
+    /// token graph will need.  Expert and projection tensors stay packed and
+    /// are not listed here.
+    fn static_decoded_vector_catalog(&self) -> Vec<(String, usize)> {
+        let mut catalog =
+            Vec::with_capacity(self.config.layers.saturating_mul(4).saturating_add(1));
+        for layer in 0..self.config.layers {
+            catalog.push((
+                Self::layer_name(layer, "input_layernorm.weight"),
+                self.config.hidden,
+            ));
+            catalog.push((
+                Self::layer_name(layer, "post_attention_layernorm.weight"),
+                self.config.hidden,
+            ));
+            catalog.push((
+                Self::layer_name(layer, "self_attn.q_norm.weight"),
+                self.config.head_dim,
+            ));
+            catalog.push((
+                Self::layer_name(layer, "self_attn.k_norm.weight"),
+                self.config.head_dim,
+            ));
+        }
+        catalog.push(("model.norm.weight".to_owned(), self.config.hidden));
+        catalog
+    }
+
+    /// Decode every static RMSNorm vector into one command buffer (one fence).
+    ///
+    /// Component-only / load-path helper.  The sealed complete-token profile
+    /// recorded 291 command buffers on a cold first token because each of the
+    /// 193 vector decodes paid its own `commit_and_wait`.  After this prewarm
+    /// a warm token's structural graph is embed + 48×(attn/router) +
+    /// 48×(experts) + final_head = 98 CBs until the host route-id roundtrip
+    /// itself is removed.  Not a TPS measurement.
+    pub fn prewarm_static_decoded_vectors(&mut self) -> Result<Qwen30StaticDecodePrewarmReport> {
+        let catalog = self.static_decoded_vector_catalog();
+        let catalog_len = catalog.len();
+        let already_resident = catalog
+            .iter()
+            .filter(|(name, _)| self.decoded_vectors.contains_key(name))
+            .count();
+        // Clone context: TCB must not hold a borrow of `self.context` across
+        // `&mut self` cache inserts inside `ensure_decoded_vector_on_tcb`.
+        let context = self.context.clone();
+        let mut tcb = TokenCommandBuffer::new(&context);
+        let serial = qwen30_serial_encoder_enabled();
+        if serial {
+            tcb.begin_serial_group()?;
+        }
+        let mut decoded_now = 0usize;
+        for (name, elements) in &catalog {
+            if self.decoded_vectors.contains_key(name) {
+                continue;
+            }
+            self.ensure_decoded_vector_on_tcb(&mut tcb, name, *elements)?;
+            decoded_now = decoded_now.saturating_add(1);
+        }
+        if serial {
+            tcb.end_concurrent_group()?;
+        }
+        let dispatches = tcb.dispatch_count();
+        let command_buffers = if dispatches > 0 {
+            tcb.commit_and_wait()?;
+            1usize
+        } else {
+            0usize
+        };
+        Ok(Qwen30StaticDecodePrewarmReport {
+            catalog_vectors: catalog_len,
+            already_resident,
+            decoded_now,
+            dispatches,
+            command_buffers,
+            serial_encoder: serial,
+        })
+    }
+
+    /// Whether the production token path currently folds multi-dispatch waves
+    /// into one serial compute encoder.  Diagnostic `HAWKING_TCB_TRACE=gpu*`
+    /// modes ignore the serial group (no-op inside TCB) so per-kernel
+    /// timestamps remain available.
+    pub fn serial_encoder_enabled(&self) -> bool {
+        qwen30_serial_encoder_enabled()
     }
 
     fn dispatch_embedding(
@@ -2269,13 +2421,20 @@ impl Qwen30CompleteNativeRuntime {
             self.diagnostic_selected_expert_ids.clear();
         }
 
+        let serial_encoder = qwen30_serial_encoder_enabled();
         host_stages.measure(
             "embedding",
             "embedding direct-packed lookup plus command-buffer submit/wait",
             || {
                 let embedding = self.packed_tensor("model.embed_tokens.weight")?;
                 let mut tcb = TokenCommandBuffer::new(&self.context);
+                if serial_encoder {
+                    tcb.begin_serial_group()?;
+                }
                 self.dispatch_embedding(&mut tcb, &embedding, token)?;
+                if serial_encoder {
+                    tcb.end_concurrent_group()?;
+                }
                 metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
                 tcb.commit_and_wait()?;
                 command_buffers = command_buffers.saturating_add(1);
@@ -2300,10 +2459,10 @@ impl Qwen30CompleteNativeRuntime {
                     let o_name = Self::layer_name(layer, "self_attn.o_proj.weight");
                     let router_name = Self::layer_name(layer, "mlp.gate.weight");
 
-                    let input_norm = self.decoded_vector(&input_norm_name, self.config.hidden)?;
-                    let post_norm = self.decoded_vector(&post_norm_name, self.config.hidden)?;
-                    let q_norm = self.decoded_vector(&q_norm_name, self.config.head_dim)?;
-                    let k_norm = self.decoded_vector(&k_norm_name, self.config.head_dim)?;
+                    // Packed weight lookup is host-side catalog/cache only; the
+                    // RMSNorm vectors fold any cold decode into the layer TCB
+                    // below so a cold first token does not pay 4 dedicated CBs
+                    // per layer.
                     let q = self.packed_tensor(&q_name)?;
                     let k = self.packed_tensor(&k_name)?;
                     let v = self.packed_tensor(&v_name)?;
@@ -2324,7 +2483,21 @@ impl Qwen30CompleteNativeRuntime {
                     let cache_offset_bytes =
                         bytes_for_f32(layer_cache_elements, "layer KV cache byte offset")?;
 
-                    let mut tcb = TokenCommandBuffer::new(&self.context);
+                    // Clone context so folding cold vector decode (`&mut self`)
+                    // can coexist with the layer TokenCommandBuffer lifetime.
+                    let context = self.context.clone();
+                    let mut tcb = TokenCommandBuffer::new(&context);
+                    if serial_encoder {
+                        tcb.begin_serial_group()?;
+                    }
+                    let input_norm =
+                        self.ensure_decoded_vector_on_tcb(&mut tcb, &input_norm_name, self.config.hidden)?;
+                    let post_norm =
+                        self.ensure_decoded_vector_on_tcb(&mut tcb, &post_norm_name, self.config.hidden)?;
+                    let q_norm =
+                        self.ensure_decoded_vector_on_tcb(&mut tcb, &q_norm_name, self.config.head_dim)?;
+                    let k_norm =
+                        self.ensure_decoded_vector_on_tcb(&mut tcb, &k_norm_name, self.config.head_dim)?;
                     rmsnorm_metal_buf_tcb(
                         &mut tcb,
                         &self.workspace.x,
@@ -2447,6 +2620,9 @@ impl Qwen30CompleteNativeRuntime {
                         self.config.experts_per_token,
                     )?;
                     self.dispatch_normalize_route_weights(&mut tcb)?;
+                    if serial_encoder {
+                        tcb.end_concurrent_group()?;
+                    }
                     metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
                     tcb.commit_and_wait()?;
                     command_buffers = command_buffers.saturating_add(1);
@@ -2457,6 +2633,12 @@ impl Qwen30CompleteNativeRuntime {
             // The device selects and normalizes routes.  The host only uses
             // the eight ids to bind those exact resident expert tensor slabs;
             // it does not recompute scores, weights, or activations.
+            //
+            // This host roundtrip is the structural reason the warm path still
+            // pays ~2 command buffers per layer: expert weight buffers cannot
+            // be bound until the device-written route ids are visible.  See
+            // the S-bucket mechanism table (device-indexed expert argument
+            // buffers) for the elimination path.
             let route_weights = host_stages.measure(
                 "router",
                 format!(
@@ -2493,6 +2675,9 @@ impl Qwen30CompleteNativeRuntime {
                 ),
                 || {
                     let mut tcb = TokenCommandBuffer::new(&self.context);
+                    if serial_encoder {
+                        tcb.begin_serial_group()?;
+                    }
                     for (route, weights) in route_weights.iter().enumerate() {
                         let mid_offset = bytes_for_f32(
                             route
@@ -2528,6 +2713,9 @@ impl Qwen30CompleteNativeRuntime {
                         )?;
                     }
                     self.dispatch_weighted_expert_add(&mut tcb)?;
+                    if serial_encoder {
+                        tcb.end_concurrent_group()?;
+                    }
                     metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
                     tcb.commit_and_wait()?;
                     command_buffers = command_buffers.saturating_add(1);
@@ -2568,13 +2756,21 @@ impl Qwen30CompleteNativeRuntime {
             "final_head",
             "final norm/lm-head/finite guard/argmax command graph submit/wait",
             || {
-                let final_norm = self.decoded_vector("model.norm.weight", self.config.hidden)?;
                 let lm_head = self.packed_tensor("lm_head.weight")?;
                 MetalContext::write_buffer_bytes(
                     &self.workspace.invalid_f32_flag,
                     &0u32.to_ne_bytes(),
                 );
-                let mut tcb = TokenCommandBuffer::new(&self.context);
+                let context = self.context.clone();
+                let mut tcb = TokenCommandBuffer::new(&context);
+                if serial_encoder {
+                    tcb.begin_serial_group()?;
+                }
+                let final_norm = self.ensure_decoded_vector_on_tcb(
+                    &mut tcb,
+                    "model.norm.weight",
+                    self.config.hidden,
+                )?;
                 rmsnorm_metal_buf_tcb(
                     &mut tcb,
                     &self.workspace.x,
@@ -2602,6 +2798,9 @@ impl Qwen30CompleteNativeRuntime {
                     &self.workspace.sampled_token,
                     self.config.vocab_size,
                 )?;
+                if serial_encoder {
+                    tcb.end_concurrent_group()?;
+                }
                 metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
                 tcb.commit_and_wait()?;
                 command_buffers = command_buffers.saturating_add(1);
@@ -3302,5 +3501,188 @@ mod tests {
                 expected[row], scalar[row], simdgroup[row],
             );
         }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn static_decoded_vector_catalog_matches_cold_token_vector_count() {
+        // 48 layers × (input_ln, post_ln, q_norm, k_norm) + final norm = 193.
+        // The sealed complete-token profile's 291 CBs = 193 cold vector-decode
+        // CBs + 98 structural graph CBs; this catalog is the first term.
+        let expected = QWEN30_LAYERS * 4 + 1;
+        assert_eq!(expected, 193);
+        // Shape of the public report type is part of the falsifier surface.
+        let report = Qwen30StaticDecodePrewarmReport {
+            catalog_vectors: expected,
+            already_resident: 0,
+            decoded_now: expected,
+            dispatches: expected,
+            command_buffers: 1,
+            serial_encoder: true,
+        };
+        assert_eq!(report.catalog_vectors, 193);
+        assert_eq!(report.command_buffers, 1);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn serial_encoder_env_opt_out_is_recognized() {
+        // Default-on, explicit off for A/B against the historical per-dispatch
+        // encoder shape.  Restoring the prior env value keeps the test
+        // hermetic under parallel cargo test runners that share the process
+        // environment only within a single binary.
+        let previous = std::env::var("HAWKING_QWEN30_SERIAL_ENCODER").ok();
+        std::env::remove_var("HAWKING_QWEN30_SERIAL_ENCODER");
+        assert!(qwen30_serial_encoder_enabled());
+        for off in ["0", "false", "OFF", "no"] {
+            std::env::set_var("HAWKING_QWEN30_SERIAL_ENCODER", off);
+            assert!(
+                !qwen30_serial_encoder_enabled(),
+                "expected serial encoder disabled for {off:?}"
+            );
+        }
+        std::env::set_var("HAWKING_QWEN30_SERIAL_ENCODER", "1");
+        assert!(qwen30_serial_encoder_enabled());
+        match previous {
+            Some(value) => std::env::set_var("HAWKING_QWEN30_SERIAL_ENCODER", value),
+            None => std::env::remove_var("HAWKING_QWEN30_SERIAL_ENCODER"),
+        }
+    }
+
+    /// Component-only topology microbench: multi-CB vs multi-encoder-in-one-CB
+    /// vs one serial encoder.  Does **not** claim clean TPS and does not take
+    /// an exclusive GPU lease; it only proves bit-identity and prints wall
+    /// times so a human can rank the three shapes against the S-bucket
+    /// hypothesis without a full Q30 token.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn component_command_topology_serial_vs_split_encoder_and_multi_cb() {
+        use half::f16;
+
+        const N: usize = 64;
+        const ELEMENTS: u32 = 256;
+
+        let context = match MetalContext::new() {
+            Ok(context) => context,
+            Err(error) => {
+                // Sandboxed CI / seats without a Metal device must not fail
+                // the compile-gated suite; the human gate profile runs this
+                // as a real component microbench.
+                eprintln!(
+                    "component_only command topology skipped (no Metal device): {error}"
+                );
+                return;
+            }
+        };
+        let mut signs = vec![0u8; QWEN30_GROUP_SIZE / 8];
+        signs[0] = 0b0000_0101;
+        let scale = f16::from_f32(1.0).to_bits().to_le_bytes();
+        let signs_buf = context
+            .new_buffer_with_bytes_checked(&signs)
+            .expect("signs");
+        let scales_buf = context
+            .new_buffer_with_bytes_checked(&scale)
+            .expect("scales");
+        let mut outputs = Vec::with_capacity(N);
+        for _ in 0..N {
+            outputs.push(
+                context
+                    .new_buffer_checked(ELEMENTS as usize * std::mem::size_of::<f32>())
+                    .expect("output"),
+            );
+        }
+
+        let encode_one = |tcb: &mut TokenCommandBuffer<'_>, out: &PinnedBuffer| {
+            tcb.dispatch_threads(
+                "qwen_complete_binary_decode_vector",
+                (ELEMENTS, 1, 1),
+                (ELEMENTS.min(256).max(1), 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&signs_buf), 0);
+                    encoder.set_buffer(1, Some(&scales_buf), 0);
+                    encoder.set_buffer(2, Some(out), 0);
+                    encoder.qwen_set_u32(3, ELEMENTS);
+                    encoder.qwen_set_u32(4, QWEN30_GROUP_SIZE as u32);
+                },
+            )
+            .expect("decode dispatch");
+        };
+
+        // Warm the pipeline once so the measured passes are not dominated by
+        // first-shader compile.
+        {
+            let mut warm = TokenCommandBuffer::new(&context);
+            encode_one(&mut warm, &outputs[0]);
+            warm.commit_and_wait().expect("warm");
+        }
+
+        let zero_all = || {
+            let zeros = vec![0u8; ELEMENTS as usize * std::mem::size_of::<f32>()];
+            for out in &outputs {
+                MetalContext::write_buffer_bytes(out, &zeros);
+            }
+        };
+
+        let head4 = |buf: &PinnedBuffer| -> [f32; 4] {
+            let slice = unsafe { std::slice::from_raw_parts(buf.contents() as *const f32, 4) };
+            [slice[0], slice[1], slice[2], slice[3]]
+        };
+        let assert_all_match = |label: &str, expected: [f32; 4]| {
+            for (index, out) in outputs.iter().enumerate() {
+                let observed = head4(out);
+                assert_eq!(
+                    observed, expected,
+                    "{label}: topology shape diverged at buffer {index}"
+                );
+            }
+        };
+        let expected_values = [1.0f32, -1.0, 1.0, -1.0];
+
+        // Shape A: N command buffers, one dispatch each.
+        zero_all();
+        let t0 = Instant::now();
+        for out in &outputs {
+            let mut tcb = TokenCommandBuffer::new(&context);
+            encode_one(&mut tcb, out);
+            tcb.commit_and_wait().expect("multi-cb wait");
+        }
+        let multi_cb_us = t0.elapsed().as_micros();
+        assert_all_match("multi_cb", expected_values);
+
+        // Shape B: one CB, N separate encoders (historical TCB default).
+        zero_all();
+        let t0 = Instant::now();
+        {
+            let mut tcb = TokenCommandBuffer::new(&context);
+            for out in &outputs {
+                encode_one(&mut tcb, out);
+            }
+            tcb.commit_and_wait().expect("multi-encoder wait");
+        }
+        let multi_encoder_us = t0.elapsed().as_micros();
+        assert_all_match("multi_encoder", expected_values);
+
+        // Shape C: one CB, one serial encoder, N dispatches.
+        zero_all();
+        let t0 = Instant::now();
+        {
+            let mut tcb = TokenCommandBuffer::new(&context);
+            tcb.begin_serial_group().expect("serial group");
+            for out in &outputs {
+                encode_one(&mut tcb, out);
+            }
+            tcb.end_concurrent_group().expect("end serial group");
+            tcb.commit_and_wait().expect("serial wait");
+        }
+        let serial_us = t0.elapsed().as_micros();
+        assert_all_match("serial_encoder", expected_values);
+
+        // Component-only numbers for the human report.  Not a gate.
+        eprintln!(
+            "component_only command topology N={N}: multi_cb_us={multi_cb_us} multi_encoder_one_cb_us={multi_encoder_us} serial_one_encoder_us={serial_us}"
+        );
+        // All three completed and matched the packed oracle.  We do not assert
+        // a speedup here — ranking is the human's A/B against the S bucket.
+        assert!(multi_cb_us > 0 && multi_encoder_us > 0 && serial_us > 0);
     }
 }

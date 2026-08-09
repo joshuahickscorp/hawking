@@ -1,0 +1,122 @@
+{
+  "schema": "hawking.ascension.qwen30_s_bucket_mechanism_table.v1",
+  "profile_seal_sha256": "b22b4cc650ba58021f1d4ce6dacbbf7f1eadf2d5b13fb0fb98c8600686ab877f",
+  "profile_status": "EARNED_REAL_COMPLETE_TOKEN_STAGE_PROFILE_DIAGNOSTIC_NOT_TPS",
+  "measured": {
+    "complete_token_host_wall_us": 842003,
+    "production_gpu_idle_or_command_topology_gap_us": 427350.258,
+    "host_wall_outside_gpu_timestamp_envelope_us": 41998.5,
+    "host_stage_command_graph_transition_gap_us": 609865.0,
+    "host_stage_command_graph_transition_gap_share_percent": 72.43,
+    "command_buffers_committed_cold": 291,
+    "structural_graph_command_buffers_warm_floor": 98,
+    "cold_vector_decode_command_buffers": 193,
+    "host_route_id_readbacks_per_token": 48,
+    "expert_gate_up_gpu_us": 235663,
+    "expert_gate_up_share_of_gpu_kernel_percent": 59.10,
+    "expert_gate_up_share_of_host_wall_percent_approx": 28.0,
+    "paired_gate_up_swiglu_already_live": true
+  },
+  "primary_target": {
+    "bucket": "S",
+    "name": "command_graph_transition_gap / production_gpu_idle_or_command_topology_gap",
+    "not_primary": "expert_gate_up GPU kernel bucket (59% of GPU, ~28% of wall)"
+  },
+  "mechanisms": [
+    {
+      "id": "M1",
+      "rank": 1,
+      "name": "device_indexed_expert_argument_buffers",
+      "kind": "binding_topology_device_side_resource_index",
+      "buckets": ["S", "H"],
+      "expected_recoverable_ns_low": 200000000,
+      "expected_recoverable_ns_high": 400000000,
+      "status": "designed_not_implemented",
+      "cheapest_falsifier": "warm host_route_id_readbacks==0 and command_buffers<=2 with bit-identical routes; component mid-wait vs no-mid-wait micro graph",
+      "prior_negative_evidence_to_survive": [
+        "serial_moe_route_dispatch_slower_is_different_lever",
+        "icb_encode_share_kill_is_not_wait_topology",
+        "gap_is_not_simply_dispatch_count"
+      ]
+    },
+    {
+      "id": "M2",
+      "rank": 2,
+      "name": "collapse_command_buffers_single_cb_discipline",
+      "kind": "submission_topology",
+      "buckets": ["S", "H"],
+      "expected_recoverable_ns_low": 50000000,
+      "expected_recoverable_ns_high": 200000000,
+      "status": "partial_cold_vector_decode_folded_and_prewarm",
+      "note": "Full single-CB token blocked on M1; warm floor remains 98 CBs with route wait",
+      "cheapest_falsifier": "warm command_buffers==98 after prewarm; if gap still ~427ms pure CB reduction without M1 cannot explain S",
+      "prior_negative_evidence_to_survive": [
+        "host_per_dispatch_overhead_type1_kill_was_encode_share",
+        "cpu_gpu_pipelining_type1_dead"
+      ]
+    },
+    {
+      "id": "M3",
+      "rank": 3,
+      "name": "serial_multi_dispatch_encoder_per_wave",
+      "kind": "encoder_boundary_topology",
+      "buckets": ["S"],
+      "expected_recoverable_ns_low": 50000000,
+      "expected_recoverable_ns_high": 250000000,
+      "status": "implemented_default_on",
+      "opt_out_env": "HAWKING_QWEN30_SERIAL_ENCODER=0",
+      "cheapest_falsifier": "component_command_topology_serial_vs_split_encoder_and_multi_cb unit test; serialized A/B complete-token profiler serial on vs off",
+      "prior_negative_evidence_to_survive": [
+        "megakernel_fusion_4.4x_slower_is_not_coencoding",
+        "multi_cq_dead_is_not_single_queue_serial_encoder"
+      ]
+    },
+    {
+      "id": "M4",
+      "rank": 4,
+      "name": "residency_use_resource_argument_buffer_batching",
+      "kind": "host_bind_path",
+      "buckets": ["H"],
+      "expected_recoverable_ns_low": 0,
+      "expected_recoverable_ns_high": 20000000,
+      "status": "rejected_as_primary",
+      "cheapest_falsifier": "bind-only loop set_buffer vs use_resource at production bind counts; delta <1ms kills as dominant S lever"
+    },
+    {
+      "id": "M5",
+      "rank": 5,
+      "name": "icb_preencode_per_token_graph",
+      "kind": "preencoded_command_replay",
+      "buckets": ["H"],
+      "expected_recoverable_ns_low": 0,
+      "expected_recoverable_ns_high": 10000000,
+      "status": "rejected_as_primary_unless_encode_share_reopens",
+      "prior_negative_evidence_to_survive": [
+        "dead_levers_icb_type1",
+        "icb_cannot_capture_set_bytes_without_argbuf"
+      ]
+    }
+  ],
+  "implemented_this_worktree": [
+    "fold_cold_rmsnorm_vector_decode_into_parent_tcb",
+    "prewarm_static_decoded_vectors_one_cb",
+    "serial_encoder_groups_default_on",
+    "component_topology_unit_test",
+    "mechanism_table_receipt"
+  ],
+  "first_serialized_experiment": {
+    "name": "complete_token_profiler_serial_on_vs_off_warm_token",
+    "requires_human_serialized_run": true,
+    "compare": [
+      "production_gpu_idle_or_command_topology_gap_us",
+      "command_buffers_committed",
+      "host_route_id_readbacks",
+      "complete_token_host_wall_us",
+      "sampled_token_id_parity"
+    ],
+    "arms": [
+      "default serial ON + prewarm",
+      "HAWKING_QWEN30_SERIAL_ENCODER=0 + prewarm"
+    ]
+  }
+}
