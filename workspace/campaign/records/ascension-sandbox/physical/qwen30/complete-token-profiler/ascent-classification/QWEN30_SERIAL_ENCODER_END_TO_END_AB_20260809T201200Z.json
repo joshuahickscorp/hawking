@@ -1,0 +1,48 @@
+{
+ "claim_boundary": {
+  "artifact_is_low_fidelity_and_degenerate_so_this_is_not_a_base_true_tps": true,
+  "diagnostic_forward_token_not_clean_tps": true,
+  "other_grok_lanes_were_running_during_measurement": true,
+  "paired_ab_same_binary_same_artifact_same_token": true
+ },
+ "counters_prior_receipt": {
+  "command_buffers": 98,
+  "elapsed_us": 726106,
+  "host_route_id_readbacks": 48,
+  "host_stage_interval_count": 295,
+  "metal_dispatches": 1493
+ },
+ "counters_this_binary": {
+  "command_buffers": 98,
+  "host_route_id_readbacks": 48,
+  "host_stage_interval_count": 0,
+  "metal_dispatches": 1686
+ },
+ "elapsed_us": {
+  "delta_percent": 0.34,
+  "median_serial_off": 349906,
+  "median_serial_on": 348724,
+  "serial_off": [
+   349906,
+   348833,
+   352128
+  ],
+  "serial_on": [
+   348724,
+   359202,
+   347611
+  ]
+ },
+ "findings": [
+  "Serial encoder groups have NO measurable end-to-end effect: medians differ by 0.34%, inside run-to-run noise. The 5% seen in the N=64 component microbench does not translate to the real 48-layer graph. The change was merged defaulted ON on microbench evidence; this corrects that basis.",
+  "A first uncorrected pair read 509,792 vs 419,909 us and would have been reported as a 21% regression. Three trials each dissolved it. Single-shot timings on this host are not admissible.",
+  "metal_dispatches rose 1493 -> 1686, exactly +193: the 193 static vector decodes now encode as dispatches inside existing command buffers instead of taking their own. That is the cold vector-decode fold working as designed; command_buffers stayed at the 98 warm floor.",
+  "host_stage_interval_count went 295 -> 0 with the new host-stage ledger."
+ ],
+ "method": "ascension_qwen30_complete_native_runtime --mode forward-token --token-id 151643, gate-up kernel paired-scalar-order-production-no-parity, HAWKING_QWEN30_SERIAL_ENCODER toggled, 3 trials each",
+ "next": "The unimplemented lever remains device-indexed expert argument buffers to remove the 48 per-token host route-id readbacks; command_buffers is already at its 98 warm floor and did not move.",
+ "not_established": "The elapsed drop from the prior receipt's 726,106 us to ~349,000 us is NOT attributed to these changes. That receipt was taken at another time under unknown contention; attributing it would require an A/B against the prior binary, which was not run. No optimization credit is claimed.",
+ "recorded_at": "2026-08-09T20:12:00Z",
+ "schema": "hawking.ascension.qwen30_serial_encoder_end_to_end_ab.v1",
+ "status": "EARNED_NEGATIVE_SERIAL_ENCODER_NO_MEASURABLE_END_TO_END_EFFECT"
+}
