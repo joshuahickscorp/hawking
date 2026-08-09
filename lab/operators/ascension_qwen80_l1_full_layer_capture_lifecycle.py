@@ -1361,6 +1361,12 @@ def _outer_terminal_document(
             "status": status,
             "recorded_at": _utc_now(),
             "test_only_fake_child": test_only,
+            # Same assertion the strict host writes into its inner receipt, under
+            # the name every consuming assessor reads.  The outer previously
+            # published this fact only as ``test_only_fake_child``, so a
+            # conforming real capture could not be bound by an assessor that
+            # requires ``fixture_or_synthetic`` on both halves of the pair.
+            "fixture_or_synthetic": test_only,
             "production_lifecycle_wrapper_required": True,
             "host_preflight": _evidence(context.host_preflight),
             "outer_preflight": _evidence(context.outer_preflight),

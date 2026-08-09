@@ -296,15 +296,162 @@ def _source_payloads() -> dict[str, object]:
     }
 
 
+def _teacher_child_binary(path: Path, payload: bytes = b"#!/bin/sh\nexit 0\n") -> Path:
+    binary = path / controller.STREAMED_TEACHER_CHILD_BASENAME
+    binary.write_bytes(payload)
+    binary.chmod(0o700)
+    return binary
+
+
 def test_current_preflight_stays_blocked_and_binds_only_metadata(tmp_path: Path) -> None:
     paths = _fixtures(tmp_path)
     result = controller.build_current_preflight(**paths)
     assert result["status"] == controller.BLOCKED_STATUS
     assert result["future_source_launch_contract"]["actual_streamed_executor_present"] is False
+    assert result["future_source_launch_contract"]["streamed_teacher_child_binary"] == {"present": False}
     assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+    assert controller.BLOCKER_NO_EXECUTOR in result["blockers"]
+    assert controller.BLOCKER_NO_EXECUTION_SEMANTICS in result["blockers"]
+    assert controller.BLOCKER_NO_SOURCE_LEASE in result["blockers"]
     assert result["claim_boundary"]["no_child_launched"] is True
     assert result["claim_boundary"]["does_not_claim_source_quality_coherence_hcli_tps_tg_or_tournament"] is True
     verify(result, label="guarded streamed-source outer preflight")
+
+
+def test_present_pin_matching_executor_clears_only_executor_blocker(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    binary = _teacher_child_binary(tmp_path)
+    pin = hashlib.sha256(binary.read_bytes()).hexdigest()
+    result = controller.build_current_preflight(
+        **paths,
+        streamed_executor_path=binary,
+        expected_streamed_executor_sha256=pin,
+    )
+    assert result["status"] == controller.BLOCKED_INCOMPLETE_STATUS
+    launch = result["future_source_launch_contract"]
+    assert launch["actual_streamed_executor_present"] is True
+    assert launch["streamed_teacher_child_binary"]["present"] is True
+    assert launch["streamed_teacher_child_binary"]["sha256"] == pin
+    assert launch["streamed_teacher_child_binary"]["bytes"] == binary.stat().st_size
+    assert Path(launch["streamed_teacher_child_binary"]["path"]) == binary.resolve()
+    assert controller.BLOCKER_NO_EXECUTOR not in result["blockers"]
+    assert controller.BLOCKER_EXECUTOR_HASH_MISMATCH not in result["blockers"]
+    assert controller.BLOCKER_NO_EXECUTION_SEMANTICS in result["blockers"]
+    assert controller.BLOCKER_NO_SOURCE_LEASE in result["blockers"]
+    assert controller.BLOCKER_NO_SOURCE_CAPTURE in result["blockers"]
+    assert controller.BLOCKER_NO_NATIVE_LEASE in result["blockers"]
+    assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+    verify(result, label="guarded outer with bound teacher-child")
+
+
+def test_hash_mismatched_executor_produces_hash_blocker(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    binary = _teacher_child_binary(tmp_path, payload=b"#!/bin/sh\necho mismatch\n")
+    result = controller.build_current_preflight(
+        **paths,
+        streamed_executor_path=binary,
+        expected_streamed_executor_sha256="a" * 64,
+    )
+    assert result["future_source_launch_contract"]["actual_streamed_executor_present"] is False
+    assert controller.BLOCKER_EXECUTOR_HASH_MISMATCH in result["blockers"]
+    assert controller.BLOCKER_NO_EXECUTOR not in result["blockers"]
+    assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+
+
+def test_absent_executor_path_produces_absent_blocker(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    missing = tmp_path / controller.STREAMED_TEACHER_CHILD_BASENAME
+    result = controller.build_current_preflight(
+        **paths,
+        streamed_executor_path=missing,
+        expected_streamed_executor_sha256="b" * 64,
+    )
+    assert result["future_source_launch_contract"]["actual_streamed_executor_present"] is False
+    assert controller.BLOCKER_EXECUTOR_INVALID in result["blockers"]
+    assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+
+
+def test_teacher_child_preflight_is_bound_but_non_authorizing(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    binary = _teacher_child_binary(tmp_path)
+    pin = hashlib.sha256(binary.read_bytes()).hexdigest()
+    preflight_path = _write(
+        tmp_path / "teacher-child-preflight.json",
+        {
+            "schema": controller.TEACHER_CHILD_PREFLIGHT_SCHEMA,
+            "status": controller.TEACHER_CHILD_PREFLIGHT_STATUS,
+            "execution_authorized": False,
+            "execution_boundary": {
+                "source_tensor_payload_opened": False,
+                "source_model_loaded_or_instantiated": False,
+                "whole_source_model_resident": False,
+                "gpu_metal_mps_or_other_accelerator_invoked": False,
+                "server_started_or_contacted": False,
+                "hcli_invoked": False,
+                "lease_requested_issued_or_consumed": False,
+                "child_process_started": False,
+                "source_teacher_or_native_vector_written": False,
+                "source_eviction_or_native_phase_performed": False,
+            },
+            "current_blockers": ["no_fresh_one_shot_source_lease_or_runtime_admission_exists"],
+        },
+        sealed=True,
+    )
+    result = controller.build_current_preflight(
+        **paths,
+        streamed_executor_path=binary,
+        expected_streamed_executor_sha256=pin,
+        teacher_child_preflight_path=preflight_path,
+    )
+    binding = result["teacher_child_interface_preflight"]
+    assert binding["present"] is True
+    assert binding["execution_authorized"] is False
+    assert binding["non_authorizing_interface_only"] is True
+    assert binding["evidence"]["seal_sha256"]
+    assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+
+
+def test_tampered_teacher_child_preflight_is_refused(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    preflight_path = _write(
+        tmp_path / "teacher-child-preflight.json",
+        {
+            "schema": controller.TEACHER_CHILD_PREFLIGHT_SCHEMA,
+            "status": controller.TEACHER_CHILD_PREFLIGHT_STATUS,
+            "execution_authorized": False,
+            "execution_boundary": {
+                "source_tensor_payload_opened": False,
+                "source_model_loaded_or_instantiated": False,
+                "whole_source_model_resident": False,
+                "gpu_metal_mps_or_other_accelerator_invoked": False,
+                "server_started_or_contacted": False,
+                "hcli_invoked": False,
+                "lease_requested_issued_or_consumed": False,
+                "child_process_started": False,
+                "source_teacher_or_native_vector_written": False,
+                "source_eviction_or_native_phase_performed": False,
+            },
+            "seal_sha256": "0" * 64,
+        },
+        sealed=False,
+    )
+    with pytest.raises(controller.GuardedStreamedSourceOuterError, match="absent or invalid"):
+        controller.build_current_preflight(**paths, teacher_child_preflight_path=preflight_path)
+
+
+def test_oracle_execution_authorized_never_true_on_incomplete_evidence(tmp_path: Path) -> None:
+    paths = _fixtures(tmp_path)
+    binary = _teacher_child_binary(tmp_path)
+    pin = hashlib.sha256(binary.read_bytes()).hexdigest()
+    result = controller.build_current_preflight(
+        **paths,
+        streamed_executor_path=binary,
+        expected_streamed_executor_sha256=pin,
+    )
+    assert result["derived_current_streamed_feasibility"]["oracle_execution_authorized"] is False
+    assert result["derived_current_streamed_feasibility"]["semantic_equivalence_proven"] is False
+    # Even a present executor cannot clear lease/capture/eviction measurements.
+    assert len(result["blockers"]) >= 4
 
 
 def test_future_sequence_requires_fresh_safety_bounded_cache_and_accounting(tmp_path: Path) -> None:

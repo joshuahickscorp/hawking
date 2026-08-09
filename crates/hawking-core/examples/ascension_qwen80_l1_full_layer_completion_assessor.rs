@@ -408,13 +408,41 @@ fn bind(
     })
 }
 
+/// Receipt-internal provenance pointer check.
+///
+/// Producers record upstream sealed documents as seal-identity pointers
+/// (`document_sha256` and `document_seal_sha256` both carry the seal — the
+/// unsigned canonical hash). That is distinct from the assessor-input
+/// *wrapper* convention, where `document_sha256` is `json_sha` of the full
+/// sealed document. Mirror the L0 state-handoff assessor's proven semantics:
+/// seal binding is mandatory; full-document identity is checked only when the
+/// pointer actually carries it under `canonical_document_sha256` /
+/// `bound_document_sha256`. Never treat receipt-internal `document_sha256` as
+/// the wrapper-style full-document hash.
 fn pointer(value: &Value, expected: &Bound, label: &str) -> Result<(), String> {
     let value = obj(value, label)?;
     boolean(value, "present", true, label)?;
-    if sha_field(value, "document_sha256", label)? != expected.document_sha256
-        || sha_field(value, "document_seal_sha256", label)? != expected.seal_sha256
+    let observed_seal = value
+        .get("document_seal_sha256")
+        .or_else(|| value.get("seal_sha256"))
+        .and_then(Value::as_str)
+        .ok_or_else(|| format!("{label}.seal_sha256 is required"))?;
+    if !valid_sha(observed_seal) {
+        return Err(format!("{label}.seal_sha256 must be a lowercase SHA-256"));
+    }
+    if observed_seal != expected.seal_sha256 {
+        return Err(format!(
+            "{label} does not bind the expected sealed document"
+        ));
+    }
+    if let Some(observed_document_sha) = value
+        .get("canonical_document_sha256")
+        .or_else(|| value.get("bound_document_sha256"))
+        .and_then(Value::as_str)
     {
-        return Err(format!("{label} does not bind its supplied document"));
+        if observed_document_sha != expected.document_sha256 {
+            return Err(format!("{label} canonical document identity drifted"));
+        }
     }
     Ok(())
 }
@@ -1065,10 +1093,24 @@ mod tests {
         })
     }
 
+    /// Wrapper-style pointer: `document_sha256` = full sealed-document hash.
+    /// Used by older synthetic fixtures; still valid because `pointer()` only
+    /// mandatorily checks the seal field.
     fn reference(document: &Value) -> Value {
         json!({
             "present": true,
             "document_sha256": json_sha(document).unwrap(),
+            "document_seal_sha256": document["seal_sha256"].clone(),
+        })
+    }
+
+    /// Real producer/receipt-internal convention: both identity fields carry
+    /// the seal (unsigned canonical hash). This is what the capture host and
+    /// Python `_evidence()` emit.
+    fn producer_reference(document: &Value) -> Value {
+        json!({
+            "present": true,
+            "document_sha256": document["seal_sha256"].clone(),
             "document_seal_sha256": document["seal_sha256"].clone(),
         })
     }
@@ -1141,13 +1183,13 @@ mod tests {
         })
     }
 
-    fn inner(historical: &Value) -> Value {
+    fn inner_with(historical: &Value, reference_fn: fn(&Value) -> Value) -> Value {
         sealed(json!({
             "schema": INNER_SCHEMA,
             "status": INNER_STATUS,
             "fixture_or_synthetic": false,
             "self_asserted": false,
-            "historical_component_provenance": reference(historical),
+            "historical_component_provenance": reference_fn(historical),
             "historical_provenance_only": true,
             "prior_process_or_buffer_reuse_accepted": false,
             "fresh_same_runtime_execution": {
@@ -1218,13 +1260,13 @@ mod tests {
         }))
     }
 
-    fn outer(inner: &Value) -> Value {
+    fn outer_with(inner: &Value, reference_fn: fn(&Value) -> Value) -> Value {
         sealed(json!({
             "schema": OUTER_SCHEMA,
             "status": OUTER_STATUS,
             "fixture_or_synthetic": false,
             "self_asserted": false,
-            "inner_capture": reference(inner),
+            "inner_capture": reference_fn(inner),
             "lease_id": sha('e'),
             "child_terminal": {
                 "exit_code": 0,
@@ -1245,11 +1287,11 @@ mod tests {
         }))
     }
 
-    fn release(outer: &Value) -> Value {
+    fn release_with(outer: &Value, reference_fn: fn(&Value) -> Value) -> Value {
         sealed(json!({
             "schema": RELEASE_SCHEMA,
             "status": RELEASE_STATUS,
-            "outer_terminal": reference(outer),
+            "outer_terminal": reference_fn(outer),
             "lease_id": sha('e'),
             "actual_release_performed": true,
             "released_after_outer_terminal": true,
@@ -1260,11 +1302,23 @@ mod tests {
         }))
     }
 
+    fn outer(inner: &Value) -> Value {
+        outer_with(inner, reference)
+    }
+
+    fn release(outer: &Value) -> Value {
+        release_with(outer, reference)
+    }
+
     fn input() -> Value {
+        input_with_references(reference)
+    }
+
+    fn input_with_references(reference_fn: fn(&Value) -> Value) -> Value {
         let historical = historical();
-        let inner = inner(&historical);
-        let outer = outer(&inner);
-        let release = release(&outer);
+        let inner = inner_with(&historical, reference_fn);
+        let outer = outer_with(&inner, reference_fn);
+        let release = release_with(&outer, reference_fn);
         sealed(json!({
             "schema": INPUT_SCHEMA,
             "historical_joint_assessment": wrapper(historical),
@@ -1359,5 +1413,115 @@ mod tests {
             .unwrap()
             .iter()
             .any(|value| value.as_str().unwrap().contains("historical_l0_receipt")));
+    }
+
+    #[test]
+    fn accepts_real_producer_seal_only_provenance_pointers() {
+        let report = assess(&input_with_references(producer_reference), false);
+        assert_eq!(report["status"], EARNED_STATUS);
+        assert_eq!(report["earned_complete_l1_component_only"], true);
+        assert!(report["blockers"].as_array().unwrap().is_empty());
+        verify_seal(&report, "report").unwrap();
+    }
+
+    #[test]
+    fn rejects_producer_pointer_with_wrong_seal() {
+        let mut value = input_with_references(producer_reference);
+        let inner = value["fresh_full_layer_inner"]["document"]
+            .as_object_mut()
+            .unwrap();
+        // Valid hex shape, but not the historical seal.
+        inner["historical_component_provenance"]["document_seal_sha256"] = json!(sha('f'));
+        // Keep document_sha256 on the same wrong-seal path producers use: both fields equal.
+        inner["historical_component_provenance"]["document_sha256"] = json!(sha('f'));
+        let inner = reseal(Value::Object(inner.clone()));
+        value["fresh_full_layer_inner"] = wrapper(inner.clone());
+        let outer = outer_with(&inner, producer_reference);
+        let release = release_with(&outer, producer_reference);
+        value["fresh_full_layer_outer"] = wrapper(outer);
+        value["fresh_full_layer_release"] = wrapper(release);
+        value = reseal(value);
+        let report = assess(&value, false);
+        assert_eq!(report["status"], REFUSED_STATUS);
+        assert!(report["blockers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| {
+                value
+                    .as_str()
+                    .unwrap()
+                    .contains("does not bind the expected sealed document")
+            }));
+    }
+
+    #[test]
+    fn rejects_producer_pointer_with_wrong_canonical_document_sha() {
+        let mut value = input_with_references(producer_reference);
+        let historical = value["historical_joint_assessment"]["document"].clone();
+        let correct_full = json_sha(&historical).unwrap();
+        assert_ne!(correct_full, historical["seal_sha256"].as_str().unwrap());
+
+        let inner = value["fresh_full_layer_inner"]["document"]
+            .as_object_mut()
+            .unwrap();
+        // Seal still correct; optional full-document identity is present and wrong.
+        inner["historical_component_provenance"]["canonical_document_sha256"] = json!(sha('e'));
+        let inner = reseal(Value::Object(inner.clone()));
+        value["fresh_full_layer_inner"] = wrapper(inner.clone());
+        let outer = outer_with(&inner, producer_reference);
+        let release = release_with(&outer, producer_reference);
+        value["fresh_full_layer_outer"] = wrapper(outer);
+        value["fresh_full_layer_release"] = wrapper(release);
+        value = reseal(value);
+        let report = assess(&value, false);
+        assert_eq!(report["status"], REFUSED_STATUS);
+        assert!(report["blockers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| {
+                value
+                    .as_str()
+                    .unwrap()
+                    .contains("canonical document identity drifted")
+            }));
+    }
+
+    #[test]
+    fn rejects_tampered_historical_with_resealed_different_content() {
+        // Build a producer-shaped chain, then replace the historical document
+        // with different content resealed under a new seal while leaving the
+        // receipt pointer bound to the original seal. Tamper via an extra
+        // field so validate_historical still accepts the document body — only
+        // the seal-binding pointer must refuse.
+        let original_historical = historical();
+        let original_seal = original_historical["seal_sha256"].as_str().unwrap().to_owned();
+        let mut value = input_with_references(producer_reference);
+
+        let mut tampered = original_historical.clone();
+        tampered
+            .as_object_mut()
+            .unwrap()
+            .insert("tamper_marker".into(), json!("different content"));
+        let tampered = reseal(tampered);
+        let tampered_seal = tampered["seal_sha256"].as_str().unwrap().to_owned();
+        assert_ne!(original_seal, tampered_seal);
+
+        value["historical_joint_assessment"] = wrapper(tampered);
+        value = reseal(value);
+
+        let report = assess(&value, false);
+        assert_eq!(report["status"], REFUSED_STATUS);
+        assert!(report["blockers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| {
+                value
+                    .as_str()
+                    .unwrap()
+                    .contains("does not bind the expected sealed document")
+            }));
     }
 }

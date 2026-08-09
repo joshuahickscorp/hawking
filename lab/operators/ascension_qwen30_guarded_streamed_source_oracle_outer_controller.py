@@ -6,9 +6,11 @@ metadata validators a *future*, separately reviewed runner must satisfy.  It
 does not accept a source root, a safetensors path, or a child command; it has
 no subprocess, server, HCLI, Metal, MPS, or lease-issuing surface.
 
-The present result is always blocked.  A real layer-streamed source executor,
-fresh safety observation, source lease, source capture, source eviction, and
-fresh native lease are all future evidence.  The order is deliberately rigid:
+Blockers and the streamed-executor binding are derived from measured evidence.
+A present, pin-matching teacher-child binary can clear the executor blocker,
+but this preflight never self-authorizes: fresh safety observation, source
+lease, source capture, source eviction, and a fresh native lease remain
+separately earned.  The order is deliberately rigid:
 
     source-streamed capture -> durable source-vector retention -> eviction
     -> native lease -> native capture
@@ -73,9 +75,19 @@ DEFAULT_CURRENT_TRACE = (
     "98db412d42e87e938a89c759d426f69bd51e700a944701704a5c82949244298f.json"
 )
 DEFAULT_OUTPUT_ROOT = DEFAULT_ROOT / "streamed-source-oracle-outer-controller/receipts"
+DEFAULT_STREAMED_TEACHER_CHILD = (
+    REPO_ROOT
+    / "workspace/ops/build/rust/debug/examples"
+    / "ascension_qwen30_streamed_source_teacher_child"
+)
 
 SCHEMA = "hawking.ascension.qwen30_guarded_streamed_source_oracle_outer_controller.v1"
+# Historical name retained when the teacher-child binary is absent.  A future
+# remint of the binary pin or a present binding uses the incomplete-prereq form.
 BLOCKED_STATUS = "BLOCKED_QWEN30_GUARDED_STREAMED_SOURCE_ORACLE_OUTER_NO_EXECUTOR_NOT_EXECUTED"
+BLOCKED_INCOMPLETE_STATUS = (
+    "BLOCKED_QWEN30_GUARDED_STREAMED_SOURCE_ORACLE_OUTER_PREREQUISITES_INCOMPLETE_NOT_EXECUTED"
+)
 
 RANGE_AUTHORITY_SCHEMA = "hawking.ascension.qwen30_streamed_oracle_metadata_only_range_map_authority.v1"
 RANGE_AUTHORITY_STATUS = "PREPARED_QWEN30_STREAMED_ORACLE_SOURCE_RANGE_MAP_AUTHORITY_NOT_EXECUTED"
@@ -86,6 +98,12 @@ FUTURE_EXECUTION_SEMANTICS_SCHEMA = (
 )
 FUTURE_EXECUTION_SEMANTICS_STATUS = (
     "EARNED_QWEN30_LAYER_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_ATTESTED"
+)
+TEACHER_CHILD_PREFLIGHT_SCHEMA = (
+    "hawking.ascension.qwen30_streamed_source_teacher_child_preflight.v1"
+)
+TEACHER_CHILD_PREFLIGHT_STATUS = (
+    "PREPARED_QWEN30_STREAMED_SOURCE_TEACHER_CHILD_INTERFACE_NOT_EXECUTED"
 )
 
 # These schemas intentionally align with the existing raw-six-vector sequence
@@ -100,11 +118,34 @@ SOURCE_EVICTION_STATUS = "EARNED_QWEN30_HQ30GR2_SOURCE_BF16_TEACHER_EVICTED_BEFO
 NATIVE_LEASE_SCHEMA = "hawking.ascension.qwen30_hq30gr2_raw_final_logit_retention_quiet_lease.v1"
 NATIVE_LEASE_STATUS = "GRANTED_QWEN30_HQ30GR2_RAW_FINAL_LOGIT_RETENTION_ONE_SHOT"
 
+# Frozen current teacher-child binary pin.  A future remint must be consciously
+# supplied as a new pin, never discovered by scanning a directory or silently
+# substituted through a recovery wrapper.
+CURRENT_STREAMED_TEACHER_CHILD_SHA256 = (
+    "cf235f549cf1cd5bfff4003ae394eae640697a0f7bef8e748f75fd1b9db7e8c0"
+)
+STREAMED_TEACHER_CHILD_BASENAME = "ascension_qwen30_streamed_source_teacher_child"
+
 MAX_METADATA_BYTES = 64 * 1024 * 1024
+MAX_BINARY_BYTES = 512 * 1024 * 1024
 PREFIX_TOKENS = three_way_contract.PREFIX_TOKENS
 FORCED_TOKEN = three_way_contract.FORCED_TOKEN
 VOCAB_ROWS = three_way_contract.VOCAB_ROWS
 F32_VECTOR_BYTES = retention_contract.F32LE_BYTES_PER_VECTOR
+
+BLOCKER_NO_EXECUTOR = (
+    "no actual layer-streamed Q30 source executor or receipt-last child protocol exists"
+)
+BLOCKER_EXECUTOR_HASH_MISMATCH = (
+    "streamed_teacher_child_sha256_does_not_match_frozen_pin"
+)
+BLOCKER_EXECUTOR_INVALID = "streamed_teacher_child_binary_absent_or_invalid"
+BLOCKER_NO_EXECUTION_SEMANTICS = "no exact execution semantics attestation has been earned"
+BLOCKER_NO_SOURCE_LEASE = (
+    "no fresh zero-swap/zero-swapout source safety receipt and one-shot source lease exist"
+)
+BLOCKER_NO_SOURCE_CAPTURE = "no source capture/eviction terminal evidence exists"
+BLOCKER_NO_NATIVE_LEASE = "no fresh native lease may be considered before source eviction"
 
 
 class GuardedStreamedSourceOuterError(RuntimeError):
@@ -115,12 +156,155 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         while block := handle.read(1024 * 1024):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+
+
+def _binding_for_path(
+    path: Path,
+    *,
+    label: str,
+    expected_sha256: str | None = None,
+    executable: bool = False,
+    max_bytes: int = MAX_METADATA_BYTES,
+) -> dict[str, Any]:
+    """Pin a host file by absolute path, byte count, and sha256."""
+    if not path.is_absolute():
+        raise GuardedStreamedSourceOuterError(f"{label} must be absolute")
+    try:
+        metadata = path.lstat()
+    except OSError as exc:
+        raise GuardedStreamedSourceOuterError(f"cannot stat {label}: {exc}") from exc
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+        raise GuardedStreamedSourceOuterError(f"{label} must be a regular non-symlink file")
+    if metadata.st_size <= 0 or metadata.st_size > max_bytes:
+        raise GuardedStreamedSourceOuterError(
+            f"{label} must contain 1..={max_bytes} bytes"
+        )
+    if executable and not os.access(path, os.X_OK):
+        raise GuardedStreamedSourceOuterError(f"{label} must be executable")
+    resolved = path.resolve(strict=True)
+    digest = _sha256_file(resolved)
+    if expected_sha256 is not None:
+        if not _is_sha256(expected_sha256):
+            raise GuardedStreamedSourceOuterError(f"{label} frozen pin must be a lowercase SHA-256")
+        if digest != expected_sha256:
+            raise GuardedStreamedSourceOuterError(
+                f"{label} SHA does not match the explicit frozen pin"
+            )
+    return {
+        "path": str(resolved),
+        "present": True,
+        "bytes": int(metadata.st_size),
+        "sha256": digest,
+    }
+
+
+def _probe_streamed_teacher_child(
+    path: Path | None,
+    *,
+    expected_sha256: str,
+) -> tuple[bool, dict[str, Any] | None, list[str]]:
+    """Measure the teacher-child binary without inventing its presence."""
+    if path is None:
+        return False, None, [BLOCKER_NO_EXECUTOR]
+    try:
+        binding = _binding_for_path(
+            path,
+            label="streamed teacher-child executor",
+            expected_sha256=expected_sha256,
+            executable=True,
+            max_bytes=MAX_BINARY_BYTES,
+        )
+    except GuardedStreamedSourceOuterError as exc:
+        message = str(exc)
+        if "does not match the explicit frozen pin" in message:
+            return False, None, [BLOCKER_EXECUTOR_HASH_MISMATCH]
+        return False, None, [BLOCKER_EXECUTOR_INVALID]
+    if Path(binding["path"]).name != STREAMED_TEACHER_CHILD_BASENAME:
+        return False, None, [BLOCKER_EXECUTOR_INVALID]
+    return True, binding, []
+
+
+def _bind_teacher_child_preflight(path: Path) -> dict[str, Any]:
+    """Accept an optional sealed teacher-child interface preflight; never authorize from it."""
+    document, clean = _sealed_json(path, label="teacher-child interface preflight")
+    _schema_status(
+        document,
+        schema=TEACHER_CHILD_PREFLIGHT_SCHEMA,
+        status=TEACHER_CHILD_PREFLIGHT_STATUS,
+        label="teacher-child interface preflight",
+    )
+    if document.get("execution_authorized") is not False:
+        raise GuardedStreamedSourceOuterError(
+            "teacher-child interface preflight may not authorize execution"
+        )
+    boundary = _mapping(document.get("execution_boundary"), label="teacher-child execution boundary")
+    for key in (
+        "source_tensor_payload_opened",
+        "source_model_loaded_or_instantiated",
+        "whole_source_model_resident",
+        "gpu_metal_mps_or_other_accelerator_invoked",
+        "server_started_or_contacted",
+        "hcli_invoked",
+        "lease_requested_issued_or_consumed",
+        "child_process_started",
+        "source_teacher_or_native_vector_written",
+        "source_eviction_or_native_phase_performed",
+    ):
+        if boundary.get(key) is not False:
+            raise GuardedStreamedSourceOuterError(
+                f"teacher-child interface preflight {key} must remain false"
+            )
+    return {
+        "present": True,
+        "evidence": _evidence(clean, document),
+        "schema": TEACHER_CHILD_PREFLIGHT_SCHEMA,
+        "status": TEACHER_CHILD_PREFLIGHT_STATUS,
+        "execution_authorized": False,
+        "non_authorizing_interface_only": True,
+    }
+
+
+def _derive_launch_blockers(
+    *,
+    executor_present: bool,
+    executor_blockers: Sequence[str],
+    semantic_equivalence_proven: bool,
+) -> list[str]:
+    """Emit a blocker only when its evidence is genuinely absent or invalid."""
+    blockers: list[str] = list(executor_blockers)
+    if not semantic_equivalence_proven:
+        blockers.append(BLOCKER_NO_EXECUTION_SEMANTICS)
+    # These remain real physical prerequisites that this metadata preflight
+    # cannot observe as present: no lease/capture/eviction inputs are accepted.
+    blockers.extend(
+        [
+            BLOCKER_NO_SOURCE_LEASE,
+            BLOCKER_NO_SOURCE_CAPTURE,
+            BLOCKER_NO_NATIVE_LEASE,
+        ]
+    )
+    if executor_present and BLOCKER_NO_EXECUTOR in blockers:
+        # Defensive: present binding never carries the absent-executor constant.
+        blockers = [item for item in blockers if item != BLOCKER_NO_EXECUTOR]
+    return blockers
 
 
 def _regular_json(path: Path, *, label: str) -> Path:
@@ -496,13 +680,17 @@ def build_current_preflight(
     semantics_path: Path,
     raw_retention_path: Path,
     current_trace_path: Path,
+    streamed_executor_path: Path | None = None,
+    expected_streamed_executor_sha256: str = CURRENT_STREAMED_TEACHER_CHILD_SHA256,
+    teacher_child_preflight_path: Path | None = None,
 ) -> dict[str, Any]:
     """Seal the current, deliberately blocked outer receipt without a child.
 
     The feasibility document is derived in memory from sealed metadata only.
-    Its expected refusal is intentional: the present semantics record is a
-    metadata-only attester, not the future exact execution attestation, and
-    there is no streamed executor to receive a future lease.
+    Its expected refusal is intentional while the semantics record remains a
+    metadata-only attester rather than the future exact execution attestation.
+    A pin-matching teacher-child binary can be bound as measured evidence, but
+    this preflight still cannot authorize a lease or launch.
     """
     source, source_path = _sealed_json(source_contract_path, label="source three-way contract")
     trace = _trace_from_source_contract(source)
@@ -527,6 +715,13 @@ def build_current_preflight(
     current_evidence = _validate_current_trace(
         current=current, current_path=current_path, raw=raw, trace=trace
     )
+    teacher_child_preflight_binding: dict[str, Any] = {"present": False}
+    if teacher_child_preflight_path is not None:
+        teacher_child_preflight_binding = _bind_teacher_child_preflight(teacher_child_preflight_path)
+    executor_present, executor_binding, executor_blockers = _probe_streamed_teacher_child(
+        streamed_executor_path,
+        expected_sha256=expected_streamed_executor_sha256,
+    )
     # No semantics execution attestation is supplied to the feasibility
     # preparer.  That is exactly the current truthful condition.
     derived = feasibility.build_feasibility(
@@ -539,6 +734,14 @@ def build_current_preflight(
     feasibility_state = _mapping(derived.get("feasibility"), label="derived streamed feasibility state")
     if feasibility_state.get("oracle_execution_authorized") is not False:
         raise GuardedStreamedSourceOuterError("derived streamed feasibility may not authorize an oracle")
+    semantic_equivalence_proven = feasibility_state[
+        "semantic_equivalence_proven_by_external_sealed_attestation"
+    ] is True
+    memory_assessment = _mapping(
+        derived.get("memory_assessment"), label="derived streamed memory assessment"
+    )
+    streamed_memory_fits = memory_assessment.get("streamed_memory_arithmetic_fits") is True
+    zero_swap = memory_assessment.get("zero_swap_condition_met") is True
     working_set = _mapping(derived.get("working_set"), label="derived streamed working set")
     streamed_floor = _integer(
         working_set.get("minimum_reclaimable_bytes_required_for_streamed_plan"),
@@ -547,10 +750,53 @@ def build_current_preflight(
     )
     if maximum_window_bytes <= 0:
         raise GuardedStreamedSourceOuterError("range authority did not produce a cache bound")
+    blockers = _derive_launch_blockers(
+        executor_present=executor_present,
+        executor_blockers=executor_blockers,
+        semantic_equivalence_proven=semantic_equivalence_proven,
+    )
+    # Authorization requires every named future condition, not merely a binary.
+    # This preflight never receives leases/capture/eviction evidence, so it
+    # remains non-authorizing even when the teacher-child binary binds cleanly.
+    oracle_execution_authorized = (
+        executor_present
+        and semantic_equivalence_proven
+        and streamed_memory_fits
+        and zero_swap
+        and BLOCKER_NO_SOURCE_LEASE not in blockers
+        and BLOCKER_NO_SOURCE_CAPTURE not in blockers
+        and BLOCKER_NO_NATIVE_LEASE not in blockers
+    )
+    if oracle_execution_authorized:
+        raise GuardedStreamedSourceOuterError(
+            "guarded outer preflight cannot authorize oracle execution from metadata alone"
+        )
+    status = BLOCKED_INCOMPLETE_STATUS if executor_present else BLOCKED_STATUS
+    launch_contract: dict[str, Any] = {
+        "actual_streamed_executor_present": executor_present,
+        "streamed_teacher_child_binary": executor_binding
+        if executor_binding is not None
+        else {"present": False},
+        "frozen_streamed_teacher_child_sha256_pin": expected_streamed_executor_sha256,
+        "this_module_has_no_child_launch_surface": True,
+        "future_executor_must_be_separate_and_receipt_last": True,
+        "source_lease": {"schema": SOURCE_LEASE_SCHEMA, "status": SOURCE_LEASE_STATUS},
+        "source_terminal": {"schema": SOURCE_TERMINAL_SCHEMA, "status": SOURCE_TERMINAL_STATUS},
+        "source_eviction": {"schema": SOURCE_EVICTION_SCHEMA, "status": SOURCE_EVICTION_STATUS},
+        "native_lease": {"schema": NATIVE_LEASE_SCHEMA, "status": NATIVE_LEASE_STATUS},
+        "minimum_reclaimable_bytes_required_immediately_before_source_child": streamed_floor,
+        "zero_swap_and_zero_swapouts_required_immediately_before_every_child": True,
+        "maximum_source_reader_cached_windows": 1,
+        "maximum_source_reader_cached_bytes": maximum_window_bytes,
+        "source_payload_read_accounting_must_be_explicit": True,
+        "source_then_durable_eviction_then_native_is_mandatory": True,
+        "automatic_retry_or_receipt_replay_forbidden": True,
+        "future_validation_is_metadata_only_and_never_launches_a_child": True,
+    }
     return seal(
         {
             "schema": SCHEMA,
-            "status": BLOCKED_STATUS,
+            "status": status,
             "recorded_at": _utc_now(),
             "source_bf16_three_way_contract": _evidence(source_path, source),
             "strict_source_bf16_memory_preflight": _evidence(memory_path, memory),
@@ -564,47 +810,20 @@ def build_current_preflight(
             "metadata_only_operator_semantics": semantics_evidence,
             "raw_final_logit_retention": raw_binding,
             "current_native_trace_reference_only": current_evidence,
+            "teacher_child_interface_preflight": teacher_child_preflight_binding,
             "exact_trace": trace,
             "derived_current_streamed_feasibility": {
                 "schema": derived["schema"],
                 "status": derived["status"],
                 "seal_sha256": derived["seal_sha256"],
-                "streamed_memory_arithmetic_fits": _mapping(
-                    derived.get("memory_assessment"), label="derived streamed memory assessment"
-                )["streamed_memory_arithmetic_fits"],
-                "zero_swap_in_historical_snapshot": _mapping(
-                    derived.get("memory_assessment"), label="derived streamed memory assessment"
-                )["zero_swap_condition_met"],
-                "semantic_equivalence_proven": feasibility_state[
-                    "semantic_equivalence_proven_by_external_sealed_attestation"
-                ],
+                "streamed_memory_arithmetic_fits": streamed_memory_fits,
+                "zero_swap_in_historical_snapshot": zero_swap,
+                "semantic_equivalence_proven": semantic_equivalence_proven,
                 "oracle_execution_authorized": False,
             },
             "current_memory_snapshot_reference_only": memory_state,
-            "future_source_launch_contract": {
-                "actual_streamed_executor_present": False,
-                "this_module_has_no_child_launch_surface": True,
-                "future_executor_must_be_separate_and_receipt_last": True,
-                "source_lease": {"schema": SOURCE_LEASE_SCHEMA, "status": SOURCE_LEASE_STATUS},
-                "source_terminal": {"schema": SOURCE_TERMINAL_SCHEMA, "status": SOURCE_TERMINAL_STATUS},
-                "source_eviction": {"schema": SOURCE_EVICTION_SCHEMA, "status": SOURCE_EVICTION_STATUS},
-                "native_lease": {"schema": NATIVE_LEASE_SCHEMA, "status": NATIVE_LEASE_STATUS},
-                "minimum_reclaimable_bytes_required_immediately_before_source_child": streamed_floor,
-                "zero_swap_and_zero_swapouts_required_immediately_before_every_child": True,
-                "maximum_source_reader_cached_windows": 1,
-                "maximum_source_reader_cached_bytes": maximum_window_bytes,
-                "source_payload_read_accounting_must_be_explicit": True,
-                "source_then_durable_eviction_then_native_is_mandatory": True,
-                "automatic_retry_or_receipt_replay_forbidden": True,
-                "future_validation_is_metadata_only_and_never_launches_a_child": True,
-            },
-            "blockers": [
-                "no actual layer-streamed Q30 source executor or receipt-last child protocol exists",
-                "no exact execution semantics attestation has been earned",
-                "no fresh zero-swap/zero-swapout source safety receipt and one-shot source lease exist",
-                "no source capture/eviction terminal evidence exists",
-                "no fresh native lease may be considered before source eviction",
-            ],
+            "future_source_launch_contract": launch_contract,
+            "blockers": blockers,
             "claim_boundary": {
                 "metadata_only_preflight": True,
                 "no_child_launched": True,
@@ -613,6 +832,7 @@ def build_current_preflight(
                 "does_not_touch_qwen30_server_hcli_or_watcher": True,
                 "does_not_issue_a_source_or_native_lease": True,
                 "does_not_claim_source_quality_coherence_hcli_tps_tg_or_tournament": True,
+                "bound_teacher_child_binary_is_not_a_launch_authorization": True,
             },
         }
     )
@@ -832,6 +1052,30 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--semantics", type=Path, default=DEFAULT_SEMANTICS)
     parser.add_argument("--raw-retention", type=Path, default=DEFAULT_RAW_RETENTION)
     parser.add_argument("--current-trace", type=Path, default=DEFAULT_CURRENT_TRACE)
+    parser.add_argument(
+        "--streamed-executor",
+        type=Path,
+        default=None,
+        help=(
+            "optional absolute path to ascension_qwen30_streamed_source_teacher_child; "
+            "when omitted the executor is measured absent"
+        ),
+    )
+    parser.add_argument(
+        "--expected-streamed-executor-sha256",
+        type=str,
+        default=CURRENT_STREAMED_TEACHER_CHILD_SHA256,
+        help="frozen teacher-child binary pin; a remint must be consciously supplied",
+    )
+    parser.add_argument(
+        "--teacher-child-preflight",
+        type=Path,
+        default=None,
+        help=(
+            "optional sealed PREPARED teacher-child interface preflight; "
+            "verified and bound, never treated as execution authorization"
+        ),
+    )
     parser.add_argument("--out", type=Path, required=True, help="new absolute blocked receipt path")
     return parser
 
@@ -846,6 +1090,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             semantics_path=args.semantics,
             raw_retention_path=args.raw_retention,
             current_trace_path=args.current_trace,
+            streamed_executor_path=args.streamed_executor,
+            expected_streamed_executor_sha256=args.expected_streamed_executor_sha256,
+            teacher_child_preflight_path=args.teacher_child_preflight,
         )
         _write_new_json(args.out, result)
     except GuardedStreamedSourceOuterError as exc:
