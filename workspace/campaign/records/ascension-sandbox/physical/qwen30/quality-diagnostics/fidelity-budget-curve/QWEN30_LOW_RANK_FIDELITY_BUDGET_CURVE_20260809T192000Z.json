@@ -1,0 +1,75 @@
+{
+ "claim_boundary": {
+  "cpu_numpy_only": true,
+  "does_not_claim_hcli_tps_tg_or_tournament": true,
+  "no_lease_issued": true,
+  "no_metal_context": true,
+  "no_model_loaded": true,
+  "two_tensors_layer0_expert127_not_whole_model": true,
+  "weight_space_cosine_only_not_output_cosine": true
+ },
+ "finding": "The live dual-gravity search explores randomized_low_rank_plus_group_quantized_factors at rank<=128/3bits = 0.7485 component BPW, half the V3 1.5 ceiling. Spending the entire remaining budget on that family reaches weight cosine ~0.84 (gate_proj) and ~0.72 (down_proj), which is not materially better than the already-deployed artifact's 0.796587 mean component cosine - and that artifact generates degenerate text. Coherence-grade weight fidelity (>=0.94) requires ~3.9 BPW, 2.6x over the ceiling.",
+ "measurements": [
+  {
+   "bits": 3,
+   "bpw": 0.749,
+   "rank": 128,
+   "tensor": "model.layers.0.mlp.experts.127.down_proj.weight",
+   "weight_cosine": 0.556095
+  },
+  {
+   "bits": 4,
+   "bpw": 1.4651,
+   "rank": 192,
+   "tensor": "model.layers.0.mlp.experts.127.down_proj.weight",
+   "weight_cosine": 0.690499
+  },
+  {
+   "bits": 3,
+   "bpw": 1.4938,
+   "rank": 256,
+   "tensor": "model.layers.0.mlp.experts.127.down_proj.weight",
+   "weight_cosine": 0.719738
+  },
+  {
+   "bits": 4,
+   "bpw": 3.9,
+   "rank": 512,
+   "tensor": "model.layers.0.mlp.experts.127.down_proj.weight",
+   "weight_cosine": 0.942033
+  },
+  {
+   "bits": 3,
+   "bpw": 0.749,
+   "rank": 128,
+   "tensor": "model.layers.0.mlp.experts.127.gate_proj.weight",
+   "weight_cosine": 0.707597
+  },
+  {
+   "bits": 4,
+   "bpw": 1.4651,
+   "rank": 192,
+   "tensor": "model.layers.0.mlp.experts.127.gate_proj.weight",
+   "weight_cosine": 0.841536
+  },
+  {
+   "bits": 3,
+   "bpw": 1.4938,
+   "rank": 256,
+   "tensor": "model.layers.0.mlp.experts.127.gate_proj.weight",
+   "weight_cosine": 0.837968
+  },
+  {
+   "bits": 4,
+   "bpw": 3.9,
+   "rank": 512,
+   "tensor": "model.layers.0.mlp.experts.127.gate_proj.weight",
+   "weight_cosine": 0.972442
+  }
+ ],
+ "method": "lab/operators/ascension_dual_gravity_worker.py::_low_rank_codec on real source tensors read by bounded positioned reads from the admitted Qwen3-Coder-30B-A3B-Instruct shards",
+ "recorded_at": "2026-08-09T19:20:00Z",
+ "reopen_condition": "This measures WEIGHT-space cosine only. Prior GLM-5.2 evidence (replicated 12/12 experts) showed weight-space scoring inverts family ranking versus real captured activations. A family that loses here may win when fitted and scored on real activation distributions. Reopen with output-space cosine against real captured activations and a reported null baseline.",
+ "schema": "hawking.ascension.qwen30_low_rank_fidelity_budget_curve.v1",
+ "status": "EARNED_NEGATIVE_LOW_RANK_FAMILY_CANNOT_REACH_COHERENCE_FIDELITY_UNDER_1_5_BPW"
+}
