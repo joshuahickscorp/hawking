@@ -106,6 +106,7 @@ def _synthetic_context(
         "sha256": hashlib.sha256(host_raw).hexdigest(),
     }
     kernel_names = _kernel_names()
+    one_layer = kernel_names[:23]
 
     schedule = _write(
         tmp_path / "schedule.json",
@@ -114,7 +115,12 @@ def _synthetic_context(
                 "schema": lifecycle.SCHEDULE_SCHEMA,
                 "status": lifecycle.SCHEDULE_STATUS,
                 "layers": [
-                    {"layer": index, "mixer": "delta_net", "full_layer_dispatch_count": 23}
+                    {
+                        "layer": index,
+                        "mixer": "delta_net",
+                        "full_layer_dispatch_count": 23,
+                        "full_layer_kernel_names": list(one_layer),
+                    }
                     for index in range(3)
                 ],
                 "source_authority": {"source_revision": "deadbeef" * 5},

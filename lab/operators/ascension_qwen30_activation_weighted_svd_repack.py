@@ -350,8 +350,34 @@ def select_budget_for_organ(
 ) -> dict[str, Any]:
     """Pick the under-ceiling budget maximizing surplus-over-null."""
 
-    candidates: list[dict[str, Any]] = []
+    # Well-posedness: Gram = X'X/n has rank <= n_fit, so any rank beyond n_fit is
+    # set by the ridge rather than by data. On the first all-layer candidate 72%
+    # of selected organs were fitted above their own row count (51% above 2x it),
+    # which cost payload without buying fidelity (cosine 0.8978 well-posed vs
+    # 0.8924 ill-posed) -- and payload is exactly what limits coverage, the thing
+    # that actually broke coherence. Clamp instead of skip so a thin organ still
+    # gets its best honest fit rather than dropping out entirely.
+    n_fit_rows = int(X_fit.shape[0])
+    effective_budgets: list[dict[str, Any]] = []
+    seen_points: set[tuple[int, int]] = set()
     for budget in BUDGET_POINTS:
+        rank = min(int(budget["rank"]), n_fit_rows)
+        if rank < 1:
+            continue
+        point = (rank, int(budget["bits"]))
+        if point in seen_points:
+            continue
+        seen_points.add(point)
+        effective_budgets.append(
+            {**budget, "rank": rank, "rank_clamped_to_n_fit": rank != int(budget["rank"])}
+        )
+    if not effective_budgets:
+        raise ActivationWeightedRepackError(
+            f"organ has n_fit_tokens={n_fit_rows}; no well-posed rank budget exists"
+        )
+
+    candidates: list[dict[str, Any]] = []
+    for budget in effective_budgets:
         codec = dual._activation_weighted_svd_low_rank_codec(
             W,
             rank=int(budget["rank"]),
@@ -366,6 +392,7 @@ def select_budget_for_organ(
         row = {
             "budget_label": budget["label"],
             "rank": int(codec.metadata["rank"]),
+            "rank_clamped_to_n_fit": bool(budget.get("rank_clamped_to_n_fit", False)),
             "bits": int(budget["bits"]),
             "component_bpw": float(bpw),
             "under_ceiling": under,

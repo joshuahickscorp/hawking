@@ -164,6 +164,76 @@ def one_user_native_prompt(tokenizer: Any, user_text: str) -> list[int]:
     return ids
 
 
+# Repo-source corpus. The hand-written corpus above is 32 probes / ~3.9k tokens,
+# which routes only 5.1 of the 32 hits an expert needs to be fittable: 42.8% of
+# the 6144 (layer, expert) pairs were never routed at all. Coverage of experts is
+# what the fit is starved of, so this draws real source text off disk to widen
+# routing. Instruction framings vary so the router does not see one flat shape.
+REPO_TASK_FRAMES = (
+    "Explain what this code does, then name one edge case it mishandles:\n\n",
+    "Review this code for correctness. Be specific about failure modes:\n\n",
+    "Write a concise docstring or module comment for this code:\n\n",
+    "Summarise the control flow here in three sentences:\n\n",
+    "What would break if this ran concurrently? Reason about the shared state:\n\n",
+)
+REPO_SOURCE_GLOBS = (("*.rs", "repo_rust"), ("*.py", "repo_python"), ("*.md", "repo_docs"))
+
+
+def build_repo_corpus(
+    root: Path, target_tokens: int, tokenizer: Any, *, chunk_chars: int = 2800
+) -> list[dict[str, str]]:
+    """Draw probes from real repo source until ~target_tokens is reached.
+
+    Deterministic: files sorted, round-robin across extensions so one language
+    cannot dominate the routing distribution. Skips generated/vendored trees and
+    anything too small to carry structure.
+    """
+    skip = ("/.git/", "/target/", "/workspace/ops/build/", "/node_modules/",
+            "/.worktrees/", "/vendor/", "/workspace/campaign/evidence/")
+    buckets: list[list[Path]] = []
+    for pattern, _domain in REPO_SOURCE_GLOBS:
+        found = sorted(
+            p for p in root.rglob(pattern)
+            if p.is_file()
+            and not any(s in f"/{p.relative_to(root).as_posix()}/" for s in skip)
+            and 1500 < p.stat().st_size < 400_000
+        )
+        buckets.append(found)
+
+    rows: list[dict[str, str]] = []
+    total = 0
+    idx = [0] * len(buckets)
+    exhausted = [False] * len(buckets)
+    while total < target_tokens and not all(exhausted):
+        for b, (_, domain) in enumerate(REPO_SOURCE_GLOBS):
+            if total >= target_tokens:
+                break
+            if idx[b] >= len(buckets[b]):
+                exhausted[b] = True
+                continue
+            path = buckets[b][idx[b]]
+            idx[b] += 1
+            try:
+                text = path.read_text(encoding="utf-8", errors="strict")
+            except (UnicodeDecodeError, OSError):
+                continue
+            chunk = text[:chunk_chars].strip()
+            if len(chunk) < 400:
+                continue
+            frame = REPO_TASK_FRAMES[len(rows) % len(REPO_TASK_FRAMES)]
+            body = f"{frame}```\n{chunk}\n```"
+            n = len(tokenizer.encode(body, add_special_tokens=False).ids)
+            rows.append(
+                {
+                    "probe_id": f"{domain}_{idx[b]:05d}",
+                    "domain": domain,
+                    "text": body,
+                }
+            )
+            total += n
+    return rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tokenizer-json", type=Path, default=DEFAULT_TOKENIZER)
@@ -173,6 +243,19 @@ def main() -> int:
         type=int,
         default=0,
         help="optional cap for smoke tests (0 = full corpus)",
+    )
+    parser.add_argument(
+        "--repo-corpus-root",
+        type=Path,
+        default=None,
+        help="draw additional probes from real source under this root "
+        "(default: hand-written corpus only, unchanged)",
+    )
+    parser.add_argument(
+        "--repo-corpus-target-tokens",
+        type=int,
+        default=0,
+        help="approximate token budget for repo-drawn probes (0 = none)",
     )
     args = parser.parse_args()
 
@@ -195,6 +278,16 @@ def main() -> int:
     corpus = build_corpus()
     if args.max_prompts > 0:
         corpus = corpus[: args.max_prompts]
+    if args.repo_corpus_root is not None and args.repo_corpus_target_tokens > 0:
+        root = args.repo_corpus_root.expanduser().resolve()
+        if not root.is_dir():
+            print(f"repo corpus root missing: {root}", file=sys.stderr)
+            return 2
+        extra = build_repo_corpus(root, args.repo_corpus_target_tokens, tokenizer)
+        if not extra:
+            print("repo corpus root yielded no usable probes", file=sys.stderr)
+            return 2
+        corpus = corpus + extra
     if len(corpus) < 12:
         print("need at least 12 prompts for broad schema", file=sys.stderr)
         return 2

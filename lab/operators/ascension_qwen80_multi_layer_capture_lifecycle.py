@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Receipt-last, one-shot lifecycle for the Qwen80 69-dispatch L0..L2 multi-layer host.
+"""Receipt-last, one-shot lifecycle for the Qwen80 multi-layer same-runtime host.
 
 This controller deliberately sits *outside* the host and the static multi-layer
 outer preflight.  A CPU preflight can inspect a frozen host/outer/schedule/
@@ -156,9 +156,17 @@ INNER_RECEIPT_FILENAME = "receipt.json"
 STDOUT_FILENAME = "child.stdout.log"
 STDERR_FILENAME = "child.stderr.log"
 
-TOTAL_DISPATCHES = 69
+# Default kept at the first validated chain length (L0..L2). The chain is
+# parameterised, so these are defaults rather than laws: --layer-count must
+# agree with the host preflight and the chain oracle, and all three are checked
+# against each other. Dispatch totals come from the chain oracle for the
+# requested N (69 at N=3 DeltaNet-only; 92 at N=4 once the first GQA layer at
+# index 3 joins). Kernel order is derived from the schedule authority's
+# full_layer_kernel_names for layers 0..N-1 — never by repeating one layer
+# template, because GQA layers share the dispatch count but not the names.
 LAYER_COUNT = 3
-PER_LAYER_DISPATCHES = 23
+PER_LAYER_DISPATCHES = 23  # default only while every layer is 23-dispatch
+TOTAL_DISPATCHES = 69  # default for the first validated chain length (N=3)
 MIN_FREE_PERCENT = 80
 MAX_RESOURCE_AGE_SECONDS = 300
 MAX_TIMEOUT_SECONDS = 7200.0
@@ -205,6 +213,8 @@ class AuthorityContext:
     real_host_metal_cli_available: bool
     kernel_names: tuple[str, ...]
     layer_count: int
+    total_dispatches: int
+    per_layer_dispatches: int | list[int]
 
 
 @dataclass(frozen=True)
@@ -252,13 +262,19 @@ def _array(value: object, label: str) -> list[Any]:
 
 
 def _require_bool(document: Mapping[str, Any], field: str, expected: bool, label: str) -> None:
-    if document.get(field) is not expected:
-        raise MultiLayerLifecycleError(f"{label}.{field} must be {expected}")
+    observed = document.get(field)
+    if observed is not expected:
+        raise MultiLayerLifecycleError(
+            f"{label}.{field} must be {expected}, observed {observed}"
+        )
 
 
 def _require_int(document: Mapping[str, Any], field: str, expected: int, label: str) -> None:
-    if document.get(field) != expected:
-        raise MultiLayerLifecycleError(f"{label}.{field} must be {expected}")
+    observed = document.get(field)
+    if observed != expected:
+        raise MultiLayerLifecycleError(
+            f"{label}.{field} must be {expected}, observed {observed}"
+        )
 
 
 def _canonical_regular(path: Path, label: str, *, executable: bool = False) -> Path:
@@ -411,13 +427,96 @@ def _valid_cpu_preflight_status(value: object, prefix: str) -> bool:
     )
 
 
-def _kernel_names_from_trace(graph: Mapping[str, Any], label: str) -> tuple[str, ...]:
+def _kernel_names_from_trace(
+    graph: Mapping[str, Any], label: str, expected_dispatches: int
+) -> tuple[str, ...]:
     names = _array(graph.get("kernel_names"), f"{label}.kernel_names")
-    if len(names) != TOTAL_DISPATCHES or any(not isinstance(name, str) or not name for name in names):
+    if len(names) != expected_dispatches or any(
+        not isinstance(name, str) or not name for name in names
+    ):
         raise MultiLayerLifecycleError(
-            f"{label} must retain exactly {TOTAL_DISPATCHES} non-empty kernel names"
+            f"{label} must retain exactly {expected_dispatches} non-empty kernel names, "
+            f"observed length {len(names)}"
         )
     return tuple(str(name) for name in names)
+
+
+def _oracle_total_dispatches(oracle: Mapping[str, Any]) -> int:
+    """Total dispatches are owned by the chain CPU oracle for the requested N."""
+    total = oracle.get("total_dispatches_physical_capture")
+    if not isinstance(total, int) or isinstance(total, bool):
+        total = oracle.get("total_dispatches")
+    if not isinstance(total, int) or isinstance(total, bool) or total <= 0:
+        raise MultiLayerLifecycleError(
+            "chain cpu oracle must declare a positive integer total_dispatches, "
+            f"observed total_dispatches_physical_capture="
+            f"{oracle.get('total_dispatches_physical_capture')!r}, "
+            f"total_dispatches={oracle.get('total_dispatches')!r}"
+        )
+    return int(total)
+
+
+def _expected_kernels_from_schedule(
+    schedule: Mapping[str, Any], layer_count: int
+) -> tuple[str, ...]:
+    """Concatenate full_layer_kernel_names for layers 0..layer_count-1 in order."""
+    schedule_layers = _array(schedule.get("layers"), "schedule.layers")
+    if len(schedule_layers) < layer_count:
+        raise MultiLayerLifecycleError(
+            f"schedule.layers length must be at least {layer_count}, "
+            f"observed {len(schedule_layers)}"
+        )
+    names: list[str] = []
+    for index, layer_value in enumerate(schedule_layers[:layer_count]):
+        layer = _mapping(layer_value, f"schedule.layers[{index}]")
+        layer_names = _array(
+            layer.get("full_layer_kernel_names"),
+            f"schedule.layers[{index}].full_layer_kernel_names",
+        )
+        if not layer_names or any(not isinstance(name, str) or not name for name in layer_names):
+            raise MultiLayerLifecycleError(
+                f"schedule.layers[{index}].full_layer_kernel_names must be a non-empty "
+                f"list of non-empty strings, observed {layer_names!r}"
+            )
+        names.extend(str(name) for name in layer_names)
+    return tuple(names)
+
+
+def _validate_per_layer_dispatches(
+    observed: object,
+    *,
+    layer_count: int,
+    expected_dispatches: int,
+    label: str,
+) -> int | list[int]:
+    """Accept a uniform int or a per-layer list; never assume uniformity by law."""
+    if isinstance(observed, bool):
+        raise MultiLayerLifecycleError(
+            f"{label} must be an int or a list, observed {observed!r}"
+        )
+    if isinstance(observed, int):
+        if observed * layer_count != expected_dispatches:
+            raise MultiLayerLifecycleError(
+                f"{label} {observed} x layer_count {layer_count} != total "
+                f"{expected_dispatches}"
+            )
+        return observed
+    if isinstance(observed, list):
+        if len(observed) != layer_count or any(
+            isinstance(value, bool) or not isinstance(value, int) for value in observed
+        ):
+            raise MultiLayerLifecycleError(
+                f"{label} list must have {layer_count} integer entries, observed {observed!r}"
+            )
+        if sum(observed) != expected_dispatches:
+            raise MultiLayerLifecycleError(
+                f"{label} list must have {layer_count} entries summing to "
+                f"{expected_dispatches}, observed {observed}"
+            )
+        return [int(value) for value in observed]
+    raise MultiLayerLifecycleError(
+        f"{label} must be an int or a list, observed {type(observed).__name__}"
+    )
 
 
 def _capture_body_wired_from_host(root: Mapping[str, Any]) -> bool:
@@ -433,8 +532,15 @@ def _capture_body_wired_from_host(root: Mapping[str, Any]) -> bool:
 
 
 def _validate_host_preflight(
-    host: BoundDocument, host_binary: Path, host_binary_bytes: int, host_binary_sha256: str
-) -> tuple[bool, tuple[str, ...]]:
+    host: BoundDocument,
+    host_binary: Path,
+    host_binary_bytes: int,
+    host_binary_sha256: str,
+    *,
+    layer_count: int,
+    expected_dispatches: int,
+    expected_kernels: tuple[str, ...],
+) -> tuple[bool, tuple[str, ...], int | list[int]]:
     root = host.document
     if root.get("schema") != HOST_PREFLIGHT_SCHEMA or not _valid_cpu_preflight_status(
         root.get("status"), "COMPILED_QWEN80_SOURCE_TOKEN_"
@@ -447,8 +553,11 @@ def _validate_host_preflight(
         or binary.get("sha256") != host_binary_sha256
     ):
         raise MultiLayerLifecycleError("host preflight is not bound to the current host binary")
-    _require_int(root, "layer_count", LAYER_COUNT, "host preflight")
+    _require_int(root, "layer_count", layer_count, "host preflight")
     _require_int(root, "source_token_id", 1, "host preflight")
+    layers = _mapping(root.get("layers_inclusive_range"), "host preflight.layers_inclusive_range")
+    _require_int(layers, "first", 0, "host preflight.layers_inclusive_range")
+    _require_int(layers, "last", layer_count - 1, "host preflight.layers_inclusive_range")
     policy = _mapping(root.get("execution_policy"), "host preflight.execution_policy")
     for field in (
         "one_runtime",
@@ -460,12 +569,38 @@ def _validate_host_preflight(
     ):
         _require_bool(policy, field, True, "host preflight.execution_policy")
     _require_int(policy, "fence_count", 1, "host preflight.execution_policy")
-    _require_int(policy, "total_dispatches", TOTAL_DISPATCHES, "host preflight.execution_policy")
-    _require_int(policy, "per_layer_dispatch_count", PER_LAYER_DISPATCHES, "host preflight.execution_policy")
+    _require_int(policy, "total_dispatches", expected_dispatches, "host preflight.execution_policy")
+    # Per-layer dispatch count is uniform only while every layer shares a mixer.
+    # DeltaNet and GQA layers differ in kernel names (same count today); accept
+    # either a single int or a list and cross-check the total, which binds.
+    per_layer = _validate_per_layer_dispatches(
+        policy.get("per_layer_dispatch_count"),
+        layer_count=layer_count,
+        expected_dispatches=expected_dispatches,
+        label="host preflight.execution_policy.per_layer_dispatch_count",
+    )
     names = _kernel_names_from_trace(
         _mapping(root.get("structural_kernel_trace"), "host preflight.structural_kernel_trace"),
         "host preflight.structural_kernel_trace",
+        expected_dispatches,
     )
+    if names != expected_kernels:
+        first_bad = next(
+            (i for i, (observed, expected) in enumerate(zip(names, expected_kernels)) if observed != expected),
+            None,
+        )
+        detail = (
+            f" first divergence at index {first_bad}: observed={names[first_bad]!r} "
+            f"expected={expected_kernels[first_bad]!r}"
+            if first_bad is not None
+            else (
+                f" observed length {len(names)}, expected length {len(expected_kernels)}"
+            )
+        )
+        raise MultiLayerLifecycleError(
+            "host structural kernel names are not the frozen schedule order for this chain"
+            + detail
+        )
     metal = _mapping(root.get("metal_path"), "host preflight.metal_path")
     _require_bool(metal, "metal_context_or_dispatch_performed", False, "host preflight.metal_path")
     _require_bool(
@@ -476,9 +611,15 @@ def _validate_host_preflight(
     )
     schemas = _mapping(root.get("future_capture_schemas"), "host preflight.future_capture_schemas")
     if schemas.get("inner") != INNER_SCHEMA or schemas.get("inner_status") != INNER_SUCCESS_STATUS:
-        raise MultiLayerLifecycleError("host preflight inner receipt ABI drifted")
+        raise MultiLayerLifecycleError(
+            f"host preflight inner receipt ABI drifted, observed inner={schemas.get('inner')!r} "
+            f"inner_status={schemas.get('inner_status')!r}"
+        )
     if schemas.get("outer") != OUTER_TERMINAL_SCHEMA or schemas.get("outer_status") != OUTER_TERMINAL_STATUS:
-        raise MultiLayerLifecycleError("host preflight outer terminal ABI drifted")
+        raise MultiLayerLifecycleError(
+            f"host preflight outer terminal ABI drifted, observed outer={schemas.get('outer')!r} "
+            f"outer_status={schemas.get('outer_status')!r}"
+        )
     boundary = _mapping(root.get("claim_boundary"), "host preflight claim boundary")
     for field in (
         "multi_layer_device_parity",
@@ -489,7 +630,7 @@ def _validate_host_preflight(
         "tournament_started",
     ):
         _require_bool(boundary, field, False, "host preflight claim boundary")
-    return _capture_body_wired_from_host(root), names
+    return _capture_body_wired_from_host(root), names, per_layer
 
 
 def _validate_outer_preflight(
@@ -500,7 +641,10 @@ def _validate_outer_preflight(
     host_binary_sha256: str,
     host_kernel_names: tuple[str, ...],
     host_capture_body_wired: bool,
-) -> tuple[bool, bool, tuple[str, ...]]:
+    *,
+    layer_count: int,
+    expected_dispatches: int,
+) -> tuple[bool, bool, tuple[str, ...], int | list[int]]:
     root = outer.document
     if root.get("schema") != OUTER_PREFLIGHT_SCHEMA or not _valid_cpu_preflight_status(
         root.get("status"), "PREFLIGHTED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_"
@@ -515,21 +659,30 @@ def _validate_outer_preflight(
     ):
         raise MultiLayerLifecycleError("outer preflight host binary drifted")
     scope = _mapping(root.get("exact_component_scope"), "outer preflight exact component scope")
-    for field, expected in (
-        ("source_token_id", 1),
-        ("layer_count", LAYER_COUNT),
-        ("total_dispatches", TOTAL_DISPATCHES),
-        ("per_layer_dispatches", PER_LAYER_DISPATCHES),
-    ):
-        _require_int(scope, field, expected, "outer preflight exact component scope")
+    _require_int(scope, "source_token_id", 1, "outer preflight exact component scope")
+    _require_int(scope, "layer_count", layer_count, "outer preflight exact component scope")
+    _require_int(scope, "total_dispatches", expected_dispatches, "outer preflight exact component scope")
+    if "layers_first" in scope:
+        _require_int(scope, "layers_first", 0, "outer preflight exact component scope")
+    if "layers_last" in scope:
+        _require_int(scope, "layers_last", layer_count - 1, "outer preflight exact component scope")
+    per_layer = _validate_per_layer_dispatches(
+        scope.get("per_layer_dispatches"),
+        layer_count=layer_count,
+        expected_dispatches=expected_dispatches,
+        label="outer preflight exact component scope.per_layer_dispatches",
+    )
     _require_bool(scope, "one_fence_required", True, "outer preflight exact component scope")
     _require_bool(scope, "non_timed_exact_trace_required", True, "outer preflight exact component scope")
     outer_names = tuple(_array(scope.get("kernel_names"), "outer preflight kernel names"))
-    if len(outer_names) != TOTAL_DISPATCHES or any(not isinstance(name, str) for name in outer_names):
-        raise MultiLayerLifecycleError("outer preflight kernel names drifted")
+    if len(outer_names) != expected_dispatches or any(not isinstance(name, str) for name in outer_names):
+        raise MultiLayerLifecycleError(
+            f"outer preflight kernel names must be exactly {expected_dispatches} strings, "
+            f"observed length {len(outer_names)}"
+        )
     if outer_names != host_kernel_names:
         raise MultiLayerLifecycleError(
-            f"host/outer exact {TOTAL_DISPATCHES}-kernel traces disagree"
+            f"host/outer exact {expected_dispatches}-kernel traces disagree"
         )
     gate = _mapping(root.get("future_metal_entrypoint"), "outer preflight Metal gate")
     for field in (
@@ -543,7 +696,10 @@ def _validate_outer_preflight(
     ):
         _require_bool(gate, field, True, "outer preflight Metal gate")
     if gate.get("capture_body_wired") is not host_capture_body_wired:
-        raise MultiLayerLifecycleError("host/outer capture-body wiring disagrees")
+        raise MultiLayerLifecycleError(
+            f"host/outer capture-body wiring disagrees, host={host_capture_body_wired}, "
+            f"outer={gate.get('capture_body_wired')}"
+        )
     lifecycle = _mapping(root.get("lifecycle"), "outer preflight lifecycle")
     for field in (
         "replay_guard_required",
@@ -554,7 +710,8 @@ def _validate_outer_preflight(
     _require_bool(lifecycle, "automatic_retry_authorized", False, "outer preflight lifecycle")
     if not isinstance(lifecycle.get("real_host_metal_cli_available"), bool):
         raise MultiLayerLifecycleError(
-            "outer preflight lifecycle.real_host_metal_cli_available must be boolean"
+            "outer preflight lifecycle.real_host_metal_cli_available must be boolean, "
+            f"observed {lifecycle.get('real_host_metal_cli_available')!r}"
         )
     # Bind schedule / oracle / assessment seals from outer to pins (checked in load).
     for field in (
@@ -565,7 +722,12 @@ def _validate_outer_preflight(
     ):
         if field not in root:
             raise MultiLayerLifecycleError(f"outer preflight missing {field}")
-    return bool(gate["capture_body_wired"]), bool(lifecycle["real_host_metal_cli_available"]), outer_names
+    return (
+        bool(gate["capture_body_wired"]),
+        bool(lifecycle["real_host_metal_cli_available"]),
+        outer_names,
+        per_layer,
+    )
 
 
 def _pointer_seal(value: object, label: str) -> str:
@@ -582,8 +744,13 @@ def load_authority_context(
     outer_preflight: Path,
     host_binary: Path,
     pins: AuthorityPins = AuthorityPins(),
+    layer_count: int = LAYER_COUNT,
 ) -> AuthorityContext:
     """Load exactly one pinned multi-layer authority chain without spawning work."""
+    if isinstance(layer_count, bool) or not isinstance(layer_count, int) or layer_count < 1:
+        raise MultiLayerLifecycleError(
+            f"layer_count must be a positive integer, observed {layer_count!r}"
+        )
     for value, label in (
         (pins.host_binary_sha256, "host binary pin"),
         (pins.host_preflight_seal_sha256, "host preflight pin"),
@@ -660,10 +827,26 @@ def load_authority_context(
         raise MultiLayerLifecycleError("loaded L1 assessment seal drifted from pin")
     if joint.seal_sha256 != pins.joint_assessment_seal_sha256:
         raise MultiLayerLifecycleError("loaded joint assessment seal drifted from pin")
-    capture_body_wired, host_names = _validate_host_preflight(
-        host, clean_host, len(host_raw), host_sha
+    # Derive N-dependent figures from the authorities that own them — never from
+    # layer_count * 23, and never from a repeated single-layer kernel template.
+    _require_int(oracle.document, "layer_count", layer_count, "chain cpu oracle")
+    expected_dispatches = _oracle_total_dispatches(oracle.document)
+    expected_kernels = _expected_kernels_from_schedule(schedule.document, layer_count)
+    if len(expected_kernels) != expected_dispatches:
+        raise MultiLayerLifecycleError(
+            f"schedule kernel names for layers 0..{layer_count - 1} total "
+            f"{len(expected_kernels)}, chain oracle says {expected_dispatches}"
+        )
+    capture_body_wired, host_names, host_per_layer = _validate_host_preflight(
+        host,
+        clean_host,
+        len(host_raw),
+        host_sha,
+        layer_count=layer_count,
+        expected_dispatches=expected_dispatches,
+        expected_kernels=expected_kernels,
     )
-    outer_wired, real_cli, outer_names = _validate_outer_preflight(
+    outer_wired, real_cli, outer_names, outer_per_layer = _validate_outer_preflight(
         outer,
         host,
         clean_host,
@@ -671,9 +854,18 @@ def load_authority_context(
         host_sha,
         host_names,
         capture_body_wired,
+        layer_count=layer_count,
+        expected_dispatches=expected_dispatches,
     )
     if outer_wired is not capture_body_wired:
-        raise MultiLayerLifecycleError("host/outer capture body state drifted")
+        raise MultiLayerLifecycleError(
+            f"host/outer capture body state drifted, host={capture_body_wired}, outer={outer_wired}"
+        )
+    if outer_per_layer != host_per_layer:
+        raise MultiLayerLifecycleError(
+            f"host/outer per-layer dispatch figures disagree, host={host_per_layer!r}, "
+            f"outer={outer_per_layer!r}"
+        )
     return AuthorityContext(
         host_preflight=host,
         outer_preflight=outer,
@@ -687,7 +879,9 @@ def load_authority_context(
         capture_body_wired=capture_body_wired,
         real_host_metal_cli_available=real_cli,
         kernel_names=outer_names,
-        layer_count=LAYER_COUNT,
+        layer_count=layer_count,
+        total_dispatches=expected_dispatches,
+        per_layer_dispatches=host_per_layer,
     )
 
 
@@ -838,6 +1032,7 @@ def build_lifecycle_preflight(
     host_binary: Path,
     resource_admission: Path,
     pins: AuthorityPins = AuthorityPins(),
+    layer_count: int = LAYER_COUNT,
     now: datetime | None = None,
 ) -> dict[str, Any]:
     """Seal a CPU/file-only future-execution decision without creating state."""
@@ -850,6 +1045,7 @@ def build_lifecycle_preflight(
             outer_preflight=outer_preflight,
             host_binary=host_binary,
             pins=pins,
+            layer_count=layer_count,
         )
         resource = _read_resource_admission(context=context, path=resource_admission, now=now)
         if not context.capture_body_wired:
@@ -947,11 +1143,12 @@ def _lease_document(context: AuthorityContext, resource: BoundDocument, *, lease
             "fresh_resource_admission": _evidence(resource),
             "execution_policy": {
                 "source_token_id": 1,
-                "layer_count": LAYER_COUNT,
-                "per_layer_dispatches": PER_LAYER_DISPATCHES,
-                "total_dispatches": TOTAL_DISPATCHES,
+                "layer_count": context.layer_count,
+                "per_layer_dispatches": context.per_layer_dispatches,
+                "total_dispatches": context.total_dispatches,
                 # These exact names are consumed by the host's file-only
                 # Metal gate before it can create its inner capture directory.
+                # The "69" token is a frozen ABI field name, not a live total.
                 "metal_mode_only": True,
                 "non_timed_exact_69_dispatches_required": True,
                 "one_fence_required": True,
@@ -1023,11 +1220,12 @@ def _outer_launch_document(
             "planned_outer_capture_dir": str(outer_capture_dir),
             "planned_inner_capture_dir": str(inner_capture_dir),
             "workers": workers,
-            "layer_count": LAYER_COUNT,
+            "layer_count": context.layer_count,
             "execution_policy": {
-                "layer_count": LAYER_COUNT,
-                "total_dispatches": TOTAL_DISPATCHES,
+                "layer_count": context.layer_count,
+                "total_dispatches": context.total_dispatches,
                 "metal_mode_only": True,
+                # Frozen ABI field name (not a live total). See lease document.
                 "non_timed_exact_69_dispatches_required": True,
                 "one_fence_required": True,
                 "non_timed_exact_trace_required": True,
@@ -1346,8 +1544,8 @@ def _validate_inner_receipt(
         if field in execution:
             _require_bool(execution, field, True, "child same-runtime execution")
     for field, expected in (
-        ("layer_count", LAYER_COUNT),
-        ("total_dispatches", TOTAL_DISPATCHES),
+        ("layer_count", context.layer_count),
+        ("total_dispatches", context.total_dispatches),
         ("fence_count", 1),
     ):
         if field in execution:
@@ -1357,7 +1555,8 @@ def _validate_inner_receipt(
     names = tuple(_array(trace.get("kernel_names"), "child structural kernel names"))
     if names != context.kernel_names:
         raise MultiLayerLifecycleError(
-            f"child structural trace is not the frozen exact {TOTAL_DISPATCHES}-kernel trace"
+            f"child structural trace is not the frozen exact {context.total_dispatches}-kernel "
+            f"trace, observed length {len(names)}"
         )
     boundary = _mapping(root.get("claim_boundary"), "child claim boundary")
     _require_bool(boundary, "multi_layer_component_only", True, "child claim boundary")
@@ -1527,6 +1726,7 @@ def _execution_context(config: ExecuteConfig) -> tuple[AuthorityContext, BoundDo
         outer_preflight=config.outer_preflight,
         host_binary=config.host_binary,
         pins=config.pins,
+        layer_count=config.layer_count,
     )
     resource = _read_resource_admission(context=context, path=config.resource_admission)
     if not context.capture_body_wired:
@@ -1786,6 +1986,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 host_binary=args.host_binary,
                 resource_admission=args.resource_admission,
                 pins=_pins_from_args(args),
+                layer_count=args.layer_count,
             )
             _write_new(args.out, document)
         else:
