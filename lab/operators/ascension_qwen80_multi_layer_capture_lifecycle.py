@@ -1469,6 +1469,13 @@ def _outer_terminal_document(
                 "server_or_watcher_started": False,
                 "tps_or_tg_measured": False,
                 "tournament_started": False,
+                # Also inside claim_boundary, not only at the document root. The
+                # strict child publishes both here, and the completion assessor
+                # reads them here; the outer published them at the root only, so
+                # a conforming capture still failed independent assessment. Same
+                # fact, stated where the consumer looks.
+                "test_only_fake_child": test_only,
+                "fixture_or_synthetic": test_only,
             },
         }
     )
