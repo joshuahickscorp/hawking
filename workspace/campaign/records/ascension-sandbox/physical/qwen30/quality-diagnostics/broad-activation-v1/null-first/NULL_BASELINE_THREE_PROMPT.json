@@ -1,0 +1,260 @@
+{
+  "activation_provenance": {
+    "capture_result_sha256": "43845450bc8dc977d07d742125d88958ab7322ea92e09ef5048346f4eabad062",
+    "capture_run": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/current-hcli-route-capture/runs/74c918d500b2a8fdc17c2a4a417bf0e967b6a17709e7cdba486466c7c39e862a_8bd3bfb36e16be850dc5e1909e3f07a3b0ddc4f49634455e258a0eb3d8660037",
+    "claim_boundary": {
+      "all_48_layers_lm_head_sampler_autoregressive_feedback_and_generation_not_executed": true,
+      "does_not_claim_coherence_hcli_tps_tg_capability_or_tournament": true,
+      "new_diagnostic_not_historical": true,
+      "only_embedding_layer0_attention_postnorm_router_executed": true,
+      "qwen30_server_watcher_and_hcli_adapter_are_not_used": true
+    },
+    "experts_with_hits": 114,
+    "hidden_source": "device-produced L0 post-attention RMSNorm (router input)",
+    "hit_counts_top": {
+      "1": 477,
+      "100": 447,
+      "103": 387,
+      "104": 484,
+      "112": 96,
+      "114": 451,
+      "16": 444,
+      "21": 108,
+      "25": 420,
+      "28": 396,
+      "45": 458,
+      "48": 390,
+      "51": 414,
+      "53": 441,
+      "58": 387,
+      "62": 138,
+      "65": 453,
+      "7": 395,
+      "84": 69,
+      "85": 441
+    },
+    "probes": [
+      {
+        "n_steps": 369,
+        "probe_id": "literal_hawking",
+        "source_one_user_native_prompt_token_count": 369
+      },
+      {
+        "n_steps": 381,
+        "probe_id": "json_status",
+        "source_one_user_native_prompt_token_count": 381
+      },
+      {
+        "n_steps": 375,
+        "probe_id": "python_add",
+        "source_one_user_native_prompt_token_count": 375
+      }
+    ],
+    "schema": "hawking.ascension.qwen30_current_hcli_layer0_route_capture_result.v1",
+    "status": "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_L0_ROUTE_AND_HIDDEN_CAPTURE_UNQUALIFIED",
+    "token_expert_pairs": 9000,
+    "total_steps": 1125
+  },
+  "capture_result_sha256": "43845450bc8dc977d07d742125d88958ab7322ea92e09ef5048346f4eabad062",
+  "capture_run": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/current-hcli-route-capture/runs/74c918d500b2a8fdc17c2a4a417bf0e967b6a17709e7cdba486466c7c39e862a_8bd3bfb36e16be850dc5e1909e3f07a3b0ddc4f49634455e258a0eb3d8660037",
+  "claim_boundary": {
+    "diagnostic_not_capability": true,
+    "null_only_no_family_result": true
+  },
+  "headline": {
+    "materially_below_prior_null": false,
+    "max_null_all_scored": 0.9925390903211545,
+    "mean_null_all_scored": 0.9566873250678474,
+    "mean_null_high_hit_ge_200": 0.9566873250678474,
+    "min_null_all_scored": 0.891482337713939,
+    "n_high_hit_rows": 18,
+    "n_rows": 18,
+    "null_trap_threshold": 0.942,
+    "verdict": "NULL_STILL_HIGH_CAPTURE_STRATEGY_STILL_WRONG"
+  },
+  "label": "baseline_three_prompt_hcli",
+  "reported_at": "2026-08-09T19:49:02.089119Z",
+  "rows": [
+    {
+      "component": "gate_proj",
+      "expert": 104,
+      "n_hold": 121,
+      "n_routed": 484,
+      "null_baseline": 0.9215634728837495,
+      "x_centered_rms": 0.0777711570262909,
+      "x_mean_norm": 8.458024024963379,
+      "y_row_norm_cv": 0.0649268850684166
+    },
+    {
+      "component": "up_proj",
+      "expert": 104,
+      "n_hold": 121,
+      "n_routed": 484,
+      "null_baseline": 0.9231849076679739,
+      "x_centered_rms": 0.0778503492474556,
+      "x_mean_norm": 8.464430809020996,
+      "y_row_norm_cv": 0.08873865008354187
+    },
+    {
+      "component": "down_proj",
+      "expert": 104,
+      "n_hold": 121,
+      "n_routed": 484,
+      "null_baseline": 0.9592797132369121,
+      "x_centered_rms": 0.011111137457191944,
+      "x_mean_norm": 0.9198923110961914,
+      "y_row_norm_cv": 0.19260792434215546
+    },
+    {
+      "component": "gate_proj",
+      "expert": 1,
+      "n_hold": 119,
+      "n_routed": 477,
+      "null_baseline": 0.891482337713939,
+      "x_centered_rms": 0.08855894207954407,
+      "x_mean_norm": 8.245844841003418,
+      "y_row_norm_cv": 0.13431225717067719
+    },
+    {
+      "component": "up_proj",
+      "expert": 1,
+      "n_hold": 119,
+      "n_routed": 477,
+      "null_baseline": 0.9579852471930407,
+      "x_centered_rms": 0.0622209757566452,
+      "x_mean_norm": 8.717109680175781,
+      "y_row_norm_cv": 0.09276615083217621
+    },
+    {
+      "component": "down_proj",
+      "expert": 1,
+      "n_hold": 119,
+      "n_routed": 477,
+      "null_baseline": 0.9489014008120776,
+      "x_centered_rms": 0.020360078662633896,
+      "x_mean_norm": 1.1165310144424438,
+      "y_row_norm_cv": 0.32113173604011536
+    },
+    {
+      "component": "gate_proj",
+      "expert": 45,
+      "n_hold": 114,
+      "n_routed": 458,
+      "null_baseline": 0.9484100533432723,
+      "x_centered_rms": 0.06644117087125778,
+      "x_mean_norm": 8.65026569366455,
+      "y_row_norm_cv": 0.05819179117679596
+    },
+    {
+      "component": "up_proj",
+      "expert": 45,
+      "n_hold": 114,
+      "n_routed": 458,
+      "null_baseline": 0.9673110017583297,
+      "x_centered_rms": 0.05495213717222214,
+      "x_mean_norm": 8.81603717803955,
+      "y_row_norm_cv": 0.04571537673473358
+    },
+    {
+      "component": "down_proj",
+      "expert": 45,
+      "n_hold": 114,
+      "n_routed": 458,
+      "null_baseline": 0.9615949909579385,
+      "x_centered_rms": 0.011228866875171661,
+      "x_mean_norm": 0.6379888653755188,
+      "y_row_norm_cv": 0.210622176527977
+    },
+    {
+      "component": "gate_proj",
+      "expert": 65,
+      "n_hold": 113,
+      "n_routed": 453,
+      "null_baseline": 0.9748120203409271,
+      "x_centered_rms": 0.0521182157099247,
+      "x_mean_norm": 8.850357055664062,
+      "y_row_norm_cv": 0.060336653143167496
+    },
+    {
+      "component": "up_proj",
+      "expert": 65,
+      "n_hold": 113,
+      "n_routed": 453,
+      "null_baseline": 0.948866967385069,
+      "x_centered_rms": 0.068545863032341,
+      "x_mean_norm": 8.620501518249512,
+      "y_row_norm_cv": 0.0852939784526825
+    },
+    {
+      "component": "down_proj",
+      "expert": 65,
+      "n_hold": 113,
+      "n_routed": 453,
+      "null_baseline": 0.9837916246187897,
+      "x_centered_rms": 0.013086616061627865,
+      "x_mean_norm": 1.1510932445526123,
+      "y_row_norm_cv": 0.048817988485097885
+    },
+    {
+      "component": "gate_proj",
+      "expert": 114,
+      "n_hold": 113,
+      "n_routed": 451,
+      "null_baseline": 0.9428387343475434,
+      "x_centered_rms": 0.06800191849470139,
+      "x_mean_norm": 8.633049964904785,
+      "y_row_norm_cv": 0.06491222977638245
+    },
+    {
+      "component": "up_proj",
+      "expert": 114,
+      "n_hold": 113,
+      "n_routed": 451,
+      "null_baseline": 0.9561847067468513,
+      "x_centered_rms": 0.058930814266204834,
+      "x_mean_norm": 8.766056060791016,
+      "y_row_norm_cv": 0.051388125866651535
+    },
+    {
+      "component": "down_proj",
+      "expert": 114,
+      "n_hold": 113,
+      "n_routed": 451,
+      "null_baseline": 0.9886456440511874,
+      "x_centered_rms": 0.008608540520071983,
+      "x_mean_norm": 0.7960911989212036,
+      "y_row_norm_cv": 0.08394692838191986
+    },
+    {
+      "component": "gate_proj",
+      "expert": 100,
+      "n_hold": 112,
+      "n_routed": 447,
+      "null_baseline": 0.9774828413108991,
+      "x_centered_rms": 0.04628386348485947,
+      "x_mean_norm": 8.916932106018066,
+      "y_row_norm_cv": 0.01834188401699066
+    },
+    {
+      "component": "up_proj",
+      "expert": 100,
+      "n_hold": 112,
+      "n_routed": 447,
+      "null_baseline": 0.975497096531597,
+      "x_centered_rms": 0.05088713392615318,
+      "x_mean_norm": 8.86220645904541,
+      "y_row_norm_cv": 0.02587999776005745
+    },
+    {
+      "component": "down_proj",
+      "expert": 100,
+      "n_hold": 112,
+      "n_routed": 447,
+      "null_baseline": 0.9925390903211545,
+      "x_centered_rms": 0.010241184383630753,
+      "x_mean_norm": 1.5838202238082886,
+      "y_row_norm_cv": 0.10438323020935059
+    }
+  ],
+  "schema": "hawking.ascension.qwen30_activation_null_first.v1"
+}

@@ -31,10 +31,22 @@ mod macos {
 
     const INPUT_SCHEMA: &str =
         "hawking.ascension.qwen30_current_hcli_layer0_route_capture_input.v1";
+    /// Broader activation-diversity diagnostic input. Same Metal L0 path as the
+    /// three-probe HCLI capture; not a capability claim and not a gate change.
+    const BROAD_INPUT_SCHEMA: &str =
+        "hawking.ascension.qwen30_broad_activation_layer0_route_capture_input.v1";
     const RESULT_SCHEMA: &str =
         "hawking.ascension.qwen30_current_hcli_layer0_route_capture_result.v1";
+    const BROAD_RESULT_SCHEMA: &str =
+        "hawking.ascension.qwen30_broad_activation_layer0_route_capture_result.v1";
     const TRACE_STATUS: &str = "NEW_DIAGNOSTIC_NOT_HISTORICAL";
     const CAPTURE_PROTOCOL_REVISION: &str = "l0-route-hidden-capture-output-parent-v2";
+    const BROAD_CAPTURE_PROTOCOL_REVISION: &str =
+        "l0-route-hidden-capture-broad-activation-v1";
+    /// Minimum probes for the broad diagnostic schema (must materially exceed the
+    /// three-prompt HCLI set that produced the ~0.94 constant-mean null trap).
+    const BROAD_MIN_PROBES: usize = 12;
+    const BROAD_MAX_PROBES: usize = 64;
 
     struct Arguments {
         manifest: PathBuf,
@@ -209,16 +221,24 @@ mod macos {
             .collect()
     }
 
-    fn parse_input(path: &Path) -> Result<(Value, Vec<(String, Vec<u32>)>), String> {
+    fn parse_input(path: &Path) -> Result<(Value, Vec<(String, Vec<u32>)>, bool), String> {
         let bytes = fs::read(path)
             .map_err(|error| format!("cannot read capture input {}: {error}", path.display()))?;
         let document: Value = serde_json::from_slice(&bytes)
             .map_err(|error| format!("capture input is not JSON: {error}"))?;
-        if document.get("schema").and_then(Value::as_str) != Some(INPUT_SCHEMA) {
-            return Err(
-                "capture input schema is not the isolated current-HCLI route schema".into(),
-            );
-        }
+        let schema = document
+            .get("schema")
+            .and_then(Value::as_str)
+            .ok_or_else(|| "capture input lacks schema".to_string())?;
+        let broad = match schema {
+            INPUT_SCHEMA => false,
+            BROAD_INPUT_SCHEMA => true,
+            _ => {
+                return Err(
+                    "capture input schema is not a known L0 route-capture input schema".into(),
+                )
+            }
+        };
         if document.get("status").and_then(Value::as_str) != Some(TRACE_STATUS) {
             return Err("capture input is not marked NEW_DIAGNOSTIC_NOT_HISTORICAL".into());
         }
@@ -228,15 +248,51 @@ mod macos {
             != Some(false)
         {
             return Err(
-                "capture input does not prove its compiler traces stopped before model execution"
-                    .into(),
+                "capture input does not prove preparation stopped before model execution".into(),
             );
+        }
+        if broad {
+            // Broad path is diagnostic-only: must self-declare non-capability and
+            // activation-pricing purpose. This does not weaken the three-probe HCLI
+            // gate; that schema still requires exactly the three protected probes.
+            if document
+                .pointer("/claim_boundary/diagnostic_activation_pricing_only")
+                .and_then(Value::as_bool)
+                != Some(true)
+            {
+                return Err(
+                    "broad capture input must set claim_boundary.diagnostic_activation_pricing_only=true"
+                        .into(),
+                );
+            }
+            if document
+                .pointer("/claim_boundary/does_not_claim_coherence_hcli_tps_or_capability")
+                .and_then(Value::as_bool)
+                != Some(true)
+            {
+                return Err(
+                    "broad capture input must refuse coherence/HCLI/TPS/capability claims".into(),
+                );
+            }
         }
         let probes = document
             .get("probes")
             .and_then(Value::as_array)
             .ok_or_else(|| "capture input lacks probes".to_string())?;
-        if probes.len() != 3 {
+        if broad {
+            if probes.len() < BROAD_MIN_PROBES {
+                return Err(format!(
+                    "broad capture input must contain at least {BROAD_MIN_PROBES} probes (got {})",
+                    probes.len()
+                ));
+            }
+            if probes.len() > BROAD_MAX_PROBES {
+                return Err(format!(
+                    "broad capture input must contain at most {BROAD_MAX_PROBES} probes (got {})",
+                    probes.len()
+                ));
+            }
+        } else if probes.len() != 3 {
             return Err(
                 "capture input must contain exactly the three protected public probes".into(),
             );
@@ -259,9 +315,15 @@ mod macos {
                     .ok_or_else(|| format!("{probe_id} lacks source one-user native token IDs"))?,
                 &probe_id,
             )?;
+            if broad && token_ids.len() < 8 {
+                return Err(format!(
+                    "{probe_id} is too short for broad activation diversity ({} tokens)",
+                    token_ids.len()
+                ));
+            }
             result.push((probe_id, token_ids));
         }
-        Ok((document, result))
+        Ok((document, result, broad))
     }
 
     fn write_hidden(path: &Path, values: &[f32]) -> Result<(String, usize), String> {
@@ -365,7 +427,7 @@ mod macos {
         {
             fail("route capture output parent must already exist");
         }
-        let (input, probes) =
+        let (input, probes, broad) =
             parse_input(&arguments.input_json).unwrap_or_else(|error| fail(error));
         let input_sha256 = sha256_file(&arguments.input_json).unwrap_or_else(|error| fail(error));
         fs::create_dir(&arguments.output_dir).unwrap_or_else(|error| {
@@ -387,6 +449,7 @@ mod macos {
         )
         .unwrap_or_else(|error| fail(error.to_string()));
         let mut probe_rows = Vec::with_capacity(probes.len());
+        let mut total_tokens = 0usize;
         for (probe_id, token_ids) in probes {
             if token_ids.len() > arguments.max_seq_len {
                 fail(format!(
@@ -406,16 +469,43 @@ mod macos {
                         .unwrap_or_else(|error| fail(error)),
                 );
             }
+            total_tokens += steps.len();
             probe_rows.push(json!({
                 "probe_id": probe_id,
                 "source_one_user_native_prompt_token_count": steps.len(),
                 "steps": steps,
             }));
         }
+        let (result_schema, protocol_revision, status) = if broad {
+            (
+                BROAD_RESULT_SCHEMA,
+                BROAD_CAPTURE_PROTOCOL_REVISION,
+                "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_BROAD_ACTIVATION_L0_ROUTE_AND_HIDDEN_CAPTURE_UNQUALIFIED",
+            )
+        } else {
+            (
+                RESULT_SCHEMA,
+                CAPTURE_PROTOCOL_REVISION,
+                "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_L0_ROUTE_AND_HIDDEN_CAPTURE_UNQUALIFIED",
+            )
+        };
+        let mut claim_boundary = json!({
+            "new_diagnostic_not_historical": true,
+            "only_embedding_layer0_attention_postnorm_router_executed": true,
+            "all_48_layers_lm_head_sampler_autoregressive_feedback_and_generation_not_executed": true,
+            "does_not_claim_coherence_hcli_tps_tg_capability_or_tournament": true,
+            "qwen30_server_watcher_and_hcli_adapter_are_not_used": true,
+        });
+        if broad {
+            claim_boundary["diagnostic_activation_pricing_only"] = json!(true);
+            claim_boundary["broad_activation_diversity_capture"] = json!(true);
+            claim_boundary["not_hcli_compiler_trace_bound"] = json!(true);
+            claim_boundary["source_tokenizer_one_user_native_prompts"] = json!(true);
+        }
         let result = json!({
-            "schema": RESULT_SCHEMA,
-            "status": "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_L0_ROUTE_AND_HIDDEN_CAPTURE_UNQUALIFIED",
-            "capture_protocol_revision": CAPTURE_PROTOCOL_REVISION,
+            "schema": result_schema,
+            "status": status,
+            "capture_protocol_revision": protocol_revision,
             "input": {
                 "path": arguments.input_json,
                 "sha256": input_sha256,
@@ -439,18 +529,21 @@ mod macos {
                 "packed_matvec_kernel": runtime.packed_matvec_kernel().receipt_name(),
                 "gate_up_swiglu_kernel": runtime.gate_up_swiglu_kernel().receipt_name(),
             },
+            "capture_summary": {
+                "probe_count": probe_rows.len(),
+                "total_tokens": total_tokens,
+                "broad_activation_diversity": broad,
+            },
             "probes": probe_rows,
             "logit_provenance": {
                 "status": "NOT_EXECUTED_FAIL_CLOSED",
-                "reason": "HQ30GR2 typed residual gate/up dispatch is not integrated into a candidate-only all-layer diagnostic runtime; baseline logits would not measure candidate-minus-control divergence",
+                "reason": if broad {
+                    "broad activation capture is L0 route+hidden only; no logits, no all-layer candidate path"
+                } else {
+                    "HQ30GR2 typed residual gate/up dispatch is not integrated into a candidate-only all-layer diagnostic runtime; baseline logits would not measure candidate-minus-control divergence"
+                },
             },
-            "claim_boundary": {
-                "new_diagnostic_not_historical": true,
-                "only_embedding_layer0_attention_postnorm_router_executed": true,
-                "all_48_layers_lm_head_sampler_autoregressive_feedback_and_generation_not_executed": true,
-                "does_not_claim_coherence_hcli_tps_tg_capability_or_tournament": true,
-                "qwen30_server_watcher_and_hcli_adapter_are_not_used": true,
-            },
+            "claim_boundary": claim_boundary,
         });
         let result_path = arguments.output_dir.join("capture-result.json");
         write_json_new(&result_path, &result).unwrap_or_else(|error| fail(error));

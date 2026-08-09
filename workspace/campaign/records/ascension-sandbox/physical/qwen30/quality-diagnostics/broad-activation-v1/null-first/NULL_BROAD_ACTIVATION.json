@@ -1,0 +1,409 @@
+{
+  "activation_provenance": {
+    "capture_result_sha256": "4c721dc855ad3fbe0699e41244106da277c5983e1404ea6dafa9d43b90865037",
+    "capture_run": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/runs/main_20260809T195857Z",
+    "claim_boundary": {
+      "all_48_layers_lm_head_sampler_autoregressive_feedback_and_generation_not_executed": true,
+      "broad_activation_diversity_capture": true,
+      "diagnostic_activation_pricing_only": true,
+      "does_not_claim_coherence_hcli_tps_tg_capability_or_tournament": true,
+      "new_diagnostic_not_historical": true,
+      "not_hcli_compiler_trace_bound": true,
+      "only_embedding_layer0_attention_postnorm_router_executed": true,
+      "qwen30_server_watcher_and_hcli_adapter_are_not_used": true,
+      "source_tokenizer_one_user_native_prompts": true
+    },
+    "experts_with_hits": 128,
+    "hidden_source": "device-produced L0 post-attention RMSNorm (router input)",
+    "hit_counts_top": {
+      "1": 868,
+      "104": 602,
+      "109": 1623,
+      "112": 574,
+      "115": 629,
+      "119": 1032,
+      "120": 571,
+      "121": 704,
+      "27": 522,
+      "35": 549,
+      "45": 532,
+      "51": 752,
+      "57": 630,
+      "58": 836,
+      "65": 525,
+      "7": 589,
+      "76": 1145,
+      "77": 710,
+      "85": 1549,
+      "88": 739
+    },
+    "probes": [
+      {
+        "n_steps": 26,
+        "probe_id": "code_fib_iter",
+        "source_one_user_native_prompt_token_count": 26
+      },
+      {
+        "n_steps": 25,
+        "probe_id": "code_py_bisect",
+        "source_one_user_native_prompt_token_count": 25
+      },
+      {
+        "n_steps": 33,
+        "probe_id": "code_sql_window",
+        "source_one_user_native_prompt_token_count": 33
+      },
+      {
+        "n_steps": 31,
+        "probe_id": "code_go_http",
+        "source_one_user_native_prompt_token_count": 31
+      },
+      {
+        "n_steps": 27,
+        "probe_id": "code_ts_reduce",
+        "source_one_user_native_prompt_token_count": 27
+      },
+      {
+        "n_steps": 98,
+        "probe_id": "code_long_pq",
+        "source_one_user_native_prompt_token_count": 98
+      },
+      {
+        "n_steps": 59,
+        "probe_id": "prose_measure",
+        "source_one_user_native_prompt_token_count": 59
+      },
+      {
+        "n_steps": 22,
+        "probe_id": "prose_short_haiku",
+        "source_one_user_native_prompt_token_count": 22
+      },
+      {
+        "n_steps": 24,
+        "probe_id": "prose_argument",
+        "source_one_user_native_prompt_token_count": 24
+      },
+      {
+        "n_steps": 39,
+        "probe_id": "prose_narrative",
+        "source_one_user_native_prompt_token_count": 39
+      },
+      {
+        "n_steps": 26,
+        "probe_id": "json_status_strict",
+        "source_one_user_native_prompt_token_count": 26
+      },
+      {
+        "n_steps": 90,
+        "probe_id": "json_schema_example",
+        "source_one_user_native_prompt_token_count": 90
+      },
+      {
+        "n_steps": 39,
+        "probe_id": "json_array_table",
+        "source_one_user_native_prompt_token_count": 39
+      },
+      {
+        "n_steps": 44,
+        "probe_id": "json_nested_error",
+        "source_one_user_native_prompt_token_count": 44
+      },
+      {
+        "n_steps": 87,
+        "probe_id": "multi_turn_moe",
+        "source_one_user_native_prompt_token_count": 87
+      },
+      {
+        "n_steps": 44,
+        "probe_id": "multi_turn_debug",
+        "source_one_user_native_prompt_token_count": 44
+      },
+      {
+        "n_steps": 39,
+        "probe_id": "multi_turn_review",
+        "source_one_user_native_prompt_token_count": 39
+      },
+      {
+        "n_steps": 1222,
+        "probe_id": "long_ctx_notes",
+        "source_one_user_native_prompt_token_count": 1222
+      },
+      {
+        "n_steps": 1459,
+        "probe_id": "long_ctx_log",
+        "source_one_user_native_prompt_token_count": 1459
+      },
+      {
+        "n_steps": 40,
+        "probe_id": "math_bayes",
+        "source_one_user_native_prompt_token_count": 40
+      },
+      {
+        "n_steps": 43,
+        "probe_id": "math_rank",
+        "source_one_user_native_prompt_token_count": 43
+      },
+      {
+        "n_steps": 44,
+        "probe_id": "math_entropy",
+        "source_one_user_native_prompt_token_count": 44
+      },
+      {
+        "n_steps": 30,
+        "probe_id": "instr_checklist",
+        "source_one_user_native_prompt_token_count": 30
+      },
+      {
+        "n_steps": 30,
+        "probe_id": "instr_refuse",
+        "source_one_user_native_prompt_token_count": 30
+      },
+      {
+        "n_steps": 43,
+        "probe_id": "instr_compare",
+        "source_one_user_native_prompt_token_count": 43
+      },
+      {
+        "n_steps": 63,
+        "probe_id": "dialogue_lab",
+        "source_one_user_native_prompt_token_count": 63
+      },
+      {
+        "n_steps": 29,
+        "probe_id": "list_domains",
+        "source_one_user_native_prompt_token_count": 29
+      },
+      {
+        "n_steps": 41,
+        "probe_id": "mixed_api",
+        "source_one_user_native_prompt_token_count": 41
+      },
+      {
+        "n_steps": 31,
+        "probe_id": "mixed_regex",
+        "source_one_user_native_prompt_token_count": 31
+      },
+      {
+        "n_steps": 34,
+        "probe_id": "code_rust_parse",
+        "source_one_user_native_prompt_token_count": 34
+      },
+      {
+        "n_steps": 29,
+        "probe_id": "prose_policy",
+        "source_one_user_native_prompt_token_count": 29
+      },
+      {
+        "n_steps": 38,
+        "probe_id": "structured_yamlish",
+        "source_one_user_native_prompt_token_count": 38
+      }
+    ],
+    "schema": "hawking.ascension.qwen30_broad_activation_layer0_route_capture_result.v1",
+    "status": "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_BROAD_ACTIVATION_L0_ROUTE_AND_HIDDEN_CAPTURE_UNQUALIFIED",
+    "token_expert_pairs": 31432,
+    "total_steps": 3929
+  },
+  "capture_result_sha256": "4c721dc855ad3fbe0699e41244106da277c5983e1404ea6dafa9d43b90865037",
+  "capture_run": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/runs/main_20260809T195857Z",
+  "claim_boundary": {
+    "diagnostic_not_capability": true,
+    "null_only_no_family_result": true
+  },
+  "headline": {
+    "materially_below_prior_null": true,
+    "max_null_all_scored": 0.8882189070948395,
+    "mean_null_all_scored": 0.61407758905743,
+    "mean_null_high_hit_ge_200": 0.61407758905743,
+    "min_null_all_scored": 0.38994260983516005,
+    "n_high_hit_rows": 18,
+    "n_rows": 18,
+    "null_trap_threshold": 0.942,
+    "verdict": "NULL_FELL_MATERIALLY"
+  },
+  "label": "broad_activation_v1",
+  "reported_at": "2026-08-09T20:01:01.969437Z",
+  "rows": [
+    {
+      "component": "gate_proj",
+      "expert": 109,
+      "n_hold": 406,
+      "n_routed": 1623,
+      "null_baseline": 0.46141235642424916,
+      "x_centered_rms": 0.1865442544221878,
+      "x_mean_norm": 3.717069149017334,
+      "y_row_norm_cv": 0.30217498540878296
+    },
+    {
+      "component": "up_proj",
+      "expert": 109,
+      "n_hold": 406,
+      "n_routed": 1623,
+      "null_baseline": 0.4788759353765477,
+      "x_centered_rms": 0.18620318174362183,
+      "x_mean_norm": 3.762385368347168,
+      "y_row_norm_cv": 0.2802906930446625
+    },
+    {
+      "component": "down_proj",
+      "expert": 109,
+      "n_hold": 406,
+      "n_routed": 1623,
+      "null_baseline": 0.7476564191489332,
+      "x_centered_rms": 0.03453560173511505,
+      "x_mean_norm": 0.6006239652633667,
+      "y_row_norm_cv": 0.6440433859825134
+    },
+    {
+      "component": "gate_proj",
+      "expert": 85,
+      "n_hold": 387,
+      "n_routed": 1549,
+      "null_baseline": 0.558461246919674,
+      "x_centered_rms": 0.18098635971546173,
+      "x_mean_norm": 4.268749237060547,
+      "y_row_norm_cv": 0.123543381690979
+    },
+    {
+      "component": "up_proj",
+      "expert": 85,
+      "n_hold": 387,
+      "n_routed": 1549,
+      "null_baseline": 0.5772393279814443,
+      "x_centered_rms": 0.18047577142715454,
+      "x_mean_norm": 4.322155952453613,
+      "y_row_norm_cv": 0.1119425967335701
+    },
+    {
+      "component": "down_proj",
+      "expert": 85,
+      "n_hold": 387,
+      "n_routed": 1549,
+      "null_baseline": 0.682888974520245,
+      "x_centered_rms": 0.021931758150458336,
+      "x_mean_norm": 0.3654201328754425,
+      "y_row_norm_cv": 0.35422638058662415
+    },
+    {
+      "component": "gate_proj",
+      "expert": 76,
+      "n_hold": 286,
+      "n_routed": 1145,
+      "null_baseline": 0.622775459122902,
+      "x_centered_rms": 0.17400264739990234,
+      "x_mean_norm": 4.7865309715271,
+      "y_row_norm_cv": 0.21392910182476044
+    },
+    {
+      "component": "up_proj",
+      "expert": 76,
+      "n_hold": 286,
+      "n_routed": 1145,
+      "null_baseline": 0.6283446018685505,
+      "x_centered_rms": 0.17604143917560577,
+      "x_mean_norm": 4.627254486083984,
+      "y_row_norm_cv": 0.20972386002540588
+    },
+    {
+      "component": "down_proj",
+      "expert": 76,
+      "n_hold": 286,
+      "n_routed": 1145,
+      "null_baseline": 0.7803796610893818,
+      "x_centered_rms": 0.03017151728272438,
+      "x_mean_norm": 0.8582203388214111,
+      "y_row_norm_cv": 0.4181601107120514
+    },
+    {
+      "component": "gate_proj",
+      "expert": 119,
+      "n_hold": 258,
+      "n_routed": 1032,
+      "null_baseline": 0.38994260983516005,
+      "x_centered_rms": 0.18808577954769135,
+      "x_mean_norm": 3.571154832839966,
+      "y_row_norm_cv": 0.25242653489112854
+    },
+    {
+      "component": "up_proj",
+      "expert": 119,
+      "n_hold": 258,
+      "n_routed": 1032,
+      "null_baseline": 0.3900436345455975,
+      "x_centered_rms": 0.18766869604587555,
+      "x_mean_norm": 3.6059255599975586,
+      "y_row_norm_cv": 0.24831855297088623
+    },
+    {
+      "component": "down_proj",
+      "expert": 119,
+      "n_hold": 258,
+      "n_routed": 1032,
+      "null_baseline": 0.694195724423092,
+      "x_centered_rms": 0.04305105283856392,
+      "x_mean_norm": 0.692274272441864,
+      "y_row_norm_cv": 0.639714777469635
+    },
+    {
+      "component": "gate_proj",
+      "expert": 1,
+      "n_hold": 217,
+      "n_routed": 868,
+      "null_baseline": 0.5079008696856769,
+      "x_centered_rms": 0.17338135838508606,
+      "x_mean_norm": 4.805534362792969,
+      "y_row_norm_cv": 0.2969551980495453
+    },
+    {
+      "component": "up_proj",
+      "expert": 1,
+      "n_hold": 217,
+      "n_routed": 868,
+      "null_baseline": 0.537796875625099,
+      "x_centered_rms": 0.16962219774723053,
+      "x_mean_norm": 5.0786309242248535,
+      "y_row_norm_cv": 0.2730327546596527
+    },
+    {
+      "component": "down_proj",
+      "expert": 1,
+      "n_hold": 217,
+      "n_routed": 868,
+      "null_baseline": 0.6999050678658231,
+      "x_centered_rms": 0.05822448804974556,
+      "x_mean_norm": 1.01528799533844,
+      "y_row_norm_cv": 0.9023249745368958
+    },
+    {
+      "component": "gate_proj",
+      "expert": 58,
+      "n_hold": 209,
+      "n_routed": 836,
+      "null_baseline": 0.7342461070355353,
+      "x_centered_rms": 0.1543867588043213,
+      "x_mean_norm": 6.007268905639648,
+      "y_row_norm_cv": 0.1333646923303604
+    },
+    {
+      "component": "up_proj",
+      "expert": 58,
+      "n_hold": 209,
+      "n_routed": 836,
+      "null_baseline": 0.67311282447099,
+      "x_centered_rms": 0.15591450035572052,
+      "x_mean_norm": 5.931274890899658,
+      "y_row_norm_cv": 0.12970487773418427
+    },
+    {
+      "component": "down_proj",
+      "expert": 58,
+      "n_hold": 209,
+      "n_routed": 836,
+      "null_baseline": 0.8882189070948395,
+      "x_centered_rms": 0.04350736364722252,
+      "x_mean_norm": 1.4288671016693115,
+      "y_row_norm_cv": 0.3824736177921295
+    }
+  ],
+  "schema": "hawking.ascension.qwen30_activation_null_first.v1"
+}

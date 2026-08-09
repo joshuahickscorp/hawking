@@ -1,0 +1,39 @@
+{
+  "claim_boundary": {
+    "diagnostic_activation_pricing_only": true,
+    "does_not_claim_coherence_hcli_tps_or_capability": true,
+    "model_execution_started": false,
+    "new_diagnostic_not_historical": true,
+    "not_hcli_compiler_trace_bound": true,
+    "production_server_not_used": true,
+    "source_tokenizer_one_user_native_prompts": true
+  },
+  "corpus_summary": {
+    "domain_counts": {
+      "code": 7,
+      "dialogue": 1,
+      "instruction": 3,
+      "list": 1,
+      "long_context": 2,
+      "math": 3,
+      "mixed": 2,
+      "multi_turn": 3,
+      "prose": 5,
+      "structured": 5
+    },
+    "max_tokens": 1459,
+    "mean_tokens": 122.78,
+    "min_tokens": 22,
+    "probe_count": 32,
+    "total_tokens": 3929
+  },
+  "input_path": "/Users/scammermike/.claude-grok/worktrees/q30-broader-capture-20260809-154213/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/requests/QWEN30_BROAD_ACTIVATION_L0_ROUTE_CAPTURE_INPUT_901a24bdcfc6c1d2.json",
+  "input_sha256": "8c5ff2d8490f716b1a14fe04c3606472dca5d0da9df20356abe804dedde3151c",
+  "note": "Input only. Metal L0 capture not started. Live production server must not be disturbed; run capture serialized if GPU residency conflicts.",
+  "prepared_at": "2026-08-09T19:48:12.058244Z",
+  "schema": "hawking.ascension.qwen30_broad_activation_capture_prepare.v1",
+  "tokenizer_binding": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/tokenizer.json",
+    "sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d"
+  }
+}
