@@ -88,7 +88,11 @@ L1_ROUTE_AUTHORITY_STATUS = (
 # preflight and the chain oracle, and all three are checked against each other.
 LAYER_COUNT = 3
 PER_LAYER_DISPATCHES = 23
-TOTAL_DISPATCHES = 69
+# Dispatch totals are a function of the chain length and its mixer mix, not a
+# constant: 69 at N=3 (DeltaNet only), 92 at N=4 once the first GQA layer at
+# index 3 joins. The outer takes the count from the chain oracle for the
+# requested N and cross-checks the host preflight against the same number.
+TOTAL_DISPATCHES = 69  # default for the first validated chain length (N=3)
 SOURCE_TOKEN_ID = 1
 MAX_JSON_BYTES = 100_000_000
 
@@ -308,12 +312,12 @@ def _validate_route_authority(authority: BoundDocument) -> tuple[list[int], list
     return [int(value) for value in ids], [float(value) for value in weights]
 
 
-def _kernel_names_from_host(host: Mapping[str, Any]) -> tuple[str, ...]:
+def _kernel_names_from_host(host: Mapping[str, Any], expected_dispatches: int) -> tuple[str, ...]:
     trace = _mapping(host.get("structural_kernel_trace"), "host structural_kernel_trace")
     names = _array(trace.get("kernel_names"), "host structural_kernel_trace.kernel_names")
-    if len(names) != TOTAL_DISPATCHES or any(not isinstance(name, str) or not name for name in names):
+    if len(names) != expected_dispatches or any(not isinstance(name, str) or not name for name in names):
         raise MultiLayerOuterError(
-            f"host structural kernel names must be exactly {TOTAL_DISPATCHES} non-empty strings"
+            f"host structural kernel names must be exactly {expected_dispatches} non-empty strings"
         )
     if tuple(names) != EXACT_KERNELS:
         raise MultiLayerOuterError("host structural kernel names are not the frozen L0..L2 order")
@@ -334,6 +338,7 @@ def _capture_body_wired(host: Mapping[str, Any]) -> bool:
 
 def _validate_host_preflight(
     layer_count: int,
+    expected_dispatches: int,
     host: BoundDocument,
     host_binary: Mapping[str, Any],
     schedule: BoundDocument,
@@ -353,7 +358,7 @@ def _validate_host_preflight(
     _int(root, "source_token_id", SOURCE_TOKEN_ID, "host preflight")
     layers = _mapping(root.get("layers_inclusive_range"), "host preflight.layers_inclusive_range")
     _int(layers, "first", 0, "host preflight.layers_inclusive_range")
-    _int(layers, "last", LAYER_COUNT - 1, "host preflight.layers_inclusive_range")
+    _int(layers, "last", layer_count - 1, "host preflight.layers_inclusive_range")
     _require_full_binding(
         root.get("execution_schedule_authority"), schedule, "host preflight.execution_schedule_authority"
     )
@@ -377,9 +382,29 @@ def _validate_host_preflight(
     ):
         _bool(policy, field, True, "host preflight.execution_policy")
     _int(policy, "fence_count", 1, "host preflight.execution_policy")
-    _int(policy, "total_dispatches", TOTAL_DISPATCHES, "host preflight.execution_policy")
-    _int(policy, "per_layer_dispatch_count", PER_LAYER_DISPATCHES, "host preflight.execution_policy")
-    names = _kernel_names_from_host(root)
+    _int(policy, "total_dispatches", expected_dispatches, "host preflight.execution_policy")
+    # Per-layer dispatch count is uniform only while every layer shares a mixer.
+    # DeltaNet and GQA layers differ, so once a GQA layer joins the chain the host
+    # reports the mix rather than one number; accept either shape and cross-check
+    # the total, which is the figure that actually binds.
+    observed_per_layer = policy.get("per_layer_dispatch_count")
+    if isinstance(observed_per_layer, int):
+        if observed_per_layer * layer_count != expected_dispatches:
+            raise MultiLayerOuterError(
+                "host preflight.execution_policy.per_layer_dispatch_count "
+                f"{observed_per_layer} x layer_count {layer_count} != total {expected_dispatches}"
+            )
+    elif isinstance(observed_per_layer, list):
+        if len(observed_per_layer) != layer_count or sum(observed_per_layer) != expected_dispatches:
+            raise MultiLayerOuterError(
+                "host preflight.execution_policy.per_layer_dispatch_count list must have "
+                f"{layer_count} entries summing to {expected_dispatches}, observed {observed_per_layer}"
+            )
+    else:
+        raise MultiLayerOuterError(
+            "host preflight.execution_policy.per_layer_dispatch_count must be an int or a list"
+        )
+    names = _kernel_names_from_host(root, expected_dispatches)
     schemas = _mapping(root.get("future_capture_schemas"), "host preflight.future_capture_schemas")
     _text(schemas, "inner", INNER_SCHEMA, "host preflight.future_capture_schemas")
     _text(schemas, "inner_status", INNER_STATUS, "host preflight.future_capture_schemas")
@@ -401,19 +426,20 @@ def _validate_host_preflight(
     return _capture_body_wired(root), names
 
 
-def _validate_chain_oracle(oracle: BoundDocument, layer_count: int) -> None:
+def _validate_chain_oracle(oracle: BoundDocument, layer_count: int, expected_dispatches: int) -> None:
     root = oracle.document
     _int(root, "layer_count", layer_count, "chain cpu oracle")
     if root.get("includes_unready_gqa") is True:
         raise MultiLayerOuterError(
             "chain cpu oracle includes_unready_gqa=true; multi-layer outer requires a DeltaNet-only L0..L2 chain"
         )
+    expected_total = expected_dispatches
     total = root.get("total_dispatches_physical_capture")
     if total is None:
         total = root.get("total_dispatches")
-    if total != TOTAL_DISPATCHES:
+    if total != expected_total:
         raise MultiLayerOuterError(
-            f"chain cpu oracle total_dispatches observed={total}, expected={TOTAL_DISPATCHES}"
+            f"chain cpu oracle total_dispatches observed={total}, expected={expected_total}"
         )
 
 
@@ -492,7 +518,15 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
         (L1_ROUTE_AUTHORITY_STATUS,),
     )
     _validate_schedule(schedule)
-    _validate_chain_oracle(oracle, layer_count)
+    _oracle_root = oracle.document
+    expected_dispatches = _oracle_root.get("total_dispatches_physical_capture")
+    if not isinstance(expected_dispatches, int):
+        expected_dispatches = _oracle_root.get("total_dispatches")
+    if not isinstance(expected_dispatches, int) or expected_dispatches <= 0:
+        raise MultiLayerOuterError(
+            "chain cpu oracle must declare a positive integer total_dispatches"
+        )
+    _validate_chain_oracle(oracle, layer_count, expected_dispatches)
     if assessment.document.get("earned_complete_l1_component_only") is not True:
         raise MultiLayerOuterError("L1 assessment did not earn complete L1 component")
     if joint.document.get("earned_component_only") is not True:
@@ -500,6 +534,7 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
     ids, weights = _validate_route_authority(route)
     capture_body_wired, kernel_names = _validate_host_preflight(
         layer_count,
+        expected_dispatches,
         host, host_binary, schedule, oracle, assessment, joint
     )
     return seal(
@@ -518,9 +553,9 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
                 "source_token_id": SOURCE_TOKEN_ID,
                 "layer_count": layer_count,
                 "layers_first": 0,
-                "layers_last": LAYER_COUNT - 1,
+                "layers_last": layer_count - 1,
                 "per_layer_dispatches": PER_LAYER_DISPATCHES,
-                "total_dispatches": TOTAL_DISPATCHES,
+                "total_dispatches": expected_dispatches,
                 "one_fence_required": True,
                 "non_timed_exact_trace_required": True,
                 "kernel_names": list(kernel_names),
