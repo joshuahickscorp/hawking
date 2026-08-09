@@ -43,6 +43,7 @@ mod source_prefix;
 mod completion_preflight;
 
 #[cfg(target_os = "macos")]
+use std::collections::BTreeMap;
 use hawking_core::metal::TokenCommandBuffer;
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen80_complete_runtime::{
@@ -238,10 +239,154 @@ fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
+// Campaign-canonical JSON: keys sorted, compact separators, and Python-style float
+// repr. serde_json's default number formatting differs from Python's in exponent
+// zero-padding (e-7 vs e-07) and integral floats (1 vs 1.0), which made every
+// sealed multi-layer child receipt fail the outer's seal check even though the
+// capture itself succeeded. Every other sealed document in this campaign is
+// produced or verified through the Python form, so the child must match it.
+fn python_float(number: &serde_json::Number) -> Result<String, String> {
+    let value = number
+        .as_f64()
+        .filter(|value| value.is_finite())
+        .ok_or("floating JSON number must be finite")?;
+    if value == 0.0 {
+        return Ok(if value.is_sign_negative() {
+            "-0.0"
+        } else {
+            "0.0"
+        }
+        .into());
+    }
+    let raw = number.to_string();
+    let (negative, unsigned) = match raw.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, raw.as_str()),
+    };
+    let (mantissa, exponent) = match unsigned.find('e').or_else(|| unsigned.find('E')) {
+        Some(index) => (
+            &unsigned[..index],
+            unsigned[index + 1..]
+                .parse::<i32>()
+                .map_err(|error| format!("bad exponent: {error}"))?,
+        ),
+        None => (unsigned, 0),
+    };
+    let mut fractional = 0_i32;
+    let mut after_decimal = false;
+    let mut digits = String::new();
+    for byte in mantissa.bytes() {
+        match byte {
+            b'.' if !after_decimal => after_decimal = true,
+            b'0'..=b'9' => {
+                if after_decimal {
+                    fractional = fractional.checked_add(1).ok_or("float length overflow")?;
+                }
+                digits.push(char::from(byte));
+            }
+            _ => return Err("bad float mantissa".into()),
+        }
+    }
+    let first = digits
+        .bytes()
+        .position(|byte| byte != b'0')
+        .ok_or("zero float has no significant digit")?;
+    let mut significant = digits[first..].to_owned();
+    let mut power = exponent
+        .checked_sub(fractional)
+        .ok_or("float power overflow")?;
+    while significant.len() > 1 && significant.ends_with('0') {
+        significant.pop();
+        power = power.checked_add(1).ok_or("float power overflow")?;
+    }
+    let scientific = power
+        .checked_add(i32::try_from(significant.len() - 1).unwrap_or(i32::MAX))
+        .ok_or("float power overflow")?;
+    let sign = if negative { "-" } else { "" };
+    if !(-4..16).contains(&scientific) {
+        let mut rendered = significant[..1].to_owned();
+        if significant.len() > 1 {
+            rendered.push('.');
+            rendered.push_str(&significant[1..]);
+        }
+        let exponent_sign = if scientific < 0 { '-' } else { '+' };
+        return Ok(format!(
+            "{sign}{rendered}e{exponent_sign}{:02}",
+            scientific.unsigned_abs()
+        ));
+    }
+    let position = scientific + 1;
+    let rendered = if position <= 0 {
+        format!(
+            "0.{}{}",
+            "0".repeat(usize::try_from(-position).unwrap_or(usize::MAX)),
+            significant
+        )
+    } else if usize::try_from(position).unwrap_or(usize::MAX) >= significant.len() {
+        format!(
+            "{}{}.0",
+            significant,
+            "0".repeat(usize::try_from(position).unwrap_or(usize::MAX) - significant.len())
+        )
+    } else {
+        let position = usize::try_from(position).map_err(|_| "negative float position")?;
+        format!("{}.{}", &significant[..position], &significant[position..])
+    };
+    Ok(format!("{sign}{rendered}"))
+}
+
+fn canonical_into(value: &Value, output: &mut String) -> Result<(), String> {
+    match value {
+        Value::Null => output.push_str("null"),
+        Value::Bool(value) => output.push_str(if *value { "true" } else { "false" }),
+        Value::Number(value) => {
+            if value.is_i64() || value.is_u64() {
+                output.push_str(&value.to_string());
+            } else {
+                output.push_str(&python_float(value)?);
+            }
+        }
+        Value::String(value) => output.push_str(
+            &serde_json::to_string(value)
+                .map_err(|error| format!("string canonicalization: {error}"))?,
+        ),
+        Value::Array(values) => {
+            output.push('[');
+            for (index, value) in values.iter().enumerate() {
+                if index != 0 {
+                    output.push(',');
+                }
+                canonical_into(value, output)?;
+            }
+            output.push(']');
+        }
+        Value::Object(values) => {
+            let mut ordered = BTreeMap::new();
+            for (key, value) in values {
+                ordered.insert(key, value);
+            }
+            output.push('{');
+            for (index, (key, value)) in ordered.into_iter().enumerate() {
+                if index != 0 {
+                    output.push(',');
+                }
+                output.push_str(
+                    &serde_json::to_string(key)
+                        .map_err(|error| format!("key canonicalization: {error}"))?,
+                );
+                output.push(':');
+                canonical_into(value, output)?;
+            }
+            output.push('}');
+        }
+    }
+    Ok(())
+}
+
 fn canonical_json_sha(value: &Value) -> Result<String, String> {
-    Ok(sha256_hex(
-        &serde_json::to_vec(value).map_err(|e| format!("canonicalize: {e}"))?,
-    ))
+    let mut rendered = String::new();
+    canonical_into(value, &mut rendered)?;
+    Ok(sha256_hex(rendered.as_bytes()))
 }
 
 fn seal(value: &mut Value) -> Result<String, String> {
