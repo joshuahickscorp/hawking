@@ -158,3 +158,11 @@ tools/sovereignty/__pycache__/
 # real GLM float exports — large binary, correctly excluded from git, but lives inside
 # the repo tree (not a worktree-only path) so it survives worktree cleanup
 /workspace/campaign/evidence/models/frankenstein/glm-floats-safe/
+
+# Physical gravity artifacts: multi-GB payload bodies and their receipts live on
+# disk as evidence, never in git (this has always been the practice -- nothing
+# under physical/ has ever been tracked). Named explicitly so a stray `git add -A`
+# cannot commit a 5.9 GB candidate.
+workspace/campaign/records/ascension-sandbox/physical/**/selected-payloads/
+workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01
+workspace/campaign/records/ascension-sandbox/physical/**/tensors/
