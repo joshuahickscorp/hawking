@@ -2,10 +2,11 @@
 """CPU/file-only outer contract for future Qwen80 multi-layer (L0..L2) capture.
 
 The Rust multi-layer host preflight binds the 48-layer execution schedule, the
-chain CPU oracle, and the earned L1 full-layer assessment.  This module
-independently verifies those bindings, binds the L0 source outer and original
-L1 route authority required by the Metal gate, and seals a receipt-last/replay
-outer preflight for the lifecycle controller.
+chain CPU oracle, the earned L1 full-layer completion assessment (preflight
+validation), and the L0+L1 joint post-capture assessment (metal-path provenance).
+This module independently verifies those bindings, binds the L0 source outer and
+original L1 route authority required by the Metal gate, and seals a
+receipt-last/replay outer preflight for the lifecycle controller.
 
 It deliberately has no lease issuer, Metal context, device dispatch, catalog
 scan, watcher, server, HCLI, TPS, or production execution path.  A later
@@ -64,6 +65,10 @@ CHAIN_ORACLE_SCHEMA = "hawking.ascension.qwen80_multi_layer_chain_cpu_oracle.v1"
 L1_ASSESSMENT_SCHEMA = "hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1"
 L1_ASSESSMENT_STATUS = (
     "EARNED_QWEN80_SOURCE_TOKEN_L1_COMPLETE_LAYER_COMPONENT_NOT_TOKEN_DECODER"
+)
+JOINT_ASSESSMENT_SCHEMA = "hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1"
+JOINT_ASSESSMENT_STATUS = (
+    "EARNED_QWEN80_SOURCE_TOKEN_L0_L1_COMPONENT_NOT_FULL_LAYER_TOKEN_DECODER"
 )
 L0_OUTER_PREFLIGHT_SCHEMA = (
     "hawking.ascension.qwen80_source_token_all_ten_true_moe_outer_preflight.v1"
@@ -134,6 +139,7 @@ class OuterInputs:
     execution_schedule_authority: Path
     chain_cpu_oracle: Path
     l1_full_layer_assessment: Path
+    joint_assessment: Path
     l0_source_outer_preflight: Path
     original_l1_route_authority: Path
 
@@ -328,6 +334,7 @@ def _validate_host_preflight(
     schedule: BoundDocument,
     oracle: BoundDocument,
     assessment: BoundDocument,
+    joint: BoundDocument,
 ) -> tuple[bool, tuple[str, ...]]:
     root = host.document
     recorded_binary = _mapping(root.get("host_binary"), "host preflight.host_binary")
@@ -351,6 +358,8 @@ def _validate_host_preflight(
         "l1_full_layer_assessment"
     )
     _require_full_binding(assessment_binding, assessment, "host preflight L1 assessment")
+    joint_binding = root.get("joint_assessment") or root.get("joint_assessment_provenance")
+    _require_full_binding(joint_binding, joint, "host preflight joint assessment")
     policy = _mapping(root.get("execution_policy"), "host preflight.execution_policy")
     for field in (
         "one_runtime",
@@ -458,6 +467,12 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
         L1_ASSESSMENT_SCHEMA,
         (L1_ASSESSMENT_STATUS,),
     )
+    joint = _read_bound(
+        inputs.joint_assessment,
+        "joint post-capture assessment",
+        JOINT_ASSESSMENT_SCHEMA,
+        (JOINT_ASSESSMENT_STATUS,),
+    )
     l0_outer = _read_bound(
         inputs.l0_source_outer_preflight,
         "L0 source outer preflight",
@@ -474,9 +489,11 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
     _validate_chain_oracle(oracle)
     if assessment.document.get("earned_complete_l1_component_only") is not True:
         raise MultiLayerOuterError("L1 assessment did not earn complete L1 component")
+    if joint.document.get("earned_component_only") is not True:
+        raise MultiLayerOuterError("joint assessment did not earn L0+L1 component")
     ids, weights = _validate_route_authority(route)
     capture_body_wired, kernel_names = _validate_host_preflight(
-        host, host_binary, schedule, oracle, assessment
+        host, host_binary, schedule, oracle, assessment, joint
     )
     return seal(
         {
@@ -487,6 +504,7 @@ def build_outer_preflight(inputs: OuterInputs) -> dict[str, Any]:
             "execution_schedule_authority": _bound_evidence(schedule),
             "chain_cpu_oracle": _bound_evidence(oracle),
             "l1_full_layer_assessment": _bound_evidence(assessment),
+            "joint_assessment": _bound_evidence(joint),
             "l0_source_outer_preflight": _bound_evidence(l0_outer),
             "original_l1_route_authority": _bound_evidence(route),
             "exact_component_scope": {
@@ -572,6 +590,7 @@ def _parse_args(arguments: Sequence[str]) -> tuple[OuterInputs, Path]:
     parser.add_argument("--execution-schedule-authority", required=True, type=Path)
     parser.add_argument("--chain-cpu-oracle", required=True, type=Path)
     parser.add_argument("--l1-full-layer-assessment", required=True, type=Path)
+    parser.add_argument("--joint-assessment", required=True, type=Path)
     parser.add_argument("--l0-source-outer-preflight", required=True, type=Path)
     parser.add_argument("--original-l1-route-authority", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
@@ -583,6 +602,7 @@ def _parse_args(arguments: Sequence[str]) -> tuple[OuterInputs, Path]:
             execution_schedule_authority=args.execution_schedule_authority,
             chain_cpu_oracle=args.chain_cpu_oracle,
             l1_full_layer_assessment=args.l1_full_layer_assessment,
+            joint_assessment=args.joint_assessment,
             l0_source_outer_preflight=args.l0_source_outer_preflight,
             original_l1_route_authority=args.original_l1_route_authority,
         ),

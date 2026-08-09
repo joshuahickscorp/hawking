@@ -14,7 +14,8 @@
 //!   --mode preflight --layer-count 3 \
 //!   --execution-schedule-authority ABSOLUTE_SEALED_SCHEDULE \
 //!   --chain-cpu-oracle ABSOLUTE_SEALED_CHAIN_ORACLE \
-//!   --l1-full-layer-assessment ABSOLUTE_SEALED_L1_ASSESSMENT \
+//!   --l1-full-layer-assessment ABSOLUTE_SEALED_L1_COMPLETION_ASSESSMENT \
+//!   --joint-assessment ABSOLUTE_SEALED_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT \
 //!   --host-binary ABSOLUTE_CURRENT_HOST_BINARY \
 //!   --out ABSOLUTE_NEW_JSON --workers 1
 //!
@@ -100,6 +101,13 @@ const L1_ASSESSMENT_SCHEMA: &str =
     "hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1";
 const L1_EARNED_STATUS: &str =
     "EARNED_QWEN80_SOURCE_TOKEN_L1_COMPLETE_LAYER_COMPONENT_NOT_TOKEN_DECODER";
+/// Metal-path provenance for the shared L0+L1 finalizer / route-authority validator.
+/// Distinct from [`L1_ASSESSMENT_SCHEMA`]: preflight validates the completion assessment;
+/// metal loads this joint post-capture assessment. One flag cannot satisfy both.
+const JOINT_ASSESSMENT_SCHEMA: &str =
+    "hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1";
+const JOINT_ASSESSMENT_STATUS: &str =
+    "EARNED_QWEN80_SOURCE_TOKEN_L0_L1_COMPONENT_NOT_FULL_LAYER_TOKEN_DECODER";
 const L1_ROUTE_AUTHORITY_SCHEMA: &str =
     "hawking.ascension.qwen80_source_token_l1_all_ten_route_authority.v1";
 const L1_ROUTE_AUTHORITY_STATUS: &str =
@@ -167,6 +175,7 @@ struct Args {
     execution_schedule_authority: PathBuf,
     chain_cpu_oracle: PathBuf,
     l1_full_layer_assessment: PathBuf,
+    joint_assessment: PathBuf,
     host_binary: PathBuf,
     out: PathBuf,
     workers: usize,
@@ -220,9 +229,9 @@ struct MetalExecutionPhase {
 }
 
 fn usage() -> &'static str {
-    "usage: ascension_qwen80_source_token_multi_layer_same_runtime_device \\\n  --mode preflight --layer-count N \\\n  --execution-schedule-authority ABSOLUTE_SEALED_SCHEDULE \\\n  --chain-cpu-oracle ABSOLUTE_SEALED_CHAIN_ORACLE \\\n  --l1-full-layer-assessment ABSOLUTE_SEALED_L1_ASSESSMENT \\\n  --host-binary ABSOLUTE_CURRENT_HOST_BINARY \\\n  --out ABSOLUTE_NEW_JSON --workers 1..4\n\
+    "usage: ascension_qwen80_source_token_multi_layer_same_runtime_device \\\n  --mode preflight --layer-count N \\\n  --execution-schedule-authority ABSOLUTE_SEALED_SCHEDULE \\\n  --chain-cpu-oracle ABSOLUTE_SEALED_CHAIN_ORACLE \\\n  --l1-full-layer-assessment ABSOLUTE_SEALED_L1_COMPLETION_ASSESSMENT \\\n  --joint-assessment ABSOLUTE_SEALED_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT \\\n  --host-binary ABSOLUTE_CURRENT_HOST_BINARY \\\n  --out ABSOLUTE_NEW_JSON --workers 1..4\n\
 or: ... --mode metal --layer-count N \\\n  --outer-preflight ABSOLUTE --lease-receipt ABSOLUTE \\\n  --outer-launch-authority ABSOLUTE --outer-capture-dir ABSOLUTE \\\n  --capture-dir ABSOLUTE_NEW_CHILD --workers 1..4\n\
-metal mode is intentionally not default; the owner runs physical capture under resource admission after this preflight."
+preflight validates the L1 full-layer completion assessment; metal-path provenance requires the joint post-capture assessment bound through the outer. metal mode is intentionally not default; the owner runs physical capture under resource admission after this preflight."
 }
 
 fn sha256_hex(bytes: &[u8]) -> String {
@@ -349,6 +358,7 @@ fn parse_preflight_args(mut args: impl Iterator<Item = String>) -> Result<Args, 
     let mut execution_schedule_authority = None;
     let mut chain_cpu_oracle = None;
     let mut l1_full_layer_assessment = None;
+    let mut joint_assessment = None;
     let mut host_binary = None;
     let mut out = None;
     let mut workers = None;
@@ -386,6 +396,12 @@ fn parse_preflight_args(mut args: impl Iterator<Item = String>) -> Result<Args, 
                     .is_some()
                 {
                     return Err("--l1-full-layer-assessment may not be repeated".into());
+                }
+            }
+            "--joint-assessment" => {
+                let value = args.next().ok_or("--joint-assessment requires a value")?;
+                if joint_assessment.replace(PathBuf::from(value)).is_some() {
+                    return Err("--joint-assessment may not be repeated".into());
                 }
             }
             "--host-binary" => {
@@ -431,6 +447,7 @@ fn parse_preflight_args(mut args: impl Iterator<Item = String>) -> Result<Args, 
         )?,
         chain_cpu_oracle: require(chain_cpu_oracle, "--chain-cpu-oracle")?,
         l1_full_layer_assessment: require(l1_full_layer_assessment, "--l1-full-layer-assessment")?,
+        joint_assessment: require(joint_assessment, "--joint-assessment")?,
         host_binary: require(host_binary, "--host-binary")?,
         out: require(out, "--out")?,
         workers,
@@ -724,6 +741,25 @@ fn validate_l1_assessment(value: &Value) -> Result<String, String> {
     Ok(seal)
 }
 
+fn validate_joint_assessment(value: &Value) -> Result<String, String> {
+    let seal = verify_seal(value, "joint assessment")?;
+    let root = obj(value, "joint assessment")?;
+    if text(root, "schema", "joint assessment")? != JOINT_ASSESSMENT_SCHEMA {
+        return Err(format!(
+            "joint assessment schema observed={}, expected={JOINT_ASSESSMENT_SCHEMA}",
+            text(root, "schema", "joint assessment")?
+        ));
+    }
+    if text(root, "status", "joint assessment")? != JOINT_ASSESSMENT_STATUS {
+        return Err(format!(
+            "joint assessment status observed={}, expected={JOINT_ASSESSMENT_STATUS}",
+            text(root, "status", "joint assessment")?
+        ));
+    }
+    boolean(root, "earned_component_only", true, "joint assessment")?;
+    Ok(seal)
+}
+
 fn build_preflight(args: &Args) -> Result<Value, String> {
     Qwen80ExecutionScheduleSourceBinding::exact().validate_exact()?;
     let schedule = read_json(
@@ -735,6 +771,8 @@ fn build_preflight(args: &Args) -> Result<Value, String> {
     let oracle_seal = validate_chain_oracle(&oracle, args.layer_count)?;
     let l1 = read_json(&args.l1_full_layer_assessment, "L1 full-layer assessment")?;
     let l1_seal = validate_l1_assessment(&l1)?;
+    let joint = read_json(&args.joint_assessment, "joint assessment")?;
+    let joint_seal = validate_joint_assessment(&joint)?;
     let (host_bytes, host_sha) = file_sha(&args.host_binary, "host binary")?;
 
     let expected_kernels = qwen80_multi_layer_structural_kernel_trace(args.layer_count, false)?;
@@ -797,6 +835,14 @@ fn build_preflight(args: &Args) -> Result<Value, String> {
             "document_sha256": l1_seal,
             "historical_component_only": true,
             "does_not_import_pinned_buffers": true,
+        },
+        "joint_assessment": {
+            "path": args.joint_assessment.to_string_lossy(),
+            "document_seal_sha256": joint_seal,
+            "document_sha256": joint_seal,
+            "metal_path_provenance_only": true,
+            "does_not_import_pinned_buffers": true,
+            "schema": JOINT_ASSESSMENT_SCHEMA,
         },
         "host_binary": {
             "path": args.host_binary.to_string_lossy(),
@@ -1355,6 +1401,7 @@ struct MultiLayerCaptureAuthority {
     schedule: SealedDocument,
     chain_oracle: SealedDocument,
     l1_assessment: SealedDocument,
+    joint_assessment: SealedDocument,
     l0_source_outer_preflight: SealedDocument,
     l1_route_authority: completion_preflight::ValidatedSourceTokenL1RouteAuthority,
     manifest: SealedDocument,
@@ -1518,6 +1565,13 @@ fn resolve_multi_layer_authority(
         L1_ASSESSMENT_SCHEMA,
         L1_EARNED_STATUS,
     )?;
+    // Metal-path provenance: joint post-capture assessment (not the L1 completion
+    // assessment). The shared L0+L1 route-authority validator requires this schema.
+    let joint_assessment = load(
+        "joint_assessment",
+        JOINT_ASSESSMENT_SCHEMA,
+        JOINT_ASSESSMENT_STATUS,
+    )?;
     let l0_source_outer_preflight = load(
         "l0_source_outer_preflight",
         L0_SOURCE_OUTER_SCHEMA,
@@ -1528,8 +1582,21 @@ fn resolve_multi_layer_authority(
         L1_ROUTE_AUTHORITY_SCHEMA,
         L1_ROUTE_AUTHORITY_STATUS,
     )?;
+    // Prefer host-preflight joint binding when present so host/outer cannot drift.
+    let host_root = obj(&host_preflight.value, "host preflight")?;
+    if let Some(host_joint) = host_root.get("joint_assessment") {
+        let host_joint = obj(host_joint, "host preflight.joint_assessment")?;
+        let host_joint_seal = text(host_joint, "document_seal_sha256", "host joint")
+            .or_else(|_| text(host_joint, "document_sha256", "host joint"))?;
+        if joint_assessment.seal_sha256 != host_joint_seal {
+            return Err(format!(
+                "host/outer joint assessment seal observed outer={}, host expected={host_joint_seal}",
+                joint_assessment.seal_sha256
+            ));
+        }
+    }
     let l1_route_authority = completion_preflight::validate_source_token_l1_route_authority_files(
-        &l1_assessment.file.path,
+        &joint_assessment.file.path,
         &route_document.file.path,
     )?;
     // Source artifact chain from L0 outer.
@@ -1571,6 +1638,7 @@ fn resolve_multi_layer_authority(
         schedule,
         chain_oracle,
         l1_assessment,
+        joint_assessment,
         l0_source_outer_preflight,
         l1_route_authority,
         manifest,
@@ -1995,6 +2063,22 @@ mod tests {
         document
     }
 
+    fn sealed_joint() -> Value {
+        let mut document = json!({
+            "schema": JOINT_ASSESSMENT_SCHEMA,
+            "status": JOINT_ASSESSMENT_STATUS,
+            "earned_component_only": true,
+            "component_scope": {
+                "source_token_id": SOURCE_TOKEN_ID,
+                "fresh_l0_dispatches": L0_DISPATCHES,
+                "fresh_l1_slot1_prefix_dispatches": L1_PREFIX_DISPATCHES,
+                "fresh_total_dispatches": L0_DISPATCHES + L1_PREFIX_DISPATCHES,
+            },
+        });
+        seal(&mut document).unwrap();
+        document
+    }
+
     fn write_temp(dir: &Path, name: &str, value: &Value) -> PathBuf {
         let path = dir.join(name);
         fs::write(&path, serde_json::to_vec(value).unwrap()).unwrap();
@@ -2007,6 +2091,7 @@ mod tests {
         let schedule = write_temp(dir.path(), "schedule.json", &sealed_schedule());
         let oracle = write_temp(dir.path(), "oracle.json", &sealed_oracle(3));
         let l1 = write_temp(dir.path(), "l1.json", &sealed_l1());
+        let joint = write_temp(dir.path(), "joint.json", &sealed_joint());
         let host = write_temp(dir.path(), "host.bin", &json!({"binary": true}));
         let out_abs = fs::canonicalize(dir.path()).unwrap().join("out.json");
         let args = Args {
@@ -2014,6 +2099,7 @@ mod tests {
             execution_schedule_authority: schedule,
             chain_cpu_oracle: oracle,
             l1_full_layer_assessment: l1,
+            joint_assessment: joint,
             host_binary: host,
             out: out_abs.clone(),
             workers: 1,
@@ -2041,8 +2127,129 @@ mod tests {
                 .len(),
             69
         );
+        assert_eq!(
+            document["joint_assessment"]["schema"],
+            JOINT_ASSESSMENT_SCHEMA
+        );
+        assert_eq!(
+            document["joint_assessment"]["metal_path_provenance_only"],
+            true
+        );
         write_new(&out_abs, &document).unwrap();
         assert!(out_abs.exists());
+    }
+
+    #[test]
+    fn preflight_refuses_joint_document_on_l1_full_layer_assessment_flag() {
+        let dir = tempfile::tempdir().unwrap();
+        let schedule = write_temp(dir.path(), "schedule.json", &sealed_schedule());
+        let oracle = write_temp(dir.path(), "oracle.json", &sealed_oracle(3));
+        // Wrong document on the L1 flag: joint post-capture assessment.
+        let joint_as_l1 = write_temp(dir.path(), "wrong-l1.json", &sealed_joint());
+        let joint = write_temp(dir.path(), "joint.json", &sealed_joint());
+        let host = write_temp(dir.path(), "host.bin", &json!({}));
+        let args = Args {
+            layer_count: 3,
+            execution_schedule_authority: schedule,
+            chain_cpu_oracle: oracle,
+            l1_full_layer_assessment: joint_as_l1,
+            joint_assessment: joint,
+            host_binary: host,
+            out: fs::canonicalize(dir.path()).unwrap().join("out.json"),
+            workers: 1,
+        };
+        let err = build_preflight(&args).unwrap_err();
+        assert!(
+            err.contains("L1 assessment schema observed=")
+                && err.contains(JOINT_ASSESSMENT_SCHEMA)
+                && err.contains(&format!("expected={L1_ASSESSMENT_SCHEMA}")),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn preflight_refuses_l1_completion_on_joint_assessment_flag() {
+        let dir = tempfile::tempdir().unwrap();
+        let schedule = write_temp(dir.path(), "schedule.json", &sealed_schedule());
+        let oracle = write_temp(dir.path(), "oracle.json", &sealed_oracle(3));
+        let l1 = write_temp(dir.path(), "l1.json", &sealed_l1());
+        // Wrong document on the joint flag: L1 full-layer completion assessment.
+        let l1_as_joint = write_temp(dir.path(), "wrong-joint.json", &sealed_l1());
+        let host = write_temp(dir.path(), "host.bin", &json!({}));
+        let args = Args {
+            layer_count: 3,
+            execution_schedule_authority: schedule,
+            chain_cpu_oracle: oracle,
+            l1_full_layer_assessment: l1,
+            joint_assessment: l1_as_joint,
+            host_binary: host,
+            out: fs::canonicalize(dir.path()).unwrap().join("out.json"),
+            workers: 1,
+        };
+        let err = build_preflight(&args).unwrap_err();
+        assert!(
+            err.contains("joint assessment schema observed=")
+                && err.contains(L1_ASSESSMENT_SCHEMA)
+                && err.contains(&format!("expected={JOINT_ASSESSMENT_SCHEMA}")),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn metal_path_joint_assessment_load_refuses_l1_completion_schema() {
+        // Metal authority load of outer.joint_assessment accepts only the joint schema.
+        let dir = tempfile::tempdir().unwrap();
+        let wrong = write_temp(dir.path(), "l1-as-joint.json", &sealed_l1());
+        let err = read_sealed_document(
+            &wrong,
+            "joint_assessment",
+            JOINT_ASSESSMENT_SCHEMA,
+            JOINT_ASSESSMENT_STATUS,
+        )
+        .unwrap_err();
+        assert!(
+            err.contains("joint_assessment.schema observed=")
+                && err.contains(L1_ASSESSMENT_SCHEMA)
+                && err.contains(&format!("expected={JOINT_ASSESSMENT_SCHEMA}")),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn metal_path_l1_assessment_load_refuses_joint_schema() {
+        let dir = tempfile::tempdir().unwrap();
+        let wrong = write_temp(dir.path(), "joint-as-l1.json", &sealed_joint());
+        let err = read_sealed_document(
+            &wrong,
+            "l1_full_layer_assessment",
+            L1_ASSESSMENT_SCHEMA,
+            L1_EARNED_STATUS,
+        )
+        .unwrap_err();
+        assert!(
+            err.contains("l1_full_layer_assessment.schema observed=")
+                && err.contains(JOINT_ASSESSMENT_SCHEMA)
+                && err.contains(&format!("expected={L1_ASSESSMENT_SCHEMA}")),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn metal_path_accepts_joint_assessment_schema() {
+        let dir = tempfile::tempdir().unwrap();
+        let joint = write_temp(dir.path(), "joint.json", &sealed_joint());
+        let doc = read_sealed_document(
+            &joint,
+            "joint_assessment",
+            JOINT_ASSESSMENT_SCHEMA,
+            JOINT_ASSESSMENT_STATUS,
+        )
+        .unwrap();
+        assert_eq!(doc.seal_sha256.len(), 64);
+        assert_eq!(
+            doc.value["schema"].as_str().unwrap(),
+            JOINT_ASSESSMENT_SCHEMA
+        );
     }
 
     #[test]
@@ -2062,12 +2269,14 @@ mod tests {
         seal(&mut oracle_doc).unwrap();
         let oracle = write_temp(dir.path(), "oracle.json", &oracle_doc);
         let l1 = write_temp(dir.path(), "l1.json", &sealed_l1());
+        let joint = write_temp(dir.path(), "joint.json", &sealed_joint());
         let host = write_temp(dir.path(), "host.bin", &json!({}));
         let args = Args {
             layer_count: 4,
             execution_schedule_authority: schedule,
             chain_cpu_oracle: oracle,
             l1_full_layer_assessment: l1,
+            joint_assessment: joint,
             host_binary: host,
             out: fs::canonicalize(dir.path()).unwrap().join("out.json"),
             workers: 1,

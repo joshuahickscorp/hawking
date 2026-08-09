@@ -24,6 +24,7 @@ FROZEN_HOST_PREFLIGHT = (
 FROZEN_SCHEDULE = COMPLETE_MAIN / "QWEN80_48_LAYER_EXECUTION_SCHEDULE_AUTHORITY_20260809T192559Z.json"
 FROZEN_ORACLE = COMPLETE_MAIN / "QWEN80_MULTI_LAYER_CHAIN_CPU_ORACLE_L0_L2_20260809T192600Z.json"
 FROZEN_ASSESSMENT = COMPLETE_MAIN / "QWEN80_L1_FULL_LAYER_COMPLETION_ASSESSMENT_20260809T185418Z.json"
+FROZEN_JOINT_ASSESSMENT = COMPLETE_MAIN / "QWEN80_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT_20260809T115059Z.json"
 FROZEN_HOST = Path(
     "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/"
     "ascension_qwen80_source_token_multi_layer_same_runtime_device"
@@ -144,9 +145,21 @@ def _synthetic_context(
             }
         ),
     )
+    joint = _write(
+        tmp_path / "joint-assessment.json",
+        seal(
+            {
+                "schema": lifecycle.JOINT_ASSESSMENT_SCHEMA,
+                "status": lifecycle.JOINT_ASSESSMENT_STATUS,
+                "earned_component_only": True,
+                "blockers": [],
+            }
+        ),
+    )
     schedule_ev = _evidence(schedule)
     oracle_ev = _evidence(oracle)
     assessment_ev = _evidence(assessment)
+    joint_ev = _evidence(joint)
 
     host = _write(
         tmp_path / "host-preflight.json",
@@ -161,6 +174,7 @@ def _synthetic_context(
                 "execution_schedule_authority": schedule_ev,
                 "chain_cpu_oracle": oracle_ev,
                 "l1_full_layer_assessment_provenance": assessment_ev,
+                "joint_assessment": joint_ev,
                 "execution_policy": {
                     "one_runtime": True,
                     "one_command_buffer": True,
@@ -227,6 +241,7 @@ def _synthetic_context(
                 "execution_schedule_authority": schedule_ev,
                 "chain_cpu_oracle": oracle_ev,
                 "l1_full_layer_assessment": assessment_ev,
+                "joint_assessment": joint_ev,
                 "l0_source_outer_preflight": {
                     "path": str(tmp_path / "l0-outer.json"),
                     "present": True,
@@ -282,6 +297,7 @@ def _synthetic_context(
         execution_schedule_seal_sha256=schedule_ev["document_seal_sha256"],
         chain_cpu_oracle_seal_sha256=oracle_ev["document_seal_sha256"],
         l1_full_layer_assessment_seal_sha256=assessment_ev["document_seal_sha256"],
+        joint_assessment_seal_sha256=joint_ev["document_seal_sha256"],
     )
     context = lifecycle.load_authority_context(
         host_preflight=host,
@@ -517,6 +533,7 @@ def test_unwired_or_wrong_mode_refuses_before_creating_any_lease_or_directory(tm
             "--expected-execution-schedule-seal-sha256", pins.execution_schedule_seal_sha256,
             "--expected-chain-cpu-oracle-seal-sha256", pins.chain_cpu_oracle_seal_sha256,
             "--expected-l1-full-layer-assessment-seal-sha256", pins.l1_full_layer_assessment_seal_sha256,
+            "--expected-joint-assessment-seal-sha256", pins.joint_assessment_seal_sha256,
         ]
     )
     assert result == 2
@@ -524,10 +541,54 @@ def test_unwired_or_wrong_mode_refuses_before_creating_any_lease_or_directory(tm
     assert not config.launch_dir.exists()
 
 
+def test_lifecycle_authority_context_binds_both_assessments(tmp_path: Path) -> None:
+    context, pins, _host, _outer, _binary = _synthetic_context(tmp_path)
+    assert context.l1_full_layer_assessment.seal_sha256 == pins.l1_full_layer_assessment_seal_sha256
+    assert context.joint_assessment.seal_sha256 == pins.joint_assessment_seal_sha256
+    assert context.l1_full_layer_assessment.document["schema"] == lifecycle.L1_ASSESSMENT_SCHEMA
+    assert context.joint_assessment.document["schema"] == lifecycle.JOINT_ASSESSMENT_SCHEMA
+    # Distinct documents: seals must not collapse to one pin.
+    assert (
+        context.l1_full_layer_assessment.seal_sha256 != context.joint_assessment.seal_sha256
+    )
+    resource = lifecycle.build_resource_admission(context=context, snapshot=_green_snapshot())
+    assert resource["l1_full_layer_assessment"]["document_seal_sha256"] == pins.l1_full_layer_assessment_seal_sha256
+    assert resource["joint_assessment"]["document_seal_sha256"] == pins.joint_assessment_seal_sha256
+
+
+def test_outer_missing_joint_assessment_refuses(tmp_path: Path) -> None:
+    context, pins, host, outer, binary = _synthetic_context(tmp_path)
+    # Rewrite outer without joint_assessment so lifecycle refuses before any lease.
+    stripped = dict(context.outer_preflight.document)
+    stripped.pop("joint_assessment", None)
+    stripped.pop("seal_sha256", None)
+    bad_outer = _write(tmp_path / "outer-no-joint.json", seal(stripped))
+    bad_pins = lifecycle.AuthorityPins(
+        host_binary_sha256=pins.host_binary_sha256,
+        host_preflight_seal_sha256=pins.host_preflight_seal_sha256,
+        outer_preflight_seal_sha256=_evidence(bad_outer)["document_seal_sha256"],
+        execution_schedule_seal_sha256=pins.execution_schedule_seal_sha256,
+        chain_cpu_oracle_seal_sha256=pins.chain_cpu_oracle_seal_sha256,
+        l1_full_layer_assessment_seal_sha256=pins.l1_full_layer_assessment_seal_sha256,
+        joint_assessment_seal_sha256=pins.joint_assessment_seal_sha256,
+    )
+    with pytest.raises(
+        lifecycle.MultiLayerLifecycleError,
+        match="outer joint assessment must be an object|outer preflight missing joint_assessment",
+    ):
+        lifecycle.load_authority_context(
+            host_preflight=host,
+            outer_preflight=bad_outer,
+            host_binary=binary,
+            pins=bad_pins,
+        )
+
+
 def test_frozen_pin_constants_match_task_prefixes() -> None:
     assert lifecycle.EXECUTION_SCHEDULE_SEAL_SHA256.startswith("54084ddf")
     assert lifecycle.CHAIN_CPU_ORACLE_SEAL_SHA256.startswith("a217fc80")
     assert lifecycle.CURRENT_HOST_PREFLIGHT_SEAL_SHA256.startswith("bf40d5e0")
     assert lifecycle.L1_FULL_LAYER_ASSESSMENT_SEAL_SHA256.startswith("47a4f33f")
+    assert lifecycle.JOINT_ASSESSMENT_SEAL_SHA256.startswith("d1b28931")
     assert lifecycle.TOTAL_DISPATCHES == 69
     assert lifecycle.LAYER_COUNT == 3

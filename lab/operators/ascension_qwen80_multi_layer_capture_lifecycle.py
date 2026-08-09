@@ -52,6 +52,7 @@ CURRENT_OUTER_PREFLIGHT_SEAL_SHA256 = "0" * 64
 EXECUTION_SCHEDULE_SEAL_SHA256 = "54084ddfeb117f964d48242b76afe7765eddca39330416c95cbd877cf400106c"
 CHAIN_CPU_ORACLE_SEAL_SHA256 = "a217fc80410993fdde888f02e28eb9fae3f20ae88f676b9b4acd6ed60fb4bae2"
 L1_FULL_LAYER_ASSESSMENT_SEAL_SHA256 = "47a4f33f0d904873edafc5943ed7a21605386c48428097b14fc167d6f46daea5"
+JOINT_ASSESSMENT_SEAL_SHA256 = "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d"
 
 HOST_PREFLIGHT_SCHEMA = (
     "hawking.ascension.qwen80_source_token_multi_layer_same_runtime_host_preflight.v1"
@@ -74,6 +75,10 @@ CHAIN_ORACLE_NUMERIC_STATUS = (
 L1_ASSESSMENT_SCHEMA = "hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1"
 L1_ASSESSMENT_STATUS = (
     "EARNED_QWEN80_SOURCE_TOKEN_L1_COMPLETE_LAYER_COMPONENT_NOT_TOKEN_DECODER"
+)
+JOINT_ASSESSMENT_SCHEMA = "hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1"
+JOINT_ASSESSMENT_STATUS = (
+    "EARNED_QWEN80_SOURCE_TOKEN_L0_L1_COMPONENT_NOT_FULL_LAYER_TOKEN_DECODER"
 )
 
 RESOURCE_SCHEMA = (
@@ -182,6 +187,7 @@ class AuthorityPins:
     execution_schedule_seal_sha256: str = EXECUTION_SCHEDULE_SEAL_SHA256
     chain_cpu_oracle_seal_sha256: str = CHAIN_CPU_ORACLE_SEAL_SHA256
     l1_full_layer_assessment_seal_sha256: str = L1_FULL_LAYER_ASSESSMENT_SEAL_SHA256
+    joint_assessment_seal_sha256: str = JOINT_ASSESSMENT_SEAL_SHA256
 
 
 @dataclass(frozen=True)
@@ -191,6 +197,7 @@ class AuthorityContext:
     execution_schedule_authority: BoundDocument
     chain_cpu_oracle: BoundDocument
     l1_full_layer_assessment: BoundDocument
+    joint_assessment: BoundDocument
     host_binary: Path
     host_binary_bytes: int
     host_binary_sha256: str
@@ -554,6 +561,7 @@ def _validate_outer_preflight(
         "execution_schedule_authority",
         "chain_cpu_oracle",
         "l1_full_layer_assessment",
+        "joint_assessment",
     ):
         if field not in root:
             raise MultiLayerLifecycleError(f"outer preflight missing {field}")
@@ -583,6 +591,7 @@ def load_authority_context(
         (pins.execution_schedule_seal_sha256, "execution schedule pin"),
         (pins.chain_cpu_oracle_seal_sha256, "chain cpu oracle pin"),
         (pins.l1_full_layer_assessment_seal_sha256, "L1 assessment pin"),
+        (pins.joint_assessment_seal_sha256, "joint assessment pin"),
     ):
         if not _is_sha256(value):
             raise MultiLayerLifecycleError(f"{label} must be a lowercase SHA-256")
@@ -597,7 +606,7 @@ def load_authority_context(
         raise MultiLayerLifecycleError("host preflight seal does not match the explicit frozen pin")
     if outer.seal_sha256 != pins.outer_preflight_seal_sha256:
         raise MultiLayerLifecycleError("outer preflight seal does not match the explicit frozen pin")
-    # Outer binds schedule/oracle/assessment; pin against those seals.
+    # Outer binds schedule/oracle/assessments; pin against those seals.
     schedule_seal = _pointer_seal(
         outer.document.get("execution_schedule_authority"), "outer execution schedule"
     )
@@ -605,12 +614,15 @@ def load_authority_context(
     assessment_seal = _pointer_seal(
         outer.document.get("l1_full_layer_assessment"), "outer L1 assessment"
     )
+    joint_seal = _pointer_seal(outer.document.get("joint_assessment"), "outer joint assessment")
     if schedule_seal != pins.execution_schedule_seal_sha256:
         raise MultiLayerLifecycleError("execution schedule seal does not match the explicit frozen pin")
     if oracle_seal != pins.chain_cpu_oracle_seal_sha256:
         raise MultiLayerLifecycleError("chain cpu oracle seal does not match the explicit frozen pin")
     if assessment_seal != pins.l1_full_layer_assessment_seal_sha256:
         raise MultiLayerLifecycleError("L1 assessment seal does not match the explicit frozen pin")
+    if joint_seal != pins.joint_assessment_seal_sha256:
+        raise MultiLayerLifecycleError("joint assessment seal does not match the explicit frozen pin")
     # Load bound documents for evidence in receipts (paths from outer).
     schedule = _read_sealed(
         Path(_mapping(outer.document["execution_schedule_authority"], "schedule")["path"]),
@@ -634,12 +646,20 @@ def load_authority_context(
         schema=L1_ASSESSMENT_SCHEMA,
         statuses=(L1_ASSESSMENT_STATUS,),
     )
+    joint = _read_sealed(
+        Path(_mapping(outer.document["joint_assessment"], "joint assessment")["path"]),
+        "joint post-capture assessment",
+        schema=JOINT_ASSESSMENT_SCHEMA,
+        statuses=(JOINT_ASSESSMENT_STATUS,),
+    )
     if schedule.seal_sha256 != pins.execution_schedule_seal_sha256:
         raise MultiLayerLifecycleError("loaded schedule seal drifted from pin")
     if oracle.seal_sha256 != pins.chain_cpu_oracle_seal_sha256:
         raise MultiLayerLifecycleError("loaded chain oracle seal drifted from pin")
     if assessment.seal_sha256 != pins.l1_full_layer_assessment_seal_sha256:
         raise MultiLayerLifecycleError("loaded L1 assessment seal drifted from pin")
+    if joint.seal_sha256 != pins.joint_assessment_seal_sha256:
+        raise MultiLayerLifecycleError("loaded joint assessment seal drifted from pin")
     capture_body_wired, host_names = _validate_host_preflight(
         host, clean_host, len(host_raw), host_sha
     )
@@ -660,6 +680,7 @@ def load_authority_context(
         execution_schedule_authority=schedule,
         chain_cpu_oracle=oracle,
         l1_full_layer_assessment=assessment,
+        joint_assessment=joint,
         host_binary=clean_host,
         host_binary_bytes=len(host_raw),
         host_binary_sha256=host_sha,
@@ -723,6 +744,7 @@ def build_resource_admission(
             "execution_schedule_authority": _evidence(context.execution_schedule_authority),
             "chain_cpu_oracle": _evidence(context.chain_cpu_oracle),
             "l1_full_layer_assessment": _evidence(context.l1_full_layer_assessment),
+            "joint_assessment": _evidence(context.joint_assessment),
             "host_binary": {
                 "path": str(context.host_binary),
                 "present": True,
@@ -778,6 +800,11 @@ def _read_resource_admission(
         root.get("l1_full_layer_assessment"),
         context.l1_full_layer_assessment,
         "resource admission L1 assessment",
+    )
+    _matches_evidence(
+        root.get("joint_assessment"),
+        context.joint_assessment,
+        "resource admission joint assessment",
     )
     binary = _mapping(root.get("host_binary"), "resource admission.host_binary")
     if (
@@ -850,6 +877,7 @@ def build_lifecycle_preflight(
             "l1_full_layer_assessment": _evidence(context.l1_full_layer_assessment)
             if context
             else {"present": False},
+            "joint_assessment": _evidence(context.joint_assessment) if context else {"present": False},
             "resource_admission": _evidence(resource) if resource else {"present": False},
             "blockers": blockers,
             "claim_boundary": {
@@ -915,6 +943,7 @@ def _lease_document(context: AuthorityContext, resource: BoundDocument, *, lease
             "execution_schedule_authority": _evidence(context.execution_schedule_authority),
             "chain_cpu_oracle": _evidence(context.chain_cpu_oracle),
             "l1_full_layer_assessment": _evidence(context.l1_full_layer_assessment),
+            "joint_assessment": _evidence(context.joint_assessment),
             "fresh_resource_admission": _evidence(resource),
             "execution_policy": {
                 "source_token_id": 1,
@@ -949,6 +978,7 @@ def _lease_id(context: AuthorityContext, resource: BoundDocument, launch: Path) 
         "execution_schedule_seal_sha256": context.execution_schedule_authority.seal_sha256,
         "chain_cpu_oracle_seal_sha256": context.chain_cpu_oracle.seal_sha256,
         "l1_full_layer_assessment_seal_sha256": context.l1_full_layer_assessment.seal_sha256,
+        "joint_assessment_seal_sha256": context.joint_assessment.seal_sha256,
         "resource_admission_seal_sha256": resource.seal_sha256,
         "launch_dir": str(launch),
         "random_nonce_sha256": _sha256_bytes(os.urandom(32)),
@@ -982,6 +1012,7 @@ def _outer_launch_document(
             "execution_schedule_authority": _evidence(context.execution_schedule_authority),
             "chain_cpu_oracle": _evidence(context.chain_cpu_oracle),
             "l1_full_layer_assessment": _evidence(context.l1_full_layer_assessment),
+            "joint_assessment": _evidence(context.joint_assessment),
             "fresh_resource_admission": _evidence(resource),
             "host_binary": {
                 "path": str(context.host_binary),
@@ -1407,6 +1438,7 @@ def _outer_terminal_document(
             "execution_schedule_authority": _evidence(context.execution_schedule_authority),
             "chain_cpu_oracle": _evidence(context.chain_cpu_oracle),
             "l1_full_layer_assessment": _evidence(context.l1_full_layer_assessment),
+            "joint_assessment": _evidence(context.joint_assessment),
             "fresh_resource_admission": _evidence(resource),
             "lease": {**_evidence(lease), "lease_id": lease_id},
             "outer_launch_authority": _evidence(launch),
@@ -1674,6 +1706,7 @@ def _pins_from_args(args: argparse.Namespace) -> AuthorityPins:
         execution_schedule_seal_sha256=args.expected_execution_schedule_seal_sha256,
         chain_cpu_oracle_seal_sha256=args.expected_chain_cpu_oracle_seal_sha256,
         l1_full_layer_assessment_seal_sha256=args.expected_l1_full_layer_assessment_seal_sha256,
+        joint_assessment_seal_sha256=args.expected_joint_assessment_seal_sha256,
     )
 
 
@@ -1721,6 +1754,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--expected-l1-full-layer-assessment-seal-sha256",
         default=L1_FULL_LAYER_ASSESSMENT_SEAL_SHA256,
+    )
+    parser.add_argument(
+        "--expected-joint-assessment-seal-sha256",
+        default=JOINT_ASSESSMENT_SEAL_SHA256,
     )
     parser.add_argument("--out", type=Path, required=True)
     return parser
