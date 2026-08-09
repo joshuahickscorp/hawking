@@ -143,8 +143,10 @@ const QWEN80_SOURCE_TOKEN_L1_MOE_SUFFIX_KERNELS: [&str; 14] = [
 mod multi_layer_same_runtime_encode;
 #[cfg(target_os = "macos")]
 pub use multi_layer_same_runtime_encode::{
-    Qwen80MultiLayerSuffixWitness, Qwen80SameRuntimeDeltaNetLayerPrefixEncoder,
-    Qwen80SameRuntimeMultiLayerChainParity,
+    Qwen80MultiLayerSuffixCpuOracle, Qwen80MultiLayerSuffixWitness,
+    Qwen80SameRuntimeDeltaNetLayerPrefixEncoder, Qwen80SameRuntimeGqaLayerPrefixEncoder,
+    Qwen80SameRuntimeGqaLayerPrefixParity, Qwen80SameRuntimeLayerPrefixParity,
+    Qwen80SameRuntimeMultiLayerChainParity, Qwen80SameRuntimeSubsequentLayerPrefix,
 };
 
 #[cfg(target_os = "macos")]
@@ -4773,6 +4775,707 @@ impl Qwen80CompleteArtifactCatalog {
         contract.validate_against_catalog(self)?;
         Ok(contract)
     }
+
+    /// Artifact-bound contract for one source-scheduled full-attention (GQA)
+    /// mixer layer.  Validates compact payload identity only; does not
+    /// allocate Metal state or dispatch.
+    pub fn canonical_gqa_operator_contract(
+        &self,
+        layer: usize,
+    ) -> Result<Qwen80CanonicalGqaOperatorContract> {
+        if !matches!(
+            self.config.layer_kind(layer)?,
+            Qwen80LayerKind::FullAttention
+        ) {
+            return Err(model_error(format!(
+                "Qwen80 layer {layer} is not a canonical GQA full-attention layer (observed kind={}, expected=full_attention)",
+                self.config.layer_kind(layer)?.as_source_name()
+            )));
+        }
+        let full_attention_state_slot = layer / QWEN80_FULL_ATTENTION_INTERVAL;
+        let query_dim = QWEN80_FULL_ATTN_HEADS * QWEN80_FULL_ATTN_HEAD_DIM;
+        let kv_dim = QWEN80_FULL_ATTN_KV_HEADS * QWEN80_FULL_ATTN_HEAD_DIM;
+        let prefix = format!("model.layers.{layer}");
+        let input_layernorm = Qwen80CompleteHybridDecoderPlan::binding(
+            self,
+            format!("{prefix}.input_layernorm.weight"),
+            &[QWEN80_HIDDEN],
+        )?;
+        let mixer = Qwen80FullAttentionLayerBindings {
+            q_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.q_proj.weight"),
+                &[query_dim * 2, QWEN80_HIDDEN],
+            )?,
+            k_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.k_proj.weight"),
+                &[kv_dim, QWEN80_HIDDEN],
+            )?,
+            v_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.v_proj.weight"),
+                &[kv_dim, QWEN80_HIDDEN],
+            )?,
+            q_norm: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.q_norm.weight"),
+                &[QWEN80_FULL_ATTN_HEAD_DIM],
+            )?,
+            k_norm: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.k_norm.weight"),
+                &[QWEN80_FULL_ATTN_HEAD_DIM],
+            )?,
+            o_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.self_attn.o_proj.weight"),
+                &[QWEN80_HIDDEN, query_dim],
+            )?,
+        };
+        let mut direct_packed_payload_bytes = BTreeMap::new();
+        for binding in [
+            &input_layernorm,
+            &mixer.q_proj,
+            &mixer.k_proj,
+            &mixer.v_proj,
+            &mixer.q_norm,
+            &mixer.k_norm,
+            &mixer.o_proj,
+        ] {
+            let header = self.direct_tensor_header(&binding.name)?;
+            direct_packed_payload_bytes.insert(binding.name.clone(), header.payload_bytes);
+        }
+        let layout = Qwen80CanonicalGqaLayout::source_exact();
+        layout.validate()?;
+        let contract = Qwen80CanonicalGqaOperatorContract {
+            manifest_seal_sha256: self.manifest_seal().to_owned(),
+            source_revision: self.config.source_revision.clone(),
+            layer,
+            full_attention_state_slot,
+            input_layernorm,
+            mixer,
+            layout: layout.clone(),
+            minimum_device_resources: Qwen80CanonicalGqaDeviceResources::minimum(
+                &layout,
+                full_attention_state_slot,
+                direct_packed_payload_bytes,
+            )?,
+        };
+        contract.validate_against_catalog(self)?;
+        Ok(contract)
+    }
+
+    /// Artifact-bound post-GQA MoE contract for one full-attention layer.
+    /// Fixed bodies are verified now; routed experts remain deferred until a
+    /// source top-10 route exists.
+    pub fn canonical_gqa_moe_operator_contract(
+        &self,
+        layer: usize,
+    ) -> Result<Qwen80CanonicalGqaMoEOperatorContract> {
+        let mixer = self.canonical_gqa_operator_contract(layer)?;
+        let prefix = format!("model.layers.{layer}");
+        let contract = Qwen80CanonicalGqaMoEOperatorContract {
+            manifest_seal_sha256: self.manifest_seal().to_owned(),
+            source_revision: self.config.source_revision.clone(),
+            mixer,
+            post_attention_layernorm: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.post_attention_layernorm.weight"),
+                &[QWEN80_HIDDEN],
+            )?,
+            router: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.mlp.gate.weight"),
+                &[QWEN80_EXPERTS, QWEN80_HIDDEN],
+            )?,
+            shared_gate_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.mlp.shared_expert.gate_proj.weight"),
+                &[QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN],
+            )?,
+            shared_up_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.mlp.shared_expert.up_proj.weight"),
+                &[QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN],
+            )?,
+            shared_down_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.mlp.shared_expert.down_proj.weight"),
+                &[QWEN80_HIDDEN, QWEN80_SHARED_EXPERT_INTERMEDIATE],
+            )?,
+            shared_expert_gate: Qwen80CompleteHybridDecoderPlan::binding(
+                self,
+                format!("{prefix}.mlp.shared_expert_gate.weight"),
+                &[1, QWEN80_HIDDEN],
+            )?,
+        };
+        contract.validate_against_catalog(self)?;
+        Ok(contract)
+    }
+}
+
+/// Source-exact GQA mixer layout (16 query heads / 2 KV heads / head_dim 256 /
+/// partial RoPE 64).  Shared by the CPU oracle and the same-runtime encode.
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+pub struct Qwen80CanonicalGqaLayout {
+    pub hidden_elements: usize,
+    pub query_heads: usize,
+    pub key_value_heads: usize,
+    pub head_dim: usize,
+    pub rotary_dim: usize,
+    pub query_dim: usize,
+    pub kv_dim: usize,
+    pub q_proj_rows: usize,
+    pub group_size: usize,
+    pub rope_theta_bits: u32,
+    pub rms_eps_bits: u32,
+}
+
+impl Qwen80CanonicalGqaLayout {
+    pub fn source_exact() -> Self {
+        let query_dim = QWEN80_FULL_ATTN_HEADS * QWEN80_FULL_ATTN_HEAD_DIM;
+        let kv_dim = QWEN80_FULL_ATTN_KV_HEADS * QWEN80_FULL_ATTN_HEAD_DIM;
+        Self {
+            hidden_elements: QWEN80_HIDDEN,
+            query_heads: QWEN80_FULL_ATTN_HEADS,
+            key_value_heads: QWEN80_FULL_ATTN_KV_HEADS,
+            head_dim: QWEN80_FULL_ATTN_HEAD_DIM,
+            rotary_dim: (QWEN80_FULL_ATTN_HEAD_DIM as f32 * QWEN80_PARTIAL_ROTARY_FACTOR) as usize,
+            query_dim,
+            kv_dim,
+            q_proj_rows: query_dim * 2,
+            group_size: QWEN80_GROUP_SIZE,
+            rope_theta_bits: QWEN80_ROPE_THETA.to_bits(),
+            rms_eps_bits: QWEN80_RMS_EPS.to_bits(),
+        }
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        let expected = Self::source_exact();
+        if self != &expected {
+            return Err(model_error(format!(
+                "Qwen80 GQA layout drifted from source-exact geometry (observed query_heads={}, kv_heads={}, head_dim={}, rotary_dim={}; expected {}, {}, {}, {})",
+                self.query_heads,
+                self.key_value_heads,
+                self.head_dim,
+                self.rotary_dim,
+                expected.query_heads,
+                expected.key_value_heads,
+                expected.head_dim,
+                expected.rotary_dim
+            )));
+        }
+        if self.rotary_dim != 64 {
+            return Err(model_error(format!(
+                "Qwen80 GQA rotary_dim observed={}, expected=64",
+                self.rotary_dim
+            )));
+        }
+        Ok(())
+    }
+
+    pub fn elements_per_position(&self) -> Result<usize> {
+        self.kv_dim
+            .checked_mul(1)
+            .ok_or_else(|| model_error("GQA elements_per_position overflowed"))
+    }
+}
+
+/// Minimum device resources for one exclusive GQA KV state slot inside the
+/// shared full-attention key/value arenas.
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+pub struct Qwen80CanonicalGqaDeviceResources {
+    pub full_attention_state_slot: usize,
+    pub key_cache_offset_elements: usize,
+    pub value_cache_offset_elements: usize,
+    pub key_cache_capacity_elements: usize,
+    pub value_cache_capacity_elements: usize,
+    pub max_seq_len: usize,
+    pub direct_packed_payload_bytes: BTreeMap<String, usize>,
+}
+
+impl Qwen80CanonicalGqaDeviceResources {
+    /// Capacity is sized for one source-token position (max_seq_len=1) when
+    /// the multi-layer host runs with that option; offsets scale with the
+    /// runtime's actual max_seq_len at encode time.
+    pub fn minimum(
+        layout: &Qwen80CanonicalGqaLayout,
+        full_attention_state_slot: usize,
+        direct_packed_payload_bytes: BTreeMap<String, usize>,
+    ) -> Result<Self> {
+        layout.validate()?;
+        // Slot stride for max_seq_len=1 source-token capture: one KV row.
+        let per_position = layout.kv_dim;
+        let key_cache_offset_elements = full_attention_state_slot
+            .checked_mul(per_position)
+            .ok_or_else(|| model_error("GQA key cache offset overflowed"))?;
+        Ok(Self {
+            full_attention_state_slot,
+            key_cache_offset_elements,
+            value_cache_offset_elements: key_cache_offset_elements,
+            key_cache_capacity_elements: per_position,
+            value_cache_capacity_elements: per_position,
+            max_seq_len: 1,
+            direct_packed_payload_bytes,
+        })
+    }
+
+    /// Recompute offsets for a runtime with an arbitrary max_seq_len.
+    pub fn for_max_seq_len(
+        layout: &Qwen80CanonicalGqaLayout,
+        full_attention_state_slot: usize,
+        max_seq_len: usize,
+        direct_packed_payload_bytes: BTreeMap<String, usize>,
+    ) -> Result<Self> {
+        layout.validate()?;
+        if max_seq_len == 0 {
+            return Err(model_error(
+                "GQA device resources refuse max_seq_len=0 (observed=0, expected>=1)",
+            ));
+        }
+        let slot_stride = layout
+            .kv_dim
+            .checked_mul(max_seq_len)
+            .ok_or_else(|| model_error("GQA slot stride overflowed"))?;
+        let offset = full_attention_state_slot
+            .checked_mul(slot_stride)
+            .ok_or_else(|| model_error("GQA slot offset overflowed"))?;
+        Ok(Self {
+            full_attention_state_slot,
+            key_cache_offset_elements: offset,
+            value_cache_offset_elements: offset,
+            key_cache_capacity_elements: slot_stride,
+            value_cache_capacity_elements: slot_stride,
+            max_seq_len,
+            direct_packed_payload_bytes,
+        })
+    }
+}
+
+/// Strict source/artifact contract for one gated GQA mixer decode step.
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+pub struct Qwen80CanonicalGqaOperatorContract {
+    pub manifest_seal_sha256: String,
+    pub source_revision: String,
+    pub layer: usize,
+    pub full_attention_state_slot: usize,
+    pub input_layernorm: Qwen80PackedTensorBinding,
+    pub mixer: Qwen80FullAttentionLayerBindings,
+    pub layout: Qwen80CanonicalGqaLayout,
+    pub minimum_device_resources: Qwen80CanonicalGqaDeviceResources,
+}
+
+impl Qwen80CanonicalGqaOperatorContract {
+    pub fn validate(&self) -> Result<()> {
+        self.layout.validate()?;
+        if self.manifest_seal_sha256.len() != 64 || self.source_revision.is_empty() {
+            return Err(model_error(
+                "Qwen80 canonical GQA contract has no complete artifact identity",
+            ));
+        }
+        if !matches!(qwen80_layer_kind(self.layer)?, Qwen80LayerKind::FullAttention)
+            || self.full_attention_state_slot != self.layer / QWEN80_FULL_ATTENTION_INTERVAL
+        {
+            return Err(model_error(format!(
+                "Qwen80 canonical GQA contract layer {} / state slot {} is not on the 3:1 source schedule (expected slot={})",
+                self.layer,
+                self.full_attention_state_slot,
+                self.layer / QWEN80_FULL_ATTENTION_INTERVAL
+            )));
+        }
+        let prefix = format!("model.layers.{}", self.layer);
+        let expected = [
+            (
+                "input_layernorm",
+                &self.input_layernorm,
+                vec![QWEN80_HIDDEN],
+                "input_layernorm.weight",
+            ),
+            (
+                "q_proj",
+                &self.mixer.q_proj,
+                vec![self.layout.q_proj_rows, QWEN80_HIDDEN],
+                "self_attn.q_proj.weight",
+            ),
+            (
+                "k_proj",
+                &self.mixer.k_proj,
+                vec![self.layout.kv_dim, QWEN80_HIDDEN],
+                "self_attn.k_proj.weight",
+            ),
+            (
+                "v_proj",
+                &self.mixer.v_proj,
+                vec![self.layout.kv_dim, QWEN80_HIDDEN],
+                "self_attn.v_proj.weight",
+            ),
+            (
+                "q_norm",
+                &self.mixer.q_norm,
+                vec![QWEN80_FULL_ATTN_HEAD_DIM],
+                "self_attn.q_norm.weight",
+            ),
+            (
+                "k_norm",
+                &self.mixer.k_norm,
+                vec![QWEN80_FULL_ATTN_HEAD_DIM],
+                "self_attn.k_norm.weight",
+            ),
+            (
+                "o_proj",
+                &self.mixer.o_proj,
+                vec![QWEN80_HIDDEN, self.layout.query_dim],
+                "self_attn.o_proj.weight",
+            ),
+        ];
+        for (label, binding, shape, suffix) in expected {
+            if binding.group_size != QWEN80_GROUP_SIZE || binding.shape != shape {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA {label} binding geometry differs from source (observed shape={:?}/group={}, expected {:?}/{})",
+                    binding.shape, binding.group_size, shape, QWEN80_GROUP_SIZE
+                )));
+            }
+            if binding.name != format!("{prefix}.{suffix}") {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA {label} binding is outside source layer {} (observed name={}, expected={prefix}.{suffix})",
+                    self.layer, binding.name
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_against_catalog(&self, catalog: &Qwen80CompleteArtifactCatalog) -> Result<()> {
+        self.validate()?;
+        if catalog.manifest_seal() != self.manifest_seal_sha256
+            || catalog.config.source_revision != self.source_revision
+        {
+            return Err(model_error(
+                "Qwen80 canonical GQA contract does not match the admitted catalog identity",
+            ));
+        }
+        for binding in [
+            &self.input_layernorm,
+            &self.mixer.q_proj,
+            &self.mixer.k_proj,
+            &self.mixer.v_proj,
+            &self.mixer.q_norm,
+            &self.mixer.k_norm,
+            &self.mixer.o_proj,
+        ] {
+            let header = catalog.direct_tensor_header(&binding.name)?;
+            if header.shape != binding.shape || header.group_size != binding.group_size {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA admitted header drifted for {:?}",
+                    binding.name
+                )));
+            }
+            let payload = catalog.verified_direct_tensor_payload(&binding.name)?;
+            if payload.len() != header.payload_bytes {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA compact payload length drifted for {:?}",
+                    binding.name
+                )));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// GQA mixer + post-attention MoE fixed bodies for one full-attention layer.
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+pub struct Qwen80CanonicalGqaMoEOperatorContract {
+    pub manifest_seal_sha256: String,
+    pub source_revision: String,
+    pub mixer: Qwen80CanonicalGqaOperatorContract,
+    pub post_attention_layernorm: Qwen80PackedTensorBinding,
+    pub router: Qwen80PackedTensorBinding,
+    pub shared_gate_proj: Qwen80PackedTensorBinding,
+    pub shared_up_proj: Qwen80PackedTensorBinding,
+    pub shared_down_proj: Qwen80PackedTensorBinding,
+    pub shared_expert_gate: Qwen80PackedTensorBinding,
+}
+
+impl Qwen80CanonicalGqaMoEOperatorContract {
+    fn fixed_moe_bindings(&self) -> [&Qwen80PackedTensorBinding; 6] {
+        [
+            &self.post_attention_layernorm,
+            &self.router,
+            &self.shared_gate_proj,
+            &self.shared_up_proj,
+            &self.shared_down_proj,
+            &self.shared_expert_gate,
+        ]
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        self.mixer.validate()?;
+        if self.manifest_seal_sha256 != self.mixer.manifest_seal_sha256
+            || self.source_revision != self.mixer.source_revision
+        {
+            return Err(model_error(
+                "Qwen80 canonical GQA MoE contract drifted from its GQA mixer artifact identity",
+            ));
+        }
+        let prefix = format!("model.layers.{}", self.mixer.layer);
+        let expected = [
+            (
+                "post_attention_layernorm",
+                &self.post_attention_layernorm,
+                vec![QWEN80_HIDDEN],
+                "post_attention_layernorm.weight",
+            ),
+            (
+                "router",
+                &self.router,
+                vec![QWEN80_EXPERTS, QWEN80_HIDDEN],
+                "mlp.gate.weight",
+            ),
+            (
+                "shared_gate_proj",
+                &self.shared_gate_proj,
+                vec![QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN],
+                "mlp.shared_expert.gate_proj.weight",
+            ),
+            (
+                "shared_up_proj",
+                &self.shared_up_proj,
+                vec![QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN],
+                "mlp.shared_expert.up_proj.weight",
+            ),
+            (
+                "shared_down_proj",
+                &self.shared_down_proj,
+                vec![QWEN80_HIDDEN, QWEN80_SHARED_EXPERT_INTERMEDIATE],
+                "mlp.shared_expert.down_proj.weight",
+            ),
+            (
+                "shared_expert_gate",
+                &self.shared_expert_gate,
+                vec![1, QWEN80_HIDDEN],
+                "mlp.shared_expert_gate.weight",
+            ),
+        ];
+        for (label, binding, shape, suffix) in expected {
+            if binding.group_size != QWEN80_GROUP_SIZE || binding.shape != shape {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA MoE {label} binding geometry differs from source"
+                )));
+            }
+            if binding.name != format!("{prefix}.{suffix}") {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA MoE {label} binding is outside source layer {}",
+                    self.mixer.layer
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_against_catalog(&self, catalog: &Qwen80CompleteArtifactCatalog) -> Result<()> {
+        self.validate()?;
+        self.mixer.validate_against_catalog(catalog)?;
+        if catalog.manifest_seal() != self.manifest_seal_sha256
+            || catalog.config.source_revision != self.source_revision
+        {
+            return Err(model_error(
+                "Qwen80 canonical GQA MoE contract does not match the admitted catalog identity",
+            ));
+        }
+        for binding in self.fixed_moe_bindings() {
+            let header = catalog.direct_tensor_header(&binding.name)?;
+            if header.shape != binding.shape || header.group_size != binding.group_size {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA MoE admitted header drifted for {:?}",
+                    binding.name
+                )));
+            }
+            let payload = catalog.verified_direct_tensor_payload(&binding.name)?;
+            if payload.len() != header.payload_bytes {
+                return Err(model_error(format!(
+                    "Qwen80 canonical GQA MoE compact payload length drifted for {:?}",
+                    binding.name
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    fn routed_expert_bindings(
+        &self,
+        catalog: &Qwen80CompleteArtifactCatalog,
+        route: &Qwen80RouteSelection,
+    ) -> Result<Vec<Qwen80ExpertBindings>> {
+        self.validate_against_catalog(catalog)?;
+        route.validate()?;
+        let mut bindings = Vec::with_capacity(QWEN80_TOP_K);
+        for &expert_id in &route.ids {
+            let expert = expert_id as usize;
+            let prefix = format!("model.layers.{}.mlp.experts.{expert}", self.mixer.layer);
+            let expert_bindings = Qwen80ExpertBindings {
+                expert,
+                gate_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                    catalog,
+                    format!("{prefix}.gate_proj.weight"),
+                    &[QWEN80_MOE_INTERMEDIATE, QWEN80_HIDDEN],
+                )?,
+                up_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                    catalog,
+                    format!("{prefix}.up_proj.weight"),
+                    &[QWEN80_MOE_INTERMEDIATE, QWEN80_HIDDEN],
+                )?,
+                down_proj: Qwen80CompleteHybridDecoderPlan::binding(
+                    catalog,
+                    format!("{prefix}.down_proj.weight"),
+                    &[QWEN80_HIDDEN, QWEN80_MOE_INTERMEDIATE],
+                )?,
+            };
+            for binding in [
+                &expert_bindings.gate_proj,
+                &expert_bindings.up_proj,
+                &expert_bindings.down_proj,
+            ] {
+                let header = catalog.direct_tensor_header(&binding.name)?;
+                let payload = catalog.verified_direct_tensor_payload(&binding.name)?;
+                if header.shape != binding.shape
+                    || header.group_size != binding.group_size
+                    || payload.len() != header.payload_bytes
+                {
+                    return Err(model_error(format!(
+                        "Qwen80 GQA routed expert {expert} compact payload/header drifted for {:?}",
+                        binding.name
+                    )));
+                }
+            }
+            bindings.push(expert_bindings);
+        }
+        if bindings.len() != QWEN80_TOP_K {
+            return Err(model_error(format!(
+                "Qwen80 GQA routed-expert binding count is not source top-10 (observed={}, expected={QWEN80_TOP_K})",
+                bindings.len()
+            )));
+        }
+        Ok(bindings)
+    }
+}
+
+/// Zeroed exclusive GQA KV state for one decode position.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Qwen80CanonicalGqaLayerCpuState {
+    pub key_cache: Vec<f32>,
+    pub value_cache: Vec<f32>,
+}
+
+impl Qwen80CanonicalGqaLayerCpuState {
+    pub fn zeroed_for_positions(positions: usize, kv_dim: usize) -> Result<Self> {
+        if positions == 0 {
+            return Err(model_error(
+                "GQA CPU state refuses positions=0 (observed=0, expected>=1)",
+            ));
+        }
+        let elements = positions
+            .checked_mul(kv_dim)
+            .ok_or_else(|| model_error("GQA CPU state element count overflowed"))?;
+        Ok(Self {
+            key_cache: vec![0.0; elements],
+            value_cache: vec![0.0; elements],
+        })
+    }
+}
+
+/// CPU input for one GQA mixer step: hidden + exclusive zeroed KV slot.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Qwen80CanonicalGqaLayerCpuInput {
+    pub hidden: Vec<f32>,
+    pub state: Qwen80CanonicalGqaLayerCpuState,
+    pub position: usize,
+}
+
+impl Qwen80CanonicalGqaLayerCpuInput {
+    pub fn with_zero_state_at_position(hidden: Vec<f32>, position: usize) -> Result<Self> {
+        let layout = Qwen80CanonicalGqaLayout::source_exact();
+        layout.validate()?;
+        // Capacity covers positions 0..=position inclusive.
+        let positions = position
+            .checked_add(1)
+            .ok_or_else(|| model_error("GQA CPU input position overflowed"))?;
+        Ok(Self {
+            hidden,
+            state: Qwen80CanonicalGqaLayerCpuState::zeroed_for_positions(positions, layout.kv_dim)?,
+            position,
+        })
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        let layout = Qwen80CanonicalGqaLayout::source_exact();
+        if self.hidden.len() != QWEN80_HIDDEN || self.hidden.iter().any(|v| !v.is_finite()) {
+            return Err(model_error(format!(
+                "GQA CPU input hidden len observed={}, expected={QWEN80_HIDDEN} finite values",
+                self.hidden.len()
+            )));
+        }
+        let need = (self.position + 1)
+            .checked_mul(layout.kv_dim)
+            .ok_or_else(|| model_error("GQA CPU input cache need overflowed"))?;
+        if self.state.key_cache.len() < need || self.state.value_cache.len() < need {
+            return Err(model_error(format!(
+                "GQA CPU input cache capacity observed key={}, value={}, expected>={need} for position={}",
+                self.state.key_cache.len(),
+                self.state.value_cache.len(),
+                self.position
+            )));
+        }
+        Ok(())
+    }
+}
+
+/// GQA mixer CPU oracle result through first residual (and next KV state).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Qwen80CanonicalGqaLayerCpuOracleResult {
+    pub layer: usize,
+    pub full_attention_state_slot: usize,
+    pub position: usize,
+    pub input_rms_norm_output: Vec<f32>,
+    pub q_projection: Vec<f32>,
+    pub k_projection: Vec<f32>,
+    pub v_projection: Vec<f32>,
+    pub query: Vec<f32>,
+    pub key_row: Vec<f32>,
+    pub value_row: Vec<f32>,
+    pub attention: Vec<f32>,
+    pub gated_attention: Vec<f32>,
+    pub mixer_output: Vec<f32>,
+    pub mixer_residual_output: Vec<f32>,
+    pub next_state: Qwen80CanonicalGqaLayerCpuState,
+    pub source_algorithm_boundary: String,
+}
+
+/// Full GQA+MoE layer CPU oracle through second residual.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Qwen80CanonicalGqaMoECpuOracleResult {
+    pub mixer: Qwen80CanonicalGqaLayerCpuOracleResult,
+    pub direct_packed_post_attention_layernorm_tensor: String,
+    pub direct_packed_router_tensor: String,
+    pub direct_packed_shared_gate_proj_tensor: String,
+    pub direct_packed_shared_up_proj_tensor: String,
+    pub direct_packed_shared_down_proj_tensor: String,
+    pub direct_packed_shared_expert_gate_tensor: String,
+    pub post_attention_rms_norm_output: Vec<f32>,
+    pub router_logits: Vec<f32>,
+    pub route: Qwen80RouteSelection,
+    pub routed_experts: Vec<Qwen80RoutedExpertCpuOracleResult>,
+    pub routed_expert_sum: Vec<f32>,
+    pub shared_gate_projection: Vec<f32>,
+    pub shared_up_projection: Vec<f32>,
+    pub shared_gated_up_product: Vec<f32>,
+    pub shared_expert_output: Vec<f32>,
+    pub shared_expert_gate_logit: f32,
+    pub shared_expert_gate_value: f32,
+    pub shared_gated_output: Vec<f32>,
+    pub moe_output: Vec<f32>,
+    pub layer_output: Vec<f32>,
+    pub source_algorithm_boundary: String,
 }
 
 /// State for one canonical source-scheduled Qwen3-Next Gated DeltaNet mixer
@@ -5778,10 +6481,11 @@ impl Qwen80CompleteArtifactCatalog {
         Ok(bundle)
     }
 
-    /// Return the only legal source/state boundary for a DeltaNet
-    /// first-residual buffer.  The returned contract is intentionally not an
-    /// execution receipt and cannot substitute for future buffer-content
-    /// parity evidence.
+    /// Return the only legal source/state boundary for a mixer first-residual
+    /// buffer (DeltaNet or GQA).  The returned contract is intentionally not
+    /// an execution receipt and cannot substitute for future buffer-content
+    /// parity evidence.  `linear_state_slot` on the binding is the domain
+    /// slot index (DeltaNet linear slot or GQA full-attention slot).
     pub fn first_residual_device_binding(
         &self,
         layer_index: usize,
@@ -5789,18 +6493,34 @@ impl Qwen80CompleteArtifactCatalog {
         let plan = self.complete_hybrid_decoder_plan(1)?;
         let layer = plan.layers.get(layer_index).ok_or_else(|| {
             model_error(format!(
-                "first-residual device binding layer {layer_index} is outside hybrid plan"
+                "first-residual device binding layer {layer_index} is outside hybrid plan (observed plan_len={})",
+                plan.layers.len()
             ))
         })?;
-        let linear_state_slot = match (&layer.kind, &layer.mixer, layer.linear_state_slot) {
+        let domain_state_slot = match (
+            &layer.kind,
+            &layer.mixer,
+            layer.linear_state_slot,
+            layer.full_attention_state_slot,
+        ) {
             (
                 Qwen80LayerKind::LinearAttention,
                 Qwen80HybridMixerBindings::LinearDeltaNet(_),
                 Some(slot),
+                None,
+            ) => slot,
+            (
+                Qwen80LayerKind::FullAttention,
+                Qwen80HybridMixerBindings::FullAttention(_),
+                None,
+                Some(slot),
             ) => slot,
             _ => {
                 return Err(model_error(format!(
-                    "first-residual device binding layer {layer_index} is not a DeltaNet mixer"
+                    "first-residual device binding layer {layer_index} has unexpected mixer/state slot (observed kind={}, linear_slot={:?}, attention_slot={:?})",
+                    layer.kind.as_source_name(),
+                    layer.linear_state_slot,
+                    layer.full_attention_state_slot
                 )))
             }
         };
@@ -5808,7 +6528,7 @@ impl Qwen80CompleteArtifactCatalog {
             manifest_seal_sha256: self.manifest_seal().to_owned(),
             source_revision: self.config.source_revision.clone(),
             layer: layer.layer,
-            linear_state_slot,
+            linear_state_slot: domain_state_slot,
             elements: QWEN80_HIDDEN,
             same_command_graph_required: true,
         })
@@ -6049,6 +6769,175 @@ fn source_qwen80_residual_rms_norm(input: &[f32], weight: &[f32]) -> Result<Vec<
         ));
     }
     Ok(output)
+}
+
+/// Deinterleave Qwen3-Next q_proj layout `[head][query(256), gate(256)]` into
+/// the query half only.
+fn qwen80_gqa_query_from_interleaved_q_projection(
+    q_projection: &[f32],
+    layout: &Qwen80CanonicalGqaLayout,
+) -> Result<Vec<f32>> {
+    if q_projection.len() != layout.q_proj_rows {
+        return Err(model_error(format!(
+            "GQA q_proj has {} outputs, expected {}",
+            q_projection.len(),
+            layout.q_proj_rows
+        )));
+    }
+    let mut query = vec![0.0f32; layout.query_dim];
+    for head in 0..layout.query_heads {
+        let source = head * 2 * layout.head_dim;
+        let destination = head * layout.head_dim;
+        query[destination..destination + layout.head_dim]
+            .copy_from_slice(&q_projection[source..source + layout.head_dim]);
+    }
+    Ok(query)
+}
+
+/// Per-head residual RMSNorm `(x * rsqrt(mean(x^2)+eps) * (1+w))` then
+/// non-interleaved rotate_half RoPE on the first `rotary_dim` dimensions.
+fn qwen80_gqa_source_norm_rope(
+    raw: &[f32],
+    weights: &[f32],
+    heads: usize,
+    head_dim: usize,
+    rotary_dim: usize,
+    sequence_slot: usize,
+    label: &str,
+) -> Result<Vec<f32>> {
+    if raw.len() != heads * head_dim || weights.len() != head_dim || rotary_dim > head_dim {
+        return Err(model_error(format!(
+            "{label} received raw={} weights={} for heads={heads}/head_dim={head_dim}/rotary={rotary_dim}",
+            raw.len(),
+            weights.len()
+        )));
+    }
+    let mut output = vec![0.0f32; raw.len()];
+    for head in 0..heads {
+        let base = head * head_dim;
+        let variance = raw[base..base + head_dim]
+            .iter()
+            .map(|value| value * value)
+            .sum::<f32>()
+            / head_dim as f32;
+        let inverse_rms = (variance + QWEN80_RMS_EPS).sqrt().recip();
+        for dimension in 0..head_dim {
+            output[base + dimension] =
+                raw[base + dimension] * inverse_rms * (1.0 + weights[dimension]);
+        }
+        let before = output[base..base + rotary_dim].to_vec();
+        for dimension in 0..(rotary_dim / 2) {
+            let inverse_frequency =
+                QWEN80_ROPE_THETA.powf(-2.0 * dimension as f32 / rotary_dim as f32);
+            let angle = sequence_slot as f32 * inverse_frequency;
+            let cosine = angle.cos();
+            let sine = angle.sin();
+            output[base + dimension] =
+                before[dimension] * cosine - before[dimension + rotary_dim / 2] * sine;
+            output[base + dimension + rotary_dim / 2] =
+                before[dimension + rotary_dim / 2] * cosine + before[dimension] * sine;
+        }
+    }
+    if output.iter().any(|value| !value.is_finite()) {
+        return Err(model_error(format!(
+            "{label} produced a non-finite qk-norm/RoPE vector"
+        )));
+    }
+    Ok(output)
+}
+
+/// Causal GQA over the active prefix of a `[seq][kv_heads][head_dim]` cache.
+fn qwen80_gqa_causal_attention(
+    query: &[f32],
+    key_cache: &[f32],
+    value_cache: &[f32],
+    sequence_length: usize,
+    layout: &Qwen80CanonicalGqaLayout,
+) -> Result<Vec<f32>> {
+    if query.len() != layout.query_dim
+        || key_cache.len() < sequence_length * layout.kv_dim
+        || value_cache.len() < sequence_length * layout.kv_dim
+        || sequence_length == 0
+    {
+        return Err(model_error(format!(
+            "GQA causal attention invalid geometry (query={}, key_cache={}, value_cache={}, seq={sequence_length}; expected query={}, cache>={}, seq>=1)",
+            query.len(),
+            key_cache.len(),
+            value_cache.len(),
+            layout.query_dim,
+            sequence_length * layout.kv_dim
+        )));
+    }
+    let group = layout.query_heads / layout.key_value_heads;
+    let scale = (layout.head_dim as f32).sqrt().recip();
+    let mut output = vec![0.0f32; layout.query_dim];
+    for head in 0..layout.query_heads {
+        let query_base = head * layout.head_dim;
+        let kv_head = head / group;
+        let mut scores = Vec::with_capacity(sequence_length);
+        for token in 0..sequence_length {
+            let cache_base = (token * layout.key_value_heads + kv_head) * layout.head_dim;
+            let dot = (0..layout.head_dim)
+                .map(|dimension| {
+                    query[query_base + dimension] * key_cache[cache_base + dimension]
+                })
+                .sum::<f32>();
+            scores.push(dot * scale);
+        }
+        let maximum = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+        let normalizer = scores
+            .iter()
+            .map(|score| (score - maximum).exp())
+            .sum::<f32>();
+        if !normalizer.is_finite() || normalizer <= 0.0 {
+            return Err(model_error(format!(
+                "GQA causal attention invalid softmax at head {head} (normalizer={normalizer})"
+            )));
+        }
+        for (token, score) in scores.iter().enumerate() {
+            let probability = (*score - maximum).exp() / normalizer;
+            let cache_base = (token * layout.key_value_heads + kv_head) * layout.head_dim;
+            for dimension in 0..layout.head_dim {
+                output[query_base + dimension] +=
+                    probability * value_cache[cache_base + dimension];
+            }
+        }
+    }
+    if output.iter().any(|value| !value.is_finite()) {
+        return Err(model_error("GQA causal attention produced non-finite output"));
+    }
+    Ok(output)
+}
+
+/// Apply the per-head second half of q_proj as a sigmoid gate after attention.
+fn qwen80_gqa_apply_sigmoid_gate(
+    attention: &[f32],
+    q_projection: &[f32],
+    layout: &Qwen80CanonicalGqaLayout,
+) -> Result<Vec<f32>> {
+    if attention.len() != layout.query_dim || q_projection.len() != layout.q_proj_rows {
+        return Err(model_error(format!(
+            "GQA sigmoid gate geometry invalid (attention={}, q_proj={}; expected {}, {})",
+            attention.len(),
+            q_projection.len(),
+            layout.query_dim,
+            layout.q_proj_rows
+        )));
+    }
+    let mut gated = vec![0.0f32; layout.query_dim];
+    for head in 0..layout.query_heads {
+        let dest = head * layout.head_dim;
+        let gate_source = head * 2 * layout.head_dim + layout.head_dim;
+        for dimension in 0..layout.head_dim {
+            let gate = q_projection[gate_source + dimension];
+            let sigmoid = 1.0 / (1.0 + (-gate).exp());
+            gated[dest + dimension] = attention[dest + dimension] * sigmoid;
+        }
+    }
+    if gated.iter().any(|value| !value.is_finite()) {
+        return Err(model_error("GQA sigmoid gate produced non-finite output"));
+    }
+    Ok(gated)
 }
 
 fn source_qwen80_gated_rms_norm(
@@ -6577,6 +7466,309 @@ impl Qwen80CompleteArtifactCatalog {
         )
     }
 
+    /// CPU oracle for one source-scheduled GQA mixer step (through first residual).
+    pub fn execute_canonical_gqa_cpu_oracle(
+        &self,
+        contract: &Qwen80CanonicalGqaOperatorContract,
+        input: &Qwen80CanonicalGqaLayerCpuInput,
+    ) -> Result<Qwen80CanonicalGqaLayerCpuOracleResult> {
+        self.execute_canonical_gqa_cpu_impl(
+            contract,
+            input,
+            Qwen80CpuPackedReadMode::StreamingDirect,
+        )
+    }
+
+    /// CPU oracle for one source-scheduled GQA full layer (mixer + MoE through second residual).
+    pub fn execute_canonical_gqa_moe_cpu_oracle(
+        &self,
+        contract: &Qwen80CanonicalGqaMoEOperatorContract,
+        input: &Qwen80CanonicalGqaLayerCpuInput,
+    ) -> Result<Qwen80CanonicalGqaMoECpuOracleResult> {
+        self.execute_canonical_gqa_moe_cpu_impl(
+            contract,
+            input,
+            Qwen80CpuPackedReadMode::StreamingDirect,
+        )
+    }
+
+    fn execute_canonical_gqa_cpu_impl(
+        &self,
+        contract: &Qwen80CanonicalGqaOperatorContract,
+        input: &Qwen80CanonicalGqaLayerCpuInput,
+        mode: Qwen80CpuPackedReadMode,
+    ) -> Result<Qwen80CanonicalGqaLayerCpuOracleResult> {
+        input.validate()?;
+        contract.validate_against_catalog(self)?;
+        let layout = &contract.layout;
+        let position = input.position;
+        let input_layernorm = Qwen80CpuPackedTensor::from_binding(self, &contract.input_layernorm)?;
+        let q_proj = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.q_proj)?;
+        let k_proj = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.k_proj)?;
+        let v_proj = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.v_proj)?;
+        let q_norm = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.q_norm)?;
+        let k_norm = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.k_norm)?;
+        let o_proj = Qwen80CpuPackedTensor::from_binding(self, &contract.mixer.o_proj)?;
+
+        let norm_weight = input_layernorm.vector(QWEN80_HIDDEN, mode)?;
+        let input_rms_norm_output = source_qwen80_residual_rms_norm(&input.hidden, &norm_weight)?;
+        let q_projection = q_proj.matvec(
+            &input_rms_norm_output,
+            layout.q_proj_rows,
+            QWEN80_HIDDEN,
+            mode,
+        )?;
+        let k_projection =
+            k_proj.matvec(&input_rms_norm_output, layout.kv_dim, QWEN80_HIDDEN, mode)?;
+        let v_projection =
+            v_proj.matvec(&input_rms_norm_output, layout.kv_dim, QWEN80_HIDDEN, mode)?;
+
+        let q_norm_weight = q_norm.vector(layout.head_dim, mode)?;
+        let k_norm_weight = k_norm.vector(layout.head_dim, mode)?;
+        let query_raw = qwen80_gqa_query_from_interleaved_q_projection(&q_projection, layout)?;
+        let query = qwen80_gqa_source_norm_rope(
+            &query_raw,
+            &q_norm_weight,
+            layout.query_heads,
+            layout.head_dim,
+            layout.rotary_dim,
+            position,
+            "GQA q_norm + partial RoPE",
+        )?;
+        let key_row = qwen80_gqa_source_norm_rope(
+            &k_projection,
+            &k_norm_weight,
+            layout.key_value_heads,
+            layout.head_dim,
+            layout.rotary_dim,
+            position,
+            "GQA k_norm + partial RoPE",
+        )?;
+        let value_row = v_projection.clone();
+
+        let mut next_state = input.state.clone();
+        let cache_start = position
+            .checked_mul(layout.kv_dim)
+            .ok_or_else(|| model_error("GQA cache start offset overflowed"))?;
+        let cache_end = cache_start
+            .checked_add(layout.kv_dim)
+            .ok_or_else(|| model_error("GQA cache end offset overflowed"))?;
+        next_state.key_cache[cache_start..cache_end].copy_from_slice(&key_row);
+        next_state.value_cache[cache_start..cache_end].copy_from_slice(&value_row);
+
+        let sequence_length = position
+            .checked_add(1)
+            .ok_or_else(|| model_error("GQA sequence length overflowed"))?;
+        let attention = qwen80_gqa_causal_attention(
+            &query,
+            &next_state.key_cache,
+            &next_state.value_cache,
+            sequence_length,
+            layout,
+        )?;
+        let gated_attention =
+            qwen80_gqa_apply_sigmoid_gate(&attention, &q_projection, layout)?;
+        let mixer_output =
+            o_proj.matvec(&gated_attention, QWEN80_HIDDEN, layout.query_dim, mode)?;
+        let mixer_residual_output = input
+            .hidden
+            .iter()
+            .zip(&mixer_output)
+            .map(|(&residual, &mixer)| residual + mixer)
+            .collect::<Vec<_>>();
+        if mixer_residual_output.iter().any(|value| !value.is_finite()) {
+            return Err(model_error(
+                "Qwen80 GQA mixer residual produced a non-finite value",
+            ));
+        }
+        Ok(Qwen80CanonicalGqaLayerCpuOracleResult {
+            layer: contract.layer,
+            full_attention_state_slot: contract.full_attention_state_slot,
+            position,
+            input_rms_norm_output,
+            q_projection,
+            k_projection,
+            v_projection,
+            query,
+            key_row,
+            value_row,
+            attention,
+            gated_attention,
+            mixer_output,
+            mixer_residual_output,
+            next_state,
+            source_algorithm_boundary: format!(
+                "layer-{} direct-packed input RMSNorm -> q/k/v projections -> qk-norm + partial RoPE + KV append -> causal GQA -> sigmoid gate -> o projection -> first residual only; MoE/later layers/final norm/lm_head/sampler/feedback/HCLI/TPS are absent",
+                contract.layer
+            ),
+        })
+    }
+
+    fn execute_canonical_gqa_moe_cpu_impl(
+        &self,
+        contract: &Qwen80CanonicalGqaMoEOperatorContract,
+        input: &Qwen80CanonicalGqaLayerCpuInput,
+        mode: Qwen80CpuPackedReadMode,
+    ) -> Result<Qwen80CanonicalGqaMoECpuOracleResult> {
+        input.validate()?;
+        contract.validate_against_catalog(self)?;
+        let mixer = self.execute_canonical_gqa_cpu_impl(&contract.mixer, input, mode)?;
+
+        let post_attention_layernorm =
+            Qwen80CpuPackedTensor::from_binding(self, &contract.post_attention_layernorm)?;
+        let router = Qwen80CpuPackedTensor::from_binding(self, &contract.router)?;
+        let shared_gate_proj =
+            Qwen80CpuPackedTensor::from_binding(self, &contract.shared_gate_proj)?;
+        let shared_up_proj = Qwen80CpuPackedTensor::from_binding(self, &contract.shared_up_proj)?;
+        let shared_down_proj =
+            Qwen80CpuPackedTensor::from_binding(self, &contract.shared_down_proj)?;
+        let shared_expert_gate =
+            Qwen80CpuPackedTensor::from_binding(self, &contract.shared_expert_gate)?;
+
+        let post_norm_weight = post_attention_layernorm.vector(QWEN80_HIDDEN, mode)?;
+        let post_attention_rms_norm_output =
+            source_qwen80_residual_rms_norm(&mixer.mixer_residual_output, &post_norm_weight)?;
+
+        let shared_mlp = source_qwen80_mlp(
+            &shared_gate_proj,
+            &shared_up_proj,
+            &shared_down_proj,
+            &post_attention_rms_norm_output,
+            QWEN80_SHARED_EXPERT_INTERMEDIATE,
+            mode,
+        )?;
+        let router_logits = router.matvec(
+            &post_attention_rms_norm_output,
+            QWEN80_EXPERTS,
+            QWEN80_HIDDEN,
+            mode,
+        )?;
+        let route = source_qwen80_topk_router(&router_logits)?;
+        let expert_bindings = contract.routed_expert_bindings(self, &route)?;
+        let mut routed_expert_sum = vec![0.0f32; QWEN80_HIDDEN];
+        let mut routed_experts = Vec::with_capacity(QWEN80_TOP_K);
+        for ((expert, &route_weight), &route_id) in expert_bindings
+            .iter()
+            .zip(route.weights.iter())
+            .zip(route.ids.iter())
+        {
+            if expert.expert != route_id as usize {
+                return Err(model_error(format!(
+                    "Qwen80 GQA routed expert binding no longer matches its source router id (observed expert={}, expected={route_id})",
+                    expert.expert
+                )));
+            }
+            let gate_proj = Qwen80CpuPackedTensor::from_binding(self, &expert.gate_proj)?;
+            let up_proj = Qwen80CpuPackedTensor::from_binding(self, &expert.up_proj)?;
+            let down_proj = Qwen80CpuPackedTensor::from_binding(self, &expert.down_proj)?;
+            let mlp = source_qwen80_mlp(
+                &gate_proj,
+                &up_proj,
+                &down_proj,
+                &post_attention_rms_norm_output,
+                QWEN80_MOE_INTERMEDIATE,
+                mode,
+            )?;
+            let weighted_output = mlp
+                .output
+                .iter()
+                .map(|&value| value * route_weight)
+                .collect::<Vec<_>>();
+            if weighted_output.iter().any(|value| !value.is_finite()) {
+                return Err(model_error(format!(
+                    "Qwen80 GQA routed expert {} produced a non-finite weighted output",
+                    expert.expert
+                )));
+            }
+            for (sum, value) in routed_expert_sum.iter_mut().zip(&weighted_output) {
+                *sum += value;
+            }
+            routed_experts.push(Qwen80RoutedExpertCpuOracleResult {
+                expert: expert.expert,
+                route_weight,
+                direct_packed_gate_proj_tensor: gate_proj.name,
+                direct_packed_up_proj_tensor: up_proj.name,
+                direct_packed_down_proj_tensor: down_proj.name,
+                gate_projection: mlp.gate_projection,
+                up_projection: mlp.up_projection,
+                gated_up_product: mlp.gated_up_product,
+                output: mlp.output,
+                weighted_output,
+            });
+        }
+        if routed_experts.len() != QWEN80_TOP_K
+            || routed_expert_sum.iter().any(|value| !value.is_finite())
+        {
+            return Err(model_error(format!(
+                "Qwen80 GQA routed top-10 wave did not produce a finite complete source sum (observed experts={})",
+                routed_experts.len()
+            )));
+        }
+
+        let shared_expert_gate_logit = shared_expert_gate
+            .matvec(&post_attention_rms_norm_output, 1, QWEN80_HIDDEN, mode)?
+            .into_iter()
+            .next()
+            .ok_or_else(|| model_error("Qwen80 GQA shared expert gate returned no logit"))?;
+        let shared_expert_gate_value = 1.0 / (1.0 + (-shared_expert_gate_logit).exp());
+        if !shared_expert_gate_value.is_finite() || !(0.0..=1.0).contains(&shared_expert_gate_value)
+        {
+            return Err(model_error("Qwen80 GQA shared expert gate sigmoid is invalid"));
+        }
+        let shared_gated_output = shared_mlp
+            .output
+            .iter()
+            .map(|&value| value * shared_expert_gate_value)
+            .collect::<Vec<_>>();
+        let moe_output = routed_expert_sum
+            .iter()
+            .zip(&shared_gated_output)
+            .map(|(&routed, &shared)| routed + shared)
+            .collect::<Vec<_>>();
+        let layer_output = mixer
+            .mixer_residual_output
+            .iter()
+            .zip(&moe_output)
+            .map(|(&residual, &moe)| residual + moe)
+            .collect::<Vec<_>>();
+        if shared_gated_output.iter().any(|value| !value.is_finite())
+            || moe_output.iter().any(|value| !value.is_finite())
+            || layer_output.iter().any(|value| !value.is_finite())
+        {
+            return Err(model_error(
+                "Qwen80 GQA MoE/residual produced a non-finite value",
+            ));
+        }
+
+        Ok(Qwen80CanonicalGqaMoECpuOracleResult {
+            direct_packed_post_attention_layernorm_tensor: post_attention_layernorm.name,
+            direct_packed_router_tensor: router.name,
+            direct_packed_shared_gate_proj_tensor: shared_gate_proj.name,
+            direct_packed_shared_up_proj_tensor: shared_up_proj.name,
+            direct_packed_shared_down_proj_tensor: shared_down_proj.name,
+            direct_packed_shared_expert_gate_tensor: shared_expert_gate.name,
+            mixer,
+            post_attention_rms_norm_output,
+            router_logits,
+            route,
+            routed_experts,
+            routed_expert_sum,
+            shared_gate_projection: shared_mlp.gate_projection,
+            shared_up_projection: shared_mlp.up_projection,
+            shared_gated_up_product: shared_mlp.gated_up_product,
+            shared_expert_output: shared_mlp.output,
+            shared_expert_gate_logit,
+            shared_expert_gate_value,
+            shared_gated_output,
+            moe_output,
+            layer_output,
+            source_algorithm_boundary: format!(
+                "layer-{} direct-packed input RMSNorm -> gated GQA mixer -> first residual -> direct-packed post-attention RMSNorm -> source top-10 router -> all ten routed gate/up/down waves weighted by normalized router probabilities -> source shared gate/up/down MLP -> sigmoid shared gate -> MoE combine -> second residual only; later layers, final norm, lm_head, sampler, feedback, HCLI, and TPS are absent",
+                contract.mixer.layer
+            ),
+        })
+    }
+
     fn execute_canonical_linear_moe_cpu_impl(
         &self,
         contract: &Qwen80CanonicalLinearMoEOperatorContract,
@@ -7091,9 +8283,12 @@ pub struct Qwen80GpuBinaryTensor {
 /// Allocating this holder does not encode, commit, fence, or read back a
 /// command buffer.  It is a narrow resource boundary for a future explicitly
 /// leased source-input L0 capture, not a layer or token executor.
+///
+/// The contract may be DeltaNet or GQA MoE; both share the same fixed MoE
+/// bodies and scratch layout after the mixer first residual.
 #[cfg(target_os = "macos")]
 pub struct Qwen80L0TrueMoeFixedDeviceBuffers {
-    pub contract: Qwen80CanonicalLinearMoEOperatorContract,
+    pub contract: Qwen80TrueMoeFixedContract,
     pub postnorm: Qwen80GpuBinaryTensor,
     pub router: Qwen80GpuBinaryTensor,
     pub shared_gate_proj: Qwen80GpuBinaryTensor,
@@ -7118,6 +8313,80 @@ pub struct Qwen80L0TrueMoeFixedDeviceBuffers {
     pub gated_shared: PinnedBuffer,
     pub routed_sum: PinnedBuffer,
     pub second_residual: PinnedBuffer,
+}
+
+/// Fixed post-mixer MoE bodies for either a DeltaNet or GQA full layer.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Debug)]
+pub enum Qwen80TrueMoeFixedContract {
+    Linear(Qwen80CanonicalLinearMoEOperatorContract),
+    Gqa(Qwen80CanonicalGqaMoEOperatorContract),
+}
+
+#[cfg(target_os = "macos")]
+impl Qwen80TrueMoeFixedContract {
+    pub fn layer(&self) -> usize {
+        match self {
+            Self::Linear(contract) => contract.mixer.layer,
+            Self::Gqa(contract) => contract.mixer.layer,
+        }
+    }
+
+    pub fn state_slot(&self) -> usize {
+        match self {
+            Self::Linear(contract) => contract.mixer.linear_state_slot,
+            Self::Gqa(contract) => contract.mixer.full_attention_state_slot,
+        }
+    }
+
+    pub fn post_attention_layernorm(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.post_attention_layernorm,
+            Self::Gqa(contract) => &contract.post_attention_layernorm,
+        }
+    }
+
+    pub fn router(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.router,
+            Self::Gqa(contract) => &contract.router,
+        }
+    }
+
+    pub fn shared_gate_proj(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.shared_gate_proj,
+            Self::Gqa(contract) => &contract.shared_gate_proj,
+        }
+    }
+
+    pub fn shared_up_proj(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.shared_up_proj,
+            Self::Gqa(contract) => &contract.shared_up_proj,
+        }
+    }
+
+    pub fn shared_down_proj(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.shared_down_proj,
+            Self::Gqa(contract) => &contract.shared_down_proj,
+        }
+    }
+
+    pub fn shared_expert_gate(&self) -> &Qwen80PackedTensorBinding {
+        match self {
+            Self::Linear(contract) => &contract.shared_expert_gate,
+            Self::Gqa(contract) => &contract.shared_expert_gate,
+        }
+    }
+
+    pub fn validate_against_catalog(&self, catalog: &Qwen80CompleteArtifactCatalog) -> Result<()> {
+        match self {
+            Self::Linear(contract) => contract.validate_against_catalog(catalog),
+            Self::Gqa(contract) => contract.validate_against_catalog(catalog),
+        }
+    }
 }
 
 /// A parity result for the exact Qwen3-Next recurrent-state component at the
@@ -8015,8 +9284,8 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
         fixed: &Qwen80L0TrueMoeFixedDeviceBuffers,
         cpu: &Qwen80CanonicalLinearMoECpuOracleResult,
     ) -> Result<Qwen80SameRuntimeL1TrueMoeSuffixParity> {
-        if fixed.contract.mixer.layer != 1
-            || fixed.contract.mixer.linear_state_slot != 1
+        if fixed.contract.layer() != 1
+            || fixed.contract.state_slot() != 1
             || cpu.mixer.layer != 1
             || cpu.mixer.linear_state_slot != 1
             || cpu.route.ids.len() != QWEN80_TOP_K
@@ -8569,7 +9838,7 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
                 command.dispatch_count(),
             )));
         }
-        if fixed.contract.mixer.layer != 1 || fixed.contract.mixer.linear_state_slot != 1 {
+        if fixed.contract.layer() != 1 || fixed.contract.state_slot() != 1 {
             return Err(model_error(
                 "same-runtime full-L1 finalizer refuses a non-Layer-1 fixed suffix holder",
             ));
@@ -8595,13 +9864,13 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
             .expect("checked exact structural trace")
             .to_vec();
         let l1_cpu = self.derive_fresh_l1_full_cpu_oracle(runtime)?;
-        if fixed.contract.post_attention_layernorm.name
+        if fixed.contract.post_attention_layernorm().name
             != l1_cpu.direct_packed_post_attention_layernorm_tensor
-            || fixed.contract.router.name != l1_cpu.direct_packed_router_tensor
-            || fixed.contract.shared_gate_proj.name != l1_cpu.direct_packed_shared_gate_proj_tensor
-            || fixed.contract.shared_up_proj.name != l1_cpu.direct_packed_shared_up_proj_tensor
-            || fixed.contract.shared_down_proj.name != l1_cpu.direct_packed_shared_down_proj_tensor
-            || fixed.contract.shared_expert_gate.name
+            || fixed.contract.router().name != l1_cpu.direct_packed_router_tensor
+            || fixed.contract.shared_gate_proj().name != l1_cpu.direct_packed_shared_gate_proj_tensor
+            || fixed.contract.shared_up_proj().name != l1_cpu.direct_packed_shared_up_proj_tensor
+            || fixed.contract.shared_down_proj().name != l1_cpu.direct_packed_shared_down_proj_tensor
+            || fixed.contract.shared_expert_gate().name
                 != l1_cpu.direct_packed_shared_expert_gate_tensor
         {
             return Err(model_error(
@@ -8896,6 +10165,22 @@ impl Qwen80CompleteNativeRuntime {
     ///
     /// This is allocation/upload only: it neither creates a command buffer nor
     /// encodes, commits, fences, or reads back a device graph.
+    /// Upload fixed MoE bodies for any source-scheduled decoder layer
+    /// (DeltaNet or GQA).  Dispatches to the matching mixer-family contract.
+    pub fn upload_canonical_layer_moe_fixed_device_buffers(
+        &self,
+        layer: usize,
+    ) -> Result<Qwen80L0TrueMoeFixedDeviceBuffers> {
+        match self.catalog.config.layer_kind(layer)? {
+            Qwen80LayerKind::LinearAttention => {
+                self.upload_canonical_linear_moe_fixed_device_buffers(layer)
+            }
+            Qwen80LayerKind::FullAttention => {
+                self.upload_canonical_gqa_moe_fixed_device_buffers(layer)
+            }
+        }
+    }
+
     pub fn upload_canonical_linear_moe_fixed_device_buffers(
         &self,
         layer: usize,
@@ -8910,17 +10195,47 @@ impl Qwen80CompleteNativeRuntime {
             || contract.shared_down_proj.shape != [QWEN80_HIDDEN, QWEN80_SHARED_EXPERT_INTERMEDIATE]
             || contract.shared_expert_gate.shape != [1, QWEN80_HIDDEN]
         {
-            return Err(model_error(
-                "Qwen80 canonical true-MoE fixed resource contract has unexpected geometry",
-            ));
+            return Err(model_error(format!(
+                "Qwen80 canonical true-MoE fixed resource contract has unexpected geometry (layer observed={}, expected={layer})",
+                contract.mixer.layer
+            )));
         }
+        self.finish_true_moe_fixed_device_buffers(Qwen80TrueMoeFixedContract::Linear(contract))
+    }
 
-        let postnorm = self.upload_direct_tensor(&contract.post_attention_layernorm.name)?;
-        let router = self.upload_direct_tensor(&contract.router.name)?;
-        let shared_gate_proj = self.upload_direct_tensor(&contract.shared_gate_proj.name)?;
-        let shared_up_proj = self.upload_direct_tensor(&contract.shared_up_proj.name)?;
-        let shared_down_proj = self.upload_direct_tensor(&contract.shared_down_proj.name)?;
-        let shared_expert_gate = self.upload_direct_tensor(&contract.shared_expert_gate.name)?;
+    /// Upload fixed MoE bodies for one GQA full-attention layer.
+    pub fn upload_canonical_gqa_moe_fixed_device_buffers(
+        &self,
+        layer: usize,
+    ) -> Result<Qwen80L0TrueMoeFixedDeviceBuffers> {
+        let contract = self.catalog.canonical_gqa_moe_operator_contract(layer)?;
+        contract.validate_against_catalog(&self.catalog)?;
+        if contract.mixer.layer != layer
+            || contract.post_attention_layernorm.shape != [QWEN80_HIDDEN]
+            || contract.router.shape != [QWEN80_EXPERTS, QWEN80_HIDDEN]
+            || contract.shared_gate_proj.shape != [QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN]
+            || contract.shared_up_proj.shape != [QWEN80_SHARED_EXPERT_INTERMEDIATE, QWEN80_HIDDEN]
+            || contract.shared_down_proj.shape != [QWEN80_HIDDEN, QWEN80_SHARED_EXPERT_INTERMEDIATE]
+            || contract.shared_expert_gate.shape != [1, QWEN80_HIDDEN]
+        {
+            return Err(model_error(format!(
+                "Qwen80 GQA true-MoE fixed resource contract has unexpected geometry (layer observed={}, expected={layer})",
+                contract.mixer.layer
+            )));
+        }
+        self.finish_true_moe_fixed_device_buffers(Qwen80TrueMoeFixedContract::Gqa(contract))
+    }
+
+    fn finish_true_moe_fixed_device_buffers(
+        &self,
+        contract: Qwen80TrueMoeFixedContract,
+    ) -> Result<Qwen80L0TrueMoeFixedDeviceBuffers> {
+        let postnorm = self.upload_direct_tensor(&contract.post_attention_layernorm().name)?;
+        let router = self.upload_direct_tensor(&contract.router().name)?;
+        let shared_gate_proj = self.upload_direct_tensor(&contract.shared_gate_proj().name)?;
+        let shared_up_proj = self.upload_direct_tensor(&contract.shared_up_proj().name)?;
+        let shared_down_proj = self.upload_direct_tensor(&contract.shared_down_proj().name)?;
+        let shared_expert_gate = self.upload_direct_tensor(&contract.shared_expert_gate().name)?;
 
         let hidden = QWEN80_HIDDEN;
         let intermediate = QWEN80_SHARED_EXPERT_INTERMEDIATE;
@@ -9385,7 +10700,7 @@ impl Qwen80CompleteNativeRuntime {
             ));
         }
         fixed.contract.validate_against_catalog(&self.catalog)?;
-        if fixed.contract.mixer.layer != 0 || fixed.contract.mixer.linear_state_slot != 0 {
+        if fixed.contract.layer() != 0 || fixed.contract.state_slot() != 0 {
             return Err(model_error(
                 "canonical source-token L0 continuation received a non-L0 fixed-MoE suffix",
             ));

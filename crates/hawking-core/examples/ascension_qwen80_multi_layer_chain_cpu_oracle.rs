@@ -180,7 +180,7 @@ fn build_structure_oracle(layer_count: usize) -> Result<Value, String> {
                     "execute_canonical_linear_moe_cpu_oracle"
                 }
                 Qwen80ExecutionMixerKind::Gqa => {
-                    "BLOCKED_UNTIL_SAME_RUNTIME_GQA_FULL_LAYER_CPU_ORACLE"
+                    "execute_canonical_gqa_moe_cpu_oracle"
                 }
             },
             "same_runtime_full_layer_encode_ready": schedule.same_runtime_full_layer_encode_ready,
@@ -557,15 +557,18 @@ mod tests {
     }
 
     #[test]
-    fn structure_oracle_marks_gqa_unready() {
+    fn structure_oracle_includes_gqa_l3_when_encode_ready() {
         let doc = build_structure_oracle(4).unwrap();
-        assert_eq!(doc["includes_unready_gqa"], true);
-        assert!(doc["total_dispatches_physical_capture"].is_null());
+        assert_eq!(doc["includes_unready_gqa"], false);
+        assert_eq!(doc["total_dispatches_physical_capture"], 92);
         assert_eq!(doc["layers"][3]["mixer"], "gqa");
         assert_eq!(
             doc["layers"][3]["cpu_oracle_operator"],
-            "BLOCKED_UNTIL_SAME_RUNTIME_GQA_FULL_LAYER_CPU_ORACLE"
+            "execute_canonical_gqa_moe_cpu_oracle"
         );
+        assert_eq!(doc["layers"][3]["same_runtime_full_layer_encode_ready"], true);
+        assert_eq!(doc["layers"][3]["state_slot"], 0);
+        assert_eq!(doc["layers"][3]["domain"], "gqa_kv");
     }
 
     #[test]

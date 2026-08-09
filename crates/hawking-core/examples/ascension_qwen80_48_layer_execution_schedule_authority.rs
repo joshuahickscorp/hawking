@@ -13,10 +13,10 @@
 
 use hawking_core::model::qwen80_48_layer_execution_schedule::{
     qwen80_all_48_layer_execution_schedules, validate_full_48_layer_schedule,
-    Qwen80ExecutionScheduleSourceBinding, QWEN80_48_LAYER_EXECUTION_SCHEDULE_SCHEMA,
-    QWEN80_48_LAYER_EXECUTION_SCHEDULE_STATUS, QWEN80_DELTANET_FULL_LAYER_DISPATCHES,
-    QWEN80_DELTANET_LAYERS, QWEN80_GQA_LAYERS, QWEN80_GRAVITY_MANIFEST_SEAL_SHA256, QWEN80_LAYERS,
-    QWEN80_SOURCE_REVISION,
+    Qwen80ExecutionMixerKind, Qwen80ExecutionScheduleSourceBinding,
+    QWEN80_48_LAYER_EXECUTION_SCHEDULE_SCHEMA, QWEN80_48_LAYER_EXECUTION_SCHEDULE_STATUS,
+    QWEN80_DELTANET_FULL_LAYER_DISPATCHES, QWEN80_DELTANET_LAYERS, QWEN80_GQA_LAYERS,
+    QWEN80_GRAVITY_MANIFEST_SEAL_SHA256, QWEN80_LAYERS, QWEN80_SOURCE_REVISION,
 };
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -211,13 +211,25 @@ fn build_authority() -> Result<Value, String> {
             "gqa_layers": QWEN80_GQA_LAYERS,
             "full_layer_dispatch_count_each": QWEN80_DELTANET_FULL_LAYER_DISPATCHES,
             "total_dispatches_all_48_layers": total_all_48,
-            "same_runtime_deltanet_encode_ready_layer_count": layers.iter().filter(|l| l.same_runtime_full_layer_encode_ready).count(),
-            "same_runtime_gqa_encode_ready_layer_count": 0,
+            "same_runtime_deltanet_encode_ready_layer_count": layers
+                .iter()
+                .filter(|l| {
+                    l.same_runtime_full_layer_encode_ready
+                        && matches!(l.mixer, Qwen80ExecutionMixerKind::DeltaNet)
+                })
+                .count(),
+            "same_runtime_gqa_encode_ready_layer_count": layers
+                .iter()
+                .filter(|l| {
+                    l.same_runtime_full_layer_encode_ready
+                        && matches!(l.mixer, Qwen80ExecutionMixerKind::Gqa)
+                })
+                .count(),
         },
         "multi_layer_host_parameterization": {
             "layer_count_parameter": "number of sequential layers starting at 0 (e.g. 3 => L0..L2)",
-            "recommended_first_physical_capture_layer_count": 3,
-            "recommended_first_physical_capture_reason": "L0..L2 is three proven DeltaNet+MoE full layers (69 dispatches, one fence); L0..L3 adds GQA L3 whose same-runtime full-layer encode is scheduled but not yet capture-ready",
+            "recommended_first_physical_capture_layer_count": 4,
+            "recommended_first_physical_capture_reason": "L0..L3 is the first chain that crosses a GQA layer (layer 3): 3×DeltaNet + 1×GQA = 92 dispatches, one command buffer, one fence; GQA full-layer same-runtime encode is wired (physical parity is owner-run)",
             "single_fence_after_all_dispatches_required": true,
             "one_runtime_one_command_buffer_required": true,
             "caller_owned_per_layer_state_slots_required": true,
@@ -301,7 +313,7 @@ mod tests {
         assert_eq!(layers[1]["state_slot"]["slot"], 1);
         assert_eq!(layers[3]["mixer"], "gqa");
         assert_eq!(layers[3]["state_slot"]["slot"], 0);
-        assert_eq!(layers[3]["same_runtime_full_layer_encode_ready"], false);
+        assert_eq!(layers[3]["same_runtime_full_layer_encode_ready"], true);
         assert_eq!(layers[0]["full_layer_dispatch_count"], 23);
         assert_eq!(
             document["aggregate"]["total_dispatches_all_48_layers"],
@@ -310,7 +322,15 @@ mod tests {
         assert_eq!(
             document["multi_layer_host_parameterization"]
                 ["recommended_first_physical_capture_layer_count"],
-            3
+            4
+        );
+        assert_eq!(
+            document["aggregate"]["same_runtime_gqa_encode_ready_layer_count"],
+            12
+        );
+        assert_eq!(
+            document["aggregate"]["same_runtime_deltanet_encode_ready_layer_count"],
+            36
         );
         // Seal integrity.
         let mut unsigned = document.clone();

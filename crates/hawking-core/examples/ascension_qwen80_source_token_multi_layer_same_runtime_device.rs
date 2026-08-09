@@ -4,14 +4,15 @@
 //! one runtime, one command buffer, ONE fence after all dispatches, caller-owned
 //! per-layer state slots, structural kernel-name trace, receipt written last.
 //!
-//! `--layer-count N` selects layers `0..N` (e.g. 3 ⇒ L0+L1+L2 = 69 dispatches).
-//! Physical capture is currently ready only for DeltaNet-only prefixes (no GQA).
-//! Default CLI is preflight-only and never creates a Metal context or loads the
-//! 148 GB body.  `--mode metal` is owner-run under resource admission.
+//! `--layer-count N` selects layers `0..N` (e.g. 3 ⇒ L0+L1+L2 = 69 dispatches;
+//! 4 ⇒ L0..L3 = 92 dispatches and crosses the first GQA layer).  GQA full-layer
+//! same-runtime encode is wired; physical metal captures for layer-count 3 and
+//! 4 are owner-run under resource admission.  Default CLI is preflight-only and
+//! never creates a Metal context or loads the 148 GB body.
 //!
 //! ```text
 //! cargo run -p hawking-core --example ascension_qwen80_source_token_multi_layer_same_runtime_device -- \
-//!   --mode preflight --layer-count 3 \
+//!   --mode preflight --layer-count 4 \
 //!   --execution-schedule-authority ABSOLUTE_SEALED_SCHEDULE \
 //!   --chain-cpu-oracle ABSOLUTE_SEALED_CHAIN_ORACLE \
 //!   --l1-full-layer-assessment ABSOLUTE_SEALED_L1_COMPLETION_ASSESSMENT \
@@ -19,9 +20,9 @@
 //!   --host-binary ABSOLUTE_CURRENT_HOST_BINARY \
 //!   --out ABSOLUTE_NEW_JSON --workers 1
 //!
-//! # Owner physical capture (after lease + outer launch authority):
+//! # Owner physical capture (after lease + outer launch authority) — first GQA crossing:
 //! cargo run -p hawking-core --example ascension_qwen80_source_token_multi_layer_same_runtime_device -- \
-//!   --mode metal --layer-count 3 \
+//!   --mode metal --layer-count 4 \
 //!   --outer-preflight ABSOLUTE_SEALED_OUTER_PREFLIGHT \
 //!   --lease-receipt ABSOLUTE_SEALED_LEASE \
 //!   --outer-launch-authority ABSOLUTE_SEALED_OUTER_LAUNCH \
@@ -48,7 +49,8 @@ use hawking_core::metal::TokenCommandBuffer;
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen80_complete_runtime::{
     Qwen80CompleteArtifactCatalog, Qwen80CompleteNativeRuntime, Qwen80CompleteRuntimeOptions,
-    Qwen80MultiLayerSuffixWitness, Qwen80RouteSelection, Qwen80SameRuntimeMultiLayerChainParity,
+    Qwen80MultiLayerSuffixCpuOracle, Qwen80MultiLayerSuffixWitness, Qwen80RouteSelection,
+    Qwen80SameRuntimeMultiLayerChainParity, Qwen80SameRuntimeSubsequentLayerPrefix,
 };
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen_complete_binary::{CompleteBinaryAdmission, QwenCompleteBinaryModel};
@@ -126,8 +128,12 @@ const ADMISSION_RECEIPT_STATUS: &str =
 const CHAIN_ORACLE_SCHEMA: &str = "hawking.ascension.qwen80_multi_layer_chain_cpu_oracle.v1";
 const MAX_JSON_BYTES: u64 = 100_000_000;
 const SOURCE_TOKEN_ID: u64 = 1;
-/// First physical multi-layer capture: L0..L2 (three DeltaNet full layers).
-const RECOMMENDED_FIRST_LAYER_COUNT: usize = 3;
+/// Proven DeltaNet-only multi-layer capture: L0..L2 (three full layers).
+const RECOMMENDED_DELTANET_LAYER_COUNT: usize = 3;
+/// First chain that crosses GQA: L0..L3 (three DeltaNet + one GQA = 92 dispatches).
+const RECOMMENDED_FIRST_GQA_LAYER_COUNT: usize = 4;
+/// Back-compat alias for preflight docs that still name the DeltaNet-only step.
+const RECOMMENDED_FIRST_LAYER_COUNT: usize = RECOMMENDED_DELTANET_LAYER_COUNT;
 const L0_DISPATCHES: usize = 23;
 const L1_PREFIX_DISPATCHES: usize = 9;
 const L1_MOE_SUFFIX_DISPATCHES: usize = 14;
@@ -666,11 +672,14 @@ fn parse_metal_args(mut args: impl Iterator<Item = String>) -> Result<MetalArgs,
         }
     }
     let layer_count = layer_count.ok_or("--layer-count is required")?;
-    if layer_count != RECOMMENDED_FIRST_LAYER_COUNT {
-        // First physical multi-layer capture is L0..L2 only; refuse wider
-        // ranges until GQA encode is ready and intermediate handoffs proven.
+    // Physical metal captures admitted for L0..L2 (DeltaNet-only, earned) and
+    // L0..L3 (first GQA crossing). Longer chains remain blocked until each
+    // intermediate handoff is proven.
+    if layer_count != RECOMMENDED_DELTANET_LAYER_COUNT
+        && layer_count != RECOMMENDED_FIRST_GQA_LAYER_COUNT
+    {
         return Err(format!(
-            "metal mode --layer-count observed={layer_count}, expected={RECOMMENDED_FIRST_LAYER_COUNT} for the first L0..L2 physical capture (GQA and longer chains remain blocked)"
+            "metal mode --layer-count observed={layer_count}, expected={RECOMMENDED_DELTANET_LAYER_COUNT} (L0..L2 DeltaNet-only) or {RECOMMENDED_FIRST_GQA_LAYER_COUNT} (L0..L3 first GQA crossing)"
         ));
     }
     let workers = workers.ok_or("--workers is required")?;
@@ -851,7 +860,7 @@ fn validate_chain_oracle(value: &Value, layer_count: usize) -> Result<String, St
         == Some(true)
     {
         return Err(format!(
-            "oracle includes_unready_gqa=true for layer_count={layer_count}; physical multi-layer preflight requires a DeltaNet-only chain"
+            "oracle includes_unready_gqa=true for layer_count={layer_count} (observed true, expected false); every mixer in the requested prefix must be same-runtime encode-ready"
         ));
     }
     let total = number(root, "total_dispatches_physical_capture", "oracle").or_else(|_| {
@@ -1025,10 +1034,31 @@ fn build_preflight(args: &Args) -> Result<Value, String> {
             "release_status": FUTURE_RELEASE_STATUS,
         },
         "recommended_first_physical_capture": {
-            "layer_count": RECOMMENDED_FIRST_LAYER_COUNT,
-            "layers": "L0..L2",
-            "total_dispatches": RECOMMENDED_FIRST_LAYER_COUNT * QWEN80_DELTANET_FULL_LAYER_DISPATCHES,
-            "reason": "three sequential DeltaNet+MoE full layers scales the earned L0+L1 path by one layer without entering GQA L3, whose same-runtime full-layer encode is scheduled but not encode-ready",
+            "layer_count": RECOMMENDED_FIRST_GQA_LAYER_COUNT,
+            "layers": "L0..L3",
+            "total_dispatches": RECOMMENDED_FIRST_GQA_LAYER_COUNT
+                * QWEN80_DELTANET_FULL_LAYER_DISPATCHES,
+            "gqa_layer": 3,
+            "gqa_prefix_dispatches": 9,
+            "gqa_full_layer_dispatches": 23,
+            "frozen_gqa_mixer_prefix_kernels": [
+                "qwen_next_direct_packed_input_rmsnorm",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_binary_sign_scale_matvec",
+                "qwen80_attention_qk_norm_rope_cache",
+                "mha_decode_f32",
+                "qwen80_attention_apply_sigmoid_gate",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_next_add_residual",
+            ],
+            "reason": "L0..L3 is the first chain that crosses a GQA layer (layer 3) after the earned L0..L2 DeltaNet-only component; 92 dispatches, one command buffer, one fence",
+            "earned_deltanet_prefix": {
+                "layer_count": RECOMMENDED_DELTANET_LAYER_COUNT,
+                "layers": "L0..L2",
+                "total_dispatches": RECOMMENDED_DELTANET_LAYER_COUNT
+                    * QWEN80_DELTANET_FULL_LAYER_DISPATCHES,
+            },
         },
         "metal_path": {
             "preflight_only": true,
@@ -1041,9 +1071,10 @@ fn build_preflight(args: &Args) -> Result<Value, String> {
             "encode_path": {
                 "layer_0": "encode_source_input_l0_true_moe_capture (proven)",
                 "layer_1": "encode_source_token_l1_deltanet_prefix + MoE suffix (proven)",
-                "layer_2_plus_deltanet": "encode_source_token_deltanet_prefix_from_previous_second_residual_into + MoE suffix (wired)",
+                "layer_2_plus_deltanet": "encode_source_token_deltanet_prefix_from_previous_second_residual_into + MoE suffix (proven)",
+                "layer_3_gqa": "encode_source_token_gqa_prefix_from_previous_second_residual_into + MoE suffix (wired)",
                 "finalizer": "finalize_after_exact_multi_layer_deltanet_chain_fence_with_readbacks",
-                "gqa_layers": "BLOCKED until same-runtime GQA full-layer encode is proven",
+                "gqa_layers": "encode-ready; physical parity pending owner L0..L3 capture",
             },
             "future_metal_entrypoint": {
                 "explicit_mode_required": true,
@@ -1274,9 +1305,38 @@ fn phase_document(phase: &MetalExecutionPhase) -> Value {
 }
 
 #[cfg(target_os = "macos")]
+fn encode_source_token_multi_layer_same_runtime(
+    runtime: &Qwen80CompleteNativeRuntime,
+    command: TokenCommandBuffer<'_>,
+    layer_count: usize,
+    l0_source_outer_preflight: &Path,
+    l1_route_authority: &completion_preflight::ValidatedSourceTokenL1RouteAuthority,
+    workers: usize,
+    phase: &mut MetalExecutionPhase,
+) -> Result<Qwen80SameRuntimeMultiLayerChainParity, String> {
+    if layer_count != RECOMMENDED_DELTANET_LAYER_COUNT
+        && layer_count != RECOMMENDED_FIRST_GQA_LAYER_COUNT
+    {
+        return Err(format!(
+            "encode host --layer-count observed={layer_count}, expected={RECOMMENDED_DELTANET_LAYER_COUNT} or {RECOMMENDED_FIRST_GQA_LAYER_COUNT}"
+        ));
+    }
+    encode_source_token_multi_layer_l0_l2_same_runtime(
+        runtime,
+        command,
+        layer_count,
+        l0_source_outer_preflight,
+        l1_route_authority,
+        workers,
+        phase,
+    )
+}
+
+#[cfg(target_os = "macos")]
 fn encode_source_token_multi_layer_l0_l2_same_runtime(
     runtime: &Qwen80CompleteNativeRuntime,
     command: TokenCommandBuffer<'_>,
+    layer_count: usize,
     l0_source_outer_preflight: &Path,
     l1_route_authority: &completion_preflight::ValidatedSourceTokenL1RouteAuthority,
     workers: usize,
@@ -1487,22 +1547,148 @@ fn encode_source_token_multi_layer_l0_l2_same_runtime(
         }
     }
 
-    let expected_total = RECOMMENDED_FIRST_LAYER_COUNT * QWEN80_DELTANET_FULL_LAYER_DISPATCHES;
+    // After L2 full layer: 69 dispatches.
+    if command.dispatch_count() != 69 {
+        return Err(format!(
+            "after L2 full layer total dispatches observed={}, expected=69",
+            command.dispatch_count()
+        ));
+    }
+
+    let mut subsequent: Vec<Qwen80SameRuntimeSubsequentLayerPrefix> =
+        vec![Qwen80SameRuntimeSubsequentLayerPrefix::DeltaNet(l2_prefix)];
+    let mut suffixes = vec![
+        Qwen80MultiLayerSuffixWitness {
+            layer: 1,
+            fixed: l1_fixed,
+            cpu: Qwen80MultiLayerSuffixCpuOracle::Linear(l1_cpu),
+        },
+        Qwen80MultiLayerSuffixWitness {
+            layer: 2,
+            fixed: l2_fixed,
+            cpu: Qwen80MultiLayerSuffixCpuOracle::Linear(l2_cpu),
+        },
+    ];
+
+    // Optional L3 GQA full layer (23) when layer_count=4.
+    if layer_count == RECOMMENDED_FIRST_GQA_LAYER_COUNT {
+        let l2_second_residual = suffixes[1].fixed.second_residual.to_owned();
+        let l2_layer_output = match &suffixes[1].cpu {
+            Qwen80MultiLayerSuffixCpuOracle::Linear(cpu) => cpu.layer_output.clone(),
+            Qwen80MultiLayerSuffixCpuOracle::Gqa(cpu) => cpu.layer_output.clone(),
+        };
+        let l3_prefix = runtime
+            .encode_source_token_gqa_prefix_from_previous_second_residual_into(
+                &mut command,
+                3,
+                l2_second_residual,
+                &l2_layer_output,
+                69,
+                0, // source-token first position
+            )
+            .map_err(|error| format!("same-runtime GQA Layer-3 prefix refused: {error}"))?;
+        let l3_cpu = l3_prefix
+            .derive_full_cpu_oracle(runtime)
+            .map_err(|error| format!("same-runtime GQA Layer-3 CPU oracle refused: {error}"))?;
+        let l3_plan_sha = {
+            let mut hasher = Sha256::new();
+            hasher.update(b"qwen80-live-layer-3-gqa-cpu-route\0");
+            for id in &l3_cpu.route.ids {
+                hasher.update(id.to_le_bytes());
+            }
+            for w in &l3_cpu.route.weights {
+                hasher.update(w.to_bits().to_le_bytes());
+            }
+            format!("{:x}", hasher.finalize())
+        };
+        let l3_source_bridge = runtime
+            .build_source_token_layer_all_ten_true_moe_source_bridge_from_route(
+                3,
+                GRAVITY_MANIFEST_DOCUMENT_SHA256,
+                &l3_plan_sha,
+                l3_cpu.route.clone(),
+            )
+            .map_err(|error| format!("Layer-3 GQA route bridge refused: {error}"))?;
+        let l3_route_bridge = runtime
+            .upload_all_ten_true_moe_device_bridge(
+                &l3_source_bridge,
+                l3_prefix.first_residual().to_owned(),
+            )
+            .map_err(|error| format!("Layer-3 GQA route upload refused: {error}"))?;
+        let l3_fixed = runtime
+            .upload_canonical_gqa_moe_fixed_device_buffers(3)
+            .map_err(|error| format!("Layer-3 GQA fixed upload refused: {error}"))?;
+        {
+            let fixed_buffers = all_ten::Qwen80AllTenTrueMoeGraphFixedBuffers {
+                postnorm_signs: &l3_fixed.postnorm.signs,
+                postnorm_scales: &l3_fixed.postnorm.scales,
+                postnorm_hidden: &l3_fixed.postnorm_hidden,
+                router_signs: &l3_fixed.router.signs,
+                router_scales: &l3_fixed.router.scales,
+                router_logits: &l3_fixed.router_logits,
+                router_probabilities: &l3_fixed.router_probabilities,
+                router_route_ids: &l3_fixed.router_route_ids,
+                router_route_weights: &l3_fixed.router_route_weights,
+                route_guard: &l3_fixed.route_guard,
+                route_gate: &l3_fixed.route_gate,
+                route_up: &l3_fixed.route_up,
+                route_activated: &l3_fixed.route_activated,
+                route_weighted: &l3_fixed.route_weighted,
+                shared_gate_signs: &l3_fixed.shared_gate_proj.signs,
+                shared_gate_scales: &l3_fixed.shared_gate_proj.scales,
+                shared_up_signs: &l3_fixed.shared_up_proj.signs,
+                shared_up_scales: &l3_fixed.shared_up_proj.scales,
+                shared_down_signs: &l3_fixed.shared_down_proj.signs,
+                shared_down_scales: &l3_fixed.shared_down_proj.scales,
+                shared_scalar_signs: &l3_fixed.shared_expert_gate.signs,
+                shared_scalar_scales: &l3_fixed.shared_expert_gate.scales,
+                shared_gate: &l3_fixed.shared_gate,
+                shared_up: &l3_fixed.shared_up,
+                shared_activated: &l3_fixed.shared_activated,
+                shared_output: &l3_fixed.shared_output,
+                shared_scalar_logit: &l3_fixed.shared_scalar_logit,
+                gated_shared: &l3_fixed.gated_shared,
+                routed_sum: &l3_fixed.routed_sum,
+                second_residual: &l3_fixed.second_residual,
+            };
+            let graph = all_ten::Qwen80AllTenTrueMoeGraphBuffers::from_admitted_route_bridge(
+                &l3_route_bridge,
+                fixed_buffers,
+            );
+            let suffix = all_ten::encode_all_ten_true_moe_from_first_residual(&mut command, &graph)?;
+            if suffix != L1_MOE_SUFFIX_DISPATCHES {
+                return Err(format!(
+                    "L3 GQA MoE suffix dispatches observed={suffix}, expected={L1_MOE_SUFFIX_DISPATCHES}"
+                ));
+            }
+        }
+        subsequent.push(Qwen80SameRuntimeSubsequentLayerPrefix::Gqa(l3_prefix));
+        suffixes.push(Qwen80MultiLayerSuffixWitness {
+            layer: 3,
+            fixed: l3_fixed,
+            cpu: Qwen80MultiLayerSuffixCpuOracle::Gqa(l3_cpu),
+        });
+    }
+
+    let expected_total = layer_count * QWEN80_DELTANET_FULL_LAYER_DISPATCHES;
+    let expected_kernels = expected_multi_layer_kernels(layer_count)?;
     if command.dispatch_count() != expected_total
         || command
             .structural_kernel_names()
             .ok_or("multi-layer host did not retain structural trace")?
             .iter()
             .map(String::as_str)
-            .ne(MULTI_LAYER_L0_L2_KERNELS.iter().copied())
+            .ne(expected_kernels.iter().copied())
     {
         let names = command
             .structural_kernel_names()
             .map(|n| n.len())
             .unwrap_or(0);
         return Err(format!(
-            "multi-layer L0..L2 structural trace drifted: dispatch_count observed={}, expected={expected_total}; kernel_names_len observed={names}, expected=69",
-            command.dispatch_count()
+            "multi-layer L0..L{} structural trace drifted: dispatch_count observed={}, expected={expected_total}; kernel_names_len observed={names}, expected={}",
+            layer_count - 1,
+            command.dispatch_count(),
+            expected_kernels.len()
         ));
     }
     phase.dispatches_encoded = command.dispatch_count();
@@ -1512,19 +1698,8 @@ fn encode_source_token_multi_layer_l0_l2_same_runtime(
         .to_vec();
     phase.command_commit_may_have_been_attempted = true;
 
-    let suffixes = [
-        Qwen80MultiLayerSuffixWitness {
-            layer: 1,
-            fixed: l1_fixed,
-            cpu: l1_cpu,
-        },
-        Qwen80MultiLayerSuffixWitness {
-            layer: 2,
-            fixed: l2_fixed,
-            cpu: l2_cpu,
-        },
-    ];
-    let subsequent = [l2_prefix];
+    // Recover L1 prefix owner: still held as the first subsequent's peer is L2.
+    // The l1_prefix was moved into... wait, l1_prefix is still in scope above.
     let parity = l1_prefix
         .finalize_after_exact_multi_layer_deltanet_chain_fence_with_readbacks(
             runtime,
@@ -2081,9 +2256,10 @@ fn run_metal_child(args: &MetalArgs) -> Result<String, String> {
         .map_err(|e| format!("strict-Math runtime construction failed: {e}"))?;
         phase.metal_context_constructed = true;
         let command = runtime.begin_component_token_command_buffer();
-        let parity = encode_source_token_multi_layer_l0_l2_same_runtime(
+        let parity = encode_source_token_multi_layer_same_runtime(
             &runtime,
             command,
+            authority.layer_count,
             &authority.l0_source_outer_preflight.file.path,
             &authority.l1_route_authority,
             authority.workers,
@@ -2398,11 +2574,11 @@ mod tests {
     }
 
     #[test]
-    fn preflight_refuses_layer_count_including_gqa_with_values() {
+    fn preflight_refuses_oracle_that_still_flags_unready_gqa_with_values() {
         let dir = tempfile::tempdir().unwrap();
         let schedule = write_temp(dir.path(), "schedule.json", &sealed_schedule());
-        // Oracle that claims physical total for L0..L3 would be inconsistent;
-        // build oracle that includes gqa flag.
+        // Adversarial: schedule is encode-ready but the chain oracle still
+        // claims includes_unready_gqa=true — host must refuse with values.
         let mut oracle_doc = json!({
             "schema": CHAIN_ORACLE_SCHEMA,
             "status": "PREPARED",
@@ -2428,8 +2604,24 @@ mod tests {
         };
         let err = build_preflight(&args).unwrap_err();
         assert!(
-            err.contains("layer 3") || err.contains("includes_unready_gqa") || err.contains("GQA") || err.contains("gqa") || err.contains("not same-runtime"),
+            err.contains("includes_unready_gqa=true")
+                && err.contains("observed true")
+                && err.contains("expected false"),
             "{err}"
+        );
+    }
+
+    #[test]
+    fn expected_kernels_l0_l3_is_92_with_gqa_tail() {
+        let kernels = expected_multi_layer_kernels(4).unwrap();
+        assert_eq!(kernels.len(), 92);
+        assert_eq!(kernels[69], "qwen_next_direct_packed_input_rmsnorm");
+        assert_eq!(kernels[73], "qwen80_attention_qk_norm_rope_cache");
+        assert_eq!(kernels[74], "mha_decode_f32");
+        assert_eq!(kernels[75], "qwen80_attention_apply_sigmoid_gate");
+        assert_eq!(
+            kernels[91],
+            "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
         );
     }
 
@@ -2501,8 +2693,30 @@ mod tests {
     }
 
     #[test]
-    fn metal_mode_refuses_non_l0_l2_layer_count_with_values() {
-        let err = parse_metal_args(
+    fn metal_mode_accepts_layer_count_3_and_4_and_refuses_others_with_values() {
+        let ok3 = parse_metal_args(
+            [
+                "--layer-count",
+                "3",
+                "--outer-preflight",
+                "/tmp/o.json",
+                "--lease-receipt",
+                "/tmp/l.json",
+                "--outer-launch-authority",
+                "/tmp/a.json",
+                "--outer-capture-dir",
+                "/tmp/outer",
+                "--capture-dir",
+                "/tmp/outer/inner",
+                "--workers",
+                "1",
+            ]
+            .into_iter()
+            .map(str::to_owned),
+        )
+        .unwrap();
+        assert_eq!(ok3.layer_count, 3);
+        let ok4 = parse_metal_args(
             [
                 "--layer-count",
                 "4",
@@ -2522,9 +2736,31 @@ mod tests {
             .into_iter()
             .map(str::to_owned),
         )
+        .unwrap();
+        assert_eq!(ok4.layer_count, 4);
+        let err = parse_metal_args(
+            [
+                "--layer-count",
+                "5",
+                "--outer-preflight",
+                "/tmp/o.json",
+                "--lease-receipt",
+                "/tmp/l.json",
+                "--outer-launch-authority",
+                "/tmp/a.json",
+                "--outer-capture-dir",
+                "/tmp/outer",
+                "--capture-dir",
+                "/tmp/outer/inner",
+                "--workers",
+                "1",
+            ]
+            .into_iter()
+            .map(str::to_owned),
+        )
         .unwrap_err();
-        assert!(err.contains("observed=4"), "{err}");
-        assert!(err.contains("expected=3"), "{err}");
+        assert!(err.contains("observed=5"), "{err}");
+        assert!(err.contains("expected=3") && err.contains("or 4"), "{err}");
     }
 
     #[test]

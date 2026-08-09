@@ -325,23 +325,23 @@ pub struct Qwen80LayerExecutionSchedule {
     pub full_layer_kernel_names: Vec<&'static str>,
     pub residency: Qwen80LayerResidencyRequirements,
     /// Same-runtime multi-layer host readiness for this layer's encode path.
-    /// DeltaNet layers 0.. are ready once the multi-layer host is wired;
-    /// GQA full-layer same-runtime encode remains a scheduled target until a
-    /// dedicated capture proves it.
+    /// True for every source-scheduled mixer once its full-layer same-runtime
+    /// encode (prefix + MoE suffix) is wired into the multi-layer host.
+    /// Physical capture still proves device parity; readiness here only means
+    /// the host will not refuse at CPU preflight for that mixer family.
     pub same_runtime_full_layer_encode_ready: bool,
 }
 
 /// Build the exact execution schedule for one layer in `0..48`.
 pub fn qwen80_layer_execution_schedule(layer: usize) -> Result<Qwen80LayerExecutionSchedule, String> {
     let mixer = qwen80_execution_mixer_kind(layer)?;
-    let (state_slot, prefix, full, ready) = match mixer {
+    let (state_slot, prefix, full) = match mixer {
         Qwen80ExecutionMixerKind::DeltaNet => {
             let slot = qwen80_deltanet_state_slot(layer)?;
             (
                 deltanet_state_slot(layer, slot),
                 QWEN80_DELTANET_MIXER_PREFIX_KERNELS.as_slice(),
                 QWEN80_DELTANET_FULL_LAYER_KERNELS.as_slice(),
-                true,
             )
         }
         Qwen80ExecutionMixerKind::Gqa => {
@@ -350,7 +350,6 @@ pub fn qwen80_layer_execution_schedule(layer: usize) -> Result<Qwen80LayerExecut
                 gqa_state_slot(layer, slot),
                 QWEN80_GQA_MIXER_PREFIX_KERNELS.as_slice(),
                 QWEN80_GQA_FULL_LAYER_KERNELS.as_slice(),
-                false,
             )
         }
     };
@@ -386,7 +385,8 @@ pub fn qwen80_layer_execution_schedule(layer: usize) -> Result<Qwen80LayerExecut
             state_slot_zeroed_or_caller_restored_before_encode: true,
             second_residual_is_next_layer_input: true,
         },
-        same_runtime_full_layer_encode_ready: ready,
+        // Both DeltaNet and GQA full-layer same-runtime encodes are wired.
+        same_runtime_full_layer_encode_ready: true,
     })
 }
 
@@ -401,24 +401,28 @@ pub fn qwen80_all_48_layer_execution_schedules() -> Result<Vec<Qwen80LayerExecut
 /// Cumulative structural kernel trace for layers `0..layer_count` (exclusive end).
 ///
 /// `layer_count` is the number of sequential layers starting at 0
-/// (e.g. `3` means L0+L1+L2).  Refuses ranges that include a not-yet-ready
-/// GQA full-layer encode unless `allow_scheduled_gqa` is true (schedule-only
-/// mode for authority documents).
+/// (e.g. `3` means L0+L1+L2; `4` means L0..L3 and crosses the first GQA layer).
+///
+/// `allow_scheduled_gqa` is retained for authority/document callers that used
+/// the pre-encode-ready flag; it is a no-op once every mixer family is
+/// encode-ready (both DeltaNet and GQA).  Still refuses unknown layer counts
+/// with observed vs expected values.
 pub fn qwen80_multi_layer_structural_kernel_trace(
     layer_count: usize,
     allow_scheduled_gqa: bool,
 ) -> Result<Vec<&'static str>, String> {
+    let _ = allow_scheduled_gqa;
     if layer_count == 0 || layer_count > QWEN80_LAYERS {
         return Err(format!(
-            "layer_count={layer_count} is outside 1..={QWEN80_LAYERS}"
+            "layer_count={layer_count} is outside 1..={QWEN80_LAYERS} (observed layer_count={layer_count}, expected in 1..={QWEN80_LAYERS})"
         ));
     }
     let mut kernels = Vec::with_capacity(layer_count * QWEN80_DELTANET_FULL_LAYER_DISPATCHES);
     for layer in 0..layer_count {
         let schedule = qwen80_layer_execution_schedule(layer)?;
-        if !schedule.same_runtime_full_layer_encode_ready && !allow_scheduled_gqa {
+        if !schedule.same_runtime_full_layer_encode_ready {
             return Err(format!(
-                "layer {layer} mixer={} is scheduled but same-runtime full-layer encode is not ready yet (observed ready=false, expected true for physical multi-layer capture; use a DeltaNet-only prefix such as layer_count=3 for L0..L2)",
+                "layer {layer} mixer={} is not same-runtime full-layer encode ready (observed ready=false, expected true)",
                 schedule.mixer
             ));
         }
@@ -611,7 +615,9 @@ mod tests {
         assert!(layers[0].same_runtime_full_layer_encode_ready);
         assert!(layers[1].same_runtime_full_layer_encode_ready);
         assert!(layers[2].same_runtime_full_layer_encode_ready);
-        assert!(!layers[3].same_runtime_full_layer_encode_ready);
+        assert!(layers[3].same_runtime_full_layer_encode_ready);
+        assert!(layers[7].same_runtime_full_layer_encode_ready);
+        assert!(layers[47].same_runtime_full_layer_encode_ready);
         assert_eq!(layers[0].full_layer_dispatch_count, 23);
         assert_eq!(layers[3].full_layer_dispatch_count, 23);
         assert_eq!(
@@ -619,6 +625,21 @@ mod tests {
             QWEN80_DELTANET_FULL_LAYER_KERNELS
         );
         assert_eq!(layers[3].full_layer_kernel_names, QWEN80_GQA_FULL_LAYER_KERNELS);
+        assert_eq!(
+            layers[3].mixer_prefix_kernel_names,
+            QWEN80_GQA_MIXER_PREFIX_KERNELS
+        );
+        assert_eq!(layers[3].mixer_prefix_dispatch_count, QWEN80_MIXER_PREFIX_DISPATCHES);
+        assert_eq!(layers[3].full_layer_dispatch_count, QWEN80_GQA_FULL_LAYER_DISPATCHES);
+        assert_eq!(
+            layers[3].state_slot.device_buffers_required_before_execution,
+            vec!["gqa_key_cache", "gqa_value_cache"]
+        );
+        assert_eq!(
+            layers[3].state_slot.rollback_buffers_required_before_execution,
+            vec!["gqa_key_cache_rollback", "gqa_value_cache_rollback"]
+        );
+        assert!(layers[3].state_slot.exclusive_caller_owned_slot);
     }
 
     #[test]
@@ -628,14 +649,17 @@ mod tests {
         assert_eq!(&trace[..23], &QWEN80_DELTANET_FULL_LAYER_KERNELS);
         assert_eq!(&trace[23..46], &QWEN80_DELTANET_FULL_LAYER_KERNELS);
         assert_eq!(&trace[46..69], &QWEN80_DELTANET_FULL_LAYER_KERNELS);
-        // L0..L3 includes GQA L3 — refused for physical capture without allow flag.
-        let err = qwen80_multi_layer_structural_kernel_trace(4, false).unwrap_err();
-        assert!(err.contains("layer 3"), "{err}");
-        assert!(err.contains("not ready"), "{err}");
-        // Schedule-only may include GQA.
-        let scheduled = qwen80_multi_layer_structural_kernel_trace(4, true).unwrap();
-        assert_eq!(scheduled.len(), 92);
-        assert_eq!(&scheduled[69..92], &QWEN80_GQA_FULL_LAYER_KERNELS);
+        // L0..L3 crosses GQA L3: 3×DeltaNet + 1×GQA = 92 dispatches.
+        let with_gqa = qwen80_multi_layer_structural_kernel_trace(4, false).unwrap();
+        assert_eq!(with_gqa.len(), 92);
+        assert_eq!(&with_gqa[69..92], &QWEN80_GQA_FULL_LAYER_KERNELS);
+        assert_eq!(
+            qwen80_multi_layer_total_dispatches(4, false).unwrap(),
+            92
+        );
+        let err = qwen80_multi_layer_structural_kernel_trace(0, false).unwrap_err();
+        assert!(err.contains("layer_count=0"), "{err}");
+        assert!(err.contains("1..=48"), "{err}");
     }
 
     #[test]
@@ -653,5 +677,62 @@ mod tests {
         let err = qwen80_execution_mixer_kind(48).unwrap_err();
         assert!(err.contains("48"));
         assert!(err.contains("0..48"));
+    }
+
+    #[test]
+    fn gqa_full_layer_dispatch_count_and_frozen_kernel_order_are_declared() {
+        assert_eq!(QWEN80_GQA_FULL_LAYER_DISPATCHES, 23);
+        assert_eq!(QWEN80_MIXER_PREFIX_DISPATCHES, 9);
+        assert_eq!(QWEN80_GQA_MIXER_PREFIX_KERNELS.len(), 9);
+        assert_eq!(QWEN80_GQA_FULL_LAYER_KERNELS.len(), 23);
+        assert_eq!(
+            QWEN80_GQA_MIXER_PREFIX_KERNELS,
+            [
+                "qwen_next_direct_packed_input_rmsnorm",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_binary_sign_scale_matvec",
+                "qwen80_attention_qk_norm_rope_cache",
+                "mha_decode_f32",
+                "qwen80_attention_apply_sigmoid_gate",
+                "qwen_binary_sign_scale_matvec",
+                "qwen_next_add_residual",
+            ]
+        );
+        // MoE suffix is shared with DeltaNet and closes every full layer.
+        assert_eq!(
+            &QWEN80_GQA_FULL_LAYER_KERNELS[9..],
+            QWEN80_MOE_SUFFIX_KERNELS.as_slice()
+        );
+        // All twelve GQA layers share the same structural table and exclusive KV slots.
+        for (index, layer) in [3usize, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47]
+            .into_iter()
+            .enumerate()
+        {
+            let schedule = qwen80_layer_execution_schedule(layer).unwrap();
+            assert!(schedule.same_runtime_full_layer_encode_ready);
+            assert_eq!(schedule.mixer, Qwen80ExecutionMixerKind::Gqa);
+            assert_eq!(schedule.state_slot.slot, index);
+            assert_eq!(
+                schedule.state_slot.device_buffers_required_before_execution,
+                vec!["gqa_key_cache", "gqa_value_cache"]
+            );
+            assert_eq!(
+                schedule.state_slot.rollback_buffers_required_before_execution,
+                vec!["gqa_key_cache_rollback", "gqa_value_cache_rollback"]
+            );
+            assert!(schedule.state_slot.exclusive_caller_owned_slot);
+            assert_eq!(schedule.full_layer_kernel_names, QWEN80_GQA_FULL_LAYER_KERNELS);
+        }
+    }
+
+    #[test]
+    fn multi_layer_trace_refuses_zero_and_oversized_layer_count_with_values() {
+        let err0 = qwen80_multi_layer_structural_kernel_trace(0, false).unwrap_err();
+        assert!(err0.contains("layer_count=0"), "{err0}");
+        assert!(err0.contains("1..=48"), "{err0}");
+        let err49 = qwen80_multi_layer_structural_kernel_trace(49, false).unwrap_err();
+        assert!(err49.contains("layer_count=49"), "{err49}");
+        assert!(err49.contains("1..=48"), "{err49}");
     }
 }
