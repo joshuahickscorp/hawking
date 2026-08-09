@@ -90,6 +90,7 @@ MAGIC_LOWRANK = b"HGRAVL01"
 MAGIC_HADAMARD = b"HGRAVH01"
 MAGIC_ADDITIVE = b"HGRAVA01"
 MAGIC_ACTIVATION = b"HGRAVC01"
+MAGIC_ACT_SVD = b"HGRAVS01"
 GPU_LEASE_STATUS_PATH = FAMILY_ROOT / "GPU_LEASE_STATUS.json"
 GPU_LEASE_LOCK_PATH = FAMILY_ROOT / ".gpu-lease.lock"
 
@@ -120,6 +121,21 @@ EXPANDED_REPRESENTATIONS = (
     "additive_residual_codebook_q2x2",
     "activation_corrected_rowwise_q3",
 )
+# Real-capture activation-weighted SVD is a first-class pack/encode family.  It
+# is deliberately *not* appended to EXPANDED_REPRESENTATIONS: doing so would
+# remap every post-boundary v2 genome for live workers.  Explicit proposals and
+# the complete activation-weighted repack path call it by name; auto-schedule
+# expansion requires a future pinned v3 boundary.
+ACTIVATION_WEIGHTED_SVD_REPRESENTATION = "activation_weighted_svd_low_rank_q"
+EXPLICIT_PACK_REPRESENTATIONS = (ACTIVATION_WEIGHTED_SVD_REPRESENTATION,)
+# Bound real activation captures only.  Synthetic unit-direction corrections
+# remain the separate activation_corrected_rowwise_q3 family.
+DEFAULT_Q30_ACTIVATION_CAPTURE_RUN = Path(
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/"
+    "physical/qwen30/quality-diagnostics/broad-activation-v1/runs/main_20260809T195857Z"
+)
+OPERATOR_RECOVERY_WEIGHT_COS = 0.5
+CEILING_COMPONENT_BPW = 1.5
 
 
 class DualGravityError(RuntimeError):
@@ -1148,6 +1164,202 @@ def _low_rank_codec(
     return CodecResult(payload=payload, reconstruction=reconstruction, metadata=header), training
 
 
+def _mean_row_cosine(y: np.ndarray, y_hat: np.ndarray) -> float:
+    left = np.asarray(y, dtype=np.float64)
+    right = np.asarray(y_hat, dtype=np.float64)
+    if left.ndim == 1:
+        left = left.reshape(1, -1)
+        right = right.reshape(1, -1)
+    ln = left / (np.linalg.norm(left, axis=1, keepdims=True) + 1e-12)
+    rn = right / (np.linalg.norm(right, axis=1, keepdims=True) + 1e-12)
+    return float((ln * rn).sum(axis=1).mean())
+
+
+def _constant_mean_null_cosine(y: np.ndarray) -> float:
+    rows = np.asarray(y, dtype=np.float64)
+    if rows.ndim == 1:
+        rows = rows.reshape(1, -1)
+    mean_row = np.repeat(rows.mean(axis=0, keepdims=True), rows.shape[0], axis=0)
+    return _mean_row_cosine(rows, mean_row)
+
+
+def _activation_capture_binding(
+    capture_run: Path | None = None,
+    *,
+    capture_result_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Bind a real activation capture by path + sha256 of capture-result.json.
+
+    Synthetic unit-direction "activation" corrections are intentionally not
+    accepted here; those remain activation_corrected_rowwise_q3.
+    """
+
+    run = (capture_run or DEFAULT_Q30_ACTIVATION_CAPTURE_RUN).expanduser().resolve()
+    result_path = run / "capture-result.json"
+    if not result_path.is_file():
+        raise DualGravityError(f"activation capture result missing: {result_path}")
+    digest = _sha256_file(result_path)
+    if capture_result_sha256 is not None and digest != capture_result_sha256:
+        raise DualGravityError(
+            "activation capture sha256 mismatch: "
+            f"expected {capture_result_sha256}, observed {digest}"
+        )
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DualGravityError(f"activation capture result is not readable JSON: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise DualGravityError("activation capture result must be a JSON object")
+    return {
+        "path": str(run),
+        "capture_result_path": str(result_path),
+        "sha256": digest,
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "claim_boundary": payload.get("claim_boundary"),
+        "fit_kind": "real_routed_activation_capture",
+        "not_synthetic_unit_direction": True,
+    }
+
+
+def _activation_weighted_svd_factors(
+    matrix: np.ndarray, X_fit: np.ndarray, *, rank: int
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    """Low-rank factors minimizing ||(W - LR) X||_F on the fit activations."""
+
+    X = np.ascontiguousarray(X_fit, dtype=np.float32)
+    if X.ndim != 2 or X.shape[0] < 1:
+        raise DualGravityError("activation-weighted SVD requires a non-empty activation matrix")
+    if X.shape[1] != matrix.shape[1]:
+        raise DualGravityError(
+            f"activation in-dim {X.shape[1]} does not match weight in-dim {matrix.shape[1]}"
+        )
+    n = max(1, X.shape[0])
+    gram = (X.T @ X) / float(n)
+    ridge = 1e-5 * float(np.trace(gram) / max(gram.shape[0], 1)) + 1e-8
+    gram = gram + ridge * np.eye(gram.shape[0], dtype=np.float32)
+    evals, evecs = np.linalg.eigh(gram.astype(np.float64))
+    evals = np.clip(evals, 1e-12, None)
+    sqrt_g = (evecs * np.sqrt(evals)) @ evecs.T
+    inv_sqrt_g = (evecs * (1.0 / np.sqrt(evals))) @ evecs.T
+    weighted = (matrix.astype(np.float64) @ sqrt_g).astype(np.float32)
+    actual = min(max(1, int(rank)), weighted.shape[0], weighted.shape[1])
+    u, s, vt = np.linalg.svd(weighted, full_matrices=False)
+    left = (u[:, :actual] * s[:actual]).astype(np.float32)
+    right = (vt[:actual, :].astype(np.float32) @ inv_sqrt_g.astype(np.float32)).astype(np.float32)
+    return left, right, {
+        "fit": "activation_weighted_svd_output_frobenius",
+        "rank": int(actual),
+        "n_fit_tokens": int(X.shape[0]),
+        "gram_ridge": float(ridge),
+    }
+
+
+def _decode_activation_weighted_svd_low_rank_codec(payload: bytes) -> np.ndarray:
+    header, body = _parse_container(payload, expected_magic=MAGIC_ACT_SVD)
+    try:
+        shape = tuple(int(item) for item in header["shape"])
+        left_meta = dict(header["left"])
+        right_meta = dict(header["right"])
+        left_bytes = int(header["left_body_bytes"])
+        right_bytes = int(header["right_body_bytes"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise DualGravityError("activation-weighted SVD header lacks factor geometry") from exc
+    if left_bytes < 0 or right_bytes < 0 or left_bytes + right_bytes != len(body):
+        raise DualGravityError("activation-weighted SVD body ledger does not match physical bytes")
+    left = _decode_uniform_body(left_meta, body[:left_bytes])
+    right = _decode_uniform_body(right_meta, body[left_bytes : left_bytes + right_bytes])
+    return np.ascontiguousarray(left @ right, dtype=np.float32).reshape(shape)
+
+
+def _activation_weighted_svd_low_rank_codec(
+    values: np.ndarray,
+    *,
+    rank: int,
+    bits: int,
+    X_fit: np.ndarray,
+    capture_identity: Mapping[str, Any],
+    X_hold: np.ndarray | None = None,
+) -> CodecResult:
+    """Encode W ≈ LR fitted to minimize output Frobenius error on real activations.
+
+    Capture identity (path + sha256) is required in the header so a synthetic
+    fit can never be confused with a real-capture result.
+    """
+
+    if values.ndim < 2:
+        raise DualGravityError("activation-weighted SVD requires a matrix-like tensor")
+    if not isinstance(capture_identity, Mapping) or not capture_identity.get("sha256"):
+        raise DualGravityError("activation-weighted SVD requires a bound real activation capture")
+    if capture_identity.get("fit_kind") != "real_routed_activation_capture":
+        raise DualGravityError("activation-weighted SVD refuses synthetic activation bindings")
+    original_shape = tuple(int(item) for item in values.shape)
+    matrix = np.ascontiguousarray(values, dtype=np.float32).reshape(values.shape[0], -1)
+    left, right, fit_meta = _activation_weighted_svd_factors(matrix, X_fit, rank=rank)
+    left_body, left_rebuilt, left_meta = _factor_codec(left, bits=bits)
+    right_body, right_rebuilt, right_meta = _factor_codec(right, bits=bits)
+    reconstruction = (left_rebuilt @ right_rebuilt).reshape(original_shape)
+    hold = X_hold if X_hold is not None else X_fit
+    hold = np.ascontiguousarray(hold, dtype=np.float32)
+    if hold.ndim != 2 or hold.shape[1] != matrix.shape[1]:
+        raise DualGravityError("activation holdout geometry does not match weight in-dim")
+    y = hold @ matrix.T
+    y_hat = hold @ reconstruction.reshape(matrix.shape).T
+    output_cosine = _mean_row_cosine(y, y_hat)
+    null_baseline = _constant_mean_null_cosine(y)
+    surplus = output_cosine - null_baseline
+    weight = _quality(matrix, reconstruction.reshape(matrix.shape))
+    header = {
+        "schema": "hawking.gravity.activation_weighted_svd_low_rank.v1",
+        "representation": ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+        "shape": list(original_shape),
+        "matrix_shape": [int(item) for item in matrix.shape],
+        "elements": int(values.size),
+        "rank": int(left.shape[1]),
+        "factor_bits": int(bits),
+        "factor_group_size": GROUP_UNIFORM,
+        "left": left_meta,
+        "right": right_meta,
+        "left_body_bytes": len(left_body),
+        "right_body_bytes": len(right_body),
+        "fit": fit_meta,
+        "activation_capture": {
+            "path": capture_identity.get("path"),
+            "capture_result_path": capture_identity.get("capture_result_path"),
+            "sha256": capture_identity.get("sha256"),
+            "schema": capture_identity.get("schema"),
+            "status": capture_identity.get("status"),
+            "fit_kind": capture_identity.get("fit_kind"),
+            "not_synthetic_unit_direction": True,
+        },
+        "selection_metric": {
+            "primary": "surplus_over_null",
+            "secondary": "weight_cosine",
+            "weight_cosine_role": "distribution_local_guard",
+            "operator_recovery_weight_cos_cutoff": OPERATOR_RECOVERY_WEIGHT_COS,
+            "ceiling_component_bpw": CEILING_COMPONENT_BPW,
+        },
+        "activation_quality": {
+            "output_cosine": float(output_cosine),
+            "null_baseline": float(null_baseline),
+            "surplus_over_null": float(surplus),
+            "beats_null": bool(output_cosine > null_baseline),
+            "n_hold_tokens": int(hold.shape[0]),
+            "weight_cosine": float(weight["cosine"]),
+            "weight_relative_l2": float(weight["relative_l2"]),
+            "distribution_local_only": bool(
+                surplus >= 0.10
+                and output_cosine >= 0.90
+                and weight["cosine"] < OPERATOR_RECOVERY_WEIGHT_COS
+            ),
+        },
+    }
+    payload = _container(MAGIC_ACT_SVD, header, left_body + right_body)
+    # Reconstruction must come from physical bytes, not encoder-local factors.
+    decoded = _decode_activation_weighted_svd_low_rank_codec(payload)
+    return CodecResult(payload=payload, reconstruction=decoded, metadata=header)
+
+
 def _representation_config(representation: str, generation: int) -> dict[str, Any]:
     phase = generation % 3
     if representation == "binary_sign_scale128":
@@ -1171,6 +1383,22 @@ def _representation_config(representation: str, generation: int) -> dict[str, An
             "calibration_seed": (101, 211, 307)[phase],
             "correction": "deterministic_unit_direction_row_output_correction",
         }
+    if representation == ACTIVATION_WEIGHTED_SVD_REPRESENTATION:
+        # Capture binding is required at encode time.  Config carries the bound
+        # identity so candidate records cannot be confused with synthetic fits.
+        capture_run = os.environ.get("QWEN30_ACTIVATION_CAPTURE_RUN")
+        capture = _activation_capture_binding(
+            Path(capture_run) if capture_run else DEFAULT_Q30_ACTIVATION_CAPTURE_RUN
+        )
+        return {
+            "rank": (128, 192, 256)[phase],
+            "bits": (3, 4, 3)[phase],
+            "factor_group_size": GROUP_UNIFORM,
+            "activation_capture": capture,
+            "selection_metric": "surplus_over_null",
+            "weight_cosine_role": "secondary_and_distribution_local_guard",
+            "schedule_note": "explicit pack/encode family; not part of the pinned v2 ten-family auto-schedule",
+        }
     raise DualGravityError(f"unknown representation {representation}")
 
 
@@ -1179,6 +1407,8 @@ def _encode(
     proposal: Proposal,
     *,
     gpu_lease: Callable[[], contextlib.AbstractContextManager[Any]] | None = None,
+    activation_rows: np.ndarray | None = None,
+    activation_hold_rows: np.ndarray | None = None,
 ) -> tuple[CodecResult, dict[str, Any]]:
     config = dict(proposal.config)
     if proposal.representation == "binary_sign_scale128":
@@ -1209,6 +1439,35 @@ def _encode(
             group_size=int(config["group_size"]),
             calibration_seed=int(config["calibration_seed"]),
         ), {"status": "NOT_APPLICABLE"}
+    if proposal.representation == ACTIVATION_WEIGHTED_SVD_REPRESENTATION:
+        capture = config.get("activation_capture")
+        if not isinstance(capture, Mapping):
+            raise DualGravityError("activation_weighted_svd_low_rank_q requires activation_capture in config")
+        # Re-verify path+sha256 at encode so a stale config cannot mislabel bytes.
+        bound = _activation_capture_binding(
+            Path(str(capture.get("path", ""))),
+            capture_result_sha256=str(capture.get("sha256", "")),
+        )
+        if activation_rows is None:
+            raise DualGravityError(
+                "activation_weighted_svd_low_rank_q encode requires real activation_rows; "
+                "refusing silent synthetic fallback"
+            )
+        return (
+            _activation_weighted_svd_low_rank_codec(
+                values,
+                rank=int(config["rank"]),
+                bits=int(config["bits"]),
+                X_fit=activation_rows,
+                capture_identity=bound,
+                X_hold=activation_hold_rows,
+            ),
+            {
+                "status": "FIT_ON_BOUND_REAL_ACTIVATION_CAPTURE",
+                "activation_capture": bound,
+                "selection_metric": "surplus_over_null",
+            },
+        )
     raise DualGravityError(f"unsupported representation {proposal.representation}")
 
 
