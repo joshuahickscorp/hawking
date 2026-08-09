@@ -27,7 +27,8 @@ mod macos {
         Qwen30PackedMatvecKernel,
     };
     use hawking_core::model::qwen_complete_binary::{
-        CompleteBinaryAdmission, QwenCompleteBinaryModel,
+        CompleteBinaryAdmission, Qwen30ActivationWeightedSvdAdmission, QwenCompleteBinaryModel,
+        QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA, QWEN30_COMPLETE_BINARY_SCHEMA,
     };
     use serde_json::{json, Value};
     use std::collections::BTreeMap;
@@ -50,10 +51,23 @@ mod macos {
         expected_manifest_seal_sha256: String,
         expected_source_audit_seal_sha256: String,
         expected_source_revision: String,
+        activation_weighted: Option<ActivationWeightedBindings>,
         bind: SocketAddr,
         max_seq_len: usize,
         max_output_tokens: usize,
         gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel,
+    }
+
+    #[derive(Clone, Debug)]
+    struct ActivationWeightedBindings {
+        expected_revalidation_path: PathBuf,
+        expected_revalidation_seal_sha256: String,
+        expected_selection_path: PathBuf,
+        expected_selection_seal_sha256: String,
+        expected_source_snapshot_path: PathBuf,
+        expected_source_snapshot_seal_sha256: String,
+        expected_terminal_path: PathBuf,
+        expected_terminal_seal_sha256: String,
     }
 
     #[derive(Debug)]
@@ -88,7 +102,11 @@ mod macos {
             --expected-source-revision REVISION \\
             --bind 127.0.0.1:PORT \\
             [--max-seq-len N] [--max-output-tokens N] \
-            [--gate-up-swiglu-kernel control|paired-scalar-order-production-no-parity]"
+            [--gate-up-swiglu-kernel control|paired-scalar-order-production-no-parity] \
+            [--expected-revalidation-path PATH --expected-revalidation-seal-sha256 SHA256 \
+             --expected-selection-path PATH --expected-selection-seal-sha256 SHA256 \
+             --expected-source-snapshot-path PATH --expected-source-snapshot-seal-sha256 SHA256 \
+             --expected-terminal-path PATH --expected-terminal-seal-sha256 SHA256]"
     }
 
     fn required<T>(value: Option<T>, flag: &str) -> Result<T, String> {
@@ -135,6 +153,14 @@ mod macos {
         let mut expected_manifest_seal_sha256 = None;
         let mut expected_source_audit_seal_sha256 = None;
         let mut expected_source_revision = None;
+        let mut expected_revalidation_path = None;
+        let mut expected_revalidation_seal_sha256 = None;
+        let mut expected_selection_path = None;
+        let mut expected_selection_seal_sha256 = None;
+        let mut expected_source_snapshot_path = None;
+        let mut expected_source_snapshot_seal_sha256 = None;
+        let mut expected_terminal_path = None;
+        let mut expected_terminal_seal_sha256 = None;
         let mut bind = None;
         let mut max_seq_len = 256usize;
         let mut max_output_tokens = 16usize;
@@ -174,6 +200,82 @@ mod macos {
                         ));
                     }
                 }
+                "--expected-revalidation-path" => {
+                    if expected_revalidation_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-revalidation-path supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-revalidation-seal-sha256" => {
+                    if expected_revalidation_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-revalidation-seal-sha256 supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-selection-path" => {
+                    if expected_selection_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-selection-path supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-selection-seal-sha256" => {
+                    if expected_selection_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-selection-seal-sha256 supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-source-snapshot-path" => {
+                    if expected_source_snapshot_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-source-snapshot-path supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-source-snapshot-seal-sha256" => {
+                    if expected_source_snapshot_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-source-snapshot-seal-sha256 supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-terminal-path" => {
+                    if expected_terminal_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-terminal-path supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-terminal-seal-sha256" => {
+                    if expected_terminal_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-terminal-seal-sha256 supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
                 "--bind" => {
                     if bind
                         .replace(value.parse::<SocketAddr>().map_err(|_| {
@@ -209,6 +311,56 @@ mod macos {
         if max_seq_len == 0 || max_output_tokens == 0 {
             return Err("--max-seq-len and --max-output-tokens must be positive".into());
         }
+        let aw_any = expected_revalidation_path.is_some()
+            || expected_revalidation_seal_sha256.is_some()
+            || expected_selection_path.is_some()
+            || expected_selection_seal_sha256.is_some()
+            || expected_source_snapshot_path.is_some()
+            || expected_source_snapshot_seal_sha256.is_some()
+            || expected_terminal_path.is_some()
+            || expected_terminal_seal_sha256.is_some();
+        let activation_weighted = if aw_any {
+            let revalidation_path =
+                required(expected_revalidation_path, "--expected-revalidation-path")?;
+            let selection_path = required(expected_selection_path, "--expected-selection-path")?;
+            let snapshot_path =
+                required(expected_source_snapshot_path, "--expected-source-snapshot-path")?;
+            let terminal_path = required(expected_terminal_path, "--expected-terminal-path")?;
+            for (flag, path) in [
+                ("--expected-revalidation-path", &revalidation_path),
+                ("--expected-selection-path", &selection_path),
+                ("--expected-source-snapshot-path", &snapshot_path),
+                ("--expected-terminal-path", &terminal_path),
+            ] {
+                if !path.is_absolute() {
+                    return Err(format!("{flag} must be an absolute path"));
+                }
+            }
+            Some(ActivationWeightedBindings {
+                expected_revalidation_path: revalidation_path,
+                expected_revalidation_seal_sha256: required(
+                    expected_revalidation_seal_sha256,
+                    "--expected-revalidation-seal-sha256",
+                )?,
+                expected_selection_path: selection_path,
+                expected_selection_seal_sha256: required(
+                    expected_selection_seal_sha256,
+                    "--expected-selection-seal-sha256",
+                )?,
+                expected_source_snapshot_path: snapshot_path,
+                expected_source_snapshot_seal_sha256: required(
+                    expected_source_snapshot_seal_sha256,
+                    "--expected-source-snapshot-seal-sha256",
+                )?,
+                expected_terminal_path: terminal_path,
+                expected_terminal_seal_sha256: required(
+                    expected_terminal_seal_sha256,
+                    "--expected-terminal-seal-sha256",
+                )?,
+            })
+        } else {
+            None
+        };
         Ok(Args {
             manifest,
             expected_manifest_seal_sha256: required(
@@ -223,6 +375,7 @@ mod macos {
                 expected_source_revision,
                 "--expected-source-revision",
             )?,
+            activation_weighted,
             bind: required(bind, "--bind")?,
             max_seq_len,
             max_output_tokens,
@@ -889,23 +1042,78 @@ mod macos {
 
     pub fn run() -> Result<(), String> {
         let args = parse_args()?;
-        let admission = CompleteBinaryAdmission {
-            model: QwenCompleteBinaryModel::Qwen30Coder,
-            expected_manifest_seal_sha256: args.expected_manifest_seal_sha256,
-            expected_source_audit_seal_sha256: args.expected_source_audit_seal_sha256,
-            expected_source_revision: args.expected_source_revision,
+        let schema = {
+            let raw = std::fs::read(&args.manifest)
+                .map_err(|error| format!("cannot read manifest: {error}"))?;
+            let value: Value = serde_json::from_slice(&raw)
+                .map_err(|error| format!("manifest is not JSON: {error}"))?;
+            value
+                .get("schema")
+                .and_then(Value::as_str)
+                .ok_or_else(|| "manifest lacks schema".to_string())?
+                .to_owned()
         };
-        let mut runtime = Qwen30CompleteNativeRuntime::load(
-            &args.manifest,
-            &admission,
-            Qwen30CompleteRuntimeOptions {
-                max_seq_len: args.max_seq_len,
-                trace_dispatch: false,
-                packed_matvec_kernel: Qwen30PackedMatvecKernel::ScalarControl,
-                gate_up_swiglu_kernel: args.gate_up_swiglu_kernel,
-            },
-        )
-        .map_err(|error| format!("direct packed native runtime load refused: {error}"))?;
+        let options = Qwen30CompleteRuntimeOptions {
+            max_seq_len: args.max_seq_len,
+            trace_dispatch: false,
+            packed_matvec_kernel: Qwen30PackedMatvecKernel::ScalarControl,
+            gate_up_swiglu_kernel: args.gate_up_swiglu_kernel,
+        };
+        let mut runtime = if schema == QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA {
+            let aw = args.activation_weighted.as_ref().ok_or_else(|| {
+                "activation-weighted SVD candidate requires protected revalidation/selection/snapshot/terminal path+seal bindings".to_string()
+            })?;
+            // Mixed candidates always use three-dispatch control so HGRAVS01
+            // organs are not forced through HQ30G1B1 fused gate/up kernels.
+            if options.gate_up_swiglu_kernel != Qwen30GateUpSwiGluKernel::ThreeDispatchControl {
+                return Err(
+                    "activation-weighted SVD serve path requires --gate-up-swiglu-kernel control"
+                        .into(),
+                );
+            }
+            let admission = Qwen30ActivationWeightedSvdAdmission {
+                expected_manifest_seal_sha256: args.expected_manifest_seal_sha256.clone(),
+                expected_source_audit_seal_sha256: args.expected_source_audit_seal_sha256.clone(),
+                expected_source_revision: args.expected_source_revision.clone(),
+                expected_revalidation_path: aw.expected_revalidation_path.clone(),
+                expected_revalidation_seal_sha256: aw.expected_revalidation_seal_sha256.clone(),
+                expected_selection_path: aw.expected_selection_path.clone(),
+                expected_selection_seal_sha256: aw.expected_selection_seal_sha256.clone(),
+                expected_source_snapshot_path: aw.expected_source_snapshot_path.clone(),
+                expected_source_snapshot_seal_sha256: aw
+                    .expected_source_snapshot_seal_sha256
+                    .clone(),
+                expected_terminal_path: aw.expected_terminal_path.clone(),
+                expected_terminal_seal_sha256: aw.expected_terminal_seal_sha256.clone(),
+            };
+            Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
+                &args.manifest,
+                &admission,
+                options,
+            )
+            .map_err(|error| {
+                format!("activation-weighted mixed native runtime load refused: {error}")
+            })?
+        } else if schema == QWEN30_COMPLETE_BINARY_SCHEMA {
+            if args.activation_weighted.is_some() {
+                return Err(
+                    "activation-weighted handoff bindings were supplied for a direct HQ30G1B1 manifest"
+                        .into(),
+                );
+            }
+            let admission = CompleteBinaryAdmission {
+                model: QwenCompleteBinaryModel::Qwen30Coder,
+                expected_manifest_seal_sha256: args.expected_manifest_seal_sha256,
+                expected_source_audit_seal_sha256: args.expected_source_audit_seal_sha256,
+                expected_source_revision: args.expected_source_revision,
+            };
+            Qwen30CompleteNativeRuntime::load(&args.manifest, &admission, options)
+                .map_err(|error| format!("direct packed native runtime load refused: {error}"))?
+        } else {
+            return Err(format!(
+                "unsupported Qwen30 native HTTP server manifest schema {schema:?}"
+            ));
+        };
         let started_nanos = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_err(|error| format!("system clock before UNIX epoch: {error}"))?
@@ -919,8 +1127,9 @@ mod macos {
         let listener = TcpListener::bind(args.bind)
             .map_err(|error| format!("bind loopback native adapter {}: {error}", args.bind))?;
         eprintln!(
-            "qwen30 direct packed native HTTP adapter listening on http://{}",
-            args.bind
+            "qwen30 native HTTP adapter listening on http://{} (activation_weighted_svd={})",
+            args.bind,
+            runtime.has_activation_weighted_svd_organs()
         );
         for incoming in listener.incoming() {
             match incoming {

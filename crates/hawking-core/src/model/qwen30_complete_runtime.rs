@@ -31,9 +31,11 @@ use super::qwen30_quality_repack_diagnostic::{
     Qwen30QualityRepackSparseGateUpDispatch,
 };
 use super::qwen_complete_binary::{
-    admit_complete_binary_artifact, admit_qwen30_quality_repack_artifact, CompleteBinaryAdmission,
-    CompleteBinaryArtifact, CompleteBinaryHeader, Qwen30QualityRepackAdmission,
-    QwenCompleteBinaryModel,
+    admit_complete_binary_artifact, admit_qwen30_activation_weighted_svd_artifact,
+    admit_qwen30_quality_repack_artifact, decode_hgravs01_factors_f32, CompleteBinaryAdmission,
+    CompleteBinaryArtifact, CompleteBinaryHeader, Qwen30ActivationWeightedSvdAdmission,
+    Qwen30ActivationWeightedSvdArtifact, Qwen30ActivationWeightedTensorLayout,
+    Qwen30QualityRepackAdmission, QwenCompleteBinaryModel,
 };
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -52,7 +54,9 @@ use crate::kernels::{
     rope_qk_kv_append_vbias_f32_tcb,
 };
 #[cfg(target_os = "macos")]
-use crate::metal::{DispatchSample, MetalContext, PinnedBuffer, TokenCommandBuffer};
+use crate::metal::{
+    ArgLayout, DispatchSample, KernelArgBuffer, MetalContext, PinnedBuffer, TokenCommandBuffer,
+};
 
 // The generic kernel dispatcher keeps its scalar-binding helper private.  This
 // runtime has a handful of bespoke kernels, so retain the same direct Metal
@@ -703,32 +707,6 @@ pub struct Qwen30Layer0RouterCapture {
     pub router_input_hidden: Vec<f32>,
 }
 
-/// One layer's router observation from a full all-layer diagnostic forward.
-/// Captured after the layer's post-attention RMSNorm + router top-k, before
-/// the selected expert gate/up/down wave mutates residual state.
-#[cfg(target_os = "macos")]
-#[derive(Clone, Debug)]
-pub struct Qwen30LayerRouterCapture {
-    pub layer: usize,
-    pub selected_expert_ids: [u32; QWEN30_TOP_K],
-    pub normalized_route_weights: [f32; QWEN30_TOP_K],
-    /// Device-produced post-attention RMSNorm buffer at this layer (router
-    /// input). Host copy only; never fed back into native model math.
-    pub router_input_hidden: Vec<f32>,
-}
-
-/// Full 48-layer router+hidden diagnostic for one tokenized input token.
-/// Executes the complete residual stack (embedding through every expert wave)
-/// so deeper-layer hiddens are causally real. Final norm / lm_head / sampler
-/// still run via the shared greedy path; their outputs are not retained here.
-#[cfg(target_os = "macos")]
-#[derive(Clone, Debug)]
-pub struct Qwen30AllLayerRouterCaptureStep {
-    pub position: usize,
-    pub input_token_id: u32,
-    pub layers: Vec<Qwen30LayerRouterCapture>,
-}
-
 /// Diagnostic-only profiler data from one or more actual native Metal token
 /// executions.  It deliberately exposes counts and raw completed-dispatch
 /// samples rather than calculating a TPS value; clean sustained throughput is
@@ -805,6 +783,85 @@ fn tensor_shapes() -> BTreeMap<String, Vec<usize>> {
     expected.insert("model.norm.weight".into(), vec![QWEN30_HIDDEN]);
     expected.insert("lm_head.weight".into(), vec![QWEN30_VOCAB, QWEN30_HIDDEN]);
     expected
+}
+
+fn bytemuck_f32_slice(values: &[f32]) -> Result<&[u8]> {
+    let byte_len = values
+        .len()
+        .checked_mul(std::mem::size_of::<f32>())
+        .ok_or_else(|| model_error("f32 slice byte length overflows usize"))?;
+    Ok(unsafe { std::slice::from_raw_parts(values.as_ptr() as *const u8, byte_len) })
+}
+
+fn validate_mixed_activation_weighted_catalog(
+    mixed: &Qwen30ActivationWeightedSvdArtifact,
+    direct: &CompleteBinaryArtifact,
+    config: &Qwen30CompleteRuntimeConfig,
+) -> Result<()> {
+    if direct.model != QwenCompleteBinaryModel::Qwen30Coder {
+        return Err(model_error(
+            "mixed activation-weighted direct base is not the Qwen30 model family",
+        ));
+    }
+    if direct.source_revision != config.source_revision
+        || mixed.source_revision != config.source_revision
+        || config.source_repository != QWEN30_REPOSITORY
+    {
+        return Err(model_error(
+            "mixed activation-weighted artifact and source configuration revision binding disagrees",
+        ));
+    }
+    let expected = tensor_shapes();
+    let mut actual: HashSet<&str> = direct.tensors.keys().map(String::as_str).collect();
+    for name in &mixed.selected_hgravs_organs {
+        if !actual.insert(name.as_str()) {
+            return Err(model_error(format!(
+                "HGRAVS01 organ {name:?} also appears in the direct base catalog"
+            )));
+        }
+        let tensor = mixed.tensor(name)?;
+        let Qwen30ActivationWeightedTensorLayout::ActivationWeightedSvd(header) = &tensor.layout
+        else {
+            return Err(model_error(format!(
+                "selected organ {name:?} is not typed as HGRAVS01"
+            )));
+        };
+        let Some(expected_shape) = expected.get(name) else {
+            return Err(model_error(format!(
+                "HGRAVS01 organ {name:?} is not a required Qwen30 tensor"
+            )));
+        };
+        if &header.shape != expected_shape {
+            return Err(model_error(format!(
+                "HGRAVS01 organ {name:?} shape {:?} differs from required {:?}",
+                header.shape, expected_shape
+            )));
+        }
+    }
+    let required: HashSet<&str> = expected.keys().map(String::as_str).collect();
+    if actual != required {
+        return Err(model_error(
+            "mixed activation-weighted catalog tensor set is incomplete or has unexpected names",
+        ));
+    }
+    for (name, shape) in &expected {
+        if mixed.selected_hgravs_organs.iter().any(|selected| selected == name) {
+            continue;
+        }
+        let tensor = direct.tensor(name)?;
+        if &tensor.header.shape != shape {
+            return Err(model_error(format!(
+                "direct organ {name:?} shape {:?} differs from required {shape:?}",
+                tensor.header.shape
+            )));
+        }
+        if tensor.header.group_size != QWEN30_GROUP_SIZE {
+            return Err(model_error(format!(
+                "direct organ {name:?} group size is not {QWEN30_GROUP_SIZE}"
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn validate_complete_catalog(
@@ -1061,10 +1118,23 @@ impl GpuBinaryTensor {
     }
 }
 
+/// Device-resident HGRAVS01 factors. Token execution is `y = L @ (R @ x)` —
+/// never a dense `L @ R` reconstruction on the token path.
+#[cfg(target_os = "macos")]
+#[derive(Clone)]
+struct GpuHgravsFactors {
+    left: PinnedBuffer,
+    right: PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    rank: usize,
+}
+
 /// Host-side binding for one device-selected routed expert.  The sparse
 /// variant is deliberately possible only for the separately admitted
 /// HQ30GR2 L0/E0 candidate; ordinary runtime routes retain three direct
-/// HQ30G1B1 tensors.
+/// HQ30G1B1 tensors. The activation-weighted variant holds native HGRAVS01
+/// factors for mixed HQ30G1B1 + HGRAVS01 candidates.
 #[cfg(target_os = "macos")]
 enum Qwen30RoutedExpertWeights {
     Direct {
@@ -1074,6 +1144,11 @@ enum Qwen30RoutedExpertWeights {
     },
     QualitySparseGateUp {
         down: GpuBinaryTensor,
+    },
+    ActivationWeightedSvd {
+        gate: GpuHgravsFactors,
+        up: GpuHgravsFactors,
+        down: GpuHgravsFactors,
     },
 }
 
@@ -1173,6 +1248,11 @@ pub struct Qwen30CompleteNativeRuntime {
     workspace: DeviceWorkspace,
     packed_tensors: HashMap<String, GpuBinaryTensor>,
     decoded_vectors: HashMap<String, PinnedBuffer>,
+    /// Device-resident HGRAVS01 factors for the mixed activation-weighted
+    /// candidate. Empty for ordinary direct and HQ30GR2 diagnostic runtimes.
+    hgravs_tensors: HashMap<String, GpuHgravsFactors>,
+    /// Scratch for the low-rank intermediate `R @ x` (max admitted rank).
+    hgravs_rank_mid: Option<PinnedBuffer>,
     packed_matvec_kernel: Qwen30PackedMatvecKernel,
     gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel,
     /// Present only for the separately admitted HQ30GR2 diagnostic body.
@@ -1194,12 +1274,6 @@ pub struct Qwen30CompleteNativeRuntime {
     /// membership cannot silently become part of a production token path.
     diagnostic_route_capture_enabled: bool,
     diagnostic_selected_expert_ids: Vec<[u32; QWEN30_TOP_K]>,
-    /// Enabled only by the all-layer activation capture diagnostic.  When set,
-    /// each layer's router-input hidden and route membership are retained
-    /// after the router command buffer completes and before the expert wave.
-    /// Serving never enables this.
-    diagnostic_router_hidden_capture_enabled: bool,
-    diagnostic_layer_router_captures: Vec<Qwen30LayerRouterCapture>,
     max_seq_len: usize,
     next_position: usize,
 }
@@ -1268,6 +1342,8 @@ impl Qwen30CompleteNativeRuntime {
             workspace,
             packed_tensors: HashMap::new(),
             decoded_vectors: HashMap::new(),
+            hgravs_tensors: HashMap::new(),
+            hgravs_rank_mid: None,
             packed_matvec_kernel: options.packed_matvec_kernel,
             gate_up_swiglu_kernel: options.gate_up_swiglu_kernel,
             quality_sparse_gate_up: None,
@@ -1275,8 +1351,124 @@ impl Qwen30CompleteNativeRuntime {
             trace_host_stages: options.trace_dispatch,
             diagnostic_route_capture_enabled: false,
             diagnostic_selected_expert_ids: Vec::new(),
-            diagnostic_router_hidden_capture_enabled: false,
-            diagnostic_layer_router_captures: Vec::new(),
+            max_seq_len: options.max_seq_len,
+            next_position: 0,
+        })
+    }
+
+    /// Re-admit the mixed HQ30G1B1 + HGRAVS01 candidate and construct a native
+    /// runtime that executes HGRAVS01 organs as two-stage low-rank matvecs.
+    /// Dense `L @ R` reconstruction is forbidden on the token path.
+    pub fn load_activation_weighted_svd(
+        manifest_path: impl AsRef<Path>,
+        admission: &Qwen30ActivationWeightedSvdAdmission,
+        options: Qwen30CompleteRuntimeOptions,
+    ) -> Result<Self> {
+        if options.gate_up_swiglu_kernel != Qwen30GateUpSwiGluKernel::ThreeDispatchControl {
+            return Err(model_error(
+                "activation-weighted SVD runtime requires the three-dispatch gate/up control topology; fused HQ30G1B1 kernels cannot execute HGRAVS01 factors",
+            ));
+        }
+        let mixed = admit_qwen30_activation_weighted_svd_artifact(manifest_path, admission)?;
+        Self::from_admitted_activation_weighted(mixed, options)
+    }
+
+    fn from_admitted_activation_weighted(
+        mixed: Qwen30ActivationWeightedSvdArtifact,
+        options: Qwen30CompleteRuntimeOptions,
+    ) -> Result<Self> {
+        if options.max_seq_len == 0 || options.max_seq_len > QWEN30_COMPLETE_NATIVE_MAX_CONTEXT {
+            return Err(model_error(format!(
+                "requested max_seq_len={} is outside native GQA support 1..={QWEN30_COMPLETE_NATIVE_MAX_CONTEXT}",
+                options.max_seq_len
+            )));
+        }
+        if mixed.verified_payload_count() != QWEN30_COMPLETE_TENSOR_COUNT
+            || !mixed.has_complete_verified_payload_cache()
+            || mixed.selected_hgravs_organs.len() != 327
+        {
+            return Err(model_error(
+                "activation-weighted admission did not retain a complete mixed catalog (18540 direct + 327 HGRAVS01)",
+            ));
+        }
+        let direct = mixed.direct_base_view_for_runtime()?;
+        // Config/tokenizer bind through the same source paths as the direct
+        // control; the partial direct catalog still carries full source seals.
+        let (_config_path, _config_sha256, source_config) = parse_source_config(&direct)?;
+        let config = Qwen30CompleteRuntimeConfig::from_source_config(
+            &source_config,
+            QWEN30_REPOSITORY,
+            &direct.source_revision,
+        )?;
+        if options.max_seq_len > config.source_max_position_embeddings {
+            return Err(model_error(format!(
+                "requested max_seq_len={} exceeds source config maximum {}",
+                options.max_seq_len, config.source_max_position_embeddings
+            )));
+        }
+        let (_tokenizer_path, _tokenizer_sha256, tokenizer, tokenizer_addressable_vocab) =
+            tokenizer_from_source(&direct)?;
+        let source_user_chat_template = source_user_chat_template_from_source(&direct)?;
+        validate_mixed_activation_weighted_catalog(&mixed, &direct, &config)?;
+        let context = MetalContext::new_with_trace(options.trace_dispatch)?;
+        let workspace = DeviceWorkspace::new(&context, options.max_seq_len, &config)?;
+        let mut hgravs_tensors = HashMap::new();
+        let mut max_rank = 0usize;
+        for name in &mixed.selected_hgravs_organs {
+            let payload = mixed.verified_tensor_payload(name)?;
+            let (header, left, right) = decode_hgravs01_factors_f32(payload.as_ref())?;
+            if header.matrix_shape[0] == 0
+                || header.matrix_shape[1] == 0
+                || header.rank == 0
+                || left.len() != header.matrix_shape[0] * header.rank
+                || right.len() != header.rank * header.matrix_shape[1]
+            {
+                return Err(model_error(format!(
+                    "HGRAVS01 organ {name:?} factor geometry is invalid for device upload"
+                )));
+            }
+            max_rank = max_rank.max(header.rank);
+            let left_bytes = bytemuck_f32_slice(&left)?;
+            let right_bytes = bytemuck_f32_slice(&right)?;
+            hgravs_tensors.insert(
+                name.clone(),
+                GpuHgravsFactors {
+                    left: context.new_buffer_with_bytes_checked(left_bytes)?,
+                    right: context.new_buffer_with_bytes_checked(right_bytes)?,
+                    rows: header.matrix_shape[0],
+                    cols: header.matrix_shape[1],
+                    rank: header.rank,
+                },
+            );
+        }
+        if hgravs_tensors.len() != mixed.selected_hgravs_organs.len() {
+            return Err(model_error(
+                "activation-weighted runtime failed to upload every selected HGRAVS01 organ",
+            ));
+        }
+        let hgravs_rank_mid = context.new_buffer_checked(bytes_for_f32(
+            max_rank.max(1),
+            "HGRAVS01 low-rank intermediate workspace",
+        )?)?;
+        Ok(Self {
+            artifact: direct,
+            config,
+            tokenizer,
+            tokenizer_addressable_vocab,
+            source_user_chat_template,
+            context,
+            workspace,
+            packed_tensors: HashMap::new(),
+            decoded_vectors: HashMap::new(),
+            hgravs_tensors,
+            hgravs_rank_mid: Some(hgravs_rank_mid),
+            packed_matvec_kernel: options.packed_matvec_kernel,
+            gate_up_swiglu_kernel: options.gate_up_swiglu_kernel,
+            quality_sparse_gate_up: None,
+            quality_sparse_gate_up_interception_count: Cell::new(0),
+            trace_host_stages: options.trace_dispatch,
+            diagnostic_route_capture_enabled: false,
+            diagnostic_selected_expert_ids: Vec::new(),
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1289,7 +1481,6 @@ impl Qwen30CompleteNativeRuntime {
         MetalContext::write_buffer_bytes(&self.workspace.key_cache, &zero_kv);
         MetalContext::write_buffer_bytes(&self.workspace.value_cache, &zero_kv);
         self.diagnostic_selected_expert_ids.clear();
-        self.diagnostic_layer_router_captures.clear();
         self.quality_sparse_gate_up_interception_count.set(0);
         self.next_position = 0;
     }
@@ -1331,63 +1522,6 @@ impl Qwen30CompleteNativeRuntime {
         })
     }
 
-    /// Run one complete 48-layer native token and retain every layer's
-    /// device-selected route IDs/weights plus the router-input hidden vector.
-    ///
-    /// This is the activation-capture primitive for all-layer surplus fitting.
-    /// It deliberately reuses the exact residual/expert stack of
-    /// [`Self::forward_token_greedy`] so deeper-layer hiddens are causally real
-    /// (unlike [`Self::capture_layer0_router_for_token`], which stops before the
-    /// L0 expert wave). Serving never enables this path.
-    pub fn capture_all_layers_router_for_token(
-        &mut self,
-        token: u32,
-    ) -> Result<Qwen30AllLayerRouterCaptureStep> {
-        if self.diagnostic_route_capture_enabled || self.diagnostic_router_hidden_capture_enabled {
-            return Err(model_error(
-                "all-layer router capture is already active for another native token",
-            ));
-        }
-        self.diagnostic_selected_expert_ids.clear();
-        self.diagnostic_layer_router_captures.clear();
-        self.diagnostic_route_capture_enabled = true;
-        self.diagnostic_router_hidden_capture_enabled = true;
-        let result = self.forward_token_greedy(token);
-        self.diagnostic_route_capture_enabled = false;
-        self.diagnostic_router_hidden_capture_enabled = false;
-        let layers = std::mem::take(&mut self.diagnostic_layer_router_captures);
-        let _selected = std::mem::take(&mut self.diagnostic_selected_expert_ids);
-        let greedy = result?;
-        if layers.len() != self.config.layers {
-            return Err(model_error(format!(
-                "all-layer router capture retained {} layers, expected {}",
-                layers.len(),
-                self.config.layers
-            )));
-        }
-        for (expected, row) in layers.iter().enumerate() {
-            if row.layer != expected {
-                return Err(model_error(format!(
-                    "all-layer router capture layer order broken: expected {expected}, got {}",
-                    row.layer
-                )));
-            }
-            if row.router_input_hidden.len() != self.config.hidden {
-                return Err(model_error(format!(
-                    "all-layer router capture layer {} hidden width {} != {}",
-                    row.layer,
-                    row.router_input_hidden.len(),
-                    self.config.hidden
-                )));
-            }
-        }
-        Ok(Qwen30AllLayerRouterCaptureStep {
-            position: greedy.position,
-            input_token_id: token,
-            layers,
-        })
-    }
-
     pub fn max_seq_len(&self) -> usize {
         self.max_seq_len
     }
@@ -1416,18 +1550,26 @@ impl Qwen30CompleteNativeRuntime {
         &self.artifact.manifest_seal_sha256
     }
 
-    /// Number of immutable direct payload snapshots verified during this
-    /// process's full artifact admission. It must remain the complete sealed
-    /// catalog count; a lazy subset is not accepted for production execution.
+    /// Number of immutable payload snapshots verified during this process's
+    /// full artifact admission (direct HQ30G1B1 plus any HGRAVS01 factors).
+    /// It must remain the complete sealed catalog count; a lazy subset is not
+    /// accepted for production execution.
     pub fn verified_payload_count(&self) -> usize {
-        self.artifact.verified_payload_count()
+        self.artifact
+            .verified_payload_count()
+            .saturating_add(self.hgravs_tensors.len())
     }
 
-    /// Whether the runtime owns a complete immutable direct-payload catalog
-    /// for this process. This is an integrity/residency fact only, not a TPS
-    /// result.
+    /// Whether the runtime owns a complete immutable payload catalog for this
+    /// process. This is an integrity/residency fact only, not a TPS result.
     pub fn has_complete_verified_payload_cache(&self) -> bool {
         self.artifact.has_complete_verified_payload_cache()
+            && self.verified_payload_count() == QWEN30_COMPLETE_TENSOR_COUNT
+    }
+
+    /// Whether this process loaded the mixed HQ30G1B1 + HGRAVS01 candidate.
+    pub fn has_activation_weighted_svd_organs(&self) -> bool {
+        !self.hgravs_tensors.is_empty()
     }
 
     pub fn packed_matvec_kernel(&self) -> Qwen30PackedMatvecKernel {
@@ -1456,6 +1598,11 @@ impl Qwen30CompleteNativeRuntime {
     }
 
     fn packed_tensor(&mut self, name: &str) -> Result<GpuBinaryTensor> {
+        if self.hgravs_tensors.contains_key(name) {
+            return Err(model_error(format!(
+                "tensor {name:?} is an admitted HGRAVS01 organ; the direct HQ30G1B1 packed path is forbidden for it"
+            )));
+        }
         if let Some(tensor) = self.packed_tensors.get(name) {
             return Ok(tensor.clone());
         }
@@ -1677,6 +1824,132 @@ impl Qwen30CompleteNativeRuntime {
                 encoder.qwen_set_u32(5, self.config.vocab_size as u32);
                 encoder.qwen_set_u32(6, QWEN30_GROUP_SIZE as u32);
             },
+        )
+    }
+
+    /// Native HGRAVS01 execution: `y = L @ (R @ x)` with dequantized factors.
+    /// Factors are decoded once at load; token time never forms dense `W`.
+    fn dispatch_hgravs_low_rank_matvec(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight: &GpuHgravsFactors,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        input_offset_bytes: usize,
+        output_offset_bytes: usize,
+    ) -> Result<()> {
+        let mid = self.hgravs_rank_mid.as_ref().ok_or_else(|| {
+            model_error("HGRAVS01 low-rank intermediate workspace is absent")
+        })?;
+        if weight.rank == 0 || weight.rank > mid.length() as usize / std::mem::size_of::<f32>() {
+            return Err(model_error(
+                "HGRAVS01 rank exceeds the allocated intermediate workspace",
+            ));
+        }
+        let required_input = bytes_for_f32(weight.cols, "HGRAVS01 projection input")?;
+        let input_end = input_offset_bytes
+            .checked_add(required_input)
+            .ok_or_else(|| model_error("HGRAVS01 projection input offset overflows usize"))?;
+        if input_end > input.length() as usize {
+            return Err(model_error(
+                "HGRAVS01 projection input range exceeds workspace",
+            ));
+        }
+        let required_output = bytes_for_f32(weight.rows, "HGRAVS01 projection output")?;
+        let output_end = output_offset_bytes
+            .checked_add(required_output)
+            .ok_or_else(|| model_error("HGRAVS01 projection output offset overflows usize"))?;
+        if output_end > output.length() as usize {
+            return Err(model_error(
+                "HGRAVS01 projection output range exceeds workspace",
+            ));
+        }
+        // mid = R @ x
+        self.dispatch_f32_gemv(
+            tcb,
+            &weight.right,
+            weight.rank,
+            weight.cols,
+            input,
+            input_offset_bytes,
+            mid,
+            0,
+        )?;
+        // y = L @ mid
+        self.dispatch_f32_gemv(
+            tcb,
+            &weight.left,
+            weight.rows,
+            weight.rank,
+            mid,
+            0,
+            output,
+            output_offset_bytes,
+        )
+    }
+
+    fn dispatch_f32_gemv(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        input: &PinnedBuffer,
+        input_offset_bytes: usize,
+        output: &PinnedBuffer,
+        output_offset_bytes: usize,
+    ) -> Result<()> {
+        let rows_u32 = u32_checked(rows, "f32 gemv rows")?;
+        let cols_u32 = u32_checked(cols, "f32 gemv cols")?;
+        let tg = 256u32;
+        let mut args = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])
+            .map_err(|error| model_error(format!("HGRAVS01 f32 gemv arg buffer refused: {error}")))?;
+        args.set_u32(0, rows_u32);
+        args.set_u32(1, cols_u32);
+        tcb.dispatch_threads(
+            "gemv_f32_moe",
+            (rows_u32.saturating_mul(tg), 1, 1),
+            (tg, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(weight), 0);
+                encoder.set_buffer(1, Some(input), input_offset_bytes as u64);
+                encoder.set_buffer(2, Some(output), output_offset_bytes as u64);
+                encoder.set_buffer(3, Some(args.handle()), 0);
+                encoder.set_threadgroup_memory_length(
+                    0,
+                    (tg as u64) * std::mem::size_of::<f32>() as u64,
+                );
+            },
+        )
+    }
+
+    fn dispatch_hgravs_expert_gate_up_swiglu(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate: &GpuHgravsFactors,
+        up: &GpuHgravsFactors,
+        output_offset_bytes: usize,
+    ) -> Result<()> {
+        self.dispatch_hgravs_low_rank_matvec(
+            tcb,
+            gate,
+            &self.workspace.x_norm,
+            &self.workspace.expert_gate,
+            0,
+            output_offset_bytes,
+        )?;
+        self.dispatch_hgravs_low_rank_matvec(
+            tcb,
+            up,
+            &self.workspace.x_norm,
+            &self.workspace.expert_up,
+            0,
+            output_offset_bytes,
+        )?;
+        self.dispatch_silu_offset(
+            tcb,
+            output_offset_bytes,
+            &self.workspace.expert_activation,
         )
     }
 
@@ -2512,9 +2785,6 @@ impl Qwen30CompleteNativeRuntime {
         if self.diagnostic_route_capture_enabled {
             self.diagnostic_selected_expert_ids.clear();
         }
-        if self.diagnostic_router_hidden_capture_enabled {
-            self.diagnostic_layer_router_captures.clear();
-        }
 
         let serial_encoder = qwen30_serial_encoder_enabled();
         host_stages.measure(
@@ -2744,32 +3014,51 @@ impl Qwen30CompleteNativeRuntime {
                     if self.diagnostic_route_capture_enabled {
                         self.diagnostic_selected_expert_ids.push(route_ids);
                     }
-                    // Hidden/route capture must happen before the expert wave
-                    // reuses x_norm. Observation-only; never fed back.
-                    if self.diagnostic_router_hidden_capture_enabled {
-                        let router_input_hidden = self.router_input_hidden()?;
-                        let normalized_route_weights = self.route_weights()?;
-                        self.diagnostic_layer_router_captures
-                            .push(Qwen30LayerRouterCapture {
-                                layer,
-                                selected_expert_ids: route_ids,
-                                normalized_route_weights,
-                                router_input_hidden,
-                            });
-                    }
                     let mut route_weights = Vec::with_capacity(self.config.experts_per_token);
                     for &expert in &route_ids {
                         let prefix = format!("model.layers.{layer}.mlp.experts.{expert}");
-                        let down = self.packed_tensor(&format!("{prefix}.down_proj.weight"))?;
-                        if self.quality_sparse_gate_up_applies(layer, expert) {
+                        let gate_name = format!("{prefix}.gate_proj.weight");
+                        let up_name = format!("{prefix}.up_proj.weight");
+                        let down_name = format!("{prefix}.down_proj.weight");
+                        if self.hgravs_tensors.contains_key(&gate_name)
+                            || self.hgravs_tensors.contains_key(&up_name)
+                            || self.hgravs_tensors.contains_key(&down_name)
+                        {
+                            // Mixed candidate: every HGRAVS organ for this expert
+                            // must be present; partial triples are refused closed.
+                            let gate = self.hgravs_tensors.get(&gate_name).cloned().ok_or_else(
+                                || {
+                                    model_error(format!(
+                                        "selected expert {prefix} missing HGRAVS01 gate factor"
+                                    ))
+                                },
+                            )?;
+                            let up = self.hgravs_tensors.get(&up_name).cloned().ok_or_else(|| {
+                                model_error(format!(
+                                    "selected expert {prefix} missing HGRAVS01 up factor"
+                                ))
+                            })?;
+                            let down =
+                                self.hgravs_tensors.get(&down_name).cloned().ok_or_else(|| {
+                                    model_error(format!(
+                                        "selected expert {prefix} missing HGRAVS01 down factor"
+                                    ))
+                                })?;
+                            route_weights.push(Qwen30RoutedExpertWeights::ActivationWeightedSvd {
+                                gate,
+                                up,
+                                down,
+                            });
+                        } else if self.quality_sparse_gate_up_applies(layer, expert) {
+                            let down = self.packed_tensor(&down_name)?;
                             route_weights.push(Qwen30RoutedExpertWeights::QualitySparseGateUp {
                                 down,
                             });
                         } else {
                             route_weights.push(Qwen30RoutedExpertWeights::Direct {
-                                gate: self.packed_tensor(&format!("{prefix}.gate_proj.weight"))?,
-                                up: self.packed_tensor(&format!("{prefix}.up_proj.weight"))?,
-                                down,
+                                gate: self.packed_tensor(&gate_name)?,
+                                up: self.packed_tensor(&up_name)?,
+                                down: self.packed_tensor(&down_name)?,
                             });
                         }
                     }
@@ -2801,24 +3090,45 @@ impl Qwen30CompleteNativeRuntime {
                             })?,
                             "expert route hidden offset",
                         )?;
-                        let down = match weights {
+                        match weights {
                             Qwen30RoutedExpertWeights::Direct { gate, up, down } => {
-                                self.dispatch_expert_gate_up_swiglu(&mut tcb, gate, up, mid_offset)?;
-                                down
+                                self.dispatch_expert_gate_up_swiglu(
+                                    &mut tcb, gate, up, mid_offset,
+                                )?;
+                                self.dispatch_binary_matvec(
+                                    &mut tcb,
+                                    down,
+                                    &self.workspace.expert_activation,
+                                    &self.workspace.expert_output,
+                                    mid_offset,
+                                    hidden_offset,
+                                )?;
                             }
                             Qwen30RoutedExpertWeights::QualitySparseGateUp { down } => {
                                 self.dispatch_quality_sparse_gate_up(&mut tcb, mid_offset)?;
-                                down
+                                self.dispatch_binary_matvec(
+                                    &mut tcb,
+                                    down,
+                                    &self.workspace.expert_activation,
+                                    &self.workspace.expert_output,
+                                    mid_offset,
+                                    hidden_offset,
+                                )?;
                             }
-                        };
-                        self.dispatch_binary_matvec(
-                            &mut tcb,
-                            down,
-                            &self.workspace.expert_activation,
-                            &self.workspace.expert_output,
-                            mid_offset,
-                            hidden_offset,
-                        )?;
+                            Qwen30RoutedExpertWeights::ActivationWeightedSvd { gate, up, down } => {
+                                self.dispatch_hgravs_expert_gate_up_swiglu(
+                                    &mut tcb, gate, up, mid_offset,
+                                )?;
+                                self.dispatch_hgravs_low_rank_matvec(
+                                    &mut tcb,
+                                    down,
+                                    &self.workspace.expert_activation,
+                                    &self.workspace.expert_output,
+                                    mid_offset,
+                                    hidden_offset,
+                                )?;
+                            }
+                        }
                     }
                     self.dispatch_weighted_expert_add(&mut tcb)?;
                     if serial_encoder {
@@ -3194,6 +3504,16 @@ impl Qwen30CompleteNativeRuntime {
     ) -> Result<Self> {
         Err(Error::Metal(
             "Qwen30 complete native runtime is Metal-only and requires macOS".into(),
+        ))
+    }
+
+    pub fn load_activation_weighted_svd(
+        _manifest_path: impl AsRef<Path>,
+        _admission: &Qwen30ActivationWeightedSvdAdmission,
+        _options: Qwen30CompleteRuntimeOptions,
+    ) -> Result<Self> {
+        Err(Error::Metal(
+            "Qwen30 activation-weighted SVD runtime is Metal-only and requires macOS".into(),
         ))
     }
 }

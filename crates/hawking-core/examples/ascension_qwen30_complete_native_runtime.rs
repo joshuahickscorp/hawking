@@ -20,7 +20,8 @@ mod macos {
         Qwen30PackedMatvecKernel,
     };
     use hawking_core::model::qwen_complete_binary::{
-        CompleteBinaryAdmission, QwenCompleteBinaryModel,
+        CompleteBinaryAdmission, Qwen30ActivationWeightedSvdAdmission, QwenCompleteBinaryModel,
+        QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA, QWEN30_COMPLETE_BINARY_SCHEMA,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -124,6 +125,8 @@ mod macos {
         expected_manifest_seal_sha256: String,
         expected_source_audit_seal_sha256: String,
         expected_source_revision: String,
+        /// Required only for the mixed HQ30G1B1 + HGRAVS01 candidate schema.
+        activation_weighted: Option<ActivationWeightedBindings>,
         mode: Mode,
         token_id: Option<u32>,
         prompt: Option<String>,
@@ -133,6 +136,18 @@ mod macos {
         packed_matvec_kernel: Qwen30PackedMatvecKernel,
         gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel,
         prompt_template: PromptTemplate,
+    }
+
+    #[derive(Clone, Debug)]
+    struct ActivationWeightedBindings {
+        expected_revalidation_path: PathBuf,
+        expected_revalidation_seal_sha256: String,
+        expected_selection_path: PathBuf,
+        expected_selection_seal_sha256: String,
+        expected_source_snapshot_path: PathBuf,
+        expected_source_snapshot_seal_sha256: String,
+        expected_terminal_path: PathBuf,
+        expected_terminal_seal_sha256: String,
     }
 
     fn usage() -> &'static str {
@@ -145,7 +160,11 @@ mod macos {
             [--token-id ID] [--prompt TEXT] [--max-new-tokens N] \\
             [--max-seq-len N] [--trace-dispatch] [--prompt-template raw-text-diagnostic|source-user-chat] \
             [--packed-matvec-kernel control|simdgroup-candidate] \
-            [--gate-up-swiglu-kernel control|fused-candidate|fused-candidate-device-parity|paired-scalar-order-candidate-device-parity|paired-scalar-order-production-no-parity]"
+            [--gate-up-swiglu-kernel control|fused-candidate|fused-candidate-device-parity|paired-scalar-order-candidate-device-parity|paired-scalar-order-production-no-parity] \
+            [--expected-revalidation-path PATH --expected-revalidation-seal-sha256 SHA256 \
+             --expected-selection-path PATH --expected-selection-seal-sha256 SHA256 \
+             --expected-source-snapshot-path PATH --expected-source-snapshot-seal-sha256 SHA256 \
+             --expected-terminal-path PATH --expected-terminal-seal-sha256 SHA256]"
     }
 
     fn parse_usize(value: &str, flag: &str) -> Result<usize, String> {
@@ -169,6 +188,14 @@ mod macos {
         let mut expected_manifest_seal_sha256 = None;
         let mut expected_source_audit_seal_sha256 = None;
         let mut expected_source_revision = None;
+        let mut expected_revalidation_path = None;
+        let mut expected_revalidation_seal_sha256 = None;
+        let mut expected_selection_path = None;
+        let mut expected_selection_seal_sha256 = None;
+        let mut expected_source_snapshot_path = None;
+        let mut expected_source_snapshot_seal_sha256 = None;
+        let mut expected_terminal_path = None;
+        let mut expected_terminal_seal_sha256 = None;
         let mut mode = None;
         let mut token_id = None;
         let mut prompt = None;
@@ -222,6 +249,82 @@ mod macos {
                     if expected_source_revision.replace(value).is_some() {
                         return Err(format!(
                             "--expected-source-revision was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-revalidation-path" => {
+                    if expected_revalidation_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-revalidation-path was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-revalidation-seal-sha256" => {
+                    if expected_revalidation_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-revalidation-seal-sha256 was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-selection-path" => {
+                    if expected_selection_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-selection-path was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-selection-seal-sha256" => {
+                    if expected_selection_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-selection-seal-sha256 was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-source-snapshot-path" => {
+                    if expected_source_snapshot_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-source-snapshot-path was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-source-snapshot-seal-sha256" => {
+                    if expected_source_snapshot_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-source-snapshot-seal-sha256 was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-terminal-path" => {
+                    if expected_terminal_path
+                        .replace(PathBuf::from(value))
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "--expected-terminal-path was supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
+                "--expected-terminal-seal-sha256" => {
+                    if expected_terminal_seal_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-terminal-seal-sha256 was supplied more than once; {}",
                             usage()
                         ));
                     }
@@ -286,6 +389,56 @@ mod macos {
         if max_seq_len == 0 {
             return Err("--max-seq-len must be positive".into());
         }
+        let aw_any = expected_revalidation_path.is_some()
+            || expected_revalidation_seal_sha256.is_some()
+            || expected_selection_path.is_some()
+            || expected_selection_seal_sha256.is_some()
+            || expected_source_snapshot_path.is_some()
+            || expected_source_snapshot_seal_sha256.is_some()
+            || expected_terminal_path.is_some()
+            || expected_terminal_seal_sha256.is_some();
+        let activation_weighted = if aw_any {
+            let revalidation_path =
+                required(expected_revalidation_path, "--expected-revalidation-path")?;
+            let selection_path = required(expected_selection_path, "--expected-selection-path")?;
+            let snapshot_path =
+                required(expected_source_snapshot_path, "--expected-source-snapshot-path")?;
+            let terminal_path = required(expected_terminal_path, "--expected-terminal-path")?;
+            for (flag, path) in [
+                ("--expected-revalidation-path", &revalidation_path),
+                ("--expected-selection-path", &selection_path),
+                ("--expected-source-snapshot-path", &snapshot_path),
+                ("--expected-terminal-path", &terminal_path),
+            ] {
+                if !path.is_absolute() {
+                    return Err(format!("{flag} must be an absolute path"));
+                }
+            }
+            Some(ActivationWeightedBindings {
+                expected_revalidation_path: revalidation_path,
+                expected_revalidation_seal_sha256: required(
+                    expected_revalidation_seal_sha256,
+                    "--expected-revalidation-seal-sha256",
+                )?,
+                expected_selection_path: selection_path,
+                expected_selection_seal_sha256: required(
+                    expected_selection_seal_sha256,
+                    "--expected-selection-seal-sha256",
+                )?,
+                expected_source_snapshot_path: snapshot_path,
+                expected_source_snapshot_seal_sha256: required(
+                    expected_source_snapshot_seal_sha256,
+                    "--expected-source-snapshot-seal-sha256",
+                )?,
+                expected_terminal_path: terminal_path,
+                expected_terminal_seal_sha256: required(
+                    expected_terminal_seal_sha256,
+                    "--expected-terminal-seal-sha256",
+                )?,
+            })
+        } else {
+            None
+        };
         Ok(Arguments {
             manifest,
             expected_manifest_seal_sha256: required(
@@ -300,6 +453,7 @@ mod macos {
                 expected_source_revision,
                 "--expected-source-revision",
             )?,
+            activation_weighted,
             mode,
             token_id,
             prompt,
@@ -319,6 +473,37 @@ mod macos {
             expected_source_audit_seal_sha256: arguments.expected_source_audit_seal_sha256.clone(),
             expected_source_revision: arguments.expected_source_revision.clone(),
         }
+    }
+
+    fn activation_weighted_admission(arguments: &Arguments) -> Result<Qwen30ActivationWeightedSvdAdmission, String> {
+        let aw = arguments.activation_weighted.as_ref().ok_or_else(|| {
+            "activation-weighted SVD candidate requires --expected-revalidation-path/seal, --expected-selection-path/seal, --expected-source-snapshot-path/seal, and --expected-terminal-path/seal".to_string()
+        })?;
+        Ok(Qwen30ActivationWeightedSvdAdmission {
+            expected_manifest_seal_sha256: arguments.expected_manifest_seal_sha256.clone(),
+            expected_source_audit_seal_sha256: arguments.expected_source_audit_seal_sha256.clone(),
+            expected_source_revision: arguments.expected_source_revision.clone(),
+            expected_revalidation_path: aw.expected_revalidation_path.clone(),
+            expected_revalidation_seal_sha256: aw.expected_revalidation_seal_sha256.clone(),
+            expected_selection_path: aw.expected_selection_path.clone(),
+            expected_selection_seal_sha256: aw.expected_selection_seal_sha256.clone(),
+            expected_source_snapshot_path: aw.expected_source_snapshot_path.clone(),
+            expected_source_snapshot_seal_sha256: aw.expected_source_snapshot_seal_sha256.clone(),
+            expected_terminal_path: aw.expected_terminal_path.clone(),
+            expected_terminal_seal_sha256: aw.expected_terminal_seal_sha256.clone(),
+        })
+    }
+
+    fn peek_manifest_schema(path: &std::path::Path) -> Result<String, String> {
+        let raw = std::fs::read(path)
+            .map_err(|error| format!("cannot read manifest {}: {error}", path.display()))?;
+        let value: Value = serde_json::from_slice(&raw)
+            .map_err(|error| format!("manifest is not JSON: {error}"))?;
+        value
+            .get("schema")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+            .ok_or_else(|| "manifest lacks a string schema field".into())
     }
 
     fn duration_us(value: std::time::Duration) -> u64 {
@@ -598,9 +783,63 @@ mod macos {
     pub fn run() {
         let arguments = parse_arguments().unwrap_or_else(|error| fail(error));
         let admission = admission(&arguments);
+        let schema = peek_manifest_schema(&arguments.manifest).unwrap_or_else(|error| fail(error));
+        let is_activation_weighted = schema == QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA;
+        if is_activation_weighted && arguments.activation_weighted.is_none() {
+            fail(
+                "manifest schema is activation-weighted SVD; supply the protected revalidation/selection/snapshot/terminal path+seal bindings",
+            );
+        }
+        if !is_activation_weighted && arguments.activation_weighted.is_some() {
+            fail(
+                "activation-weighted handoff bindings were supplied for a non-activation-weighted manifest schema",
+            );
+        }
+        if !is_activation_weighted && schema != QWEN30_COMPLETE_BINARY_SCHEMA {
+            fail(format!(
+                "unsupported Qwen30 complete-native manifest schema {schema:?}"
+            ));
+        }
         let runtime_executable_sha256 =
             current_executable_sha256().unwrap_or_else(|error| fail(error));
         if arguments.mode == Mode::Preflight {
+            if is_activation_weighted {
+                let aw = activation_weighted_admission(&arguments)
+                    .unwrap_or_else(|error| fail(error));
+                let artifact =
+                    hawking_core::model::qwen_complete_binary::admit_qwen30_activation_weighted_svd_artifact(
+                        &arguments.manifest,
+                        &aw,
+                    )
+                    .unwrap_or_else(|error| fail(error.to_string()));
+                print_json(json!({
+                    "schema": RESULT_SCHEMA,
+                    "status": "EARNED_QWEN30_ACTIVATION_WEIGHTED_SVD_NATIVE_ADMISSION_PREFLIGHT_NOT_TOKEN_EXECUTION",
+                    "mode": arguments.mode.name(),
+                    "runtime_executable_sha256": runtime_executable_sha256,
+                    "preflight": {
+                        "manifest_path": artifact.manifest_path,
+                        "manifest_seal_sha256": artifact.manifest_seal_sha256,
+                        "source_revision": artifact.source_revision,
+                        "tensor_count": artifact.tensors.len(),
+                        "tensor_payload_bytes": artifact.tensor_payload_bytes,
+                        "source_weight_elements": artifact.source_weight_elements,
+                        "selected_hgravs01_organs": artifact.selected_hgravs_organs.len(),
+                        "verified_payload_count": artifact.verified_payload_count(),
+                        "complete_verified_payload_cache_at_admission": artifact.has_complete_verified_payload_cache(),
+                        "mixed_layout": "HQ30G1B1+HGRAVS01",
+                        "hgravs01_executes_natively_as_two_stage_low_rank_matvec": true,
+                        "dense_reconstruction_on_token_path": false,
+                        "preflight_payload_snapshots_are_process_local": true,
+                    },
+                    "claim_boundary": {
+                        "strict_mixed_artifact_admission_only": true,
+                        "no_full_token_has_executed": true,
+                        "not_generation_capability_hcli_clean_tps_tg_or_tournament_qualification": true,
+                    },
+                }));
+                return;
+            }
             let preflight = preflight_complete_runtime(&arguments.manifest, &admission)
                 .unwrap_or_else(|error| fail(error.to_string()));
             print_json(json!({
@@ -640,17 +879,24 @@ mod macos {
             return;
         }
 
-        let mut runtime = Qwen30CompleteNativeRuntime::load(
-            &arguments.manifest,
-            &admission,
-            Qwen30CompleteRuntimeOptions {
-                max_seq_len: arguments.max_seq_len,
-                trace_dispatch: arguments.trace_dispatch,
-                packed_matvec_kernel: arguments.packed_matvec_kernel,
-                gate_up_swiglu_kernel: arguments.gate_up_swiglu_kernel,
-            },
-        )
-        .unwrap_or_else(|error| fail(error.to_string()));
+        let options = Qwen30CompleteRuntimeOptions {
+            max_seq_len: arguments.max_seq_len,
+            trace_dispatch: arguments.trace_dispatch,
+            packed_matvec_kernel: arguments.packed_matvec_kernel,
+            gate_up_swiglu_kernel: arguments.gate_up_swiglu_kernel,
+        };
+        let mut runtime = if is_activation_weighted {
+            let aw = activation_weighted_admission(&arguments).unwrap_or_else(|error| fail(error));
+            Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
+                &arguments.manifest,
+                &aw,
+                options,
+            )
+            .unwrap_or_else(|error| fail(error.to_string()))
+        } else {
+            Qwen30CompleteNativeRuntime::load(&arguments.manifest, &admission, options)
+                .unwrap_or_else(|error| fail(error.to_string()))
+        };
         // Exclude constructor allocation from the bounded execution profile.
         let _ = runtime.drain_profiler();
         let runtime_binding = json!({
@@ -672,12 +918,22 @@ mod macos {
             "raw_bf16_teacher_not_runtime_participant": true,
             "model_alone": true,
             "no_host_model_math_fallback": true,
+            "fallback_count": 0,
+            "activation_weighted_svd": {
+                "enabled": runtime.has_activation_weighted_svd_organs(),
+                "hgravs01_executes_natively_as_two_stage_low_rank_matvec": runtime.has_activation_weighted_svd_organs(),
+                "dense_reconstruction_on_token_path": false,
+            },
             "immutable_complete_payload_catalog": {
                 "validated_during_process_admission": true,
                 "verified_payload_count": runtime.verified_payload_count(),
                 "expected_complete_tensor_count": 18867,
                 "complete_verified_payload_cache": runtime.has_complete_verified_payload_cache(),
-                "payload_access_path": "immutable_admission_verified_direct_snapshot",
+                "payload_access_path": if runtime.has_activation_weighted_svd_organs() {
+                    "immutable_admission_verified_mixed_hq30g1b1_hgravs01_snapshot"
+                } else {
+                    "immutable_admission_verified_direct_snapshot"
+                },
                 "per_token_payload_sha256_rescan": false,
                 "full_artifact_revalidation_required_on_process_restart": true,
             },
@@ -705,13 +961,19 @@ mod macos {
                 );
                 print_json(json!({
                     "schema": RESULT_SCHEMA,
-                    "status": "EARNED_QWEN30_DIRECT_PACKED_NATIVE_METAL_FULL_TOKEN_EXECUTED_UNQUALIFIED",
+                    "status": if is_activation_weighted {
+                        "EARNED_QWEN30_MIXED_HQ30G1B1_HGRAVS01_NATIVE_METAL_FULL_TOKEN_EXECUTED_UNQUALIFIED"
+                    } else {
+                        "EARNED_QWEN30_DIRECT_PACKED_NATIVE_METAL_FULL_TOKEN_EXECUTED_UNQUALIFIED"
+                    },
                     "mode": arguments.mode.name(),
                     "runtime_executable_sha256": runtime_executable_sha256,
                     "runtime_binding": runtime_binding,
                     "execution": {
                         "input_token_id": input_token_id,
+                        "all_layers_executed": true,
                         "all_48_layers_executed": true,
+                        "fallback_count": 0,
                         "final_norm_lm_head_device_argmax_executed": true,
                         "step": step_json(&step),
                     },
