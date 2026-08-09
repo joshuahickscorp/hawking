@@ -1,0 +1,112 @@
+{
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "both_exact_fresh_tg10_operational_receipts_present": false,
+  "bound_knowledge_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+    "document_seal_sha256": "0478c05876b8b7f0fd61a2072284a9303943dec0ae0a226ed4dadc70ff9d162d",
+    "document_sha256": "cafdad27a15f282ba911f57ff2ba1a06e5530fbd2720f0b87ee9ad6ef5cc2bc3",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_KNOWLEDGE_AUTHORITY.json"
+  },
+  "bound_lane_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+    "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+    "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json"
+  },
+  "bound_mutation_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+    "document_seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+    "document_sha256": "b8f7acad4e5899455e166ba55f5426c82d63577ac7f2e9bc5c9c39b074598de6",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json"
+  },
+  "bound_operational_ascent_status": {
+    "document_schema": "hawking.ascension.physical_operational_ascent.v1",
+    "document_seal_sha256": "d6388f73b99aeba52892a17eb11512e3ca1f73f93510ef21397a3413c8df054d",
+    "document_sha256": "b2759145301c69949af8457d06e260564cd36c4d27d60623015958add4579856",
+    "document_status": "WAITING_FOR_BOTH_VALID_TG10_OPERATIONAL_RECEIPTS",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/lifecycle/ASCENSION_OPERATIONAL_ASCENT_STATUS.json"
+  },
+  "bound_scheduler_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+    "document_seal_sha256": "e383a27923ac863c623e81bec7f2415f5108ee654d644089d985434a713d8b5b",
+    "document_sha256": "e4942efa448d5ed91dc909629ab96e871dcfc965942748d16cbd77dee77abce9",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_ROLE_RESOURCE_SCHEDULER_AUTHORITY.json"
+  },
+  "claim_boundary": [
+    "This is a sealed CPU-only both-TG10 state machine, not a runtime or paired-development activator.",
+    "It consumes exact sealed lane, mutation, Knowledge Plane, scheduler, and canonical operational-ascent inputs without reopening paths.",
+    "Both Q30 and Q80 must have fresh exact TG10 operational receipts: coherent HCLI, complete-token BASE_TRUE_TPS measurement at least 100, zero fallback, and matching source/admission/kernel/HCLI/runtime status evidence.",
+    "Receipt status timestamp and evidence fingerprint mismatches are stale; seal, model, evidence, lane, and scheduler mismatches are refused.",
+    "A prepared result reserves a later protected-controller action only; it does not create a logical session, start either server, or activate a paired candidate world.",
+    "TG3, final manager evaluation, scorecards, tournament launch, and winner selection remain outside this activation gate.",
+    "No model/GPU/server/watcher/port/HCLI/token/TPS/TG/tournament state is touched by this contract."
+  ],
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "focused_checks": {
+    "both_receipts_require_coherent_complete_fallback_free_base_true_tps_at_least_100": false,
+    "exact_sealed_lane_mutation_knowledge_and_scheduler_chain_bound": true,
+    "execution_boundary_cpu_only": true,
+    "final_manager_selection_scorecards_and_tg3_outside_activation": true,
+    "no_runtime_server_gpu_watcher_or_tournament_authority": true,
+    "paired_development_never_activated_by_this_contract": true,
+    "qwen30_and_qwen80_tg10_receipts_are_exact_fresh_and_model_matched": false,
+    "sealed_operational_ascent_status_bound_at_canonical_path": true,
+    "stale_forged_mismatched_and_early_receipts_refused": true
+  },
+  "paired_development_activation_authorized_by_this_contract": false,
+  "paired_development_active": false,
+  "prepared": false,
+  "qwen30_tg10_audit": {
+    "blockers": [
+      "tg10_receipt_not_present"
+    ],
+    "model_key": "qwen30",
+    "receipt_document_sha256": null,
+    "receipt_present": false,
+    "receipt_seal_sha256": null,
+    "valid_exact_fresh_tg10_operational_receipt": false
+  },
+  "qwen80_tg10_audit": {
+    "blockers": [
+      "tg10_receipt_not_present"
+    ],
+    "model_key": "qwen80",
+    "receipt_document_sha256": null,
+    "receipt_present": false,
+    "receipt_seal_sha256": null,
+    "valid_exact_fresh_tg10_operational_receipt": false
+  },
+  "schema": "hawking.ascension.paired_cognition_both_tg10_development_activation_state_machine.v1",
+  "seal_sha256": "7336148a57b055be06339f21006c81a22fe1043e3dd367aff30ebaf10ed91c58",
+  "state_blockers": [
+    "operational_status_both_valid_tg10_receipts_false",
+    "operational_status_evidence_fingerprint_missing",
+    "qwen30:tg10_receipt_not_present",
+    "qwen80:tg10_receipt_not_present"
+  ],
+  "status": "REFUSED_TODAY_PAIRED_COGNITION_WAITING_FOR_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS",
+  "unsealed_preimage_sha256": "050bf69dc7b7b4e1d87886794e3037819e02b7aebcdb51a493707fc9b064563b"
+}

@@ -1,0 +1,254 @@
+{
+  "adversarial_review_hook": {
+    "enabled": true,
+    "opposing_candidate_read_only_reviewer": true,
+    "protected_review_namespace": "sealed://protected-tournament/adversarial-review/read-only",
+    "protected_verifier_adjudicates_challenges": true,
+    "review_may_read_hidden_membership": false,
+    "review_may_read_hidden_plaintext": false,
+    "reviewer_may_modify_candidate_artifact": false
+  },
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "bound_final_manager_protocol": {
+    "document_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+    "document_seal_sha256": "1517c9e7fbbf09d3da0d99acc90eba30105cc2f12179a7748c8c1058a550369e",
+    "document_sha256": "28e84e0c3a5306462bda1cd853cffe594675607343d6a24179e470087f39146c",
+    "document_status": "PREPARED_FINAL_MANAGER_SELECTION_PROTOCOL_NOT_EXECUTED",
+    "path": "/Users/scammermike/.claude/ultragoal/hawking-manager-tournament/protected-tournament/FINAL_MANAGER_PROTOCOL.json"
+  },
+  "bound_knowledge_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+    "document_seal_sha256": "0478c05876b8b7f0fd61a2072284a9303943dec0ae0a226ed4dadc70ff9d162d",
+    "document_sha256": "cafdad27a15f282ba911f57ff2ba1a06e5530fbd2720f0b87ee9ad6ef5cc2bc3",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_KNOWLEDGE_AUTHORITY.json"
+  },
+  "bound_lane_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+    "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+    "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json"
+  },
+  "bound_mutation_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+    "document_seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+    "document_sha256": "b8f7acad4e5899455e166ba55f5426c82d63577ac7f2e9bc5c9c39b074598de6",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json"
+  },
+  "bound_scheduler_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+    "document_seal_sha256": "e383a27923ac863c623e81bec7f2415f5108ee654d644089d985434a713d8b5b",
+    "document_sha256": "e4942efa448d5ed91dc909629ab96e871dcfc965942748d16cbd77dee77abce9",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_ROLE_RESOURCE_SCHEDULER_AUTHORITY.json"
+  },
+  "bound_tg10_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_both_tg10_development_activation_state_machine.v1",
+    "document_seal_sha256": "7336148a57b055be06339f21006c81a22fe1043e3dd367aff30ebaf10ed91c58",
+    "document_sha256": "71d5037e33c4b6b9ddc49662d4b7fd5a06418a03a6693c8b240c661d5b5d193c",
+    "document_status": "REFUSED_TODAY_PAIRED_COGNITION_WAITING_FOR_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_TG10_DEVELOPMENT_ACTIVATION.json"
+  },
+  "candidate_or_red_team_hidden_access_granted": false,
+  "claim_boundary": [
+    "This is a sealed CPU-only protected task-corpus commitment, not a corpus generator, scored tournament runner, or manager selector.",
+    "It exposes only the required real-Hawking family/campaign labels, public counts, and SHA-256 commitments; no task membership, task plaintext, answer key, candidate scorecard, or task result is emitted.",
+    "All 15 task families and six long-horizon campaigns are exact bindings of the existing final-manager protocol identity.",
+    "Membership/plaintext/answer keys are reserved under immutable controller-only namespaces; candidates and red teams cannot read them, mutate them, change tournament weights, self-score, promote themselves, or invalidate an opponent.",
+    "Fair-envelope and read-only adversarial-review hooks are policy commitments only. They allocate no runtime resource and authorize no reviewer modification or hidden-corpus access.",
+    "The corpus commitment is frozen before scored execution. TG3, qualification, final scorecards, protected selection, and tournament execution remain outside this authority.",
+    "No model body, server, watcher, port, GPU lease, device work, HCLI request, token, TPS/TG measurement, hidden task, or tournament state is created or changed."
+  ],
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "fair_envelope_hook": {
+    "candidate_specific_resource_advantage": false,
+    "equalized_dimensions": [
+      "gpu_opportunity",
+      "cpu_budget",
+      "wall_clock_or_experiment_budget",
+      "logical_agent_budget",
+      "context_budget",
+      "tool_access",
+      "helper_model_access",
+      "retry_policy",
+      "storage_budget",
+      "hidden_evidence",
+      "temperature_sampling_policy"
+    ],
+    "public_fair_envelope_commitment_sha256": "692aac3cb41f234bce3f361618447f08ed6ddadf8e7a298f7e6d90cd217593c2",
+    "record_every_asymmetry": true,
+    "scored_execution_started": false
+  },
+  "focused_checks": {
+    "all_fifteen_real_hawking_task_families_committed": true,
+    "all_six_long_horizon_campaigns_committed": true,
+    "blind_membership_immutable_and_frozen_before_scored_execution": true,
+    "candidates_and_red_teams_cannot_read_hidden_membership_or_plaintext": true,
+    "candidates_cannot_mutate_tasks_weights_or_self_score": true,
+    "exact_final_protocol_and_paired_authority_chain_bound": true,
+    "execution_boundary_cpu_only": true,
+    "fair_envelope_and_read_only_adversarial_review_hooks_bound": true,
+    "final_manager_selection_and_tg3_remain_outside_corpus_commitment": true,
+    "no_runtime_server_model_gpu_watcher_lease_tps_or_tournament_action": true,
+    "only_public_family_count_and_commitment_metadata_exposed": true,
+    "protected_membership_plaintext_and_answer_keys_controller_only": true
+  },
+  "hidden_tasks_created": false,
+  "prepared": true,
+  "protected_task_namespace_reservation": {
+    "candidates_may_read_hidden_membership": false,
+    "candidates_may_read_hidden_plaintext": false,
+    "controller_only_answer_key_namespace": "sealed://protected-tournament/controller-only/answer-keys",
+    "controller_only_membership_mutable": false,
+    "controller_only_plaintext_mutable": false,
+    "controller_only_task_membership_namespace": "sealed://protected-tournament/controller-only/task-membership",
+    "controller_only_task_plaintext_namespace": "sealed://protected-tournament/controller-only/task-plaintext",
+    "hidden_plaintext_opened_by_this_contract": false,
+    "hidden_tasks_created_by_this_contract": false,
+    "red_teams_may_read_hidden_membership": false,
+    "red_teams_may_read_hidden_plaintext": false
+  },
+  "public_corpus_manifest": {
+    "campaign_metadata": [
+      {
+        "campaign": "agent_os_concurrency_optimization",
+        "protected_membership_commitment_sha256": "2899ee72401320e9b49c805e4aff79ab609a5e91cf78e637cdae72b2137f06c8",
+        "public_stage_count": 5
+      },
+      {
+        "campaign": "exact_model_family_qualification",
+        "protected_membership_commitment_sha256": "62e0d9881b9c9a50c065235b0d21640af50d121f0988af73d690b4716c95d97a",
+        "public_stage_count": 6
+      },
+      {
+        "campaign": "gravity_representation_tournament",
+        "protected_membership_commitment_sha256": "5ca2bf43033c01ab24062e259aa0308269d551e479a8c0c345c1edefce95ef52",
+        "public_stage_count": 6
+      },
+      {
+        "campaign": "multi_subsystem_hcli_repair",
+        "protected_membership_commitment_sha256": "014aa6979ede58d406c2100fde5966a5a79a6e8684170cf5ce291899ee4a1d4c",
+        "public_stage_count": 5
+      },
+      {
+        "campaign": "six_stage_kernel_optimization",
+        "protected_membership_commitment_sha256": "eceb1f0e7b7b76c7d3d7e96db65b3d749dc263d4935f2b1bd114ef22a40c9cfd",
+        "public_stage_count": 6
+      },
+      {
+        "campaign": "storage_pressure_model_acquisition",
+        "protected_membership_commitment_sha256": "a8cd4385c8ddceb972e068d8a14bf99a5e43a6956245f81908f5d50aa0f62116",
+        "public_stage_count": 4
+      }
+    ],
+    "corpus_id": "hawking-protected-corpus-d0fcd3c5d511a124e71d783ea1382f507199374454a9ef576c6dddf9ad643f94",
+    "family_metadata": [
+      {
+        "family": "adversarial_evidence",
+        "protected_membership_commitment_sha256": "eae375237b1d4ed2404365f322a2d5dc701319964f4a20e340fb31cf921db9af",
+        "public_task_count": 2
+      },
+      {
+        "family": "benchmark_honesty",
+        "protected_membership_commitment_sha256": "82690fa83b9f1e9d98d5fa819ce9891ad7755458301ba3e986c9e566ec0b0db2",
+        "public_task_count": 2
+      },
+      {
+        "family": "bug_repair",
+        "protected_membership_commitment_sha256": "e2a6f02162c673659e66f796257eab85d6924ca63a54a65937640273050179f7",
+        "public_task_count": 2
+      },
+      {
+        "family": "complete_token_performance",
+        "protected_membership_commitment_sha256": "857d5032347ff57232ecec6d1f98e41c288cdbe939c024be6d29974164196138",
+        "public_task_count": 2
+      },
+      {
+        "family": "context_memory",
+        "protected_membership_commitment_sha256": "84fd9999e3a903ffaf8b9a58ff664752528651dc9ae7710d3c5d925c855b4df5",
+        "public_task_count": 1
+      },
+      {
+        "family": "delegation",
+        "protected_membership_commitment_sha256": "299fb68b88b438dbb811aa0296fecd44b4224b7c715b005421a0107b51acfc8a",
+        "public_task_count": 1
+      },
+      {
+        "family": "gravity_research",
+        "protected_membership_commitment_sha256": "105c11efaac6c2f36c821a24c33593155c0f1b726eeea8319843f1413ef29db6",
+        "public_task_count": 2
+      },
+      {
+        "family": "helper_management",
+        "protected_membership_commitment_sha256": "4ac3a421711026ea3c56d27e8ff9a5c0fe2606cb69f30900c83a435c36e7142b",
+        "public_task_count": 1
+      },
+      {
+        "family": "interrupt_recovery",
+        "protected_membership_commitment_sha256": "c207ac72bc2c7704cde0f400b37a58862184f2ea05d26b7b7e8c241e2bc9dc7f",
+        "public_task_count": 1
+      },
+      {
+        "family": "kernel_metal_diagnosis",
+        "protected_membership_commitment_sha256": "98ca23531db8f33229dc0be628f33e8fac0da4e1546db7761b9f8c4e93820600",
+        "public_task_count": 2
+      },
+      {
+        "family": "release_integration",
+        "protected_membership_commitment_sha256": "6e78080649d36ab92a6762fbc5579d5d84a4eea957ae6ac4cbaf648b1e49efb4",
+        "public_task_count": 1
+      },
+      {
+        "family": "repository_architecture",
+        "protected_membership_commitment_sha256": "03120802e1359600da45eadb388578ddf666aad355c2f32fdc573525547f5097",
+        "public_task_count": 3
+      },
+      {
+        "family": "security_effect_boundaries",
+        "protected_membership_commitment_sha256": "90d8197fbb96d605edd35f63e48613d54c6aa6ba8fd1315dcaa6219269495cd2",
+        "public_task_count": 1
+      },
+      {
+        "family": "storage_resource_campaign",
+        "protected_membership_commitment_sha256": "3276e8b9bfef4ecc67f8e11f607dc25a5bdd3c2cbe981edbda8d75011b541724",
+        "public_task_count": 1
+      },
+      {
+        "family": "tool_use",
+        "protected_membership_commitment_sha256": "9246b552543ff047794920b50db197b826cae27209c401192398ac2a3380025d",
+        "public_task_count": 1
+      }
+    ],
+    "membership_frozen_before_scored_execution": true,
+    "protected_full_membership_commitment_sha256": "fa1988feabd9312ccb2d37e16a294f0d2f754da442a9484f90493a501cffb796",
+    "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+    "public_metadata_sha256": "63cb6c7bf8c754b30fbac04e7f35f8e9f1bf02be2766192825f457f8a7fdbe59"
+  },
+  "schema": "hawking.ascension.manager_tournament_protected_task_corpus_commitment_authority.v1",
+  "scored_execution_started": false,
+  "seal_sha256": "486ff40d68002c8a3e5f5f206dbab71e2ba633022bb641e70fe603585086a086",
+  "state_blockers": [],
+  "status": "PREPARED_NOT_ACTIVE_PROTECTED_REAL_HAWKING_TASK_CORPUS_METADATA_COMMITTED_NO_HIDDEN_TASKS_OR_SCORED_EXECUTION",
+  "unsealed_preimage_sha256": "da61b67654761acd3a61fd977e7be1fb9ebe012f4644216fb49fe1ee0f06892b"
+}

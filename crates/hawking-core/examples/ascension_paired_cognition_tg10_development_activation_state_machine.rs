@@ -1582,6 +1582,149 @@ mod tests {
             .any(|blocker| blocker.contains("tg10_receipt_not_present")));
     }
 
+    /// §10 hard gate: both operational passes FALSE (current truth) must refuse
+    /// any transition toward MANAGER_ASCENT_TOURNAMENT_ACTIVE and must name the
+    /// unmet both-receipt condition.
+    #[test]
+    fn both_tg10_false_refuses_and_names_unmet_both_receipt_condition() {
+        let report = build_report(input_fixture()).unwrap();
+        assert_eq!(report.status, REFUSED_TODAY_STATUS);
+        assert_ne!(
+            report.status.as_str(),
+            "MANAGER_ASCENT_TOURNAMENT_ACTIVE",
+            "gate must never reach manager-ascent tournament active while both TG10 passes are false"
+        );
+        assert!(!report.paired_development_active);
+        assert!(!report.paired_development_activation_authorized_by_this_contract);
+        assert!(!report.both_exact_fresh_tg10_operational_receipts_present);
+        assert!(
+            report.state_blockers.iter().any(|blocker| {
+                blocker.contains("operational_status_both_valid_tg10_receipts_false")
+                    || blocker.contains("tg10_receipt_not_present")
+            }),
+            "refusal must name the unmet both-TG10 condition; blockers={:?}",
+            report.state_blockers
+        );
+        assert!(report
+            .state_blockers
+            .iter()
+            .any(|blocker| blocker.starts_with("qwen30:") && blocker.contains("tg10_receipt_not_present")));
+        assert!(report
+            .state_blockers
+            .iter()
+            .any(|blocker| blocker.starts_with("qwen80:") && blocker.contains("tg10_receipt_not_present")));
+    }
+
+    /// Exactly one TG10 operational pass is the dangerous partial-success case.
+    /// §10 requires BOTH; a single true pass must still refuse.
+    fn one_true_input(winner: &str) -> Input {
+        let loser = if winner == QWEN30 { QWEN80 } else { QWEN30 };
+        let status_seed_value = operational_status_value(
+            operational_model(QWEN30, None, winner == QWEN30),
+            operational_model(QWEN80, None, winner == QWEN80),
+            false,
+            None,
+        );
+        let status_seed: OperationalAscentStatus =
+            serde_json::from_value(status_seed_value).unwrap();
+        let fingerprint = operational_evidence_fingerprint(&status_seed).unwrap();
+        let winner_doc = receipt_document(winner, &status_seed);
+        let winner_seal = winner_doc["seal_sha256"].as_str().unwrap().to_owned();
+        let qwen30 = if winner == QWEN30 {
+            tg10(true, Some(winner_seal.clone()))
+        } else {
+            tg10(false, None)
+        };
+        let qwen80 = if winner == QWEN80 {
+            tg10(true, Some(winner_seal.clone()))
+        } else {
+            tg10(false, None)
+        };
+        let lane = binding(
+            "/sealed/paired/PAIRED_COGNITION_LANE_AUTHORITY.json",
+            sealed_lane_document(qwen30.clone(), qwen80.clone()),
+        );
+        let mutation = mutation_binding(&lane);
+        let knowledge = knowledge_binding(&lane, &mutation);
+        let scheduler = scheduler_binding(&lane, &mutation, &knowledge, &qwen30, &qwen80);
+        let status = binding(
+            OPERATIONAL_STATUS_PATH,
+            operational_status_value(
+                operational_model(
+                    QWEN30,
+                    qwen30.receipt_seal_sha256.clone(),
+                    winner == QWEN30,
+                ),
+                operational_model(
+                    QWEN80,
+                    qwen80.receipt_seal_sha256.clone(),
+                    winner == QWEN80,
+                ),
+                false,
+                Some(fingerprint),
+            ),
+        );
+        let (qwen30_receipt, qwen80_receipt) = if winner == QWEN30 {
+            (
+                Some(binding("/sealed/tg10/qwen30.json", winner_doc)),
+                None,
+            )
+        } else {
+            (
+                None,
+                Some(binding("/sealed/tg10/qwen80.json", winner_doc)),
+            )
+        };
+        let _ = loser;
+        Input {
+            schema: INPUT_SCHEMA.into(),
+            lane_authority: lane,
+            mutation_authority: mutation,
+            knowledge_authority: knowledge,
+            scheduler_authority: scheduler,
+            operational_ascent_status: status,
+            qwen30_tg10_receipt: qwen30_receipt,
+            qwen80_tg10_receipt: qwen80_receipt,
+            paired_development_activation_requested: false,
+            authority_boundary: authority_boundary(),
+            execution_boundary: execution_boundary(),
+            seal_sha256: sha('f'),
+        }
+    }
+
+    #[test]
+    fn exactly_one_tg10_true_still_refuses_because_both_are_required() {
+        for winner in [QWEN30, QWEN80] {
+            let report = build_report(one_true_input(winner)).unwrap();
+            assert_eq!(
+                report.status, REFUSED_TODAY_STATUS,
+                "exactly one true ({winner}) must still refuse"
+            );
+            assert_ne!(report.status.as_str(), "MANAGER_ASCENT_TOURNAMENT_ACTIVE");
+            assert!(!report.prepared);
+            assert!(!report.paired_development_active);
+            assert!(!report.both_exact_fresh_tg10_operational_receipts_present);
+            assert!(
+                report.state_blockers.iter().any(|blocker| {
+                    blocker.contains("operational_status_both_valid_tg10_receipts_false")
+                        || blocker.contains("tg10_receipt_not_present")
+                }),
+                "one-true refusal must name unmet both-receipt condition; winner={winner} blockers={:?}",
+                report.state_blockers
+            );
+            let loser_prefix = if winner == QWEN30 { "qwen80:" } else { "qwen30:" };
+            assert!(
+                report
+                    .state_blockers
+                    .iter()
+                    .any(|blocker| blocker.starts_with(loser_prefix)
+                        && blocker.contains("tg10_receipt_not_present")),
+                "loser receipt absence must be named; winner={winner} blockers={:?}",
+                report.state_blockers
+            );
+        }
+    }
+
     #[test]
     fn both_exact_fresh_tg10_receipts_can_only_prepare_not_activate() {
         let report = build_report(ready_input()).unwrap();
@@ -1590,6 +1733,45 @@ mod tests {
         assert!(report.both_exact_fresh_tg10_operational_receipts_present);
         assert!(!report.paired_development_active);
         assert!(!report.paired_development_activation_authorized_by_this_contract);
+    }
+
+    /// Fixture-only: when both exact TG10 receipts are bound, the state machine
+    /// permits the PREPARED reservation transition. It must still never emit
+    /// MANAGER_ASCENT_TOURNAMENT_ACTIVE or any activation receipt.
+    #[test]
+    fn both_tg10_true_permits_prepared_reservation_not_manager_ascent_activation() {
+        let report = build_report(ready_input()).unwrap();
+        assert_eq!(report.status, PREPARED_STATUS);
+        assert!(report.prepared);
+        assert!(report.both_exact_fresh_tg10_operational_receipts_present);
+        assert_ne!(report.status.as_str(), "MANAGER_ASCENT_TOURNAMENT_ACTIVE");
+        assert!(!report.paired_development_active);
+        assert!(!report.paired_development_activation_authorized_by_this_contract);
+        assert!(report
+            .focused_checks
+            .paired_development_never_activated_by_this_contract);
+    }
+
+    #[test]
+    fn tampered_upstream_lane_seal_is_refused() {
+        let mut input = input_fixture();
+        input.lane_authority.document["seal_sha256"] = Value::String(sha('0'));
+        let error = build_report(input).unwrap_err();
+        assert!(
+            error.contains("seal_sha256") || error.contains("lane_authority"),
+            "tampered upstream seal must be refused; error={error}"
+        );
+    }
+
+    #[test]
+    fn tampered_upstream_mutation_document_sha256_is_refused() {
+        let mut input = input_fixture();
+        input.mutation_authority.document_sha256 = sha('0');
+        let error = build_report(input).unwrap_err();
+        assert!(
+            error.contains("document_sha256") || error.contains("mutation_authority"),
+            "tampered upstream document_sha256 must be refused; error={error}"
+        );
     }
 
     #[test]
