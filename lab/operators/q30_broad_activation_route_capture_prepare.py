@@ -179,14 +179,33 @@ REPO_TASK_FRAMES = (
 REPO_SOURCE_GLOBS = (("*.rs", "repo_rust"), ("*.py", "repo_python"), ("*.md", "repo_docs"))
 
 
+def approx_raw_token_count(text: str) -> int:
+    """Budget heuristic when the HF `tokenizers` package is unavailable.
+
+    Used only to decide how many repo files to draw; the sealed document always
+    uses exact token counts from either HF encode or `--tokenized-json`.
+    Qwen BPE on mixed code/prose is closer to ~4 chars/token than 3; using 4
+    tends to slightly overshoot the raw budget so the chat-framed total still
+    lands near the requested target rather than starving it.
+    """
+    return max(1, (len(text) + 3) // 4)
+
+
 def build_repo_corpus(
-    root: Path, target_tokens: int, tokenizer: Any, *, chunk_chars: int = 2800
+    root: Path,
+    target_tokens: int,
+    count_tokens: Any,
+    *,
+    chunk_chars: int = 2800,
 ) -> list[dict[str, str]]:
     """Draw probes from real repo source until ~target_tokens is reached.
 
     Deterministic: files sorted, round-robin across extensions so one language
     cannot dominate the routing distribution. Skips generated/vendored trees and
     anything too small to carry structure.
+
+    `count_tokens` is a callable(text) -> int used only for the budget loop
+    (HF encode when available, approx when using the Rust tokenizer bridge).
     """
     skip = ("/.git/", "/target/", "/workspace/ops/build/", "/node_modules/",
             "/.worktrees/", "/vendor/", "/workspace/campaign/evidence/")
@@ -222,7 +241,7 @@ def build_repo_corpus(
                 continue
             frame = REPO_TASK_FRAMES[len(rows) % len(REPO_TASK_FRAMES)]
             body = f"{frame}```\n{chunk}\n```"
-            n = len(tokenizer.encode(body, add_special_tokens=False).ids)
+            n = int(count_tokens(body))
             rows.append(
                 {
                     "probe_id": f"{domain}_{idx[b]:05d}",
@@ -232,6 +251,73 @@ def build_repo_corpus(
             )
             total += n
     return rows
+
+
+def load_tokenized_json(path: Path) -> dict[str, dict[str, Any]]:
+    """Load Rust bridge output: array of {probe_id, domain, token_ids, ...}."""
+    raw = path.read_text(encoding="utf-8")
+    data = json.loads(raw)
+    if not isinstance(data, list):
+        raise RuntimeError(f"--tokenized-json must be a JSON array: {path}")
+    by_id: dict[str, dict[str, Any]] = {}
+    for i, row in enumerate(data):
+        if not isinstance(row, dict):
+            raise RuntimeError(f"--tokenized-json row {i} is not an object")
+        probe_id = row.get("probe_id")
+        if not isinstance(probe_id, str) or not probe_id:
+            raise RuntimeError(f"--tokenized-json row {i} lacks non-empty probe_id")
+        if probe_id in by_id:
+            raise RuntimeError(f"--tokenized-json repeats probe_id {probe_id!r}")
+        ids = row.get("token_ids")
+        if not isinstance(ids, list) or not ids:
+            raise RuntimeError(f"--tokenized-json {probe_id}: missing token_ids")
+        if not all(isinstance(x, int) and not isinstance(x, bool) for x in ids):
+            raise RuntimeError(f"--tokenized-json {probe_id}: token_ids must be ints")
+        if int(ids[0]) != 151644:
+            raise RuntimeError(
+                f"--tokenized-json {probe_id}: expected chat start token 151644, got {ids[0]}"
+            )
+        by_id[probe_id] = row
+    return by_id
+
+
+def probe_from_tokenized(
+    row: dict[str, str], tok_row: dict[str, Any]
+) -> dict[str, Any]:
+    """Build one sealed probe from corpus text + Rust bridge receipt."""
+    ids = [int(x) for x in tok_row["token_ids"]]
+    text_sha = sha256_bytes(row["text"].encode("utf-8"))
+    ids_sha = token_ids_u32le_sha256(ids)
+    got_text_sha = tok_row.get("user_text_sha256")
+    if got_text_sha != text_sha:
+        raise RuntimeError(
+            f"probe {row['probe_id']}: user_text_sha256 mismatch "
+            f"(tokenized={got_text_sha}, corpus={text_sha})"
+        )
+    got_ids_sha = tok_row.get("token_ids_u32le_sha256")
+    if got_ids_sha is not None and got_ids_sha != ids_sha:
+        raise RuntimeError(
+            f"probe {row['probe_id']}: token_ids_u32le_sha256 mismatch "
+            f"(tokenized={got_ids_sha}, recomputed={ids_sha})"
+        )
+    token_count = tok_row.get("token_count")
+    if token_count is not None and int(token_count) != len(ids):
+        raise RuntimeError(
+            f"probe {row['probe_id']}: token_count {token_count} != len(token_ids) {len(ids)}"
+        )
+    return {
+        "probe_id": row["probe_id"],
+        "domain": row["domain"],
+        "source_one_user_native_prompt": {
+            "token_ids": ids,
+            "token_count": len(ids),
+            "token_ids_u32le_sha256": ids_sha,
+            "add_special_tokens": True,
+            "chat_shape": "one_user_message_no_system_no_tools",
+            "user_text_sha256": text_sha,
+        },
+        "user_text": row["text"],
+    }
 
 
 def main() -> int:
@@ -257,23 +343,64 @@ def main() -> int:
         default=0,
         help="approximate token budget for repo-drawn probes (0 = none)",
     )
+    parser.add_argument(
+        "--tokenized-json",
+        type=Path,
+        default=None,
+        help="use pre-tokenized rows from qwen30_corpus_tokenize (absolute path). "
+        "When set, the Python tokenizers package is not imported.",
+    )
+    parser.add_argument(
+        "--emit-in-json",
+        type=Path,
+        default=None,
+        help="write the untokenized corpus array {probe_id,domain,text} and exit "
+        "(for the Rust tokenizer bridge; does not require tokenizers)",
+    )
     args = parser.parse_args()
 
-    try:
-        from tokenizers import Tokenizer
-    except ImportError as exc:
-        print(
-            "tokenizers package required (pip install tokenizers). "
-            f"Import failed: {exc}",
-            file=sys.stderr,
+    tokenized_path = (
+        args.tokenized_json.expanduser().resolve() if args.tokenized_json is not None else None
+    )
+    tokenized_by_id: dict[str, dict[str, Any]] | None = None
+    tokenizer: Any = None
+
+    if tokenized_path is not None:
+        if not tokenized_path.is_file():
+            print(f"tokenized-json missing: {tokenized_path}", file=sys.stderr)
+            return 2
+        try:
+            tokenized_by_id = load_tokenized_json(tokenized_path)
+        except (OSError, json.JSONDecodeError, RuntimeError) as exc:
+            print(f"tokenized-json load failed: {exc}", file=sys.stderr)
+            return 2
+        count_tokens = approx_raw_token_count
+    elif args.emit_in_json is not None:
+        # Corpus dump only: approximate budget for repo draws.
+        count_tokens = approx_raw_token_count
+    else:
+        try:
+            from tokenizers import Tokenizer
+        except ImportError as exc:
+            print(
+                "tokenizers package required (pip install tokenizers). "
+                f"Import failed: {exc}",
+                file=sys.stderr,
+            )
+            return 2
+        tok_path_early = args.tokenizer_json.expanduser().resolve()
+        if not tok_path_early.is_file():
+            print(f"tokenizer missing: {tok_path_early}", file=sys.stderr)
+            return 2
+        tokenizer = Tokenizer.from_file(str(tok_path_early))
+        count_tokens = lambda text: len(  # noqa: E731
+            tokenizer.encode(text, add_special_tokens=False).ids
         )
-        return 2
 
     tok_path = args.tokenizer_json.expanduser().resolve()
     if not tok_path.is_file():
         print(f"tokenizer missing: {tok_path}", file=sys.stderr)
         return 2
-    tokenizer = Tokenizer.from_file(str(tok_path))
 
     corpus = build_corpus()
     if args.max_prompts > 0:
@@ -283,7 +410,7 @@ def main() -> int:
         if not root.is_dir():
             print(f"repo corpus root missing: {root}", file=sys.stderr)
             return 2
-        extra = build_repo_corpus(root, args.repo_corpus_target_tokens, tokenizer)
+        extra = build_repo_corpus(root, args.repo_corpus_target_tokens, count_tokens)
         if not extra:
             print("repo corpus root yielded no usable probes", file=sys.stderr)
             return 2
@@ -292,26 +419,66 @@ def main() -> int:
         print("need at least 12 prompts for broad schema", file=sys.stderr)
         return 2
 
+    if args.emit_in_json is not None:
+        emit_path = args.emit_in_json.expanduser().resolve()
+        if not emit_path.is_absolute():
+            print(f"--emit-in-json must be absolute: {args.emit_in_json}", file=sys.stderr)
+            return 2
+        emit_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = [
+            {"probe_id": r["probe_id"], "domain": r["domain"], "text": r["text"]}
+            for r in corpus
+        ]
+        emit_path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "emit_in_json": str(emit_path),
+                    "probe_count": len(payload),
+                    "note": "untokenized corpus only; run qwen30_corpus_tokenize next",
+                },
+                indent=2,
+            )
+        )
+        return 0
+
     probes: list[dict[str, Any]] = []
     domain_counts: dict[str, int] = {}
     for row in corpus:
-        ids = one_user_native_prompt(tokenizer, row["text"])
         domain_counts[row["domain"]] = domain_counts.get(row["domain"], 0) + 1
-        probes.append(
-            {
-                "probe_id": row["probe_id"],
-                "domain": row["domain"],
-                "source_one_user_native_prompt": {
-                    "token_ids": ids,
-                    "token_count": len(ids),
-                    "token_ids_u32le_sha256": token_ids_u32le_sha256(ids),
-                    "add_special_tokens": True,
-                    "chat_shape": "one_user_message_no_system_no_tools",
-                    "user_text_sha256": sha256_bytes(row["text"].encode("utf-8")),
-                },
-                "user_text": row["text"],
-            }
-        )
+        if tokenized_by_id is not None:
+            tok_row = tokenized_by_id.get(row["probe_id"])
+            if tok_row is None:
+                print(
+                    f"tokenized-json missing probe_id {row['probe_id']!r}",
+                    file=sys.stderr,
+                )
+                return 2
+            try:
+                probes.append(probe_from_tokenized(row, tok_row))
+            except RuntimeError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
+        else:
+            ids = one_user_native_prompt(tokenizer, row["text"])
+            probes.append(
+                {
+                    "probe_id": row["probe_id"],
+                    "domain": row["domain"],
+                    "source_one_user_native_prompt": {
+                        "token_ids": ids,
+                        "token_count": len(ids),
+                        "token_ids_u32le_sha256": token_ids_u32le_sha256(ids),
+                        "add_special_tokens": True,
+                        "chat_shape": "one_user_message_no_system_no_tools",
+                        "user_text_sha256": sha256_bytes(row["text"].encode("utf-8")),
+                    },
+                    "user_text": row["text"],
+                }
+            )
 
     out_dir = args.out_dir.expanduser().resolve()
     req_dir = out_dir / "requests"
