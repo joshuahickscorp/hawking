@@ -707,6 +707,32 @@ pub struct Qwen30Layer0RouterCapture {
     pub router_input_hidden: Vec<f32>,
 }
 
+/// One layer's router observation from a full all-layer diagnostic forward.
+/// Captured after the layer's post-attention RMSNorm + router top-k, before
+/// the selected expert gate/up/down wave mutates residual state.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Debug)]
+pub struct Qwen30LayerRouterCapture {
+    pub layer: usize,
+    pub selected_expert_ids: [u32; QWEN30_TOP_K],
+    pub normalized_route_weights: [f32; QWEN30_TOP_K],
+    /// Device-produced post-attention RMSNorm buffer at this layer (router
+    /// input). Host copy only; never fed back into native model math.
+    pub router_input_hidden: Vec<f32>,
+}
+
+/// Full 48-layer router+hidden diagnostic for one tokenized input token.
+/// Executes the complete residual stack (embedding through every expert wave)
+/// so deeper-layer hiddens are causally real. Final norm / lm_head / sampler
+/// still run via the shared greedy path; their outputs are not retained here.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Debug)]
+pub struct Qwen30AllLayerRouterCaptureStep {
+    pub position: usize,
+    pub input_token_id: u32,
+    pub layers: Vec<Qwen30LayerRouterCapture>,
+}
+
 /// Diagnostic-only profiler data from one or more actual native Metal token
 /// executions.  It deliberately exposes counts and raw completed-dispatch
 /// samples rather than calculating a TPS value; clean sustained throughput is
@@ -1274,6 +1300,12 @@ pub struct Qwen30CompleteNativeRuntime {
     /// membership cannot silently become part of a production token path.
     diagnostic_route_capture_enabled: bool,
     diagnostic_selected_expert_ids: Vec<[u32; QWEN30_TOP_K]>,
+    /// Enabled only by the all-layer activation capture diagnostic.  When set,
+    /// each layer's router-input hidden and route membership are retained
+    /// after the router command buffer completes and before the expert wave.
+    /// Serving never enables this.
+    diagnostic_router_hidden_capture_enabled: bool,
+    diagnostic_layer_router_captures: Vec<Qwen30LayerRouterCapture>,
     max_seq_len: usize,
     next_position: usize,
 }
@@ -1351,6 +1383,8 @@ impl Qwen30CompleteNativeRuntime {
             trace_host_stages: options.trace_dispatch,
             diagnostic_route_capture_enabled: false,
             diagnostic_selected_expert_ids: Vec::new(),
+            diagnostic_router_hidden_capture_enabled: false,
+            diagnostic_layer_router_captures: Vec::new(),
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1483,6 +1517,8 @@ impl Qwen30CompleteNativeRuntime {
             trace_host_stages: options.trace_dispatch,
             diagnostic_route_capture_enabled: false,
             diagnostic_selected_expert_ids: Vec::new(),
+            diagnostic_router_hidden_capture_enabled: false,
+            diagnostic_layer_router_captures: Vec::new(),
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1495,6 +1531,7 @@ impl Qwen30CompleteNativeRuntime {
         MetalContext::write_buffer_bytes(&self.workspace.key_cache, &zero_kv);
         MetalContext::write_buffer_bytes(&self.workspace.value_cache, &zero_kv);
         self.diagnostic_selected_expert_ids.clear();
+        self.diagnostic_layer_router_captures.clear();
         self.quality_sparse_gate_up_interception_count.set(0);
         self.next_position = 0;
     }
@@ -1533,6 +1570,63 @@ impl Qwen30CompleteNativeRuntime {
         Ok(Qwen30NativeRouteCaptureStep {
             greedy,
             selected_expert_ids_per_layer,
+        })
+    }
+
+    /// Run one complete 48-layer native token and retain every layer's
+    /// device-selected route IDs/weights plus the router-input hidden vector.
+    ///
+    /// This is the activation-capture primitive for all-layer surplus fitting.
+    /// It deliberately reuses the exact residual/expert stack of
+    /// [`Self::forward_token_greedy`] so deeper-layer hiddens are causally real
+    /// (unlike [`Self::capture_layer0_router_for_token`], which stops before the
+    /// L0 expert wave). Serving never enables this path.
+    pub fn capture_all_layers_router_for_token(
+        &mut self,
+        token: u32,
+    ) -> Result<Qwen30AllLayerRouterCaptureStep> {
+        if self.diagnostic_route_capture_enabled || self.diagnostic_router_hidden_capture_enabled {
+            return Err(model_error(
+                "all-layer router capture is already active for another native token",
+            ));
+        }
+        self.diagnostic_selected_expert_ids.clear();
+        self.diagnostic_layer_router_captures.clear();
+        self.diagnostic_route_capture_enabled = true;
+        self.diagnostic_router_hidden_capture_enabled = true;
+        let result = self.forward_token_greedy(token);
+        self.diagnostic_route_capture_enabled = false;
+        self.diagnostic_router_hidden_capture_enabled = false;
+        let layers = std::mem::take(&mut self.diagnostic_layer_router_captures);
+        let _selected = std::mem::take(&mut self.diagnostic_selected_expert_ids);
+        let greedy = result?;
+        if layers.len() != self.config.layers {
+            return Err(model_error(format!(
+                "all-layer router capture retained {} layers, expected {}",
+                layers.len(),
+                self.config.layers
+            )));
+        }
+        for (expected, row) in layers.iter().enumerate() {
+            if row.layer != expected {
+                return Err(model_error(format!(
+                    "all-layer router capture layer order broken: expected {expected}, got {}",
+                    row.layer
+                )));
+            }
+            if row.router_input_hidden.len() != self.config.hidden {
+                return Err(model_error(format!(
+                    "all-layer router capture layer {} hidden width {} != {}",
+                    row.layer,
+                    row.router_input_hidden.len(),
+                    self.config.hidden
+                )));
+            }
+        }
+        Ok(Qwen30AllLayerRouterCaptureStep {
+            position: greedy.position,
+            input_token_id: token,
+            layers,
         })
     }
 
@@ -2799,6 +2893,9 @@ impl Qwen30CompleteNativeRuntime {
         if self.diagnostic_route_capture_enabled {
             self.diagnostic_selected_expert_ids.clear();
         }
+        if self.diagnostic_router_hidden_capture_enabled {
+            self.diagnostic_layer_router_captures.clear();
+        }
 
         let serial_encoder = qwen30_serial_encoder_enabled();
         host_stages.measure(
@@ -3027,6 +3124,19 @@ impl Qwen30CompleteNativeRuntime {
                     let route_ids = self.route_ids()?;
                     if self.diagnostic_route_capture_enabled {
                         self.diagnostic_selected_expert_ids.push(route_ids);
+                    }
+                    // Hidden/route capture must happen before the expert wave
+                    // reuses x_norm. Observation-only; never fed back.
+                    if self.diagnostic_router_hidden_capture_enabled {
+                        let router_input_hidden = self.router_input_hidden()?;
+                        let normalized_route_weights = self.route_weights()?;
+                        self.diagnostic_layer_router_captures
+                            .push(Qwen30LayerRouterCapture {
+                                layer,
+                                selected_expert_ids: route_ids,
+                                normalized_route_weights,
+                                router_input_hidden,
+                            });
                     }
                     let mut route_weights = Vec::with_capacity(self.config.experts_per_token);
                     for &expert in &route_ids {

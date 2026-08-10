@@ -17,6 +17,7 @@ pub mod qwen30_complete_runtime;
 /// Streams one layer at a time from safetensors; does not resident-load the
 /// full 56.9 GiB source (separate resource contract from the co-resident gate).
 pub mod qwen30_source_bf16_layer_major;
+pub mod qwen80_source_bf16_layer_major;
 /// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
 /// all-layer diagnostic.  It is not an Engine or endpoint selection.
 pub mod qwen30_quality_repack_diagnostic;

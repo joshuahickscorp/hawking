@@ -77,6 +77,12 @@ mod macos {
         output_dir: PathBuf,
         max_seq_len: usize,
         max_hidden_tokens_per_layer: usize,
+        /// Which probe shard this process owns. Default 0 with count 1 is the
+        /// historical single-process path.
+        probe_shard: usize,
+        /// Number of independent probe shards. Probe i is owned by shard
+        /// `i % probe_shard_count`. Probes never share state across shards.
+        probe_shard_count: usize,
     }
 
     fn usage() -> &'static str {
@@ -86,7 +92,8 @@ mod macos {
             --expected-source-audit-seal-sha256 SHA256 \\
             --expected-source-revision REVISION \\
             --input-json ABSOLUTE_PATH --output-dir ABSOLUTE_PATH \\
-            [--max-seq-len N] [--max-hidden-tokens-per-layer N]"
+            [--max-seq-len N] [--max-hidden-tokens-per-layer N] \\
+            [--probe-shard INDEX] [--probe-shard-count N]"
     }
 
     fn required<T>(value: Option<T>, flag: &str) -> Result<T, String> {
@@ -115,6 +122,8 @@ mod macos {
         let mut output_dir = None;
         let mut max_seq_len = 4096usize;
         let mut max_hidden_tokens_per_layer = DEFAULT_MAX_HIDDEN_TOKENS_PER_LAYER;
+        let mut probe_shard = 0usize;
+        let mut probe_shard_count = 1usize;
         let mut args = env::args().skip(1);
         while let Some(flag) = args.next() {
             let value = args
@@ -174,6 +183,10 @@ mod macos {
                     max_hidden_tokens_per_layer =
                         parse_usize(&value, "--max-hidden-tokens-per-layer")?;
                 }
+                "--probe-shard" => probe_shard = parse_usize(&value, "--probe-shard")?,
+                "--probe-shard-count" => {
+                    probe_shard_count = parse_usize(&value, "--probe-shard-count")?;
+                }
                 _ => return Err(format!("unsupported option {flag:?}; {}", usage())),
             }
         }
@@ -182,6 +195,14 @@ mod macos {
         }
         if max_hidden_tokens_per_layer == 0 {
             return Err("--max-hidden-tokens-per-layer must be positive".into());
+        }
+        if probe_shard_count == 0 {
+            return Err("--probe-shard-count must be positive".into());
+        }
+        if probe_shard >= probe_shard_count {
+            return Err(format!(
+                "--probe-shard {probe_shard} must be < --probe-shard-count {probe_shard_count}"
+            ));
         }
         // Hard size gate: refuse an unbounded capture request.
         let budget_bytes = max_hidden_tokens_per_layer
@@ -213,6 +234,8 @@ mod macos {
             output_dir: absolute(required(output_dir, "--output-dir")?, "--output-dir")?,
             max_seq_len,
             max_hidden_tokens_per_layer,
+            probe_shard,
+            probe_shard_count,
         })
     }
 
@@ -360,6 +383,13 @@ mod macos {
     /// Allocates slots proportional to each probe's length so short probes are
     /// not erased, then takes an evenly spaced stride within each probe. The
     /// same token set is retained for every layer (residual path is shared).
+    ///
+    /// **Sharding contract:** selection is computed over the FULL global probe
+    /// list with global probe indices. Every shard must call this with the same
+    /// full list and budget so they agree without communicating; each shard then
+    /// only *writes* the selected positions for probes it owns. Independent
+    /// per-shard selection would multiply the hidden budget by N and corrupt
+    /// the fit inputs.
     fn select_hidden_positions(
         probes: &[(String, Vec<u32>)],
         max_hidden_tokens: usize,
@@ -557,15 +587,36 @@ mod macos {
         let (input, probes) =
             parse_input(&arguments.input_json).unwrap_or_else(|error| fail(error));
         let input_sha256 = sha256_file(&arguments.input_json).unwrap_or_else(|error| fail(error));
-        let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
+        // Global stratified subsample over the FULL probe list so every shard
+        // agrees on which (probe_index, position) pairs retain hiddens without
+        // communicating. Filtering probes first would reallocate the budget
+        // independently per shard and inflate the merged sample by ~N.
         let hidden_positions =
             select_hidden_positions(&probes, arguments.max_hidden_tokens_per_layer);
-        let hidden_tokens_retained = hidden_positions.len();
-        let naive_hidden_bytes = total_tokens
+        let global_hidden_tokens_selected = hidden_positions.len();
+        let shard_probe_indices: Vec<usize> = (0..probes.len())
+            .filter(|probe_index| {
+                probe_index % arguments.probe_shard_count == arguments.probe_shard
+            })
+            .collect();
+        let shard_token_budget: usize = shard_probe_indices
+            .iter()
+            .map(|&i| probes[i].1.len())
+            .sum();
+        let shard_hidden_positions: usize = hidden_positions
+            .iter()
+            .filter(|(probe_index, _)| {
+                probe_index % arguments.probe_shard_count == arguments.probe_shard
+            })
+            .count();
+        let naive_hidden_bytes = shard_token_budget
             .saturating_mul(QWEN30_LAYERS)
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
-        let retained_hidden_budget_bytes = hidden_tokens_retained
+        // Budget accounting for THIS shard's retained rows (not the global
+        // selection size). Single-process (count=1) equals the historical
+        // global figure.
+        let retained_hidden_budget_bytes = shard_hidden_positions
             .saturating_mul(QWEN30_LAYERS)
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
@@ -602,10 +653,11 @@ mod macos {
             ));
         }
 
-        let mut probe_rows = Vec::with_capacity(probes.len());
+        let mut probe_rows = Vec::with_capacity(shard_probe_indices.len());
         let mut tokens_executed = 0usize;
         let mut hidden_bytes_written = 0usize;
-        for (probe_index, (probe_id, token_ids)) in probes.iter().enumerate() {
+        for &probe_index in &shard_probe_indices {
+            let (probe_id, token_ids) = &probes[probe_index];
             if token_ids.len() > arguments.max_seq_len {
                 fail(format!(
                     "{probe_id} token length {} exceeds capture max sequence {}",
@@ -616,6 +668,7 @@ mod macos {
             runtime.reset();
             let mut steps = Vec::with_capacity(token_ids.len());
             for (position, &token_id) in token_ids.iter().enumerate() {
+                // Global (probe_index, position) — not a renumbered shard index.
                 let store_hidden = hidden_positions.contains(&(probe_index, position));
                 let capture = runtime
                     .capture_all_layers_router_for_token(token_id)
@@ -697,7 +750,8 @@ mod macos {
                 "strategy": "stratified_token_subsample_raw_hiddens_plus_full_route_membership",
                 "why": "SVD fit needs Gram = X'X/n (buildable from raw rows at pack time) and surplus-over-null needs true holdout rows; full raw dump is ~1.5GB; per-expert Gram dumps are multi-GB and lose holdout rows",
                 "max_hidden_tokens_per_layer": arguments.max_hidden_tokens_per_layer,
-                "hidden_tokens_retained_per_layer": hidden_tokens_retained,
+                "hidden_tokens_retained_per_layer": shard_hidden_positions,
+                "global_hidden_tokens_selected_per_layer": global_hidden_tokens_selected,
                 "layers": QWEN30_LAYERS,
                 "hidden_width": QWEN30_HIDDEN,
                 "total_tokens_executed": tokens_executed,
@@ -705,10 +759,18 @@ mod macos {
                 "retained_hidden_budget_bytes": retained_hidden_budget_bytes,
                 "retained_hidden_bytes_written": hidden_bytes_written,
                 "full_route_membership_for_every_token_every_layer": true,
+                "hidden_position_selection": "global_stratified_over_full_probe_list",
                 "rejected_alternatives": {
                     "full_raw_all_tokens": "unbounded (~1.5 GB for this prompt set); not acceptable",
                     "per_expert_gram_only": "2048x2048 f32 = 16MB per (layer,expert); multi-GB at scale and cannot score holdout null/surplus"
                 },
+            },
+            "probe_shard": {
+                "index": arguments.probe_shard,
+                "count": arguments.probe_shard_count,
+                "ownership": "probe_index % count == index",
+                "global_probe_count": probes.len(),
+                "shard_probe_count": probe_rows.len(),
             },
             "capture_summary": {
                 "probe_count": probe_rows.len(),
@@ -716,7 +778,7 @@ mod macos {
                 "layers_executed": QWEN30_LAYERS,
                 "broad_activation_diversity": true,
                 "all_layer_activation_capture": true,
-                "hidden_tokens_retained": hidden_tokens_retained,
+                "hidden_tokens_retained": shard_hidden_positions,
             },
             "probes": probe_rows,
             "logit_provenance": {
@@ -733,10 +795,12 @@ mod macos {
                 "status": result.get("status"),
                 "schema": RESULT_SCHEMA,
                 "output_dir": arguments.output_dir,
+                "probe_shard": result.get("probe_shard"),
                 "capture_summary": result.get("capture_summary"),
                 "bounded_storage": {
                     "strategy": "stratified_token_subsample_raw_hiddens_plus_full_route_membership",
-                    "hidden_tokens_retained_per_layer": hidden_tokens_retained,
+                    "hidden_tokens_retained_per_layer": shard_hidden_positions,
+                    "global_hidden_tokens_selected_per_layer": global_hidden_tokens_selected,
                     "retained_hidden_bytes_written": hidden_bytes_written,
                     "naive_all_token_hidden_bytes_estimate": naive_hidden_bytes,
                 },

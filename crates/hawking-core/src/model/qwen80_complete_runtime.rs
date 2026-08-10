@@ -4007,7 +4007,10 @@ pub struct Qwen80CanonicalLinearDeltaNetLayout {
 }
 
 impl Qwen80CanonicalLinearDeltaNetLayout {
-    fn source_exact() -> Self {
+    /// Pinned source geometry for Qwen3-Next Gated DeltaNet layers.
+    /// Public so the BF16 layer-major source forward can share one layout authority
+    /// with the packed CPU/Metal oracles (no second source of truth).
+    pub fn source_exact() -> Self {
         let value_heads_per_key_head = QWEN80_LINEAR_VALUE_HEADS / QWEN80_LINEAR_KEY_HEADS;
         let value_rows_per_key_head = value_heads_per_key_head * QWEN80_LINEAR_VALUE_HEAD_DIM;
         Self {
@@ -5943,7 +5946,8 @@ impl Qwen80CpuPackedTensor {
     }
 }
 
-fn source_qwen80_topk_router(logits: &[f32]) -> Result<Qwen80RouteSelection> {
+/// Source top-10 router with `norm_topk_prob` (shared with BF16 layer-major).
+pub(crate) fn source_qwen80_topk_router(logits: &[f32]) -> Result<Qwen80RouteSelection> {
     if logits.len() != QWEN80_EXPERTS || logits.iter().any(|value| !value.is_finite()) {
         return Err(model_error(
             "Qwen80 source router requires 512 finite direct-packed logits",
@@ -6750,7 +6754,8 @@ impl Qwen80AllTenTrueMoeSourceBridge {
     }
 }
 
-fn source_qwen80_residual_rms_norm(input: &[f32], weight: &[f32]) -> Result<Vec<f32>> {
+/// Qwen3Next residual RMSNorm: `x * rsqrt(mean(x^2)+eps) * (1+w)`.
+pub(crate) fn source_qwen80_residual_rms_norm(input: &[f32], weight: &[f32]) -> Result<Vec<f32>> {
     if input.len() != weight.len() || input.is_empty() {
         return Err(model_error(
             "Qwen80 residual RMSNorm input/weight geometry is invalid",
@@ -6773,7 +6778,7 @@ fn source_qwen80_residual_rms_norm(input: &[f32], weight: &[f32]) -> Result<Vec<
 
 /// Deinterleave Qwen3-Next q_proj layout `[head][query(256), gate(256)]` into
 /// the query half only.
-fn qwen80_gqa_query_from_interleaved_q_projection(
+pub(crate) fn qwen80_gqa_query_from_interleaved_q_projection(
     q_projection: &[f32],
     layout: &Qwen80CanonicalGqaLayout,
 ) -> Result<Vec<f32>> {
@@ -6796,7 +6801,7 @@ fn qwen80_gqa_query_from_interleaved_q_projection(
 
 /// Per-head residual RMSNorm `(x * rsqrt(mean(x^2)+eps) * (1+w))` then
 /// non-interleaved rotate_half RoPE on the first `rotary_dim` dimensions.
-fn qwen80_gqa_source_norm_rope(
+pub(crate) fn qwen80_gqa_source_norm_rope(
     raw: &[f32],
     weights: &[f32],
     heads: usize,
@@ -6847,7 +6852,7 @@ fn qwen80_gqa_source_norm_rope(
 }
 
 /// Causal GQA over the active prefix of a `[seq][kv_heads][head_dim]` cache.
-fn qwen80_gqa_causal_attention(
+pub(crate) fn qwen80_gqa_causal_attention(
     query: &[f32],
     key_cache: &[f32],
     value_cache: &[f32],
@@ -6910,7 +6915,7 @@ fn qwen80_gqa_causal_attention(
 }
 
 /// Apply the per-head second half of q_proj as a sigmoid gate after attention.
-fn qwen80_gqa_apply_sigmoid_gate(
+pub(crate) fn qwen80_gqa_apply_sigmoid_gate(
     attention: &[f32],
     q_projection: &[f32],
     layout: &Qwen80CanonicalGqaLayout,
@@ -6940,7 +6945,7 @@ fn qwen80_gqa_apply_sigmoid_gate(
     Ok(gated)
 }
 
-fn source_qwen80_gated_rms_norm(
+pub(crate) fn source_qwen80_gated_rms_norm(
     input: &[f32],
     gate: &[f32],
     repeated_weight: &[f32],
@@ -6987,7 +6992,7 @@ fn source_qwen80_gated_rms_norm(
     Ok(output)
 }
 
-fn source_qwen80_ba_to_decay_beta(
+pub(crate) fn source_qwen80_ba_to_decay_beta(
     ba: &[f32],
     a_log: &[f32],
     dt_bias: &[f32],
@@ -7012,22 +7017,24 @@ fn source_qwen80_ba_to_decay_beta(
         let x = a + dt_bias[value_head];
         let softplus = x.max(0.0) + (-x.abs()).exp().ln_1p();
         let g = -a_log[value_head].exp() * softplus;
-        decay[value_head] = g.exp();
-        beta[value_head] = 1.0 / (1.0 + (-b).exp());
-        if !decay[value_head].is_finite()
-            || !beta[value_head].is_finite()
-            || decay[value_head] <= 0.0
-            || decay[value_head] > 1.0
-        {
+        // Metal and f32 source both flush exp(g) to 0 for large negative g
+        // (e.g. positive A_log with moderate softplus). That is a valid
+        // near-zero decay, not an invalid control — reject only non-finite
+        // or >1.0 (which would imply a positive g, impossible for real A_log).
+        let decay_value = g.exp();
+        let beta_value = 1.0 / (1.0 + (-b).exp());
+        if !decay_value.is_finite() || !beta_value.is_finite() || decay_value > 1.0 {
             return Err(model_error(format!(
                 "Qwen80 BA source control is invalid at value head {value_head}"
             )));
         }
+        decay[value_head] = decay_value;
+        beta[value_head] = beta_value;
     }
     Ok((decay, beta))
 }
 
-fn source_qwen80_l2_normalize(values: &mut [f32], scale: f32) -> Result<()> {
+pub(crate) fn source_qwen80_l2_normalize(values: &mut [f32], scale: f32) -> Result<()> {
     let norm = values.iter().map(|value| value * value).sum::<f32>();
     let inverse_norm = (norm + QWEN80_RMS_EPS).sqrt().recip() * scale;
     for value in values.iter_mut() {
@@ -7041,7 +7048,7 @@ fn source_qwen80_l2_normalize(values: &mut [f32], scale: f32) -> Result<()> {
     Ok(())
 }
 
-fn source_qwen80_recurrent_deltanet(
+pub(crate) fn source_qwen80_recurrent_deltanet(
     state: &mut [f32],
     query: &[f32],
     key: &[f32],
@@ -7099,7 +7106,7 @@ fn source_qwen80_recurrent_deltanet(
     Ok(output)
 }
 
-fn source_qwen80_split_linear_qkvz(
+pub(crate) fn source_qwen80_split_linear_qkvz(
     projection: &[f32],
     layout: &Qwen80CanonicalLinearDeltaNetLayout,
 ) -> Result<(Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>)> {
@@ -7189,6 +7196,55 @@ fn source_qwen80_causal_conv_step(
     {
         return Err(model_error(
             "Qwen80 causal convolution produced a non-finite value",
+        ));
+    }
+    Ok((output, next_state))
+}
+
+/// Dense-weight causal depthwise SiLU conv (same recurrence as the packed oracle).
+/// Used by the BF16 source layer-major path with widened `conv1d.weight`.
+pub(crate) fn source_qwen80_causal_conv_step_dense(
+    mixed_qkv: &[f32],
+    prior_state: &[f32],
+    conv_weights: &[f32],
+    layout: &Qwen80CanonicalLinearDeltaNetLayout,
+) -> Result<(Vec<f32>, Vec<f32>)> {
+    layout.validate()?;
+    let expected_weights = layout
+        .conv_channels
+        .checked_mul(layout.conv_kernel)
+        .ok_or_else(|| model_error("Qwen80 dense causal conv weight geometry overflowed"))?;
+    if mixed_qkv.len() != layout.conv_channels
+        || prior_state.len() != layout.conv_state_elements()?
+        || conv_weights.len() != expected_weights
+    {
+        return Err(model_error(
+            "Qwen80 dense causal convolution geometry is invalid",
+        ));
+    }
+    let mut output = vec![0.0f32; layout.conv_channels];
+    let mut next_state = vec![0.0f32; prior_state.len()];
+    for channel in 0..layout.conv_channels {
+        let state_base = channel * layout.conv_state_tokens;
+        let mut sum = 0.0f32;
+        for tap in 0..layout.conv_state_tokens {
+            let weight_index = channel * layout.conv_kernel + tap;
+            sum += prior_state[state_base + tap] * conv_weights[weight_index];
+            if tap + 1 < layout.conv_state_tokens {
+                next_state[state_base + tap] = prior_state[state_base + tap + 1];
+            } else {
+                next_state[state_base + tap] = mixed_qkv[channel];
+            }
+        }
+        let newest_weight_index = channel * layout.conv_kernel + layout.conv_state_tokens;
+        sum += mixed_qkv[channel] * conv_weights[newest_weight_index];
+        output[channel] = sum / (1.0 + (-sum).exp());
+    }
+    if output.iter().any(|value| !value.is_finite())
+        || next_state.iter().any(|value| !value.is_finite())
+    {
+        return Err(model_error(
+            "Qwen80 dense causal convolution produced a non-finite value",
         ));
     }
     Ok((output, next_state))
@@ -11411,13 +11467,10 @@ impl Qwen80CompleteNativeRuntime {
             let x = a + dt_bias[value_head];
             let softplus = x.max(0.0) + (-x.abs()).exp().ln_1p();
             let g = -a_log[value_head].exp() * softplus;
+            // Allow f32 underflow of exp(g) to 0 (matches Metal / source BF16).
             let decay_value = g.exp();
             let beta_value = 1.0 / (1.0 + (-b).exp());
-            if !decay_value.is_finite()
-                || !beta_value.is_finite()
-                || decay_value <= 0.0
-                || decay_value > 1.0
-            {
+            if !decay_value.is_finite() || !beta_value.is_finite() || decay_value > 1.0 {
                 return Err(model_error(format!(
                     "Qwen80 BA control reference produced invalid recurrence controls at value head {value_head}"
                 )));
