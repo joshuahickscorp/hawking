@@ -624,7 +624,7 @@ mod macos {
                     Qwen30CompleteRuntimeOptions {
                         max_seq_len: arguments.max_seq_len,
                         trace_dispatch: true,
-                        packed_matvec_kernel: Qwen30PackedMatvecKernel::ScalarControl,
+                        packed_matvec_kernel: Qwen30PackedMatvecKernel::SerialControl,
                         gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel::ThreeDispatchControl,
                     },
                 )

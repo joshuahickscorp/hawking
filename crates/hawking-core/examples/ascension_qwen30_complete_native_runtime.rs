@@ -92,9 +92,10 @@ mod macos {
     fn parse_packed_matvec_kernel(value: &str) -> Result<Qwen30PackedMatvecKernel, String> {
         match value {
             "control" => Ok(Qwen30PackedMatvecKernel::ScalarControl),
+            "serial-control" => Ok(Qwen30PackedMatvecKernel::SerialControl),
             "simdgroup-candidate" => Ok(Qwen30PackedMatvecKernel::SimdgroupCandidate),
             _ => Err(format!(
-                "unsupported --packed-matvec-kernel {value:?}; expected control or simdgroup-candidate; {}",
+                "unsupported --packed-matvec-kernel {value:?}; expected control, serial-control, or simdgroup-candidate; {}",
                 usage()
             )),
         }
@@ -160,7 +161,7 @@ mod macos {
             --mode preflight|forward-token|generate-greedy \\
             [--token-id ID] [--prompt TEXT] [--max-new-tokens N] \\
             [--max-seq-len N] [--trace-dispatch] [--prompt-template raw-text-diagnostic|source-user-chat] \
-            [--packed-matvec-kernel control|simdgroup-candidate] \
+            [--packed-matvec-kernel control|serial-control|simdgroup-candidate] \
             [--gate-up-swiglu-kernel control|fused-candidate|fused-candidate-device-parity|paired-scalar-order-candidate-device-parity|paired-scalar-order-production-no-parity] \
             [--expected-revalidation-path PATH --expected-revalidation-seal-sha256 SHA256 \
              --expected-selection-path PATH --expected-selection-seal-sha256 SHA256 \

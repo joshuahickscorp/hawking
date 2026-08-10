@@ -108,11 +108,9 @@ qwen30_select_projection(const device Qwen30DeviceExpertTriplet &entry, uint pro
     return &entry.down;
 }
 
-// Scalar-control binary sign/scale matvec, fused across top-k routes.
-// One thread owns one (route, row). Accumulation matches
-// qwen_binary_sign_scale_matvec / the prior single-route table kernel.
+// Serial one-thread-per-(route,row) oracle for bit-identity A/B.
 // Grid: (experts_per_token * max_rows, 1, 1).
-kernel void qwen30_expert_table_binary_matvec(
+kernel void qwen30_expert_table_binary_matvec_serial(
     const device uint *route_ids [[buffer(0)]],
     const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],
     const device float *input [[buffer(2)]],
@@ -176,9 +174,89 @@ kernel void qwen30_expert_table_binary_matvec(
     y[row] = sum;
 }
 
-// Simdgroup candidate geometry: same products as scalar, simd_sum reduction.
+// Default binary sign/scale matvec, fused across top-k routes.
+// Matches qwen_binary_sign_scale_matvec: one simdgroup per (route, row),
+// contiguous 32-col tiles, simd_sum reduction.
 // Grid: (experts_per_token * ceil(max_rows / 8) * 256, 1, 1), TG (256, 1, 1).
-// One threadgroup owns 8 rows of one route (same packing as single-route).
+kernel void qwen30_expert_table_binary_matvec(
+    const device uint *route_ids [[buffer(0)]],
+    const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],
+    const device float *input [[buffer(2)]],
+    device float *output [[buffer(3)]],
+    constant Qwen30DeviceExpertMatvecParams &p [[buffer(4)]],
+    uint group_id [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id [[simdgroup_index_in_threadgroup]])
+{
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    const uint groups_per_route = (p.max_rows + kSimdgroupsPerThreadgroup - 1u) /
+                                  kSimdgroupsPerThreadgroup;
+    if (groups_per_route == 0u) {
+        return;
+    }
+    const uint route = group_id / groups_per_route;
+    const uint group_in_route = group_id % groups_per_route;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
+    if (expert >= p.n_experts) {
+        return;
+    }
+    const device Qwen30DeviceExpertTriplet &entry = table[expert];
+    const device Qwen30DeviceExpertTensorRef *tensor =
+        qwen30_select_projection(entry, p.projection);
+    if (entry.ready_mask != QWEN30_EXPERT_TRIPLET_READY ||
+        entry.generation != p.generation ||
+        tensor->generation != p.generation ||
+        tensor->kind != QWEN30_EXPERT_KIND_BINARY ||
+        tensor->primary == nullptr ||
+        tensor->secondary == nullptr ||
+        tensor->rows == 0u ||
+        tensor->cols == 0u ||
+        p.group_size == 0u) {
+        return;
+    }
+    const uint row = group_in_route * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= tensor->rows || row >= p.max_rows) {
+        return;
+    }
+
+    const device uchar *signs = tensor->primary;
+    const device half *scales =
+        reinterpret_cast<const device half *>(tensor->secondary);
+    const uint in_off = p.input_base_elems + route * p.input_stride_elems;
+    const uint out_off = p.output_base_elems + route * p.output_stride_elems;
+    const device float *x = input + in_off;
+    device float *y = output + out_off;
+
+    float partial = 0.0f;
+    const uint row_base = row * tensor->cols;
+    const uint scale_base =
+        row * ((tensor->cols + p.group_size - 1u) / p.group_size);
+    for (uint base = 0u; base < tensor->cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= tensor->cols) {
+            continue;
+        }
+        const float scale = float(scales[scale_base + col / p.group_size]);
+        const uint flat = row_base + col;
+        const uchar byte = signs[flat >> 3u];
+        const bool positive = ((byte >> (flat & 7u)) & 1u) != 0u;
+        partial += (positive ? scale : -scale) * x[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[row] = partial;
+    }
+}
+
+// Strided-lane simdgroup A/B entry (lane owns col, col+32, ...). Same grid as
+// the tiled default; retained for --packed-matvec-kernel simdgroup-candidate.
 kernel void qwen30_expert_table_binary_matvec_simdgroup(
     const device uint *route_ids [[buffer(0)]],
     const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],

@@ -3274,7 +3274,7 @@ fn execute_all_layer_witnesses(
             .checked_add(FORCED_CONTINUATION_FORWARDS)
             .ok_or_else(|| "all-layer diagnostic context length overflowed".to_owned())?,
         trace_dispatch: false,
-        packed_matvec_kernel: Qwen30PackedMatvecKernel::ScalarControl,
+        packed_matvec_kernel: Qwen30PackedMatvecKernel::SerialControl,
         gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel::ThreeDispatchControl,
     };
     let (control_prefix, control_continuation) = {

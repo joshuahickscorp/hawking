@@ -538,19 +538,25 @@ impl Qwen30CompleteRuntimeConfig {
 
 /// The packed projection geometry chosen for a bounded native execution.
 ///
-/// `ScalarControl` is the admitted control path.  `SimdgroupCandidate` has a
-/// separate direct-packed Metal-vs-CPU parity test and is deliberately opt-in
-/// so a kernel experiment cannot silently alter an existing runtime receipt.
+/// Packed binary matvec geometry for a bounded native execution.
+///
+/// - `ScalarControl` (default): tiled simdgroup — 8 rows / 256-thread TG,
+///   contiguous 32-col tiles under `qwen_binary_sign_scale_matvec`.
+/// - `SerialControl`: one-thread-per-row left-to-right f32 oracle for
+///   bit-identity A/B against the default.
+/// - `SimdgroupCandidate`: older strided-lane simdgroup entry.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Qwen30PackedMatvecKernel {
     ScalarControl,
+    SerialControl,
     SimdgroupCandidate,
 }
 
 impl Qwen30PackedMatvecKernel {
     pub fn receipt_name(self) -> &'static str {
         match self {
-            Self::ScalarControl => "scalar_one_thread_per_row_control",
+            Self::ScalarControl => "tiled_simdgroup_eight_rows_per_threadgroup_default",
+            Self::SerialControl => "scalar_one_thread_per_row_control",
             Self::SimdgroupCandidate => "simdgroup_eight_rows_per_threadgroup_candidate",
         }
     }
@@ -2362,21 +2368,25 @@ impl Qwen30CompleteNativeRuntime {
         let cols_u32 = u32_checked(cols, "direct binary projection cols")?;
         let groups = cols.div_ceil(QWEN30_GROUP_SIZE);
         let (kernel, grid, threads_per_threadgroup) = match self.packed_matvec_kernel {
-            Qwen30PackedMatvecKernel::ScalarControl => (
-                "qwen_binary_sign_scale_matvec",
+            Qwen30PackedMatvecKernel::SerialControl => (
+                "qwen_binary_sign_scale_matvec_serial",
                 (rows_u32, 1, 1),
                 (rows_u32.min(256).max(1), 1, 1),
             ),
-            Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+            Qwen30PackedMatvecKernel::ScalarControl
+            | Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+                // 8-rows-per-TG simdgroup geometry. Default tiles columns
+                // contiguously; candidate keeps strided lane ownership.
                 let groups_of_rows = rows.div_ceil(8);
                 let grid_x = groups_of_rows
                     .checked_mul(256)
-                    .ok_or_else(|| model_error("simdgroup projection grid overflows usize"))?;
-                (
-                    "qwen_binary_sign_scale_matvec_simdgroup_candidate",
-                    (u32_checked(grid_x, "simdgroup projection grid")?, 1, 1),
-                    (256, 1, 1),
-                )
+                    .ok_or_else(|| model_error("packed binary projection grid overflows usize"))?;
+                let grid_x_u32 = u32_checked(grid_x, "packed binary projection grid")?;
+                let kernel = match self.packed_matvec_kernel {
+                    Qwen30PackedMatvecKernel::ScalarControl => "qwen_binary_sign_scale_matvec",
+                    _ => "qwen_binary_sign_scale_matvec_simdgroup_candidate",
+                };
+                (kernel, (grid_x_u32, 1, 1), (256, 1, 1))
             }
         };
         tcb.dispatch_threads(kernel, grid, threads_per_threadgroup, |encoder| {
@@ -3075,12 +3085,13 @@ impl Qwen30CompleteNativeRuntime {
             .ok_or_else(|| model_error("device expert fused binary grid overflows usize"))?;
         let total_rows_u32 = u32_checked(total_rows, "device expert fused binary threads")?;
         let (kernel, grid, tg) = match self.packed_matvec_kernel {
-            Qwen30PackedMatvecKernel::ScalarControl => (
-                "qwen30_expert_table_binary_matvec",
+            Qwen30PackedMatvecKernel::SerialControl => (
+                "qwen30_expert_table_binary_matvec_serial",
                 (total_rows_u32, 1, 1),
                 (total_rows_u32.min(256).max(1), 1, 1),
             ),
-            Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+            Qwen30PackedMatvecKernel::ScalarControl
+            | Qwen30PackedMatvecKernel::SimdgroupCandidate => {
                 let groups_of_rows = rows_per_route.div_ceil(8);
                 let groups_total = top_k.checked_mul(groups_of_rows).ok_or_else(|| {
                     model_error("device expert fused simdgroup groups overflow")
@@ -3088,11 +3099,12 @@ impl Qwen30CompleteNativeRuntime {
                 let grid_x = groups_total
                     .checked_mul(256)
                     .ok_or_else(|| model_error("device expert simdgroup grid overflows usize"))?;
-                (
-                    "qwen30_expert_table_binary_matvec_simdgroup",
-                    (u32_checked(grid_x, "device expert simdgroup grid")?, 1, 1),
-                    (256, 1, 1),
-                )
+                let grid_x_u32 = u32_checked(grid_x, "device expert simdgroup grid")?;
+                let kernel = match self.packed_matvec_kernel {
+                    Qwen30PackedMatvecKernel::ScalarControl => "qwen30_expert_table_binary_matvec",
+                    _ => "qwen30_expert_table_binary_matvec_simdgroup",
+                };
+                (kernel, (grid_x_u32, 1, 1), (256, 1, 1))
             }
         };
         let route_ids = self.workspace.route_ids.clone();
@@ -4717,11 +4729,11 @@ impl Qwen30QualityRepackNativeDiagnosticRuntime {
         admission: &Qwen30QualityRepackAdmission,
         options: Qwen30CompleteRuntimeOptions,
     ) -> Result<Self> {
-        if options.packed_matvec_kernel != Qwen30PackedMatvecKernel::ScalarControl
+        if options.packed_matvec_kernel != Qwen30PackedMatvecKernel::SerialControl
             || options.gate_up_swiglu_kernel != Qwen30GateUpSwiGluKernel::ThreeDispatchControl
         {
             return Err(model_error(
-                "HQ30GR2 all-layer diagnostic requires the scalar direct control topology for every unchanged organ",
+                "HQ30GR2 all-layer diagnostic requires the serial one-thread-per-row direct control topology for every unchanged organ",
             ));
         }
         let candidate = admit_qwen30_quality_repack_artifact(manifest_path, admission)?;
@@ -5193,10 +5205,11 @@ mod tests {
             .new_buffer_checked(std::mem::size_of::<f32>())
             .expect("matvec output");
         let mut tcb = TokenCommandBuffer::new(&context);
+        // Tiled simdgroup default: one row still needs a full 256-thread TG.
         tcb.dispatch_threads(
             "qwen_binary_sign_scale_matvec",
-            (1, 1, 1),
-            (1, 1, 1),
+            (256, 1, 1),
+            (256, 1, 1),
             |encoder| {
                 encoder.set_buffer(0, Some(&signs_buffer), 0);
                 encoder.set_buffer(1, Some(&scales_buffer), 0);
@@ -5274,10 +5287,12 @@ mod tests {
             .new_buffer_checked(rows * std::mem::size_of::<f32>())
             .expect("simdgroup output buffer");
         let mut tcb = TokenCommandBuffer::new(&context);
+        let grid_x = rows.div_ceil(8).saturating_mul(256) as u32;
+        // Serial oracle: exact left-to-right f32 order (one thread per row).
         tcb.dispatch_threads(
-            "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_serial",
             (rows as u32, 1, 1),
-            (256, 1, 1),
+            (rows.min(256).max(1) as u32, 1, 1),
             |encoder| {
                 encoder.set_buffer(0, Some(&signs_buffer), 0);
                 encoder.set_buffer(1, Some(&scales_buffer), 0);
@@ -5289,10 +5304,11 @@ mod tests {
                 encoder.qwen_set_u32(7, groups_per_row as u32);
             },
         )
-        .expect("scalar packed binary dispatch");
+        .expect("serial packed binary dispatch");
+        // Live tiled simdgroup default.
         tcb.dispatch_threads(
-            "qwen_binary_sign_scale_matvec_simdgroup_candidate",
-            (rows.div_ceil(8).saturating_mul(256) as u32, 1, 1),
+            "qwen_binary_sign_scale_matvec",
+            (grid_x, 1, 1),
             (256, 1, 1),
             |encoder| {
                 encoder.set_buffer(0, Some(&signs_buffer), 0);
@@ -5305,22 +5321,22 @@ mod tests {
                 encoder.qwen_set_u32(7, groups_per_row as u32);
             },
         )
-        .expect("simdgroup packed binary dispatch");
+        .expect("tiled simdgroup packed binary dispatch");
         tcb.commit_and_wait()
             .expect("packed binary candidate command completion");
 
-        let scalar =
+        let serial =
             unsafe { std::slice::from_raw_parts(scalar_output.contents() as *const f32, rows) };
-        let simdgroup =
+        let tiled =
             unsafe { std::slice::from_raw_parts(simdgroup_output.contents() as *const f32, rows) };
         for row in 0..rows {
-            let scalar_error = (scalar[row] - expected[row]).abs();
-            let simdgroup_error = (simdgroup[row] - expected[row]).abs();
-            let candidate_delta = (simdgroup[row] - scalar[row]).abs();
+            let serial_error = (serial[row] - expected[row]).abs();
+            let tiled_error = (tiled[row] - expected[row]).abs();
+            let candidate_delta = (tiled[row] - serial[row]).abs();
             assert!(
-                scalar_error <= 3e-5 && simdgroup_error <= 3e-5 && candidate_delta <= 3e-5,
-                "row {row}: cpu={}, scalar={}, simdgroup={}, scalar_error={scalar_error}, simdgroup_error={simdgroup_error}, candidate_delta={candidate_delta}",
-                expected[row], scalar[row], simdgroup[row],
+                serial_error <= 3e-5 && tiled_error <= 3e-5 && candidate_delta <= 3e-5,
+                "row {row}: cpu={}, serial={}, tiled={}, serial_error={serial_error}, tiled_error={tiled_error}, candidate_delta={candidate_delta}",
+                expected[row], serial[row], tiled[row],
             );
         }
     }
