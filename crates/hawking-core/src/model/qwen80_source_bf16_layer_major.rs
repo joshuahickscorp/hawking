@@ -27,7 +27,11 @@ use crate::{Error, Result};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::io::Read;
+#[cfg(not(unix))]
+use std::io::{Seek, SeekFrom};
+#[cfg(unix)]
+use std::os::unix::fs::FileExt;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
@@ -60,7 +64,609 @@ fn bf16_le_to_f32(bytes: &[u8]) -> f32 {
     f32::from_bits((u16::from_le_bytes([bytes[0], bytes[1]]) as u32) << 16)
 }
 
+/// BF16-LE → f32 widen of a row-major `[rows, cols]` matrix into a fresh buffer.
+pub fn widen_bf16_mat(weight_le: &[u8], rows: usize, cols: usize) -> Result<Vec<f32>> {
+    let n = rows
+        .checked_mul(cols)
+        .ok_or_else(|| model_err("widen_bf16_mat size overflow"))?;
+    let mut out = vec![0.0f32; n];
+    widen_bf16_into(weight_le, rows, cols, &mut out)?;
+    Ok(out)
+}
+
+/// BF16-LE → f32 widen into a caller-owned buffer (avoids per-call alloc when reused).
+pub fn widen_bf16_into(
+    weight_le: &[u8],
+    rows: usize,
+    cols: usize,
+    out: &mut [f32],
+) -> Result<()> {
+    let n = rows
+        .checked_mul(cols)
+        .ok_or_else(|| model_err("widen_bf16_into size overflow"))?;
+    let expect = n
+        .checked_mul(2)
+        .ok_or_else(|| model_err("widen_bf16_into byte overflow"))?;
+    if weight_le.len() < expect {
+        return Err(model_err(format!(
+            "widen_bf16_into weight bytes {} < {expect}",
+            weight_le.len()
+        )));
+    }
+    if out.len() < n {
+        return Err(model_err(format!(
+            "widen_bf16_into out len {} < {n}",
+            out.len()
+        )));
+    }
+    // Memory-bandwidth bound. Parallelise only for large tensors; avoid
+    // thread-spawn storms when widening many experts × 3 mats per layer.
+    const PARALLEL_THRESHOLD: usize = 512 * 1024; // elements
+    if n < PARALLEL_THRESHOLD {
+        for i in 0..n {
+            let b = i * 2;
+            out[i] = bf16_le_to_f32(&weight_le[b..b + 2]);
+        }
+        return Ok(());
+    }
+    let threads = std::thread::available_parallelism()
+        .map(|t| t.get())
+        .unwrap_or(4)
+        .clamp(1, 8);
+    let chunk = n.div_ceil(threads).max(1);
+    std::thread::scope(|scope| {
+        for (t, out_chunk) in out[..n].chunks_mut(chunk).enumerate() {
+            let base = t * chunk;
+            let w = weight_le;
+            scope.spawn(move || {
+                for (i, o) in out_chunk.iter_mut().enumerate() {
+                    let idx = base + i;
+                    let b = idx * 2;
+                    *o = bf16_le_to_f32(&w[b..b + 2]);
+                }
+            });
+        }
+    });
+    Ok(())
+}
+
+/// One expert's gate/up/down for its member tokens.
+///
+/// Widens BF16 → f32 once, then runs **per-token** `gemm_f32` (n_batch=1).
+/// Multi-token sgemm (M>1) can use a different Accelerate micro-kernel than
+/// M=1 and reassociate enough to flip borderline top-k after ~30 layers; the
+/// scalar capture path uses M=1 via `gemv_bf16`→`gemm_bf16`, so we match that.
+/// Amortised widen still removes the on-the-fly BF16 tax; parallel experts
+/// supply the throughput.
+///
+/// Writes unweighted down outputs into `expert_down_out` (n × h). Residual
+/// scatter stays with the caller (route-slot order).
+fn expert_batched_down(
+    expert: &ExpertWeights,
+    members: &[(usize, f32)],
+    all_router_in: &[f32],
+    h: usize,
+    inter: usize,
+    expert_down_out: &mut [f32],
+    _x_g: &mut [f32],
+    gu_out: &mut [f32],
+    act: &mut [f32],
+    w_gu: &mut [f32],
+    w_down: &mut [f32],
+) -> Result<()> {
+    let n = members.len();
+    if n == 0 {
+        return Ok(());
+    }
+    if expert_down_out.len() < n * h {
+        return Err(model_err("expert_batched_down output too small"));
+    }
+
+    // Widen once; run gate/up/down as separate M=1 matvecs (matches scalar
+    // swiglu_mlp_bf16 → gemv_bf16 → gemm_bf16 geometry exactly).
+    let (w_gate, w_up) = w_gu[..2 * inter * h].split_at_mut(inter * h);
+    widen_bf16_into(&expert.gate, inter, h, w_gate)?;
+    widen_bf16_into(&expert.up, inter, h, w_up)?;
+    let w_down = &mut w_down[..h * inter];
+    widen_bf16_into(&expert.down, h, inter, w_down)?;
+
+    let (gate_scratch, up_scratch) = gu_out[..2 * inter].split_at_mut(inter);
+    let act_scratch = &mut act[..inter];
+    for (i, &(t, _)) in members.iter().enumerate() {
+        let x = &all_router_in[t * h..(t + 1) * h];
+        gemm_f32(w_gate, inter, h, x, 1, gate_scratch)?;
+        gemm_f32(w_up, inter, h, x, 1, up_scratch)?;
+        silu_mul(gate_scratch, up_scratch, act_scratch);
+        gemm_f32(
+            w_down,
+            h,
+            inter,
+            act_scratch,
+            1,
+            &mut expert_down_out[i * h..(i + 1) * h],
+        )?;
+    }
+    Ok(())
+}
+
+/// Parallel per-expert MoE over the flat token corpus at one layer (routed experts only).
+///
+/// Expert GEMMs run in parallel; residual scatter is serial and applies each
+/// token's experts in **route top-k slot order** so float accumulation matches
+/// scalar `moe_combine` (route membership stays bitwise-stable).
+fn moe_routed_experts_parallel(
+    layer: &mut LoadedLayer,
+    expert_members: &[Vec<(usize, f32)>],
+    routes: &[(Vec<u32>, Vec<f32>)],
+    all_router_in: &[f32],
+    total_tokens: usize,
+    h: usize,
+    inter: usize,
+    moe_out: &mut [f32],
+) -> Result<()> {
+    // Active experts only.
+    let active: Vec<usize> = (0..QWEN80_EXPERTS)
+        .filter(|&e| !expert_members[e].is_empty())
+        .collect();
+    for e in 0..QWEN80_EXPERTS {
+        if expert_members[e].is_empty() {
+            layer.experts[e].gate = Vec::new();
+            layer.experts[e].up = Vec::new();
+            layer.experts[e].down = Vec::new();
+        }
+    }
+    if active.is_empty() {
+        return Ok(());
+    }
+
+    // Per-expert unweighted down outputs (empty for inactive).
+    let mut expert_down: Vec<Vec<f32>> = (0..QWEN80_EXPERTS).map(|_| Vec::new()).collect();
+    let max_by_mem = if total_tokens > 40_000 {
+        2usize
+    } else if total_tokens > 4_000 {
+        4
+    } else {
+        8
+    };
+    let n_workers = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .clamp(1, max_by_mem)
+        .min(active.len());
+
+    let err: Mutex<Option<String>> = Mutex::new(None);
+    // Each worker returns (expert_id, down_out) pairs for its shard.
+    let mut worker_results: Vec<Vec<(usize, Vec<f32>)>> =
+        (0..n_workers).map(|_| Vec::new()).collect();
+    {
+        let experts: &[ExpertWeights] = &layer.experts;
+        std::thread::scope(|scope| {
+            let chunk = active.len().div_ceil(n_workers);
+            for (wi, result_slot) in worker_results.iter_mut().enumerate() {
+                let start = wi * chunk;
+                if start >= active.len() {
+                    break;
+                }
+                let end = (start + chunk).min(active.len());
+                let my_experts = &active[start..end];
+                let expert_members = expert_members;
+                let all_router_in = all_router_in;
+                let err = &err;
+                scope.spawn(move || {
+                    let max_n = my_experts
+                        .iter()
+                        .map(|&e| expert_members[e].len())
+                        .max()
+                        .unwrap_or(0);
+                    let mut x_g = vec![0.0f32; max_n * h];
+                    let mut gu_out = vec![0.0f32; max_n * 2 * inter];
+                    let mut act = vec![0.0f32; max_n * inter];
+                    let mut w_gu = vec![0.0f32; 2 * inter * h];
+                    let mut w_down = vec![0.0f32; h * inter];
+                    let mut local: Vec<(usize, Vec<f32>)> = Vec::with_capacity(my_experts.len());
+                    for &e in my_experts {
+                        let n = expert_members[e].len();
+                        let mut out = vec![0.0f32; n * h];
+                        if let Err(err_e) = expert_batched_down(
+                            &experts[e],
+                            &expert_members[e],
+                            all_router_in,
+                            h,
+                            inter,
+                            &mut out,
+                            &mut x_g,
+                            &mut gu_out,
+                            &mut act,
+                            &mut w_gu,
+                            &mut w_down,
+                        ) {
+                            if let Ok(mut g) = err.lock() {
+                                *g = Some(err_e.to_string());
+                            }
+                            return;
+                        }
+                        local.push((e, out));
+                    }
+                    *result_slot = local;
+                });
+            }
+        });
+    }
+    if let Some(msg) = err.into_inner().unwrap_or(None) {
+        return Err(model_err(msg));
+    }
+    for wr in worker_results {
+        for (e, out) in wr {
+            expert_down[e] = out;
+        }
+    }
+
+    // local_of[e][token] = row in expert_down[e]
+    let mut local_of: Vec<HashMap<usize, usize>> = vec![HashMap::new(); QWEN80_EXPERTS];
+    for &e in &active {
+        for (local_i, &(t, _)) in expert_members[e].iter().enumerate() {
+            local_of[e].insert(t, local_i);
+        }
+    }
+
+    // Scatter in route-slot order per token (matches scalar moe_combine).
+    for t in 0..total_tokens {
+        let (ids, weights) = &routes[t];
+        let dst = &mut moe_out[t * h..(t + 1) * h];
+        for (&eid, &w) in ids.iter().zip(weights.iter()) {
+            let e = eid as usize;
+            let local_i = *local_of[e].get(&t).ok_or_else(|| {
+                model_err(format!("token {t} missing local row for expert {e}"))
+            })?;
+            let src = &expert_down[e][local_i * h..(local_i + 1) * h];
+            for j in 0..h {
+                dst[j] += src[j] * w;
+            }
+        }
+    }
+
+    for e in 0..QWEN80_EXPERTS {
+        layer.experts[e].gate = Vec::new();
+        layer.experts[e].up = Vec::new();
+        layer.experts[e].down = Vec::new();
+        expert_down[e] = Vec::new();
+    }
+    Ok(())
+}
+
+/// Shared expert SwiGLU over all tokens + per-token sigmoid gate values.
+/// Returns `(shared_down [T*h], gate_vals [T])` so the caller can add
+/// `shared_down * gate` **after** routed experts (scalar `moe_combine` order).
+///
+/// Per-token M=1 matvecs after one widen — matches scalar `swiglu_mlp_bf16`.
+fn shared_expert_batched(
+    layer: &LoadedLayer,
+    all_router_in: &[f32],
+    total_tokens: usize,
+    h: usize,
+    inter: usize,
+) -> Result<(Vec<f32>, Vec<f32>)> {
+    if total_tokens == 0 {
+        return Ok((Vec::new(), Vec::new()));
+    }
+    let w_gate = widen_bf16_mat(&layer.shared_gate, inter, h)?;
+    let w_up = widen_bf16_mat(&layer.shared_up, inter, h)?;
+    let w_down = widen_bf16_mat(&layer.shared_down, h, inter)?;
+    let w_sg = widen_bf16_mat(&layer.shared_expert_gate, 1, h)?;
+
+    let mut shared_down = vec![0.0f32; total_tokens * h];
+    let mut gate_vals = vec![0.0f32; total_tokens];
+    let mut gate_buf = vec![0.0f32; inter];
+    let mut up_buf = vec![0.0f32; inter];
+    let mut act_buf = vec![0.0f32; inter];
+    let mut sg_logit = [0.0f32; 1];
+    for t in 0..total_tokens {
+        let x = &all_router_in[t * h..(t + 1) * h];
+        gemm_f32(&w_gate, inter, h, x, 1, &mut gate_buf)?;
+        gemm_f32(&w_up, inter, h, x, 1, &mut up_buf)?;
+        silu_mul(&gate_buf, &up_buf, &mut act_buf);
+        gemm_f32(
+            &w_down,
+            h,
+            inter,
+            &act_buf,
+            1,
+            &mut shared_down[t * h..(t + 1) * h],
+        )?;
+        gemm_f32(&w_sg, 1, h, x, 1, &mut sg_logit)?;
+        let gate_val = 1.0 / (1.0 + (-sg_logit[0]).exp());
+        if !gate_val.is_finite() || !(0.0..=1.0).contains(&gate_val) {
+            return Err(model_err("shared expert gate sigmoid invalid"));
+        }
+        gate_vals[t] = gate_val;
+    }
+    Ok((shared_down, gate_vals))
+}
+
+#[cfg(target_os = "macos")]
+mod accelerate_gemm {
+    const CBLAS_ROW_MAJOR: i32 = 101;
+    const CBLAS_NO_TRANS: i32 = 111;
+    const CBLAS_TRANS: i32 = 112;
+
+    #[link(name = "Accelerate", kind = "framework")]
+    extern "C" {
+        fn cblas_sgemm(
+            order: i32,
+            transa: i32,
+            transb: i32,
+            m: i32,
+            n: i32,
+            k: i32,
+            alpha: f32,
+            a: *const f32,
+            lda: i32,
+            b: *const f32,
+            ldb: i32,
+            beta: f32,
+            c: *mut f32,
+            ldc: i32,
+        );
+    }
+
+    /// Batched matmul: `out[b] = W @ x[b]` where `W` is row-major `[rows, cols]`.
+    pub fn gemm_w_times_x(
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        n_batch: usize,
+        out: &mut [f32],
+    ) {
+        debug_assert_eq!(w.len(), rows * cols);
+        debug_assert_eq!(x.len(), n_batch * cols);
+        debug_assert_eq!(out.len(), n_batch * rows);
+        if n_batch == 0 || rows == 0 || cols == 0 {
+            return;
+        }
+        unsafe {
+            cblas_sgemm(
+                CBLAS_ROW_MAJOR,
+                CBLAS_NO_TRANS,
+                CBLAS_TRANS,
+                n_batch as i32,
+                rows as i32,
+                cols as i32,
+                1.0,
+                x.as_ptr(),
+                cols as i32,
+                w.as_ptr(),
+                cols as i32,
+                0.0,
+                out.as_mut_ptr(),
+                rows as i32,
+            );
+        }
+    }
+
+    /// `Out = scores @ V` with scores `[seq, seq]` and V `[seq, head_dim]`.
+    pub fn gemm_scores_times_v(
+        scores: &[f32],
+        v: &[f32],
+        seq_len: usize,
+        head_dim: usize,
+        out: &mut [f32],
+    ) {
+        debug_assert_eq!(scores.len(), seq_len * seq_len);
+        debug_assert_eq!(v.len(), seq_len * head_dim);
+        debug_assert_eq!(out.len(), seq_len * head_dim);
+        if seq_len == 0 || head_dim == 0 {
+            return;
+        }
+        unsafe {
+            cblas_sgemm(
+                CBLAS_ROW_MAJOR,
+                CBLAS_NO_TRANS,
+                CBLAS_NO_TRANS,
+                seq_len as i32,
+                head_dim as i32,
+                seq_len as i32,
+                1.0,
+                scores.as_ptr(),
+                seq_len as i32,
+                v.as_ptr(),
+                head_dim as i32,
+                0.0,
+                out.as_mut_ptr(),
+                head_dim as i32,
+            );
+        }
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+mod accelerate_gemm {
+    pub fn gemm_w_times_x(
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        n_batch: usize,
+        out: &mut [f32],
+    ) {
+        for b in 0..n_batch {
+            let xb = &x[b * cols..(b + 1) * cols];
+            let ob = &mut out[b * rows..(b + 1) * rows];
+            for r in 0..rows {
+                let row = &w[r * cols..(r + 1) * cols];
+                let mut acc = 0.0f32;
+                for c in 0..cols {
+                    acc += row[c] * xb[c];
+                }
+                ob[r] = acc;
+            }
+        }
+    }
+
+    pub fn gemm_scores_times_v(
+        scores: &[f32],
+        v: &[f32],
+        seq_len: usize,
+        head_dim: usize,
+        out: &mut [f32],
+    ) {
+        for b in 0..seq_len {
+            for d in 0..head_dim {
+                let mut acc = 0.0f32;
+                for t in 0..seq_len {
+                    acc += scores[b * seq_len + t] * v[t * head_dim + d];
+                }
+                out[b * head_dim + d] = acc;
+            }
+        }
+    }
+}
+
+/// Causal GQA prefill for a full sequence via Accelerate GEMM for QKᵀ and PV.
+/// Layouts match `qwen80_gqa_causal_attention`:
+///   q:     (seq, query_heads * head_dim)
+///   k/v:   (seq, kv_heads * head_dim)
+///   out:   (seq, query_heads * head_dim)
+fn gqa_prefill_causal(
+    q: &[f32],
+    k: &[f32],
+    v: &[f32],
+    layout: &Qwen80CanonicalGqaLayout,
+    seq_len: usize,
+    out: &mut [f32],
+) -> Result<()> {
+    if seq_len == 0 {
+        return Ok(());
+    }
+    let n_heads = layout.query_heads;
+    let n_kv_heads = layout.key_value_heads;
+    let head_dim = layout.head_dim;
+    let q_dim = layout.query_dim;
+    let kv_dim = layout.kv_dim;
+    if q.len() != seq_len * q_dim
+        || k.len() != seq_len * kv_dim
+        || v.len() != seq_len * kv_dim
+        || out.len() != seq_len * q_dim
+    {
+        return Err(model_err("gqa_prefill_causal geometry mismatch"));
+    }
+    // Short sequences: decode-step loop avoids scratch alloc and matches the
+    // single-token path bit-for-bit (no GEMM reassociation).
+    if seq_len <= 32 {
+        for pos in 0..seq_len {
+            let attn = qwen80_gqa_causal_attention(
+                &q[pos * q_dim..(pos + 1) * q_dim],
+                &k[..(pos + 1) * kv_dim],
+                &v[..(pos + 1) * kv_dim],
+                pos + 1,
+                layout,
+            )?;
+            out[pos * q_dim..(pos + 1) * q_dim].copy_from_slice(&attn);
+        }
+        return Ok(());
+    }
+
+    let group_size = n_heads / n_kv_heads;
+    let scale = 1.0 / (head_dim as f32).sqrt();
+    let mut q_h = vec![0.0f32; seq_len * head_dim];
+    let mut k_h = vec![0.0f32; seq_len * head_dim];
+    let mut v_h = vec![0.0f32; seq_len * head_dim];
+    let mut scores = vec![0.0f32; seq_len * seq_len];
+    let mut ctx = vec![0.0f32; seq_len * head_dim];
+
+    for h in 0..n_heads {
+        let kv_h = h / group_size;
+        for t in 0..seq_len {
+            let qs = t * q_dim + h * head_dim;
+            let ks = t * kv_dim + kv_h * head_dim;
+            q_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&q[qs..qs + head_dim]);
+            k_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&k[ks..ks + head_dim]);
+            v_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&v[ks..ks + head_dim]);
+        }
+        // scores[b,t] = k[t] · q[b]
+        accelerate_gemm::gemm_w_times_x(&k_h, seq_len, head_dim, &q_h, seq_len, &mut scores);
+        for b in 0..seq_len {
+            let row = &mut scores[b * seq_len..(b + 1) * seq_len];
+            let mut max_v = f32::NEG_INFINITY;
+            for t in 0..=b {
+                row[t] *= scale;
+                if row[t] > max_v {
+                    max_v = row[t];
+                }
+            }
+            for t in (b + 1)..seq_len {
+                row[t] = 0.0;
+            }
+            let mut sum = 0.0f32;
+            for t in 0..=b {
+                let e = (row[t] - max_v).exp();
+                row[t] = e;
+                sum += e;
+            }
+            let inv = if sum > 0.0 { 1.0 / sum } else { 0.0 };
+            for t in 0..=b {
+                row[t] *= inv;
+            }
+            for t in (b + 1)..seq_len {
+                row[t] = 0.0;
+            }
+        }
+        accelerate_gemm::gemm_scores_times_v(&scores, &v_h, seq_len, head_dim, &mut ctx);
+        for t in 0..seq_len {
+            let os = t * q_dim + h * head_dim;
+            out[os..os + head_dim].copy_from_slice(&ctx[t * head_dim..(t + 1) * head_dim]);
+        }
+    }
+    if out.iter().any(|v| !v.is_finite()) {
+        return Err(model_err("gqa_prefill_causal produced non-finite output"));
+    }
+    Ok(())
+}
+
+/// F32 GEMM: `out[b] = W @ x[b]` for `b in 0..n_batch`.
+pub fn gemm_f32(
+    w: &[f32],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    n_batch: usize,
+    out: &mut [f32],
+) -> Result<()> {
+    if w.len() < rows * cols {
+        return Err(model_err(format!(
+            "gemm_f32 W len {} < rows*cols {}",
+            w.len(),
+            rows * cols
+        )));
+    }
+    if x.len() != n_batch * cols || out.len() != n_batch * rows {
+        return Err(model_err(format!(
+            "gemm_f32 geometry: x={} out={} n_batch={n_batch} rows={rows} cols={cols}",
+            x.len(),
+            out.len()
+        )));
+    }
+    accelerate_gemm::gemm_w_times_x(w, rows, cols, x, n_batch, out);
+    Ok(())
+}
+
+/// Row-major BF16 GEMM: widen once, then `out[b] = W @ x[b]`.
+pub fn gemm_bf16(
+    weight_le: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    n_batch: usize,
+    out: &mut [f32],
+) -> Result<()> {
+    let w = widen_bf16_mat(weight_le, rows, cols)?;
+    gemm_f32(&w, rows, cols, x, n_batch, out)
+}
+
 /// Row-major GEMV: `out = W @ x` with W stored as little-endian BF16 rows.
+///
+/// Large mats (lm_head, big projections): widen once and hit Accelerate GEMM.
+/// Small projections: on-the-fly convert keeps the decode working set lean.
 pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mut [f32]) -> Result<()> {
     if x.len() != cols || out.len() != rows {
         return Err(model_err(format!(
@@ -78,6 +684,10 @@ pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mu
             "gemv_bf16 weight bytes {} < {expect}",
             weight_le.len()
         )));
+    }
+    const WIDEN_THRESHOLD_ELEMS: usize = 256 * 1024;
+    if rows.saturating_mul(cols) >= WIDEN_THRESHOLD_ELEMS {
+        return gemm_bf16(weight_le, rows, cols, x, 1, out);
     }
     let threads = std::thread::available_parallelism()
         .map(|n| n.get())
@@ -127,34 +737,7 @@ pub fn gemv_f32_rows(w: &[f32], rows: usize, cols: usize, x: &[f32], out: &mut [
             out.len()
         )));
     }
-    let threads = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(4)
-        .clamp(1, 16);
-    let chunk = rows.div_ceil(threads).max(1);
-    std::thread::scope(|scope| {
-        for (t, out_chunk) in out.chunks_mut(chunk).enumerate() {
-            let row0 = t * chunk;
-            let w = w;
-            let x = x;
-            scope.spawn(move || {
-                for (i, o) in out_chunk.iter_mut().enumerate() {
-                    let row = row0 + i;
-                    if row >= rows {
-                        break;
-                    }
-                    let base = row * cols;
-                    let mut acc = 0.0f32;
-                    let row_w = &w[base..base + cols];
-                    for c in 0..cols {
-                        acc += row_w[c] * x[c];
-                    }
-                    *o = acc;
-                }
-            });
-        }
-    });
-    Ok(())
+    gemm_f32(w, rows, cols, x, 1, out)
 }
 
 #[derive(Clone, Debug)]
@@ -257,41 +840,145 @@ impl SourceBf16Index {
             .ok_or_else(|| model_err(format!("source index lacks tensor {name}")))
     }
 
+    /// Range-read a tensor's raw BF16 payload. Does not keep other tensors resident.
+    ///
+    /// On Unix this uses `pread` (`read_exact_at`) so concurrent callers on the
+    /// same shard do not need to serialize seeks. That is what makes parallel
+    /// expert loads in [`LoadedLayer::load`] safe and fast.
     pub fn read_raw(&self, name: &str) -> Result<Vec<u8>> {
         let loc = self.require(name)?;
+        // Avoid zero-fill: pread overwrites every byte.
+        let mut buf = Vec::with_capacity(loc.nbytes);
+        unsafe {
+            buf.set_len(loc.nbytes);
+        }
+        self.read_raw_into(loc, name, &mut buf)?;
+        Ok(buf)
+    }
+
+    fn ensure_shard_open(&self, shard: &Path) -> Result<()> {
         let mut handles = self
             .handles
             .lock()
             .map_err(|_| model_err("source shard handle map poisoned"))?;
-        let file = if let Some(f) = handles.get_mut(&loc.shard) {
-            f
-        } else {
-            let f = File::open(&loc.shard).map_err(|e| {
-                model_err(format!("cannot open shard {}: {e}", loc.shard.display()))
-            })?;
-            handles.insert(loc.shard.clone(), f);
-            handles.get_mut(&loc.shard).unwrap()
+        if !handles.contains_key(shard) {
+            let f = File::open(shard)
+                .map_err(|e| model_err(format!("cannot open shard {}: {e}", shard.display())))?;
+            handles.insert(shard.to_path_buf(), f);
+        }
+        Ok(())
+    }
+
+    fn read_raw_into(&self, loc: &TensorLoc, name: &str, buf: &mut [u8]) -> Result<()> {
+        if buf.len() < loc.nbytes {
+            return Err(model_err(format!(
+                "read_raw_into buffer {} < {}",
+                buf.len(),
+                loc.nbytes
+            )));
+        }
+        self.ensure_shard_open(&loc.shard)?;
+        // Clone the fd under the lock, then release so concurrent preads do not
+        // serialize on the handle map.
+        let file = {
+            let handles = self
+                .handles
+                .lock()
+                .map_err(|_| model_err("source shard handle map poisoned"))?;
+            let f = handles
+                .get(&loc.shard)
+                .ok_or_else(|| model_err(format!("shard {} not open", loc.shard.display())))?;
+            f.try_clone().map_err(|e| {
+                model_err(format!(
+                    "cannot clone shard handle {}: {e}",
+                    loc.shard.display()
+                ))
+            })?
         };
-        file.seek(SeekFrom::Start(loc.data_offset)).map_err(|e| {
-            model_err(format!(
-                "seek {} @ {}: {e}",
-                loc.shard.display(),
-                loc.data_offset
-            ))
-        })?;
-        let mut buf = vec![0u8; loc.nbytes];
-        file.read_exact(&mut buf).map_err(|e| {
-            model_err(format!(
-                "range-read {} ({} bytes) from {}: {e}",
-                name,
-                loc.nbytes,
-                loc.shard.display()
-            ))
-        })?;
+        #[cfg(unix)]
+        {
+            file.read_exact_at(&mut buf[..loc.nbytes], loc.data_offset)
+                .map_err(|e| {
+                    model_err(format!(
+                        "range-read {} ({} bytes) from {} @ {}: {e}",
+                        name,
+                        loc.nbytes,
+                        loc.shard.display(),
+                        loc.data_offset
+                    ))
+                })?;
+        }
+        #[cfg(not(unix))]
+        {
+            let mut f = file;
+            f.seek(SeekFrom::Start(loc.data_offset)).map_err(|e| {
+                model_err(format!(
+                    "seek {} @ {}: {e}",
+                    loc.shard.display(),
+                    loc.data_offset
+                ))
+            })?;
+            f.read_exact(&mut buf[..loc.nbytes]).map_err(|e| {
+                model_err(format!(
+                    "range-read {} ({} bytes) from {}: {e}",
+                    name,
+                    loc.nbytes,
+                    loc.shard.display()
+                ))
+            })?;
+        }
         if let Ok(mut br) = self.bytes_read.lock() {
             *br = br.saturating_add(loc.nbytes as u64);
         }
-        Ok(buf)
+        Ok(())
+    }
+
+    /// Parallel range-read of many tensors (used to load a layer's 512 experts).
+    pub fn read_raw_many(&self, names: &[String]) -> Result<Vec<Vec<u8>>> {
+        if names.is_empty() {
+            return Ok(Vec::new());
+        }
+        for name in names {
+            let loc = self.require(name)?;
+            self.ensure_shard_open(&loc.shard)?;
+        }
+        let n = names.len();
+        let n_workers = std::thread::available_parallelism()
+            .map(|t| t.get())
+            .unwrap_or(4)
+            .clamp(1, 16)
+            .min(n);
+        let chunk = n.div_ceil(n_workers);
+        let mut out: Vec<Option<Vec<u8>>> = (0..n).map(|_| None).collect();
+        let err: Mutex<Option<String>> = Mutex::new(None);
+        std::thread::scope(|scope| {
+            for (wi, out_chunk) in out.chunks_mut(chunk).enumerate() {
+                let base = wi * chunk;
+                let names = names;
+                let err = &err;
+                let index = self;
+                scope.spawn(move || {
+                    for (i, slot) in out_chunk.iter_mut().enumerate() {
+                        let name = &names[base + i];
+                        match index.read_raw(name) {
+                            Ok(buf) => *slot = Some(buf),
+                            Err(e) => {
+                                if let Ok(mut g) = err.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        if let Some(msg) = err.into_inner().unwrap_or(None) {
+            return Err(model_err(msg));
+        }
+        out.into_iter()
+            .map(|o| o.ok_or_else(|| model_err("parallel read_raw_many missing result")))
+            .collect()
     }
 
     pub fn read_f32(&self, name: &str) -> Result<Vec<f32>> {
@@ -320,24 +1007,32 @@ impl SourceBf16Index {
                     .ok_or_else(|| model_err("embed row offset overflow"))?,
             )
             .ok_or_else(|| model_err("embed absolute offset overflow"))?;
-        let mut handles = self
-            .handles
-            .lock()
-            .map_err(|_| model_err("source shard handle map poisoned"))?;
-        let file = if let Some(f) = handles.get_mut(&loc.shard) {
-            f
-        } else {
-            let f = File::open(&loc.shard).map_err(|e| {
-                model_err(format!("cannot open shard {}: {e}", loc.shard.display()))
-            })?;
-            handles.insert(loc.shard.clone(), f);
-            handles.get_mut(&loc.shard).unwrap()
+        self.ensure_shard_open(&loc.shard)?;
+        let file = {
+            let handles = self
+                .handles
+                .lock()
+                .map_err(|_| model_err("source shard handle map poisoned"))?;
+            let f = handles
+                .get(&loc.shard)
+                .ok_or_else(|| model_err(format!("shard {} not open", loc.shard.display())))?;
+            f.try_clone()
+                .map_err(|e| model_err(format!("cannot clone embed shard handle: {e}")))?
         };
-        file.seek(SeekFrom::Start(offset))
-            .map_err(|e| model_err(format!("seek embed row {token}: {e}")))?;
         let mut buf = vec![0u8; row_bytes];
-        file.read_exact(&mut buf)
-            .map_err(|e| model_err(format!("read embed row {token}: {e}")))?;
+        #[cfg(unix)]
+        {
+            file.read_exact_at(&mut buf, offset)
+                .map_err(|e| model_err(format!("read embed row {token}: {e}")))?;
+        }
+        #[cfg(not(unix))]
+        {
+            let mut f = file;
+            f.seek(SeekFrom::Start(offset))
+                .map_err(|e| model_err(format!("seek embed row {token}: {e}")))?;
+            f.read_exact(&mut buf)
+                .map_err(|e| model_err(format!("read embed row {token}: {e}")))?;
+        }
         if let Ok(mut br) = self.bytes_read.lock() {
             *br = br.saturating_add(row_bytes as u64);
         }
@@ -582,11 +1277,28 @@ impl LoadedLayer {
             }
         }
 
-        let mut experts = Vec::with_capacity(QWEN80_EXPERTS);
+        // 512 experts × gate/up/down: parallel pread across shards (the 28%→high
+        // CPU fix — sequential range-reads starve the cores on this many tensors).
+        let mut expert_names = Vec::with_capacity(QWEN80_EXPERTS * 3);
         for expert in 0..QWEN80_EXPERTS {
-            let gate = index.read_raw(&expert_name(layer, expert, "gate_proj"))?;
-            let up = index.read_raw(&expert_name(layer, expert, "up_proj"))?;
-            let down = index.read_raw(&expert_name(layer, expert, "down_proj"))?;
+            expert_names.push(expert_name(layer, expert, "gate_proj"));
+            expert_names.push(expert_name(layer, expert, "up_proj"));
+            expert_names.push(expert_name(layer, expert, "down_proj"));
+        }
+        let mut expert_payloads = index.read_raw_many(&expert_names)?;
+        if expert_payloads.len() != QWEN80_EXPERTS * 3 {
+            return Err(model_err(format!(
+                "expert payload count {} != {}",
+                expert_payloads.len(),
+                QWEN80_EXPERTS * 3
+            )));
+        }
+        let mut experts = Vec::with_capacity(QWEN80_EXPERTS);
+        let mut payloads = expert_payloads.drain(..);
+        for _ in 0..QWEN80_EXPERTS {
+            let gate = payloads.next().unwrap();
+            let up = payloads.next().unwrap();
+            let down = payloads.next().unwrap();
             resident += gate.len() + up.len() + down.len();
             experts.push(ExpertWeights { gate, up, down });
         }
@@ -976,6 +1688,121 @@ fn gqa_mixer_step(
     Ok(residual)
 }
 
+/// Batched GQA mixer over a full probe sequence: one Q/K/V/O GEMM, sgemm causal
+/// attention. This is the change that dominated wall clock on Q30 long probes;
+/// same story here on GQA layers (3,7,...,47).
+fn gqa_mixer_prefill_probe(
+    layer: &LoadedLayer,
+    hidden: &mut [f32],
+    seq_len: usize,
+    layout: &Qwen80CanonicalGqaLayout,
+) -> Result<()> {
+    if seq_len == 0 {
+        return Ok(());
+    }
+    let h = QWEN80_HIDDEN;
+    if hidden.len() != seq_len * h {
+        return Err(model_err("gqa_mixer_prefill_probe hidden geometry"));
+    }
+    let q_proj = layer.q_proj.as_ref().ok_or_else(|| model_err("missing q_proj"))?;
+    let k_proj = layer.k_proj.as_ref().ok_or_else(|| model_err("missing k_proj"))?;
+    let v_proj = layer.v_proj.as_ref().ok_or_else(|| model_err("missing v_proj"))?;
+    let o_proj = layer.o_proj.as_ref().ok_or_else(|| model_err("missing o_proj"))?;
+    let q_norm = layer.q_norm.as_ref().ok_or_else(|| model_err("missing q_norm"))?;
+    let k_norm = layer.k_norm.as_ref().ok_or_else(|| model_err("missing k_norm"))?;
+
+    // Widen dense projections once; per-position M=1 matvecs match scalar
+    // `gqa_mixer_step` / gemv_bf16→gemm_bf16. Batched attention (sgemm QKᵀ/PV)
+    // is applied over the full sequence after Q/K/V are materialised — that is
+    // the dominant prefill win on long probes.
+    let q_w = widen_bf16_mat(q_proj, layout.q_proj_rows, h)?;
+    let k_w = widen_bf16_mat(k_proj, layout.kv_dim, h)?;
+    let v_w = widen_bf16_mat(v_proj, layout.kv_dim, h)?;
+    let o_w = widen_bf16_mat(o_proj, h, layout.query_dim)?;
+
+    let mut q_projection = vec![0.0f32; seq_len * layout.q_proj_rows];
+    let mut k_cache = vec![0.0f32; seq_len * layout.kv_dim];
+    let mut v_cache = vec![0.0f32; seq_len * layout.kv_dim];
+    let mut query = vec![0.0f32; seq_len * layout.query_dim];
+
+    for pos in 0..seq_len {
+        let rin = source_qwen80_residual_rms_norm(
+            &hidden[pos * h..(pos + 1) * h],
+            &layer.input_layernorm,
+        )?;
+        let q_row = &mut q_projection[pos * layout.q_proj_rows..(pos + 1) * layout.q_proj_rows];
+        let k_row = &mut k_cache[pos * layout.kv_dim..(pos + 1) * layout.kv_dim];
+        let v_row = &mut v_cache[pos * layout.kv_dim..(pos + 1) * layout.kv_dim];
+        gemm_f32(&q_w, layout.q_proj_rows, h, &rin, 1, q_row)?;
+        gemm_f32(&k_w, layout.kv_dim, h, &rin, 1, k_row)?;
+        gemm_f32(&v_w, layout.kv_dim, h, &rin, 1, v_row)?;
+
+        let query_raw = qwen80_gqa_query_from_interleaved_q_projection(q_row, layout)?;
+        let q_normed = qwen80_gqa_source_norm_rope(
+            &query_raw,
+            q_norm,
+            layout.query_heads,
+            layout.head_dim,
+            layout.rotary_dim,
+            pos,
+            "GQA q_norm + partial RoPE",
+        )?;
+        query[pos * layout.query_dim..(pos + 1) * layout.query_dim].copy_from_slice(&q_normed);
+
+        let k_normed = qwen80_gqa_source_norm_rope(
+            k_row,
+            k_norm,
+            layout.key_value_heads,
+            layout.head_dim,
+            layout.rotary_dim,
+            pos,
+            "GQA k_norm + partial RoPE",
+        )?;
+        k_row.copy_from_slice(&k_normed);
+    }
+    drop(q_w);
+    drop(k_w);
+    drop(v_w);
+
+    let mut attn = vec![0.0f32; seq_len * layout.query_dim];
+    gqa_prefill_causal(&query, &k_cache, &v_cache, layout, seq_len, &mut attn)?;
+    drop(query);
+    drop(k_cache);
+    drop(v_cache);
+
+    let mut gated = vec![0.0f32; seq_len * layout.query_dim];
+    for pos in 0..seq_len {
+        let g = qwen80_gqa_apply_sigmoid_gate(
+            &attn[pos * layout.query_dim..(pos + 1) * layout.query_dim],
+            &q_projection[pos * layout.q_proj_rows..(pos + 1) * layout.q_proj_rows],
+            layout,
+        )?;
+        gated[pos * layout.query_dim..(pos + 1) * layout.query_dim].copy_from_slice(&g);
+    }
+    drop(attn);
+    drop(q_projection);
+
+    for pos in 0..seq_len {
+        let mut mixer_row = vec![0.0f32; h];
+        gemm_f32(
+            &o_w,
+            h,
+            layout.query_dim,
+            &gated[pos * layout.query_dim..(pos + 1) * layout.query_dim],
+            1,
+            &mut mixer_row,
+        )?;
+        add_inplace(&mut hidden[pos * h..(pos + 1) * h], &mixer_row);
+        if hidden[pos * h..(pos + 1) * h]
+            .iter()
+            .any(|v| !v.is_finite())
+        {
+            return Err(model_err("GQA residual non-finite"));
+        }
+    }
+    Ok(())
+}
+
 /// Run one loaded layer over one probe sequence (causal within the probe).
 pub fn forward_layer_probe(
     layer: &LoadedLayer,
@@ -1145,6 +1972,18 @@ impl StreamTelemetry {
 }
 
 /// Layer-major full forward over all probes.
+///
+/// Per layer:
+/// 1. Mixer phase — GQA: batched Q/K/V/O + sgemm causal attention per probe;
+///    DeltaNet: sequential recurrence within each probe (batch across probes
+///    only via the shared MoE phase, never across time).
+/// 2. Collect every token's post-attention RMSNorm (router input) into one matrix.
+/// 3. One router GEMM over the whole corpus at this layer.
+/// 4. Shared expert one batched SwiGLU; routed experts gather/GEMM/scatter in
+///    parallel; widen only active experts.
+///
+/// `max_hidden_tokens_per_layer` is the sole retained-hidden authority (stride
+/// over the global flat token order). Route membership is always retained.
 pub fn capture_all_layers(
     index: &SourceBf16Index,
     probes: &[(String, Vec<u32>)],
@@ -1156,7 +1995,8 @@ pub fn capture_all_layers(
         return Err(model_err("hiddens/probes length mismatch"));
     }
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
-    // Deterministic, layer-independent retained-hidden subsample (see forward_layer_probe).
+    // Deterministic, layer-independent retained-hidden subsample.
+    // One authority only — do not introduce a second selection mechanism.
     let retain_stride = if max_hidden_tokens_per_layer == 0
         || total_tokens <= max_hidden_tokens_per_layer
     {
@@ -1164,14 +2004,6 @@ pub fn capture_all_layers(
     } else {
         total_tokens.div_ceil(max_hidden_tokens_per_layer)
     };
-    let probe_token_offsets: Vec<usize> = probes
-        .iter()
-        .scan(0usize, |acc, (_, t)| {
-            let start = *acc;
-            *acc += t.len();
-            Some(start)
-        })
-        .collect();
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
         .map(|(_, toks)| {
@@ -1189,34 +2021,196 @@ pub fn capture_all_layers(
         ..Default::default()
     };
 
+    let h = QWEN80_HIDDEN;
+    let inter = QWEN80_MOE_INTERMEDIATE;
+    let shared_inter = QWEN80_SHARED_EXPERT_INTERMEDIATE;
+    let linear_layout = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
+    linear_layout.validate()?;
+    let gqa_layout = Qwen80CanonicalGqaLayout::source_exact();
+    gqa_layout.validate()?;
+
+    let mut all_router_in = vec![0.0f32; total_tokens * h];
+    let mut router_logits = vec![0.0f32; total_tokens * QWEN80_EXPERTS];
+    let mut moe_out = vec![0.0f32; total_tokens * h];
+
     for layer_idx in 0..QWEN80_LAYERS {
         let load_t0 = Instant::now();
-        let layer = LoadedLayer::load(index, layer_idx)?;
+        let mut layer = LoadedLayer::load(index, layer_idx)?;
         telem.load_secs += load_t0.elapsed().as_secs_f64();
         telem.max_layer_resident_bytes = telem.max_layer_resident_bytes.max(layer.resident_bytes);
         if let Some(cb) = on_layer.as_mut() {
             cb(layer_idx, &layer, &telem);
         }
         let comp_t0 = Instant::now();
-        for (pi, (_, tokens)) in probes.iter().enumerate() {
-            let seq_len = tokens.len();
-            let layer_caps = forward_layer_probe(
-                &layer,
-                &mut hiddens[pi],
-                seq_len,
-                probe_token_offsets[pi],
-                retain_stride,
-            )?;
-            if layer_caps.len() != seq_len {
-                return Err(model_err(format!(
-                    "layer {layer_idx} probe {pi}: capture count {} != {seq_len}",
-                    layer_caps.len()
-                )));
+
+        // token_index[t] = (probe_i, pos); flat order is the retain-stride domain.
+        let mut token_index: Vec<(usize, usize)> = Vec::with_capacity(total_tokens);
+        let mut flat_t = 0usize;
+
+        // --- Phase 1: mixer per probe, collect router inputs. ---
+        match layer.kind {
+            LayerKind::LinearDeltaNet => {
+                // Sequential WITHIN each probe (recurrence). Across probes is free
+                // because each probe has independent DeltaNet state.
+                for (pi, (_, tokens)) in probes.iter().enumerate() {
+                    let seq_len = tokens.len();
+                    if seq_len == 0 {
+                        continue;
+                    }
+                    let hidden = &mut hiddens[pi];
+                    if hidden.len() != seq_len * h {
+                        return Err(model_err(format!(
+                            "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
+                            hidden.len()
+                        )));
+                    }
+                    let mut state = DeltaNetState::zero(&linear_layout)?;
+                    for pos in 0..seq_len {
+                        let x_in = hidden[pos * h..(pos + 1) * h].to_vec();
+                        let first =
+                            deltanet_mixer_step(&layer, &x_in, &mut state, &linear_layout)?;
+                        hidden[pos * h..(pos + 1) * h].copy_from_slice(&first);
+                        let rin = source_qwen80_residual_rms_norm(
+                            &first,
+                            &layer.post_attention_layernorm,
+                        )?;
+                        all_router_in[flat_t * h..(flat_t + 1) * h].copy_from_slice(&rin);
+                        token_index.push((pi, pos));
+                        flat_t += 1;
+                    }
+                }
             }
-            for (pos, cap) in layer_caps.into_iter().enumerate() {
-                captures[pi][pos].push(cap);
+            LayerKind::FullAttentionGqa => {
+                for (pi, (_, tokens)) in probes.iter().enumerate() {
+                    let seq_len = tokens.len();
+                    if seq_len == 0 {
+                        continue;
+                    }
+                    let hidden = &mut hiddens[pi];
+                    if hidden.len() != seq_len * h {
+                        return Err(model_err(format!(
+                            "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
+                            hidden.len()
+                        )));
+                    }
+                    gqa_mixer_prefill_probe(&layer, hidden, seq_len, &gqa_layout)?;
+                    for pos in 0..seq_len {
+                        let rin = source_qwen80_residual_rms_norm(
+                            &hidden[pos * h..(pos + 1) * h],
+                            &layer.post_attention_layernorm,
+                        )?;
+                        all_router_in[flat_t * h..(flat_t + 1) * h].copy_from_slice(&rin);
+                        token_index.push((pi, pos));
+                        flat_t += 1;
+                    }
+                }
             }
         }
+        debug_assert_eq!(flat_t, total_tokens);
+
+        // Free mixer BF16 payloads before MoE (experts still needed).
+        layer.in_proj_qkvz = None;
+        layer.in_proj_ba = None;
+        layer.out_proj_linear = None;
+        layer.q_proj = None;
+        layer.k_proj = None;
+        layer.v_proj = None;
+        layer.o_proj = None;
+
+        // --- Phase 2: router — widen once, per-token M=1 matvec (matches scalar). ---
+        let router_w = widen_bf16_mat(&layer.router, QWEN80_EXPERTS, h)?;
+        layer.router = Vec::new();
+        for t in 0..total_tokens {
+            gemm_f32(
+                &router_w,
+                QWEN80_EXPERTS,
+                h,
+                &all_router_in[t * h..(t + 1) * h],
+                1,
+                &mut router_logits[t * QWEN80_EXPERTS..(t + 1) * QWEN80_EXPERTS],
+            )?;
+        }
+        drop(router_w);
+
+        let mut routes: Vec<(Vec<u32>, Vec<f32>)> = Vec::with_capacity(total_tokens);
+        let mut expert_members: Vec<Vec<(usize, f32)>> = vec![Vec::new(); QWEN80_EXPERTS];
+        for t in 0..total_tokens {
+            let route = source_qwen80_topk_router(
+                &router_logits[t * QWEN80_EXPERTS..(t + 1) * QWEN80_EXPERTS],
+            )?;
+            let ids: Vec<u32> = route.ids.iter().map(|&id| id as u32).collect();
+            let weights = route.weights.to_vec();
+            for (&e, &w) in ids.iter().zip(weights.iter()) {
+                expert_members[e as usize].push((t, w));
+            }
+            routes.push((ids, weights));
+        }
+
+        // --- Phase 3: shared expert (compute only) + parallel routed GEMMs,
+        //     then residual combine in scalar order: routed (route-slot order)
+        //     then shared*gate. ---
+        moe_out.fill(0.0);
+        let (shared_down, gate_vals) = shared_expert_batched(
+            &layer,
+            &all_router_in,
+            total_tokens,
+            h,
+            shared_inter,
+        )?;
+        // Drop shared BF16 after use.
+        layer.shared_gate = Vec::new();
+        layer.shared_up = Vec::new();
+        layer.shared_down = Vec::new();
+        layer.shared_expert_gate = Vec::new();
+
+        moe_routed_experts_parallel(
+            &mut layer,
+            &expert_members,
+            &routes,
+            &all_router_in,
+            total_tokens,
+            h,
+            inter,
+            &mut moe_out,
+        )?;
+        // shared * sigmoid(gate) last — matches scalar moe_combine.
+        for t in 0..total_tokens {
+            let g = gate_vals[t];
+            let src = &shared_down[t * h..(t + 1) * h];
+            let dst = &mut moe_out[t * h..(t + 1) * h];
+            for j in 0..h {
+                dst[j] += src[j] * g;
+            }
+        }
+
+        // Apply MoE residual and record captures.
+        for (t, &(pi, pos)) in token_index.iter().enumerate() {
+            add_inplace(
+                &mut hiddens[pi][pos * h..(pos + 1) * h],
+                &moe_out[t * h..(t + 1) * h],
+            );
+            if hiddens[pi][pos * h..(pos + 1) * h]
+                .iter()
+                .any(|v| !v.is_finite())
+            {
+                return Err(model_err(format!(
+                    "layer {layer_idx} probe {pi} pos {pos} second residual non-finite"
+                )));
+            }
+            let (ids, weights) = std::mem::take(&mut routes[t]);
+            let retain = retain_stride <= 1 || (t % retain_stride) == 0;
+            captures[pi][pos].push(LayerTokenCapture {
+                layer: layer_idx,
+                selected_expert_ids: ids,
+                normalized_route_weights: weights,
+                router_input_hidden: if retain {
+                    all_router_in[t * h..(t + 1) * h].to_vec()
+                } else {
+                    Vec::new()
+                },
+            });
+        }
+
         telem.compute_secs += comp_t0.elapsed().as_secs_f64();
         drop(layer);
         telem.peak_rss_bytes = telem.peak_rss_bytes.max(peak_rss_bytes());
@@ -1624,5 +2618,66 @@ mod tests {
             .validate()
             .unwrap();
         Qwen80CanonicalGqaLayout::source_exact().validate().unwrap();
+    }
+
+    /// Manual gate: set `QWEN80_SOURCE_DIR` and run with `--ignored`.
+    /// Compares scalar [`forward_layer_probe`] routes vs batched [`capture_all_layers`]
+    /// on one short probe for every layer (bitwise expert-id identity).
+    #[test]
+    #[ignore = "requires QWEN80_SOURCE_DIR and ~minutes of weight streaming"]
+    fn route_membership_scalar_vs_batched_identity() {
+        let dir = std::path::PathBuf::from(
+            std::env::var("QWEN80_SOURCE_DIR").expect("QWEN80_SOURCE_DIR"),
+        );
+        let index = SourceBf16Index::open(&dir).expect("open source");
+        // Fixed short chat-template-ish token sequence (15 tokens).
+        let probes = vec![(
+            "route_check".to_string(),
+            vec![
+                151644u32, 872, 198, 3838, 374, 279, 6722, 315, 9625, 30, 151645, 198, 151644,
+                77091, 198,
+            ],
+        )];
+        let seq = probes[0].1.len();
+        let total: usize = seq;
+
+        let mut h_scalar = embed_probes(&index, &probes).expect("embed scalar");
+        let mut scalar_by_layer_token: Vec<Vec<Vec<u32>>> =
+            vec![vec![Vec::new(); seq]; QWEN80_LAYERS];
+        for layer_idx in 0..QWEN80_LAYERS {
+            let layer = LoadedLayer::load(&index, layer_idx).expect("load scalar");
+            let caps =
+                forward_layer_probe(&layer, &mut h_scalar[0], seq, 0, 1).expect("scalar forward");
+            for (pos, cap) in caps.into_iter().enumerate() {
+                scalar_by_layer_token[layer_idx][pos] = cap.selected_expert_ids;
+            }
+            drop(layer);
+            eprintln!("route_check scalar layer {layer_idx}/{QWEN80_LAYERS}");
+        }
+
+        let mut h_batch = embed_probes(&index, &probes).expect("embed batch");
+        let (batch_caps, _) =
+            capture_all_layers(&index, &probes, &mut h_batch, total, None).expect("batched");
+
+        let mut mismatches = 0usize;
+        for layer_idx in 0..QWEN80_LAYERS {
+            for pos in 0..seq {
+                let b = &batch_caps[0][pos][layer_idx].selected_expert_ids;
+                let s = &scalar_by_layer_token[layer_idx][pos];
+                if b != s {
+                    mismatches += 1;
+                    if mismatches <= 8 {
+                        eprintln!(
+                            "ROUTE MISMATCH layer={layer_idx} pos={pos} scalar={s:?} batch={b:?}"
+                        );
+                    }
+                }
+            }
+        }
+        assert_eq!(
+            mismatches, 0,
+            "route membership not bitwise identical ({mismatches} token-layers)"
+        );
+        eprintln!("ROUTE IDENTITY PASS: {QWEN80_LAYERS} layers × {seq} tokens");
     }
 }
