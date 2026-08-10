@@ -69,8 +69,14 @@ kernel void qwen_complete_rmsnorm_rows_f32(
     constant float& eps        [[buffer(5)]],
     threadgroup float* scratch [[threadgroup(0)]],
     uint tid                    [[thread_index_in_threadgroup]],
-    uint row                    [[threadgroup_position_in_grid]])
+    uint2 tg_pos                [[threadgroup_position_in_grid]])
 {
+    // The host dispatches a 2D grid: (256, rows, 1) threads with (256,1,1)
+    // threadgroups, so the threadgroups form (1, rows, 1) and the row index
+    // lives in .y. Binding a scalar uint here takes only .x, which is always
+    // 0 -- every threadgroup then recomputed row 0 and rows 1.. were never
+    // written, leaving stale buffer contents in q_norm for heads 1..31.
+    const uint row = tg_pos.y;
     if (row >= rows) return;
     float sum = 0.0f;
     const uint base = row * width;
