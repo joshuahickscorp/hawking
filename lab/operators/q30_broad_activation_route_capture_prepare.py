@@ -177,6 +177,18 @@ REPO_TASK_FRAMES = (
     "What would break if this ran concurrently? Reason about the shared state:\n\n",
 )
 REPO_SOURCE_GLOBS = (("*.rs", "repo_rust"), ("*.py", "repo_python"), ("*.md", "repo_docs"))
+# Stable skip list for generated/vendored trees (path must contain these segments).
+REPO_SKIP_SEGMENTS = (
+    "/.git/",
+    "/target/",
+    "/target-parallel/",
+    "/workspace/ops/build/",
+    "/node_modules/",
+    "/.worktrees/",
+    "/vendor/",
+    "/workspace/campaign/evidence/",
+    "/.claude-grok/",
+)
 
 
 def approx_raw_token_count(text: str) -> int:
@@ -191,6 +203,54 @@ def approx_raw_token_count(text: str) -> int:
     return max(1, (len(text) + 3) // 4)
 
 
+def _repo_dir_key(rel: Path) -> str:
+    """Coarse directory bucket for round-robin (crates/foo, lab/operators, ...)."""
+    parts = rel.parts
+    if not parts:
+        return "."
+    if len(parts) == 1:
+        return parts[0]
+    return f"{parts[0]}/{parts[1]}"
+
+
+def _stable_u32(s: str) -> int:
+    """Deterministic non-cryptographic digest for offset selection (no RNG)."""
+    return int.from_bytes(hashlib.sha256(s.encode("utf-8")).digest()[:4], "little")
+
+
+def _chunk_at_offset(text: str, chunk_chars: int, offset: int) -> str:
+    """Take a ~chunk_chars window starting at offset; snap back if the tail is short."""
+    n = len(text)
+    if n <= chunk_chars:
+        return text.strip()
+    start = max(0, min(offset, n - chunk_chars))
+    return text[start : start + chunk_chars].strip()
+
+
+def _offsets_for_file(text: str, rel_posix: str, chunk_chars: int) -> list[int]:
+    """Deterministic, diverse start offsets for a file (never only the head).
+
+    First offset is a path-stable position so we do not always take chars [0:N].
+    Further offsets walk the file in chunk-sized strides for multi-draw reuse of
+    large files once directory coverage is exhausted.
+    """
+    n = len(text)
+    if n <= chunk_chars:
+        return [0]
+    span = n - chunk_chars
+    # Primary: stable mid-biased offset from path hash (not wall-clock, not RNG seed).
+    primary = _stable_u32(rel_posix) % (span + 1)
+    offsets = [primary]
+    # Secondary lattice: head, 1/4, mid, 3/4, then stride through the rest.
+    lattice = [0, span // 4, span // 2, (3 * span) // 4, span]
+    stride = max(chunk_chars // 2, 400)
+    stepped = list(range(0, span + 1, stride))
+    for cand in lattice + stepped:
+        if cand not in offsets:
+            offsets.append(cand)
+    return offsets
+
+
 def build_repo_corpus(
     root: Path,
     target_tokens: int,
@@ -200,56 +260,123 @@ def build_repo_corpus(
 ) -> list[dict[str, str]]:
     """Draw probes from real repo source until ~target_tokens is reached.
 
-    Deterministic: files sorted, round-robin across extensions so one language
-    cannot dominate the routing distribution. Skips generated/vendored trees and
-    anything too small to carry structure.
+    Diversity-first, deterministic draw:
+    - Round-robin across DIRECTORIES (then extension within a visit), not only
+      across ``*.rs`` / ``*.py`` / ``*.md`` buckets — so crates/hawking-core
+      cannot drown out lab/, tools/, app/, ramanujan/, ...
+    - Vary chunk offsets: path-stable primary offset, then lattice/stride; never
+      always the first ``chunk_chars`` of every file.
+    - Sorted inputs only; no wall-clock or drifting RNG seeds.
+    - Skips generated/vendored trees and files too small to carry structure.
 
     `count_tokens` is a callable(text) -> int used only for the budget loop
     (HF encode when available, approx when using the Rust tokenizer bridge).
     """
-    skip = ("/.git/", "/target/", "/workspace/ops/build/", "/node_modules/",
-            "/.worktrees/", "/vendor/", "/workspace/campaign/evidence/")
-    buckets: list[list[Path]] = []
-    for pattern, _domain in REPO_SOURCE_GLOBS:
-        found = sorted(
-            p for p in root.rglob(pattern)
-            if p.is_file()
-            and not any(s in f"/{p.relative_to(root).as_posix()}/" for s in skip)
-            and 1500 < p.stat().st_size < 400_000
-        )
-        buckets.append(found)
+    root = root.resolve()
+    # dir_key -> domain -> sorted list of absolute paths
+    by_dir: dict[str, dict[str, list[Path]]] = {}
+    for pattern, domain in REPO_SOURCE_GLOBS:
+        for path in sorted(root.rglob(pattern)):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(root)
+            rel_posix = rel.as_posix()
+            if any(s in f"/{rel_posix}/" for s in REPO_SKIP_SEGMENTS):
+                continue
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            if not (1500 < size < 400_000):
+                continue
+            dkey = _repo_dir_key(rel)
+            by_dir.setdefault(dkey, {}).setdefault(domain, []).append(path)
+
+    dir_keys = sorted(by_dir.keys())
+    if not dir_keys:
+        return []
+
+    # Per (dir, domain): file index and which offset slot within that file.
+    file_idx: dict[tuple[str, str], int] = {}
+    offset_slot: dict[tuple[str, str, str], int] = {}  # dir, domain, relpath -> slot
+    # Cursor into the sorted domain list for each directory (round-robin languages).
+    domain_cursor: dict[str, int] = {d: 0 for d in dir_keys}
+    dir_exhausted = {d: False for d in dir_keys}
 
     rows: list[dict[str, str]] = []
     total = 0
-    idx = [0] * len(buckets)
-    exhausted = [False] * len(buckets)
-    while total < target_tokens and not all(exhausted):
-        for b, (_, domain) in enumerate(REPO_SOURCE_GLOBS):
+    # Safety: bound visits so a pathological tree cannot loop forever.
+    max_visits = max(target_tokens // 50, len(dir_keys) * 64)
+    visits = 0
+    while total < target_tokens and not all(dir_exhausted.values()) and visits < max_visits:
+        progress = False
+        for dkey in dir_keys:
             if total >= target_tokens:
                 break
-            if idx[b] >= len(buckets[b]):
-                exhausted[b] = True
+            if dir_exhausted[dkey]:
                 continue
-            path = buckets[b][idx[b]]
-            idx[b] += 1
-            try:
-                text = path.read_text(encoding="utf-8", errors="strict")
-            except (UnicodeDecodeError, OSError):
+            domains_map = by_dir[dkey]
+            domain_names = sorted(domains_map.keys())
+            if not domain_names:
+                dir_exhausted[dkey] = True
                 continue
-            chunk = text[:chunk_chars].strip()
-            if len(chunk) < 400:
-                continue
-            frame = REPO_TASK_FRAMES[len(rows) % len(REPO_TASK_FRAMES)]
-            body = f"{frame}```\n{chunk}\n```"
-            n = int(count_tokens(body))
-            rows.append(
-                {
-                    "probe_id": f"{domain}_{idx[b]:05d}",
-                    "domain": domain,
-                    "text": body,
-                }
-            )
-            total += n
+
+            # Try each language once per directory visit (starting at cursor).
+            placed = False
+            for _ in range(len(domain_names)):
+                di = domain_cursor[dkey] % len(domain_names)
+                domain_cursor[dkey] = (di + 1) % len(domain_names)
+                domain = domain_names[di]
+                files = domains_map[domain]
+                fi_key = (dkey, domain)
+                start_fi = file_idx.get(fi_key, 0)
+                # Walk files in this (dir, domain) looking for a usable chunk.
+                for step in range(len(files)):
+                    fi = (start_fi + step) % len(files)
+                    path = files[fi]
+                    rel_posix = path.relative_to(root).as_posix()
+                    try:
+                        text = path.read_text(encoding="utf-8", errors="strict")
+                    except (UnicodeDecodeError, OSError):
+                        continue
+                    offsets = _offsets_for_file(text, rel_posix, chunk_chars)
+                    slot_key = (dkey, domain, rel_posix)
+                    slot = offset_slot.get(slot_key, 0)
+                    if slot >= len(offsets):
+                        continue
+                    chunk = _chunk_at_offset(text, chunk_chars, offsets[slot])
+                    if len(chunk) < 400:
+                        offset_slot[slot_key] = slot + 1
+                        continue
+                    frame = REPO_TASK_FRAMES[len(rows) % len(REPO_TASK_FRAMES)]
+                    body = f"{frame}```\n{chunk}\n```"
+                    n = int(count_tokens(body))
+                    rows.append(
+                        {
+                            "probe_id": f"{domain}_{len(rows):05d}",
+                            "domain": domain,
+                            "text": body,
+                            "source_relpath": rel_posix,
+                            "source_dir": dkey,
+                            "chunk_offset": int(offsets[slot]),
+                        }
+                    )
+                    total += n
+                    offset_slot[slot_key] = slot + 1
+                    # Advance file cursor past this file for the next pass.
+                    file_idx[fi_key] = (fi + 1) % len(files)
+                    placed = True
+                    progress = True
+                    break
+                if placed or total >= target_tokens:
+                    break
+
+            if not placed:
+                # No remaining (file, offset) pairs in this directory.
+                dir_exhausted[dkey] = True
+        visits += 1
+        if not progress:
+            break
     return rows
 
 
@@ -305,7 +432,7 @@ def probe_from_tokenized(
         raise RuntimeError(
             f"probe {row['probe_id']}: token_count {token_count} != len(token_ids) {len(ids)}"
         )
-    return {
+    probe: dict[str, Any] = {
         "probe_id": row["probe_id"],
         "domain": row["domain"],
         "source_one_user_native_prompt": {
@@ -318,6 +445,53 @@ def probe_from_tokenized(
         },
         "user_text": row["text"],
     }
+    for key in ("source_relpath", "source_dir", "chunk_offset"):
+        if key in row and row[key] is not None and row[key] != "":
+            probe[key] = row[key]
+    return probe
+
+
+def _median_int(values: list[int]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2 == 1:
+        return float(ordered[mid])
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def _truncate_corpus_to_token_budget(
+    corpus: list[dict[str, Any]],
+    tokenized_by_id: dict[str, dict[str, Any]] | None,
+    target_total_tokens: int,
+    count_tokens: Any,
+) -> list[dict[str, Any]]:
+    """Keep a prefix of corpus until ~target_total_tokens (no padding).
+
+    Uses exact tokenized counts when available; otherwise the budget heuristic.
+    Stops at the last probe that still fits under or equal to the target when
+    possible; if the first probe alone exceeds the target it is still kept.
+    """
+    if target_total_tokens <= 0 or not corpus:
+        return corpus
+    kept: list[dict[str, Any]] = []
+    total = 0
+    for row in corpus:
+        if tokenized_by_id is not None:
+            tok_row = tokenized_by_id.get(row["probe_id"])
+            if tok_row is None:
+                n = int(count_tokens(row["text"]))
+            else:
+                ids = tok_row.get("token_ids") or []
+                n = int(tok_row.get("token_count") or len(ids))
+        else:
+            n = int(count_tokens(row["text"]))
+        if kept and total + n > target_total_tokens:
+            break
+        kept.append(row)
+        total += n
+    return kept
 
 
 def main() -> int:
@@ -342,6 +516,14 @@ def main() -> int:
         type=int,
         default=0,
         help="approximate token budget for repo-drawn probes (0 = none)",
+    )
+    parser.add_argument(
+        "--target-total-tokens",
+        type=int,
+        default=0,
+        help="optional hard cap on total sealed tokens (prefix of the built "
+        "corpus; 0 = no cap). Use after a shared wide tokenization to seal a "
+        "smaller Q30 document from the same token-id set as Q80.",
     )
     parser.add_argument(
         "--tokenized-json",
@@ -415,6 +597,10 @@ def main() -> int:
             print("repo corpus root yielded no usable probes", file=sys.stderr)
             return 2
         corpus = corpus + extra
+    if args.target_total_tokens > 0:
+        corpus = _truncate_corpus_to_token_budget(
+            corpus, tokenized_by_id, int(args.target_total_tokens), count_tokens
+        )
     if len(corpus) < 12:
         print("need at least 12 prompts for broad schema", file=sys.stderr)
         return 2
@@ -425,30 +611,50 @@ def main() -> int:
             print(f"--emit-in-json must be absolute: {args.emit_in_json}", file=sys.stderr)
             return 2
         emit_path.parent.mkdir(parents=True, exist_ok=True)
-        payload = [
-            {"probe_id": r["probe_id"], "domain": r["domain"], "text": r["text"]}
-            for r in corpus
-        ]
+        payload = []
+        dir_hist: dict[str, int] = {}
+        domain_hist: dict[str, int] = {}
+        for r in corpus:
+            row_out: dict[str, Any] = {
+                "probe_id": r["probe_id"],
+                "domain": r["domain"],
+                "text": r["text"],
+            }
+            for key in ("source_relpath", "source_dir", "chunk_offset"):
+                if key in r:
+                    row_out[key] = r[key]
+            payload.append(row_out)
+            domain_hist[r["domain"]] = domain_hist.get(r["domain"], 0) + 1
+            dkey = str(r.get("source_dir") or "handwritten")
+            dir_hist[dkey] = dir_hist.get(dkey, 0) + 1
         emit_path.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
+        approx_total = sum(int(count_tokens(r["text"])) for r in corpus)
         print(
             json.dumps(
                 {
                     "emit_in_json": str(emit_path),
                     "probe_count": len(payload),
+                    "approx_raw_tokens": approx_total,
+                    "domain_counts": domain_hist,
+                    "directory_counts": dir_hist,
                     "note": "untokenized corpus only; run qwen30_corpus_tokenize next",
                 },
                 indent=2,
+                sort_keys=True,
             )
         )
         return 0
 
     probes: list[dict[str, Any]] = []
     domain_counts: dict[str, int] = {}
+    directory_counts: dict[str, int] = {}
     for row in corpus:
         domain_counts[row["domain"]] = domain_counts.get(row["domain"], 0) + 1
+        dkey = str(row.get("source_dir") or "handwritten")
+        directory_counts[dkey] = directory_counts.get(dkey, 0) + 1
         if tokenized_by_id is not None:
             tok_row = tokenized_by_id.get(row["probe_id"])
             if tok_row is None:
@@ -464,26 +670,29 @@ def main() -> int:
                 return 2
         else:
             ids = one_user_native_prompt(tokenizer, row["text"])
-            probes.append(
-                {
-                    "probe_id": row["probe_id"],
-                    "domain": row["domain"],
-                    "source_one_user_native_prompt": {
-                        "token_ids": ids,
-                        "token_count": len(ids),
-                        "token_ids_u32le_sha256": token_ids_u32le_sha256(ids),
-                        "add_special_tokens": True,
-                        "chat_shape": "one_user_message_no_system_no_tools",
-                        "user_text_sha256": sha256_bytes(row["text"].encode("utf-8")),
-                    },
-                    "user_text": row["text"],
-                }
-            )
+            probe: dict[str, Any] = {
+                "probe_id": row["probe_id"],
+                "domain": row["domain"],
+                "source_one_user_native_prompt": {
+                    "token_ids": ids,
+                    "token_count": len(ids),
+                    "token_ids_u32le_sha256": token_ids_u32le_sha256(ids),
+                    "add_special_tokens": True,
+                    "chat_shape": "one_user_message_no_system_no_tools",
+                    "user_text_sha256": sha256_bytes(row["text"].encode("utf-8")),
+                },
+                "user_text": row["text"],
+            }
+            for key in ("source_relpath", "source_dir", "chunk_offset"):
+                if key in row and row[key] is not None and row[key] != "":
+                    probe[key] = row[key]
+            probes.append(probe)
 
     out_dir = args.out_dir.expanduser().resolve()
     req_dir = out_dir / "requests"
     req_dir.mkdir(parents=True, exist_ok=True)
 
+    token_counts = [p["source_one_user_native_prompt"]["token_count"] for p in probes]
     document: dict[str, Any] = {
         "schema": BROAD_INPUT_SCHEMA,
         "status": STATUS,
@@ -508,13 +717,12 @@ def main() -> int:
         "corpus_summary": {
             "probe_count": len(probes),
             "domain_counts": domain_counts,
-            "total_tokens": sum(p["source_one_user_native_prompt"]["token_count"] for p in probes),
-            "min_tokens": min(p["source_one_user_native_prompt"]["token_count"] for p in probes),
-            "max_tokens": max(p["source_one_user_native_prompt"]["token_count"] for p in probes),
-            "mean_tokens": round(
-                sum(p["source_one_user_native_prompt"]["token_count"] for p in probes) / len(probes),
-                2,
-            ),
+            "directory_counts": directory_counts,
+            "total_tokens": sum(token_counts),
+            "min_tokens": min(token_counts) if token_counts else 0,
+            "median_tokens": _median_int(token_counts),
+            "max_tokens": max(token_counts) if token_counts else 0,
+            "mean_tokens": round(sum(token_counts) / max(len(token_counts), 1), 2),
         },
         "probes": probes,
     }

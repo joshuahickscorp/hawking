@@ -97,9 +97,12 @@ def main() -> int:
         return 2
 
     domain_counts: dict[str, int] = {}
+    directory_counts: dict[str, int] = {}
     for probe in probes:
         domain = str(probe.get("domain") or "unknown")
         domain_counts[domain] = domain_counts.get(domain, 0) + 1
+        dkey = str(probe.get("source_dir") or "handwritten")
+        directory_counts[dkey] = directory_counts.get(dkey, 0) + 1
 
     total_tokens = sum(
         int((p.get("source_one_user_native_prompt") or {}).get("token_count") or 0)
@@ -109,6 +112,15 @@ def main() -> int:
         int((p.get("source_one_user_native_prompt") or {}).get("token_count") or 0)
         for p in probes
     ]
+    ordered_counts = sorted(token_counts)
+    if ordered_counts:
+        mid = len(ordered_counts) // 2
+        if len(ordered_counts) % 2 == 1:
+            median_tokens: float = float(ordered_counts[mid])
+        else:
+            median_tokens = (ordered_counts[mid - 1] + ordered_counts[mid]) / 2.0
+    else:
+        median_tokens = 0.0
 
     document: dict[str, Any] = {
         "schema": INPUT_SCHEMA,
@@ -159,8 +171,10 @@ def main() -> int:
         "corpus_summary": {
             "probe_count": len(probes),
             "domain_counts": domain_counts,
+            "directory_counts": directory_counts,
             "total_tokens": total_tokens,
             "min_tokens": min(token_counts) if token_counts else 0,
+            "median_tokens": median_tokens,
             "max_tokens": max(token_counts) if token_counts else 0,
             "mean_tokens": round(sum(token_counts) / max(len(token_counts), 1), 2),
         },
