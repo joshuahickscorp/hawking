@@ -80,6 +80,9 @@ EXPECTED_TENSOR_COUNT = 18_867
 MODEL_LAYERS = 48
 CEILING_BPW = 1.5
 MIN_TOKENS = 32
+# Minimum surplus over the constant-mean null for an organ to be REPLACED. 0.0 keeps the
+# bare `beats_null` bar; higher values refuse organs that only trivially beat a constant.
+MIN_SURPLUS = 0.0
 HOLD_FRAC = 0.25
 SEED = 0xA17A5D
 OPERATOR_RECOVERY_WEIGHT_COS = dual.OPERATOR_RECOVERY_WEIGHT_COS
@@ -973,6 +976,23 @@ class ActivationWeightedSvdRepack:
             winner = select_budget_for_organ(
                 W=W, X_fit=X_fit, X_hold=X_hold, capture_identity=capture_identity
             )
+            # ENFORCE the selection criterion. Until 2026-08-10 `beats_null` was computed,
+            # recorded and reported, but never used to reject an organ: 6026 of 16296
+            # selected organs in the source-calibrated candidate had beats_null False,
+            # surplus down to -1.95 and output cosine down to -0.95 (ANTI-correlated with
+            # the true output). `frac_beats_null` on every receipt was being read as a
+            # quality score when it was in fact the fraction that should have been
+            # REJECTED. An organ that loses to the constant-mean null must keep its
+            # baseline representation instead.
+            #
+            # `beats_null` is the minimum bar. MIN_SURPLUS raises it, because a surplus of
+            # +0.001 is not meaningfully better than a constant either; it is a flag so the
+            # bar can be tightened without another code change.
+            if not bool(winner["beats_null"]) or float(
+                winner["surplus_over_null"]
+            ) < MIN_SURPLUS:
+                return None
+
             # Persist payload beside selection for deterministic rewrite.
             payload_dir = self.root / "selected-payloads"
             payload_dir.mkdir(parents=True, exist_ok=True)
@@ -1015,9 +1035,17 @@ class ActivationWeightedSvdRepack:
                 "codec_metadata": winner["codec_metadata"],
             }
 
+        # `one()` returns None for an organ that loses to the constant-mean null (or falls
+        # under MIN_SURPLUS); those keep their baseline representation and must not enter
+        # the selected set.
+        rejected_below_null = 0
         if self.workers == 1 or len(work) <= 1:
             for layer, expert, component in work:
-                scored.append(one(layer, expert, component))
+                row = one(layer, expert, component)
+                if row is None:
+                    rejected_below_null += 1
+                else:
+                    scored.append(row)
         else:
             with ThreadPoolExecutor(max_workers=self.workers) as pool:
                 futures = {
@@ -1025,7 +1053,16 @@ class ActivationWeightedSvdRepack:
                     for layer, expert, component in work
                 }
                 for fut in as_completed(futures):
-                    scored.append(fut.result())
+                    row = fut.result()
+                    if row is None:
+                        rejected_below_null += 1
+                    else:
+                        scored.append(row)
+        print(
+            f"selection: {len(scored)} organs admitted, {rejected_below_null} rejected "
+            f"for failing surplus-over-null (min_surplus={MIN_SURPLUS})",
+            flush=True,
+        )
         scored.sort(
             key=lambda r: (
                 -float(r["surplus_over_null"]),
