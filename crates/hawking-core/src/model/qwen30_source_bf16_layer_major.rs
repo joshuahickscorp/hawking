@@ -1526,6 +1526,7 @@ pub fn capture_all_layers(
     index: &SourceBf16Index,
     probes: &[(String, Vec<u32>)],
     hiddens: &mut [ProbeHidden],
+    max_hidden_tokens_per_layer: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, u64)>,
 ) -> Result<Vec<Vec<Vec<LayerTokenCapture>>>> {
     if hiddens.len() != probes.len() {
@@ -1538,6 +1539,12 @@ pub fn capture_all_layers(
         .collect();
 
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
+    // Deterministic stride so the retained set is reproducible and evenly spread.
+    let retain_stride = if max_hidden_tokens_per_layer == 0 || total_tokens <= max_hidden_tokens_per_layer {
+        1
+    } else {
+        total_tokens.div_ceil(max_hidden_tokens_per_layer)
+    };
     let h = QWEN30_HIDDEN;
     let inter = QWEN30_MOE_INTERMEDIATE;
     let q_dim = QWEN30_HEADS * QWEN30_HEAD_DIM;
@@ -1718,11 +1725,24 @@ pub fn capture_all_layers(
                 &moe_out[t * h..(t + 1) * h],
             );
             let (ids, weights) = std::mem::take(&mut routes[t]);
+            // Route membership is kept for EVERY token (it is small and the fit needs
+            // full coverage). The router-input hidden is 2048 f32 = 8 KiB per token per
+            // layer, so retaining it for every token costs total_tokens * 8 KiB PER LAYER
+            // and is never freed -- 393 MiB/layer at 49k tokens, which is what broke the
+            // streamed peak-RSS contract. Retain only the bounded stratified subsample,
+            // which is the documented `--max-hidden-tokens-per-layer` contract this
+            // function previously ignored. Selection is a deterministic stride over the
+            // global token order, so it is reproducible and independent of layer.
+            let retain = retain_stride == 0 || t % retain_stride == 0;
             captures[pi][pos].push(LayerTokenCapture {
                 layer: layer_idx,
                 selected_expert_ids: ids,
                 normalized_route_weights: weights,
-                router_input_hidden: all_router_in[t * h..(t + 1) * h].to_vec(),
+                router_input_hidden: if retain {
+                    all_router_in[t * h..(t + 1) * h].to_vec()
+                } else {
+                    Vec::new()
+                },
             });
         }
 

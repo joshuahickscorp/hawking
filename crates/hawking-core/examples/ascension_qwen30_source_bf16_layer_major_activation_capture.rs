@@ -649,6 +649,7 @@ mod macos {
             &index,
             &probes,
             &mut hiddens,
+            arguments.max_hidden_tokens_per_layer,
             Some(&mut on_layer),
         )
         .unwrap_or_else(|e| fail(e.to_string()));
