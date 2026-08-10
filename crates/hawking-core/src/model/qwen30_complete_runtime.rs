@@ -174,7 +174,19 @@ fn qwen30_device_expert_table_enabled() -> bool {
             }
         }
     }
-    true
+    // DEFAULT OFF until the path is proven deterministic. Measured 2026-08-09:
+    // six-token greedy decode produced a DIFFERENT token sequence on each of
+    // five consecutive runs with identical inputs, while the host-readback
+    // control was stable. Token 1 was always correct (the cold path is slow
+    // enough to serialise); tokens 2+ raced. One of the five happened to match
+    // the control exactly, so a single-trial bit-identity check would have
+    // certified a race as a win.
+    //
+    // The structural result is real and worth finishing -- 98 command buffers
+    // to 1, 48 host route-id readbacks to 0 -- but a non-deterministic decode
+    // must never be the default, and least of all while coherence and TPS are
+    // being measured on this runtime.
+    false
 }
 
 #[cfg(target_os = "macos")]
@@ -4716,10 +4728,12 @@ mod tests {
 
     #[test]
     #[cfg(target_os = "macos")]
-    fn device_expert_table_flag_defaults_on_and_opt_out() {
+    fn device_expert_table_flag_defaults_off_and_opt_in() {
         let prior = std::env::var_os("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
         std::env::remove_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
-        assert!(qwen30_device_expert_table_enabled());
+        // Default OFF: the path is non-deterministic (five identical runs gave
+        // five different token sequences). Opt-in only until that is fixed.
+        assert!(!qwen30_device_expert_table_enabled());
         std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "0");
         assert!(!qwen30_device_expert_table_enabled());
         std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "false");
