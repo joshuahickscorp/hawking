@@ -13,6 +13,10 @@ pub mod mixtral;
 /// Direct, admitted Qwen3-Coder-30B complete-binary Metal baseline.  It is an
 /// explicit artifact runtime rather than a GGUF architecture dispatch.
 pub mod qwen30_complete_runtime;
+/// Layer-major BF16 SOURCE activation capture for Qwen3-Coder-30B.
+/// Streams one layer at a time from safetensors; does not resident-load the
+/// full 56.9 GiB source (separate resource contract from the co-resident gate).
+pub mod qwen30_source_bf16_layer_major;
 /// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
 /// all-layer diagnostic.  It is not an Engine or endpoint selection.
 pub mod qwen30_quality_repack_diagnostic;
