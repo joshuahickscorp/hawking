@@ -3535,7 +3535,12 @@ mod imp {
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
-            let enc = cmd.new_compute_command_encoder();
+            // Explicit Serial: never rely on the platform default of
+            // `computeCommandEncoder` alone. Dependent dispatches in a Q30
+            // token wave (rope→mha, R@x→L@mid, topk→expert) must not run
+            // concurrently or residual/router state becomes non-deterministic.
+            let enc =
+                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Serial);
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(
                     command,
@@ -4107,6 +4112,12 @@ mod imp {
                     let wait_d = t_sync.elapsed();
                     cost_ledger::add_duration(Bucket::MetalSynchronize, wait_d);
                     cost_ledger::record_sync_point();
+                    let status = cmd.status();
+                    if status != metal::MTLCommandBufferStatus::Completed {
+                        eprintln!(
+                            "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                        );
+                    }
 
                     // Device timeline: GPUStartTime/GPUEndTime after wait.
                     // Counter-sample markers are not encoded on this path
@@ -4179,6 +4190,16 @@ mod imp {
                 self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
             }
             cmd.wait_until_completed();
+            // Fail closed on GPU errors: an errored CB can leave shared buffers
+            // half-written, which surfaces as non-deterministic greedy decode
+            // (varying route ids / dispatch counts) rather than a hard error
+            // if we only wait. Drop path cannot return Result — log loudly.
+            let status = cmd.status();
+            if status != metal::MTLCommandBufferStatus::Completed {
+                eprintln!(
+                    "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                );
+            }
             match self.mode {
                 TcbTraceMode::Off => {}
                 TcbTraceMode::CpuEncode => {

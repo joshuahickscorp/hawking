@@ -176,11 +176,12 @@ fn qwen30_device_expert_table_enabled() -> bool {
     }
     // DEFAULT OFF until the path is proven deterministic. Measured 2026-08-09:
     // six-token greedy decode produced a DIFFERENT token sequence on each of
-    // five consecutive runs with identical inputs, while the host-readback
-    // control was stable. Token 1 was always correct (the cold path is slow
-    // enough to serialise); tokens 2+ raced. One of the five happened to match
-    // the control exactly, so a single-trial bit-identity check would have
-    // certified a race as a win.
+    // five consecutive runs with identical inputs on BOTH the device-route
+    // path and the host-readback control. Token 1 was always correct; tokens
+    // 2+ diverged; metal_dispatches/token varied (3008/2999/3002), proving
+    // MoE routing itself is non-deterministic. One of the five device-route
+    // runs happened to match a control sample, so a single-trial bit-identity
+    // check would have certified a race as a win.
     //
     // The structural result is real and worth finishing -- 98 command buffers
     // to 1, 48 host route-id readbacks to 0 -- but a non-deterministic decode
@@ -1360,13 +1361,51 @@ struct DeviceWorkspace {
 
 #[cfg(target_os = "macos")]
 impl DeviceWorkspace {
+    /// Metal `newBufferWithLength` leaves contents **undefined**. Any
+    /// workspace that can contribute to residual / router logits / KV must be
+    /// zeroed at construction and again at session reset; otherwise garbage
+    /// perturbs top-k routing and the metal dispatch graph itself.
+    fn zero_buffer(buffer: &PinnedBuffer) {
+        let zeroes = vec![0u8; buffer.length() as usize];
+        MetalContext::write_buffer_bytes(buffer, &zeroes);
+    }
+
+    fn zero_all(&self) {
+        for buffer in [
+            &self.x,
+            &self.x_norm,
+            &self.q,
+            &self.k,
+            &self.v,
+            &self.attention,
+            &self.attention_projection,
+            &self.router_logits,
+            &self.route_ids,
+            &self.route_weights,
+            &self.expert_gate,
+            &self.expert_up,
+            &self.expert_activation,
+            &self.expert_activation_control,
+            &self.expert_output,
+            &self.final_logits,
+            &self.sampled_token,
+            &self.invalid_f32_flag,
+            &self.key_cache,
+            &self.value_cache,
+        ] {
+            Self::zero_buffer(buffer);
+        }
+    }
+
     fn new(
         context: &MetalContext,
         max_seq_len: usize,
         config: &Qwen30CompleteRuntimeConfig,
     ) -> Result<Self> {
         let f32_buf = |elements: usize, label: &str| -> Result<PinnedBuffer> {
-            context.new_buffer_checked(bytes_for_f32(elements, label)?)
+            let buffer = context.new_buffer_checked(bytes_for_f32(elements, label)?)?;
+            Self::zero_buffer(&buffer);
+            Ok(buffer)
         };
         let kv_elements = config
             .layers
@@ -1381,6 +1420,17 @@ impl DeviceWorkspace {
             .experts_per_token
             .checked_mul(config.hidden)
             .ok_or_else(|| model_error("expert output workspace overflows usize"))?;
+        let route_ids = context.new_buffer_checked(
+            config
+                .experts_per_token
+                .checked_mul(std::mem::size_of::<u32>())
+                .ok_or_else(|| model_error("route id workspace byte count overflows usize"))?,
+        )?;
+        Self::zero_buffer(&route_ids);
+        let sampled_token = context.new_buffer_checked(std::mem::size_of::<u32>())?;
+        Self::zero_buffer(&sampled_token);
+        let invalid_f32_flag = context.new_buffer_checked(std::mem::size_of::<u32>())?;
+        Self::zero_buffer(&invalid_f32_flag);
         Ok(Self {
             x: f32_buf(config.hidden, "residual workspace")?,
             x_norm: f32_buf(config.hidden, "normalized workspace")?,
@@ -1390,12 +1440,7 @@ impl DeviceWorkspace {
             attention: f32_buf(config.q_dim(), "attention workspace")?,
             attention_projection: f32_buf(config.hidden, "attention projection workspace")?,
             router_logits: f32_buf(config.experts, "router workspace")?,
-            route_ids: context.new_buffer_checked(
-                config
-                    .experts_per_token
-                    .checked_mul(std::mem::size_of::<u32>())
-                    .ok_or_else(|| model_error("route id workspace byte count overflows usize"))?,
-            )?,
+            route_ids,
             route_weights: f32_buf(config.experts_per_token, "route weight workspace")?,
             expert_gate: f32_buf(expert_mid, "expert gate workspace")?,
             expert_up: f32_buf(expert_mid, "expert up workspace")?,
@@ -1406,8 +1451,8 @@ impl DeviceWorkspace {
             )?,
             expert_output: f32_buf(expert_hidden, "expert output workspace")?,
             final_logits: f32_buf(config.vocab_size, "final logits workspace")?,
-            sampled_token: context.new_buffer_checked(std::mem::size_of::<u32>())?,
-            invalid_f32_flag: context.new_buffer_checked(std::mem::size_of::<u32>())?,
+            sampled_token,
+            invalid_f32_flag,
             key_cache: f32_buf(kv_elements, "native Qwen30 key cache")?,
             value_cache: f32_buf(kv_elements, "native Qwen30 value cache")?,
         })
@@ -1430,8 +1475,13 @@ pub struct Qwen30CompleteNativeRuntime {
     /// Device-resident HGRAVS01 factors for the mixed activation-weighted
     /// candidate. Empty for ordinary direct and HQ30GR2 diagnostic runtimes.
     hgravs_tensors: HashMap<String, GpuHgravsFactors>,
-    /// Scratch for the low-rank intermediate `R @ x` (max admitted rank).
+    /// Scratch for the low-rank intermediate `R @ x`. Sized
+    /// `experts_per_token * hgravs_rank_mid_stride` so each top-k route owns
+    /// an isolated mid slice — a single shared mid is a write-write race when
+    /// two HGRAVS experts are live in one encoder/CB wave.
     hgravs_rank_mid: Option<PinnedBuffer>,
+    /// Elements per route in [`Self::hgravs_rank_mid`] (= max admitted rank).
+    hgravs_rank_mid_stride: usize,
     packed_matvec_kernel: Qwen30PackedMatvecKernel,
     gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel,
     /// Present only for the separately admitted HQ30GR2 diagnostic body.
@@ -1533,6 +1583,7 @@ impl Qwen30CompleteNativeRuntime {
             decoded_vectors: HashMap::new(),
             hgravs_tensors: HashMap::new(),
             hgravs_rank_mid: None,
+            hgravs_rank_mid_stride: 0,
             packed_matvec_kernel: options.packed_matvec_kernel,
             gate_up_swiglu_kernel: options.gate_up_swiglu_kernel,
             quality_sparse_gate_up: None,
@@ -1652,10 +1703,17 @@ impl Qwen30CompleteNativeRuntime {
                 "activation-weighted runtime failed to upload every selected HGRAVS01 organ",
             ));
         }
+        // One mid slice per top-k route so concurrent or mis-ordered HGRAVS
+        // gate/up stages cannot clobber each other's R@x intermediate.
+        let mid_stride = max_rank.max(1);
+        let mid_elements = mid_stride
+            .checked_mul(config.experts_per_token)
+            .ok_or_else(|| model_error("HGRAVS01 per-route mid workspace overflows usize"))?;
         let hgravs_rank_mid = context.new_buffer_checked(bytes_for_f32(
-            max_rank.max(1),
-            "HGRAVS01 low-rank intermediate workspace",
+            mid_elements,
+            "HGRAVS01 per-route low-rank intermediate workspace",
         )?)?;
+        DeviceWorkspace::zero_buffer(&hgravs_rank_mid);
         let n_layers = config.layers;
         Ok(Self {
             artifact: direct,
@@ -1669,6 +1727,7 @@ impl Qwen30CompleteNativeRuntime {
             decoded_vectors: HashMap::new(),
             hgravs_tensors,
             hgravs_rank_mid: Some(hgravs_rank_mid),
+            hgravs_rank_mid_stride: mid_stride,
             packed_matvec_kernel: options.packed_matvec_kernel,
             gate_up_swiglu_kernel: options.gate_up_swiglu_kernel,
             quality_sparse_gate_up: None,
@@ -1687,9 +1746,13 @@ impl Qwen30CompleteNativeRuntime {
     /// Reset only native device state.  The compact weight cache remains bound
     /// to the exact admission and is reused across sessions.
     pub fn reset(&mut self) {
-        let zero_kv = vec![0u8; self.workspace.key_cache.length() as usize];
-        MetalContext::write_buffer_bytes(&self.workspace.key_cache, &zero_kv);
-        MetalContext::write_buffer_bytes(&self.workspace.value_cache, &zero_kv);
+        // Zero every live activation / KV / router workspace. Metal leaves
+        // newBuffer contents undefined; only zeroing the KV caches left residual
+        // and mid scratch carrying process-local garbage into later positions.
+        self.workspace.zero_all();
+        if let Some(mid) = self.hgravs_rank_mid.as_ref() {
+            DeviceWorkspace::zero_buffer(mid);
+        }
         self.diagnostic_selected_expert_ids.clear();
         self.diagnostic_layer_router_captures.clear();
         self.quality_sparse_gate_up_interception_count.set(0);
@@ -2097,6 +2160,9 @@ impl Qwen30CompleteNativeRuntime {
 
     /// Native HGRAVS01 execution: `y = L @ (R @ x)` with dequantized factors.
     /// Factors are decoded once at load; token time never forms dense `W`.
+    ///
+    /// `mid_offset_bytes` selects this route's isolated slice inside the
+    /// per-route mid workspace (see [`Self::hgravs_rank_mid_stride`]).
     fn dispatch_hgravs_low_rank_matvec(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
@@ -2105,13 +2171,24 @@ impl Qwen30CompleteNativeRuntime {
         output: &PinnedBuffer,
         input_offset_bytes: usize,
         output_offset_bytes: usize,
+        mid_offset_bytes: usize,
     ) -> Result<()> {
         let mid = self.hgravs_rank_mid.as_ref().ok_or_else(|| {
             model_error("HGRAVS01 low-rank intermediate workspace is absent")
         })?;
-        if weight.rank == 0 || weight.rank > mid.length() as usize / std::mem::size_of::<f32>() {
+        let stride = self.hgravs_rank_mid_stride;
+        if stride == 0 || weight.rank == 0 || weight.rank > stride {
             return Err(model_error(
-                "HGRAVS01 rank exceeds the allocated intermediate workspace",
+                "HGRAVS01 rank exceeds the allocated per-route intermediate workspace",
+            ));
+        }
+        let mid_slice_bytes = bytes_for_f32(stride, "HGRAVS01 per-route mid slice")?;
+        let mid_end = mid_offset_bytes
+            .checked_add(mid_slice_bytes)
+            .ok_or_else(|| model_error("HGRAVS01 mid offset overflows usize"))?;
+        if mid_end > mid.length() as usize {
+            return Err(model_error(
+                "HGRAVS01 mid range exceeds the per-route intermediate workspace",
             ));
         }
         let required_input = bytes_for_f32(weight.cols, "HGRAVS01 projection input")?;
@@ -2132,7 +2209,7 @@ impl Qwen30CompleteNativeRuntime {
                 "HGRAVS01 projection output range exceeds workspace",
             ));
         }
-        // mid = R @ x
+        // mid = R @ x  (into this route's isolated slice)
         self.dispatch_f32_gemv(
             tcb,
             &weight.right,
@@ -2141,7 +2218,7 @@ impl Qwen30CompleteNativeRuntime {
             input,
             input_offset_bytes,
             mid,
-            0,
+            mid_offset_bytes,
         )?;
         // y = L @ mid
         self.dispatch_f32_gemv(
@@ -2150,7 +2227,7 @@ impl Qwen30CompleteNativeRuntime {
             weight.rows,
             weight.rank,
             mid,
-            0,
+            mid_offset_bytes,
             output,
             output_offset_bytes,
         )
@@ -2197,6 +2274,7 @@ impl Qwen30CompleteNativeRuntime {
         gate: &GpuHgravsFactors,
         up: &GpuHgravsFactors,
         output_offset_bytes: usize,
+        mid_offset_bytes: usize,
     ) -> Result<()> {
         self.dispatch_hgravs_low_rank_matvec(
             tcb,
@@ -2205,6 +2283,7 @@ impl Qwen30CompleteNativeRuntime {
             &self.workspace.expert_gate,
             0,
             output_offset_bytes,
+            mid_offset_bytes,
         )?;
         self.dispatch_hgravs_low_rank_matvec(
             tcb,
@@ -2213,6 +2292,7 @@ impl Qwen30CompleteNativeRuntime {
             &self.workspace.expert_up,
             0,
             output_offset_bytes,
+            mid_offset_bytes,
         )?;
         self.dispatch_silu_offset(
             tcb,
@@ -3186,11 +3266,21 @@ impl Qwen30CompleteNativeRuntime {
             } else {
                 // Mixed HGRAVS/binary: per-route expert is device-selected, so
                 // encode both kind paths. Exactly one kind is ready per expert;
-                // the other kernel returns early without writing.
+                // the other kernel returns early without writing. Each route
+                // owns an isolated mid slice so concurrent dual-path stages
+                // cannot clobber R@x intermediates across routes.
                 let mid_buf = mid.ok_or_else(|| {
                     model_error("HGRAVS mid workspace required for mixed device table")
                 })?;
-                let max_rank = (mid_buf.length() as usize) / std::mem::size_of::<f32>();
+                let mid_stride = self.hgravs_rank_mid_stride;
+                if mid_stride == 0 {
+                    return Err(model_error(
+                        "HGRAVS per-route mid stride is zero for mixed device table",
+                    ));
+                }
+                let mid_scratch_elems = route
+                    .checked_mul(mid_stride)
+                    .ok_or_else(|| model_error("device expert HGRAVS mid scratch offset overflows"))?;
                 self.dispatch_device_expert_hgravs_stage(
                     tcb,
                     lease,
@@ -3200,8 +3290,8 @@ impl Qwen30CompleteNativeRuntime {
                     &self.workspace.x_norm,
                     mid_buf,
                     0,
-                    0,
-                    max_rank,
+                    mid_scratch_elems,
+                    mid_stride,
                     declare,
                 )?;
                 resources_declared = true;
@@ -3213,7 +3303,7 @@ impl Qwen30CompleteNativeRuntime {
                     1,
                     mid_buf,
                     &self.workspace.expert_gate,
-                    0,
+                    mid_scratch_elems,
                     mid_elems,
                     intermediate,
                     false,
@@ -3239,8 +3329,8 @@ impl Qwen30CompleteNativeRuntime {
                     &self.workspace.x_norm,
                     mid_buf,
                     0,
-                    0,
-                    max_rank,
+                    mid_scratch_elems,
+                    mid_stride,
                     false,
                 )?;
                 self.dispatch_device_expert_hgravs_stage(
@@ -3251,7 +3341,7 @@ impl Qwen30CompleteNativeRuntime {
                     1,
                     mid_buf,
                     &self.workspace.expert_up,
-                    0,
+                    mid_scratch_elems,
                     mid_elems,
                     intermediate,
                     false,
@@ -3294,7 +3384,17 @@ impl Qwen30CompleteNativeRuntime {
                 let mid_buf = mid.ok_or_else(|| {
                     model_error("HGRAVS mid workspace required for mixed device table down")
                 })?;
-                let max_rank = (mid_buf.length() as usize) / std::mem::size_of::<f32>();
+                let mid_stride = self.hgravs_rank_mid_stride;
+                if mid_stride == 0 {
+                    return Err(model_error(
+                        "HGRAVS per-route mid stride is zero for mixed device table down",
+                    ));
+                }
+                let mid_scratch_elems = route
+                    .checked_mul(mid_stride)
+                    .ok_or_else(|| {
+                        model_error("device expert HGRAVS mid scratch offset overflows on down")
+                    })?;
                 self.dispatch_device_expert_hgravs_stage(
                     tcb,
                     lease,
@@ -3304,8 +3404,8 @@ impl Qwen30CompleteNativeRuntime {
                     &self.workspace.expert_activation,
                     mid_buf,
                     mid_elems,
-                    0,
-                    max_rank,
+                    mid_scratch_elems,
+                    mid_stride,
                     false,
                 )?;
                 self.dispatch_device_expert_hgravs_stage(
@@ -3316,7 +3416,7 @@ impl Qwen30CompleteNativeRuntime {
                     1,
                     mid_buf,
                     &self.workspace.expert_output,
-                    0,
+                    mid_scratch_elems,
                     hidden_elems,
                     hidden,
                     false,
@@ -4280,8 +4380,24 @@ impl Qwen30CompleteNativeRuntime {
                                 )?;
                             }
                             Qwen30RoutedExpertWeights::ActivationWeightedSvd { gate, up, down } => {
+                                // Isolate R@x mid per route so two HGRAVS experts
+                                // in the same wave cannot clobber each other.
+                                let mid_scratch_offset = bytes_for_f32(
+                                    route
+                                        .checked_mul(self.hgravs_rank_mid_stride)
+                                        .ok_or_else(|| {
+                                            model_error(
+                                                "HGRAVS01 per-route mid scratch offset overflows",
+                                            )
+                                        })?,
+                                    "HGRAVS01 per-route mid scratch offset",
+                                )?;
                                 self.dispatch_hgravs_expert_gate_up_swiglu(
-                                    &mut tcb, gate, up, mid_offset,
+                                    &mut tcb,
+                                    gate,
+                                    up,
+                                    mid_offset,
+                                    mid_scratch_offset,
                                 )?;
                                 self.dispatch_hgravs_low_rank_matvec(
                                     &mut tcb,
@@ -4290,6 +4406,7 @@ impl Qwen30CompleteNativeRuntime {
                                     &self.workspace.expert_output,
                                     mid_offset,
                                     hidden_offset,
+                                    mid_scratch_offset,
                                 )?;
                             }
                         }
