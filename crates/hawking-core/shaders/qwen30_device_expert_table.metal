@@ -1,8 +1,14 @@
-// Qwen30 device-indexed expert address table.
+// Qwen30 device-indexed expert address table — multi-route fused.
 //
 // Host populates one Gravity-style per-layer table of 128 expert triplets
 // (gate/up/down) with Metal gpuAddress values. Device route_ids select which
 // expert each of the top-k routes executes — without a host readback.
+//
+// Fusion contract (intersection of gemv_f32_moe + device table lookup):
+// one dispatch covers all experts_per_token routes for a single organ stage.
+// Threadgroups own (route, row); route_ids[route] indexes the table. This
+// restores the control path's multi-expert-per-dispatch shape while keeping
+// selection on device.
 //
 // Layout is frozen against the Rust structs in qwen30_complete_runtime.rs.
 // Every indirectly referenced buffer must also be declared via useResources.
@@ -38,29 +44,35 @@ static_assert(sizeof(Qwen30DeviceExpertTensorRef) == 40,
 static_assert(sizeof(Qwen30DeviceExpertTriplet) == 128,
               "Qwen30DeviceExpertTriplet ABI drift");
 
+// Multi-route fused binary matvec params.
+// Grid covers experts_per_token * max_rows output rows (or simdgroup tiles).
 struct Qwen30DeviceExpertMatvecParams {
     uint n_experts;
     uint experts_per_token;
     uint generation;
-    uint execution_position;
     uint projection; // 0=gate, 1=up, 2=down
     uint group_size;
-    uint input_offset_elems;
-    uint output_offset_elems;
+    uint max_rows; // rows per route in the grid (intermediate or hidden)
+    uint input_base_elems;
+    uint input_stride_elems; // 0 when all routes share one input (e.g. x_norm)
+    uint output_base_elems;
+    uint output_stride_elems; // intermediate or hidden
+    uint pad0;
+    uint pad1;
 };
 
-static_assert(sizeof(Qwen30DeviceExpertMatvecParams) == 32,
+static_assert(sizeof(Qwen30DeviceExpertMatvecParams) == 48,
               "Qwen30DeviceExpertMatvecParams ABI drift");
 
 struct Qwen30DeviceExpertPairedParams {
     uint n_experts;
     uint experts_per_token;
     uint generation;
-    uint execution_position;
     uint group_size;
-    uint output_offset_elems;
+    uint max_rows; // intermediate rows per route
+    uint output_base_elems;
+    uint output_stride_elems; // intermediate
     uint pad0;
-    uint pad1;
 };
 
 static_assert(sizeof(Qwen30DeviceExpertPairedParams) == 32,
@@ -70,14 +82,18 @@ struct Qwen30DeviceExpertHgravsParams {
     uint n_experts;
     uint experts_per_token;
     uint generation;
-    uint execution_position;
     uint projection; // 0=gate, 1=up, 2=down
     uint stage;     // 0 = R@x -> mid, 1 = L@mid -> y
-    uint input_offset_elems;
-    uint output_offset_elems;
+    uint max_rows;  // grid rows per route (mid_stride / intermediate / hidden)
+    uint input_base_elems;
+    uint input_stride_elems;
+    uint output_base_elems;
+    uint output_stride_elems;
+    uint pad0;
+    uint pad1;
 };
 
-static_assert(sizeof(Qwen30DeviceExpertHgravsParams) == 32,
+static_assert(sizeof(Qwen30DeviceExpertHgravsParams) == 48,
               "Qwen30DeviceExpertHgravsParams ABI drift");
 
 static inline const device Qwen30DeviceExpertTensorRef *
@@ -92,20 +108,27 @@ qwen30_select_projection(const device Qwen30DeviceExpertTriplet &entry, uint pro
     return &entry.down;
 }
 
-// Scalar-control binary sign/scale matvec indexed by device route_ids.
-// One thread owns one output row; accumulation matches qwen_binary_sign_scale_matvec.
+// Scalar-control binary sign/scale matvec, fused across top-k routes.
+// One thread owns one (route, row). Accumulation matches
+// qwen_binary_sign_scale_matvec / the prior single-route table kernel.
+// Grid: (experts_per_token * max_rows, 1, 1).
 kernel void qwen30_expert_table_binary_matvec(
     const device uint *route_ids [[buffer(0)]],
     const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],
     const device float *input [[buffer(2)]],
     device float *output [[buffer(3)]],
     constant Qwen30DeviceExpertMatvecParams &p [[buffer(4)]],
-    uint row [[thread_position_in_grid]])
+    uint tid [[thread_position_in_grid]])
 {
-    if (p.execution_position >= p.experts_per_token) {
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
         return;
     }
-    uint expert = route_ids[p.execution_position];
+    const uint route = tid / p.max_rows;
+    const uint row = tid % p.max_rows;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
     if (expert >= p.n_experts) {
         return;
     }
@@ -123,7 +146,7 @@ kernel void qwen30_expert_table_binary_matvec(
         p.group_size == 0u) {
         return;
     }
-    if (row >= tensor->rows) {
+    if (row >= tensor->rows || row >= p.max_rows) {
         return;
     }
 
@@ -131,8 +154,10 @@ kernel void qwen30_expert_table_binary_matvec(
     const device half *scales =
         reinterpret_cast<const device half *>(tensor->secondary);
     const uint groups_per_row = (tensor->cols + p.group_size - 1u) / p.group_size;
-    const device float *x = input + p.input_offset_elems;
-    device float *y = output + p.output_offset_elems;
+    const uint in_off = p.input_base_elems + route * p.input_stride_elems;
+    const uint out_off = p.output_base_elems + route * p.output_stride_elems;
+    const device float *x = input + in_off;
+    device float *y = output + out_off;
 
     float sum = 0.0f;
     const uint row_base = row * tensor->cols;
@@ -152,7 +177,8 @@ kernel void qwen30_expert_table_binary_matvec(
 }
 
 // Simdgroup candidate geometry: same products as scalar, simd_sum reduction.
-// Grid: (ceil(rows / 8) * 256, 1, 1), threadgroup (256, 1, 1).
+// Grid: (experts_per_token * ceil(max_rows / 8) * 256, 1, 1), TG (256, 1, 1).
+// One threadgroup owns 8 rows of one route (same packing as single-route).
 kernel void qwen30_expert_table_binary_matvec_simdgroup(
     const device uint *route_ids [[buffer(0)]],
     const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],
@@ -163,10 +189,21 @@ kernel void qwen30_expert_table_binary_matvec_simdgroup(
     uint simd_lane [[thread_index_in_simdgroup]],
     uint simd_id [[simdgroup_index_in_threadgroup]])
 {
-    if (p.execution_position >= p.experts_per_token) {
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
         return;
     }
-    uint expert = route_ids[p.execution_position];
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint groups_per_route = (p.max_rows + kSimdgroupsPerThreadgroup - 1u) /
+                                  kSimdgroupsPerThreadgroup;
+    if (groups_per_route == 0u) {
+        return;
+    }
+    const uint route = group_id / groups_per_route;
+    const uint group_in_route = group_id % groups_per_route;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
     if (expert >= p.n_experts) {
         return;
     }
@@ -184,17 +221,18 @@ kernel void qwen30_expert_table_binary_matvec_simdgroup(
         p.group_size == 0u) {
         return;
     }
-    constexpr uint kSimdgroupsPerThreadgroup = 8u;
-    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
-    if (row >= tensor->rows) {
+    const uint row = group_in_route * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= tensor->rows || row >= p.max_rows) {
         return;
     }
 
     const device uchar *signs = tensor->primary;
     const device half *scales =
         reinterpret_cast<const device half *>(tensor->secondary);
-    const device float *x = input + p.input_offset_elems;
-    device float *y = output + p.output_offset_elems;
+    const uint in_off = p.input_base_elems + route * p.input_stride_elems;
+    const uint out_off = p.output_base_elems + route * p.output_stride_elems;
+    const device float *x = input + in_off;
+    device float *y = output + out_off;
 
     float sum = 0.0f;
     const uint row_base = row * tensor->cols;
@@ -212,8 +250,10 @@ kernel void qwen30_expert_table_binary_matvec_simdgroup(
     }
 }
 
-// Paired gate/up SwiGLU with scalar-order arithmetic, table-indexed.
-// Matches qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate.
+// Paired gate/up SwiGLU with scalar-order arithmetic, table-indexed, fused
+// across top-k routes. Matches
+// qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate.
+// Grid: (experts_per_token * max_rows, 1, 1).
 #pragma clang fp contract(off)
 #pragma clang fp reassociate(off)
 
@@ -237,12 +277,17 @@ kernel void qwen30_expert_table_paired_gate_up_swiglu(
     const device float *input [[buffer(2)]],
     device float *activation [[buffer(3)]],
     constant Qwen30DeviceExpertPairedParams &p [[buffer(4)]],
-    uint row [[thread_position_in_grid]])
+    uint tid [[thread_position_in_grid]])
 {
-    if (p.execution_position >= p.experts_per_token) {
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
         return;
     }
-    uint expert = route_ids[p.execution_position];
+    const uint route = tid / p.max_rows;
+    const uint row = tid % p.max_rows;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
     if (expert >= p.n_experts) {
         return;
     }
@@ -262,7 +307,7 @@ kernel void qwen30_expert_table_paired_gate_up_swiglu(
         p.group_size == 0u) {
         return;
     }
-    if (row >= entry.gate.rows) {
+    if (row >= entry.gate.rows || row >= p.max_rows) {
         return;
     }
 
@@ -272,7 +317,8 @@ kernel void qwen30_expert_table_paired_gate_up_swiglu(
     const device uchar *up_signs = entry.up.primary;
     const device half *up_scales =
         reinterpret_cast<const device half *>(entry.up.secondary);
-    device float *out = activation + p.output_offset_elems;
+    device float *out =
+        activation + p.output_base_elems + route * p.output_stride_elems;
 
     float gate_sum = 0.0f;
     float up_sum = 0.0f;
@@ -294,10 +340,11 @@ kernel void qwen30_expert_table_paired_gate_up_swiglu(
 #pragma clang fp reassociate(on)
 #pragma clang fp contract(on)
 
-// HGRAVS01 stage gemv via device pointers.
+// HGRAVS01 stage gemv via device pointers, fused across top-k routes.
 // stage 0: mid = R @ x  (weight = secondary, rows=rank, cols=cols)
 // stage 1: y   = L @ mid (weight = primary, rows=rows, cols=rank)
-// Grid: (rows * 256, 1, 1), threadgroup (256, 1, 1) — matches gemv_f32_moe.
+// Grid: (experts_per_token * max_rows * 256, 1, 1), TG (256, 1, 1)
+// — same per-row reduction as gemv_f32_moe, with route packed into the grid.
 kernel void qwen30_expert_table_hgravs_gemv(
     const device uint *route_ids [[buffer(0)]],
     const device Qwen30DeviceExpertTriplet *table [[buffer(1)]],
@@ -309,10 +356,15 @@ kernel void qwen30_expert_table_hgravs_gemv(
     uint gid [[threadgroup_position_in_grid]],
     uint tg_size [[threads_per_threadgroup]])
 {
-    if (p.execution_position >= p.experts_per_token) {
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
         return;
     }
-    uint expert = route_ids[p.execution_position];
+    const uint route = gid / p.max_rows;
+    const uint row = gid % p.max_rows;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
     if (expert >= p.n_experts) {
         return;
     }
@@ -345,13 +397,15 @@ kernel void qwen30_expert_table_hgravs_gemv(
         cols = tensor->rank;
         w = reinterpret_cast<const device float *>(tensor->primary);
     }
-    if (gid >= rows || w == nullptr) {
+    if (row >= rows || row >= p.max_rows || w == nullptr) {
         return;
     }
 
-    const device float *x = input + p.input_offset_elems;
-    device float *y = output + p.output_offset_elems;
-    const device float *row_w = w + (uint64_t)gid * (uint64_t)cols;
+    const uint in_off = p.input_base_elems + route * p.input_stride_elems;
+    const uint out_off = p.output_base_elems + route * p.output_stride_elems;
+    const device float *x = input + in_off;
+    device float *y = output + out_off;
+    const device float *row_w = w + (uint64_t)row * (uint64_t)cols;
 
     float partial = 0.0f;
     for (uint c = tid; c < cols; c += tg_size) {
@@ -366,6 +420,6 @@ kernel void qwen30_expert_table_hgravs_gemv(
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
     if (tid == 0u) {
-        y[gid] = shmem[0];
+        y[row] = shmem[0];
     }
 }

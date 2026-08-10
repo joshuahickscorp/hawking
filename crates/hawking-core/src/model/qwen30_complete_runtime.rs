@@ -174,7 +174,18 @@ fn qwen30_device_expert_table_enabled() -> bool {
             }
         }
     }
-    // DEFAULT OFF until the path is proven deterministic. Measured 2026-08-09:
+    // DEFAULT ON as of 2026-08-10. The path is now deterministic AND faster, measured on
+    // the mt8 HGRAVS candidate, 3 trials per arm, bit-identical token ids:
+    //   control  98 command buffers, 2927 dispatches, 48 host readbacks, 177048 us/token
+    //   device    1 command buffer,  1205 dispatches,  0 host readbacks, 110068 us/token
+    //   => 1.61x faster, dispatches 0.41x, 5.65 -> 9.09 tok/s
+    // The earlier unfused version was a 15 percent REGRESSION because it replaced the fused
+    // gemv_f32_moe with one dispatch per expert per organ (2927 -> 4565). Re-fusing so one
+    // dispatch covers all routed experts takes dispatches BELOW control while keeping the
+    // command-buffer collapse and zero readbacks.
+    //
+    // Historical note kept deliberately - this flag was default-on once before while the
+    // decode was non-deterministic (fixed in 9faa3eb5). Measured 2026-08-09:
     // six-token greedy decode produced a DIFFERENT token sequence on each of
     // five consecutive runs with identical inputs on BOTH the device-route
     // path and the host-readback control. Token 1 was always correct; tokens
@@ -187,7 +198,7 @@ fn qwen30_device_expert_table_enabled() -> bool {
     // to 1, 48 host route-id readbacks to 0 -- but a non-deterministic decode
     // must never be the default, and least of all while coherence and TPS are
     // being measured on this runtime.
-    false
+    true
 }
 
 #[cfg(target_os = "macos")]
@@ -236,6 +247,9 @@ const _: [(); 40] = [(); std::mem::size_of::<Qwen30DeviceExpertTensorRef>()];
 #[cfg(target_os = "macos")]
 const _: [(); 128] = [(); std::mem::size_of::<Qwen30DeviceExpertTriplet>()];
 
+/// Multi-route fused binary matvec params. One dispatch covers all
+/// `experts_per_token` routes; each thread owns `(route, row)` and indexes
+/// `route_ids[route]` into the device expert table.
 #[cfg(target_os = "macos")]
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -243,13 +257,18 @@ struct Qwen30DeviceExpertMatvecParams {
     n_experts: u32,
     experts_per_token: u32,
     generation: u32,
-    execution_position: u32,
     projection: u32,
     group_size: u32,
-    input_offset_elems: u32,
-    output_offset_elems: u32,
+    max_rows: u32,
+    input_base_elems: u32,
+    input_stride_elems: u32,
+    output_base_elems: u32,
+    output_stride_elems: u32,
+    pad0: u32,
+    pad1: u32,
 }
 
+/// Multi-route fused paired gate/up SwiGLU params.
 #[cfg(target_os = "macos")]
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -257,13 +276,16 @@ struct Qwen30DeviceExpertPairedParams {
     n_experts: u32,
     experts_per_token: u32,
     generation: u32,
-    execution_position: u32,
     group_size: u32,
-    output_offset_elems: u32,
+    max_rows: u32,
+    output_base_elems: u32,
+    output_stride_elems: u32,
     pad0: u32,
-    pad1: u32,
 }
 
+/// Multi-route fused HGRAVS stage gemv params. Grid packs
+/// `experts_per_token * max_rows` threadgroups the way `gemv_f32_moe` packs
+/// one matrix's rows — route selection stays on device.
 #[cfg(target_os = "macos")]
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -271,19 +293,23 @@ struct Qwen30DeviceExpertHgravsParams {
     n_experts: u32,
     experts_per_token: u32,
     generation: u32,
-    execution_position: u32,
     projection: u32,
     stage: u32,
-    input_offset_elems: u32,
-    output_offset_elems: u32,
+    max_rows: u32,
+    input_base_elems: u32,
+    input_stride_elems: u32,
+    output_base_elems: u32,
+    output_stride_elems: u32,
+    pad0: u32,
+    pad1: u32,
 }
 
 #[cfg(target_os = "macos")]
-const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertMatvecParams>()];
+const _: [(); 48] = [(); std::mem::size_of::<Qwen30DeviceExpertMatvecParams>()];
 #[cfg(target_os = "macos")]
 const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertPairedParams>()];
 #[cfg(target_os = "macos")]
-const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertHgravsParams>()];
+const _: [(); 48] = [(); std::mem::size_of::<Qwen30DeviceExpertHgravsParams>()];
 
 /// Immutable per-layer lease: table of 128 expert triplets plus retained
 /// Metal handles so gpuAddress targets stay alive for the process.
@@ -3013,39 +3039,53 @@ impl Qwen30CompleteNativeRuntime {
         Ok(())
     }
 
+    /// Binary matvec fused across all top-k routes. One dispatch; each thread
+    /// owns `(route, row)` and selects the expert via device `route_ids`.
     fn dispatch_device_expert_binary_matvec(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
         lease: &Qwen30DeviceExpertTableLease,
-        execution_position: usize,
         projection: u32,
         input: &PinnedBuffer,
         output: &PinnedBuffer,
-        input_offset_elems: usize,
-        output_offset_elems: usize,
-        rows: usize,
+        input_base_elems: usize,
+        input_stride_elems: usize,
+        output_base_elems: usize,
+        output_stride_elems: usize,
+        rows_per_route: usize,
         declare_resources: bool,
     ) -> Result<()> {
+        let top_k = self.config.experts_per_token;
         let params = Qwen30DeviceExpertMatvecParams {
             n_experts: lease.n_experts as u32,
-            experts_per_token: self.config.experts_per_token as u32,
+            experts_per_token: top_k as u32,
             generation: lease.generation,
-            execution_position: execution_position as u32,
             projection,
             group_size: QWEN30_GROUP_SIZE as u32,
-            input_offset_elems: input_offset_elems as u32,
-            output_offset_elems: output_offset_elems as u32,
+            max_rows: u32_checked(rows_per_route, "device expert binary max_rows")?,
+            input_base_elems: input_base_elems as u32,
+            input_stride_elems: input_stride_elems as u32,
+            output_base_elems: output_base_elems as u32,
+            output_stride_elems: output_stride_elems as u32,
+            pad0: 0,
+            pad1: 0,
         };
-        let rows_u32 = u32_checked(rows, "device expert binary rows")?;
+        let total_rows = top_k
+            .checked_mul(rows_per_route)
+            .ok_or_else(|| model_error("device expert fused binary grid overflows usize"))?;
+        let total_rows_u32 = u32_checked(total_rows, "device expert fused binary threads")?;
         let (kernel, grid, tg) = match self.packed_matvec_kernel {
             Qwen30PackedMatvecKernel::ScalarControl => (
                 "qwen30_expert_table_binary_matvec",
-                (rows_u32, 1, 1),
-                (rows_u32.min(256).max(1), 1, 1),
+                (total_rows_u32, 1, 1),
+                (total_rows_u32.min(256).max(1), 1, 1),
             ),
             Qwen30PackedMatvecKernel::SimdgroupCandidate => {
-                let groups_of_rows = rows.div_ceil(8);
-                let grid_x = groups_of_rows
+                let groups_of_rows = rows_per_route.div_ceil(8);
+                let groups_total = top_k.checked_mul(groups_of_rows).ok_or_else(|| {
+                    model_error("device expert fused simdgroup groups overflow")
+                })?;
+                let grid_x = groups_total
                     .checked_mul(256)
                     .ok_or_else(|| model_error("device expert simdgroup grid overflows usize"))?;
                 (
@@ -3084,25 +3124,29 @@ impl Qwen30CompleteNativeRuntime {
         })
     }
 
+    /// Paired gate/up SwiGLU fused across all top-k routes.
     fn dispatch_device_expert_paired_gate_up(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
         lease: &Qwen30DeviceExpertTableLease,
-        execution_position: usize,
-        output_offset_elems: usize,
         declare_resources: bool,
     ) -> Result<()> {
+        let top_k = self.config.experts_per_token;
+        let rows_per_route = self.config.moe_intermediate;
         let params = Qwen30DeviceExpertPairedParams {
             n_experts: lease.n_experts as u32,
-            experts_per_token: self.config.experts_per_token as u32,
+            experts_per_token: top_k as u32,
             generation: lease.generation,
-            execution_position: execution_position as u32,
             group_size: QWEN30_GROUP_SIZE as u32,
-            output_offset_elems: output_offset_elems as u32,
+            max_rows: u32_checked(rows_per_route, "paired gate/up max_rows")?,
+            output_base_elems: 0,
+            output_stride_elems: rows_per_route as u32,
             pad0: 0,
-            pad1: 0,
         };
-        let rows = u32_checked(self.config.moe_intermediate, "paired gate/up rows")?;
+        let total_rows = top_k
+            .checked_mul(rows_per_route)
+            .ok_or_else(|| model_error("device expert fused paired grid overflows usize"))?;
+        let total_rows_u32 = u32_checked(total_rows, "paired gate/up fused threads")?;
         let route_ids = self.workspace.route_ids.clone();
         let table = lease.table.clone();
         let input = self.workspace.x_norm.clone();
@@ -3111,8 +3155,8 @@ impl Qwen30CompleteNativeRuntime {
         let resources = lease.resources.clone();
         tcb.dispatch_threads(
             "qwen30_expert_table_paired_gate_up_swiglu",
-            (rows, 1, 1),
-            (rows.min(256).max(1), 1, 1),
+            (total_rows_u32, 1, 1),
+            (total_rows_u32.min(256).max(1), 1, 1),
             move |encoder| {
                 encoder.set_buffer(0, Some(&route_ids), 0);
                 encoder.set_buffer(1, Some(&table), 0);
@@ -3134,31 +3178,43 @@ impl Qwen30CompleteNativeRuntime {
         )
     }
 
+    /// HGRAVS stage gemv fused across all top-k routes (gemv_f32_moe shape ×
+    /// device table lookup). One dispatch covers every selected expert for
+    /// this projection/stage.
     fn dispatch_device_expert_hgravs_stage(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
         lease: &Qwen30DeviceExpertTableLease,
-        execution_position: usize,
         projection: u32,
         stage: u32,
         input: &PinnedBuffer,
         output: &PinnedBuffer,
-        input_offset_elems: usize,
-        output_offset_elems: usize,
-        rows: usize,
+        input_base_elems: usize,
+        input_stride_elems: usize,
+        output_base_elems: usize,
+        output_stride_elems: usize,
+        rows_per_route: usize,
         declare_resources: bool,
     ) -> Result<()> {
+        let top_k = self.config.experts_per_token;
         let params = Qwen30DeviceExpertHgravsParams {
             n_experts: lease.n_experts as u32,
-            experts_per_token: self.config.experts_per_token as u32,
+            experts_per_token: top_k as u32,
             generation: lease.generation,
-            execution_position: execution_position as u32,
             projection,
             stage,
-            input_offset_elems: input_offset_elems as u32,
-            output_offset_elems: output_offset_elems as u32,
+            max_rows: u32_checked(rows_per_route, "device expert HGRAVS max_rows")?,
+            input_base_elems: input_base_elems as u32,
+            input_stride_elems: input_stride_elems as u32,
+            output_base_elems: output_base_elems as u32,
+            output_stride_elems: output_stride_elems as u32,
+            pad0: 0,
+            pad1: 0,
         };
-        let rows_u32 = u32_checked(rows, "device expert HGRAVS rows")?;
+        let total_rows = top_k
+            .checked_mul(rows_per_route)
+            .ok_or_else(|| model_error("device expert fused HGRAVS grid overflows usize"))?;
+        let total_rows_u32 = u32_checked(total_rows, "device expert HGRAVS fused rows")?;
         let tg = 256u32;
         let route_ids = self.workspace.route_ids.clone();
         let table = lease.table.clone();
@@ -3168,7 +3224,7 @@ impl Qwen30CompleteNativeRuntime {
         let resources = lease.resources.clone();
         tcb.dispatch_threads(
             "qwen30_expert_table_hgravs_gemv",
-            (rows_u32.saturating_mul(tg), 1, 1),
+            (total_rows_u32.saturating_mul(tg), 1, 1),
             (tg, 1, 1),
             move |encoder| {
                 encoder.set_buffer(0, Some(&route_ids), 0);
@@ -3197,246 +3253,271 @@ impl Qwen30CompleteNativeRuntime {
 
     /// Encode the full top-k expert wave for one layer using the device table.
     /// Route selection is already on device in `workspace.route_ids`.
+    ///
+    /// Each organ stage is **one** multi-route fused dispatch (all 8 selected
+    /// experts), not one dispatch per route. That is the intersection of
+    /// `gemv_f32_moe`'s fused multi-row shape and device table lookup — the
+    /// unfused device path regressed by ~15% from launch count alone.
     fn dispatch_device_expert_wave(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
         lease: &Qwen30DeviceExpertTableLease,
     ) -> Result<()> {
         self.declare_device_expert_resources(tcb, lease)?;
-        let top_k = self.config.experts_per_token;
         let intermediate = self.config.moe_intermediate;
         let hidden = self.config.hidden;
         let mid = self.hgravs_rank_mid.as_ref();
         let mixed = !self.hgravs_tensors.is_empty();
-        // First dispatch in the wave declares all expert resources once; the
-        // serial encoder keeps them live for subsequent dispatches.
-        let mut resources_declared = false;
-        for route in 0..top_k {
-            let mid_elems = route
-                .checked_mul(intermediate)
-                .ok_or_else(|| model_error("device expert mid offset overflows"))?;
-            let hidden_elems = route
-                .checked_mul(hidden)
-                .ok_or_else(|| model_error("device expert hidden offset overflows"))?;
-            let declare = !resources_declared;
-            if !mixed
-                && matches!(
-                    self.gate_up_swiglu_kernel,
-                    Qwen30GateUpSwiGluKernel::PairedScalarOrderProductionNoParity
-                )
-            {
-                self.dispatch_device_expert_paired_gate_up(
-                    tcb, lease, route, mid_elems, declare,
-                )?;
-                resources_declared = true;
-            } else if !mixed {
-                // Pure-direct three-dispatch control topology.
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_GATE,
-                    &self.workspace.x_norm,
-                    &self.workspace.expert_gate,
-                    0,
-                    mid_elems,
-                    intermediate,
-                    declare,
-                )?;
-                resources_declared = true;
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_UP,
-                    &self.workspace.x_norm,
-                    &self.workspace.expert_up,
-                    0,
-                    mid_elems,
-                    intermediate,
-                    false,
-                )?;
-                self.dispatch_silu_offset(
-                    tcb,
-                    mid_elems
-                        .checked_mul(std::mem::size_of::<f32>())
-                        .ok_or_else(|| model_error("silu offset byte overflow"))?,
-                    &self.workspace.expert_activation,
-                )?;
-            } else {
-                // Mixed HGRAVS/binary: per-route expert is device-selected, so
-                // encode both kind paths. Exactly one kind is ready per expert;
-                // the other kernel returns early without writing. Each route
-                // owns an isolated mid slice so concurrent dual-path stages
-                // cannot clobber R@x intermediates across routes.
-                let mid_buf = mid.ok_or_else(|| {
-                    model_error("HGRAVS mid workspace required for mixed device table")
-                })?;
-                let mid_stride = self.hgravs_rank_mid_stride;
-                if mid_stride == 0 {
-                    return Err(model_error(
-                        "HGRAVS per-route mid stride is zero for mixed device table",
-                    ));
-                }
-                let mid_scratch_elems = route
-                    .checked_mul(mid_stride)
-                    .ok_or_else(|| model_error("device expert HGRAVS mid scratch offset overflows"))?;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_GATE,
-                    0,
-                    &self.workspace.x_norm,
-                    mid_buf,
-                    0,
-                    mid_scratch_elems,
-                    mid_stride,
-                    declare,
-                )?;
-                resources_declared = true;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_GATE,
-                    1,
-                    mid_buf,
-                    &self.workspace.expert_gate,
-                    mid_scratch_elems,
-                    mid_elems,
-                    intermediate,
-                    false,
-                )?;
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_GATE,
-                    &self.workspace.x_norm,
-                    &self.workspace.expert_gate,
-                    0,
-                    mid_elems,
-                    intermediate,
-                    false,
-                )?;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_UP,
-                    0,
-                    &self.workspace.x_norm,
-                    mid_buf,
-                    0,
-                    mid_scratch_elems,
-                    mid_stride,
-                    false,
-                )?;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_UP,
-                    1,
-                    mid_buf,
-                    &self.workspace.expert_up,
-                    mid_scratch_elems,
-                    mid_elems,
-                    intermediate,
-                    false,
-                )?;
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_UP,
-                    &self.workspace.x_norm,
-                    &self.workspace.expert_up,
-                    0,
-                    mid_elems,
-                    intermediate,
-                    false,
-                )?;
-                self.dispatch_silu_offset(
-                    tcb,
-                    mid_elems
-                        .checked_mul(std::mem::size_of::<f32>())
-                        .ok_or_else(|| model_error("silu offset byte overflow"))?,
-                    &self.workspace.expert_activation,
-                )?;
+
+        if !mixed
+            && matches!(
+                self.gate_up_swiglu_kernel,
+                Qwen30GateUpSwiGluKernel::PairedScalarOrderProductionNoParity
+            )
+        {
+            // Pure binary + paired gate/up: 2 fused dispatches (gate/up, down).
+            self.dispatch_device_expert_paired_gate_up(tcb, lease, true)?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_DOWN,
+                &self.workspace.expert_activation,
+                &self.workspace.expert_output,
+                0,
+                intermediate,
+                0,
+                hidden,
+                hidden,
+                false,
+            )?;
+        } else if !mixed {
+            // Pure-direct three-organ topology, each fused across routes.
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_GATE,
+                &self.workspace.x_norm,
+                &self.workspace.expert_gate,
+                0,
+                0,
+                0,
+                intermediate,
+                intermediate,
+                true,
+            )?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_UP,
+                &self.workspace.x_norm,
+                &self.workspace.expert_up,
+                0,
+                0,
+                0,
+                intermediate,
+                intermediate,
+                false,
+            )?;
+            // Route-major gate/up/activation are contiguous: one silu covers
+            // all top-k intermediate slices.
+            self.dispatch_silu_all_routes(tcb, &self.workspace.expert_activation)?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_DOWN,
+                &self.workspace.expert_activation,
+                &self.workspace.expert_output,
+                0,
+                intermediate,
+                0,
+                hidden,
+                hidden,
+                false,
+            )?;
+        } else {
+            // Mixed HGRAVS/binary: device selects per expert, so encode both
+            // kind paths once each (fused across routes). Exactly one kind is
+            // ready per expert; the other kernel returns early without writing.
+            let mid_buf = mid.ok_or_else(|| {
+                model_error("HGRAVS mid workspace required for mixed device table")
+            })?;
+            let mid_stride = self.hgravs_rank_mid_stride;
+            if mid_stride == 0 {
+                return Err(model_error(
+                    "HGRAVS per-route mid stride is zero for mixed device table",
+                ));
             }
-            // Down projection
-            if !mixed {
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_DOWN,
-                    &self.workspace.expert_activation,
-                    &self.workspace.expert_output,
-                    mid_elems,
-                    hidden_elems,
-                    hidden,
-                    false,
-                )?;
-            } else {
-                let mid_buf = mid.ok_or_else(|| {
-                    model_error("HGRAVS mid workspace required for mixed device table down")
-                })?;
-                let mid_stride = self.hgravs_rank_mid_stride;
-                if mid_stride == 0 {
-                    return Err(model_error(
-                        "HGRAVS per-route mid stride is zero for mixed device table down",
-                    ));
-                }
-                let mid_scratch_elems = route
-                    .checked_mul(mid_stride)
-                    .ok_or_else(|| {
-                        model_error("device expert HGRAVS mid scratch offset overflows on down")
-                    })?;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_DOWN,
-                    0,
-                    &self.workspace.expert_activation,
-                    mid_buf,
-                    mid_elems,
-                    mid_scratch_elems,
-                    mid_stride,
-                    false,
-                )?;
-                self.dispatch_device_expert_hgravs_stage(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_DOWN,
-                    1,
-                    mid_buf,
-                    &self.workspace.expert_output,
-                    mid_scratch_elems,
-                    hidden_elems,
-                    hidden,
-                    false,
-                )?;
-                self.dispatch_device_expert_binary_matvec(
-                    tcb,
-                    lease,
-                    route,
-                    QWEN30_DEVICE_PROJ_DOWN,
-                    &self.workspace.expert_activation,
-                    &self.workspace.expert_output,
-                    mid_elems,
-                    hidden_elems,
-                    hidden,
-                    false,
-                )?;
-            }
+            // gate: HGRAVS R@x, L@mid + binary matvec
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_GATE,
+                0,
+                &self.workspace.x_norm,
+                mid_buf,
+                0,
+                0,
+                0,
+                mid_stride,
+                mid_stride,
+                true,
+            )?;
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_GATE,
+                1,
+                mid_buf,
+                &self.workspace.expert_gate,
+                0,
+                mid_stride,
+                0,
+                intermediate,
+                intermediate,
+                false,
+            )?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_GATE,
+                &self.workspace.x_norm,
+                &self.workspace.expert_gate,
+                0,
+                0,
+                0,
+                intermediate,
+                intermediate,
+                false,
+            )?;
+            // up: same dual-path shape
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_UP,
+                0,
+                &self.workspace.x_norm,
+                mid_buf,
+                0,
+                0,
+                0,
+                mid_stride,
+                mid_stride,
+                false,
+            )?;
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_UP,
+                1,
+                mid_buf,
+                &self.workspace.expert_up,
+                0,
+                mid_stride,
+                0,
+                intermediate,
+                intermediate,
+                false,
+            )?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_UP,
+                &self.workspace.x_norm,
+                &self.workspace.expert_up,
+                0,
+                0,
+                0,
+                intermediate,
+                intermediate,
+                false,
+            )?;
+            self.dispatch_silu_all_routes(tcb, &self.workspace.expert_activation)?;
+            // down: HGRAVS + binary
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_DOWN,
+                0,
+                &self.workspace.expert_activation,
+                mid_buf,
+                0,
+                intermediate,
+                0,
+                mid_stride,
+                mid_stride,
+                false,
+            )?;
+            self.dispatch_device_expert_hgravs_stage(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_DOWN,
+                1,
+                mid_buf,
+                &self.workspace.expert_output,
+                0,
+                mid_stride,
+                0,
+                hidden,
+                hidden,
+                false,
+            )?;
+            self.dispatch_device_expert_binary_matvec(
+                tcb,
+                lease,
+                QWEN30_DEVICE_PROJ_DOWN,
+                &self.workspace.expert_activation,
+                &self.workspace.expert_output,
+                0,
+                intermediate,
+                0,
+                hidden,
+                hidden,
+                false,
+            )?;
         }
         self.dispatch_weighted_expert_add(tcb)?;
         Ok(())
+    }
+
+    /// SwiGLU over the full route-major gate/up workspace in one dispatch.
+    /// Layout is `[top_k][intermediate]` contiguous, so a single
+    /// `qwen_complete_silu_mul_offset` with `elements = top_k * intermediate`
+    /// matches eight offset calls.
+    fn dispatch_silu_all_routes(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        output: &PinnedBuffer,
+    ) -> Result<()> {
+        let top_k = self.config.experts_per_token;
+        let intermediate = self.config.moe_intermediate;
+        let elements = top_k
+            .checked_mul(intermediate)
+            .ok_or_else(|| model_error("device expert fused silu element count overflows"))?;
+        let elements_u32 = u32_checked(elements, "fused silu elements")?;
+        let required = bytes_for_f32(elements, "fused silu activation")?;
+        if required > output.length() as usize {
+            return Err(model_error(
+                "fused silu range exceeds the route-major activation workspace",
+            ));
+        }
+        if required > self.workspace.expert_gate.length() as usize
+            || required > self.workspace.expert_up.length() as usize
+        {
+            return Err(model_error(
+                "fused silu range exceeds gate/up route-major workspaces",
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_complete_silu_mul_offset",
+            (elements_u32, 1, 1),
+            (elements_u32.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&self.workspace.expert_gate), 0);
+                encoder.set_buffer(1, Some(&self.workspace.expert_up), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                encoder.qwen_set_u32(3, elements_u32);
+            },
+        )
     }
 
     fn route_ids(&self) -> Result<[u32; QWEN30_TOP_K]> {
@@ -4838,19 +4919,19 @@ mod tests {
         assert_eq!(std::mem::align_of::<Qwen30DeviceExpertTensorRef>(), 8);
         assert_eq!(std::mem::size_of::<Qwen30DeviceExpertTriplet>(), 128);
         assert_eq!(std::mem::align_of::<Qwen30DeviceExpertTriplet>(), 8);
-        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertMatvecParams>(), 32);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertMatvecParams>(), 48);
         assert_eq!(std::mem::size_of::<Qwen30DeviceExpertPairedParams>(), 32);
-        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertHgravsParams>(), 32);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertHgravsParams>(), 48);
     }
 
     #[test]
     #[cfg(target_os = "macos")]
-    fn device_expert_table_flag_defaults_off_and_opt_in() {
+    fn device_expert_table_flag_defaults_on_and_opt_out() {
         let prior = std::env::var_os("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
         std::env::remove_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
-        // Default OFF: the path is non-deterministic (five identical runs gave
-        // five different token sequences). Opt-in only until that is fixed.
-        assert!(!qwen30_device_expert_table_enabled());
+        // Default ON: deterministic and 1.61x faster than the host-readback control,
+        // bit-identical token ids (see qwen30_device_expert_table_enabled).
+        assert!(qwen30_device_expert_table_enabled());
         std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "0");
         assert!(!qwen30_device_expert_table_enabled());
         std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "false");
