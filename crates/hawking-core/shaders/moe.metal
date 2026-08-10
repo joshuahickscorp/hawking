@@ -117,64 +117,164 @@ static inline float q6_k_value(device const uchar* w_q6, uint64_t bo, uint tid)
 }
 
 // H2.1 — top-K softmax gate over routed-expert logits.
-// One workgroup per token. n_experts is small (64 for DeepSeek-V2-Lite),
-// so we use a single-thread reduction inside the workgroup; the rest of
-// the threads idle. Perf isn't the wedge here — the gate is tiny vs the
-// grouped-gemm — and a serial 64-element softmax+top-k is far faster
-// than its dispatch overhead anyway.
+// One workgroup per token.
+//
+// Threadgroup memory layout (host allocates at least this many bytes):
+//   work[n_experts]             — logits → softmax probs (masked in-place)
+//   red_val[tg_size]            — float reduction scratch
+//   red_idx[tg_size]            — uint reduction scratch (overlay as float*)
+// Total floats: n_experts + 2*tg_size.
+//
+// Two paths, branched once on the uniform `args.tie_epsilon`:
+//
+//   tie_epsilon == 0 (default): parallel lexicographic max of the total
+//     order (value, -index). Max / sum / top-k are associative over that
+//     order, so a tree reduction is bit-identical to the serial scan for
+//     every exact-tie pattern. Lowest index wins on exact ties.
+//
+//   tie_epsilon > 0: keep the historical single-thread scan. The epsilon-
+//     window rule compares against a running best_val and is order-
+//     dependent; no reduction reproduces it.
 //
 // Input/output are fp32: top-K selection compares softmax probabilities
 // for *integer* expert-id tie-breaking, so any precision loss on input
 // can flip ordering for two close experts. The upstream kernel
 // (`gemv_f32_moe`) already produces fp32 logits, so f32 here is also
 // the natural shape.
+
+// Prefer (val_a, -idx_a) over (val_b, -idx_b): higher value wins; on an
+// exact value tie the lower index wins. Matches the serial left-to-right
+// strict-`>` scan (which retains the first/lowest index on equality).
+static inline bool moe_topk_lex_prefer(float val_a, uint idx_a, float val_b, uint idx_b)
+{
+    return (val_a > val_b) || (val_a == val_b && idx_a < idx_b);
+}
+
 kernel void moe_topk_gate(
     device const float* logits    [[buffer(0)]],   // (n_tokens, n_experts) row-major fp32
     device       uint*  expert_ids[[buffer(1)]],   // (n_tokens, top_k)
     device       float* weights   [[buffer(2)]],   // (n_tokens, top_k) raw softmax probs
     constant ArgbufTopkGate& args [[buffer(3)]],
-    threadgroup  float* shmem     [[threadgroup(0)]],   // n_experts floats
+    threadgroup  float* shmem     [[threadgroup(0)]],   // n_experts + 2*tg_size floats
     uint                tid       [[thread_position_in_threadgroup]],
     uint                gid       [[threadgroup_position_in_grid]],   // token index
     uint                tg_size   [[threads_per_threadgroup]])
 {
+    threadgroup float* work = shmem;
+    threadgroup float* red_val = shmem + args.n_experts;
+    threadgroup uint*  red_idx = (threadgroup uint*)(shmem + args.n_experts + tg_size);
+
     // Cooperative load — pure fp32 copy.
     for (uint i = tid; i < args.n_experts; i += tg_size) {
-        shmem[i] = logits[(uint64_t)gid * args.n_experts + i];
+        work[i] = logits[(uint64_t)gid * args.n_experts + i];
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
-    if (tid == 0) {
-        // Stable softmax: subtract max before exp.
-        float m = -INFINITY;
-        for (uint i = 0; i < args.n_experts; ++i) if (shmem[i] > m) m = shmem[i];
+    // ── Serial path: epsilon-window ties (order-dependent) ──────────────────
+    if (args.tie_epsilon > 0.0f) {
+        if (tid == 0) {
+            float m = -INFINITY;
+            for (uint i = 0; i < args.n_experts; ++i) if (work[i] > m) m = work[i];
 
-        float sum = 0.0f;
-        for (uint i = 0; i < args.n_experts; ++i) {
-            shmem[i] = exp(shmem[i] - m);
-            sum += shmem[i];
-        }
-        float inv = 1.0f / sum;
-        for (uint i = 0; i < args.n_experts; ++i) shmem[i] *= inv;
-
-        // Top-K via masked selection (k passes; n_experts small).
-        for (uint k = 0; k < args.top_k; ++k) {
-            uint best_idx = 0;
-            float best_val = -INFINITY;
+            float sum = 0.0f;
             for (uint i = 0; i < args.n_experts; ++i) {
-                bool finite_pair = isfinite(best_val) && isfinite(shmem[i]);
-                bool tied = args.tie_epsilon > 0.0f
-                    && finite_pair
-                    && abs(shmem[i] - best_val) <= args.tie_epsilon;
-                if ((shmem[i] > best_val && !tied) || (tied && i < best_idx)) {
-                    best_val = shmem[i];
-                    best_idx = i;
+                work[i] = exp(work[i] - m);
+                sum += work[i];
+            }
+            float inv = 1.0f / sum;
+            for (uint i = 0; i < args.n_experts; ++i) work[i] *= inv;
+
+            for (uint k = 0; k < args.top_k; ++k) {
+                uint best_idx = 0;
+                float best_val = -INFINITY;
+                for (uint i = 0; i < args.n_experts; ++i) {
+                    bool finite_pair = isfinite(best_val) && isfinite(work[i]);
+                    bool tied = finite_pair
+                        && abs(work[i] - best_val) <= args.tie_epsilon;
+                    if ((work[i] > best_val && !tied) || (tied && i < best_idx)) {
+                        best_val = work[i];
+                        best_idx = i;
+                    }
+                }
+                expert_ids[(uint64_t)gid * args.top_k + k] = best_idx;
+                weights[(uint64_t)gid * args.top_k + k]    = best_val;
+                work[best_idx] = -INFINITY;
+            }
+        }
+        return;
+    }
+
+    // ── Parallel path: tie_epsilon == 0 ─────────────────────────────────────
+    // Stable softmax max (associative; bit-identical for finite floats).
+    {
+        float local = -INFINITY;
+        for (uint i = tid; i < args.n_experts; i += tg_size) {
+            local = max(local, work[i]);
+        }
+        red_val[tid] = local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+            if (tid < stride) red_val[tid] = max(red_val[tid], red_val[tid + stride]);
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+    float m = red_val[0];
+
+    // Cooperative exp(x - m). The sum is a serial left-fold on tid 0 so the
+    // inverse scale is bit-identical to the historical single-thread softmax
+    // (FP add is not associative; a tree sum would drift weights and can flip
+    // downstream tokens even when top-k *ids* match). Exp + scale still run
+    // across the threadgroup; only the O(n) add chain is serial.
+    for (uint i = tid; i < args.n_experts; i += tg_size) {
+        work[i] = exp(work[i] - m);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0) {
+        float sum = 0.0f;
+        for (uint i = 0; i < args.n_experts; ++i) sum += work[i];
+        red_val[0] = 1.0f / sum;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float inv = red_val[0];
+    for (uint i = tid; i < args.n_experts; i += tg_size) {
+        work[i] *= inv;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Top-K: k passes of parallel lexicographic (value, -index) max.
+    // Mask each winner to -INFINITY between passes (total order still holds
+    // over the remaining experts; exact ties keep the lowest index).
+    for (uint k = 0; k < args.top_k; ++k) {
+        float best_val = -INFINITY;
+        uint  best_idx = 0xFFFFFFFFu;
+        for (uint i = tid; i < args.n_experts; i += tg_size) {
+            float v = work[i];
+            if (moe_topk_lex_prefer(v, i, best_val, best_idx)) {
+                best_val = v;
+                best_idx = i;
+            }
+        }
+        red_val[tid] = best_val;
+        red_idx[tid] = best_idx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+            if (tid < stride) {
+                float ov = red_val[tid + stride];
+                uint  oi = red_idx[tid + stride];
+                if (moe_topk_lex_prefer(ov, oi, red_val[tid], red_idx[tid])) {
+                    red_val[tid] = ov;
+                    red_idx[tid] = oi;
                 }
             }
-            expert_ids[(uint64_t)gid * args.top_k + k] = best_idx;
-            weights[(uint64_t)gid * args.top_k + k]    = best_val;
-            shmem[best_idx] = -INFINITY;   // mask for next pass
+            threadgroup_barrier(mem_flags::mem_threadgroup);
         }
+        if (tid == 0) {
+            uint win = red_idx[0];
+            expert_ids[(uint64_t)gid * args.top_k + k] = win;
+            weights[(uint64_t)gid * args.top_k + k]    = red_val[0];
+            work[win] = -INFINITY;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 }
 

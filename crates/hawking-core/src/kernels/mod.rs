@@ -12719,7 +12719,9 @@ mod metal_dispatch {
         let n_experts_u32 = n_experts as u32;
         let top_k_u32 = top_k as u32;
         let tie_epsilon = crate::moe::route_tie_epsilon();
-        let shmem_bytes = (n_experts as u64) * std::mem::size_of::<f32>() as u64;
+        // work[n_experts] + red_val[tg_size] + red_idx[tg_size] (see moe.metal).
+        let shmem_bytes = ((n_experts as u64) + 2 * (TG_SIZE as u64))
+            * (std::mem::size_of::<f32>() as u64);
         let mut ab =
             KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32])?;
         ab.set_u32(0, n_experts_u32);

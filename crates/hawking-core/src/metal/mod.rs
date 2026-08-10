@@ -1038,6 +1038,7 @@ mod imp {
             // packed decode, state, and routed-expert time rather than fold
             // it into an opaque "other" bucket.
             "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
             "qwen_binary_sign_scale_matvec_simdgroup_candidate" => {
                 "qwen_binary_sign_scale_matvec_simdgroup_candidate"
             }
@@ -1053,6 +1054,7 @@ mod imp {
                 "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate"
             }
             "qwen30_expert_table_binary_matvec" => "qwen30_expert_table_binary_matvec",
+            "qwen30_expert_table_binary_matvec_serial" => "qwen30_expert_table_binary_matvec_serial",
             "qwen30_expert_table_binary_matvec_simdgroup" => {
                 "qwen30_expert_table_binary_matvec_simdgroup"
             }
