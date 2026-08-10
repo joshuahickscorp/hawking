@@ -981,6 +981,10 @@ pub fn forward_layer_probe(
     layer: &LoadedLayer,
     hidden: &mut ProbeHidden,
     seq_len: usize,
+    // Global token offset of this probe, and the stride of the retained hidden
+    // subsample. `retain_stride <= 1` keeps every token (the previous behaviour).
+    probe_token_offset: usize,
+    retain_stride: usize,
 ) -> Result<Vec<LayerTokenCapture>> {
     if seq_len == 0 {
         return Ok(Vec::new());
@@ -1050,11 +1054,18 @@ pub fn forward_layer_probe(
             )));
         }
         hidden[pos * QWEN80_HIDDEN..(pos + 1) * QWEN80_HIDDEN].copy_from_slice(&out);
+        // Same defect Q30 had: this hidden is QWEN80_HIDDEN f32 = 8 KiB per token per
+        // layer, and retaining it for every token costs total_tokens * 8 KiB PER LAYER
+        // for the whole run. Route membership stays complete (small, and the fit needs
+        // full coverage); only the hidden is bounded, by a deterministic stride so the
+        // retained set is reproducible and layer-independent.
+        let flat_index = probe_token_offset + pos;
+        let retain = retain_stride <= 1 || (flat_index % retain_stride) == 0;
         captures.push(LayerTokenCapture {
             layer: layer.layer,
             selected_expert_ids: ids,
             normalized_route_weights: weights,
-            router_input_hidden: router_input,
+            router_input_hidden: if retain { router_input } else { Vec::new() },
         });
     }
     Ok(captures)
@@ -1138,12 +1149,29 @@ pub fn capture_all_layers(
     index: &SourceBf16Index,
     probes: &[(String, Vec<u32>)],
     hiddens: &mut [ProbeHidden],
+    max_hidden_tokens_per_layer: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, &LoadedLayer, &StreamTelemetry)>,
 ) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
     if hiddens.len() != probes.len() {
         return Err(model_err("hiddens/probes length mismatch"));
     }
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
+    // Deterministic, layer-independent retained-hidden subsample (see forward_layer_probe).
+    let retain_stride = if max_hidden_tokens_per_layer == 0
+        || total_tokens <= max_hidden_tokens_per_layer
+    {
+        1
+    } else {
+        total_tokens.div_ceil(max_hidden_tokens_per_layer)
+    };
+    let probe_token_offsets: Vec<usize> = probes
+        .iter()
+        .scan(0usize, |acc, (_, t)| {
+            let start = *acc;
+            *acc += t.len();
+            Some(start)
+        })
+        .collect();
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
         .map(|(_, toks)| {
@@ -1172,7 +1200,13 @@ pub fn capture_all_layers(
         let comp_t0 = Instant::now();
         for (pi, (_, tokens)) in probes.iter().enumerate() {
             let seq_len = tokens.len();
-            let layer_caps = forward_layer_probe(&layer, &mut hiddens[pi], seq_len)?;
+            let layer_caps = forward_layer_probe(
+                &layer,
+                &mut hiddens[pi],
+                seq_len,
+                probe_token_offsets[pi],
+                retain_stride,
+            )?;
             if layer_caps.len() != seq_len {
                 return Err(model_err(format!(
                     "layer {layer_idx} probe {pi}: capture count {} != {seq_len}",

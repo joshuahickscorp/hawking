@@ -599,7 +599,13 @@ mod macos {
             refuse_if_resident_load(peak_rss_bytes());
         };
         let (captures, telem) =
-            capture_all_layers(&index, &probes, &mut hiddens, Some(&mut on_layer))
+            capture_all_layers(
+                &index,
+                &probes,
+                &mut hiddens,
+                arguments.max_hidden_tokens_per_layer,
+                Some(&mut on_layer),
+            )
                 .unwrap_or_else(|e| fail(e.to_string()));
         drop(hiddens);
 
