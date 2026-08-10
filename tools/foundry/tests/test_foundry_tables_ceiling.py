@@ -15,12 +15,13 @@ import os
 from lab.operators import acquisition as acq
 from lab.operators import gravity_potency as gp
 
-class _ReleasedPPR:
-    """Released research surface — tests must skip rather than call product code."""
-    def __getattr__(self, name):
-        import pytest
-        pytest.skip("C-SCI-R1 released tools/foundry/post_parent_review.py")
-ppr = _ReleasedPPR()
+# Live post-parent review (restored). Gates must execute, not skip by construction.
+import importlib.util as _ilu
+_ppr_path = FOUNDRY / "post_parent_review.py"
+_spec = _ilu.spec_from_file_location("hawking_post_parent_review", _ppr_path)
+ppr = _ilu.module_from_spec(_spec)
+assert _spec.loader is not None
+_spec.loader.exec_module(ppr)
 from test_foundry_tables_potency import adapters, synthetic_evidence
 from fractions import Fraction
 from lab.operators import one_bit_ceiling as obc

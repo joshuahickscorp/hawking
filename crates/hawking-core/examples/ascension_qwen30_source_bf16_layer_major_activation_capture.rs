@@ -9,6 +9,7 @@
 //! for layer in 0..48:
 //!     range-read layer weights from safetensors shards
 //!     push ALL probe tokens through that layer (probe-local causal attention)
+//!     retain router-input hiddens under per-expert first-N (after top-k known)
 //!     write retained hidden rows + full route membership
 //!     free the layer weights
 //! ```
@@ -16,6 +17,11 @@
 //! Working set is ~one layer (~1.2 GiB BF16) + residual streams — single-digit
 //! GiB — not the 56.9 GiB full-source residency the co-resident gate correctly
 //! refuses. Weight bytes are read once total, not once per token.
+//!
+//! Hidden retention is **per-expert first-N** (default N=64), not a global
+//! stratified position set. A shared per-layer budget starves experts when a
+//! larger corpus spreads routing; first-N after routing is known guarantees up
+//! to N retained rows per (layer, expert) and is deterministic.
 //!
 //! Output layout matches
 //! `ascension_qwen30_broad_activation_all_layer_route_capture` so
@@ -37,12 +43,13 @@ fn main() {
 mod macos {
     use hawking_core::model::qwen30_source_bf16_layer_major::{
         capture_all_layers, embed_probes, greedy_decode_user_prompt, is_coherent_paris_continuation,
-        peak_rss_bytes, SourceBf16Index, STREAMED_PEAK_RSS_HARD_CAP_BYTES, QWEN30_HIDDEN,
-        QWEN30_LAYERS,
+        peak_rss_bytes, CaptureTiming, LayerTokenCapture, SourceBf16Index,
+        DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, STREAMED_PEAK_RSS_HARD_CAP_BYTES, QWEN30_EXPERTS,
+        QWEN30_HIDDEN, QWEN30_LAYERS,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
-    use std::collections::{BTreeSet, HashSet};
+    use std::collections::HashSet;
     use std::env;
     use std::fs::{self, File, OpenOptions};
     use std::io::{Read, Write};
@@ -59,9 +66,8 @@ mod macos {
     const RESULT_SCHEMA: &str =
         "hawking.ascension.qwen30_broad_activation_all_layer_route_capture_result.v1";
     const CAPTURE_PROTOCOL_REVISION: &str =
-        "source-bf16-layer-major-route-hidden-capture-stratified-subsample-v1";
+        "source-bf16-layer-major-route-hidden-capture-per-expert-first-n-v1";
     const TRACE_STATUS: &str = "NEW_DIAGNOSTIC_NOT_HISTORICAL";
-    const DEFAULT_MAX_HIDDEN_TOKENS_PER_LAYER: usize = 1024;
     const PARIS_PROMPT: &str = "What is the capital of France?";
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -75,7 +81,7 @@ mod macos {
         source_model_dir: PathBuf,
         input_json: Option<PathBuf>,
         output_dir: Option<PathBuf>,
-        max_hidden_tokens_per_layer: usize,
+        max_hidden_tokens_per_expert: usize,
         max_probes: Option<usize>,
         max_new_tokens: usize,
         tokenizer_path: Option<PathBuf>,
@@ -85,9 +91,10 @@ mod macos {
         "usage:\n  capture: ascension_qwen30_source_bf16_layer_major_activation_capture \\\n\
          \x20   --mode capture --source-model-dir ABSOLUTE_PATH \\\n\
          \x20   --input-json ABSOLUTE_PATH --output-dir ABSOLUTE_PATH \\\n\
-         \x20   [--max-hidden-tokens-per-layer N] [--max-probes N]\n\
+         \x20   [--max-hidden-tokens-per-expert N] [--max-probes N]\n\
          coherence: ... --mode coherence --source-model-dir ABSOLUTE_PATH \\\n\
-         \x20   [--tokenizer-path ABSOLUTE_PATH] [--max-new-tokens N]"
+         \x20   [--tokenizer-path ABSOLUTE_PATH] [--max-new-tokens N]\n\
+         note: --max-hidden-tokens-per-layer is retired; use --max-hidden-tokens-per-expert"
     }
 
     fn required<T>(value: Option<T>, flag: &str) -> Result<T, String> {
@@ -112,7 +119,7 @@ mod macos {
         let mut source_model_dir = None;
         let mut input_json = None;
         let mut output_dir = None;
-        let mut max_hidden_tokens_per_layer = DEFAULT_MAX_HIDDEN_TOKENS_PER_LAYER;
+        let mut max_hidden_tokens_per_expert = DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT;
         let mut max_probes = None;
         let mut max_new_tokens = 12usize;
         let mut tokenizer_path = None;
@@ -158,11 +165,26 @@ mod macos {
                     }
                 }
                 "--max-hidden-tokens-per-layer" => {
+                    // Retired: a per-layer cap shared across 128 experts was the
+                    // root cause of under-fitted organs on large corpora. Refuse
+                    // rather than silently reinterpreting the number as per-expert.
+                    return Err(
+                        "--max-hidden-tokens-per-layer is retired: retention is now \
+                         per-expert first-N (deterministic). Use \
+                         --max-hidden-tokens-per-expert N (default 64). A shared \
+                         per-layer budget cannot guarantee rows-per-expert."
+                            .into(),
+                    );
+                }
+                "--max-hidden-tokens-per-expert" => {
                     let value = args.next().ok_or_else(|| {
-                        format!("missing value for --max-hidden-tokens-per-layer; {}", usage())
+                        format!(
+                            "missing value for --max-hidden-tokens-per-expert; {}",
+                            usage()
+                        )
                     })?;
-                    max_hidden_tokens_per_layer =
-                        parse_usize(&value, "--max-hidden-tokens-per-layer")?;
+                    max_hidden_tokens_per_expert =
+                        parse_usize(&value, "--max-hidden-tokens-per-expert")?;
                 }
                 "--max-probes" => {
                     let value = args
@@ -188,20 +210,27 @@ mod macos {
                 other => return Err(format!("unsupported option {other:?}; {}", usage())),
             }
         }
-        if max_hidden_tokens_per_layer == 0 {
-            return Err("--max-hidden-tokens-per-layer must be positive".into());
+        if max_hidden_tokens_per_expert == 0 {
+            return Err("--max-hidden-tokens-per-expert must be positive".into());
         }
         if max_new_tokens == 0 {
             return Err("--max-new-tokens must be positive".into());
         }
-        let budget_bytes = max_hidden_tokens_per_layer
+        // Worst-case unique retained rows/layer = N * experts (no multi-route
+        // credit). Co-routing typically keeps realised rows well below this.
+        let budget_bytes = max_hidden_tokens_per_expert
+            .saturating_mul(QWEN30_EXPERTS)
             .saturating_mul(QWEN30_LAYERS)
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
-        const MAX_HIDDEN_BUDGET_BYTES: usize = 768 * 1024 * 1024;
+        // 4 GiB worst-case retained capture budget: default N=64 → ~3.0 GiB.
+        // Peak RSS hard cap remains STREAMED_PEAK_RSS_HARD_CAP_BYTES (12 GiB).
+        const MAX_HIDDEN_BUDGET_BYTES: usize = 4 * 1024 * 1024 * 1024;
         if budget_bytes > MAX_HIDDEN_BUDGET_BYTES {
             return Err(format!(
-                "--max-hidden-tokens-per-layer {max_hidden_tokens_per_layer} implies ~{budget_bytes} hidden bytes (> {MAX_HIDDEN_BUDGET_BYTES} hard cap)"
+                "--max-hidden-tokens-per-expert {max_hidden_tokens_per_expert} implies \
+                 worst-case ~{budget_bytes} retained hidden bytes \
+                 (> {MAX_HIDDEN_BUDGET_BYTES} hard cap); lower N"
             ));
         }
         Ok(Arguments {
@@ -218,7 +247,7 @@ mod macos {
                 Some(p) => Some(absolute(p, "--output-dir")?),
                 None => None,
             },
-            max_hidden_tokens_per_layer,
+            max_hidden_tokens_per_expert,
             max_probes,
             max_new_tokens,
             tokenizer_path: match tokenizer_path {
@@ -356,75 +385,127 @@ mod macos {
         Ok((document, result))
     }
 
-    /// Same stratified subsample as the complete-binary all-layer capture.
-    fn select_hidden_positions(
-        probes: &[(String, Vec<u32>)],
-        max_hidden_tokens: usize,
-    ) -> BTreeSet<(usize, usize)> {
-        let total: usize = probes.iter().map(|(_, t)| t.len()).sum();
-        if total == 0 || max_hidden_tokens == 0 {
-            return BTreeSet::new();
+    /// Percentile of a non-empty ascending-sorted slice (nearest-rank).
+    fn percentile_sorted(sorted: &[usize], p: f64) -> usize {
+        if sorted.is_empty() {
+            return 0;
         }
-        if total <= max_hidden_tokens {
-            let mut all = BTreeSet::new();
-            for (pi, (_, tokens)) in probes.iter().enumerate() {
-                for pos in 0..tokens.len() {
-                    all.insert((pi, pos));
+        let rank = ((p / 100.0) * (sorted.len() as f64 - 1.0)).round() as usize;
+        sorted[rank.min(sorted.len() - 1)]
+    }
+
+    /// Summarise a vector of non-negative counts into the acceptance distribution.
+    fn dist_summary(counts: &[usize]) -> Value {
+        let mut sorted = counts.to_vec();
+        sorted.sort_unstable();
+        let n = sorted.len();
+        let frac = |pred: &dyn Fn(usize) -> bool| -> f64 {
+            if n == 0 {
+                0.0
+            } else {
+                sorted.iter().filter(|&&c| pred(c)).count() as f64 / n as f64
+            }
+        };
+        json!({
+            "n": n,
+            "min": sorted.first().copied().unwrap_or(0),
+            "p10": percentile_sorted(&sorted, 10.0),
+            "p25": percentile_sorted(&sorted, 25.0),
+            "p50": percentile_sorted(&sorted, 50.0),
+            "p75": percentile_sorted(&sorted, 75.0),
+            "p90": percentile_sorted(&sorted, 90.0),
+            "max": sorted.last().copied().unwrap_or(0),
+            "mean": if n == 0 {
+                0.0
+            } else {
+                counts.iter().sum::<usize>() as f64 / n as f64
+            },
+            "frac_lt_8": frac(&|c| c < 8),
+            "frac_lt_16": frac(&|c| c < 16),
+            "frac_lt_32": frac(&|c| c < 32),
+            "frac_ge_64": frac(&|c| c >= 64),
+            "count_lt_8": sorted.iter().filter(|&&c| c < 8).count(),
+            "count_lt_16": sorted.iter().filter(|&&c| c < 16).count(),
+            "count_lt_32": sorted.iter().filter(|&&c| c < 32).count(),
+            "count_ge_64": sorted.iter().filter(|&&c| c >= 64).count(),
+            "count_zero": sorted.iter().filter(|&&c| c == 0).count(),
+        })
+    }
+
+    /// Per-(layer, expert) retained-hidden hit counts — the quantity organs fit on.
+    ///
+    /// Matches the repack's collect path: a retained token contributes one row to
+    /// every expert in its top-k for that layer. Also reports the same distribution
+    /// broken out by layer and by expert (marginals). Components (gate/up/down)
+    /// share the router-input row, so component n_fit equals expert n_fit.
+    fn n_fit_distribution(captures: &[Vec<Vec<LayerTokenCapture>>]) -> Value {
+        let mut by_layer_expert: Vec<usize> =
+            Vec::with_capacity(QWEN30_LAYERS * QWEN30_EXPERTS);
+        let mut by_layer: Vec<usize> = Vec::with_capacity(QWEN30_LAYERS);
+        let mut by_expert: Vec<usize> = vec![0usize; QWEN30_EXPERTS];
+        for layer in 0..QWEN30_LAYERS {
+            let mut per_expert = vec![0usize; QWEN30_EXPERTS];
+            for probe_caps in captures {
+                for token_caps in probe_caps {
+                    let layer_cap = &token_caps[layer];
+                    if layer_cap.router_input_hidden.is_empty() {
+                        continue;
+                    }
+                    for &expert in &layer_cap.selected_expert_ids {
+                        let e = expert as usize;
+                        if e < QWEN30_EXPERTS {
+                            per_expert[e] += 1;
+                        }
+                    }
                 }
             }
-            return all;
+            let layer_total: usize = per_expert.iter().sum();
+            by_layer.push(layer_total);
+            for e in 0..QWEN30_EXPERTS {
+                by_expert[e] += per_expert[e];
+            }
+            by_layer_expert.extend(per_expert);
         }
-        let mut quotas: Vec<(usize, usize, f64)> = probes
-            .iter()
-            .enumerate()
-            .map(|(pi, (_, tokens))| {
-                let exact = max_hidden_tokens as f64 * (tokens.len() as f64) / (total as f64);
-                let base = exact.floor() as usize;
-                let frac = exact - base as f64;
-                (pi, base.min(tokens.len()), frac)
+        json!({
+            "unit": "retained_hidden_rows_per_layer_expert",
+            "overall": dist_summary(&by_layer_expert),
+            "by_layer_totals": dist_summary(&by_layer),
+            "by_expert_totals_across_layers": dist_summary(&by_expert),
+            "by_component": {
+                "note": "gate/up/down organs share the same router-input retained rows; n_fit is identical across components",
+                "gate": "same_as_overall",
+                "up": "same_as_overall",
+                "down": "same_as_overall",
+            },
+            "comparison_note": "Acceptance: with per-expert first-N=64, frac_lt_16 must be far below the starved per-layer-subsample bands (74%/30%).",
+        })
+    }
+
+    fn timing_to_json(t: &CaptureTiming) -> Value {
+        let total = t.total_secs.max(1e-9);
+        let row = |secs: f64| {
+            json!({
+                "seconds": secs,
+                "pct": 100.0 * secs / total,
             })
-            .collect();
-        let mut allocated: usize = quotas.iter().map(|(_, b, _)| *b).sum();
-        let mut order: Vec<usize> = (0..quotas.len()).collect();
-        order.sort_by(|a, b| {
-            quotas[*b]
-                .2
-                .partial_cmp(&quotas[*a].2)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then_with(|| a.cmp(b))
-        });
-        let mut oi = 0usize;
-        while allocated < max_hidden_tokens && !order.is_empty() {
-            let idx = order[oi % order.len()];
-            let pi = quotas[idx].0;
-            let len = probes[pi].1.len();
-            if quotas[idx].1 < len {
-                quotas[idx].1 += 1;
-                allocated += 1;
-            }
-            oi += 1;
-            if oi > max_hidden_tokens.saturating_mul(4) {
-                break;
-            }
-        }
-        let mut selected = BTreeSet::new();
-        for (pi, quota, _) in quotas {
-            let len = probes[pi].1.len();
-            if quota == 0 || len == 0 {
-                continue;
-            }
-            if quota >= len {
-                for pos in 0..len {
-                    selected.insert((pi, pos));
-                }
-                continue;
-            }
-            for i in 0..quota {
-                let pos = (i * len) / quota;
-                selected.insert((pi, pos.min(len - 1)));
-            }
-        }
-        selected
+        };
+        json!({
+            "load_io": row(t.load_secs),
+            "bf16_widen_dense": row(t.bf16_widen_dense_secs),
+            "attention": row(t.attention_secs),
+            "router": row(t.router_secs),
+            "expert_gemm": row(t.expert_gemm_secs),
+            "retention_write": row(t.retention_write_secs),
+            "total_capture_secs": t.total_secs,
+            "unaccounted_secs": (t.total_secs
+                - t.load_secs
+                - t.bf16_widen_dense_secs
+                - t.attention_secs
+                - t.router_secs
+                - t.expert_gemm_secs
+                - t.retention_write_secs)
+            .max(0.0),
+        })
     }
 
     fn write_hidden(path: &Path, values: &[f32]) -> Result<(String, usize), String> {
@@ -442,25 +523,27 @@ mod macos {
             .create_new(true)
             .open(path)
             .map_err(|e| format!("cannot create hidden capture {}: {e}", path.display()))?;
+        // One contiguous write of native LE f32 bytes. Avoid per-element write_all
+        // and per-file fsync — those dominated wall clock once retention grew to
+        // per-expert N=64 (tens of thousands of files). Integrity is still sealed
+        // via the sha256 of the written bytes recorded in capture-result.json;
+        // a single fsync of the result file is enough for the receipt.
+        let nbytes = values.len() * std::mem::size_of::<f32>();
+        let bytes: &[u8] = unsafe {
+            std::slice::from_raw_parts(values.as_ptr() as *const u8, nbytes)
+        };
         let mut digest = Sha256::new();
-        for value in values {
-            let bytes = value.to_le_bytes();
-            file.write_all(&bytes)
-                .map_err(|e| format!("cannot write hidden capture {}: {e}", path.display()))?;
-            digest.update(bytes);
-        }
-        file.flush()
-            .map_err(|e| format!("cannot flush hidden capture {}: {e}", path.display()))?;
-        file.sync_all()
-            .map_err(|e| format!("cannot sync hidden capture {}: {e}", path.display()))?;
-        Ok((
-            format!("{:x}", digest.finalize()),
-            values.len() * std::mem::size_of::<f32>(),
-        ))
+        digest.update(bytes);
+        file.write_all(bytes)
+            .map_err(|e| format!("cannot write hidden capture {}: {e}", path.display()))?;
+        Ok((format!("{:x}", digest.finalize()), nbytes))
     }
 
     fn write_json_new(path: &Path, value: &Value) -> Result<(), String> {
-        let text = serde_json::to_string_pretty(value)
+        // Compact JSON: pretty-print of the full route census is multi-GB and
+        // dominated wall time on the sealed corpus. Compact is still valid JSON
+        // for the repack consumer.
+        let text = serde_json::to_string(value)
             .map_err(|e| format!("cannot serialize capture result: {e}"))?;
         let mut file = OpenOptions::new()
             .write(true)
@@ -473,6 +556,7 @@ mod macos {
             .map_err(|e| format!("cannot finish result {}: {e}", path.display()))?;
         file.flush()
             .map_err(|e| format!("cannot flush result {}: {e}", path.display()))?;
+        // One fsync for the receipt, not per hidden file.
         file.sync_all()
             .map_err(|e| format!("cannot sync result {}: {e}", path.display()))?;
         Ok(())
@@ -575,6 +659,17 @@ mod macos {
     }
 
     fn run_capture(arguments: &Arguments) {
+        // MoE is serial-over-experts; let Accelerate use the cores for sgemm.
+        // Cap so we leave headroom for concurrent gate lanes and attention workers.
+        // SAFETY: set before any BLAS call in this process.
+        unsafe {
+            if std::env::var_os("VECLIB_MAXIMUM_THREADS").is_none() {
+                std::env::set_var("VECLIB_MAXIMUM_THREADS", "8");
+            }
+            if std::env::var_os("OMP_NUM_THREADS").is_none() {
+                std::env::set_var("OMP_NUM_THREADS", "8");
+            }
+        }
         let input_json = required(arguments.input_json.clone(), "--input-json")
             .unwrap_or_else(|e| fail(e));
         let output_dir = required(arguments.output_dir.clone(), "--output-dir")
@@ -596,14 +691,16 @@ mod macos {
             parse_input(&input_json, arguments.max_probes).unwrap_or_else(|e| fail(e));
         let input_sha256 = sha256_file(&input_json).unwrap_or_else(|e| fail(e));
         let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
-        let hidden_positions =
-            select_hidden_positions(&probes, arguments.max_hidden_tokens_per_layer);
-        let hidden_tokens_retained = hidden_positions.len();
         let naive_hidden_bytes = total_tokens
             .saturating_mul(QWEN30_LAYERS)
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
-        let retained_hidden_budget_bytes = hidden_tokens_retained
+        // Worst-case unique rows/layer under first-N (no multi-route credit).
+        let worst_case_rows_per_layer = arguments
+            .max_hidden_tokens_per_expert
+            .saturating_mul(QWEN30_EXPERTS)
+            .min(total_tokens);
+        let retained_hidden_budget_bytes = worst_case_rows_per_layer
             .saturating_mul(QWEN30_LAYERS)
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
@@ -625,10 +722,11 @@ mod macos {
         }
 
         eprintln!(
-            "capture: {} probes, {} tokens, retain {} hidden positions/layer; source tensors={}",
+            "capture: {} probes, {} tokens, per-expert first-N={} (worst-case {} rows/layer); source tensors={}",
             probes.len(),
             total_tokens,
-            hidden_tokens_retained,
+            arguments.max_hidden_tokens_per_expert,
+            worst_case_rows_per_layer,
             index.tensor_count()
         );
 
@@ -645,14 +743,33 @@ mod macos {
             }
             refuse_if_resident_load(peak_rss_bytes());
         };
-        let captures = capture_all_layers(
+        let capture_run = capture_all_layers(
             &index,
             &probes,
             &mut hiddens,
-            &hidden_positions,
+            arguments.max_hidden_tokens_per_expert,
             Some(&mut on_layer),
         )
         .unwrap_or_else(|e| fail(e.to_string()));
+        let captures = capture_run.captures;
+        let capture_timing = capture_run.timing;
+        let saturation = capture_run.saturation;
+        eprintln!(
+            "capture timing: total={:.1}s load={:.1}s attn={:.1}s router={:.1}s expert_gemm={:.1}s retention={:.1}s widen={:.1}s",
+            capture_timing.total_secs,
+            capture_timing.load_secs,
+            capture_timing.attention_secs,
+            capture_timing.router_secs,
+            capture_timing.expert_gemm_secs,
+            capture_timing.retention_write_secs,
+            capture_timing.bf16_widen_dense_secs,
+        );
+        eprintln!(
+            "saturation: global_max_token={:?} pct_corpus_after={:.1}% (per-layer first token index when every expert hit N={})",
+            saturation.global_max_saturation_token,
+            saturation.pct_corpus_after_global_saturation,
+            arguments.max_hidden_tokens_per_expert,
+        );
         // Free residual streams once captures are materialised into probe rows.
         drop(hiddens);
 
@@ -660,11 +777,12 @@ mod macos {
         let mut tokens_executed = 0usize;
         let mut hidden_bytes_written = 0usize;
         let mut route_membership_total = 0usize;
+        let mut hidden_rows_retained_total = 0usize;
+        let mut hidden_rows_per_layer = vec![0usize; QWEN30_LAYERS];
 
         for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
             let mut steps = Vec::with_capacity(token_ids.len());
             for (pos, &token_id) in token_ids.iter().enumerate() {
-                let store_hidden = hidden_positions.contains(&(pi, pos));
                 let layer_caps = &captures[pi][pos];
                 if layer_caps.len() != QWEN30_LAYERS {
                     fail(format!(
@@ -673,6 +791,7 @@ mod macos {
                     ));
                 }
                 let mut layer_rows = Vec::with_capacity(QWEN30_LAYERS);
+                let mut any_layer_retained = false;
                 for layer_cap in layer_caps {
                     if layer_cap.selected_expert_ids.len() != 8
                         || layer_cap.normalized_route_weights.len() != 8
@@ -684,6 +803,26 @@ mod macos {
                     }
                     route_membership_total = route_membership_total
                         .saturating_add(layer_cap.selected_expert_ids.len());
+                    // Per-expert first-N is decided inside capture_all_layers after
+                    // routing; the writer trusts non-empty router_input_hidden as the
+                    // sole retained-hidden authority (must not re-derive a position set).
+                    let store_hidden = !layer_cap.router_input_hidden.is_empty();
+                    if store_hidden {
+                        if layer_cap.router_input_hidden.len() != QWEN30_HIDDEN {
+                            fail(format!(
+                                "{probe_id}@{pos} L{}: retained hidden width {} != {QWEN30_HIDDEN}",
+                                layer_cap.layer,
+                                layer_cap.router_input_hidden.len()
+                            ));
+                        }
+                        any_layer_retained = true;
+                        hidden_rows_retained_total =
+                            hidden_rows_retained_total.saturating_add(1);
+                        if layer_cap.layer < QWEN30_LAYERS {
+                            hidden_rows_per_layer[layer_cap.layer] =
+                                hidden_rows_per_layer[layer_cap.layer].saturating_add(1);
+                        }
+                    }
                     let hidden_meta = if store_hidden {
                         let hidden_relative = format!(
                             "hidden/L{:02}/{}/{:06}.f32le",
@@ -719,7 +858,7 @@ mod macos {
                     "all_48_layers_executed": true,
                     "final_norm_lm_head_sampler_executed": false,
                     "autoregressive_feedback_or_generation_not_executed": true,
-                    "hidden_retained_for_this_token": store_hidden,
+                    "hidden_retained_for_this_token": any_layer_retained,
                 }));
                 tokens_executed += 1;
             }
@@ -735,15 +874,14 @@ mod macos {
         refuse_if_resident_load(peak);
 
         // Self-consistency: every token × every layer has route membership;
-        // retained hidden file count matches retained_positions × layers.
+        // written hidden bytes match counted retained rows.
         let expected_route_slots = tokens_executed.saturating_mul(QWEN30_LAYERS).saturating_mul(8);
         if route_membership_total != expected_route_slots {
             fail(format!(
                 "route membership total {route_membership_total} != expected {expected_route_slots}"
             ));
         }
-        let expected_hidden_bytes = hidden_tokens_retained
-            .saturating_mul(QWEN30_LAYERS)
+        let expected_hidden_bytes = hidden_rows_retained_total
             .saturating_mul(QWEN30_HIDDEN)
             .saturating_mul(4);
         if hidden_bytes_written != expected_hidden_bytes {
@@ -751,6 +889,11 @@ mod macos {
                 "hidden bytes written {hidden_bytes_written} != expected {expected_hidden_bytes}"
             ));
         }
+        let n_fit_dist = n_fit_distribution(&captures);
+        eprintln!(
+            "n_fit distribution (retained rows per layer×expert): {}",
+            serde_json::to_string(&n_fit_dist).unwrap_or_else(|_| "{}".into())
+        );
 
         let corpus_scale = 87_439f64;
         let rate_tokens_per_sec = if wall.as_secs_f64() > 0.0 {
@@ -824,10 +967,15 @@ mod macos {
                 "does_not_weaken_or_flag_flip_co_resident_memory_gate": true,
             },
             "bounded_storage": {
-                "strategy": "stratified_token_subsample_raw_hiddens_plus_full_route_membership",
-                "why": "SVD fit needs Gram = X'X/n (buildable from raw rows at pack time) and surplus-over-null needs true holdout rows; full raw dump is multi-GB; per-expert Gram dumps are multi-GB and lose holdout rows",
-                "max_hidden_tokens_per_layer": arguments.max_hidden_tokens_per_layer,
-                "hidden_tokens_retained_per_layer": hidden_tokens_retained,
+                "strategy": "per_expert_first_n_router_input_hiddens_plus_full_route_membership",
+                "why": "Per-layer stratified subsample shared across 128 experts left ~8 rows/expert on large corpora (organs fail null test below ~16). First-N per expert after routing is known guarantees up to N retained rows per (layer, expert) while keeping full route membership and staying inside the streamed RSS cap.",
+                "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                "retention_policy": "first_N_tokens_that_route_to_expert_in_global_token_order",
+                "deterministic": true,
+                "experts": QWEN30_EXPERTS,
+                "worst_case_unique_rows_per_layer": worst_case_rows_per_layer,
+                "hidden_rows_retained_total": hidden_rows_retained_total,
+                "hidden_rows_retained_per_layer": hidden_rows_per_layer,
                 "layers": QWEN30_LAYERS,
                 "hidden_width": QWEN30_HIDDEN,
                 "total_tokens_executed": tokens_executed,
@@ -835,8 +983,11 @@ mod macos {
                 "retained_hidden_budget_bytes": retained_hidden_budget_bytes,
                 "retained_hidden_bytes_written": hidden_bytes_written,
                 "full_route_membership_for_every_token_every_layer": true,
+                "n_fit_distribution": n_fit_dist.clone(),
                 "rejected_alternatives": {
                     "full_raw_all_tokens": "unbounded; not acceptable",
+                    "per_layer_stratified_subsample": "shared budget across experts; larger corpus spreads routing and starves each expert",
+                    "random_reservoir": "not deterministic unless seeded and documented; first-N is byte-identical across runs",
                     "per_expert_gram_only": "2048x2048 f32 = 16MB per (layer,expert); multi-GB at scale and cannot score holdout null/surplus"
                 },
             },
@@ -846,7 +997,9 @@ mod macos {
                 "layers_executed": QWEN30_LAYERS,
                 "broad_activation_diversity": true,
                 "all_layer_activation_capture": true,
-                "hidden_tokens_retained": hidden_tokens_retained,
+                "hidden_rows_retained_total": hidden_rows_retained_total,
+                "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                "n_fit_distribution": n_fit_dist.clone(),
                 "source_bf16_layer_major": true,
                 "route_membership_total": route_membership_total,
             },
@@ -856,6 +1009,14 @@ mod macos {
                 "tokens_per_sec": rate_tokens_per_sec,
                 "implied_full_corpus_87439_tokens_secs": implied_full_corpus_secs,
                 "implied_full_corpus_87439_tokens_hours": implied_full_corpus_secs / 3600.0,
+                "breakdown": timing_to_json(&capture_timing),
+            },
+            "saturation": {
+                "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                "layer_all_experts_full_at_token": saturation.layer_all_experts_full_at_token,
+                "global_max_saturation_token": saturation.global_max_saturation_token,
+                "pct_corpus_after_global_saturation": saturation.pct_corpus_after_global_saturation,
+                "note": "After every (layer,expert) first-N reservoir is full, later tokens cannot change the retained set. Expert GEMMs still run for residual (required for later-layer route bit-identity).",
             },
             "probes": probe_rows,
             "logit_provenance": {
@@ -876,10 +1037,12 @@ mod macos {
                 "streamed_resource_contract": result.get("streamed_resource_contract"),
                 "timing": result.get("timing"),
                 "bounded_storage": {
-                    "strategy": "stratified_token_subsample_raw_hiddens_plus_full_route_membership",
-                    "hidden_tokens_retained_per_layer": hidden_tokens_retained,
+                    "strategy": "per_expert_first_n_router_input_hiddens_plus_full_route_membership",
+                    "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                    "hidden_rows_retained_total": hidden_rows_retained_total,
                     "retained_hidden_bytes_written": hidden_bytes_written,
                     "naive_all_token_hidden_bytes_estimate": naive_hidden_bytes,
+                    "n_fit_distribution": n_fit_dist,
                 },
                 "claim_boundary": {
                     "does_not_claim_coherence_hcli_tps_tg_capability_or_tournament": true,

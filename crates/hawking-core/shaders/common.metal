@@ -33,11 +33,15 @@ struct ArgbufRowsCols { uint rows; uint cols; };
 /// (hidden: u32, eps: f32) — used by rmsnorm_f32 TCB path.
 struct ArgbufRmsnorm { uint hidden; float eps; };
 
-/// (n_experts: u32, top_k: u32, tie_epsilon: f32) — used by moe_topk_gate.
+/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)
+/// — used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected
+/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on
+/// single-thread dispatch.
 struct ArgbufTopkGate {
     uint n_experts;
     uint top_k;
     float tie_epsilon;
+    uint normalize_topk;
 };
 
 /// (n: u32) — used by silu_mul / moe_batched_silu_mul.

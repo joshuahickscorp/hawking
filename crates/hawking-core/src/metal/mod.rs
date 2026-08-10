@@ -352,6 +352,7 @@ pub const SHADER_QWEN30_DEVICE_EXPERT_TABLE: &str =
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
 pub const SHADER_QWEN_UNIFORM_Q4: &str = include_str!("../../shaders/qwen_uniform_q4.metal");
+pub const SHADER_QWEN_UNIFORM_QN: &str = include_str!("../../shaders/qwen_uniform_qn.metal");
 /// RWKV-7 WKV-7 single-step decode recurrence (`rwkv7_wkv_decode`). The novel,
 /// tps-critical kernel of the RWKV-7 GPU decode path — threadgroup-per-head with
 /// the fixed `head_size×head_size` recurrent state in a persistent GPU buffer
@@ -411,6 +412,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
         SHADER_QWEN30_DEVICE_EXPERT_TABLE,
         SHADER_QWEN_UNIFORM_Q4,
+        SHADER_QWEN_UNIFORM_QN,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
         SHADER_DEEPSEEK_V4_P7,
@@ -1039,11 +1041,32 @@ mod imp {
             // it into an opaque "other" bucket.
             "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
             "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
+            "qwen_binary_sign_scale_matvec_tiled" => "qwen_binary_sign_scale_matvec_tiled",
             "qwen_binary_sign_scale_matvec_simdgroup_candidate" => {
                 "qwen_binary_sign_scale_matvec_simdgroup_candidate"
             }
+            "qwen_binary_sign_scale_matvec_qkv" => "qwen_binary_sign_scale_matvec_qkv",
+            "qwen_binary_postnorm_router_matvec" => "qwen_binary_postnorm_router_matvec",
+            "qwen_binary_sign_scale_matvec_rowblock2" => {
+                "qwen_binary_sign_scale_matvec_rowblock2"
+            }
+            "qwen_binary_sign_scale_matvec_rowblock4" => {
+                "qwen_binary_sign_scale_matvec_rowblock4"
+            }
+            "qwen_binary_sign_scale_matvec_rowblock8" => {
+                "qwen_binary_sign_scale_matvec_rowblock8"
+            }
             "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
             "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
+            "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
+            "qwen_uniform_q4_decode_vector" => "qwen_uniform_q4_decode_vector",
+            "qwen_uniform_q4_embedding_lookup" => "qwen_uniform_q4_embedding_lookup",
+            "qwen_uniform_qn_matvec" => "qwen_uniform_qn_matvec",
+            "qwen_uniform_qn_decode_vector" => "qwen_uniform_qn_decode_vector",
+            "qwen_uniform_qn_embedding_lookup" => "qwen_uniform_qn_embedding_lookup",
+            "qwen_complete_binary_embedding_lookup_device_token" => {
+                "qwen_complete_binary_embedding_lookup_device_token"
+            }
             "qwen_complete_rmsnorm_rows_f32" => "qwen_complete_rmsnorm_rows_f32",
             "qwen_complete_normalize_route_weights" => "qwen_complete_normalize_route_weights",
             "qwen_complete_silu_mul_offset" => "qwen_complete_silu_mul_offset",
@@ -1058,10 +1081,28 @@ mod imp {
             "qwen30_expert_table_binary_matvec_simdgroup" => {
                 "qwen30_expert_table_binary_matvec_simdgroup"
             }
+            "qwen30_expert_table_binary_matvec_rowblock2" => {
+                "qwen30_expert_table_binary_matvec_rowblock2"
+            }
+            "qwen30_expert_table_binary_matvec_rowblock4" => {
+                "qwen30_expert_table_binary_matvec_rowblock4"
+            }
+            "qwen30_expert_table_binary_matvec_rowblock8" => {
+                "qwen30_expert_table_binary_matvec_rowblock8"
+            }
             "qwen30_expert_table_paired_gate_up_swiglu" => {
                 "qwen30_expert_table_paired_gate_up_swiglu"
             }
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
+            "qwen30_expert_table_hgravs_gemv_rowblock2" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock2"
+            }
+            "qwen30_expert_table_hgravs_gemv_rowblock4" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock4"
+            }
+            "qwen30_expert_table_hgravs_gemv_rowblock8" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock8"
+            }
             "qwen_complete_weighted_expert_add" => "qwen_complete_weighted_expert_add",
             "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
             "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",
@@ -1699,34 +1740,218 @@ mod imp {
         }
     }
 
+    /// Metallib disk cache keyed by (device name, shader source hash, math mode).
+    /// Disable with `HAWKING_METALLIB_CACHE=0`. When a matching `.metallib` is
+    /// present it is loaded; otherwise sources are compiled at runtime. Writing
+    /// a new `.metallib` requires the Xcode `metal`/`metallib` tools; when they
+    /// are absent the warm path still benefits from any pre-seeded cache file
+    /// and from the OS Metal shader cache for repeated `newLibraryWithSource`.
+    fn metallib_cache_enabled() -> bool {
+        match std::env::var("HAWKING_METALLIB_CACHE") {
+            Ok(v) if matches!(v.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+                false
+            }
+            _ => true,
+        }
+    }
+
+    fn metallib_cache_root() -> std::path::PathBuf {
+        if let Ok(dir) = std::env::var("HAWKING_METALLIB_CACHE_DIR") {
+            return std::path::PathBuf::from(dir);
+        }
+        if let Ok(xdg) = std::env::var("XDG_CACHE_HOME") {
+            return std::path::PathBuf::from(xdg).join("hawking").join("metallib");
+        }
+        if let Ok(home) = std::env::var("HOME") {
+            return std::path::PathBuf::from(home)
+                .join(".cache")
+                .join("hawking")
+                .join("metallib");
+        }
+        std::path::PathBuf::from("/tmp/hawking-cache/metallib")
+    }
+
+    fn shader_source_sha256(src: &str) -> String {
+        use sha2::{Digest, Sha256};
+        format!("{:x}", Sha256::digest(src.as_bytes()))
+    }
+
+    fn sanitize_device_name(name: &str) -> String {
+        name.chars()
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .collect()
+    }
+
+    fn metallib_cache_path(device: &Device, source_sha: &str, strict_math: bool) -> std::path::PathBuf {
+        let math = if strict_math {
+            "strict_math"
+        } else {
+            "fast_math_default"
+        };
+        metallib_cache_root()
+            .join(sanitize_device_name(&device.name().to_string()))
+            .join(format!("{source_sha}_{math}.metallib"))
+    }
+
+    /// Opt-in offline metallib build via Xcode tools (`HAWKING_METALLIB_BUILD=1`).
+    /// Default off so normal experiment starts never shell out.
+    fn try_build_metallib_with_xcrun(
+        src: &str,
+        out_path: &std::path::Path,
+        strict_math: bool,
+    ) -> Option<()> {
+        use std::io::Write;
+        use std::process::Command;
+        if let Some(parent) = out_path.parent() {
+            std::fs::create_dir_all(parent).ok()?;
+        }
+        let tmp_dir = out_path
+            .parent()?
+            .join(format!(".build-{}", std::process::id()));
+        std::fs::create_dir_all(&tmp_dir).ok()?;
+        let metal_src = tmp_dir.join("all_shaders.metal");
+        let air = tmp_dir.join("all_shaders.air");
+        let metallib_tmp = tmp_dir.join("out.metallib");
+        {
+            let mut f = std::fs::File::create(&metal_src).ok()?;
+            f.write_all(src.as_bytes()).ok()?;
+        }
+        let metal_bin = Command::new("xcrun")
+            .args(["-sdk", "macosx", "-f", "metal"])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .filter(|p| !p.is_empty())?;
+        let metallib_bin = Command::new("xcrun")
+            .args(["-sdk", "macosx", "-f", "metallib"])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .filter(|p| !p.is_empty())?;
+        let mut compile = Command::new(&metal_bin);
+        compile.arg("-c");
+        if strict_math {
+            compile.arg("-fno-fast-math");
+        }
+        let compile = compile
+            .arg(metal_src.as_os_str())
+            .arg("-o")
+            .arg(air.as_os_str())
+            .output()
+            .ok()?;
+        if !compile.status.success() {
+            let _ = std::fs::remove_dir_all(&tmp_dir);
+            return None;
+        }
+        let link = Command::new(&metallib_bin)
+            .arg(air.as_os_str())
+            .arg("-o")
+            .arg(metallib_tmp.as_os_str())
+            .output()
+            .ok()?;
+        if !link.status.success() {
+            let _ = std::fs::remove_dir_all(&tmp_dir);
+            return None;
+        }
+        std::fs::rename(&metallib_tmp, out_path).ok()?;
+        let _ = std::fs::remove_dir_all(&tmp_dir);
+        Some(())
+    }
+
+    fn load_or_compile_shader_library(device: &Device, strict_math: bool) -> Result<Library> {
+        let src = super::all_shader_sources();
+        let source_sha = shader_source_sha256(&src);
+
+        if metallib_cache_enabled() {
+            let path = metallib_cache_path(device, &source_sha, strict_math);
+            if path.is_file() {
+                let load_start = std::time::Instant::now();
+                match device.new_library_with_file(&path) {
+                    Ok(library) => {
+                        crate::startup_timing::record_ms(
+                            "metal_shader_library_load_metallib_cache_hit",
+                            crate::startup_timing::duration_ms(load_start.elapsed()),
+                        );
+                        return Ok(library);
+                    }
+                    Err(_err) => {
+                        // Corrupt or wrong-GPU metallib: fall through to source.
+                        crate::startup_timing::record_ms(
+                            "metal_shader_library_metallib_load_failed_fallback_source",
+                            0,
+                        );
+                    }
+                }
+            } else if matches!(
+                std::env::var("HAWKING_METALLIB_BUILD").as_deref(),
+                Ok("1") | Ok("true") | Ok("TRUE")
+            ) {
+                let build_start = std::time::Instant::now();
+                if try_build_metallib_with_xcrun(&src, &path, strict_math).is_some() {
+                    crate::startup_timing::record_ms(
+                        "metal_shader_library_xcrun_metallib_build",
+                        crate::startup_timing::duration_ms(build_start.elapsed()),
+                    );
+                    if let Ok(library) = device.new_library_with_file(&path) {
+                        return Ok(library);
+                    }
+                }
+            }
+        }
+
+        let compile_start = std::time::Instant::now();
+        let opts = metal::CompileOptions::new();
+        if strict_math {
+            opts.set_fast_math_enabled(false);
+        }
+        let library = device.new_library_with_source(&src, &opts).map_err(|e| {
+            Error::Metal(format!(
+                "{}shader compile: {e}",
+                if strict_math { "strict-math " } else { "" }
+            ))
+        })?;
+        crate::startup_timing::record_ms(
+            "metal_shader_library_compile_from_source",
+            crate::startup_timing::duration_ms(compile_start.elapsed()),
+        );
+        Ok(library)
+    }
+
     impl MetalContext {
         pub fn new() -> Result<Self> {
             Self::new_with_trace(false)
         }
 
         pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
-            let device = Device::system_default()
-                .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
-            let queue = device.new_command_queue();
-            let opts = metal::CompileOptions::new();
-            let src = super::all_shader_sources();
-            let library = device
-                .new_library_with_source(&src, &opts)
-                .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
-            // Resolve at construction so hot-path checks are a single bool load.
-            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
-            Ok(Self {
-                inner: Arc::new(Inner {
-                    device,
-                    queue,
-                    library,
-                    pipelines: Mutex::new(HashMap::new()),
-                    icb_pipelines: Mutex::new(HashMap::new()),
-                }),
-                trace: Arc::new(DispatchTrace::new()),
-                stats: Arc::new(MetalContextStats::new()),
-                trace_dispatch: effective,
-                prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+            crate::startup_timing::time_ms_result("metal_context_new_with_trace", || {
+                let device = Device::system_default()
+                    .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+                let queue = device.new_command_queue();
+                let library = load_or_compile_shader_library(&device, /*strict_math=*/ false)?;
+                // Resolve at construction so hot-path checks are a single bool load.
+                let effective =
+                    trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+                Ok(Self {
+                    inner: Arc::new(Inner {
+                        device,
+                        queue,
+                        library,
+                        pipelines: Mutex::new(HashMap::new()),
+                        icb_pipelines: Mutex::new(HashMap::new()),
+                    }),
+                    trace: Arc::new(DispatchTrace::new()),
+                    stats: Arc::new(MetalContextStats::new()),
+                    trace_dispatch: effective,
+                    prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+                })
             })
         }
 
@@ -1735,28 +1960,26 @@ mod imp {
         /// default compile options; callers must opt in explicitly and must
         /// not treat this as a runtime-wide arithmetic policy.
         pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
-            let device = Device::system_default()
-                .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
-            let queue = device.new_command_queue();
-            let opts = metal::CompileOptions::new();
-            opts.set_fast_math_enabled(false);
-            let src = super::all_shader_sources();
-            let library = device
-                .new_library_with_source(&src, &opts)
-                .map_err(|e| Error::Metal(format!("strict-math shader compile: {e}")))?;
-            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
-            Ok(Self {
-                inner: Arc::new(Inner {
-                    device,
-                    queue,
-                    library,
-                    pipelines: Mutex::new(HashMap::new()),
-                    icb_pipelines: Mutex::new(HashMap::new()),
-                }),
-                trace: Arc::new(DispatchTrace::new()),
-                stats: Arc::new(MetalContextStats::new()),
-                trace_dispatch: effective,
-                prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+            crate::startup_timing::time_ms_result("metal_context_new_with_trace_strict_math", || {
+                let device = Device::system_default()
+                    .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+                let queue = device.new_command_queue();
+                let library = load_or_compile_shader_library(&device, /*strict_math=*/ true)?;
+                let effective =
+                    trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+                Ok(Self {
+                    inner: Arc::new(Inner {
+                        device,
+                        queue,
+                        library,
+                        pipelines: Mutex::new(HashMap::new()),
+                        icb_pipelines: Mutex::new(HashMap::new()),
+                    }),
+                    trace: Arc::new(DispatchTrace::new()),
+                    stats: Arc::new(MetalContextStats::new()),
+                    trace_dispatch: effective,
+                    prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+                })
             })
         }
 
@@ -1804,6 +2027,7 @@ mod imp {
             if let Some(p) = pipes.get(fn_name) {
                 return Ok(p.clone());
             }
+            let start = std::time::Instant::now();
             let f = self
                 .inner
                 .library
@@ -1814,6 +2038,12 @@ mod imp {
                 .device
                 .new_compute_pipeline_state_with_function(&f)
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
+            let ms = crate::startup_timing::duration_ms(start.elapsed());
+            // Aggregate first-create cost; hot path hits cache above.
+            crate::startup_timing::record_ms(
+                format!("metal_pipeline_create:{fn_name}"),
+                ms,
+            );
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
         }
@@ -3564,6 +3794,67 @@ mod imp {
             Ok(())
         }
 
+        /// True while a concurrent or serial compute encoder group is open.
+        ///
+        /// When a group is active, Metal resource residency declared via
+        /// [`Self::use_resources_read_on_group`] (or `use_resources` on the
+        /// shared encoder) persists for the rest of the group. Callers that
+        /// re-declare on every dispatch pay host time for no GPU gain.
+        pub fn has_active_group(&self) -> bool {
+            self.concurrent_encoder.is_some()
+        }
+
+        /// Declare read residency for `resources` on the open serial/concurrent
+        /// group encoder. Fail closed if no group is active — per-dispatch
+        /// encoders must call `use_resources` inside their own encode closure.
+        pub fn use_resources_read_on_group(&mut self, resources: &[PinnedBuffer]) -> Result<()> {
+            let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
+                Error::Metal(
+                    "use_resources_read_on_group requires an open serial/concurrent group".into(),
+                )
+            })?;
+            if resources.is_empty() {
+                return Ok(());
+            }
+            let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+            for resource in resources {
+                refs.push(resource);
+            }
+            enc.use_resources(&refs, MTLResourceUsage::Read);
+            Ok(())
+        }
+
+        /// Insert a resource-scoped memory barrier on the open group encoder.
+        ///
+        /// Required under [`MTLDispatchType::Concurrent`] at every real
+        /// producer→consumer edge. No-op when no group is active (per-dispatch
+        /// encoder modes already serialize across encoder boundaries). Under a
+        /// serial group the barrier is redundant but safe.
+        pub fn memory_barrier_with_resources(
+            &mut self,
+            resources: &[&metal::ResourceRef],
+        ) -> Result<()> {
+            if resources.is_empty() {
+                return Ok(());
+            }
+            if let Some(enc) = self.concurrent_encoder.as_ref() {
+                enc.memory_barrier_with_resources(resources);
+            }
+            Ok(())
+        }
+
+        /// Convenience wrapper: barrier on a list of `PinnedBuffer` resources.
+        pub fn memory_barrier_with_buffers(&mut self, buffers: &[&PinnedBuffer]) -> Result<()> {
+            if buffers.is_empty() || self.concurrent_encoder.is_none() {
+                return Ok(());
+            }
+            let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(buffers.len());
+            for buffer in buffers {
+                refs.push(buffer);
+            }
+            self.memory_barrier_with_resources(&refs)
+        }
+
         /// Append one execution of a pre-encoded compute graph to this token
         /// command buffer. The replay itself creates one direct compute
         /// encoder and performs no pipeline lookup or buffer-address rebinding.
@@ -4031,6 +4322,66 @@ mod imp {
             Ok(())
         }
 
+        /// Encode a GPU-side byte fill into the pending command buffer.
+        /// Used to clear device flags (e.g. finite-check) without a host write
+        /// that would race a prior in-flight command buffer on the same queue.
+        pub fn fill_buffer_bytes(
+            &mut self,
+            dst: &metal::Buffer,
+            dst_offset: u64,
+            size: u64,
+            value: u8,
+        ) -> Result<()> {
+            if size == 0 {
+                return Ok(());
+            }
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                let dedicated = self.ctx.inner.queue.new_command_buffer();
+                let physical_trace = physical_command_label("command_buffer");
+                if let Some((_, label)) = physical_trace.as_ref() {
+                    dedicated.set_label(label);
+                }
+                let blit = dedicated.new_blit_command_encoder();
+                if let Some((command, _)) = physical_trace.as_ref() {
+                    blit.set_label(&physical_encoder_label(command, "blit_encoder", "fill"));
+                }
+                blit.fill_buffer(
+                    dst,
+                    NSRange {
+                        location: dst_offset,
+                        length: size,
+                    },
+                    value,
+                );
+                blit.end_encoding();
+                dedicated.commit();
+                if self.ctx.trace_dispatch {
+                    self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                }
+                dedicated.wait_until_completed();
+                return Ok(());
+            }
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let blit = cmd.new_blit_command_encoder();
+            if let Some(command) = self.physical_trace.as_ref() {
+                blit.set_label(&physical_encoder_label(command, "blit_encoder", "fill"));
+            }
+            blit.fill_buffer(
+                dst,
+                NSRange {
+                    location: dst_offset,
+                    length: size,
+                },
+                value,
+            );
+            blit.end_encoding();
+            self.has_encoded_work = true;
+            Ok(())
+        }
+
         /// Resolve a completed production-CB tracer, publish its ordered
         /// samples, then return the now-reset buffer to the context pool.
         /// This must run only after `wait_until_completed`; callers below
@@ -4071,6 +4422,80 @@ mod imp {
         /// a single atomic load then the historical flush path.
         pub fn commit_and_wait(self) -> Result<()> {
             self.commit_and_wait_split()
+        }
+
+        /// Commit without waiting. The Metal command queue still serialises
+        /// buffers, so a later `commit_and_wait` on the same queue drains
+        /// every earlier committed buffer. Used by device-resident
+        /// autoregressive feedback so token N+1 can be enqueued while token N
+        /// runs — the host no longer blocks on the sampled id between steps.
+        ///
+        /// Consumes self. Trace modes that need a completed CB for GPU
+        /// timestamps (SplitCbGpu / ProdCbGpu) fall back to
+        /// [`commit_and_wait`] so diagnostic attribution stays valid.
+        pub fn commit_no_wait(mut self) -> Result<()> {
+            use crate::cost_ledger::{self, Bucket};
+            use std::time::Instant;
+
+            // Diagnostic GPU-timestamp modes require a completed CB to resolve
+            // counters; keep their historical wait behaviour.
+            if matches!(
+                self.mode,
+                TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu
+            ) {
+                return self.commit_and_wait();
+            }
+
+            if let Some(cmd) = self.cmd.take() {
+                if let Some(enc) = self.concurrent_encoder.take() {
+                    enc.end_encoding();
+                }
+                if cost_ledger::is_recording() {
+                    if self.ledger_encode_ns > 0 {
+                        cost_ledger::add_duration(
+                            Bucket::MetalEncode,
+                            std::time::Duration::from_nanos(self.ledger_encode_ns as u64),
+                        );
+                        self.ledger_encode_ns = 0;
+                    }
+                    cost_ledger::record_dispatches(self.dispatch_count as u64);
+                    let t_submit = Instant::now();
+                    cmd.commit();
+                    if self.ctx.trace_dispatch {
+                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                    }
+                    let commit_d = t_submit.elapsed();
+                    cost_ledger::add_duration(Bucket::MetalSubmit, commit_d);
+                    cost_ledger::record_command_buffer();
+                    // No wait: GPU timestamps and host_wait are recorded when
+                    // a later terminal drain waits on the queue.
+                } else {
+                    cmd.commit();
+                    if self.ctx.trace_dispatch {
+                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                    }
+                }
+                match self.mode {
+                    TcbTraceMode::Off => {}
+                    TcbTraceMode::CpuEncode => {
+                        let layer = super::current_layer();
+                        for s in self.tcb_samples.drain(..) {
+                            self.ctx
+                                .trace
+                                .record(s.kernel_name, s.wall_us, s.layer_hint);
+                        }
+                        self.ctx.trace.record("tcb_commit_no_wait", 0, layer);
+                    }
+                    TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu => unreachable!(),
+                }
+                // Dropping `cmd` is safe: after commit the queue retains the
+                // buffer until completion. We must not wait here.
+                drop(cmd);
+            }
+            // Prevent Drop from re-committing: cmd is already None.
+            self.has_encoded_work = false;
+            self.recycle_unused_prod_cb_tracer();
+            Ok(())
         }
 
         /// Like [`commit_and_wait`], but when the per-token cost ledger is

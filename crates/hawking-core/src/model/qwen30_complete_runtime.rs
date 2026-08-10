@@ -32,10 +32,13 @@ use super::qwen30_quality_repack_diagnostic::{
 };
 use super::qwen_complete_binary::{
     admit_complete_binary_artifact, admit_qwen30_activation_weighted_svd_artifact,
-    admit_qwen30_quality_repack_artifact, decode_hgravs01_factors_f32, CompleteBinaryAdmission,
+    admit_qwen30_quality_repack_artifact, admit_qwen30_uniform_q4_artifact,
+    admit_qwen30_uniform_qn_artifact, decode_hgravs01_factors_f32, CompleteBinaryAdmission,
     CompleteBinaryArtifact, CompleteBinaryHeader, Qwen30ActivationWeightedSvdAdmission,
     Qwen30ActivationWeightedSvdArtifact, Qwen30ActivationWeightedTensorLayout,
-    Qwen30QualityRepackAdmission, QwenCompleteBinaryModel,
+    Qwen30QualityRepackAdmission, Qwen30UniformQ4Admission, Qwen30UniformQnAdmission,
+    QwenCompleteBinaryModel, UniformQnBits, UNIFORM_Q4_CODE_BYTES_PER_GROUP, UNIFORM_Q4_GROUP_SIZE,
+    UNIFORM_QN_GROUP_SIZE,
 };
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -50,8 +53,8 @@ use std::time::{Duration, Instant};
 
 #[cfg(target_os = "macos")]
 use crate::kernels::{
-    add_inplace_metal_tcb, mha_decode_f32_tcb, moe_topk_gate_tcb, rmsnorm_metal_buf_tcb,
-    rope_qk_kv_append_vbias_f32_tcb,
+    add_inplace_metal_tcb, add_rmsnorm_fused_tcb, mha_decode_f32_tcb, moe_topk_gate_tcb_ex,
+    rmsnorm_metal_buf_tcb, rope_qk_kv_append_vbias_f32_tcb,
 };
 #[cfg(target_os = "macos")]
 use crate::metal::{
@@ -115,6 +118,43 @@ const QWEN30_VOCAB: usize = 151_936;
 const QWEN30_ROPE_THETA: f32 = 10_000_000.0;
 const QWEN30_RMS_EPS: f32 = 1.0e-6;
 
+/// Physical weight body consumed by the token path.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Qwen30WeightCodec {
+    BinarySignScale128,
+    UniformQ4Group64,
+    UniformQ3Group128,
+    UniformQ2Group128,
+}
+
+impl Qwen30WeightCodec {
+    pub fn receipt_name(self) -> &'static str {
+        match self {
+            Self::BinarySignScale128 => "hq30g1b1_binary_sign_scale_group128",
+            Self::UniformQ4Group64 => "hq30uq4_uniform_q4_group64_diagnostic",
+            Self::UniformQ3Group128 => "hq30uq3_uniform_q3_group128_diagnostic",
+            Self::UniformQ2Group128 => "hq30uq2_uniform_q2_group128_diagnostic",
+        }
+    }
+    fn group_size(self) -> usize {
+        match self {
+            Self::BinarySignScale128 => QWEN30_GROUP_SIZE,
+            Self::UniformQ4Group64 => UNIFORM_Q4_GROUP_SIZE,
+            Self::UniformQ3Group128 | Self::UniformQ2Group128 => UNIFORM_QN_GROUP_SIZE,
+        }
+    }
+    fn is_uniform_diagnostic(self) -> bool {
+        !matches!(self, Self::BinarySignScale128)
+    }
+    fn qn_bits_bound(self) -> Option<(u32, i32)> {
+        match self {
+            Self::UniformQ3Group128 => Some((3, 3)),
+            Self::UniformQ2Group128 => Some((2, 1)),
+            _ => None,
+        }
+    }
+}
+
 fn model_error(message: impl Into<String>) -> Error {
     Error::Model(format!(
         "qwen30 complete native runtime: {}",
@@ -133,7 +173,14 @@ fn model_error(message: impl Into<String>) -> Error {
 /// so timestamp attribution is unchanged.
 #[cfg(target_os = "macos")]
 fn qwen30_serial_encoder_enabled() -> bool {
-    match std::env::var("HAWKING_QWEN30_SERIAL_ENCODER") {
+    qwen30_env_flag_default_on("HAWKING_QWEN30_SERIAL_ENCODER")
+}
+
+/// Parse a Q30 lane env flag. Missing → `default_on`. Explicit
+/// `0`/`false`/`off`/`no` → false; any other non-empty value → true.
+#[cfg(target_os = "macos")]
+fn qwen30_env_flag_default_on(name: &str) -> bool {
+    match std::env::var(name) {
         Ok(raw) => {
             let trimmed = raw.trim();
             !(trimmed.eq_ignore_ascii_case("0")
@@ -145,8 +192,58 @@ fn qwen30_serial_encoder_enabled() -> bool {
     }
 }
 
+/// Lane K / K1: fuse Q+K+V packed matvec into one dispatch (default on).
+/// Set `HAWKING_QWEN30_FUSED_QKV=0` to restore three separate dispatches.
+#[cfg(target_os = "macos")]
+fn qwen30_fused_qkv_enabled() -> bool {
+    qwen30_env_flag_default_on("HAWKING_QWEN30_FUSED_QKV")
+}
+
+/// Lane K / K2: fold top-k weight re-normalization into `moe_topk_gate`
+/// (default on). Set `HAWKING_QWEN30_FUSED_TOPK_NORM=0` to restore the
+/// separate `qwen_complete_normalize_route_weights` dispatch.
+#[cfg(target_os = "macos")]
+fn qwen30_fused_topk_norm_enabled() -> bool {
+    qwen30_env_flag_default_on("HAWKING_QWEN30_FUSED_TOPK_NORM")
+}
+
+/// Lane K / K2: fuse residual `add_inplace` + post-attention RMSNorm into
+/// `add_rmsnorm_fused` (default on). Disabled automatically when K3's
+/// postnorm+router fusion is active (that path consumes the residual
+/// pre-norm). Set `HAWKING_QWEN30_FUSED_ADD_RMSNORM=0` to opt out.
+#[cfg(target_os = "macos")]
+fn qwen30_fused_add_rmsnorm_enabled() -> bool {
+    qwen30_env_flag_default_on("HAWKING_QWEN30_FUSED_ADD_RMSNORM")
+}
+
+/// Lane K / K3: fuse post-attention RMSNorm + router matvec (default on).
+/// Set `HAWKING_QWEN30_FUSED_POSTNORM_ROUTER=0` to restore two dispatches.
+#[cfg(target_os = "macos")]
+fn qwen30_fused_postnorm_router_enabled() -> bool {
+    qwen30_env_flag_default_on("HAWKING_QWEN30_FUSED_POSTNORM_ROUTER")
+}
+
 /// Device-indexed expert address tables (M1 / S-bucket elimination).
 ///
+/// Device-resident autoregressive feedback (decode). Default **on** when the
+/// device-expert-table path is eligible. Set
+/// `HAWKING_QWEN30_DEVICE_RESIDENT_AR=0` / `false` / `off` / `no` to restore
+/// the historical per-token host sample-id readback + `wait_until_completed`
+/// loop for A/B measurement.
+#[cfg(target_os = "macos")]
+fn qwen30_device_resident_ar_enabled() -> bool {
+    match std::env::var("HAWKING_QWEN30_DEVICE_RESIDENT_AR") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => true,
+    }
+}
+
 /// Default **on**: expert gate/up/down dispatches index a per-layer table of
 /// all 128 expert buffer gpuAddresses by the device-written `route_ids`, so
 /// the host never reads route ids mid-token.  That removes the 48 host
@@ -541,15 +638,22 @@ impl Qwen30CompleteRuntimeConfig {
 /// Packed binary matvec geometry for a bounded native execution.
 ///
 /// - `ScalarControl` (default): tiled simdgroup — 8 rows / 256-thread TG,
-///   contiguous 32-col tiles under `qwen_binary_sign_scale_matvec`.
+///   contiguous 32-col tiles under `qwen_binary_sign_scale_matvec_tiled`.
 /// - `SerialControl`: one-thread-per-row left-to-right f32 oracle for
 ///   bit-identity A/B against the default.
 /// - `SimdgroupCandidate`: older strided-lane simdgroup entry.
+/// - `RowBlock2` / `RowBlock4` / `RowBlock8`: register-blocked row variants —
+///   each simdgroup owns R consecutive output rows with R independent
+///   accumulators (ILP + input reuse). Bit-identical to ScalarControl within
+///   each row by construction. Also drives the matching HGRAVS row-block.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Qwen30PackedMatvecKernel {
     ScalarControl,
     SerialControl,
     SimdgroupCandidate,
+    RowBlock2,
+    RowBlock4,
+    RowBlock8,
 }
 
 impl Qwen30PackedMatvecKernel {
@@ -558,6 +662,24 @@ impl Qwen30PackedMatvecKernel {
             Self::ScalarControl => "tiled_simdgroup_eight_rows_per_threadgroup_default",
             Self::SerialControl => "scalar_one_thread_per_row_control",
             Self::SimdgroupCandidate => "simdgroup_eight_rows_per_threadgroup_candidate",
+            Self::RowBlock2 => "rowblock2_sixteen_rows_per_threadgroup_candidate",
+            Self::RowBlock4 => "rowblock4_thirtytwo_rows_per_threadgroup_candidate",
+            Self::RowBlock8 => "rowblock8_sixtyfour_rows_per_threadgroup_candidate",
+        }
+    }
+
+    /// Rows owned by one simdgroup (binary matvec) / one threadgroup (HGRAVS).
+    pub fn row_block(self) -> usize {
+        match self {
+            Self::RowBlock2 => 2,
+            Self::RowBlock4 => 4,
+            Self::RowBlock8 => 8,
+            // Non-row-blocked kernels MUST stay at row_block 1 here. Setting 8 to
+            // "match" their internal 8-rows-per-threadgroup tiling shrinks the grid so
+            // the kernel computes only a fraction of the output rows: measured 61.4 tok/s
+            // with WRONG tokens ([754, 16859, ...] instead of [23604, 69622, ...]).
+            // Caught by the bit-identity gate, not by any test. Do not "optimise" this.
+            _ => 1,
         }
     }
 }
@@ -1117,14 +1239,28 @@ fn validate_complete_catalog(
             "admitted Qwen30 catalog tensor set mismatch; missing={missing:?} unexpected={unexpected:?}"
         )));
     }
+    let catalog_group = artifact
+        .tensors
+        .values()
+        .next()
+        .map(|t| t.header.group_size)
+        .unwrap_or(QWEN30_GROUP_SIZE);
+    if catalog_group != QWEN30_GROUP_SIZE
+        && catalog_group != UNIFORM_Q4_GROUP_SIZE
+        && catalog_group != UNIFORM_QN_GROUP_SIZE
+    {
+        return Err(model_error(format!(
+            "admitted catalog group size {catalog_group} is unsupported"
+        )));
+    }
     for (name, shape) in expected {
         let tensor = artifact.tensors.get(&name).ok_or_else(|| {
             model_error(format!("required tensor {name:?} vanished after set check"))
         })?;
-        if tensor.header.shape != shape || tensor.header.group_size != QWEN30_GROUP_SIZE {
+        if tensor.header.shape != shape || tensor.header.group_size != catalog_group {
             return Err(model_error(format!(
                 "tensor {name:?} has shape {:?}/group {} but requires {:?}/{}",
-                tensor.header.shape, tensor.header.group_size, shape, QWEN30_GROUP_SIZE
+                tensor.header.shape, tensor.header.group_size, shape, catalog_group
             )));
         }
     }
@@ -1386,6 +1522,10 @@ struct DeviceWorkspace {
     expert_output: PinnedBuffer,
     final_logits: PinnedBuffer,
     sampled_token: PinnedBuffer,
+    /// Device-side ring of argmax ids written by decode steps so the host can
+    /// drain completion tokens once at the end of a device-resident batch
+    /// instead of reading after every token.
+    sample_history: PinnedBuffer,
     invalid_f32_flag: PinnedBuffer,
     key_cache: PinnedBuffer,
     value_cache: PinnedBuffer,
@@ -1421,6 +1561,7 @@ impl DeviceWorkspace {
             &self.expert_output,
             &self.final_logits,
             &self.sampled_token,
+            &self.sample_history,
             &self.invalid_f32_flag,
             &self.key_cache,
             &self.value_cache,
@@ -1461,6 +1602,11 @@ impl DeviceWorkspace {
         Self::zero_buffer(&route_ids);
         let sampled_token = context.new_buffer_checked(std::mem::size_of::<u32>())?;
         Self::zero_buffer(&sampled_token);
+        let sample_history_bytes = max_seq_len
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| model_error("sample history byte count overflows usize"))?;
+        let sample_history = context.new_buffer_checked(sample_history_bytes)?;
+        Self::zero_buffer(&sample_history);
         let invalid_f32_flag = context.new_buffer_checked(std::mem::size_of::<u32>())?;
         Self::zero_buffer(&invalid_f32_flag);
         Ok(Self {
@@ -1484,11 +1630,23 @@ impl DeviceWorkspace {
             expert_output: f32_buf(expert_hidden, "expert output workspace")?,
             final_logits: f32_buf(config.vocab_size, "final logits workspace")?,
             sampled_token,
+            sample_history,
             invalid_f32_flag,
             key_cache: f32_buf(kv_elements, "native Qwen30 key cache")?,
             value_cache: f32_buf(kv_elements, "native Qwen30 value cache")?,
         })
     }
+}
+
+/// Where the next embedding gather reads its token id on the device-expert
+/// production path.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Copy, Debug)]
+enum Qwen30EmbedSource {
+    /// Prefill / host-known id written as a Metal constant.
+    HostToken(u32),
+    /// Previous step's device argmax (`workspace.sampled_token`).
+    DeviceSampledToken,
 }
 
 /// Direct Metal runtime for the admitted Qwen30 artifact.  It is deliberately
@@ -1544,6 +1702,7 @@ pub struct Qwen30CompleteNativeRuntime {
     /// Per-layer device expert address tables. Built lazily on first use of
     /// the device-indexed path; empty when the host-bind control path runs.
     device_expert_tables: Vec<Option<Qwen30DeviceExpertTableLease>>,
+    weight_codec: Qwen30WeightCodec,
     max_seq_len: usize,
     next_position: usize,
 }
@@ -1626,6 +1785,7 @@ impl Qwen30CompleteNativeRuntime {
             diagnostic_router_hidden_capture_enabled: false,
             diagnostic_layer_router_captures: Vec::new(),
             device_expert_tables: vec![None; n_layers],
+            weight_codec: Qwen30WeightCodec::BinarySignScale128,
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1634,6 +1794,44 @@ impl Qwen30CompleteNativeRuntime {
     /// Re-admit the mixed HQ30G1B1 + HGRAVS01 candidate and construct a native
     /// runtime that executes HGRAVS01 organs as two-stage low-rank matvecs.
     /// Dense `L @ R` reconstruction is forbidden on the token path.
+
+    pub fn load_uniform_q4(
+        manifest_path: impl AsRef<Path>,
+        admission: &Qwen30UniformQ4Admission,
+        options: Qwen30CompleteRuntimeOptions,
+    ) -> Result<Self> {
+        if options.gate_up_swiglu_kernel != Qwen30GateUpSwiGluKernel::ThreeDispatchControl {
+            return Err(model_error("uniform Q4 requires three-dispatch gate/up control"));
+        }
+        if options.packed_matvec_kernel != Qwen30PackedMatvecKernel::SerialControl {
+            return Err(model_error("uniform Q4 requires serial-control matvec"));
+        }
+        let artifact = admit_qwen30_uniform_q4_artifact(manifest_path, admission)?;
+        let mut runtime = Self::from_admitted_direct_artifact(artifact, options)?;
+        runtime.weight_codec = Qwen30WeightCodec::UniformQ4Group64;
+        Ok(runtime)
+    }
+
+    pub fn load_uniform_qn(
+        manifest_path: impl AsRef<Path>,
+        admission: &Qwen30UniformQnAdmission,
+        options: Qwen30CompleteRuntimeOptions,
+    ) -> Result<Self> {
+        if options.gate_up_swiglu_kernel != Qwen30GateUpSwiGluKernel::ThreeDispatchControl {
+            return Err(model_error("uniform Qn requires three-dispatch gate/up control"));
+        }
+        if options.packed_matvec_kernel != Qwen30PackedMatvecKernel::SerialControl {
+            return Err(model_error("uniform Qn requires serial-control matvec"));
+        }
+        let artifact = admit_qwen30_uniform_qn_artifact(manifest_path, admission)?;
+        let mut runtime = Self::from_admitted_direct_artifact(artifact, options)?;
+        runtime.weight_codec = match admission.bits {
+            UniformQnBits::Two => Qwen30WeightCodec::UniformQ2Group128,
+            UniformQnBits::Three => Qwen30WeightCodec::UniformQ3Group128,
+        };
+        Ok(runtime)
+    }
+
     pub fn load_activation_weighted_svd(
         manifest_path: impl AsRef<Path>,
         admission: &Qwen30ActivationWeightedSvdAdmission,
@@ -1770,6 +1968,7 @@ impl Qwen30CompleteNativeRuntime {
             diagnostic_router_hidden_capture_enabled: false,
             diagnostic_layer_router_captures: Vec::new(),
             device_expert_tables: vec![None; n_layers],
+            weight_codec: Qwen30WeightCodec::BinarySignScale128,
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1983,9 +2182,10 @@ impl Qwen30CompleteNativeRuntime {
                 header.payload_bytes
             )));
         }
-        if header.group_size != QWEN30_GROUP_SIZE {
+        let expected_group = self.weight_codec.group_size();
+        if header.group_size != expected_group {
             return Err(model_error(format!(
-                "tensor {name:?} group size {} is not the admitted Qwen30 group size {QWEN30_GROUP_SIZE}",
+                "tensor {name:?} group size {} is not the admitted codec group size {expected_group}",
                 header.group_size
             )));
         }
@@ -1994,12 +2194,29 @@ impl Qwen30CompleteNativeRuntime {
             .ok_or_else(|| model_error(format!("tensor {name:?} scales are truncated")))?;
         let signs = payload
             .get(header.sign_offset..header.payload_bytes)
-            .ok_or_else(|| model_error(format!("tensor {name:?} signs are truncated")))?;
-        let expected_sign_bytes = header
-            .groups
-            .checked_mul(header.group_size / 8)
-            .ok_or_else(|| model_error(format!("tensor {name:?} sign byte count overflow")))?;
-        if signs.len() != expected_sign_bytes || scales.len() != header.groups * 2 {
+            .ok_or_else(|| model_error(format!("tensor {name:?} signs/codes are truncated")))?;
+        let expected_body_bytes = match self.weight_codec {
+            Qwen30WeightCodec::BinarySignScale128 => header
+                .groups
+                .checked_mul(header.group_size / 8)
+                .ok_or_else(|| model_error(format!("tensor {name:?} sign byte count overflow")))?,
+            Qwen30WeightCodec::UniformQ4Group64 => header
+                .groups
+                .checked_mul(UNIFORM_Q4_CODE_BYTES_PER_GROUP)
+                .ok_or_else(|| model_error(format!("tensor {name:?} code byte count overflow")))?,
+            Qwen30WeightCodec::UniformQ3Group128 | Qwen30WeightCodec::UniformQ2Group128 => {
+                let bits = self.weight_codec.qn_bits_bound().unwrap().0 as usize;
+                let padded = header
+                    .groups
+                    .checked_mul(header.group_size)
+                    .ok_or_else(|| model_error(format!("tensor {name:?} padded overflow")))?;
+                padded
+                    .checked_mul(bits)
+                    .ok_or_else(|| model_error(format!("tensor {name:?} code bits overflow")))?
+                    .div_ceil(8)
+            }
+        };
+        if signs.len() != expected_body_bytes || scales.len() != header.groups * 2 {
             return Err(model_error(format!(
                 "tensor {name:?} compact sections disagree with checked header"
             )));
@@ -2059,18 +2276,53 @@ impl Qwen30CompleteNativeRuntime {
             .context
             .new_buffer_checked(bytes_for_f32(elements, "decoded vector")?)?;
         let threads = u32_checked(elements, "decoded vector elements")?;
-        tcb.dispatch_threads(
-            "qwen_complete_binary_decode_vector",
-            (threads, 1, 1),
-            (threads.min(256).max(1), 1, 1),
-            |encoder| {
-                encoder.set_buffer(0, Some(&tensor.signs), 0);
-                encoder.set_buffer(1, Some(&tensor.scales), 0);
-                encoder.set_buffer(2, Some(&output), 0);
-                encoder.qwen_set_u32(3, threads);
-                encoder.qwen_set_u32(4, QWEN30_GROUP_SIZE as u32);
-            },
-        )?;
+        match self.weight_codec {
+            Qwen30WeightCodec::BinarySignScale128 => {
+                tcb.dispatch_threads(
+                    "qwen_complete_binary_decode_vector",
+                    (threads, 1, 1),
+                    (threads.min(256).max(1), 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&tensor.signs), 0);
+                        encoder.set_buffer(1, Some(&tensor.scales), 0);
+                        encoder.set_buffer(2, Some(&output), 0);
+                        encoder.qwen_set_u32(3, threads);
+                        encoder.qwen_set_u32(4, QWEN30_GROUP_SIZE as u32);
+                    },
+                )?;
+            }
+            Qwen30WeightCodec::UniformQ4Group64 => {
+                tcb.dispatch_threads(
+                    "qwen_uniform_q4_decode_vector",
+                    (threads, 1, 1),
+                    (threads.min(256).max(1), 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&tensor.signs), 0);
+                        encoder.set_buffer(1, Some(&tensor.scales), 0);
+                        encoder.set_buffer(2, Some(&output), 0);
+                        encoder.qwen_set_u32(3, threads);
+                        encoder.qwen_set_u32(4, UNIFORM_Q4_GROUP_SIZE as u32);
+                    },
+                )?;
+            }
+            Qwen30WeightCodec::UniformQ3Group128 | Qwen30WeightCodec::UniformQ2Group128 => {
+                let (bits, bound) = self.weight_codec.qn_bits_bound().unwrap();
+                tcb.dispatch_threads(
+                    "qwen_uniform_qn_decode_vector",
+                    (threads, 1, 1),
+                    (threads.min(256).max(1), 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&tensor.signs), 0);
+                        encoder.set_buffer(1, Some(&tensor.scales), 0);
+                        encoder.set_buffer(2, Some(&output), 0);
+                        encoder.qwen_set_u32(3, threads);
+                        encoder.qwen_set_u32(4, UNIFORM_QN_GROUP_SIZE as u32);
+                        encoder.qwen_set_u32(5, bits);
+                        encoder.qwen_set_u32(6, bound as u32);
+                    },
+                )?;
+            }
+        }
         self.decoded_vectors.insert(name.to_owned(), output.clone());
         Ok(output)
     }
@@ -2174,15 +2426,80 @@ impl Qwen30CompleteNativeRuntime {
             ));
         }
         let hidden = u32_checked(self.config.hidden, "embedding hidden")?;
+        match self.weight_codec {
+            Qwen30WeightCodec::BinarySignScale128 => tcb.dispatch_threads(
+                "qwen_complete_binary_embedding_lookup",
+                (hidden, 1, 1),
+                (hidden.min(256).max(1), 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&embedding.signs), 0);
+                    encoder.set_buffer(1, Some(&embedding.scales), 0);
+                    encoder.set_buffer(2, Some(&self.workspace.x), 0);
+                    encoder.qwen_set_u32(3, token);
+                    encoder.qwen_set_u32(4, hidden);
+                    encoder.qwen_set_u32(5, self.config.vocab_size as u32);
+                    encoder.qwen_set_u32(6, QWEN30_GROUP_SIZE as u32);
+                },
+            ),
+            Qwen30WeightCodec::UniformQ4Group64 => tcb.dispatch_threads(
+                "qwen_uniform_q4_embedding_lookup",
+                (hidden, 1, 1),
+                (hidden.min(256).max(1), 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&embedding.signs), 0);
+                    encoder.set_buffer(1, Some(&embedding.scales), 0);
+                    encoder.set_buffer(2, Some(&self.workspace.x), 0);
+                    encoder.qwen_set_u32(3, token);
+                    encoder.qwen_set_u32(4, hidden);
+                    encoder.qwen_set_u32(5, self.config.vocab_size as u32);
+                    encoder.qwen_set_u32(6, UNIFORM_Q4_GROUP_SIZE as u32);
+                },
+            ),
+            Qwen30WeightCodec::UniformQ3Group128 | Qwen30WeightCodec::UniformQ2Group128 => {
+                let (bits, bound) = self.weight_codec.qn_bits_bound().unwrap();
+                tcb.dispatch_threads(
+                    "qwen_uniform_qn_embedding_lookup",
+                    (hidden, 1, 1),
+                    (hidden.min(256).max(1), 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&embedding.signs), 0);
+                        encoder.set_buffer(1, Some(&embedding.scales), 0);
+                        encoder.set_buffer(2, Some(&self.workspace.x), 0);
+                        encoder.qwen_set_u32(3, token);
+                        encoder.qwen_set_u32(4, hidden);
+                        encoder.qwen_set_u32(5, self.config.vocab_size as u32);
+                        encoder.qwen_set_u32(6, UNIFORM_QN_GROUP_SIZE as u32);
+                        encoder.qwen_set_u32(7, bits);
+                        encoder.qwen_set_u32(8, bound as u32);
+                    },
+                )
+            }
+        }
+    }
+
+    /// Embedding gather driven by a device-resident token id (the previous
+    /// step's argmax). No host constant is written; the GPU reads
+    /// [`DeviceWorkspace::sampled_token`] directly.
+    fn dispatch_embedding_from_device_token(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        embedding: &GpuBinaryTensor,
+    ) -> Result<()> {
+        if embedding.header.shape != [self.config.vocab_size, self.config.hidden] {
+            return Err(model_error(
+                "embedding tensor shape changed after catalog admission",
+            ));
+        }
+        let hidden = u32_checked(self.config.hidden, "embedding hidden")?;
         tcb.dispatch_threads(
-            "qwen_complete_binary_embedding_lookup",
+            "qwen_complete_binary_embedding_lookup_device_token",
             (hidden, 1, 1),
             (hidden.min(256).max(1), 1, 1),
             |encoder| {
                 encoder.set_buffer(0, Some(&embedding.signs), 0);
                 encoder.set_buffer(1, Some(&embedding.scales), 0);
                 encoder.set_buffer(2, Some(&self.workspace.x), 0);
-                encoder.qwen_set_u32(3, token);
+                encoder.set_buffer(3, Some(&self.workspace.sampled_token), 0);
                 encoder.qwen_set_u32(4, hidden);
                 encoder.qwen_set_u32(5, self.config.vocab_size as u32);
                 encoder.qwen_set_u32(6, QWEN30_GROUP_SIZE as u32);
@@ -2342,9 +2659,68 @@ impl Qwen30CompleteNativeRuntime {
         input_offset_bytes: usize,
         output_offset_bytes: usize,
     ) -> Result<()> {
-        let (rows, cols) = weight.rows_cols("direct binary projection")?;
-        if weight.header.group_size != QWEN30_GROUP_SIZE {
-            return Err(model_error("direct binary projection group size drifted"));
+        let (rows, cols) = weight.rows_cols("direct packed projection")?;
+        let expected_group = self.weight_codec.group_size();
+        if weight.header.group_size != expected_group {
+            return Err(model_error("direct packed projection group size drifted"));
+        }
+        if self.weight_codec.is_uniform_diagnostic() {
+            let required_input = bytes_for_f32(cols, "direct packed projection input")?;
+            let input_end = input_offset_bytes
+                .checked_add(required_input)
+                .ok_or_else(|| model_error("direct packed projection input offset overflows usize"))?;
+            if input_end > input.length() as usize {
+                return Err(model_error("direct packed projection input range exceeds workspace"));
+            }
+            let required_output = bytes_for_f32(rows, "direct packed projection output")?;
+            let end = output_offset_bytes
+                .checked_add(required_output)
+                .ok_or_else(|| model_error("direct packed projection output offset overflows usize"))?;
+            if end > output.length() as usize {
+                return Err(model_error("direct packed projection output range exceeds workspace"));
+            }
+            let rows_u32 = u32_checked(rows, "direct packed projection rows")?;
+            let cols_u32 = u32_checked(cols, "direct packed projection cols")?;
+            return match self.weight_codec {
+                Qwen30WeightCodec::UniformQ4Group64 => {
+                    let groups_per_row = cols.div_ceil(UNIFORM_Q4_GROUP_SIZE);
+                    let groups_u32 = u32_checked(groups_per_row, "uniform Q4 groups_per_row")?;
+                    tcb.dispatch_threads(
+                        "qwen_uniform_q4_group64_matvec",
+                        (rows_u32, 1, 1),
+                        (rows_u32.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&weight.signs), 0);
+                            encoder.set_buffer(1, Some(&weight.scales), 0);
+                            encoder.set_buffer(2, Some(input), input_offset_bytes as u64);
+                            encoder.set_buffer(3, Some(output), output_offset_bytes as u64);
+                            encoder.qwen_set_u32(4, rows_u32);
+                            encoder.qwen_set_u32(5, cols_u32);
+                            encoder.qwen_set_u32(6, groups_u32);
+                        },
+                    )
+                }
+                Qwen30WeightCodec::UniformQ3Group128 | Qwen30WeightCodec::UniformQ2Group128 => {
+                    let (bits, bound) = self.weight_codec.qn_bits_bound().unwrap();
+                    tcb.dispatch_threads(
+                        "qwen_uniform_qn_matvec",
+                        (rows_u32, 1, 1),
+                        (rows_u32.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&weight.signs), 0);
+                            encoder.set_buffer(1, Some(&weight.scales), 0);
+                            encoder.set_buffer(2, Some(input), input_offset_bytes as u64);
+                            encoder.set_buffer(3, Some(output), output_offset_bytes as u64);
+                            encoder.qwen_set_u32(4, rows_u32);
+                            encoder.qwen_set_u32(5, cols_u32);
+                            encoder.qwen_set_u32(6, UNIFORM_QN_GROUP_SIZE as u32);
+                            encoder.qwen_set_u32(7, bits);
+                            encoder.qwen_set_u32(8, bound as u32);
+                        },
+                    )
+                }
+                Qwen30WeightCodec::BinarySignScale128 => unreachable!(),
+            };
         }
         let required_input = bytes_for_f32(cols, "direct binary projection input")?;
         let input_end = input_offset_bytes
@@ -2374,17 +2750,42 @@ impl Qwen30CompleteNativeRuntime {
                 (rows_u32.min(256).max(1), 1, 1),
             ),
             Qwen30PackedMatvecKernel::ScalarControl
-            | Qwen30PackedMatvecKernel::SimdgroupCandidate => {
-                // 8-rows-per-TG simdgroup geometry. Default tiles columns
-                // contiguously; candidate keeps strided lane ownership.
-                let groups_of_rows = rows.div_ceil(8);
+            | Qwen30PackedMatvecKernel::SimdgroupCandidate
+            | Qwen30PackedMatvecKernel::RowBlock2
+            | Qwen30PackedMatvecKernel::RowBlock4
+            | Qwen30PackedMatvecKernel::RowBlock8 => {
+                // 8 simdgroups per TG; each owns `row_block` consecutive rows.
+                // R=1 default tiles columns contiguously; simdgroup-candidate
+                // keeps strided lane ownership; rowblock-R keeps tiled columns
+                // with R independent accumulators per lane.
+                let rows_per_tg = 8usize
+                    .checked_mul(self.packed_matvec_kernel.row_block())
+                    .ok_or_else(|| model_error("packed binary rows_per_tg overflows"))?;
+                let groups_of_rows = rows.div_ceil(rows_per_tg);
                 let grid_x = groups_of_rows
                     .checked_mul(256)
                     .ok_or_else(|| model_error("packed binary projection grid overflows usize"))?;
                 let grid_x_u32 = u32_checked(grid_x, "packed binary projection grid")?;
                 let kernel = match self.packed_matvec_kernel {
-                    Qwen30PackedMatvecKernel::ScalarControl => "qwen_binary_sign_scale_matvec",
-                    _ => "qwen_binary_sign_scale_matvec_simdgroup_candidate",
+                    // Tiled entry is Q30-ONLY. The shared name `qwen_binary_sign_scale_matvec`
+                    // is association-preserving SERIAL, because the Q80 shared TCB
+                    // dispatches serial geometry against it. Commit 8d451127 put the
+                    // tiled body under the shared name and broke Q80 L0 to O(1)
+                    // (0.8933 vs a 1e-3 tolerance) with no Q30 test failing.
+                    Qwen30PackedMatvecKernel::ScalarControl => "qwen_binary_sign_scale_matvec_tiled",
+                    Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+                        "qwen_binary_sign_scale_matvec_simdgroup_candidate"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock2 => {
+                        "qwen_binary_sign_scale_matvec_rowblock2"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock4 => {
+                        "qwen_binary_sign_scale_matvec_rowblock4"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock8 => {
+                        "qwen_binary_sign_scale_matvec_rowblock8"
+                    }
+                    Qwen30PackedMatvecKernel::SerialControl => unreachable!(),
                 };
                 (kernel, (grid_x_u32, 1, 1), (256, 1, 1))
             }
@@ -2399,6 +2800,222 @@ impl Qwen30CompleteNativeRuntime {
             encoder.qwen_set_u32(6, QWEN30_GROUP_SIZE as u32);
             encoder.qwen_set_u32(7, groups as u32);
         })
+    }
+
+    /// Lane K / K1: one dispatch covering Q, K, and V packed projections.
+    /// Falls back to three `dispatch_binary_matvec` calls when the fused
+    /// kernel is disabled or when the serial/col32/simdgroup candidates are
+    /// selected (those keep the decomposed surface for A/B).
+    fn dispatch_qkv_binary_matvec(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &GpuBinaryTensor,
+        k: &GpuBinaryTensor,
+        v: &GpuBinaryTensor,
+        input: &PinnedBuffer,
+    ) -> Result<()> {
+        let use_fused = qwen30_fused_qkv_enabled()
+            && matches!(
+                self.packed_matvec_kernel,
+                Qwen30PackedMatvecKernel::ScalarControl
+            );
+        if !use_fused {
+            self.dispatch_binary_matvec(tcb, q, input, &self.workspace.q, 0, 0)?;
+            self.dispatch_binary_matvec(tcb, k, input, &self.workspace.k, 0, 0)?;
+            self.dispatch_binary_matvec(tcb, v, input, &self.workspace.v, 0, 0)?;
+            return Ok(());
+        }
+        let (q_rows, q_cols) = q.rows_cols("fused QKV q projection")?;
+        let (k_rows, k_cols) = k.rows_cols("fused QKV k projection")?;
+        let (v_rows, v_cols) = v.rows_cols("fused QKV v projection")?;
+        if q_cols != k_cols || q_cols != v_cols {
+            return Err(model_error(
+                "fused QKV requires Q/K/V to share the same column count",
+            ));
+        }
+        if q.header.group_size != QWEN30_GROUP_SIZE
+            || k.header.group_size != QWEN30_GROUP_SIZE
+            || v.header.group_size != QWEN30_GROUP_SIZE
+        {
+            return Err(model_error("fused QKV projection group size drifted"));
+        }
+        let cols = q_cols;
+        let required_input = bytes_for_f32(cols, "fused QKV input")?;
+        if required_input > input.length() as usize {
+            return Err(model_error("fused QKV input range exceeds workspace"));
+        }
+        for (rows, out, label) in [
+            (q_rows, &self.workspace.q, "q"),
+            (k_rows, &self.workspace.k, "k"),
+            (v_rows, &self.workspace.v, "v"),
+        ] {
+            let required = bytes_for_f32(rows, &format!("fused QKV {label} output"))?;
+            if required > out.length() as usize {
+                return Err(model_error(format!(
+                    "fused QKV {label} output range exceeds workspace"
+                )));
+            }
+        }
+        let total_rows = q_rows
+            .checked_add(k_rows)
+            .and_then(|n| n.checked_add(v_rows))
+            .ok_or_else(|| model_error("fused QKV total rows overflow"))?;
+        let groups_of_rows = total_rows.div_ceil(8);
+        let grid_x = groups_of_rows
+            .checked_mul(256)
+            .ok_or_else(|| model_error("fused QKV grid overflows usize"))?;
+        let groups = cols.div_ceil(QWEN30_GROUP_SIZE);
+        tcb.dispatch_threads(
+            "qwen_binary_sign_scale_matvec_qkv",
+            (u32_checked(grid_x, "fused QKV grid")?, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&q.signs), 0);
+                encoder.set_buffer(1, Some(&q.scales), 0);
+                encoder.set_buffer(2, Some(&k.signs), 0);
+                encoder.set_buffer(3, Some(&k.scales), 0);
+                encoder.set_buffer(4, Some(&v.signs), 0);
+                encoder.set_buffer(5, Some(&v.scales), 0);
+                encoder.set_buffer(6, Some(input), 0);
+                encoder.set_buffer(7, Some(&self.workspace.q), 0);
+                encoder.set_buffer(8, Some(&self.workspace.k), 0);
+                encoder.set_buffer(9, Some(&self.workspace.v), 0);
+                encoder.qwen_set_u32(10, q_rows as u32);
+                encoder.qwen_set_u32(11, k_rows as u32);
+                encoder.qwen_set_u32(12, v_rows as u32);
+                encoder.qwen_set_u32(13, cols as u32);
+                encoder.qwen_set_u32(14, QWEN30_GROUP_SIZE as u32);
+                encoder.qwen_set_u32(15, groups as u32);
+            },
+        )
+    }
+
+    /// Residual attention add + post-attention RMSNorm + router matvec +
+    /// top-k (+ optional in-kernel top-k renorm). Honors K2/K3 env gates.
+    fn dispatch_attn_residual_postnorm_router(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        post_norm: &PinnedBuffer,
+        router: &GpuBinaryTensor,
+    ) -> Result<()> {
+        let fused_postnorm_router = qwen30_fused_postnorm_router_enabled()
+            && matches!(
+                self.packed_matvec_kernel,
+                Qwen30PackedMatvecKernel::ScalarControl
+            );
+        let fused_add_rmsnorm =
+            qwen30_fused_add_rmsnorm_enabled() && !fused_postnorm_router;
+        let fused_topk_norm = qwen30_fused_topk_norm_enabled();
+
+        if fused_postnorm_router {
+            // K3 path: add residual, then fused postnorm+router matvec.
+            add_inplace_metal_tcb(
+                tcb,
+                &self.workspace.x,
+                &self.workspace.attention_projection,
+                self.config.hidden,
+            )?;
+            self.dispatch_postnorm_router_matvec(tcb, post_norm, router)?;
+        } else if fused_add_rmsnorm {
+            // K2 path: fused add+rmsnorm, then standalone router matvec.
+            add_rmsnorm_fused_tcb(
+                tcb,
+                &self.workspace.x,
+                &self.workspace.attention_projection,
+                post_norm,
+                &self.workspace.x_norm,
+                self.config.rms_norm_eps(),
+                self.config.hidden,
+            )?;
+            self.dispatch_binary_matvec(
+                tcb,
+                router,
+                &self.workspace.x_norm,
+                &self.workspace.router_logits,
+                0,
+                0,
+            )?;
+        } else {
+            add_inplace_metal_tcb(
+                tcb,
+                &self.workspace.x,
+                &self.workspace.attention_projection,
+                self.config.hidden,
+            )?;
+            rmsnorm_metal_buf_tcb(
+                tcb,
+                &self.workspace.x,
+                post_norm,
+                self.config.rms_norm_eps(),
+                self.config.hidden,
+                &self.workspace.x_norm,
+            )?;
+            self.dispatch_binary_matvec(
+                tcb,
+                router,
+                &self.workspace.x_norm,
+                &self.workspace.router_logits,
+                0,
+                0,
+            )?;
+        }
+
+        moe_topk_gate_tcb_ex(
+            tcb,
+            &self.workspace.router_logits,
+            &self.workspace.route_ids,
+            &self.workspace.route_weights,
+            self.config.experts,
+            self.config.experts_per_token,
+            fused_topk_norm,
+        )?;
+        if !fused_topk_norm {
+            self.dispatch_normalize_route_weights(tcb)?;
+        }
+        Ok(())
+    }
+
+    /// K3: fused post-attention RMSNorm + router packed matvec.
+    fn dispatch_postnorm_router_matvec(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        post_norm: &PinnedBuffer,
+        router: &GpuBinaryTensor,
+    ) -> Result<()> {
+        let (rows, cols) = router.rows_cols("postnorm+router projection")?;
+        if cols != self.config.hidden {
+            return Err(model_error(
+                "postnorm+router requires router cols == hidden",
+            ));
+        }
+        if router.header.group_size != QWEN30_GROUP_SIZE {
+            return Err(model_error("postnorm+router group size drifted"));
+        }
+        let groups = cols.div_ceil(QWEN30_GROUP_SIZE);
+        let groups_of_rows = rows.div_ceil(8);
+        let grid_x = groups_of_rows
+            .checked_mul(256)
+            .ok_or_else(|| model_error("postnorm+router grid overflows usize"))?;
+        let shmem_bytes = 256u64 * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "qwen_binary_postnorm_router_matvec",
+            (u32_checked(grid_x, "postnorm+router grid")?, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&self.workspace.x), 0);
+                encoder.set_buffer(1, Some(post_norm), 0);
+                encoder.set_buffer(2, Some(&self.workspace.x_norm), 0);
+                encoder.set_buffer(3, Some(&router.signs), 0);
+                encoder.set_buffer(4, Some(&router.scales), 0);
+                encoder.set_buffer(5, Some(&self.workspace.router_logits), 0);
+                encoder.qwen_set_u32(6, self.config.hidden as u32);
+                encoder.qwen_set_u32(7, rows as u32);
+                encoder.qwen_set_u32(8, QWEN30_GROUP_SIZE as u32);
+                encoder.qwen_set_u32(9, groups as u32);
+                encoder.qwen_set_f32(10, self.config.rms_norm_eps());
+                encoder.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
     }
 
     fn dispatch_rmsnorm_rows(
@@ -2870,6 +3487,9 @@ impl Qwen30CompleteNativeRuntime {
     /// HQ30GR2 sparse override, production gate/up topologies only, and the
     /// env flag left on.
     fn device_expert_table_path_eligible(&self) -> bool {
+        if self.weight_codec.is_uniform_diagnostic() {
+            return false;
+        }
         qwen30_device_expert_table_enabled()
             && !self.diagnostic_route_capture_enabled
             && !self.diagnostic_router_hidden_capture_enabled
@@ -3031,10 +3651,11 @@ impl Qwen30CompleteNativeRuntime {
         tcb: &mut TokenCommandBuffer<'_>,
         lease: &Qwen30DeviceExpertTableLease,
     ) -> Result<()> {
-        // One no-op-sized dispatch carrier is unnecessary: Metal's
-        // useResources must be called on a live compute encoder.  Encode a
-        // residency declaration on the first real expert dispatch instead via
-        // the bind closure.  This helper only validates the lease.
+        // Validate the lease, then declare residency once when a serial /
+        // concurrent encoder group is open. Per-dispatch encoder modes
+        // (gpu* TCB traces, or serial encoder off) still re-declare inside
+        // each expert bind closure — Metal residency does not cross
+        // encoder boundaries.
         if lease.n_experts == 0 || lease.ready_entries != lease.n_experts {
             return Err(model_error(
                 "device expert table lease is incomplete for residency declaration",
@@ -3045,8 +3666,33 @@ impl Qwen30CompleteNativeRuntime {
                 "device expert table lease has no retained resources",
             ));
         }
-        let _ = tcb;
+        if tcb.has_active_group() {
+            tcb.use_resources_read_on_group(&lease.resources)?;
+        }
         Ok(())
+    }
+
+    /// Whether an expert-table dispatch must call `use_resources` itself.
+    ///
+    /// Shared serial/concurrent groups keep residency for the encoder
+    /// lifetime, so only the wave's first declaration (via
+    /// [`Self::declare_device_expert_resources`]) is required. Fresh
+    /// per-dispatch encoders must re-declare every time.
+    fn expert_table_dispatch_needs_use_resources(
+        tcb: &TokenCommandBuffer<'_>,
+        declare_resources: bool,
+    ) -> bool {
+        if tcb.has_active_group() {
+            // Group path: residency already sticky. The declare_resources
+            // flag is retained for callers that opt into an extra mid-wave
+            // re-declare; the default wave sets it true only on the first
+            // organ and false thereafter, and declare_device_expert_resources
+            // already covered the lease before any organ runs.
+            let _ = declare_resources;
+            false
+        } else {
+            true
+        }
     }
 
     /// Binary matvec fused across all top-k routes. One dispatch; each thread
@@ -3091,8 +3737,14 @@ impl Qwen30CompleteNativeRuntime {
                 (total_rows_u32.min(256).max(1), 1, 1),
             ),
             Qwen30PackedMatvecKernel::ScalarControl
-            | Qwen30PackedMatvecKernel::SimdgroupCandidate => {
-                let groups_of_rows = rows_per_route.div_ceil(8);
+            | Qwen30PackedMatvecKernel::SimdgroupCandidate
+            | Qwen30PackedMatvecKernel::RowBlock2
+            | Qwen30PackedMatvecKernel::RowBlock4
+            | Qwen30PackedMatvecKernel::RowBlock8 => {
+                let rows_per_tg = 8usize
+                    .checked_mul(self.packed_matvec_kernel.row_block())
+                    .ok_or_else(|| model_error("device expert binary rows_per_tg overflows"))?;
+                let groups_of_rows = rows_per_route.div_ceil(rows_per_tg);
                 let groups_total = top_k.checked_mul(groups_of_rows).ok_or_else(|| {
                     model_error("device expert fused simdgroup groups overflow")
                 })?;
@@ -3102,7 +3754,19 @@ impl Qwen30CompleteNativeRuntime {
                 let grid_x_u32 = u32_checked(grid_x, "device expert simdgroup grid")?;
                 let kernel = match self.packed_matvec_kernel {
                     Qwen30PackedMatvecKernel::ScalarControl => "qwen30_expert_table_binary_matvec",
-                    _ => "qwen30_expert_table_binary_matvec_simdgroup",
+                    Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+                        "qwen30_expert_table_binary_matvec_simdgroup"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock2 => {
+                        "qwen30_expert_table_binary_matvec_rowblock2"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock4 => {
+                        "qwen30_expert_table_binary_matvec_rowblock4"
+                    }
+                    Qwen30PackedMatvecKernel::RowBlock8 => {
+                        "qwen30_expert_table_binary_matvec_rowblock8"
+                    }
+                    Qwen30PackedMatvecKernel::SerialControl => unreachable!(),
                 };
                 (kernel, (grid_x_u32, 1, 1), (256, 1, 1))
             }
@@ -3111,11 +3775,15 @@ impl Qwen30CompleteNativeRuntime {
         let table = lease.table.clone();
         let input = input.clone();
         let output = output.clone();
-        // Always declare residency: under HAWKING_TCB_TRACE=gpu_prod each
-        // dispatch owns its own compute encoder, so a one-shot use_resources
-        // on the first expert wave is not visible to later encoders.
-        let _ = declare_resources;
-        let resources = lease.resources.clone();
+        // Under a serial/concurrent group, residency was declared once for
+        // the lease before the wave. Under per-dispatch encoders (gpu* /
+        // serial off) every dispatch must re-declare — Metal residency does
+        // not cross encoder boundaries.
+        let resources = if Self::expert_table_dispatch_needs_use_resources(tcb, declare_resources) {
+            lease.resources.clone()
+        } else {
+            Vec::new()
+        };
         tcb.dispatch_threads(kernel, grid, tg, move |encoder| {
             encoder.set_buffer(0, Some(&route_ids), 0);
             encoder.set_buffer(1, Some(&table), 0);
@@ -3163,8 +3831,11 @@ impl Qwen30CompleteNativeRuntime {
         let table = lease.table.clone();
         let input = self.workspace.x_norm.clone();
         let output = self.workspace.expert_activation.clone();
-        let _ = declare_resources;
-        let resources = lease.resources.clone();
+        let resources = if Self::expert_table_dispatch_needs_use_resources(tcb, declare_resources) {
+            lease.resources.clone()
+        } else {
+            Vec::new()
+        };
         tcb.dispatch_threads(
             "qwen30_expert_table_paired_gate_up_swiglu",
             (total_rows_u32, 1, 1),
@@ -3190,9 +3861,9 @@ impl Qwen30CompleteNativeRuntime {
         )
     }
 
-    /// HGRAVS stage gemv fused across all top-k routes (gemv_f32_moe shape ×
-    /// device table lookup). One dispatch covers every selected expert for
-    /// this projection/stage.
+    /// HGRAVS stage gemv fused across all top-k routes. One dispatch covers
+    /// every selected expert for this projection/stage. Grid: eight rows per
+    /// 256-thread threadgroup (tiled simdgroup geometry; already measured).
     fn dispatch_device_expert_hgravs_stage(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
@@ -3223,20 +3894,31 @@ impl Qwen30CompleteNativeRuntime {
             pad0: 0,
             pad1: 0,
         };
-        let total_rows = top_k
-            .checked_mul(rows_per_route)
+        let row_block = self.packed_matvec_kernel.row_block();
+        let groups_per_route = rows_per_route.div_ceil(row_block);
+        let total_groups = top_k
+            .checked_mul(groups_per_route)
             .ok_or_else(|| model_error("device expert fused HGRAVS grid overflows usize"))?;
-        let total_rows_u32 = u32_checked(total_rows, "device expert HGRAVS fused rows")?;
+        let total_groups_u32 = u32_checked(total_groups, "device expert HGRAVS fused groups")?;
         let tg = 256u32;
+        let hgravs_kernel = match self.packed_matvec_kernel {
+            Qwen30PackedMatvecKernel::RowBlock2 => "qwen30_expert_table_hgravs_gemv_rowblock2",
+            Qwen30PackedMatvecKernel::RowBlock4 => "qwen30_expert_table_hgravs_gemv_rowblock4",
+            Qwen30PackedMatvecKernel::RowBlock8 => "qwen30_expert_table_hgravs_gemv_rowblock8",
+            _ => "qwen30_expert_table_hgravs_gemv",
+        };
         let route_ids = self.workspace.route_ids.clone();
         let table = lease.table.clone();
         let input = input.clone();
         let output = output.clone();
-        let _ = declare_resources;
-        let resources = lease.resources.clone();
+        let resources = if Self::expert_table_dispatch_needs_use_resources(tcb, declare_resources) {
+            lease.resources.clone()
+        } else {
+            Vec::new()
+        };
         tcb.dispatch_threads(
-            "qwen30_expert_table_hgravs_gemv",
-            (total_rows_u32.saturating_mul(tg), 1, 1),
+            hgravs_kernel,
+            (total_groups_u32.saturating_mul(tg), 1, 1),
             (tg, 1, 1),
             move |encoder| {
                 encoder.set_buffer(0, Some(&route_ids), 0);
@@ -3247,10 +3929,6 @@ impl Qwen30CompleteNativeRuntime {
                     4,
                     std::mem::size_of_val(&params) as u64,
                     &params as *const _ as *const _,
-                );
-                encoder.set_threadgroup_memory_length(
-                    0,
-                    (tg as u64) * std::mem::size_of::<f32>() as u64,
                 );
                 if !resources.is_empty() {
                     let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
@@ -3663,29 +4341,12 @@ impl Qwen30CompleteNativeRuntime {
                 self.config.hidden,
                 &self.workspace.x_norm,
             )?;
-            self.dispatch_binary_matvec(
+            self.dispatch_qkv_binary_matvec(
                 &mut tcb,
                 &q,
-                &self.workspace.x_norm,
-                &self.workspace.q,
-                0,
-                0,
-            )?;
-            self.dispatch_binary_matvec(
-                &mut tcb,
                 &k,
-                &self.workspace.x_norm,
-                &self.workspace.k,
-                0,
-                0,
-            )?;
-            self.dispatch_binary_matvec(
-                &mut tcb,
                 &v,
                 &self.workspace.x_norm,
-                &self.workspace.v,
-                0,
-                0,
             )?;
             self.dispatch_rmsnorm_rows(
                 &mut tcb,
@@ -3742,37 +4403,7 @@ impl Qwen30CompleteNativeRuntime {
                 0,
                 0,
             )?;
-            add_inplace_metal_tcb(
-                &mut tcb,
-                &self.workspace.x,
-                &self.workspace.attention_projection,
-                self.config.hidden,
-            )?;
-            rmsnorm_metal_buf_tcb(
-                &mut tcb,
-                &self.workspace.x,
-                &post_norm,
-                self.config.rms_norm_eps(),
-                self.config.hidden,
-                &self.workspace.x_norm,
-            )?;
-            self.dispatch_binary_matvec(
-                &mut tcb,
-                &router,
-                &self.workspace.x_norm,
-                &self.workspace.router_logits,
-                0,
-                0,
-            )?;
-            moe_topk_gate_tcb(
-                &mut tcb,
-                &self.workspace.router_logits,
-                &self.workspace.route_ids,
-                &self.workspace.route_weights,
-                self.config.experts,
-                self.config.experts_per_token,
-            )?;
-            self.dispatch_normalize_route_weights(&mut tcb)?;
+            self.dispatch_attn_residual_postnorm_router(&mut tcb, &post_norm, &router)?;
             tcb.commit_and_wait()?;
         }
         let selected_expert_ids = self.route_ids()?;
@@ -3810,6 +4441,52 @@ impl Qwen30CompleteNativeRuntime {
         &mut self,
         token: u32,
     ) -> Result<Qwen30NativeGreedyStep> {
+        self.forward_token_greedy_device_expert_table_inner(
+            Qwen30EmbedSource::HostToken(token),
+            /*wait_and_read_sample=*/ true,
+            /*history_slot=*/ None,
+        )
+    }
+
+    /// Device-resident autoregressive step: embedding gathers the previous
+    /// argmax from [`DeviceWorkspace::sampled_token`]. When `wait_and_read_sample`
+    /// is false the command buffer is committed without waiting and the host
+    /// does not read the new id (it is snapshotted into `sample_history` when
+    /// `history_slot` is set). A later terminal drain must wait and read.
+    fn forward_token_greedy_device_expert_table_inner(
+        &mut self,
+        embed: Qwen30EmbedSource,
+        wait_and_read_sample: bool,
+        history_slot: Option<usize>,
+    ) -> Result<Qwen30NativeGreedyStep> {
+        if let Qwen30EmbedSource::HostToken(token) = embed {
+            if token as usize >= self.config.vocab_size {
+                return Err(model_error(format!(
+                    "input token {token} is outside the source vocabulary"
+                )));
+            }
+        }
+        if self.next_position >= self.max_seq_len {
+            return Err(model_error(format!(
+                "native KV cache is full at position {}; reset or use a supported larger max_seq_len",
+                self.max_seq_len
+            )));
+        }
+        if let Some(slot) = history_slot {
+            if slot >= self.max_seq_len {
+                return Err(model_error(format!(
+                    "sample history slot {slot} exceeds max_seq_len {}",
+                    self.max_seq_len
+                )));
+            }
+        }
+
+        let ledger_on = crate::cost_ledger::is_enabled();
+        if ledger_on {
+            let _ = crate::cost_ledger::end_token();
+            let _ = crate::cost_ledger::begin_token();
+        }
+
         let started = Instant::now();
         let mut host_stages = Qwen30HostStageRecorder::new(started, self.trace_host_stages);
         let position = self.next_position;
@@ -3841,7 +4518,14 @@ impl Qwen30CompleteNativeRuntime {
                 if serial_encoder {
                     tcb.begin_serial_group()?;
                 }
-                self.dispatch_embedding(&mut tcb, &embedding, token)?;
+                match embed {
+                    Qwen30EmbedSource::HostToken(token) => {
+                        self.dispatch_embedding(&mut tcb, &embedding, token)?;
+                    }
+                    Qwen30EmbedSource::DeviceSampledToken => {
+                        self.dispatch_embedding_from_device_token(&mut tcb, &embedding)?;
+                    }
+                }
 
                 for layer in 0..self.config.layers {
                     let lease = self.ensure_device_expert_table(layer)?;
@@ -3901,29 +4585,12 @@ impl Qwen30CompleteNativeRuntime {
                         self.config.hidden,
                         &self.workspace.x_norm,
                     )?;
-                    self.dispatch_binary_matvec(
+                    self.dispatch_qkv_binary_matvec(
                         &mut tcb,
                         &q,
-                        &self.workspace.x_norm,
-                        &self.workspace.q,
-                        0,
-                        0,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &k,
-                        &self.workspace.x_norm,
-                        &self.workspace.k,
-                        0,
-                        0,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &v,
                         &self.workspace.x_norm,
-                        &self.workspace.v,
-                        0,
-                        0,
                     )?;
                     self.dispatch_rmsnorm_rows(
                         &mut tcb,
@@ -3980,46 +4647,33 @@ impl Qwen30CompleteNativeRuntime {
                         0,
                         0,
                     )?;
-                    add_inplace_metal_tcb(
+                    self.dispatch_attn_residual_postnorm_router(
                         &mut tcb,
-                        &self.workspace.x,
-                        &self.workspace.attention_projection,
-                        self.config.hidden,
-                    )?;
-                    rmsnorm_metal_buf_tcb(
-                        &mut tcb,
-                        &self.workspace.x,
                         &post_norm,
-                        self.config.rms_norm_eps(),
-                        self.config.hidden,
-                        &self.workspace.x_norm,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &router,
-                        &self.workspace.x_norm,
-                        &self.workspace.router_logits,
-                        0,
-                        0,
                     )?;
-                    moe_topk_gate_tcb(
-                        &mut tcb,
-                        &self.workspace.router_logits,
-                        &self.workspace.route_ids,
-                        &self.workspace.route_weights,
-                        self.config.experts,
-                        self.config.experts_per_token,
-                    )?;
-                    self.dispatch_normalize_route_weights(&mut tcb)?;
                     // Device route_ids drive expert selection — no host readback.
                     self.dispatch_device_expert_wave(&mut tcb, &lease)?;
                 }
 
                 let lm_head = self.packed_tensor("lm_head.weight")?;
-                MetalContext::write_buffer_bytes(
+                // Close the serial compute encoder before blits. Metal allows
+                // only one encoder on a CB at a time; fill/copy need a blit
+                // encoder. Re-open serial for the final-head compute wave.
+                if serial_encoder {
+                    tcb.end_concurrent_group()?;
+                }
+                // Device-side clear so a pipelined prior CB cannot race a host
+                // write to the shared finite-check flag.
+                tcb.fill_buffer_bytes(
                     &self.workspace.invalid_f32_flag,
-                    &0u32.to_ne_bytes(),
-                );
+                    0,
+                    std::mem::size_of::<u32>() as u64,
+                    0,
+                )?;
+                if serial_encoder {
+                    tcb.begin_serial_group()?;
+                }
                 let final_norm = self.ensure_decoded_vector_on_tcb(
                     &mut tcb,
                     "model.norm.weight",
@@ -4055,27 +4709,58 @@ impl Qwen30CompleteNativeRuntime {
                 if serial_encoder {
                     tcb.end_concurrent_group()?;
                 }
+                if let Some(slot) = history_slot {
+                    let dst_off = (slot * std::mem::size_of::<u32>()) as u64;
+                    tcb.copy_buffer_bytes(
+                        &self.workspace.sampled_token,
+                        0,
+                        &self.workspace.sample_history,
+                        dst_off,
+                        std::mem::size_of::<u32>() as u64,
+                    )?;
+                }
                 metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
-                tcb.commit_and_wait()?;
+                if wait_and_read_sample {
+                    tcb.commit_and_wait()?;
+                } else {
+                    tcb.commit_no_wait()?;
+                }
                 command_buffers = command_buffers.saturating_add(1);
                 Ok(())
             },
         )?;
 
-        let token_id = host_stages.measure(
-            "sampling",
-            "final finite flag and sampled-token device readback",
-            || {
-                self.assert_final_logits_finite()?;
-                self.sampled_id()
-            },
-        )?;
+        let (token_id, host_sample_id_readbacks) = if wait_and_read_sample {
+            let token_id = host_stages.measure(
+                "sampling",
+                "final finite flag and sampled-token device readback",
+                || {
+                    self.assert_final_logits_finite()?;
+                    self.sampled_id()
+                },
+            )?;
+            (token_id, 1usize)
+        } else {
+            // Sample id stays device-resident; host learns it at terminal drain.
+            (0u32, 0usize)
+        };
         host_stages.measure("sampling", "advance native autoregressive position", || {
             self.next_position = self.next_position.saturating_add(1);
             Ok(())
         })?;
         let elapsed = started.elapsed();
         let host_stage_intervals = host_stages.finish(elapsed);
+        if ledger_on {
+            if let Some(report) = crate::cost_ledger::end_token() {
+                // Steady-state measurement surface: print one JSON line per
+                // token when HAWKING_COST_LEDGER=1 so lane scripts can parse
+                // gpu_execution_us / gpu_queue_wait_us / host_wait without a
+                // separate harness. Prefer stderr so stdout JSON stays clean.
+                if let Ok(line) = serde_json::to_string(&report) {
+                    eprintln!("[hawking.cost_ledger.token] {line}");
+                }
+            }
+        }
         Ok(Qwen30NativeGreedyStep {
             position,
             token_id,
@@ -4083,7 +4768,7 @@ impl Qwen30CompleteNativeRuntime {
             command_buffers,
             metal_dispatches,
             host_route_id_readbacks: 0,
-            host_sample_id_readbacks: 1,
+            host_sample_id_readbacks,
             gate_up_swiglu_device_control_parity: None,
             host_stage_intervals,
         })
@@ -4215,29 +4900,12 @@ impl Qwen30CompleteNativeRuntime {
                         self.config.hidden,
                         &self.workspace.x_norm,
                     )?;
-                    self.dispatch_binary_matvec(
+                    self.dispatch_qkv_binary_matvec(
                         &mut tcb,
                         &q,
-                        &self.workspace.x_norm,
-                        &self.workspace.q,
-                        0,
-                        0,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &k,
-                        &self.workspace.x_norm,
-                        &self.workspace.k,
-                        0,
-                        0,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &v,
                         &self.workspace.x_norm,
-                        &self.workspace.v,
-                        0,
-                        0,
                     )?;
                     self.dispatch_rmsnorm_rows(
                         &mut tcb,
@@ -4298,37 +4966,11 @@ impl Qwen30CompleteNativeRuntime {
                         0,
                         0,
                     )?;
-                    add_inplace_metal_tcb(
+                    self.dispatch_attn_residual_postnorm_router(
                         &mut tcb,
-                        &self.workspace.x,
-                        &self.workspace.attention_projection,
-                        self.config.hidden,
-                    )?;
-                    rmsnorm_metal_buf_tcb(
-                        &mut tcb,
-                        &self.workspace.x,
                         &post_norm,
-                        self.config.rms_norm_eps(),
-                        self.config.hidden,
-                        &self.workspace.x_norm,
-                    )?;
-                    self.dispatch_binary_matvec(
-                        &mut tcb,
                         &router,
-                        &self.workspace.x_norm,
-                        &self.workspace.router_logits,
-                        0,
-                        0,
                     )?;
-                    moe_topk_gate_tcb(
-                        &mut tcb,
-                        &self.workspace.router_logits,
-                        &self.workspace.route_ids,
-                        &self.workspace.route_weights,
-                        self.config.experts,
-                        self.config.experts_per_token,
-                    )?;
-                    self.dispatch_normalize_route_weights(&mut tcb)?;
                     if serial_encoder {
                         tcb.end_concurrent_group()?;
                     }
@@ -4631,6 +5273,13 @@ impl Qwen30CompleteNativeRuntime {
     /// on device and reads only the sampled id.  Temperature/top-k/top-p HCLI
     /// sampling is a separate device sampler implementation and is not
     /// silently delegated to the CPU here.
+    ///
+    /// When the production device-expert-table path is eligible, decode uses
+    /// **device-resident autoregressive feedback**: the argmax id stays in
+    /// `sampled_token`, the next embedding gathers it on device, intermediate
+    /// command buffers are enqueued without `wait_until_completed`, and the
+    /// host drains sample history once at the end (or when it must stop for
+    /// EOS after a terminal wait). Prefill still uses host-known token ids.
     pub fn generate_greedy(
         &mut self,
         prompt: &str,
@@ -4655,6 +5304,17 @@ impl Qwen30CompleteNativeRuntime {
             let step = self.forward_token_greedy(token)?;
             next = step.token_id;
             prefill_steps.push(step);
+        }
+        if self.device_expert_table_path_eligible()
+            && qwen30_device_resident_ar_enabled()
+            && max_new_tokens > 0
+        {
+            return self.finish_generate_greedy_device_resident(
+                prompt_token_ids,
+                prefill_steps,
+                next,
+                max_new_tokens,
+            );
         }
         let mut completion_token_ids = Vec::with_capacity(max_new_tokens);
         let mut steps = Vec::with_capacity(max_new_tokens);
@@ -4687,6 +5347,142 @@ impl Qwen30CompleteNativeRuntime {
         })
     }
 
+    /// Device-resident decode tail after prefill. Prefill left the first
+    /// completion candidate in `sampled_token` and on the host as
+    /// `first_completion`. Subsequent embeddings read that device buffer;
+    /// intermediate CBs commit without waiting; the final CB waits and the
+    /// host drains `sample_history` once.
+    fn finish_generate_greedy_device_resident(
+        &mut self,
+        prompt_token_ids: Vec<u32>,
+        prefill_steps: Vec<Qwen30NativeGreedyStep>,
+        first_completion: u32,
+        max_new_tokens: usize,
+    ) -> Result<Qwen30NativeGeneration> {
+        let mut completion_token_ids = Vec::with_capacity(max_new_tokens);
+        let mut steps = Vec::with_capacity(max_new_tokens);
+        let mut ended_on_eog = false;
+
+        // Mirror the historical loop shape: for each of max_new_tokens
+        // iterations, emit the current id, stop on EOG, otherwise run one
+        // full forward that produces the next id. Device-resident mode runs
+        // those forwards with device embedding and defers sample readback
+        // until a terminal drain so the GPU queue is not stalled on the host
+        // between tokens. EOS is applied when the drained ids are assembled
+        // so the reported sequence never continues past the stop condition.
+        //
+        // If the first completion is already EOG we must not enqueue further
+        // work (strict stop).
+        if first_completion as usize >= self.tokenizer_addressable_vocab {
+            return Err(model_error(format!(
+                "device sampler emitted model token {first_completion} in the LM-head reserved tail; source tokenizer only addresses 0..{} and no token remapping is permitted",
+                self.tokenizer_addressable_vocab.saturating_sub(1)
+            )));
+        }
+        if self.tokenizer.is_eog(first_completion) {
+            completion_token_ids.push(first_completion);
+            ended_on_eog = true;
+            let completion_text = self.tokenizer.decode(&completion_token_ids, true)?;
+            return Ok(Qwen30NativeGeneration {
+                prompt_token_ids,
+                completion_token_ids,
+                completion_text,
+                ended_on_eog,
+                prefill_steps,
+                steps,
+            });
+        }
+
+        // Number of feedback forwards matching the legacy loop (one per
+        // max_new_tokens iteration, including a final unused sample).
+        let n_forwards = max_new_tokens;
+        let mut raw_steps = Vec::with_capacity(n_forwards);
+        for i in 0..n_forwards {
+            let is_last = i + 1 == n_forwards;
+            // After prefill, sampled_token holds first_completion. Each
+            // forward embeds from that device id and overwrites it with the
+            // next argmax; history[i] snapshots the new id for the drain.
+            let step = self.forward_token_greedy_device_expert_table_inner(
+                Qwen30EmbedSource::DeviceSampledToken,
+                /*wait_and_read_sample=*/ is_last,
+                /*history_slot=*/ Some(i),
+            )?;
+            raw_steps.push(step);
+        }
+
+        // Terminal drain: last forward waited, so the full queue is idle and
+        // sample_history[0..n_forwards) is host-visible.
+        let history = self.read_sample_history(n_forwards)?;
+        self.assert_final_logits_finite()?;
+
+        // Assemble completion / steps like the host loop, truncating at EOG.
+        // completion[0] = first_completion (prefill sample)
+        // completion[k+1] = history[k] for k that are emitted
+        // steps[k].token_id = history[k]
+        // Reported tokens never continue past EOG even if the GPU batch
+        // computed further speculative steps (see `assemble_device_resident_completion`).
+        let plan = assemble_device_resident_completion(
+            first_completion,
+            &history,
+            max_new_tokens,
+            |id| self.tokenizer.is_eog(id),
+        );
+        ended_on_eog = plan.ended_on_eog;
+        for &cur in &plan.completion_token_ids {
+            if cur as usize >= self.tokenizer_addressable_vocab {
+                return Err(model_error(format!(
+                    "device sampler emitted model token {cur} in the LM-head reserved tail; source tokenizer only addresses 0..{} and no token remapping is permitted",
+                    self.tokenizer_addressable_vocab.saturating_sub(1)
+                )));
+            }
+        }
+        completion_token_ids = plan.completion_token_ids;
+        for i in 0..plan.feedback_forwards_used {
+            let mut step = raw_steps[i].clone();
+            let sampled = history[i];
+            if sampled as usize >= self.config.vocab_size {
+                return Err(model_error(format!(
+                    "device sampler emitted token id {sampled} outside vocabulary"
+                )));
+            }
+            step.token_id = sampled;
+            // Only the terminal drain performed a host sample-id readback.
+            // Intermediate steps committed without reading. Attribute the
+            // single drain readback to the last *reported* step.
+            if i + 1 == plan.feedback_forwards_used {
+                step.host_sample_id_readbacks = 1;
+            } else {
+                step.host_sample_id_readbacks = 0;
+            }
+            steps.push(step);
+        }
+
+        let completion_text = self.tokenizer.decode(&completion_token_ids, true)?;
+        Ok(Qwen30NativeGeneration {
+            prompt_token_ids,
+            completion_token_ids,
+            completion_text,
+            ended_on_eog,
+            prefill_steps,
+            steps,
+        })
+    }
+
+    fn read_sample_history(&self, count: usize) -> Result<Vec<u32>> {
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        if count > self.max_seq_len {
+            return Err(model_error(format!(
+                "sample history drain count {count} exceeds max_seq_len {}",
+                self.max_seq_len
+            )));
+        }
+        let ptr = self.workspace.sample_history.contents() as *const u32;
+        let slice = unsafe { std::slice::from_raw_parts(ptr, count) };
+        Ok(slice.to_vec())
+    }
+
     /// Generate through the exact validated one-user source chat-template
     /// branch.  The forward path remains the same direct packed Metal model;
     /// only prompt formatting differs from the raw-text diagnostic helper.
@@ -4697,6 +5493,49 @@ impl Qwen30CompleteNativeRuntime {
     ) -> Result<Qwen30NativeGeneration> {
         let rendered = self.render_source_user_chat_prompt(user_content);
         self.generate_greedy(&rendered, max_new_tokens)
+    }
+}
+
+/// Pure plan for device-resident completion assembly. Truncates at the first
+/// EOG so reported tokens never continue past the stop condition, even when
+/// the GPU batch speculated further forwards.
+#[cfg(target_os = "macos")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct DeviceResidentCompletionPlan {
+    completion_token_ids: Vec<u32>,
+    /// How many history slots / feedback forwards contribute a reported step.
+    feedback_forwards_used: usize,
+    ended_on_eog: bool,
+}
+
+#[cfg(target_os = "macos")]
+fn assemble_device_resident_completion(
+    first_completion: u32,
+    history: &[u32],
+    max_new_tokens: usize,
+    is_eog: impl Fn(u32) -> bool,
+) -> DeviceResidentCompletionPlan {
+    let mut completion_token_ids = Vec::with_capacity(max_new_tokens);
+    let mut feedback_forwards_used = 0usize;
+    let mut ended_on_eog = false;
+    let mut cur = first_completion;
+    for i in 0..max_new_tokens {
+        completion_token_ids.push(cur);
+        if is_eog(cur) {
+            ended_on_eog = true;
+            break;
+        }
+        if i >= history.len() {
+            break;
+        }
+        // One feedback forward produced history[i] and becomes the next emit.
+        feedback_forwards_used = feedback_forwards_used.saturating_add(1);
+        cur = history[i];
+    }
+    DeviceResidentCompletionPlan {
+        completion_token_ids,
+        feedback_forwards_used,
+        ended_on_eog,
     }
 }
 
@@ -4957,6 +5796,51 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
+    fn device_resident_ar_flag_defaults_on_and_opt_out() {
+        let prior = std::env::var_os("HAWKING_QWEN30_DEVICE_RESIDENT_AR");
+        std::env::remove_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR");
+        assert!(qwen30_device_resident_ar_enabled());
+        std::env::set_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR", "0");
+        assert!(!qwen30_device_resident_ar_enabled());
+        std::env::set_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR", "false");
+        assert!(!qwen30_device_resident_ar_enabled());
+        match prior {
+            Some(v) => std::env::set_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR", v),
+            None => std::env::remove_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR"),
+        }
+    }
+
+    /// EOS / early-stop contract for device-resident assembly: reported tokens
+    /// stop at the first EOG even when the GPU history contains later ids.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn device_resident_completion_truncates_at_eog() {
+        let eog = 151645u32;
+        let is_eog = |id: u32| id == eog;
+        // First token is EOG: no feedback forwards.
+        let p0 = assemble_device_resident_completion(eog, &[1, 2, 3, 4, 5, 6], 6, is_eog);
+        assert_eq!(p0.completion_token_ids, vec![eog]);
+        assert_eq!(p0.feedback_forwards_used, 0);
+        assert!(p0.ended_on_eog);
+        // Mid-sequence EOG: history after the stop is ignored in the report.
+        let p1 = assemble_device_resident_completion(
+            10,
+            &[20, eog, 40, 50, 60, 70],
+            6,
+            is_eog,
+        );
+        assert_eq!(p1.completion_token_ids, vec![10, 20, eog]);
+        assert_eq!(p1.feedback_forwards_used, 2);
+        assert!(p1.ended_on_eog);
+        // No EOG: full max_new_tokens, one step per iteration.
+        let p2 = assemble_device_resident_completion(1, &[2, 3, 4, 5, 6, 7], 6, is_eog);
+        assert_eq!(p2.completion_token_ids, vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(p2.feedback_forwards_used, 6);
+        assert!(!p2.ended_on_eog);
+    }
+
+    #[test]
     fn exact_qwen30_source_config_is_required() {
         let config = Qwen30CompleteRuntimeConfig::from_source_config(
             &source_config(),
@@ -5207,7 +6091,7 @@ mod tests {
         let mut tcb = TokenCommandBuffer::new(&context);
         // Tiled simdgroup default: one row still needs a full 256-thread TG.
         tcb.dispatch_threads(
-            "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_tiled",
             (256, 1, 1),
             (256, 1, 1),
             |encoder| {
@@ -5305,9 +6189,9 @@ mod tests {
             },
         )
         .expect("serial packed binary dispatch");
-        // Live tiled simdgroup default.
+        // Live tiled simdgroup default (Q30 speed path).
         tcb.dispatch_threads(
-            "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_tiled",
             (grid_x, 1, 1),
             (256, 1, 1),
             |encoder| {

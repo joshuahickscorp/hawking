@@ -12713,6 +12713,28 @@ mod metal_dispatch {
         n_experts: usize,
         top_k: usize,
     ) -> Result<()> {
+        moe_topk_gate_tcb_ex(
+            tcb,
+            logits_buf,
+            route_ids_buf,
+            route_weights_buf,
+            n_experts,
+            top_k,
+            false,
+        )
+    }
+
+    /// Like [`moe_topk_gate_tcb`], optionally re-normalizing the selected top-k
+    /// weights in-kernel (`normalize_topk=true`, Qwen3 `norm_topk_prob`).
+    pub fn moe_topk_gate_tcb_ex(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        n_experts: usize,
+        top_k: usize,
+        normalize_topk: bool,
+    ) -> Result<()> {
         if top_k == 0 {
             return Err(Error::Kernel("moe_topk_gate_tcb: top_k must be > 0".into()));
         }
@@ -12722,11 +12744,20 @@ mod metal_dispatch {
         // work[n_experts] + red_val[tg_size] + red_idx[tg_size] (see moe.metal).
         let shmem_bytes = ((n_experts as u64) + 2 * (TG_SIZE as u64))
             * (std::mem::size_of::<f32>() as u64);
-        let mut ab =
-            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32])?;
+        // Layout matches ArgbufTopkGate: n_experts, top_k, tie_epsilon, normalize_topk.
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+                ArgLayout::U32,
+            ],
+        )?;
         ab.set_u32(0, n_experts_u32);
         ab.set_u32(1, top_k_u32);
         ab.set_f32(2, tie_epsilon);
+        ab.set_u32(3, u32::from(normalize_topk));
         tcb.dispatch_threads("moe_topk_gate", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(logits_buf), 0);
             enc.set_buffer(1, Some(route_ids_buf), 0);

@@ -57,6 +57,25 @@ kernel void qwen_complete_binary_embedding_lookup(
     output[id] = qwen_complete_binary_value(signs, scales, element, group_size);
 }
 
+// Device-resident autoregressive feedback: the previous step's argmax id stays
+// in a device buffer (`sampled_token`) and is gathered here without a host
+// round-trip.  Buffer layout matches `sample_argmax_f32` (one uint).
+kernel void qwen_complete_binary_embedding_lookup_device_token(
+    device const uchar* signs [[buffer(0)]],
+    device const half* scales [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    device const uint* token_id [[buffer(3)]],
+    constant uint& hidden      [[buffer(4)]],
+    constant uint& vocab       [[buffer(5)]],
+    constant uint& group_size  [[buffer(6)]],
+    uint id                     [[thread_position_in_grid]])
+{
+    const uint token = token_id[0];
+    if (id >= hidden || token >= vocab) return;
+    const uint element = token * hidden + id;
+    output[id] = qwen_complete_binary_value(signs, scales, element, group_size);
+}
+
 // One threadgroup handles one independently normalized row.  It supports the
 // Qwen30 32 Q heads and 4 KV heads (each width 128) without copying their
 // activations through the host.  `input` and `output` may alias.

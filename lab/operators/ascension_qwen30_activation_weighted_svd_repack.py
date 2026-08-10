@@ -7,8 +7,8 @@ complete candidate under quality-candidates/activation-weighted-svd-v1 by:
    Accepts the L0-only broad capture (historical) or the all-layer broad
    capture (`...all_layer_route_capture_result.v1`).
 2. Selecting expert gate/up/down organs by surplus-over-null under the
-   1.5 *component* BPW ceiling, then packing greedily under the 1.5
-   *complete_physical_bpw* ceiling (weight cosine is reported and used only
+   the campaign one-bit complete-BPW ceiling (1/1), then packing greedily under
+   the same complete_physical_bpw law (weight cosine is reported and used only
    as the distribution-local guard, not the selection metric).
 3. Encoding selected organs with activation_weighted_svd_low_rank_q (real
    capture fit; dual-gravity first-class codec).
@@ -45,6 +45,7 @@ import numpy as np
 
 from lab.operators import ascension_dual_gravity_worker as dual
 from lab.operators import ascension_qwen30_complete_gravity as complete
+from lab.operators import one_bit_ceiling as obc
 from lab.operators.qwen30b_gravity_pack import load_tensor, load_weight_map
 from lab.receipts import seal, verify
 
@@ -78,7 +79,8 @@ ARTIFACT_PREFIX = "QWEN30_ACTIVATION_WEIGHTED_SVD_V1"
 MODEL_ID = "Qwen3-Coder-30B-A3B-Instruct-activation-weighted-svd-v1"
 EXPECTED_TENSOR_COUNT = 18_867
 MODEL_LAYERS = 48
-CEILING_BPW = 1.5
+# Campaign law: complete BPW <= 1/1 (one_bit_ceiling.CEILING). No private looser constant.
+CEILING_BPW = float(obc.CEILING)  # 1.0 — was illegally 1.5
 MIN_TOKENS = 32
 # Minimum surplus over the constant-mean null for an organ to be REPLACED. 0.0 keeps the
 # bare `beats_null` bar; higher values refuse organs that only trivially beat a constant.
@@ -759,12 +761,25 @@ class ActivationWeightedSvdRepack:
             if ledger_padding is not None:
                 ledger["manifest_ledger_padding_bytes"] = len(ledger_padding)
                 ledger["manifest_ledger_padding"] = ledger_padding
+            # FAIL CLOSED via the live one-bit enforcer (names overage exactly).
+            try:
+                ceiling_receipt = obc.enforce_artifact_bpw(
+                    payload_bytes=artifact_bytes,
+                    manifest_bytes=manifest_bytes_billed,
+                    original_weight_count=elements,
+                    note="activation_weighted_svd_repack complete candidate",
+                )
+            except obc.CeilingViolation as exc:
+                raise ActivationWeightedRepackError(str(exc)) from exc
             if complete_bpw > CEILING_BPW:
-                # Honest refusal: never silently trim quality to force the gate.
+                # Belt-and-suspenders float path (enforcer is exact Fraction).
                 raise ActivationWeightedRepackError(
                     f"complete_physical_bpw {complete_bpw:.6f} exceeds ceiling {CEILING_BPW}; "
                     "refusing to seal a trimmed candidate"
                 )
+            ledger["one_bit_ceiling_receipt"] = {
+                k: v for k, v in ceiling_receipt.items() if k != "ledger"
+            }
             return seal(
                 {
                     **preliminary,
@@ -1106,6 +1121,48 @@ class ActivationWeightedSvdRepack:
                     }
                 )
 
+        # EXPERT-ATOMIC ENFORCEMENT. The runtime's execution unit is the expert
+        # TRIPLE, not the individual organ: both `ensure_device_expert_table` and
+        # the control routed-expert path refuse closed on a partial HGRAVS triple
+        # ("device expert table <prefix> missing HGRAVS01 gate factor"). The
+        # per-organ surplus gate above, and the greedy BPW pack below it, can each
+        # leave an expert with 1 or 2 of its 3 components replaced. The first gated
+        # candidate did exactly that -- 841 of 6144 experts, and layer 0 expert 55
+        # killed admission before a single token was generated.
+        #
+        # So representation choice is made atomic per expert here: an expert keeps
+        # HGRAVS01 only if all three of gate/up/down survived. This is a
+        # STRENGTHENING of selection, never a weakening -- it demotes organs back to
+        # the verified baseline representation, it never admits one that failed.
+        # Keeping the triple homogeneous also keeps the fused expert wave's dispatch
+        # topology uniform, which the dispatch-count work depends on.
+        by_expert: dict[tuple[int, int], list[dict[str, Any]]] = {}
+        for row in organs:
+            by_expert.setdefault((int(row["layer"]), int(row["expert"])), []).append(row)
+        partial = {k: v for k, v in by_expert.items() if len(v) < len(COMPONENTS)}
+        if partial:
+            demoted = {id(r) for rows in partial.values() for r in rows}
+            for rows in partial.values():
+                for r in rows:
+                    payload_running -= int(r["payload_delta_bytes"])
+                    deferred.append(
+                        {
+                            "tensor_name": r["tensor_name"],
+                            "layer": r["layer"],
+                            "expert": r["expert"],
+                            "component": r["component"],
+                            "surplus_over_null": r["surplus_over_null"],
+                            "payload_delta_bytes": r["payload_delta_bytes"],
+                            "reason": "expert_triple_incomplete_runtime_requires_atomic_expert",
+                        }
+                    )
+            organs = [r for r in organs if id(r) not in demoted]
+        print(
+            f"expert-atomic: {len(partial)} experts had an incomplete HGRAVS triple; "
+            f"{sum(len(v) for v in partial.values())} organs demoted to baseline",
+            flush=True,
+        )
+
         organs.sort(key=lambda r: (int(r["layer"]), int(r["expert"]), str(r["component"])))
         coverage = coverage_report(selected_organs=organs, act_prov=act_prov)
         mean_surplus = float(np.mean([r["surplus_over_null"] for r in organs])) if organs else 0.0
@@ -1142,6 +1199,11 @@ class ActivationWeightedSvdRepack:
                     "scored_organs": len(scored),
                     "selected_organs": len(organs),
                     "deferred_for_complete_bpw": len(deferred),
+                    "expert_atomic_representation": True,
+                    "experts_demoted_for_incomplete_triple": len(partial),
+                    "organs_demoted_for_incomplete_triple": sum(
+                        len(v) for v in partial.values()
+                    ),
                     "projected_complete_physical_bpw": float(projected_bpw),
                 },
                 "activation_capture": capture_identity,

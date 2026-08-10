@@ -6,8 +6,8 @@
 //! and must not expand `L @ R` into a dense weight matrix on a token path.
 
 use super::{
-    absolute_path, canonical_directory, canonical_expected_regular_path, canonical_regular_path,
-    expected_tensor_path, is_sha256, model_error, parse_complete_binary_header,
+    absolute_path, admission_warm_receipt, canonical_directory, canonical_expected_regular_path,
+    canonical_regular_path, expected_tensor_path, is_sha256, model_error, parse_complete_binary_header,
     parse_json_no_duplicate_keys, quality_payload_verification_lanes, read_regular_file,
     require_exact_regular_path, require_exact_string, require_safe_filename, required_array,
     required_bool, required_f64, required_object, required_sha256, required_string, required_u64,
@@ -20,8 +20,42 @@ use half::f16;
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::thread;
+use std::time::Instant;
+
+/// Process-local accumulators for fine-grained cold-payload buckets under
+/// `HAWKING_STARTUP_TIMING=1`. Reset at the start of each HGRAVS admission.
+static AW_PAYLOAD_READ_MS: AtomicU64 = AtomicU64::new(0);
+static AW_PAYLOAD_SHA256_MS: AtomicU64 = AtomicU64::new(0);
+static AW_PAYLOAD_LAYOUT_MS: AtomicU64 = AtomicU64::new(0);
+
+fn aw_payload_timing_reset() {
+    AW_PAYLOAD_READ_MS.store(0, Ordering::Relaxed);
+    AW_PAYLOAD_SHA256_MS.store(0, Ordering::Relaxed);
+    AW_PAYLOAD_LAYOUT_MS.store(0, Ordering::Relaxed);
+}
+
+fn aw_payload_timing_add(target: &AtomicU64, start: Instant) {
+    let ms = crate::startup_timing::duration_ms(start.elapsed());
+    target.fetch_add(ms, Ordering::Relaxed);
+}
+
+fn aw_payload_timing_flush() {
+    crate::startup_timing::record_ms(
+        "admit_payload_file_read",
+        AW_PAYLOAD_READ_MS.load(Ordering::Relaxed),
+    );
+    crate::startup_timing::record_ms(
+        "admit_payload_sha256",
+        AW_PAYLOAD_SHA256_MS.load(Ordering::Relaxed),
+    );
+    crate::startup_timing::record_ms(
+        "admit_payload_layout_geometry",
+        AW_PAYLOAD_LAYOUT_MS.load(Ordering::Relaxed),
+    );
+}
 
 pub const HGRAVS01_MAGIC: [u8; 8] = *b"HGRAVS01";
 pub const HGRAVS01_MAGIC_TEXT: &str = "HGRAVS01";
@@ -1201,13 +1235,19 @@ fn validate_aw_terminal(
     Ok(())
 }
 
-fn validate_aw_tensor_row(
+/// Validate one activation-weighted tensor row.
+///
+/// When `warm_payload` is `Some`, identity has already been proven via the
+/// shared warm receipt and content SHA-256 is not recomputed. Size, layout,
+/// selection binding, and geometry checks still run on every start.
+fn validate_aw_tensor_row_with_payload(
     row: &Map<String, Value>,
     root: &Path,
     source: &super::SourceChain,
     selected_organs: &BTreeMap<String, Map<String, Value>>,
     selection_path: &Path,
     expected_activation_capture_sha256: &str,
+    warm_payload: Option<Arc<[u8]>>,
 ) -> Result<(Qwen30ActivationWeightedTensor, Arc<[u8]>)> {
     let label = "activation-weighted SVD manifest tensor";
     let tensor_name = required_string(row, "tensor_name", label)?;
@@ -1252,21 +1292,39 @@ fn validate_aw_tensor_row(
         required_string(row, "artifact_path", label)?,
         label,
     )?;
-    let payload = read_regular_file(&expected_path, label)?;
     let artifact_bytes = required_u64(row, "artifact_bytes", label)?;
-    if artifact_bytes != u64::try_from(payload.len()).unwrap_or(u64::MAX) {
-        return Err(model_error(
-            label,
-            "tensor artifact_bytes does not equal physical payload bytes",
-        ));
-    }
     let artifact_sha256 = required_sha256(row, "artifact_sha256", label)?;
-    if sha256_hex(&payload) != artifact_sha256 {
-        return Err(model_error(
-            label,
-            "tensor payload SHA-256 does not match the manifest",
-        ));
-    }
+    let payload: Arc<[u8]> = if let Some(warm) = warm_payload {
+        // Warm path: content hash already proven under matching identity.
+        // Still prove size equals the sealed manifest row.
+        if artifact_bytes != u64::try_from(warm.len()).unwrap_or(u64::MAX) {
+            return Err(model_error(
+                label,
+                "warm tensor artifact_bytes does not equal physical payload bytes",
+            ));
+        }
+        warm
+    } else {
+        let read_start = Instant::now();
+        let bytes = read_regular_file(&expected_path, label)?;
+        aw_payload_timing_add(&AW_PAYLOAD_READ_MS, read_start);
+        if artifact_bytes != u64::try_from(bytes.len()).unwrap_or(u64::MAX) {
+            return Err(model_error(
+                label,
+                "tensor artifact_bytes does not equal physical payload bytes",
+            ));
+        }
+        let hash_start = Instant::now();
+        let observed = sha256_hex(&bytes);
+        aw_payload_timing_add(&AW_PAYLOAD_SHA256_MS, hash_start);
+        if observed != artifact_sha256 {
+            return Err(model_error(
+                label,
+                "tensor payload SHA-256 does not match the manifest",
+            ));
+        }
+        Arc::from(bytes)
+    };
     let mutation = required_object(row, "candidate_mutation", label)?;
     let rollback = required_object(mutation, "baseline_rollback", label)?;
     require_exact_string(
@@ -1277,6 +1335,7 @@ fn validate_aw_tensor_row(
     )?;
     let layout = required_object(row, "layout", label)?;
     let is_selected = selected_organs.contains_key(tensor_name);
+    let layout_start = Instant::now();
     let parsed_layout = if is_selected {
         if !required_bool(mutation, "changed_from_admitted_control", label)? {
             return Err(model_error(
@@ -1314,7 +1373,7 @@ fn validate_aw_tensor_row(
         require_exact_string(layout, "magic", HGRAVS01_MAGIC_TEXT, label)?;
         require_exact_string(layout, "family", HGRAVS01_REPRESENTATION, label)?;
         require_exact_string(layout, "schema", HGRAVS01_SCHEMA, label)?;
-        let parsed = parse_hgravs01_header(&payload)?;
+        let parsed = parse_hgravs01_header(payload.as_ref())?;
         if parsed.shape != shape || u64::try_from(parsed.elements).ok() != Some(elements) {
             return Err(model_error(
                 label,
@@ -1365,7 +1424,7 @@ fn validate_aw_tensor_row(
         }
         require_exact_string(layout, "sign_bit_order", "little", label)?;
         require_exact_string(layout, "scale_dtype", "float16", label)?;
-        let parsed = parse_complete_binary_header(&payload)?;
+        let parsed = parse_complete_binary_header(payload.as_ref())?;
         if parsed.shape != shape || u64::try_from(parsed.elements).ok() != Some(elements) {
             return Err(model_error(
                 label,
@@ -1374,6 +1433,7 @@ fn validate_aw_tensor_row(
         }
         Qwen30ActivationWeightedTensorLayout::Direct(parsed)
     };
+    aw_payload_timing_add(&AW_PAYLOAD_LAYOUT_MS, layout_start);
     Ok((
         Qwen30ActivationWeightedTensor {
             tensor_name: tensor_name.to_owned(),
@@ -1381,13 +1441,13 @@ fn validate_aw_tensor_row(
             source_shard_sha256,
             source_dtype: source_dtype.to_owned(),
             artifact_path: expected_path,
-            artifact_sha256,
+            artifact_sha256: artifact_sha256.to_owned(),
             artifact_bytes: payload.len(),
             elements: usize::try_from(elements)
                 .map_err(|_| model_error(label, "tensor elements do not fit platform usize"))?,
             layout: parsed_layout,
         },
-        Arc::from(payload),
+        payload,
     ))
 }
 
@@ -1453,6 +1513,26 @@ fn validate_aw_tensor_rows_bounded_parallel(
     selection_path: &Path,
     expected_activation_capture_sha256: &str,
 ) -> Result<(Vec<(Qwen30ActivationWeightedTensor, Arc<[u8]>)>, usize)> {
+    validate_aw_tensor_rows_bounded_parallel_with_warm(
+        rows,
+        root,
+        source,
+        selected_organs,
+        selection_path,
+        expected_activation_capture_sha256,
+        None,
+    )
+}
+
+fn validate_aw_tensor_rows_bounded_parallel_with_warm(
+    rows: &[Value],
+    root: &Path,
+    source: &super::SourceChain,
+    selected_organs: &BTreeMap<String, Map<String, Value>>,
+    selection_path: &Path,
+    expected_activation_capture_sha256: &str,
+    warm_payloads: Option<&BTreeMap<String, Arc<[u8]>>>,
+) -> Result<(Vec<(Qwen30ActivationWeightedTensor, Arc<[u8]>)>, usize)> {
     let (lanes, workers) = quality_payload_verification_lanes(rows);
     let workers = workers.min(QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS);
     if workers == 0 {
@@ -1473,13 +1553,32 @@ fn validate_aw_tensor_rows_bounded_parallel(
                             )
                         })
                         .and_then(|row| {
-                            validate_aw_tensor_row(
+                            let warm = if let Some(map) = warm_payloads {
+                                let name = required_string(
+                                    row,
+                                    "tensor_name",
+                                    "activation-weighted SVD manifest tensor",
+                                )?;
+                                Some(
+                                    map.get(name)
+                                        .cloned()
+                                        .ok_or_else(|| {
+                                            Error::Model(format!(
+                                                "warm admission missing preloaded payload for {name:?}"
+                                            ))
+                                        })?,
+                                )
+                            } else {
+                                None
+                            };
+                            validate_aw_tensor_row_with_payload(
                                 row,
                                 root,
                                 source,
                                 selected_organs,
                                 selection_path,
                                 expected_activation_capture_sha256,
+                                warm,
                             )
                         });
                     lane_outcomes.push((ordinal, outcome));
@@ -1513,11 +1612,89 @@ fn validate_aw_tensor_rows_bounded_parallel(
     Ok((tensors, workers))
 }
 
+fn load_aw_warm_payloads_bounded_parallel(
+    receipt: &admission_warm_receipt::WarmAdmissionReceipt,
+) -> Result<BTreeMap<String, Arc<[u8]>>> {
+    let entries: Vec<&admission_warm_receipt::ReceiptEntry> = receipt.entries.values().collect();
+    if entries.is_empty() {
+        return Ok(BTreeMap::new());
+    }
+    let workers = entries
+        .len()
+        .min(QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS)
+        .max(1);
+    let mut lanes: Vec<Vec<usize>> = (0..workers).map(|_| Vec::new()).collect();
+    for (idx, _) in entries.iter().enumerate() {
+        lanes[idx % workers].push(idx);
+    }
+    let outcomes = thread::scope(|scope| {
+        let mut handles = Vec::with_capacity(lanes.len());
+        for lane in &lanes {
+            let entries = &entries;
+            handles.push(scope.spawn(move || {
+                let mut lane_outcomes = Vec::with_capacity(lane.len());
+                for &idx in lane {
+                    let outcome =
+                        admission_warm_receipt::load_payload_bytes_warm_skip_hash(entries[idx]);
+                    lane_outcomes.push((idx, outcome));
+                }
+                lane_outcomes
+            }));
+        }
+        let mut joined = Vec::with_capacity(entries.len());
+        for handle in handles {
+            let lane = handle.join().map_err(|_| {
+                Error::Model(
+                    "activation-weighted warm payload load worker panicked; refusing admission"
+                        .into(),
+                )
+            })?;
+            joined.extend(lane);
+        }
+        Ok::<_, Error>(joined)
+    })?;
+    let mut outcomes = outcomes;
+    outcomes.sort_by_key(|(idx, _)| *idx);
+    let mut payloads = BTreeMap::new();
+    for (idx, outcome) in outcomes {
+        let payload = outcome.map_err(|error| {
+            Error::Model(format!(
+                "activation-weighted warm payload load failed at entry {idx}: {error}"
+            ))
+        })?;
+        let name = entries[idx].tensor_name.clone();
+        if payloads.insert(name, payload).is_some() {
+            return Err(Error::Model(
+                "activation-weighted warm load produced a duplicate tensor_name".into(),
+            ));
+        }
+    }
+    Ok(payloads)
+}
+
 /// Strict native admission for the mixed HQ30G1B1 + HGRAVS01 Qwen30 candidate.
+///
+/// Warm path (`HAWKING_ADMISSION_WARM_RECEIPT`, default on): after a prior cold
+/// full rehash wrote a sealed receipt, a later process may skip *recomputing*
+/// content SHA-256 when every payload file's (size, mtime_ns, device, inode)
+/// still matches. It never skips the unchanged-file check. Selection, snapshot,
+/// terminal, activation-capture, source-chain, and geometry seals still run
+/// every start. Disable with `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full
+/// cold rehash every start.
 pub fn admit_qwen30_activation_weighted_svd_artifact(
     manifest_path: impl AsRef<Path>,
     admission: &Qwen30ActivationWeightedSvdAdmission,
 ) -> Result<Qwen30ActivationWeightedSvdArtifact> {
+    crate::startup_timing::time_ms_result("admit_hgravs_total", || {
+        admit_qwen30_activation_weighted_svd_artifact_inner(manifest_path, admission)
+    })
+}
+
+fn admit_qwen30_activation_weighted_svd_artifact_inner(
+    manifest_path: impl AsRef<Path>,
+    admission: &Qwen30ActivationWeightedSvdAdmission,
+) -> Result<Qwen30ActivationWeightedSvdArtifact> {
+    aw_payload_timing_reset();
     for (label, value) in [
         (
             "expected manifest seal",
@@ -1559,6 +1736,9 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
             "activation-weighted SVD admission requires a protected source revision".into(),
         ));
     }
+
+    // ---- Manifest seal (always) ----
+    let phase = Instant::now();
     let manifest_path =
         canonical_regular_path(manifest_path.as_ref(), "activation-weighted SVD manifest")?;
     let root = manifest_path.parent().ok_or_else(|| {
@@ -1607,6 +1787,13 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
                 .into(),
         ));
     }
+    crate::startup_timing::record_ms(
+        "admit_manifest_seal",
+        crate::startup_timing::duration_ms(phase.elapsed()),
+    );
+
+    // ---- Source chain (always) ----
+    let phase = Instant::now();
     // Revalidation lives under the baseline complete-gravity authority, not
     // necessarily under the candidate root.
     if required_sha256(
@@ -1681,6 +1868,13 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         &manifest_audit_seal,
     )?;
     let authority_selected_count = validate_aw_manifest_source(manifest_object, &source)?;
+    crate::startup_timing::record_ms(
+        "admit_source_chain",
+        crate::startup_timing::duration_ms(phase.elapsed()),
+    );
+
+    // ---- Selection + source-binding snapshot seals (always) ----
+    let phase = Instant::now();
     let selected_organs = validate_aw_selection_and_snapshot(
         manifest_object,
         admission,
@@ -1688,7 +1882,13 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         &sha256_hex(&receipt_raw),
         authority_selected_count,
     )?;
+    crate::startup_timing::record_ms(
+        "admit_selection_snapshot_seals",
+        crate::startup_timing::duration_ms(phase.elapsed()),
+    );
 
+    // ---- Terminal seal (always) ----
+    let phase = Instant::now();
     let terminal_raw =
         read_regular_file(&expected_terminal_path, "activation-weighted terminal receipt")?;
     let terminal =
@@ -1725,6 +1925,10 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
             "activation-weighted terminal source audit seal differs from protected handoff".into(),
         ));
     }
+    crate::startup_timing::record_ms(
+        "admit_terminal_seal",
+        crate::startup_timing::duration_ms(phase.elapsed()),
+    );
 
     let rows = required_array(
         manifest_object,
@@ -1742,15 +1946,185 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         &admission.expected_selection_path,
         "protected activation-weighted selection receipt",
     )?;
-    let (validated_rows, payload_verification_workers) =
-        validate_aw_tensor_rows_bounded_parallel(
-            rows,
+
+    // ---- Warm path: skip content rehash when identity metadata still matches ----
+    if admission_warm_receipt::warm_receipt_enabled() {
+        match try_warm_aw_payload_admission(
+            &manifest_path,
+            &manifest_seal,
             root,
             &source,
+            rows,
+            manifest_object,
+            manifest_raw.len(),
             &selected_organs,
             &expected_selection_path,
             &admission.expected_activation_capture_sha256,
-        )?;
+            authority_selected_count,
+            terminal_object,
+        ) {
+            Ok(Some(artifact)) => {
+                crate::startup_timing::record_ms("admit_payload_mode_warm_skip_rehash", 1);
+                aw_payload_timing_flush();
+                return Ok(artifact);
+            }
+            Ok(None) => {
+                // Fall through to cold full rehash.
+            }
+            Err(error) => {
+                // Warm path must never weaken the gate: any hard failure during
+                // a claimed warm hit aborts rather than silently accepting.
+                return Err(error);
+            }
+        }
+    }
+
+    // ---- Cold path: full per-payload SHA-256 ----
+    let (validated_rows, payload_verification_workers) =
+        crate::startup_timing::time_ms_result("admit_payload_cold_rehash", || {
+            validate_aw_tensor_rows_bounded_parallel(
+                rows,
+                root,
+                &source,
+                &selected_organs,
+                &expected_selection_path,
+                &admission.expected_activation_capture_sha256,
+            )
+        })?;
+    crate::startup_timing::record_ms("admit_payload_mode_cold_full_rehash", 1);
+    aw_payload_timing_flush();
+
+    let artifact = assemble_aw_artifact(
+        validated_rows,
+        payload_verification_workers,
+        &source,
+        authority_selected_count,
+        &selected_organs,
+        manifest_object,
+        terminal_object,
+        manifest_raw.len(),
+        manifest_path,
+        manifest_seal,
+    )?;
+
+    if admission_warm_receipt::warm_receipt_enabled() {
+        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_write", || {
+            let specs: Vec<admission_warm_receipt::ReceiptEntrySpec> = artifact
+                .tensors
+                .iter()
+                .map(|(name, tensor)| {
+                    let layout_kind = match &tensor.layout {
+                        Qwen30ActivationWeightedTensorLayout::Direct(_) => {
+                            admission_warm_receipt::LAYOUT_KIND_HQ30G1B1
+                        }
+                        Qwen30ActivationWeightedTensorLayout::ActivationWeightedSvd(_) => {
+                            admission_warm_receipt::LAYOUT_KIND_HGRAVS01
+                        }
+                    };
+                    // Mixed catalog: layout is re-proven from bytes+manifest on
+                    // every warm load. Identity receipt does not store headers.
+                    admission_warm_receipt::ReceiptEntrySpec {
+                        tensor_name: name.clone(),
+                        artifact_path: tensor.artifact_path.clone(),
+                        artifact_sha256: tensor.artifact_sha256.clone(),
+                        source_shard: tensor.source_shard.clone(),
+                        source_shard_sha256: tensor.source_shard_sha256.clone(),
+                        source_dtype: tensor.source_dtype.clone(),
+                        header: None,
+                        layout_kind: layout_kind.to_owned(),
+                    }
+                })
+                .collect();
+            let receipt = admission_warm_receipt::build_receipt_from_specs(
+                &artifact.manifest_path,
+                &artifact.manifest_seal_sha256,
+                &specs,
+            )?;
+            admission_warm_receipt::write_receipt(&receipt)
+        });
+    }
+
+    Ok(artifact)
+}
+
+fn try_warm_aw_payload_admission(
+    manifest_path: &Path,
+    manifest_seal: &str,
+    root: &Path,
+    source: &super::SourceChain,
+    rows: &[Value],
+    manifest_object: &Map<String, Value>,
+    manifest_raw_len: usize,
+    selected_organs: &BTreeMap<String, Map<String, Value>>,
+    selection_path: &Path,
+    expected_activation_capture_sha256: &str,
+    authority_selected_count: usize,
+    terminal_object: &Map<String, Value>,
+) -> Result<Option<Qwen30ActivationWeightedSvdArtifact>> {
+    let Some(receipt) = admission_warm_receipt::load_receipt(manifest_seal)? else {
+        return Ok(None);
+    };
+    if receipt.manifest_path != manifest_path {
+        return Ok(None);
+    }
+    if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
+        return Ok(None);
+    }
+    let identity_ok =
+        crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+            admission_warm_receipt::receipt_identities_still_match(&receipt)
+        })?;
+    if !identity_ok {
+        // Any single identity mismatch forces FULL cold rehash of the catalog.
+        return Ok(None);
+    }
+
+    let warm_payloads =
+        crate::startup_timing::time_ms_result("admit_payload_warm_load_no_rehash", || {
+            load_aw_warm_payloads_bounded_parallel(&receipt)
+        })?;
+
+    // Layout / selection / geometry still re-proven on every warm start.
+    let (validated_rows, payload_verification_workers) =
+        crate::startup_timing::time_ms_result("admit_payload_warm_layout_revalidate", || {
+            validate_aw_tensor_rows_bounded_parallel_with_warm(
+                rows,
+                root,
+                source,
+                selected_organs,
+                selection_path,
+                expected_activation_capture_sha256,
+                Some(&warm_payloads),
+            )
+        })?;
+
+    let artifact = assemble_aw_artifact(
+        validated_rows,
+        payload_verification_workers,
+        source,
+        authority_selected_count,
+        selected_organs,
+        manifest_object,
+        terminal_object,
+        manifest_raw_len,
+        manifest_path.to_path_buf(),
+        manifest_seal.to_owned(),
+    )?;
+    Ok(Some(artifact))
+}
+
+fn assemble_aw_artifact(
+    validated_rows: Vec<(Qwen30ActivationWeightedTensor, Arc<[u8]>)>,
+    payload_verification_workers: usize,
+    source: &super::SourceChain,
+    authority_selected_count: usize,
+    selected_organs: &BTreeMap<String, Map<String, Value>>,
+    manifest_object: &Map<String, Value>,
+    terminal_object: &Map<String, Value>,
+    manifest_raw_len: usize,
+    manifest_path: PathBuf,
+    manifest_seal: String,
+) -> Result<Qwen30ActivationWeightedSvdArtifact> {
     let mut tensors = BTreeMap::new();
     let mut verified_payloads = BTreeMap::new();
     let mut selected_hgravs_organs = BTreeSet::new();
@@ -1778,8 +2152,7 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
     }
     if selected_hgravs_organs.len() != authority_selected_count
         || selected_hgravs_organs.len() != selected_organs.len()
-        || selected_hgravs_organs
-            != selected_organs.keys().cloned().collect::<BTreeSet<_>>()
+        || selected_hgravs_organs != selected_organs.keys().cloned().collect::<BTreeSet<_>>()
     {
         return Err(Error::Model(format!(
             "activation-weighted SVD selected HGRAVS01 set differs from sealed selection: observed_hgravs={} selection={} authority={}",
@@ -1800,22 +2173,23 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
         ));
     }
     let (source_weight_elements, tensor_payload_bytes) =
-        validate_aw_ledger(manifest_object, &tensors, manifest_raw.len())?;
+        validate_aw_ledger(manifest_object, &tensors, manifest_raw_len)?;
     let terminal_candidate =
         required_object(terminal_object, "candidate", "activation-weighted terminal receipt")?;
     if required_u64(
         terminal_candidate,
         "all_required_weight_artifact_bytes",
         "activation-weighted terminal receipt",
-    )? != tensor_payload_bytes + u64::try_from(manifest_raw.len()).unwrap_or(u64::MAX)
+    )? != tensor_payload_bytes + u64::try_from(manifest_raw_len).unwrap_or(u64::MAX)
     {
         return Err(Error::Model(
             "activation-weighted terminal byte ledger differs from scanned manifest".into(),
         ));
     }
-    let exact_bpw =
-        (tensor_payload_bytes + u64::try_from(manifest_raw.len()).unwrap_or(u64::MAX)) as f64 * 8.0
-            / source_weight_elements as f64;
+    let exact_bpw = (tensor_payload_bytes + u64::try_from(manifest_raw_len).unwrap_or(u64::MAX))
+        as f64
+        * 8.0
+        / source_weight_elements as f64;
     if (required_f64(
         terminal_candidate,
         "complete_physical_bpw",
@@ -1836,10 +2210,10 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
     Ok(Qwen30ActivationWeightedSvdArtifact {
         manifest_path,
         manifest_seal_sha256: manifest_seal,
-        source_audit_path: source.source_audit_path,
-        source_audit_seal_sha256: source.source_audit_seal_sha256,
-        source_revision: source.source_revision,
-        source_index_path: source.source_index_path,
+        source_audit_path: source.source_audit_path.clone(),
+        source_audit_seal_sha256: source.source_audit_seal_sha256.clone(),
+        source_revision: source.source_revision.clone(),
+        source_index_path: source.source_index_path.clone(),
         source_weight_elements,
         tensor_payload_bytes,
         selected_hgravs_organs: selected_hgravs_organs.into_iter().collect(),

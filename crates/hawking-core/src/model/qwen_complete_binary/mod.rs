@@ -20,7 +20,15 @@ use std::sync::Arc;
 use std::thread;
 
 mod activation_weighted_svd;
+mod admission_warm_receipt;
+mod uniform_q4;
+mod uniform_qn;
 pub use activation_weighted_svd::*;
+pub use admission_warm_receipt::{
+    receipt_path_for_seal, warm_receipt_enabled, ADMISSION_WARM_RECEIPT_SCHEMA,
+};
+pub use uniform_q4::*;
+pub use uniform_qn::*;
 
 pub const COMPLETE_BINARY_MAGIC: [u8; 8] = *b"HQ30G1B1";
 pub const COMPLETE_BINARY_VERSION: u32 = 1;
@@ -1490,6 +1498,7 @@ fn canonical_string_map_sha256(values: &BTreeMap<String, String>) -> Result<Stri
     Ok(sha256_hex(&canonical_json(&Value::Object(object))?))
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct SourceChain {
     source_audit_path: PathBuf,
     source_audit_seal_sha256: String,
@@ -2798,7 +2807,22 @@ fn validate_quality_tensor_rows_bounded_parallel(
 /// the protected manifest seal, its source-audit chain, current source index
 /// and shard identities, every tensor payload hash, and all fixed-layout
 /// geometry.  It deliberately has no decoder, HCLI, or TPS side effect.
+///
+/// Warm path (`HAWKING_ADMISSION_WARM_RECEIPT`, default on): after a prior cold
+/// full rehash wrote a sealed receipt, a later process may skip *recomputing*
+/// content SHA-256 when every payload file's (size, mtime_ns, device, inode)
+/// still matches. It never skips the unchanged-file check. Disable with
+/// `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full cold rehash every start.
 pub fn admit_complete_binary_artifact(
+    manifest_path: impl AsRef<Path>,
+    admission: &CompleteBinaryAdmission,
+) -> Result<CompleteBinaryArtifact> {
+    crate::startup_timing::time_ms_result("admit_complete_binary_total", || {
+        admit_complete_binary_artifact_inner(manifest_path, admission)
+    })
+}
+
+fn admit_complete_binary_artifact_inner(
     manifest_path: impl AsRef<Path>,
     admission: &CompleteBinaryAdmission,
 ) -> Result<CompleteBinaryArtifact> {
@@ -2811,7 +2835,9 @@ pub fn admit_complete_binary_artifact(
                 .into(),
         ));
     }
-    let manifest_path = canonical_regular_path(manifest_path.as_ref(), "complete binary manifest")?;
+    let manifest_path = crate::startup_timing::time_ms_result("admit_manifest_seal", || {
+        canonical_regular_path(manifest_path.as_ref(), "complete binary manifest")
+    })?;
     let root = manifest_path.parent().ok_or_else(|| {
         Error::Model("complete binary manifest has no parent artifact root".into())
     })?;
@@ -2858,31 +2884,37 @@ pub fn admit_complete_binary_artifact(
         )?,
         "complete binary source revalidation receipt",
     )?;
-    let receipt_raw =
-        read_regular_file(&receipt_path, "complete binary source revalidation receipt")?;
-    let receipt =
-        parse_json_no_duplicate_keys(&receipt_raw, "complete binary source revalidation receipt")?;
-    let receipt_seal =
-        verify_sealed_document(&receipt, "complete binary source revalidation receipt")?;
-    if receipt_seal
-        != required_sha256(
-            manifest_object,
-            "source_revalidation_receipt_seal_sha256",
-            "complete binary manifest",
-        )?
-    {
-        return Err(Error::Model(
-            "complete binary manifest revalidation receipt seal does not match its payload".into(),
-        ));
-    }
-    let source = validate_source_chain(
-        &receipt,
-        &receipt_path,
-        root,
-        admission,
-        &manifest_audit_seal,
-    )?;
-    validate_manifest_source(manifest_object, &source, admission.model)?;
+    let source = crate::startup_timing::time_ms_result("admit_source_chain", || {
+        let receipt_raw =
+            read_regular_file(&receipt_path, "complete binary source revalidation receipt")?;
+        let receipt = parse_json_no_duplicate_keys(
+            &receipt_raw,
+            "complete binary source revalidation receipt",
+        )?;
+        let receipt_seal =
+            verify_sealed_document(&receipt, "complete binary source revalidation receipt")?;
+        if receipt_seal
+            != required_sha256(
+                manifest_object,
+                "source_revalidation_receipt_seal_sha256",
+                "complete binary manifest",
+            )?
+        {
+            return Err(Error::Model(
+                "complete binary manifest revalidation receipt seal does not match its payload"
+                    .into(),
+            ));
+        }
+        let source = validate_source_chain(
+            &receipt,
+            &receipt_path,
+            root,
+            admission,
+            &manifest_audit_seal,
+        )?;
+        validate_manifest_source(manifest_object, &source, admission.model)?;
+        Ok(source)
+    })?;
 
     let rows = required_array(manifest_object, "tensors", "complete binary manifest")?;
     if rows.len() != source.weight_map.len() {
@@ -2891,28 +2923,84 @@ pub fn admit_complete_binary_artifact(
                 .into(),
         ));
     }
-    let mut tensors = BTreeMap::new();
-    let mut verified_payloads = BTreeMap::new();
-    for value in rows {
-        let row = value.as_object().ok_or_else(|| {
-            Error::Model("complete binary manifest tensor entry must be an object".into())
-        })?;
-        let (tensor, verified_payload) = validate_tensor_row(row, root, &source)?;
-        let tensor_name = tensor.tensor_name.clone();
-        if tensors.insert(tensor_name.clone(), tensor).is_some() {
-            return Err(Error::Model(
-                "complete binary manifest contains a duplicate tensor_name".into(),
-            ));
-        }
-        if verified_payloads
-            .insert(tensor_name, verified_payload)
-            .is_some()
-        {
-            return Err(Error::Model(
-                "complete binary manifest duplicated an immutable payload entry".into(),
-            ));
+
+    // ---- Warm path: skip content rehash when identity metadata still matches ----
+    if admission_warm_receipt::warm_receipt_enabled() {
+        match try_warm_payload_admission(
+            &manifest_path,
+            &manifest_seal,
+            root,
+            &source,
+            rows,
+            admission.model,
+            manifest_object,
+            manifest_raw.len(),
+        ) {
+            Ok(Some(artifact)) => {
+                crate::startup_timing::record_ms("admit_payload_path", 0);
+                crate::startup_timing::record_ms("admit_payload_mode_warm_skip_rehash", 1);
+                return Ok(artifact);
+            }
+            Ok(None) => {
+                // Fall through to cold full rehash.
+            }
+            Err(error) => {
+                // Warm path must never weaken the gate: any hard failure during
+                // a claimed warm hit aborts rather than silently accepting.
+                return Err(error);
+            }
         }
     }
+
+    // ---- Cold path: full per-payload SHA-256 ----
+    // Default: bounded parallel by source-shard lanes (same pattern as quality
+    // repack). Force historical sequential scan with
+    // `HAWKING_ADMISSION_PARALLEL=0` for baseline measurement.
+    let (tensors, verified_payloads) =
+        crate::startup_timing::time_ms_result("admit_payload_cold_rehash", || {
+            let parallel = match std::env::var("HAWKING_ADMISSION_PARALLEL") {
+                Ok(v)
+                    if matches!(
+                        v.as_str(),
+                        "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF"
+                    ) =>
+                {
+                    false
+                }
+                _ => true,
+            };
+            if parallel {
+                validate_complete_binary_tensor_rows_bounded_parallel(rows, root, &source)
+            } else {
+                let mut tensors = BTreeMap::new();
+                let mut verified_payloads = BTreeMap::new();
+                for value in rows {
+                    let row = value.as_object().ok_or_else(|| {
+                        Error::Model(
+                            "complete binary manifest tensor entry must be an object".into(),
+                        )
+                    })?;
+                    let (tensor, verified_payload) = validate_tensor_row(row, root, &source)?;
+                    let tensor_name = tensor.tensor_name.clone();
+                    if tensors.insert(tensor_name.clone(), tensor).is_some() {
+                        return Err(Error::Model(
+                            "complete binary manifest contains a duplicate tensor_name".into(),
+                        ));
+                    }
+                    if verified_payloads
+                        .insert(tensor_name, verified_payload)
+                        .is_some()
+                    {
+                        return Err(Error::Model(
+                            "complete binary manifest duplicated an immutable payload entry".into(),
+                        ));
+                    }
+                }
+                Ok((tensors, verified_payloads))
+            }
+        })?;
+    crate::startup_timing::record_ms("admit_payload_mode_cold_full_rehash", 1);
+
     if tensors.keys().ne(source.weight_map.keys()) {
         return Err(Error::Model(
             "complete binary manifest tensor set does not exactly match the revalidated source index"
@@ -2927,10 +3015,10 @@ pub fn admit_complete_binary_artifact(
     }
     let (source_weight_elements, tensor_payload_bytes) =
         validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
-    Ok(CompleteBinaryArtifact {
+    let artifact = CompleteBinaryArtifact {
         model: admission.model,
-        manifest_path,
-        manifest_seal_sha256: manifest_seal,
+        manifest_path: manifest_path.clone(),
+        manifest_seal_sha256: manifest_seal.clone(),
         source_audit_path: source.source_audit_path,
         source_audit_seal_sha256: source.source_audit_seal_sha256,
         source_revision: source.source_revision,
@@ -2939,7 +3027,219 @@ pub fn admit_complete_binary_artifact(
         tensor_payload_bytes,
         tensors,
         verified_payloads,
-    })
+    };
+
+    if admission_warm_receipt::warm_receipt_enabled() {
+        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_write", || {
+            let receipt = admission_warm_receipt::build_receipt_from_admitted(
+                &artifact.manifest_path,
+                &artifact.manifest_seal_sha256,
+                &artifact.tensors,
+            )?;
+            admission_warm_receipt::write_receipt(&receipt)
+        });
+    }
+
+    Ok(artifact)
+}
+
+fn try_warm_payload_admission(
+    manifest_path: &Path,
+    manifest_seal: &str,
+    root: &Path,
+    source: &SourceChain,
+    rows: &[Value],
+    model: QwenCompleteBinaryModel,
+    manifest_object: &Map<String, Value>,
+    manifest_raw_len: usize,
+) -> Result<Option<CompleteBinaryArtifact>> {
+    let Some(receipt) = admission_warm_receipt::load_receipt(manifest_seal)? else {
+        return Ok(None);
+    };
+    if receipt.manifest_path != manifest_path {
+        // Same seal should imply same content, but require path identity too.
+        return Ok(None);
+    }
+    if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
+        return Ok(None);
+    }
+    let identity_ok =
+        crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+            admission_warm_receipt::receipt_identities_still_match(&receipt)
+        })?;
+    if !identity_ok {
+        return Ok(None);
+    }
+
+    // Identity matches: load payloads without content rehash (still prove size
+    // and header geometry). Parallel by source-shard lanes for I/O.
+    let (tensors, verified_payloads) =
+        crate::startup_timing::time_ms_result("admit_payload_warm_load_no_rehash", || {
+            load_warm_payloads_bounded_parallel(&receipt)
+        })?;
+
+    if tensors.keys().ne(source.weight_map.keys()) {
+        return Err(Error::Model(
+            "warm admission tensor set does not exactly match the revalidated source index".into(),
+        ));
+    }
+    if verified_payloads.len() != tensors.len() {
+        return Err(Error::Model(
+            "warm admission did not retain one immutable payload per tensor".into(),
+        ));
+    }
+    let (source_weight_elements, tensor_payload_bytes) =
+        validate_ledger(manifest_object, &tensors, manifest_raw_len)?;
+    Ok(Some(CompleteBinaryArtifact {
+        model,
+        manifest_path: manifest_path.to_path_buf(),
+        manifest_seal_sha256: manifest_seal.to_owned(),
+        source_audit_path: source.source_audit_path.clone(),
+        source_audit_seal_sha256: source.source_audit_seal_sha256.clone(),
+        source_revision: source.source_revision.clone(),
+        source_index_path: source.source_index_path.clone(),
+        source_weight_elements,
+        tensor_payload_bytes,
+        tensors,
+        verified_payloads,
+    }))
+}
+
+fn validate_complete_binary_tensor_rows_bounded_parallel(
+    rows: &[Value],
+    root: &Path,
+    source: &SourceChain,
+) -> Result<(
+    BTreeMap<String, CompleteBinaryTensor>,
+    BTreeMap<String, Arc<[u8]>>,
+)> {
+    let (lanes, workers) = quality_payload_verification_lanes(rows);
+    if workers == 0 {
+        return Ok((BTreeMap::new(), BTreeMap::new()));
+    }
+    let outcomes = thread::scope(|scope| {
+        let mut handles = Vec::with_capacity(lanes.len());
+        for lane in &lanes {
+            handles.push(scope.spawn(move || {
+                let mut lane_outcomes = Vec::with_capacity(lane.len());
+                for &ordinal in lane {
+                    let outcome = rows[ordinal]
+                        .as_object()
+                        .ok_or_else(|| {
+                            Error::Model(
+                                "complete binary manifest tensor entry must be an object".into(),
+                            )
+                        })
+                        .and_then(|row| validate_tensor_row(row, root, source));
+                    lane_outcomes.push((ordinal, outcome));
+                }
+                lane_outcomes
+            }));
+        }
+        let mut joined = Vec::with_capacity(rows.len());
+        for handle in handles {
+            let lane = handle.join().map_err(|_| {
+                Error::Model(
+                    "complete binary payload verification worker panicked; refusing admission"
+                        .into(),
+                )
+            })?;
+            joined.extend(lane);
+        }
+        Ok::<_, Error>(joined)
+    })?;
+    let mut outcomes = outcomes;
+    outcomes.sort_by_key(|(ordinal, _)| *ordinal);
+    let mut tensors = BTreeMap::new();
+    let mut verified_payloads = BTreeMap::new();
+    for (ordinal, outcome) in outcomes {
+        let (tensor, payload) = outcome.map_err(|error| {
+            Error::Model(format!(
+                "complete binary payload verification failed at manifest ordinal {ordinal}: {error}"
+            ))
+        })?;
+        let name = tensor.tensor_name.clone();
+        if tensors.insert(name.clone(), tensor).is_some() {
+            return Err(Error::Model(
+                "complete binary manifest contains a duplicate tensor_name".into(),
+            ));
+        }
+        if verified_payloads.insert(name, payload).is_some() {
+            return Err(Error::Model(
+                "complete binary manifest duplicated an immutable payload entry".into(),
+            ));
+        }
+    }
+    Ok((tensors, verified_payloads))
+}
+
+fn load_warm_payloads_bounded_parallel(
+    receipt: &admission_warm_receipt::WarmAdmissionReceipt,
+) -> Result<(
+    BTreeMap<String, CompleteBinaryTensor>,
+    BTreeMap<String, Arc<[u8]>>,
+)> {
+    let entries: Vec<&admission_warm_receipt::ReceiptEntry> =
+        receipt.entries.values().collect();
+    if entries.is_empty() {
+        return Ok((BTreeMap::new(), BTreeMap::new()));
+    }
+    let workers = entries
+        .len()
+        .min(QWEN30_QUALITY_REPACK_MAX_PAYLOAD_VERIFY_WORKERS)
+        .max(1);
+    let mut lanes: Vec<Vec<usize>> = (0..workers).map(|_| Vec::new()).collect();
+    for (idx, _) in entries.iter().enumerate() {
+        lanes[idx % workers].push(idx);
+    }
+    let outcomes = thread::scope(|scope| {
+        let mut handles = Vec::with_capacity(lanes.len());
+        for lane in &lanes {
+            let entries = &entries;
+            handles.push(scope.spawn(move || {
+                let mut lane_outcomes = Vec::with_capacity(lane.len());
+                for &idx in lane {
+                    let outcome =
+                        admission_warm_receipt::load_payload_warm_skip_hash(entries[idx]);
+                    lane_outcomes.push((idx, outcome));
+                }
+                lane_outcomes
+            }));
+        }
+        let mut joined = Vec::with_capacity(entries.len());
+        for handle in handles {
+            let lane = handle.join().map_err(|_| {
+                Error::Model(
+                    "warm admission payload load worker panicked; refusing admission".into(),
+                )
+            })?;
+            joined.extend(lane);
+        }
+        Ok::<_, Error>(joined)
+    })?;
+    let mut outcomes = outcomes;
+    outcomes.sort_by_key(|(idx, _)| *idx);
+    let mut tensors = BTreeMap::new();
+    let mut verified_payloads = BTreeMap::new();
+    for (idx, outcome) in outcomes {
+        let (tensor, payload) = outcome.map_err(|error| {
+            Error::Model(format!(
+                "warm admission payload load failed at entry {idx}: {error}"
+            ))
+        })?;
+        let name = tensor.tensor_name.clone();
+        if tensors.insert(name.clone(), tensor).is_some() {
+            return Err(Error::Model(
+                "warm admission produced a duplicate tensor_name".into(),
+            ));
+        }
+        if verified_payloads.insert(name, payload).is_some() {
+            return Err(Error::Model(
+                "warm admission duplicated an immutable payload entry".into(),
+            ));
+        }
+    }
+    Ok((tensors, verified_payloads))
 }
 
 /// Strict native admission for the separately rooted Qwen30 gate/up residual

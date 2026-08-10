@@ -200,6 +200,19 @@ kernel void moe_topk_gate(
                 weights[(uint64_t)gid * args.top_k + k]    = best_val;
                 work[best_idx] = -INFINITY;
             }
+            // Optional top-k re-normalization (norm_topk_prob). Matches
+            // qwen_complete_normalize_route_weights left-to-right sum/scale.
+            if (args.normalize_topk != 0u) {
+                device float* w = weights + (uint64_t)gid * args.top_k;
+                float sum = 0.0f;
+                for (uint i = 0u; i < args.top_k; ++i) sum += w[i];
+                if (!isfinite(sum) || sum <= 0.0f) {
+                    for (uint i = 0u; i < args.top_k; ++i) w[i] = NAN;
+                } else {
+                    const float inv_w = 1.0f / sum;
+                    for (uint i = 0u; i < args.top_k; ++i) w[i] *= inv_w;
+                }
+            }
         }
         return;
     }
@@ -275,6 +288,19 @@ kernel void moe_topk_gate(
             work[win] = -INFINITY;
         }
         threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    // Optional top-k re-normalization (norm_topk_prob). Matches
+    // qwen_complete_normalize_route_weights left-to-right sum/scale.
+    if (args.normalize_topk != 0u && tid == 0u) {
+        device float* w = weights + (uint64_t)gid * args.top_k;
+        float sum = 0.0f;
+        for (uint i = 0u; i < args.top_k; ++i) sum += w[i];
+        if (!isfinite(sum) || sum <= 0.0f) {
+            for (uint i = 0u; i < args.top_k; ++i) w[i] = NAN;
+        } else {
+            const float inv_w = 1.0f / sum;
+            for (uint i = 0u; i < args.top_k; ++i) w[i] *= inv_w;
+        }
     }
 }
 

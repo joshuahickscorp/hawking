@@ -132,6 +132,8 @@ pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
 pub mod sidecar;
+/// Process-local startup phase timers (`HAWKING_STARTUP_TIMING=1`).
+pub mod startup_timing;
 // speculate extracted to the hawking-speculate crate (NUCLEAR PASTA).
 // Re-export so integration tests (and any in-tree callers) that still path
 // through `hawking_core::speculate::…` keep compiling.

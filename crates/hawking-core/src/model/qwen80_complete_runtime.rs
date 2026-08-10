@@ -15578,4 +15578,107 @@ mod tests {
             }
         }
     }
+
+    /// Layer 3 is the first GQA layer. A prior hoisted
+    /// `canonical_linear_moe_operator_contract(layer)` call refused every
+    /// non-LinearAttention layer and made the GQA match arm dead code. This
+    /// unit test calls the multi-layer bridge builder at layer 3 and requires
+    /// Ok — the absence of this assertion hid the GQA-unreachable regression.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn layer3_gqa_bridge_builder_returns_ok() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut artifact = already_admitted_catalog_fixture(&temp);
+        // Install fixed GQA mixer + MoE bodies for layer 3.
+        let layer = 3usize;
+        let prefix = format!("model.layers.{layer}");
+        let fixed = [
+            format!("{prefix}.input_layernorm.weight"),
+            format!("{prefix}.self_attn.q_proj.weight"),
+            format!("{prefix}.self_attn.k_proj.weight"),
+            format!("{prefix}.self_attn.v_proj.weight"),
+            format!("{prefix}.self_attn.q_norm.weight"),
+            format!("{prefix}.self_attn.k_norm.weight"),
+            format!("{prefix}.self_attn.o_proj.weight"),
+            format!("{prefix}.post_attention_layernorm.weight"),
+            format!("{prefix}.mlp.gate.weight"),
+            format!("{prefix}.mlp.shared_expert.gate_proj.weight"),
+            format!("{prefix}.mlp.shared_expert.up_proj.weight"),
+            format!("{prefix}.mlp.shared_expert.down_proj.weight"),
+            format!("{prefix}.mlp.shared_expert_gate.weight"),
+        ];
+        for (seed, name) in fixed.iter().enumerate() {
+            install_verified_direct_fixture_payload(&mut artifact, name, seed as u64 + 1);
+        }
+        // Ten routed experts for a synthetic valid top-10 route.
+        let route_ids: [u16; QWEN80_TOP_K] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        for (route_index, expert) in route_ids.iter().enumerate() {
+            let expert_prefix = format!("{prefix}.mlp.experts.{expert}");
+            for (projection_index, suffix) in
+                ["gate_proj.weight", "up_proj.weight", "down_proj.weight"]
+                    .iter()
+                    .enumerate()
+            {
+                install_verified_direct_fixture_payload(
+                    &mut artifact,
+                    &format!("{expert_prefix}.{suffix}"),
+                    200 + route_index as u64 * 3 + projection_index as u64,
+                );
+            }
+        }
+        // NativeRuntime requires the source tokenizer sidecar next to the
+        // admitted source index. Copy (not symlink) so canonicalize stays a
+        // direct child of the fixture source root.
+        let tokenizer_src = PathBuf::from(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/tokenizer.json",
+        );
+        if !tokenizer_src.is_file() {
+            // Skip rather than fail when the physical source tree is absent.
+            eprintln!("skip layer3_gqa_bridge_builder_returns_ok: tokenizer missing at {tokenizer_src:?}");
+            return;
+        }
+        let source_dir = artifact
+            .source_index_path
+            .parent()
+            .expect("source index parent")
+            .to_path_buf();
+        fs::copy(&tokenizer_src, source_dir.join("tokenizer.json"))
+            .expect("copy tokenizer into fixture source dir");
+
+        let catalog = Qwen80CompleteArtifactCatalog::from_admitted(artifact)
+            .expect("layer-3 fixture catalog must admit");
+        // Sanity: linear contract still refuses GQA (the old hoisted bug).
+        assert!(
+            catalog.canonical_linear_moe_operator_contract(layer).is_err(),
+            "linear MoE contract must refuse layer 3 (GQA)"
+        );
+        assert!(
+            catalog.canonical_gqa_moe_operator_contract(layer).is_ok(),
+            "GQA MoE contract must accept layer 3"
+        );
+
+        let runtime = Qwen80CompleteNativeRuntime::from_admitted_catalog(
+            catalog,
+            Qwen80CompleteRuntimeOptions {
+                max_seq_len: 1,
+                trace_dispatch: false,
+            },
+        )
+        .expect("layer-3 fixture native runtime must construct on Metal");
+        let route = Qwen80RouteSelection {
+            ids: route_ids,
+            weights: [0.1f32; QWEN80_TOP_K],
+        };
+        let bridge = runtime
+            .build_source_token_layer_all_ten_true_moe_source_bridge_from_route(
+                layer,
+                &"b".repeat(64),
+                &"a".repeat(64),
+                route,
+            );
+        assert!(
+            bridge.is_ok(),
+            "layer-3 GQA bridge builder must return Ok (observed Err={bridge:?})"
+        );
+    }
 }

@@ -20,8 +20,10 @@ mod macos {
         Qwen30PackedMatvecKernel,
     };
     use hawking_core::model::qwen_complete_binary::{
-        CompleteBinaryAdmission, Qwen30ActivationWeightedSvdAdmission, QwenCompleteBinaryModel,
+        CompleteBinaryAdmission, Qwen30ActivationWeightedSvdAdmission, Qwen30UniformQ4Admission,
+        Qwen30UniformQnAdmission, QwenCompleteBinaryModel, UniformQnBits,
         QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA, QWEN30_COMPLETE_BINARY_SCHEMA,
+        QWEN30_UNIFORM_Q4_SCHEMA,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -91,11 +93,14 @@ mod macos {
 
     fn parse_packed_matvec_kernel(value: &str) -> Result<Qwen30PackedMatvecKernel, String> {
         match value {
-            "control" => Ok(Qwen30PackedMatvecKernel::ScalarControl),
+            "control" | "col32-candidate" => Ok(Qwen30PackedMatvecKernel::ScalarControl),
             "serial-control" => Ok(Qwen30PackedMatvecKernel::SerialControl),
             "simdgroup-candidate" => Ok(Qwen30PackedMatvecKernel::SimdgroupCandidate),
+            "rowblock-2" => Ok(Qwen30PackedMatvecKernel::RowBlock2),
+            "rowblock-4" => Ok(Qwen30PackedMatvecKernel::RowBlock4),
+            "rowblock-8" => Ok(Qwen30PackedMatvecKernel::RowBlock8),
             _ => Err(format!(
-                "unsupported --packed-matvec-kernel {value:?}; expected control, serial-control, or simdgroup-candidate; {}",
+                "unsupported --packed-matvec-kernel {value:?}; expected control, serial-control, simdgroup-candidate, rowblock-2, rowblock-4, or rowblock-8; {}",
                 usage()
             )),
         }
@@ -128,6 +133,8 @@ mod macos {
         expected_source_revision: String,
         /// Required only for the mixed HQ30G1B1 + HGRAVS01 candidate schema.
         activation_weighted: Option<ActivationWeightedBindings>,
+        uniform_q4: Option<UniformQ4Bindings>,
+        uniform_qn: Option<UniformQnBindings>,
         mode: Mode,
         token_id: Option<u32>,
         prompt: Option<String>,
@@ -137,6 +144,23 @@ mod macos {
         packed_matvec_kernel: Qwen30PackedMatvecKernel,
         gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel,
         prompt_template: PromptTemplate,
+    }
+
+    #[derive(Clone, Debug)]
+    struct UniformQ4Bindings {
+        expected_revalidation_path: PathBuf,
+        expected_revalidation_seal_sha256: String,
+        expected_terminal_path: PathBuf,
+        expected_terminal_seal_sha256: String,
+    }
+
+    #[derive(Clone, Debug)]
+    struct UniformQnBindings {
+        bits: u32,
+        expected_revalidation_path: PathBuf,
+        expected_revalidation_seal_sha256: String,
+        expected_terminal_path: PathBuf,
+        expected_terminal_seal_sha256: String,
     }
 
     #[derive(Clone, Debug)]
@@ -161,7 +185,7 @@ mod macos {
             --mode preflight|forward-token|generate-greedy \\
             [--token-id ID] [--prompt TEXT] [--max-new-tokens N] \\
             [--max-seq-len N] [--trace-dispatch] [--prompt-template raw-text-diagnostic|source-user-chat] \
-            [--packed-matvec-kernel control|serial-control|simdgroup-candidate] \
+            [--packed-matvec-kernel control|serial-control|simdgroup-candidate|rowblock-2|rowblock-4|rowblock-8] \
             [--gate-up-swiglu-kernel control|fused-candidate|fused-candidate-device-parity|paired-scalar-order-candidate-device-parity|paired-scalar-order-production-no-parity] \
             [--expected-revalidation-path PATH --expected-revalidation-seal-sha256 SHA256 \
              --expected-selection-path PATH --expected-selection-seal-sha256 SHA256 \
@@ -401,16 +425,16 @@ mod macos {
         if max_seq_len == 0 {
             return Err("--max-seq-len must be positive".into());
         }
-        let aw_any = expected_revalidation_path.is_some()
-            || expected_revalidation_seal_sha256.is_some()
-            || expected_selection_path.is_some()
+        let aw_only = expected_selection_path.is_some()
             || expected_selection_seal_sha256.is_some()
             || expected_source_snapshot_path.is_some()
             || expected_source_snapshot_seal_sha256.is_some()
-            || expected_terminal_path.is_some()
-            || expected_terminal_seal_sha256.is_some()
             || expected_activation_capture_sha256.is_some();
-        let activation_weighted = if aw_any {
+        let reval_or_terminal = expected_revalidation_path.is_some()
+            || expected_revalidation_seal_sha256.is_some()
+            || expected_terminal_path.is_some()
+            || expected_terminal_seal_sha256.is_some();
+        let (activation_weighted, uniform_q4, uniform_qn) = if aw_only {
             let revalidation_path =
                 required(expected_revalidation_path, "--expected-revalidation-path")?;
             let selection_path = required(expected_selection_path, "--expected-selection-path")?;
@@ -427,36 +451,71 @@ mod macos {
                     return Err(format!("{flag} must be an absolute path"));
                 }
             }
-            Some(ActivationWeightedBindings {
-                expected_revalidation_path: revalidation_path,
+            (
+                Some(ActivationWeightedBindings {
+                    expected_revalidation_path: revalidation_path,
+                    expected_revalidation_seal_sha256: required(
+                        expected_revalidation_seal_sha256,
+                        "--expected-revalidation-seal-sha256",
+                    )?,
+                    expected_selection_path: selection_path,
+                    expected_selection_seal_sha256: required(
+                        expected_selection_seal_sha256,
+                        "--expected-selection-seal-sha256",
+                    )?,
+                    expected_source_snapshot_path: snapshot_path,
+                    expected_source_snapshot_seal_sha256: required(
+                        expected_source_snapshot_seal_sha256,
+                        "--expected-source-snapshot-seal-sha256",
+                    )?,
+                    expected_terminal_path: terminal_path,
+                    expected_terminal_seal_sha256: required(
+                        expected_terminal_seal_sha256,
+                        "--expected-terminal-seal-sha256",
+                    )?,
+                    expected_activation_capture_sha256: required(
+                        expected_activation_capture_sha256,
+                        "--expected-activation-capture-sha256",
+                    )?,
+                }),
+                None,
+                None,
+            )
+        } else if reval_or_terminal {
+            let revalidation_path =
+                required(expected_revalidation_path, "--expected-revalidation-path")?;
+            let terminal_path = required(expected_terminal_path, "--expected-terminal-path")?;
+            for (flag, path) in [
+                ("--expected-revalidation-path", &revalidation_path),
+                ("--expected-terminal-path", &terminal_path),
+            ] {
+                if !path.is_absolute() {
+                    return Err(format!("{flag} must be an absolute path"));
+                }
+            }
+            let uq = UniformQ4Bindings {
+                expected_revalidation_path: revalidation_path.clone(),
                 expected_revalidation_seal_sha256: required(
-                    expected_revalidation_seal_sha256,
+                    expected_revalidation_seal_sha256.clone(),
                     "--expected-revalidation-seal-sha256",
                 )?,
-                expected_selection_path: selection_path,
-                expected_selection_seal_sha256: required(
-                    expected_selection_seal_sha256,
-                    "--expected-selection-seal-sha256",
-                )?,
-                expected_source_snapshot_path: snapshot_path,
-                expected_source_snapshot_seal_sha256: required(
-                    expected_source_snapshot_seal_sha256,
-                    "--expected-source-snapshot-seal-sha256",
-                )?,
-                expected_terminal_path: terminal_path,
+                expected_terminal_path: terminal_path.clone(),
                 expected_terminal_seal_sha256: required(
-                    expected_terminal_seal_sha256,
+                    expected_terminal_seal_sha256.clone(),
                     "--expected-terminal-seal-sha256",
                 )?,
-                // Required on the AW-SVD path so a forged manifest cannot name
-                // its own activation capture and pass.
-                expected_activation_capture_sha256: required(
-                    expected_activation_capture_sha256,
-                    "--expected-activation-capture-sha256",
-                )?,
-            })
+            };
+            // Same bindings work for Qn; bits chosen later from schema.
+            let un = UniformQnBindings {
+                bits: 0,
+                expected_revalidation_path: revalidation_path,
+                expected_revalidation_seal_sha256: uq.expected_revalidation_seal_sha256.clone(),
+                expected_terminal_path: terminal_path,
+                expected_terminal_seal_sha256: uq.expected_terminal_seal_sha256.clone(),
+            };
+            (None, Some(uq), Some(un))
         } else {
-            None
+            (None, None, None)
         };
         Ok(Arguments {
             manifest,
@@ -473,6 +532,8 @@ mod macos {
                 "--expected-source-revision",
             )?,
             activation_weighted,
+            uniform_q4,
+            uniform_qn,
             mode,
             token_id,
             prompt,
@@ -492,6 +553,38 @@ mod macos {
             expected_source_audit_seal_sha256: arguments.expected_source_audit_seal_sha256.clone(),
             expected_source_revision: arguments.expected_source_revision.clone(),
         }
+    }
+
+
+    fn uniform_q4_admission(arguments: &Arguments) -> Result<Qwen30UniformQ4Admission, String> {
+        let uq = arguments.uniform_q4.as_ref().ok_or_else(|| {
+            "uniform Q4 requires --expected-revalidation-path/seal and --expected-terminal-path/seal".to_string()
+        })?;
+        Ok(Qwen30UniformQ4Admission {
+            expected_manifest_seal_sha256: arguments.expected_manifest_seal_sha256.clone(),
+            expected_source_audit_seal_sha256: arguments.expected_source_audit_seal_sha256.clone(),
+            expected_source_revision: arguments.expected_source_revision.clone(),
+            expected_revalidation_path: uq.expected_revalidation_path.clone(),
+            expected_revalidation_seal_sha256: uq.expected_revalidation_seal_sha256.clone(),
+            expected_terminal_path: uq.expected_terminal_path.clone(),
+            expected_terminal_seal_sha256: uq.expected_terminal_seal_sha256.clone(),
+        })
+    }
+
+    fn uniform_qn_admission(arguments: &Arguments, bits: UniformQnBits) -> Result<Qwen30UniformQnAdmission, String> {
+        let un = arguments.uniform_qn.as_ref().ok_or_else(|| {
+            "uniform Qn requires --expected-revalidation-path/seal and --expected-terminal-path/seal".to_string()
+        })?;
+        Ok(Qwen30UniformQnAdmission {
+            bits,
+            expected_manifest_seal_sha256: arguments.expected_manifest_seal_sha256.clone(),
+            expected_source_audit_seal_sha256: arguments.expected_source_audit_seal_sha256.clone(),
+            expected_source_revision: arguments.expected_source_revision.clone(),
+            expected_revalidation_path: un.expected_revalidation_path.clone(),
+            expected_revalidation_seal_sha256: un.expected_revalidation_seal_sha256.clone(),
+            expected_terminal_path: un.expected_terminal_path.clone(),
+            expected_terminal_seal_sha256: un.expected_terminal_seal_sha256.clone(),
+        })
     }
 
     fn activation_weighted_admission(arguments: &Arguments) -> Result<Qwen30ActivationWeightedSvdAdmission, String> {
@@ -785,7 +878,16 @@ mod macos {
         })
     }
 
-    fn print_json(value: Value) {
+    fn print_json(mut value: Value) {
+        // Attach process-local startup phase timers when HAWKING_STARTUP_TIMING=1.
+        // Always emit to stderr (never stdout — stdout is the receipt).
+        hawking_core::startup_timing::emit_stderr_json();
+        let snap = hawking_core::startup_timing::snapshot();
+        if snap.enabled {
+            if let Some(object) = value.as_object_mut() {
+                object.insert("startup_timing".into(), snap.to_json());
+            }
+        }
         println!(
             "{}",
             serde_json::to_string(&value).expect("runtime result must serialize")
@@ -793,6 +895,8 @@ mod macos {
     }
 
     fn fail(detail: impl AsRef<str>) -> ! {
+        // Surface partial startup phases even on fail-closed exits.
+        hawking_core::startup_timing::emit_stderr_json();
         eprintln!(
             "qwen30 complete native runtime refused: {}",
             detail.as_ref()
@@ -801,24 +905,33 @@ mod macos {
     }
 
     pub fn run() {
+        hawking_core::startup_timing::mark_process_start();
         let arguments = parse_arguments().unwrap_or_else(|error| fail(error));
         let admission = admission(&arguments);
         let schema = peek_manifest_schema(&arguments.manifest).unwrap_or_else(|error| fail(error));
         let is_activation_weighted = schema == QWEN30_ACTIVATION_WEIGHTED_SVD_SCHEMA;
+        let is_uniform_q4 = schema == QWEN30_UNIFORM_Q4_SCHEMA;
+        let is_uniform_q3 = schema == "hawking.ascension.qwen30_uniform_q3_group128_candidate.v1";
+        let is_uniform_q2 = schema == "hawking.ascension.qwen30_uniform_q2_group128_candidate.v1";
+        let is_uniform_qn = is_uniform_q2 || is_uniform_q3;
         if is_activation_weighted && arguments.activation_weighted.is_none() {
-            fail(
-                "manifest schema is activation-weighted SVD; supply the protected revalidation/selection/snapshot/terminal path+seal bindings and --expected-activation-capture-sha256",
-            );
+            fail("manifest schema is activation-weighted SVD; supply AW handoff bindings");
         }
         if !is_activation_weighted && arguments.activation_weighted.is_some() {
-            fail(
-                "activation-weighted handoff bindings were supplied for a non-activation-weighted manifest schema",
-            );
+            fail("activation-weighted handoff bindings supplied for non-AW schema");
         }
-        if !is_activation_weighted && schema != QWEN30_COMPLETE_BINARY_SCHEMA {
-            fail(format!(
-                "unsupported Qwen30 complete-native manifest schema {schema:?}"
-            ));
+        if is_uniform_q4 && arguments.uniform_q4.is_none() {
+            fail("uniform Q4 schema needs revalidation+terminal seals");
+        }
+        if is_uniform_qn && arguments.uniform_qn.is_none() {
+            fail("uniform Qn schema needs revalidation+terminal seals");
+        }
+        if !is_activation_weighted
+            && !is_uniform_q4
+            && !is_uniform_qn
+            && schema != QWEN30_COMPLETE_BINARY_SCHEMA
+        {
+            fail(format!("unsupported Qwen30 complete-native manifest schema {schema:?}"));
         }
         let runtime_executable_sha256 =
             current_executable_sha256().unwrap_or_else(|error| fail(error));
@@ -902,10 +1015,27 @@ mod macos {
         let options = Qwen30CompleteRuntimeOptions {
             max_seq_len: arguments.max_seq_len,
             trace_dispatch: arguments.trace_dispatch,
-            packed_matvec_kernel: arguments.packed_matvec_kernel,
-            gate_up_swiglu_kernel: arguments.gate_up_swiglu_kernel,
+            packed_matvec_kernel: if is_uniform_q4 || is_uniform_qn {
+                Qwen30PackedMatvecKernel::SerialControl
+            } else {
+                arguments.packed_matvec_kernel
+            },
+            gate_up_swiglu_kernel: if is_uniform_q4 || is_uniform_qn {
+                Qwen30GateUpSwiGluKernel::ThreeDispatchControl
+            } else {
+                arguments.gate_up_swiglu_kernel
+            },
         };
-        let mut runtime = if is_activation_weighted {
+        let mut runtime = if is_uniform_q4 {
+            let uq = uniform_q4_admission(&arguments).unwrap_or_else(|error| fail(error));
+            Qwen30CompleteNativeRuntime::load_uniform_q4(&arguments.manifest, &uq, options)
+                .unwrap_or_else(|error| fail(error.to_string()))
+        } else if is_uniform_qn {
+            let bits = if is_uniform_q3 { UniformQnBits::Three } else { UniformQnBits::Two };
+            let un = uniform_qn_admission(&arguments, bits).unwrap_or_else(|error| fail(error));
+            Qwen30CompleteNativeRuntime::load_uniform_qn(&arguments.manifest, &un, options)
+                .unwrap_or_else(|error| fail(error.to_string()))
+        } else if is_activation_weighted {
             let aw = activation_weighted_admission(&arguments).unwrap_or_else(|error| fail(error));
             Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
                 &arguments.manifest,
@@ -965,9 +1095,21 @@ mod macos {
         match arguments.mode {
             Mode::ForwardToken => {
                 let input_token_id = arguments.token_id.expect("validated forward-token id");
+                // Production-mode cost ledger (HAWKING_COST_LEDGER=1): 18 buckets +
+                // DeviceTimeline existed but nothing ever opened a token, so
+                // is_recording() was always false. gpu_prod cannot answer this -- it
+                // early-returns from begin_serial_group, giving one encoder per dispatch.
+                let ledger_open = hawking_core::cost_ledger::begin_token();
                 let step = runtime
                     .forward_token_greedy(input_token_id)
                     .unwrap_or_else(|error| fail(error.to_string()));
+                let cost_ledger_json = if ledger_open {
+                    hawking_core::cost_ledger::end_token()
+                        .map(|report| report.to_json_value())
+                        .unwrap_or(Value::Null)
+                } else {
+                    Value::Null
+                };
                 // `step.metal_dispatches` counts graph dispatches; native
                 // first-token residency also lazily decodes four RMS vectors
                 // per layer plus final norm (48 * 4 + 1) through distinct
@@ -989,6 +1131,7 @@ mod macos {
                     "mode": arguments.mode.name(),
                     "runtime_executable_sha256": runtime_executable_sha256,
                     "runtime_binding": runtime_binding,
+                    "cost_ledger": cost_ledger_json,
                     "execution": {
                         "input_token_id": input_token_id,
                         "all_layers_executed": true,

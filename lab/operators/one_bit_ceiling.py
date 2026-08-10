@@ -97,6 +97,50 @@ def assert_complete_bpw_le_one(ledger: CompleteByteLedger, original_weight_count
         raise CeilingViolation(f'one-bit ceiling violated: complete {float(bpw):.9f} BPW (exact {bpw.numerator}/{bpw.denominator}) over {int(original_weight_count)} weights; overage {float(over):.9f} BPW = {float(over_bits):.0f} bits = {float(over_bits) / 8 / 1024 ** 2:.1f} MiB; rebudget to <= 1/1, do not raise the ceiling')
     return {'schema': SCHEMA, 'legal': True, 'complete_bpw_exact': f'{bpw.numerator}/{bpw.denominator}', 'complete_bpw_float': float(bpw), 'headroom_bits': str(int(original_weight_count) - ledger.complete_bits()), 'reserve_bits': str(ledger.bits[RESERVE]), 'scope': 'whole_model'}
 
+
+def ledger_from_artifact_bytes(
+    *,
+    payload_bytes: int,
+    manifest_bytes: int = 0,
+    note: str = '',
+    **extra_component_bits: Any,
+) -> CompleteByteLedger:
+    """Build an itemized ledger from accounted artifact bytes.
+
+    Payload bits land in ``indices``; manifest bits in ``metadata``. Other
+    COMPONENTS default to zero (explicit). Extra named component bit counts may
+    be supplied as keyword args. Reserve defaults to zero.
+    """
+    bits = {c: 0 for c in COMPONENTS}
+    bits['indices'] = int(payload_bytes) * 8
+    bits['metadata'] = int(manifest_bytes) * 8
+    for k, v in extra_component_bits.items():
+        if k not in REQUIRED_FIELDS:
+            raise IncompleteLedger(f'unknown ledger component: {k}')
+        bits[k] = v
+    bits.setdefault(RESERVE, 0)
+    return CompleteByteLedger(note=note, **bits)
+
+
+def enforce_artifact_bpw(
+    *,
+    payload_bytes: int,
+    original_weight_count: int,
+    manifest_bytes: int = 0,
+    note: str = '',
+    **extra_component_bits: Any,
+) -> dict[str, Any]:
+    """FAIL CLOSED: build ledger from artifact bytes and assert complete BPW <= 1/1."""
+    ledger = ledger_from_artifact_bytes(
+        payload_bytes=payload_bytes,
+        manifest_bytes=manifest_bytes,
+        note=note,
+        **extra_component_bits,
+    )
+    receipt = assert_complete_bpw_le_one(ledger, original_weight_count)
+    receipt['ledger'] = ledger.as_dict(original_weight_count)
+    return receipt
+
 def is_legal_candidate(spec: dict[str, Any]) -> tuple[bool, list[str]]:
     """Candidate validation. (legal, reasons). Reasons are empty iff legal.
 

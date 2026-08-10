@@ -68,6 +68,7 @@ mod macos {
         expected_source_snapshot_seal_sha256: String,
         expected_terminal_path: PathBuf,
         expected_terminal_seal_sha256: String,
+        expected_activation_capture_sha256: String,
     }
 
     #[derive(Debug)]
@@ -106,7 +107,8 @@ mod macos {
             [--expected-revalidation-path PATH --expected-revalidation-seal-sha256 SHA256 \
              --expected-selection-path PATH --expected-selection-seal-sha256 SHA256 \
              --expected-source-snapshot-path PATH --expected-source-snapshot-seal-sha256 SHA256 \
-             --expected-terminal-path PATH --expected-terminal-seal-sha256 SHA256]"
+             --expected-terminal-path PATH --expected-terminal-seal-sha256 SHA256 \
+             --expected-activation-capture-sha256 SHA256]"
     }
 
     fn required<T>(value: Option<T>, flag: &str) -> Result<T, String> {
@@ -161,6 +163,7 @@ mod macos {
         let mut expected_source_snapshot_seal_sha256 = None;
         let mut expected_terminal_path = None;
         let mut expected_terminal_seal_sha256 = None;
+        let mut expected_activation_capture_sha256 = None;
         let mut bind = None;
         let mut max_seq_len = 256usize;
         let mut max_output_tokens = 16usize;
@@ -276,6 +279,14 @@ mod macos {
                         ));
                     }
                 }
+                "--expected-activation-capture-sha256" => {
+                    if expected_activation_capture_sha256.replace(value).is_some() {
+                        return Err(format!(
+                            "--expected-activation-capture-sha256 supplied more than once; {}",
+                            usage()
+                        ));
+                    }
+                }
                 "--bind" => {
                     if bind
                         .replace(value.parse::<SocketAddr>().map_err(|_| {
@@ -318,7 +329,8 @@ mod macos {
             || expected_source_snapshot_path.is_some()
             || expected_source_snapshot_seal_sha256.is_some()
             || expected_terminal_path.is_some()
-            || expected_terminal_seal_sha256.is_some();
+            || expected_terminal_seal_sha256.is_some()
+            || expected_activation_capture_sha256.is_some();
         let activation_weighted = if aw_any {
             let revalidation_path =
                 required(expected_revalidation_path, "--expected-revalidation-path")?;
@@ -356,6 +368,10 @@ mod macos {
                 expected_terminal_seal_sha256: required(
                     expected_terminal_seal_sha256,
                     "--expected-terminal-seal-sha256",
+                )?,
+                expected_activation_capture_sha256: required(
+                    expected_activation_capture_sha256,
+                    "--expected-activation-capture-sha256",
                 )?,
             })
         } else {
@@ -1085,6 +1101,9 @@ mod macos {
                     .clone(),
                 expected_terminal_path: aw.expected_terminal_path.clone(),
                 expected_terminal_seal_sha256: aw.expected_terminal_seal_sha256.clone(),
+                expected_activation_capture_sha256: aw
+                    .expected_activation_capture_sha256
+                    .clone(),
             };
             Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
                 &args.manifest,

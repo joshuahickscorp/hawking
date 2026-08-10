@@ -54,6 +54,46 @@ pub const STREAMED_PEAK_RSS_HARD_CAP_BYTES: u64 = 16 * 1024 * 1024 * 1024;
 /// Contract estimate for per-layer expert BF16 payload (~3 GiB).
 pub const PER_LAYER_EXPERT_BF16_BYTES: u64 = 3 * 1024 * 1024 * 1024;
 
+/// Default retained router-input rows per (layer, expert) under first-N retention.
+///
+/// Chosen so organs see enough fit rows to pass the null test (failure is sharp
+/// below ~16 rows; flattens above ~32). At N=64 × 512 experts the worst-case
+/// unique rows/layer is 32768 (≈256 MiB of f32@2048). Captures stay per-layer
+/// resident for the streamed contract; worst-case all-layer unique retention is
+/// ≈12 GiB, under [`STREAMED_PEAK_RSS_HARD_CAP_BYTES`] (16 GiB).
+pub const DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT: usize = 64;
+
+/// Deterministic per-expert first-N retention for one token.
+///
+/// Walk tokens in global order. For each top-k expert that still has fewer than
+/// `max_per_expert` retained members, credit this token to that expert. Retain
+/// the token's router-input hidden if any expert still needed a slot.
+///
+/// This is deliberately not a random reservoir: the same corpus + same N yields
+/// byte-identical retention across runs. Route membership is independent and
+/// stays complete for every token.
+pub fn credit_expert_first_n_retention(
+    expert_retained: &mut [usize],
+    selected_expert_ids: &[u32],
+    max_per_expert: usize,
+) -> bool {
+    if max_per_expert == 0 || selected_expert_ids.is_empty() {
+        return false;
+    }
+    let mut retain = false;
+    for &expert in selected_expert_ids {
+        let e = expert as usize;
+        if e >= expert_retained.len() {
+            continue;
+        }
+        if expert_retained[e] < max_per_expert {
+            expert_retained[e] += 1;
+            retain = true;
+        }
+    }
+    retain
+}
+
 fn model_err(msg: impl Into<String>) -> Error {
     Error::Model(msg.into())
 }
@@ -1981,29 +2021,26 @@ impl StreamTelemetry {
 /// 3. One router GEMM over the whole corpus at this layer.
 /// 4. Shared expert one batched SwiGLU; routed experts gather/GEMM/scatter in
 ///    parallel; widen only active experts.
+/// 5. Retains router-input hiddens under **per-expert first-N** (see
+///    [`credit_expert_first_n_retention`]): the first `max_hidden_tokens_per_expert`
+///    tokens that route to expert E keep their hidden for that layer. Full route
+///    membership is always recorded.
 ///
-/// `max_hidden_tokens_per_layer` is the sole retained-hidden authority (stride
-/// over the global flat token order). Route membership is always retained.
+/// Retention must happen *after* routing is known, so a precomputed global
+/// (probe, position) set cannot express per-expert quotas. Both DeltaNet and
+/// GQA layers run the same MoE router (512 experts, top-10); only the mixer
+/// differs. Expert-retained counters reset each layer.
 pub fn capture_all_layers(
     index: &SourceBf16Index,
     probes: &[(String, Vec<u32>)],
     hiddens: &mut [ProbeHidden],
-    max_hidden_tokens_per_layer: usize,
+    max_hidden_tokens_per_expert: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, &LoadedLayer, &StreamTelemetry)>,
 ) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
     if hiddens.len() != probes.len() {
         return Err(model_err("hiddens/probes length mismatch"));
     }
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
-    // Deterministic, layer-independent retained-hidden subsample.
-    // One authority only — do not introduce a second selection mechanism.
-    let retain_stride = if max_hidden_tokens_per_layer == 0
-        || total_tokens <= max_hidden_tokens_per_layer
-    {
-        1
-    } else {
-        total_tokens.div_ceil(max_hidden_tokens_per_layer)
-    };
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
         .map(|(_, toks)| {
@@ -2043,7 +2080,7 @@ pub fn capture_all_layers(
         }
         let comp_t0 = Instant::now();
 
-        // token_index[t] = (probe_i, pos); flat order is the retain-stride domain.
+        // token_index[t] = (probe_i, pos); flat order is the first-N retention domain.
         let mut token_index: Vec<(usize, usize)> = Vec::with_capacity(total_tokens);
         let mut flat_t = 0usize;
 
@@ -2183,7 +2220,14 @@ pub fn capture_all_layers(
             }
         }
 
-        // Apply MoE residual and record captures.
+        // Apply MoE residual and record captures. Hidden retention is decided
+        // here, after top-k routing is known: first N tokens (global order) that
+        // route to expert E keep their router-input hidden for E's organ fit. A
+        // token is kept if any of its top-k experts still has an open slot;
+        // co-routing may therefore give popular experts more than N rows, which
+        // is a floor-not-ceiling. Route membership is always recorded.
+        // expert_retained is sized from QWEN80_EXPERTS (512), never a Q30 constant.
+        let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
         for (t, &(pi, pos)) in token_index.iter().enumerate() {
             add_inplace(
                 &mut hiddens[pi][pos * h..(pos + 1) * h],
@@ -2198,7 +2242,11 @@ pub fn capture_all_layers(
                 )));
             }
             let (ids, weights) = std::mem::take(&mut routes[t]);
-            let retain = retain_stride <= 1 || (t % retain_stride) == 0;
+            let retain = credit_expert_first_n_retention(
+                &mut expert_retained,
+                &ids,
+                max_hidden_tokens_per_expert,
+            );
             captures[pi][pos].push(LayerTokenCapture {
                 layer: layer_idx,
                 selected_expert_ids: ids,
@@ -2620,6 +2668,55 @@ mod tests {
         Qwen80CanonicalGqaLayout::source_exact().validate().unwrap();
     }
 
+    #[test]
+    fn per_expert_first_n_retention_is_deterministic_and_bounded() {
+        // Synthetic routes against Q80's expert table size (512) and top-10
+        // shape: tokens cycle through disjoint expert pairs so each expert's
+        // first-N set is unambiguous. (Only 8 experts are touched; the rest
+        // stay at zero — bookkeeping is still sized from QWEN80_EXPERTS.)
+        let max_n = 3usize;
+        let mut counts = vec![0usize; QWEN80_EXPERTS];
+        let routes: Vec<Vec<u32>> = (0..20u32)
+            .map(|t| vec![t % 4, 4 + (t % 4)])
+            .collect();
+        let mut retained_mask = Vec::new();
+        for ids in &routes {
+            retained_mask.push(credit_expert_first_n_retention(&mut counts, ids, max_n));
+        }
+        // Touched experts 0..7 should have been credited exactly max_n times.
+        for e in 0..8 {
+            assert_eq!(counts[e], max_n, "expert {e} retained count");
+        }
+        for e in 8..QWEN80_EXPERTS {
+            assert_eq!(counts[e], 0, "untouched expert {e}");
+        }
+        // First 3 tokens that hit expert 0 (t=0,4,8) must be retained; later ones
+        // that only hit already-full experts must not.
+        assert!(retained_mask[0]);
+        assert!(retained_mask[4]);
+        assert!(retained_mask[8]);
+        // After experts 0 and 4 are full (3 credits each from t=0,4,8), token 12
+        // routes to the same pair and must be dropped.
+        assert!(!retained_mask[12]);
+        // Re-running the same sequence must produce the same mask (determinism).
+        let mut counts2 = vec![0usize; QWEN80_EXPERTS];
+        let mask2: Vec<bool> = routes
+            .iter()
+            .map(|ids| credit_expert_first_n_retention(&mut counts2, ids, max_n))
+            .collect();
+        assert_eq!(retained_mask, mask2);
+        assert_eq!(counts, counts2);
+    }
+
+    #[test]
+    fn per_expert_first_n_zero_retains_nothing() {
+        let mut counts = vec![0usize; QWEN80_EXPERTS];
+        // top-10 shaped id list (Q80 routing width), still zero when N=0.
+        let ids: Vec<u32> = (0..QWEN80_TOP_K as u32).collect();
+        assert!(!credit_expert_first_n_retention(&mut counts, &ids, 0));
+        assert!(counts.iter().all(|&c| c == 0));
+    }
+
     /// Manual gate: set `QWEN80_SOURCE_DIR` and run with `--ignored`.
     /// Compares scalar [`forward_layer_probe`] routes vs batched [`capture_all_layers`]
     /// on one short probe for every layer (bitwise expert-id identity).
@@ -2639,7 +2736,6 @@ mod tests {
             ],
         )];
         let seq = probes[0].1.len();
-        let total: usize = seq;
 
         let mut h_scalar = embed_probes(&index, &probes).expect("embed scalar");
         let mut scalar_by_layer_token: Vec<Vec<Vec<u32>>> =
@@ -2656,8 +2752,16 @@ mod tests {
         }
 
         let mut h_batch = embed_probes(&index, &probes).expect("embed batch");
-        let (batch_caps, _) =
-            capture_all_layers(&index, &probes, &mut h_batch, total, None).expect("batched");
+        // N large enough that short-probe retention does not drop routes' tokens;
+        // identity check is on expert ids only.
+        let (batch_caps, _) = capture_all_layers(
+            &index,
+            &probes,
+            &mut h_batch,
+            DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT,
+            None,
+        )
+        .expect("batched");
 
         let mut mismatches = 0usize;
         for layer_idx in 0..QWEN80_LAYERS {

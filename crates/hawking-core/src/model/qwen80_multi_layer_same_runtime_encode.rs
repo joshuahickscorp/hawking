@@ -754,15 +754,9 @@ impl Qwen80CompleteNativeRuntime {
         )?;
         route.validate()?;
         let catalog = &self.catalog;
-        let contract = catalog.canonical_linear_moe_operator_contract(layer)?;
-        contract.validate_against_catalog(catalog)?;
-        if contract.mixer.layer != layer {
-            return Err(model_error(format!(
-                "source-token layer {layer} bridge contract layer drifted: observed={}, expected={layer}",
-                contract.mixer.layer
-            )));
-        }
         // DeltaNet or GQA: both full-layer same-runtime encodes are wired.
+        // Do NOT hoist canonical_linear_moe_operator_contract here — it refuses
+        // any non-LinearAttention layer and would make the GQA arm below dead.
         let hybrid = catalog.complete_hybrid_decoder_plan(1)?;
         let layer_plan = hybrid.layers.get(layer).ok_or_else(|| {
             model_error(format!(

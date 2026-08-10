@@ -26,6 +26,7 @@ use std::io::{Read, Seek, SeekFrom};
 use std::os::unix::fs::FileExt;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::time::Instant;
 
 pub const QWEN30_LAYERS: usize = 48;
 pub const QWEN30_HIDDEN: usize = 2048;
@@ -91,46 +92,83 @@ pub fn widen_bf16_into(
     }
     // Memory-bandwidth bound. Parallelise only for large tensors; avoid
     // thread-spawn storms when widening 128 experts × 3 mats per layer.
-    const PARALLEL_THRESHOLD: usize = 512 * 1024; // elements
+    // Unrolled 8-wide conversion keeps the inner loop tight (no per-elem fn call).
+    const PARALLEL_THRESHOLD: usize = 256 * 1024; // elements
     if n < PARALLEL_THRESHOLD {
-        for i in 0..n {
-            let b = i * 2;
-            out[i] = bf16_le_to_f32(&weight_le[b..b + 2]);
-        }
+        widen_bf16_slice(weight_le, &mut out[..n]);
         return Ok(());
     }
     let threads = std::thread::available_parallelism()
         .map(|t| t.get())
         .unwrap_or(4)
-        .clamp(1, 8);
+        .clamp(1, 12);
     let chunk = n.div_ceil(threads).max(1);
     std::thread::scope(|scope| {
         for (t, out_chunk) in out[..n].chunks_mut(chunk).enumerate() {
             let base = t * chunk;
             let w = weight_le;
             scope.spawn(move || {
-                for (i, o) in out_chunk.iter_mut().enumerate() {
-                    let idx = base + i;
-                    let b = idx * 2;
-                    *o = bf16_le_to_f32(&w[b..b + 2]);
-                }
+                let byte_base = base * 2;
+                let byte_end = byte_base + out_chunk.len() * 2;
+                widen_bf16_slice(&w[byte_base..byte_end], out_chunk);
             });
         }
     });
     Ok(())
 }
 
+/// BF16-LE → f32 for a contiguous slice; 8-wide unrolled body.
+#[inline]
+fn widen_bf16_slice(weight_le: &[u8], out: &mut [f32]) {
+    let n = out.len();
+    debug_assert!(weight_le.len() >= n * 2);
+    let mut i = 0usize;
+    while i + 8 <= n {
+        let b = i * 2;
+        out[i] = f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
+        out[i + 1] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 2], weight_le[b + 3]]) as u32) << 16,
+        );
+        out[i + 2] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 4], weight_le[b + 5]]) as u32) << 16,
+        );
+        out[i + 3] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 6], weight_le[b + 7]]) as u32) << 16,
+        );
+        out[i + 4] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 8], weight_le[b + 9]]) as u32) << 16,
+        );
+        out[i + 5] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 10], weight_le[b + 11]]) as u32) << 16,
+        );
+        out[i + 6] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 12], weight_le[b + 13]]) as u32) << 16,
+        );
+        out[i + 7] = f32::from_bits(
+            (u16::from_le_bytes([weight_le[b + 14], weight_le[b + 15]]) as u32) << 16,
+        );
+        i += 8;
+    }
+    while i < n {
+        let b = i * 2;
+        out[i] = f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
+        i += 1;
+    }
+}
+
 /// Run one expert's gate/up/down as batched GEMMs against gathered token rows.
 ///
 /// Widens BF16 → f32 for this expert only (then drops), so peak resident expert
 /// weights stay ~18 MiB rather than ~2.3 GiB for all 128 experts at once.
-fn expert_batched_moe(
+/// Leaves the weighted expert contribution in `down[0..n*h]` (already scaled by
+/// route weight) and does **not** scatter — callers scatter into the shared
+/// residual under whatever concurrency scheme they use.
+fn expert_batched_moe_compute(
     expert: &ExpertWeights,
     members: &[(usize, f32)],
     all_router_in: &[f32],
     h: usize,
     inter: usize,
-    moe_out: &mut [f32],
     // Reusable scratch (sized for max members across callers).
     x_g: &mut [f32],
     gu_out: &mut [f32],
@@ -173,22 +211,76 @@ fn expert_batched_moe(
     let down = &mut down[..n * h];
     gemm_f32(w_down, h, inter, act, n, down)?;
 
-    for (i, &(t, w)) in members.iter().enumerate() {
-        let src = &down[i * h..(i + 1) * h];
-        let dst = &mut moe_out[t * h..(t + 1) * h];
+    // Fold route weight into down so scatter is a plain add.
+    for (i, &(_, w)) in members.iter().enumerate() {
+        let row = &mut down[i * h..(i + 1) * h];
         for j in 0..h {
-            dst[j] += src[j] * w;
+            row[j] *= w;
         }
     }
     Ok(())
 }
 
+#[inline]
+fn scatter_expert_down(
+    members: &[(usize, f32)],
+    down: &[f32],
+    h: usize,
+    moe_out: &mut [f32],
+) {
+    for (i, &(t, _)) in members.iter().enumerate() {
+        let src = &down[i * h..(i + 1) * h];
+        let dst = &mut moe_out[t * h..(t + 1) * h];
+        for j in 0..h {
+            dst[j] += src[j];
+        }
+    }
+}
+
+/// Serial expert path: compute + scatter into `moe_out` with no locking.
+fn expert_batched_moe(
+    expert: &ExpertWeights,
+    members: &[(usize, f32)],
+    all_router_in: &[f32],
+    h: usize,
+    inter: usize,
+    moe_out: &mut [f32],
+    x_g: &mut [f32],
+    gu_out: &mut [f32],
+    act: &mut [f32],
+    down: &mut [f32],
+    w_gu: &mut [f32],
+    w_down: &mut [f32],
+) -> Result<()> {
+    expert_batched_moe_compute(
+        expert,
+        members,
+        all_router_in,
+        h,
+        inter,
+        x_g,
+        gu_out,
+        act,
+        down,
+        w_gu,
+        w_down,
+    )?;
+    scatter_expert_down(members, down, h, moe_out);
+    Ok(())
+}
+
 /// Parallel per-expert MoE over the flat token corpus at one layer.
+///
+/// Workers share one `moe_out` buffer. Each expert's gate/up/down GEMM runs in a
+/// private scratch; only the weighted scatter-add takes a short lock. This avoids
+/// the previous `n_workers × total_tokens × hidden` partial buffers (~2 GiB at the
+/// sealed corpus with 2 workers), which both raised RSS and serialised a full-size
+/// reduce — and lets us run more expert workers inside the 12 GiB hard cap.
 fn moe_all_experts_parallel(
     layer: &mut LoadedLayer,
     expert_members: &[Vec<(usize, f32)>],
     all_router_in: &[f32],
-    total_tokens: usize,
+    _total_tokens: usize,
     h: usize,
     inter: usize,
     moe_out: &mut [f32],
@@ -210,126 +302,37 @@ fn moe_all_experts_parallel(
         return Ok(());
     }
 
-    // Cap workers by corpus size so partial moe_out buffers stay in budget.
-    // Each worker holds a private total_tokens×h partial (~4 B/elem).
-    let max_by_mem = if total_tokens > 40_000 {
-        2usize
-    } else if total_tokens > 4_000 {
-        4
-    } else {
-        8
-    };
-    let n_workers = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(4)
-        .clamp(1, max_by_mem)
-        .min(active.len());
-
-    if n_workers == 1 {
-        let max_n = active
-            .iter()
-            .map(|&e| expert_members[e].len())
-            .max()
-            .unwrap_or(0);
-        let mut x_g = vec![0.0f32; max_n * h];
-        let mut gu_out = vec![0.0f32; max_n * 2 * inter];
-        let mut act = vec![0.0f32; max_n * inter];
-        let mut down = vec![0.0f32; max_n * h];
-        let mut w_gu = vec![0.0f32; 2 * inter * h];
-        let mut w_down = vec![0.0f32; h * inter];
-        for &e in &active {
-            expert_batched_moe(
-                &layer.experts[e],
-                &expert_members[e],
-                all_router_in,
-                h,
-                inter,
-                moe_out,
-                &mut x_g,
-                &mut gu_out,
-                &mut act,
-                &mut down,
-                &mut w_gu,
-                &mut w_down,
-            )?;
-            layer.experts[e].gate = Vec::new();
-            layer.experts[e].up = Vec::new();
-            layer.experts[e].down = Vec::new();
-        }
-        return Ok(());
-    }
-
-    // Partition active experts across workers; each writes a private partial.
-    let chunk = active.len().div_ceil(n_workers);
-    let mut partials: Vec<Vec<f32>> = (0..n_workers)
-        .map(|_| vec![0.0f32; total_tokens * h])
-        .collect();
-    let err: Mutex<Option<String>> = Mutex::new(None);
-
-    // Immutable expert view for the parallel section; BF16 free happens after.
-    {
-        let experts: &[ExpertWeights] = &layer.experts;
-        std::thread::scope(|scope| {
-            for (wi, partial) in partials.iter_mut().enumerate() {
-                let start = wi * chunk;
-                if start >= active.len() {
-                    break;
-                }
-                let end = (start + chunk).min(active.len());
-                let my_experts = &active[start..end];
-                let expert_members = expert_members;
-                let all_router_in = all_router_in;
-                let err = &err;
-                scope.spawn(move || {
-                    let max_n = my_experts
-                        .iter()
-                        .map(|&e| expert_members[e].len())
-                        .max()
-                        .unwrap_or(0);
-                    let mut x_g = vec![0.0f32; max_n * h];
-                    let mut gu_out = vec![0.0f32; max_n * 2 * inter];
-                    let mut act = vec![0.0f32; max_n * inter];
-                    let mut down = vec![0.0f32; max_n * h];
-                    let mut w_gu = vec![0.0f32; 2 * inter * h];
-                    let mut w_down = vec![0.0f32; h * inter];
-                    for &e in my_experts {
-                        if let Err(err_e) = expert_batched_moe(
-                            &experts[e],
-                            &expert_members[e],
-                            all_router_in,
-                            h,
-                            inter,
-                            partial,
-                            &mut x_g,
-                            &mut gu_out,
-                            &mut act,
-                            &mut down,
-                            &mut w_gu,
-                            &mut w_down,
-                        ) {
-                            if let Ok(mut g) = err.lock() {
-                                *g = Some(err_e.to_string());
-                            }
-                            return;
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    if let Some(msg) = err.into_inner().unwrap_or(None) {
-        return Err(model_err(msg));
-    }
-
-    // Reduce partials.
-    for partial in &partials {
-        for (d, s) in moe_out.iter_mut().zip(partial.iter()) {
-            *d += *s;
-        }
-    }
-    // Free all expert BF16 now that every active expert has been consumed.
-    for e in 0..QWEN30_EXPERTS {
+    // Serial experts in ascending id order, scatter immediately. Parallelism is
+    // inside Accelerate sgemm (VECLIB threads). Holding all experts' down buffers
+    // at once is tokens×top_k×h×4 ≈ 7.8 GiB on the sealed corpus and blows the
+    // 12 GiB RSS cap; one-expert-at-a-time keeps expert scratch to ~O(max_n×h).
+    // Active list is already ascending because it is built by filtering 0..E.
+    let max_n = active
+        .iter()
+        .map(|&e| expert_members[e].len())
+        .max()
+        .unwrap_or(0);
+    let mut x_g = vec![0.0f32; max_n * h];
+    let mut gu_out = vec![0.0f32; max_n * 2 * inter];
+    let mut act = vec![0.0f32; max_n * inter];
+    let mut down = vec![0.0f32; max_n * h];
+    let mut w_gu = vec![0.0f32; 2 * inter * h];
+    let mut w_down = vec![0.0f32; h * inter];
+    for &e in &active {
+        expert_batched_moe(
+            &layer.experts[e],
+            &expert_members[e],
+            all_router_in,
+            h,
+            inter,
+            moe_out,
+            &mut x_g,
+            &mut gu_out,
+            &mut act,
+            &mut down,
+            &mut w_gu,
+            &mut w_down,
+        )?;
         layer.experts[e].gate = Vec::new();
         layer.experts[e].up = Vec::new();
         layer.experts[e].down = Vec::new();
@@ -1511,6 +1514,84 @@ pub fn logits_from_final_hidden(
     Ok(logits)
 }
 
+/// Default retained router-input rows per (layer, expert) under first-N retention.
+///
+/// Chosen so organs see enough fit rows to pass the null test (failure is sharp
+/// below ~16 rows; flattens above ~32). At N=64 × 128 experts the worst-case
+/// unique rows/layer is 8192 (≈64 MiB of f32@2048), which is the documented
+/// streamed budget for this capture path.
+pub const DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT: usize = 64;
+
+/// Wall-clock buckets for one capture_all_layers run (summed over all layers).
+#[derive(Clone, Debug, Default)]
+pub struct CaptureTiming {
+    pub load_secs: f64,
+    pub bf16_widen_dense_secs: f64,
+    pub attention_secs: f64,
+    pub router_secs: f64,
+    pub expert_gemm_secs: f64,
+    pub retention_write_secs: f64,
+    pub total_secs: f64,
+}
+
+/// Per-layer first-N saturation: flat token index at which every expert first
+/// held `N` retained credits (None if the corpus never filled every expert).
+#[derive(Clone, Debug, Default)]
+pub struct SaturationStats {
+    /// `layer_all_experts_full_at_token[L] = Some(t)` means at flat token `t`
+    /// (0-based, inclusive), every expert at layer L first reached N.
+    pub layer_all_experts_full_at_token: Vec<Option<usize>>,
+    /// Max saturation token index across layers that did saturate.
+    pub global_max_saturation_token: Option<usize>,
+    /// Fraction of corpus tokens strictly after the global max saturation token.
+    pub pct_corpus_after_global_saturation: f64,
+}
+
+/// Result of [`capture_all_layers`]: captures plus timing/saturation telemetry.
+#[derive(Clone, Debug)]
+pub struct CaptureAllLayersResult {
+    pub captures: Vec<Vec<Vec<LayerTokenCapture>>>,
+    pub timing: CaptureTiming,
+    pub saturation: SaturationStats,
+}
+
+/// Deterministic per-expert first-N retention for one token.
+///
+/// Walk tokens in global order. For each top-k expert that still has fewer than
+/// `max_per_expert` retained members, credit this token to that expert. Retain
+/// the token's router-input hidden if any expert still needed a slot.
+///
+/// This is deliberately not a random reservoir: the same corpus + same N yields
+/// byte-identical retention across runs. Route membership is independent and
+/// stays complete for every token.
+pub fn credit_expert_first_n_retention(
+    expert_retained: &mut [usize],
+    selected_expert_ids: &[u32],
+    max_per_expert: usize,
+) -> bool {
+    if max_per_expert == 0 || selected_expert_ids.is_empty() {
+        return false;
+    }
+    let mut retain = false;
+    for &expert in selected_expert_ids {
+        let e = expert as usize;
+        if e >= expert_retained.len() {
+            continue;
+        }
+        if expert_retained[e] < max_per_expert {
+            expert_retained[e] += 1;
+            retain = true;
+        }
+    }
+    retain
+}
+
+/// True iff every expert has at least `max_per_expert` retained credits.
+#[inline]
+fn all_experts_saturated(expert_retained: &[usize], max_per_expert: usize) -> bool {
+    expert_retained.iter().all(|&c| c >= max_per_expert)
+}
+
 /// Layer-major full forward over all probes: returns per-probe per-layer per-token captures
 /// and leaves `hiddens` as the final residuals.
 ///
@@ -1519,23 +1600,30 @@ pub fn logits_from_final_hidden(
 /// 2. Packs every token's post-attention RMSNorm (router input) into one matrix
 /// 3. Runs one router GEMM over the whole corpus at this layer
 /// 4. Per expert: gather tokens that selected it, one gate/up/down GEMM, scatter-add
+/// 5. Retains router-input hiddens under **per-expert first-N** (see
+///    [`credit_expert_first_n_retention`]): the first `max_hidden_tokens_per_expert`
+///    tokens that route to expert E keep their hidden for that layer. Full route
+///    membership is always recorded.
 ///
-/// That is the point of layer-major: each expert's weights are widened and multiplied
-/// once per layer, not once per token.
+/// Prefetches layer L+1 weights on a background thread while layer L computes.
+///
+/// Expert GEMMs always run for the full membership set: residual after MoE feeds
+/// the next layer's attention and router, so dropping them after retention
+/// saturation would flip later-layer routes (not bit-identical). Saturation is
+/// measured and reported so the free "hidden materialization" exit is quantified.
 pub fn capture_all_layers(
     index: &SourceBf16Index,
     probes: &[(String, Vec<u32>)],
     hiddens: &mut [ProbeHidden],
-    // The SAME (probe, position) set the writer uses to decide `store_hidden`.
-    // Passing the set rather than re-deriving a stride here keeps ONE authority for
-    // which positions are retained; two independent selectors silently intersect and
-    // under-write the capture.
-    retain_hidden: &std::collections::BTreeSet<(usize, usize)>,
+    max_hidden_tokens_per_expert: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, u64)>,
-) -> Result<Vec<Vec<Vec<LayerTokenCapture>>>> {
+) -> Result<CaptureAllLayersResult> {
     if hiddens.len() != probes.len() {
         return Err(model_err("hiddens/probes length mismatch"));
     }
+    let wall0 = Instant::now();
+    let mut timing = CaptureTiming::default();
+
     // captures[probe][token][layer]
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
@@ -1549,14 +1637,8 @@ pub fn capture_all_layers(
     let q_dim = QWEN30_HEADS * QWEN30_HEAD_DIM;
     let kv_dim = QWEN30_KV_HEADS * QWEN30_HEAD_DIM;
 
-    // Scratch sized for the largest probe (attention) and the full corpus (MoE).
+    // Largest probe length — each attention worker allocates private scratch of this size.
     let max_seq = probes.iter().map(|(_, t)| t.len()).max().unwrap_or(0);
-    let mut scratch_x_norm = vec![0.0f32; max_seq * h];
-    let mut scratch_q = vec![0.0f32; max_seq * q_dim];
-    let mut scratch_k = vec![0.0f32; max_seq * kv_dim];
-    let mut scratch_v = vec![0.0f32; max_seq * kv_dim];
-    let mut scratch_attn = vec![0.0f32; max_seq * q_dim];
-    let mut scratch_attn_proj = vec![0.0f32; max_seq * h];
 
     // MoE output + router surfaces. Expert f32 weights and gather scratch are
     // allocated inside moe_all_experts_parallel (per-worker, one-expert-at-a-time).
@@ -1564,191 +1646,363 @@ pub fn capture_all_layers(
     let mut all_router_in = vec![0.0f32; total_tokens * h];
     let mut router_logits = vec![0.0f32; total_tokens * QWEN30_EXPERTS];
 
+    let mut layer_sat: Vec<Option<usize>> = vec![None; QWEN30_LAYERS];
+
+    // Load layer 0; each iteration prefetches L+1 while computing L.
+    let t_load0 = Instant::now();
+    let mut next_layer: Option<LoadedLayer> = Some(LoadedLayer::load(index, 0)?);
+    timing.load_secs += t_load0.elapsed().as_secs_f64();
+
     for layer_idx in 0..QWEN30_LAYERS {
-        let mut layer = LoadedLayer::load(index, layer_idx)?;
-        let resident = layer.resident_bytes;
-        if let Some(cb) = on_layer.as_mut() {
-            cb(layer_idx, resident);
-        }
+        let mut layer = next_layer
+            .take()
+            .ok_or_else(|| model_err(format!("missing layer {layer_idx}")))?;
 
-        // token_index[t] = (probe_i, pos)
-        let mut token_index: Vec<(usize, usize)> = Vec::with_capacity(total_tokens);
+        // Overlap load(L+1) with compute(L). Join at end of scope yields the next layer.
+        let prefetched = std::thread::scope(|scope| -> Result<Option<LoadedLayer>> {
+            let prefetch = if layer_idx + 1 < QWEN30_LAYERS {
+                let next = layer_idx + 1;
+                Some(scope.spawn(move || LoadedLayer::load(index, next)))
+            } else {
+                None
+            };
 
-        // Widen dense projections once for this layer; free BF16 payloads.
-        // Experts stay BF16 until Phase 3 and are widened one-at-a-time there.
-        let q_w = widen_bf16_mat(&layer.q_proj, q_dim, h)?;
-        let k_w = widen_bf16_mat(&layer.k_proj, kv_dim, h)?;
-        let v_w = widen_bf16_mat(&layer.v_proj, kv_dim, h)?;
-        let o_w = widen_bf16_mat(&layer.o_proj, h, q_dim)?;
-        let router_w = widen_bf16_mat(&layer.router, QWEN30_EXPERTS, h)?;
-        layer.q_proj = Vec::new();
-        layer.k_proj = Vec::new();
-        layer.v_proj = Vec::new();
-        layer.o_proj = Vec::new();
-        layer.router = Vec::new();
-
-        // --- Phase 1: attention per probe (probe-local causal), collect router inputs. ---
-        let mut flat_t = 0usize;
-        for (pi, (_, tokens)) in probes.iter().enumerate() {
-            let seq_len = tokens.len();
-            if seq_len == 0 {
-                continue;
-            }
-            let hidden = &mut hiddens[pi];
-            if hidden.len() != seq_len * h {
-                return Err(model_err(format!(
-                    "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
-                    hidden.len()
-                )));
+            let resident = layer.resident_bytes;
+            if let Some(cb) = on_layer.as_mut() {
+                cb(layer_idx, resident);
             }
 
-            let x_norm = &mut scratch_x_norm[..seq_len * h];
-            for pos in 0..seq_len {
-                rmsnorm(
-                    &hidden[pos * h..(pos + 1) * h],
-                    &layer.input_layernorm,
-                    QWEN30_RMS_EPS,
-                    &mut x_norm[pos * h..(pos + 1) * h],
-                );
-            }
+            // Widen dense projections once for this layer; free BF16 payloads.
+            let t_widen = Instant::now();
+            let q_w = widen_bf16_mat(&layer.q_proj, q_dim, h)?;
+            let k_w = widen_bf16_mat(&layer.k_proj, kv_dim, h)?;
+            let v_w = widen_bf16_mat(&layer.v_proj, kv_dim, h)?;
+            let o_w = widen_bf16_mat(&layer.o_proj, h, q_dim)?;
+            let router_w = widen_bf16_mat(&layer.router, QWEN30_EXPERTS, h)?;
+            timing.bf16_widen_dense_secs += t_widen.elapsed().as_secs_f64();
+            layer.q_proj = Vec::new();
+            layer.k_proj = Vec::new();
+            layer.v_proj = Vec::new();
+            layer.o_proj = Vec::new();
+            layer.router = Vec::new();
 
-            let q = &mut scratch_q[..seq_len * q_dim];
-            let k_cache = &mut scratch_k[..seq_len * kv_dim];
-            let v_cache = &mut scratch_v[..seq_len * kv_dim];
-            gemm_f32(&q_w, q_dim, h, x_norm, seq_len, q)?;
-            gemm_f32(&k_w, kv_dim, h, x_norm, seq_len, k_cache)?;
-            gemm_f32(&v_w, kv_dim, h, x_norm, seq_len, v_cache)?;
-
-            for pos in 0..seq_len {
-                let q_row = &mut q[pos * q_dim..(pos + 1) * q_dim];
-                let k_row = &mut k_cache[pos * kv_dim..(pos + 1) * kv_dim];
-                rmsnorm_rows(q_row, &layer.q_norm, QWEN30_HEADS, QWEN30_HEAD_DIM)?;
-                rmsnorm_rows(k_row, &layer.k_norm, QWEN30_KV_HEADS, QWEN30_HEAD_DIM)?;
-                for head in 0..QWEN30_HEADS {
-                    let start = head * QWEN30_HEAD_DIM;
-                    rope_neox_inplace(
-                        &mut q_row[start..start + QWEN30_HEAD_DIM],
-                        pos as u32,
-                        QWEN30_ROPE_THETA,
-                    );
+            // --- Phase 1: attention per probe (parallel across probes), collect router inputs. ---
+            let t_attn = Instant::now();
+            // Precompute flat offsets so workers write disjoint slices of all_router_in.
+            let mut probe_flat_start = vec![0usize; probes.len()];
+            {
+                let mut acc = 0usize;
+                for (pi, (_, tokens)) in probes.iter().enumerate() {
+                    probe_flat_start[pi] = acc;
+                    acc += tokens.len();
                 }
-                for head in 0..QWEN30_KV_HEADS {
-                    let start = head * QWEN30_HEAD_DIM;
-                    rope_neox_inplace(
-                        &mut k_row[start..start + QWEN30_HEAD_DIM],
-                        pos as u32,
-                        QWEN30_ROPE_THETA,
-                    );
+                debug_assert_eq!(acc, total_tokens);
+            }
+            // Build token_index in global order (probe-major, position order).
+            let mut token_index: Vec<(usize, usize)> = Vec::with_capacity(total_tokens);
+            for (pi, (_, tokens)) in probes.iter().enumerate() {
+                for pos in 0..tokens.len() {
+                    token_index.push((pi, pos));
                 }
             }
 
-            let attn = &mut scratch_attn[..seq_len * q_dim];
-            mha_prefill_causal(
-                q,
-                k_cache,
-                v_cache,
-                QWEN30_HEADS,
-                QWEN30_KV_HEADS,
-                QWEN30_HEAD_DIM,
-                seq_len,
-                attn,
-            )?;
+            // Parallel attention over probes. Each probe is independent (own residual,
+            // own causal window). Shared dense weights are read-only; each worker
+            // owns private scratch sized to the largest probe.
+            let n_attn_workers = std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(4)
+                .clamp(1, 8)
+                .min(probes.len().max(1));
+            let err_attn: Mutex<Option<String>> = Mutex::new(None);
+            // SAFETY: hiddens partitions by probe; all_router_in partitions by flat offset.
+            let hiddens_addr = hiddens.as_mut_ptr() as usize;
+            let hiddens_len = hiddens.len();
+            let router_in_addr = all_router_in.as_mut_ptr() as usize;
+            let router_in_len = all_router_in.len();
+            let input_ln = &layer.input_layernorm;
+            let post_ln = &layer.post_attention_layernorm;
+            let q_norm = &layer.q_norm;
+            let k_norm = &layer.k_norm;
 
-            let attn_proj = &mut scratch_attn_proj[..seq_len * h];
-            gemm_f32(&o_w, h, q_dim, attn, seq_len, attn_proj)?;
-            for pos in 0..seq_len {
-                add_inplace(
-                    &mut hidden[pos * h..(pos + 1) * h],
-                    &attn_proj[pos * h..(pos + 1) * h],
-                );
-            }
-
-            // Post-attention RMSNorm → router input (capture surface).
-            for pos in 0..seq_len {
-                rmsnorm(
-                    &hidden[pos * h..(pos + 1) * h],
-                    &layer.post_attention_layernorm,
-                    QWEN30_RMS_EPS,
-                    &mut all_router_in[flat_t * h..(flat_t + 1) * h],
-                );
-                token_index.push((pi, pos));
-                flat_t += 1;
-            }
-        }
-        debug_assert_eq!(flat_t, total_tokens);
-        drop(q_w);
-        drop(k_w);
-        drop(v_w);
-        drop(o_w);
-
-        // --- Phase 2: one router GEMM over all corpus tokens at this layer. ---
-        let t_all = total_tokens;
-        gemm_f32(
-            &router_w,
-            QWEN30_EXPERTS,
-            h,
-            &all_router_in,
-            t_all,
-            &mut router_logits,
-        )?;
-        drop(router_w);
-
-        let mut routes: Vec<(Vec<u32>, Vec<f32>)> = Vec::with_capacity(t_all);
-        let mut expert_members: Vec<Vec<(usize, f32)>> = vec![Vec::new(); QWEN30_EXPERTS];
-        for t in 0..t_all {
-            let (ids, weights) = router_topk_norm(
-                &router_logits[t * QWEN30_EXPERTS..(t + 1) * QWEN30_EXPERTS],
-                QWEN30_TOP_K,
-            )?;
-            for (&e, &w) in ids.iter().zip(weights.iter()) {
-                expert_members[e as usize].push((t, w));
-            }
-            routes.push((ids, weights));
-        }
-
-        // --- Phase 3: parallel per-expert batched GEMM; widen only active experts. ---
-        moe_all_experts_parallel(
-            &mut layer,
-            &expert_members,
-            &all_router_in,
-            t_all,
-            h,
-            inter,
-            &mut moe_out,
-        )?;
-
-        // Apply MoE residual and record captures.
-        for (t, &(pi, pos)) in token_index.iter().enumerate() {
-            add_inplace(
-                &mut hiddens[pi][pos * h..(pos + 1) * h],
-                &moe_out[t * h..(t + 1) * h],
-            );
-            let (ids, weights) = std::mem::take(&mut routes[t]);
-            // Route membership is kept for EVERY token (it is small and the fit needs
-            // full coverage). The router-input hidden is 2048 f32 = 8 KiB per token per
-            // layer, so retaining it for every token costs total_tokens * 8 KiB PER LAYER
-            // and is never freed -- 393 MiB/layer at 49k tokens, which is what broke the
-            // streamed peak-RSS contract. Retain only the bounded stratified subsample,
-            // which is the documented `--max-hidden-tokens-per-layer` contract this
-            // function previously ignored. Selection is a deterministic stride over the
-            // global token order, so it is reproducible and independent of layer.
-            let retain = retain_hidden.is_empty() || retain_hidden.contains(&(pi, pos));
-            captures[pi][pos].push(LayerTokenCapture {
-                layer: layer_idx,
-                selected_expert_ids: ids,
-                normalized_route_weights: weights,
-                router_input_hidden: if retain {
-                    all_router_in[t * h..(t + 1) * h].to_vec()
-                } else {
-                    Vec::new()
-                },
+            std::thread::scope(|scope| {
+                let chunk = probes.len().div_ceil(n_attn_workers);
+                for wi in 0..n_attn_workers {
+                    let start_pi = wi * chunk;
+                    if start_pi >= probes.len() {
+                        break;
+                    }
+                    let end_pi = (start_pi + chunk).min(probes.len());
+                    let probes = probes;
+                    let probe_flat_start = &probe_flat_start;
+                    let err_attn = &err_attn;
+                    let q_w = &q_w;
+                    let k_w = &k_w;
+                    let v_w = &v_w;
+                    let o_w = &o_w;
+                    scope.spawn(move || {
+                        let mut x_norm = vec![0.0f32; max_seq * h];
+                        let mut q = vec![0.0f32; max_seq * q_dim];
+                        let mut k_cache = vec![0.0f32; max_seq * kv_dim];
+                        let mut v_cache = vec![0.0f32; max_seq * kv_dim];
+                        let mut attn = vec![0.0f32; max_seq * q_dim];
+                        let mut attn_proj = vec![0.0f32; max_seq * h];
+                        for pi in start_pi..end_pi {
+                            let seq_len = probes[pi].1.len();
+                            if seq_len == 0 {
+                                continue;
+                            }
+                            // Exclusive probe residual slice.
+                            let hidden = unsafe {
+                                let base = hiddens_addr as *mut ProbeHidden;
+                                &mut *base.add(pi)
+                            };
+                            if hidden.len() != seq_len * h {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(format!(
+                                        "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
+                                        hidden.len()
+                                    ));
+                                }
+                                return;
+                            }
+                            let x_norm = &mut x_norm[..seq_len * h];
+                            for pos in 0..seq_len {
+                                rmsnorm(
+                                    &hidden[pos * h..(pos + 1) * h],
+                                    input_ln,
+                                    QWEN30_RMS_EPS,
+                                    &mut x_norm[pos * h..(pos + 1) * h],
+                                );
+                            }
+                            let q = &mut q[..seq_len * q_dim];
+                            let k_cache = &mut k_cache[..seq_len * kv_dim];
+                            let v_cache = &mut v_cache[..seq_len * kv_dim];
+                            if let Err(e) = gemm_f32(q_w, q_dim, h, x_norm, seq_len, q) {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                            if let Err(e) = gemm_f32(k_w, kv_dim, h, x_norm, seq_len, k_cache) {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                            if let Err(e) = gemm_f32(v_w, kv_dim, h, x_norm, seq_len, v_cache) {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                            for pos in 0..seq_len {
+                                let q_row = &mut q[pos * q_dim..(pos + 1) * q_dim];
+                                let k_row = &mut k_cache[pos * kv_dim..(pos + 1) * kv_dim];
+                                if let Err(e) =
+                                    rmsnorm_rows(q_row, q_norm, QWEN30_HEADS, QWEN30_HEAD_DIM)
+                                {
+                                    if let Ok(mut g) = err_attn.lock() {
+                                        *g = Some(e.to_string());
+                                    }
+                                    return;
+                                }
+                                if let Err(e) =
+                                    rmsnorm_rows(k_row, k_norm, QWEN30_KV_HEADS, QWEN30_HEAD_DIM)
+                                {
+                                    if let Ok(mut g) = err_attn.lock() {
+                                        *g = Some(e.to_string());
+                                    }
+                                    return;
+                                }
+                                for head in 0..QWEN30_HEADS {
+                                    let start = head * QWEN30_HEAD_DIM;
+                                    rope_neox_inplace(
+                                        &mut q_row[start..start + QWEN30_HEAD_DIM],
+                                        pos as u32,
+                                        QWEN30_ROPE_THETA,
+                                    );
+                                }
+                                for head in 0..QWEN30_KV_HEADS {
+                                    let start = head * QWEN30_HEAD_DIM;
+                                    rope_neox_inplace(
+                                        &mut k_row[start..start + QWEN30_HEAD_DIM],
+                                        pos as u32,
+                                        QWEN30_ROPE_THETA,
+                                    );
+                                }
+                            }
+                            let attn = &mut attn[..seq_len * q_dim];
+                            if let Err(e) = mha_prefill_causal(
+                                q,
+                                k_cache,
+                                v_cache,
+                                QWEN30_HEADS,
+                                QWEN30_KV_HEADS,
+                                QWEN30_HEAD_DIM,
+                                seq_len,
+                                attn,
+                            ) {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                            let attn_proj = &mut attn_proj[..seq_len * h];
+                            if let Err(e) = gemm_f32(o_w, h, q_dim, attn, seq_len, attn_proj) {
+                                if let Ok(mut g) = err_attn.lock() {
+                                    *g = Some(e.to_string());
+                                }
+                                return;
+                            }
+                            for pos in 0..seq_len {
+                                add_inplace(
+                                    &mut hidden[pos * h..(pos + 1) * h],
+                                    &attn_proj[pos * h..(pos + 1) * h],
+                                );
+                            }
+                            let flat0 = probe_flat_start[pi];
+                            let router_in = unsafe {
+                                std::slice::from_raw_parts_mut(
+                                    router_in_addr as *mut f32,
+                                    router_in_len,
+                                )
+                            };
+                            for pos in 0..seq_len {
+                                let flat_t = flat0 + pos;
+                                rmsnorm(
+                                    &hidden[pos * h..(pos + 1) * h],
+                                    post_ln,
+                                    QWEN30_RMS_EPS,
+                                    &mut router_in[flat_t * h..(flat_t + 1) * h],
+                                );
+                            }
+                            let _ = hiddens_len; // silence
+                        }
+                    });
+                }
             });
-        }
+            if let Some(msg) = err_attn.into_inner().unwrap_or(None) {
+                return Err(model_err(msg));
+            }
+            timing.attention_secs += t_attn.elapsed().as_secs_f64();
+            drop(q_w);
+            drop(k_w);
+            drop(v_w);
+            drop(o_w);
 
-        // Explicit free before next layer load.
-        drop(layer);
+            // --- Phase 2: router GEMM + top-k for every token. ---
+            let t_router = Instant::now();
+            let t_all = total_tokens;
+            gemm_f32(
+                &router_w,
+                QWEN30_EXPERTS,
+                h,
+                &all_router_in,
+                t_all,
+                &mut router_logits,
+            )?;
+            drop(router_w);
+
+            let mut routes: Vec<(Vec<u32>, Vec<f32>)> = Vec::with_capacity(t_all);
+            let mut expert_members: Vec<Vec<(usize, f32)>> = vec![Vec::new(); QWEN30_EXPERTS];
+            for t in 0..t_all {
+                let (ids, weights) = router_topk_norm(
+                    &router_logits[t * QWEN30_EXPERTS..(t + 1) * QWEN30_EXPERTS],
+                    QWEN30_TOP_K,
+                )?;
+                for (&e, &w) in ids.iter().zip(weights.iter()) {
+                    expert_members[e as usize].push((t, w));
+                }
+                routes.push((ids, weights));
+            }
+            timing.router_secs += t_router.elapsed().as_secs_f64();
+
+            // --- Phase 3: full MoE residual (required for later-layer routes). ---
+            let t_moe = Instant::now();
+            moe_all_experts_parallel(
+                &mut layer,
+                &expert_members,
+                &all_router_in,
+                t_all,
+                h,
+                inter,
+                &mut moe_out,
+            )?;
+            timing.expert_gemm_secs += t_moe.elapsed().as_secs_f64();
+
+            // Residual + retention. Route membership always recorded; hiddens only
+            // while some expert still has an open first-N slot.
+            let t_ret = Instant::now();
+            let mut expert_retained = vec![0usize; QWEN30_EXPERTS];
+            let mut sat_at: Option<usize> = None;
+            for (t, &(pi, pos)) in token_index.iter().enumerate() {
+                add_inplace(
+                    &mut hiddens[pi][pos * h..(pos + 1) * h],
+                    &moe_out[t * h..(t + 1) * h],
+                );
+                let (ids, weights) = std::mem::take(&mut routes[t]);
+                let retain = credit_expert_first_n_retention(
+                    &mut expert_retained,
+                    &ids,
+                    max_hidden_tokens_per_expert,
+                );
+                if sat_at.is_none()
+                    && all_experts_saturated(&expert_retained, max_hidden_tokens_per_expert)
+                {
+                    sat_at = Some(t);
+                }
+                captures[pi][pos].push(LayerTokenCapture {
+                    layer: layer_idx,
+                    selected_expert_ids: ids,
+                    normalized_route_weights: weights,
+                    router_input_hidden: if retain {
+                        all_router_in[t * h..(t + 1) * h].to_vec()
+                    } else {
+                        Vec::new()
+                    },
+                });
+            }
+            layer_sat[layer_idx] = sat_at;
+            timing.retention_write_secs += t_ret.elapsed().as_secs_f64();
+            drop(layer);
+
+            // Join next-layer load (overlapped with everything above).
+            let t_join = Instant::now();
+            let next = match prefetch {
+                Some(handle) => Some(
+                    handle
+                        .join()
+                        .map_err(|_| model_err("layer prefetch thread panicked"))??,
+                ),
+                None => None,
+            };
+            // Only the wait residual counts as load time; pure overlap is free.
+            timing.load_secs += t_join.elapsed().as_secs_f64();
+            Ok(next)
+        })?;
+
+        next_layer = prefetched;
     }
-    Ok(captures)
+
+    timing.total_secs = wall0.elapsed().as_secs_f64();
+    let global_max = layer_sat.iter().flatten().copied().max();
+    let pct_after = match global_max {
+        Some(t) if total_tokens > 0 => {
+            let after = total_tokens.saturating_sub(t + 1);
+            100.0 * after as f64 / total_tokens as f64
+        }
+        _ => 0.0,
+    };
+    Ok(CaptureAllLayersResult {
+        captures,
+        timing,
+        saturation: SaturationStats {
+            layer_all_experts_full_at_token: layer_sat,
+            global_max_saturation_token: global_max,
+            pct_corpus_after_global_saturation: pct_after,
+        },
+    })
 }
 
 /// One layer's KV cache (f32), layout `(seq, kv_heads * head_dim)`.
@@ -2148,6 +2402,48 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn per_expert_first_n_retention_is_deterministic_and_bounded() {
+        // Synthetic routes: tokens cycle through disjoint expert pairs so each
+        // expert's first-N set is unambiguous.
+        let max_n = 3usize;
+        let mut counts = vec![0usize; 8];
+        let routes: Vec<Vec<u32>> = (0..20u32)
+            .map(|t| vec![t % 4, 4 + (t % 4)])
+            .collect();
+        let mut retained_mask = Vec::new();
+        for ids in &routes {
+            retained_mask.push(credit_expert_first_n_retention(&mut counts, ids, max_n));
+        }
+        // Every expert should have been credited exactly max_n times.
+        for (e, &c) in counts.iter().enumerate() {
+            assert_eq!(c, max_n, "expert {e} retained count");
+        }
+        // First 3 tokens that hit expert 0 (t=0,4,8) must be retained; later ones
+        // that only hit already-full experts must not.
+        assert!(retained_mask[0]);
+        assert!(retained_mask[4]);
+        assert!(retained_mask[8]);
+        // After experts 0 and 4 are full (3 credits each from t=0,4,8), token 12
+        // routes to the same pair and must be dropped.
+        assert!(!retained_mask[12]);
+        // Re-running the same sequence must produce the same mask (determinism).
+        let mut counts2 = vec![0usize; 8];
+        let mask2: Vec<bool> = routes
+            .iter()
+            .map(|ids| credit_expert_first_n_retention(&mut counts2, ids, max_n))
+            .collect();
+        assert_eq!(retained_mask, mask2);
+        assert_eq!(counts, counts2);
+    }
+
+    #[test]
+    fn per_expert_first_n_zero_retains_nothing() {
+        let mut counts = vec![0usize; 4];
+        assert!(!credit_expert_first_n_retention(&mut counts, &[0, 1], 0));
+        assert_eq!(counts, vec![0, 0, 0, 0]);
     }
 
     #[test]
