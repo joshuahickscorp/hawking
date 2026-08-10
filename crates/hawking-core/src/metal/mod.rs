@@ -343,6 +343,11 @@ pub const SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER: &str =
 /// not a generic engine or endpoint selection.
 pub const SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP: &str =
     include_str!("../../shaders/qwen30_quality_repack_sparse_gate_up.metal");
+/// Qwen30 device-indexed expert address table (route-id on device; no host
+/// expert bind). Mirrors the GLM device expert table idiom for HQ30G1B1 /
+/// HGRAVS01 organs.
+pub const SHADER_QWEN30_DEVICE_EXPERT_TABLE: &str =
+    include_str!("../../shaders/qwen30_device_expert_table.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -404,6 +409,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED,
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER,
         SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
+        SHADER_QWEN30_DEVICE_EXPERT_TABLE,
         SHADER_QWEN_UNIFORM_Q4,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
@@ -1046,6 +1052,14 @@ mod imp {
             "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate" => {
                 "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate"
             }
+            "qwen30_expert_table_binary_matvec" => "qwen30_expert_table_binary_matvec",
+            "qwen30_expert_table_binary_matvec_simdgroup" => {
+                "qwen30_expert_table_binary_matvec_simdgroup"
+            }
+            "qwen30_expert_table_paired_gate_up_swiglu" => {
+                "qwen30_expert_table_paired_gate_up_swiglu"
+            }
+            "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen_complete_weighted_expert_add" => "qwen_complete_weighted_expert_add",
             "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
             "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",

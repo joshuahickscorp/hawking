@@ -57,6 +57,8 @@ use crate::kernels::{
 use crate::metal::{
     ArgLayout, DispatchSample, KernelArgBuffer, MetalContext, PinnedBuffer, TokenCommandBuffer,
 };
+#[cfg(target_os = "macos")]
+use metal::MTLResourceUsage;
 
 // The generic kernel dispatcher keeps its scalar-binding helper private.  This
 // runtime has a handful of bespoke kernels, so retain the same direct Metal
@@ -141,6 +143,145 @@ fn qwen30_serial_encoder_enabled() -> bool {
         }
         Err(_) => true,
     }
+}
+
+/// Device-indexed expert address tables (M1 / S-bucket elimination).
+///
+/// Default **on**: expert gate/up/down dispatches index a per-layer table of
+/// all 128 expert buffer gpuAddresses by the device-written `route_ids`, so
+/// the host never reads route ids mid-token.  That removes the 48 host
+/// route-id round trips and allows the attn/router/expert wave (and, when
+/// diagnostics permit, the whole token) to stay in one command buffer.
+///
+/// Set `HAWKING_QWEN30_DEVICE_EXPERT_TABLE=0` / `false` / `off` / `no` to
+/// restore the historical host-bind path for A/B bit-identity checks.
+/// Alias: `HAWKING_QWEN30_DEVICE_ROUTE=0` is accepted as the same opt-out.
+#[cfg(target_os = "macos")]
+fn qwen30_device_expert_table_enabled() -> bool {
+    for key in ["HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "HAWKING_QWEN30_DEVICE_ROUTE"] {
+        if let Ok(raw) = std::env::var(key) {
+            let trimmed = raw.trim();
+            if trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no")
+            {
+                return false;
+            }
+            // Explicit non-empty enable wins for this key.
+            if !trimmed.is_empty() {
+                return true;
+            }
+        }
+    }
+    true
+}
+
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_EXPERT_KIND_BINARY: u32 = 1;
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_EXPERT_KIND_HGRAVS: u32 = 2;
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_EXPERT_TRIPLET_READY: u32 = 0b111;
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_PROJ_GATE: u32 = 0;
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_PROJ_UP: u32 = 1;
+#[cfg(target_os = "macos")]
+const QWEN30_DEVICE_PROJ_DOWN: u32 = 2;
+
+/// Tagged device pointer pair plus projection geometry. Frozen against
+/// `Qwen30DeviceExpertTensorRef` in `qwen30_device_expert_table.metal`.
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
+struct Qwen30DeviceExpertTensorRef {
+    primary_address: u64,
+    secondary_address: u64,
+    rows: u32,
+    cols: u32,
+    rank: u32,
+    kind: u32,
+    generation: u32,
+    pad: u32,
+}
+
+/// One routed expert's gate/up/down descriptor.
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
+struct Qwen30DeviceExpertTriplet {
+    gate: Qwen30DeviceExpertTensorRef,
+    up: Qwen30DeviceExpertTensorRef,
+    down: Qwen30DeviceExpertTensorRef,
+    ready_mask: u32,
+    generation: u32,
+}
+
+#[cfg(target_os = "macos")]
+const _: [(); 40] = [(); std::mem::size_of::<Qwen30DeviceExpertTensorRef>()];
+#[cfg(target_os = "macos")]
+const _: [(); 128] = [(); std::mem::size_of::<Qwen30DeviceExpertTriplet>()];
+
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct Qwen30DeviceExpertMatvecParams {
+    n_experts: u32,
+    experts_per_token: u32,
+    generation: u32,
+    execution_position: u32,
+    projection: u32,
+    group_size: u32,
+    input_offset_elems: u32,
+    output_offset_elems: u32,
+}
+
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct Qwen30DeviceExpertPairedParams {
+    n_experts: u32,
+    experts_per_token: u32,
+    generation: u32,
+    execution_position: u32,
+    group_size: u32,
+    output_offset_elems: u32,
+    pad0: u32,
+    pad1: u32,
+}
+
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct Qwen30DeviceExpertHgravsParams {
+    n_experts: u32,
+    experts_per_token: u32,
+    generation: u32,
+    execution_position: u32,
+    projection: u32,
+    stage: u32,
+    input_offset_elems: u32,
+    output_offset_elems: u32,
+}
+
+#[cfg(target_os = "macos")]
+const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertMatvecParams>()];
+#[cfg(target_os = "macos")]
+const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertPairedParams>()];
+#[cfg(target_os = "macos")]
+const _: [(); 32] = [(); std::mem::size_of::<Qwen30DeviceExpertHgravsParams>()];
+
+/// Immutable per-layer lease: table of 128 expert triplets plus retained
+/// Metal handles so gpuAddress targets stay alive for the process.
+#[cfg(target_os = "macos")]
+#[derive(Clone)]
+struct Qwen30DeviceExpertTableLease {
+    table: PinnedBuffer,
+    resources: Vec<PinnedBuffer>,
+    generation: u32,
+    n_experts: usize,
+    ready_entries: usize,
 }
 
 /// Receipt from [`Qwen30CompleteNativeRuntime::prewarm_static_decoded_vectors`].
@@ -1306,6 +1447,9 @@ pub struct Qwen30CompleteNativeRuntime {
     /// Serving never enables this.
     diagnostic_router_hidden_capture_enabled: bool,
     diagnostic_layer_router_captures: Vec<Qwen30LayerRouterCapture>,
+    /// Per-layer device expert address tables. Built lazily on first use of
+    /// the device-indexed path; empty when the host-bind control path runs.
+    device_expert_tables: Vec<Option<Qwen30DeviceExpertTableLease>>,
     max_seq_len: usize,
     next_position: usize,
 }
@@ -1364,6 +1508,7 @@ impl Qwen30CompleteNativeRuntime {
         validate_complete_catalog(&artifact, &config)?;
         let context = MetalContext::new_with_trace(options.trace_dispatch)?;
         let workspace = DeviceWorkspace::new(&context, options.max_seq_len, &config)?;
+        let n_layers = config.layers;
         Ok(Self {
             artifact,
             config,
@@ -1385,6 +1530,7 @@ impl Qwen30CompleteNativeRuntime {
             diagnostic_selected_expert_ids: Vec::new(),
             diagnostic_router_hidden_capture_enabled: false,
             diagnostic_layer_router_captures: Vec::new(),
+            device_expert_tables: vec![None; n_layers],
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -1498,6 +1644,7 @@ impl Qwen30CompleteNativeRuntime {
             max_rank.max(1),
             "HGRAVS01 low-rank intermediate workspace",
         )?)?;
+        let n_layers = config.layers;
         Ok(Self {
             artifact: direct,
             config,
@@ -1519,6 +1666,7 @@ impl Qwen30CompleteNativeRuntime {
             diagnostic_selected_expert_ids: Vec::new(),
             diagnostic_router_hidden_capture_enabled: false,
             diagnostic_layer_router_captures: Vec::new(),
+            device_expert_tables: vec![None; n_layers],
             max_seq_len: options.max_seq_len,
             next_position: 0,
         })
@@ -2589,6 +2737,596 @@ impl Qwen30CompleteNativeRuntime {
         Ok(logits.to_vec())
     }
 
+    /// Whether this forward can run the device-indexed expert table path:
+    /// no diagnostic mid-token host observation, no parity dual-path, no
+    /// HQ30GR2 sparse override, production gate/up topologies only, and the
+    /// env flag left on.
+    fn device_expert_table_path_eligible(&self) -> bool {
+        qwen30_device_expert_table_enabled()
+            && !self.diagnostic_route_capture_enabled
+            && !self.diagnostic_router_hidden_capture_enabled
+            && !self.gate_up_swiglu_kernel.requires_device_control_parity()
+            && self.quality_sparse_gate_up.is_none()
+            && matches!(
+                self.gate_up_swiglu_kernel,
+                Qwen30GateUpSwiGluKernel::ThreeDispatchControl
+                    | Qwen30GateUpSwiGluKernel::PairedScalarOrderProductionNoParity
+            )
+    }
+
+    fn binary_tensor_ref(
+        tensor: &GpuBinaryTensor,
+        generation: u32,
+    ) -> Result<(Qwen30DeviceExpertTensorRef, Vec<PinnedBuffer>)> {
+        let (rows, cols) = tensor.rows_cols("device expert binary projection")?;
+        Ok((
+            Qwen30DeviceExpertTensorRef {
+                primary_address: tensor.signs.gpu_address(),
+                secondary_address: tensor.scales.gpu_address(),
+                rows: u32_checked(rows, "device expert binary rows")?,
+                cols: u32_checked(cols, "device expert binary cols")?,
+                rank: 0,
+                kind: QWEN30_DEVICE_EXPERT_KIND_BINARY,
+                generation,
+                pad: 0,
+            },
+            vec![tensor.signs.clone(), tensor.scales.clone()],
+        ))
+    }
+
+    fn hgravs_tensor_ref(
+        tensor: &GpuHgravsFactors,
+        generation: u32,
+    ) -> Result<(Qwen30DeviceExpertTensorRef, Vec<PinnedBuffer>)> {
+        Ok((
+            Qwen30DeviceExpertTensorRef {
+                primary_address: tensor.left.gpu_address(),
+                secondary_address: tensor.right.gpu_address(),
+                rows: u32_checked(tensor.rows, "device expert HGRAVS rows")?,
+                cols: u32_checked(tensor.cols, "device expert HGRAVS cols")?,
+                rank: u32_checked(tensor.rank, "device expert HGRAVS rank")?,
+                kind: QWEN30_DEVICE_EXPERT_KIND_HGRAVS,
+                generation,
+                pad: 0,
+            },
+            vec![tensor.left.clone(), tensor.right.clone()],
+        ))
+    }
+
+    /// Build (or return cached) the immutable per-layer device expert table.
+    /// Uploads every expert's gate/up/down so route-id selection never needs
+    /// a host bind.
+    fn ensure_device_expert_table(&mut self, layer: usize) -> Result<Qwen30DeviceExpertTableLease> {
+        if layer >= self.config.layers {
+            return Err(model_error(format!(
+                "device expert table layer {layer} outside configured layers {}",
+                self.config.layers
+            )));
+        }
+        if let Some(lease) = self.device_expert_tables[layer].clone() {
+            return Ok(lease);
+        }
+        let n_experts = self.config.experts;
+        let generation = u32_checked(layer.saturating_add(1), "device expert table generation")?;
+        let mut entries = vec![Qwen30DeviceExpertTriplet::default(); n_experts];
+        let mut resources = Vec::with_capacity(n_experts.saturating_mul(6));
+        let mut ready_entries = 0usize;
+        for expert in 0..n_experts {
+            let prefix = format!("model.layers.{layer}.mlp.experts.{expert}");
+            let gate_name = format!("{prefix}.gate_proj.weight");
+            let up_name = format!("{prefix}.up_proj.weight");
+            let down_name = format!("{prefix}.down_proj.weight");
+            let (gate, gate_res, up, up_res, down, down_res) = if self.hgravs_tensors.contains_key(&gate_name)
+                || self.hgravs_tensors.contains_key(&up_name)
+                || self.hgravs_tensors.contains_key(&down_name)
+            {
+                let gate = self.hgravs_tensors.get(&gate_name).cloned().ok_or_else(|| {
+                    model_error(format!(
+                        "device expert table {prefix} missing HGRAVS01 gate factor"
+                    ))
+                })?;
+                let up = self.hgravs_tensors.get(&up_name).cloned().ok_or_else(|| {
+                    model_error(format!(
+                        "device expert table {prefix} missing HGRAVS01 up factor"
+                    ))
+                })?;
+                let down = self.hgravs_tensors.get(&down_name).cloned().ok_or_else(|| {
+                    model_error(format!(
+                        "device expert table {prefix} missing HGRAVS01 down factor"
+                    ))
+                })?;
+                let (g, gr) = Self::hgravs_tensor_ref(&gate, generation)?;
+                let (u, ur) = Self::hgravs_tensor_ref(&up, generation)?;
+                let (d, dr) = Self::hgravs_tensor_ref(&down, generation)?;
+                (g, gr, u, ur, d, dr)
+            } else {
+                let gate = self.packed_tensor(&gate_name)?;
+                let up = self.packed_tensor(&up_name)?;
+                let down = self.packed_tensor(&down_name)?;
+                let (g, gr) = Self::binary_tensor_ref(&gate, generation)?;
+                let (u, ur) = Self::binary_tensor_ref(&up, generation)?;
+                let (d, dr) = Self::binary_tensor_ref(&down, generation)?;
+                (g, gr, u, ur, d, dr)
+            };
+            // Geometry gate: binary gate/up are [intermediate, hidden]; down is
+            // [hidden, intermediate]. HGRAVS uses the same logical matrix shape.
+            let expected_gate_up = (
+                u32_checked(self.config.moe_intermediate, "moe intermediate")?,
+                u32_checked(self.config.hidden, "hidden")?,
+            );
+            let expected_down = (
+                u32_checked(self.config.hidden, "hidden")?,
+                u32_checked(self.config.moe_intermediate, "moe intermediate")?,
+            );
+            if (gate.rows, gate.cols) != expected_gate_up
+                || (up.rows, up.cols) != expected_gate_up
+                || (down.rows, down.cols) != expected_down
+            {
+                return Err(model_error(format!(
+                    "device expert table {prefix} projection geometry drifted: gate=({},{}), up=({},{}), down=({},{})",
+                    gate.rows, gate.cols, up.rows, up.cols, down.rows, down.cols
+                )));
+            }
+            entries[expert] = Qwen30DeviceExpertTriplet {
+                gate,
+                up,
+                down,
+                ready_mask: QWEN30_DEVICE_EXPERT_TRIPLET_READY,
+                generation,
+            };
+            resources.extend(gate_res);
+            resources.extend(up_res);
+            resources.extend(down_res);
+            ready_entries = ready_entries.saturating_add(1);
+        }
+        if ready_entries != n_experts {
+            return Err(model_error(format!(
+                "device expert table layer {layer} only ready for {ready_entries}/{n_experts} experts"
+            )));
+        }
+        let table = self
+            .context
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&entries))?;
+        let lease = Qwen30DeviceExpertTableLease {
+            table,
+            resources,
+            generation,
+            n_experts,
+            ready_entries,
+        };
+        self.device_expert_tables[layer] = Some(lease.clone());
+        Ok(lease)
+    }
+
+    fn declare_device_expert_resources(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        lease: &Qwen30DeviceExpertTableLease,
+    ) -> Result<()> {
+        // One no-op-sized dispatch carrier is unnecessary: Metal's
+        // useResources must be called on a live compute encoder.  Encode a
+        // residency declaration on the first real expert dispatch instead via
+        // the bind closure.  This helper only validates the lease.
+        if lease.n_experts == 0 || lease.ready_entries != lease.n_experts {
+            return Err(model_error(
+                "device expert table lease is incomplete for residency declaration",
+            ));
+        }
+        if lease.resources.is_empty() {
+            return Err(model_error(
+                "device expert table lease has no retained resources",
+            ));
+        }
+        let _ = tcb;
+        Ok(())
+    }
+
+    fn dispatch_device_expert_binary_matvec(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        lease: &Qwen30DeviceExpertTableLease,
+        execution_position: usize,
+        projection: u32,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        input_offset_elems: usize,
+        output_offset_elems: usize,
+        rows: usize,
+        declare_resources: bool,
+    ) -> Result<()> {
+        let params = Qwen30DeviceExpertMatvecParams {
+            n_experts: lease.n_experts as u32,
+            experts_per_token: self.config.experts_per_token as u32,
+            generation: lease.generation,
+            execution_position: execution_position as u32,
+            projection,
+            group_size: QWEN30_GROUP_SIZE as u32,
+            input_offset_elems: input_offset_elems as u32,
+            output_offset_elems: output_offset_elems as u32,
+        };
+        let rows_u32 = u32_checked(rows, "device expert binary rows")?;
+        let (kernel, grid, tg) = match self.packed_matvec_kernel {
+            Qwen30PackedMatvecKernel::ScalarControl => (
+                "qwen30_expert_table_binary_matvec",
+                (rows_u32, 1, 1),
+                (rows_u32.min(256).max(1), 1, 1),
+            ),
+            Qwen30PackedMatvecKernel::SimdgroupCandidate => {
+                let groups_of_rows = rows.div_ceil(8);
+                let grid_x = groups_of_rows
+                    .checked_mul(256)
+                    .ok_or_else(|| model_error("device expert simdgroup grid overflows usize"))?;
+                (
+                    "qwen30_expert_table_binary_matvec_simdgroup",
+                    (u32_checked(grid_x, "device expert simdgroup grid")?, 1, 1),
+                    (256, 1, 1),
+                )
+            }
+        };
+        let route_ids = self.workspace.route_ids.clone();
+        let table = lease.table.clone();
+        let input = input.clone();
+        let output = output.clone();
+        // Always declare residency: under HAWKING_TCB_TRACE=gpu_prod each
+        // dispatch owns its own compute encoder, so a one-shot use_resources
+        // on the first expert wave is not visible to later encoders.
+        let _ = declare_resources;
+        let resources = lease.resources.clone();
+        tcb.dispatch_threads(kernel, grid, tg, move |encoder| {
+            encoder.set_buffer(0, Some(&route_ids), 0);
+            encoder.set_buffer(1, Some(&table), 0);
+            encoder.set_buffer(2, Some(&input), 0);
+            encoder.set_buffer(3, Some(&output), 0);
+            encoder.set_bytes(
+                4,
+                std::mem::size_of_val(&params) as u64,
+                &params as *const _ as *const _,
+            );
+            if !resources.is_empty() {
+                let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+                for resource in &resources {
+                    refs.push(resource);
+                }
+                encoder.use_resources(&refs, MTLResourceUsage::Read);
+            }
+        })
+    }
+
+    fn dispatch_device_expert_paired_gate_up(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        lease: &Qwen30DeviceExpertTableLease,
+        execution_position: usize,
+        output_offset_elems: usize,
+        declare_resources: bool,
+    ) -> Result<()> {
+        let params = Qwen30DeviceExpertPairedParams {
+            n_experts: lease.n_experts as u32,
+            experts_per_token: self.config.experts_per_token as u32,
+            generation: lease.generation,
+            execution_position: execution_position as u32,
+            group_size: QWEN30_GROUP_SIZE as u32,
+            output_offset_elems: output_offset_elems as u32,
+            pad0: 0,
+            pad1: 0,
+        };
+        let rows = u32_checked(self.config.moe_intermediate, "paired gate/up rows")?;
+        let route_ids = self.workspace.route_ids.clone();
+        let table = lease.table.clone();
+        let input = self.workspace.x_norm.clone();
+        let output = self.workspace.expert_activation.clone();
+        let _ = declare_resources;
+        let resources = lease.resources.clone();
+        tcb.dispatch_threads(
+            "qwen30_expert_table_paired_gate_up_swiglu",
+            (rows, 1, 1),
+            (rows.min(256).max(1), 1, 1),
+            move |encoder| {
+                encoder.set_buffer(0, Some(&route_ids), 0);
+                encoder.set_buffer(1, Some(&table), 0);
+                encoder.set_buffer(2, Some(&input), 0);
+                encoder.set_buffer(3, Some(&output), 0);
+                encoder.set_bytes(
+                    4,
+                    std::mem::size_of_val(&params) as u64,
+                    &params as *const _ as *const _,
+                );
+                if !resources.is_empty() {
+                    let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+                    for resource in &resources {
+                        refs.push(resource);
+                    }
+                    encoder.use_resources(&refs, MTLResourceUsage::Read);
+                }
+            },
+        )
+    }
+
+    fn dispatch_device_expert_hgravs_stage(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        lease: &Qwen30DeviceExpertTableLease,
+        execution_position: usize,
+        projection: u32,
+        stage: u32,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        input_offset_elems: usize,
+        output_offset_elems: usize,
+        rows: usize,
+        declare_resources: bool,
+    ) -> Result<()> {
+        let params = Qwen30DeviceExpertHgravsParams {
+            n_experts: lease.n_experts as u32,
+            experts_per_token: self.config.experts_per_token as u32,
+            generation: lease.generation,
+            execution_position: execution_position as u32,
+            projection,
+            stage,
+            input_offset_elems: input_offset_elems as u32,
+            output_offset_elems: output_offset_elems as u32,
+        };
+        let rows_u32 = u32_checked(rows, "device expert HGRAVS rows")?;
+        let tg = 256u32;
+        let route_ids = self.workspace.route_ids.clone();
+        let table = lease.table.clone();
+        let input = input.clone();
+        let output = output.clone();
+        let _ = declare_resources;
+        let resources = lease.resources.clone();
+        tcb.dispatch_threads(
+            "qwen30_expert_table_hgravs_gemv",
+            (rows_u32.saturating_mul(tg), 1, 1),
+            (tg, 1, 1),
+            move |encoder| {
+                encoder.set_buffer(0, Some(&route_ids), 0);
+                encoder.set_buffer(1, Some(&table), 0);
+                encoder.set_buffer(2, Some(&input), 0);
+                encoder.set_buffer(3, Some(&output), 0);
+                encoder.set_bytes(
+                    4,
+                    std::mem::size_of_val(&params) as u64,
+                    &params as *const _ as *const _,
+                );
+                encoder.set_threadgroup_memory_length(
+                    0,
+                    (tg as u64) * std::mem::size_of::<f32>() as u64,
+                );
+                if !resources.is_empty() {
+                    let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+                    for resource in &resources {
+                        refs.push(resource);
+                    }
+                    encoder.use_resources(&refs, MTLResourceUsage::Read);
+                }
+            },
+        )
+    }
+
+    /// Encode the full top-k expert wave for one layer using the device table.
+    /// Route selection is already on device in `workspace.route_ids`.
+    fn dispatch_device_expert_wave(
+        &self,
+        tcb: &mut TokenCommandBuffer<'_>,
+        lease: &Qwen30DeviceExpertTableLease,
+    ) -> Result<()> {
+        self.declare_device_expert_resources(tcb, lease)?;
+        let top_k = self.config.experts_per_token;
+        let intermediate = self.config.moe_intermediate;
+        let hidden = self.config.hidden;
+        let mid = self.hgravs_rank_mid.as_ref();
+        let mixed = !self.hgravs_tensors.is_empty();
+        // First dispatch in the wave declares all expert resources once; the
+        // serial encoder keeps them live for subsequent dispatches.
+        let mut resources_declared = false;
+        for route in 0..top_k {
+            let mid_elems = route
+                .checked_mul(intermediate)
+                .ok_or_else(|| model_error("device expert mid offset overflows"))?;
+            let hidden_elems = route
+                .checked_mul(hidden)
+                .ok_or_else(|| model_error("device expert hidden offset overflows"))?;
+            let declare = !resources_declared;
+            if !mixed
+                && matches!(
+                    self.gate_up_swiglu_kernel,
+                    Qwen30GateUpSwiGluKernel::PairedScalarOrderProductionNoParity
+                )
+            {
+                self.dispatch_device_expert_paired_gate_up(
+                    tcb, lease, route, mid_elems, declare,
+                )?;
+                resources_declared = true;
+            } else if !mixed {
+                // Pure-direct three-dispatch control topology.
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_GATE,
+                    &self.workspace.x_norm,
+                    &self.workspace.expert_gate,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    declare,
+                )?;
+                resources_declared = true;
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_UP,
+                    &self.workspace.x_norm,
+                    &self.workspace.expert_up,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    false,
+                )?;
+                self.dispatch_silu_offset(
+                    tcb,
+                    mid_elems
+                        .checked_mul(std::mem::size_of::<f32>())
+                        .ok_or_else(|| model_error("silu offset byte overflow"))?,
+                    &self.workspace.expert_activation,
+                )?;
+            } else {
+                // Mixed HGRAVS/binary: per-route expert is device-selected, so
+                // encode both kind paths. Exactly one kind is ready per expert;
+                // the other kernel returns early without writing.
+                let mid_buf = mid.ok_or_else(|| {
+                    model_error("HGRAVS mid workspace required for mixed device table")
+                })?;
+                let max_rank = (mid_buf.length() as usize) / std::mem::size_of::<f32>();
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_GATE,
+                    0,
+                    &self.workspace.x_norm,
+                    mid_buf,
+                    0,
+                    0,
+                    max_rank,
+                    declare,
+                )?;
+                resources_declared = true;
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_GATE,
+                    1,
+                    mid_buf,
+                    &self.workspace.expert_gate,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    false,
+                )?;
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_GATE,
+                    &self.workspace.x_norm,
+                    &self.workspace.expert_gate,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    false,
+                )?;
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_UP,
+                    0,
+                    &self.workspace.x_norm,
+                    mid_buf,
+                    0,
+                    0,
+                    max_rank,
+                    false,
+                )?;
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_UP,
+                    1,
+                    mid_buf,
+                    &self.workspace.expert_up,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    false,
+                )?;
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_UP,
+                    &self.workspace.x_norm,
+                    &self.workspace.expert_up,
+                    0,
+                    mid_elems,
+                    intermediate,
+                    false,
+                )?;
+                self.dispatch_silu_offset(
+                    tcb,
+                    mid_elems
+                        .checked_mul(std::mem::size_of::<f32>())
+                        .ok_or_else(|| model_error("silu offset byte overflow"))?,
+                    &self.workspace.expert_activation,
+                )?;
+            }
+            // Down projection
+            if !mixed {
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_DOWN,
+                    &self.workspace.expert_activation,
+                    &self.workspace.expert_output,
+                    mid_elems,
+                    hidden_elems,
+                    hidden,
+                    false,
+                )?;
+            } else {
+                let mid_buf = mid.ok_or_else(|| {
+                    model_error("HGRAVS mid workspace required for mixed device table down")
+                })?;
+                let max_rank = (mid_buf.length() as usize) / std::mem::size_of::<f32>();
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_DOWN,
+                    0,
+                    &self.workspace.expert_activation,
+                    mid_buf,
+                    mid_elems,
+                    0,
+                    max_rank,
+                    false,
+                )?;
+                self.dispatch_device_expert_hgravs_stage(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_DOWN,
+                    1,
+                    mid_buf,
+                    &self.workspace.expert_output,
+                    0,
+                    hidden_elems,
+                    hidden,
+                    false,
+                )?;
+                self.dispatch_device_expert_binary_matvec(
+                    tcb,
+                    lease,
+                    route,
+                    QWEN30_DEVICE_PROJ_DOWN,
+                    &self.workspace.expert_activation,
+                    &self.workspace.expert_output,
+                    mid_elems,
+                    hidden_elems,
+                    hidden,
+                    false,
+                )?;
+            }
+        }
+        self.dispatch_weighted_expert_add(tcb)?;
+        Ok(())
+    }
+
     fn route_ids(&self) -> Result<[u32; QWEN30_TOP_K]> {
         let ids = unsafe {
             std::slice::from_raw_parts(
@@ -2859,6 +3597,293 @@ impl Qwen30CompleteNativeRuntime {
         format!("model.layers.{layer}.{suffix}")
     }
 
+    /// Device-indexed expert path: zero host route-id readbacks, one command
+    /// buffer for the full token (embed + 48 layers + final head). Expert
+    /// weights are addressed by device `route_ids` through a per-layer table
+    /// of gpuAddresses — the GLM device expert table idiom.
+    fn forward_token_greedy_device_expert_table(
+        &mut self,
+        token: u32,
+    ) -> Result<Qwen30NativeGreedyStep> {
+        let started = Instant::now();
+        let mut host_stages = Qwen30HostStageRecorder::new(started, self.trace_host_stages);
+        let position = self.next_position;
+        let serial_encoder = qwen30_serial_encoder_enabled();
+        let mut metal_dispatches = 0usize;
+        let mut command_buffers = 0usize;
+
+        // Pre-build every layer table (and resident expert slabs) before the
+        // measured CB so cold first-token upload is not attributed to the
+        // structural graph. Subsequent tokens hit the lease cache.
+        host_stages.measure(
+            "router",
+            "prebuild device expert address tables for all layers",
+            || {
+                for layer in 0..self.config.layers {
+                    let _ = self.ensure_device_expert_table(layer)?;
+                }
+                Ok(())
+            },
+        )?;
+
+        host_stages.measure(
+            "command_graph_transition_gap",
+            "full-token device-expert-table graph: embed + 48 layers + final head, one CB",
+            || {
+                let embedding = self.packed_tensor("model.embed_tokens.weight")?;
+                let context = self.context.clone();
+                let mut tcb = TokenCommandBuffer::new(&context);
+                if serial_encoder {
+                    tcb.begin_serial_group()?;
+                }
+                self.dispatch_embedding(&mut tcb, &embedding, token)?;
+
+                for layer in 0..self.config.layers {
+                    let lease = self.ensure_device_expert_table(layer)?;
+                    let input_norm_name = Self::layer_name(layer, "input_layernorm.weight");
+                    let post_norm_name = Self::layer_name(layer, "post_attention_layernorm.weight");
+                    let q_norm_name = Self::layer_name(layer, "self_attn.q_norm.weight");
+                    let k_norm_name = Self::layer_name(layer, "self_attn.k_norm.weight");
+                    let q = self.packed_tensor(&Self::layer_name(layer, "self_attn.q_proj.weight"))?;
+                    let k = self.packed_tensor(&Self::layer_name(layer, "self_attn.k_proj.weight"))?;
+                    let v = self.packed_tensor(&Self::layer_name(layer, "self_attn.v_proj.weight"))?;
+                    let o = self.packed_tensor(&Self::layer_name(layer, "self_attn.o_proj.weight"))?;
+                    let router = self.packed_tensor(&Self::layer_name(layer, "mlp.gate.weight"))?;
+
+                    let layer_cache_elements = layer
+                        .checked_mul(self.max_seq_len)
+                        .and_then(|value| value.checked_mul(self.config.kv_dim()))
+                        .ok_or_else(|| model_error("layer KV cache offset overflows usize"))?;
+                    let kv_offset = layer_cache_elements
+                        .checked_add(
+                            position
+                                .checked_mul(self.config.kv_dim())
+                                .ok_or_else(|| {
+                                    model_error("position KV cache offset overflows usize")
+                                })?,
+                        )
+                        .ok_or_else(|| {
+                            model_error("layer-position KV cache offset overflows usize")
+                        })?;
+                    let cache_offset_bytes =
+                        bytes_for_f32(layer_cache_elements, "layer KV cache byte offset")?;
+
+                    let input_norm = self.ensure_decoded_vector_on_tcb(
+                        &mut tcb,
+                        &input_norm_name,
+                        self.config.hidden,
+                    )?;
+                    let post_norm = self.ensure_decoded_vector_on_tcb(
+                        &mut tcb,
+                        &post_norm_name,
+                        self.config.hidden,
+                    )?;
+                    let q_norm = self.ensure_decoded_vector_on_tcb(
+                        &mut tcb,
+                        &q_norm_name,
+                        self.config.head_dim,
+                    )?;
+                    let k_norm = self.ensure_decoded_vector_on_tcb(
+                        &mut tcb,
+                        &k_norm_name,
+                        self.config.head_dim,
+                    )?;
+                    rmsnorm_metal_buf_tcb(
+                        &mut tcb,
+                        &self.workspace.x,
+                        &input_norm,
+                        self.config.rms_norm_eps(),
+                        self.config.hidden,
+                        &self.workspace.x_norm,
+                    )?;
+                    self.dispatch_binary_matvec(
+                        &mut tcb,
+                        &q,
+                        &self.workspace.x_norm,
+                        &self.workspace.q,
+                        0,
+                        0,
+                    )?;
+                    self.dispatch_binary_matvec(
+                        &mut tcb,
+                        &k,
+                        &self.workspace.x_norm,
+                        &self.workspace.k,
+                        0,
+                        0,
+                    )?;
+                    self.dispatch_binary_matvec(
+                        &mut tcb,
+                        &v,
+                        &self.workspace.x_norm,
+                        &self.workspace.v,
+                        0,
+                        0,
+                    )?;
+                    self.dispatch_rmsnorm_rows(
+                        &mut tcb,
+                        &self.workspace.q,
+                        &q_norm,
+                        &self.workspace.q,
+                        self.config.attention_heads,
+                        self.config.head_dim,
+                    )?;
+                    self.dispatch_rmsnorm_rows(
+                        &mut tcb,
+                        &self.workspace.k,
+                        &k_norm,
+                        &self.workspace.k,
+                        self.config.key_value_heads,
+                        self.config.head_dim,
+                    )?;
+                    rope_qk_kv_append_vbias_f32_tcb(
+                        &mut tcb,
+                        &self.workspace.q,
+                        &self.workspace.k,
+                        &self.workspace.v,
+                        None,
+                        None,
+                        None,
+                        &self.workspace.key_cache,
+                        &self.workspace.value_cache,
+                        self.config.attention_heads,
+                        self.config.key_value_heads,
+                        self.config.head_dim,
+                        position as u32,
+                        self.config.rope_theta(),
+                        self.config.kv_dim(),
+                        kv_offset,
+                    )?;
+                    mha_decode_f32_tcb(
+                        &mut tcb,
+                        &self.workspace.q,
+                        &self.workspace.key_cache,
+                        cache_offset_bytes,
+                        &self.workspace.value_cache,
+                        cache_offset_bytes,
+                        &self.workspace.attention,
+                        position + 1,
+                        self.config.head_dim,
+                        self.config.attention_heads,
+                        self.config.key_value_heads,
+                    )?;
+                    self.dispatch_binary_matvec(
+                        &mut tcb,
+                        &o,
+                        &self.workspace.attention,
+                        &self.workspace.attention_projection,
+                        0,
+                        0,
+                    )?;
+                    add_inplace_metal_tcb(
+                        &mut tcb,
+                        &self.workspace.x,
+                        &self.workspace.attention_projection,
+                        self.config.hidden,
+                    )?;
+                    rmsnorm_metal_buf_tcb(
+                        &mut tcb,
+                        &self.workspace.x,
+                        &post_norm,
+                        self.config.rms_norm_eps(),
+                        self.config.hidden,
+                        &self.workspace.x_norm,
+                    )?;
+                    self.dispatch_binary_matvec(
+                        &mut tcb,
+                        &router,
+                        &self.workspace.x_norm,
+                        &self.workspace.router_logits,
+                        0,
+                        0,
+                    )?;
+                    moe_topk_gate_tcb(
+                        &mut tcb,
+                        &self.workspace.router_logits,
+                        &self.workspace.route_ids,
+                        &self.workspace.route_weights,
+                        self.config.experts,
+                        self.config.experts_per_token,
+                    )?;
+                    self.dispatch_normalize_route_weights(&mut tcb)?;
+                    // Device route_ids drive expert selection — no host readback.
+                    self.dispatch_device_expert_wave(&mut tcb, &lease)?;
+                }
+
+                let lm_head = self.packed_tensor("lm_head.weight")?;
+                MetalContext::write_buffer_bytes(
+                    &self.workspace.invalid_f32_flag,
+                    &0u32.to_ne_bytes(),
+                );
+                let final_norm = self.ensure_decoded_vector_on_tcb(
+                    &mut tcb,
+                    "model.norm.weight",
+                    self.config.hidden,
+                )?;
+                rmsnorm_metal_buf_tcb(
+                    &mut tcb,
+                    &self.workspace.x,
+                    &final_norm,
+                    self.config.rms_norm_eps(),
+                    self.config.hidden,
+                    &self.workspace.x_norm,
+                )?;
+                self.dispatch_binary_matvec(
+                    &mut tcb,
+                    &lm_head,
+                    &self.workspace.x_norm,
+                    &self.workspace.final_logits,
+                    0,
+                    0,
+                )?;
+                self.dispatch_finite_check(
+                    &mut tcb,
+                    &self.workspace.final_logits,
+                    self.config.vocab_size,
+                )?;
+                crate::kernels::sample_argmax_f32_tcb(
+                    &mut tcb,
+                    &self.workspace.final_logits,
+                    &self.workspace.sampled_token,
+                    self.config.vocab_size,
+                )?;
+                if serial_encoder {
+                    tcb.end_concurrent_group()?;
+                }
+                metal_dispatches = metal_dispatches.saturating_add(tcb.dispatch_count());
+                tcb.commit_and_wait()?;
+                command_buffers = command_buffers.saturating_add(1);
+                Ok(())
+            },
+        )?;
+
+        let token_id = host_stages.measure(
+            "sampling",
+            "final finite flag and sampled-token device readback",
+            || {
+                self.assert_final_logits_finite()?;
+                self.sampled_id()
+            },
+        )?;
+        host_stages.measure("sampling", "advance native autoregressive position", || {
+            self.next_position = self.next_position.saturating_add(1);
+            Ok(())
+        })?;
+        let elapsed = started.elapsed();
+        let host_stage_intervals = host_stages.finish(elapsed);
+        Ok(Qwen30NativeGreedyStep {
+            position,
+            token_id,
+            elapsed,
+            command_buffers,
+            metal_dispatches,
+            host_route_id_readbacks: 0,
+            host_sample_id_readbacks: 1,
+            gate_up_swiglu_device_control_parity: None,
+            host_stage_intervals,
+        })
+    }
+
     /// Execute one exact full 48-layer greedy token graph using only compact
     /// admitted artifact weights and native Metal operators.  This is the
     /// primitive used by [`generate_greedy`].  It performs no CPU model
@@ -2874,6 +3899,9 @@ impl Qwen30CompleteNativeRuntime {
                 "native KV cache is full at position {}; reset or use a supported larger max_seq_len",
                 self.max_seq_len
             )));
+        }
+        if self.device_expert_table_path_eligible() {
+            return self.forward_token_greedy_device_expert_table(token);
         }
         let started = Instant::now();
         let mut host_stages = Qwen30HostStageRecorder::new(started, self.trace_host_stages);
@@ -3672,6 +4700,36 @@ mod tests {
             "rms_norm_eps": 1e-6,
             "max_position_embeddings": 262144,
         })
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn device_expert_table_abi_matches_metal_static_asserts() {
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertTensorRef>(), 40);
+        assert_eq!(std::mem::align_of::<Qwen30DeviceExpertTensorRef>(), 8);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertTriplet>(), 128);
+        assert_eq!(std::mem::align_of::<Qwen30DeviceExpertTriplet>(), 8);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertMatvecParams>(), 32);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertPairedParams>(), 32);
+        assert_eq!(std::mem::size_of::<Qwen30DeviceExpertHgravsParams>(), 32);
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn device_expert_table_flag_defaults_on_and_opt_out() {
+        let prior = std::env::var_os("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
+        std::env::remove_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE");
+        assert!(qwen30_device_expert_table_enabled());
+        std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "0");
+        assert!(!qwen30_device_expert_table_enabled());
+        std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "false");
+        assert!(!qwen30_device_expert_table_enabled());
+        std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "1");
+        assert!(qwen30_device_expert_table_enabled());
+        match prior {
+            Some(v) => std::env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", v),
+            None => std::env::remove_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE"),
+        }
     }
 
     #[test]
