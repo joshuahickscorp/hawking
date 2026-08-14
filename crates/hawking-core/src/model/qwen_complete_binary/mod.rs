@@ -1436,8 +1436,14 @@ fn current_file_identity_matches(
                 .ok_or_else(|| model_error(label, format!("missing signed integer field {key:?}")))
         }
 
+        // st_dev is a mount-time artifact: a reboot/remount reassigns the APFS
+        // volume device number without touching the file, so it is not file
+        // identity. Content integrity is sealed independently in shard_hashes;
+        // (bytes + inode) already pin the file on a single volume. Checking
+        // device here made admission hard-refuse on a benign remount (observed
+        // 16777234 -> 16777233, inode + bytes byte-identical). Dropped from the
+        // hard-fail set; the receipt may still carry a "device" field, unread.
         let observed = [
-            ("device", i128::from(metadata.dev())),
             ("inode", i128::from(metadata.ino())),
             (
                 "mtime_ns",
@@ -2810,7 +2816,7 @@ fn validate_quality_tensor_rows_bounded_parallel(
 ///
 /// Warm path (`HAWKING_ADMISSION_WARM_RECEIPT`, default on): after a prior cold
 /// full rehash wrote a sealed receipt, a later process may skip *recomputing*
-/// content SHA-256 when every payload file's (size, mtime_ns, device, inode)
+/// content SHA-256 when every payload file's (size, mtime_ns, inode)
 /// still matches. It never skips the unchanged-file check. Disable with
 /// `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full cold rehash every start.
 pub fn admit_complete_binary_artifact(
