@@ -17,7 +17,7 @@ use super::{
 };
 use crate::{Error, Result};
 use half::f16;
-use serde_json::{Map, Value};
+use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -1235,11 +1235,196 @@ fn validate_aw_terminal(
     Ok(())
 }
 
+/// Cached geometry from a prior cold (or geometry-complete warm) admission.
+/// Used only after file identity still matches; never skips manifest binding.
+#[derive(Clone, Debug)]
+enum WarmGeometryCache {
+    Direct(CompleteBinaryHeader),
+    ActivationWeightedSvd(Hgravs01Header),
+}
+
+fn uniform_factor_to_json(factor: &Hgravs01UniformFactor) -> Value {
+    json!({
+        "shape": factor.shape,
+        "elements": factor.elements,
+        "bits": factor.bits,
+        "group_size": factor.group_size,
+        "groups": factor.groups,
+        "scale_bytes": factor.scale_bytes,
+        "code_bytes": factor.code_bytes,
+        "retained_padding_elements": factor.retained_padding_elements,
+    })
+}
+
+fn uniform_factor_from_json(value: &Value, label: &str) -> Result<Hgravs01UniformFactor> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| model_error(label, "uniform factor must be an object"))?;
+    let shape = object
+        .get("shape")
+        .and_then(Value::as_array)
+        .ok_or_else(|| model_error(label, "uniform factor shape must be an array"))?
+        .iter()
+        .map(|v| {
+            v.as_u64()
+                .and_then(|n| usize::try_from(n).ok())
+                .ok_or_else(|| model_error(label, "uniform factor shape entry must be usize"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Hgravs01UniformFactor {
+        shape,
+        elements: required_u64(object, "elements", label)? as usize,
+        bits: u8::try_from(required_u64(object, "bits", label)?)
+            .map_err(|_| model_error(label, "uniform factor bits do not fit u8"))?,
+        group_size: required_u64(object, "group_size", label)? as usize,
+        groups: required_u64(object, "groups", label)? as usize,
+        scale_bytes: required_u64(object, "scale_bytes", label)? as usize,
+        code_bytes: required_u64(object, "code_bytes", label)? as usize,
+        retained_padding_elements: required_u64(object, "retained_padding_elements", label)?
+            as usize,
+    })
+}
+
+fn hgravs01_header_to_json(header: &Hgravs01Header) -> Value {
+    json!({
+        "shape": header.shape,
+        "matrix_shape": header.matrix_shape,
+        "elements": header.elements,
+        "rank": header.rank,
+        "factor_bits": header.factor_bits,
+        "factor_group_size": header.factor_group_size,
+        "left": uniform_factor_to_json(&header.left),
+        "right": uniform_factor_to_json(&header.right),
+        "left_body_offset": header.left_body_offset,
+        "right_body_offset": header.right_body_offset,
+        "left_body_bytes": header.left_body_bytes,
+        "right_body_bytes": header.right_body_bytes,
+        "payload_bytes": header.payload_bytes,
+        "activation_capture_sha256": header.activation_capture_sha256,
+    })
+}
+
+fn hgravs01_header_from_json(value: &Value, label: &str) -> Result<Hgravs01Header> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| model_error(label, "hgravs01 header must be an object"))?;
+    let shape = object
+        .get("shape")
+        .and_then(Value::as_array)
+        .ok_or_else(|| model_error(label, "hgravs01 shape must be an array"))?
+        .iter()
+        .map(|v| {
+            v.as_u64()
+                .and_then(|n| usize::try_from(n).ok())
+                .ok_or_else(|| model_error(label, "hgravs01 shape entry must be usize"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let matrix_shape_vec = object
+        .get("matrix_shape")
+        .and_then(Value::as_array)
+        .ok_or_else(|| model_error(label, "hgravs01 matrix_shape must be an array"))?
+        .iter()
+        .map(|v| {
+            v.as_u64()
+                .and_then(|n| usize::try_from(n).ok())
+                .ok_or_else(|| model_error(label, "hgravs01 matrix_shape entry must be usize"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if matrix_shape_vec.len() != 2 {
+        return Err(model_error(label, "hgravs01 matrix_shape must be rank-2"));
+    }
+    let matrix_shape = [matrix_shape_vec[0], matrix_shape_vec[1]];
+    let left = uniform_factor_from_json(
+        object
+            .get("left")
+            .ok_or_else(|| model_error(label, "hgravs01 left missing"))?,
+        "warm receipt hgravs01 left",
+    )?;
+    let right = uniform_factor_from_json(
+        object
+            .get("right")
+            .ok_or_else(|| model_error(label, "hgravs01 right missing"))?,
+        "warm receipt hgravs01 right",
+    )?;
+    let activation_capture_sha256 =
+        required_sha256(object, "activation_capture_sha256", label)?.to_owned();
+    Ok(Hgravs01Header {
+        shape,
+        matrix_shape,
+        elements: required_u64(object, "elements", label)? as usize,
+        rank: required_u64(object, "rank", label)? as usize,
+        factor_bits: u8::try_from(required_u64(object, "factor_bits", label)?)
+            .map_err(|_| model_error(label, "hgravs01 factor_bits do not fit u8"))?,
+        factor_group_size: required_u64(object, "factor_group_size", label)? as usize,
+        left,
+        right,
+        left_body_offset: required_u64(object, "left_body_offset", label)? as usize,
+        right_body_offset: required_u64(object, "right_body_offset", label)? as usize,
+        left_body_bytes: required_u64(object, "left_body_bytes", label)? as usize,
+        right_body_bytes: required_u64(object, "right_body_bytes", label)? as usize,
+        payload_bytes: required_u64(object, "payload_bytes", label)? as usize,
+        activation_capture_sha256,
+    })
+}
+
+fn warm_geometry_from_receipt_entry(
+    entry: &admission_warm_receipt::ReceiptEntry,
+) -> Option<WarmGeometryCache> {
+    match entry.layout_kind.as_str() {
+        admission_warm_receipt::LAYOUT_KIND_HGRAVS01 => entry
+            .hgravs01_header
+            .as_ref()
+            .and_then(|value| hgravs01_header_from_json(value, "warm receipt hgravs01").ok())
+            .map(WarmGeometryCache::ActivationWeightedSvd),
+        admission_warm_receipt::LAYOUT_KIND_HQ30G1B1 => entry
+            .header
+            .clone()
+            .map(WarmGeometryCache::Direct),
+        _ => None,
+    }
+}
+
+fn aw_receipt_specs_from_artifact(
+    artifact: &Qwen30ActivationWeightedSvdArtifact,
+) -> Vec<admission_warm_receipt::ReceiptEntrySpec> {
+    artifact
+        .tensors
+        .iter()
+        .map(|(name, tensor)| {
+            let (layout_kind, header, hgravs01_header) = match &tensor.layout {
+                Qwen30ActivationWeightedTensorLayout::Direct(direct) => (
+                    admission_warm_receipt::LAYOUT_KIND_HQ30G1B1,
+                    Some(direct.clone()),
+                    None,
+                ),
+                Qwen30ActivationWeightedTensorLayout::ActivationWeightedSvd(hgravs) => (
+                    admission_warm_receipt::LAYOUT_KIND_HGRAVS01,
+                    None,
+                    Some(hgravs01_header_to_json(hgravs)),
+                ),
+            };
+            admission_warm_receipt::ReceiptEntrySpec {
+                tensor_name: name.clone(),
+                artifact_path: tensor.artifact_path.clone(),
+                artifact_sha256: tensor.artifact_sha256.clone(),
+                source_shard: tensor.source_shard.clone(),
+                source_shard_sha256: tensor.source_shard_sha256.clone(),
+                source_dtype: tensor.source_dtype.clone(),
+                header,
+                hgravs01_header,
+                layout_kind: layout_kind.to_owned(),
+            }
+        })
+        .collect()
+}
+
 /// Validate one activation-weighted tensor row.
 ///
 /// When `warm_payload` is `Some`, identity has already been proven via the
-/// shared warm receipt and content SHA-256 is not recomputed. Size, layout,
-/// selection binding, and geometry checks still run on every start.
+/// shared warm receipt and content SHA-256 is not recomputed. Size, selection
+/// binding, and manifest↔geometry checks still run on every start. When
+/// `warm_geometry` is also `Some`, the cold-validated header is reused instead
+/// of re-parsing (and re-decoding HGRAVS factor bodies).
 fn validate_aw_tensor_row_with_payload(
     row: &Map<String, Value>,
     root: &Path,
@@ -1248,6 +1433,7 @@ fn validate_aw_tensor_row_with_payload(
     selection_path: &Path,
     expected_activation_capture_sha256: &str,
     warm_payload: Option<Arc<[u8]>>,
+    warm_geometry: Option<WarmGeometryCache>,
 ) -> Result<(Qwen30ActivationWeightedTensor, Arc<[u8]>)> {
     let label = "activation-weighted SVD manifest tensor";
     let tensor_name = required_string(row, "tensor_name", label)?;
@@ -1373,7 +1559,28 @@ fn validate_aw_tensor_row_with_payload(
         require_exact_string(layout, "magic", HGRAVS01_MAGIC_TEXT, label)?;
         require_exact_string(layout, "family", HGRAVS01_REPRESENTATION, label)?;
         require_exact_string(layout, "schema", HGRAVS01_SCHEMA, label)?;
-        let parsed = parse_hgravs01_header(payload.as_ref())?;
+        let parsed = match warm_geometry {
+            Some(WarmGeometryCache::ActivationWeightedSvd(cached)) => {
+                // Identity already matches; reuse cold-validated geometry.
+                // Still re-bind against the live sealed manifest / selection.
+                if u64::try_from(cached.payload_bytes).ok()
+                    != Some(u64::try_from(payload.len()).unwrap_or(u64::MAX))
+                {
+                    return Err(model_error(
+                        label,
+                        "warm HGRAVS01 cached geometry payload_bytes disagrees with physical bytes",
+                    ));
+                }
+                cached
+            }
+            Some(WarmGeometryCache::Direct(_)) => {
+                return Err(model_error(
+                    label,
+                    "warm geometry cache layout kind disagrees with selected HGRAVS01 organ",
+                ));
+            }
+            None => parse_hgravs01_header(payload.as_ref())?,
+        };
         if parsed.shape != shape || u64::try_from(parsed.elements).ok() != Some(elements) {
             return Err(model_error(
                 label,
@@ -1424,7 +1631,26 @@ fn validate_aw_tensor_row_with_payload(
         }
         require_exact_string(layout, "sign_bit_order", "little", label)?;
         require_exact_string(layout, "scale_dtype", "float16", label)?;
-        let parsed = parse_complete_binary_header(payload.as_ref())?;
+        let parsed = match warm_geometry {
+            Some(WarmGeometryCache::Direct(cached)) => {
+                if u64::try_from(cached.payload_bytes).ok()
+                    != Some(u64::try_from(payload.len()).unwrap_or(u64::MAX))
+                {
+                    return Err(model_error(
+                        label,
+                        "warm direct cached geometry payload_bytes disagrees with physical bytes",
+                    ));
+                }
+                cached
+            }
+            Some(WarmGeometryCache::ActivationWeightedSvd(_)) => {
+                return Err(model_error(
+                    label,
+                    "warm geometry cache layout kind disagrees with control direct tensor",
+                ));
+            }
+            None => parse_complete_binary_header(payload.as_ref())?,
+        };
         if parsed.shape != shape || u64::try_from(parsed.elements).ok() != Some(elements) {
             return Err(model_error(
                 label,
@@ -1521,6 +1747,7 @@ fn validate_aw_tensor_rows_bounded_parallel(
         selection_path,
         expected_activation_capture_sha256,
         None,
+        None,
     )
 }
 
@@ -1532,6 +1759,7 @@ fn validate_aw_tensor_rows_bounded_parallel_with_warm(
     selection_path: &Path,
     expected_activation_capture_sha256: &str,
     warm_payloads: Option<&BTreeMap<String, Arc<[u8]>>>,
+    warm_geometry: Option<&BTreeMap<String, WarmGeometryCache>>,
 ) -> Result<(Vec<(Qwen30ActivationWeightedTensor, Arc<[u8]>)>, usize)> {
     let (lanes, workers) = quality_payload_verification_lanes(rows);
     let workers = workers.min(QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS);
@@ -1553,12 +1781,12 @@ fn validate_aw_tensor_rows_bounded_parallel_with_warm(
                             )
                         })
                         .and_then(|row| {
+                            let name = required_string(
+                                row,
+                                "tensor_name",
+                                "activation-weighted SVD manifest tensor",
+                            )?;
                             let warm = if let Some(map) = warm_payloads {
-                                let name = required_string(
-                                    row,
-                                    "tensor_name",
-                                    "activation-weighted SVD manifest tensor",
-                                )?;
                                 Some(
                                     map.get(name)
                                         .cloned()
@@ -1571,6 +1799,7 @@ fn validate_aw_tensor_rows_bounded_parallel_with_warm(
                             } else {
                                 None
                             };
+                            let geometry = warm_geometry.and_then(|map| map.get(name).cloned());
                             validate_aw_tensor_row_with_payload(
                                 row,
                                 root,
@@ -1579,6 +1808,7 @@ fn validate_aw_tensor_rows_bounded_parallel_with_warm(
                                 selection_path,
                                 expected_activation_capture_sha256,
                                 warm,
+                                geometry,
                             )
                         });
                     lane_outcomes.push((ordinal, outcome));
@@ -1676,11 +1906,15 @@ fn load_aw_warm_payloads_bounded_parallel(
 ///
 /// Warm path (`HAWKING_ADMISSION_WARM_RECEIPT`, default on): after a prior cold
 /// full rehash wrote a sealed receipt, a later process may skip *recomputing*
-/// content SHA-256 when every payload file's (size, mtime_ns, device, inode)
-/// still matches. It never skips the unchanged-file check. Selection, snapshot,
-/// terminal, activation-capture, source-chain, and geometry seals still run
-/// every start. Disable with `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full
-/// cold rehash every start.
+/// content SHA-256 when every payload file's (size, mtime_ns, inode) still
+/// matches. device (st_dev) is deliberately excluded — it is a mount-time
+/// artifact that a remount reassigns without changing the file, and including it
+/// forced a full cold rehash on every post-reboot start. It never skips the
+/// unchanged-file check. When the receipt also carries cold-validated per-tensor
+/// geometry, the warm path reuses it instead of re-parsing 18k headers.
+/// Selection, snapshot, terminal, activation-capture, source-chain, and
+/// manifest↔geometry seals still run every start. Disable with
+/// `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full cold rehash every start.
 pub fn admit_qwen30_activation_weighted_svd_artifact(
     manifest_path: impl AsRef<Path>,
     admission: &Qwen30ActivationWeightedSvdAdmission,
@@ -2009,32 +2243,9 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
 
     if admission_warm_receipt::warm_receipt_enabled() {
         let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_write", || {
-            let specs: Vec<admission_warm_receipt::ReceiptEntrySpec> = artifact
-                .tensors
-                .iter()
-                .map(|(name, tensor)| {
-                    let layout_kind = match &tensor.layout {
-                        Qwen30ActivationWeightedTensorLayout::Direct(_) => {
-                            admission_warm_receipt::LAYOUT_KIND_HQ30G1B1
-                        }
-                        Qwen30ActivationWeightedTensorLayout::ActivationWeightedSvd(_) => {
-                            admission_warm_receipt::LAYOUT_KIND_HGRAVS01
-                        }
-                    };
-                    // Mixed catalog: layout is re-proven from bytes+manifest on
-                    // every warm load. Identity receipt does not store headers.
-                    admission_warm_receipt::ReceiptEntrySpec {
-                        tensor_name: name.clone(),
-                        artifact_path: tensor.artifact_path.clone(),
-                        artifact_sha256: tensor.artifact_sha256.clone(),
-                        source_shard: tensor.source_shard.clone(),
-                        source_shard_sha256: tensor.source_shard_sha256.clone(),
-                        source_dtype: tensor.source_dtype.clone(),
-                        header: None,
-                        layout_kind: layout_kind.to_owned(),
-                    }
-                })
-                .collect();
+            // Store cold-validated geometry so the next warm hit can skip
+            // re-parsing 18k HGRAVS01 headers / factor bodies.
+            let specs = aw_receipt_specs_from_artifact(&artifact);
             let receipt = admission_warm_receipt::build_receipt_from_specs(
                 &artifact.manifest_path,
                 &artifact.manifest_seal_sha256,
@@ -2084,7 +2295,26 @@ fn try_warm_aw_payload_admission(
             load_aw_warm_payloads_bounded_parallel(&receipt)
         })?;
 
-    // Layout / selection / geometry still re-proven on every warm start.
+    // Load any cold-validated geometry from the receipt. Entries without a
+    // geometry blob re-parse (older receipts); a complete receipt skips the
+    // expensive HGRAVS01 header + factor-body decode for every tensor.
+    let warm_geometry: BTreeMap<String, WarmGeometryCache> = receipt
+        .entries
+        .iter()
+        .filter_map(|(name, entry)| {
+            warm_geometry_from_receipt_entry(entry).map(|geometry| (name.clone(), geometry))
+        })
+        .collect();
+    let geometry_hit = !warm_geometry.is_empty()
+        && admission_warm_receipt::receipt_geometry_complete(&receipt);
+    if geometry_hit {
+        crate::startup_timing::record_ms("admit_payload_warm_geometry_cache_hit", 1);
+    } else {
+        crate::startup_timing::record_ms("admit_payload_warm_geometry_cache_miss", 1);
+    }
+
+    // Selection / manifest bindings always re-proven; payload geometry parse
+    // is skipped when the identity-matched receipt carries it.
     let (validated_rows, payload_verification_workers) =
         crate::startup_timing::time_ms_result("admit_payload_warm_layout_revalidate", || {
             validate_aw_tensor_rows_bounded_parallel_with_warm(
@@ -2095,6 +2325,7 @@ fn try_warm_aw_payload_admission(
                 selection_path,
                 expected_activation_capture_sha256,
                 Some(&warm_payloads),
+                Some(&warm_geometry),
             )
         })?;
 
@@ -2110,6 +2341,21 @@ fn try_warm_aw_payload_admission(
         manifest_path.to_path_buf(),
         manifest_seal.to_owned(),
     )?;
+
+    // Upgrade older identity-only receipts (or any incomplete geometry set)
+    // so subsequent warm hits get the full geometry skip.
+    if !geometry_hit {
+        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_geometry_upgrade", || {
+            let specs = aw_receipt_specs_from_artifact(&artifact);
+            let upgraded = admission_warm_receipt::build_receipt_from_specs(
+                &artifact.manifest_path,
+                &artifact.manifest_seal_sha256,
+                &specs,
+            )?;
+            admission_warm_receipt::write_receipt(&upgraded)
+        });
+    }
+
     Ok(Some(artifact))
 }
 
