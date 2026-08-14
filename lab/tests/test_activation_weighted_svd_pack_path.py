@@ -142,6 +142,124 @@ def test_select_budget_prefers_surplus_over_weight_cosine(tmp_path: Path) -> Non
     assert winner["surplus_over_null"] == max(r["surplus_over_null"] for r in under)
 
 
+def test_shared_factor_budget_sweep_matches_independent_codec_payloads(tmp_path: Path) -> None:
+    """Shared max-rank SVD + slice must be byte-identical to four independent fits.
+
+    This is the correctness gate for the repack latency cut: a faster sweep that
+    changes any payload hash is a failed optimisation.
+    """
+    from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
+        _effective_budgets_for_organ,
+        _encode_budget_from_factors,
+    )
+
+    rng = np.random.default_rng(0xA17A5D)
+    # gate/up geometry and a down-like transpose case
+    shapes = [(768, 2048), (2048, 768)]
+    capture = {
+        "path": str(tmp_path),
+        "capture_result_path": str(tmp_path / "capture-result.json"),
+        "sha256": "d" * 64,
+        "schema": "test",
+        "status": "TEST",
+        "fit_kind": "real_routed_activation_capture",
+        "not_synthetic_unit_direction": True,
+    }
+    for out_dim, in_dim in shapes:
+        plant = 24
+        W = (
+            rng.standard_normal((out_dim, plant), dtype=np.float32)
+            @ rng.standard_normal((plant, in_dim), dtype=np.float32)
+        )
+        X = rng.standard_normal((96, in_dim), dtype=np.float32)
+        X_fit, X_hold = X[:72], X[72:]
+        n_fit = int(X_fit.shape[0])
+        effective = _effective_budgets_for_organ(n_fit)
+        matrix = np.ascontiguousarray(W, dtype=np.float32).reshape(W.shape[0], -1)
+        max_rank = max(int(b["rank"]) for b in effective)
+        left_full, right_full, fit_meta = dual._activation_weighted_svd_factors(
+            matrix, X_fit, rank=max_rank
+        )
+        hold = np.ascontiguousarray(X_hold, dtype=np.float32)
+        y_hold = hold @ matrix.T
+        null_baseline = dual._constant_mean_null_cosine(y_hold)
+        for budget in effective:
+            shared = _encode_budget_from_factors(
+                W=W,
+                matrix=matrix,
+                left_full=left_full,
+                right_full=right_full,
+                fit_meta_base=fit_meta,
+                rank=int(budget["rank"]),
+                bits=int(budget["bits"]),
+                capture_identity=capture,
+                hold=hold,
+                y_hold=y_hold,
+                null_baseline=float(null_baseline),
+            )
+            independent = _activation_weighted_svd_low_rank_codec(
+                W,
+                rank=int(budget["rank"]),
+                bits=int(budget["bits"]),
+                X_fit=X_fit,
+                capture_identity=capture,
+                X_hold=X_hold,
+            )
+            assert shared.payload == independent.payload, (
+                f"payload mismatch shape={W.shape} budget={budget['label']}"
+            )
+            assert (
+                shared.metadata["activation_quality"]["surplus_over_null"]
+                == independent.metadata["activation_quality"]["surplus_over_null"]
+            )
+
+
+def test_fit_cache_roundtrip_preserves_payload(tmp_path: Path) -> None:
+    from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
+        organ_fit_cache_key,
+        store_fit_cache,
+        try_load_fit_cache,
+    )
+
+    rng = np.random.default_rng(3)
+    # Q30 gate geometry so under-ceiling budgets exist (tiny matrices overshoot BPW).
+    plant = 16
+    W = (
+        rng.standard_normal((768, plant), dtype=np.float32)
+        @ rng.standard_normal((plant, 2048), dtype=np.float32)
+    )
+    X = rng.standard_normal((64, 2048), dtype=np.float32)
+    capture = {
+        "path": str(tmp_path),
+        "capture_result_path": str(tmp_path / "capture-result.json"),
+        "sha256": "e" * 64,
+        "schema": "test",
+        "status": "TEST",
+        "fit_kind": "real_routed_activation_capture",
+        "not_synthetic_unit_direction": True,
+    }
+    winner = select_budget_for_organ(
+        W=W, X_fit=X[:48], X_hold=X[48:], capture_identity=capture
+    )
+    key = organ_fit_cache_key(
+        capture_sha="e" * 64,
+        layer=0,
+        expert=1,
+        component="gate_proj",
+        source_value_sha256="f" * 64,
+        activation_fingerprint="a" * 64,
+        n_tokens=48,
+    )
+    cache = tmp_path / "fit-cache"
+    store_fit_cache(cache, key, winner)
+    loaded = try_load_fit_cache(cache, key)
+    assert loaded is not None
+    assert loaded["payload"] == winner["payload"]
+    assert loaded["payload_sha256"] == winner["payload_sha256"]
+    assert loaded["budget_label"] == winner["budget_label"]
+    assert loaded["surplus_over_null"] == winner["surplus_over_null"]
+
+
 def test_real_capture_binding_when_asset_present() -> None:
     capture_run = dual.DEFAULT_Q30_ACTIVATION_CAPTURE_RUN
     if not (capture_run / "capture-result.json").is_file():

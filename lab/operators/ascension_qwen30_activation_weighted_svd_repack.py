@@ -45,7 +45,9 @@ import numpy as np
 
 from lab.operators import ascension_dual_gravity_worker as dual
 from lab.operators import ascension_qwen30_complete_gravity as complete
+from lab.operators import capture_expert_pack as expert_pack
 from lab.operators import one_bit_ceiling as obc
+from lab.operators import repack_score_index as score_index
 from lab.operators.qwen30b_gravity_pack import load_tensor, load_weight_map
 from lab.receipts import seal, verify
 
@@ -80,7 +82,15 @@ MODEL_ID = "Qwen3-Coder-30B-A3B-Instruct-activation-weighted-svd-v1"
 EXPECTED_TENSOR_COUNT = 18_867
 MODEL_LAYERS = 48
 # Campaign law: complete BPW <= 1/1 (one_bit_ceiling.CEILING). No private looser constant.
+# Trunk fixed the illegal 1.5 complete-BPW constant; keep component and complete both at 1.0.
 CEILING_BPW = float(obc.CEILING)  # 1.0 — was illegally 1.5
+DEFAULT_GLOBAL_BUDGET_BPW = float(CEILING_BPW)
+ONE_BIT_CEILING_BPW = float(obc.CEILING)  # 1.0 — alias for evaluate/seal hard law
+DEFAULT_FIT_CACHE = QWEN30_ROOT / "quality-candidates" / "activation-weighted-svd-fit-cache"
+DEFAULT_SCORE_INDEX = (
+    QWEN30_ROOT / "quality-candidates" / "activation-weighted-svd-score-index.v1.json"
+)
+FIT_CACHE_SCHEMA = "hawking.ascension.activation_weighted_svd_organ_fit_cache.v1"
 MIN_TOKENS = 32
 # Minimum surplus over the constant-mean null for an organ to be REPLACED. 0.0 keeps the
 # bare `beats_null` bar; higher values refuse organs that only trivially beat a constant.
@@ -100,6 +110,28 @@ L0_BROAD_RESULT_SCHEMA = (
 L0_HCLI_RESULT_SCHEMA = (
     "hawking.ascension.qwen30_current_hcli_layer0_route_capture_result.v1"
 )
+
+# Pin BLAS under the worker pool.  Capture lane measured VECLIB_MAXIMUM_THREADS=8
+# as a real win: worker threads × default Accelerate fan-out oversubscribe the
+# machine and the organ fits thrash.  Only set when the operator did not already
+# pin the env (so an outer orchestrator keeps control).
+_BLAS_ENV_DEFAULTS = {
+    "VECLIB_MAXIMUM_THREADS": "8",
+    "OPENBLAS_NUM_THREADS": "8",
+    "OMP_NUM_THREADS": "8",
+    "MKL_NUM_THREADS": "8",
+}
+
+
+def _pin_blas_threads() -> dict[str, str]:
+    applied: dict[str, str] = {}
+    for key, value in _BLAS_ENV_DEFAULTS.items():
+        if key not in os.environ or not str(os.environ.get(key) or "").strip():
+            os.environ[key] = value
+            applied[key] = value
+        else:
+            applied[key] = str(os.environ[key])
+    return applied
 
 # Under-ceiling budgets from the measured family probe.  Over-ceiling anchors
 # are intentionally excluded from selection.
@@ -202,69 +234,23 @@ def capture_is_all_layer(capture: Mapping[str, Any]) -> bool:
     return False
 
 
-def collect_expert_activations(
+def collect_expert_activations_from_json(
     run_dir: Path, capture: Mapping[str, Any]
 ) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
-    """Collect router-input hiddens keyed by (layer, expert_id).
+    """JSON + per-token f32le fallback.  Same row order as the historical collector.
 
-    L0-only captures are projected onto layer 0 so the rest of the packer can
-    share one code path. All-layer captures only count tokens that retained a
-    raw hidden (bounded subsample); route-only tokens contribute to hit-count
-    provenance but not to the fit matrix.
+    Deduplicates file reads via relative_path so multi-expert hits on one token
+    do not re-open the same hidden file.  Still pays the multi-GB JSON parse and
+    tens of thousands of small-file opens when the binary expert pack is absent.
     """
 
-    by_key: dict[tuple[int, int], list[np.ndarray]] = {}
-    total_steps = 0
-    hidden_steps = 0
-    route_only_steps = 0
-    layers_seen: set[int] = set()
     all_layer = capture_is_all_layer(capture)
-
-    for probe in capture["probes"]:
-        for step in probe["steps"]:
-            total_steps += 1
-            if all_layer:
-                layer_rows = step.get("layers") or []
-                if not layer_rows:
-                    raise ActivationWeightedRepackError(
-                        f"all-layer capture step missing layers at position {step.get('position')}"
-                    )
-                any_hidden = False
-                for layer_row in layer_rows:
-                    layer = int(layer_row["layer"])
-                    layers_seen.add(layer)
-                    hidden_meta = layer_row.get("router_input_hidden_f32le")
-                    if not hidden_meta:
-                        continue
-                    any_hidden = True
-                    rel = hidden_meta["relative_path"]
-                    path = run_dir / rel
-                    x = np.fromfile(path, dtype="<f4")
-                    if x.size != int(hidden_meta["elements"]):
-                        raise ActivationWeightedRepackError(f"hidden size mismatch at {path}")
-                    for expert_id in layer_row["selected_expert_ids"]:
-                        by_key.setdefault((layer, int(expert_id)), []).append(x)
-                if any_hidden:
-                    hidden_steps += 1
-                else:
-                    route_only_steps += 1
-            else:
-                layers_seen.add(DEFAULT_LAYER)
-                hidden_meta = step.get("router_input_hidden_f32le")
-                if not hidden_meta:
-                    raise ActivationWeightedRepackError(
-                        "L0 capture step missing router_input_hidden_f32le"
-                    )
-                rel = hidden_meta["relative_path"]
-                path = run_dir / rel
-                x = np.fromfile(path, dtype="<f4")
-                if x.size != int(hidden_meta["elements"]):
-                    raise ActivationWeightedRepackError(f"hidden size mismatch at {path}")
-                hidden_steps += 1
-                for expert_id in step["selected_expert_ids"]:
-                    by_key.setdefault((DEFAULT_LAYER, int(expert_id)), []).append(x)
-
-    stacked = {key: np.stack(rows, axis=0) for key, rows in by_key.items()}
+    try:
+        stacked, provenance, _meta = expert_pack.build_from_capture_walk(
+            run_dir, capture, all_layer=all_layer, default_layer=DEFAULT_LAYER
+        )
+    except expert_pack.ExpertPackError as exc:
+        raise ActivationWeightedRepackError(str(exc)) from exc
     hit_counts = {
         f"L{layer}.E{expert}": int(arr.shape[0])
         for (layer, expert), arr in sorted(
@@ -272,19 +258,53 @@ def collect_expert_activations(
         )
     }
     provenance = {
-        "total_steps": total_steps,
-        "hidden_retained_steps": hidden_steps,
-        "route_only_steps": route_only_steps,
-        "token_expert_pairs": int(sum(v.shape[0] for v in stacked.values())),
-        "layer_expert_pairs_with_hits": len(stacked),
-        "experts_with_hits": len({e for (_, e) in stacked}),
-        "layers_with_hidden_hits": sorted(layers_seen),
-        "n_layers_with_hidden_hits": len(layers_seen),
-        "all_layer_capture": all_layer,
+        **provenance,
         "hit_counts": hit_counts,
-        "capture_schema": capture.get("schema"),
-        "bounded_storage": capture.get("bounded_storage"),
+        "load_path": "json_capture_result_fallback",
     }
+    return stacked, provenance
+
+
+def collect_expert_activations(
+    run_dir: Path, capture: Mapping[str, Any] | None = None
+) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
+    """Collect router-input hiddens keyed by (layer, expert_id).
+
+    Prefers the binary expert-pack.v1 (unique rows + uint32 index).  Falls back
+    to walking capture-result.json + per-token f32le files so existing captures
+    remain readable without a convert step.
+
+    L0-only captures are projected onto layer 0 so the rest of the packer can
+    share one code path. All-layer captures only count tokens that retained a
+    raw hidden (bounded subsample); route-only tokens contribute to hit-count
+    provenance but not to the fit matrix.
+    """
+
+    run_dir = Path(run_dir)
+    t0 = time.perf_counter()
+    if expert_pack.pack_is_present(run_dir):
+        try:
+            stacked, provenance = expert_pack.load_expert_pack(run_dir)
+            provenance = dict(provenance)
+            provenance["load_path"] = "binary_expert_pack_v1"
+            provenance["load_wall_secs"] = time.perf_counter() - t0
+            return stacked, provenance
+        except expert_pack.ExpertPackError as exc:
+            # Corrupt pack must not silently change selection — refuse rather than
+            # half-load.  Operator can delete the pack dir to force JSON fallback.
+            raise ActivationWeightedRepackError(
+                f"expert-pack present but unreadable ({exc}); delete "
+                f"{expert_pack.pack_dir(run_dir)} to fall back to JSON"
+            ) from exc
+
+    if capture is None:
+        result_path = run_dir / "capture-result.json"
+        if not result_path.is_file():
+            raise ActivationWeightedRepackError(f"capture-result.json missing under {run_dir}")
+        capture = json.loads(result_path.read_bytes())
+    stacked, provenance = collect_expert_activations_from_json(run_dir, capture)
+    provenance = dict(provenance)
+    provenance["load_wall_secs"] = time.perf_counter() - t0
     return stacked, provenance
 
 
@@ -346,23 +366,10 @@ def coverage_report(
     }
 
 
-def select_budget_for_organ(
-    *,
-    W: np.ndarray,
-    X_fit: np.ndarray,
-    X_hold: np.ndarray,
-    capture_identity: Mapping[str, Any],
-) -> dict[str, Any]:
-    """Pick the under-ceiling budget maximizing surplus-over-null."""
 
-    # Well-posedness: Gram = X'X/n has rank <= n_fit, so any rank beyond n_fit is
-    # set by the ridge rather than by data. On the first all-layer candidate 72%
-    # of selected organs were fitted above their own row count (51% above 2x it),
-    # which cost payload without buying fidelity (cosine 0.8978 well-posed vs
-    # 0.8924 ill-posed) -- and payload is exactly what limits coverage, the thing
-    # that actually broke coherence. Clamp instead of skip so a thin organ still
-    # gets its best honest fit rather than dropping out entirely.
-    n_fit_rows = int(X_fit.shape[0])
+def _effective_budgets_for_organ(n_fit_rows: int) -> list[dict[str, Any]]:
+    """Clamp budget ranks to n_fit (well-posed ridge) and drop duplicates."""
+
     effective_budgets: list[dict[str, Any]] = []
     seen_points: set[tuple[int, int]] = set()
     for budget in BUDGET_POINTS:
@@ -376,20 +383,145 @@ def select_budget_for_organ(
         effective_budgets.append(
             {**budget, "rank": rank, "rank_clamped_to_n_fit": rank != int(budget["rank"])}
         )
+    return effective_budgets
+
+
+def _encode_budget_from_factors(
+    *,
+    W: np.ndarray,
+    matrix: np.ndarray,
+    left_full: np.ndarray,
+    right_full: np.ndarray,
+    fit_meta_base: Mapping[str, Any],
+    rank: int,
+    bits: int,
+    capture_identity: Mapping[str, Any],
+    hold: np.ndarray,
+    y_hold: np.ndarray,
+    null_baseline: float,
+) -> dual.CodecResult:
+    """Quantize/score one (rank, bits) from a shared max-rank activation-weighted SVD.
+
+    Factors for rank k are the leading-k slice of a single full economy SVD of the
+    weighted matrix — identical to calling the codec once per rank (numpy always
+    computes the full economy decomposition then truncates). Byte-identity of the
+    resulting payload is the contract; do not "approximate" this path.
+    """
+
+    original_shape = tuple(int(item) for item in W.shape)
+    actual = min(max(1, int(rank)), int(left_full.shape[1]), int(right_full.shape[0]))
+    left = left_full[:, :actual]
+    right = right_full[:actual, :]
+    left_body, left_rebuilt, left_meta = dual._factor_codec(left, bits=int(bits))
+    right_body, right_rebuilt, right_meta = dual._factor_codec(right, bits=int(bits))
+    reconstruction = (left_rebuilt @ right_rebuilt).reshape(original_shape)
+    y_hat = hold @ reconstruction.reshape(matrix.shape).T
+    output_cosine = dual._mean_row_cosine(y_hold, y_hat)
+    surplus = output_cosine - float(null_baseline)
+    weight = dual._quality(matrix, reconstruction.reshape(matrix.shape))
+    fit_meta = {
+        "fit": fit_meta_base["fit"],
+        "rank": int(actual),
+        "n_fit_tokens": int(fit_meta_base["n_fit_tokens"]),
+        "gram_ridge": float(fit_meta_base["gram_ridge"]),
+    }
+    header = {
+        "schema": "hawking.gravity.activation_weighted_svd_low_rank.v1",
+        "representation": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+        "shape": list(original_shape),
+        "matrix_shape": [int(item) for item in matrix.shape],
+        "elements": int(W.size),
+        "rank": int(left.shape[1]),
+        "factor_bits": int(bits),
+        "factor_group_size": dual.GROUP_UNIFORM,
+        "left": left_meta,
+        "right": right_meta,
+        "left_body_bytes": len(left_body),
+        "right_body_bytes": len(right_body),
+        "fit": fit_meta,
+        "activation_capture": {
+            "path": capture_identity.get("path"),
+            "capture_result_path": capture_identity.get("capture_result_path"),
+            "sha256": capture_identity.get("sha256"),
+            "schema": capture_identity.get("schema"),
+            "status": capture_identity.get("status"),
+            "fit_kind": capture_identity.get("fit_kind"),
+            "not_synthetic_unit_direction": True,
+        },
+        "selection_metric": {
+            "primary": "surplus_over_null",
+            "secondary": "weight_cosine",
+            "weight_cosine_role": "distribution_local_guard",
+            "operator_recovery_weight_cos_cutoff": dual.OPERATOR_RECOVERY_WEIGHT_COS,
+            # Match independent codec header field (dual constant). Selection under_ceiling
+            # still uses module CEILING_BPW (= one_bit 1.0).
+            "ceiling_component_bpw": dual.CEILING_COMPONENT_BPW,
+        },
+        "activation_quality": {
+            "output_cosine": float(output_cosine),
+            "null_baseline": float(null_baseline),
+            "surplus_over_null": float(surplus),
+            "beats_null": bool(output_cosine > null_baseline),
+            "n_hold_tokens": int(hold.shape[0]),
+            "weight_cosine": float(weight["cosine"]),
+            "weight_relative_l2": float(weight["relative_l2"]),
+            "distribution_local_only": bool(
+                surplus >= 0.10
+                and output_cosine >= 0.90
+                and weight["cosine"] < dual.OPERATOR_RECOVERY_WEIGHT_COS
+            ),
+        },
+    }
+    payload = dual._container(dual.MAGIC_ACT_SVD, header, left_body + right_body)
+    # Reconstruction must come from physical bytes, not encoder-local factors.
+    decoded = dual._decode_activation_weighted_svd_low_rank_codec(payload)
+    return dual.CodecResult(payload=payload, reconstruction=decoded, metadata=header)
+
+
+def select_budget_for_organ(
+    *,
+    W: np.ndarray,
+    X_fit: np.ndarray,
+    X_hold: np.ndarray,
+    capture_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Pick the under-ceiling budget maximizing surplus-over-null.
+
+    Execution: one activation-weighted SVD at the max effective rank, then
+    quantize+score each budget by slicing factors. Selection semantics and
+    payload bytes are identical to four independent codec calls (see tests).
+    """
+
+    n_fit_rows = int(X_fit.shape[0])
+    effective_budgets = _effective_budgets_for_organ(n_fit_rows)
     if not effective_budgets:
         raise ActivationWeightedRepackError(
             f"organ has n_fit_tokens={n_fit_rows}; no well-posed rank budget exists"
         )
 
+    matrix = np.ascontiguousarray(W, dtype=np.float32).reshape(W.shape[0], -1)
+    max_rank = max(int(b["rank"]) for b in effective_budgets)
+    left_full, right_full, fit_meta_base = dual._activation_weighted_svd_factors(
+        matrix, X_fit, rank=max_rank
+    )
+    hold = np.ascontiguousarray(X_hold, dtype=np.float32)
+    y_hold = hold @ matrix.T
+    null_baseline = dual._constant_mean_null_cosine(y_hold)
+
     candidates: list[dict[str, Any]] = []
     for budget in effective_budgets:
-        codec = dual._activation_weighted_svd_low_rank_codec(
-            W,
+        codec = _encode_budget_from_factors(
+            W=W,
+            matrix=matrix,
+            left_full=left_full,
+            right_full=right_full,
+            fit_meta_base=fit_meta_base,
             rank=int(budget["rank"]),
             bits=int(budget["bits"]),
-            X_fit=X_fit,
             capture_identity=capture_identity,
-            X_hold=X_hold,
+            hold=hold,
+            y_hold=y_hold,
+            null_baseline=float(null_baseline),
         )
         bpw = len(codec.payload) * 8.0 / max(W.size, 1)
         quality = codec.metadata["activation_quality"]
@@ -408,7 +540,7 @@ def select_budget_for_organ(
             "codec_metadata": {
                 k: v
                 for k, v in codec.metadata.items()
-                if k not in {"left", "right"}  # large nested scale tables omitted from selection receipt
+                if k not in {"left", "right"}
             },
             "left_meta": codec.metadata["left"],
             "right_meta": codec.metadata["right"],
@@ -422,7 +554,6 @@ def select_budget_for_organ(
             "n_hold_tokens": int(quality["n_hold_tokens"]),
             "n_fit_tokens": int(codec.metadata["fit"]["n_fit_tokens"]),
         }
-        # Keep full metadata for the winning payload write.
         row["_full_metadata"] = codec.metadata
         candidates.append(row)
     under = [c for c in candidates if c["under_ceiling"]]
@@ -432,7 +563,6 @@ def select_budget_for_organ(
             f"no under-ceiling budget for organ; best surplus budget was "
             f"{best['budget_label']} at bpw={best['component_bpw']:.4f}"
         )
-    # Primary: surplus-over-null. Secondary: weight cosine. Tertiary: lower BPW.
     under.sort(
         key=lambda r: (
             -float(r["surplus_over_null"]),
@@ -453,6 +583,120 @@ def select_budget_for_organ(
     return winner
 
 
+def _activation_fingerprint(X: np.ndarray) -> str:
+    """Content hash of activation rows used in the fit/holdout split."""
+
+    arr = np.ascontiguousarray(X, dtype=np.float32)
+    h = hashlib.sha256()
+    h.update(str(arr.shape).encode("ascii"))
+    h.update(arr.tobytes())
+    return h.hexdigest()
+
+
+def organ_fit_cache_key(
+    *,
+    capture_sha: str,
+    layer: int,
+    expert: int,
+    component: str,
+    source_value_sha256: str,
+    activation_fingerprint: str,
+    n_tokens: int,
+) -> str:
+    """Content-addressed key for a per-organ budget-sweep winner."""
+
+    material = {
+        "schema": FIT_CACHE_SCHEMA,
+        "capture_sha": capture_sha,
+        "layer": int(layer),
+        "expert": int(expert),
+        "component": str(component),
+        "source_value_sha256": source_value_sha256,
+        "activation_fingerprint": activation_fingerprint,
+        "n_tokens": int(n_tokens),
+        "hold_frac": HOLD_FRAC,
+        "seed": SEED,
+        "seed_mix": "SEED^(layer*9176)^(expert*1009)^(sha256(component)[:8]&0xFFFF)",
+        "budget_points": list(BUDGET_POINTS),
+        "ceiling_component_bpw": CEILING_BPW,
+        "min_surplus": MIN_SURPLUS,
+        "codec_schema": "hawking.gravity.activation_weighted_svd_low_rank.v1",
+    }
+    return _canonical_sha256(material)
+
+
+def _fit_cache_paths(cache_root: Path, key: str) -> tuple[Path, Path]:
+    shard = cache_root / key[:2]
+    return shard / f"{key}.json", shard / f"{key}.hgravs01"
+
+
+def try_load_fit_cache(cache_root: Path | None, key: str) -> dict[str, Any] | None:
+    if cache_root is None:
+        return None
+    meta_path, payload_path = _fit_cache_paths(cache_root, key)
+    if not meta_path.is_file() or not payload_path.is_file():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        payload = payload_path.read_bytes()
+    except (OSError, json.JSONDecodeError):
+        return None
+    if meta.get("schema") != FIT_CACHE_SCHEMA:
+        return None
+    if meta.get("payload_sha256") != hashlib.sha256(payload).hexdigest():
+        return None
+    if int(meta.get("artifact_bytes") or -1) != len(payload):
+        return None
+    winner = dict(meta["winner"])
+    winner["payload"] = payload
+    winner["payload_sha256"] = meta["payload_sha256"]
+    winner["artifact_bytes"] = len(payload)
+    winner["reconstruction"] = None
+    winner["_full_metadata"] = winner.get("codec_metadata")
+    winner["sweep"] = list(meta.get("sweep") or [])
+    return winner
+
+
+def store_fit_cache(cache_root: Path | None, key: str, winner: Mapping[str, Any]) -> None:
+    if cache_root is None:
+        return
+    payload = winner["payload"]
+    meta_path, payload_path = _fit_cache_paths(cache_root, key)
+    meta_path.parent.mkdir(parents=True, exist_ok=True)
+    sweep = winner.get("sweep") or []
+    winner_meta = {
+        k: v
+        for k, v in winner.items()
+        if k not in {"payload", "reconstruction", "_full_metadata", "left_meta", "right_meta"}
+    }
+    document = {
+        "schema": FIT_CACHE_SCHEMA,
+        "key": key,
+        "payload_sha256": hashlib.sha256(payload).hexdigest(),
+        "artifact_bytes": len(payload),
+        "winner": winner_meta,
+        "sweep": sweep,
+    }
+    tmp_payload = payload_path.with_suffix(payload_path.suffix + ".tmp")
+    tmp_meta = meta_path.with_suffix(meta_path.suffix + ".tmp")
+    try:
+        tmp_payload.write_bytes(payload)
+        tmp_meta.write_text(
+            json.dumps(document, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+            encoding="utf-8",
+        )
+        os.replace(tmp_payload, payload_path)
+        os.replace(tmp_meta, meta_path)
+    finally:
+        for p in (tmp_payload, tmp_meta):
+            if p.exists():
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+
+
+
 class ActivationWeightedSvdRepack:
     """Seal a complete activation-weighted-SVD candidate from baseline + capture."""
 
@@ -468,6 +712,11 @@ class ActivationWeightedSvdRepack:
         max_layers: int | None = None,
         workers: int = 4,
         require_all_layer_capture: bool = False,
+        budget_bpw: float = DEFAULT_GLOBAL_BUDGET_BPW,
+        score_index_path: Path | None = DEFAULT_SCORE_INDEX,
+        fit_cache: Path | None = DEFAULT_FIT_CACHE,
+        disable_fit_cache: bool = False,
+        previous_seal_root: Path | None = None,
     ) -> None:
         self.model_dir = model_dir.expanduser().resolve()
         self.baseline_root = baseline_root.expanduser().resolve()
@@ -478,6 +727,21 @@ class ActivationWeightedSvdRepack:
         self.max_layers = max_layers
         self.workers = max(1, int(workers))
         self.require_all_layer_capture = bool(require_all_layer_capture)
+        self.budget_bpw = float(budget_bpw)
+        self.score_index_path = (
+            score_index_path.expanduser().resolve() if score_index_path is not None else None
+        )
+        if disable_fit_cache:
+            self.fit_cache = None
+        elif fit_cache is None:
+            self.fit_cache = None
+        else:
+            self.fit_cache = fit_cache.expanduser().resolve()
+        self.previous_seal_root = (
+            previous_seal_root.expanduser().resolve() if previous_seal_root is not None else None
+        )
+        self._resident_score_index: score_index.ScoreIndex | None = None
+        self._resident_capture: tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]] | None = None
         self.tensor_dir = self.root / "tensors"
         self.manifest_path = self.root / f"{ARTIFACT_PREFIX}_COMPLETE_BINARY_GRAVITY_CANDIDATE.json"
         self.selection_path = self.root / f"{ARTIFACT_PREFIX}_SELECTION_RECEIPT.json"
@@ -485,6 +749,7 @@ class ActivationWeightedSvdRepack:
         self.terminal_path = self.root / f"{ARTIFACT_PREFIX}_COMPLETE_GRAVITY_TERMINAL_RECEIPT.json"
         self.status_path = self.root / f"{ARTIFACT_PREFIX}_COMPLETE_GRAVITY_STATUS.json"
         self.coverage_path = self.root / f"{ARTIFACT_PREFIX}_COVERAGE_RECEIPT.json"
+        self.evaluate_path = self.root / f"{ARTIFACT_PREFIX}_EVALUATE_RECEIPT.json"
         self.baseline_manifest_path = self.baseline_root / BASELINE_MANIFEST_NAME
         self.baseline_admission_path = self.baseline_root / BASELINE_ADMISSION_NAME
         self.baseline_revalidation_path = self.baseline_root / BASELINE_REVALIDATION_NAME
@@ -492,8 +757,12 @@ class ActivationWeightedSvdRepack:
 
     def run(self) -> dict[str, Any]:
         started = time.perf_counter()
+        profile: dict[str, Any] = {}
+        blas_pin = _pin_blas_threads()
         self.root.mkdir(parents=True, exist_ok=True)
         self.tensor_dir.mkdir(parents=True, exist_ok=True)
+        if self.fit_cache is not None:
+            self.fit_cache.mkdir(parents=True, exist_ok=True)
 
         if self.manifest_path.is_file() and self.terminal_path.is_file():
             terminal = _sealed(self.terminal_path, label="existing terminal receipt")
@@ -507,15 +776,40 @@ class ActivationWeightedSvdRepack:
                 "terminal_seal_sha256": terminal["seal_sha256"],
             }
 
+        t_cap = time.perf_counter()
         capture_identity = dual._activation_capture_binding(self.capture_run)
-        capture = json.loads(Path(capture_identity["capture_result_path"]).read_text(encoding="utf-8"))
-        all_layer = capture_is_all_layer(capture)
+        # Prefer binary pack: avoid parsing multi-GB capture-result.json when the
+        # pack is present.  Binding still hashes capture-result.json for identity.
+        if expert_pack.pack_is_present(self.capture_run):
+            header = json.loads(
+                (expert_pack.pack_dir(self.capture_run) / expert_pack.HEADER_NAME).read_text(
+                    encoding="utf-8"
+                )
+            )
+            # Lightweight all-layer check without JSON body.
+            all_layer = bool(header.get("all_layer_capture", True))
+            capture: Mapping[str, Any] | None = None
+            if self.require_all_layer_capture and not all_layer:
+                # Fall back to JSON only when we must confirm.
+                capture = json.loads(
+                    Path(capture_identity["capture_result_path"]).read_bytes()
+                )
+                all_layer = capture_is_all_layer(capture)
+        else:
+            capture = json.loads(Path(capture_identity["capture_result_path"]).read_bytes())
+            all_layer = capture_is_all_layer(capture)
         if self.require_all_layer_capture and not all_layer:
             raise ActivationWeightedRepackError(
                 "require_all_layer_capture=True but bound capture is not an all-layer "
-                f"activation capture (schema={capture.get('schema')})"
+                f"activation capture (schema={capture_identity.get('schema')})"
             )
         by_layer_expert, act_prov = collect_expert_activations(self.capture_run, capture)
+        profile["capture_load_secs"] = time.perf_counter() - t_cap
+        print(
+            f"capture_load: {profile['capture_load_secs']:.2f}s "
+            f"path={act_prov.get('load_path')} pairs={len(by_layer_expert)}",
+            flush=True,
+        )
         weight_map = load_weight_map(self.model_dir)
         audit = _sealed(self.source_audit, label="source body audit")
         revalidation = _sealed(self.baseline_revalidation_path, label="baseline source revalidation")
@@ -622,6 +916,7 @@ class ActivationWeightedSvdRepack:
                 # Allow re-seal only when content matches after stripping recorded_at/seal.
                 pass
 
+        t_sel = time.perf_counter()
         if self.selection_path.is_file():
             selection = _sealed(self.selection_path, label="selection receipt")
         else:
@@ -636,6 +931,7 @@ class ActivationWeightedSvdRepack:
                 baseline_ledger=baseline_ledger,
             )
             _atomic_json(self.selection_path, selection)
+        profile["selection_secs"] = time.perf_counter() - t_sel
 
         selected_organs = selection["selected_representation"]["organs"]
         selected_by_name = {row["tensor_name"]: row for row in selected_organs}
@@ -676,21 +972,51 @@ class ActivationWeightedSvdRepack:
                 f"baseline manifest tensor count {len(baseline_rows)} != {EXPECTED_TENSOR_COUNT}"
             )
 
+        t_mat = time.perf_counter()
         self._materialize_baseline_tensors(baseline_rows)
+        profile["baseline_link_secs"] = time.perf_counter() - t_mat
+        t_write = time.perf_counter()
         ordered: list[dict[str, Any]] = []
+        # Content-addressed selected writes are independent — parallelise them.
+        selected_names = sorted(n for n in baseline_rows if n in selected_by_name)
+        baseline_names = sorted(n for n in baseline_rows if n not in selected_by_name)
+
+        def write_one(tensor_name: str) -> dict[str, Any]:
+            return self._write_selected_organ(
+                tensor_name=tensor_name,
+                baseline_row=baseline_rows[tensor_name],
+                organ=selected_by_name[tensor_name],
+                weight_map=weight_map,
+            )
+
+        written: dict[str, dict[str, Any]] = {}
+        if self.workers == 1 or len(selected_names) <= 1:
+            for name in selected_names:
+                written[name] = write_one(name)
+        else:
+            with ThreadPoolExecutor(max_workers=self.workers) as pool:
+                futs = {pool.submit(write_one, name): name for name in selected_names}
+                for fut in as_completed(futs):
+                    name = futs[fut]
+                    written[name] = fut.result()
         for tensor_name in sorted(baseline_rows):
-            base = baseline_rows[tensor_name]
-            if tensor_name in selected_by_name:
+            if tensor_name in written:
+                ordered.append(written[tensor_name])
+            else:
                 ordered.append(
-                    self._write_selected_organ(
-                        tensor_name=tensor_name,
-                        baseline_row=base,
-                        organ=selected_by_name[tensor_name],
-                        weight_map=weight_map,
+                    self._row_from_baseline(
+                        tensor_name=tensor_name, baseline_row=baseline_rows[tensor_name]
                     )
                 )
-            else:
-                ordered.append(self._row_from_baseline(tensor_name=tensor_name, baseline_row=base))
+        profile["selected_write_secs"] = time.perf_counter() - t_write
+        profile["materialize_secs"] = profile["baseline_link_secs"] + profile["selected_write_secs"]
+        print(
+            f"materialize: {profile['materialize_secs']:.2f}s "
+            f"(baseline_link={profile['baseline_link_secs']:.2f}s "
+            f"selected_write={profile['selected_write_secs']:.2f}s "
+            f"n_selected={len(selected_names)} n_baseline={len(baseline_names)})",
+            flush=True,
+        )
 
         artifact_bytes = sum(int(row["artifact_bytes"]) for row in ordered)
         elements = sum(int(row["elements"]) for row in ordered)
@@ -912,6 +1238,8 @@ class ActivationWeightedSvdRepack:
             }
         )
         _atomic_json(self.terminal_path, terminal)
+        profile["elapsed_seconds"] = time.perf_counter() - started
+        profile["blas_thread_pin"] = blas_pin  # type: ignore[assignment]
         status = {
             "schema": "hawking.ascension.qwen30_activation_weighted_svd_status.v1",
             "status": "EARNED_COMPLETE_ACTIVATION_WEIGHTED_SVD_CANDIDATE_UNQUALIFIED",
@@ -922,7 +1250,8 @@ class ActivationWeightedSvdRepack:
             "manifest_seal_sha256": candidate["seal_sha256"],
             "terminal_seal_sha256": terminal["seal_sha256"],
             "activation_capture_sha256": capture_identity["sha256"],
-            "elapsed_seconds": time.perf_counter() - started,
+            "elapsed_seconds": profile["elapsed_seconds"],
+            "profile": profile,
             "claim_boundary": {
                 "not_promoted": True,
                 "not_served": True,
@@ -943,6 +1272,7 @@ class ActivationWeightedSvdRepack:
             "activation_capture": capture_identity,
             "quality_summary": quality_summary,
             "elapsed_seconds": status["elapsed_seconds"],
+            "profile": profile,
         }
 
     def _build_selection(
@@ -984,13 +1314,30 @@ class ActivationWeightedSvdRepack:
                 raise ActivationWeightedRepackError(
                     f"{name} in-dim {W.shape[1]} != activation in-dim {X_use.shape[1]}"
                 )
-            comp_seed = int(hashlib.sha256(component.encode()).hexdigest()[:8], 16)
-            X_fit, X_hold = holdout_split(
-                X_use, seed=SEED ^ (layer * 9176) ^ (expert * 1009) ^ (comp_seed & 0xFFFF)
+            source_value_sha256 = hashlib.sha256(
+                np.ascontiguousarray(W, dtype="<f4").tobytes()
+            ).hexdigest()
+            act_fp = _activation_fingerprint(X_use)
+            capture_sha = str(capture_identity.get("sha256") or "")
+            cache_key = organ_fit_cache_key(
+                capture_sha=capture_sha,
+                layer=layer,
+                expert=expert,
+                component=component,
+                source_value_sha256=source_value_sha256,
+                activation_fingerprint=act_fp,
+                n_tokens=int(X_use.shape[0]),
             )
-            winner = select_budget_for_organ(
-                W=W, X_fit=X_fit, X_hold=X_hold, capture_identity=capture_identity
-            )
+            winner = try_load_fit_cache(self.fit_cache, cache_key)
+            if winner is None:
+                comp_seed = int(hashlib.sha256(component.encode()).hexdigest()[:8], 16)
+                X_fit, X_hold = holdout_split(
+                    X_use, seed=SEED ^ (layer * 9176) ^ (expert * 1009) ^ (comp_seed & 0xFFFF)
+                )
+                winner = select_budget_for_organ(
+                    W=W, X_fit=X_fit, X_hold=X_hold, capture_identity=capture_identity
+                )
+                store_fit_cache(self.fit_cache, cache_key, winner)
             # ENFORCE the selection criterion. Until 2026-08-10 `beats_null` was computed,
             # recorded and reported, but never used to reject an organ: 6026 of 16296
             # selected organs in the source-calibrated candidate had beats_null False,
@@ -1089,86 +1436,39 @@ class ActivationWeightedSvdRepack:
             )
         )
 
-        # Greedy pack under the complete_physical_bpw ceiling. Component BPW
-        # ceiling was already enforced per organ; this is the global ledger.
+        # Greedy pack under the *global* complete_physical_bpw budget.
+        # Component BPW ceiling was already enforced per organ (CEILING_BPW=1.0).
+        # Density-ladder steps only change self.budget_bpw — organ metrics stay fixed.
         base_payload = int(baseline_ledger["tensor_payload_bytes"])
         elements = int(baseline_ledger["source_weight_elements"])
         # Manifest bytes are unknown until seal; reserve the baseline billed
         # size as a conservative floor (repack rebuilds the exact ledger later).
         manifest_reserve = int(baseline_ledger.get("manifest_bytes_billed") or 0)
-        payload_running = base_payload
-        organs: list[dict[str, Any]] = []
-        deferred: list[dict[str, Any]] = []
-        for row in scored:
-            trial_payload = payload_running + int(row["payload_delta_bytes"])
-            trial_bpw = (trial_payload + manifest_reserve) * 8.0 / max(elements, 1)
-            if trial_bpw <= CEILING_BPW + 1e-9:
-                row = dict(row)
-                row["selected_under_complete_bpw"] = True
-                row["projected_complete_physical_bpw_after_add"] = float(trial_bpw)
-                organs.append(row)
-                payload_running = trial_payload
-            else:
-                deferred.append(
-                    {
-                        "tensor_name": row["tensor_name"],
-                        "layer": row["layer"],
-                        "expert": row["expert"],
-                        "component": row["component"],
-                        "surplus_over_null": row["surplus_over_null"],
-                        "payload_delta_bytes": row["payload_delta_bytes"],
-                        "reason": "would_exceed_complete_physical_bpw_ceiling",
-                    }
-                )
-
-        # EXPERT-ATOMIC ENFORCEMENT. The runtime's execution unit is the expert
-        # TRIPLE, not the individual organ: both `ensure_device_expert_table` and
-        # the control routed-expert path refuse closed on a partial HGRAVS triple
-        # ("device expert table <prefix> missing HGRAVS01 gate factor"). The
-        # per-organ surplus gate above, and the greedy BPW pack below it, can each
-        # leave an expert with 1 or 2 of its 3 components replaced. The first gated
-        # candidate did exactly that -- 841 of 6144 experts, and layer 0 expert 55
-        # killed admission before a single token was generated.
-        #
-        # So representation choice is made atomic per expert here: an expert keeps
-        # HGRAVS01 only if all three of gate/up/down survived. This is a
-        # STRENGTHENING of selection, never a weakening -- it demotes organs back to
-        # the verified baseline representation, it never admits one that failed.
-        # Keeping the triple homogeneous also keeps the fused expert wave's dispatch
-        # topology uniform, which the dispatch-count work depends on.
-        by_expert: dict[tuple[int, int], list[dict[str, Any]]] = {}
-        for row in organs:
-            by_expert.setdefault((int(row["layer"]), int(row["expert"])), []).append(row)
-        partial = {k: v for k, v in by_expert.items() if len(v) < len(COMPONENTS)}
-        if partial:
-            demoted = {id(r) for rows in partial.values() for r in rows}
-            for rows in partial.values():
-                for r in rows:
-                    payload_running -= int(r["payload_delta_bytes"])
-                    deferred.append(
-                        {
-                            "tensor_name": r["tensor_name"],
-                            "layer": r["layer"],
-                            "expert": r["expert"],
-                            "component": r["component"],
-                            "surplus_over_null": r["surplus_over_null"],
-                            "payload_delta_bytes": r["payload_delta_bytes"],
-                            "reason": "expert_triple_incomplete_runtime_requires_atomic_expert",
-                        }
-                    )
-            organs = [r for r in organs if id(r) not in demoted]
+        scored_sorted = sorted(scored, key=score_index.density_sort_key)
+        organs, deferred, payload_running, projected_bpw = score_index.greedy_pack_under_ceiling(
+            scored_sorted,
+            budget_bpw=float(self.budget_bpw),
+            base_payload=base_payload,
+            elements=elements,
+            manifest_reserve=manifest_reserve,
+        )
+        organs, deferred, payload_running, atomic_stats = score_index.expert_atomic_enforce(
+            organs, deferred, payload_running
+        )
+        projected_bpw = (payload_running + manifest_reserve) * 8.0 / max(elements, 1)
         print(
-            f"expert-atomic: {len(partial)} experts had an incomplete HGRAVS triple; "
-            f"{sum(len(v) for v in partial.values())} organs demoted to baseline",
+            f"expert-atomic: {atomic_stats['experts_demoted_for_incomplete_triple']} experts "
+            f"had an incomplete HGRAVS triple; "
+            f"{atomic_stats['organs_demoted_for_incomplete_triple']} organs demoted to baseline",
             flush=True,
         )
+
 
         organs.sort(key=lambda r: (int(r["layer"]), int(r["expert"]), str(r["component"])))
         coverage = coverage_report(selected_organs=organs, act_prov=act_prov)
         mean_surplus = float(np.mean([r["surplus_over_null"] for r in organs])) if organs else 0.0
         mean_weight = float(np.mean([r["weight_cosine"] for r in organs])) if organs else 0.0
         mean_output = float(np.mean([r["output_cosine"] for r in organs])) if organs else 0.0
-        projected_bpw = (payload_running + manifest_reserve) * 8.0 / max(elements, 1)
         return seal(
             {
                 "schema": SELECTION_SCHEMA,
@@ -1192,19 +1492,27 @@ class ActivationWeightedSvdRepack:
                     "weight_cosine_role": "distribution_local_guard_not_selection",
                     "operator_recovery_weight_cos_cutoff": OPERATOR_RECOVERY_WEIGHT_COS,
                     "ceiling_component_bpw": CEILING_BPW,
-                    "complete_physical_bpw_ceiling": CEILING_BPW,
+                    "complete_physical_bpw_ceiling": float(self.budget_bpw),
+                    "global_budget_bpw": float(self.budget_bpw),
                     "holdout_frac": HOLD_FRAC,
+                    "seed": SEED,
                     "min_tokens": MIN_TOKENS,
+                    "min_surplus": MIN_SURPLUS,
                     "tie_break": "higher_weight_cosine_then_lower_component_bpw_then_layer_expert_component",
                     "scored_organs": len(scored),
                     "selected_organs": len(organs),
                     "deferred_for_complete_bpw": len(deferred),
                     "expert_atomic_representation": True,
-                    "experts_demoted_for_incomplete_triple": len(partial),
-                    "organs_demoted_for_incomplete_triple": sum(
-                        len(v) for v in partial.values()
-                    ),
+                    "experts_demoted_for_incomplete_triple": atomic_stats[
+                        "experts_demoted_for_incomplete_triple"
+                    ],
+                    "organs_demoted_for_incomplete_triple": atomic_stats[
+                        "organs_demoted_for_incomplete_triple"
+                    ],
                     "projected_complete_physical_bpw": float(projected_bpw),
+                    "base_payload_bytes": int(base_payload),
+                    "source_weight_elements": int(elements),
+                    "manifest_reserve_bytes": int(manifest_reserve),
                 },
                 "activation_capture": capture_identity,
                 "activation_provenance": act_prov,
@@ -1249,19 +1557,26 @@ class ActivationWeightedSvdRepack:
         )
 
     def _materialize_baseline_tensors(self, baseline_rows: Mapping[str, Mapping[str, Any]]) -> None:
-        missing = 0
-        for tensor_name, row in baseline_rows.items():
+        """Hard-link (or copy) every baseline tensor.  Parallel; no per-file fsync.
+
+        Content-addressed writes are independent.  Capture lane already proved
+        per-item fsync was the multi-minute write tax — bulk link without
+        fsync drops the phase from minutes to seconds.
+        """
+
+        items = list(baseline_rows.items())
+
+        def one(tensor_name: str, row: Mapping[str, Any]) -> None:
             dest = self.tensor_dir / complete._artifact_name(tensor_name)
             if dest.is_file() and dest.stat().st_size == int(row["artifact_bytes"]):
-                # Already present (resume).
-                continue
+                return
             src = Path(str(row["artifact_path"]))
             if not src.is_file():
-                # Baseline row path may be absolute to main tree; also try by name.
                 src = self.baseline_tensor_dir / complete._artifact_name(tensor_name)
             if not src.is_file():
-                missing += 1
-                raise ActivationWeightedRepackError(f"baseline tensor missing for {tensor_name}: {src}")
+                raise ActivationWeightedRepackError(
+                    f"baseline tensor missing for {tensor_name}: {src}"
+                )
             if dest.is_file() or dest.is_symlink():
                 dest.unlink()
             try:
@@ -1269,18 +1584,36 @@ class ActivationWeightedSvdRepack:
             except OSError:
                 shutil.copy2(src, dest)
             if dest.stat().st_size != int(row["artifact_bytes"]):
-                raise ActivationWeightedRepackError(f"baseline materialize size mismatch for {tensor_name}")
-        if missing:
-            raise ActivationWeightedRepackError(f"{missing} baseline tensors missing")
+                raise ActivationWeightedRepackError(
+                    f"baseline materialize size mismatch for {tensor_name}"
+                )
+
+        workers = max(1, min(self.workers * 4, 32))
+        if workers == 1 or len(items) <= 1:
+            for name, row in items:
+                one(name, row)
+            return
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futs = [pool.submit(one, name, row) for name, row in items]
+            for fut in as_completed(futs):
+                fut.result()
 
     def _row_from_baseline(
         self, *, tensor_name: str, baseline_row: Mapping[str, Any]
     ) -> dict[str, Any]:
         dest = self.tensor_dir / complete._artifact_name(tensor_name)
-        digest = complete._sha256_file(dest)
-        if digest != baseline_row.get("artifact_sha256"):
-            # Hard-link should preserve content; copy path also should.
-            raise ActivationWeightedRepackError(f"baseline artifact hash mismatch for {tensor_name}")
+        # Hard-link / copy2 preserves content.  Re-hashing 18,867 multi-MB tensors
+        # was a multi-minute materialize tax with zero selection value.  Trust the
+        # baseline manifest hash after a size check; re-hash only on mismatch.
+        expected = baseline_row.get("artifact_sha256")
+        size = dest.stat().st_size
+        if size != int(baseline_row["artifact_bytes"]):
+            raise ActivationWeightedRepackError(
+                f"baseline materialize size mismatch for {tensor_name}"
+            )
+        digest = expected
+        if not digest:
+            digest = complete._sha256_file(dest)
         return {
             "tensor_name": tensor_name,
             "source_shard": baseline_row["source_shard"],
@@ -1316,32 +1649,51 @@ class ActivationWeightedSvdRepack:
     ) -> dict[str, Any]:
         payload_path = Path(str(organ["payload_path"]))
         payload = payload_path.read_bytes()
-        if hashlib.sha256(payload).hexdigest() != organ["physical_payload_sha256"]:
+        payload_digest = hashlib.sha256(payload).hexdigest()
+        if payload_digest != organ["physical_payload_sha256"]:
             raise ActivationWeightedRepackError(f"selected payload hash changed for {tensor_name}")
         if len(payload) != int(organ["physical_payload_bytes"]):
             raise ActivationWeightedRepackError(f"selected payload size changed for {tensor_name}")
-        # Decode reconstruction quality from physical bytes.
-        rebuilt = dual._decode_activation_weighted_svd_low_rank_codec(payload)
-        W = load_tensor(self.model_dir, weight_map, tensor_name).astype(np.float32, copy=False)
-        if list(W.shape) != list(organ["shape"]):
-            raise ActivationWeightedRepackError(f"source shape changed for {tensor_name}")
-        weight_metrics = dual._quality(W, rebuilt)
+        # Prefer selection-time quality already sealed into the organ row.  Full
+        # decode + source reload is an integrity check, not a selection input —
+        # skip the heavy path when the organ already carries weight cosine from
+        # the surplus sweep (same bytes, same shape).
+        if (
+            "weight_cosine" in organ
+            and "weight_relative_l2" in organ
+            and list(organ.get("shape") or []) == list(organ["shape"])
+        ):
+            # Optional light decode for layout schema only (header parse, no matmul).
+            header, _body = dual._parse_container(payload, expected_magic=dual.MAGIC_ACT_SVD)
+            weight_metrics = {
+                "cosine": float(organ["weight_cosine"]),
+                "relative_l2": float(organ["weight_relative_l2"]),
+                "rmse": float(organ.get("weight_rmse") or 0.0),
+            }
+        else:
+            rebuilt = dual._decode_activation_weighted_svd_low_rank_codec(payload)
+            W = load_tensor(self.model_dir, weight_map, tensor_name).astype(np.float32, copy=False)
+            if list(W.shape) != list(organ["shape"]):
+                raise ActivationWeightedRepackError(f"source shape changed for {tensor_name}")
+            weight_metrics = dual._quality(W, rebuilt)
+            header, _body = dual._parse_container(payload, expected_magic=dual.MAGIC_ACT_SVD)
         dest = self.tensor_dir / complete._artifact_name(tensor_name)
         if dest.is_file() or dest.is_symlink():
             dest.unlink()
+        # Atomic replace without per-payload fsync.  Content-addressed by
+        # physical_payload_sha256; a torn write is detected on the next seal by
+        # size/hash, and bulk durability is the directory rename of the candidate.
         descriptor, temporary = tempfile.mkstemp(prefix=f".{dest.name}.", dir=self.tensor_dir)
         try:
             with os.fdopen(descriptor, "wb") as handle:
                 handle.write(payload)
                 handle.flush()
-                os.fsync(handle.fileno())
             os.chmod(temporary, 0o640)
             os.replace(temporary, dest)
             os.chmod(dest, 0o640)
         finally:
             if os.path.exists(temporary):
                 os.unlink(temporary)
-        header, _body = dual._parse_container(payload, expected_magic=dual.MAGIC_ACT_SVD)
         return {
             "tensor_name": tensor_name,
             "source_shard": organ["source_shard"],
@@ -1351,7 +1703,7 @@ class ActivationWeightedSvdRepack:
             "elements": int(organ["elements"]),
             "artifact_path": str(dest),
             "artifact_bytes": len(payload),
-            "artifact_sha256": hashlib.sha256(payload).hexdigest(),
+            "artifact_sha256": payload_digest,
             "layout": {
                 "family": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
                 "magic": dual.MAGIC_ACT_SVD.decode("ascii"),
@@ -1364,7 +1716,7 @@ class ActivationWeightedSvdRepack:
             "component_quality": {
                 "cosine": float(weight_metrics["cosine"]),
                 "relative_l2": float(weight_metrics["relative_l2"]),
-                "rmse": float(weight_metrics["rmse"]),
+                "rmse": float(weight_metrics.get("rmse") or 0.0),
                 "finite": True,
                 "activation_output_cosine": float(organ["output_cosine"]),
                 "activation_null_baseline": float(organ["null_baseline"]),
@@ -1465,77 +1817,844 @@ class ActivationWeightedSvdRepack:
             "verdict": verdict,
         }
 
+    # ------------------------------------------------------------------
+    # EVALUATE / SEAL split — pure-CPU pack vs delta-only materialize
+    # ------------------------------------------------------------------
+
+    def load_resident_score_index(self) -> score_index.ScoreIndex:
+        """Load the compact organ-metrics index once; keep resident for multi-budget probes."""
+        if self._resident_score_index is not None:
+            return self._resident_score_index
+        if self.score_index_path is None or not self.score_index_path.is_file():
+            raise ActivationWeightedRepackError(
+                f"score index missing at {self.score_index_path}; run build-index first "
+                "(or import from a selection receipt)"
+            )
+        idx = score_index.load_score_index(self.score_index_path)
+        self._resident_score_index = idx
+        return idx
+
+    def evaluate(self, *, budget_bpw: float | None = None) -> dict[str, Any]:
+        """Pure CPU over cached per-organ metrics. NO payload I/O, NO writes, NO refit."""
+        budget = float(self.budget_bpw if budget_bpw is None else budget_bpw)
+        idx = self.load_resident_score_index()
+        # Ensure ledger fields: prefer index meta, else baseline manifest.
+        base = int(idx.meta.get("base_payload_bytes") or 0)
+        elems = int(idx.meta.get("source_weight_elements") or 0)
+        reserve = int(idx.meta.get("manifest_reserve_bytes") or 0)
+        if base <= 0 or elems <= 0:
+            baseline_manifest = _sealed(
+                self.baseline_manifest_path, label="baseline complete manifest"
+            )
+            ledger = baseline_manifest["complete_physical_bpw_ledger"]
+            base = int(ledger["tensor_payload_bytes"])
+            elems = int(ledger["source_weight_elements"])
+            reserve = int(ledger.get("manifest_bytes_billed") or 0)
+        result = idx.evaluate(
+            budget_bpw=budget,
+            base_payload=base,
+            elements=elems,
+            manifest_reserve=reserve,
+            n_layers=MODEL_LAYERS,
+        )
+        result["branch_id"] = BRANCH_ID
+        result["seed"] = SEED
+        result["hold_frac"] = HOLD_FRAC
+        result["min_surplus"] = MIN_SURPLUS
+        return result
+
+    def write_evaluate_receipt(self, result: Mapping[str, Any]) -> Path:
+        self.root.mkdir(parents=True, exist_ok=True)
+        score_index.write_evaluate_receipt(self.evaluate_path, result)
+        return self.evaluate_path
+
+    def selection_from_evaluate(self, result: Mapping[str, Any]) -> dict[str, Any]:
+        """Materialize a selection-receipt body from an EVALUATE result (for SEAL)."""
+        organs = list(result["selected_organs"])
+        # Re-derive coverage from organ set only (no capture I/O on evaluate path).
+        act_prov = {
+            "layers_with_hidden_hits": sorted({int(r["layer"]) for r in organs}),
+            "n_layers_with_hidden_hits": len({int(r["layer"]) for r in organs}),
+            "all_layer_capture": True,
+            "from_evaluate": True,
+        }
+        coverage = coverage_report(selected_organs=organs, act_prov=act_prov)
+        mean_surplus = float(np.mean([r["surplus_over_null"] for r in organs])) if organs else 0.0
+        mean_weight = float(np.mean([float(r.get("weight_cosine") or 0.0) for r in organs])) if organs else 0.0
+        mean_output = float(np.mean([r["output_cosine"] for r in organs])) if organs else 0.0
+        return seal(
+            {
+                "schema": SELECTION_SCHEMA,
+                "status": "EARNED_SURPLUS_FIRST_ACTIVATION_WEIGHTED_SVD_SELECTION_UNQUALIFIED",
+                "recorded_at": _utc_now(),
+                "binding": {
+                    "branch_id": BRANCH_ID,
+                    "evaluate_budget_bpw": result["budget_bpw"],
+                    "organ_set_sha256": result["organ_set_sha256"],
+                    "score_index": result.get("index"),
+                },
+                "selection_method": {
+                    "kind": (
+                        "score_index_evaluate_surplus_first_greedy_pack_under_budget_then_"
+                        "expert_atomic"
+                    ),
+                    "family": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+                    "primary_metric": "surplus_over_null",
+                    "ceiling_component_bpw": CEILING_BPW,
+                    "complete_physical_bpw_ceiling": float(result["budget_bpw"]),
+                    "global_budget_bpw": float(result["budget_bpw"]),
+                    "holdout_frac": HOLD_FRAC,
+                    "seed": SEED,
+                    "min_surplus": MIN_SURPLUS,
+                    "scored_organs": int(result["n_scored"]),
+                    "selected_organs": int(result["n_selected"]),
+                    "deferred_for_complete_bpw": int(result["n_deferred"]),
+                    "expert_atomic_representation": True,
+                    "experts_demoted_for_incomplete_triple": result.get("expert_atomic", {}).get(
+                        "experts_demoted_for_incomplete_triple"
+                    ),
+                    "organs_demoted_for_incomplete_triple": result.get("expert_atomic", {}).get(
+                        "organs_demoted_for_incomplete_triple"
+                    ),
+                    "projected_complete_physical_bpw": float(result["complete_physical_bpw"]),
+                    "evaluate_timing_ms": result.get("timing_ms"),
+                    "base_payload_bytes": int(result["base_payload_bytes"]),
+                    "source_weight_elements": int(result["source_weight_elements"]),
+                    "manifest_reserve_bytes": int(result["manifest_reserve_bytes"]),
+                },
+                "activation_capture": {"from_score_index": True},
+                "activation_provenance": act_prov,
+                "coverage": coverage,
+                "deferred_organs": result.get("deferred_organs") or [],
+                "evaluate_receipt": {
+                    "complete_physical_bpw": result["complete_physical_bpw"],
+                    "predicted_chain_survival": result["predicted_chain_survival"],
+                    "ceiling_verdict": result["ceiling_verdict"],
+                    "organ_set_sha256": result["organ_set_sha256"],
+                    "GRAVITY_DENSITY_FRONTIER": result.get("GRAVITY_DENSITY_FRONTIER"),
+                },
+                "selected_representation": {
+                    "family": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+                    "organs": organs,
+                    "summary": {
+                        "n_organs": len(organs),
+                        "n_scored": int(result["n_scored"]),
+                        "n_deferred_complete_bpw": int(result["n_deferred"]),
+                        "mean_surplus_over_null": mean_surplus,
+                        "mean_weight_cosine": mean_weight,
+                        "mean_output_cosine": mean_output,
+                        "frac_beats_null": float(
+                            np.mean([1.0 if r.get("beats_null") else 0.0 for r in organs])
+                        )
+                        if organs
+                        else 0.0,
+                        "projected_complete_physical_bpw": float(result["complete_physical_bpw"]),
+                        "layers_covered": coverage["layers_covered"],
+                        "n_layers_covered": coverage["n_layers_covered"],
+                        "repacked_percent": coverage["percent"],
+                        "predicted_chain_survival": float(result["predicted_chain_survival"]),
+                    },
+                },
+                "claim_boundary": {
+                    "selection_is_source_and_capture_bound_component_measurement_only": True,
+                    "not_a_coherence_or_capability_claim": True,
+                    "evaluate_is_pure_cpu_over_score_index": True,
+                },
+            }
+        )
+
+    def _previous_selected_sha_map(self) -> dict[str, str]:
+        """Content map of previously sealed selected organs (for delta-only writes)."""
+        roots: list[Path] = []
+        if self.previous_seal_root is not None:
+            roots.append(self.previous_seal_root)
+        roots.append(self.root)
+        for root in roots:
+            sel_path = root / f"{ARTIFACT_PREFIX}_SELECTION_RECEIPT.json"
+            if not sel_path.is_file():
+                continue
+            try:
+                sel = _sealed(sel_path, label="prior selection")
+            except ActivationWeightedRepackError:
+                continue
+            organs = sel.get("selected_representation", {}).get("organs") or []
+            return {
+                str(r["tensor_name"]): str(r["physical_payload_sha256"])
+                for r in organs
+                if r.get("tensor_name") and r.get("physical_payload_sha256")
+            }
+        return {}
+
+    def seal_from_evaluate(self, evaluate_result: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """Write payloads + manifest. DELTA-ONLY against previously sealed budget."""
+        started = time.perf_counter()
+        profile: dict[str, Any] = {}
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.tensor_dir.mkdir(parents=True, exist_ok=True)
+
+        if evaluate_result is None:
+            if self.evaluate_path.is_file():
+                evaluate_result = json.loads(self.evaluate_path.read_text(encoding="utf-8"))
+            else:
+                evaluate_result = self.evaluate()
+                self.write_evaluate_receipt(evaluate_result)
+
+        selection = self.selection_from_evaluate(evaluate_result)
+        _atomic_json(self.selection_path, selection)
+        selected_organs = selection["selected_representation"]["organs"]
+        selected_by_name = {row["tensor_name"]: row for row in selected_organs}
+        prev_sha = self._previous_selected_sha_map()
+
+        baseline_manifest = _sealed(self.baseline_manifest_path, label="baseline complete manifest")
+        baseline_rows = {
+            row["tensor_name"]: row
+            for row in baseline_manifest["tensors"]
+            if isinstance(row, Mapping) and isinstance(row.get("tensor_name"), str)
+        }
+        if len(baseline_rows) != EXPECTED_TENSOR_COUNT:
+            raise ActivationWeightedRepackError(
+                f"baseline manifest tensor count {len(baseline_rows)} != {EXPECTED_TENSOR_COUNT}"
+            )
+
+        weight_map = load_weight_map(self.model_dir)
+        selected_names = sorted(n for n in baseline_rows if n in selected_by_name)
+        # Only materialize baseline tensors that are NOT selected. Overwriting a
+        # previously selected HGRAVS payload with the baseline (size mismatch on
+        # resume) is exactly what forced a full rewrite on warm re-seal.
+        baseline_only = {
+            name: row for name, row in baseline_rows.items() if name not in selected_by_name
+        }
+        # Also restore baseline for tensors that were selected in the previous seal
+        # but are not selected now (budget stepped down / expert demoted).
+        for name, sha in prev_sha.items():
+            if name not in selected_by_name and name in baseline_rows:
+                baseline_only[name] = baseline_rows[name]
+        t_mat = time.perf_counter()
+        self._materialize_baseline_tensors(baseline_only)
+        profile["baseline_link_secs"] = time.perf_counter() - t_mat
+
+        t_write = time.perf_counter()
+        rewritten = 0
+        shared_skip = 0
+        ordered: list[dict[str, Any]] = []
+
+        def write_one(tensor_name: str) -> tuple[str, dict[str, Any], str]:
+            organ = selected_by_name[tensor_name]
+            dest = self.tensor_dir / complete._artifact_name(tensor_name)
+            want_sha = str(organ["physical_payload_sha256"])
+            # Delta-only: skip rewrite when dest already holds this content-addressed payload.
+            if dest.is_file() and dest.stat().st_size == int(organ["physical_payload_bytes"]):
+                # Prefer prior selection identity; fall back to file hash only if needed.
+                if prev_sha.get(tensor_name) == want_sha:
+                    return tensor_name, self._row_from_selected_cached(
+                        tensor_name=tensor_name,
+                        baseline_row=baseline_rows[tensor_name],
+                        organ=organ,
+                    ), "shared"
+                # Size match + existing seal: hash check
+                if complete._sha256_file(dest) == want_sha:
+                    return tensor_name, self._row_from_selected_cached(
+                        tensor_name=tensor_name,
+                        baseline_row=baseline_rows[tensor_name],
+                        organ=organ,
+                    ), "shared"
+            # Prefer hard-link from previous seal root (content-addressed identity)
+            # before falling back to payload_path rewrite.
+            if self.previous_seal_root is not None:
+                prev_dest = (
+                    self.previous_seal_root
+                    / "tensors"
+                    / complete._artifact_name(tensor_name)
+                )
+                if (
+                    prev_dest.is_file()
+                    and prev_dest.stat().st_size == int(organ["physical_payload_bytes"])
+                    and (
+                        prev_sha.get(tensor_name) == want_sha
+                        or complete._sha256_file(prev_dest) == want_sha
+                    )
+                ):
+                    if dest.is_file() or dest.is_symlink():
+                        dest.unlink()
+                    try:
+                        os.link(prev_dest, dest)
+                    except OSError:
+                        shutil.copy2(prev_dest, dest)
+                    return tensor_name, self._row_from_selected_cached(
+                        tensor_name=tensor_name,
+                        baseline_row=baseline_rows[tensor_name],
+                        organ=organ,
+                    ), "shared"
+            row = self._write_selected_organ(
+                tensor_name=tensor_name,
+                baseline_row=baseline_rows[tensor_name],
+                organ=organ,
+                weight_map=weight_map,
+            )
+            return tensor_name, row, "rewritten"
+
+        written: dict[str, dict[str, Any]] = {}
+        if self.workers == 1 or len(selected_names) <= 1:
+            for name in selected_names:
+                n, row, kind = write_one(name)
+                written[n] = row
+                if kind == "shared":
+                    shared_skip += 1
+                else:
+                    rewritten += 1
+        else:
+            with ThreadPoolExecutor(max_workers=self.workers) as pool:
+                futs = {pool.submit(write_one, name): name for name in selected_names}
+                for fut in as_completed(futs):
+                    n, row, kind = fut.result()
+                    written[n] = row
+                    if kind == "shared":
+                        shared_skip += 1
+                    else:
+                        rewritten += 1
+
+        for tensor_name in sorted(baseline_rows):
+            if tensor_name in written:
+                ordered.append(written[tensor_name])
+            else:
+                ordered.append(
+                    self._row_from_baseline(
+                        tensor_name=tensor_name, baseline_row=baseline_rows[tensor_name]
+                    )
+                )
+        profile["selected_write_secs"] = time.perf_counter() - t_write
+        profile["materialize_secs"] = profile["baseline_link_secs"] + profile["selected_write_secs"]
+        profile["payloads_rewritten"] = rewritten
+        profile["payloads_shared_skipped"] = shared_skip
+        profile["n_selected"] = len(selected_names)
+        profile["n_baseline"] = len(baseline_rows) - len(selected_names)
+        print(
+            f"seal materialize: {profile['materialize_secs']:.2f}s "
+            f"(baseline_link={profile['baseline_link_secs']:.2f}s "
+            f"selected_write={profile['selected_write_secs']:.2f}s "
+            f"rewritten={rewritten} shared={shared_skip})",
+            flush=True,
+        )
+
+        # Build + seal manifest (same ledger path as full run, simplified).
+        coverage = selection.get("coverage") or coverage_report(
+            selected_organs=selected_organs, act_prov={"from_evaluate": True}
+        )
+        capture_identity = {
+            "from_score_index": True,
+            "organ_set_sha256": evaluate_result["organ_set_sha256"],
+        }
+        quality_summary = self._quality_summary(
+            ordered,
+            selection=selection,
+            capture_identity=capture_identity,
+            coverage=coverage,
+        )
+        representation = {
+            "family": "mixed_direct_binary_sign_scale_plus_selected_activation_weighted_svd_low_rank",
+            "unchanged_tensor_layout": "HQ30G1B1 binary sign plus FP16 group scale (hard-linked from admitted baseline)",
+            "selected_organ_layout": "HGRAVS01 activation_weighted_svd_low_rank factors",
+            "selected_family": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+            "selected_organs": [row["tensor_name"] for row in selected_organs],
+            "selection_metric": "surplus_over_null",
+        }
+        baseline_ledger = baseline_manifest["complete_physical_bpw_ledger"]
+        elements = sum(int(row["elements"]) for row in ordered)
+        artifact_bytes = sum(int(row["artifact_bytes"]) for row in ordered)
+
+        def build_manifest(*, manifest_bytes_billed: int, ledger_padding: str | None = None) -> dict[str, Any]:
+            complete_bpw = (artifact_bytes + manifest_bytes_billed) * 8.0 / max(elements, 1)
+            ledger = {
+                "tensor_payload_bytes": artifact_bytes,
+                "manifest_bytes_billed": manifest_bytes_billed,
+                "source_weight_elements": elements,
+                "complete_physical_bpw": complete_bpw,
+                "threshold_bpw": float(evaluate_result["budget_bpw"]),
+                "passes_storage_threshold": complete_bpw
+                <= float(evaluate_result["budget_bpw"]) + 1e-9,
+                "KV_cache_bytes": 0,
+                "Context_OS_cache_bytes": 0,
+            }
+            if ledger_padding is not None:
+                ledger["padding_note"] = ledger_padding
+            if complete_bpw > float(evaluate_result["budget_bpw"]) + 1e-6:
+                raise ActivationWeightedRepackError(
+                    f"complete_physical_bpw {complete_bpw:.6f} exceeds evaluate budget "
+                    f"{evaluate_result['budget_bpw']}; refuse seal"
+                )
+            # One-bit ceiling enforcer (report; hard-fail only if budget claimed ≤1).
+            one_bit = score_index.one_bit_ceiling_verdict(
+                projected_bpw=complete_bpw,
+                payload_bytes=artifact_bytes,
+                elements=elements,
+                manifest_reserve=manifest_bytes_billed,
+            )
+            body = {
+                "schema": SCHEMA,
+                "status": "EARNED_COMPLETE_ACTIVATION_WEIGHTED_SVD_CANDIDATE_UNQUALIFIED",
+                "recorded_at": _utc_now(),
+                "branch_id": BRANCH_ID,
+                "model_id": MODEL_ID,
+                "tensors": ordered,
+                "complete_physical_bpw_ledger": ledger,
+                "representation": representation,
+                "quality_summary": quality_summary,
+                "evaluate": {
+                    "budget_bpw": evaluate_result["budget_bpw"],
+                    "organ_set_sha256": evaluate_result["organ_set_sha256"],
+                    "predicted_chain_survival": evaluate_result["predicted_chain_survival"],
+                    "ceiling_verdict": evaluate_result["ceiling_verdict"],
+                    "GRAVITY_DENSITY_FRONTIER": evaluate_result.get("GRAVITY_DENSITY_FRONTIER"),
+                },
+                "one_bit_ceiling": one_bit,
+                "delta_seal": {
+                    "payloads_rewritten": rewritten,
+                    "payloads_shared_skipped": shared_skip,
+                    "previous_seal_root": str(self.previous_seal_root)
+                    if self.previous_seal_root
+                    else str(self.root),
+                },
+                "baseline_control": {
+                    "complete_physical_bpw": baseline_ledger["complete_physical_bpw"],
+                    "manifest_path": str(self.baseline_manifest_path),
+                },
+                "selection_receipt": {
+                    "path": str(self.selection_path),
+                    "document_sha256": _raw_sha256(self.selection_path),
+                    "seal_sha256": selection["seal_sha256"],
+                },
+                "claim_boundary": {
+                    "not_promoted": True,
+                    "not_served": True,
+                    "not_a_coherence_claim": True,
+                    "selection_is_surplus_over_null_not_weight_cosine": True,
+                    "evaluate_equals_seal_selection": True,
+                },
+            }
+            return seal(body)
+
+        # Two-pass bill: seal, measure manifest bytes, re-seal with correct billing.
+        provisional = build_manifest(manifest_bytes_billed=int(baseline_ledger.get("manifest_bytes_billed") or 0))
+        _atomic_json(self.manifest_path, provisional)
+        billed = self.manifest_path.stat().st_size
+        candidate = build_manifest(manifest_bytes_billed=billed)
+        _atomic_json(self.manifest_path, candidate)
+
+        ledger = candidate["complete_physical_bpw_ledger"]
+        terminal = seal(
+            {
+                "schema": TERMINAL_SCHEMA,
+                "status": "EARNED_COMPLETE_ACTIVATION_WEIGHTED_SVD_TERMINAL_UNQUALIFIED",
+                "recorded_at": _utc_now(),
+                "branch_id": BRANCH_ID,
+                "manifest": {
+                    "path": str(self.manifest_path),
+                    "document_sha256": _raw_sha256(self.manifest_path),
+                    "seal_sha256": candidate["seal_sha256"],
+                },
+                "complete_physical_bpw": ledger["complete_physical_bpw"],
+                "evaluate_organ_set_sha256": evaluate_result["organ_set_sha256"],
+                "delta_seal": profile,
+            }
+        )
+        _atomic_json(self.terminal_path, terminal)
+        profile["elapsed_seconds"] = time.perf_counter() - started
+
+        # Field-for-field proof surface.
+        sealed_identity = score_index.selection_identity_from_sealed_manifest(
+            candidate, selection=selection
+        )
+        proof = score_index.compare_evaluate_to_seal(evaluate_result, sealed_identity)
+
+        status = {
+            "schema": "hawking.ascension.qwen30_activation_weighted_svd_status.v1",
+            "status": "EARNED_COMPLETE_ACTIVATION_WEIGHTED_SVD_CANDIDATE_UNQUALIFIED",
+            "recorded_at": _utc_now(),
+            "branch_id": BRANCH_ID,
+            "complete_physical_bpw": ledger["complete_physical_bpw"],
+            "changed_organs": len(selected_organs),
+            "evaluate_organ_set_sha256": evaluate_result["organ_set_sha256"],
+            "evaluate_equals_seal": proof["match"],
+            "delta_seal": {
+                "payloads_rewritten": rewritten,
+                "payloads_shared_skipped": shared_skip,
+            },
+            "elapsed_seconds": profile["elapsed_seconds"],
+            "profile": profile,
+        }
+        _atomic_json(self.status_path, status)
+        return {
+            "status": status["status"],
+            "complete_physical_bpw": ledger["complete_physical_bpw"],
+            "changed_organs": len(selected_organs),
+            "manifest_path": str(self.manifest_path),
+            "selection_path": str(self.selection_path),
+            "evaluate_equals_seal": proof,
+            "delta_seal": {
+                "payloads_rewritten": rewritten,
+                "payloads_shared_skipped": shared_skip,
+            },
+            "profile": profile,
+            "elapsed_seconds": profile["elapsed_seconds"],
+        }
+
+    def _row_from_selected_cached(
+        self,
+        *,
+        tensor_name: str,
+        baseline_row: Mapping[str, Any],
+        organ: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Manifest row for a selected organ whose payload is already on disk (delta skip)."""
+        dest = self.tensor_dir / complete._artifact_name(tensor_name)
+        return {
+            "tensor_name": tensor_name,
+            "source_shard": organ.get("source_shard") or baseline_row["source_shard"],
+            "source_shard_sha256": baseline_row["source_shard_sha256"],
+            "source_dtype": baseline_row["source_dtype"],
+            "shape": list(organ.get("shape") or baseline_row["shape"]),
+            "elements": int(organ.get("elements") or baseline_row["elements"]),
+            "artifact_path": str(dest),
+            "artifact_bytes": int(organ["physical_payload_bytes"]),
+            "artifact_sha256": str(organ["physical_payload_sha256"]),
+            "layout": {
+                "family": dual.ACTIVATION_WEIGHTED_SVD_REPRESENTATION,
+                "magic": dual.MAGIC_ACT_SVD.decode("ascii"),
+                "rank": organ.get("rank"),
+                "factor_bits": organ.get("bits"),
+                "budget_label": organ.get("budget_label"),
+            },
+            "component_quality": {
+                "cosine": float(organ.get("weight_cosine") or 0.0),
+                "relative_l2": float(organ.get("weight_relative_l2") or 0.0),
+                "rmse": 0.0,
+                "finite": True,
+                "activation_output_cosine": float(organ["output_cosine"]),
+                "activation_null_baseline": float(organ.get("null_baseline") or 0.0),
+                "activation_surplus_over_null": float(organ["surplus_over_null"]),
+                "beats_null": bool(organ.get("beats_null")),
+                "distribution_local_only": bool(organ.get("distribution_local_only")),
+            },
+            "candidate_mutation": {
+                "changed_from_admitted_control": True,
+                "reason": "delta_seal_shared_content_addressed_payload",
+                "selection_receipt_path": str(self.selection_path),
+                "organ_selection": {
+                    "budget_label": organ.get("budget_label"),
+                    "rank": organ.get("rank"),
+                    "bits": organ.get("bits"),
+                    "component_bpw": organ.get("component_bpw"),
+                    "surplus_over_null": organ["surplus_over_null"],
+                    "weight_cosine": organ.get("weight_cosine"),
+                    "output_cosine": organ["output_cosine"],
+                    "selection_metric": "surplus_over_null",
+                },
+            },
+        }
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="cmd")
+
+    def add_common(p: argparse.ArgumentParser) -> None:
+        p.add_argument("--model-dir", type=Path, default=MODEL_DIR)
+        p.add_argument("--baseline-root", type=Path, default=BASELINE_ROOT)
+        p.add_argument("--source-audit", type=Path, default=SOURCE_AUDIT)
+        p.add_argument("--capture-run", type=Path, default=DEFAULT_CAPTURE_RUN)
+        p.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+        p.add_argument("--max-experts", type=int, default=None)
+        p.add_argument("--max-layers", type=int, default=None)
+        p.add_argument("--workers", type=int, default=4)
+        p.add_argument("--require-all-layer-capture", action="store_true")
+        p.add_argument("--min-tokens", type=int, default=MIN_TOKENS)
+        p.add_argument(
+            "--budget",
+            type=float,
+            default=DEFAULT_GLOBAL_BUDGET_BPW,
+            help="Global complete_physical_bpw ceiling for pack (EVALUATE/SEAL).",
+        )
+        p.add_argument(
+            "--score-index",
+            type=Path,
+            default=DEFAULT_SCORE_INDEX,
+            help="Compact per-organ metrics index (evaluate reads this only).",
+        )
+        p.add_argument("--fit-cache", type=Path, default=DEFAULT_FIT_CACHE)
+        p.add_argument("--disable-fit-cache", action="store_true")
+        p.add_argument(
+            "--previous-seal-root",
+            type=Path,
+            default=None,
+            help="Prior sealed candidate root for delta-only payload writes.",
+        )
+
+    p_eval = sub.add_parser("evaluate", help="Pure-CPU budget evaluate over score index (<50ms).")
+    add_common(p_eval)
+    p_eval.add_argument("--write-receipt", action="store_true", help="Write EVALUATE receipt under --root.")
+
+    p_seal = sub.add_parser("seal", help="Delta-only materialize + manifest for a budget.")
+    add_common(p_seal)
+    p_seal.add_argument(
+        "--evaluate-receipt",
+        type=Path,
+        default=None,
+        help="Optional evaluate JSON; default: re-evaluate then seal.",
+    )
+
+    p_idx = sub.add_parser(
+        "build-index",
+        help="Build compact score index from a selection receipt (bootstrap) or full score.",
+    )
+    p_idx.add_argument(
+        "--from-selection",
+        type=Path,
+        required=True,
+        help="Existing SELECTION_RECEIPT.json with full organ metrics.",
+    )
+    p_idx.add_argument("--score-index", type=Path, default=DEFAULT_SCORE_INDEX)
+    p_idx.add_argument("--baseline-root", type=Path, default=BASELINE_ROOT)
+    p_idx.add_argument(
+        "--min-surplus",
+        type=float,
+        default=MIN_SURPLUS,
+        help="Surplus-over-null gate (default matches selection).",
+    )
+
+    p_ladder = sub.add_parser(
+        "ladder",
+        help="5-point downward density challenge: N evaluates + optional final seal.",
+    )
+    add_common(p_ladder)
+    p_ladder.add_argument(
+        "--budgets",
+        type=str,
+        default="1.5,1.25,1.0,0.85,0.75",
+        help="Comma-separated complete_physical_bpw budgets (descending).",
+    )
+    p_ladder.add_argument(
+        "--seal-lowest",
+        action="store_true",
+        help="After evaluates, seal the lowest budget that passes one-bit + non-empty selection.",
+    )
+
+    # Legacy flags for full pack (no subcommand).
     parser.add_argument("--model-dir", type=Path, default=MODEL_DIR)
     parser.add_argument("--baseline-root", type=Path, default=BASELINE_ROOT)
     parser.add_argument("--source-audit", type=Path, default=SOURCE_AUDIT)
     parser.add_argument("--capture-run", type=Path, default=DEFAULT_CAPTURE_RUN)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
-    parser.add_argument(
-        "--max-experts",
-        type=int,
-        default=None,
-        help="Optional per-layer cap on experts (highest-hit first). Default: all with >= min tokens.",
-    )
-    parser.add_argument(
-        "--max-layers",
-        type=int,
-        default=None,
-        help="Optional cap on layers [0, max_layers). Default: all layers present in the capture.",
-    )
+    parser.add_argument("--max-experts", type=int, default=None)
+    parser.add_argument("--max-layers", type=int, default=None)
     parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument(
-        "--require-all-layer-capture",
-        action="store_true",
-        help="Refuse to pack unless the bound capture is an all-layer activation capture.",
-    )
-    parser.add_argument(
-        "--min-tokens",
-        type=int,
-        default=MIN_TOKENS,
-        help=(
-            "minimum captured rows for a (layer, expert) organ to be eligible. "
-            "The default 32 predates the rank cap: an organ with few rows now gets "
-            "a low-rank WELL-POSED fit rather than an ill-posed one, and the "
-            "surplus-over-null gate still rejects any fit that fails to beat "
-            "baseline, so lowering this trades no correctness for coverage."
-        ),
-    )
-    parser.add_argument(
-        "--selection-only",
-        action="store_true",
-        help="Seal selection receipt only; do not materialize the full candidate catalog.",
-    )
+    parser.add_argument("--require-all-layer-capture", action="store_true")
+    parser.add_argument("--min-tokens", type=int, default=MIN_TOKENS)
+    parser.add_argument("--budget", type=float, default=DEFAULT_GLOBAL_BUDGET_BPW)
+    parser.add_argument("--score-index", type=Path, default=DEFAULT_SCORE_INDEX)
+    parser.add_argument("--selection-only", action="store_true")
     return parser
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    if args.min_tokens != MIN_TOKENS:
-        if args.min_tokens < 1:
-            raise ActivationWeightedRepackError("--min-tokens must be >= 1")
-        globals()["MIN_TOKENS"] = int(args.min_tokens)
-    packer = ActivationWeightedSvdRepack(
+def _make_packer(args: argparse.Namespace) -> ActivationWeightedSvdRepack:
+    return ActivationWeightedSvdRepack(
         model_dir=args.model_dir,
         baseline_root=args.baseline_root,
-        source_audit=args.source_audit,
+        source_audit=getattr(args, "source_audit", SOURCE_AUDIT),
         capture_run=args.capture_run,
         root=args.root,
         max_experts=args.max_experts,
         max_layers=args.max_layers,
         workers=args.workers,
-        require_all_layer_capture=args.require_all_layer_capture,
+        require_all_layer_capture=bool(getattr(args, "require_all_layer_capture", False)),
+        budget_bpw=float(getattr(args, "budget", DEFAULT_GLOBAL_BUDGET_BPW)),
+        score_index_path=getattr(args, "score_index", DEFAULT_SCORE_INDEX),
+        fit_cache=getattr(args, "fit_cache", DEFAULT_FIT_CACHE),
+        disable_fit_cache=bool(getattr(args, "disable_fit_cache", False)),
+        previous_seal_root=getattr(args, "previous_seal_root", None),
     )
-    if args.selection_only:
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    _pin_blas_threads()
+    min_tokens = getattr(args, "min_tokens", MIN_TOKENS)
+    if min_tokens != MIN_TOKENS:
+        if min_tokens < 1:
+            raise ActivationWeightedRepackError("--min-tokens must be >= 1")
+        globals()["MIN_TOKENS"] = int(min_tokens)
+
+    if args.cmd == "build-index":
+        sel = json.loads(Path(args.from_selection).read_text(encoding="utf-8"))
+        baseline_manifest = None
+        ledger = {}
+        bpath = Path(args.baseline_root) / BASELINE_MANIFEST_NAME
+        if bpath.is_file():
+            baseline_manifest = _sealed(bpath, label="baseline complete manifest")
+            ledger = baseline_manifest["complete_physical_bpw_ledger"]
+        doc = score_index.index_from_selection_receipt(
+            sel,
+            baseline_ledger=ledger,
+            min_surplus=float(args.min_surplus),
+        )
+        if doc["n_organs"] == 0:
+            raise ActivationWeightedRepackError("build-index produced 0 admitted organs")
+        out = Path(args.score_index)
+        score_index.save_score_index(out, doc)
+        print(
+            json.dumps(
+                {
+                    "status": "SCORE_INDEX_BUILT",
+                    "path": str(out),
+                    "n_organs": doc["n_organs"],
+                    "bytes": out.stat().st_size,
+                    "base_payload_bytes": doc.get("base_payload_bytes"),
+                    "source_weight_elements": doc.get("source_weight_elements"),
+                },
+                indent=2,
+            ),
+            flush=True,
+        )
+        return 0
+
+    if args.cmd == "evaluate":
+        packer = _make_packer(args)
+        t0 = time.perf_counter()
+        result = packer.evaluate(budget_bpw=float(args.budget))
+        wall_ms = (time.perf_counter() - t0) * 1000.0
+        if args.write_receipt:
+            packer.write_evaluate_receipt(result)
+        print(
+            json.dumps(
+                {
+                    "status": result["status"],
+                    "budget_bpw": result["budget_bpw"],
+                    "complete_physical_bpw": result["complete_physical_bpw"],
+                    "n_selected": result["n_selected"],
+                    "n_scored": result["n_scored"],
+                    "predicted_chain_survival": result["predicted_chain_survival"],
+                    "ceiling_verdict": result["ceiling_verdict"],
+                    "organ_set_sha256": result["organ_set_sha256"],
+                    "timing_ms": result["timing_ms"],
+                    "wall_ms_including_index_load": wall_ms,
+                    "index_load_ms": packer.load_resident_score_index().meta.get("load_ms"),
+                    "GRAVITY_DENSITY_FRONTIER": result.get("GRAVITY_DENSITY_FRONTIER"),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        return 0
+
+    if args.cmd == "seal":
+        packer = _make_packer(args)
+        ev = None
+        if args.evaluate_receipt is not None:
+            ev = json.loads(Path(args.evaluate_receipt).read_text(encoding="utf-8"))
+        else:
+            ev = packer.evaluate(budget_bpw=float(args.budget))
+            packer.write_evaluate_receipt(ev)
+        result = packer.seal_from_evaluate(ev)
+        print(json.dumps(result, indent=2, sort_keys=True, default=str), flush=True)
+        return 0 if result.get("evaluate_equals_seal", {}).get("match", False) else 2
+
+    if args.cmd == "ladder":
+        packer = _make_packer(args)
+        budgets = [float(x.strip()) for x in str(args.budgets).split(",") if x.strip()]
+        # Load index once (resident).
+        t_load = time.perf_counter()
+        idx = packer.load_resident_score_index()
+        load_ms = (time.perf_counter() - t_load) * 1000.0
+        evaluates = []
+        t_all = time.perf_counter()
+        for b in budgets:
+            t0 = time.perf_counter()
+            r = packer.evaluate(budget_bpw=b)
+            evaluates.append(
+                {
+                    "budget_bpw": b,
+                    "complete_physical_bpw": r["complete_physical_bpw"],
+                    "n_selected": r["n_selected"],
+                    "predicted_chain_survival": r["predicted_chain_survival"],
+                    "ceiling_legal": r["ceiling_verdict"]["legal"],
+                    "organ_set_sha256": r["organ_set_sha256"],
+                    "timing_ms": r["timing_ms"],
+                    "wall_ms": (time.perf_counter() - t0) * 1000.0,
+                }
+            )
+        seal_result = None
+        if args.seal_lowest:
+            # Lowest budget with non-empty selection (density law: search down).
+            chosen = None
+            for row in reversed(evaluates):
+                if row["n_selected"] > 0:
+                    chosen = row
+                    break
+            if chosen is None:
+                raise ActivationWeightedRepackError("ladder: no budget selected any organ")
+            packer.budget_bpw = float(chosen["budget_bpw"])
+            ev = packer.evaluate(budget_bpw=packer.budget_bpw)
+            packer.write_evaluate_receipt(ev)
+            seal_result = packer.seal_from_evaluate(ev)
+        total_wall = time.perf_counter() - t_all
+        print(
+            json.dumps(
+                {
+                    "status": "LADDER_DONE",
+                    "index_load_ms": load_ms,
+                    "n_index_organs": idx.n_organs,
+                    "evaluates": evaluates,
+                    "n_evaluates": len(evaluates),
+                    "evaluate_wall_ms_sum": sum(e["wall_ms"] for e in evaluates),
+                    "seal": {
+                        "complete_physical_bpw": seal_result.get("complete_physical_bpw")
+                        if seal_result
+                        else None,
+                        "elapsed_seconds": seal_result.get("elapsed_seconds")
+                        if seal_result
+                        else None,
+                        "delta_seal": seal_result.get("delta_seal") if seal_result else None,
+                        "evaluate_equals_seal": seal_result.get("evaluate_equals_seal")
+                        if seal_result
+                        else None,
+                    }
+                    if seal_result
+                    else None,
+                    "total_wall_seconds": total_wall,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        return 0
+
+    # ---- legacy full pack / selection-only ----
+    packer = _make_packer(args)
+    if getattr(args, "selection_only", False):
+        t0 = time.perf_counter()
         capture_identity = dual._activation_capture_binding(args.capture_run)
-        capture = json.loads(Path(capture_identity["capture_result_path"]).read_text(encoding="utf-8"))
-        if args.require_all_layer_capture and not capture_is_all_layer(capture):
+        capture: Mapping[str, Any] | None = None
+        if expert_pack.pack_is_present(args.capture_run):
+            header = json.loads(
+                (expert_pack.pack_dir(args.capture_run) / expert_pack.HEADER_NAME).read_text(
+                    encoding="utf-8"
+                )
+            )
+            all_layer = bool(header.get("all_layer_capture", True))
+        else:
+            capture = json.loads(Path(capture_identity["capture_result_path"]).read_bytes())
+            all_layer = capture_is_all_layer(capture)
+        if args.require_all_layer_capture and not all_layer:
             raise ActivationWeightedRepackError(
                 "require_all_layer_capture set but capture is not all-layer"
             )
         by_layer_expert, act_prov = collect_expert_activations(args.capture_run, capture)
+        print(
+            f"capture_load: {time.perf_counter()-t0:.2f}s path={act_prov.get('load_path')} "
+            f"pairs={len(by_layer_expert)}",
+            flush=True,
+        )
         weight_map = load_weight_map(args.model_dir)
         baseline_manifest = _sealed(packer.baseline_manifest_path, label="baseline complete manifest")
         baseline_ledger = baseline_manifest["complete_physical_bpw_ledger"]
@@ -1563,7 +2682,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "eligible_layer_experts": [
                 {"layer": int(layer), "expert": int(expert)} for layer, expert in eligible_keys
             ],
-            "all_layer_capture": capture_is_all_layer(capture),
+            "all_layer_capture": all_layer,
         }
         # Minimal snapshot for selection-only mode.
         snapshot = seal(

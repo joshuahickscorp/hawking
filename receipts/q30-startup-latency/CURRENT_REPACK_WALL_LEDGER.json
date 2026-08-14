@@ -1,0 +1,187 @@
+{
+  "schema": "hawking.current_repack_wall_ledger.v1",
+  "purpose": "First integrated end-to-end Q30 activation-weighted-SVD repack wall after landing evaluate-seal + loop2-python + shared-factor (rSVD withheld).",
+  "recorded_at": "2026-08-14T09:03:55.477011+00:00",
+  "trunk_base": "74aaa5fe68e28862c07f08f817309682d41ea3a6",
+  "integration_branch": "grok/integrate-repack-20260814-034733",
+  "capture": "workspace/.../source-bf16-capture-v2-perexpert64 (expert-pack.v1)",
+  "workers": 20,
+  "blas_pin": "VECLIB/OMP/OPENBLAS/MKL=8",
+  "pack_budget_bpw_for_successful_seal": 1.5,
+  "component_ceiling_bpw": 1.0,
+  "one_bit_ceiling": 1.0,
+  "eligible_layer_expert_keys": 6140,
+  "organs_fitted": 18420,
+  "organs_admitted_surplus": 17650,
+  "organs_selected_after_pack_budget_1p5": 16395,
+  "stages": [
+    {
+      "name": "capture",
+      "cold_s": 4.17,
+      "warm_s": 7.11,
+      "note": "binary expert-pack.v1 load"
+    },
+    {
+      "name": "fit",
+      "cold_s": 3520.7,
+      "warm_s": 43.45,
+      "note": "per-organ shared-factor SVD+quant; warm is fit-cache hits inside selection_secs"
+    },
+    {
+      "name": "select",
+      "cold_s": 0.05,
+      "warm_s": 1.51,
+      "note": "surplus gate + greedy pack + expert-atomic; warm reseal loads existing selection in 1.51s"
+    },
+    {
+      "name": "materialize",
+      "cold_s": 25.96,
+      "warm_s": 25.96,
+      "note": "baseline hardlink + selected writes; n_selected=16395 at pack budget 1.5"
+    },
+    {
+      "name": "seal",
+      "cold_s": 16.92,
+      "warm_s": 16.92,
+      "note": "manifest build + one_bit enforce + terminal seal"
+    },
+    {
+      "name": "verify",
+      "cold_s": 0.0,
+      "warm_s": 0.0,
+      "note": "folded into seal path (_sealed/verify on write); not a separate wall bucket"
+    }
+  ],
+  "totals": {
+    "cold_s": 3567.8,
+    "cold_min": 59.46,
+    "warm_s": 94.95,
+    "warm_min": 1.58,
+    "warm_process_wall_s": 94.95,
+    "warm_reseal_wall_s": 41.99,
+    "already_sealed_s": 0.317
+  },
+  "reconciliation": {
+    "cold": {
+      "sum_stage_s": 3567.8,
+      "measured_fit_span_s": 3520.7,
+      "measured_capture_s": 4.17,
+      "materialize_seal_from_budget15_path_s": 42.88,
+      "reconstructed_total_s": 3567.8,
+      "abs_error_vs_sum": 0.0,
+      "verdict": "RECONCILES (fit span measured; materialize+seal grafted from successful budget-1.5 seal path with same organ fits)"
+    },
+    "warm": {
+      "sum_stage_s": 94.95,
+      "process_wall_s": 94.95,
+      "abs_error_s": 0.0,
+      "verdict": "RECONCILES"
+    },
+    "sum_approx_total": true
+  },
+  "vs_old_ledger": {
+    "reference_total_s": 4606.29,
+    "reference_fit_s": 4419,
+    "new_cold_total_s": 3567.8,
+    "speedup_vs_old": 1.29,
+    "fit_speedup_vs_old": 1.26,
+    "predicted_cold_8p5_min_s": 510,
+    "predicted_refute": true,
+    "why_not_8p5_min": "rSVD NOT landed (selection-differs-MATERIAL: 223/5406 gate boundary crossings). Shared-factor alone: cold fit ~58.7 min on 18420 organs (perexpert64), not 5406. Arithmetic 8.5 min assumed rSVD 0.49s/organ * 5406 / 20 workers \u2248 132s fit."
+  },
+  "measured_runs": {
+    "cold_fit_cache_empty_budget_1p0_until_seal_refuse": {
+      "capture_s": 4.17,
+      "fit_select_s": 3520.7,
+      "materialize_s": 11.96,
+      "seal": "REFUSED one-bit: baseline complete_bpw=1.125 > 1.0 with n_selected=0 under pack budget 1.0",
+      "note": "pack budget 1.0 cannot admit first organ when baseline is already 1.13 BPW (greedy only adds if trial_bpw<=budget)"
+    },
+    "warm_fit_cache_live_budget_1p5_full_pipeline": {
+      "wall_s": 94.95,
+      "profile": {
+        "capture_load_secs": 7.11,
+        "selection_secs": 44.96,
+        "materialize_secs": 25.96,
+        "seal_and_remainder_secs": 16.92
+      },
+      "complete_physical_bpw": 0.7964223488636805,
+      "changed_organs": 16395,
+      "manifest_seal_sha256": "1bebd51c2f638204b4300180e138b99acd3c0158f4d351b525a9db01d07c5953"
+    },
+    "warm_reseal_selection_cached": {
+      "wall_s": 41.99,
+      "profile": {
+        "capture_load_secs": 5.82,
+        "selection_secs": 1.51,
+        "materialize_secs": 31.08,
+        "seal_and_remainder_secs": 3.58
+      },
+      "complete_physical_bpw": 0.7964386820877456
+    },
+    "already_sealed_short_circuit_s": 0.317,
+    "evaluate_ms_per_budget_after_index_load": [
+      {
+        "budget": 1.5,
+        "ms": 313.4,
+        "note": "includes first index residency"
+      },
+      {
+        "budget": 1.25,
+        "ms": 18.3
+      },
+      {
+        "budget": 1.0,
+        "ms": 2.0
+      },
+      {
+        "budget": 0.85,
+        "ms": 1.7
+      },
+      {
+        "budget": 0.75,
+        "ms": 1.8
+      }
+    ]
+  },
+  "rsvd_landed": false,
+  "rsvd_bar": "selection-differs-MATERIAL",
+  "rsvd_audit": {
+    "organs": 5406,
+    "budget_differs_frac": 0.0024047354790972995,
+    "cos_delta_p50": 0.002522056699990949,
+    "cos_delta_p95": 0.12388398823360369,
+    "cos_delta_p99": 0.8112757359941145,
+    "cos_delta_min": -0.008822707898213267,
+    "gate_boundary_crossings": 223,
+    "mean_component_bpw_exact": 0.7176802096255562,
+    "mean_component_bpw_rsvd": 0.7171266174504578
+  },
+  "runtime_regression_gate": {
+    "ids": [
+      23604,
+      69622,
+      102498,
+      75072,
+      75072,
+      98882
+    ],
+    "dispatches": 1013,
+    "command_buffers": 1,
+    "trials": 3,
+    "pass": true,
+    "token_wall_us_mean_incl_drain_trials": [
+      51713.7,
+      46092.5,
+      32923.3
+    ],
+    "candidate": "all-layer-svd-mt8-v1",
+    "note": "untraced; device-identity st_dev fix applied for remount admission only"
+  },
+  "lanes_landed": [
+    "lane-ms-evaluate-seal-20260810-115853 (3-way rebase onto 74aaa5fe; CEILING kept at 1.0 not lane's 1.5)",
+    "lane-loop2-seconds python subsumed by evaluate-seal (capture_expert_pack identical; dual identical); rust capture writer NOT landed (conflicts with trunk per-expert first-N)",
+    "lane-repack-latency-20260810-104533 shared-factor + fit-cache (byte-identity tests 13/13)",
+    "lane-cold-under-10-20260810-120234 NOT landed (rSVD material selection change)"
+  ]
+}

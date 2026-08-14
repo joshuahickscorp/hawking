@@ -1204,21 +1204,42 @@ def _activation_capture_binding(
             "activation capture sha256 mismatch: "
             f"expected {capture_result_sha256}, observed {digest}"
         )
-    try:
-        payload = json.loads(result_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise DualGravityError(f"activation capture result is not readable JSON: {exc}") from exc
-    if not isinstance(payload, Mapping):
-        raise DualGravityError("activation capture result must be a JSON object")
+    # Prefer the small expert-pack header for schema/status when present so a
+    # multi-GB capture-result.json is not parsed just to bind identity.
+    pack_header_path = run / "expert-pack.v1" / "header.json"
+    payload: Mapping[str, Any] | None = None
+    schema = None
+    status = None
+    claim_boundary = None
+    if pack_header_path.is_file():
+        try:
+            header = json.loads(pack_header_path.read_text(encoding="utf-8"))
+            if isinstance(header, Mapping):
+                schema = header.get("capture_schema") or header.get("schema")
+                status = header.get("capture_status") or header.get("status")
+                claim_boundary = header.get("claim_boundary")
+        except (OSError, json.JSONDecodeError):
+            header = None
+    if schema is None or status is None:
+        try:
+            payload = json.loads(result_path.read_bytes())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise DualGravityError(f"activation capture result is not readable JSON: {exc}") from exc
+        if not isinstance(payload, Mapping):
+            raise DualGravityError("activation capture result must be a JSON object")
+        schema = payload.get("schema")
+        status = payload.get("status")
+        claim_boundary = payload.get("claim_boundary")
     return {
         "path": str(run),
         "capture_result_path": str(result_path),
         "sha256": digest,
-        "schema": payload.get("schema"),
-        "status": payload.get("status"),
-        "claim_boundary": payload.get("claim_boundary"),
+        "schema": schema,
+        "status": status,
+        "claim_boundary": claim_boundary,
         "fit_kind": "real_routed_activation_capture",
         "not_synthetic_unit_direction": True,
+        "expert_pack_present": pack_header_path.is_file(),
     }
 
 
