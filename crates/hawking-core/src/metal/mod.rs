@@ -1046,6 +1046,9 @@ mod imp {
                 "qwen_binary_sign_scale_matvec_simdgroup_candidate"
             }
             "qwen_binary_sign_scale_matvec_qkv" => "qwen_binary_sign_scale_matvec_qkv",
+            "qwen_binary_sign_scale_matvec_qkv_rowblock4" => {
+                "qwen_binary_sign_scale_matvec_qkv_rowblock4"
+            }
             "qwen_binary_postnorm_router_matvec" => "qwen_binary_postnorm_router_matvec",
             "qwen_binary_sign_scale_matvec_rowblock2" => {
                 "qwen_binary_sign_scale_matvec_rowblock2"

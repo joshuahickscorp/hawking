@@ -2804,8 +2804,11 @@ impl Qwen30CompleteNativeRuntime {
 
     /// Lane K / K1: one dispatch covering Q, K, and V packed projections.
     /// Falls back to three `dispatch_binary_matvec` calls when the fused
-    /// kernel is disabled or when the serial/col32/simdgroup candidates are
-    /// selected (those keep the decomposed surface for A/B).
+    /// kernel is disabled or when the serial/simdgroup/rowblock-2/8
+    /// candidates are selected (those keep the decomposed surface for A/B).
+    /// ScalarControl uses the R=1 fused kernel; RowBlock4 uses the R=4 fused
+    /// kernel so the production packed-matvec winner keeps the 96-dispatch
+    /// QKV savings without changing per-row association.
     fn dispatch_qkv_binary_matvec(
         &self,
         tcb: &mut TokenCommandBuffer<'_>,
@@ -2818,6 +2821,7 @@ impl Qwen30CompleteNativeRuntime {
             && matches!(
                 self.packed_matvec_kernel,
                 Qwen30PackedMatvecKernel::ScalarControl
+                    | Qwen30PackedMatvecKernel::RowBlock4
             );
         if !use_fused {
             self.dispatch_binary_matvec(tcb, q, input, &self.workspace.q, 0, 0)?;
@@ -2860,13 +2864,28 @@ impl Qwen30CompleteNativeRuntime {
             .checked_add(k_rows)
             .and_then(|n| n.checked_add(v_rows))
             .ok_or_else(|| model_error("fused QKV total rows overflow"))?;
-        let groups_of_rows = total_rows.div_ceil(8);
+        // Scalar fused QKV: 8 rows/TG (one per simdgroup). RowBlock4 fused:
+        // 8*R=32 rows/TG — same geometry as the split rowblock4 path so each
+        // projection's local row→simdgroup map is unchanged.
+        let rows_per_tg = match self.packed_matvec_kernel {
+            Qwen30PackedMatvecKernel::RowBlock4 => 8usize
+                .checked_mul(self.packed_matvec_kernel.row_block())
+                .ok_or_else(|| model_error("fused QKV rows_per_tg overflows"))?,
+            _ => 8usize,
+        };
+        let kernel = match self.packed_matvec_kernel {
+            Qwen30PackedMatvecKernel::RowBlock4 => {
+                "qwen_binary_sign_scale_matvec_qkv_rowblock4"
+            }
+            _ => "qwen_binary_sign_scale_matvec_qkv",
+        };
+        let groups_of_rows = total_rows.div_ceil(rows_per_tg);
         let grid_x = groups_of_rows
             .checked_mul(256)
             .ok_or_else(|| model_error("fused QKV grid overflows usize"))?;
         let groups = cols.div_ceil(QWEN30_GROUP_SIZE);
         tcb.dispatch_threads(
-            "qwen_binary_sign_scale_matvec_qkv",
+            kernel,
             (u32_checked(grid_x, "fused QKV grid")?, 1, 1),
             (256, 1, 1),
             |encoder| {
