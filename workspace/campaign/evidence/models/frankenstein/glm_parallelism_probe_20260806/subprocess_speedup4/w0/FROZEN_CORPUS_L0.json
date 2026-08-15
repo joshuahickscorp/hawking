@@ -1,0 +1,119 @@
+{
+  "fabricated": false,
+  "frozen_at": "2026-08-06T12:30:06.674334Z",
+  "level": "L0",
+  "max_sequence": 2,
+  "membership": {
+    "assignments": {
+      "tf_syn_0000": "train",
+      "tf_syn_0001": "train",
+      "tf_syn_0002": "train",
+      "tf_syn_0003": "train",
+      "tf_syn_0004": "train",
+      "tf_syn_0005": "train",
+      "tf_syn_0006": "train",
+      "tf_syn_0007": "train"
+    },
+    "counts": {
+      "calibration": 0,
+      "hidden_test": 0,
+      "public_test": 0,
+      "retention": 0,
+      "train": 8
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T12:30:06.674130Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "235662e6eecdcb6610603aa4a00f79a3db4706b45a232cee199b1ace1e613f1c",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "membership_sha256": "d1d3241031cc7c5c14dce6fdf7180623f17ea1b5994737df5bcc22923ba128fa",
+  "n_sequences": 8,
+  "pad_id": 0,
+  "revision": "synthetic-revision",
+  "schema": "hawking.frankenstein.glm_frozen_corpus.v1",
+  "seal_sha256": "b7132cad99c4399267a77b2b265fa859e672cf967f2604189ce4e7e9e415f78c",
+  "sequences": [
+    {
+      "domain": "algebra",
+      "example_id": "tf_syn_0000",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[algebra] Prove or solve step 0: let n=3. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "b5d85a65226e4ae73b473f3ead04eafb1d9305152e562720bb19f443606e5140",
+      "token_ids_sha256": "1c081f093f6645d2a61cbb7c0b0272ef7cd5c1bc4cfe5aa9abb01361ed34c50e"
+    },
+    {
+      "domain": "geometry",
+      "example_id": "tf_syn_0001",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[geometry] Prove or solve step 1: let n=4. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "82111b8eb3aa8f71c7c8bfb9b0a678443a61f90810b62d1109d4dd3e9d543541",
+      "token_ids_sha256": "2bb6ca121b4f72b5dc49a167fb6398f777a2229062b7ae22aa1ca0b62925666f"
+    },
+    {
+      "domain": "combinatorics",
+      "example_id": "tf_syn_0002",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[combinatorics] Prove or solve step 2: let n=5. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "e6a1ee567ea61fb267d82763261b07fab7952bad4d36c152eadba5e86a09f804",
+      "token_ids_sha256": "f0b824e9b8c85c172436de7be11014bf9e5bec559e801d2b5e19f99ce5985ea6"
+    },
+    {
+      "domain": "formal",
+      "example_id": "tf_syn_0003",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[formal] Prove or solve step 3: let n=6. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "a5c06681127af96f00116d50911003544eb7df5a31d6d13912fee0991aa75464",
+      "token_ids_sha256": "c438424775b9818a1a0e69b7921993fff1f32c75ffc2961d650b1de3de81bade"
+    },
+    {
+      "domain": "coding",
+      "example_id": "tf_syn_0004",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[coding] Prove or solve step 4: let n=7. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "4385c0cf594ba5a318acfe3ba74c2dee276aa914aaa6da1d59a36ca9f718545c",
+      "token_ids_sha256": "65032417f15990e9a68e852121cc0c34b3142d21c708182725ae34896fb21799"
+    },
+    {
+      "domain": "tools",
+      "example_id": "tf_syn_0005",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[tools] Prove or solve step 5: let n=8. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "3b092260880854be7e408fc9580106c0278bf7e83d8a783d77e15498540d4ff1",
+      "token_ids_sha256": "d7fc7d1ef19824a1c9b799c235ca31672bc723c4d0dc80869a084c17c09a1a85"
+    },
+    {
+      "domain": "general",
+      "example_id": "tf_syn_0006",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[general] Prove or solve step 6: let n=9. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "6dfeab213770d04ceefb02396749ea9cd95663a9276beb1b96a4f3514dab6f08",
+      "token_ids_sha256": "d4a0be108d03a48714ca55f4cbd7e9a1854580b633c5593bb3b5a7e2101c671a"
+    },
+    {
+      "domain": "repair",
+      "example_id": "tf_syn_0007",
+      "membership": "train",
+      "n_tokens": 8,
+      "prompt_text": "[repair] Prove or solve step 7: let n=10. Select a method, decompose, and answer with certainty.",
+      "prompt_text_sha256": "f64829111130784842b9d2f4ae01f86677ebc57464d65df0f52802f55707c7a6",
+      "token_ids_sha256": "4109569f501875b895daac316073431f2433a5ab63d839315551acd32c4c9244"
+    }
+  ],
+  "source": "SYNTHETIC_DETERMINISTIC_PROBE|shard[0:8]",
+  "target_n": 32
+}

@@ -1,0 +1,48 @@
+{
+  "attempt": 1,
+  "create_new_before_source_root_open": true,
+  "fresh_bootstrap_lease": {
+    "canonical_document_sha256": "26967e61046556b921f12bff88b09c358ccfd4545c76f57743ea7f6c88907104",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_LAUNCH_20260809T144246Z/production-bootstrap-lease.json",
+    "raw_document_sha256": "36459076edf5ad51aebc49dee0dd032fdd6495f43a04583011dbca7f6b52a2aa",
+    "seal_sha256": "9cf81bd894e5c89ef647e6037707a014828f742ef67e8fe6308268a8e030bcac"
+  },
+  "gpu_server_hcli_or_tps_authorized": false,
+  "independent_non_fixture_semantics_attester": {
+    "canonical_document_sha256": "0dab1e41c901569ad0b5b5680a35f09ea2499a25a3f906f9a648a9f162bb5732",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+    "raw_document_sha256": "1b840daef95fa6b444ce0dc5e46142214f02963359c5fb2d53c863d8f236f96b",
+    "seal_sha256": null
+  },
+  "interface_authority": {
+    "canonical_document_sha256": "2506e64c3857b43b78536dd0744619b82d7ee50e9bdd3edde739ffa407ef3210",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_INTERFACE_PREFLIGHT_20260809T140448Z.json",
+    "raw_document_sha256": "57fe82c69f9569b15cc9badb23d683428642f7b8fe528182aad2f44e03b55b50",
+    "seal_sha256": "26fe5f46544cc0dd203f3c1663bcd34f12d752fc93c33cfae5188f701d6fbda2"
+  },
+  "metadata_range_authority": {
+    "canonical_document_sha256": "d78be55bdd6aca732ae8ab9109b60a05bb98a9fa69f29ceb7f56f1ac15227eb3",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_ORACLE_METADATA_ONLY_RANGE_MAP_AUTHORITY_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+    "raw_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589",
+    "seal_sha256": null
+  },
+  "one_child_maximum": true,
+  "production_scan_authority": {
+    "canonical_document_sha256": "bc464f1c495e73d211f6e0a568565aa44881fc3896949bb147b7d081629e072c",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_AUTHORITY_20260809T144027Z.json",
+    "raw_document_sha256": "d3d6d7de3e089632054fd25b4a1548b3bb4e4d6a96ab8de592e55d6d56821a12",
+    "seal_sha256": "be00aeb41007b114851553ef351cc3bb759ca8b4528aeb1d3526d5612d358969"
+  },
+  "replay_or_relaunch_forbidden": true,
+  "runtime_admission_producer_authority": {
+    "canonical_document_sha256": "2231df0076f5e1930f38d9d294813842291400c30acc576004e3b386f10db89f",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RUNTIME_RANGE_ADMISSION_PRODUCER_PREFLIGHT_20260809T140324Z.json",
+    "raw_document_sha256": "fc928f4bd74c805442e4a9bc2d6df1d0d865e0c86d0541e56a8064659da7f716",
+    "seal_sha256": "2b513c388723a3479057c3d1c42e60f83a75c53f7ebadbd9cd79d57175541845"
+  },
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_replay_reservation.v1",
+  "seal_sha256": "40ea30982c679bbc2d96daff9d62e2ef81050a3e51a89c7a49a5112627b88f03",
+  "source_root_opened_or_statted": false,
+  "source_teacher_or_logits_authorized": false,
+  "status": "RESERVED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_ONE_SHOT_NOT_SPAWNED"
+}

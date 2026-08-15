@@ -1,0 +1,52 @@
+{
+  "armed": true,
+  "armed_at": "2026-08-09T06:16:03.096010Z",
+  "candidate_order": [
+    "Qwen30-Gravity-Manager-Artifact",
+    "Qwen80-Gravity-Manager-Artifact"
+  ],
+  "claim_boundary": {
+    "armed_is_not_manager_winner": true,
+    "armed_is_not_sandbox_activation": true,
+    "armed_is_not_tournament_complete": true,
+    "does_not_launch_model_body": true
+  },
+  "comparison_dimensions": [
+    "hard_gate_compliance",
+    "manager_capability",
+    "solo_manager_capability",
+    "manager_as_orchestrator_capability",
+    "verified_tasks_per_hour",
+    "architecture_kernel_research",
+    "gravity_research_quality",
+    "long_horizon_reliability",
+    "tool_recovery",
+    "search_retrieval",
+    "memory_context",
+    "hcli_latency",
+    "multi_agent_throughput",
+    "resident_memory",
+    "active_bytes_per_token",
+    "energy_per_verified_task",
+    "thermal_stability",
+    "error_rate",
+    "receipt_quality",
+    "adversarial_review_quality",
+    "failure_recovery",
+    "benchmark_honesty",
+    "security_effect_discipline",
+    "release_integration"
+  ],
+  "execution_contract": {
+    "alternate_offload_required_before_sandbox": true,
+    "hidden_task_catalog_must_be_frozen": true,
+    "models_cannot_self_promote": true,
+    "protected_controller_or_human_certifies_result": true,
+    "requires_both_independently_qualified": true,
+    "winner_not_auto_selected": true
+  },
+  "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+  "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+  "schema": "hawking.ascension.manager_tournament_controller.v1",
+  "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f"
+}

@@ -1,0 +1,448 @@
+{
+  "alternate_offload_contract": {
+    "does_not_allow_hidden_second_manager": true,
+    "must_precede_sandbox_activation": true,
+    "required_proofs": [
+      "winner_model_binding",
+      "alternate_model_binding",
+      "remote_hash",
+      "one_command_restore",
+      "alternate_local_body_evicted",
+      "small_fixtures_retained",
+      "no_permanent_second_local_reviewer"
+    ]
+  },
+  "arming": {
+    "armed_at": "2026-08-09T06:16:03.096010Z",
+    "blockers": [
+      "requires certified MANAGER_30B_AGENT",
+      "requires certified MANAGER_80B_AGENT"
+    ],
+    "candidate_order": [
+      "Qwen30-Gravity-Manager-Artifact",
+      "Qwen80-Gravity-Manager-Artifact"
+    ],
+    "claim_boundary": {
+      "does_not_activate_sandbox": true,
+      "does_not_run_candidate_models": true,
+      "does_not_select_a_winner": true
+    },
+    "dimensions": [
+      "hard_gate_compliance",
+      "manager_capability",
+      "solo_manager_capability",
+      "manager_as_orchestrator_capability",
+      "verified_tasks_per_hour",
+      "architecture_kernel_research",
+      "gravity_research_quality",
+      "long_horizon_reliability",
+      "tool_recovery",
+      "search_retrieval",
+      "memory_context",
+      "hcli_latency",
+      "multi_agent_throughput",
+      "resident_memory",
+      "active_bytes_per_token",
+      "energy_per_verified_task",
+      "thermal_stability",
+      "error_rate",
+      "receipt_quality",
+      "adversarial_review_quality",
+      "failure_recovery",
+      "benchmark_honesty",
+      "security_effect_discipline",
+      "release_integration"
+    ],
+    "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+    "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+    "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+    "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+  },
+  "candidates": [
+    {
+      "agent_qualification_state": "PENDING_PREREQUISITES",
+      "source_teacher_model_id": "Qwen3-Coder-30B-A3B-Instruct",
+      "tournament_artifact_id": "Qwen30-Gravity-Manager-Artifact"
+    },
+    {
+      "agent_qualification_state": "PENDING_PREREQUISITES",
+      "source_teacher_model_id": "Qwen3-Coder-Next-80B",
+      "tournament_artifact_id": "Qwen80-Gravity-Manager-Artifact"
+    }
+  ],
+  "claim_boundary": {
+    "workflow_does_not_activate_sandbox": true,
+    "workflow_does_not_choose_winner": true,
+    "workflow_does_not_evict_alternate": true,
+    "workflow_does_not_execute_tasks": true,
+    "workflow_does_not_score_subjective_dimensions": true
+  },
+  "deterministic_comparison_contract": {
+    "all_dimensions_must_be_measured": true,
+    "catalog_hash_required": true,
+    "comparison_dimensions": [
+      "hard_gate_compliance",
+      "manager_capability",
+      "solo_manager_capability",
+      "manager_as_orchestrator_capability",
+      "verified_tasks_per_hour",
+      "architecture_kernel_research",
+      "gravity_research_quality",
+      "long_horizon_reliability",
+      "tool_recovery",
+      "search_retrieval",
+      "memory_context",
+      "hcli_latency",
+      "multi_agent_throughput",
+      "resident_memory",
+      "active_bytes_per_token",
+      "energy_per_verified_task",
+      "thermal_stability",
+      "error_rate",
+      "receipt_quality",
+      "adversarial_review_quality",
+      "failure_recovery",
+      "benchmark_honesty",
+      "security_effect_discipline",
+      "release_integration"
+    ],
+    "each_participant_requires_complete_gravity_artifact_at_most_1_5_bpw": true,
+    "fixed_candidate_order": [
+      "Qwen30-Gravity-Manager-Artifact",
+      "Qwen80-Gravity-Manager-Artifact"
+    ],
+    "frozen_hidden_task_catalog_required": true,
+    "no_blended_or_unmeasured_dimension_may_choose_a_winner": true,
+    "raw_bf16_models_are_source_authorities_and_not_participants": true
+  },
+  "final_manager_selection_protocol": {
+    "binding_required_in_scored_tournament_receipt": true,
+    "does_not_create_a_new_lifecycle_state_or_weaken_tg3": true,
+    "protocol": {
+      "adversarial_review": {
+        "measure_genuine_defects_and_false_objections": true,
+        "opposing_candidate_is_read_only_red_team_reviewer": true,
+        "protected_verifier_adjudicates_challenges": true,
+        "required_after_each_candidate_task": true,
+        "reviewer_may_not_modify_candidate_artifact": true
+      },
+      "ascent_boundary": {
+        "candidate_specific_optimization_allowed_only_before_freeze": true,
+        "development_race_is_not_final_selection": true,
+        "freeze_requires_both_complete_manager_qualification_floors": true,
+        "post_freeze_candidate_specific_change_requires_failed_hard_gate_repair": true,
+        "repair_requires_replay_of_all_affected_scored_tests": true
+      },
+      "candidates": {
+        "both_must_meet_complete_manager_qualification_floor_before_freeze": true,
+        "fixed_order": [
+          "Qwen30-Gravity-Manager-Artifact",
+          "Qwen80-Gravity-Manager-Artifact"
+        ]
+      },
+      "claim_boundary": {
+        "does_not_activate_a_server_or_sandbox": true,
+        "does_not_choose_winner": true,
+        "does_not_execute_tournament": true,
+        "does_not_relax_tg3_or_other_hard_gates": true,
+        "does_not_score_candidates": true
+      },
+      "evaluation_modes": {
+        "MANAGER_AS_ORCHESTRATOR": {
+          "each_candidate_measured": true,
+          "measures": "organization_level_verified_engineering_progress",
+          "no_hidden_information_or_worker_advantage": true,
+          "same_hawking_agent_os": true,
+          "symmetric_helper_model_infrastructure": true
+        },
+        "SOLO_MANAGER": {
+          "each_candidate_measured": true,
+          "measures": "raw_model_manager_capability",
+          "no_helper_advantage": true
+        },
+        "required": [
+          "SOLO_MANAGER",
+          "MANAGER_AS_ORCHESTRATOR"
+        ]
+      },
+      "fairness_envelope": {
+        "equalize": {
+          "context_budget": {
+            "required": true
+          },
+          "cpu_budget": {
+            "required": true
+          },
+          "gpu_opportunity": {
+            "required": true
+          },
+          "helper_model_access": {
+            "required": true
+          },
+          "hidden_evidence": {
+            "required": true
+          },
+          "logical_agent_budget": {
+            "required": true
+          },
+          "retry_policy": {
+            "required": true
+          },
+          "storage_budget": {
+            "required": true
+          },
+          "temperature_sampling_policy": {
+            "required": true
+          },
+          "tool_access": {
+            "required": true
+          },
+          "wall_clock_or_experiment_budget": {
+            "required": true
+          }
+        },
+        "record_every_asymmetry": true
+      },
+      "final_report": {
+        "must_state_winner_loser_decisive_evidence_tradeoffs_restore_path": true,
+        "required_fields": [
+          "bpw",
+          "tg_rung",
+          "base_true_tps",
+          "p99",
+          "memory",
+          "verified_tasks_per_hour",
+          "solo_capability",
+          "orchestrated_capability",
+          "repository_architecture_tasks",
+          "kernel_tasks",
+          "gravity_tasks",
+          "tool_reliability",
+          "delegation",
+          "context",
+          "restart",
+          "failure_recovery",
+          "adversarial_review",
+          "resource_efficiency",
+          "long_horizon_completion",
+          "human_interventions",
+          "hard_gate_status"
+        ],
+        "side_by_side_candidates_required": true
+      },
+      "freeze_contract": {
+        "both_candidates_frozen_before_scored_execution": true,
+        "candidate_specific_optimization_disabled_during_scored_execution": true,
+        "hard_gate_repair_requires_affected_test_replay": true
+      },
+      "hard_gates": {
+        "conjunctive": true,
+        "each_gate_required_for_each_candidate": true,
+        "no_score_can_compensate_for_failure": true,
+        "required": {
+          "agent_os_production_path": {
+            "required": true
+          },
+          "capability_retention": {
+            "required": true
+          },
+          "coherent_real_hcli": {
+            "required": true
+          },
+          "complete_bpw_at_most_1_5": {
+            "required": true
+          },
+          "fallback_zero": {
+            "required": true
+          },
+          "manager_contract": {
+            "required": true
+          },
+          "real_metal": {
+            "required": true
+          },
+          "residency": {
+            "required": true
+          },
+          "restart_recovery": {
+            "required": true
+          },
+          "security_effect_boundaries": {
+            "required": true
+          },
+          "source_identity": {
+            "required": true
+          },
+          "storage_rollback": {
+            "required": true
+          },
+          "tg3_base_true_tps": {
+            "required": true
+          }
+        }
+      },
+      "long_horizon_campaigns": {
+        "measure_initial_plan_adaptation_resets_repeated_mistakes_branches_goal_fidelity_and_completion": true,
+        "required": [
+          "six_stage_kernel_optimization",
+          "multi_subsystem_hcli_repair",
+          "exact_model_family_qualification",
+          "storage_pressure_model_acquisition",
+          "agent_os_concurrency_optimization",
+          "gravity_representation_tournament"
+        ]
+      },
+      "protected_selection": {
+        "candidate_self_assessments_are_evidence_only": true,
+        "candidates_cannot_change_weights_or_hidden_tests": true,
+        "candidates_cannot_promote_self_or_invalidate_opponent": true,
+        "candidates_cannot_self_grade": true,
+        "only_protected_controller_or_human_may_select_manager": true
+      },
+      "protected_task_corpus": {
+        "blind_tasks_required": true,
+        "hidden_membership_frozen_before_scored_execution": true,
+        "real_hawking_work_only": true,
+        "required_families": [
+          "repository_architecture",
+          "kernel_metal_diagnosis",
+          "gravity_research",
+          "complete_token_performance",
+          "bug_repair",
+          "tool_use",
+          "delegation",
+          "helper_management",
+          "context_memory",
+          "interrupt_recovery",
+          "adversarial_evidence",
+          "benchmark_honesty",
+          "storage_resource_campaign",
+          "security_effect_boundaries",
+          "release_integration"
+        ]
+      },
+      "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+      "purpose": "Select the Hawking operating intelligence that produces the most correct, verified, recoverable engineering progress per unit of machine resource while preserving the Ascension constitution.",
+      "recorded_at": "2026-08-09T17:44:43.553370Z",
+      "schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+      "scorecards": {
+        "do_not_collapse_to_scalar_before_complete_evidence_matrix": true,
+        "failure_recovery_injections": [
+          "bad_worker_patch",
+          "failed_build",
+          "false_benchmark",
+          "stale_receipt",
+          "killed_process",
+          "disk_pressure",
+          "kv_corruption",
+          "failed_metal_parity",
+          "incorrect_architectural_assumption"
+        ],
+        "manager_intelligence_metrics": [
+          "architecture_comprehension",
+          "root_cause_diagnosis",
+          "planning_quality",
+          "experiment_quality",
+          "scientific_reasoning",
+          "kernel_reasoning",
+          "representation_reasoning",
+          "tool_competence",
+          "delegation",
+          "recovery",
+          "context_retention",
+          "evidence_discipline",
+          "self_correction",
+          "release_discipline"
+        ],
+        "orchestration_metrics": [
+          "worker_utilization",
+          "duplicate_work",
+          "idle_lanes",
+          "bad_delegation",
+          "integration_failures",
+          "merge_conflicts",
+          "review_quality",
+          "critical_path_scheduling",
+          "verified_tasks_per_hour"
+        ],
+        "pareto_frontier_required_before_selection": true,
+        "performance_metrics": [
+          "base_true_tps",
+          "latency_p50",
+          "latency_p95",
+          "latency_p99",
+          "ttft",
+          "hcli_overhead",
+          "resident_memory",
+          "active_bytes_per_token",
+          "state_kv_traffic",
+          "energy_resource_efficiency",
+          "multi_session_throughput",
+          "weight_reuse"
+        ],
+        "primary_metric": "verified_tasks_per_hour",
+        "primary_metrics": [
+          "verified_tasks_per_hour",
+          "first_pass_success",
+          "repair_cycles",
+          "failed_experiments",
+          "tool_errors",
+          "worker_rejection_accuracy",
+          "human_intervention_count",
+          "regressions_introduced",
+          "rollback_events",
+          "resource_use"
+        ]
+      },
+      "seal_sha256": "adeb31664984241b5ed6757fba355280e8867cf551a42fdc46bf305077868db8",
+      "status": "PREPARED_FINAL_MANAGER_SELECTION_PROTOCOL_NOT_EXECUTED",
+      "winner_freeze_and_alternate": {
+        "cold_store_hash_verify_restore_test_one_command_recovery_required": true,
+        "do_not_delete_loser_before_restore_proof": true,
+        "seal_loser_before_any_evictability": true,
+        "seal_winner_source_artifact_runtime_kernel_agent_os_context_kv_benchmarks_capability_tournament_and_rollback": true
+      }
+    },
+    "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+    "runs_only_after_both_candidates_are_frozen_at_complete_manager_floor": true,
+    "schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+    "seal_sha256": "adeb31664984241b5ed6757fba355280e8867cf551a42fdc46bf305077868db8"
+  },
+  "pre_tournament_kernel_gate": {
+    "each_candidate_requires_exact_model_custom_kernel": true,
+    "minimum_operational_base_true_tps": 100.0,
+    "operational_floor_is_not_a_tg3_substitute": true,
+    "required_manager_receipts": [
+      "QWEN30_MANAGER_KERNEL_OPERATIONAL",
+      "QWEN80_MANAGER_KERNEL_OPERATIONAL"
+    ],
+    "tg3_base_true_tps": 333.0
+  },
+  "protected_authority": {
+    "models_may_not_self_promote": true,
+    "required_receipts": [
+      "ASCENSION_MANAGER_TOURNAMENT",
+      "ASCENSION_MANAGER_WINNER",
+      "ASCENSION_ALTERNATE_OFFLOAD"
+    ],
+    "winner_designation": "ASCENSION_MANAGER",
+    "winner_must_be_certified_by": [
+      "protected_controller",
+      "human_operator"
+    ]
+  },
+  "recorded_at": "2026-08-09T17:44:43.553554Z",
+  "runtime_phase": "ARMED_WAITING_FOR_QUALIFICATIONS",
+  "sandbox_start_contract": {
+    "losing_gravity_artifact_cold_stored_then_locally_evicted": true,
+    "only_winner_active": true,
+    "requires_alternate_offload": true,
+    "requires_sealed_manager_tournament": true,
+    "requires_sealed_winner": true,
+    "second_local_manager_active": false
+  },
+  "schema": "hawking.ascension.manager_tournament_workflow.v1",
+  "seal_sha256": "bb6356d3e3878bf5fa4576eba3d23cbf2c2992820e830905e060877b00b28d11",
+  "status": "CONTROLLER_WORKFLOW_ONLY"
+}

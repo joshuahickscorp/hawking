@@ -1,0 +1,25 @@
+{
+ "claim_boundary": {
+  "component_microbenchmark_only_not_a_model_token": true,
+  "measured_on_this_host_with_real_metal": true,
+  "not_a_tps_tg_hcli_capability_or_tournament_result": true,
+  "per_command_buffer_cost_is_from_this_microbench_not_the_production_graph": true
+ },
+ "derived": {
+  "implied_per_command_buffer_overhead_us": 248.2,
+  "one_cb_vs_per_dispatch_cb_speedup": 21.29,
+  "serial_encoder_additional_gain_percent": 5.2
+ },
+ "does_not_establish": "No claim about end-to-end tokens per second. The deployed Q30 artifact is LOW_FIDELITY and generates degenerate text, so no valid BASE_TRUE_TPS exists to improve yet. The remaining and larger lever, device-indexed expert argument buffers to remove the 48 per-token host route-id readbacks, is designed but not implemented.",
+ "finding": "Collapsing 64 dispatches from one command buffer each into a single command buffer is a 21.3x reduction, implying roughly 248 us of overhead per command buffer in this microbench. That is the empirical basis for the S-bucket attack: the production path uses 291 cold command buffers (193 vector-decode + 98 structural) with a warm floor of 98, so submission topology - not expert math - is where the recoverable nanoseconds are. Serial single-encoder adds a further ~5%.",
+ "measurements_us": {
+  "multi_command_buffer": 15886,
+  "multi_encoder_one_command_buffer": 746,
+  "serial_one_encoder_one_command_buffer": 707
+ },
+ "method": "hawking-core lib test model::qwen30_complete_runtime::tests::component_command_topology_serial_vs_split_encoder_and_multi_cb, N=64 dispatches, real Metal device",
+ "recorded_at": "2026-08-09T19:56:00Z",
+ "schema": "hawking.ascension.qwen30_command_topology_component_measurement.v1",
+ "status": "EARNED_COMPONENT_COMMAND_TOPOLOGY_MEASUREMENT_NOT_TPS",
+ "validates": "commit dd71270b: cold vector-decode fold into the parent token command buffer, prewarm_static_decoded_vectors in one buffer and one fence, serial encoder groups default on"
+}

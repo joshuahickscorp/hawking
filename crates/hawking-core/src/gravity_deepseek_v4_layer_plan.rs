@@ -60,9 +60,7 @@ pub enum DeepSeekV4MhcControlExpStrategy {
 impl DeepSeekV4MhcControlExpStrategy {
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::DarwinDoubleDoubleControlDomain => {
-                "darwin_double_double_control_domain_general"
-            }
+            Self::DarwinDoubleDoubleControlDomain => "darwin_double_double_control_domain_general",
         }
     }
 }
@@ -144,8 +142,7 @@ impl DeepSeekV4LayerDevicePlan {
         Err(plan_error(format!(
             "layer {} MoE device refused: {}",
             self.layer,
-            self.moe_refusal
-                .unwrap_or("MoE device path is unavailable")
+            self.moe_refusal.unwrap_or("MoE device path is unavailable")
         )))
     }
 
@@ -209,7 +206,11 @@ impl DeepSeekV4LayerDevicePlan {
         self.require_moe_device()
     }
 
-    pub fn common_tensor_name(&self, anchors: &DeepSeekV4LayerSourceAnchors, kind: DeepSeekV4LayerCommonTensor) -> Result<String> {
+    pub fn common_tensor_name(
+        &self,
+        anchors: &DeepSeekV4LayerSourceAnchors,
+        kind: DeepSeekV4LayerCommonTensor,
+    ) -> Result<String> {
         Ok(anchors.layer(self.layer)?.common_tensor(kind).name)
     }
 
@@ -218,7 +219,11 @@ impl DeepSeekV4LayerDevicePlan {
         anchors: &DeepSeekV4LayerSourceAnchors,
         projection: DeepSeekV4LayerControlProjection,
     ) -> Result<String> {
-        Ok(anchors.layer(self.layer)?.control_pair(projection).weight.name)
+        Ok(anchors
+            .layer(self.layer)?
+            .control_pair(projection)
+            .weight
+            .name)
     }
 
     pub fn mhc_fn_name(
@@ -307,10 +312,7 @@ impl DeepSeekV4LayerDeviceCatalog {
 }
 
 fn plan_error(message: impl Into<String>) -> Error {
-    Error::Gravity(format!(
-        "DeepSeek-V4 layer device plan: {}",
-        message.into()
-    ))
+    Error::Gravity(format!("DeepSeek-V4 layer device plan: {}", message.into()))
 }
 
 #[cfg(test)]
@@ -390,9 +392,15 @@ mod tests {
             gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
             tensor_count: 0,
         });
-        assert!(ratio4.require_empty_compressed_growing_kv_attention(0).is_ok());
-        assert!(ratio4.require_empty_compressed_growing_kv_attention(2).is_ok());
-        assert!(ratio4.require_empty_compressed_growing_kv_attention(3).is_err());
+        assert!(ratio4
+            .require_empty_compressed_growing_kv_attention(0)
+            .is_ok());
+        assert!(ratio4
+            .require_empty_compressed_growing_kv_attention(2)
+            .is_ok());
+        assert!(ratio4
+            .require_empty_compressed_growing_kv_attention(3)
+            .is_err());
 
         let ratio128 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
             layer: 3,
@@ -400,9 +408,15 @@ mod tests {
             gate_mode: DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias,
             tensor_count: 0,
         });
-        assert!(ratio128.require_empty_compressed_growing_kv_attention(0).is_ok());
-        assert!(ratio128.require_empty_compressed_growing_kv_attention(126).is_ok());
-        assert!(ratio128.require_empty_compressed_growing_kv_attention(127).is_err());
+        assert!(ratio128
+            .require_empty_compressed_growing_kv_attention(0)
+            .is_ok());
+        assert!(ratio128
+            .require_empty_compressed_growing_kv_attention(126)
+            .is_ok());
+        assert!(ratio128
+            .require_empty_compressed_growing_kv_attention(127)
+            .is_err());
 
         let ratio0 = DeepSeekV4LayerDevicePlan::from_anchor(&DeepSeekV4LayerSourceAnchor {
             layer: 0,
@@ -410,8 +424,14 @@ mod tests {
             gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
             tensor_count: 0,
         });
-        assert!(ratio0.require_empty_compressed_growing_kv_attention(0).is_ok());
-        assert!(ratio0.require_empty_compressed_growing_kv_attention(127).is_ok());
-        assert!(ratio0.require_empty_compressed_growing_kv_attention(128).is_err());
+        assert!(ratio0
+            .require_empty_compressed_growing_kv_attention(0)
+            .is_ok());
+        assert!(ratio0
+            .require_empty_compressed_growing_kv_attention(127)
+            .is_ok());
+        assert!(ratio0
+            .require_empty_compressed_growing_kv_attention(128)
+            .is_err());
     }
 }

@@ -1,0 +1,140 @@
+{
+ "ceiling_complete_physical_bpw": 1.5,
+ "claim_boundary": {
+  "artifact_packed": false,
+  "coherence_tested": false,
+  "note": "This is a budget envelope derived from source geometry only. It constrains the search; it does not assert any artifact exists or is coherent.",
+  "tps_measured": false
+ },
+ "envelope": [
+  {
+   "clears_ceiling_at_8bit_nonexpert": true,
+   "complete_bpw_if_nonexpert_8bit": 1.2077814402685134,
+   "expert_bpw": 1.0,
+   "max_nonexpert_bits_to_hold_ceiling": 17.844622866589965
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": true,
+   "complete_bpw_if_nonexpert_8bit": 1.3048131339789635,
+   "expert_bpw": 1.1,
+   "max_nonexpert_bits_to_hold_ceiling": 14.575698293271968
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": true,
+   "complete_bpw_if_nonexpert_8bit": 1.401844827689413,
+   "expert_bpw": 1.2,
+   "max_nonexpert_bits_to_hold_ceiling": 11.30677371995398
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": true,
+   "complete_bpw_if_nonexpert_8bit": 1.450360674544638,
+   "expert_bpw": 1.25,
+   "max_nonexpert_bits_to_hold_ceiling": 9.672311433294984
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": true,
+   "complete_bpw_if_nonexpert_8bit": 1.498876521399863,
+   "expert_bpw": 1.3,
+   "max_nonexpert_bits_to_hold_ceiling": 8.037849146635986
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": false,
+   "complete_bpw_if_nonexpert_8bit": 1.5000409017243883,
+   "expert_bpw": 1.3012,
+   "max_nonexpert_bits_to_hold_ceiling": 7.998622051756171
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": false,
+   "complete_bpw_if_nonexpert_8bit": 1.5473923682550879,
+   "expert_bpw": 1.35,
+   "max_nonexpert_bits_to_hold_ceiling": 6.403386859976989
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": false,
+   "complete_bpw_if_nonexpert_8bit": 1.5959082151103128,
+   "expert_bpw": 1.4,
+   "max_nonexpert_bits_to_hold_ceiling": 4.768924573317992
+  },
+  {
+   "clears_ceiling_at_8bit_nonexpert": false,
+   "complete_bpw_if_nonexpert_8bit": 1.6550005165799768,
+   "expert_bpw": 1.4609,
+   "max_nonexpert_bits_to_hold_ceiling": 2.778149508167331
+  }
+ ],
+ "geometry": {
+  "experts": 512,
+  "hidden": 2048,
+  "layers": 48,
+  "moe_intermediate": 512,
+  "shared_expert_intermediate": 512,
+  "tie_word_embeddings": false,
+  "top_k": 10,
+  "vocab": 151936
+ },
+ "hf_commit": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+ "identity": "complete_bpw = 0.97032*expert_bpw + 0.02968*nonexpert_bpw",
+ "mass_fractions": {
+  "f_non_expert": 0.029683062895501933,
+  "f_routed_expert": 0.9703169371044981
+ },
+ "model": "Qwen3-Coder-Next",
+ "operating_point": {
+  "max_expert_bpw_with_full_8bit_nonexpert": 1.3011578470468521,
+  "measured_reference_r192": {
+   "expert_bpw": 1.4609,
+   "nonexpert_budget_bits": 2.778149508167331,
+   "organ_cosine": 0.9693
+  },
+  "recommendation": "target expert_bpw <= 1.3012",
+  "why": "At or below this, EVERY high-sensitivity organ (embeddings, lm_head, attention, DeltaNet state, router) can be held at 8 bits and the complete artifact still clears 1.500000. Above it the sensitive 3%% must be squeezed: the measured r192 point (expert 1.4609, organ cosine 0.9693) forces non-expert to 2.78 bits, which puts untied embeddings and lm_head below 3 bits."
+ },
+ "organs": [
+  {
+   "capability_sensitivity": "LOW-MED",
+   "organ_class": "routed_expert",
+   "params": 77309411328,
+   "pct_mass": 97.0316937104498,
+   "rationale": "512 experts top-10; rare experts rarely on the critical path and are crushable",
+   "tensors": 73728
+  },
+  {
+   "capability_sensitivity": "HIGH",
+   "organ_class": "attention_gqa+deltanet+norm+router",
+   "params": 1591655168,
+   "pct_mass": 1.9976998155992287,
+   "rationale": "router mis-selection cascades; DeltaNet state is recurrent so error accumulates across tokens",
+   "tensors": 421
+  },
+  {
+   "capability_sensitivity": "HIGH",
+   "organ_class": "embed_tokens",
+   "params": 311164928,
+   "pct_mass": 0.39054572358637124,
+   "rationale": "untied; sub-bit embeddings showed catastrophic reconstruction in the GLM R0 campaign",
+   "tensors": 1
+  },
+  {
+   "capability_sensitivity": "HIGH",
+   "organ_class": "lm_head",
+   "params": 311164928,
+   "pct_mass": 0.39054572358637124,
+   "rationale": "untied; directly decides the emitted token",
+   "tensors": 1
+  },
+  {
+   "capability_sensitivity": "MED",
+   "organ_class": "shared_expert",
+   "params": 150994944,
+   "pct_mass": 0.18951502677822227,
+   "rationale": "fires on every token, so its error is never averaged away",
+   "tensors": 192
+  }
+ ],
+ "schema": "hawking.ascension.qwen80_bit_budget_ledger.v1",
+ "seal_sha256": "07ee4cfe361fdb8049270609f87b52bb7cd1db2b2bb00b23e6ba30ff59bdecd9",
+ "status": "BUDGET_ENVELOPE_ONLY_NO_ARTIFACT_PACKED_YET",
+ "structural_note": "97.03%% of Q80 mass is routed experts, so expert representation almost entirely determines complete BPW. This is the subsidy a dense model cannot offer: the 97%% can pay for the sensitive 3%%.",
+ "total_params": 79674391296,
+ "total_source_bytes_bf16": 159348782592
+}

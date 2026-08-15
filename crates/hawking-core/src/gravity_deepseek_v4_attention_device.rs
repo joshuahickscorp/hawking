@@ -184,7 +184,10 @@ fn resolve_tensor_names(
 ) -> Result<DeepSeekV4Ratio0AttentionTensorNames> {
     let layer = anchors.layer(plan.layer)?;
     Ok(DeepSeekV4Ratio0AttentionTensorNames {
-        hc_attn_fn: layer.mhc_binding(DeepSeekV4LayerMhcStage::Attention).fn_tensor.name,
+        hc_attn_fn: layer
+            .mhc_binding(DeepSeekV4LayerMhcStage::Attention)
+            .fn_tensor
+            .name,
         hc_attn_base: layer
             .mhc_binding(DeepSeekV4LayerMhcStage::Attention)
             .base_tensor

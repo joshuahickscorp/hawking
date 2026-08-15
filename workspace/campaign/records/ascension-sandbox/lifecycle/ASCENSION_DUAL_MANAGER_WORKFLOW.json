@@ -1,0 +1,211 @@
+{
+  "claim_boundary": {
+    "workflow_does_not_start_or_evict_models": true,
+    "workflow_is_not_a_runtime_measurement": true,
+    "workflow_is_not_a_tournament_result": true,
+    "workflow_is_not_model_body_download_authorization": true,
+    "workflow_is_not_source_authority": true
+  },
+  "fixed_candidate_order": [
+    "Qwen30-Gravity-Manager-Artifact",
+    "Qwen80-Gravity-Manager-Artifact"
+  ],
+  "handoff": {
+    "post_tournament": [
+      "ASCENSION_MANAGER_WINNER protected certification",
+      "ASCENSION_ALTERNATE_OFFLOAD remote hash + restore + local eviction proof",
+      "SANDBOX_ACTIVATION only under sealed winner"
+    ],
+    "qwen30_candidate_certified": false,
+    "qwen80_candidate_certified": false,
+    "qwen80_may_begin_after_qwen30_agent_certified": false,
+    "tournament_phase": "WAITING_FOR_BOTH_QUALIFIED_MANAGERS",
+    "tournament_requires": [
+      "MANAGER_30B_AGENT",
+      "MANAGER_80B_AGENT"
+    ]
+  },
+  "managers": [
+    {
+      "implementation_surfaces": [
+        {
+          "path": "lab/operators/ascension_source_admission.py",
+          "present": true,
+          "role": "source_admission"
+        },
+        {
+          "path": "lab/operators/qwen30b_gravity_pack.py",
+          "present": true,
+          "role": "bounded_gravity_probe"
+        },
+        {
+          "path": "lab/operators/ascension_parity_ladder.py",
+          "present": true,
+          "role": "parity_ladder_contract"
+        },
+        {
+          "path": "lab/operators/ascension_tg_gauntlet.py",
+          "present": true,
+          "role": "tg_gauntlet_contract"
+        },
+        {
+          "path": "lab/hcli/option_c.py",
+          "present": true,
+          "role": "agent_os_policy"
+        },
+        {
+          "path": "lab/hcli/residency.py",
+          "present": true,
+          "role": "residency_policy"
+        }
+      ],
+      "key": "qwen30",
+      "local_source": {
+        "body_execution_adapter_status": "RESEARCH_PROBE_EXISTS_NOT_LAUNCH_QUALIFICATION",
+        "is_not_admission_or_qualification": true,
+        "known_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct",
+        "present": true
+      },
+      "required_controller_evidence": [
+        "QWEN30_MANAGER_SOURCE",
+        "QWEN30_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN30_MANAGER_GRAVITY",
+        "QWEN30_MANAGER_TG3",
+        "QWEN30_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN30_MANAGER_AGENT_OS"
+      ],
+      "role": "executor",
+      "source_candidate": {
+        "architectures": [
+          "Qwen3MoeForCausalLM"
+        ],
+        "candidate_only": true,
+        "config_sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62",
+        "license": null,
+        "model_type": "qwen3_moe",
+        "no_model_body_downloaded": true,
+        "not_source_authority": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_SOURCE_METADATA_CANDIDATE.json",
+        "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+        "seal_sha256": "6312846a38e868f4f8cb6af5c9ada2f15aacb926183908c1f96ade202665d5e7",
+        "status": "PINNED_CANDIDATE_METADATA"
+      },
+      "source_teacher_model_id": "Qwen3-Coder-30B-A3B-Instruct",
+      "stage_order": [
+        "MANAGER_30B_DENSITY",
+        "MANAGER_30B_TG",
+        "MANAGER_30B_AGENT"
+      ],
+      "stage_statuses": {
+        "MANAGER_30B_AGENT": "PENDING_PREREQUISITES",
+        "MANAGER_30B_DENSITY": "PENDING_PREREQUISITES",
+        "MANAGER_30B_TG": "PENDING_PREREQUISITES"
+      },
+      "tournament_artifact_id": "Qwen30-Gravity-Manager-Artifact",
+      "transition_policy": {
+        "all_model_body_jobs_require_independent_controller_evidence": true,
+        "candidate_completion_requires_final_agent_state_certification": true,
+        "candidate_metadata_is_not_download_permission": true,
+        "raw_bf16_source_is_authority_teacher_not_tournament_participant": true,
+        "source_anchor_then_gravity_then_tg3_then_100tps_custom_kernel_then_agent_os": true,
+        "tournament_artifact_requires_complete_gravity_at_most_1_5_bpw": true
+      }
+    },
+    {
+      "implementation_surfaces": [
+        {
+          "path": "lab/operators/ascension_source_admission.py",
+          "present": true,
+          "role": "source_admission"
+        },
+        {
+          "path": "lab/operators/ascension_parity_ladder.py",
+          "present": true,
+          "role": "hybrid_parity_ladder_contract"
+        },
+        {
+          "path": "lab/operators/ascension_tg_gauntlet.py",
+          "present": true,
+          "role": "tg_gauntlet_contract"
+        },
+        {
+          "path": "lab/hcli/option_c.py",
+          "present": true,
+          "role": "agent_os_policy"
+        },
+        {
+          "path": "lab/hcli/residency.py",
+          "present": true,
+          "role": "residency_policy"
+        }
+      ],
+      "key": "qwen80",
+      "local_source": {
+        "body_execution_adapter_status": "NOT_YET_MEASURED_OR_CERTIFIED",
+        "is_not_admission_or_qualification": true,
+        "known_path": null,
+        "present": false
+      },
+      "required_controller_evidence": [
+        "QWEN80_MANAGER_SOURCE",
+        "QWEN80_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN80_MANAGER_GRAVITY",
+        "QWEN80_MANAGER_TG3",
+        "QWEN80_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN80_MANAGER_AGENT_OS"
+      ],
+      "role": "reviewer",
+      "source_candidate": {
+        "architectures": [
+          "Qwen3NextForCausalLM"
+        ],
+        "candidate_only": true,
+        "config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+        "license": null,
+        "model_type": "qwen3_next",
+        "no_model_body_downloaded": true,
+        "not_source_authority": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN80_SOURCE_METADATA_CANDIDATE.json",
+        "repository": "Qwen/Qwen3-Coder-Next",
+        "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+        "seal_sha256": "2d1c9cdd0db5e5bdb7fd8b59cf2e0c674ba77077df5d0bf415640858f8aff4a5",
+        "status": "PINNED_CANDIDATE_METADATA"
+      },
+      "source_teacher_model_id": "Qwen3-Coder-Next-80B",
+      "stage_order": [
+        "MANAGER_80B_DENSITY",
+        "MANAGER_80B_TG",
+        "MANAGER_80B_AGENT"
+      ],
+      "stage_statuses": {
+        "MANAGER_80B_AGENT": "PENDING_PREREQUISITES",
+        "MANAGER_80B_DENSITY": "PENDING_PREREQUISITES",
+        "MANAGER_80B_TG": "PENDING_PREREQUISITES"
+      },
+      "tournament_artifact_id": "Qwen80-Gravity-Manager-Artifact",
+      "transition_policy": {
+        "all_model_body_jobs_require_independent_controller_evidence": true,
+        "candidate_completion_requires_final_agent_state_certification": true,
+        "candidate_metadata_is_not_download_permission": true,
+        "raw_bf16_source_is_authority_teacher_not_tournament_participant": true,
+        "source_anchor_then_gravity_then_tg3_then_100tps_custom_kernel_then_agent_os": true,
+        "tournament_artifact_requires_complete_gravity_at_most_1_5_bpw": true
+      }
+    }
+  ],
+  "raw_bf16_models_are_source_authorities_not_tournament_participants": true,
+  "recorded_at": "2026-08-09T17:44:43.544999Z",
+  "resource_and_authority_policy": {
+    "executor_and_reviewer_may_emit_candidate_reports_only": "lab/hcli/option_c.py",
+    "minimum_operational_custom_kernel_base_true_tps": 100.0,
+    "one_heavy_model_body_job_at_a_time": true,
+    "protected_controller_or_human_certifies_terminal_receipts": true,
+    "source_lifecycle_requires_stream_verify_transform_seal_evict": "lab/operators/credential_broker/lifecycle.py",
+    "tg3_remains_the_stricter_tournament_runtime_floor": 333.0,
+    "use_bounded_process_runner_for_body_work": "workspace/ops/ascension/bounded_process_runner.py"
+  },
+  "schema": "hawking.ascension.dual_manager_workflow.v1",
+  "seal_sha256": "88d8e2e17378bc61fc4c9486bee4bbf83cc0d0e37e5f416932747e95b0fff2bf",
+  "status": "CONTROLLER_WORKFLOW_ONLY"
+}

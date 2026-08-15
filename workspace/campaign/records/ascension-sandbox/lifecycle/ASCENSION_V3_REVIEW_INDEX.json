@@ -1,0 +1,52 @@
+{
+  "claim_boundary": {
+    "review_index_is_not_certification": true
+  },
+  "recorded_at": "2026-08-09T17:44:43.495043Z",
+  "reviews": [
+    {
+      "reason": "TG3 is a stop-for-review threshold, never silent promotion.",
+      "required_authority": "protected_controller_or_human",
+      "review": "QWEN30_TG3",
+      "state": "MANAGER_30B_TG",
+      "status": "PENDING"
+    },
+    {
+      "reason": "TG3 is a stop-for-review threshold, never silent promotion.",
+      "required_authority": "protected_controller_or_human",
+      "review": "QWEN80_TG3",
+      "state": "MANAGER_80B_TG",
+      "status": "PENDING"
+    },
+    {
+      "reason": "both independently qualified managers must be compared on frozen tasks.",
+      "required_authority": "protected_controller_or_human",
+      "review": "MANAGER_TOURNAMENT",
+      "state": "MANAGER_TOURNAMENT",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    },
+    {
+      "reason": "remote hash, restore command, eviction, retained fixtures, and no hidden reviewer are mandatory.",
+      "required_authority": "protected_controller_or_human",
+      "review": "ALTERNATE_OFFLOAD",
+      "state": "MANAGER_TOURNAMENT",
+      "status": "PENDING"
+    },
+    {
+      "reason": "a V3 review packet is not itself launch approval.",
+      "required_authority": "external_reviewer_and_human",
+      "review": "GLOBAL_EXTERNAL_REVIEW",
+      "state": "EXTERNAL_REVIEW",
+      "status": "PENDING_PREREQUISITES"
+    },
+    {
+      "reason": "release follows accepted external review and complete matrix evidence.",
+      "required_authority": "protected_controller_or_human",
+      "review": "APPLE_RELEASE",
+      "state": "APPLE_RELEASE",
+      "status": "PENDING_PREREQUISITES"
+    }
+  ],
+  "schema": "hawking.ascension.v3_review_index.v1",
+  "seal_sha256": "13a8e2734bf24046068315e1b65a7dbc079acda14915136ac8f2877897c54789"
+}

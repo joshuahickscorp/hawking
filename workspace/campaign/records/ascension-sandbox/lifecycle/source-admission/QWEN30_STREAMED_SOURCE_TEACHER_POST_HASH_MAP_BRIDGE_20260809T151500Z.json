@@ -1,0 +1,167 @@
+{
+  "admission_before_open_cycle": {
+    "bridge_does_not_relax_or_reorder_any_requirement": true,
+    "existing_source_teacher_child_requires_runtime_admission_before_source_root_open": true,
+    "resolved": false,
+    "runtime_admission_must_be_earned_before_source_root_open": true,
+    "runtime_producer_requires_bounded_source_validation_and_both_execution_attestations": true
+  },
+  "claim_boundary": "Sealed CPU/file-only post-hash-map provenance reservation only. It validates a completed non-fixture production bounded hash scan and preserves the existing source-teacher ABI, but it does not authorize or execute source teacher/native/model/GPU/server/HCLI/lease/TPS/TG/tournament work, earn a runtime admission, or emit a dual-attestation bridge.",
+  "current_blockers": [
+    "fresh_source_teacher_runtime_admission_absent",
+    "sealed_dual_attestation_runtime_admission_bridge_absent",
+    "admission_before_open_cycle_unresolved",
+    "fresh_source_teacher_lease_absent",
+    "no_real_source_teacher_child_or_execution_attestations_exist"
+  ],
+  "dual_attestation_runtime_admission_emitted": false,
+  "execution_authorized": false,
+  "execution_boundary": {
+    "child_process_started": false,
+    "gpu_native_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed": false,
+    "operator_or_reader_execution_attestation_emitted": false,
+    "source_model_loaded_or_instantiated": false,
+    "source_payload_opened": false,
+    "source_root_opened_or_statted": false,
+    "source_teacher_or_logits_executed": false,
+    "source_teacher_runtime_admission_emitted": false,
+    "whole_source_model_resident": false
+  },
+  "future_source_teacher_provenance_reservation": {
+    "dual_attestation_runtime_admission": {
+      "must_be_sealed": true,
+      "must_bind_runtime_admission_seal_sha256": true,
+      "must_bind_this_post_hash_map_bridge_seal_sha256": true,
+      "must_preserve_existing_source_teacher_child_schema_resolution": true,
+      "not_emitted_by_this_bridge": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_teacher_dual_attestation_runtime_admission.v1",
+      "status": "PREPARED_QWEN30_STREAMED_SOURCE_TEACHER_DUAL_ATTESTATION_RUNTIME_ADMISSION_NOT_EXECUTED"
+    },
+    "existing_source_teacher_child_compatible_shape": {
+      "future_source_worker": {
+        "close_handles_and_clear_cache_before_eviction_receipt": true,
+        "maximum_positioned_read_bytes": 1048576,
+        "native_f32le_vectors": 4,
+        "one_bounded_window_only": true,
+        "separate_native_four_vector_phase_required": true,
+        "source_f32le_vectors": 2,
+        "source_forwards": 370,
+        "source_layers": 48,
+        "source_payloads_durable_before_eviction": true
+      },
+      "schema_resolution": {
+        "both_execution_attestations_required_after_source_child": true,
+        "bridge_does_not_authorize_execution": true,
+        "operator_accumulation_execution_attestation": {
+          "schema": "hawking.ascension.qwen30_layer_streamed_source_operator_accumulation_execution_attestation.v1",
+          "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_ATTESTED"
+        },
+        "range_reader_exact_semantics_attestation": {
+          "schema": "hawking.ascension.qwen30_layer_streamed_source_bf16_exact_semantics_attestation.v1",
+          "status": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_BF16_EXACT_SEMANTICS_ATTESTED"
+        },
+        "runtime_admission_schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+        "runtime_admission_status_only_after_bounded_source_validation": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY",
+        "runtime_range_admission_required_before_payload_open": true,
+        "runtime_range_map_schema": "hawking.ascension.qwen30_source_bf16_range_map.v1"
+      }
+    },
+    "post_hash_map_bridge_is_not_dual_attestation_bridge": true,
+    "post_hash_map_bridge_is_not_runtime_admission": true,
+    "reservation_status": "NOT_EXECUTED",
+    "runtime_admission": {
+      "must_be_sealed": true,
+      "must_bind_both_future_execution_attestation_seals": true,
+      "must_bind_flat_map_and_coverage_canonical_hashes": true,
+      "must_bind_post_hash_map_antecedents": true,
+      "must_precede_any_source_root_or_payload_open": true,
+      "not_emitted_by_this_bridge": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+      "status": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY"
+    },
+    "unbound_later_inputs_required_by_existing_source_teacher_preflight": [
+      "sealed_streamed_feasibility_receipt",
+      "sealed_raw_six_vector_contract",
+      "sealed_current_trace",
+      "fresh_source_teacher_lease"
+    ]
+  },
+  "post_hash_map_antecedents": {
+    "production_child_capture": {
+      "canonical_document_sha256": "1fe6a33ba984bc60383a58fbfa962fdb45873d38bb1929f1020544efb7a92926",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/receipt.json",
+      "raw_document_sha256": "796547743cc8ac2965a6e265bbf04ab006faf3c3ad878b693d7dde439331551d",
+      "seal_sha256": "742d3ed404384c5254fc4e58e577a1f590a72785b238f79de254ba77caf95841"
+    },
+    "production_flat_map": {
+      "canonical_document_sha256": "760bc516363744944fadc92dc1208479d7fc439a62ac57f4b197e1ca83de52cd",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/flat-runtime-range-map.json",
+      "raw_document_sha256": "2a50026ea805f135c0f14217e0ad08e1f9afdc2d4a6590ec8db543bdaffba055",
+      "seal_sha256": "e40662714b9c7ebb8ab03b85d9631b0f79c0a79bfbc896017087dc318854f97b"
+    },
+    "production_hash_coverage": {
+      "canonical_document_sha256": "36985558f8c18f01fa451b19c09fbad14981986ed35ce0734905094c0d40d4f8",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/hash-coverage-attestation.json",
+      "raw_document_sha256": "93592aba558b0225c8093e3b43b7733af93ecd339cf9329a5ddc6ba77b149ff7",
+      "seal_sha256": "4ea036ae00cdb33436302e76b1a8f060936a147a114bb46a309002fa1923bdc2"
+    },
+    "production_lease_release": {
+      "canonical_document_sha256": "b84688b18ac8e4f383bc81f318e679197299b24a36600f0220b38c4503ded6f6",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_LAUNCH_20260809T144246Z/quiet-lease-release.json",
+      "raw_document_sha256": "e6c073190b962799a2b74f6965cc0f9a49ba42ecb17abd44ada9e9bebd72847c",
+      "seal_sha256": "9bec78a9a7b4e417be859278e178293921f52e1dd03363bf3417e53add2579a5"
+    },
+    "production_outer_terminal": {
+      "canonical_document_sha256": "96473b121e78f8f82f88e6546e394a6a6017a80dd135e25db5ef6b3f20801bc8",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/outer-terminal-receipt.json",
+      "raw_document_sha256": "07842516f34b7d1890f5fab2a7f5e0fdd1011c97cdb727f92d8b48e6f17de8ee",
+      "seal_sha256": "d98087cc70d11248711d3a25842fa2ad0eb14c2a331dbef94fac987c486ec53a"
+    }
+  },
+  "prepared": true,
+  "runtime_admission_earned": false,
+  "schema": "hawking.ascension.qwen30_streamed_source_teacher_post_hash_map_bridge.v1",
+  "seal_sha256": "b6eae400c1847a7a85f0a8294943541dd6640134f8e6fdf042ea75f87f868dba",
+  "status": "PREPARED_QWEN30_STREAMED_SOURCE_TEACHER_POST_HASH_MAP_BRIDGE_NOT_EXECUTED",
+  "upstream_authorities": {
+    "metadata_range_authority": {
+      "canonical_document_sha256": "d78be55bdd6aca732ae8ab9109b60a05bb98a9fa69f29ceb7f56f1ac15227eb3",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_ORACLE_METADATA_ONLY_RANGE_MAP_AUTHORITY_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589",
+      "seal_sha256": null
+    },
+    "runtime_admission_producer_authority": {
+      "canonical_document_sha256": "2231df0076f5e1930f38d9d294813842291400c30acc576004e3b386f10db89f",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RUNTIME_RANGE_ADMISSION_PRODUCER_PREFLIGHT_20260809T140324Z.json",
+      "raw_document_sha256": "fc928f4bd74c805442e4a9bc2d6df1d0d865e0c86d0541e56a8064659da7f716",
+      "seal_sha256": "2b513c388723a3479057c3d1c42e60f83a75c53f7ebadbd9cd79d57175541845"
+    },
+    "semantics_attester": {
+      "canonical_document_sha256": "0dab1e41c901569ad0b5b5680a35f09ea2499a25a3f906f9a648a9f162bb5732",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1b840daef95fa6b444ce0dc5e46142214f02963359c5fb2d53c863d8f236f96b",
+      "seal_sha256": null
+    }
+  },
+  "validated_production_hash_scan": {
+    "all_full_shard_and_raw_bf16_hash_coverage_bound": true,
+    "lease_finalized_after_outer_terminal": true,
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "non_fixture_production_flat_map": true,
+    "one_shard_handle_at_a_time": true,
+    "one_shot_replay_reservation_attempt": 1,
+    "operator_or_reader_execution_attestation_emitted": false,
+    "outer_child_reaped_successfully": true,
+    "reader_cache_zeroed_before_hash_scan_receipt": true,
+    "source_handles_closed_before_hash_scan_receipt": true,
+    "source_index_sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c",
+    "source_model_id": "Qwen3-Coder-30B-A3B-Instruct",
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "source_shards": 16,
+    "source_teacher_execution_or_logits": false,
+    "source_teacher_runtime_admission_earned": false,
+    "source_tensors": 18867
+  }
+}

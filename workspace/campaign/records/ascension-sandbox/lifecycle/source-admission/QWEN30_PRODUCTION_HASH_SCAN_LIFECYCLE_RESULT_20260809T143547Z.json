@@ -1,0 +1,10 @@
+{
+  "claim_boundary": "Pointer to a separately sealed one-shot outer terminal/release only.",
+  "outer_terminal_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_CAPTURE_20260809T143547Z/outer-terminal-receipt.json",
+  "outer_terminal_seal_sha256": "f7ea50a6061c411b764e98e9f7069e914affd6f5c291325ee9afcc6ab32476c9",
+  "release_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_LAUNCH_20260809T143547Z/quiet-lease-release.json",
+  "release_seal_sha256": "c8556fe63e5ef2dd741882dc5afb90fcfe27ba78b979f7cf39c2466c02f38d12",
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_lease_outer_reaper.v1",
+  "seal_sha256": "79eac541e89e9b6ceb6f112ff8ec48797234bb05974722ae5d36373c6b899314",
+  "status": "REFUSED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_OUTER_TERMINAL_CHILD_FAILED_OR_INVALID"
+}

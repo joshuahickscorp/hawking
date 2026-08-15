@@ -1,0 +1,115 @@
+{
+  "authority_chain_materialized": true,
+  "chain": {
+    "knowledge": {
+      "both_exact_fresh_tg10_operational_receipts_present": null,
+      "document_seal_sha256": "0478c05876b8b7f0fd61a2072284a9303943dec0ae0a226ed4dadc70ff9d162d",
+      "document_sha256": "cafdad27a15f282ba911f57ff2ba1a06e5530fbd2720f0b87ee9ad6ef5cc2bc3",
+      "paired_candidate_worlds_active": null,
+      "paired_development_activation_authorized_by_this_contract": null,
+      "paired_development_active": null,
+      "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_KNOWLEDGE_AUTHORITY.json",
+      "prepared": true,
+      "schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+      "state_blockers": null,
+      "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT"
+    },
+    "lane": {
+      "both_exact_fresh_tg10_operational_receipts_present": null,
+      "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+      "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+      "paired_candidate_worlds_active": false,
+      "paired_development_activation_authorized_by_this_contract": null,
+      "paired_development_active": null,
+      "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json",
+      "prepared": true,
+      "schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+      "state_blockers": null,
+      "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT"
+    },
+    "mutation": {
+      "both_exact_fresh_tg10_operational_receipts_present": null,
+      "document_seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+      "document_sha256": "b8f7acad4e5899455e166ba55f5426c82d63577ac7f2e9bc5c9c39b074598de6",
+      "paired_candidate_worlds_active": false,
+      "paired_development_activation_authorized_by_this_contract": null,
+      "paired_development_active": null,
+      "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json",
+      "prepared": true,
+      "schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+      "state_blockers": null,
+      "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION"
+    },
+    "scheduler": {
+      "both_exact_fresh_tg10_operational_receipts_present": null,
+      "document_seal_sha256": "e383a27923ac863c623e81bec7f2415f5108ee654d644089d985434a713d8b5b",
+      "document_sha256": "e4942efa448d5ed91dc909629ab96e871dcfc965942748d16cbd77dee77abce9",
+      "paired_candidate_worlds_active": null,
+      "paired_development_activation_authorized_by_this_contract": null,
+      "paired_development_active": false,
+      "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_ROLE_RESOURCE_SCHEDULER_AUTHORITY.json",
+      "prepared": true,
+      "schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+      "state_blockers": null,
+      "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION"
+    },
+    "tg10_development_activation": {
+      "both_exact_fresh_tg10_operational_receipts_present": false,
+      "document_seal_sha256": "7336148a57b055be06339f21006c81a22fe1043e3dd367aff30ebaf10ed91c58",
+      "document_sha256": "71d5037e33c4b6b9ddc49662d4b7fd5a06418a03a6693c8b240c661d5b5d193c",
+      "paired_candidate_worlds_active": null,
+      "paired_development_activation_authorized_by_this_contract": false,
+      "paired_development_active": false,
+      "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_TG10_DEVELOPMENT_ACTIVATION.json",
+      "prepared": false,
+      "schema": "hawking.ascension.paired_cognition_both_tg10_development_activation_state_machine.v1",
+      "state_blockers": [
+        "operational_status_both_valid_tg10_receipts_false",
+        "operational_status_evidence_fingerprint_missing",
+        "qwen30:tg10_receipt_not_present",
+        "qwen80:tg10_receipt_not_present"
+      ],
+      "status": "REFUSED_TODAY_PAIRED_COGNITION_WAITING_FOR_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS"
+    }
+  },
+  "claim_boundary": [
+    "No TG10 pass was fabricated for either candidate.",
+    "No document asserts a measured BASE_TRUE_TPS for either candidate.",
+    "No server, lease, Metal, model load, or tournament state mutation occurred.",
+    "MANAGER_ASCENT_TOURNAMENT_ACTIVE remains unreachable while both operational passes are false."
+  ],
+  "identity_convention": {
+    "document_seal_sha256": "json_sha of document with seal_sha256 removed (equals seal_sha256 field)",
+    "document_sha256": "json_sha of full sealed document including seal_sha256",
+    "raw_file_bytes_sha256": "not used by these five contracts"
+  },
+  "inputs_still_missing_before_real_activation": [
+    "QWEN30_TG10_OPERATIONAL_PASS exact sealed receipt (coherent HCLI, complete-token path, fallback_count=0, median BASE_TRUE_TPS >= 100)",
+    "QWEN80_TG10_OPERATIONAL_PASS exact sealed receipt (same requirements)",
+    "canonical operational ascent both_valid_tg10_receipts=true with matching evidence_fingerprint",
+    "lane/scheduler TG10 readiness must rebind the exact receipt seals for both models",
+    "a later protected controller (outside this CPU-only state machine) to perform actual activation; this contract only prepares or refuses",
+    "TG3 qualifications, post-TG3 freeze, protected corpus/scorecard/selection contracts remain missing for any manager tournament"
+  ],
+  "refusal_proof": {
+    "both_exact_fresh_tg10_operational_receipts_present": false,
+    "manager_ascent_tournament_active": false,
+    "named_unmet_condition": [
+      "operational_status_both_valid_tg10_receipts_false",
+      "qwen30:tg10_receipt_not_present",
+      "qwen80:tg10_receipt_not_present"
+    ],
+    "output_path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_TG10_DEVELOPMENT_ACTIVATION.json",
+    "paired_development_activation_authorized_by_this_contract": false,
+    "paired_development_active": false,
+    "prepared": false,
+    "state_blockers": [
+      "operational_status_both_valid_tg10_receipts_false",
+      "operational_status_evidence_fingerprint_missing",
+      "qwen30:tg10_receipt_not_present",
+      "qwen80:tg10_receipt_not_present"
+    ],
+    "status": "REFUSED_TODAY_PAIRED_COGNITION_WAITING_FOR_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS"
+  },
+  "seal_sha256": "7a046205ed0dd7cf11fd98cda5ee0c534311d5fd1393a8dee3b66ac0fce8fb04"
+}

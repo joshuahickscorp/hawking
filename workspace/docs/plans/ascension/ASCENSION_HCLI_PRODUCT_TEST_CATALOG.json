@@ -1,0 +1,214 @@
+{
+  "schema": "hawking.ascension.hcli_product_test_catalog.v1",
+  "bible_section": 33,
+  "primary_metric": "verified_tasks_completed_per_hour",
+  "agent_speed_chain": [
+    "question",
+    "trustworthy_evidence",
+    "implemented_result",
+    "verified_result"
+  ],
+  "secondary_metrics": [
+    "per_agent_latency_ms",
+    "aggregate_accepted_tps",
+    "patch_acceptance_rate",
+    "tests_passed",
+    "retries",
+    "regressions",
+    "human_intervention_count",
+    "thermal_stability",
+    "search_latency_ms",
+    "tool_selection_latency_ms",
+    "memory_retrieval_cost",
+    "planning_failure_rate"
+  ],
+  "privacy": {
+    "prompt_disclosure_mode": "hash_only",
+    "aggregate_must_not_contain": ["raw_prompt_text", "raw_completion_text"]
+  },
+  "existing_deepseek_v4_anchor": {
+    "suite_test": "tools/condense/tests/test_deepseek_v4_hcli_live_suite.py",
+    "packer": "lab.operators.deepseek_v4_gravity:hcli_live_suite_receipt",
+    "receipt_schema": "hawking.gravity.deepseek_v4.hcli_live_suite.v1",
+    "receipt_status": "HCLI_LIVE_SUITE_EVIDENCE_SEALED_DIAGNOSTIC_ONLY",
+    "evidence_dir": "workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r",
+    "aggregate_receipt": "workspace/campaign/evidence/hide/deepseek-v4-live.sBqM7r/hcli-live-suite-receipt-v2.json",
+    "claim": "diagnostic_pattern_proof_only_not_tg_or_production"
+  },
+  "cases": [
+    {
+      "id": "chat",
+      "bible_label": "chat",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run"],
+      "deepseek_v4_evidence": ["normal-turn.json"],
+      "companion_lane": null,
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "repo_context",
+      "bible_label": "repo context",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run", "hcli.source.context.v1"],
+      "deepseek_v4_evidence": [
+        "repo-context-turn.json",
+        "repo-source-ingest.json",
+        "attached-evidence-turn.json"
+      ],
+      "companion_lane": "hcli-retrieval-tools",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "coding",
+      "bible_label": "coding",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run", "hide.headless.audit.v1"],
+      "deepseek_v4_evidence": ["coding-task-turn.json"],
+      "companion_lane": "hcli-sandbox-verification",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "planner_act_verify",
+      "bible_label": "planner/act/verify",
+      "required": true,
+      "evidence_kinds": ["hide.headless.audit.v1"],
+      "deepseek_v4_evidence": [
+        "hcli-agent-planner-act-verify-receipt.json",
+        "hcli-agent-planner-act-verify-6-receipt.json"
+      ],
+      "companion_lane": "hcli-scheduler-planning",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "tool_calls",
+      "bible_label": "tool calls",
+      "required": true,
+      "evidence_kinds": ["hide.headless.audit.v1", "tool_gateway_event"],
+      "deepseek_v4_evidence": [
+        "hcli-agent-planner-act-verify-receipt.json"
+      ],
+      "companion_lane": "hcli-retrieval-tools",
+      "status": "PATTERN_PARTIAL_VIA_PLANNER_AUDIT"
+    },
+    {
+      "id": "structured_json",
+      "bible_label": "structured JSON",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run"],
+      "deepseek_v4_evidence": ["structured-json-turn.json"],
+      "companion_lane": null,
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "session_restart",
+      "bible_label": "session restart",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run", "session_snapshot"],
+      "deepseek_v4_evidence": [
+        "recovery-before-turn.json",
+        "recovery-after-turn.json",
+        "recovery-session-before.json",
+        "recovery-session-after.json"
+      ],
+      "companion_lane": "hcli-scheduler-planning",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "endpoint_restart",
+      "bible_label": "endpoint restart",
+      "required": true,
+      "evidence_kinds": ["endpoint_health", "hcli.command.v1:capabilities"],
+      "deepseek_v4_evidence": [
+        "endpoint-health-after-restart.json",
+        "capabilities.json"
+      ],
+      "companion_lane": null,
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "context_compaction",
+      "bible_label": "context compaction",
+      "required": true,
+      "evidence_kinds": ["hcli.command.v1:run", "hcli.source.context.v1"],
+      "deepseek_v4_evidence": [
+        "context-compaction-turn.json",
+        "compaction-source-ingest.json"
+      ],
+      "companion_lane": "hcli-scheduler-planning",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "read_safe_swarm",
+      "bible_label": "read-safe swarm",
+      "required": true,
+      "evidence_kinds": ["hcli.parallel_analysis_swarm.v1"],
+      "deepseek_v4_evidence": [
+        "../deepseek-v4-swarm.NvBh4u/hcli-read-safe-swarm-receipt.json"
+      ],
+      "companion_lane": "hcli-sandbox-verification",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "isolated_write_agent",
+      "bible_label": "isolated write-agent",
+      "required": true,
+      "evidence_kinds": ["hide.headless.audit.v1"],
+      "deepseek_v4_evidence": [
+        "../deepseek-v4-write-smoke.Yz13sy/hcli-isolated-write-smoke-receipt.json"
+      ],
+      "companion_lane": "hcli-sandbox-verification",
+      "status": "PATTERN_PROVEN_ON_DEEPSEEK_DIAGNOSTIC"
+    },
+    {
+      "id": "continuous_batching",
+      "bible_label": "continuous batching",
+      "required": true,
+      "evidence_kinds": ["hcli.model_benchmark.v1", "base_tps_gate"],
+      "deepseek_v4_evidence": [
+        "hcli-diagnostic-cpu-benchmark-receipt.json",
+        "base-tps-gate-receipt.json"
+      ],
+      "companion_lane": null,
+      "status": "PATTERN_PROVEN_TPS_WITHHELD"
+    },
+    {
+      "id": "search_retrieval",
+      "bible_label": "search/retrieval",
+      "required": true,
+      "evidence_kinds": ["retrieval_gateway_receipt"],
+      "deepseek_v4_evidence": [],
+      "companion_lane": "hcli-retrieval-tools",
+      "status": "PENDING_COMPANION_LANE"
+    },
+    {
+      "id": "memory_ops",
+      "bible_label": "memory operations",
+      "required": true,
+      "evidence_kinds": ["memory_os_receipt"],
+      "deepseek_v4_evidence": [],
+      "companion_lane": "hcli-memory-skills",
+      "status": "PENDING_COMPANION_LANE"
+    },
+    {
+      "id": "skill_execution",
+      "bible_label": "skill execution",
+      "required": true,
+      "evidence_kinds": ["skill_foundry_receipt"],
+      "deepseek_v4_evidence": [],
+      "companion_lane": "hcli-memory-skills",
+      "status": "PENDING_COMPANION_LANE"
+    },
+    {
+      "id": "document_perception",
+      "bible_label": "document perception",
+      "required": true,
+      "evidence_kinds": ["perception_service_receipt", "hcli.source.context.v1"],
+      "deepseek_v4_evidence": [
+        "attached-evidence-turn.json",
+        "repo-source-ingest.json"
+      ],
+      "companion_lane": "hcli-perception-comms",
+      "status": "PATTERN_PARTIAL_VIA_SOURCE_INGEST"
+    }
+  ]
+}

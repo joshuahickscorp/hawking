@@ -1,0 +1,54 @@
+{
+  "claim_boundary": [
+    "This sealed CPU-baseline wrapper binds only the exact raw terminal-head and tokenizer/sampler component receipt document SHA-256 values (raw file bytes) plus their unsealed-preimage SHA-256 values.",
+    "raw_component_receipts_can_authorize_device_dispatch remains false. This wrapper satisfies ordered host-dispatch step 1 only.",
+    "It does not authorize Metal compile/dispatch, grant a lease, bind a post-48-layer hidden buffer, load a model, start a runtime/server, invoke HCLI, or measure TPS/TG.",
+    "Step 2 remains blocked until an actual source-bound, non-synthetic all-48-layer hidden vector [2048] is bound with a sealed device-parity receipt."
+  ],
+  "device_dispatch_authorized": false,
+  "integrity_verified": true,
+  "ordered_host_dispatch_step_satisfied": 1,
+  "raw_component_receipts_can_authorize_device_dispatch": false,
+  "schema": "hawking.ascension.qwen80_terminal_head_cpu_baseline_wrapper.v1",
+  "seal_sha256": "b7c40fbf9cfa8988cba195e612e73eff78be5affe3f76ab8de210a5d64a58785",
+  "source_admission": {
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "manifest_schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "model_id": "Qwen3-Coder-Next-80B",
+    "model_key": "qwen80",
+    "rms_norm_epsilon_bits": 897988541,
+    "source_chat_template_sha256": "c79a833039a43602150cce0902403d6e376c50930c1b2a139b2964e1f0c322a0",
+    "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "source_generation_config_sha256": "37a3c1ef63516ca489c575f0db1c0405ddc0c3dbaca9ed987344c966c37aeef5",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "source_tokenizer_config_sha256": "fc76878832c668e3f0f8be66e6239a475b9093d2fe5cef97c242369779e6c6e6",
+    "source_tokenizer_sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d"
+  },
+  "status": "SEALED_CURRENT_ADMITTED_QWEN80_TERMINAL_HEAD_AND_SAMPLER_CPU_BASELINE",
+  "terminal_receipt_document_sha256": "1ebe19139833491ec06cc7515f6844fad0a122de15fb74c978dfda3524a38d04",
+  "terminal_receipt_evidence": {
+    "absolute_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_DIRECT_PACKED_TERMINAL_HEAD_CPU_COMPONENT_RECEIPT.json",
+    "bytes": 7297,
+    "document_sha256": "1ebe19139833491ec06cc7515f6844fad0a122de15fb74c978dfda3524a38d04",
+    "schema": "hawking.ascension.qwen80_direct_packed_terminal_head_cpu.v1",
+    "status": "EARNED_CURRENT_ADMITTED_QWEN80_DIRECT_PACKED_TERMINAL_COMPONENT_CPU_ONLY_NOT_RUNTIME_OR_TOKEN",
+    "unsealed_preimage_sha256": "d815c6bfff615a1c238ed56863b14ba61349f1c04824195448722a6a3e81372b"
+  },
+  "terminal_receipt_schema": "hawking.ascension.qwen80_direct_packed_terminal_head_cpu.v1",
+  "terminal_receipt_status": "EARNED_CURRENT_ADMITTED_QWEN80_DIRECT_PACKED_TERMINAL_COMPONENT_CPU_ONLY_NOT_RUNTIME_OR_TOKEN",
+  "terminal_receipt_unsealed_preimage_sha256": "d815c6bfff615a1c238ed56863b14ba61349f1c04824195448722a6a3e81372b",
+  "tokenizer_receipt_document_sha256": "e152b21d9eae43e7039f9d646412b2806b8f07d3d3c7ea932ab281dc6c9a0792",
+  "tokenizer_receipt_evidence": {
+    "absolute_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_TOKENIZER_TEMPLATE_SAMPLER_HANDOFF_COMPONENT_RECEIPT.json",
+    "bytes": 5460,
+    "document_sha256": "e152b21d9eae43e7039f9d646412b2806b8f07d3d3c7ea932ab281dc6c9a0792",
+    "schema": "hawking.ascension.qwen80_tokenizer_sampler_handoff_contract.v1",
+    "status": "EARNED_SOURCE_BOUND_TOKENIZER_TEMPLATE_SAMPLER_HANDOFF_COMPONENT_NOT_RUNTIME_OR_TOKEN",
+    "unsealed_preimage_sha256": "5c2f66487c7a4fb387806bb9439259eb62c86f33b1e30ca4dac701ee38ac164c"
+  },
+  "tokenizer_receipt_schema": "hawking.ascension.qwen80_tokenizer_sampler_handoff_contract.v1",
+  "tokenizer_receipt_status": "EARNED_SOURCE_BOUND_TOKENIZER_TEMPLATE_SAMPLER_HANDOFF_COMPONENT_NOT_RUNTIME_OR_TOKEN",
+  "tokenizer_receipt_unsealed_preimage_sha256": "5c2f66487c7a4fb387806bb9439259eb62c86f33b1e30ca4dac701ee38ac164c"
+}

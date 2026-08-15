@@ -1,0 +1,13 @@
+1786016186.790260000 our_cpu%=0.0 our_rss_kb=1552 gpu_device_renderer=61,47 live_l1_cpu%=96.9 our_pids=11580 11583 
+1786016187.378732000 our_cpu%=72.6 our_rss_kb=357168 gpu_device_renderer=83,82 live_l1_cpu%=87.4 our_pids=11580 11583 
+1786016187.966260000 our_cpu%=70.1 our_rss_kb=410256 gpu_device_renderer=25,19 live_l1_cpu%=96.9 our_pids=11580 11583 
+1786016188.554674000 our_cpu%=10.9 our_rss_kb=410256 gpu_device_renderer=63,59 live_l1_cpu%=81.0 our_pids=11580 11583 
+1786016189.139644000 our_cpu%=42.4 our_rss_kb=485664 gpu_device_renderer=0,0 live_l1_cpu%=98.0 our_pids=11580 11583 
+1786016189.727027000 our_cpu%=60.2 our_rss_kb=670944 gpu_device_renderer=75,67 live_l1_cpu%=85.8 our_pids=11580 11583 
+1786016190.316314000 our_cpu%=62.1 our_rss_kb=732240 gpu_device_renderer=77,68 live_l1_cpu%=98.1 our_pids=11580 11583 
+1786016190.901852000 our_cpu%=75.3 our_rss_kb=732800 gpu_device_renderer=83,73 live_l1_cpu%=85.8 our_pids=11580 11583 
+1786016191.489637000 our_cpu%=80.4 our_rss_kb=779536 gpu_device_renderer=76,71 live_l1_cpu%=98.4 our_pids=11580 11583 
+1786016192.073499000 our_cpu%=71.1 our_rss_kb=846896 gpu_device_renderer=82,77 live_l1_cpu%=87.4 our_pids=11580 11583 
+1786016192.657689000 our_cpu%=83.5 our_rss_kb=734800 gpu_device_renderer=83,78 live_l1_cpu%=96.9 our_pids=11580 11583 
+1786016193.245872000 our_cpu%=77.9 our_rss_kb=791504 gpu_device_renderer=75,63 live_l1_cpu%=85.2 our_pids=11580 11583 
+1786016193.828475000 our_cpu%=71.8 our_rss_kb=746080 gpu_device_renderer=78,73 live_l1_cpu%=98.5 our_pids=11580 11583 

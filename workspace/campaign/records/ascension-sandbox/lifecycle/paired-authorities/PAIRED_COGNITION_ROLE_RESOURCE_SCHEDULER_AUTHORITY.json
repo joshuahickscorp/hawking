@@ -1,0 +1,224 @@
+{
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "body_resource_budgets": [
+    {
+      "endpoint": {
+        "host": "127.0.0.1",
+        "port": 18430
+      },
+      "immutable_weight_copies": 1,
+      "max_inflight_turns": 1,
+      "max_logical_sessions": 2,
+      "model_key": "qwen30",
+      "physical_body_id": "qwen30-one-resident-body",
+      "resident_model_processes": 1
+    },
+    {
+      "endpoint": {
+        "host": "127.0.0.1",
+        "port": 18480
+      },
+      "immutable_weight_copies": 1,
+      "max_inflight_turns": 1,
+      "max_logical_sessions": 2,
+      "model_key": "qwen80",
+      "physical_body_id": "qwen80-one-resident-body",
+      "resident_model_processes": 1
+    }
+  ],
+  "bound_knowledge_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+    "document_seal_sha256": "0478c05876b8b7f0fd61a2072284a9303943dec0ae0a226ed4dadc70ff9d162d",
+    "document_sha256": "cafdad27a15f282ba911f57ff2ba1a06e5530fbd2720f0b87ee9ad6ef5cc2bc3",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_KNOWLEDGE_AUTHORITY.json"
+  },
+  "bound_lane_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+    "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+    "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json"
+  },
+  "bound_mutation_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+    "document_seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+    "document_sha256": "b8f7acad4e5899455e166ba55f5426c82d63577ac7f2e9bc5c9c39b074598de6",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json"
+  },
+  "claim_boundary": [
+    "This is a sealed CPU-only role/resource scheduler authority, not a process launcher, logical-session creator, or live scheduler.",
+    "It binds exactly one Q30 body at 127.0.0.1:18430 and one Q80 body at 127.0.0.1:18480, each with one immutable weight copy and two reserved logical roles.",
+    "Q80-primary/Q30-helper occupy the Q80 lane and Q30-primary/Q80-helper occupy the Q30 lane; every role session and queue is unique and remains in its own lane-private session namespace.",
+    "Per-body queues are bounded and one-inflight with equal round-robin service; telemetry carries only aggregate counters, never request content, generated tokens, private namespaces, or candidate scores.",
+    "Private cross-lane reads, helper/opponent champion control, self-scoring, cloned bodies/endpoints/weights, activation, and winner selection remain prohibited.",
+    "Paired development is reserved only after both sealed coherent complete TG10 operational receipts measure at least 100 BASE_TRUE_TPS, but this contract cannot activate it.",
+    "Solo manager and symmetric manager-as-orchestrator evaluations remain reserved until both TG3 receipts and a post-TG3 freeze exist; this contract never selects a winner.",
+    "No model, GPU, server, watcher, port, HCLI, token, TPS/TG measurement, tournament, or runtime state is touched."
+  ],
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "final_mode_gate": {
+    "both_tg3_operational_receipts_present": false,
+    "final_modes_ready_after_both_tg3_and_freeze": false,
+    "post_tg3_freeze_present": false,
+    "solo_manager_evaluation_authorized_by_this_contract": false,
+    "symmetric_orchestrator_evaluation_authorized_by_this_contract": false,
+    "winner_selection_authorized_by_this_contract": false
+  },
+  "focused_checks": {
+    "all_session_and_queue_namespaces_are_lane_private_and_distinct": true,
+    "bounded_queues_and_equal_fairness_telemetry_are_private_and_content_free": true,
+    "cross_lane_private_reads_and_self_scoring_denied": true,
+    "exact_sealed_lane_mutation_and_knowledge_authorities_bound": true,
+    "execution_boundary_cpu_only": true,
+    "four_expected_primary_helper_roles_and_no_extra_logical_sessions": true,
+    "no_runtime_server_gpu_or_tournament_authority": true,
+    "one_q30_body_and_one_q80_body_only": true,
+    "one_weight_copy_and_one_endpoint_per_body": true,
+    "paired_development_reserved_until_two_valid_tg10_receipts": true,
+    "role_body_bindings_are_heterogeneous_and_nonduplicating": true,
+    "solo_and_orchestrator_final_modes_reserved_until_two_tg3_receipts_and_freeze": true,
+    "winner_selection_denied": true
+  },
+  "logical_sessions_created": false,
+  "paired_development_active": false,
+  "paired_development_reservation": {
+    "both_tg10_operational_receipts_present": false,
+    "paired_development_activation_authorized_by_this_contract": false,
+    "paired_development_ready_after_both_tg10": false,
+    "qwen30_tg10": {
+      "model_key": "qwen30",
+      "operational_pass": false,
+      "receipt_seal_sha256": null,
+      "required_base_true_tps": 100
+    },
+    "qwen80_tg10": {
+      "model_key": "qwen80",
+      "operational_pass": false,
+      "receipt_seal_sha256": null,
+      "required_base_true_tps": 100
+    },
+    "required_base_true_tps": 100
+  },
+  "prepared": true,
+  "queue_fairness_telemetry_policies": [
+    {
+      "fairness_lag_bound_dispatches": 1,
+      "max_consecutive_dispatches_to_same_session": 1,
+      "max_inflight_turns_per_body": 1,
+      "physical_body_id": "qwen30-one-resident-body",
+      "physical_model_key": "qwen30",
+      "required_counter_fields": [
+        "eligible_sessions",
+        "queued_request_count",
+        "scheduled_turn_count",
+        "oldest_wait_dispatches",
+        "consecutive_dispatch_count"
+      ],
+      "scheduling_discipline": "round_robin_equal_weight",
+      "telemetry_contains_generated_tokens": false,
+      "telemetry_contains_lane_private_scores": false,
+      "telemetry_contains_private_namespace_identifiers": false,
+      "telemetry_contains_request_content": false,
+      "telemetry_namespace": "sealed://paired-scheduler/qwen30/fairness-telemetry"
+    },
+    {
+      "fairness_lag_bound_dispatches": 1,
+      "max_consecutive_dispatches_to_same_session": 1,
+      "max_inflight_turns_per_body": 1,
+      "physical_body_id": "qwen80-one-resident-body",
+      "physical_model_key": "qwen80",
+      "required_counter_fields": [
+        "eligible_sessions",
+        "queued_request_count",
+        "scheduled_turn_count",
+        "oldest_wait_dispatches",
+        "consecutive_dispatch_count"
+      ],
+      "scheduling_discipline": "round_robin_equal_weight",
+      "telemetry_contains_generated_tokens": false,
+      "telemetry_contains_lane_private_scores": false,
+      "telemetry_contains_private_namespace_identifiers": false,
+      "telemetry_contains_request_content": false,
+      "telemetry_namespace": "sealed://paired-scheduler/qwen80/fairness-telemetry"
+    }
+  ],
+  "role_session_assignments": [
+    {
+      "lane_id": "qwen80-candidate-world",
+      "logical_actor_id": "qwen30-helper-in-qwen80-lane",
+      "max_inflight_turns": 1,
+      "max_queued_requests": 8,
+      "physical_body_id": "qwen30-one-resident-body",
+      "physical_model_key": "qwen30",
+      "private_lane_visibility_only": true,
+      "queue_namespace": "sealed://qwen80-lane/sessions/logical/qwen30-helper-in-qwen80-lane/queue",
+      "role": "helper",
+      "scheduling_weight": 1,
+      "session_namespace": "sealed://qwen80-lane/sessions/logical/qwen30-helper-in-qwen80-lane"
+    },
+    {
+      "lane_id": "qwen30-candidate-world",
+      "logical_actor_id": "qwen30-primary-in-qwen30-lane",
+      "max_inflight_turns": 1,
+      "max_queued_requests": 8,
+      "physical_body_id": "qwen30-one-resident-body",
+      "physical_model_key": "qwen30",
+      "private_lane_visibility_only": true,
+      "queue_namespace": "sealed://qwen30-lane/sessions/logical/qwen30-primary-in-qwen30-lane/queue",
+      "role": "primary",
+      "scheduling_weight": 1,
+      "session_namespace": "sealed://qwen30-lane/sessions/logical/qwen30-primary-in-qwen30-lane"
+    },
+    {
+      "lane_id": "qwen30-candidate-world",
+      "logical_actor_id": "qwen80-helper-in-qwen30-lane",
+      "max_inflight_turns": 1,
+      "max_queued_requests": 8,
+      "physical_body_id": "qwen80-one-resident-body",
+      "physical_model_key": "qwen80",
+      "private_lane_visibility_only": true,
+      "queue_namespace": "sealed://qwen30-lane/sessions/logical/qwen80-helper-in-qwen30-lane/queue",
+      "role": "helper",
+      "scheduling_weight": 1,
+      "session_namespace": "sealed://qwen30-lane/sessions/logical/qwen80-helper-in-qwen30-lane"
+    },
+    {
+      "lane_id": "qwen80-candidate-world",
+      "logical_actor_id": "qwen80-primary-in-qwen80-lane",
+      "max_inflight_turns": 1,
+      "max_queued_requests": 8,
+      "physical_body_id": "qwen80-one-resident-body",
+      "physical_model_key": "qwen80",
+      "private_lane_visibility_only": true,
+      "queue_namespace": "sealed://qwen80-lane/sessions/logical/qwen80-primary-in-qwen80-lane/queue",
+      "role": "primary",
+      "scheduling_weight": 1,
+      "session_namespace": "sealed://qwen80-lane/sessions/logical/qwen80-primary-in-qwen80-lane"
+    }
+  ],
+  "schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+  "seal_sha256": "e383a27923ac863c623e81bec7f2415f5108ee654d644089d985434a713d8b5b",
+  "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION",
+  "unsealed_preimage_sha256": "fc00637a0f6bfc1ecb8b0229de0223dd0c56e0ee37d4e0b3f9bfe930cf653e3e"
+}

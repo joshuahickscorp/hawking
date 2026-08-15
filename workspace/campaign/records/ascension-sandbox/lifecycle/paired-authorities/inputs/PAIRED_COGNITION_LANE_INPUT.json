@@ -1,0 +1,255 @@
+{
+  "activation_requested": false,
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "cross_lane_read_policy": {
+    "allow_cross_lane_experiment_reads": false,
+    "allow_cross_lane_frontier_reads": false,
+    "allow_cross_lane_mission_reads": false,
+    "allow_cross_lane_patch_reads": false,
+    "allow_cross_lane_receipt_reads": false,
+    "allow_cross_lane_score_reads": false,
+    "allow_cross_lane_session_reads": false,
+    "allow_cross_lane_worktree_reads": false,
+    "verified_generic_knowledge_plane_publication_only": true
+  },
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "lanes": [
+    {
+      "helper_model_key": "qwen30",
+      "lane_id": "qwen80-candidate-world",
+      "mission_authority": {
+        "hard_gate_conjunction_required_before_activation": true,
+        "helper_may_inspect_and_critique": true,
+        "helper_may_mutate_primary_champion": false,
+        "helper_may_promote_primary_champion": false,
+        "helper_may_propose_or_test_in_private_worktree": true,
+        "independent_verifier_required_before_promotion": true,
+        "opposite_lane_may_mutate_primary_champion": false,
+        "post_tg3_freeze_required_before_final_evaluation": true,
+        "primary_candidate_mutation_authority": true,
+        "primary_candidate_promotion_authority": true,
+        "primary_or_helper_may_self_score": false,
+        "protected_adversarial_review_required_before_promotion": true,
+        "solo_and_symmetric_orchestrator_evaluations_required": true
+      },
+      "primary_model_key": "qwen80",
+      "private_namespaces": {
+        "experiments": "sealed://qwen80-lane/experiments",
+        "frontier": "sealed://qwen80-lane/frontier",
+        "hard_gate_conjunction": "sealed://qwen80-lane/hard-gate-conjunction",
+        "independent_verification": "sealed://qwen80-lane/independent-verification",
+        "mission": "sealed://qwen80-lane/mission",
+        "patches": "sealed://qwen80-lane/patches",
+        "post_tg3_freeze": "sealed://qwen80-lane/post-tg3-freeze",
+        "protected_adversarial_reviews": "sealed://qwen80-lane/protected-adversarial-reviews",
+        "receipts": "sealed://qwen80-lane/receipts",
+        "scores": "sealed://qwen80-lane/scores",
+        "sessions": "sealed://qwen80-lane/sessions",
+        "solo_manager_evaluation": "sealed://qwen80-lane/solo-manager-evaluation",
+        "symmetric_orchestrator_evaluation": "sealed://qwen80-lane/symmetric-orchestrator-evaluation",
+        "worktree": "sealed://qwen80-lane/worktree"
+      }
+    },
+    {
+      "helper_model_key": "qwen80",
+      "lane_id": "qwen30-candidate-world",
+      "mission_authority": {
+        "hard_gate_conjunction_required_before_activation": true,
+        "helper_may_inspect_and_critique": true,
+        "helper_may_mutate_primary_champion": false,
+        "helper_may_promote_primary_champion": false,
+        "helper_may_propose_or_test_in_private_worktree": true,
+        "independent_verifier_required_before_promotion": true,
+        "opposite_lane_may_mutate_primary_champion": false,
+        "post_tg3_freeze_required_before_final_evaluation": true,
+        "primary_candidate_mutation_authority": true,
+        "primary_candidate_promotion_authority": true,
+        "primary_or_helper_may_self_score": false,
+        "protected_adversarial_review_required_before_promotion": true,
+        "solo_and_symmetric_orchestrator_evaluations_required": true
+      },
+      "primary_model_key": "qwen30",
+      "private_namespaces": {
+        "experiments": "sealed://qwen30-lane/experiments",
+        "frontier": "sealed://qwen30-lane/frontier",
+        "hard_gate_conjunction": "sealed://qwen30-lane/hard-gate-conjunction",
+        "independent_verification": "sealed://qwen30-lane/independent-verification",
+        "mission": "sealed://qwen30-lane/mission",
+        "patches": "sealed://qwen30-lane/patches",
+        "post_tg3_freeze": "sealed://qwen30-lane/post-tg3-freeze",
+        "protected_adversarial_reviews": "sealed://qwen30-lane/protected-adversarial-reviews",
+        "receipts": "sealed://qwen30-lane/receipts",
+        "scores": "sealed://qwen30-lane/scores",
+        "sessions": "sealed://qwen30-lane/sessions",
+        "solo_manager_evaluation": "sealed://qwen30-lane/solo-manager-evaluation",
+        "symmetric_orchestrator_evaluation": "sealed://qwen30-lane/symmetric-orchestrator-evaluation",
+        "worktree": "sealed://qwen30-lane/worktree"
+      }
+    }
+  ],
+  "model_authorities": [
+    {
+      "activation": {
+        "contract": {
+          "document": {
+            "model_key": "qwen30",
+            "schema": "hawking.ascension.qwen30.activation.fixture.v1",
+            "seal_sha256": "9dbe6be27d08c896a485a62eaf136da8635db537c829c1357fe037a239438a80",
+            "status": "PREPARED_activation_FIXTURE"
+          },
+          "document_sha256": "0dd01c3f981bd94a02163a498bfa6075faa49cb95fef2a77e1ad142a33b2e0b4",
+          "path": "/sealed/qwen30/activation.json",
+          "topology_assertion": {
+            "endpoint": {
+              "host": "127.0.0.1",
+              "port": 18430
+            },
+            "immutable_weight_copies": 1,
+            "logical_session_policy": "many_logical_sessions",
+            "resident_model_processes": 1
+          }
+        },
+        "tg10": {
+          "coherent_hcli_pass": false,
+          "complete_token_path_measured": false,
+          "fallback_count": 0,
+          "median_base_true_tps": null,
+          "operational_pass": false,
+          "receipt_seal_sha256": null,
+          "required_base_true_tps": 100
+        }
+      },
+      "memory": {
+        "document": {
+          "model_key": "qwen30",
+          "schema": "hawking.ascension.qwen30.memory.fixture.v1",
+          "seal_sha256": "098d4df0d393a49eefb6e738048bf0362df75f078dee7f4871789386d5631cad",
+          "status": "PREPARED_memory_FIXTURE"
+        },
+        "document_sha256": "d97debdcfe198de509cfa87009a3af1d584b4cb8cc452eed49fac38720526d37",
+        "path": "/sealed/qwen30/memory.json",
+        "topology_assertion": {
+          "endpoint": {
+            "host": "127.0.0.1",
+            "port": 18430
+          },
+          "immutable_weight_copies": 1,
+          "logical_session_policy": "many_logical_sessions",
+          "resident_model_processes": 1
+        }
+      },
+      "model_key": "qwen30",
+      "session": {
+        "document": {
+          "model_key": "qwen30",
+          "schema": "hawking.ascension.qwen30.session.fixture.v1",
+          "seal_sha256": "23b5d93dfd58e0e4c275c29400b913e500e666ab9c4f56a377d28e230861593f",
+          "status": "PREPARED_session_FIXTURE"
+        },
+        "document_sha256": "39c7d460303de0cae478a3116115c4e53a461e0089ad9d89f2887992ae2fb776",
+        "path": "/sealed/qwen30/session.json",
+        "topology_assertion": {
+          "endpoint": {
+            "host": "127.0.0.1",
+            "port": 18430
+          },
+          "immutable_weight_copies": 1,
+          "logical_session_policy": "many_logical_sessions",
+          "resident_model_processes": 1
+        }
+      }
+    },
+    {
+      "activation": {
+        "contract": {
+          "document": {
+            "model_key": "qwen80",
+            "schema": "hawking.ascension.qwen80.activation.fixture.v1",
+            "seal_sha256": "0899223eed87eed2ede9c3185a6890f3872cdb7a257d0746bfd1837e7f4f3012",
+            "status": "PREPARED_activation_FIXTURE"
+          },
+          "document_sha256": "6f99c0a1737559373beb1d889669c59bac3295a0b323008d1f17a58b29544495",
+          "path": "/sealed/qwen80/activation.json",
+          "topology_assertion": {
+            "endpoint": {
+              "host": "127.0.0.1",
+              "port": 18480
+            },
+            "immutable_weight_copies": 1,
+            "logical_session_policy": "many_logical_sessions",
+            "resident_model_processes": 1
+          }
+        },
+        "tg10": {
+          "coherent_hcli_pass": false,
+          "complete_token_path_measured": false,
+          "fallback_count": 0,
+          "median_base_true_tps": null,
+          "operational_pass": false,
+          "receipt_seal_sha256": null,
+          "required_base_true_tps": 100
+        }
+      },
+      "memory": {
+        "document": {
+          "model_key": "qwen80",
+          "schema": "hawking.ascension.qwen80.memory.fixture.v1",
+          "seal_sha256": "44812616f19df8ee3a7f53523b8de344cb3e2f70e233b9350368b52281a9d2cb",
+          "status": "PREPARED_memory_FIXTURE"
+        },
+        "document_sha256": "b826d6cbec7f16a436c3051932a78554c19a9dbf7332354786a19b4f0eaa35b4",
+        "path": "/sealed/qwen80/memory.json",
+        "topology_assertion": {
+          "endpoint": {
+            "host": "127.0.0.1",
+            "port": 18480
+          },
+          "immutable_weight_copies": 1,
+          "logical_session_policy": "many_logical_sessions",
+          "resident_model_processes": 1
+        }
+      },
+      "model_key": "qwen80",
+      "session": {
+        "document": {
+          "model_key": "qwen80",
+          "schema": "hawking.ascension.qwen80.session.fixture.v1",
+          "seal_sha256": "7f8783167c240a475f992ad1e9aaead37e26dde904943ac4797db470757223e5",
+          "status": "PREPARED_session_FIXTURE"
+        },
+        "document_sha256": "ab0a7c7e679788224ad62606e7ff466fe9300b58ebda9d3c587e09657928da02",
+        "path": "/sealed/qwen80/session.json",
+        "topology_assertion": {
+          "endpoint": {
+            "host": "127.0.0.1",
+            "port": 18480
+          },
+          "immutable_weight_copies": 1,
+          "logical_session_policy": "many_logical_sessions",
+          "resident_model_processes": 1
+        }
+      }
+    }
+  ],
+  "schema": "hawking.ascension.paired_cognition_lane_authority_input.v1",
+  "seal_sha256": "1bcd286ffe612b01fcfb4fc63c427d650c8daf27b8565c5579b38233a426d165"
+}

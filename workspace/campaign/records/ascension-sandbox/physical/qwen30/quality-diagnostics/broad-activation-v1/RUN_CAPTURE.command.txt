@@ -1,0 +1,11 @@
+# Exact exclusive-safe capture command (do not run while another Q30 Metal resident is hot if memory is tight).
+# Production server :18430 pid 95951 must not be disturbed by this process killing it; serialize if needed.
+
+/Users/scammermike/.claude-grok/worktrees/q30-broader-capture-20260809-154213/workspace/ops/build/rust/debug/examples/ascension_qwen30_current_hcli_layer0_route_capture \
+  --manifest /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json \
+  --expected-manifest-seal-sha256 3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357 \
+  --expected-source-audit-seal-sha256 00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b \
+  --expected-source-revision b2cff646eb4bb1d68355c01b18ae02e7cf42d120 \
+  --input-json /Users/scammermike/.claude-grok/worktrees/q30-broader-capture-20260809-154213/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/requests/QWEN30_BROAD_ACTIVATION_L0_ROUTE_CAPTURE_INPUT_901a24bdcfc6c1d2.json \
+  --output-dir /Users/scammermike/.claude-grok/worktrees/q30-broader-capture-20260809-154213/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/runs/8c5ff2d8490f716b_94c3f75f83dce25a \
+  --max-seq-len 2048

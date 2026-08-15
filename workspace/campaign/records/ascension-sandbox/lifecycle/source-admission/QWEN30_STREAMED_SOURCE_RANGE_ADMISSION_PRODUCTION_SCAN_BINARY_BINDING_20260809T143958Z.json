@@ -1,0 +1,66 @@
+{
+  "binary_sha256": "6f34ae834c8fe892d847f13aad92000e4098fa2f1ead6e1891f8931e11e1876b",
+  "bootstrap_binary": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_BINARY_BINDING_20260809T130203Z.json",
+    "raw_document_sha256": "85103de9332adf0d228a8b5ea27354fe3a820fe6076c7c49f70cfbb0317e9c11",
+    "seal_sha256": "f340ff41b3c0a856cb4db5692f74e97a9caf1628c0c6bf034c004c06280b7c57"
+  },
+  "bootstrap_preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_PREFLIGHT_20260809T130203Z.json",
+    "raw_document_sha256": "66dfe09c1e29a44ea6ab1d428630eb052696f71a9d7d16e0ca2232643c0e406c",
+    "seal_sha256": "c29eb276920a9afd38c15e3eead031d5885e3378faaa7a7f8c6aebd78cce66ea"
+  },
+  "bootstrap_resource": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_BOOTSTRAP_RESOURCE_ADMISSION_20260809T130203Z.json",
+    "raw_document_sha256": "bdb1b3d783812f9239090479642a7e424669d66bb36f71cf5ff12a0b45874be6",
+    "seal_sha256": "3c8ca165a5661eb13f2f3f8c4472cdff7a19311ec6a40a4d508d9c2383b1e63e"
+  },
+  "claim_boundary": "CPU-only production-child binding. It does not authorize or execute a source hash scan, source teacher, source model, GPU, server, HCLI, lease, TPS, TG, or tournament action.",
+  "compiled_command": [
+    "cargo",
+    "build",
+    "-p",
+    "hawking-core",
+    "--example",
+    "ascension_qwen30_streamed_source_range_admission_production_scan_interface"
+  ],
+  "compiled_command_sha256": "d8884fa6c1249ddf5fcec1bbbf1f2220f9c1ba036306e2fd25b4f0e091e1d0b1",
+  "cpu_only": true,
+  "executable": {
+    "bytes": 2176904,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen30_streamed_source_range_admission_production_scan_interface",
+    "sha256": "6f34ae834c8fe892d847f13aad92000e4098fa2f1ead6e1891f8931e11e1876b"
+  },
+  "execution_boundary": {
+    "binary_invoked_by_this_binder": false,
+    "capture_child_spawned": false,
+    "gpu_server_hcli_or_tps_action": false,
+    "lease_issued_or_consumed_or_released": false,
+    "source_model_loaded": false,
+    "source_payload_opened": false,
+    "source_root_argument_or_stat_performed": false
+  },
+  "lease_issued_or_consumed": false,
+  "legacy_bootstrap_resource_is_ancestry_only": true,
+  "model_gpu_server_hcli_or_tps_action": false,
+  "production_hash_scan_backend_compiled": true,
+  "production_hash_scan_executed": false,
+  "production_interface_expected": {
+    "future_execution_not_authorized_by_binding": true,
+    "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_interface.v1",
+    "status": "PREPARED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_INTERFACE_NOT_EXECUTED"
+  },
+  "recorded_at": "2026-08-09T14:40:11.112356Z",
+  "schema": "hawking.ascension.qwen30_streamed_source_range_admission_production_scan_binary_binding.v1",
+  "seal_sha256": "45774c6a37d2338d27ce756534ea300cadb508ef04c65f6946a3ce2ff7028d9b",
+  "source": {
+    "bytes": 103674,
+    "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_qwen30_streamed_source_range_admission_production_scan_interface.rs",
+    "sha256": "e0d8940ff2487e04b224889ccc541f16c25b95d27e13cf4aa03441df063eec8e"
+  },
+  "source_payload_opened": false,
+  "source_root_opened_or_statted": false,
+  "source_sha256": "e0d8940ff2487e04b224889ccc541f16c25b95d27e13cf4aa03441df063eec8e",
+  "source_teacher_or_logits_executed": false,
+  "status": "COMPILED_QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_HASH_SCAN_CPU_ONLY_NOT_EXECUTED"
+}

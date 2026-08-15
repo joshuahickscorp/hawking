@@ -73,6 +73,7 @@ V0_ASSEMBLE_RECEIPT_SCHEMA = "hawking.frankenstein.v0_assemble_receipt.v1"
 V0_VERIFY_SCHEMA = "hawking.frankenstein.v0_independent_verify.v1"
 V0_CLOUD_PACKAGE_SCHEMA = "hawking.frankenstein.v0_cloud_package.v1"
 V0_CLOUD_SEALED_SCHEMA = "hawking.frankenstein.v0_proto_cloud_sealed.v1"
+V0_PROTO_TERMINAL_SCHEMA = "hawking.frankenstein.proto_terminal.v1"
 V0_MODULE_PACK_SCHEMA = "hawking.frankenstein.v0_trained_module_pack.v1"
 GRAVITY_ACCOUNTING_SCHEMA = "hawking.frankenstein.v0_gravity_accounting.v1"
 
@@ -82,6 +83,7 @@ VERIFY_RECEIPT_NAME = "PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY.json"
 CLOUD_PACKAGE_DIR = "cloud-package"
 CLOUD_MANIFEST_NAME = "PROTO_V0_CLOUD_MANIFEST.json"
 CLOUD_SEALED_NAME = "PROTO_CLOUD_SEALED.json"
+TERMINAL_RECEIPT_NAME = "PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT.json"
 RESTORE_SCRIPT_NAME = "restore_proto_frankenstein_v0.sh"
 UPLOAD_INSTRUCTIONS_NAME = "UPLOAD_MANUAL.txt"
 
@@ -211,6 +213,62 @@ def _optional_binding(path: Path | None, *, label: str) -> dict[str, Any] | None
         "bytes": size,
         "file_sha256": _sha256_file(path),
     }
+
+
+def _read_sealed_receipt(
+    path: Path,
+    *,
+    label: str,
+    required_schema: str | None = None,
+) -> dict[str, Any]:
+    if not path.is_file():
+        raise V0SealError(f"{label} missing: {path}")
+    doc = _load_json(path)
+    verify(doc, label=label)
+    if required_schema is not None and doc.get("schema") != required_schema:
+        raise V0SealError(
+            f"{label} schema mismatch: got {doc.get('schema')!r}; "
+            f"expected {required_schema!r}"
+        )
+    return doc
+
+
+def _verify_cloud_manifest_payload(manifest: Mapping[str, Any], package_dir: Path) -> list[str]:
+    payload = manifest.get("payload")
+    if not isinstance(payload, list):
+        return ["cloud manifest payload must be a list"]
+    missing: list[str] = []
+    payload_dir = package_dir / "payload"
+    for row in payload:
+        if not isinstance(row, Mapping):
+            missing.append("cloud manifest payload row malformed")
+            continue
+        name = row.get("name")
+        expected = row.get("sha256")
+        if not isinstance(name, str):
+            missing.append("cloud payload row missing name")
+            continue
+        if not isinstance(expected, str):
+            missing.append(f"cloud payload row {name} missing expected sha256")
+            continue
+        member = payload_dir / name
+        if not member.is_file():
+            missing.append(f"cloud payload member missing: {name}")
+            continue
+        actual = _sha256_file(member)
+        if actual != expected:
+            missing.append(
+                f"cloud payload hash mismatch for {name}: expected {expected}, got {actual}"
+            )
+    return missing
+
+
+def _terminal_evidence_hash_ok(path: Path, expected: Any, label: str) -> bool:
+    if not isinstance(expected, str):
+        return False
+    doc = _load_json(path)
+    seal = doc.get("seal_sha256")
+    return isinstance(seal, str) and seal == expected
 
 
 # ---------------------------------------------------------------------------
@@ -968,6 +1026,296 @@ def independent_verify(
 
 
 # ---------------------------------------------------------------------------
+# Proto terminalization
+# ---------------------------------------------------------------------------
+
+
+def terminalize_v0_artifact(
+    *,
+    artifact_path: Path | str,
+    independent_verify_path: Path | str,
+    cloud_sealed_path: Path | str,
+    cloud_manifest_path: Path | str,
+    out_dir: Path | str | None = None,
+    dry_run: bool = False,
+    certification_status: str = "CONTROLLER_CERTIFIED",
+    certified_by: str = "protected_controller",
+    active_storage_paths: Sequence[str] | None = None,
+    write: bool = True,
+) -> dict[str, Any]:
+    """Build PROTO terminal receipt after validating terminal-critical evidence bindings."""
+
+    artifact_p = Path(artifact_path)
+    verify_p = Path(independent_verify_path)
+    cloud_sealed_p = Path(cloud_sealed_path)
+    cloud_manifest_p = Path(cloud_manifest_path)
+
+    reasons: list[str] = []
+
+    try:
+        artifact = _read_sealed_receipt(
+            artifact_p, label="artifact", required_schema=V0_ARTIFACT_SCHEMA
+        )
+    except V0SealError as exc:
+        reasons.append(str(exc))
+        artifact = {}
+    try:
+        independent_verify = _read_sealed_receipt(
+            verify_p,
+            label="independent_verify",
+            required_schema=V0_VERIFY_SCHEMA,
+        )
+    except V0SealError as exc:
+        reasons.append(str(exc))
+        independent_verify = {}
+    try:
+        cloud_sealed = _read_sealed_receipt(
+            cloud_sealed_p,
+            label="cloud_sealed",
+            required_schema=V0_CLOUD_SEALED_SCHEMA,
+        )
+    except V0SealError as exc:
+        reasons.append(str(exc))
+        cloud_sealed = {}
+    try:
+        manifest = _read_sealed_receipt(
+            cloud_manifest_p,
+            label="cloud_manifest",
+            required_schema=V0_CLOUD_PACKAGE_SCHEMA,
+        )
+    except V0SealError as exc:
+        reasons.append(str(exc))
+        manifest = {}
+
+    artifact_hash = artifact.get("seal_sha256") if isinstance(artifact, Mapping) else None
+    verify_hash = (
+        independent_verify.get("seal_sha256")
+        if isinstance(independent_verify, Mapping)
+        else None
+    )
+    cloud_sealed_hash = (
+        cloud_sealed.get("seal_sha256") if isinstance(cloud_sealed, Mapping) else None
+    )
+    manifest_hash = (
+        manifest.get("seal_sha256") if isinstance(manifest, Mapping) else None
+    )
+
+    if not isinstance(certification_status, str) or not certification_status.strip():
+        reasons.append("certification.status must be non-empty")
+    if certification_status != "CONTROLLER_CERTIFIED":
+        reasons.append("certification status must be CONTROLLER_CERTIFIED")
+
+    if certified_by not in {"protected_controller", "human_operator"}:
+        reasons.append(
+            "certification certifier must be protected_controller or human_operator"
+        )
+
+    if not isinstance(dry_run, bool):
+        reasons.append("dry_run must be boolean")
+
+    # Evidence binding / hash checks.
+    hash_ok = True
+    for path, expected in (
+        (artifact_p, artifact_hash),
+        (verify_p, verify_hash),
+        (cloud_sealed_p, cloud_sealed_hash),
+        (cloud_manifest_p, manifest_hash),
+    ):
+        if isinstance(expected, str):
+            if not _terminal_evidence_hash_ok(path, expected, str(path)):
+                hash_ok = False
+        else:
+            hash_ok = False
+
+    if hash_ok is False:
+        reasons.append("one or more evidence binders are missing/invalid sealed hashes")
+
+    if not isinstance(artifact, Mapping) or artifact.get("schema") != V0_ARTIFACT_SCHEMA:
+        reasons.append("artifact schema mismatch")
+    else:
+        runtime_storage = artifact.get("runtime_storage") or {}
+        storage = runtime_storage.get("storage") if isinstance(runtime_storage, Mapping) else None
+        donor_weights_retained = (
+            storage.get("donor_weights_retained")
+            if isinstance(storage, Mapping)
+            else None
+        )
+        if not isinstance(donor_weights_retained, bool):
+            reasons.append("artifact.runtime_storage.storage.donor_weights_retained missing")
+        elif donor_weights_retained is not False:
+            reasons.append(
+                "artifact indicates donor_weights_retained=True; terminal requires False"
+            )
+
+    if not isinstance(independent_verify, Mapping) or independent_verify.get("schema") != V0_VERIFY_SCHEMA:
+        reasons.append("independent_verify schema mismatch")
+    else:
+        if (
+            independent_verify.get("status") != "EVALUATED"
+            or independent_verify.get("verdict") != "ACCEPT"
+            or independent_verify.get("pass") is not True
+        ):
+            reasons.append(
+                "independent verify must be status=EVALUATED, verdict=ACCEPT, pass=true"
+            )
+        if independent_verify.get("independent_of_training_lane") is not True:
+            reasons.append("independent verify must be independent_of_training_lane=true")
+        challenger = independent_verify.get("challenger") or {}
+        promotion = independent_verify.get("promotion_gate") or {}
+        if (
+            not isinstance(challenger, Mapping)
+            or challenger.get("verdict") != "ACCEPT"
+        ):
+            reasons.append("independent challenger must report verdict=ACCEPT")
+        if (
+            not isinstance(promotion, Mapping)
+            or promotion.get("verdict") != "ACCEPT"
+        ):
+            reasons.append("independent promotion gate must report verdict=ACCEPT")
+        retention = independent_verify.get("retention_gate") or {}
+        if (
+            not isinstance(retention, Mapping)
+            or retention.get("verdict") not in {"PASS", "ACCEPT"}
+        ):
+            reasons.append(
+                "independent retention gate must be PASS/ACCEPT before terminal seal"
+            )
+        ablation_ag = independent_verify.get("ablation_ag") or {}
+        if not isinstance(ablation_ag, Mapping) or ablation_ag.get("verdict") != "ACCEPT":
+            reasons.append("independent A-G ablation must verdict=ACCEPT")
+
+    if not isinstance(cloud_sealed, Mapping) or cloud_sealed.get("schema") != V0_CLOUD_SEALED_SCHEMA:
+        reasons.append("cloud_sealed schema mismatch")
+    else:
+        if cloud_sealed.get("confirmed") is not True:
+            reasons.append("cloud seal must be confirmed=true before terminalization")
+        if cloud_sealed.get("reclaim_may_evict_superseded") is not True:
+            reasons.append(
+                "cloud seal must set reclaim_may_evict_superseded=true before terminalization"
+            )
+        if not isinstance(cloud_sealed.get("remote_hash"), str) or not cloud_sealed.get(
+            "remote_hash"
+        ).strip():
+            reasons.append("cloud seal missing non-empty remote_hash")
+        if (
+            manifest
+            and cloud_sealed.get("bundle_sha256") != manifest.get("bundle_sha256")
+        ):
+            reasons.append("cloud manifest hash mismatch between sealed and manifest")
+        if (
+            manifest
+            and cloud_sealed.get("manifest_seal_sha256")
+            != manifest.get("seal_sha256")
+        ):
+            reasons.append("cloud manifest seal mismatch between sealed and manifest")
+
+    if not isinstance(manifest, Mapping) or manifest.get("schema") != V0_CLOUD_PACKAGE_SCHEMA:
+        reasons.append("cloud_manifest schema mismatch")
+    else:
+        payload_root = Path(cloud_manifest_p).parent
+        payload_dir = payload_root / "payload"
+        if not payload_dir.is_dir():
+            reasons.append("cloud manifest payload directory missing")
+        else:
+            reasons.extend(_verify_cloud_manifest_payload(manifest, payload_root))
+
+    # If active-storage paths are provided, fail if any still exists (including symlink).
+    removed_from_active_storage = True
+    if active_storage_paths:
+        present: list[str] = []
+        for raw in active_storage_paths:
+            target = Path(raw)
+            if target.exists() or target.is_symlink():
+                present.append(str(target))
+        if present:
+            removed_from_active_storage = False
+            reasons.append(
+                f"active donor-paths still present: {'; '.join(present)}"
+            )
+    else:
+        removed_from_active_storage = False
+        reasons.append("active-storage path list not provided; cannot verify donor removal")
+
+    terminal_reached = not reasons
+    storage = {
+        "offloaded": bool(
+            cloud_sealed.get("confirmed") is True
+            and cloud_sealed.get("reclaim_may_evict_superseded") is True
+            and not hash_ok is False
+        ),
+        "hash_verified": bool(hash_ok and not reasons),
+        "removed_from_active_storage": removed_from_active_storage,
+        "donor_weights_retained": (
+            artifact.get("runtime_storage", {})
+            .get("storage", {})
+            .get("donor_weights_retained")
+            if isinstance(artifact, Mapping)
+            else None
+        ),
+    }
+    if not isinstance(storage["donor_weights_retained"], bool):
+        storage["donor_weights_retained"] = False
+
+    document = seal(
+        {
+            "schema": V0_PROTO_TERMINAL_SCHEMA,
+            "name": "PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT",
+            "recorded_at": _utc_now(),
+            "status": "TERMINALIZED" if terminal_reached else "BLOCKED",
+            "terminal_endpoint": TERMINAL_ENDPOINT,
+            "terminal_reached": terminal_reached,
+            "proto_frankenstein_complete": True,
+            "dry_run": bool(dry_run),
+            "runtime_storage": artifact.get("runtime_storage", {}),
+            "certification": {
+                "status": certification_status,
+                "certified_by": certified_by,
+            },
+            "storage": storage,
+            "storage_hash_checks": {"all_bindings_verified": bool(hash_ok)},
+            "evidence_bindings": {
+                "artifact": {"seal_sha256": artifact_hash},
+                "independent_verify": {"seal_sha256": verify_hash},
+                "cloud_sealed": {"seal_sha256": cloud_sealed_hash},
+                "cloud_manifest": {"seal_sha256": manifest_hash},
+            },
+            "terminal_not_reached_reasons": reasons,
+            "runtime_state": {
+                "artifact_path": str(artifact_p),
+                "independent_verify_path": str(verify_p),
+                "cloud_sealed_path": str(cloud_sealed_p),
+                "cloud_manifest_path": str(cloud_manifest_p),
+                "active_storage_paths": list(active_storage_paths or []),
+            },
+            "capability_claim": False,
+            "note": (
+                "Terminal requires independent verify acceptance, confirmed cloud "
+                "seal, binding hash verification, and donor removal from active "
+                "storage before terminal_reached can be true."
+            ),
+        }
+    )
+
+    paths: dict[str, str] = {}
+    if write:
+        out = Path(out_dir) if out_dir is not None else DEFAULT_SEAL_ROOT
+        _ensure_dir(out)
+        p = out / TERMINAL_RECEIPT_NAME
+        _atomic_write_json(p, document)
+        paths["terminal_receipt"] = str(p)
+
+    return {
+        "status": document["status"],
+        "terminal_reached": terminal_reached,
+        "reasons": reasons,
+        "document": document,
+        "paths": paths,
+        "storage": storage,
+        "capability_claim": False,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Cloud package + restore + PROTO_CLOUD_SEALED confirm hook
 # ---------------------------------------------------------------------------
 
@@ -1407,6 +1755,36 @@ def build_parser() -> argparse.ArgumentParser:
     p_pkg.add_argument("--out", type=Path, default=None)
     p_pkg.add_argument("--remote-uri-hint", type=str, default=None)
 
+    p_term = sub.add_parser(
+        "terminal",
+        help="Create PROTO terminal receipt after verify + cloud + offload checks",
+    )
+    p_term.add_argument("--artifact", type=Path, required=True)
+    p_term.add_argument("--independent-verify", type=Path, required=True)
+    p_term.add_argument("--cloud-sealed", type=Path, required=True)
+    p_term.add_argument("--cloud-manifest", type=Path, required=True)
+    p_term.add_argument(
+        "--active-storage-path",
+        action="append",
+        default=[],
+        help="Path checked for donor-weight removal (repeatable)",
+    )
+    p_term.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Perform all checks without writing terminal receipt",
+    )
+    p_term.add_argument(
+        "--certification-status",
+        default="CONTROLLER_CERTIFIED",
+    )
+    p_term.add_argument(
+        "--certified-by",
+        default="protected_controller",
+    )
+    p_term.add_argument("--out", type=Path, default=DEFAULT_SEAL_ROOT)
+    p_term.add_argument("--no-write", action="store_true")
+
     p_conf = sub.add_parser(
         "confirm-cloud",
         help="PROTO_CLOUD_SEALED confirm hook after manual upload",
@@ -1503,6 +1881,36 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
             return 0
+
+        if args.command == "terminal":
+            result = terminalize_v0_artifact(
+                artifact_path=args.artifact,
+                independent_verify_path=args.independent_verify,
+                cloud_sealed_path=args.cloud_sealed,
+                cloud_manifest_path=args.cloud_manifest,
+                active_storage_paths=args.active_storage_path,
+                out_dir=args.out,
+                dry_run=args.dry_run,
+                certification_status=args.certification_status,
+                certified_by=args.certified_by,
+                write=not args.no_write,
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": result["status"],
+                        "terminal_reached": result["terminal_reached"],
+                        "reasons": result["reasons"],
+                        "storage": result["storage"],
+                        "paths": result.get("paths"),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            if args.no_write:
+                return 0 if not result["reasons"] else 2
+            return 0 if result["terminal_reached"] else 2
 
         if args.command == "confirm-cloud":
             result = confirm_cloud_sealed(

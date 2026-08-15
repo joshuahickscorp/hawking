@@ -21,18 +21,28 @@ A–G ablation:
   scores feed the additive-not-subtractive reject rule via frankenstein_ablation.
   Never claims real math inheritance from synthetic runs.
 
+CPU multi-worker parallelism (orchestration only — not module math):
+  * Independent bridge SITES (GLM_METHOD_BRIDGE, …) train concurrently.
+  * Independent A–G arms train concurrently the same way.
+  * Thread budget is partitioned across workers to avoid BLAS oversubscription
+    (N processes × 28 OpenMP threads would thrash, not saturate).
+
 New-file lane: does not edit frankenstein_transfer / frankenstein_bridges.
 """
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
+import hashlib
 import json
+import multiprocessing as mp
 import os
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import torch
 import torch.nn as nn
@@ -52,6 +62,7 @@ from lab.operators.frankenstein_adapter_modules import (
     param_bytes,
     param_count,
 )
+from lab.operators.frankenstein_bridges import V0_BRIDGE_SITES
 from lab.receipts import seal, verify
 
 
@@ -62,10 +73,22 @@ EVIDENCE_ROOT = (
 TRAINER_RUN_SCHEMA = "hawking.frankenstein.adapter_trainer_run.v1"
 SYNTHETIC_FIXTURE_SCHEMA = "hawking.frankenstein.synthetic_paired_activation.v1"
 AG_TRAIN_SCHEMA = "hawking.frankenstein.adapter_ag_train_ablation.v1"
+SITE_TRAIN_SCHEMA = "hawking.frankenstein.site_bridge_train.v1"
+PARALLEL_BENCH_SCHEMA = "hawking.frankenstein.bridge_train_parallel_bench.v1"
 
 REQUIRES_PAIRED_DATA = "REQUIRES_PAIRED_DATA"
 REQUIRES_PAIRED_CAPTURE = "REQUIRES_PAIRED_CAPTURE"  # latent V0 real-train gate
 REQUIRES_TRAINING_LOOP = "REQUIRES_TRAINING_LOOP"  # opened by this module for adapters
+
+# Default float tolerance when bit-exact match fails due to BLAS reduction order
+# under mismatched thread counts. Correctness proofs pin threads_per_worker so
+# parallel and serial share the same intra-op budget and match bit-exact.
+PARALLEL_MATCH_ATOL = 1e-6
+PARALLEL_MATCH_RTOL = 1e-5
+
+# ThreadPool workers share process-global torch RNG; serialize seed+module-init
+# only. Forward/backward for independent modules may still run concurrently.
+_TORCH_INIT_LOCK = threading.Lock()
 
 # Full latent V0 lives in frankenstein_latent_v0 (teacher proj / observer /
 # interventions / 11-loss schedule A–F / latent A–G).  This module remains the
@@ -196,6 +219,240 @@ def fail_closed_paired_data(*, stage: str, operation: str) -> dict[str, Any]:
             ),
         }
     )
+
+
+# ---------------------------------------------------------------------------
+# CPU multi-worker parallelism (sites + A–G arms)
+# ---------------------------------------------------------------------------
+
+
+def resolve_cpu_parallel_budget(
+    n_units: int,
+    *,
+    max_workers: int | None = None,
+    cpu_count: int | None = None,
+    threads_per_worker: int | None = None,
+) -> dict[str, int]:
+    """Partition CPU cores across independent train units.
+
+    Avoids the thrash case: N processes each spinning full OMP/MKL/Accelerate
+    thread pools (e.g. 8 × 28 = 224 threads on a 28-core machine).
+    """
+
+    n_units = max(0, int(n_units))
+    cpus = int(cpu_count if cpu_count is not None else (os.cpu_count() or 1))
+    cpus = max(1, cpus)
+    if n_units <= 0:
+        return {
+            "n_units": 0,
+            "n_workers": 0,
+            "threads_per_worker": max(1, cpus),
+            "cpu_count": cpus,
+            "total_threads_budget": cpus,
+        }
+    if max_workers is None:
+        n_workers = min(n_units, cpus)
+    else:
+        n_workers = max(1, min(int(max_workers), n_units, cpus))
+    if threads_per_worker is not None:
+        tpw = max(1, int(threads_per_worker))
+    else:
+        tpw = max(1, cpus // n_workers)
+    return {
+        "n_units": n_units,
+        "n_workers": n_workers,
+        "threads_per_worker": tpw,
+        "cpu_count": cpus,
+        "total_threads_budget": n_workers * tpw,
+    }
+
+
+def apply_cpu_thread_budget(n_threads: int) -> dict[str, int]:
+    """Pin torch + BLAS thread pools for this process (call in every worker)."""
+
+    n = max(1, int(n_threads))
+    # Set env first so late-loaded BLAS libs pick it up; also re-set for spawn children.
+    for key in (
+        "OMP_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",  # macOS Accelerate
+        "BLIS_NUM_THREADS",
+    ):
+        os.environ[key] = str(n)
+    torch.set_num_threads(n)
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        # interop threads can only be set once per process
+        pass
+    return {
+        "torch_num_threads": int(torch.get_num_threads()),
+        "requested_threads": n,
+    }
+
+
+def unit_seed(base_seed: int, unit_key: str) -> int:
+    """Deterministic per-unit seed so serial and parallel agree regardless of order."""
+
+    digest = hashlib.sha256(f"{int(base_seed)}::{unit_key}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "little") % (2**31 - 1)
+
+
+def _mp_context() -> mp.context.BaseContext:
+    # spawn: clean interpreter, env vars + thread budget apply correctly on macOS
+    return mp.get_context("spawn")
+
+
+def map_train_units(
+    worker: Callable[[dict[str, Any]], dict[str, Any]],
+    payloads: Sequence[dict[str, Any]],
+    *,
+    n_workers: int,
+    threads_per_worker: int,
+    prefer_processes: bool = True,
+    worker_name: str | None = None,
+) -> list[dict[str, Any]]:
+    """Run independent train units serially or across workers.
+
+    Preference order:
+      1. ProcessPool (true isolation; each worker gets threads_per_worker).
+         Preferred on unrestricted hosts — saturates cores without GIL.
+      2. ThreadPool fallback when ProcessPool semaphores are blocked
+         (sandboxed agents).  Forces torch/BLAS to 1 thread so concurrent
+         Python workers do not thrash a shared OpenMP pool.  Init is
+         serialized under ``_TORCH_INIT_LOCK`` for bit-exact determinism;
+         forward/backward of independent modules still run concurrently.
+
+    ``worker_name`` is accepted for API stability (subprocess backend was
+    removed: after parent imports torch, child torch imports can hang on
+    macOS OpenMP fork-safety).
+
+    Results are returned in the same order as payloads.
+    """
+
+    _ = worker_name  # reserved / API-compat
+    items = list(payloads)
+    if not items:
+        return []
+    n_workers = max(1, int(n_workers))
+    # Always pin in the parent too so serial path matches worker path.
+    apply_cpu_thread_budget(threads_per_worker)
+    if n_workers == 1 or len(items) == 1:
+        rows = [worker(p) for p in items]
+        for row in rows:
+            if isinstance(row, dict):
+                row.setdefault("_parallel_backend", "serial")
+        return rows
+
+    pool_size = min(n_workers, len(items))
+
+    def _collect(pool: concurrent.futures.Executor) -> list[dict[str, Any]]:
+        results: list[dict[str, Any] | None] = [None] * len(items)
+        future_to_idx = {
+            pool.submit(worker, payload): i for i, payload in enumerate(items)
+        }
+        for fut in concurrent.futures.as_completed(future_to_idx):
+            idx = future_to_idx[fut]
+            results[idx] = fut.result()
+        out: list[dict[str, Any]] = []
+        for i, r in enumerate(results):
+            if r is None:
+                raise TrainerError(f"parallel train unit {i} returned no result")
+            out.append(r)
+        return out
+
+    if prefer_processes:
+        try:
+            ctx = _mp_context()
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=pool_size,
+                mp_context=ctx,
+                initializer=apply_cpu_thread_budget,
+                initargs=(int(threads_per_worker),),
+            ) as pool:
+                rows = _collect(pool)
+            for row in rows:
+                if isinstance(row, dict):
+                    row.setdefault("_parallel_backend", "process")
+            return rows
+        except (PermissionError, OSError):
+            pass
+
+    # ThreadPool fallback: pin intra-op to 1 so N concurrent units share the
+    # process without N×threads BLAS oversubscription.
+    # IMPORTANT: for bit-exact serial↔parallel match under ThreadPool, callers
+    # must also pin threads_per_worker=1 on the serial path (compare helpers do).
+    apply_cpu_thread_budget(1)
+    thread_payloads = []
+    for p in items:
+        q = dict(p)
+        q["threads_per_worker"] = 1
+        q["_parallel_backend"] = "thread"
+        thread_payloads.append(q)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=pool_size) as pool:
+        rows = _collect(pool)
+    for row in rows:
+        if isinstance(row, dict):
+            row.setdefault("_parallel_backend", "thread")
+    return rows
+
+
+def loss_weights_for_arm(arm: str) -> LossWeights:
+    """Arm-specific loss emphasis (shared by serial and parallel AG paths)."""
+
+    if arm == ARM_FT_B or arm == ARM_FT_D:
+        return LossWeights(
+            functional_output=1.0,
+            token_action_kl=0.0,
+            method_classification=0.0,
+            route_behavior=0.0,
+            verifier_outcome=0.0,
+            latent_cosine=0.05,
+        )
+    if arm == ARM_FT_C:
+        return LossWeights(
+            functional_output=0.5,
+            token_action_kl=1.0,
+            method_classification=0.5,
+            route_behavior=0.0,
+            verifier_outcome=0.25,
+            latent_cosine=0.0,
+        )
+    if arm == ARM_FT_E:
+        return LossWeights(
+            functional_output=0.5,
+            token_action_kl=0.25,
+            method_classification=1.0,
+            route_behavior=1.0,
+            verifier_outcome=0.0,
+            latent_cosine=0.0,
+        )
+    if arm == ARM_FT_F:
+        return LossWeights(
+            functional_output=0.5,
+            token_action_kl=0.25,
+            method_classification=0.5,
+            route_behavior=0.0,
+            verifier_outcome=1.0,
+            latent_cosine=0.0,
+        )
+    # G and unknown use full defaults
+    return LossWeights()
+
+
+def _seed_everything(seed: int) -> None:
+    torch.manual_seed(int(seed))
+    if hasattr(torch, "use_deterministic_algorithms"):
+        # Prefer determinism where available; do not fail closed if an op is banned.
+        try:
+            torch.use_deterministic_algorithms(True, warn_only=True)  # type: ignore[call-arg]
+        except TypeError:
+            try:
+                torch.use_deterministic_algorithms(True)
+            except Exception:
+                pass
 
 
 # ---------------------------------------------------------------------------
@@ -458,9 +715,27 @@ def make_loader(
     *,
     batch_size: int,
     shuffle: bool,
+    seed: int | None = None,
 ) -> DataLoader:
+    """Build a single-process DataLoader (num_workers=0).
+
+    When ``seed`` is set and shuffle=True, shuffle order is deterministic so
+    serial and multi-process train units can match bit-exact given the same
+    threads_per_worker budget.
+    """
+
     ds = PairedActivationDataset(tensors)
-    return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
+    generator = None
+    if shuffle and seed is not None:
+        generator = torch.Generator()
+        generator.manual_seed(int(seed))
+    return DataLoader(
+        ds,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        generator=generator,
+        num_workers=0,  # never nest DataLoader workers under site/arm process pool
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -713,22 +988,196 @@ def _proxy_scores_from_result(
     }
 
 
+def _train_config_to_dict(cfg: TrainConfig) -> dict[str, Any]:
+    return {
+        "epochs": int(cfg.epochs),
+        "lr": float(cfg.lr),
+        "weight_decay": float(cfg.weight_decay),
+        "device": cfg.device,
+        "log_every": int(cfg.log_every),
+        "grad_clip": cfg.grad_clip,
+    }
+
+
+def _synth_config_to_dict(cfg: SyntheticConfig) -> dict[str, Any]:
+    return {
+        "n_train": int(cfg.n_train),
+        "n_eval": int(cfg.n_eval),
+        "seq_len": int(cfg.seq_len),
+        "d_model": int(cfg.d_model),
+        "n_experts": int(cfg.n_experts),
+        "n_actions": int(cfg.n_actions),
+        "n_methods": int(cfg.n_methods),
+        "seed": int(cfg.seed),
+        "batch_size": int(cfg.batch_size),
+    }
+
+
+def _train_one_arm_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Process-pool worker: train a single independent A–G arm on synthetic fixture.
+
+    Self-contained (rebuilds data + stack from seeds) so serial and parallel
+    paths produce identical results when threads_per_worker is pinned equal.
+    """
+
+    apply_cpu_thread_budget(int(payload["threads_per_worker"]))
+    arm = str(payload["arm"])
+    seed = int(payload["unit_seed"])
+    _seed_everything(seed)
+
+    synth_cfg = SyntheticConfig(**payload["synth_cfg"])
+    train_cfg_d = payload["train_cfg"]
+    lw = loss_weights_for_arm(arm)
+    tcfg = TrainConfig(
+        epochs=int(train_cfg_d["epochs"]),
+        lr=float(train_cfg_d["lr"]),
+        weight_decay=float(train_cfg_d["weight_decay"]),
+        device=train_cfg_d.get("device") or "cpu",
+        loss_weights=lw,
+        log_every=int(train_cfg_d.get("log_every") or 10),
+        grad_clip=train_cfg_d.get("grad_clip"),
+    )
+    # Force CPU: standing convention for bridge train.
+    if tcfg.device not in (None, "cpu"):
+        tcfg.device = "cpu"
+
+    train_t = make_synthetic_paired_tensors(synth_cfg, split="train")
+    eval_t = make_synthetic_paired_tensors(synth_cfg, split="eval")
+    train_loader = make_loader(
+        train_t,
+        batch_size=synth_cfg.batch_size,
+        shuffle=True,
+        seed=seed,
+    )
+    eval_loader = make_loader(
+        eval_t,
+        batch_size=synth_cfg.batch_size,
+        shuffle=False,
+        seed=None,
+    )
+
+    # Re-seed + construct + materialize lazy modules under lock so ThreadPool
+    # workers cannot race process-global torch RNG during nn.init (including
+    # FunctionalStack's lazy _action_proj created on first forward_bundle).
+    with _TORCH_INIT_LOCK:
+        _seed_everything(seed + 1)
+        stack = build_stack_for_arm(
+            arm,
+            d_model=synth_cfg.d_model,
+            d_hidden=max(16, synth_cfg.d_model // 2),
+            rank=4,
+            n_experts=synth_cfg.n_experts,
+        )
+        # Materialize lazy heads with a deterministic seed before concurrent train.
+        _seed_everything(seed + 2)
+        sample = next(iter(train_loader))
+        dev = torch.device("cpu")
+        stack = stack.to(dev)
+        stack.eval()
+        with torch.no_grad():
+            stack.forward_bundle(_move_batch(sample, dev))
+    result = train_stack(
+        stack,
+        train_loader,
+        eval_loader,
+        cfg=tcfg,
+        arm=arm,
+        data_kind="SYNTHETIC_PAIRED_ACTIVATION_FIXTURE",
+    )
+    state = {k: v.detach().cpu().clone() for k, v in stack.state_dict().items()}
+    out = {
+        "arm": arm,
+        "unit_seed": seed,
+        "result": result.as_dict(),
+        "scores": _proxy_scores_from_result(result),
+        "state_digest": _state_digest(state),
+    }
+    if payload.get("return_states"):
+        out["state"] = state
+    return out
+
+
+def _state_digest(state: Mapping[str, torch.Tensor]) -> str:
+    h = hashlib.sha256()
+    for k in sorted(state.keys()):
+        t = state[k].detach().cpu().contiguous()
+        h.update(k.encode("utf-8"))
+        h.update(str(tuple(t.shape)).encode("utf-8"))
+        h.update(t.numpy().tobytes())
+    return h.hexdigest()
+
+
 def train_ag_variants(
     *,
     synth_cfg: SyntheticConfig | None = None,
     train_cfg: TrainConfig | None = None,
     arms: Sequence[str] | None = None,
+    max_workers: int | None = None,
+    threads_per_worker: int | None = None,
+    parallel: bool = True,
+    return_states: bool = False,
 ) -> dict[str, Any]:
-    """Train B..G stacks on synthetic paired fixture; wire reject rule."""
+    """Train B..G stacks on synthetic paired fixture; wire reject rule.
+
+    Arms are independent (own stack, own loss, no shared params) — safe to
+    train concurrently across CPU workers when ``parallel=True``.
+    """
 
     synth_cfg = synth_cfg or SyntheticConfig()
     train_cfg = train_cfg or TrainConfig()
+    # Standing convention: bridge train stays on CPU.
+    if train_cfg.device not in (None, "cpu"):
+        train_cfg = TrainConfig(
+            epochs=train_cfg.epochs,
+            lr=train_cfg.lr,
+            weight_decay=train_cfg.weight_decay,
+            device="cpu",
+            loss_weights=train_cfg.loss_weights,
+            log_every=train_cfg.log_every,
+            grad_clip=train_cfg.grad_clip,
+        )
     target_arms = list(arms) if arms is not None else list(TRAINABLE_ARMS)
 
-    train_t = make_synthetic_paired_tensors(synth_cfg, split="train")
-    eval_t = make_synthetic_paired_tensors(synth_cfg, split="eval")
-    train_loader = make_loader(train_t, batch_size=synth_cfg.batch_size, shuffle=True)
-    eval_loader = make_loader(eval_t, batch_size=synth_cfg.batch_size, shuffle=False)
+    budget = resolve_cpu_parallel_budget(
+        len(target_arms),
+        max_workers=(1 if not parallel else max_workers),
+        threads_per_worker=threads_per_worker,
+    )
+    if not parallel:
+        budget = resolve_cpu_parallel_budget(
+            len(target_arms),
+            max_workers=1,
+            threads_per_worker=threads_per_worker
+            if threads_per_worker is not None
+            else budget["threads_per_worker"],
+        )
+
+    synth_d = _synth_config_to_dict(synth_cfg)
+    train_d = _train_config_to_dict(train_cfg)
+    payloads = [
+        {
+            "arm": arm,
+            "unit_seed": unit_seed(synth_cfg.seed, f"arm:{arm}"),
+            "synth_cfg": synth_d,
+            "train_cfg": train_d,
+            "threads_per_worker": budget["threads_per_worker"],
+            "return_states": bool(return_states),
+        }
+        for arm in target_arms
+    ]
+
+    t0 = time.perf_counter()
+    unit_rows = map_train_units(
+        _train_one_arm_payload,
+        payloads,
+        n_workers=budget["n_workers"],
+        threads_per_worker=budget["threads_per_worker"],
+        worker_name="train_one_arm",
+    )
+    wall_ms = (time.perf_counter() - t0) * 1000.0
+    backend = (
+        unit_rows[0].get("_parallel_backend") if unit_rows else "serial"
+    )
 
     arm_results: dict[str, Any] = {}
     arm_scores: dict[str, Any] = {
@@ -740,73 +1189,15 @@ def train_ag_variants(
             "synthetic_proxy": True,
         }
     }
-
-    for arm in target_arms:
-        stack = build_stack_for_arm(
-            arm,
-            d_model=synth_cfg.d_model,
-            d_hidden=max(16, synth_cfg.d_model // 2),
-            rank=4,
-            n_experts=synth_cfg.n_experts,
-        )
-        # Arm-specific loss emphasis.
-        lw = LossWeights()
-        if arm == ARM_FT_B or arm == ARM_FT_D:
-            lw = LossWeights(
-                functional_output=1.0,
-                token_action_kl=0.0,
-                method_classification=0.0,
-                route_behavior=0.0,
-                verifier_outcome=0.0,
-                latent_cosine=0.05,
-            )
-        elif arm == ARM_FT_C:
-            lw = LossWeights(
-                functional_output=0.5,
-                token_action_kl=1.0,
-                method_classification=0.5,
-                route_behavior=0.0,
-                verifier_outcome=0.25,
-                latent_cosine=0.0,
-            )
-        elif arm == ARM_FT_E:
-            lw = LossWeights(
-                functional_output=0.5,
-                token_action_kl=0.25,
-                method_classification=1.0,
-                route_behavior=1.0,
-                verifier_outcome=0.0,
-                latent_cosine=0.0,
-            )
-        elif arm == ARM_FT_F:
-            lw = LossWeights(
-                functional_output=0.5,
-                token_action_kl=0.25,
-                method_classification=0.5,
-                route_behavior=0.0,
-                verifier_outcome=1.0,
-                latent_cosine=0.0,
-            )
-        # G uses full DEFAULT_LOSS_WEIGHTS
-        tcfg = TrainConfig(
-            epochs=train_cfg.epochs,
-            lr=train_cfg.lr,
-            weight_decay=train_cfg.weight_decay,
-            device=train_cfg.device,
-            loss_weights=lw,
-            log_every=train_cfg.log_every,
-            grad_clip=train_cfg.grad_clip,
-        )
-        result = train_stack(
-            stack,
-            train_loader,
-            eval_loader,
-            cfg=tcfg,
-            arm=arm,
-            data_kind="SYNTHETIC_PAIRED_ACTIVATION_FIXTURE",
-        )
-        arm_results[arm] = result.as_dict()
-        arm_scores[arm] = _proxy_scores_from_result(result)
+    arm_states: dict[str, dict[str, torch.Tensor]] = {}
+    arm_digests: dict[str, str] = {}
+    for row in unit_rows:
+        arm = row["arm"]
+        arm_results[arm] = row["result"]
+        arm_scores[arm] = row["scores"]
+        arm_digests[arm] = row["state_digest"]
+        if return_states and "state" in row:
+            arm_states[arm] = row["state"]
 
     # Wire additive-not-subtractive reject via existing A-vs-B harness per arm.
     # Prefer scaffold run_ag_ablation if present; else local pairwise eval.
@@ -816,7 +1207,7 @@ def train_ag_variants(
     else:
         ag_report = _local_ag_ablation(arm_scores)
 
-    document = {
+    document: dict[str, Any] = {
         "schema": AG_TRAIN_SCHEMA,
         "recorded_at": _utc_now(),
         "status": "SYNTHETIC_AG_TRAIN_COMPLETE",
@@ -826,10 +1217,20 @@ def train_ag_variants(
         "fabricated_capability_number": False,
         "arms_trained": list(target_arms),
         "arm_results": arm_results,
+        "arm_state_digests": arm_digests,
         "ablation": ag_report,
         "reject_rule": "additive_not_subtractive (secondary non-regression)",
         "fixture": synthetic_fixture_manifest(synth_cfg),
         "losses": dict(LOSS_DEFINITIONS),
+        "parallelism": {
+            **budget,
+            "parallel": bool(parallel and budget["n_workers"] > 1),
+            "unit": "arm",
+            "wall_ms": wall_ms,
+            "backend": backend,
+            "cpu_only": True,
+            "gpu_used": False,
+        },
         "claim_boundary": {
             "training_performed_on_synthetic": True,
             "capability_claim": False,
@@ -837,7 +1238,536 @@ def train_ag_variants(
             "requires_real_paired_data_for_capability": True,
         },
     }
-    return seal(document)
+    # States are non-JSON (torch tensors) — seal the public doc, re-attach after.
+    sealed = seal(document)
+    if return_states:
+        sealed["_arm_states"] = arm_states
+    return sealed
+
+
+# ---------------------------------------------------------------------------
+# Independent bridge SITE training (natural parallel unit)
+# ---------------------------------------------------------------------------
+
+
+def make_synthetic_site_tensors(
+    cfg: SyntheticConfig,
+    site: str,
+    *,
+    split: str = "train",
+) -> dict[str, torch.Tensor]:
+    """Per-site synthetic paired activations (independent teacher transform).
+
+    Each site gets its own RNG stream from ``unit_seed(cfg.seed, site)`` so
+    sites do not share state — matching the real transplant-point story where
+    each bridge trains against its own layer's activations.
+    """
+
+    seed = unit_seed(cfg.seed, f"site-data:{site}:{split}")
+    g = torch.Generator().manual_seed(seed)
+    n = cfg.n_train if split == "train" else cfg.n_eval
+    B, S, H = n, cfg.seq_len, cfg.d_model
+    student = torch.randn(B, S, H, generator=g)
+    # Site-specific affine + nonlinearity as teacher delta target.
+    W = torch.randn(H, H, generator=g) * 0.15
+    bias = torch.randn(H, generator=g) * 0.05
+    # Mix in a site-name-stable offset so sites differ even if seeds collided.
+    site_tag = (unit_seed(0, site) % 997) / 997.0
+    teacher = student + torch.tanh(student @ W) * (0.4 + 0.2 * site_tag) + bias
+    return {
+        "student_hidden": student,
+        "teacher_hidden": teacher,
+    }
+
+
+def train_one_site_bridge(
+    site: str,
+    train_t: Mapping[str, torch.Tensor],
+    eval_t: Mapping[str, torch.Tensor],
+    *,
+    epochs: int = 40,
+    lr: float = 3e-3,
+    seed: int = 0,
+    d_hidden: int | None = None,
+    rank: int = 4,
+    batch_size: int = 16,
+    device: str = "cpu",
+    threads_per_worker: int | None = None,
+) -> dict[str, Any]:
+    """Train a single independent ReversibleBridge at one V0 site (CPU)."""
+
+    if threads_per_worker is not None:
+        apply_cpu_thread_budget(threads_per_worker)
+    if device != "cpu":
+        device = "cpu"
+
+    d_model = int(train_t["student_hidden"].shape[-1])
+    d_h = int(d_hidden if d_hidden is not None else max(16, d_model // 2))
+    # Seed + construct under lock: ThreadPool workers share global torch RNG.
+    with _TORCH_INIT_LOCK:
+        _seed_everything(seed)
+        bridge = ReversibleBridge(
+            name=site,
+            d_model=d_model,
+            d_hidden=d_h,
+            rank=int(rank),
+            scale=0.02,
+        )
+    dev = torch.device("cpu")
+    bridge = bridge.to(dev)
+    opt = torch.optim.Adam(bridge.parameters(), lr=float(lr))
+
+    train_loader = make_loader(
+        train_t, batch_size=batch_size, shuffle=True, seed=seed
+    )
+    eval_loader = make_loader(
+        eval_t, batch_size=batch_size, shuffle=False, seed=None
+    )
+
+    history: list[dict[str, float]] = []
+    t0 = time.perf_counter()
+    steps = 0
+    for epoch in range(int(epochs)):
+        bridge.train()
+        epoch_loss = 0.0
+        n_batches = 0
+        for batch in train_loader:
+            x = batch["student_hidden"].to(dev)
+            y_tgt = batch["teacher_hidden"].to(dev)
+            opt.zero_grad(set_to_none=True)
+            y = bridge(x)
+            loss = F.mse_loss(y, y_tgt)
+            if not torch.isfinite(loss):
+                raise TrainerError(f"non-finite site loss at step {steps}: {site}")
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+            opt.step()
+            steps += 1
+            epoch_loss += float(loss.item())
+            n_batches += 1
+        train_loss = epoch_loss / max(1, n_batches)
+
+        bridge.eval()
+        eval_loss = 0.0
+        n_ev = 0
+        with torch.no_grad():
+            for batch in eval_loader:
+                x = batch["student_hidden"].to(dev)
+                y_tgt = batch["teacher_hidden"].to(dev)
+                eval_loss += float(F.mse_loss(bridge(x), y_tgt).item())
+                n_ev += 1
+        eval_loss = eval_loss / max(1, n_ev)
+        history.append(
+            {
+                "epoch": float(epoch),
+                "train_loss": train_loss,
+                "eval_loss": eval_loss,
+            }
+        )
+
+    wall_ms = (time.perf_counter() - t0) * 1000.0
+    final_train = history[-1]["train_loss"] if history else 0.0
+    final_eval = history[-1]["eval_loss"] if history else 0.0
+    learned = bool(
+        history
+        and (
+            final_eval < history[0]["eval_loss"] - 1e-4
+            or final_train < history[0]["train_loss"] - 1e-4
+        )
+    )
+
+    # Reverse exactness via stored residual
+    reverse_ok = True
+    reverse_err = 0.0
+    bridge.eval()
+    with torch.no_grad():
+        sample = next(iter(eval_loader))
+        x = sample["student_hidden"].to(dev)
+        y, r = bridge.apply_with_residual(x)
+        x_back, info = bridge.revert(y, residual=r, atol=1e-5)
+        reverse_err = float(info.get("stored_step_error", info["recon_error"]))
+        reverse_ok = bool(info.get("exact", False)) and bool(
+            torch.allclose(x_back, x, atol=1e-5, rtol=1e-5)
+        )
+
+    bridge.meta["trained"] = True
+    state = {k: v.detach().cpu().clone() for k, v in bridge.state_dict().items()}
+    return {
+        "site": site,
+        "unit_seed": int(seed),
+        "final_train_loss": float(final_train),
+        "final_eval_loss": float(final_eval),
+        "learned": learned,
+        "reverse_ok": reverse_ok,
+        "reverse_recon_error": reverse_err,
+        "wall_ms": wall_ms,
+        "steps": steps,
+        "history": history,
+        "state_digest": _state_digest(state),
+        "state": state,
+        "gravity": bridge.gravity_accounting(),
+        "data_kind": "SYNTHETIC_SITE_PAIRED_ACTIVATION_FIXTURE",
+        "capability_claim": False,
+        "device": "cpu",
+    }
+
+
+def _train_one_site_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Process-pool worker for one independent bridge site."""
+
+    apply_cpu_thread_budget(int(payload["threads_per_worker"]))
+    site = str(payload["site"])
+    seed = int(payload["unit_seed"])
+    synth_cfg = SyntheticConfig(**payload["synth_cfg"])
+    train_t = make_synthetic_site_tensors(synth_cfg, site, split="train")
+    eval_t = make_synthetic_site_tensors(synth_cfg, site, split="eval")
+    # Drop bulky state from worker return unless requested.
+    row = train_one_site_bridge(
+        site,
+        train_t,
+        eval_t,
+        epochs=int(payload["epochs"]),
+        lr=float(payload["lr"]),
+        seed=seed,
+        d_hidden=payload.get("d_hidden"),
+        rank=int(payload.get("rank") or 4),
+        batch_size=int(synth_cfg.batch_size),
+        device="cpu",
+        threads_per_worker=int(payload["threads_per_worker"]),
+    )
+    if not payload.get("return_states"):
+        row = {k: v for k, v in row.items() if k != "state"}
+    return row
+
+
+def train_sites(
+    *,
+    sites: Sequence[str] | None = None,
+    synth_cfg: SyntheticConfig | None = None,
+    epochs: int = 40,
+    lr: float = 3e-3,
+    rank: int = 4,
+    max_workers: int | None = None,
+    threads_per_worker: int | None = None,
+    parallel: bool = True,
+    return_states: bool = False,
+) -> dict[str, Any]:
+    """Train independent V0 bridge sites (CPU multi-worker when parallel=True).
+
+    Correctness-safe: each site is a separate module with its own activations,
+    optimizer, and seed — no shared state between sites.
+    """
+
+    synth_cfg = synth_cfg or SyntheticConfig()
+    target_sites = list(sites) if sites is not None else list(V0_BRIDGE_SITES)
+    budget = resolve_cpu_parallel_budget(
+        len(target_sites),
+        max_workers=(1 if not parallel else max_workers),
+        threads_per_worker=threads_per_worker,
+    )
+    if not parallel:
+        # Keep the same threads_per_worker as a parallel run would use when the
+        # caller pins it; otherwise use full-CPU serial (single process).
+        tpw = (
+            threads_per_worker
+            if threads_per_worker is not None
+            else budget["threads_per_worker"]
+        )
+        budget = resolve_cpu_parallel_budget(
+            len(target_sites),
+            max_workers=1,
+            threads_per_worker=tpw,
+        )
+
+    synth_d = _synth_config_to_dict(synth_cfg)
+    payloads = [
+        {
+            "site": site,
+            "unit_seed": unit_seed(synth_cfg.seed, f"site-train:{site}"),
+            "synth_cfg": synth_d,
+            "epochs": int(epochs),
+            "lr": float(lr),
+            "rank": int(rank),
+            "d_hidden": max(16, synth_cfg.d_model // 2),
+            "threads_per_worker": budget["threads_per_worker"],
+            "return_states": bool(return_states),
+        }
+        for site in target_sites
+    ]
+
+    t0 = time.perf_counter()
+    rows = map_train_units(
+        _train_one_site_payload,
+        payloads,
+        n_workers=budget["n_workers"],
+        threads_per_worker=budget["threads_per_worker"],
+        worker_name="train_one_site",
+    )
+    wall_ms = (time.perf_counter() - t0) * 1000.0
+    backend = rows[0].get("_parallel_backend") if rows else "serial"
+
+    site_results: dict[str, Any] = {}
+    for row in rows:
+        site = row["site"]
+        # Strip state from sealed document unless caller needs it.
+        public = {
+            k: v
+            for k, v in row.items()
+            if k not in ("state", "_parallel_backend")
+        }
+        site_results[site] = public
+
+    all_learned = all(r.get("learned") for r in site_results.values()) if site_results else False
+    all_reverse = (
+        all(r.get("reverse_ok") for r in site_results.values()) if site_results else False
+    )
+
+    document: dict[str, Any] = {
+        "schema": SITE_TRAIN_SCHEMA,
+        "recorded_at": _utc_now(),
+        "status": "SYNTHETIC_SITE_TRAIN_COMPLETE",
+        "data_kind": "SYNTHETIC_SITE_PAIRED_ACTIVATION_FIXTURE",
+        "capability_claim": False,
+        "real_glm_dsv4f_capture": False,
+        "fabricated_capability_number": False,
+        "sites_trained": list(target_sites),
+        "site_results": site_results,
+        "all_learned": all_learned,
+        "all_reverse_ok": all_reverse,
+        "fixture": synthetic_fixture_manifest(synth_cfg),
+        "parallelism": {
+            **budget,
+            "parallel": bool(parallel and budget["n_workers"] > 1),
+            "unit": "site",
+            "wall_ms": wall_ms,
+            "backend": backend,
+            "cpu_only": True,
+            "gpu_used": False,
+            "why_safe": (
+                "Each V0 bridge site is an independent ReversibleBridge with its "
+                "own activations, params, optimizer, and seed; no cross-site state."
+            ),
+        },
+        "gate_still_closed": REQUIRES_PAIRED_DATA,
+        "claim_boundary": {
+            "training_performed_on_synthetic": True,
+            "capability_claim": False,
+            "requires_real_paired_data_for_capability": True,
+        },
+    }
+    sealed = seal(document)
+    if return_states:
+        sealed["_site_states"] = {
+            row["site"]: row["state"] for row in rows if "state" in row
+        }
+    return sealed
+
+
+def compare_serial_parallel_sites(
+    *,
+    synth_cfg: SyntheticConfig | None = None,
+    epochs: int = 25,
+    sites: Sequence[str] | None = None,
+    max_workers: int | None = None,
+    atol: float = PARALLEL_MATCH_ATOL,
+    rtol: float = PARALLEL_MATCH_RTOL,
+) -> dict[str, Any]:
+    """Prove parallel site training matches serial (same seed, pinned threads).
+
+    Correctness pin: threads_per_worker=1 on BOTH serial and parallel so the
+    ThreadPool fallback (forced to 1 BLAS thread) matches serial bit-exact.
+    When ProcessPool is available the same pin still holds.
+    """
+
+    synth_cfg = synth_cfg or SyntheticConfig(n_train=48, n_eval=12, seq_len=4, d_model=32)
+    target = list(sites) if sites is not None else list(V0_BRIDGE_SITES)
+    tpw = 1
+
+    serial = train_sites(
+        sites=target,
+        synth_cfg=synth_cfg,
+        epochs=epochs,
+        parallel=False,
+        threads_per_worker=tpw,
+        return_states=True,
+        max_workers=1,
+    )
+    parallel = train_sites(
+        sites=target,
+        synth_cfg=synth_cfg,
+        epochs=epochs,
+        parallel=True,
+        threads_per_worker=tpw,
+        return_states=True,
+        max_workers=max_workers,
+    )
+
+    mismatches: list[dict[str, Any]] = []
+    bit_exact = True
+    tol_match = True
+    for site in target:
+        s_dig = serial["site_results"][site]["state_digest"]
+        p_dig = parallel["site_results"][site]["state_digest"]
+        s_loss = float(serial["site_results"][site]["final_eval_loss"])
+        p_loss = float(parallel["site_results"][site]["final_eval_loss"])
+        s_state = serial["_site_states"][site]
+        p_state = parallel["_site_states"][site]
+        site_bit = s_dig == p_dig
+        site_tol = True
+        max_abs = 0.0
+        for k in s_state:
+            diff = (s_state[k] - p_state[k]).abs().max().item()
+            max_abs = max(max_abs, float(diff))
+            if not torch.allclose(s_state[k], p_state[k], atol=atol, rtol=rtol):
+                site_tol = False
+        bit_exact = bit_exact and site_bit
+        tol_match = tol_match and site_tol
+        if not site_bit or not site_tol:
+            mismatches.append(
+                {
+                    "site": site,
+                    "serial_digest": s_dig,
+                    "parallel_digest": p_dig,
+                    "serial_eval_loss": s_loss,
+                    "parallel_eval_loss": p_loss,
+                    "max_abs_param_diff": max_abs,
+                    "bit_exact": site_bit,
+                    "tol_match": site_tol,
+                }
+            )
+
+    serial_ms = float(serial["parallelism"]["wall_ms"])
+    parallel_ms = float(parallel["parallelism"]["wall_ms"])
+    speedup = (serial_ms / parallel_ms) if parallel_ms > 0 else None
+
+    return seal(
+        {
+            "schema": PARALLEL_BENCH_SCHEMA,
+            "recorded_at": _utc_now(),
+            "unit": "site",
+            "sites": list(target),
+            "threads_per_worker_pinned": tpw,
+            "serial_wall_ms": serial_ms,
+            "parallel_wall_ms": parallel_ms,
+            "speedup": speedup,
+            "parallel_budget": parallel["parallelism"],
+            "serial_budget": serial["parallelism"],
+            "bit_exact_match": bit_exact,
+            "tolerance_match": tol_match,
+            "atol": atol,
+            "rtol": rtol,
+            "mismatches": mismatches,
+            "serial_digests": {
+                s: serial["site_results"][s]["state_digest"] for s in target
+            },
+            "parallel_digests": {
+                s: parallel["site_results"][s]["state_digest"] for s in target
+            },
+            "data_kind": "SYNTHETIC_SITE_PAIRED_ACTIVATION_FIXTURE",
+            "capability_claim": False,
+            "note": (
+                "threads_per_worker pinned equal in serial and parallel so "
+                "BLAS reduction order matches; bit-exact is the target, "
+                "tolerance is documented fallback."
+            ),
+        }
+    )
+
+
+def compare_serial_parallel_arms(
+    *,
+    synth_cfg: SyntheticConfig | None = None,
+    train_cfg: TrainConfig | None = None,
+    arms: Sequence[str] | None = None,
+    max_workers: int | None = None,
+    atol: float = PARALLEL_MATCH_ATOL,
+    rtol: float = PARALLEL_MATCH_RTOL,
+) -> dict[str, Any]:
+    """Prove parallel A–G arm training matches serial (same seed, pinned threads)."""
+
+    synth_cfg = synth_cfg or SyntheticConfig(
+        n_train=48, n_eval=12, seq_len=4, d_model=32, batch_size=8, seed=3
+    )
+    train_cfg = train_cfg or TrainConfig(epochs=15, lr=5e-3, device="cpu")
+    target = list(arms) if arms is not None else list(TRAINABLE_ARMS)
+    tpw = 1
+
+    serial = train_ag_variants(
+        synth_cfg=synth_cfg,
+        train_cfg=train_cfg,
+        arms=target,
+        parallel=False,
+        threads_per_worker=tpw,
+        return_states=True,
+        max_workers=1,
+    )
+    parallel = train_ag_variants(
+        synth_cfg=synth_cfg,
+        train_cfg=train_cfg,
+        arms=target,
+        parallel=True,
+        threads_per_worker=tpw,
+        return_states=True,
+        max_workers=max_workers,
+    )
+
+    mismatches: list[dict[str, Any]] = []
+    bit_exact = True
+    tol_match = True
+    for arm in target:
+        s_dig = serial["arm_state_digests"][arm]
+        p_dig = parallel["arm_state_digests"][arm]
+        s_state = serial["_arm_states"][arm]
+        p_state = parallel["_arm_states"][arm]
+        site_bit = s_dig == p_dig
+        site_tol = True
+        max_abs = 0.0
+        for k in s_state:
+            diff = (s_state[k] - p_state[k]).abs().max().item()
+            max_abs = max(max_abs, float(diff))
+            if not torch.allclose(s_state[k], p_state[k], atol=atol, rtol=rtol):
+                site_tol = False
+        bit_exact = bit_exact and site_bit
+        tol_match = tol_match and site_tol
+        if not site_bit or not site_tol:
+            mismatches.append(
+                {
+                    "arm": arm,
+                    "serial_digest": s_dig,
+                    "parallel_digest": p_dig,
+                    "serial_eval_loss": serial["arm_results"][arm]["final_eval_loss"],
+                    "parallel_eval_loss": parallel["arm_results"][arm]["final_eval_loss"],
+                    "max_abs_param_diff": max_abs,
+                    "bit_exact": site_bit,
+                    "tol_match": site_tol,
+                }
+            )
+
+    serial_ms = float(serial["parallelism"]["wall_ms"])
+    parallel_ms = float(parallel["parallelism"]["wall_ms"])
+    speedup = (serial_ms / parallel_ms) if parallel_ms > 0 else None
+
+    return seal(
+        {
+            "schema": PARALLEL_BENCH_SCHEMA,
+            "recorded_at": _utc_now(),
+            "unit": "arm",
+            "arms": list(target),
+            "threads_per_worker_pinned": tpw,
+            "serial_wall_ms": serial_ms,
+            "parallel_wall_ms": parallel_ms,
+            "speedup": speedup,
+            "parallel_budget": parallel["parallelism"],
+            "serial_budget": serial["parallelism"],
+            "bit_exact_match": bit_exact,
+            "tolerance_match": tol_match,
+            "atol": atol,
+            "rtol": rtol,
+            "mismatches": mismatches,
+            "data_kind": "SYNTHETIC_PAIRED_ACTIVATION_FIXTURE",
+            "capability_claim": False,
+        }
+    )
 
 
 def _local_ag_ablation(arm_scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
@@ -1108,6 +2038,52 @@ def build_parser() -> argparse.ArgumentParser:
     p_lat_ag.add_argument("--device", type=str, default="cpu")
     p_lat_ag.add_argument("--out", type=Path, default=None)
 
+    p_ag.add_argument(
+        "--max-workers",
+        type=int,
+        default=None,
+        help="CPU process workers for independent A–G arms (default: min(arms, cpus))",
+    )
+    p_ag.add_argument(
+        "--serial",
+        action="store_true",
+        help="Force serial arm training (still pins threads_per_worker)",
+    )
+    p_ag.add_argument(
+        "--threads-per-worker",
+        type=int,
+        default=None,
+        help="BLAS/torch threads per worker (default: cpus // n_workers)",
+    )
+
+    p_sites = sub.add_parser(
+        "train-sites",
+        help="Train independent V0 bridge sites in parallel (synthetic fixture)",
+    )
+    p_sites.add_argument("--epochs", type=int, default=30)
+    p_sites.add_argument("--d-model", type=int, default=64)
+    p_sites.add_argument("--n-train", type=int, default=96)
+    p_sites.add_argument("--n-eval", type=int, default=24)
+    p_sites.add_argument("--seed", type=int, default=0)
+    p_sites.add_argument("--max-workers", type=int, default=None)
+    p_sites.add_argument("--serial", action="store_true")
+    p_sites.add_argument("--threads-per-worker", type=int, default=None)
+    p_sites.add_argument("--out", type=Path, default=None)
+
+    p_bench = sub.add_parser(
+        "bench-parallel",
+        help="Serial vs parallel correctness + fixture-scale speedup (sites and/or arms)",
+    )
+    p_bench.add_argument(
+        "--unit",
+        choices=("sites", "arms", "both"),
+        default="both",
+    )
+    p_bench.add_argument("--epochs", type=int, default=20)
+    p_bench.add_argument("--seed", type=int, default=7)
+    p_bench.add_argument("--max-workers", type=int, default=None)
+    p_bench.add_argument("--out", type=Path, default=None)
+
     return p
 
 
@@ -1158,7 +2134,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 d_model=args.d_model,
                 seed=args.seed,
             ),
-            train_cfg=TrainConfig(epochs=args.epochs, device=args.device),
+            train_cfg=TrainConfig(epochs=args.epochs, device="cpu"),
+            max_workers=args.max_workers,
+            threads_per_worker=args.threads_per_worker,
+            parallel=not args.serial,
         )
         if args.out:
             args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -1178,6 +2157,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "ablation_verdict": doc["ablation"].get("verdict"),
                     "learned": learned,
                     "reverse_ok": reverse,
+                    "parallelism": doc.get("parallelism"),
                     "capability_claim": doc["capability_claim"],
                     "data_kind": doc["data_kind"],
                     "seal_sha256": doc["seal_sha256"],
@@ -1188,6 +2168,98 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+
+    if args.command == "train-sites":
+        doc = train_sites(
+            synth_cfg=SyntheticConfig(
+                n_train=args.n_train,
+                n_eval=args.n_eval,
+                d_model=args.d_model,
+                seed=args.seed,
+            ),
+            epochs=args.epochs,
+            max_workers=args.max_workers,
+            threads_per_worker=args.threads_per_worker,
+            parallel=not args.serial,
+        )
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(
+                json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        print(
+            json.dumps(
+                {
+                    "status": doc["status"],
+                    "sites_trained": doc["sites_trained"],
+                    "all_learned": doc["all_learned"],
+                    "all_reverse_ok": doc["all_reverse_ok"],
+                    "parallelism": doc.get("parallelism"),
+                    "gate_still_closed": doc.get("gate_still_closed"),
+                    "capability_claim": doc["capability_claim"],
+                    "seal_sha256": doc["seal_sha256"],
+                    "out": str(args.out) if args.out else None,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0 if doc["all_learned"] and doc["all_reverse_ok"] else 2
+
+    if args.command == "bench-parallel":
+        reports: dict[str, Any] = {}
+        if args.unit in ("sites", "both"):
+            reports["sites"] = compare_serial_parallel_sites(
+                synth_cfg=SyntheticConfig(
+                    n_train=48,
+                    n_eval=12,
+                    seq_len=4,
+                    d_model=32,
+                    batch_size=8,
+                    seed=args.seed,
+                ),
+                epochs=args.epochs,
+                max_workers=args.max_workers,
+            )
+        if args.unit in ("arms", "both"):
+            reports["arms"] = compare_serial_parallel_arms(
+                synth_cfg=SyntheticConfig(
+                    n_train=48,
+                    n_eval=12,
+                    seq_len=4,
+                    d_model=32,
+                    batch_size=8,
+                    seed=args.seed,
+                ),
+                train_cfg=TrainConfig(epochs=args.epochs, lr=5e-3, device="cpu"),
+                max_workers=args.max_workers,
+            )
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            # Strip non-JSON if any leaked
+            args.out.write_text(
+                json.dumps(reports, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        summary = {
+            unit: {
+                "bit_exact_match": r.get("bit_exact_match"),
+                "tolerance_match": r.get("tolerance_match"),
+                "speedup": r.get("speedup"),
+                "serial_wall_ms": r.get("serial_wall_ms"),
+                "parallel_wall_ms": r.get("parallel_wall_ms"),
+                "threads_per_worker_pinned": r.get("threads_per_worker_pinned"),
+                "n_workers": (r.get("parallel_budget") or {}).get("n_workers"),
+                "mismatches": len(r.get("mismatches") or []),
+            }
+            for unit, r in reports.items()
+        }
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        ok = all(
+            r.get("bit_exact_match") or r.get("tolerance_match")
+            for r in reports.values()
+        )
+        return 0 if ok else 2
 
     if args.command == "fit-real":
         loaded = load_real_paired_or_fail(args.paired)

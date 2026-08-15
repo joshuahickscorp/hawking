@@ -72,8 +72,7 @@ mod macos {
     use std::path::PathBuf;
     use std::time::Instant;
 
-    const RECEIPT_SCHEMA: &str =
-        "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_l0_l1.v1";
+    const RECEIPT_SCHEMA: &str = "hawking.gravity.deepseek_v4.multi_layer_gpu_forward_l0_l1.v1";
     const RECEIPT_STATUS: &str = "PASS_MULTI_LAYER_GPU_FORWARD_L0_L1";
     const PARITY: &str = "NUMERIC_PARITY_V2_1_ONLY";
     /// Pinned BOS tid2eid row for layer 0 (source hash table).
@@ -120,9 +119,9 @@ mod macos {
         let args = parse_args()?;
         let wall = Instant::now();
 
-        let catalog = DeepSeekV4LayerDeviceCatalog::admit(
-            &DeepSeekV4FullStreamReader::admit(&args.artifact)?,
-        )?;
+        let catalog = DeepSeekV4LayerDeviceCatalog::admit(&DeepSeekV4FullStreamReader::admit(
+            &args.artifact,
+        )?)?;
         catalog.plan(0)?.require_full_layer_device()?;
         catalog.plan(1)?.require_full_layer_device()?;
         let l0_attn_exec = DeepSeekV4Ratio0AttentionDeviceExecutor::prepare(&catalog, 0, 0)?;
@@ -425,7 +424,8 @@ mod macos {
             source_parent_retained: false,
             source_upload_required_before_execution: true,
             host_activation_handoff_permitted: false,
-            runtime_boundary: "multi-layer L0->L1 GPU forward static P7 controls; no Engine/HCLI/serve/TPS claim",
+            runtime_boundary:
+                "multi-layer L0->L1 GPU forward static P7 controls; no Engine/HCLI/serve/TPS claim",
         };
         Ok((source, ffn_norm, [hc_fn, hc_base, hc_scale]))
     }

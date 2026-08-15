@@ -1,0 +1,659 @@
+{
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "authority_chain_materialized": false,
+  "binding_blockers": [
+    "both exact sealed TG10 operational receipts are not bound",
+    "both_complete_manager_floors",
+    "both_exact_tg10_operational_receipts",
+    "both_tg3_qualifications",
+    "canonical operational ascent does not bind both exact sealed TG10 operational receipts",
+    "final_report authority: missing",
+    "knowledge authority: missing",
+    "lane authority: missing",
+    "mutation authority: missing",
+    "no sealed Q30 activation/memory/many-logical-session topology binding is present",
+    "no sealed Q80 activation/memory/many-logical-session topology binding is present",
+    "none of the ten expected prepared authority documents may be fabricated from source definitions or unsealed observations",
+    "prepared_paired_and_protected_contract_identities",
+    "protected_corpus authority: missing",
+    "protected_corpus_scorecard_selection_and_report_contracts",
+    "qwen30 TG10 operational requirement is not PASS",
+    "qwen30 TG3 requirement is not PASS",
+    "qwen30 lifecycle manager floor is not certified",
+    "qwen30 missing manager-floor requirement capability_and_evaluation_receipt",
+    "qwen30 missing manager-floor requirement custom_kernel_operational_at_least_100_tps",
+    "qwen30 missing manager-floor requirement final_manager_operations_agent_os_session_restart_residency_rollback_storage",
+    "qwen30 missing manager-floor requirement measured_hcli",
+    "qwen30 operational ascent lacks a sealed TG10 receipt identity",
+    "qwen30 physical complete-manager floor is not PASS",
+    "qwen30 workflow manager qualification is not certified",
+    "qwen80 TG10 operational requirement is not PASS",
+    "qwen80 TG3 requirement is not PASS",
+    "qwen80 lifecycle manager floor is not certified",
+    "qwen80 missing manager-floor requirement capability_and_evaluation_receipt",
+    "qwen80 missing manager-floor requirement custom_kernel_operational_at_least_100_tps",
+    "qwen80 missing manager-floor requirement final_manager_operations_agent_os_session_restart_residency_rollback_storage",
+    "qwen80 missing manager-floor requirement measured_hcli",
+    "qwen80 missing manager-floor requirement native_exact_full_token_runtime",
+    "qwen80 operational ascent lacks a sealed TG10 receipt identity",
+    "qwen80 physical complete-manager floor is not PASS",
+    "qwen80 workflow manager qualification is not certified",
+    "scheduler authority: missing",
+    "scorecard_adjudication authority: missing",
+    "sealed_post_tg3_freeze_authority",
+    "selection_recovery authority: missing",
+    "tg10_development authority: missing",
+    "tg3_freeze authority: missing"
+  ],
+  "claim_boundary": [
+    "This record is a sealed read-only refusal, not a prepared paired authority.",
+    "One Q30 and one Q80 body with many logical sessions remains the only allowed topology.",
+    "No model, device, server, watcher, lease, task corpus plaintext, TPS/TG, or tournament action occurred."
+  ],
+  "execution_boundary": {
+    "fixed_metadata_records_read_only": true,
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "hidden_task_created_or_read": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "expected_authority_documents_written": [],
+  "expected_prepared_authority_paths": {
+    "final_report": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_FINAL_MANAGER_SIDE_BY_SIDE_REPORT_RESERVED_NO_WINNER_OR_EXTERNAL_EMISSION",
+      "expected_schema": "hawking.ascension.manager_tournament_final_report_contract.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/ASCENSION_MANAGER_TOURNAMENT_FINAL_REPORT_CONTRACT.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "knowledge": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_KNOWLEDGE_AUTHORITY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "lane": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "mutation": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+      "expected_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "protected_corpus": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_REAL_HAWKING_TASK_CORPUS_METADATA_COMMITTED_NO_HIDDEN_TASKS_OR_SCORED_EXECUTION",
+      "expected_schema": "hawking.ascension.manager_tournament_protected_task_corpus_commitment_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/ASCENSION_MANAGER_TOURNAMENT_PROTECTED_TASK_CORPUS_COMMITMENT.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "scheduler": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION",
+      "expected_schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_ROLE_RESOURCE_SCHEDULER_AUTHORITY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "scorecard_adjudication": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_MANAGER_TOURNAMENT_SCORECARD_ADJUDICATION_PENDING_PROTECTED_SELECTION",
+      "expected_schema": "hawking.ascension.manager_tournament_scorecard_adjudication_contract.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/ASCENSION_MANAGER_TOURNAMENT_SCORECARD_ADJUDICATION.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "selection_recovery": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_SELECTION_AND_RECOVERY_CONTRACT_COMPLETE_NO_WINNER_SELECTED",
+      "expected_schema": "hawking.ascension.manager_tournament_protected_selection_and_recovery_contract.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/ASCENSION_MANAGER_TOURNAMENT_PROTECTED_SELECTION_AND_RECOVERY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "tg10_development": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS_BOUND_NO_RUNTIME_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_both_tg10_development_activation_state_machine.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_TG10_DEVELOPMENT_ACTIVATION.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    },
+    "tg3_freeze": {
+      "exists": false,
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_BOTH_TG3_FROZEN_FINAL_MANAGER_COMPARISON_RESERVED",
+      "expected_schema": "hawking.ascension.paired_cognition_tg3_freeze_final_comparison_authority.v1",
+      "issues": [
+        "missing"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_TG3_FREEZE_FINAL_COMPARISON_AUTHORITY.json",
+      "prepared_authority_created_by_this_refusal": false,
+      "prepared_authority_present_before_refusal": false,
+      "sealed": false
+    }
+  },
+  "fixed_observed_records": {
+    "operational_ascent": {
+      "canonical_document_sha256": "bba610ae22252910e8e66e98e2e274b1df07b6f687b16a8b0a380af5fcb69a2f",
+      "exists": true,
+      "issues": [],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/lifecycle/ASCENSION_OPERATIONAL_ASCENT_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.physical_operational_ascent.v1",
+      "seal_sha256": "fba3d4b8f63bad9737ad07e84ed68daf9ebf61a7db182af0d44077dbda127025",
+      "sealed": true,
+      "status_or_phase": "WAITING_FOR_BOTH_VALID_TG10_OPERATIONAL_RECEIPTS"
+    },
+    "qwen30_base_true_tps_gate": {
+      "canonical_document_sha256": "99b629a6d8bf07bc1ab9908942231fb3589689ed5e84ce440b2966c231158c4d",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/QWEN30_BASE_TRUE_TPS_GATE_STATUS.json seal mismatch: recorded=None expected=99b629a6d8bf07bc1ab9908942231fb3589689ed5e84ce440b2966c231158c4d"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/QWEN30_BASE_TRUE_TPS_GATE_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.physical_base_true_tps_gate_status.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "BLOCKED_HCLI_PROMPT_DEPENDENT_COHERENCE_NOT_EARNED"
+    },
+    "qwen30_exact_full_token_runtime": {
+      "canonical_document_sha256": "39304280dbb9a6548d4bccadc748f5b1e244ed27495d1513ea518d6b7e3ed9ae",
+      "exists": true,
+      "issues": [],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+      "seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+      "sealed": true,
+      "status_or_phase": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME"
+    },
+    "qwen30_native_http_adapter": {
+      "canonical_document_sha256": "163d1e4346e33d9876c5f098996b781848b008e514707906e3e94b04cd437caa",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_NATIVE_HTTP_ADAPTER_STATUS.json seal mismatch: recorded=None expected=163d1e4346e33d9876c5f098996b781848b008e514707906e3e94b04cd437caa"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_NATIVE_HTTP_ADAPTER_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.qwen30_native_http_adapter.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "NATIVE_HTTP_ADAPTER_SERVING_UNQUALIFIED"
+    },
+    "qwen30_tg3": {
+      "canonical_document_sha256": "e6e180d202f542972f73a27ad7a3fdfd0ed22d6b892468f2abb07615ecfd7cc1",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tg3/QWEN30_TG3_ASCENT_STATUS.json seal mismatch: recorded=None expected=e6e180d202f542972f73a27ad7a3fdfd0ed22d6b892468f2abb07615ecfd7cc1"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tg3/QWEN30_TG3_ASCENT_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.qwen30_bootstrap_lanes.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "WAITING_FOR_NATIVE_COMPLETE_TOKEN_RUNTIME"
+    },
+    "qwen80_base_true_tps_gate": {
+      "canonical_document_sha256": "7635b85185472d9106c6394b0391c539ac975c6172fb661752a4be9a5edd2816",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/tps-gate/QWEN80_BASE_TRUE_TPS_GATE_STATUS.json seal mismatch: recorded=None expected=7635b85185472d9106c6394b0391c539ac975c6172fb661752a4be9a5edd2816"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/tps-gate/QWEN80_BASE_TRUE_TPS_GATE_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.physical_base_true_tps_gate_status.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "WAITING_FOR_CANONICAL_EXACT_RUNTIME_AFTER_CURRENT_ARTIFACT_ADMISSION"
+    },
+    "qwen80_complete_decoder_readiness": {
+      "canonical_document_sha256": "b3cc0ca77df4c821a2fd86a6578b923ece193f0175a8b612a0aa65f389d37dca",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_COMPLETE_DECODER_READINESS_AFTER_SOURCE_TOKEN_L0_20260809T063300Z.json seal mismatch: recorded=None expected=b3cc0ca77df4c821a2fd86a6578b923ece193f0175a8b612a0aa65f389d37dca"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_COMPLETE_DECODER_READINESS_AFTER_SOURCE_TOKEN_L0_20260809T063300Z.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.qwen80_complete_decoder_readiness_result.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "INCOMPLETE_QWEN80_COMPLETE_DECODER_READINESS_NO_DECODER_TOKEN_HCLI_OR_TPS_CLAIM"
+    },
+    "qwen80_tg3": {
+      "canonical_document_sha256": "8c8795ee741bad4e310413d6344a16f91a4b170ab48ec493921ba1410c15e1eb",
+      "exists": true,
+      "issues": [
+        "unsealed_or_changed:/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/tg3/QWEN80_TG3_ASCENT_STATUS.json seal mismatch: recorded=None expected=8c8795ee741bad4e310413d6344a16f91a4b170ab48ec493921ba1410c15e1eb"
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/tg3/QWEN80_TG3_ASCENT_STATUS.json",
+      "read_scope": "fixed_declared_metadata_path_only",
+      "regular_file": true,
+      "schema": "hawking.ascension.qwen80_bootstrap_lanes.v1",
+      "seal_sha256": null,
+      "sealed": false,
+      "status_or_phase": "WAITING_FOR_NATIVE_COMPLETE_TOKEN_HYBRID_RUNTIME"
+    }
+  },
+  "hidden_task_plaintext_read": false,
+  "missing_sealed_model_authorities": [
+    {
+      "binding": "activation",
+      "model_key": "qwen30",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.qwen30_native_http_adapter.v1', sealed=False"
+    },
+    {
+      "binding": "memory",
+      "model_key": "qwen30",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.physical_exact_full_token_runtime.v1', sealed=True"
+    },
+    {
+      "binding": "logical_session",
+      "model_key": "qwen30",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.qwen30_native_http_adapter.v1', sealed=False"
+    },
+    {
+      "binding": "activation",
+      "model_key": "qwen80",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.qwen80_complete_decoder_readiness_result.v1', sealed=False"
+    },
+    {
+      "binding": "memory",
+      "model_key": "qwen80",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.qwen80_complete_decoder_readiness_result.v1', sealed=False"
+    },
+    {
+      "binding": "logical_session",
+      "model_key": "qwen80",
+      "reason": "no matching sealed one-body/many-logical-session topology authority; observed fixed record is schema='hawking.ascension.qwen80_complete_decoder_readiness_result.v1', sealed=False"
+    }
+  ],
+  "observed_readiness_snapshot": {
+    "canonical_document_sha256": "c1c2cf2759109bf91f1fbd1caa43d6fa01102bfb886e8a4b758a5e3d4235d9f2",
+    "missing_prerequisites": [
+      "both_complete_manager_floors",
+      "both_exact_tg10_operational_receipts",
+      "both_tg3_qualifications",
+      "prepared_paired_and_protected_contract_identities",
+      "sealed_post_tg3_freeze_authority",
+      "protected_corpus_scorecard_selection_and_report_contracts"
+    ],
+    "schema": "hawking.ascension.manager_tournament_readiness_report.v1",
+    "seal_sha256": "4ba1e55e5ced147d1f6bd61d6284b4e3a137e12795e98f6abc47f8b779cad25c",
+    "status": "REFUSED_MANAGER_TOURNAMENT_READINESS_CONJUNCTION_INCOMPLETE_OR_UNTRUSTED"
+  },
+  "operational_tg10_snapshot": {
+    "both_valid_tg10_receipts": false,
+    "qwen30_tg10_receipt_seal_sha256": null,
+    "qwen80_tg10_receipt_seal_sha256": null,
+    "schema_matches": true,
+    "status": "WAITING_FOR_BOTH_VALID_TG10_OPERATIONAL_RECEIPTS",
+    "waiting_status_observed": true
+  },
+  "paired_candidate_worlds_active": false,
+  "paired_development_active": false,
+  "prepared": false,
+  "readiness_report_delta": {
+    "after_missing_prerequisites": [
+      "both_complete_manager_floors",
+      "both_exact_tg10_operational_receipts",
+      "both_tg3_qualifications",
+      "prepared_paired_and_protected_contract_identities",
+      "sealed_post_tg3_freeze_authority",
+      "protected_corpus_scorecard_selection_and_report_contracts"
+    ],
+    "after_status": "REFUSED_MANAGER_TOURNAMENT_READINESS_CONJUNCTION_INCOMPLETE_OR_UNTRUSTED",
+    "before_missing_prerequisites": [
+      "both_complete_manager_floors",
+      "both_exact_tg10_operational_receipts",
+      "both_tg3_qualifications",
+      "prepared_paired_and_protected_contract_identities",
+      "sealed_post_tg3_freeze_authority",
+      "protected_corpus_scorecard_selection_and_report_contracts"
+    ],
+    "before_status": "REFUSED_MANAGER_TOURNAMENT_READINESS_CONJUNCTION_INCOMPLETE_OR_UNTRUSTED",
+    "delta_is_no_change": true,
+    "new_prepared_authorities_created": [],
+    "prepared_authorities_after": {
+      "final_report": false,
+      "knowledge": false,
+      "lane": false,
+      "mutation": false,
+      "protected_corpus": false,
+      "scheduler": false,
+      "scorecard_adjudication": false,
+      "selection_recovery": false,
+      "tg10_development": false,
+      "tg3_freeze": false
+    },
+    "prepared_authorities_before": {
+      "final_report": false,
+      "knowledge": false,
+      "lane": false,
+      "mutation": false,
+      "protected_corpus": false,
+      "scheduler": false,
+      "scorecard_adjudication": false,
+      "selection_recovery": false,
+      "tg10_development": false,
+      "tg3_freeze": false
+    },
+    "reason": "a refusal record is intentionally not accepted as any of the ten prepared authority documents"
+  },
+  "recorded_at": "2026-08-09T10:38:47.186341Z",
+  "refusal_record_is_not_an_authority_materialization": true,
+  "required_one_body_topology": {
+    "invariant": "one Q30 body plus one Q80 body; no endpoint, weight, body, or session-namespace cloning",
+    "qwen30": {
+      "required_sealed_bindings": [
+        "activation",
+        "memory",
+        "logical_session"
+      ],
+      "topology_assertion": {
+        "endpoint": {
+          "host": "127.0.0.1",
+          "port": 18430
+        },
+        "immutable_weight_copies": 1,
+        "logical_session_policy": "many_logical_sessions",
+        "resident_model_processes": 1
+      }
+    },
+    "qwen80": {
+      "known_qwen80_contract_grammars": {
+        "activation": {
+          "required_status": "ELIGIBLE_QWEN80_ONE_RESIDENT_SERVER_AUTOMATIC_LAUNCH_PRECONDITION_ONLY",
+          "schema": "hawking.ascension.qwen80_resident_server_activation_result.v1"
+        },
+        "logical_session": {
+          "required_status": "PREPARED_INCOMPLETE_QWEN80_ONE_RESIDENT_MANY_LOGICAL_SESSIONS_SCHEDULER_NO_RUNTIME_SERVER_OR_TPS",
+          "schema": "hawking.ascension.qwen80_one_resident_session_scheduler_contract.v1"
+        },
+        "memory": {
+          "required_status": "PREPARED_INCOMPLETE_QWEN80_ONE_RESIDENT_MANY_LOGICAL_SESSIONS_MEMORY_ENVELOPE_PREFLIGHT_NO_RUNTIME_SERVER_OR_TPS",
+          "schema": "hawking.ascension.qwen80_resident_memory_envelope_receipt.v1"
+        }
+      },
+      "required_sealed_bindings": [
+        "activation",
+        "memory",
+        "logical_session"
+      ],
+      "topology_assertion": {
+        "endpoint": {
+          "host": "127.0.0.1",
+          "port": 18480
+        },
+        "immutable_weight_copies": 1,
+        "logical_session_policy": "many_logical_sessions",
+        "resident_model_processes": 1
+      }
+    }
+  },
+  "schema": "hawking.ascension.paired_authority_materialization_refusal_readiness.v1",
+  "seal_sha256": "c0c0bfacba22b75f670bfc3a16fad3c0df74cf2d0dfe391bd623506d586f7552",
+  "status": "REFUSED_PAIRED_AUTHORITY_MATERIALIZATION_MISSING_TRUSTED_SEALED_INPUTS",
+  "ten_contract_source_audit": {
+    "final_report": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_FINAL_MANAGER_SIDE_BY_SIDE_REPORT_RESERVED_NO_WINNER_OR_EXTERNAL_EMISSION",
+      "expected_schema": "hawking.ascension.manager_tournament_final_report_contract.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "complete two-candidate side-by-side fields",
+          "protected authorship/verifier",
+          "decision narrative reservation"
+        ],
+        "sealed_inputs": [
+          "pinned final-manager protocol",
+          "prepared corpus",
+          "prepared scorecard",
+          "prepared selection/recovery"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_manager_tournament_final_report_contract.rs",
+      "source_sha256": "69e827a745e06019eea6cb4f3bc65d1e2bff9825d22d28ce82c458030f46a0c6"
+    },
+    "knowledge": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "generic-only knowledge policy",
+          "optional independently redacted/provenanced/verified/published generic discovery releases"
+        ],
+        "sealed_inputs": [
+          "prepared lane authority",
+          "prepared mutation authority"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_knowledge_plane_release_gate.rs",
+      "source_sha256": "4f8216480946f6726042b4b671c29c0c00f3a2901de8456d3fa631f7fa780c0e"
+    },
+    "lane": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "two lane definitions",
+          "cross-lane read denial",
+          "zero-action boundaries"
+        ],
+        "sealed_inputs": [
+          "three matching Q30 activation/memory/session bindings with one-body topology",
+          "three matching Q80 activation/memory/session bindings with one-body topology"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_lane_authority_contract.rs",
+      "source_sha256": "235fadf576cf3c72052596b8b9902b767f87c03be3fb2b337659332c3b7c6443"
+    },
+    "mutation": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+      "expected_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "two lane action policies",
+          "immutable protected-record policy",
+          "final-selection reservation"
+        ],
+        "sealed_inputs": [
+          "prepared lane authority"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_mutation_authority_contract.rs",
+      "source_sha256": "4daa66f64c1aceb1ad2489c2b095292695707656407f5ac281e13b7c691a09d9"
+    },
+    "protected_corpus": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_REAL_HAWKING_TASK_CORPUS_METADATA_COMMITTED_NO_HIDDEN_TASKS_OR_SCORED_EXECUTION",
+      "expected_schema": "hawking.ascension.manager_tournament_protected_task_corpus_commitment_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "15 public family metadata rows",
+          "6 campaign metadata rows",
+          "controller-only hidden namespace",
+          "fair-envelope and read-only adversarial hooks"
+        ],
+        "sealed_inputs": [
+          "pinned final-manager protocol",
+          "prepared paired chain through TG10",
+          "immutable public corpus identity and protected membership commitment"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_manager_tournament_protected_task_corpus_commitment.rs",
+      "source_sha256": "0bb5e7a5a9f2ae4c84c300459ebe8f548659ef11194257773ca08f6c6ec5034f"
+    },
+    "scheduler": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_ONE_Q30_ONE_Q80_FOUR_ISOLATED_LOGICAL_ROLES_NO_RUNTIME_OR_WINNER_SELECTION",
+      "expected_schema": "hawking.ascension.paired_cognition_one_body_many_logical_session_role_resource_scheduler_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "one-body resource budgets",
+          "four non-cloning primary/helper role-session assignments",
+          "bounded content-free queue/fairness telemetry",
+          "TG10/TG3/final-mode reservations"
+        ],
+        "sealed_inputs": [
+          "prepared lane authority",
+          "prepared mutation authority",
+          "prepared knowledge authority"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_role_resource_scheduler_authority.rs",
+      "source_sha256": "bc4ba15f25c34b3cf3f7d3d2c0b350465089324090d40777950311d7ed97a6cd"
+    },
+    "scorecard_adjudication": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_MANAGER_TOURNAMENT_SCORECARD_ADJUDICATION_PENDING_PROTECTED_SELECTION",
+      "expected_schema": "hawking.ascension.manager_tournament_scorecard_adjudication_contract.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "selection request remains false"
+        ],
+        "sealed_inputs": [
+          "pinned final-manager protocol",
+          "prepared TG3/freeze authority",
+          "prepared protected corpus",
+          "equalized resource/asymmetry ledger",
+          "two-candidate \u00d7 two-mode verified scorecards",
+          "protected Pareto frontier"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_manager_tournament_scorecard_adjudication_contract.rs",
+      "source_sha256": "7cd5f5c2e365899e944678842e00e4ef0f9feaf7fd778001e57983523a749644"
+    },
+    "selection_recovery": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PROTECTED_SELECTION_AND_RECOVERY_CONTRACT_COMPLETE_NO_WINNER_SELECTED",
+      "expected_schema": "hawking.ascension.manager_tournament_protected_selection_and_recovery_contract.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "protected selector identity",
+          "winner immutable-seal reservation",
+          "loser seal/cold-store/hash/restore/recovery reservation"
+        ],
+        "sealed_inputs": [
+          "pinned final-manager protocol",
+          "prepared TG3/freeze",
+          "prepared corpus",
+          "prepared scorecard adjudication"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_manager_tournament_protected_selection_and_recovery_contract.rs",
+      "source_sha256": "9819513c760758b40518394019ad32d3bf4fdb3316c1c1a304be3f49ba35f4b7"
+    },
+    "tg10_development": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_BOTH_EXACT_TG10_OPERATIONAL_RECEIPTS_BOUND_NO_RUNTIME_OR_TOURNAMENT",
+      "expected_schema": "hawking.ascension.paired_cognition_both_tg10_development_activation_state_machine.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "paired-development activation request must remain false"
+        ],
+        "sealed_inputs": [
+          "prepared lane/mutation/knowledge/scheduler chain",
+          "canonical operational-ascent status",
+          "one exact, fresh Q30 TG10 operational receipt",
+          "one exact, fresh Q80 TG10 operational receipt"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_tg10_development_activation_state_machine.rs",
+      "source_sha256": "8fd8c6b6f62ef860104791a89b5a9f859c65f8aa88a0d4767db6cf096b15abf7"
+    },
+    "tg3_freeze": {
+      "expected_prepared_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_BOTH_TG3_FROZEN_FINAL_MANAGER_COMPARISON_RESERVED",
+      "expected_schema": "hawking.ascension.paired_cognition_tg3_freeze_final_comparison_authority.v1",
+      "input_grammar": {
+        "policy_inputs": [
+          "two equal evaluation-mode reservations",
+          "protected corpus/fairness/selection/recovery reservations"
+        ],
+        "sealed_inputs": [
+          "pinned final-manager protocol",
+          "prepared lane/mutation/knowledge/scheduler/TG10 chain",
+          "two complete-manager qualification and TG3/freeze evidence sets"
+        ]
+      },
+      "prepared_definition_verified": true,
+      "source_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/ascension_paired_cognition_tg3_freeze_final_comparison_authority.rs",
+      "source_sha256": "ea28439048b0a6d4b6b9d6985426ac7d14d941bb15002ba560ecccc8550dcb73"
+    }
+  },
+  "tournament_active": false,
+  "winner_selected": false
+}

@@ -1,0 +1,18 @@
+[package]
+name = "hawking-perception"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "HCLI Perception Service: cheap-first document pipeline interfaces and stubs (Ascension Bible §19). Model-free; OCR/vision backends are DEFERRED."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

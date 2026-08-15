@@ -15,11 +15,13 @@ pub mod kv;
 pub mod manifest;
 pub mod memory;
 pub mod memory_classes;
+pub mod memory_os;
 pub mod personal_tools;
 pub mod privacy;
 pub mod profiles;
 pub mod recall;
 pub mod rot;
+pub mod skill_foundry;
 pub mod sources;
 
 pub use budget::{estimate_tokens, RegionBudget, Reservations, TokenBudget, TokenCounter};
@@ -49,6 +51,10 @@ pub use memory_classes::{
     MemoryClass, MemoryExport, PersonalScope, ProceduralWriteCap, ProjectWriteCap, ScopePromotion,
     TurnWriteCap, UserWriteCap, VerifierWriteCap, WriteAuthority,
 };
+pub use memory_os::{
+    ConsolidateResult, InMemoryMemoryOs, MemoryExplain, MemoryItem, MemoryItemDraft,
+    MemoryItemPatch, MemoryOs, MemoryOsError, MemoryOsQuery, MemoryTier, VerificationState,
+};
 pub use personal_tools::{
     execute_with_receipt, execute_without_receipt, LivePersonalTool,
     PermissionDecision as ToolPermissionDecision, PersonalTool, PersonalToolAbi,
@@ -64,3 +70,9 @@ pub use profiles::{
     WorkingSetMode,
 };
 pub use rot::{detect_context_rot, ContextRotReport, RotSeverity, RotSignal, RotThresholds};
+pub use skill_foundry::{
+    example_skill_spec, AdmissionStage, ProtectedControllerCap, SandboxProposeCap,
+    SkillCompatibility, SkillEnvironment, SkillFailureMode, SkillFoundry, SkillFoundryError,
+    SkillIoField, SkillProvenance, SkillRecord, SkillSpec, SkillStatus, SkillStep, SkillTest,
+    SkillVersion, StageReceipt,
+};

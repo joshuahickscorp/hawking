@@ -1,0 +1,20 @@
+{
+ "already_earned_and_unaffected": "L0..L2 DeltaNet-only chain: 69 dispatches, one command buffer, one fence, per-layer second residual max_abs_error 8.345e-07 / 1.311e-06 / 1.311e-06, all seals independently verified.",
+ "attempt": {
+  "layer_count": 4,
+  "refusal": "layer 3 mixer=gqa is not same-runtime full-layer encode ready (observed ready=false). Reduce --layer-count to a DeltaNet-only prefix (recommended 3 for L0..L2).",
+  "stage": "host CPU preflight"
+ },
+ "claim_boundary": {
+  "cpu_preflight_refusal_only": true,
+  "does_not_affect_the_earned_L0_L2_component": true,
+  "no_capture_spent": true,
+  "no_lease_issued": true
+ },
+ "exact_missing_input": "same-runtime full-layer encode for the GQA mixer, with caller-owned gqa_key_cache/gqa_value_cache state slots and their rollback buffers as declared by the 48-layer execution schedule authority (seal 54084ddf)",
+ "finding": "The multi-layer same-runtime encode implements the DeltaNet mixer only. Layer 3 is the first GQA layer and its full-layer same-runtime encode is not ready, so any chain reaching layer 3 refuses at CPU preflight before a lease is issued. The 48-layer schedule places GQA at layers 3,7,11,15,19,23,27,31,35,39,43,47 - 12 of 48 - so a complete 48-layer forward is impossible until the GQA full-layer same-runtime encode exists.",
+ "note": "The refusal is precise and pre-lease, which is the intended behaviour: the cost of discovering this was zero captures.",
+ "recorded_at": "2026-08-09T21:00:00Z",
+ "schema": "hawking.ascension.qwen80_multi_layer_gqa_encode_gap.v1",
+ "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+}

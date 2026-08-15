@@ -1,0 +1,17 @@
+{
+  "activation_capture_sha256": "4c721dc855ad3fbe0699e41244106da277c5983e1404ea6dafa9d43b90865037",
+  "branch_id": "qwen30-activation-weighted-svd-v1",
+  "changed_organs": 327,
+  "claim_boundary": {
+    "not_a_coherence_claim": true,
+    "not_promoted": true,
+    "not_served": true
+  },
+  "complete_physical_bpw": 1.1409997601875215,
+  "elapsed_seconds": 328.17246491697733,
+  "manifest_seal_sha256": "8e642c114819e01ccda4d45a7a32e52d359400dfe55a51eeb6b15ab2f985e2a4",
+  "recorded_at": "2026-08-09T20:19:15.664910Z",
+  "schema": "hawking.ascension.qwen30_activation_weighted_svd_status.v1",
+  "status": "EARNED_COMPLETE_ACTIVATION_WEIGHTED_SVD_CANDIDATE_UNQUALIFIED",
+  "terminal_seal_sha256": "97c184bba04a00554456d0949418be5c2918f66e918075670d5629065eee30b9"
+}

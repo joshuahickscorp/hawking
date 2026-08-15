@@ -696,6 +696,10 @@ class LatentV0Stack(nn.Module):
 
         interventions: dict[str, StudentIntervention] = {}
         if use_interventions:
+            # gate_init=-2 → residual_scale = softplus(-2)*0.25 ≈ 0.032.
+            # Prior research in this repo (expansive residual / accumulated
+            # cascade drift) shows stacked non-contractive residuals diverge;
+            # 8 sites at softplus(0)*0.25≈0.173 compound aggressively.
             for site in sites:
                 interventions[site] = StudentIntervention(
                     name=site,
@@ -703,7 +707,7 @@ class LatentV0Stack(nn.Module):
                     rank=rank,
                     d_hidden=d_hidden,
                     scale=scale,
-                    gate_init=0.0,
+                    gate_init=-2.0,
                 )
         self.interventions = nn.ModuleDict(interventions)
 
@@ -779,6 +783,21 @@ class LatentV0Stack(nn.Module):
         skip: Sequence[str] | None = None,
         enabled: Sequence[str] | None = None,
     ) -> tuple[torch.Tensor, list[str], list[torch.Tensor]]:
+        """Apply enabled bridges as *parallel* additive residuals.
+
+        Each V0 site is independently ``y = x + A_i(x)`` at its transplant
+        point.  When multiple sites are evaluated on one proxy tensor (the
+        real-capture training path), they must sum on a shared base —
+
+            y = x + Σ_i A_i(x)
+
+        — not cascade ``(...((x+A1)+A2)...)``.  Sequential composition of
+        eight nonlinear residuals is expansive and was a root cause of
+        latent-arm held-out loss exploding vs linear-init (see also prior
+        expansive-residual / accumulated-drift findings in this repo).
+        Stored per-site residuals still reverse exactly via subtraction.
+        """
+
         skip_set = set(skip or ())
         applied: list[str] = []
         residuals: list[torch.Tensor] = []
@@ -794,15 +813,21 @@ class LatentV0Stack(nn.Module):
             if enabled is not None
             else list(self.interventions.keys())
         )
+        base = y
+        total_r: torch.Tensor | None = None
         for name in names:
             if name in skip_set or name not in self.interventions:
                 continue
             mod = self.interventions[name]
             if not mod.meta.get("enabled", True):
                 continue
-            y, r = mod.apply_with_residual(y)
+            # Residual from shared base (parallel), not from updated y (cascade).
+            r = mod.residual(base)
+            total_r = r if total_r is None else total_r + r
             applied.append(name)
             residuals.append(r)
+        if total_r is not None:
+            y = base + total_r
         return y, applied, residuals
 
     def forward_hidden(
@@ -1781,6 +1806,11 @@ def _set_trainable_for_phase(stack: LatentV0Stack, phase: str) -> list[nn.Parame
             _unfreeze(mod)
         _unfreeze(stack.linear_init)
     elif p == "C":
+        # Keep projectors trainable so L_latent stays calibrated while
+        # interventions/heads move adapted_hidden (freezing them here was a
+        # root cause of phase-E L_latent explosions on real capture).
+        _unfreeze(stack.teacher_projector)
+        _unfreeze(stack.student_observer)
         for mod in stack.interventions.values():
             _unfreeze(mod)
         _unfreeze(stack.method_head)
@@ -1946,6 +1976,7 @@ def train_schedule(
     wall_ms = (time.perf_counter() - t0) * 1000.0
     final_train = history[-1]["train_loss"] if history else 0.0
     final_eval = history[-1]["eval_loss"] if history else 0.0
+    final_eval_source = "last_epoch"
     # "Learned" is phase-local: loss composition changes across A–F, so comparing
     # final total to the phase-E initial eval is meaningless.  Require a clear
     # train-loss drop inside at least one phase, or any min-train < first-train.
@@ -1969,6 +2000,36 @@ def train_schedule(
             learned = func_rows[-1]["eval_L_function"] < func_rows[0]["eval_L_function"] - 1e-4
     _ = initial_eval  # retained for diagnostics; not used as sole learned gate
 
+    # Prefer BEST_BALANCED under the terminal (phase-E) objective for the
+    # reported final_eval_loss.  Phase-E joint training often regresses
+    # L_latent relative to mid-schedule peaks; comparing G vs B on the
+    # last-epoch CURRENT weights unfairly punished latent arms that had
+    # already found a better balanced point.
+    best_path = store._path("BEST_BALANCED")
+    if best_path.is_file():
+        try:
+            store.load_state("BEST_BALANCED", stack)
+            best_metrics = eval_epoch(
+                stack,
+                eval_loader,
+                weights=phase_loss_weights("E"),
+                device=device,
+            )
+            final_eval = float(best_metrics.get("total", final_eval))
+            final_eval_source = "BEST_BALANCED_reeval_phase_E"
+            store.save(
+                "CURRENT",
+                stack,
+                metrics={
+                    "eval_loss": final_eval,
+                    "train_loss": float(final_train),
+                },
+                phase="FINAL_BEST",
+                meta={"final_eval_source": final_eval_source},
+            )
+        except Exception:
+            final_eval_source = "last_epoch_best_load_failed"
+
     # Reverse check
     stack.eval()
     reverse_ok = True
@@ -1981,6 +2042,7 @@ def train_schedule(
     bytes_acc = stack.gravity_accounting()
     bytes_acc["wall_train_ms"] = wall_ms
     bytes_acc["steps"] = steps
+    phase_results["__final_eval_source"] = final_eval_source
 
     return TrainResult(
         history=history,

@@ -1,0 +1,144 @@
+{
+  "blockers": [
+    "sealed_dual_attestation_runtime_admission_bridge_absent",
+    "sealed_non_fixture_runtime_execution_admission_absent",
+    "fresh_source_teacher_resource_admission_absent",
+    "fresh_one_shot_source_teacher_lease_absent"
+  ],
+  "claim_boundary": "CPU/file-only refusal. No source root/payload, model/GPU/server/HCLI, lease, child, eviction, native handoff, TPS, TG, or tournament action occurred.",
+  "execution_boundary": {
+    "gpu_server_hcli_or_tps_action": false,
+    "native_child_spawned": false,
+    "native_lease_issued_or_consumed": false,
+    "outer_terminal_or_release_written": false,
+    "replay_reservation_created": false,
+    "source_eviction_performed": false,
+    "source_or_native_vectors_written": false,
+    "source_payload_opened": false,
+    "source_root_opened_or_statted": false,
+    "source_teacher_child_spawned": false,
+    "source_teacher_or_logits_executed": false
+  },
+  "future_lifecycle": {
+    "distinct_native_handoff": {
+      "native_action_not_authorized_by_this_preflight": true,
+      "native_lease": {
+        "schema": "hawking.ascension.qwen30_hq30gr2_raw_final_logit_retention_quiet_lease.v1",
+        "status": "GRANTED_QWEN30_HQ30GR2_RAW_FINAL_LOGIT_RETENTION_ONE_SHOT"
+      },
+      "native_lease_id_must_differ_from_source_teacher_lease": true,
+      "source_eviction_seal_must_bind_native_lease": true
+    },
+    "post_hash_map_bridge": {
+      "cannot_substitute_for_runtime_execution_admission": true,
+      "non_authorizing": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_teacher_post_hash_map_bridge.v1",
+      "status": "PREPARED_QWEN30_STREAMED_SOURCE_TEACHER_POST_HASH_MAP_BRIDGE_NOT_EXECUTED"
+    },
+    "replay_reservation": {
+      "automatic_retry_or_relaunch_forbidden": true,
+      "capture_root_must_be_new": true,
+      "one_source_child_maximum": true,
+      "schema": "hawking.ascension.qwen30_production_source_teacher_outer_replay_reservation.v1",
+      "status_only_after_create_new_reservation": "RESERVED_QWEN30_PRODUCTION_SOURCE_TEACHER_ONE_SHOT_CAPTURE_NOT_SPAWNED"
+    },
+    "runtime_execution_inputs": {
+      "dual_attestation_runtime_admission": {
+        "must_bind_post_hash_map_bridge": true,
+        "schema": "hawking.ascension.qwen30_streamed_source_teacher_dual_attestation_runtime_admission.v1",
+        "status": "PREPARED_QWEN30_STREAMED_SOURCE_TEACHER_DUAL_ATTESTATION_RUNTIME_ADMISSION_NOT_EXECUTED"
+      },
+      "runtime_range_admission": {
+        "must_bind_earned_flat_map_canonical_identity": true,
+        "must_state_hash_scan_is_not_teacher_execution": true,
+        "schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+        "status": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY"
+      },
+      "source_teacher_lease": {
+        "one_shot_and_distinct_from_production_hash_scan_lease": true,
+        "schema": "hawking.ascension.qwen30_hq30gr2_source_bf16_teacher_quiet_lease.v1",
+        "status": "GRANTED_QWEN30_HQ30GR2_SOURCE_BF16_TEACHER_RAW_LOGIT_CAPTURE_ONE_SHOT"
+      },
+      "source_teacher_resource": {
+        "fresh_zero_swap_observation_before_lease": true,
+        "schema": "hawking.ascension.qwen30_production_source_teacher_resource_admission.v1",
+        "status": "PREPARED_QWEN30_PRODUCTION_SOURCE_TEACHER_RESOURCE_ADMISSION_ZERO_SWAP_NOT_LEASED"
+      }
+    },
+    "source_child_capture": {
+      "close_handles_and_zero_cache_before_child_exit": true,
+      "fsync_two_source_vectors_before_child_exit": true,
+      "maximum_live_raw_bf16_windows": 1,
+      "maximum_positioned_read_bytes": 1048576,
+      "must_not_start_native_phase": true,
+      "schema": "hawking.ascension.qwen30_streamed_source_teacher_child_execution_evidence.v1",
+      "source_forwards": 370,
+      "source_layers": 48,
+      "source_vectors_f32le": 2,
+      "status": "CAPTURED_QWEN30_STREAMED_SOURCE_TEACHER_CHILD_TWO_F32LE_LOGITS_NOT_NATIVE_PHASE"
+    },
+    "source_child_command": [
+      "ascension_qwen30_streamed_source_teacher_child",
+      "--source-root",
+      "ABSOLUTE_CANONICAL_QWEN30_SOURCE_ROOT",
+      "--runtime-admission",
+      "ABSOLUTE_SEALED_RUNTIME_EXECUTION_ADMISSION_JSON",
+      "--dual-attestation-runtime-admission",
+      "ABSOLUTE_SEALED_DUAL_BRIDGE_JSON",
+      "--source-lease",
+      "ABSOLUTE_SEALED_FRESH_SOURCE_TEACHER_LEASE_JSON",
+      "--capture-dir",
+      "NEW_ABSOLUTE_SOURCE_CHILD_CAPTURE_DIRECTORY"
+    ],
+    "source_terminal_then_eviction": {
+      "outer_must_reap_source_child_before_terminal": true,
+      "source_eviction": {
+        "schema": "hawking.ascension.qwen30_hq30gr2_source_bf16_teacher_eviction.v1",
+        "status": "EARNED_QWEN30_HQ30GR2_SOURCE_BF16_TEACHER_EVICTED_BEFORE_NATIVE_CAPTURE"
+      },
+      "source_eviction_must_close_handles_clear_cache_and_preserve_vectors": true,
+      "source_terminal": {
+        "schema": "hawking.ascension.qwen30_hq30gr2_source_bf16_teacher_raw_logit_capture.v1",
+        "status": "CAPTURED_QWEN30_HQ30GR2_SOURCE_BF16_TWO_RAW_FINAL_LOGITS_TEACHER_ONLY"
+      },
+      "terminal_receipt_last_after_source_capture": true
+    }
+  },
+  "prepared": false,
+  "production_hash_scan_antecedents": {
+    "production_child_capture": {
+      "canonical_document_sha256": "1fe6a33ba984bc60383a58fbfa962fdb45873d38bb1929f1020544efb7a92926",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/receipt.json",
+      "raw_document_sha256": "796547743cc8ac2965a6e265bbf04ab006faf3c3ad878b693d7dde439331551d",
+      "seal_sha256": "742d3ed404384c5254fc4e58e577a1f590a72785b238f79de254ba77caf95841"
+    },
+    "production_flat_map": {
+      "canonical_document_sha256": "760bc516363744944fadc92dc1208479d7fc439a62ac57f4b197e1ca83de52cd",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/flat-runtime-range-map.json",
+      "raw_document_sha256": "2a50026ea805f135c0f14217e0ad08e1f9afdc2d4a6590ec8db543bdaffba055",
+      "seal_sha256": "e40662714b9c7ebb8ab03b85d9631b0f79c0a79bfbc896017087dc318854f97b"
+    },
+    "production_hash_coverage": {
+      "canonical_document_sha256": "36985558f8c18f01fa451b19c09fbad14981986ed35ce0734905094c0d40d4f8",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/hash-coverage-attestation.json",
+      "raw_document_sha256": "93592aba558b0225c8093e3b43b7733af93ecd339cf9329a5ddc6ba77b149ff7",
+      "seal_sha256": "4ea036ae00cdb33436302e76b1a8f060936a147a114bb46a309002fa1923bdc2"
+    },
+    "production_lease_release": {
+      "canonical_document_sha256": "b84688b18ac8e4f383bc81f318e679197299b24a36600f0220b38c4503ded6f6",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_LAUNCH_20260809T144246Z/quiet-lease-release.json",
+      "raw_document_sha256": "e6c073190b962799a2b74f6965cc0f9a49ba42ecb17abd44ada9e9bebd72847c",
+      "seal_sha256": "9bec78a9a7b4e417be859278e178293921f52e1dd03363bf3417e53add2579a5"
+    },
+    "production_outer_terminal": {
+      "canonical_document_sha256": "96473b121e78f8f82f88e6546e394a6a6017a80dd135e25db5ef6b3f20801bc8",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/outer-terminal-receipt.json",
+      "raw_document_sha256": "07842516f34b7d1890f5fab2a7f5e0fdd1011c97cdb727f92d8b48e6f17de8ee",
+      "seal_sha256": "d98087cc70d11248711d3a25842fa2ad0eb14c2a331dbef94fac987c486ec53a"
+    }
+  },
+  "schema": "hawking.ascension.qwen30_production_source_teacher_outer_lifecycle_preflight.v1",
+  "seal_sha256": "669a45e0e6d007dec04e6b39047b295e2c28b049e1f1007786c4d130f85c1672",
+  "spawn_permitted": false,
+  "status": "REFUSED_QWEN30_PRODUCTION_SOURCE_TEACHER_OUTER_LIFECYCLE_PREREQUISITES_ABSENT_OR_INVALID"
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export_ids.v1",
+  "example_ids": [
+    "v0_math_01",
+    "v0_math_02",
+    "v0_math_03",
+    "v0_math_04"
+  ],
+  "n": 4,
+  "mode": "offline_analysis_diagnostic",
+  "host_activation_handoff_permitted": false,
+  "merged_from_workers": [
+    "w0",
+    "w1",
+    "w2",
+    "w3"
+  ]
+}

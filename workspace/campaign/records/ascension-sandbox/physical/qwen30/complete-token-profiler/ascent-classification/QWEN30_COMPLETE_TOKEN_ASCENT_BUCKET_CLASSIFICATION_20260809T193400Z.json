@@ -1,0 +1,106 @@
+{
+ "buckets_ranked_by_gpu_us": [
+  {
+   "bucket": "expert_gate_up",
+   "class": "B_F",
+   "dispatches": 384,
+   "gpu_us": 235663
+  },
+  {
+   "bucket": "qkv_kv",
+   "class": "B_F_K",
+   "dispatches": 384,
+   "gpu_us": 47875
+  },
+  {
+   "bucket": "expert_down",
+   "class": "B_F",
+   "dispatches": 384,
+   "gpu_us": 47189
+  },
+  {
+   "bucket": "attention",
+   "class": "B_F",
+   "dispatches": 96,
+   "gpu_us": 32801
+  },
+  {
+   "bucket": "router",
+   "class": "F",
+   "dispatches": 144,
+   "gpu_us": 28467
+  },
+  {
+   "bucket": "norm",
+   "class": "F",
+   "dispatches": 194,
+   "gpu_us": 2815
+  },
+  {
+   "bucket": "final_head",
+   "class": "B",
+   "dispatches": 2,
+   "gpu_us": 2667
+  },
+  {
+   "bucket": "combine",
+   "class": "F",
+   "dispatches": 96,
+   "gpu_us": 881
+  },
+  {
+   "bucket": "sampling",
+   "class": "F",
+   "dispatches": 1,
+   "gpu_us": 364
+  },
+  {
+   "bucket": "embedding",
+   "class": "B",
+   "dispatches": 1,
+   "gpu_us": 9
+  }
+ ],
+ "claim_boundary": {
+  "artifact_is_low_fidelity_so_no_valid_base_true_tps_exists_yet": true,
+  "derived_from_sealed_profile_not_a_new_measurement": true,
+  "no_model_loaded_no_lease_no_metal_context": true,
+  "not_a_tps_tg_hcli_capability_or_tournament_result": true
+ },
+ "finding": "The dominant recoverable bucket is S (dispatch/synchronisation), not compute. command_graph_transition_gap is 72.43% of host wall with 1,495 idle intervals against ~1,686 real dispatches - approximately one idle gap per dispatch. expert_gate_up is 59.1% of GPU BUSY time, but GPU busy is the smaller half of the wall, so fusing expert math alone cannot reach the 100 rung. The paired gate/up SwiGLU kernel is already live and the gap survives it. hcli_overhead is 0 only because the HCLI adapter is absent; H will appear later and must not be mistaken for a regression when it does.",
+ "host_wall_dominant": {
+  "bucket": "command_graph_transition_gap",
+  "class": "S",
+  "command_graph_transition_gap_us": 427350.258,
+  "gap_intervals": 1495,
+  "host_stage_wall_us": 609865.0,
+  "share_of_host_wall_percent": 72.43026450024524
+ },
+ "observed_rate": {
+  "dec_tps": 3.38,
+  "factor_required": 29.59,
+  "rung_100_tps_token_ns": 10000000,
+  "token_ns": 295857988
+ },
+ "prior_negative_evidence_any_mechanism_must_survive": [
+  "CPU+GPU pipelining measured DEAD on this path",
+  "megakernel/fusion at 8 layers measured 4.4x SLOWER",
+  "per-dispatch overhead previously won by elimination and Indirect Command Buffers, not per-dispatch shaving",
+  "use_resource 2.62us vs set_buffer 4.5us - residency batching matters"
+ ],
+ "recorded_at": "2026-08-09T19:34:00Z",
+ "reopen_condition": "Rates here are diagnostic and taken on a LOW_FIDELITY artifact that generates degenerate text. No valid BASE_TRUE_TPS exists until a coherent artifact is admitted; re-profile then, because a different representation can change dispatch topology and bucket shares.",
+ "schema": "hawking.ascension.qwen30_complete_token_ascent_bucket_classification.v1",
+ "source_profile": {
+  "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_COMPLETE_TOKEN_PROFILE.json",
+  "seal_sha256": "b22b4cc650ba58021f1d4ce6dacbbf7f1eadf2d5b13fb0fb98c8600686ab877f",
+  "wall_coverage_percent": 100.0
+ },
+ "status": "EARNED_ASCENT_BUCKET_CLASSIFICATION_DIAGNOSTIC_NOT_TPS",
+ "totals": {
+  "gap_intervals": 1495,
+  "gpu_busy_us": 398731,
+  "host_wall_outside_gpu_timestamp_envelope_us": 41998.5,
+  "real_dispatches": 1686
+ }
+}

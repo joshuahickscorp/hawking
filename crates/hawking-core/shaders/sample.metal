@@ -73,6 +73,64 @@ kernel void sample_argmax_f32(
     if (tid == 0) token[0] = shmem_i[0];
 }
 
+// Argmax + definitive finite flag. Writes invalid=1 if any logit is
+// non-finite, else invalid=0. Removes the mid-wave blit zero + separate
+// qwen_complete_any_nonfinite_f32 dispatch. Same argmax tie-break as
+// sample_argmax_f32 (lower index wins). Grid/TG (256, 1, 1).
+kernel void sample_argmax_f32_with_finite(
+    device const float* logits  [[buffer(0)]],
+    device       uint*  token   [[buffer(1)]],
+    device       uint*  invalid [[buffer(2)]],
+    constant     uint&  n       [[buffer(3)]],
+    threadgroup  float* shmem_v [[threadgroup(0)]],
+    threadgroup  uint*  shmem_i [[threadgroup(1)]],
+    threadgroup  uint*  shmem_bad [[threadgroup(2)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    if (n == 0) {
+        if (tid == 0) {
+            token[0] = 0;
+            invalid[0] = 0;
+        }
+        return;
+    }
+    float local_v = -INFINITY;
+    uint local_i = 0;
+    uint local_bad = 0;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = logits[i];
+        if (!isfinite(v)) {
+            local_bad = 1;
+        } else if (v > local_v) {
+            local_v = v;
+            local_i = i;
+        }
+    }
+    shmem_v[tid] = local_v;
+    shmem_i[tid] = local_i;
+    shmem_bad[tid] = local_bad;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0; stride >>= 1) {
+        if (tid < stride) {
+            float vb = shmem_v[tid + stride];
+            uint ib = shmem_i[tid + stride];
+            float va = shmem_v[tid];
+            uint ia = shmem_i[tid];
+            if (vb > va || (vb == va && ib < ia)) {
+                shmem_v[tid] = vb;
+                shmem_i[tid] = ib;
+            }
+            shmem_bad[tid] |= shmem_bad[tid + stride];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) {
+        token[0] = shmem_i[0];
+        invalid[0] = shmem_bad[0];
+    }
+}
+
 // Batched greedy argmax: one thread group per slot, 256 threads each.
 // Grid: (B * 256, 1, 1). Thread groups: (256, 1, 1).
 // Shmem: 256 floats + 256 uints per TG (2 KB per slot).

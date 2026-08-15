@@ -1,0 +1,96 @@
+{
+  "fabricated": false,
+  "membership": {
+    "assignments": {
+      "tf_syn_0008": "train",
+      "tf_syn_0009": "train",
+      "tf_syn_0010": "train",
+      "tf_syn_0011": "train",
+      "tf_syn_0012": "train",
+      "tf_syn_0013": "train",
+      "tf_syn_0014": "train",
+      "tf_syn_0015": "train"
+    },
+    "counts": {
+      "calibration": 0,
+      "hidden_test": 0,
+      "public_test": 0,
+      "retention": 0,
+      "train": 8
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T12:30:06.761388Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "1474b629712d64e5e339301368ed26962492488da9930fe47298bff119f0a6fc",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "n_traces": 8,
+  "recorded_at": "2026-08-06T12:30:06.761382Z",
+  "rows": [
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0008",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "ab5424021690438c8bc4e2eb100ee1fac447f4224fc986955404faf78a78c34d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0009",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "b60cf5a690fb8279937773f5e4a7d08e39d4d07e9b1a46b3e768852417c40c29"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0010",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "b3c0eab3f872fc95b29984263a669ea8c60669447476c4197ad8d70231b121fc"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0011",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "fc8e948be18c9f9e68f88a336de146222c8149914a1d237c7dccd3ddb8db6bdc"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0012",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "9c0bf211420230c040f67a73cad7fe08636994292d14050bb12e4d6780f581f2"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0013",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "85eea26edf8255f8e17a51b7417427d9ff930275dd2ee876e853972142a8159f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0014",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "ffa43e6877c587bbe8c24f08867e784bc7b0deb4cedb822b8a167b50f5553ef0"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0015",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "87b0086472faa49fba3529081fc56cfe3150381c05ad7a87d7666ec32f0822b4"
+    }
+  ],
+  "schema": "hawking.frankenstein.evidence_corpus_index.v1",
+  "seal_sha256": "834f2af807a4c1d9b1e47b529a2c198206e8fca2f987022774ccd679e0579ed0"
+}

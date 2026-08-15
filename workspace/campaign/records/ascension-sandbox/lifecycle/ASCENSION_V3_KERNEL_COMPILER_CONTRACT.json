@@ -1,0 +1,179 @@
+{
+  "architecture_fingerprint_fields": [
+    "dense_or_moe",
+    "layer_schedule",
+    "hidden_dimensions",
+    "attention_state_operators",
+    "position_encoding",
+    "router_topology",
+    "expert_count_top_k",
+    "shared_experts",
+    "activation_norm",
+    "kv_state",
+    "native_dtype",
+    "tensor_geometry",
+    "tokenizer_template",
+    "context"
+  ],
+  "architecture_pipeline": [
+    "FINGERPRINT",
+    "OPERATOR_GRAPH",
+    "FAMILY_PLUGIN",
+    "MISSING_OPERATORS",
+    "GRAVITY_SEARCH_SPACE",
+    "CODEGEN_PLAN"
+  ],
+  "bible_sha256": "f3617881ecae08e52dc9ea3727b47d6a9bcfaaab7b73b5b84b9f3554c37026a3",
+  "claim_boundary": {
+    "declaration_is_not_compilation": true,
+    "declaration_is_not_exact_model_qualification": true,
+    "generic_hf_reference_does_not_replace_a_family_plugin": true,
+    "measured_parity_capability_complete_token_p99_and_rollback_remain_required": true
+  },
+  "family_starting_doctrines": {
+    "DEEPSEEK": [
+      "mla_latent_attention",
+      "moe",
+      "dsa_indexed_variants",
+      "mhc_state",
+      "native_fp4_fp8_when_required",
+      "proto_frankenstein_later"
+    ],
+    "GEMMA": [
+      "dense_portability",
+      "attention_variants",
+      "exact_model_codegen"
+    ],
+    "GLM": [
+      "moe",
+      "dsa",
+      "indexshare_indexed_attention",
+      "long_context",
+      "mtp_control",
+      "streamed_source"
+    ],
+    "KIMI": [
+      "bind_released_architecture_live",
+      "large_moe",
+      "delta_latent_sparse_attention_when_present",
+      "long_context",
+      "streamed_source"
+    ],
+    "LLAMA": [
+      "exact_tokenizer_bos_rope",
+      "dense_gqa",
+      "reference_parity",
+      "generated_dense_kernels"
+    ],
+    "MISTRAL_MIXTRAL": [
+      "sliding_window_semantics",
+      "gqa",
+      "moe_routing",
+      "shared_expert_where_present"
+    ],
+    "QWEN": [
+      "reuse_manager_kernel_evidence",
+      "moe_hybrid_plugins",
+      "expert_shared_expert_representations",
+      "deltanet_state_for_next"
+    ],
+    "STATE_SPACE_OR_LINEAR_ATTENTION_HYBRID": [
+      "deltanet",
+      "linear_attention",
+      "recurrent_state",
+      "state_checkpoint_restart"
+    ]
+  },
+  "gravity_components": [
+    "GRAVITY_CONTROLLER",
+    "FORGE",
+    "DOCTOR",
+    "QAT_ENGINE",
+    "KERNEL_COMPILER",
+    "SCHEDULER_COMPILER",
+    "EVENT_HORIZON",
+    "GRAVEYARD"
+  ],
+  "model_program_codegen": [
+    "loop_bounds",
+    "offsets",
+    "expert_groups",
+    "top_k",
+    "quant_grammar",
+    "scale_grouping",
+    "tile_choices",
+    "argument_tables",
+    "command_graph",
+    "prefetch_plan",
+    "residency_plan",
+    "state_layout"
+  ],
+  "model_program_key_fields": [
+    "source_revision",
+    "artifact_hash",
+    "architecture_fingerprint",
+    "gravity_plan",
+    "device",
+    "context_regime",
+    "session_regime"
+  ],
+  "recorded_at": "2026-08-09T17:44:43.536707Z",
+  "representation_tournament_classes": [
+    "native_mixed_precision",
+    "organ_aware_q3",
+    "special_down_projection",
+    "activation_correction",
+    "trellis",
+    "lattice_incoherence",
+    "additive_multi_codebook",
+    "binary_ternary",
+    "shared_basis",
+    "joint_expert_decomposition",
+    "low_rank_sparse_residual",
+    "protected_outliers",
+    "route_group_codebooks",
+    "doctor_correction",
+    "qat_recovery",
+    "kv_state_compression",
+    "active_expert_reduction",
+    "conditional_depth",
+    "functional_expert_replacement",
+    "functional_attention_replacement",
+    "shared_recurrent_block"
+  ],
+  "required_family_plugins": [
+    "QWEN_DENSE",
+    "QWEN_MOE",
+    "QWEN_NEXT_HYBRID",
+    "LLAMA_GQA",
+    "MISTRAL_SLIDING",
+    "MIXTRAL_MOE",
+    "DEEPSEEK_MLA_MOE",
+    "DEEPSEEK_V4_OR_DISCOVERED_HYBRID",
+    "GLM_MOE_INDEXED_OR_DISCOVERED_VARIANTS",
+    "KIMI_RELEASED_ARCHITECTURE_PLUGINS",
+    "GEMMA_FAMILY",
+    "STATE_SPACE_LINEAR_ATTENTION_HYBRID",
+    "GENERIC_HF_REFERENCE"
+  ],
+  "schema": "hawking.ascension.v3_kernel_compiler_contract.v1",
+  "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+  "shared_primitives": [
+    "packed_load_decode",
+    "scale_codebook_application",
+    "dot_reduction",
+    "norm",
+    "position_operations",
+    "routing",
+    "top_k",
+    "expert_gather",
+    "projection_waves",
+    "activation",
+    "residual",
+    "kv_state",
+    "sampling",
+    "continuous_batching",
+    "receipts"
+  ],
+  "status": "CONTROLLER_CONFIGURATION_ONLY"
+}

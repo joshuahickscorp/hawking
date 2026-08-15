@@ -1,0 +1,96 @@
+{
+  "fabricated": false,
+  "membership": {
+    "assignments": {
+      "tf_syn_0024": "calibration",
+      "tf_syn_0025": "public_test",
+      "tf_syn_0026": "hidden_test",
+      "tf_syn_0027": "calibration",
+      "tf_syn_0028": "public_test",
+      "tf_syn_0029": "hidden_test",
+      "tf_syn_0030": "calibration",
+      "tf_syn_0031": "public_test"
+    },
+    "counts": {
+      "calibration": 3,
+      "hidden_test": 2,
+      "public_test": 3,
+      "retention": 0,
+      "train": 0
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T12:30:06.760562Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "fd559435d52b139774aa9fd645985d902b227b94a27ae464633577d551c09e00",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "n_traces": 8,
+  "recorded_at": "2026-08-06T12:30:06.760555Z",
+  "rows": [
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0024",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "c56f4101e47d039c24aeb6b4e9ac94f572b9f56ebe1b599ffb77a16b03728ab7"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0025",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "df8a38dece5bc9847d5dda4edbf27c6299d27b2babb008e126624c36f5d20cac"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0026",
+      "glm_present": true,
+      "membership": "hidden_test",
+      "seal_sha256": "f4635edbd4d9942477f6c4686d8c22510db2cd0432a5dbdc70a29763f7523f92"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0027",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "88bfa51e3feaae88421fbed35c9b310b6595749d523a33301d21b8d70ec95d1c"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0028",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "0cd728416558608bc1b29464116560d4a59b63a2029b96f288fac95fd2b3402a"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0029",
+      "glm_present": true,
+      "membership": "hidden_test",
+      "seal_sha256": "84967d2f5e06430281e745847ff50ffe056a8481fd91b6bfedf08297c7624126"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0030",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "3344b381369cb862b6edda35e32e7ce0fc509d9978c1e44fba1c27b48008d43a"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0031",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "a31ad625136cfe6e28c2006fdbd187cf98ec17837216164bd1dbb6d88ac99e63"
+    }
+  ],
+  "schema": "hawking.frankenstein.evidence_corpus_index.v1",
+  "seal_sha256": "c4729c5766ff45ee6b68ac39182abf7778912a19675683cc74fc3b0b8bbfc5e2"
+}

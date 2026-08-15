@@ -1,0 +1,1788 @@
+{
+  "claim_boundary": {
+    "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+    "no_complete_model_layer_graph_executed": true,
+    "no_model_capability_claim": true,
+    "no_native_full_runtime_or_hcli_endpoint": true,
+    "no_tokenizer_or_prompt_template_executed": true,
+    "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+    "not_a_tournament_candidate_or_selection_action": true
+  },
+  "component": "deltanet_recurrent_state",
+  "context_regimes": [
+    8,
+    32,
+    128
+  ],
+  "model": "qwen80",
+  "recorded_at": "2026-08-08T07:31:48.555759Z",
+  "regimes": [
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 1048608,
+            "written": 1048608
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 1048608,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/fp16_reference.hkv",
+            "sha256": "fb15a4421a4298e0ab20b8483ebd21135d0d0fb3fd1da4cc74d0464e12da0ef8"
+          },
+          "reconstruction": {
+            "cosine": 0.9999991059303284,
+            "finite": true,
+            "max_abs": 2.9262155294418335e-06,
+            "relative_l2": 0.00020790363487321883,
+            "rmse": 1.1287262680070853e-07
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_fp16_reference.json",
+            "seal_sha256": "eef9a26411765d2b93a76e6e53e8ad68e2e9b27101fb6a7b65fb197b25aeddc1"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1552083,
+            "encode": 2960667,
+            "physical_read": 170792,
+            "physical_write_and_fsync": 1178667
+          }
+        },
+        {
+          "bytes": {
+            "read": 540704,
+            "written": 540704
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 540704,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/q8_group64.hkv",
+            "sha256": "d2b4c9980a5f321f9bebaecacedac16468919ae2c65b92547d44e67ee185e7d5"
+          },
+          "reconstruction": {
+            "cosine": 0.9999792575836182,
+            "finite": true,
+            "max_abs": 3.8745347410440445e-05,
+            "relative_l2": 0.006360734347254038,
+            "rmse": 3.453298177191755e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_q8_group64.json",
+            "seal_sha256": "19d062b3d6c04df6c3976ce7651e8826b8fd367ee9fa63515e2d7d0c7633c9ba"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 8638125,
+            "encode": 19210125,
+            "physical_read": 94375,
+            "physical_write_and_fsync": 579667
+          }
+        },
+        {
+          "bytes": {
+            "read": 278560,
+            "written": 278560
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 278560,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/q4_group64.hkv",
+            "sha256": "29d9d204e348f359cf6ec4f2cee9bb14802d7d2b89617008b1c05bfe4272d5a2"
+          },
+          "reconstruction": {
+            "cosine": 0.9934733510017395,
+            "finite": true,
+            "max_abs": 0.0006722132675349712,
+            "relative_l2": 0.11490526795387268,
+            "rmse": 6.238307832973078e-05
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_q4_group64.json",
+            "seal_sha256": "b07f73d47eae65d5f67f4e8a909635558cfad787de506e7bcde1f9a2feafcca3"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 7516917,
+            "encode": 16612875,
+            "physical_read": 68583,
+            "physical_write_and_fsync": 535000
+          }
+        },
+        {
+          "bytes": {
+            "read": 310018,
+            "written": 310018
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 310018,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "73f99692d1e26f3d406cbd7b3f713a99f8961a32d8f0333d289c791165030fc8"
+          },
+          "reconstruction": {
+            "cosine": 0.9946736097335815,
+            "finite": true,
+            "max_abs": 0.00020817325275857002,
+            "relative_l2": 0.10368218272924423,
+            "rmse": 5.628996586892754e-05
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "14ee44644e25ebd49ee292a119327624672d72322daa385be26afaa13c90b266"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 6926000,
+            "encode": 51860166,
+            "physical_read": 90500,
+            "physical_write_and_fsync": 555875
+          }
+        }
+      ],
+      "context_tokens": 8,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 1048608,
+              "compacted_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/branch-a-compacted-current.hkv",
+                "sha256": "f544a79d2dd568f7657dd5951f3112c964521aacc6cf0a7396ecb9f6b26454ba"
+              },
+              "expected_current_codec_sha256": "3a4742e4626ae8294921f980f4de12e4768000c10fbd28b7f0e8ea2949c3fc7b",
+              "journal": {
+                "bytes": 2097216,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/branch-a-superseded-state.journal",
+                "sha256": "7be855b7880e7460b4044b31563689f824c3d36483210ffe3c6916c8b0ec432c"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "3a4742e4626ae8294921f980f4de12e4768000c10fbd28b7f0e8ea2949c3fc7b",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/branch-a-current.hkv",
+                "sha256": "f544a79d2dd568f7657dd5951f3112c964521aacc6cf0a7396ecb9f6b26454ba"
+              },
+              "branch_b_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/branch-b-current.hkv",
+                "sha256": "0c039ae2c6b53796ccbed4c48f306cdd176edad9e4d641da7211d517c6e93a13"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 3145856,
+              "bytes_avoided_vs_full_copy": 1048576,
+              "shared_prefix": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/shared-prefix-state.hkv",
+                "sha256": "0f63740660a0dd55324fb924c9095a25d02fe6344bf759eef5a43e8c10865b5e"
+              }
+            },
+            "full_copy": {
+              "bytes": 4194432,
+              "current_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/full-copy-branch-a-current.hkv",
+                "sha256": "f544a79d2dd568f7657dd5951f3112c964521aacc6cf0a7396ecb9f6b26454ba"
+              },
+              "current_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/full-copy-branch-b-current.hkv",
+                "sha256": "0c039ae2c6b53796ccbed4c48f306cdd176edad9e4d641da7211d517c6e93a13"
+              },
+              "prefix_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/full-copy-branch-a-prefix.hkv",
+                "sha256": "0f63740660a0dd55324fb924c9095a25d02fe6344bf759eef5a43e8c10865b5e"
+              },
+              "prefix_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/fp16_reference/full-copy-branch-b-prefix.hkv",
+                "sha256": "0f63740660a0dd55324fb924c9095a25d02fe6344bf759eef5a43e8c10865b5e"
+              }
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9999998211860657,
+                "finite": true,
+                "max_abs": 1.644715666770935e-06,
+                "relative_l2": 9.54465867835097e-05,
+                "rmse": 7.058573459062245e-08
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 1.0,
+                "finite": true,
+                "max_abs": 1.644715666770935e-06,
+                "relative_l2": 9.64095743256621e-05,
+                "rmse": 7.058524431613478e-08
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999994039535522,
+                "finite": true,
+                "max_abs": 3.6964192986488342e-06,
+                "relative_l2": 0.00020735649741254747,
+                "rmse": 1.5334666159105836e-07
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.999999463558197,
+                "finite": true,
+                "max_abs": 3.725290298461914e-06,
+                "relative_l2": 0.00020756092271767557,
+                "rmse": 1.519635617341919e-07
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 540704,
+              "compacted_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/branch-a-compacted-current.hkv",
+                "sha256": "2e41ed7348befc9049a67291567568da481b31cd6d81f1c698fe5dbdc1f5be4e"
+              },
+              "expected_current_codec_sha256": "8e11afb01028445137f3e0df10f1d2dfeea7eaa9acd34196b05ad2efc579596b",
+              "journal": {
+                "bytes": 1081408,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/branch-a-superseded-state.journal",
+                "sha256": "0363ca236557d80554e5f1e3a3603da8c0a882ecb0406ee5c72e3294f58b42d7"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "8e11afb01028445137f3e0df10f1d2dfeea7eaa9acd34196b05ad2efc579596b",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/branch-a-current.hkv",
+                "sha256": "2e41ed7348befc9049a67291567568da481b31cd6d81f1c698fe5dbdc1f5be4e"
+              },
+              "branch_b_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/branch-b-current.hkv",
+                "sha256": "6b663d2e76d6d1290baed9669c9d1f7f1fda034207040035e65ddc2093ed7ec7"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 1622144,
+              "bytes_avoided_vs_full_copy": 540672,
+              "shared_prefix": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/shared-prefix-state.hkv",
+                "sha256": "ac52cac3e00e9e817eebe5edade978b989b64b2be08df1dad881029f0e8af0bb"
+              }
+            },
+            "full_copy": {
+              "bytes": 2162816,
+              "current_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/full-copy-branch-a-current.hkv",
+                "sha256": "2e41ed7348befc9049a67291567568da481b31cd6d81f1c698fe5dbdc1f5be4e"
+              },
+              "current_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/full-copy-branch-b-current.hkv",
+                "sha256": "6b663d2e76d6d1290baed9669c9d1f7f1fda034207040035e65ddc2093ed7ec7"
+              },
+              "prefix_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "ac52cac3e00e9e817eebe5edade978b989b64b2be08df1dad881029f0e8af0bb"
+              },
+              "prefix_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q8_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "ac52cac3e00e9e817eebe5edade978b989b64b2be08df1dad881029f0e8af0bb"
+              }
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9999951124191284,
+                "finite": true,
+                "max_abs": 3.267265856266022e-05,
+                "relative_l2": 0.003080264199525118,
+                "rmse": 2.27795317186974e-06
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9999953508377075,
+                "finite": true,
+                "max_abs": 3.267265856266022e-05,
+                "relative_l2": 0.0031113633885979652,
+                "rmse": 2.27795317186974e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999770522117615,
+                "finite": true,
+                "max_abs": 7.123209070414305e-05,
+                "relative_l2": 0.006686849985271692,
+                "rmse": 4.945139608025784e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999774098396301,
+                "finite": true,
+                "max_abs": 7.002917118370533e-05,
+                "relative_l2": 0.006697637494653463,
+                "rmse": 4.9036093514587265e-06
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 278560,
+              "compacted_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/branch-a-compacted-current.hkv",
+                "sha256": "8c52a2a4ecd15a7103d33c5ad34f4418e0d0c1366970a9a514f58dc9efd6b17c"
+              },
+              "expected_current_codec_sha256": "47fff49e47cf99a5eb7907b1110c03616120304cca9b11216e0332b3d4c41f51",
+              "journal": {
+                "bytes": 557120,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/branch-a-superseded-state.journal",
+                "sha256": "ba3f158355854489f3c6ec70bb0dc516c9db50b4897d2ded3932edc1b691e9df"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "47fff49e47cf99a5eb7907b1110c03616120304cca9b11216e0332b3d4c41f51",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/branch-a-current.hkv",
+                "sha256": "8c52a2a4ecd15a7103d33c5ad34f4418e0d0c1366970a9a514f58dc9efd6b17c"
+              },
+              "branch_b_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/branch-b-current.hkv",
+                "sha256": "cc9d77ae422748adc3c643141796ef8bcb04937735586ddf2d3fa83bbb22b4d3"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 835712,
+              "bytes_avoided_vs_full_copy": 278528,
+              "shared_prefix": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/shared-prefix-state.hkv",
+                "sha256": "8aa2f3933eac2e3c80e34fb4aebafb975013df0e5767d4f250307eb9568de6dd"
+              }
+            },
+            "full_copy": {
+              "bytes": 1114240,
+              "current_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/full-copy-branch-a-current.hkv",
+                "sha256": "8c52a2a4ecd15a7103d33c5ad34f4418e0d0c1366970a9a514f58dc9efd6b17c"
+              },
+              "current_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/full-copy-branch-b-current.hkv",
+                "sha256": "cc9d77ae422748adc3c643141796ef8bcb04937735586ddf2d3fa83bbb22b4d3"
+              },
+              "prefix_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "8aa2f3933eac2e3c80e34fb4aebafb975013df0e5767d4f250307eb9568de6dd"
+              },
+              "prefix_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/q4_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "8aa2f3933eac2e3c80e34fb4aebafb975013df0e5767d4f250307eb9568de6dd"
+              }
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9984943866729736,
+                "finite": true,
+                "max_abs": 0.0005912377964705229,
+                "relative_l2": 0.054934803396463394,
+                "rmse": 4.062603693455458e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9984636902809143,
+                "finite": true,
+                "max_abs": 0.000591237680055201,
+                "relative_l2": 0.0554894395172596,
+                "rmse": 4.062603693455458e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9928955435752869,
+                "finite": true,
+                "max_abs": 0.0013399305753409863,
+                "relative_l2": 0.11975205689668655,
+                "rmse": 8.856048953020945e-05
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9928774237632751,
+                "finite": true,
+                "max_abs": 0.0013057320611551404,
+                "relative_l2": 0.11995919048786163,
+                "rmse": 8.782694931142032e-05
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 310018,
+              "compacted_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/branch-a-compacted-current.hkv",
+                "sha256": "87adf88fea39f82972a8b7d5d0b8551012c12f06869353923d5349a9580df24c"
+              },
+              "expected_current_codec_sha256": "45c06b1bc563e88a46ecf4f702f835f56d99bbffcd5e16d72b1b5d471eb51a0c",
+              "journal": {
+                "bytes": 620036,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/branch-a-superseded-state.journal",
+                "sha256": "fc52dca8327fe2847009b8987298f6f0b00f64b44a147474f858bc08900e3495"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "45c06b1bc563e88a46ecf4f702f835f56d99bbffcd5e16d72b1b5d471eb51a0c",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/branch-a-current.hkv",
+                "sha256": "87adf88fea39f82972a8b7d5d0b8551012c12f06869353923d5349a9580df24c"
+              },
+              "branch_b_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/branch-b-current.hkv",
+                "sha256": "d7d49a6fa682ac5651e8e5cedf5ef2a24d34f99ef7aeca3a76cb856f1e519013"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 930086,
+              "bytes_avoided_vs_full_copy": 309986,
+              "shared_prefix": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/shared-prefix-state.hkv",
+                "sha256": "25df8a1b52c29e6bc3dc3b1acb1ca0f741cce43aeaca70261cf08c91cb5a27fc"
+              }
+            },
+            "full_copy": {
+              "bytes": 1240072,
+              "current_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-current.hkv",
+                "sha256": "87adf88fea39f82972a8b7d5d0b8551012c12f06869353923d5349a9580df24c"
+              },
+              "current_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-current.hkv",
+                "sha256": "d7d49a6fa682ac5651e8e5cedf5ef2a24d34f99ef7aeca3a76cb856f1e519013"
+              },
+              "prefix_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-prefix.hkv",
+                "sha256": "25df8a1b52c29e6bc3dc3b1acb1ca0f741cce43aeaca70261cf08c91cb5a27fc"
+              },
+              "prefix_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-prefix.hkv",
+                "sha256": "25df8a1b52c29e6bc3dc3b1acb1ca0f741cce43aeaca70261cf08c91cb5a27fc"
+              }
+            },
+            "prefix_tokens": 4,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9988626837730408,
+                "finite": true,
+                "max_abs": 0.00016713025979697704,
+                "relative_l2": 0.04774127155542374,
+                "rmse": 3.530619142111391e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9988393187522888,
+                "finite": true,
+                "max_abs": 0.0001671304926276207,
+                "relative_l2": 0.048223283141851425,
+                "rmse": 3.530619142111391e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9946454763412476,
+                "finite": true,
+                "max_abs": 0.00032407790422439575,
+                "relative_l2": 0.10392873734235764,
+                "rmse": 7.685863238293678e-05
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9946250915527344,
+                "finite": true,
+                "max_abs": 0.0003208930429536849,
+                "relative_l2": 0.10412190109491348,
+                "rmse": 7.623181591043249e-05
+              }
+            },
+            "suffix_tokens_per_branch": 4
+          }
+        ],
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "88c8264bcdc5a63c1d7f1c73b539eb03ad68a529769ba10efe0126b9ecaa45b3",
+          "branch_b_suffix": "5cab86d62ba5bd9cd8e4e919da06a298458f41df6d164a9e28f629d075d4a0f8",
+          "prefix": "ce9f87caf220be93737d3f6921b3824d26599dd0b6aedd39a6ab55785dbd2302"
+        },
+        "kind": "deltanet_recurrent_state_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "a08eedcfd912afb9565c4e985d4a741816a3acc7b63f404ea19bb50c1195c28a",
+        "shape": [
+          8,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each DeltaNet layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session_resident_state": 37749888,
+            "bytes_per_token_amortized_at_declared_session": 4718736.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 1048608
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session_resident_state": 11160648,
+            "bytes_per_token_amortized_at_declared_session": 1395081.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 310018
+          },
+          "q4_group64": {
+            "bytes_per_session_resident_state": 10028160,
+            "bytes_per_token_amortized_at_declared_session": 1253520.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 278560
+          },
+          "q8_group64": {
+            "bytes_per_session_resident_state": 19465344,
+            "bytes_per_token_amortized_at_declared_session": 2433168.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 540704
+          }
+        },
+        "heads": 32,
+        "key_head_dim": 128,
+        "kind": "fixed_size_deltanet_recurrent_state",
+        "layer_count": 36,
+        "session_tokens_for_amortization_only": 8,
+        "value_head_dim": 128,
+        "values_per_layer": 524288,
+        "values_per_session_resident_state": 18874368
+      },
+      "source_projection_output": {
+        "float32_sha256": "b96a71997dd4ad7593ba382b4178d86ab656c30a51efd9c0db6d5b7f8f362139",
+        "shape": [
+          32,
+          128,
+          128
+        ]
+      }
+    },
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 1048608,
+            "written": 1048608
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 1048608,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/fp16_reference.hkv",
+            "sha256": "3ca10ef96bce1713d5993cee6b0ec93ccdb0ee48a2287d7754d347c772ae67a0"
+          },
+          "reconstruction": {
+            "cosine": 0.9999991059303284,
+            "finite": true,
+            "max_abs": 3.698281943798065e-06,
+            "relative_l2": 0.00020735019643325359,
+            "rmse": 1.638577060703028e-07
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_fp16_reference.json",
+            "seal_sha256": "df126200ce5343dc8b2b4500b16c60793900fbe74cd71820223aec3b05518dca"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1210791,
+            "encode": 2588458,
+            "physical_read": 125166,
+            "physical_write_and_fsync": 730917
+          }
+        },
+        {
+          "bytes": {
+            "read": 540704,
+            "written": 540704
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 540704,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/q8_group64.hkv",
+            "sha256": "4a1d342b9f0f02a501322a87b47f2d56515fbcc53d7ee900bd420be0164b0a57"
+          },
+          "reconstruction": {
+            "cosine": 0.9999797940254211,
+            "finite": true,
+            "max_abs": 3.6313896998763084e-05,
+            "relative_l2": 0.006290862336754799,
+            "rmse": 4.971333964931546e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_q8_group64.json",
+            "seal_sha256": "66e00e6f3708d20f0523af296e43420e75ffdb4754485716ce0bd852418726b9"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 8708625,
+            "encode": 15291417,
+            "physical_read": 104375,
+            "physical_write_and_fsync": 643125
+          }
+        },
+        {
+          "bytes": {
+            "read": 278560,
+            "written": 278560
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 278560,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/q4_group64.hkv",
+            "sha256": "4add4caebda365b72410f3087198f685de73d413d8cd9876e2dde3cfc0e85447"
+          },
+          "reconstruction": {
+            "cosine": 0.9935734868049622,
+            "finite": true,
+            "max_abs": 0.0006458377465605736,
+            "relative_l2": 0.1139313206076622,
+            "rmse": 9.003386367112398e-05
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_q4_group64.json",
+            "seal_sha256": "84f1293bf7bdfcb3c4279254a23b996f48ce98857ed7a1432c3072dcdf32e49b"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 7312333,
+            "encode": 11882708,
+            "physical_read": 70084,
+            "physical_write_and_fsync": 503875
+          }
+        },
+        {
+          "bytes": {
+            "read": 310018,
+            "written": 310018
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 310018,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "3d6ac175ad504c8b55026e370782477ba9ae6d0c6bc4299b169c522efecebde5"
+          },
+          "reconstruction": {
+            "cosine": 0.9944539070129395,
+            "finite": true,
+            "max_abs": 0.0002768866834230721,
+            "relative_l2": 0.10578221827745438,
+            "rmse": 8.359406638192013e-05
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "c39c9d49c53c63d150131cc12b130ac6eab17be7a26bee4440d34930c1852c06"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 6635375,
+            "encode": 47960000,
+            "physical_read": 60625,
+            "physical_write_and_fsync": 914041
+          }
+        }
+      ],
+      "context_tokens": 32,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 1048608,
+              "compacted_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/branch-a-compacted-current.hkv",
+                "sha256": "021100c5eadf5bfa6a6b48e370286b2840759301e75b382628defd15afddc826"
+              },
+              "expected_current_codec_sha256": "fd7ad7457d108d387fa4e40d22dceeec08c1d8284342d2a61ce6412c18895447",
+              "journal": {
+                "bytes": 2097216,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/branch-a-superseded-state.journal",
+                "sha256": "6de9b1860fd3170653fab0ee395eef00aeb9cde1419398a85002bb1c09d562b6"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "fd7ad7457d108d387fa4e40d22dceeec08c1d8284342d2a61ce6412c18895447",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/branch-a-current.hkv",
+                "sha256": "021100c5eadf5bfa6a6b48e370286b2840759301e75b382628defd15afddc826"
+              },
+              "branch_b_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/branch-b-current.hkv",
+                "sha256": "61b9f5aa3f5bf33d53818f9adb7bb911b40d460c8ab54a51eb74177547e82fa3"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 3145856,
+              "bytes_avoided_vs_full_copy": 1048576,
+              "shared_prefix": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/shared-prefix-state.hkv",
+                "sha256": "79167fda14795f06f44c63620fa5d7ed3835565745838f20bee86a4a3534c478"
+              }
+            },
+            "full_copy": {
+              "bytes": 4194432,
+              "current_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/full-copy-branch-a-current.hkv",
+                "sha256": "021100c5eadf5bfa6a6b48e370286b2840759301e75b382628defd15afddc826"
+              },
+              "current_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/full-copy-branch-b-current.hkv",
+                "sha256": "61b9f5aa3f5bf33d53818f9adb7bb911b40d460c8ab54a51eb74177547e82fa3"
+              },
+              "prefix_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/full-copy-branch-a-prefix.hkv",
+                "sha256": "79167fda14795f06f44c63620fa5d7ed3835565745838f20bee86a4a3534c478"
+              },
+              "prefix_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/fp16_reference/full-copy-branch-b-prefix.hkv",
+                "sha256": "79167fda14795f06f44c63620fa5d7ed3835565745838f20bee86a4a3534c478"
+              }
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 1.0000001192092896,
+                "finite": true,
+                "max_abs": 1.9390136003494263e-06,
+                "relative_l2": 8.32528094178997e-05,
+                "rmse": 1.0074974454710173e-07
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 1.0,
+                "finite": true,
+                "max_abs": 1.9390136003494263e-06,
+                "relative_l2": 8.552919462090358e-05,
+                "rmse": 1.0074965217654608e-07
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999992251396179,
+                "finite": true,
+                "max_abs": 4.770234227180481e-06,
+                "relative_l2": 0.00020751191186718643,
+                "rmse": 2.511240495550737e-07
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999990463256836,
+                "finite": true,
+                "max_abs": 3.8044527173042297e-06,
+                "relative_l2": 0.00020781511557288468,
+                "rmse": 2.4479726334902807e-07
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 540704,
+              "compacted_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/branch-a-compacted-current.hkv",
+                "sha256": "bbeec1848e89c1e5e80263d64182d2922dd74eed2e8200861a61485e01f1433a"
+              },
+              "expected_current_codec_sha256": "92fb85d214b4f91917ffc6428bd494f4cbe903d0ac0915b50fb632a8d0ce56eb",
+              "journal": {
+                "bytes": 1081408,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/branch-a-superseded-state.journal",
+                "sha256": "7d8b6342a28eb061b0d61fbeb1f951bea0d9ae7a983f01e4f0a3a262c13b116b"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "92fb85d214b4f91917ffc6428bd494f4cbe903d0ac0915b50fb632a8d0ce56eb",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/branch-a-current.hkv",
+                "sha256": "bbeec1848e89c1e5e80263d64182d2922dd74eed2e8200861a61485e01f1433a"
+              },
+              "branch_b_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/branch-b-current.hkv",
+                "sha256": "73d200e5d555084ed9e898889531038213badaefc338096844f6a7130e6e4344"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 1622144,
+              "bytes_avoided_vs_full_copy": 540672,
+              "shared_prefix": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/shared-prefix-state.hkv",
+                "sha256": "61656d679c6c64f477e950e48417b62d1758013c795c0f86621a94c4d8510efe"
+              }
+            },
+            "full_copy": {
+              "bytes": 2162816,
+              "current_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/full-copy-branch-a-current.hkv",
+                "sha256": "bbeec1848e89c1e5e80263d64182d2922dd74eed2e8200861a61485e01f1433a"
+              },
+              "current_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/full-copy-branch-b-current.hkv",
+                "sha256": "73d200e5d555084ed9e898889531038213badaefc338096844f6a7130e6e4344"
+              },
+              "prefix_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "61656d679c6c64f477e950e48417b62d1758013c795c0f86621a94c4d8510efe"
+              },
+              "prefix_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q8_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "61656d679c6c64f477e950e48417b62d1758013c795c0f86621a94c4d8510efe"
+              }
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9999968409538269,
+                "finite": true,
+                "max_abs": 3.0276598408818245e-05,
+                "relative_l2": 0.002517194487154484,
+                "rmse": 3.0462260838248767e-06
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.999996542930603,
+                "finite": true,
+                "max_abs": 3.027636557817459e-05,
+                "relative_l2": 0.0025860248133540154,
+                "rmse": 3.046226311198552e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999801516532898,
+                "finite": true,
+                "max_abs": 6.230827420949936e-05,
+                "relative_l2": 0.00626656599342823,
+                "rmse": 7.5835955613001715e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999800324440002,
+                "finite": true,
+                "max_abs": 5.725282244384289e-05,
+                "relative_l2": 0.006265389733016491,
+                "rmse": 7.3803635132208e-06
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 278560,
+              "compacted_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/branch-a-compacted-current.hkv",
+                "sha256": "b54901f4e26d69295a8257508727cee22104ad82e666b36a7b86c4c43ba6392a"
+              },
+              "expected_current_codec_sha256": "fd2afa957186b285bc54694104bcca253cb606e4c44000b015455541d8adc797",
+              "journal": {
+                "bytes": 557120,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/branch-a-superseded-state.journal",
+                "sha256": "acdb61922dd669321c428d70eb954acc41d2227ec3f76c0169670a0bbd91cbff"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "fd2afa957186b285bc54694104bcca253cb606e4c44000b015455541d8adc797",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/branch-a-current.hkv",
+                "sha256": "b54901f4e26d69295a8257508727cee22104ad82e666b36a7b86c4c43ba6392a"
+              },
+              "branch_b_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/branch-b-current.hkv",
+                "sha256": "abf60ca738b38c63951a585ddfed02fdd7c5bc24327a5f594e915c84e83b12ec"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 835712,
+              "bytes_avoided_vs_full_copy": 278528,
+              "shared_prefix": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/shared-prefix-state.hkv",
+                "sha256": "6fac0cfc6e1ce7c53b7314b6eb8ee9ed61fb6cb97743f8f282166468a0149751"
+              }
+            },
+            "full_copy": {
+              "bytes": 1114240,
+              "current_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/full-copy-branch-a-current.hkv",
+                "sha256": "b54901f4e26d69295a8257508727cee22104ad82e666b36a7b86c4c43ba6392a"
+              },
+              "current_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/full-copy-branch-b-current.hkv",
+                "sha256": "abf60ca738b38c63951a585ddfed02fdd7c5bc24327a5f594e915c84e83b12ec"
+              },
+              "prefix_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "6fac0cfc6e1ce7c53b7314b6eb8ee9ed61fb6cb97743f8f282166468a0149751"
+              },
+              "prefix_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/q4_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "6fac0cfc6e1ce7c53b7314b6eb8ee9ed61fb6cb97743f8f282166468a0149751"
+              }
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9989566206932068,
+                "finite": true,
+                "max_abs": 0.0005390171427279711,
+                "relative_l2": 0.04572984576225281,
+                "rmse": 5.5340773542411625e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9988988041877747,
+                "finite": true,
+                "max_abs": 0.0005390173755586147,
+                "relative_l2": 0.04698028042912483,
+                "rmse": 5.5340773542411625e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.993591845035553,
+                "finite": true,
+                "max_abs": 0.001133451471105218,
+                "relative_l2": 0.113789401948452,
+                "rmse": 0.00013770427904091775
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.993615448474884,
+                "finite": true,
+                "max_abs": 0.001079255947843194,
+                "relative_l2": 0.11359406262636185,
+                "rmse": 0.00013380902237258852
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 310018,
+              "compacted_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/branch-a-compacted-current.hkv",
+                "sha256": "b83788db4b7a09bc3b1e8548de08a7f5e993f916ec7757b5b4cbc6bdba407216"
+              },
+              "expected_current_codec_sha256": "fc3c2e0fb9a5636d1dfda71f2b474b36867dba98b65e00292a1e6f962cf9ec13",
+              "journal": {
+                "bytes": 620036,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/branch-a-superseded-state.journal",
+                "sha256": "ef82b9ac5d9250d387d6cfaa92fe53bf5fd0979b89ebbfa21597babe945e197c"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "fc3c2e0fb9a5636d1dfda71f2b474b36867dba98b65e00292a1e6f962cf9ec13",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/branch-a-current.hkv",
+                "sha256": "b83788db4b7a09bc3b1e8548de08a7f5e993f916ec7757b5b4cbc6bdba407216"
+              },
+              "branch_b_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/branch-b-current.hkv",
+                "sha256": "f7952b122ade229ccb37b1eef7f853d005d9ebad3ea81853fd69d8d9ad39b886"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 930086,
+              "bytes_avoided_vs_full_copy": 309986,
+              "shared_prefix": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/shared-prefix-state.hkv",
+                "sha256": "3a5c8803798f95a4db4780ab67e47544089f2282c38030f6089a92080638b035"
+              }
+            },
+            "full_copy": {
+              "bytes": 1240072,
+              "current_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-current.hkv",
+                "sha256": "b83788db4b7a09bc3b1e8548de08a7f5e993f916ec7757b5b4cbc6bdba407216"
+              },
+              "current_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-current.hkv",
+                "sha256": "f7952b122ade229ccb37b1eef7f853d005d9ebad3ea81853fd69d8d9ad39b886"
+              },
+              "prefix_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-prefix.hkv",
+                "sha256": "3a5c8803798f95a4db4780ab67e47544089f2282c38030f6089a92080638b035"
+              },
+              "prefix_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-prefix.hkv",
+                "sha256": "3a5c8803798f95a4db4780ab67e47544089f2282c38030f6089a92080638b035"
+              }
+            },
+            "prefix_tokens": 16,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9991214871406555,
+                "finite": true,
+                "max_abs": 0.0002551516517996788,
+                "relative_l2": 0.0419512614607811,
+                "rmse": 5.076804882264696e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9990729689598083,
+                "finite": true,
+                "max_abs": 0.00025515156448818743,
+                "relative_l2": 0.04309837147593498,
+                "rmse": 5.076805246062577e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9946005940437317,
+                "finite": true,
+                "max_abs": 0.0004508374258875847,
+                "relative_l2": 0.10436206310987473,
+                "rmse": 0.0001262956066057086
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9946351647377014,
+                "finite": true,
+                "max_abs": 0.00044229894410818815,
+                "relative_l2": 0.104058638215065,
+                "rmse": 0.0001225766900461167
+              }
+            },
+            "suffix_tokens_per_branch": 16
+          }
+        ],
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "ea52a1a5d6d32adb6b1c212847a76ace9e875c8c4b9a1824df497bb232f0a26c",
+          "branch_b_suffix": "9d4f60848746176d0464e690a51f7a5ddb42832631e8c03cdc2ab59ac5609c9c",
+          "prefix": "bc0cf14fc498bf4a25671889513a5a039645a739090df75bc2ff8ef314fff54f"
+        },
+        "kind": "deltanet_recurrent_state_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "f643e1bcd114c7fae50b48efba54c0ec8d21b2c7f847b829bf0bfa15130054e3",
+        "shape": [
+          32,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each DeltaNet layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session_resident_state": 37749888,
+            "bytes_per_token_amortized_at_declared_session": 1179684.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 1048608
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session_resident_state": 11160648,
+            "bytes_per_token_amortized_at_declared_session": 348770.25,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 310018
+          },
+          "q4_group64": {
+            "bytes_per_session_resident_state": 10028160,
+            "bytes_per_token_amortized_at_declared_session": 313380.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 278560
+          },
+          "q8_group64": {
+            "bytes_per_session_resident_state": 19465344,
+            "bytes_per_token_amortized_at_declared_session": 608292.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 540704
+          }
+        },
+        "heads": 32,
+        "key_head_dim": 128,
+        "kind": "fixed_size_deltanet_recurrent_state",
+        "layer_count": 36,
+        "session_tokens_for_amortization_only": 32,
+        "value_head_dim": 128,
+        "values_per_layer": 524288,
+        "values_per_session_resident_state": 18874368
+      },
+      "source_projection_output": {
+        "float32_sha256": "8033651635635580cbddc8d0be05bd67c688ee27e7dec68f80d2ef3976ddef81",
+        "shape": [
+          32,
+          128,
+          128
+        ]
+      }
+    },
+    {
+      "codec_roundtrips": [
+        {
+          "bytes": {
+            "read": 1048608,
+            "written": 1048608
+          },
+          "codec": "fp16_reference",
+          "physical_artifact": {
+            "bytes": 1048608,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/fp16_reference.hkv",
+            "sha256": "8d7b81a144c1e28ca0159c677bd1376405d8eba7cec6feb20d8684959c397486"
+          },
+          "reconstruction": {
+            "cosine": 0.9999991655349731,
+            "finite": true,
+            "max_abs": 6.660819053649902e-06,
+            "relative_l2": 0.00020759007020387799,
+            "rmse": 2.1415915796296758e-07
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_fp16_reference.json",
+            "seal_sha256": "c1c4d8a08690b3854229521e64cd96181bf2abe69d876b2f40c3f8d61c95e94c"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 1096417,
+            "encode": 2361083,
+            "physical_read": 128584,
+            "physical_write_and_fsync": 1203292
+          }
+        },
+        {
+          "bytes": {
+            "read": 540704,
+            "written": 540704
+          },
+          "codec": "q8_group64",
+          "physical_artifact": {
+            "bytes": 540704,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/q8_group64.hkv",
+            "sha256": "27ff5adf986b3e76b246dca87776241a27da11fa0542679edae75a2a979788e4"
+          },
+          "reconstruction": {
+            "cosine": 0.9999790787696838,
+            "finite": true,
+            "max_abs": 9.09571535885334e-05,
+            "relative_l2": 0.006410291418433189,
+            "rmse": 6.6131469793617725e-06
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_q8_group64.json",
+            "seal_sha256": "7525e0eb248ade847d5c97458450897a9cc26e7113dcbcffed436c251be0e3ce"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 8404750,
+            "encode": 15592042,
+            "physical_read": 103250,
+            "physical_write_and_fsync": 662792
+          }
+        },
+        {
+          "bytes": {
+            "read": 278560,
+            "written": 278560
+          },
+          "codec": "q4_group64",
+          "physical_artifact": {
+            "bytes": 278560,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/q4_group64.hkv",
+            "sha256": "2f4f6440287d2a88e8762571977056f7c9e022854084c211055a94b924974c17"
+          },
+          "reconstruction": {
+            "cosine": 0.9933223128318787,
+            "finite": true,
+            "max_abs": 0.0016122394008561969,
+            "relative_l2": 0.11617349833250046,
+            "rmse": 0.00011984985758317634
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_q4_group64.json",
+            "seal_sha256": "994588c88ec7573600d4add1cb5b3d62f9fc99ec49d848fe9457e3d18ded0fad"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 7487875,
+            "encode": 12165625,
+            "physical_read": 80041,
+            "physical_write_and_fsync": 630166
+          }
+        },
+        {
+          "bytes": {
+            "read": 310018,
+            "written": 310018
+          },
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "physical_artifact": {
+            "bytes": 310018,
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16.hkv",
+            "sha256": "1bfceede6864ec3e7c3cd0c409bfe0c35a54f34f7947ee2d44876fab00bf39c9"
+          },
+          "reconstruction": {
+            "cosine": 0.994682788848877,
+            "finite": true,
+            "max_abs": 0.00040793977677822113,
+            "relative_l2": 0.10355975478887558,
+            "rmse": 0.00010683694563340396
+          },
+          "recovery_manifest": {
+            "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_protected_residual_q4_group64_top1pct_fp16.json",
+            "seal_sha256": "436127651d32046e8ffae499616c9c6cb6041fa7ef127ee51598f840157b64f1"
+          },
+          "timing_ns": {
+            "boundary": "component-state storage timing only; never model runtime timing or TPS",
+            "decode_and_rehydrate": 8468875,
+            "encode": 54234625,
+            "physical_read": 77292,
+            "physical_write_and_fsync": 649417
+          }
+        }
+      ],
+      "context_tokens": 128,
+      "copy_on_write": {
+        "codec_rows": [
+          {
+            "branches": 2,
+            "codec": "fp16_reference",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 1048608,
+              "compacted_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/branch-a-compacted-current.hkv",
+                "sha256": "2c0b4f2ee19b9fe6e70c370b3e5da7fe4457317d75ddcef99c4c880d1ad8f72e"
+              },
+              "expected_current_codec_sha256": "98285f621d7c7fcb40bf174ae94b13977c0b71ebc71202fdca0e1ba4dcecbcf0",
+              "journal": {
+                "bytes": 2097216,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/branch-a-superseded-state.journal",
+                "sha256": "44c4b1b657de90197ea4581c520970146df42603791caf9bae810c0a830b0a7d"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "98285f621d7c7fcb40bf174ae94b13977c0b71ebc71202fdca0e1ba4dcecbcf0",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/branch-a-current.hkv",
+                "sha256": "2c0b4f2ee19b9fe6e70c370b3e5da7fe4457317d75ddcef99c4c880d1ad8f72e"
+              },
+              "branch_b_current": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/branch-b-current.hkv",
+                "sha256": "6b0598d55b15de7c8a2c2ece82d6714cf40de1090525cfca75e4a65bb3f9600a"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 3145856,
+              "bytes_avoided_vs_full_copy": 1048576,
+              "shared_prefix": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/shared-prefix-state.hkv",
+                "sha256": "bdea93af598ca63b262143a89436e096403863f6337c508df75a3ba34d6c23fa"
+              }
+            },
+            "full_copy": {
+              "bytes": 4194432,
+              "current_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/full-copy-branch-a-current.hkv",
+                "sha256": "2c0b4f2ee19b9fe6e70c370b3e5da7fe4457317d75ddcef99c4c880d1ad8f72e"
+              },
+              "current_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/full-copy-branch-b-current.hkv",
+                "sha256": "6b0598d55b15de7c8a2c2ece82d6714cf40de1090525cfca75e4a65bb3f9600a"
+              },
+              "prefix_branch_a": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/full-copy-branch-a-prefix.hkv",
+                "sha256": "bdea93af598ca63b262143a89436e096403863f6337c508df75a3ba34d6c23fa"
+              },
+              "prefix_branch_b": {
+                "bytes": 1048608,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/fp16_reference/full-copy-branch-b-prefix.hkv",
+                "sha256": "bdea93af598ca63b262143a89436e096403863f6337c508df75a3ba34d6c23fa"
+              }
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9999999403953552,
+                "finite": true,
+                "max_abs": 2.775341272354126e-06,
+                "relative_l2": 6.740343815181404e-05,
+                "rmse": 8.415539554107454e-08
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 1.0,
+                "finite": true,
+                "max_abs": 2.780929207801819e-06,
+                "relative_l2": 6.525120988953859e-05,
+                "rmse": 8.415217678248155e-08
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999992847442627,
+                "finite": true,
+                "max_abs": 5.859881639480591e-06,
+                "relative_l2": 0.0002078713441733271,
+                "rmse": 2.5953409021894913e-07
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.999999463558197,
+                "finite": true,
+                "max_abs": 7.482245564460754e-06,
+                "relative_l2": 0.0002073619543807581,
+                "rmse": 2.674273389402515e-07
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "q8_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 540704,
+              "compacted_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/branch-a-compacted-current.hkv",
+                "sha256": "a4777b9bce783b48877bf89d9c0f94800238756608a434e579c1859d09cb7a1d"
+              },
+              "expected_current_codec_sha256": "56e9d6f7e0e2659a501a0ae45d737e91cba2a90cca60c0d935c53d98d638fefc",
+              "journal": {
+                "bytes": 1081408,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/branch-a-superseded-state.journal",
+                "sha256": "1dab1d823519f14b2360bb606b21a8f4945bb11ae3293e1a3f1b9e3fbf75b219"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "56e9d6f7e0e2659a501a0ae45d737e91cba2a90cca60c0d935c53d98d638fefc",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/branch-a-current.hkv",
+                "sha256": "a4777b9bce783b48877bf89d9c0f94800238756608a434e579c1859d09cb7a1d"
+              },
+              "branch_b_current": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/branch-b-current.hkv",
+                "sha256": "3cb8fc92b8881bb152aa63ef79b3d037957fbd1abf2cf67339e0acb34a3cfc16"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 1622144,
+              "bytes_avoided_vs_full_copy": 540672,
+              "shared_prefix": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/shared-prefix-state.hkv",
+                "sha256": "248176940aed6ff599ac654cb87a202dab170437185e6e0524f90105d4fb311f"
+              }
+            },
+            "full_copy": {
+              "bytes": 2162816,
+              "current_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/full-copy-branch-a-current.hkv",
+                "sha256": "a4777b9bce783b48877bf89d9c0f94800238756608a434e579c1859d09cb7a1d"
+              },
+              "current_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/full-copy-branch-b-current.hkv",
+                "sha256": "3cb8fc92b8881bb152aa63ef79b3d037957fbd1abf2cf67339e0acb34a3cfc16"
+              },
+              "prefix_branch_a": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "248176940aed6ff599ac654cb87a202dab170437185e6e0524f90105d4fb311f"
+              },
+              "prefix_branch_b": {
+                "bytes": 540704,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q8_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "248176940aed6ff599ac654cb87a202dab170437185e6e0524f90105d4fb311f"
+              }
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9999976754188538,
+                "finite": true,
+                "max_abs": 4.477688344195485e-05,
+                "relative_l2": 0.0021422274876385927,
+                "rmse": 2.6746424737211782e-06
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9999980330467224,
+                "finite": true,
+                "max_abs": 4.477705806493759e-05,
+                "relative_l2": 0.0020739049650728703,
+                "rmse": 2.67464338321588e-06
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9999788999557495,
+                "finite": true,
+                "max_abs": 9.702425450086594e-05,
+                "relative_l2": 0.006426899693906307,
+                "rmse": 8.024197995837312e-06
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9999791979789734,
+                "finite": true,
+                "max_abs": 0.00010522293450776488,
+                "relative_l2": 0.006406489294022322,
+                "rmse": 8.262227311206516e-06
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "q4_group64",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 278560,
+              "compacted_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/branch-a-compacted-current.hkv",
+                "sha256": "f603a9bde7c4e9517f253a243bcc2e0665cf46c19998a02fc3b20a4e57a1f75f"
+              },
+              "expected_current_codec_sha256": "efa72ba0a44cd559a5dfaa55062601c50ba62b655349db0e46f13049c739416e",
+              "journal": {
+                "bytes": 557120,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/branch-a-superseded-state.journal",
+                "sha256": "108e887510059b84763c0fc35858a4303ed984cbe378dc6d8036a59415d1d194"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "efa72ba0a44cd559a5dfaa55062601c50ba62b655349db0e46f13049c739416e",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/branch-a-current.hkv",
+                "sha256": "f603a9bde7c4e9517f253a243bcc2e0665cf46c19998a02fc3b20a4e57a1f75f"
+              },
+              "branch_b_current": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/branch-b-current.hkv",
+                "sha256": "0a3c20d9fac6257e4e1834d14a396a8409728725e42730315eb6a0d64a47c176"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 835712,
+              "bytes_avoided_vs_full_copy": 278528,
+              "shared_prefix": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/shared-prefix-state.hkv",
+                "sha256": "6463e50bf3b8a8d187329dc8d8bcbfd5f352487f29f6108f622b01bb2f677d0e"
+              }
+            },
+            "full_copy": {
+              "bytes": 1114240,
+              "current_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/full-copy-branch-a-current.hkv",
+                "sha256": "f603a9bde7c4e9517f253a243bcc2e0665cf46c19998a02fc3b20a4e57a1f75f"
+              },
+              "current_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/full-copy-branch-b-current.hkv",
+                "sha256": "0a3c20d9fac6257e4e1834d14a396a8409728725e42730315eb6a0d64a47c176"
+              },
+              "prefix_branch_a": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/full-copy-branch-a-prefix.hkv",
+                "sha256": "6463e50bf3b8a8d187329dc8d8bcbfd5f352487f29f6108f622b01bb2f677d0e"
+              },
+              "prefix_branch_b": {
+                "bytes": 278560,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/q4_group64/full-copy-branch-b-prefix.hkv",
+                "sha256": "6463e50bf3b8a8d187329dc8d8bcbfd5f352487f29f6108f622b01bb2f677d0e"
+              }
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9992486238479614,
+                "finite": true,
+                "max_abs": 0.0008088996983133256,
+                "relative_l2": 0.03879301995038986,
+                "rmse": 4.8434387281304225e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9992955327033997,
+                "finite": true,
+                "max_abs": 0.000808900804258883,
+                "relative_l2": 0.03755577281117439,
+                "rmse": 4.8434387281304225e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9932844042778015,
+                "finite": true,
+                "max_abs": 0.0017900471575558186,
+                "relative_l2": 0.11655626446008682,
+                "rmse": 0.00014552443462889642
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.9933049082756042,
+                "finite": true,
+                "max_abs": 0.0018983286572620273,
+                "relative_l2": 0.11631768941879272,
+                "rmse": 0.00015001092106103897
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          },
+          {
+            "branches": 2,
+            "codec": "protected_residual_q4_group64_top1pct_fp16",
+            "compaction": {
+              "boundary": "valid only for removing a superseded persisted proxy-state snapshot, not a native DeltaNet/runtime claim",
+              "bytes_reclaimed": 310018,
+              "compacted_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/branch-a-compacted-current.hkv",
+                "sha256": "49adc7f62a757c0e3534b44c67934c51b64ef1237b399c000c65e487df9cbd16"
+              },
+              "expected_current_codec_sha256": "515ed6a3db46fafa3aa72a953542e2076ca5c54b732d8633eda36f475e5ac89c",
+              "journal": {
+                "bytes": 620036,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/branch-a-superseded-state.journal",
+                "sha256": "1956a8094d79357335b5dac4e434b3aeb98f9b82e1112c1826809e98c696d40d"
+              },
+              "preserves_latest_codec_rehydrated_state": true,
+              "rehydrated_current_sha256": "515ed6a3db46fafa3aa72a953542e2076ca5c54b732d8633eda36f475e5ac89c",
+              "status": "VALID_SUPERSEDED_CODEC_STATE_SNAPSHOT_COMPACTION"
+            },
+            "copy_on_write": {
+              "branch_a_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/branch-a-current.hkv",
+                "sha256": "49adc7f62a757c0e3534b44c67934c51b64ef1237b399c000c65e487df9cbd16"
+              },
+              "branch_b_current": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/branch-b-current.hkv",
+                "sha256": "e96311d17b73c9e7403a5c439a05235a092353c0fe917fc93827e895dcff60ba"
+              },
+              "branch_reference_bytes": 32,
+              "bytes": 930086,
+              "bytes_avoided_vs_full_copy": 309986,
+              "shared_prefix": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/shared-prefix-state.hkv",
+                "sha256": "a78bbf509b70e1bbdac65b59daf96c13ed3194b4b6747c7ca0f87abe9b196f66"
+              }
+            },
+            "full_copy": {
+              "bytes": 1240072,
+              "current_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-current.hkv",
+                "sha256": "49adc7f62a757c0e3534b44c67934c51b64ef1237b399c000c65e487df9cbd16"
+              },
+              "current_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-current.hkv",
+                "sha256": "e96311d17b73c9e7403a5c439a05235a092353c0fe917fc93827e895dcff60ba"
+              },
+              "prefix_branch_a": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-a-prefix.hkv",
+                "sha256": "a78bbf509b70e1bbdac65b59daf96c13ed3194b4b6747c7ca0f87abe9b196f66"
+              },
+              "prefix_branch_b": {
+                "bytes": 310018,
+                "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/copy-on-write/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16/full-copy-branch-b-prefix.hkv",
+                "sha256": "a78bbf509b70e1bbdac65b59daf96c13ed3194b4b6747c7ca0f87abe9b196f66"
+              }
+            },
+            "prefix_tokens": 64,
+            "rehydrated_branch_state": {
+              "branch_a_vs_full_precision_prefix": {
+                "cosine": 0.9994997382164001,
+                "finite": true,
+                "max_abs": 0.00027034655795432627,
+                "relative_l2": 0.03165173530578613,
+                "rmse": 3.9518239645985886e-05
+              },
+              "branch_b_vs_full_precision_prefix": {
+                "cosine": 0.9995309114456177,
+                "finite": true,
+                "max_abs": 0.00027034617960453033,
+                "relative_l2": 0.030642248690128326,
+                "rmse": 3.9518239645985886e-05
+              },
+              "full_copy_branch_a": {
+                "cosine": 0.9948259592056274,
+                "finite": true,
+                "max_abs": 0.000542011228390038,
+                "relative_l2": 0.10218194127082825,
+                "rmse": 0.00012757758668158203
+              },
+              "full_copy_branch_b": {
+                "cosine": 0.994803786277771,
+                "finite": true,
+                "max_abs": 0.0005492246709764004,
+                "relative_l2": 0.10236448794603348,
+                "rmse": 0.00013201594993006438
+              }
+            },
+            "suffix_tokens_per_branch": 64
+          }
+        ],
+        "deterministic_component_inputs": {
+          "branch_a_suffix": "6a7fb4cad3d5a6a19abf983aa2cd71f1ac9986a5e17313a79d5f18fec0234d1c",
+          "branch_b_suffix": "616b3fedc6e65014bdb506f38bb77db32925bf599d3e17c683b8686fe39e45b0",
+          "prefix": "53721ac417570b263649971ca964e6343ed40369e3af4be321d2cf9760e4e3e0"
+        },
+        "kind": "deltanet_recurrent_state_prefix_branch_copy_on_write"
+      },
+      "deterministic_component_input": {
+        "float32_sha256": "d6d1042064df2ac6e947508bec218182e7983745815980c0cbb7e3992cf6b3fa",
+        "shape": [
+          128,
+          2048
+        ]
+      },
+      "exact_geometry_ledger": {
+        "codec_format": "hawking.ascension.qwen_state_kv_codec_format.v1",
+        "codec_storage_assumption": "each DeltaNet layer state array is independently stored with the fixed 32-byte HAWKKV1 header",
+        "codecs": {
+          "fp16_reference": {
+            "bytes_per_session_resident_state": 37749888,
+            "bytes_per_token_amortized_at_declared_session": 294921.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 1048608
+          },
+          "protected_residual_q4_group64_top1pct_fp16": {
+            "bytes_per_session_resident_state": 11160648,
+            "bytes_per_token_amortized_at_declared_session": 87192.5625,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 310018
+          },
+          "q4_group64": {
+            "bytes_per_session_resident_state": 10028160,
+            "bytes_per_token_amortized_at_declared_session": 78345.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 278560
+          },
+          "q8_group64": {
+            "bytes_per_session_resident_state": 19465344,
+            "bytes_per_token_amortized_at_declared_session": 152073.0,
+            "growth_bytes_per_additional_token": 0,
+            "per_layer_state_array_bytes": 540704
+          }
+        },
+        "heads": 32,
+        "key_head_dim": 128,
+        "kind": "fixed_size_deltanet_recurrent_state",
+        "layer_count": 36,
+        "session_tokens_for_amortization_only": 128,
+        "value_head_dim": 128,
+        "values_per_layer": 524288,
+        "values_per_session_resident_state": 18874368
+      },
+      "source_projection_output": {
+        "float32_sha256": "ef31a9294cbd09421118e7a4ca1b16b9788be5cf9766cdb856f71757338a6e2b",
+        "shape": [
+          32,
+          128,
+          128
+        ]
+      }
+    }
+  ],
+  "schema": "hawking.ascension.qwen_state_kv_traffic_receipt.v1",
+  "seal_sha256": "12113924f52e93b027ca0b0830c502fa0938d126f17b4f8d5531da24d25a665f",
+  "source_projection_bindings": [
+    {
+      "decoded_float32_sha256": "0af69350181c0eb82694ff6708c740bba476526398fbe05c1fdc333b32e8df50",
+      "decoded_float32_shape": [
+        12288,
+        2048
+      ],
+      "raw_tensor_bf16_bytes": 50331648,
+      "raw_tensor_bf16_sha256": "5138053ffe294b6ee8b6164b865e8308eac36314c4e4685e84940f7ba4beac16",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_bytes_matched_to_sealed_audit": 3999619288,
+      "tensor_name": "model.layers.0.linear_attn.in_proj_qkvz.weight"
+    },
+    {
+      "decoded_float32_sha256": "12cd22724b942eaeb89f526bef4e485fc5e0f09c555650d2de9f10c4bb7cc804",
+      "decoded_float32_shape": [
+        32
+      ],
+      "raw_tensor_bf16_bytes": 64,
+      "raw_tensor_bf16_sha256": "5789acc08fa7b9569836e89459fd48ba114adb07e43ab92f1cb47bf9abce0936",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_bytes_matched_to_sealed_audit": 3999619288,
+      "tensor_name": "model.layers.0.linear_attn.A_log"
+    }
+  ],
+  "source_verification": {
+    "architecture": "Qwen3NextForCausalLM",
+    "config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "model_type": "qwen3_next",
+    "sealed_source_body_audit": {
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
+      "schema": "hawking.ascension.qwen80_source_body_audit_candidate.v1",
+      "seal_sha256": "9e8aa8ae4625097cb7265d9a05b039b8c19e00ec47a5e75d38e9f40e90d69d2e",
+      "status": "CANDIDATE_FULL_PINNED_SOURCE_BODY_VERIFIED"
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "approved_release_identities": [
+    {
+      "generic_summary": "A fixed reduction order makes a numerical mechanism reproducible.",
+      "immutable_release_identity_seal_sha256": "ebd5ee86ef284abf690453bb3c5ece46bc3867a0288ea9676440969207e69f93",
+      "immutable_release_identity_sha256": "e3abeb1ca81e6d7da08df7e191162b553364bcdd784c6253b2dce64d90e7d14e",
+      "independent_verifier_receipt_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "public_payload_sha256": "983c4ea25159497e18cfc62e1e1c71cf6a956e3057f14a0002b9b1a5b9a091ed",
+      "registration_mode": "append_only_sealed_prepared_no_external_publication",
+      "release_id": "kp-ac3b93947622bb8a870931250bfbf662203db8e94132ddead8de5fa4c5b68c61",
+      "source_commitment_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "topics": [
+        "mechanism",
+        "numerical_stability"
+      ]
+    }
+  ],
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "bound_lane_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+    "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+    "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json"
+  },
+  "bound_mutation_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+    "document_seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+    "document_sha256": "b8f7acad4e5899455e166ba55f5426c82d63577ac7f2e9bc5c9c39b074598de6",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_MUTATION_AUTHORITY.json"
+  },
+  "claim_boundary": [
+    "This is a sealed CPU-only generic-discovery release gate, not a live Knowledge Plane service or cross-lane read channel.",
+    "It consumes the exact sealed lane and mutation authorities and keeps both candidate worlds private and inactive.",
+    "Only a redacted generic mechanism/science payload with lane-bound digest provenance, an independent redactor, an independent verifier, and an independent release steward can receive an append-only identity.",
+    "Candidate strategy, frontier, private score, current patch, hidden task, experiment history, private namespaces, and private receipt contents are forbidden from public payloads and must be positively redacted.",
+    "A claim author cannot self-redact, self-verify, or self-publish; the release identity binds the payload and every protected receipt digest at immutable revision zero.",
+    "It starts no model process, logical session, server, watcher, port listener, GPU lease, device dispatch, HCLI run, token, TPS/TG measurement, candidate mutation, activation, or tournament action.",
+    "No external publication occurs here; a later protected controller may only consume the sealed prepared identity under its own qualification gates."
+  ],
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "external_publication_performed": false,
+  "focused_checks": {
+    "all_cross_lane_private_reads_denied": true,
+    "candidate_strategy_frontier_score_patch_and_hidden_task_redacted": true,
+    "exactly_two_private_candidate_worlds_preserved": true,
+    "execution_boundary_cpu_only": true,
+    "generic_mechanism_science_payload_only": true,
+    "immutable_append_only_release_identity_bound": true,
+    "independent_redactor_verifier_and_publisher_required": true,
+    "no_private_namespace_or_action_workspace_published": true,
+    "no_runtime_server_gpu_or_tournament_authority": true,
+    "provenance_is_lane_bound_without_private_disclosure": true,
+    "sealed_lane_authority_bound": true,
+    "sealed_mutation_authority_bound_to_exact_lane_authority": true,
+    "self_published_and_self_verified_claims_denied": true
+  },
+  "knowledge_plane_active": false,
+  "knowledge_plane_policy": {
+    "append_only_release_identities": true,
+    "candidate_world_activation_authorized": false,
+    "external_publication_authorized": false,
+    "generic_mechanism_science_only": true,
+    "knowledge_plane_namespace": "sealed://knowledge-plane/generic-mechanism-science",
+    "lane_private_record_access_authorized": false,
+    "release_identity_mutation_authorized": false,
+    "release_registry_namespace": "sealed://knowledge-plane/append-only-release-registry"
+  },
+  "prepared": true,
+  "schema": "hawking.ascension.paired_cognition_knowledge_plane_generic_release_authority.v1",
+  "seal_sha256": "0478c05876b8b7f0fd61a2072284a9303943dec0ae0a226ed4dadc70ff9d162d",
+  "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_GENERIC_ONLY_INDEPENDENTLY_VERIFIED_APPEND_ONLY_KNOWLEDGE_PLANE_NO_RUNTIME_OR_TOURNAMENT",
+  "unsealed_preimage_sha256": "50154a3bad1ac52d644dfd28fe565575d870ed76515609f09b71adb827225d3f"
+}

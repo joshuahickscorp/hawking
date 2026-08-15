@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export.v1",
+  "layer": 1,
+  "site": "late_hidden",
+  "npy": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations/L01.npy",
+  "shape": [
+    4,
+    4096
+  ],
+  "dtype": "float32",
+  "example_ids_path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/merged/from_w2/activations/example_ids.json",
+  "mode": "offline_analysis_diagnostic",
+  "host_activation_handoff_permitted": false,
+  "merged": true,
+  "npy_sha256": "b3a5d928bd871e3b695b6646d4a853399125eeac2cd4f50670b0f440ea9e4d21"
+}

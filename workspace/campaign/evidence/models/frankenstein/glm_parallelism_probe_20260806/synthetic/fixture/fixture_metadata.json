@@ -1,0 +1,97 @@
+{
+  "architecture": {
+    "core_logical_elements": 1660456,
+    "core_tensor_count": 3187,
+    "experts_per_token": 8,
+    "full_tensor_count": 3978,
+    "gate_up_order": [
+      "gate_proj",
+      "up_proj"
+    ],
+    "index_topk": 2,
+    "indexer_types_main": [
+      "full",
+      "full",
+      "full",
+      "shared",
+      "shared",
+      "shared",
+      "full"
+    ],
+    "main_layers": 7,
+    "mtp_indexer_type": "full",
+    "mtp_logical_elements": 409152,
+    "mtp_physical_layer": 7,
+    "mtp_tensor_count": 791,
+    "physical_layers": 8,
+    "profile": "synthetic",
+    "routed_expert_count": 256,
+    "router_normalizes_topk_probability": true,
+    "router_scoring_function": "sigmoid",
+    "router_selection": "top-8-of-256",
+    "router_topk_method": "noaux_tc",
+    "router_weight_sum_after_scaling": 2.5,
+    "shared_expert_count": 1,
+    "source_dtypes": [
+      "BF16",
+      "F32"
+    ]
+  },
+  "deterministic": true,
+  "long_context_indexer_contract": {
+    "capability_claimed": false,
+    "maximum_positions": 1048576,
+    "shape_probe_required": true
+  },
+  "network_access": false,
+  "profile": "synthetic",
+  "routing_fixture": {
+    "all_positive_hidden_probe_is_tie_free": true,
+    "correction_bias_is_strictly_increasing_f32": true,
+    "router_rows": "constant positive BF16 fractions 1/256..256/256"
+  },
+  "schema": "hawking.glm52.synthetic_fixture.v1",
+  "shards": [
+    {
+      "file_bytes": 73600,
+      "name": "model-00001-of-00003.safetensors",
+      "payload_bytes": 67968,
+      "section": "CORE",
+      "sha256": "29c2c36835f67b2a0fd3f25a8eb92e5318bfbcf8cce31dfb517c34d206c3a04b",
+      "tensor_count": 54
+    },
+    {
+      "file_bytes": 3612624,
+      "name": "model-00002-of-00003.safetensors",
+      "payload_bytes": 3254992,
+      "section": "CORE",
+      "sha256": "fbeac2cedca6a1fc3bfe062f38d0b3030c1e70dca0f58c4b91190799750729fc",
+      "tensor_count": 3133
+    },
+    {
+      "file_bytes": 907784,
+      "name": "model-00003-of-00003.safetensors",
+      "payload_bytes": 818816,
+      "section": "MTP",
+      "sha256": "ab6381141c103ce9b27593b96f2d395303751a477393d8401139eadcf84ff49a",
+      "tensor_count": 791
+    }
+  ],
+  "views": {
+    "full": {
+      "directory": "full",
+      "index_sha256": "7a592b34f7a7ab1477a0a1f01a0fdd06ff6e19c2212fe7291050dcd8a5840020",
+      "payload_bytes": 4141776,
+      "shard_count": 3,
+      "tensor_count": 3978
+    },
+    "main_only": {
+      "directory": "main_only",
+      "index_sha256": "00ea4a685a4dca0b3fe265d630bc6c764f8828fd9bb900114e74cec92fffc170",
+      "is_exact_core_filter": true,
+      "payload_bytes": 3322960,
+      "shard_count": 2,
+      "tensor_count": 3187
+    }
+  }
+}

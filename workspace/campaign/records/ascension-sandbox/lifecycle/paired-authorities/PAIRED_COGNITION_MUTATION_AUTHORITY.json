@@ -1,0 +1,171 @@
+{
+  "authority_boundary": {
+    "gpu_leases_authorized": 0,
+    "new_physical_model_processes_authorized": 0,
+    "paired_world_activation_authorized": false,
+    "port_binds_authorized": 0,
+    "server_starts_authorized": 0,
+    "tournament_state_mutations_authorized": 0
+  },
+  "bound_lane_authority": {
+    "document_schema": "hawking.ascension.paired_cognition_lane_namespace_mission_authority.v1",
+    "document_seal_sha256": "b5f6bca23e07462f072fef145b6c14fb6fd8f715e75713ba7be994e6b454a4cf",
+    "document_sha256": "16323c3b858d2d6bf147277b6df488231ff09c54f5d91a7930edec471ee8a6bc",
+    "document_status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_TWO_SEALED_CANDIDATE_WORLDS_NO_RUNTIME_SERVER_OR_TOURNAMENT",
+    "path": "/Users/scammermike/.claude-grok/worktrees/paired-authority-chain-20260809-153731/workspace/campaign/records/ascension-sandbox/lifecycle/paired-authorities/PAIRED_COGNITION_LANE_AUTHORITY.json"
+  },
+  "claim_boundary": [
+    "This is a sealed CPU-only action-policy authority, not a model runtime or live lane controller.",
+    "It starts no Q30 or Q80 model process, server, watcher, logical session, port listener, GPU lease, or device dispatch.",
+    "It does not execute a model token, HCLI request, TPS/TG measurement, experiment, benchmark, or tournament mutation.",
+    "Only a lane primary may accept a proposal and mutate/promote that same lane's champion after all named protected evidence is present.",
+    "Helpers and opponents can only propose, protected-review, falsify, or test in their bound isolated worktrees; they cannot self-promote, mutate a champion, or select a manager.",
+    "Evidence, mission records, and tournament receipts remain immutable and are never an action workspace.",
+    "Post-TG3 freeze and solo plus symmetric manager-as-orchestrator final selection remain reserved for a later protected authority."
+  ],
+  "execution_boundary": {
+    "gpu_lease_or_registry_mutated": false,
+    "hcli_executed": false,
+    "live_artifact_scan_performed": false,
+    "logical_session_created": false,
+    "metal_device_or_dispatch_performed": false,
+    "model_or_decoder_token_executed": false,
+    "model_weights_loaded": false,
+    "port_bound_or_listener_created": false,
+    "runtime_watcher_or_server_started": false,
+    "tournament_state_mutated": false,
+    "tps_or_tg_measured": false
+  },
+  "final_selection_reservation": {
+    "final_selection_authorized_by_this_contract": false,
+    "manager_selection_authorized_by_this_contract": false,
+    "post_tg3_freeze_namespace": "sealed://tournament/post-tg3-freeze",
+    "post_tg3_freeze_required": true,
+    "protected_final_selection_namespace": "sealed://tournament/protected-final-selection",
+    "protected_final_selection_required": true,
+    "solo_manager_evaluation_required": true,
+    "symmetric_orchestrator_evaluation_required": true,
+    "tournament_selection_authorized_by_this_contract": false
+  },
+  "focused_checks": {
+    "all_cross_lane_private_reads_denied": true,
+    "completed_lane_authority_bound": true,
+    "exactly_two_lane_action_policies": true,
+    "execution_boundary_cpu_only": true,
+    "helper_and_opponent_limited_to_propose_review_falsify_and_isolated_test": true,
+    "helper_worktree_is_its_lane_private_worktree": true,
+    "no_runtime_or_tournament_authority": true,
+    "opponent_sandbox_is_outside_all_private_lane_namespaces": true,
+    "post_tg3_freeze_and_protected_final_selection_reserved": true,
+    "primary_only_own_champion_acceptance_mutation_and_promotion": true,
+    "protected_evidence_mission_and_tournament_receipts_immutable": true,
+    "qwen30_primary_qwen80_helper_and_opponent": true,
+    "qwen80_primary_qwen30_helper_and_opponent": true,
+    "self_promotion_and_manager_selection_denied": true
+  },
+  "lane_action_policies": [
+    {
+      "falsification_namespace": "sealed://qwen30-lane/falsifications",
+      "helper_actor_id": "qwen80-helper-in-qwen30-lane",
+      "helper_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree"
+      ],
+      "helper_isolated_worktree_namespace": "sealed://qwen30-lane/worktree",
+      "helper_model_key": "qwen80",
+      "lane_id": "qwen30-candidate-world",
+      "opponent_actor_id": "qwen80-opponent-reviewer-in-qwen30-lane",
+      "opponent_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree"
+      ],
+      "opponent_isolated_worktree_namespace": "sealed://qwen30-lane/opponent-isolated-worktree",
+      "opponent_model_key": "qwen80",
+      "primary_acceptance_request_namespace": "sealed://qwen30-lane/primary-acceptance-request",
+      "primary_actor_id": "qwen30-primary-in-qwen30-lane",
+      "primary_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree",
+        "accept_verified_proposal_for_own_champion",
+        "mutate_own_champion",
+        "promote_own_champion"
+      ],
+      "primary_champion_namespace": "sealed://qwen30-lane/patches",
+      "primary_model_key": "qwen30",
+      "proposal_namespace": "sealed://qwen30-lane/proposals",
+      "protected_review_namespace": "sealed://qwen30-lane/protected-reviews",
+      "required_primary_acceptance_evidence": [
+        "sealed_proposal",
+        "protected_adversarial_review",
+        "independent_falsification",
+        "independent_verifier_receipt"
+      ]
+    },
+    {
+      "falsification_namespace": "sealed://qwen80-lane/falsifications",
+      "helper_actor_id": "qwen30-helper-in-qwen80-lane",
+      "helper_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree"
+      ],
+      "helper_isolated_worktree_namespace": "sealed://qwen80-lane/worktree",
+      "helper_model_key": "qwen30",
+      "lane_id": "qwen80-candidate-world",
+      "opponent_actor_id": "qwen30-opponent-reviewer-in-qwen80-lane",
+      "opponent_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree"
+      ],
+      "opponent_isolated_worktree_namespace": "sealed://qwen80-lane/opponent-isolated-worktree",
+      "opponent_model_key": "qwen30",
+      "primary_acceptance_request_namespace": "sealed://qwen80-lane/primary-acceptance-request",
+      "primary_actor_id": "qwen80-primary-in-qwen80-lane",
+      "primary_allowed_actions": [
+        "submit_proposal",
+        "protected_review",
+        "falsify",
+        "test_in_isolated_worktree",
+        "accept_verified_proposal_for_own_champion",
+        "mutate_own_champion",
+        "promote_own_champion"
+      ],
+      "primary_champion_namespace": "sealed://qwen80-lane/patches",
+      "primary_model_key": "qwen80",
+      "proposal_namespace": "sealed://qwen80-lane/proposals",
+      "protected_review_namespace": "sealed://qwen80-lane/protected-reviews",
+      "required_primary_acceptance_evidence": [
+        "sealed_proposal",
+        "protected_adversarial_review",
+        "independent_falsification",
+        "independent_verifier_receipt"
+      ]
+    }
+  ],
+  "paired_candidate_worlds_active": false,
+  "prepared": true,
+  "protected_record_policy": {
+    "all_roles_may_delete_protected_records": false,
+    "all_roles_may_rewrite_evidence_receipts": false,
+    "all_roles_may_rewrite_mission_records": false,
+    "all_roles_may_rewrite_tournament_receipts": false,
+    "cross_lane_private_record_release_allowed": false,
+    "evidence_receipts_immutable": true,
+    "mission_records_immutable": true,
+    "protected_tournament_receipt_namespace": "sealed://tournament/protected-receipts",
+    "tournament_receipts_immutable": true
+  },
+  "schema": "hawking.ascension.paired_cognition_proposal_review_falsification_primary_acceptance_authority.v1",
+  "seal_sha256": "3fae43c84e863c9a9245e864d0813d2a76ce196bd410d534a4bfcb05b9417c8e",
+  "status": "PREPARED_NOT_ACTIVE_PAIRED_COGNITION_PRIMARY_ONLY_CHAMPION_MUTATION_PROMOTION_NO_MANAGER_OR_TOURNAMENT_SELECTION",
+  "unsealed_preimage_sha256": "2945d9ab7aabf50170cd65708166aac0dc6455790ad2dac544416779de25d8d3"
+}

@@ -252,3 +252,80 @@ def test_registry_seal() -> None:
     assert len(reg["modules"]) == 10
     assert reg["properties"]["kimi_bridge_compatible"] is True
     assert reg["capability_claim"] is False
+
+
+def test_phase_c_keeps_projectors_trainable() -> None:
+    """Phase C must not freeze projectors (real-run L_latent regression fix)."""
+    stack = lv.build_stack_for_arm(
+        lv.ARM_G,
+        d_teacher=48,
+        d_student=32,
+        d_latent=16,
+        rank=2,
+        d_hidden=16,
+        n_experts=4,
+    )
+    params = lv._set_trainable_for_phase(stack, "C")
+    assert params, "phase C should expose trainable params"
+    assert stack.teacher_projector is not None
+    assert stack.student_observer is not None
+    assert any(p.requires_grad for p in stack.teacher_projector.parameters())
+    assert any(p.requires_grad for p in stack.student_observer.parameters())
+    # Interventions also trainable
+    assert any(
+        p.requires_grad
+        for mod in stack.interventions.values()
+        for p in mod.parameters()
+    )
+
+
+def test_stack_interventions_start_contractive() -> None:
+    """Stacked residual gates must start small (non-expansive cascade)."""
+    stack = lv.LatentV0Stack(
+        d_teacher=48, d_student=32, d_latent=16, rank=2, d_hidden=16, n_experts=4
+    )
+    scales = [float(m.residual_scale().item()) for m in stack.interventions.values()]
+    assert scales, "expected intervention modules"
+    # softplus(-2)*0.25 ≈ 0.0317; allow small float slack
+    assert max(scales) < 0.05
+    assert min(scales) > 0.0
+
+
+def test_build_real_training_tensors_full_width_no_zero_pad() -> None:
+    """Full-width teacher must not be zero-padded (L_latent fairness)."""
+    import numpy as np
+    from lab.operators import frankenstein_bridge_train_real as btr
+
+    n, dt, ds = 8, 6144, 4096
+    g = np.random.randn(n, dt).astype(np.float32) * 0.01
+    s = np.random.randn(n, ds).astype(np.float32) * 0.01
+    cf = btr.closed_form_procrustes(s, g)
+    train_t, eval_t, meta = btr.build_real_training_tensors(
+        glm_mat=g,
+        dsv_mat=s,
+        procrustes=cf,
+        n_eval=2,
+        seed=0,
+        teacher_source_meta={"source": "unit_test_full", "full_width": True},
+    )
+    assert meta["teacher_pad"]["padded_zeros"] == 0
+    assert meta["teacher_pad"]["real_sample_width"] == dt
+    teach = train_t["teacher_hidden"]
+    assert teach.shape[-1] == dt
+    # Non-leading dims must not be structural zeros of a pad path
+    assert float(teach[..., 100:200].abs().mean()) > 0.0
+
+
+def test_build_real_training_tensors_narrow_still_pads_labelled() -> None:
+    import numpy as np
+    from lab.operators import frankenstein_bridge_train_real as btr
+
+    n, dt_s, ds = 8, 64, 4096
+    g = np.random.randn(n, dt_s).astype(np.float32) * 0.01
+    s = np.random.randn(n, ds).astype(np.float32) * 0.01
+    cf = btr.closed_form_procrustes(s, g)
+    _tr, _ev, meta = btr.build_real_training_tensors(
+        glm_mat=g, dsv_mat=s, procrustes=cf, n_eval=2, seed=0
+    )
+    assert meta["teacher_pad"]["padded_zeros"] == 6144 - 64
+    assert "LEGACY FALLBACK" in meta["teacher_pad"]["note"]

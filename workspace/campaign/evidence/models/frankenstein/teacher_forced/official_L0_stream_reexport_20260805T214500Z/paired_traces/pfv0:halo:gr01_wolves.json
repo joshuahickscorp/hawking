@@ -1,0 +1,1431 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 283,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "There are 3 wolves and 4 sheep on one side of a river. A boat holds at most 2 animals. Wolves may never outnumber sheep on either side if sheep are present. Is the classic constraint about not leaving wolves outnumbering sheep on a side with sheep present? Reply with only YES or NO.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:halo:gr01_wolves",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "There are 3 wolves and 4 sheep on one side of a river. A boat holds at most 2 animals. Wolves may never outnumber sheep on either side if sheep are present. Is the classic constraint about not leaving wolves outnumbering sheep on a side with sheep present? Reply with only YES or NO.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T03:33:41.574236Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "57aae7520fcc4b39521db85dce64c3d5c018f3ba1041f524b3b535ab353abbe7",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 12.158186912536621,
+          "rank": 0,
+          "token_id": 13
+        },
+        {
+          "logit": 11.493183135986328,
+          "rank": 1,
+          "token_id": 11
+        },
+        {
+          "logit": 10.01208782196045,
+          "rank": 2,
+          "token_id": 14
+        },
+        {
+          "logit": 9.553315162658691,
+          "rank": 3,
+          "token_id": 26
+        },
+        {
+          "logit": 9.49507999420166,
+          "rank": 4,
+          "token_id": 9
+        },
+        {
+          "logit": 9.177318572998047,
+          "rank": 5,
+          "token_id": 30
+        },
+        {
+          "logit": 8.628273963928223,
+          "rank": 6,
+          "token_id": 12
+        },
+        {
+          "logit": 8.511659622192383,
+          "rank": 7,
+          "token_id": 25
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.17636950314044952,
+          "l2": 3.3487534523010254,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8b3d191b422f445966e0095698bf38f1950e606007ce931000e293fb50a33195",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.21602624654769897,
+          "l2": 3.103698492050171,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "ce37bb5b4b3e436fda79acfaf77ff91c7dc98c902f8502e40fe890fd9e6c19c5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.23422226309776306,
+          "l2": 3.0025410652160645,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "e5babdc05f4551482cc22d3bea4653989bb0ef8801f0fb4acd90a2f51b69c892",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.25023776292800903,
+          "l2": 3.06605863571167,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "77c9ac82b76d678ec3da6eab080eae49e605d33e68ea8a4a14ebb65d38104deb",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.249350443482399,
+          "l2": 3.352534294128418,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "8a20c32936c9fe19eefba114739a28162c4fbe8f60e42d6f12fa7d494823b491",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3850311040878296,
+          "l2": 3.7978854179382324,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "da525097d2c0f8921450818adc12593bbcf9f5a6f53455bdbad0feb1412875d0",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 4.447998046875,
+          "l2": 15.995991706848145,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "f7775c921f56f9f437d81fba5cf11aad97dc9ed25ed66427f94dff1ac9c122ea",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 5.671070098876953,
+          "l2": 18.303390502929688,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "4139e9b1db840d469c56fad0635278fa8a373eac9beba3a49ef73eb72e180179",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 37.07350158691406,
+          "l2": 91.35987854003906,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "903acb098d407d8261d1d62641247fd1c3b0b0f0644d4e6655e5e24829037ad5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 81.58564758300781,
+          "l2": 640.7861938476562,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "f8304e697902cbf77271175e991f4bfc8bdad14a7c3a963e732ae43f45072757",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.70388793945312,
+          "l2": 646.8944091796875,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "523c9587c4388598b243edb9c5a7b17e3b70b516826c7da7d6cf1a87314b8f17",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 84.21239471435547,
+          "l2": 646.96044921875,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "6c15b3c373ec80bf4c74e36f3d7955aacadad16796d264709dbed3a1e0b6b80a",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.8061752319336,
+          "l2": 647.6397094726562,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "2b7b68fe80ac3fb9051c263fd293aeac292394ad7e532cdf26c75d07b4fc60b3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 88.56486511230469,
+          "l2": 647.8441162109375,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "e1d951676be6cbcafbf8a358efe1bd5675c340747b3278d02a512780bf684dec",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 92.3791275024414,
+          "l2": 651.8246459960938,
+          "layer": 14,
+          "mlp_type": "sparse",
+          "sample_sha256": "e366782934f1a19ccdbd48fbd63a95349763ce615e5b88288ae1cbcd6f768f27",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 92.69155883789062,
+          "l2": 651.9840698242188,
+          "layer": 15,
+          "mlp_type": "sparse",
+          "sample_sha256": "2484d3dea13047365f3df3a369bbc62017f5f5c25108f1fb0ea04c63d141d63f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 93.45450592041016,
+          "l2": 652.3733520507812,
+          "layer": 16,
+          "mlp_type": "sparse",
+          "sample_sha256": "12298a79a61a8a5254b36120804506b15bdbd4863d2e6202365d7e6103a6add7",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.05809783935547,
+          "l2": 652.8169555664062,
+          "layer": 17,
+          "mlp_type": "sparse",
+          "sample_sha256": "8dc9e50aad823b65291383bda8b3b609a129dfa4c97d7ac262d83f4b0dc1943d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.66374969482422,
+          "l2": 652.634033203125,
+          "layer": 18,
+          "mlp_type": "sparse",
+          "sample_sha256": "9076d7a79fbf67e6eb90e4c9ef2cb75f3ea6ebe2176e50c51600c295218fe1d8",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.75909423828125,
+          "l2": 652.7556762695312,
+          "layer": 19,
+          "mlp_type": "sparse",
+          "sample_sha256": "c47f7fc116fcc6b6a58665e9d528ca0a3bf5d62233942f2fbdf4d3902d946fe2",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.66685485839844,
+          "l2": 652.9002075195312,
+          "layer": 20,
+          "mlp_type": "sparse",
+          "sample_sha256": "101667ad3a5a165a086f1b08d54098e7029df23f3112d813d512b3e4fe1e0bba",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.84420776367188,
+          "l2": 653.0734252929688,
+          "layer": 21,
+          "mlp_type": "sparse",
+          "sample_sha256": "cc1801bdbedd07b196b8bac9f06460f5748cb7e3066207d2aab7ee3e696ab99d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 109.3356704711914,
+          "l2": 656.2604370117188,
+          "layer": 22,
+          "mlp_type": "sparse",
+          "sample_sha256": "dc2438bc54bb9ea7d83b085c2ec03295242d96bfe057b3128715d5dad9b5ceb5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 138.14724731445312,
+          "l2": 746.4225463867188,
+          "layer": 23,
+          "mlp_type": "sparse",
+          "sample_sha256": "4ad0069a21d4cf80fb3b47899952f13448bba5153319bab47bf7f1b40ded0832",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 147.04769897460938,
+          "l2": 764.022216796875,
+          "layer": 24,
+          "mlp_type": "sparse",
+          "sample_sha256": "454eda67c9fbab1b1c99937b43f545706b4e7de2e564a7793c0b81dc69397d8a",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 156.61788940429688,
+          "l2": 777.409912109375,
+          "layer": 25,
+          "mlp_type": "sparse",
+          "sample_sha256": "7a148d164f7925f71e262eb6337c27947d3f119a4b32aab95c8aa2b65f727442",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 157.2711181640625,
+          "l2": 778.6506958007812,
+          "layer": 26,
+          "mlp_type": "sparse",
+          "sample_sha256": "5d76b367da19c939a9c89bc7fd35a5a59cbaaac1d2273b6b23d722cf794f1d89",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 153.1704559326172,
+          "l2": 783.5446166992188,
+          "layer": 27,
+          "mlp_type": "sparse",
+          "sample_sha256": "5496f02be149e692adb9460875e516dbe18dee4c844a0663d56ee0c0225d6881",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 158.70704650878906,
+          "l2": 802.7174682617188,
+          "layer": 28,
+          "mlp_type": "sparse",
+          "sample_sha256": "e5848af6e818900117a2ad3f3153ac82434772324738ec520128472087ab96b0",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 196.89340209960938,
+          "l2": 1182.9293212890625,
+          "layer": 29,
+          "mlp_type": "sparse",
+          "sample_sha256": "49d5825e99519e7135a01a503e12253048b165cae23b77b54904da5627748736",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 198.58934020996094,
+          "l2": 1216.4425048828125,
+          "layer": 30,
+          "mlp_type": "sparse",
+          "sample_sha256": "a34f112ff184170ab7379637ba071df7507e1e005604b1865a154887d6855c6e",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 204.5379638671875,
+          "l2": 1240.200439453125,
+          "layer": 31,
+          "mlp_type": "sparse",
+          "sample_sha256": "c63e097bd34df9245b5c25e5e37ab2089daa0e5374df522969d6285f7b194621",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 206.7086944580078,
+          "l2": 1258.3817138671875,
+          "layer": 32,
+          "mlp_type": "sparse",
+          "sample_sha256": "34a956393ee0f2668b6977a85d09d11d7f1912a7fa868e9bfbd364b596121de4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 211.86997985839844,
+          "l2": 1267.30224609375,
+          "layer": 33,
+          "mlp_type": "sparse",
+          "sample_sha256": "e546e20cbe64cdbe5e3c6ccf7b7544633980d850a1f004ddb235427f8572fd07",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 214.5183868408203,
+          "l2": 1271.6746826171875,
+          "layer": 34,
+          "mlp_type": "sparse",
+          "sample_sha256": "9a061683e383060dcd9179bbbcf49d8cb35eb28296763a86d44a64fbde5020fd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.30787658691406,
+          "l2": 1281.4881591796875,
+          "layer": 35,
+          "mlp_type": "sparse",
+          "sample_sha256": "3c79069399d79e82b5ee6b1b4d1edc836f80fa360b128b25aa181baf19854b1f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.9693145751953,
+          "l2": 1292.6314697265625,
+          "layer": 36,
+          "mlp_type": "sparse",
+          "sample_sha256": "a0f6ecc68eba8ad08f806b81654e8768c5549ed7f9a1922fcd6128e829523efe",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.34230041503906,
+          "l2": 1297.2183837890625,
+          "layer": 37,
+          "mlp_type": "sparse",
+          "sample_sha256": "7860793e1e5da923465f1892031fd5f7486209ec37ff112b1d445be7ee480c48",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.11244201660156,
+          "l2": 1299.3037109375,
+          "layer": 38,
+          "mlp_type": "sparse",
+          "sample_sha256": "dcdb5638d3f706e1f78a26c8f9dea3b30b75863340b4df9fe117f555cc236d07",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.2767333984375,
+          "l2": 1301.0694580078125,
+          "layer": 39,
+          "mlp_type": "sparse",
+          "sample_sha256": "4bb762305ef049c8ab75ea1ce24591312f4db75a5e100b41f76f879b53969ce3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 226.10496520996094,
+          "l2": 1303.1256103515625,
+          "layer": 40,
+          "mlp_type": "sparse",
+          "sample_sha256": "80889517fdd45ec046351f0f353b83ecaf36838c66ff4a55185e3d83ad3d2576",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.5201416015625,
+          "l2": 1308.870361328125,
+          "layer": 41,
+          "mlp_type": "sparse",
+          "sample_sha256": "f5069f1dfd184ca7876ddd66a054ee4a46bc82269bf9ad5a73a461acc652bc29",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.68577575683594,
+          "l2": 1310.0848388671875,
+          "layer": 42,
+          "mlp_type": "sparse",
+          "sample_sha256": "2daf23bff20e6e46a34b091c7d30aec114a1bc938b6cbeb7767015dda70620ab",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.7557373046875,
+          "l2": 1312.050537109375,
+          "layer": 43,
+          "mlp_type": "sparse",
+          "sample_sha256": "463704e80763a1f4df6c8df3a6283e98056f464c4439df0e0e1f4f8ef9facebc",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.51370239257812,
+          "l2": 1314.947998046875,
+          "layer": 44,
+          "mlp_type": "sparse",
+          "sample_sha256": "733855240da4a5356b6021c60d085ff867f9e2bc0aed642bfbf30cadfd14939d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 226.74319458007812,
+          "l2": 1317.797119140625,
+          "layer": 45,
+          "mlp_type": "sparse",
+          "sample_sha256": "2c52a230d44f9923f38cc225ecf75f62d018bf3800cea9230c1e61aa4dd52753",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.69558715820312,
+          "l2": 1319.3162841796875,
+          "layer": 46,
+          "mlp_type": "sparse",
+          "sample_sha256": "79044b648f65b4a750cae75fb924e98089a274e5bb242c243a3bb710826e6819",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 224.969970703125,
+          "l2": 1318.6221923828125,
+          "layer": 47,
+          "mlp_type": "sparse",
+          "sample_sha256": "b1f09670d1e0536fd7dea490b3c7bd7840ff97592b552d2e52f1f9defc629f32",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 222.62342834472656,
+          "l2": 1302.1121826171875,
+          "layer": 48,
+          "mlp_type": "sparse",
+          "sample_sha256": "983165cb6e7e92a8fad20ff800a28851c6931a4b5089c74073824b5a9ebb15c7",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.8549041748047,
+          "l2": 1307.4239501953125,
+          "layer": 49,
+          "mlp_type": "sparse",
+          "sample_sha256": "ac8f00359fdfdfb6006a6d9e0fe748adcebfd531f8a37b63d42a0a8a3b1ecd6c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 219.3204345703125,
+          "l2": 1311.5753173828125,
+          "layer": 50,
+          "mlp_type": "sparse",
+          "sample_sha256": "3da42b4fcf9a6d755799eb27400dee900c31a75ca100b126a1aa786c75194dec",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.68568420410156,
+          "l2": 1319.233642578125,
+          "layer": 51,
+          "mlp_type": "sparse",
+          "sample_sha256": "d46c728a50be0b49bf28e58f279953b8eca512e0a26a0e64c72ad7711e180492",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.5675811767578,
+          "l2": 1322.2216796875,
+          "layer": 52,
+          "mlp_type": "sparse",
+          "sample_sha256": "d708fa19188a363192b3f94ec2bb65f90be0a458670bd7908d475189c4027bf3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 219.27455139160156,
+          "l2": 1322.6572265625,
+          "layer": 53,
+          "mlp_type": "sparse",
+          "sample_sha256": "800182695cde4f6e8160aba8b1b31980f47333c0dc844ffa4fff6849c63afee6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.61358642578125,
+          "l2": 1324.1578369140625,
+          "layer": 54,
+          "mlp_type": "sparse",
+          "sample_sha256": "f4550680b937050131082cb4cd6c86d53a60cca40d29793231a210a010c6b93c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.97056579589844,
+          "l2": 1325.404296875,
+          "layer": 55,
+          "mlp_type": "sparse",
+          "sample_sha256": "1e1a9421d9f39b9b73b41bee2da963c1d4faace5e3b4bf47aa6fafd424e944d5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 215.4282989501953,
+          "l2": 1329.7852783203125,
+          "layer": 56,
+          "mlp_type": "sparse",
+          "sample_sha256": "cf818a9f24ecf2683ff04c4fd0adec20d3850ae4f3c3254876d7141b24ee84d6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 214.05677795410156,
+          "l2": 1328.646728515625,
+          "layer": 57,
+          "mlp_type": "sparse",
+          "sample_sha256": "c4ff61e4e9c6d438071b2cb905c275ab9a7e97ba358cf9e39f65263d2c21957a",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 214.99295043945312,
+          "l2": 1329.66943359375,
+          "layer": 58,
+          "mlp_type": "sparse",
+          "sample_sha256": "994aa8e731d608534401fe1fb663358e20a6b7f6f502815c1ca5e8dca6c5dada",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 212.8733673095703,
+          "l2": 1331.8607177734375,
+          "layer": 59,
+          "mlp_type": "sparse",
+          "sample_sha256": "9e8eb9e3936078c3c70517c38e052ae61fd342240eb9832901af0cbb9d827cfa",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 209.88731384277344,
+          "l2": 1333.4930419921875,
+          "layer": 60,
+          "mlp_type": "sparse",
+          "sample_sha256": "c16e625fcd341a5fcd859d8e28a11a436c57dc77fef916f065d86e8d9f5ee011",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 209.9449920654297,
+          "l2": 1335.426513671875,
+          "layer": 61,
+          "mlp_type": "sparse",
+          "sample_sha256": "09548b2035082e81914d9eb4f888adc8d0637c19aad21f63e7c21691cd47460f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 209.37826538085938,
+          "l2": 1337.81689453125,
+          "layer": 62,
+          "mlp_type": "sparse",
+          "sample_sha256": "71236d7704ad015970198129baf707f90776cab58fe875b354c144d2cc4a141f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 207.58206176757812,
+          "l2": 1342.047607421875,
+          "layer": 63,
+          "mlp_type": "sparse",
+          "sample_sha256": "488277fb4f776d3a34611e0702b070f0f81be650fae89dc8d713c118456278ae",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 206.05743408203125,
+          "l2": 1341.615966796875,
+          "layer": 64,
+          "mlp_type": "sparse",
+          "sample_sha256": "def4a470ca1f751c50587a5d984b70db1388a2be94a802352476cdac84894010",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 201.5496063232422,
+          "l2": 1326.9755859375,
+          "layer": 65,
+          "mlp_type": "sparse",
+          "sample_sha256": "6b816765a45bc4971faa0e3dfbba5e9a4fd30d6c76059d310a41e9d2a51acb6d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 199.224609375,
+          "l2": 1328.2879638671875,
+          "layer": 66,
+          "mlp_type": "sparse",
+          "sample_sha256": "b367c1018521460cae57144a27d735f70458e1c37c327449745ab64b81e6f2f2",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 197.05482482910156,
+          "l2": 1338.6072998046875,
+          "layer": 67,
+          "mlp_type": "sparse",
+          "sample_sha256": "3633bab3c9e72f2873c77eccd1e9e2aaa1159684b85035e6d37c05cfc321b9e1",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 189.38882446289062,
+          "l2": 1334.9466552734375,
+          "layer": 68,
+          "mlp_type": "sparse",
+          "sample_sha256": "4c2602b17e8fba468652d861a1b331157bc28f233dec659e5cb75811137ae632",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 156.60626220703125,
+          "l2": 1202.3016357421875,
+          "layer": 69,
+          "mlp_type": "sparse",
+          "sample_sha256": "b5855658639acf816f5d33569641646e33f41c6a32455d9042279d2b76577b27",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 107.13674926757812,
+          "l2": 1124.0511474609375,
+          "layer": 70,
+          "mlp_type": "sparse",
+          "sample_sha256": "d8981dd095b3e4aabe6357f15e20255bc7b9358cc3a89ece2caa381fe019b480",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.03961181640625,
+          "l2": 1180.1552734375,
+          "layer": 71,
+          "mlp_type": "sparse",
+          "sample_sha256": "e1c07ef4c50ff5b5264a9a0656fb0695d6b2905e521ba36512adf6b644646867",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 88.69914245605469,
+          "l2": 1161.778564453125,
+          "layer": 72,
+          "mlp_type": "sparse",
+          "sample_sha256": "7d385eeafefa91be341bef2d78a90de981570ad9f707c85ecb24960e82912c60",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 80.3843994140625,
+          "l2": 1128.3458251953125,
+          "layer": 73,
+          "mlp_type": "sparse",
+          "sample_sha256": "3bc25d341caa92fa2f844335338bddb255dff6c405637b34780606920cf79eb1",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 75.90434265136719,
+          "l2": 1140.6229248046875,
+          "layer": 74,
+          "mlp_type": "sparse",
+          "sample_sha256": "ef50155099c657e27cca3b57b3d7dbea9a77c2ce465e0c913ddbbbbecd263187",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 190.55221557617188,
+          "l2": 1380.132080078125,
+          "layer": 75,
+          "mlp_type": "sparse",
+          "sample_sha256": "e3d2ac4153a2e5b70eadf791ab1fefc699a092e3ae595a96da140ed62df27b45",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 217.32373046875,
+          "l2": 1474.2095947265625,
+          "layer": 76,
+          "mlp_type": "sparse",
+          "sample_sha256": "a9bb31cce1c34e5963cb8ad76623dd16e083aa2dbd111673f9ba4ca524bcd9f9",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 1106.9356689453125,
+          "l2": 2217.747802734375,
+          "layer": 77,
+          "mlp_type": "sparse",
+          "sample_sha256": "abe5d10c0ef2f97598072871ee5094cf162013c1db3e6ab97e1e6ed7d242e375",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 2,
+          "10": 1,
+          "100": 1,
+          "101": 2,
+          "104": 1,
+          "108": 4,
+          "110": 1,
+          "111": 3,
+          "112": 4,
+          "113": 1,
+          "114": 2,
+          "122": 1,
+          "123": 1,
+          "125": 4,
+          "126": 3,
+          "127": 1,
+          "130": 3,
+          "133": 6,
+          "138": 1,
+          "14": 1,
+          "140": 2,
+          "141": 2,
+          "142": 1,
+          "143": 1,
+          "144": 1,
+          "145": 1,
+          "148": 3,
+          "15": 1,
+          "152": 1,
+          "157": 3,
+          "158": 1,
+          "16": 2,
+          "164": 1,
+          "166": 2,
+          "167": 8,
+          "168": 1,
+          "17": 1,
+          "171": 4,
+          "173": 1,
+          "175": 2,
+          "176": 3,
+          "184": 2,
+          "185": 1,
+          "188": 1,
+          "190": 2,
+          "191": 1,
+          "193": 4,
+          "195": 2,
+          "196": 2,
+          "2": 3,
+          "20": 1,
+          "201": 3,
+          "203": 3,
+          "204": 4,
+          "205": 1,
+          "206": 1,
+          "207": 1,
+          "208": 2,
+          "21": 2,
+          "212": 3,
+          "213": 1,
+          "214": 2,
+          "216": 1,
+          "217": 4,
+          "218": 3,
+          "219": 5,
+          "22": 1,
+          "220": 1,
+          "221": 1,
+          "222": 2,
+          "224": 2,
+          "226": 1,
+          "227": 1,
+          "229": 3,
+          "232": 2,
+          "236": 2,
+          "238": 3,
+          "239": 1,
+          "242": 1,
+          "243": 4,
+          "247": 1,
+          "248": 2,
+          "250": 1,
+          "253": 3,
+          "27": 4,
+          "28": 2,
+          "3": 2,
+          "34": 5,
+          "37": 2,
+          "38": 1,
+          "39": 1,
+          "41": 4,
+          "42": 1,
+          "44": 1,
+          "45": 1,
+          "47": 1,
+          "48": 1,
+          "49": 3,
+          "5": 3,
+          "50": 2,
+          "52": 1,
+          "55": 1,
+          "56": 2,
+          "57": 1,
+          "58": 1,
+          "60": 10,
+          "61": 2,
+          "62": 2,
+          "63": 4,
+          "64": 1,
+          "7": 1,
+          "74": 1,
+          "75": 2,
+          "77": 1,
+          "78": 1,
+          "79": 2,
+          "8": 2,
+          "83": 6,
+          "87": 1,
+          "92": 1,
+          "94": 1,
+          "96": 1,
+          "97": 1,
+          "98": 2,
+          "99": 2
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

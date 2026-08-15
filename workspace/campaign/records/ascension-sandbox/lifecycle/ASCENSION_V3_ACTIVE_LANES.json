@@ -1,0 +1,406 @@
+{
+  "active_lanes": [
+    {
+      "blockers": [
+        "sealed JSON evidence file is absent or unreadable",
+        "sealed JSONL evidence ledger is absent or empty",
+        "required file artifact is absent, symlinked, or not regular"
+      ],
+      "required_artifacts": [
+        "ASCENSION_V3_SEED_ARCHIVE",
+        "ASCENSION_V3_PROTECTED_OBJECTS",
+        "ASCENSION_V3_PROCESS_AUDIT",
+        "ASCENSION_V3_GRAVEYARD_IMPORT",
+        "ASCENSION_V3_KERNEL_GENOME_IMPORT",
+        "ASCENSION_V3_REPRESENTATION_GENOME_IMPORT",
+        "ASCENSION_V3_RESTORE",
+        "ASCENSION_V3_STORAGE_RECOVERY_RECEIPT"
+      ],
+      "resource_class": "DISK_HEAVY",
+      "state": "V3_SEED_ARCHIVE",
+      "status": "READY_FOR_EVIDENCE"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_SEED_ARCHIVE"
+      ],
+      "required_artifacts": [
+        "ASCENSION_V3_AUTHORITY_FROZEN"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "V3_AUTHORITY_FREEZE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_AUTHORITY_FREEZE"
+      ],
+      "required_artifacts": [
+        "ASCENSION_V3_GROK_BUILD_FABRIC_READY",
+        "ASCENSION_V3_RESOURCE_GOVERNOR_READY"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_GROK_BUILD_FABRIC",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_GROK_BUILD_FABRIC"
+      ],
+      "required_artifacts": [
+        "HCLI_AGENT_OS_V3_STATUS",
+        "HCLI_CONTEXT_COMPILER_RECEIPT",
+        "HCLI_KV_STATE_MANAGER_RECEIPT",
+        "HCLI_CONTINUOUS_BATCHING_SCOREBOARD",
+        "HCLI_VERIFIED_TASKS_PER_HOUR",
+        "HCLI_RESTART_AND_RECOVERY"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_AGENT_OS",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_AGENT_OS"
+      ],
+      "required_artifacts": [
+        "ASCENSION_KERNEL_GENOME",
+        "ASCENSION_REPRESENTATION_GENOME",
+        "ASCENSION_SCHEDULER_GENOME",
+        "ASCENSION_NEGATIVE_SCIENCE",
+        "ASCENSION_TRANSFER_MATRIX",
+        "ASCENSION_MECHANISM_INDEX"
+      ],
+      "resource_class": "CPU_HEAVY",
+      "state": "V3_KNOWLEDGE_PLANE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_KNOWLEDGE_PLANE"
+      ],
+      "required_artifacts": [
+        "GRAVITY_V3_FRONTIER",
+        "GRAVITY_V3_QAT_DOCTOR_INDEX"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "V3_GRAVITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_GRAVITY"
+      ],
+      "required_artifacts": [
+        "METAL_FAMILY_PLUGIN_MATRIX",
+        "METAL_EXACT_MODEL_COMPILER_STATUS"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "V3_METAL_COMPILER",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state V3_METAL_COMPILER"
+      ],
+      "required_artifacts": [
+        "QWEN30_MANAGER_SOURCE",
+        "QWEN30_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN30_MANAGER_GRAVITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_DENSITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_DENSITY"
+      ],
+      "required_artifacts": [
+        "QWEN30_MANAGER_TG3"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_TG",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_TG"
+      ],
+      "required_artifacts": [
+        "QWEN30_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN30_MANAGER_AGENT_OS"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_30B_AGENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT"
+      ],
+      "required_artifacts": [
+        "QWEN80_MANAGER_SOURCE",
+        "QWEN80_MANAGER_CAPABILITY_ANCHOR",
+        "QWEN80_MANAGER_GRAVITY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_DENSITY",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_80B_DENSITY"
+      ],
+      "required_artifacts": [
+        "QWEN80_MANAGER_TG3"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_TG",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_80B_TG"
+      ],
+      "required_artifacts": [
+        "QWEN80_MANAGER_KERNEL_OPERATIONAL",
+        "QWEN80_MANAGER_AGENT_OS"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_80B_AGENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_30B_AGENT",
+        "requires certified state MANAGER_80B_AGENT"
+      ],
+      "required_artifacts": [
+        "ASCENSION_MANAGER_TOURNAMENT",
+        "ASCENSION_MANAGER_WINNER",
+        "ASCENSION_ALTERNATE_OFFLOAD"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "MANAGER_TOURNAMENT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state MANAGER_TOURNAMENT"
+      ],
+      "required_artifacts": [
+        "ASCENSION_SANDBOX_ACTIVE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "SANDBOX_ACTIVATION",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "QWEN_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_QWEN",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "LLAMA_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_LLAMA",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "MISTRAL_MIXTRAL_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_MISTRAL",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "DEEPSEEK_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_DEEPSEEK",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "GLM_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_GLM",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "KIMI_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_KIMI",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "GEMMA_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_GEMMA",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state SANDBOX_ACTIVATION"
+      ],
+      "required_artifacts": [
+        "HYBRID_V3_LAUNCH_READY"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "FAMILY_HYBRID",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state FAMILY_QWEN",
+        "requires certified state FAMILY_LLAMA",
+        "requires certified state FAMILY_MISTRAL",
+        "requires certified state FAMILY_DEEPSEEK",
+        "requires certified state FAMILY_GLM",
+        "requires certified state FAMILY_KIMI",
+        "requires certified state FAMILY_GEMMA",
+        "requires certified state FAMILY_HYBRID"
+      ],
+      "required_artifacts": [
+        "GENERIC_HF_REFERENCE_READY",
+        "ASCENSION_V3_FAMILY_MATRIX",
+        "ASCENSION_V3_MODEL_MATRIX",
+        "ASCENSION_V3_DENSITY_MATRIX",
+        "ASCENSION_V3_TG_MATRIX",
+        "ASCENSION_V3_RESOURCE_ATLAS",
+        "ASCENSION_V3_POWER_PROFILES",
+        "ASCENSION_V3_STORAGE_LEASES",
+        "ASCENSION_V3_GARBAGE_AUDIT",
+        "ASCENSION_V3_RECOVERY_TEST",
+        "HAWKING_APPLE_V3_INSTALL_TEST",
+        "HAWKING_APPLE_V3_UPDATE_TEST",
+        "HAWKING_APPLE_V3_HCLI_PRODUCT_TEST",
+        "HAWKING_APPLE_V3_RELEASE_AUDIT",
+        "ASCENSION_V3_CORE_FAMILY_MATRIX_READY",
+        "ASCENSION_V3_ALL_ADVERTISED_MODELS_QUALIFIED"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "GLOBAL_LAUNCH_AUDIT",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state GLOBAL_LAUNCH_AUDIT"
+      ],
+      "required_artifacts": [
+        "HAWKING_ASCENSION_V3_REVIEW_REQUIRED",
+        "HAWKING_ASCENSION_V3_EXTERNAL_REVIEW_ACCEPTED"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "EXTERNAL_REVIEW",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state EXTERNAL_REVIEW"
+      ],
+      "required_artifacts": [
+        "HAWKING_APPLE_V3_PRODUCTION_RELEASE_READY"
+      ],
+      "resource_class": "CONTROLLER",
+      "state": "APPLE_RELEASE",
+      "status": "WAITING_DEPENDENCY"
+    },
+    {
+      "blockers": [
+        "requires certified state APPLE_RELEASE"
+      ],
+      "required_artifacts": [
+        "HAWKING_TG2_TG1_FRONTIER_ACTIVE"
+      ],
+      "resource_class": "GPU_HEAVY",
+      "state": "TG2_TG1_FRONTIER",
+      "status": "WAITING_DEPENDENCY"
+    }
+  ],
+  "decision_sha256": "be256163c83b72d3b5699c750178d9aa813975b959b8044c5beeac8a4c0de101",
+  "recorded_at": "2026-08-09T17:44:43.494655Z",
+  "schema": "hawking.ascension.v3_active_lanes.v1",
+  "seal_sha256": "d32ba59ca96f31c20cee04e539d8323f64323c966559d1fcd9e80d007223cead",
+  "tournament": {
+    "armed_at": "2026-08-09T06:16:03.096010Z",
+    "blockers": [
+      "requires certified MANAGER_30B_AGENT",
+      "requires certified MANAGER_80B_AGENT"
+    ],
+    "candidate_order": [
+      "Qwen30-Gravity-Manager-Artifact",
+      "Qwen80-Gravity-Manager-Artifact"
+    ],
+    "claim_boundary": {
+      "does_not_activate_sandbox": true,
+      "does_not_run_candidate_models": true,
+      "does_not_select_a_winner": true
+    },
+    "dimensions": [
+      "hard_gate_compliance",
+      "manager_capability",
+      "solo_manager_capability",
+      "manager_as_orchestrator_capability",
+      "verified_tasks_per_hour",
+      "architecture_kernel_research",
+      "gravity_research_quality",
+      "long_horizon_reliability",
+      "tool_recovery",
+      "search_retrieval",
+      "memory_context",
+      "hcli_latency",
+      "multi_agent_throughput",
+      "resident_memory",
+      "active_bytes_per_token",
+      "energy_per_verified_task",
+      "thermal_stability",
+      "error_rate",
+      "receipt_quality",
+      "adversarial_review_quality",
+      "failure_recovery",
+      "benchmark_honesty",
+      "security_effect_discipline",
+      "release_integration"
+    ],
+    "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+    "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+    "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+    "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+  }
+}

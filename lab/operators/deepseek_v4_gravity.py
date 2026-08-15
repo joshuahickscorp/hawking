@@ -133,6 +133,21 @@ class DeepSeekV4GravityError(RuntimeError):
     """The V4 streamed Condense execution cannot safely continue."""
 
 
+class DeepSeekV4GravityIncompleteError(DeepSeekV4GravityError):
+    """A sealed artifact's body is absent, not corrupt: streaming may resume.
+
+    Distinct from every other verification failure in this module.  A chunk that
+    is missing means the artifact was never finished (or its body was reclaimed);
+    a chunk that is present but the wrong size, the wrong digest, or outside the
+    artifact means the artifact is corrupt or hostile.  Only the first is
+    resumable, and conflating the two strands a recoverable artifact forever.
+    """
+
+    def __init__(self, message: str, *, missing: list[str] | None = None) -> None:
+        super().__init__(message)
+        self.missing = missing or []
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -1008,9 +1023,10 @@ def _load_or_create_journal(
     *,
     shard_names: Sequence[str] = DIAGNOSTIC_SHARDS,
     contract: str = "diagnostic",
+    resuming_sealed: bool = False,
 ) -> dict[str, Any]:
     manifest = paths["manifest"]
-    if manifest.exists():
+    if manifest.exists() and not resuming_sealed:
         raise DeepSeekV4GravityError(
             f"artifact already sealed at {manifest}; use `inspect` or a new artifact directory"
         )
@@ -1043,6 +1059,12 @@ def _completed_ranges(paths: Mapping[str, Path], artifact: Path) -> dict[str, di
         if not isinstance(range_id, str) or not isinstance(chunk_relpath, str):
             raise DeepSeekV4GravityError("stream range journal lacks a range identity")
         chunk = artifact / chunk_relpath
+        if not chunk.exists():
+            # The journal records intent to seal this range; the body is what
+            # proves it landed.  An absent chunk is simply not completed, so
+            # leave it out and let the stream re-fetch it.  A chunk that IS
+            # present but does not verify still raises below.
+            continue
         _regular_file(chunk, f"restarted chunk {range_id}")
         raw = chunk.read_bytes()
         if len(raw) != row.get("bytes") or _sha256(raw) != row.get("sha256"):
@@ -1583,8 +1605,29 @@ def build_full_model(
     _ensure_dir(artifact, "artifact directory")
     if retention.resolve(strict=False) == artifact.resolve(strict=False):
         raise DeepSeekV4GravityError("xet_root must be separate from artifact_dir")
+    resuming_sealed = False
     if (artifact / "manifest.json").is_file():
-        return reverify_full_model(artifact)
+        try:
+            return reverify_full_model(artifact)
+        except DeepSeekV4GravityIncompleteError as exc:
+            resuming_sealed = True
+            # A sealed manifest whose body is absent is an unfinished artifact,
+            # not a corrupt one.  Fall through and resume streaming the missing
+            # chunks; the content-addressed layout means a resumed body either
+            # re-derives the same seal or fails verification on the way out.
+            # Corruption (wrong size, wrong digest, escaping path) still raises.
+            print(
+                json.dumps(
+                    {
+                        "schema": "hawking.gravity.deepseek_v4.resume.v1",
+                        "status": "RESUMING_INCOMPLETE_FULL_STREAM",
+                        "missing_chunks": len(exc.missing),
+                        "reason": str(exc),
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
     paths = _artifact_paths(artifact)
     _ensure_dir(paths["chunks"], "artifact chunk root")
     _ensure_dir(paths["metadata"], "artifact metadata root")
@@ -1596,6 +1639,7 @@ def build_full_model(
         size,
         shard_names=FULL_SHARDS,
         contract="full_model",
+        resuming_sealed=resuming_sealed,
     )
     completed = _completed_ranges(paths, artifact)
     assets = _write_metadata_assets(paths)
@@ -1773,11 +1817,16 @@ def reverify_full_model(artifact_dir: str | Path) -> dict[str, Any]:
                 raise DeepSeekV4GravityError(f"full stream chunk binding conflict for {relative}")
             expected_chunks[relative] = (digest, size)
     checked_bytes = 0
+    artifact_root = artifact.resolve(strict=True)
+    missing: list[str] = []
     for relative, (digest, size) in sorted(expected_chunks.items()):
         path = artifact / relative
+        if not path.exists():
+            missing.append(relative)
+            continue
         try:
             resolved = path.resolve(strict=True)
-            resolved.relative_to(artifact.resolve(strict=True))
+            resolved.relative_to(artifact_root)
         except (OSError, ValueError) as exc:
             raise DeepSeekV4GravityError(f"full stream chunk path escapes artifact: {relative}") from exc
         if path.stat().st_size != size:
@@ -1789,6 +1838,12 @@ def reverify_full_model(artifact_dir: str | Path) -> dict[str, Any]:
         if observed.hexdigest() != digest:
             raise DeepSeekV4GravityError(f"full stream chunk hash differs for {relative}")
         checked_bytes += size
+    if missing:
+        raise DeepSeekV4GravityIncompleteError(
+            f"full stream body is incomplete: {len(missing)} of {len(expected_chunks)} "
+            f"content-addressed chunks are absent (first: {missing[0]})",
+            missing=missing,
+        )
     restart = _read_json(artifact / "restart-receipt.json", "full restart receipt")
     try:
         verify(restart, label="DeepSeek-V4 full restart receipt")
@@ -2934,6 +2989,10 @@ def reverify_sealed_diagnostic(artifact_dir: str | Path) -> dict[str, Any]:
     checked_bytes = 0
     for relative, digest in sorted(expected_chunks.items()):
         path = artifact / relative
+        if not path.exists():
+            raise DeepSeekV4GravityIncompleteError(
+                f"artifact chunk is absent: {relative}", missing=[relative]
+            )
         try:
             resolved = path.resolve(strict=True)
             resolved.relative_to(artifact.resolve(strict=True))

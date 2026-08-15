@@ -1,0 +1,448 @@
+{
+  "baseline_artifact": {
+    "admission": {
+      "bytes": 2224,
+      "document_seal_sha256": "840848f5b33db8fe836cfb8956213c3dff32ece52ddfe34edcab17aa4d7e134c",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen_complete_binary_gravity_admission_current_pointer.v1",
+      "sha256": "a92731d45a7b0f2f7b1a7408f7339613c18baaa25f26a0e78c1b00f03aec1102",
+      "status": "CURRENT_COMPLETE_BINARY_ADMISSION_RECEIPT_SELECTED"
+    },
+    "ceiling_bpw": 1.5,
+    "complete_physical_bpw": 1.1331148544404688,
+    "low_fidelity_unqualified": true,
+    "manifest": {
+      "bytes": 77842421,
+      "document_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+      "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED"
+    },
+    "source_audit": {
+      "bytes": 11904,
+      "document_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen80_source_body_audit_candidate.v1",
+      "sha256": "f861ccd47db9b49422c9eaa29fdf1aadeb7880189989ccb1b9d477c249524982",
+      "status": "CANDIDATE_FULL_PINNED_SOURCE_BODY_VERIFIED"
+    },
+    "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED",
+    "tensor_count": 74391,
+    "under_ceiling": true
+  },
+  "cheapest_honest_path_for_coherence": {
+    "bounded_storage_plan": {
+      "default_max_hidden_tokens_per_layer": 1024,
+      "full_route_membership_all_tokens_all_layers": true,
+      "hidden_bytes_at_default": 402653184,
+      "note": "Same strategy as Q30 all-layer capture: full routes (tiny) + stratified raw hiddens so Gram/fit still has holdout rows.",
+      "raw_hidden_strategy": "stratified_token_subsample"
+    },
+    "option_id": "metal_multi_layer_all_48",
+    "primary_blocker": {
+      "authority": {
+        "bytes": 1629,
+        "document_seal_sha256": null,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MULTI_LAYER_GQA_ENCODE_GAP_20260809T210000Z.json",
+        "present": true,
+        "schema": "hawking.ascension.qwen80_multi_layer_gqa_encode_gap.v1",
+        "sha256": "6a27eecc47b45e5d11a873a8091dc09a3d7d048aa5bf8a88b8f471555bb3226d",
+        "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+      },
+      "blocks": [
+        "metal_multi_layer_all_48",
+        "any complete 48-layer device chain"
+      ],
+      "description": "same-runtime full-layer encode for the GQA mixer, with caller-owned gqa_key_cache/gqa_value_cache state slots and their rollback buffers as declared by the 48-layer execution schedule authority (seal 54084ddf)",
+      "gqa_layers": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47
+      ],
+      "id": "gqa_full_layer_same_runtime_encode",
+      "ready_layer_count": 0,
+      "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+    },
+    "q30_pattern": "ascension_qwen30_broad_activation_all_layer_route_capture + q30_activation_null_first_report + ascension_qwen30_activation_weighted_svd_repack",
+    "ready_now": false,
+    "secondary_blockers": [
+      {
+        "blocks": [
+          "null-first scoring",
+          "surplus-first fit",
+          "coverage-honest repack"
+        ],
+        "description": "Q80 analogue of ascension_qwen30_broad_activation_all_layer_route_capture: multi-probe sequential forward that writes full route membership for every token at every layer and stratified raw f32 router-input hiddens (default 1024 tokens/layer × 2048 f32).",
+        "id": "broad_activation_capture_binary",
+        "q30_reference": "crates/hawking-core/examples/ascension_qwen30_broad_activation_all_layer_route_capture.rs",
+        "status": "ABSENT"
+      },
+      {
+        "blocks": [
+          "any multi-token activation capture on the current component path"
+        ],
+        "description": "Existing multi-layer same-runtime path is a single source-token component parity capture. Broad activation needs sequential state across prompt tokens (DeltaNet recurrent + GQA KV) for each probe.",
+        "id": "multi_token_sequential_state_for_capture",
+        "status": "ABSENT_ON_COMPONENT_PATH"
+      }
+    ]
+  },
+  "cheapest_honest_path_now": {
+    "coherence_eligible": false,
+    "covers_layers": [
+      0,
+      1,
+      2
+    ],
+    "note": "The only ready honest path covers 3/48 DeltaNet layers after a new multi-token capture binary is written. It is instrument calibration only — packing it would repeat the Q30 coverage failure.",
+    "option_id": "metal_deltanet_prefix_only_l0_l2"
+  },
+  "claim_boundary": {
+    "all_layer_activation_capture_not_produced": true,
+    "fitting_on_layer0_or_component_captures_is_refused": true,
+    "negative_result_is_valid_deliverable": true,
+    "no_coherence_claim": true,
+    "no_exclusive_gpu_lease": true,
+    "no_family_fit_or_repack_performed": true,
+    "no_per_layer_nulls_measured_this_lane": true,
+    "no_server_started": true,
+    "no_tps_benchmark": true
+  },
+  "missing_exact": [
+    {
+      "authority": {
+        "bytes": 1629,
+        "document_seal_sha256": null,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MULTI_LAYER_GQA_ENCODE_GAP_20260809T210000Z.json",
+        "present": true,
+        "schema": "hawking.ascension.qwen80_multi_layer_gqa_encode_gap.v1",
+        "sha256": "6a27eecc47b45e5d11a873a8091dc09a3d7d048aa5bf8a88b8f471555bb3226d",
+        "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+      },
+      "blocks": [
+        "metal_multi_layer_all_48",
+        "any complete 48-layer device chain"
+      ],
+      "description": "same-runtime full-layer encode for the GQA mixer, with caller-owned gqa_key_cache/gqa_value_cache state slots and their rollback buffers as declared by the 48-layer execution schedule authority (seal 54084ddf)",
+      "gqa_layers": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47
+      ],
+      "id": "gqa_full_layer_same_runtime_encode",
+      "ready_layer_count": 0,
+      "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+    },
+    {
+      "blocks": [
+        "null-first scoring",
+        "surplus-first fit",
+        "coverage-honest repack"
+      ],
+      "description": "Q80 analogue of ascension_qwen30_broad_activation_all_layer_route_capture: multi-probe sequential forward that writes full route membership for every token at every layer and stratified raw f32 router-input hiddens (default 1024 tokens/layer × 2048 f32).",
+      "id": "broad_activation_capture_binary",
+      "q30_reference": "crates/hawking-core/examples/ascension_qwen30_broad_activation_all_layer_route_capture.rs",
+      "status": "ABSENT"
+    },
+    {
+      "blocks": [
+        "any multi-token activation capture on the current component path"
+      ],
+      "description": "Existing multi-layer same-runtime path is a single source-token component parity capture. Broad activation needs sequential state across prompt tokens (DeltaNet recurrent + GQA KV) for each probe.",
+      "id": "multi_token_sequential_state_for_capture",
+      "status": "ABSENT_ON_COMPONENT_PATH"
+    }
+  ],
+  "model": {
+    "deltanet_layers": 36,
+    "gqa_layers": [
+      3,
+      7,
+      11,
+      15,
+      19,
+      23,
+      27,
+      31,
+      35,
+      39,
+      43,
+      47
+    ],
+    "hidden": 2048,
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "layers": 48,
+    "num_experts": 512,
+    "top_k": 10
+  },
+  "options": [
+    {
+      "blocked_by": [
+        "same-runtime full-layer GQA encode for layers 3,7,...,47 (ready_count=0/12)",
+        "broad multi-probe activation capture binary (does not exist for Q80)",
+        "owner-run Metal capture under gate profile / serialized lease"
+      ],
+      "cost_rank": 1,
+      "covers_layers": [
+        0,
+        1,
+        2
+      ],
+      "honest": true,
+      "id": "metal_multi_layer_all_48",
+      "matches_q30_pattern": true,
+      "name": "Metal multi-layer same-runtime all 48 layers",
+      "once_ready": "Extend multi-layer host to layer_count=48, add stratified hidden subsample writer (Q30 pattern), run broad prompt set.",
+      "ready_now": false
+    },
+    {
+      "blocked_by": [],
+      "coherence_eligible": false,
+      "cost_rank": 2,
+      "coverage_percent_upper_bound": 6.25,
+      "covers_layers": [
+        0,
+        1,
+        2
+      ],
+      "honest": true,
+      "id": "metal_deltanet_prefix_only_l0_l2",
+      "matches_q30_pattern": false,
+      "name": "Metal multi-layer DeltaNet prefix L0..L2 only",
+      "note": "Ready for instrument calibration only; refuse as packing input.",
+      "once_ready": "Could measure per-layer nulls on 3/48 layers after a broad multi-token capture binary is written. Cannot pack for coherence (coverage failure class of the Q30 L0-only mistake).",
+      "ready_now": true
+    },
+    {
+      "blocked_by": [
+        "full-layer GQA CPU oracle integrated into sequential multi-token chain (isolated two-token GQA CPU oracle exists; multi-layer encode wires DeltaNet only)",
+        "multi-token sequential DeltaNet+GQA state across 48 layers for capture",
+        "broad capture writer emitting stratified router-input hiddens"
+      ],
+      "cost_rank": 3,
+      "covers_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "honest": true,
+      "id": "cpu_packed_hybrid_all_48",
+      "matches_q30_pattern": false,
+      "name": "CPU packed hybrid sequential forward (admitted artifact)",
+      "once_ready": "No Metal lease required. Bound by admitted compact tensors only (no dense expand). Still multi-hour for ~4k tokens on CPU.",
+      "ready_now": false
+    },
+    {
+      "blocked_by": [
+        "no Q80 streamed source teacher / layer-streamed BF16 oracle path exists",
+        "full Qwen3-Next hybrid (DeltaNet+GQA+MoE) source forward must be built",
+        "148G source residency / disk-offload schedule"
+      ],
+      "cost_rank": 4,
+      "covers_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "honest": true,
+      "id": "source_bf16_streamed_teacher",
+      "matches_q30_pattern": false,
+      "name": "Streamed BF16 source teacher forward",
+      "once_ready": "Authority-teacher activations; still not a packing substitute without coverage.",
+      "ready_now": false
+    },
+    {
+      "blocked_by": [
+        "L0/L1 and multi-layer captures are single-token component parity receipts (second residual sha + max_abs_error). They do not retain per-token router-input f32 hiddens or multi-prompt route membership needed for null/surplus scoring and activation_weighted_svd fit."
+      ],
+      "coherence_eligible": false,
+      "cost_rank": 0,
+      "covers_layers": [],
+      "honest": false,
+      "id": "reuse_l0_l1_component_captures",
+      "name": "Reuse existing L0/L1/multi-layer component captures",
+      "ready_now": true,
+      "refused_reason": "Would repeat the Q30 coverage failure (and worse: single-token component parity has no fit matrix at all)."
+    }
+  ],
+  "recorded_at": "2026-08-09T21:10:46.075738Z",
+  "runtime_surface": {
+    "device_multi_layer_earned_prefix": {
+      "layer_count": 3,
+      "layers": "L0..L2",
+      "multi_layer_capture": {
+        "bytes": 11009,
+        "document_seal_sha256": "5d1fdacbcd4bc6cb8def1266c22c13e7c4f4a3a14de3f4672bede5a6170b930f",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MULTI_LAYER_fe88c4c3-dbcf-4a11-bd18-3d0211a53224_outer/inner/receipt.json",
+        "present": true,
+        "schema": "hawking.ascension.qwen80_source_token_multi_layer_same_runtime_capture.v1",
+        "sha256": "af4ee7b88e3661e9c0459dc39f7c915d214e4c8b995221a398ab254725cb863f",
+        "status": "CAPTURED_QWEN80_SOURCE_TOKEN_MULTI_LAYER_SAME_RUNTIME_COMPONENT_ONLY"
+      },
+      "observed_layer_count_on_latest_capture": 3,
+      "status": "CAPTURED_QWEN80_SOURCE_TOKEN_MULTI_LAYER_SAME_RUNTIME_COMPONENT_ONLY"
+    },
+    "existing_captures_reason": "L0/L1 and multi-layer captures are single-token component parity receipts (second residual sha + max_abs_error). They do not retain per-token router-input f32 hiddens or multi-prompt route membership needed for null/surplus scoring and activation_weighted_svd fit.",
+    "existing_captures_usable_for_activation_fit": false,
+    "gqa_encode_gap": {
+      "bytes": 1629,
+      "document_seal_sha256": null,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MULTI_LAYER_GQA_ENCODE_GAP_20260809T210000Z.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen80_multi_layer_gqa_encode_gap.v1",
+      "sha256": "6a27eecc47b45e5d11a873a8091dc09a3d7d048aa5bf8a88b8f471555bb3226d",
+      "status": "EARNED_NEGATIVE_GQA_FULL_LAYER_SAME_RUNTIME_ENCODE_ABSENT"
+    },
+    "l0_l1_capture": {
+      "bytes": 20724,
+      "document_seal_sha256": "d87f1e1c61f4dc8b7103cd327780638f089b1d78f20b9dffb4393470f41229f6",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/inner/receipt.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen80_source_token_l0_l1_same_runtime_prefix_capture.v1",
+      "sha256": "1df8ea23d1a430305f4077360d989d154729b90503ac45c78fb7b02fe85c3f2d",
+      "status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_SLOT1_PREFIX_SAME_RUNTIME_COMPONENT_ONLY"
+    },
+    "l0_l1_status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_SLOT1_PREFIX_SAME_RUNTIME_COMPONENT_ONLY",
+    "same_runtime_deltanet_encode_ready_layer_count": 36,
+    "same_runtime_gqa_encode_ready_layer_count": 0,
+    "schedule": {
+      "bytes": 175403,
+      "document_seal_sha256": "54084ddfeb117f964d48242b76afe7765eddca39330416c95cbd877cf400106c",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_48_LAYER_EXECUTION_SCHEDULE_AUTHORITY_20260809T192559Z.json",
+      "present": true,
+      "schema": "hawking.ascension.qwen80_48_layer_execution_schedule_authority.v1",
+      "sha256": "8132c396a4f58cfa43dce26da84ec4979c8752a3dcb6107895dc3452ce0d2c19",
+      "status": "PREPARED_QWEN80_48_LAYER_EXECUTION_SCHEDULE_AUTHORITY_NOT_EXECUTED"
+    }
+  },
+  "schema": "hawking.ascension.qwen80_all_layer_activation_capture_design.v1",
+  "selection_policy_when_capture_lands": {
+    "complete_physical_bpw_ceiling": 1.5,
+    "component_bpw_ceiling": 1.5,
+    "coverage_receipt_mandatory": true,
+    "direct_execution_no_dense_expand_at_token_time": true,
+    "family": "activation_weighted_svd_low_rank_q",
+    "null_reported_first": true,
+    "primary": "surplus_over_null",
+    "refuse_layer0_only": true,
+    "require_all_layer_capture": true,
+    "secondary": "weight_cosine",
+    "weight_cosine_role": "distribution_local_guard_only"
+  },
+  "status": "DESIGNED_NOT_EXECUTABLE_ALL_LAYER_CAPTURE_BLOCKED",
+  "verdict": "ALL_LAYER_ACTIVATION_CAPTURE_NOT_YET_POSSIBLE",
+  "verdict_detail": "Q80 device multi-layer same-runtime currently reaches 3 of 48 layers (DeltaNet L0..L2). GQA full-layer same-runtime encode ready_count=0/12. Existing L0/L1/multi-layer receipts are single-token component parity, not broad activation matrices. No Q80 streamed source teacher exists. Therefore per-layer nulls, surplus-first family tables, and a coverage-honest repack cannot be produced without inventing activations — which this lane refuses."
+}

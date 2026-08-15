@@ -1,0 +1,29 @@
+{
+ "capture_attempt": {
+  "generation": "34a8ce22-e21a-4a72-b5c0-f33c1c4bf102",
+  "inner_receipt_written": false,
+  "lease_issued": true,
+  "outer_terminal_status": "REFUSED_QWEN80_SOURCE_TOKEN_MULTI_LAYER_SAME_RUNTIME_OUTER_CHILD_NONZERO"
+ },
+ "claim_boundary": {
+  "cpu_and_one_reaped_child_only": true,
+  "does_not_claim_any_multi_layer_component": true,
+  "no_inner_receipt_produced": true
+ },
+ "finding": "ascension_qwen80_source_token_multi_layer_same_runtime_device takes ONE flag, --l1-full-layer-assessment, whose required schema differs by mode. --mode preflight refuses anything but hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1; --mode metal refuses anything but hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1, which the shared L0+L1 finalizer requires as provenance. No single document satisfies both, so the multi-layer capture cannot be run as built.",
+ "fix": "The host must accept BOTH documents - the L1 completion assessment for preflight validation and the joint post-capture assessment as metal-path provenance - via separate flags.",
+ "note": "Both refusals named observed and expected values, which is why this cost one reaped child instead of repeated blind captures. This is the fifth producer/consumer field-or-schema drift found in this campaign and the first that makes a path impossible rather than merely awkward.",
+ "observed_refusals": [
+  {
+   "message": "joint assessment.schema=\"hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1\", expected \"hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1\"",
+   "stage": "metal child"
+  },
+  {
+   "message": "L1 assessment schema observed=hawking.ascension.qwen80_l0_l1_joint_post_capture_assessment.v1, expected=hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1",
+   "stage": "preflight"
+  }
+ ],
+ "recorded_at": "2026-08-09T20:28:00Z",
+ "schema": "hawking.ascension.qwen80_multi_layer_assessment_flag_conflict.v1",
+ "status": "EARNED_NEGATIVE_MULTI_LAYER_CAPTURE_UNRUNNABLE_AS_BUILT"
+}

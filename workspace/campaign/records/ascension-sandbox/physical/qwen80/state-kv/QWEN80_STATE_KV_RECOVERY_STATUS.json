@@ -1,0 +1,260 @@
+{
+  "claim_boundary": {
+    "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+    "no_complete_model_layer_graph_executed": true,
+    "no_model_capability_claim": true,
+    "no_native_full_runtime_or_hcli_endpoint": true,
+    "no_tokenizer_or_prompt_template_executed": true,
+    "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+    "not_a_tournament_candidate_or_selection_action": true
+  },
+  "manifest_count": 24,
+  "model": "qwen80",
+  "recorded_at": "2026-08-08T07:31:54.675980Z",
+  "recoveries": [
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/fp16_reference.hkv",
+      "artifact_sha256": "53374639ec3b64277643bdd924ff7eabd9d9ef13cbf488e75e969972a85737a4",
+      "codec": "fp16_reference",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_fp16_reference.json",
+      "manifest_seal_sha256": "ed07e37fd0eae52d971e7837ea7bddb96bc3980caad5027f3a1f50b9d468e9ea",
+      "rehydrated_float32_sha256": "14d20ceaf168fe11c8632bbfe6197f17f644a219fdc1221c227ad9899e042472",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "47999f2a4e13840c514ca89fc775cd48d031bda1fa73c977ad28153539cc87b1",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "0aaa1705030f17080d21cc496dc3c249e9c0d14e7bb24387aa354bc531cb0849",
+      "rehydrated_float32_sha256": "1f1efd2ff8ee4a86d6ebf7944a8982ffc2f20b848a99bd9624d245e027ef31e9",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/q4_group64.hkv",
+      "artifact_sha256": "02f73fb9cc204db8527febec0115a675327e1ec2131ea46e440b42aff67426e4",
+      "codec": "q4_group64",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_q4_group64.json",
+      "manifest_seal_sha256": "5ba31e48ca7cc8e99f582ca3b215b643d47dd665cee7d479143e0e66414cf50d",
+      "rehydrated_float32_sha256": "817013b4d72531b55f7befa5dd8ba6e993ef9820be14cd7a6d110474e5a0355b",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-008/q8_group64.hkv",
+      "artifact_sha256": "5698e19007347bf87b6e9d1ecb3f4f65b4e05a9388383a30ec39b6ed6d282f9a",
+      "codec": "q8_group64",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-008_q8_group64.json",
+      "manifest_seal_sha256": "48916eb57e61343b6dbee0830312b734b0a3a7fc8ded5799947ec5853ed87b31",
+      "rehydrated_float32_sha256": "4f10432178282364301a09ebc4cdcd00fdaa3c660ac3ec0c57b9e4d8013d1809",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/fp16_reference.hkv",
+      "artifact_sha256": "be32ff0ed15f9293234e4c0024bd3d63a13f0c924a87156311581fa60f62e6a4",
+      "codec": "fp16_reference",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_fp16_reference.json",
+      "manifest_seal_sha256": "42f789f5813ce8279fbef0e4bf0cdb382238036d1ef37b8af04e9ace01e643f9",
+      "rehydrated_float32_sha256": "8b059ff2164a95260efe92fe62606d2b717a32f50e86dac303ae38d4f1600bd0",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "a99e70c12d53514517e290d81f527ff94ad8ed452b85643c2292e75287f72d4d",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "d906b786a5edddede04af039379d998dc1979b4d70a94bbe005a7ffc431a2c44",
+      "rehydrated_float32_sha256": "e29c6f453f13f29274a629325e417afe7ed8ab0f5824e89b95a0b0277bde934d",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/q4_group64.hkv",
+      "artifact_sha256": "616860a9be2eef0b1bdc4211ad29f2bcc6bbb918c3a7ddae84488c70b22205ef",
+      "codec": "q4_group64",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_q4_group64.json",
+      "manifest_seal_sha256": "2beee67354905bcd4089d9252ab832319f3f04bdde3fc883ea01803383c3e8d0",
+      "rehydrated_float32_sha256": "8453321843496f799e640f0e1211e089c5e9fcc27ead3c1b397302f13f6d9e96",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-032/q8_group64.hkv",
+      "artifact_sha256": "2f0fa7ea00c65b0b338290a2e3ab8bb1c1ef06365da95e487d97ab7e1e2cc4f8",
+      "codec": "q8_group64",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-032_q8_group64.json",
+      "manifest_seal_sha256": "8859cf2556eae55750c31e0da92cc1cd1208f1f31ea41b1c799d3bdd51cb48fd",
+      "rehydrated_float32_sha256": "4fa2476164f5e410cbcfd5825ae6db154e8b09a376417c66bdf91eade762fd0a",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/fp16_reference.hkv",
+      "artifact_sha256": "81e0d52f5537969ac057f529a7ba55552d8ece5d24e36574882bec6bd416d246",
+      "codec": "fp16_reference",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_fp16_reference.json",
+      "manifest_seal_sha256": "16a36cde1f1fb1d00eec1839b1071a558fe58892728f84639e63b6d2b4cbbf54",
+      "rehydrated_float32_sha256": "6ba9721bf6a26e748a394d3f962c32a8d236c9aa4e371919492d65bdcdff86b9",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "0e74f2426888faa9ade3cccd32d31d50c586b68ff9aa34d25ad62313eaf3905c",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "fc88900b360058bc27ee8062e0caa971fc30cb076eb6c42264c3f00f813d7b2d",
+      "rehydrated_float32_sha256": "fbbeeb149a515624a49565c6b510afb45d87421ec3d76d6996a795f266073caa",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/q4_group64.hkv",
+      "artifact_sha256": "e89ee4f58cf480cd9edb45db2d87a6f3a221e7e790fa05d7714e321b169d2d38",
+      "codec": "q4_group64",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_q4_group64.json",
+      "manifest_seal_sha256": "370272ddf23d37ea4ad652a765f6e778e68de8bae294de32a66b14f021f46342",
+      "rehydrated_float32_sha256": "5b4f72b0aa3dbf35de5cfe7760e58552a911ccefe9d320b1c04caec90d140d02",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/attention_kv/context-128/q8_group64.hkv",
+      "artifact_sha256": "d400c96f98a8085762af5183306eedd4f61b96ee792549ee8eb5ec2867a9d799",
+      "codec": "q8_group64",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_attention_kv_context-128_q8_group64.json",
+      "manifest_seal_sha256": "3234d8b15468602027e06b7af08555e97321c7a3526748340d8f0c566686485b",
+      "rehydrated_float32_sha256": "7eab0effe51730975e1fae1f80510177dc9bc0394ffdbc8ae4de56c15af5ff74",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/fp16_reference.hkv",
+      "artifact_sha256": "fb15a4421a4298e0ab20b8483ebd21135d0d0fb3fd1da4cc74d0464e12da0ef8",
+      "codec": "fp16_reference",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_fp16_reference.json",
+      "manifest_seal_sha256": "eef9a26411765d2b93a76e6e53e8ad68e2e9b27101fb6a7b65fb197b25aeddc1",
+      "rehydrated_float32_sha256": "504d38707bf75d4b4dd4ce6a5e7ef898b3216c3d81d106660496305e29a022c5",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "73f99692d1e26f3d406cbd7b3f713a99f8961a32d8f0333d289c791165030fc8",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "14ee44644e25ebd49ee292a119327624672d72322daa385be26afaa13c90b266",
+      "rehydrated_float32_sha256": "46645a800c8818bd7bcdafcb3d869cb67a2521aa9c9a3a6a70856e0e96bcc0ca",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/q4_group64.hkv",
+      "artifact_sha256": "29d9d204e348f359cf6ec4f2cee9bb14802d7d2b89617008b1c05bfe4272d5a2",
+      "codec": "q4_group64",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_q4_group64.json",
+      "manifest_seal_sha256": "b07f73d47eae65d5f67f4e8a909635558cfad787de506e7bcde1f9a2feafcca3",
+      "rehydrated_float32_sha256": "36389e057bbd49bf0140b40d75f82e1b786fa4b70213e4bc97e808485df3e341",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/q8_group64.hkv",
+      "artifact_sha256": "d2b4c9980a5f321f9bebaecacedac16468919ae2c65b92547d44e67ee185e7d5",
+      "codec": "q8_group64",
+      "context_tokens": 8,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-008_q8_group64.json",
+      "manifest_seal_sha256": "19d062b3d6c04df6c3976ce7651e8826b8fd367ee9fa63515e2d7d0c7633c9ba",
+      "rehydrated_float32_sha256": "a2bae62e412848821df86b48916aa9d7b80ec54c4ece9b7e6bbad733e5ae359b",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/fp16_reference.hkv",
+      "artifact_sha256": "3ca10ef96bce1713d5993cee6b0ec93ccdb0ee48a2287d7754d347c772ae67a0",
+      "codec": "fp16_reference",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_fp16_reference.json",
+      "manifest_seal_sha256": "df126200ce5343dc8b2b4500b16c60793900fbe74cd71820223aec3b05518dca",
+      "rehydrated_float32_sha256": "ac705cefb274832795aa4b616637adac9a3dbe3086dff47c349d46b22337c1c7",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "3d6ac175ad504c8b55026e370782477ba9ae6d0c6bc4299b169c522efecebde5",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "c39c9d49c53c63d150131cc12b130ac6eab17be7a26bee4440d34930c1852c06",
+      "rehydrated_float32_sha256": "4e744a04c4f6a5555b7c71ee639d2cb487299df68d1e46d5103f7e9f171f279b",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/q4_group64.hkv",
+      "artifact_sha256": "4add4caebda365b72410f3087198f685de73d413d8cd9876e2dde3cfc0e85447",
+      "codec": "q4_group64",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_q4_group64.json",
+      "manifest_seal_sha256": "84f1293bf7bdfcb3c4279254a23b996f48ce98857ed7a1432c3072dcdf32e49b",
+      "rehydrated_float32_sha256": "d111f931b206649b651463ce316e47f429654bb41af43a01c4ff21b368ea974c",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-032/q8_group64.hkv",
+      "artifact_sha256": "4a1d342b9f0f02a501322a87b47f2d56515fbcc53d7ee900bd420be0164b0a57",
+      "codec": "q8_group64",
+      "context_tokens": 32,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-032_q8_group64.json",
+      "manifest_seal_sha256": "66e00e6f3708d20f0523af296e43420e75ffdb4754485716ce0bd852418726b9",
+      "rehydrated_float32_sha256": "d23834a578489253939b75abcc9c28c7b9e3fac18792c7381734e3ac018935ac",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/fp16_reference.hkv",
+      "artifact_sha256": "8d7b81a144c1e28ca0159c677bd1376405d8eba7cec6feb20d8684959c397486",
+      "codec": "fp16_reference",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_fp16_reference.json",
+      "manifest_seal_sha256": "c1c4d8a08690b3854229521e64cd96181bf2abe69d876b2f40c3f8d61c95e94c",
+      "rehydrated_float32_sha256": "90636eb8e385715b6199e5bb048bd96fbb16529cf219627ce9e20c4bf83d999f",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/protected_residual_q4_group64_top1pct_fp16.hkv",
+      "artifact_sha256": "1bfceede6864ec3e7c3cd0c409bfe0c35a54f34f7947ee2d44876fab00bf39c9",
+      "codec": "protected_residual_q4_group64_top1pct_fp16",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_protected_residual_q4_group64_top1pct_fp16.json",
+      "manifest_seal_sha256": "436127651d32046e8ffae499616c9c6cb6041fa7ef127ee51598f840157b64f1",
+      "rehydrated_float32_sha256": "4ad63ebfeab74aef5d02378a0fdb5fe196f90c505d985f0ca276bbcf1ba719a4",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/q4_group64.hkv",
+      "artifact_sha256": "2f4f6440287d2a88e8762571977056f7c9e022854084c211055a94b924974c17",
+      "codec": "q4_group64",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_q4_group64.json",
+      "manifest_seal_sha256": "994588c88ec7573600d4add1cb5b3d62f9fc99ec49d848fe9457e3d18ded0fad",
+      "rehydrated_float32_sha256": "e3a7ff1bcac924cb0d0e7a961a9315029617f3abeba48bae02117a2d2d3f08b3",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    },
+    {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-128/q8_group64.hkv",
+      "artifact_sha256": "27ff5adf986b3e76b246dca87776241a27da11fa0542679edae75a2a979788e4",
+      "codec": "q8_group64",
+      "context_tokens": 128,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/recovery-manifests/qwen80_deltanet_recurrent_state_context-128_q8_group64.json",
+      "manifest_seal_sha256": "7525e0eb248ade847d5c97458450897a9cc26e7113dcbcffed436c251be0e3ce",
+      "rehydrated_float32_sha256": "3aee50e88ffe6caa40b59fb01e32ae42048ca1645894c22194659fe0308affe2",
+      "status": "SEALED_DURABLE_ARTIFACT_REOPENED_AND_REHYDRATED"
+    }
+  ],
+  "recovery_pid": 53376,
+  "schema": "hawking.ascension.qwen_state_kv_recovery_status.v1",
+  "seal_sha256": "d77414fa209fc48ef6891fe93b53914b1039b2cc65f7c3ac0721cc021fb73294",
+  "status": "SEALED_RESTART_EQUIVALENT_DURABLE_COMPONENT_STATE_RECOVERY_VERIFIED"
+}

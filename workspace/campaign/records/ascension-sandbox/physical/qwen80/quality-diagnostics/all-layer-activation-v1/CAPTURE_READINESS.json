@@ -1,0 +1,42 @@
+{
+  "baseline_complete_physical_bpw": 1.1331148544404688,
+  "cheapest_honest_path_for_coherence": {
+    "option_id": "metal_multi_layer_all_48",
+    "primary_blocker_id": "gqa_full_layer_same_runtime_encode",
+    "ready_now": false
+  },
+  "cheapest_honest_path_now": {
+    "coherence_eligible": false,
+    "covers_layers": [
+      0,
+      1,
+      2
+    ],
+    "note": "The only ready honest path covers 3/48 DeltaNet layers after a new multi-token capture binary is written. It is instrument calibration only — packing it would repeat the Q30 coverage failure.",
+    "option_id": "metal_deltanet_prefix_only_l0_l2"
+  },
+  "claim_boundary": {
+    "all_layer_activation_capture_not_produced": true,
+    "fitting_on_layer0_or_component_captures_is_refused": true,
+    "negative_result_is_valid_deliverable": true,
+    "no_coherence_claim": true,
+    "no_exclusive_gpu_lease": true,
+    "no_family_fit_or_repack_performed": true,
+    "no_per_layer_nulls_measured_this_lane": true,
+    "no_server_started": true,
+    "no_tps_benchmark": true
+  },
+  "design_path": "/Users/scammermike/.claude-grok/worktrees/q80-gravity-coherence-20260809-170134/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1/CAPTURE_DESIGN.json",
+  "design_sha256": "38768b45acc6f8787b9996788f9c88837b6d6f6b00796f4b28bf92e7183d635f",
+  "missing_exact_ids": [
+    "gqa_full_layer_same_runtime_encode",
+    "broad_activation_capture_binary",
+    "multi_token_sequential_state_for_capture"
+  ],
+  "recorded_at": "2026-08-09T21:10:46.096227Z",
+  "schema": "hawking.ascension.qwen80_all_layer_activation_capture_readiness.v1",
+  "seal_sha256": "89764bd872825fdceaf7fb687a69e25655f010a5bc29b285a5a850f63227b4c0",
+  "status": "ALL_LAYER_ACTIVATION_CAPTURE_NOT_YET_POSSIBLE",
+  "verdict": "ALL_LAYER_ACTIVATION_CAPTURE_NOT_YET_POSSIBLE",
+  "verdict_detail": "Q80 device multi-layer same-runtime currently reaches 3 of 48 layers (DeltaNet L0..L2). GQA full-layer same-runtime encode ready_count=0/12. Existing L0/L1/multi-layer receipts are single-token component parity, not broad activation matrices. No Q80 streamed source teacher exists. Therefore per-layer nulls, surplus-first family tables, and a coverage-honest repack cannot be produced without inventing activations — which this lane refuses."
+}

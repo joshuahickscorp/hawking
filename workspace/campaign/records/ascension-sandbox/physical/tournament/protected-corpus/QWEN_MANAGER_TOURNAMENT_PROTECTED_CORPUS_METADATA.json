@@ -1,0 +1,112 @@
+{
+ "campaigns": [
+  {
+   "campaign": "six_stage_kernel_optimization",
+   "protected_membership_commitment_sha256": "eceb1f0e7b7b76c7d3d7e96db65b3d749dc263d4935f2b1bd114ef22a40c9cfd",
+   "public_stage_count": 6
+  },
+  {
+   "campaign": "multi_subsystem_hcli_repair",
+   "protected_membership_commitment_sha256": "014aa6979ede58d406c2100fde5966a5a79a6e8684170cf5ce291899ee4a1d4c",
+   "public_stage_count": 5
+  },
+  {
+   "campaign": "exact_model_family_qualification",
+   "protected_membership_commitment_sha256": "62e0d9881b9c9a50c065235b0d21640af50d121f0988af73d690b4716c95d97a",
+   "public_stage_count": 6
+  },
+  {
+   "campaign": "storage_pressure_model_acquisition",
+   "protected_membership_commitment_sha256": "a8cd4385c8ddceb972e068d8a14bf99a5e43a6956245f81908f5d50aa0f62116",
+   "public_stage_count": 4
+  },
+  {
+   "campaign": "agent_os_concurrency_optimization",
+   "protected_membership_commitment_sha256": "2899ee72401320e9b49c805e4aff79ab609a5e91cf78e637cdae72b2137f06c8",
+   "public_stage_count": 5
+  },
+  {
+   "campaign": "gravity_representation_tournament",
+   "protected_membership_commitment_sha256": "5ca2bf43033c01ab24062e259aa0308269d551e479a8c0c345c1edefce95ef52",
+   "public_stage_count": 6
+  }
+ ],
+ "families": [
+  {
+   "family": "repository_architecture",
+   "protected_membership_commitment_sha256": "03120802e1359600da45eadb388578ddf666aad355c2f32fdc573525547f5097",
+   "public_task_count": 3
+  },
+  {
+   "family": "kernel_metal_diagnosis",
+   "protected_membership_commitment_sha256": "98ca23531db8f33229dc0be628f33e8fac0da4e1546db7761b9f8c4e93820600",
+   "public_task_count": 2
+  },
+  {
+   "family": "gravity_research",
+   "protected_membership_commitment_sha256": "105c11efaac6c2f36c821a24c33593155c0f1b726eeea8319843f1413ef29db6",
+   "public_task_count": 2
+  },
+  {
+   "family": "complete_token_performance",
+   "protected_membership_commitment_sha256": "857d5032347ff57232ecec6d1f98e41c288cdbe939c024be6d29974164196138",
+   "public_task_count": 2
+  },
+  {
+   "family": "bug_repair",
+   "protected_membership_commitment_sha256": "e2a6f02162c673659e66f796257eab85d6924ca63a54a65937640273050179f7",
+   "public_task_count": 2
+  },
+  {
+   "family": "tool_use",
+   "protected_membership_commitment_sha256": "9246b552543ff047794920b50db197b826cae27209c401192398ac2a3380025d",
+   "public_task_count": 1
+  },
+  {
+   "family": "delegation",
+   "protected_membership_commitment_sha256": "299fb68b88b438dbb811aa0296fecd44b4224b7c715b005421a0107b51acfc8a",
+   "public_task_count": 1
+  },
+  {
+   "family": "helper_management",
+   "protected_membership_commitment_sha256": "4ac3a421711026ea3c56d27e8ff9a5c0fe2606cb69f30900c83a435c36e7142b",
+   "public_task_count": 1
+  },
+  {
+   "family": "context_memory",
+   "protected_membership_commitment_sha256": "84fd9999e3a903ffaf8b9a58ff664752528651dc9ae7710d3c5d925c855b4df5",
+   "public_task_count": 1
+  },
+  {
+   "family": "interrupt_recovery",
+   "protected_membership_commitment_sha256": "c207ac72bc2c7704cde0f400b37a58862184f2ea05d26b7b7e8c241e2bc9dc7f",
+   "public_task_count": 1
+  },
+  {
+   "family": "adversarial_evidence",
+   "protected_membership_commitment_sha256": "eae375237b1d4ed2404365f322a2d5dc701319964f4a20e340fb31cf921db9af",
+   "public_task_count": 2
+  },
+  {
+   "family": "benchmark_honesty",
+   "protected_membership_commitment_sha256": "82690fa83b9f1e9d98d5fa819ce9891ad7755458301ba3e986c9e566ec0b0db2",
+   "public_task_count": 2
+  },
+  {
+   "family": "storage_resource_campaign",
+   "protected_membership_commitment_sha256": "3276e8b9bfef4ecc67f8e11f607dc25a5bdd3c2cbe981edbda8d75011b541724",
+   "public_task_count": 1
+  },
+  {
+   "family": "security_effect_boundaries",
+   "protected_membership_commitment_sha256": "90d8197fbb96d605edd35f63e48613d54c6aa6ba8fd1315dcaa6219269495cd2",
+   "public_task_count": 1
+  },
+  {
+   "family": "release_integration",
+   "protected_membership_commitment_sha256": "6e78080649d36ab92a6762fbc5579d5d84a4eea957ae6ac4cbaf648b1e49efb4",
+   "public_task_count": 1
+  }
+ ],
+ "protected_full_membership_commitment_sha256": "fa1988feabd9312ccb2d37e16a294f0d2f754da442a9484f90493a501cffb796"
+}

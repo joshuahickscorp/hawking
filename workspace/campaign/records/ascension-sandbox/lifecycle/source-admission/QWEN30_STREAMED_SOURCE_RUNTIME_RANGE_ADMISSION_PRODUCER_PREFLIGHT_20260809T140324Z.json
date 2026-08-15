@@ -1,0 +1,127 @@
+{
+  "claim_boundary": "Prepared CPU/build-only admission grammar. This does not emit a flat runtime map, validate any real source payload hash, earn runtime admission, execute a source teacher, load a model, start a server, acquire a lease, or report HCLI/TPS/TG/tournament evidence.",
+  "execution_boundary": {
+    "child_process_started": false,
+    "future_source_root_opened_or_statted": false,
+    "gpu_metal_mps_or_other_accelerator_invoked": false,
+    "hcli_invoked": false,
+    "lease_requested_issued_or_consumed": false,
+    "metadata_documents_read": true,
+    "server_started_or_contacted": false,
+    "source_model_loaded_or_instantiated": false,
+    "source_tensor_payload_opened": false,
+    "tps_or_tg_measured": false,
+    "whole_shard_mapped_or_cached": false,
+    "whole_source_model_resident": false
+  },
+  "future_flat_runtime_range_map": {
+    "full_shard_or_full_model_residency_forbidden": true,
+    "maximum_positioned_read_bytes": 1048576,
+    "maximum_window_bytes": 1048576,
+    "per_shard_raw_sha256_required": true,
+    "per_tensor_raw_bf16_sha256_required": true,
+    "ranges_must_match_metadata_authority_offsets_shapes_dtype_and_row_windows": true,
+    "required_top_level_fields": [
+      "schema",
+      "source_model_id",
+      "source_revision",
+      "source_tensor_count",
+      "source_index",
+      "maximum_window_bytes",
+      "shards",
+      "tensors"
+    ],
+    "schema": "hawking.ascension.qwen30_source_bf16_range_map.v1",
+    "shard_fields": [
+      "shard_id",
+      "relative_path",
+      "bytes",
+      "sha256",
+      "safetensors_header_sha256"
+    ],
+    "source_index_fields": [
+      "relative_path",
+      "sha256",
+      "format"
+    ],
+    "tensor_fields": [
+      "tensor_name",
+      "shard_id",
+      "dtype",
+      "shape",
+      "data_offset",
+      "data_bytes",
+      "raw_bf16_sha256"
+    ]
+  },
+  "future_reader_validation_order": [
+    "verify sealed runtime-admission receipt before source payload open",
+    "verify index/header/relative path and flat-range-map identities",
+    "read at most one <=1 MiB positioned BF16 window at a time",
+    "compute and compare every declared raw shard/tensor hash without retaining full bodies",
+    "record row-major BF16 range order and exact operator accumulation semantics",
+    "write both execution attestations only after genuine source execution"
+  ],
+  "future_runtime_admission_receipt": {
+    "must_be_sealed": true,
+    "must_bind": [
+      "sealed_metadata_authority_binding.metadata_range_authority.raw_document_sha256",
+      "sealed_metadata_authority_binding.authority_content_sha256",
+      "flat_runtime_range_map.document_sha256",
+      "flat_runtime_range_map.per_shard_raw_sha256s",
+      "flat_runtime_range_map.per_tensor_raw_bf16_sha256s",
+      "operator_accumulation_execution_attestation.seal_sha256",
+      "range_reader_exact_semantics_attestation.seal_sha256",
+      "same source revision/index/trace and <=1 MiB one-window evidence"
+    ],
+    "must_not_claim_model_residency_or_server": true,
+    "schema": "hawking.ascension.qwen30_streamed_source_teacher_runtime_range_admission.v1",
+    "status_only_after_bounded_source_validation": "EARNED_QWEN30_STREAMED_SOURCE_TEACHER_RUNTIME_RANGE_ADMISSION_NO_MODEL_RESIDENCY"
+  },
+  "future_source_root_reference": {
+    "mode": "metadata-preflight",
+    "provided": false,
+    "source_root_opened_or_statted_by_this_preflight": false
+  },
+  "metadata_semantics_binding": {
+    "both_execution_attestations_required": true,
+    "future_operator_accumulation_execution_attestation": {
+      "must_be_sealed_and_bind_same_runtime_admission": true,
+      "schema": "hawking.ascension.qwen30_layer_streamed_source_operator_accumulation_execution_attestation.v1",
+      "status_only_after_real_separately_leased_source_execution": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_ATTESTED"
+    },
+    "future_range_reader_exact_semantics_attestation": {
+      "must_be_sealed_and_bind_same_runtime_admission": true,
+      "schema": "hawking.ascension.qwen30_layer_streamed_source_bf16_exact_semantics_attestation.v1",
+      "status_only_after_real_separately_leased_source_execution": "EARNED_QWEN30_LAYER_STREAMED_SOURCE_BF16_EXACT_SEMANTICS_ATTESTED"
+    },
+    "operator_semantics_attester": {
+      "bytes": 10665,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_SOURCE_OPERATOR_ACCUMULATION_SEMANTICS_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1b840daef95fa6b444ce0dc5e46142214f02963359c5fb2d53c863d8f236f96b"
+    }
+  },
+  "prepared": true,
+  "runtime_admission_earned": false,
+  "schema": "hawking.ascension.qwen30_streamed_source_runtime_range_admission_producer_preflight.v1",
+  "seal_sha256": "2b513c388723a3479057c3d1c42e60f83a75c53f7ebadbd9cd79d57175541845",
+  "sealed_metadata_authority_binding": {
+    "authority_content_sha256": "a17d7014150d8a54ccaa850fa69a76321109b9816860c0193ef055e7ab394a78",
+    "maximum_declared_bf16_row_window_bytes": 1048576,
+    "metadata_authority_is_not_a_payload_hash_or_execution_attestation": true,
+    "metadata_range_authority": {
+      "bytes": 13086860,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_ORACLE_METADATA_ONLY_RANGE_MAP_AUTHORITY_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+      "raw_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589"
+    },
+    "source_index": {
+      "relative_path": "model.safetensors.index.json",
+      "sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c"
+    },
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "source_shard_count": 16,
+    "source_tensor_count": 18867
+  },
+  "source_payload_validation_executed": false,
+  "status": "PREPARED_QWEN30_STREAMED_SOURCE_RUNTIME_RANGE_ADMISSION_PRODUCER_NOT_EXECUTED"
+}

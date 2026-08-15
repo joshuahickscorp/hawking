@@ -247,7 +247,8 @@ impl DeepSeekV4L1BosAttentionDeviceOutput {
     pub fn p7_attention_state<'a>(
         &'a self,
         metal: &'a MetalContext,
-    ) -> Result<crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState<'a>> {
+    ) -> Result<crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState<'a>>
+    {
         self.validate()?;
         crate::gravity_deepseek_v4_p7_composition::DeepSeekV4P7AttentionDeviceState::position0(
             metal,
@@ -868,9 +869,7 @@ fn verify_l1_bos_source_contract(reader: &DeepSeekV4FullStreamReader) -> Result<
     // 43 or 44 as long as base layers 0 and 1 remain ratio-zero.
     if !(ratios.len() == 43 || ratios.len() == 44)
         || ratios.get(0).and_then(Value::as_u64) != Some(0)
-        || ratios
-            .get(DSV4F_L1_BOS_LAYER)
-            .and_then(Value::as_u64)
+        || ratios.get(DSV4F_L1_BOS_LAYER).and_then(Value::as_u64)
             != Some(DSV4F_L1_BOS_COMPRESS_RATIO as u64)
     {
         return Err(l1_error(

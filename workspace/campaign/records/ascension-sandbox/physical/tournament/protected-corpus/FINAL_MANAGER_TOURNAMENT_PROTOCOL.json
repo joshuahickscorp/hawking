@@ -1,0 +1,55 @@
+{
+ "adversarial_review": {
+  "measure_genuine_defects_and_false_objections": true,
+  "opposing_candidate_is_read_only_red_team_reviewer": true,
+  "protected_verifier_adjudicates_challenges": true,
+  "required_after_each_candidate_task": true,
+  "reviewer_may_not_modify_candidate_artifact": true
+ },
+ "fairness_envelope": {
+  "record_every_asymmetry": true
+ },
+ "long_horizon_campaigns": {
+  "measure_initial_plan_adaptation_resets_repeated_mistakes_branches_goal_fidelity_and_completion": true,
+  "required": [
+   "six_stage_kernel_optimization",
+   "multi_subsystem_hcli_repair",
+   "exact_model_family_qualification",
+   "storage_pressure_model_acquisition",
+   "agent_os_concurrency_optimization",
+   "gravity_representation_tournament"
+  ]
+ },
+ "protected_selection": {
+  "candidates_cannot_change_weights_or_hidden_tests": true,
+  "candidates_cannot_promote_self_or_invalidate_opponent": true,
+  "candidates_cannot_self_grade": true,
+  "only_protected_controller_or_human_may_select_manager": true
+ },
+ "protected_task_corpus": {
+  "blind_tasks_required": true,
+  "hidden_membership_frozen_before_scored_execution": true,
+  "real_hawking_work_only": true,
+  "required_families": [
+   "repository_architecture",
+   "kernel_metal_diagnosis",
+   "gravity_research",
+   "complete_token_performance",
+   "bug_repair",
+   "tool_use",
+   "delegation",
+   "helper_management",
+   "context_memory",
+   "interrupt_recovery",
+   "adversarial_evidence",
+   "benchmark_honesty",
+   "storage_resource_campaign",
+   "security_effect_boundaries",
+   "release_integration"
+  ]
+ },
+ "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+ "schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+ "seal_sha256": "1517c9e7fbbf09d3da0d99acc90eba30105cc2f12179a7748c8c1058a550369e",
+ "status": "PREPARED_FINAL_MANAGER_SELECTION_PROTOCOL_NOT_EXECUTED"
+}

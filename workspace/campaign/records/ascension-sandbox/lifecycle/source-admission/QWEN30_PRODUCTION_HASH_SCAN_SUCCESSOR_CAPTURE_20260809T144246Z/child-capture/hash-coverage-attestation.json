@@ -1,0 +1,58 @@
+{
+  "bounded_positioned_reader": {
+    "cache_zeroed_after_every_visit_and_before_receipt": true,
+    "maximum_live_raw_bf16_windows": 1,
+    "maximum_positioned_read_bytes": 1048576,
+    "one_shard_handle_at_a_time": true,
+    "positioned_read_bytes": 122134851070,
+    "positioned_read_calls": 116732,
+    "whole_shard_cache_or_mmap_forbidden": true
+  },
+  "coverage": {
+    "full_shard_sha256_count": 16,
+    "raw_bf16_range_sha256_count": 18867,
+    "source_index_sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c",
+    "source_shards": 16,
+    "source_tensors": 18867
+  },
+  "fixture_only": false,
+  "flat_runtime_range_map": {
+    "canonical_document_sha256": "760bc516363744944fadc92dc1208479d7fc439a62ac57f4b197e1ca83de52cd",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/flat-runtime-range-map.json",
+    "raw_document_sha256": "2a50026ea805f135c0f14217e0ad08e1f9afdc2d4a6590ec8db543bdaffba055",
+    "seal_sha256": "e40662714b9c7ebb8ab03b85d9631b0f79c0a79bfbc896017087dc318854f97b"
+  },
+  "fresh_bootstrap_lease": {
+    "canonical_document_sha256": "26967e61046556b921f12bff88b09c358ccfd4545c76f57743ea7f6c88907104",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_LAUNCH_20260809T144246Z/production-bootstrap-lease.json",
+    "raw_document_sha256": "36459076edf5ad51aebc49dee0dd032fdd6495f43a04583011dbca7f6b52a2aa",
+    "seal_sha256": "9cf81bd894e5c89ef647e6037707a014828f742ef67e8fe6308268a8e030bcac"
+  },
+  "metadata_range_authority": {
+    "canonical_document_sha256": "d78be55bdd6aca732ae8ab9109b60a05bb98a9fa69f29ceb7f56f1ac15227eb3",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/source-range-map-authority/authorities/QWEN30_STREAMED_ORACLE_METADATA_ONLY_RANGE_MAP_AUTHORITY_b2cff646eb4bb1d68355c01b18ae02e7cf42d120.json",
+    "raw_document_sha256": "1f4b42b7af4e8f6e5775409c8759e0df11fb6e3b47f252861e11873469cd5589",
+    "seal_sha256": null
+  },
+  "operator_or_reader_execution_attestation_emitted": false,
+  "production_adapter_forbidden": false,
+  "production_hash_coverage_earned": true,
+  "production_scan_authority": {
+    "canonical_document_sha256": "bc464f1c495e73d211f6e0a568565aa44881fc3896949bb147b7d081629e072c",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_STREAMED_SOURCE_RANGE_ADMISSION_PRODUCTION_SCAN_AUTHORITY_20260809T144027Z.json",
+    "raw_document_sha256": "d3d6d7de3e089632054fd25b4a1548b3bb4e4d6a96ab8de592e55d6d56821a12",
+    "seal_sha256": "be00aeb41007b114851553ef351cc3bb759ca8b4528aeb1d3526d5612d358969"
+  },
+  "replay_reservation": {
+    "canonical_document_sha256": "918630c8b13dc513123e6768abd39775269e46b402b5de16f61c9c7c62568508",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/replay-reservation.json",
+    "raw_document_sha256": "0fdf1b4049f035f2b7cc751fe31849835ce194f9b97b69568dc0048ea32bbfc9",
+    "seal_sha256": "40ea30982c679bbc2d96daff9d62e2ef81050a3e51a89c7a49a5112627b88f03"
+  },
+  "schema": "hawking.ascension.qwen30_streamed_source_production_hash_coverage_attestation.v1",
+  "seal_sha256": "4ea036ae00cdb33436302e76b1a8f060936a147a114bb46a309002fa1923bdc2",
+  "source_teacher_execution_or_logits": false,
+  "source_teacher_runtime_admission_earned": false,
+  "status": "EARNED_QWEN30_STREAMED_SOURCE_PRODUCTION_HASH_COVERAGE_ATTESTED_NOT_SOURCE_TEACHER",
+  "synthetic_fixture_only": false
+}

@@ -1,0 +1,18 @@
+[package]
+name = "hide-gateway"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "HCLI Retrieval Gateway + Tool Gateway scaffold (ascension bible §§15–16). Model-free typed contracts, ranking interfaces, tool-bundle retrieval, and tool-defect vs model-failure classification. Not wired to live indexes or MCP yet."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

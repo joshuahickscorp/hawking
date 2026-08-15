@@ -1,0 +1,33 @@
+{
+  "artifact": {
+    "bytes": 278560,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/traffic/deltanet_recurrent_state/context-008/q4_group64.hkv",
+    "sha256": "29d9d204e348f359cf6ec4f2cee9bb14802d7d2b89617008b1c05bfe4272d5a2"
+  },
+  "claim_boundary": {
+    "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+    "no_complete_model_layer_graph_executed": true,
+    "no_model_capability_claim": true,
+    "no_native_full_runtime_or_hcli_endpoint": true,
+    "no_tokenizer_or_prompt_template_executed": true,
+    "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+    "not_a_tournament_candidate_or_selection_action": true
+  },
+  "codec": "q4_group64",
+  "component": "deltanet_recurrent_state",
+  "context_tokens": 8,
+  "expected": {
+    "rehydrated_float32_sha256": "36389e057bbd49bf0140b40d75f82e1b786fa4b70213e4bc97e808485df3e341",
+    "shape": [
+      32,
+      128,
+      128
+    ],
+    "source_projection_output_float32_sha256": "b96a71997dd4ad7593ba382b4178d86ab656c30a51efd9c0db6d5b7f8f362139"
+  },
+  "model": "qwen80",
+  "recorded_at": "2026-08-08T07:31:44.943777Z",
+  "schema": "hawking.ascension.qwen_state_kv_recovery_manifest.v1",
+  "seal_sha256": "b07f73d47eae65d5f67f4e8a909635558cfad787de506e7bcde1f9a2feafcca3",
+  "writer_pid": 53287
+}

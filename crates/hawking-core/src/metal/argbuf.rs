@@ -61,6 +61,13 @@ mod imp {
             let buf = ctx
                 .device()
                 .new_buffer(size as u64, MTLResourceOptions::StorageModeShared);
+            // newBufferWithLength leaves contents undefined; zero so any field
+            // the caller forgets to set_u32/set_f32 cannot inject garbage into
+            // constant arg structs (seq_len, top_k, tie_epsilon, ...).
+            let ptr = buf.contents() as *mut u8;
+            unsafe {
+                std::ptr::write_bytes(ptr, 0, size);
+            }
             Ok(Self { buf, offsets })
         }
 

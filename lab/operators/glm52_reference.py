@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import dataclasses
 import math
+import os
+from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Mapping
 from typing import Any, Protocol
 import numpy as np
@@ -238,18 +240,43 @@ def routed_moe(hidden_states: np.ndarray, source: Mapping[str, np.ndarray] | Ten
     flat_weights = topk_weights.reshape(-1, topk_weights.shape[-1])
     routed = np.zeros_like(flat, dtype=np.float32)
     per_expert: dict[int, dict[str, np.ndarray]] = {}
-    for expert in sorted(set((int(value) for value in flat_indices.ravel()))):
+    experts = sorted(set(int(value) for value in flat_indices.ravel()))
+
+    def execute_expert(expert: int) -> tuple[int, np.ndarray, np.ndarray] | None:
         token_slot = np.argwhere(flat_indices == expert)
         if token_slot.size == 0:
-            continue
+            return None
         tokens, slots = (token_slot[:, 0], token_slot[:, 1])
         current = flat[tokens]
         stem = f'{prefix}.experts.{expert}'
         expert_out = dense_mlp(current, source, stem)
         weighted = expert_out * flat_weights[tokens, slots, None]
-        np.add.at(routed, tokens, weighted)
-        if retain_per_expert:
-            per_expert[expert] = {'tokens': tokens.copy(), 'weighted_output': weighted}
+        return (expert, tokens, weighted)
+
+    workers_raw = os.environ.get('FRANK_EXPERT_WORKERS', '1')
+    try:
+        workers = max(1, min(int(workers_raw), len(experts) or 1))
+    except ValueError as exc:
+        raise Glm52ReferenceError('FRANK_EXPERT_WORKERS must be an integer') from exc
+    if workers == 1:
+        results = (execute_expert(expert) for expert in experts)
+        pool = None
+    else:
+        pool = ThreadPoolExecutor(max_workers=workers, thread_name_prefix='glm-expert')
+        results = pool.map(execute_expert, experts)
+    try:
+        # map() preserves expert order, so float32 scatter accumulation is
+        # byte-identical to the sequential expert-major reference path.
+        for result in results:
+            if result is None:
+                continue
+            expert, tokens, weighted = result
+            np.add.at(routed, tokens, weighted)
+            if retain_per_expert:
+                per_expert[expert] = {'tokens': tokens.copy(), 'weighted_output': weighted}
+    finally:
+        if pool is not None:
+            pool.shutdown(wait=True)
     shared_prefix = f'{prefix}.shared_experts'
     shared = dense_mlp(hidden_states, source, shared_prefix)
     output = routed.reshape(hidden_states.shape) + shared

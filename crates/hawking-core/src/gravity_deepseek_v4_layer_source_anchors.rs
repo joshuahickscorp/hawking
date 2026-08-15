@@ -828,10 +828,9 @@ pub fn verify_deepseek_v4_layer_source_anchors(
     let mut base_tensor_count = 6usize;
     for layer in 0..geometry.base_layer_count {
         let compression = compression_mode_for_ratio(
-            *geometry
-                .base_compression_ratios
-                .get(layer)
-                .ok_or_else(|| anchor_error(format!("missing base compression ratio for layer {layer}")))?,
+            *geometry.base_compression_ratios.get(layer).ok_or_else(|| {
+                anchor_error(format!("missing base compression ratio for layer {layer}"))
+            })?,
             layer,
         )?;
         let gate_mode = if layer < geometry.hash_layer_count {
@@ -897,7 +896,9 @@ fn verify_identity(reader: &DeepSeekV4FullStreamReader) -> Result<DeepSeekV4Laye
         inference_config_json_sha256: reader
             .source_metadata_asset_sha256("inference/config.json")?
             .to_owned(),
-        model_config_json_sha256: reader.source_metadata_asset_sha256("config.json")?.to_owned(),
+        model_config_json_sha256: reader
+            .source_metadata_asset_sha256("config.json")?
+            .to_owned(),
     };
     if identity.inference_model_py_sha256 != OFFICIAL_INFERENCE_MODEL_PY_SHA256
         || identity.inference_kernel_py_sha256 != OFFICIAL_INFERENCE_KERNEL_PY_SHA256
@@ -912,7 +913,9 @@ fn verify_identity(reader: &DeepSeekV4FullStreamReader) -> Result<DeepSeekV4Laye
         || identity.manifest_file_sha256.is_empty()
         || identity.restart_seal_sha256.is_empty()
     {
-        return Err(anchor_error("reader identity has an empty artifact seal binding"));
+        return Err(anchor_error(
+            "reader identity has an empty artifact seal binding",
+        ));
     }
     Ok(identity)
 }
@@ -945,11 +948,7 @@ fn verify_geometry(reader: &DeepSeekV4FullStreamReader) -> Result<DeepSeekV4Laye
         hash_layer_count: required_usize(&model, "num_hash_layers", "config.json")?,
         routed_expert_count: required_usize(&model, "n_routed_experts", "config.json")?,
         shared_expert_count: required_usize(&model, "n_shared_experts", "config.json")?,
-        activated_experts_per_token: required_usize(
-            &model,
-            "num_experts_per_tok",
-            "config.json",
-        )?,
+        activated_experts_per_token: required_usize(&model, "num_experts_per_tok", "config.json")?,
         hc_mult: required_usize(&model, "hc_mult", "config.json")?,
         hc_sinkhorn_iters: required_usize(&model, "hc_sinkhorn_iters", "config.json")?,
         q_lora_rank: required_usize(&model, "q_lora_rank", "config.json")?,
@@ -1139,7 +1138,10 @@ fn verify_global_base_tensors(reader: &DeepSeekV4FullStreamReader) -> Result<()>
         "embed.weight",
         TensorExpectation {
             dtype: "BF16",
-            shape: &[VOCAB_SIZE as u64, DSV4F_LAYER_SOURCE_ANCHOR_HIDDEN_SIZE as u64],
+            shape: &[
+                VOCAB_SIZE as u64,
+                DSV4F_LAYER_SOURCE_ANCHOR_HIDDEN_SIZE as u64,
+            ],
         },
     )?;
     verify_tensor(
@@ -1155,7 +1157,10 @@ fn verify_global_base_tensors(reader: &DeepSeekV4FullStreamReader) -> Result<()>
         "head.weight",
         TensorExpectation {
             dtype: "BF16",
-            shape: &[VOCAB_SIZE as u64, DSV4F_LAYER_SOURCE_ANCHOR_HIDDEN_SIZE as u64],
+            shape: &[
+                VOCAB_SIZE as u64,
+                DSV4F_LAYER_SOURCE_ANCHOR_HIDDEN_SIZE as u64,
+            ],
         },
     )?;
     verify_tensor(
@@ -1368,7 +1373,11 @@ fn compressor_anchor_array(
         .expect("compact compressor only requested for source-supported modes");
     std::array::from_fn(|index| {
         tensor_anchor(
-            format!("{}.{}", prefix, DeepSeekV4LayerCompressorTensor::ALL[index].suffix()),
+            format!(
+                "{}.{}",
+                prefix,
+                DeepSeekV4LayerCompressorTensor::ALL[index].suffix()
+            ),
             expectations[index],
         )
     })
@@ -1379,7 +1388,11 @@ fn compressor_expectations(
     compression: DeepSeekV4LayerCompressionMode,
 ) -> Option<[TensorExpectation; 4]> {
     if indexer {
-        return matches!(compression, DeepSeekV4LayerCompressionMode::Ratio4WithIndexer).then_some([
+        return matches!(
+            compression,
+            DeepSeekV4LayerCompressionMode::Ratio4WithIndexer
+        )
+        .then_some([
             TensorExpectation {
                 dtype: "F32",
                 shape: SHAPE_F32_INDEXER_APE,
@@ -1507,7 +1520,9 @@ fn required_usize_array(value: &Value, key: &str, label: &str) -> Result<Vec<usi
         .enumerate()
         .map(|(index, item)| {
             let raw = item.as_u64().ok_or_else(|| {
-                anchor_error(format!("{label}: {key:?}[{index}] is not an unsigned integer"))
+                anchor_error(format!(
+                    "{label}: {key:?}[{index}] is not an unsigned integer"
+                ))
             })?;
             usize::try_from(raw).map_err(|_| {
                 anchor_error(format!(
@@ -1612,10 +1627,18 @@ mod tests {
             layer: 2,
             compression: DeepSeekV4LayerCompressionMode::Ratio4WithIndexer,
             gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
-            tensor_count: base_layer_tensor_count(DeepSeekV4LayerCompressionMode::Ratio4WithIndexer),
+            tensor_count: base_layer_tensor_count(
+                DeepSeekV4LayerCompressionMode::Ratio4WithIndexer,
+            ),
         };
-        assert_eq!(hash_layer.gate_binding().score_weight.name, "layers.2.ffn.gate.weight");
-        assert_eq!(hash_layer.gate_binding().route_data.name, "layers.2.ffn.gate.tid2eid");
+        assert_eq!(
+            hash_layer.gate_binding().score_weight.name,
+            "layers.2.ffn.gate.weight"
+        );
+        assert_eq!(
+            hash_layer.gate_binding().route_data.name,
+            "layers.2.ffn.gate.tid2eid"
+        );
         assert_eq!(
             hash_layer
                 .mhc_binding(DeepSeekV4LayerMhcStage::Attention)
@@ -1644,8 +1667,14 @@ mod tests {
             gate_mode: DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias,
             tensor_count: base_layer_tensor_count(DeepSeekV4LayerCompressionMode::Ratio128),
         };
-        assert_eq!(learned_layer.gate_binding().route_data.name, "layers.3.ffn.gate.bias");
-        assert!(learned_layer.compression_binding().indexer_compressor.is_none());
+        assert_eq!(
+            learned_layer.gate_binding().route_data.name,
+            "layers.3.ffn.gate.bias"
+        );
+        assert!(learned_layer
+            .compression_binding()
+            .indexer_compressor
+            .is_none());
         assert_eq!(
             learned_layer
                 .routed_expert_pair(17, DeepSeekV4LayerExpertProjection::W2)
@@ -1662,7 +1691,9 @@ mod tests {
             layer: 0,
             compression: DeepSeekV4LayerCompressionMode::SlidingWindowOnly,
             gate_mode: DeepSeekV4LayerGateMode::HashTokenIdToExpertIds,
-            tensor_count: base_layer_tensor_count(DeepSeekV4LayerCompressionMode::SlidingWindowOnly),
+            tensor_count: base_layer_tensor_count(
+                DeepSeekV4LayerCompressionMode::SlidingWindowOnly,
+            ),
         };
         assert!(layer
             .routed_expert_pair(
@@ -1681,8 +1712,14 @@ mod tests {
     fn tensor_byte_grammar_matches_native_physical_storage() {
         assert_eq!(tensor_bytes(FP8_WQ_A.weight).expect("fp8 bytes"), 4_194_304);
         assert_eq!(tensor_bytes(FP8_WQ_A.scale).expect("fp8 scale bytes"), 256);
-        assert_eq!(tensor_bytes(FP4_W1_W3.weight).expect("fp4 bytes"), 4_194_304);
-        assert_eq!(tensor_bytes(FP4_W1_W3.scale).expect("fp4 scale bytes"), 262_144);
+        assert_eq!(
+            tensor_bytes(FP4_W1_W3.weight).expect("fp4 bytes"),
+            4_194_304
+        );
+        assert_eq!(
+            tensor_bytes(FP4_W1_W3.scale).expect("fp4 scale bytes"),
+            262_144
+        );
         assert_eq!(FP4_W1_W3.logical_k, 4_096);
         assert_eq!(FP4_W1_W3.packed_k, 2_048);
     }

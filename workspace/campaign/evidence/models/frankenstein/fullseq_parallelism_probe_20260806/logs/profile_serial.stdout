@@ -1,0 +1,165 @@
+corpus_mode=synthetic n=4 WARNING: not PROTO_FRANKENSTEIN_V0; correspondence ID intersection with GLM will be empty
+shard seq=[0, 4) worker_id=None n_in_shard=4 corpus_len_before_shard=4
+captured v0_math_01 tokens=3 layers=[0] seal=096f5f74c545318f
+captured v0_math_02 tokens=3 layers=[0] seal=27639f56250f882b
+captured v0_math_03 tokens=3 layers=[0] seal=5dc32f472d58ef63
+captured v0_math_04 tokens=3 layers=[0] seal=2fc394bb79ad001c
+{
+  "artifact": {
+    "manifest_seal_sha256": "da28df8300aed5d557b3e433acc496ee19055ce57f584c6ddf619982e7e15f62",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "capture_bytes_approx": 200736,
+  "corpus_provenance": {
+    "example_ids": [
+      "v0_math_01",
+      "v0_math_02",
+      "v0_math_03",
+      "v0_math_04"
+    ],
+    "file_sha256": null,
+    "identical_to_canonical": false,
+    "mode": "synthetic",
+    "n_sequences": 4,
+    "path": null,
+    "schema": "hawking.gravity.deepseek_v4.fullseq_corpus_provenance.v1",
+    "shard": {
+      "corpus_len_before_shard": 4,
+      "example_ids_in_shard": [
+        "v0_math_01",
+        "v0_math_02",
+        "v0_math_03",
+        "v0_math_04"
+      ],
+      "n_sequences_in_shard": 4,
+      "seq_end": 4,
+      "seq_start": 0,
+      "worker_id": null
+    },
+    "warning": "legacy v0_math_*/v0_code_* table; zero content-hash overlap with PROTO_FRANKENSTEIN_V0 / GLM freeze"
+  },
+  "honesty": {
+    "fabricated_activations": false,
+    "full_43_layer_fullseq": false,
+    "glm_side_present": false,
+    "hcli_decisions_captured": false,
+    "host_activation_export_is_diagnostic_only": true,
+    "host_activation_handoff_permitted": false,
+    "logits_captured": false,
+    "logits_note": "final lm_head requires full 43-layer body per token; not run under ratio-0-only default",
+    "serve_endpoint_flipped": false
+  },
+  "host_activation_export": {
+    "dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/activations",
+    "enabled": true,
+    "host_activation_handoff_permitted": false,
+    "mode": "offline_analysis_diagnostic",
+    "note": "Export copies bounded Metal buffers to host AFTER execute for correspondence (CKA/CCA/Procrustes). The P6/P7 source contract keeps host_activation_handoff_permitted=false; the device graph is unchanged.",
+    "sidecars": [
+      {
+        "dtype": "float32",
+        "layer": 0,
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/activations/L00.npy",
+        "shape": [
+          4,
+          4096
+        ],
+        "site": "late_hidden"
+      }
+    ]
+  },
+  "metal": {
+    "command_buffers": 60,
+    "cpu_visible_waits": 60,
+    "fallback": 0,
+    "metal_dispatches": 1044
+  },
+  "non_bos_forward": {
+    "blocker_ratio_128_full": "same empty-compressed specialization only",
+    "blocker_ratio_4_full": "indexer/compressor graph not implemented for non-empty compressed slots (layer_plan::require_empty_compressed_growing_kv_attention)",
+    "exact_storage": false,
+    "growing_kv_sparse_kernel": "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+    "parity": "NUMERIC_PARITY_V2_1_ONLY",
+    "ratios_covered": {
+      "ratio_0": true,
+      "ratio_128_empty_compressed_only": false,
+      "ratio_128_full_compressed_graph": false,
+      "ratio_4_empty_compressed_only": false,
+      "ratio_4_full_indexer_graph": false
+    }
+  },
+  "paired_traces": {
+    "dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/traces",
+    "n_traces": 4,
+    "rows": [
+      {
+        "example_id": "v0_math_01",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/traces/v0_math_01.json",
+        "seal_sha256": "096f5f74c545318fab5b3ab42cdc010f501905dfaff976da5fdd64abd27ee904"
+      },
+      {
+        "example_id": "v0_math_02",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/traces/v0_math_02.json",
+        "seal_sha256": "27639f56250f882b99af9f36f4d4fa410c44c874a2c659834d86eb13276bda5a"
+      },
+      {
+        "example_id": "v0_math_03",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/traces/v0_math_03.json",
+        "seal_sha256": "5dc32f472d58ef63f05a2e4b66888b1e1ed935668e209a9ab536ca3ceb135df4"
+      },
+      {
+        "example_id": "v0_math_04",
+        "path": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/traces/v0_math_04.json",
+        "seal_sha256": "2fc394bb79ad001c2bf7f9f91157e3f950c730c49c1ed912577c128fca7b0062"
+      }
+    ],
+    "schema": "hawking.frankenstein.paired_functional_trace.v1"
+  },
+  "parity": {
+    "classification": "NUMERIC_PARITY_V2_1_ONLY",
+    "exact_storage": false
+  },
+  "schema": "hawking.gravity.deepseek_v4.fullseq_capture.v1",
+  "scope": {
+    "corpus_mode": "synthetic",
+    "corpus_path": null,
+    "empty_compressed_fullseq_note": "ratio-4 layers only admit positions 0..2 (end_pos//4==0); ratio-128 admit 0..126; ratio-0 admit 0..127. All-43-layer capture requires max_seq_len<=3.",
+    "export_host_activations": true,
+    "ladder": "L0",
+    "layer_blockers": [],
+    "layers_run": [
+      0
+    ],
+    "max_layer_requested": 0,
+    "max_seq_len": 3,
+    "min_layer_requested": 0,
+    "sequences": 4,
+    "tokens_total": 12
+  },
+  "shard": {
+    "corpus_len_before_shard": 4,
+    "layer_shard_note": "min_layer must be 0; residual handoff across workers not implemented. Sequence sharding only.",
+    "layer_shard_supported": false,
+    "n_sequences_in_shard": 4,
+    "out_dir": "workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq",
+    "seq_end": 4,
+    "seq_start": 0,
+    "worker_id": null
+  },
+  "sites_captured": [
+    "embedding",
+    "mHC",
+    "pre_post_attn",
+    "pre_router",
+    "router_logits_top6_routes",
+    "post_MoE",
+    "late_hidden"
+  ],
+  "status": "PASS_FULLSEQ_CAPTURE_L0_4_LAYERS_0_TO_0",
+  "wall_time_ms": 6979.576
+}
+receipt_path: workspace/campaign/evidence/models/frankenstein/fullseq_parallelism_probe_20260806/profile/serial_l0_4seq/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json
+receipt_sha256: 1594042e384e81b55a49ff848d281adfd648a7e66e28da7dad0948a39f9abd7e
+metal_dispatches: 1044 sequences: 4 tokens: 12 shard=[0, 4) worker_id=None

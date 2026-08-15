@@ -30,7 +30,10 @@ strand-quant = { path = "../../workspace/vendor/strand-quant", optional = true }
 hawking-speculate = { path = "../hawking-speculate" }
 thiserror = { workspace = true }
 serde = { workspace = true }
-serde_json = { workspace = true }
+# Complete-binary receipts are sealed by CPython over parsed binary64 values.
+# `float_roundtrip` prevents the fast serde_json parser from changing a valid
+# decimal by one ULP before strict seal verification.
+serde_json = { workspace = true, features = ["float_roundtrip"] }
 memmap2 = { workspace = true }
 half = { workspace = true }
 bytemuck = { workspace = true }

@@ -1,0 +1,1 @@
+qwen30 current HCLI L0 route capture refused: metal: no Metal-capable GPU

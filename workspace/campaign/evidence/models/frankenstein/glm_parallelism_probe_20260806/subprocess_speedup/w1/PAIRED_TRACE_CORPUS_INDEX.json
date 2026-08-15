@@ -1,0 +1,160 @@
+{
+  "fabricated": false,
+  "membership": {
+    "assignments": {
+      "tf_syn_0016": "train",
+      "tf_syn_0017": "train",
+      "tf_syn_0018": "train",
+      "tf_syn_0019": "train",
+      "tf_syn_0020": "train",
+      "tf_syn_0021": "train",
+      "tf_syn_0022": "public_test",
+      "tf_syn_0023": "hidden_test",
+      "tf_syn_0024": "calibration",
+      "tf_syn_0025": "public_test",
+      "tf_syn_0026": "hidden_test",
+      "tf_syn_0027": "calibration",
+      "tf_syn_0028": "public_test",
+      "tf_syn_0029": "hidden_test",
+      "tf_syn_0030": "calibration",
+      "tf_syn_0031": "public_test"
+    },
+    "counts": {
+      "calibration": 3,
+      "hidden_test": 3,
+      "public_test": 4,
+      "retention": 0,
+      "train": 6
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T12:29:39.448100Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "0d157acef55a9be298edf5e9b70bb245a44a993ca9da5a5cc93a29fd9c162ea7",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "n_traces": 16,
+  "recorded_at": "2026-08-06T12:29:39.448094Z",
+  "rows": [
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0016",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "2edac5931093fc592c2947a94ea4fec56510089695c0bfe54818ea7b5f431e6a"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0017",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "8ba63648464a776870e71c55d482bc4c9848e05ad64cbc3546fec3f43376c403"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0018",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "9ee12ad379c1872740bb548cdc6be7b5e492a2a739315864d435fbe401a80db1"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0019",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "7cab6d52cccd53696327236daab6d6edaf536bfff5cae26c936ce9bcdfd06714"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0020",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "2353f7baa4f2317bb8b40570b7a077743ee3c39c5a88cecdfaac179e7ff294a5"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0021",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "a137c19d639232d2e25cd15e6369d4e08830e2684dd72727273f0fb1e44b9677"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0022",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "c2c3094e1fa4c1c48606061c5a26756987de13fd47fe04829bbbb84e05817b93"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0023",
+      "glm_present": true,
+      "membership": "hidden_test",
+      "seal_sha256": "dc76400e8398961451b7b163a7bc4ed88bcfaf480b464f63ec046c8ae34c441f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0024",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "bee58ca58dd0fb655a064b23548053bc17d8560483f47eb3174007e5c5fd8d1f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0025",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "cbd295373c6a3ec05b04ba5409f9f05f1e54f8e12a2420a816b5c00e1dad85b2"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0026",
+      "glm_present": true,
+      "membership": "hidden_test",
+      "seal_sha256": "9f29aae90edd54909c2478cb81ee0f21250342bb29b25a52c7d5bc1cb0ca1852"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0027",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "2aaf55c4f30f869bcc88538a0df5ec96a64cd00bc89d47183b3d4643d5ad3fea"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0028",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "04d693189bea88e9a64da64880974712db503b0cb36bc35868e7e242797b4d9b"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0029",
+      "glm_present": true,
+      "membership": "hidden_test",
+      "seal_sha256": "10b4e2860023527650be18e34809413757cb8e0ee8e6ad1d47d02d5a38e0124d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0030",
+      "glm_present": true,
+      "membership": "calibration",
+      "seal_sha256": "d2b778aea163688552adcd57875d8c8b4b29a608654f54797433e769602bf2e1"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "tf_syn_0031",
+      "glm_present": true,
+      "membership": "public_test",
+      "seal_sha256": "b947fdb89e5534afe15d59bd0c66a565a22c2ac1813cfacc776c516ad20f82b0"
+    }
+  ],
+  "schema": "hawking.frankenstein.evidence_corpus_index.v1",
+  "seal_sha256": "6d6fd9ad335f63d6d4e5916d31b8f0f592f214adea641c21a2ddc5fbcd932f8b"
+}

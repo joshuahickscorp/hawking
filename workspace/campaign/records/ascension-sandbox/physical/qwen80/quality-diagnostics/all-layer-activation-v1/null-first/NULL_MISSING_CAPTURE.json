@@ -1,0 +1,18 @@
+{
+  "capture_run": "/Users/scammermike/.claude-grok/worktrees/q80-gravity-coherence-20260809-170134/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1/runs/not-yet",
+  "claim_boundary": {
+    "null_only_no_family_result": true,
+    "refused_to_invent_nulls": true
+  },
+  "headline": {
+    "mean_null_all_scored": null,
+    "n_rows": 0,
+    "verdict": "CAPTURE_MISSING_NULL_NOT_MEASURABLE"
+  },
+  "label": "q80-missing-capture",
+  "note": "No capture-result.json. Run q80_activation_capture_readiness for the exact missing pieces (GQA encode + capture binary).",
+  "per_layer": [],
+  "reported_at": "2026-08-09T21:10:46.494552Z",
+  "schema": "hawking.ascension.qwen80_activation_null_first.v1",
+  "status": "REFUSED_CAPTURE_MISSING"
+}

@@ -1,0 +1,101 @@
+{
+  "bible": {
+    "path": "/Users/scammermike/Downloads/bible.md",
+    "sha256": "f3617881ecae08e52dc9ea3727b47d6a9bcfaaab7b73b5b84b9f3554c37026a3",
+    "state_machine_matches": true
+  },
+  "canonical_states": [
+    "V3_ADOPT",
+    "V3_SEED_ARCHIVE",
+    "V3_AUTHORITY_FREEZE",
+    "V3_GROK_BUILD_FABRIC",
+    "V3_AGENT_OS",
+    "V3_KNOWLEDGE_PLANE",
+    "V3_GRAVITY",
+    "V3_METAL_COMPILER",
+    "MANAGER_30B_DENSITY",
+    "MANAGER_30B_TG",
+    "MANAGER_30B_AGENT",
+    "MANAGER_80B_DENSITY",
+    "MANAGER_80B_TG",
+    "MANAGER_80B_AGENT",
+    "MANAGER_TOURNAMENT",
+    "SANDBOX_ACTIVATION",
+    "FAMILY_QWEN",
+    "FAMILY_LLAMA",
+    "FAMILY_MISTRAL",
+    "FAMILY_DEEPSEEK",
+    "FAMILY_GLM",
+    "FAMILY_KIMI",
+    "FAMILY_GEMMA",
+    "FAMILY_HYBRID",
+    "GLOBAL_LAUNCH_AUDIT",
+    "EXTERNAL_REVIEW",
+    "APPLE_RELEASE",
+    "TG2_TG1_FRONTIER"
+  ],
+  "claim_boundary": {
+    "not_a_human_adoption_receipt": true,
+    "not_a_model_qualification_receipt": true,
+    "not_a_sandbox_activation_receipt": true,
+    "not_a_tournament_result": true
+  },
+  "evidence_intake_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/controller-evidence",
+  "exact_continuation_outputs": [
+    "ASCENSION_V3_STATE.json",
+    "ASCENSION_V3_NEXT_COMMAND.sh",
+    "ASCENSION_V3_ACTIVE_LANES.json",
+    "ASCENSION_V3_GATE_MATRIX.json",
+    "ASCENSION_V3_REVIEW_INDEX.json"
+  ],
+  "manager_tournament": {
+    "alternate_must_be_offloaded_before_sandbox": true,
+    "candidate_order": [
+      "Qwen30-Gravity-Manager-Artifact",
+      "Qwen80-Gravity-Manager-Artifact"
+    ],
+    "comparison_dimensions": [
+      "hard_gate_compliance",
+      "manager_capability",
+      "solo_manager_capability",
+      "manager_as_orchestrator_capability",
+      "verified_tasks_per_hour",
+      "architecture_kernel_research",
+      "gravity_research_quality",
+      "long_horizon_reliability",
+      "tool_recovery",
+      "search_retrieval",
+      "memory_context",
+      "hcli_latency",
+      "multi_agent_throughput",
+      "resident_memory",
+      "active_bytes_per_token",
+      "energy_per_verified_task",
+      "thermal_stability",
+      "error_rate",
+      "receipt_quality",
+      "adversarial_review_quality",
+      "failure_recovery",
+      "benchmark_honesty",
+      "security_effect_discipline",
+      "release_integration"
+    ],
+    "requires_both_qualified": true,
+    "winner_must_be_protected_controller_or_human_certified": true
+  },
+  "no_drift_policy": {
+    "family_without_exact_model": "REFUSE",
+    "generic_fallback_core_family": "REFUSE",
+    "hidden_second_reviewer": "REFUSE",
+    "manager_above_1_5_bpw": "REFUSE",
+    "manager_below_tg3": "REFUSE",
+    "model_self_promotion": "REFUSE",
+    "sandbox_before_tournament": "REFUSE",
+    "timeline_completion": "REFUSE",
+    "unverified_deletion": "REFUSE"
+  },
+  "recorded_at": "2026-08-09T17:44:43.482740Z",
+  "schema": "hawking.ascension.v3_constitution_controller.v1",
+  "seal_sha256": "bfe6b54b6d4d97001724cbbc3a502b4b943b465f859f31ebf0f8705d6bb2d5e7",
+  "status": "CONTROLLER_CONFIGURATION_ONLY"
+}

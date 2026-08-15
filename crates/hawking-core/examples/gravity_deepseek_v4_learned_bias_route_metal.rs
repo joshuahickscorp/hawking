@@ -17,16 +17,18 @@
 
 #[cfg(not(target_os = "macos"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Err(std::io::Error::other(
-        "gravity_deepseek_v4_learned_bias_route_metal requires macOS Metal",
+    Err(
+        std::io::Error::other("gravity_deepseek_v4_learned_bias_route_metal requires macOS Metal")
+            .into(),
     )
-    .into())
 }
 
 #[cfg(target_os = "macos")]
 mod macos {
     use hawking_core::gravity_deepseek_v4::DeepSeekV4FullStreamReader;
-    use hawking_core::gravity_deepseek_v4_layer0_moe::{ACTIVATED_EXPERTS, ROUTED_EXPERTS, ROUTE_SCALE};
+    use hawking_core::gravity_deepseek_v4_layer0_moe::{
+        ACTIVATED_EXPERTS, ROUTED_EXPERTS, ROUTE_SCALE,
+    };
     use hawking_core::gravity_deepseek_v4_layer_plan::DeepSeekV4LayerDeviceCatalog;
     use hawking_core::metal::MetalContext;
     use serde_json::json;
@@ -284,11 +286,19 @@ mod macos {
     }
 
     fn set_u32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: &u32) {
-        encoder.set_bytes(index, std::mem::size_of::<u32>() as u64, value as *const u32 as *const _);
+        encoder.set_bytes(
+            index,
+            std::mem::size_of::<u32>() as u64,
+            value as *const u32 as *const _,
+        );
     }
 
     fn set_f32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: &f32) {
-        encoder.set_bytes(index, std::mem::size_of::<f32>() as u64, value as *const f32 as *const _);
+        encoder.set_bytes(
+            index,
+            std::mem::size_of::<f32>() as u64,
+            value as *const f32 as *const _,
+        );
     }
 
     struct Args {

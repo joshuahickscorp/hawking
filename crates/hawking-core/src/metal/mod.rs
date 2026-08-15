@@ -282,6 +282,82 @@ pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
+/// Exact single-token Gated DeltaNet recurrence for Qwen3-Next.  The initial
+/// implementation is a device-resident parity baseline; it is not a complete
+/// Qwen decoder or a throughput claim.
+pub const SHADER_QWEN_NEXT: &str = include_str!("../../shaders/qwen_next.metal");
+/// Bounded Qwen3-Coder-Next layer-3 direct-packed GQA parity kernels. They
+/// are compiled only for an isolated attention-stage probe and do not select
+/// a generic runtime or serving path.
+pub const SHADER_QWEN80_DIRECT_PACKED_ATTENTION_STAGE: &str =
+    include_str!("../../shaders/qwen80_direct_packed_attention_stage.metal");
+/// Isolated Qwen3-Coder-Next layer-0 post-attention RMSNorm/router/top-10
+/// component kernels.  They are compiled only for an explicitly leased,
+/// strict-math, non-timed parity capture; no generic runtime or serving path
+/// selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_POSTNORM_ROUTER_TOP10: &str =
+    include_str!("../../shaders/qwen80_postnorm_router_top10.metal");
+/// Isolated Qwen3-Coder-Next layer-0 route-0/expert-65 gate/up/SwiGLU/down
+/// component kernels.  They are available only to the explicit strict-math,
+/// non-timed parity probe; no generic runtime or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_ROUTED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_routed_expert_wave.metal");
+/// Isolated Qwen3-Coder-Next layer-0 shared-expert body kernels. They are
+/// compiled only for an explicitly leased strict-math, non-timed component
+/// parity capture; no generic runtime or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_SHARED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_shared_expert_wave.metal");
+/// Isolated Qwen3-Coder-Next layer-0 MoE aggregation/shared-add/second
+/// residual kernels. They are compiled only for a separately leased,
+/// non-timed materialized-vector component parity capture; no generic runtime
+/// or serving path selects them.
+pub const SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE: &str =
+    include_str!("../../shaders/qwen80_moe_wave_aggregate_second_residual.metal");
+/// Isolated Qwen3-Coder-Next layer-0 source-selected all-ten routed-expert
+/// body kernels.  They are only reachable from the explicitly leased,
+/// strict-math, non-timed true-input component capture; no generic runtime,
+/// watcher, or serving path selects them.
+pub const SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE: &str =
+    include_str!("../../shaders/qwen80_all_ten_routed_expert_wave.metal");
+/// Composed Qwen3-Next terminal head (final RMSNorm, all-row lm_head,
+/// reserved-tail mask, greedy sample, feedback guard).  Registered so the
+/// hybrid token graph can encode it; this is not a generate or TPS claim.
+pub const SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD: &str =
+    include_str!("../../shaders/qwen80_direct_packed_terminal_head_preflight.metal");
+/// Packed binary sign + FP16 group-scale Qwen component matvec. This is a
+/// bounded operator primitive, not a complete decoder or model TPS surface.
+pub const SHADER_QWEN_BINARY: &str = include_str!("../../shaders/qwen_binary.metal");
+/// Device-side glue for the admitted Qwen30 complete-binary runtime.  It
+/// retains the packed sign/scale body through embedding, Q/K RMSNorm, and
+/// routed-expert control operations; it is not a generic BF16 fallback.
+pub const SHADER_QWEN_COMPLETE_RUNTIME: &str =
+    include_str!("../../shaders/qwen_complete_runtime.metal");
+/// Isolated direct-packed Qwen30 routed-expert gate/up/SwiGLU fusion
+/// candidate.  It is compiled into the shared library so a separately named
+/// diagnostic runtime path can establish all-layer parity; no generic engine
+/// or serving endpoint selects it by default.
+pub const SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED: &str =
+    include_str!("../../shaders/qwen_direct_packed_gate_up_swiglu_fused.metal");
+/// Distinct Qwen30 gate/up paired-topology diagnostic that preserves the
+/// scalar control's non-FMA accumulation order.  It is not selected by a
+/// generic runtime or endpoint.
+pub const SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER: &str =
+    include_str!("../../shaders/qwen_direct_packed_gate_up_swiglu_paired_scalar_order.metal");
+/// Isolated HQ30GR2 direct-base-plus-sparse-residual Qwen30 gate/up kernel.
+/// It is available only to a typed, non-serving candidate diagnostic and is
+/// not a generic engine or endpoint selection.
+pub const SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP: &str =
+    include_str!("../../shaders/qwen30_quality_repack_sparse_gate_up.metal");
+/// Qwen30 device-indexed expert address table (route-id on device; no host
+/// expert bind). Mirrors the GLM device expert table idiom for HQ30G1B1 /
+/// HGRAVS01 organs.
+pub const SHADER_QWEN30_DEVICE_EXPERT_TABLE: &str =
+    include_str!("../../shaders/qwen30_device_expert_table.metal");
+/// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
+/// fixed group-64 layout is a bounded operator primitive, not a complete
+/// decoder or model TPS surface.
+pub const SHADER_QWEN_UNIFORM_Q4: &str = include_str!("../../shaders/qwen_uniform_q4.metal");
+pub const SHADER_QWEN_UNIFORM_QN: &str = include_str!("../../shaders/qwen_uniform_qn.metal");
 /// RWKV-7 WKV-7 single-step decode recurrence (`rwkv7_wkv_decode`). The novel,
 /// tps-critical kernel of the RWKV-7 GPU decode path — threadgroup-per-head with
 /// the fixed `head_size×head_size` recurrent state in a persistent GPU buffer
@@ -327,6 +403,22 @@ pub fn all_shader_sources() -> String {
         SHADER_MATMUL,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
+        SHADER_QWEN_NEXT,
+        SHADER_QWEN80_DIRECT_PACKED_ATTENTION_STAGE,
+        SHADER_QWEN80_DIRECT_PACKED_POSTNORM_ROUTER_TOP10,
+        SHADER_QWEN80_DIRECT_PACKED_ROUTED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_SHARED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE,
+        SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD,
+        SHADER_QWEN_BINARY,
+        SHADER_QWEN_COMPLETE_RUNTIME,
+        SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED,
+        SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER,
+        SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
+        SHADER_QWEN30_DEVICE_EXPERT_TABLE,
+        SHADER_QWEN_UNIFORM_Q4,
+        SHADER_QWEN_UNIFORM_QN,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
         SHADER_DEEPSEEK_V4_P7,
@@ -657,10 +749,13 @@ mod imp {
 
     /// v2.2.0-L7: counter-sample tracer used by `ProdCbGpu` mode.
     ///
-    /// One sample buffer per `TokenCommandBuffer`; `sample_count` is sized
-    /// for 2 samples per dispatch × MAX_DISPATCHES. Each dispatch occupies
-    /// indices `[2*n, 2*n+1]`. After CB completes, the sample buffer holds
-    /// raw GPU timestamps (ns); `gpu_us = (ts[2n+1] - ts[2n]) / 1000`.
+    /// A recyclable sample buffer leased to one `TokenCommandBuffer` at a
+    /// time; `sample_count` is sized for 2 samples per dispatch ×
+    /// MAX_DISPATCHES. Each dispatch occupies indices `[2*n, 2*n+1]`. After
+    /// that CB completes, the sample buffer holds raw GPU timestamps (ns);
+    /// `gpu_us = (ts[2n+1] - ts[2n]) / 1000`. Recycling avoids exhausting
+    /// Metal's small per-device CounterSampleBuffer limit during a complete
+    /// multi-command-buffer token profile.
     struct ProdCbTracer {
         sample_buf: ::metal::CounterSampleBuffer,
         /// Index of the next pair (so the start of the next dispatch's
@@ -748,7 +843,7 @@ mod imp {
                 .load(Ordering::Relaxed)
                 .min(self.capacity_pairs);
             if pair_count == 0 {
-                return pending
+                let samples = pending
                     .into_iter()
                     .map(|p| super::DispatchSample {
                         kernel_name: p.kernel_name,
@@ -759,6 +854,8 @@ mod imp {
                         gpu_end_ns: None,
                     })
                     .collect();
+                self.next_pair.store(0, Ordering::Relaxed);
+                return samples;
             }
             // Resolve the [0, 2*pair_count) sample range. Returns NSData.
             // SAFETY: CB has committed + waited before this is called;
@@ -783,7 +880,7 @@ mod imp {
             // Per Apple, an "absent" sample is encoded as MTLCounterErrorValue
             // (0xFFFFFFFFFFFFFFFF). If we see one we leave gpu_us=None.
             const ERR: u64 = u64::MAX;
-            pending
+            let samples = pending
                 .into_iter()
                 .map(|p| {
                     let i0 = p.pair_index * 2;
@@ -810,7 +907,12 @@ mod imp {
                         gpu_end_ns,
                     }
                 })
-                .collect()
+                .collect();
+            // This tracer is returned to a context-local pool only after its
+            // command buffer has completed and timestamps have been resolved.
+            // The next lease overwrites the same sample indices safely.
+            self.next_pair.store(0, Ordering::Relaxed);
+            samples
         }
     }
 
@@ -891,6 +993,11 @@ mod imp {
         /// Mirrors `EngineConfig::trace_dispatch`; env var `HAWKING_TRACE_DISPATCH`
         /// acts as a fallback when this is false.
         pub trace_dispatch: bool,
+        /// Reusable diagnostic counter-sample buffers. A complete token may
+        /// commit dozens of serial command buffers; leasing and returning a
+        /// tracer prevents the hardware sample-buffer quota from silently
+        /// truncating a gpu_prod profile after its first few stages.
+        prod_cb_tracer_pool: Arc<Mutex<Vec<ProdCbTracer>>>,
     }
 
     /// One command buffer that can encode several compute kernels before
@@ -934,6 +1041,170 @@ mod imp {
             "moe_route_accumulate" => "moe_route_accumulate",
             "moe_route_accumulate_add" => "moe_route_accumulate_add",
             "sample_argmax_f32" => "sample_argmax_f32",
+            "sample_argmax_f32_with_finite" => "sample_argmax_f32_with_finite",
+            // Admitted Qwen30 complete-binary runtime.  These labels remain
+            // per-stage so a future complete-token profile can distinguish
+            // packed decode, state, and routed-expert time rather than fold
+            // it into an opaque "other" bucket.
+            "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
+            "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
+            "qwen_binary_sign_scale_matvec_tiled" => "qwen_binary_sign_scale_matvec_tiled",
+            "qwen_binary_sign_scale_matvec_simdgroup_candidate" => {
+                "qwen_binary_sign_scale_matvec_simdgroup_candidate"
+            }
+            "qwen_binary_sign_scale_matvec_qkv" => "qwen_binary_sign_scale_matvec_qkv",
+            "qwen_binary_sign_scale_matvec_qkv_rowblock4" => {
+                "qwen_binary_sign_scale_matvec_qkv_rowblock4"
+            }
+            "qwen_binary_postnorm_router_matvec" => "qwen_binary_postnorm_router_matvec",
+            "qwen_binary_sign_scale_matvec_rowblock2" => {
+                "qwen_binary_sign_scale_matvec_rowblock2"
+            }
+            "qwen_binary_sign_scale_matvec_rowblock4" => {
+                "qwen_binary_sign_scale_matvec_rowblock4"
+            }
+            "qwen_binary_sign_scale_matvec_rowblock8" => {
+                "qwen_binary_sign_scale_matvec_rowblock8"
+            }
+            "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
+            "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
+            "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
+            "qwen_uniform_q4_group64_matvec_rowblock" => {
+                "qwen_uniform_q4_group64_matvec_rowblock"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_x64" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_x64"
+            }
+            "qwen_uniform_q4_group64_matvec_qkv" => "qwen_uniform_q4_group64_matvec_qkv",
+            "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
+                "qwen_uniform_q4_group64_matvec_qkv_simdgroup"
+            }
+            "qwen_uniform_q4_decode_vector" => "qwen_uniform_q4_decode_vector",
+            "qwen_uniform_q4_embedding_lookup" => "qwen_uniform_q4_embedding_lookup",
+            "qwen_uniform_q4_embedding_lookup_device_token" => {
+                "qwen_uniform_q4_embedding_lookup_device_token"
+            }
+            "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8" => {
+                "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8"
+            },
+            "qwen_uniform_qn_matvec" => "qwen_uniform_qn_matvec",
+            "qwen_uniform_qn_decode_vector" => "qwen_uniform_qn_decode_vector",
+            "qwen_uniform_qn_embedding_lookup" => "qwen_uniform_qn_embedding_lookup",
+            "qwen_complete_binary_embedding_lookup_device_token" => {
+                "qwen_complete_binary_embedding_lookup_device_token"
+            }
+            "qwen_complete_rmsnorm_rows_f32" => "qwen_complete_rmsnorm_rows_f32",
+            "qwen_complete_qk_rmsnorm_rope_kv_append_f32" => {
+                "qwen_complete_qk_rmsnorm_rope_kv_append_f32"
+            }
+            "qwen_complete_normalize_route_weights" => "qwen_complete_normalize_route_weights",
+            "qwen_complete_silu_mul_offset" => "qwen_complete_silu_mul_offset",
+            "qwen_direct_packed_gate_up_swiglu_fused_candidate" => {
+                "qwen_direct_packed_gate_up_swiglu_fused_candidate"
+            }
+            "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate" => {
+                "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate"
+            }
+            "qwen30_expert_table_binary_matvec" => "qwen30_expert_table_binary_matvec",
+            "qwen30_expert_table_binary_matvec_serial" => "qwen30_expert_table_binary_matvec_serial",
+            "qwen30_expert_table_uniform_q4_matvec_serial" => {
+                "qwen30_expert_table_uniform_q4_matvec_serial"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_rowblock" => {
+                "qwen30_expert_table_uniform_q4_matvec_rowblock"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8"
+            },
+            "qwen30_expert_table_binary_matvec_simdgroup" => {
+                "qwen30_expert_table_binary_matvec_simdgroup"
+            }
+            "qwen30_expert_table_binary_matvec_rowblock2" => {
+                "qwen30_expert_table_binary_matvec_rowblock2"
+            }
+            "qwen30_expert_table_binary_matvec_rowblock4" => {
+                "qwen30_expert_table_binary_matvec_rowblock4"
+            }
+            "qwen30_expert_table_binary_matvec_rowblock8" => {
+                "qwen30_expert_table_binary_matvec_rowblock8"
+            }
+            "qwen30_expert_table_paired_gate_up_swiglu" => {
+                "qwen30_expert_table_paired_gate_up_swiglu"
+            }
+            "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu" => {
+                "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu"
+            }
+            "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8" => {
+                "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8"
+            }
+            "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
+            "qwen30_expert_table_hgravs_gemv_rowblock2" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock2"
+            }
+            "qwen30_expert_table_hgravs_gemv_rowblock4" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock4"
+            }
+            "qwen30_expert_table_hgravs_gemv_rowblock8" => {
+                "qwen30_expert_table_hgravs_gemv_rowblock8"
+            }
+            "qwen_complete_weighted_expert_add" => "qwen_complete_weighted_expert_add",
+            "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
+            "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",
+            "qwen_next_ba_to_decay_beta" => "qwen_next_ba_to_decay_beta",
+            "qwen_next_direct_packed_input_rmsnorm" => "qwen_next_direct_packed_input_rmsnorm",
+            "qwen_next_qkvz_rearrange_conv_l2" => "qwen_next_qkvz_rearrange_conv_l2",
+            "qwen_next_deltanet_gated_rmsnorm" => "qwen_next_deltanet_gated_rmsnorm",
+            "qwen_next_add_residual" => "qwen_next_add_residual",
+            "qwen80_attention_qk_norm_rope_cache" => "qwen80_attention_qk_norm_rope_cache",
+            "qwen80_attention_apply_sigmoid_gate" => "qwen80_attention_apply_sigmoid_gate",
+            "qwen80_postnorm_router_top10_rmsnorm" => "qwen80_postnorm_router_top10_rmsnorm",
+            "qwen80_postnorm_router_top10_matvec" => "qwen80_postnorm_router_top10_matvec",
+            "qwen80_postnorm_router_top10_select" => "qwen80_postnorm_router_top10_select",
+            "qwen80_all_ten_routed_wave_route_guard" => "qwen80_all_ten_routed_wave_route_guard",
+            "qwen80_all_ten_routed_wave_gate_up" => "qwen80_all_ten_routed_wave_gate_up",
+            "qwen80_all_ten_routed_wave_swiglu" => "qwen80_all_ten_routed_wave_swiglu",
+            "qwen80_all_ten_routed_wave_down_weighted" => {
+                "qwen80_all_ten_routed_wave_down_weighted"
+            }
+            "qwen80_shared_expert_wave_gate_up" => "qwen80_shared_expert_wave_gate_up",
+            "qwen80_shared_expert_wave_swiglu" => "qwen80_shared_expert_wave_swiglu",
+            "qwen80_shared_expert_wave_down" => "qwen80_shared_expert_wave_down",
+            "qwen80_shared_expert_wave_scalar_gate" => "qwen80_shared_expert_wave_scalar_gate",
+            "qwen80_shared_expert_wave_apply_sigmoid_gate" => {
+                "qwen80_shared_expert_wave_apply_sigmoid_gate"
+            }
+            "qwen80_moe_wave_aggregate_second_residual_route_sum" => {
+                "qwen80_moe_wave_aggregate_second_residual_route_sum"
+            }
+            "qwen80_moe_wave_aggregate_second_residual_add_shared_residual" => {
+                "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+            }
+            "qwen80_terminal_head_final_rmsnorm_direct_packed" => {
+                "qwen80_terminal_head_final_rmsnorm_direct_packed"
+            }
+            "qwen80_terminal_head_all_row_direct_packed" => {
+                "qwen80_terminal_head_all_row_direct_packed"
+            }
+            "qwen80_terminal_head_mask_reserved_tail" => "qwen80_terminal_head_mask_reserved_tail",
+            "qwen80_terminal_head_greedy_sample_lowest_id" => {
+                "qwen80_terminal_head_greedy_sample_lowest_id"
+            }
+            "qwen80_terminal_head_feedback_guard" => "qwen80_terminal_head_feedback_guard",
             // attn / rope / embed kernels
             "rope_inplace" => "rope_inplace",
             "rope_norm_llama_b9430" => "rope_norm_llama_b9430",
@@ -1028,6 +1299,13 @@ mod imp {
             }
             "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority" => {
                 "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority"
+            }
+            // Ratio-0 growing-KV sibling of the position1 kernel above. It is
+            // compiled into matmul.metal and dispatched, but was never given a
+            // trace name, so every dispatch of it was attributed to "other" and
+            // vanished from per-kernel profiling.
+            "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority" => {
+                "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority"
             }
             // Isolated P4B mHC-control precision experiment. This is never a
             // baseline/runtime selection: it may be invoked only to test
@@ -1567,33 +1845,218 @@ mod imp {
         }
     }
 
+    /// Metallib disk cache keyed by (device name, shader source hash, math mode).
+    /// Disable with `HAWKING_METALLIB_CACHE=0`. When a matching `.metallib` is
+    /// present it is loaded; otherwise sources are compiled at runtime. Writing
+    /// a new `.metallib` requires the Xcode `metal`/`metallib` tools; when they
+    /// are absent the warm path still benefits from any pre-seeded cache file
+    /// and from the OS Metal shader cache for repeated `newLibraryWithSource`.
+    fn metallib_cache_enabled() -> bool {
+        match std::env::var("HAWKING_METALLIB_CACHE") {
+            Ok(v) if matches!(v.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+                false
+            }
+            _ => true,
+        }
+    }
+
+    fn metallib_cache_root() -> std::path::PathBuf {
+        if let Ok(dir) = std::env::var("HAWKING_METALLIB_CACHE_DIR") {
+            return std::path::PathBuf::from(dir);
+        }
+        if let Ok(xdg) = std::env::var("XDG_CACHE_HOME") {
+            return std::path::PathBuf::from(xdg).join("hawking").join("metallib");
+        }
+        if let Ok(home) = std::env::var("HOME") {
+            return std::path::PathBuf::from(home)
+                .join(".cache")
+                .join("hawking")
+                .join("metallib");
+        }
+        std::path::PathBuf::from("/tmp/hawking-cache/metallib")
+    }
+
+    fn shader_source_sha256(src: &str) -> String {
+        use sha2::{Digest, Sha256};
+        format!("{:x}", Sha256::digest(src.as_bytes()))
+    }
+
+    fn sanitize_device_name(name: &str) -> String {
+        name.chars()
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .collect()
+    }
+
+    fn metallib_cache_path(device: &Device, source_sha: &str, strict_math: bool) -> std::path::PathBuf {
+        let math = if strict_math {
+            "strict_math"
+        } else {
+            "fast_math_default"
+        };
+        metallib_cache_root()
+            .join(sanitize_device_name(&device.name().to_string()))
+            .join(format!("{source_sha}_{math}.metallib"))
+    }
+
+    /// Opt-in offline metallib build via Xcode tools (`HAWKING_METALLIB_BUILD=1`).
+    /// Default off so normal experiment starts never shell out.
+    fn try_build_metallib_with_xcrun(
+        src: &str,
+        out_path: &std::path::Path,
+        strict_math: bool,
+    ) -> Option<()> {
+        use std::io::Write;
+        use std::process::Command;
+        if let Some(parent) = out_path.parent() {
+            std::fs::create_dir_all(parent).ok()?;
+        }
+        let tmp_dir = out_path
+            .parent()?
+            .join(format!(".build-{}", std::process::id()));
+        std::fs::create_dir_all(&tmp_dir).ok()?;
+        let metal_src = tmp_dir.join("all_shaders.metal");
+        let air = tmp_dir.join("all_shaders.air");
+        let metallib_tmp = tmp_dir.join("out.metallib");
+        {
+            let mut f = std::fs::File::create(&metal_src).ok()?;
+            f.write_all(src.as_bytes()).ok()?;
+        }
+        let metal_bin = Command::new("xcrun")
+            .args(["-sdk", "macosx", "-f", "metal"])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .filter(|p| !p.is_empty())?;
+        let metallib_bin = Command::new("xcrun")
+            .args(["-sdk", "macosx", "-f", "metallib"])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .filter(|p| !p.is_empty())?;
+        let mut compile = Command::new(&metal_bin);
+        compile.arg("-c");
+        if strict_math {
+            compile.arg("-fno-fast-math");
+        }
+        let compile = compile
+            .arg(metal_src.as_os_str())
+            .arg("-o")
+            .arg(air.as_os_str())
+            .output()
+            .ok()?;
+        if !compile.status.success() {
+            let _ = std::fs::remove_dir_all(&tmp_dir);
+            return None;
+        }
+        let link = Command::new(&metallib_bin)
+            .arg(air.as_os_str())
+            .arg("-o")
+            .arg(metallib_tmp.as_os_str())
+            .output()
+            .ok()?;
+        if !link.status.success() {
+            let _ = std::fs::remove_dir_all(&tmp_dir);
+            return None;
+        }
+        std::fs::rename(&metallib_tmp, out_path).ok()?;
+        let _ = std::fs::remove_dir_all(&tmp_dir);
+        Some(())
+    }
+
+    fn load_or_compile_shader_library(device: &Device, strict_math: bool) -> Result<Library> {
+        let src = super::all_shader_sources();
+        let source_sha = shader_source_sha256(&src);
+
+        if metallib_cache_enabled() {
+            let path = metallib_cache_path(device, &source_sha, strict_math);
+            if path.is_file() {
+                let load_start = std::time::Instant::now();
+                match device.new_library_with_file(&path) {
+                    Ok(library) => {
+                        crate::startup_timing::record_ms(
+                            "metal_shader_library_load_metallib_cache_hit",
+                            crate::startup_timing::duration_ms(load_start.elapsed()),
+                        );
+                        return Ok(library);
+                    }
+                    Err(_err) => {
+                        // Corrupt or wrong-GPU metallib: fall through to source.
+                        crate::startup_timing::record_ms(
+                            "metal_shader_library_metallib_load_failed_fallback_source",
+                            0,
+                        );
+                    }
+                }
+            } else if matches!(
+                std::env::var("HAWKING_METALLIB_BUILD").as_deref(),
+                Ok("1") | Ok("true") | Ok("TRUE")
+            ) {
+                let build_start = std::time::Instant::now();
+                if try_build_metallib_with_xcrun(&src, &path, strict_math).is_some() {
+                    crate::startup_timing::record_ms(
+                        "metal_shader_library_xcrun_metallib_build",
+                        crate::startup_timing::duration_ms(build_start.elapsed()),
+                    );
+                    if let Ok(library) = device.new_library_with_file(&path) {
+                        return Ok(library);
+                    }
+                }
+            }
+        }
+
+        let compile_start = std::time::Instant::now();
+        let opts = metal::CompileOptions::new();
+        if strict_math {
+            opts.set_fast_math_enabled(false);
+        }
+        let library = device.new_library_with_source(&src, &opts).map_err(|e| {
+            Error::Metal(format!(
+                "{}shader compile: {e}",
+                if strict_math { "strict-math " } else { "" }
+            ))
+        })?;
+        crate::startup_timing::record_ms(
+            "metal_shader_library_compile_from_source",
+            crate::startup_timing::duration_ms(compile_start.elapsed()),
+        );
+        Ok(library)
+    }
+
     impl MetalContext {
         pub fn new() -> Result<Self> {
             Self::new_with_trace(false)
         }
 
         pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
-            let device = Device::system_default()
-                .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
-            let queue = device.new_command_queue();
-            let opts = metal::CompileOptions::new();
-            let src = super::all_shader_sources();
-            let library = device
-                .new_library_with_source(&src, &opts)
-                .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
-            // Resolve at construction so hot-path checks are a single bool load.
-            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
-            Ok(Self {
-                inner: Arc::new(Inner {
-                    device,
-                    queue,
-                    library,
-                    pipelines: Mutex::new(HashMap::new()),
-                    icb_pipelines: Mutex::new(HashMap::new()),
-                }),
-                trace: Arc::new(DispatchTrace::new()),
-                stats: Arc::new(MetalContextStats::new()),
-                trace_dispatch: effective,
+            crate::startup_timing::time_ms_result("metal_context_new_with_trace", || {
+                let device = Device::system_default()
+                    .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+                let queue = device.new_command_queue();
+                let library = load_or_compile_shader_library(&device, /*strict_math=*/ false)?;
+                // Resolve at construction so hot-path checks are a single bool load.
+                let effective =
+                    trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+                Ok(Self {
+                    inner: Arc::new(Inner {
+                        device,
+                        queue,
+                        library,
+                        pipelines: Mutex::new(HashMap::new()),
+                        icb_pipelines: Mutex::new(HashMap::new()),
+                    }),
+                    trace: Arc::new(DispatchTrace::new()),
+                    stats: Arc::new(MetalContextStats::new()),
+                    trace_dispatch: effective,
+                    prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+                })
             })
         }
 
@@ -1602,27 +2065,26 @@ mod imp {
         /// default compile options; callers must opt in explicitly and must
         /// not treat this as a runtime-wide arithmetic policy.
         pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
-            let device = Device::system_default()
-                .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
-            let queue = device.new_command_queue();
-            let opts = metal::CompileOptions::new();
-            opts.set_fast_math_enabled(false);
-            let src = super::all_shader_sources();
-            let library = device
-                .new_library_with_source(&src, &opts)
-                .map_err(|e| Error::Metal(format!("strict-math shader compile: {e}")))?;
-            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
-            Ok(Self {
-                inner: Arc::new(Inner {
-                    device,
-                    queue,
-                    library,
-                    pipelines: Mutex::new(HashMap::new()),
-                    icb_pipelines: Mutex::new(HashMap::new()),
-                }),
-                trace: Arc::new(DispatchTrace::new()),
-                stats: Arc::new(MetalContextStats::new()),
-                trace_dispatch: effective,
+            crate::startup_timing::time_ms_result("metal_context_new_with_trace_strict_math", || {
+                let device = Device::system_default()
+                    .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+                let queue = device.new_command_queue();
+                let library = load_or_compile_shader_library(&device, /*strict_math=*/ true)?;
+                let effective =
+                    trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+                Ok(Self {
+                    inner: Arc::new(Inner {
+                        device,
+                        queue,
+                        library,
+                        pipelines: Mutex::new(HashMap::new()),
+                        icb_pipelines: Mutex::new(HashMap::new()),
+                    }),
+                    trace: Arc::new(DispatchTrace::new()),
+                    stats: Arc::new(MetalContextStats::new()),
+                    trace_dispatch: effective,
+                    prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+                })
             })
         }
 
@@ -1670,6 +2132,7 @@ mod imp {
             if let Some(p) = pipes.get(fn_name) {
                 return Ok(p.clone());
             }
+            let start = std::time::Instant::now();
             let f = self
                 .inner
                 .library
@@ -1680,6 +2143,12 @@ mod imp {
                 .device
                 .new_compute_pipeline_state_with_function(&f)
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
+            let ms = crate::startup_timing::duration_ms(start.elapsed());
+            // Aggregate first-create cost; hot path hits cache above.
+            crate::startup_timing::record_ms(
+                format!("metal_pipeline_create:{fn_name}"),
+                ms,
+            );
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
         }
@@ -3211,9 +3680,19 @@ mod imp {
         mode: TcbTraceMode,
         /// Accumulated per-dispatch samples; only populated when `mode` is on.
         tcb_samples: Vec<super::DispatchSample>,
-        /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
-        /// when the device doesn't support the timestamp counter set.
+        /// An opt-in, non-timing structural trace of the exact kernel labels
+        /// accepted by `dispatch_threads` in this command buffer.  Component
+        /// parity captures use this to seal dispatch order without enabling
+        /// CPU/GPU timing or changing the single-command-buffer execution
+        /// shape.  It stays `None` on ordinary runtime paths.
+        structural_kernel_names: Option<Vec<String>>,
+        /// Live in `ProdCbGpu` mode. `None` in other modes or when the device
+        /// doesn't support the timestamp counter set. It is leased from the
+        /// context-local pool and returned only after commit/wait + resolve.
         prod_cb_tracer: Option<ProdCbTracer>,
+        /// Pool paired with `prod_cb_tracer`; kept optional so off/CPU modes
+        /// retain their historical zero-allocation trace path.
+        prod_cb_tracer_pool: Option<Arc<Mutex<Vec<ProdCbTracer>>>>,
         /// Physical-evidence identity for the pending Metal command buffer.
         physical_trace: Option<PhysicalCommandIdentity>,
         /// P0.1 spike: active concurrent encoder. When `Some`, dispatches
@@ -3251,8 +3730,16 @@ mod imp {
                 cmd.set_label(label);
             }
             let mode = TcbTraceMode::from_env();
+            let prod_cb_tracer_pool = if mode == TcbTraceMode::ProdCbGpu {
+                Some(ctx.prod_cb_tracer_pool.clone())
+            } else {
+                None
+            };
+            let pooled_tracer = prod_cb_tracer_pool
+                .as_ref()
+                .and_then(|pool| pool.lock().pop());
             let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
-                ProdCbTracer::try_new(&ctx.inner.device)
+                pooled_tracer.or_else(|| ProdCbTracer::try_new(&ctx.inner.device))
             } else {
                 None
             };
@@ -3261,7 +3748,9 @@ mod imp {
                 cmd: Some(cmd),
                 mode,
                 tcb_samples: Vec::new(),
+                structural_kernel_names: None,
                 prod_cb_tracer,
+                prod_cb_tracer_pool,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 dispatch_count: 0,
@@ -3275,6 +3764,41 @@ mod imp {
         /// Valid both before and after `commit_and_wait`.
         pub fn dispatch_count(&self) -> usize {
             self.dispatch_count
+        }
+
+        /// Enable a capture-only structural trace for this fresh command
+        /// buffer.  The trace records only successful kernel encodes in
+        /// order; it never records timestamps or submits additional command
+        /// buffers.  Diagnostic callers must opt in before their first
+        /// dispatch so a partial historical trace cannot be mistaken for a
+        /// full graph.
+        pub fn enable_structural_kernel_trace(&mut self) -> Result<()> {
+            if self.dispatch_count != 0 {
+                return Err(Error::Metal(
+                    "structural kernel trace must be enabled before the first dispatch".into(),
+                ));
+            }
+            if self.structural_kernel_names.is_some() {
+                return Err(Error::Metal(
+                    "structural kernel trace was already enabled for this command buffer".into(),
+                ));
+            }
+            if self.mode != TcbTraceMode::Off {
+                return Err(Error::Metal(
+                    "structural kernel trace requires non-timed TokenCommandBuffer mode".into(),
+                ));
+            }
+            self.structural_kernel_names = Some(Vec::new());
+            Ok(())
+        }
+
+        /// Return the exact successful dispatch labels recorded by
+        /// [`Self::enable_structural_kernel_trace`].  The slice remains
+        /// available before and after the common fence so a failure receipt
+        /// can distinguish "encoded" from "committed" without inventing a
+        /// timing result.
+        pub fn structural_kernel_names(&self) -> Option<&[String]> {
+            self.structural_kernel_names.as_deref()
         }
 
         /// P0.1 spike (Q/K/V concurrent-encoder).
@@ -3341,14 +3865,26 @@ mod imp {
                     "begin_serial_group called while a group is already active".into(),
                 ));
             }
-            if !matches!(self.mode, TcbTraceMode::Off | TcbTraceMode::CpuEncode) {
+            // SplitCbGpu still no-ops: it needs one CB per dispatch for
+            // gpuStart/gpuEnd. ProdCbGpu used to no-op too for per-dispatch
+            // counter samples, but that forced the multi-encoder topology and
+            // changed Q30 greedy tokens (lane-tracebug). Prefer numeric
+            // identity with production: honour serial groups under ProdCbGpu
+            // and Off/CpuEncode. Per-dispatch gpu_us is unavailable while a
+            // group is open (shared encoder has no per-kernel sample pair).
+            if matches!(self.mode, TcbTraceMode::SplitCbGpu) {
                 return Ok(());
             }
             let cmd = self
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
-            let enc = cmd.new_compute_command_encoder();
+            // Explicit Serial: never rely on the platform default of
+            // `computeCommandEncoder` alone. Dependent dispatches in a Q30
+            // token wave (rope→mha, R@x→L@mid, topk→expert) must not run
+            // concurrently or residual/router state becomes non-deterministic.
+            let enc =
+                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Serial);
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(
                     command,
@@ -3368,6 +3904,67 @@ mod imp {
                 enc.end_encoding();
             }
             Ok(())
+        }
+
+        /// True while a concurrent or serial compute encoder group is open.
+        ///
+        /// When a group is active, Metal resource residency declared via
+        /// [`Self::use_resources_read_on_group`] (or `use_resources` on the
+        /// shared encoder) persists for the rest of the group. Callers that
+        /// re-declare on every dispatch pay host time for no GPU gain.
+        pub fn has_active_group(&self) -> bool {
+            self.concurrent_encoder.is_some()
+        }
+
+        /// Declare read residency for `resources` on the open serial/concurrent
+        /// group encoder. Fail closed if no group is active — per-dispatch
+        /// encoders must call `use_resources` inside their own encode closure.
+        pub fn use_resources_read_on_group(&mut self, resources: &[PinnedBuffer]) -> Result<()> {
+            let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
+                Error::Metal(
+                    "use_resources_read_on_group requires an open serial/concurrent group".into(),
+                )
+            })?;
+            if resources.is_empty() {
+                return Ok(());
+            }
+            let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+            for resource in resources {
+                refs.push(resource);
+            }
+            enc.use_resources(&refs, MTLResourceUsage::Read);
+            Ok(())
+        }
+
+        /// Insert a resource-scoped memory barrier on the open group encoder.
+        ///
+        /// Required under [`MTLDispatchType::Concurrent`] at every real
+        /// producer→consumer edge. No-op when no group is active (per-dispatch
+        /// encoder modes already serialize across encoder boundaries). Under a
+        /// serial group the barrier is redundant but safe.
+        pub fn memory_barrier_with_resources(
+            &mut self,
+            resources: &[&metal::ResourceRef],
+        ) -> Result<()> {
+            if resources.is_empty() {
+                return Ok(());
+            }
+            if let Some(enc) = self.concurrent_encoder.as_ref() {
+                enc.memory_barrier_with_resources(resources);
+            }
+            Ok(())
+        }
+
+        /// Convenience wrapper: barrier on a list of `PinnedBuffer` resources.
+        pub fn memory_barrier_with_buffers(&mut self, buffers: &[&PinnedBuffer]) -> Result<()> {
+            if buffers.is_empty() || self.concurrent_encoder.is_none() {
+                return Ok(());
+            }
+            let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(buffers.len());
+            for buffer in buffers {
+                refs.push(buffer);
+            }
+            self.memory_barrier_with_resources(&refs)
         }
 
         /// Append one execution of a pre-encoded compute graph to this token
@@ -3560,6 +4157,11 @@ mod imp {
                 *slot = slot.saturating_add(1);
             }
             let result = self.dispatch_threads_inner(fn_name, grid, tg, encode);
+            if result.is_ok() {
+                if let Some(names) = self.structural_kernel_names.as_mut() {
+                    names.push(fn_name.to_owned());
+                }
+            }
             if let Some(t0) = ledger_t0 {
                 self.ledger_encode_ns = self
                     .ledger_encode_ns
@@ -3575,12 +4177,16 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            // P0.1: if a concurrent group is active, record into its shared
-            // encoder. Only set under Off/CpuEncode modes by
-            // `begin_concurrent_group`, so the Split/Prod branches below
-            // remain reachable for normal (non-grouped) dispatches.
+            // Shared serial/concurrent group encoder. Opened by
+            // `begin_serial_group` / `begin_concurrent_group` under Off,
+            // CpuEncode, and ProdCbGpu (ProdCbGpu keeps serial groups for
+            // Q30 bit-identity). SplitCbGpu never opens a group.
             if self.concurrent_encoder.is_some() {
-                let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                let want_wall = matches!(
+                    self.mode,
+                    TcbTraceMode::CpuEncode | TcbTraceMode::ProdCbGpu
+                );
+                let t0 = if want_wall {
                     Some(Instant::now())
                 } else {
                     None
@@ -3597,6 +4203,8 @@ mod imp {
                     MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
                 );
                 if let Some(t0) = t0 {
+                    // Encode-wall only: a shared encoder cannot attach
+                    // per-dispatch counter-sample pairs. gpu_us stays None.
                     self.tcb_samples.push(super::DispatchSample {
                         kernel_name: static_kernel_name(fn_name),
                         wall_us: t0.elapsed().as_micros() as u64,
@@ -3686,18 +4294,17 @@ mod imp {
             // Build a per-encoder ComputePassDescriptor with one sample
             // buffer attachment at slot 0, pointing at our shared sample
             // buffer with start/end indices = (2p, 2p+1).
-            let enc = if let Some(p) = pair_index {
-                let pass = ::metal::ComputePassDescriptor::new();
-                let attachments = pass.sample_buffer_attachments();
-                let att = ::metal::ComputePassSampleBufferAttachmentDescriptor::new();
-                att.set_sample_buffer(&tracer.sample_buf);
-                att.set_start_of_encoder_sample_index((p * 2) as u64);
-                att.set_end_of_encoder_sample_index((p * 2 + 1) as u64);
-                attachments.set_object_at(0, Some(&att));
-                cmd.compute_command_encoder_with_descriptor(pass)
-            } else {
-                cmd.new_compute_command_encoder()
-            };
+            // Correctness: `compute_command_encoder_with_descriptor` with
+            // counter-sample boundary attachments changed Q30 greedy token
+            // ids vs plain `new_compute_command_encoder` under the same
+            // multi-encoder topology (deterministic; lane-tracebug). Encode
+            // compute with a plain encoder. Pair indices are still reserved
+            // so post-wait resolve stays structurally valid; without boundary
+            // samples `gpu_us` is not a trustworthy per-kernel duration
+            // (correctness outranks attribution). Prefer serial groups under
+            // ProdCbGpu for production bit-identity (see begin_serial_group).
+            let enc = cmd.new_compute_command_encoder();
+            let _ = pair_index;
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
             } else {
@@ -3832,6 +4439,97 @@ mod imp {
             Ok(())
         }
 
+        /// Encode a GPU-side byte fill into the pending command buffer.
+        /// Used to clear device flags (e.g. finite-check) without a host write
+        /// that would race a prior in-flight command buffer on the same queue.
+        pub fn fill_buffer_bytes(
+            &mut self,
+            dst: &metal::Buffer,
+            dst_offset: u64,
+            size: u64,
+            value: u8,
+        ) -> Result<()> {
+            if size == 0 {
+                return Ok(());
+            }
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                let dedicated = self.ctx.inner.queue.new_command_buffer();
+                let physical_trace = physical_command_label("command_buffer");
+                if let Some((_, label)) = physical_trace.as_ref() {
+                    dedicated.set_label(label);
+                }
+                let blit = dedicated.new_blit_command_encoder();
+                if let Some((command, _)) = physical_trace.as_ref() {
+                    blit.set_label(&physical_encoder_label(command, "blit_encoder", "fill"));
+                }
+                blit.fill_buffer(
+                    dst,
+                    NSRange {
+                        location: dst_offset,
+                        length: size,
+                    },
+                    value,
+                );
+                blit.end_encoding();
+                dedicated.commit();
+                if self.ctx.trace_dispatch {
+                    self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                }
+                dedicated.wait_until_completed();
+                return Ok(());
+            }
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let blit = cmd.new_blit_command_encoder();
+            if let Some(command) = self.physical_trace.as_ref() {
+                blit.set_label(&physical_encoder_label(command, "blit_encoder", "fill"));
+            }
+            blit.fill_buffer(
+                dst,
+                NSRange {
+                    location: dst_offset,
+                    length: size,
+                },
+                value,
+            );
+            blit.end_encoding();
+            self.has_encoded_work = true;
+            Ok(())
+        }
+
+        /// Resolve a completed production-CB tracer, publish its ordered
+        /// samples, then return the now-reset buffer to the context pool.
+        /// This must run only after `wait_until_completed`; callers below
+        /// satisfy that fence before invoking it.
+        fn flush_prod_cb_trace_and_recycle(&mut self) {
+            if let Some(tracer) = self.prod_cb_tracer.take() {
+                for sample in tracer.drain() {
+                    self.ctx.trace.samples.lock().push(sample);
+                }
+                if let Some(pool) = self.prod_cb_tracer_pool.as_ref() {
+                    pool.lock().push(tracer);
+                }
+            }
+            // Out-of-capacity samples (if a single CB exceeds the fixed
+            // 1024-pair buffer) retain their explicit gpu_us=None boundary.
+            for sample in self.tcb_samples.drain(..) {
+                self.ctx.trace.samples.lock().push(sample);
+            }
+        }
+
+        /// Return an unused diagnostic tracer without resolving timestamps.
+        /// No command buffer has been committed in this branch, so its pair
+        /// counter is necessarily zero and the buffer is safe to reuse.
+        fn recycle_unused_prod_cb_tracer(&mut self) {
+            if let Some(tracer) = self.prod_cb_tracer.take() {
+                if let Some(pool) = self.prod_cb_tracer_pool.as_ref() {
+                    pool.lock().push(tracer);
+                }
+            }
+        }
+
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
         ///
@@ -3841,6 +4539,80 @@ mod imp {
         /// a single atomic load then the historical flush path.
         pub fn commit_and_wait(self) -> Result<()> {
             self.commit_and_wait_split()
+        }
+
+        /// Commit without waiting. The Metal command queue still serialises
+        /// buffers, so a later `commit_and_wait` on the same queue drains
+        /// every earlier committed buffer. Used by device-resident
+        /// autoregressive feedback so token N+1 can be enqueued while token N
+        /// runs — the host no longer blocks on the sampled id between steps.
+        ///
+        /// Consumes self. Trace modes that need a completed CB for GPU
+        /// timestamps (SplitCbGpu / ProdCbGpu) fall back to
+        /// [`commit_and_wait`] so diagnostic attribution stays valid.
+        pub fn commit_no_wait(mut self) -> Result<()> {
+            use crate::cost_ledger::{self, Bucket};
+            use std::time::Instant;
+
+            // Diagnostic GPU-timestamp modes require a completed CB to resolve
+            // counters; keep their historical wait behaviour.
+            if matches!(
+                self.mode,
+                TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu
+            ) {
+                return self.commit_and_wait();
+            }
+
+            if let Some(cmd) = self.cmd.take() {
+                if let Some(enc) = self.concurrent_encoder.take() {
+                    enc.end_encoding();
+                }
+                if cost_ledger::is_recording() {
+                    if self.ledger_encode_ns > 0 {
+                        cost_ledger::add_duration(
+                            Bucket::MetalEncode,
+                            std::time::Duration::from_nanos(self.ledger_encode_ns as u64),
+                        );
+                        self.ledger_encode_ns = 0;
+                    }
+                    cost_ledger::record_dispatches(self.dispatch_count as u64);
+                    let t_submit = Instant::now();
+                    cmd.commit();
+                    if self.ctx.trace_dispatch {
+                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                    }
+                    let commit_d = t_submit.elapsed();
+                    cost_ledger::add_duration(Bucket::MetalSubmit, commit_d);
+                    cost_ledger::record_command_buffer();
+                    // No wait: GPU timestamps and host_wait are recorded when
+                    // a later terminal drain waits on the queue.
+                } else {
+                    cmd.commit();
+                    if self.ctx.trace_dispatch {
+                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                    }
+                }
+                match self.mode {
+                    TcbTraceMode::Off => {}
+                    TcbTraceMode::CpuEncode => {
+                        let layer = super::current_layer();
+                        for s in self.tcb_samples.drain(..) {
+                            self.ctx
+                                .trace
+                                .record(s.kernel_name, s.wall_us, s.layer_hint);
+                        }
+                        self.ctx.trace.record("tcb_commit_no_wait", 0, layer);
+                    }
+                    TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu => unreachable!(),
+                }
+                // Dropping `cmd` is safe: after commit the queue retains the
+                // buffer until completion. We must not wait here.
+                drop(cmd);
+            }
+            // Prevent Drop from re-committing: cmd is already None.
+            self.has_encoded_work = false;
+            self.recycle_unused_prod_cb_tracer();
+            Ok(())
         }
 
         /// Like [`commit_and_wait`], but when the per-token cost ledger is
@@ -3884,6 +4656,12 @@ mod imp {
                     let wait_d = t_sync.elapsed();
                     cost_ledger::add_duration(Bucket::MetalSynchronize, wait_d);
                     cost_ledger::record_sync_point();
+                    let status = cmd.status();
+                    if status != metal::MTLCommandBufferStatus::Completed {
+                        eprintln!(
+                            "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                        );
+                    }
 
                     // Device timeline: GPUStartTime/GPUEndTime after wait.
                     // Counter-sample markers are not encoded on this path
@@ -3925,12 +4703,7 @@ mod imp {
                             }
                         }
                         TcbTraceMode::ProdCbGpu => {
-                            if let Some(tracer) = self.prod_cb_tracer.as_ref() {
-                                for s in tracer.drain() {
-                                    self.ctx.trace.samples.lock().push(s);
-                                }
-                            }
-                            self.tcb_samples.clear();
+                            self.flush_prod_cb_trace_and_recycle();
                         }
                     }
                 } else {
@@ -3961,6 +4734,16 @@ mod imp {
                 self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
             }
             cmd.wait_until_completed();
+            // Fail closed on GPU errors: an errored CB can leave shared buffers
+            // half-written, which surfaces as non-deterministic greedy decode
+            // (varying route ids / dispatch counts) rather than a hard error
+            // if we only wait. Drop path cannot return Result — log loudly.
+            let status = cmd.status();
+            if status != metal::MTLCommandBufferStatus::Completed {
+                eprintln!(
+                    "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                );
+            }
             match self.mode {
                 TcbTraceMode::Off => {}
                 TcbTraceMode::CpuEncode => {
@@ -3986,16 +4769,7 @@ mod imp {
                     // the CB has completed. `drain()` reads the raw
                     // timestamps and pairs them with the recorded
                     // dispatch metadata to populate `gpu_us`.
-                    if let Some(tracer) = self.prod_cb_tracer.as_ref() {
-                        for s in tracer.drain() {
-                            self.ctx.trace.samples.lock().push(s);
-                        }
-                    }
-                    // Any out-of-capacity dispatches were pushed straight
-                    // to `tcb_samples` with gpu_us=None.
-                    for s in self.tcb_samples.drain(..) {
-                        self.ctx.trace.samples.lock().push(s);
-                    }
+                    self.flush_prod_cb_trace_and_recycle();
                 }
             }
         }
@@ -4013,6 +4787,7 @@ mod imp {
             if !self.has_encoded_work {
                 let _ = self.cmd.take();
                 let _ = self.concurrent_encoder.take();
+                self.recycle_unused_prod_cb_tracer();
                 return;
             }
             if let Some(cmd) = self.cmd.take() {

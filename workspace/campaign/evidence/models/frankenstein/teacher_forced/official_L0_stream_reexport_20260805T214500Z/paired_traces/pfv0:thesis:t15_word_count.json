@@ -1,0 +1,1436 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 295,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t15_word_count",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T03:33:41.561678Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "e020cc751fbe52a753b8de1c116e1a422f068f3cff1b49b7e39d014712d0165f",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 21.105775833129883,
+          "rank": 0,
+          "token_id": 25
+        },
+        {
+          "logit": 15.508068084716797,
+          "rank": 1,
+          "token_id": 14
+        },
+        {
+          "logit": 15.059979438781738,
+          "rank": 2,
+          "token_id": 11
+        },
+        {
+          "logit": 14.05562686920166,
+          "rank": 3,
+          "token_id": 13
+        },
+        {
+          "logit": 13.109926223754883,
+          "rank": 4,
+          "token_id": 26
+        },
+        {
+          "logit": 12.170100212097168,
+          "rank": 5,
+          "token_id": 30
+        },
+        {
+          "logit": 11.514488220214844,
+          "rank": 6,
+          "token_id": 59
+        },
+        {
+          "logit": 11.473312377929688,
+          "rank": 7,
+          "token_id": 7
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1962476521730423,
+          "l2": 3.66560435295105,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8fe968a477f690a0855d8a01bd8783fe0edd4cb267ef93e0574e9b0aa1446579",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.25400957465171814,
+          "l2": 3.408447265625,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "18d2aaa591e8339dd9dae4d425a672f7f34856bc9da04a6b502e63b2f64ec1f6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2861531674861908,
+          "l2": 3.323474884033203,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "f8b268a649ac09ca9817f07e62ed341339e0674cc4bc0bddd2b07f579f455397",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2949363887310028,
+          "l2": 3.4200711250305176,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "a46d7df134221a6ab1842245449849e6b3914fbe1525e4f9490d0b477fd9533b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.27369967103004456,
+          "l2": 3.6459879875183105,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "b737cf54be9f2512ef5926fa6fdc8d7b43218a3b451939782ba9b41fe0c7f815",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.30136483907699585,
+          "l2": 4.01900577545166,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "05fb52b9bbf28be093b7c5b5d4a38524fa5c019b71242566ee68ba7e636fcb19",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.5283593535423279,
+          "l2": 5.3267717361450195,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "ff932b843cbcad4b5db6e596077a0b26977802c020f4c68aeec048f108ad92be",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 1.0858196020126343,
+          "l2": 6.274142742156982,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "19d6e22b2f522e03dca03b0f968a3acb35d9f6f82b344b3ccd32023939e48614",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 40.37392044067383,
+          "l2": 98.63208770751953,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "eb24668f1591afc9c50577a924f5c96a37be97f0b3a9125474e977f24b6f29ca",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 81.34178161621094,
+          "l2": 635.6698608398438,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "e741df446f243b75fc35f3bb124a6f43c23d2435138c5c7100540989a37b925c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.34973907470703,
+          "l2": 641.8170776367188,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "9b31023bdf750b0cc1dadbca1a73745a6249e5f20fbad46ab3454e475d5163b6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.84765625,
+          "l2": 641.8812866210938,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "5dd40b2e990501b385cb302c092f75646cdd05d8991b816a4a08982b2b4aea6c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.35701751708984,
+          "l2": 642.5484619140625,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "6f46add1884219ac06bcc64fbde923fff4b6a4fe083ae16f1ad3c6e3e90d6604",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 88.1016616821289,
+          "l2": 642.7554321289062,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "a4347e12a285ededddfa66784d9b5be245548129e64817d04bcba148a31ecab0",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 91.80706787109375,
+          "l2": 646.6663208007812,
+          "layer": 14,
+          "mlp_type": "sparse",
+          "sample_sha256": "127d842e6c022084b4c9a5a41059f64ec90bb030f9486616d835a31e872b32ac",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 92.11824035644531,
+          "l2": 646.83544921875,
+          "layer": 15,
+          "mlp_type": "sparse",
+          "sample_sha256": "dd7de49d16d636e5cc7b94ae6769e501bd87bdb2e4ec40727df054e8b180d51c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 92.87228393554688,
+          "l2": 647.2180786132812,
+          "layer": 16,
+          "mlp_type": "sparse",
+          "sample_sha256": "705c63b46dacb05c6e904799a2784d3a738da3b57a71487f859820ea6a0ca02b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 94.45833587646484,
+          "l2": 647.65673828125,
+          "layer": 17,
+          "mlp_type": "sparse",
+          "sample_sha256": "6ced35097118b1ed6fb109cd82afabf2163e2b7cb62e7f2521fdcfab813aabd3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.01558685302734,
+          "l2": 647.3597412109375,
+          "layer": 18,
+          "mlp_type": "sparse",
+          "sample_sha256": "d188ba73a926ab64f5e5bab0907f0939cb1044eae56580bfdb49129a813995df",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.12200927734375,
+          "l2": 647.5068359375,
+          "layer": 19,
+          "mlp_type": "sparse",
+          "sample_sha256": "ec8adfe5bd9b811e0819416471a0183c3e795af69f6cf2ce20425e4728b9ddeb",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.03627014160156,
+          "l2": 647.6719360351562,
+          "layer": 20,
+          "mlp_type": "sparse",
+          "sample_sha256": "a3f2b5e6960830e356209d0d7c30ee3c43f44231eb7700fc40fe9603f821ea6d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 95.21343231201172,
+          "l2": 647.9057006835938,
+          "layer": 21,
+          "mlp_type": "sparse",
+          "sample_sha256": "3f798df8a0d088935f15d4789c1096cb737999780a2fd43290182c9b8d0de8ba",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 108.78551483154297,
+          "l2": 651.073486328125,
+          "layer": 22,
+          "mlp_type": "sparse",
+          "sample_sha256": "257a8ae6ec4437801e38c7766595446506bceda7f25dd8e45d4571150d0814dd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 137.86622619628906,
+          "l2": 742.96142578125,
+          "layer": 23,
+          "mlp_type": "sparse",
+          "sample_sha256": "a2341a014de4817c62203421598f3ec4c9fd9ed1d2df4861b41dd5434242c3a8",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 146.82077026367188,
+          "l2": 760.7196655273438,
+          "layer": 24,
+          "mlp_type": "sparse",
+          "sample_sha256": "c80a66970f399b83be8991813c59961b098fb8ed5efb9abfe31dc0b7246c5f19",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 156.4475860595703,
+          "l2": 774.1424560546875,
+          "layer": 25,
+          "mlp_type": "sparse",
+          "sample_sha256": "18065414273e0fd84d2e1c66818def78eac71401ff7757f4dfa238f789b6e414",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 157.09188842773438,
+          "l2": 775.4002685546875,
+          "layer": 26,
+          "mlp_type": "sparse",
+          "sample_sha256": "d10711a324b0f67cd709470a9fa69266decc877df9c89ae5f240e61dccc44702",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 152.98399353027344,
+          "l2": 780.3116455078125,
+          "layer": 27,
+          "mlp_type": "sparse",
+          "sample_sha256": "3117bd8172a63a6657cf26a347a2f9e555a16b4b254581b1bb599772cbcf3f3d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 158.45127868652344,
+          "l2": 799.5548706054688,
+          "layer": 28,
+          "mlp_type": "sparse",
+          "sample_sha256": "e5232725e1886b72c0390c5eff3a3ecc1df69c0fb321ec062639f63826b47bad",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 196.84124755859375,
+          "l2": 1167.4801025390625,
+          "layer": 29,
+          "mlp_type": "sparse",
+          "sample_sha256": "d8d92180c44a080c4263d94f25f461f9e05fb7993d53e33f2c7207aa971a1f7c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 198.54371643066406,
+          "l2": 1201.138427734375,
+          "layer": 30,
+          "mlp_type": "sparse",
+          "sample_sha256": "f18735d144805869995cbdb462287c8108d0108f3688dc134ab64bb49102197b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 204.47140502929688,
+          "l2": 1224.717041015625,
+          "layer": 31,
+          "mlp_type": "sparse",
+          "sample_sha256": "c0035feb2c91aacc3653b485b922006fd4ee2dbdab079e8300524fe80d17c5f0",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 206.6078643798828,
+          "l2": 1242.767822265625,
+          "layer": 32,
+          "mlp_type": "sparse",
+          "sample_sha256": "607c0d0b036caf2001d78b60e567ecc18318b9edd0daaf2d9d030ac329bc87c4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 211.75204467773438,
+          "l2": 1251.6954345703125,
+          "layer": 33,
+          "mlp_type": "sparse",
+          "sample_sha256": "06968ca54c3406a3e5e10d12a6178634899128640d0a9b9f0c3f082e2c61cdd9",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 214.375,
+          "l2": 1256.010009765625,
+          "layer": 34,
+          "mlp_type": "sparse",
+          "sample_sha256": "057d78d1bf1f2877e05fd4342e21c1211fabc38b3b37313b4a0e36d9379a863c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.146484375,
+          "l2": 1265.655517578125,
+          "layer": 35,
+          "mlp_type": "sparse",
+          "sample_sha256": "e436bddcc60464c94d8525c75995f31568dd40ac1cb87cb9dc83cf3af0f31a61",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.78138732910156,
+          "l2": 1276.6783447265625,
+          "layer": 36,
+          "mlp_type": "sparse",
+          "sample_sha256": "3831c8e9dc74a5a3ae661d30be5a4320a84a656c0ffb3630e4bf6d481a183cbe",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.1350860595703,
+          "l2": 1281.14599609375,
+          "layer": 37,
+          "mlp_type": "sparse",
+          "sample_sha256": "955768b1e7e7402558153f104293b101fbc53d2fded29818819e2b18486c2f46",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 224.87515258789062,
+          "l2": 1283.08349609375,
+          "layer": 38,
+          "mlp_type": "sparse",
+          "sample_sha256": "1674843f673a4810ad82da8ea69e932bffdc7e6692cfa0c85d5c17480a025082",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.0355987548828,
+          "l2": 1284.6484375,
+          "layer": 39,
+          "mlp_type": "sparse",
+          "sample_sha256": "3b410f8d886dd42b95c7d293cce849385c2128b9fa8fc6ab62ed6b96c237939b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.8426513671875,
+          "l2": 1286.6387939453125,
+          "layer": 40,
+          "mlp_type": "sparse",
+          "sample_sha256": "5562affc95055e662233f04b3767bd0ee874058a842c02d1ad3cccbe685e3b16",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.25413513183594,
+          "l2": 1292.2589111328125,
+          "layer": 41,
+          "mlp_type": "sparse",
+          "sample_sha256": "80640dd78b71ec9cdd3ab452c6bed3b28be888a256d39dd7298e1443887d00c4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.41033935546875,
+          "l2": 1294.3101806640625,
+          "layer": 42,
+          "mlp_type": "sparse",
+          "sample_sha256": "36410ea3f1c5d8c5bf8a662c1e872c45a447c04485a136b1d930906559d3c81b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.47763061523438,
+          "l2": 1295.7166748046875,
+          "layer": 43,
+          "mlp_type": "sparse",
+          "sample_sha256": "5c4d9aac7c7b8accde6e49a564800f56e2e7341dd7694c569428d7f29d08a5a5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.22665405273438,
+          "l2": 1298.210693359375,
+          "layer": 44,
+          "mlp_type": "sparse",
+          "sample_sha256": "fc6094ec9cbe6d672b3446f501e0be8a0bb5c62f8fd231beb8ea35dde32b5696",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 226.45620727539062,
+          "l2": 1299.82080078125,
+          "layer": 45,
+          "mlp_type": "sparse",
+          "sample_sha256": "587909a1d36221722f341970889ad975365896dae2a374c2c66e951b1ac10edd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 225.40377807617188,
+          "l2": 1302.3511962890625,
+          "layer": 46,
+          "mlp_type": "sparse",
+          "sample_sha256": "cda41a14872341b0de3a5b1fb25ea8163d1f116b86fbfc451bae6cea17dc7d0b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 224.67259216308594,
+          "l2": 1302.238525390625,
+          "layer": 47,
+          "mlp_type": "sparse",
+          "sample_sha256": "8eb4772bea9b5704dd23b2a446f11c507d201ff47da4535a5188a0935404bc6f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 222.31988525390625,
+          "l2": 1284.8153076171875,
+          "layer": 48,
+          "mlp_type": "sparse",
+          "sample_sha256": "1a8b32f0504652303290f549ee05e5475bdce099ac9eb420e7798a4d6e6a3435",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.56761169433594,
+          "l2": 1289.3092041015625,
+          "layer": 49,
+          "mlp_type": "sparse",
+          "sample_sha256": "a45e83505fe72db902da455cdee92c3b8fa86e6c5d472dfbafad9e758bde58f5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 219.01690673828125,
+          "l2": 1292.18603515625,
+          "layer": 50,
+          "mlp_type": "sparse",
+          "sample_sha256": "4cecf35aa6b58e75165781ded9c48522760cf9762d5aa8b8a8b58b29f0d8ef89",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.36253356933594,
+          "l2": 1297.420166015625,
+          "layer": 51,
+          "mlp_type": "sparse",
+          "sample_sha256": "9d5dfe28eddf26e64d81a70fe93dfea191c034259e8686f61d59a66f8b99dc41",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.22607421875,
+          "l2": 1301.6949462890625,
+          "layer": 52,
+          "mlp_type": "sparse",
+          "sample_sha256": "e9ffd8d932673a6c26bacc41fe90571833b45a32b6e7f075cf3a8dab7c84a4ce",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 218.940673828125,
+          "l2": 1300.56982421875,
+          "layer": 53,
+          "mlp_type": "sparse",
+          "sample_sha256": "edcdc5622aa62189ab275a857c697d4d463bccbc189852e01c79fcdda4118f61",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 221.3021697998047,
+          "l2": 1302.9530029296875,
+          "layer": 54,
+          "mlp_type": "sparse",
+          "sample_sha256": "9c83888368f62f549e2c2a629d7b251a04b6c3bb1107a5476cd9ee1816215366",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 220.66567993164062,
+          "l2": 1304.1553955078125,
+          "layer": 55,
+          "mlp_type": "sparse",
+          "sample_sha256": "b37ef64ae627a9ee86ff4218e08b07341edb72f6aa4eaf81b74f4c4e7639cc5b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 215.06011962890625,
+          "l2": 1307.3074951171875,
+          "layer": 56,
+          "mlp_type": "sparse",
+          "sample_sha256": "e295fa2116c61595523c3ce9534448026e79cdf10392e8395f9d2ef3d5463f35",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 213.6824188232422,
+          "l2": 1302.904052734375,
+          "layer": 57,
+          "mlp_type": "sparse",
+          "sample_sha256": "56f8082fde9f97a531cf8402ab201d40a13022b7e6982425ca76ef595df893ed",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 214.62217712402344,
+          "l2": 1306.8065185546875,
+          "layer": 58,
+          "mlp_type": "sparse",
+          "sample_sha256": "7796b7d33defd521ea04d58d8e3c39f9bb9b8632c3c31905c39a8ff0f72e9a91",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 212.5141143798828,
+          "l2": 1309.5560302734375,
+          "layer": 59,
+          "mlp_type": "sparse",
+          "sample_sha256": "27035e5fd80c6c93c5af098ba9928ddb9eee065b590ebbce942da559f5cacd01",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 209.57325744628906,
+          "l2": 1317.4041748046875,
+          "layer": 60,
+          "mlp_type": "sparse",
+          "sample_sha256": "c2c5a6cefc0966fb877f725110b2aced3c9ca4976ceddebcbce28bd5c9182d20",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 209.61097717285156,
+          "l2": 1317.0328369140625,
+          "layer": 61,
+          "mlp_type": "sparse",
+          "sample_sha256": "da183ecc61a90e09b8fcfb9ae1c4e664c1bd2862f1922f991cc2f3427a6c55db",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 208.3004913330078,
+          "l2": 1317.2982177734375,
+          "layer": 62,
+          "mlp_type": "sparse",
+          "sample_sha256": "45e6128beff40657c0a0c9b5ae95b9f3586443a026ab626222e2324bf03eb872",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 206.539794921875,
+          "l2": 1324.5213623046875,
+          "layer": 63,
+          "mlp_type": "sparse",
+          "sample_sha256": "03927ef6bfc2b9ccb29fe1b42a1c55c23cc0bc135065de01e62622bd1ee3d72d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 205.00885009765625,
+          "l2": 1325.328369140625,
+          "layer": 64,
+          "mlp_type": "sparse",
+          "sample_sha256": "1503154c92fdd877259291fbcb72be610a74d8c9ad7a8a5b9d06bcae937d72af",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 200.53692626953125,
+          "l2": 1316.1646728515625,
+          "layer": 65,
+          "mlp_type": "sparse",
+          "sample_sha256": "37ddcb68aaf26c07ebaa34f036ca0566a4a18c43f45a23d3ca1d0e3c633f1c83",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 198.23902893066406,
+          "l2": 1316.06591796875,
+          "layer": 66,
+          "mlp_type": "sparse",
+          "sample_sha256": "f62c2456e5acc20b76ab8e09b69c7608075dba63e65aa680d736600b06412a10",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 196.0738983154297,
+          "l2": 1319.5870361328125,
+          "layer": 67,
+          "mlp_type": "sparse",
+          "sample_sha256": "332d25e8a04dca246eeb2faf2bb27f641235bfec8080ec9b9852d72795cb77ed",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 188.3973388671875,
+          "l2": 1324.3558349609375,
+          "layer": 68,
+          "mlp_type": "sparse",
+          "sample_sha256": "4ed50fe10b61d469eb5ed3f419d1fc32c9c6cdcfa4ae7cd7ffb8ea98e1999fa9",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 147.44589233398438,
+          "l2": 1153.285400390625,
+          "layer": 69,
+          "mlp_type": "sparse",
+          "sample_sha256": "c50fd50cb345f3bf94f1dfa41a86285c9459f929b79602789ce7e62307e00e88",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 91.65501403808594,
+          "l2": 1039.8594970703125,
+          "layer": 70,
+          "mlp_type": "sparse",
+          "sample_sha256": "0f1c161a19744a30b7a52afb649528c57891b607c5723f5bab1abdd52c8e9725",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 75.93840026855469,
+          "l2": 1077.4906005859375,
+          "layer": 71,
+          "mlp_type": "sparse",
+          "sample_sha256": "ccc7e94911b0aa88e9d453cc37e1e319f78c0d4b2ce75c05b5472ab8b4f28f3e",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 67.39342498779297,
+          "l2": 1022.7821655273438,
+          "layer": 72,
+          "mlp_type": "sparse",
+          "sample_sha256": "5c759367930e2095a53c886f5be77da9b07d754d511896b602eeece8175f9434",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 67.09185028076172,
+          "l2": 994.941162109375,
+          "layer": 73,
+          "mlp_type": "sparse",
+          "sample_sha256": "bfdfe74c183dbdd5dade00185427363cc19e06dfadd4d529e2308739782716e4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 71.83538818359375,
+          "l2": 1014.7044677734375,
+          "layer": 74,
+          "mlp_type": "sparse",
+          "sample_sha256": "537f36021931fc0eaf4700bfc2ec0818e9f663116bbbf7c9a21149b85c8a8ce4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 119.92063903808594,
+          "l2": 1118.25146484375,
+          "layer": 75,
+          "mlp_type": "sparse",
+          "sample_sha256": "4ca175294f5621489b4f020c69685cf8e68a1be489ecbbf6f0b2e13b31d980d6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 128.41664123535156,
+          "l2": 1152.1024169921875,
+          "layer": 76,
+          "mlp_type": "sparse",
+          "sample_sha256": "ef4a1e8fa63923eff61444bdca9866d4463534759955e292712e960d418ea9de",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 553.0704345703125,
+          "l2": 1506.71728515625,
+          "layer": 77,
+          "mlp_type": "sparse",
+          "sample_sha256": "d688e3a11d154d18cfd6a65b5ff181d924f1a17043a97f858c73df00b4903a0e",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 1,
+          "1": 1,
+          "10": 2,
+          "100": 2,
+          "101": 3,
+          "108": 4,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "114": 1,
+          "115": 1,
+          "116": 3,
+          "123": 1,
+          "126": 1,
+          "128": 1,
+          "129": 2,
+          "13": 1,
+          "130": 7,
+          "131": 2,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 2,
+          "14": 4,
+          "140": 5,
+          "141": 1,
+          "144": 1,
+          "145": 1,
+          "146": 1,
+          "148": 7,
+          "150": 1,
+          "153": 1,
+          "154": 1,
+          "159": 1,
+          "163": 2,
+          "166": 1,
+          "167": 2,
+          "168": 1,
+          "169": 1,
+          "17": 5,
+          "175": 1,
+          "177": 1,
+          "18": 1,
+          "181": 1,
+          "183": 1,
+          "184": 1,
+          "185": 1,
+          "19": 1,
+          "190": 2,
+          "191": 2,
+          "193": 1,
+          "195": 3,
+          "197": 1,
+          "198": 2,
+          "199": 2,
+          "2": 1,
+          "200": 1,
+          "201": 1,
+          "203": 1,
+          "204": 1,
+          "205": 1,
+          "206": 3,
+          "207": 1,
+          "208": 1,
+          "210": 1,
+          "211": 2,
+          "213": 5,
+          "214": 1,
+          "217": 2,
+          "218": 2,
+          "219": 2,
+          "22": 1,
+          "221": 2,
+          "222": 1,
+          "224": 1,
+          "227": 3,
+          "229": 3,
+          "230": 1,
+          "231": 1,
+          "236": 1,
+          "237": 5,
+          "238": 4,
+          "240": 4,
+          "242": 2,
+          "243": 4,
+          "244": 1,
+          "245": 1,
+          "247": 1,
+          "248": 2,
+          "249": 1,
+          "250": 3,
+          "26": 2,
+          "27": 4,
+          "28": 5,
+          "3": 1,
+          "30": 1,
+          "31": 1,
+          "34": 1,
+          "37": 3,
+          "4": 3,
+          "41": 4,
+          "42": 3,
+          "44": 2,
+          "5": 2,
+          "50": 3,
+          "52": 3,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "60": 4,
+          "61": 11,
+          "62": 3,
+          "63": 3,
+          "64": 1,
+          "7": 1,
+          "70": 5,
+          "72": 1,
+          "74": 1,
+          "76": 1,
+          "78": 2,
+          "8": 3,
+          "80": 1,
+          "82": 1,
+          "83": 4,
+          "84": 1,
+          "87": 1,
+          "90": 1,
+          "95": 1,
+          "98": 2,
+          "99": 1
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

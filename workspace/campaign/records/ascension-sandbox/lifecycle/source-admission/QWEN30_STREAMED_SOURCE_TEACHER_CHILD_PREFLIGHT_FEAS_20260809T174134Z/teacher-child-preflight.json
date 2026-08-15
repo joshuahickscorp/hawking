@@ -1,0 +1,20 @@
+{
+  "claim_boundary": "Refusal is a CPU-only metadata result; no source payload or runtime operation occurred.",
+  "execution_authorized": false,
+  "execution_boundary": {
+    "child_process_started": false,
+    "gpu_metal_mps_or_other_accelerator_invoked": false,
+    "hcli_invoked": false,
+    "lease_requested_issued_or_consumed": false,
+    "server_started_or_contacted": false,
+    "source_eviction_or_native_phase_performed": false,
+    "source_model_loaded_or_instantiated": false,
+    "source_teacher_or_native_vector_written": false,
+    "source_tensor_payload_opened": false,
+    "whole_source_model_resident": false
+  },
+  "refusal_reason": "streamed feasibility schema/status drifted",
+  "schema": "hawking.ascension.qwen30_streamed_source_teacher_child_preflight.v1",
+  "seal_sha256": "074e48d4188b875aa38819319311da85fde9ef5b2bbfbe55cd38e40b63dc6267",
+  "status": "REFUSED_QWEN30_STREAMED_SOURCE_TEACHER_CHILD_PREFLIGHT_INVALID_OR_INCOMPLETE"
+}
