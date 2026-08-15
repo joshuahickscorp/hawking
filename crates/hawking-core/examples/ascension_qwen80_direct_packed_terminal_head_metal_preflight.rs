@@ -810,7 +810,8 @@ fn evaluate(input: &PreflightInput, provenance: InputProvenance) -> PreflightRep
         staged_dispatch_plan: staged_dispatch_plan(),
         contract_errors,
         read_only_build_preflight: true,
-        shader_registered_in_metal_mod: false,
+        shader_registered_in_metal_mod: hawking_core::metal::all_shader_sources()
+            .contains("kernel void qwen80_terminal_head_final_rmsnorm_direct_packed"),
         live_artifact_scan_performed: false,
         metal_context_or_dispatch_performed: false,
         model_execution_performed: false,
@@ -1277,7 +1278,7 @@ mod tests {
         );
         assert!(report.staged_shader_and_plan_valid);
         assert!(!report.metal_context_or_dispatch_performed);
-        assert!(!report.shader_registered_in_metal_mod);
+        assert!(report.shader_registered_in_metal_mod);
         assert!(!report.complete_decoder_readiness_earned);
         assert!(!report.sealed_cpu_baseline_valid);
         assert!(!report.post48_hidden_buffer_valid);

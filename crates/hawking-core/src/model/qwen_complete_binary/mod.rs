@@ -21,12 +21,14 @@ use std::thread;
 
 mod activation_weighted_svd;
 mod admission_warm_receipt;
+mod qwen80_uniform_q4;
 mod uniform_q4;
 mod uniform_qn;
 pub use activation_weighted_svd::*;
 pub use admission_warm_receipt::{
     receipt_path_for_seal, warm_receipt_enabled, ADMISSION_WARM_RECEIPT_SCHEMA,
 };
+pub use qwen80_uniform_q4::*;
 pub use uniform_q4::*;
 pub use uniform_qn::*;
 

@@ -182,3 +182,93 @@ kernel void qwen_complete_any_nonfinite_f32(
         atomic_store_explicit(&invalid[0], 1u, memory_order_relaxed);
     }
 }
+
+// Fuse per-head Q/K RMSNorm into the rope + KV-append wave.
+// Replaces qwen_complete_rmsnorm_rows_f32 (Q) + same (K) +
+// rope_qk_kv_append_vbias_f32. RMSNorm math is copied from
+// qwen_complete_rmsnorm_rows_f32 (fma tree + rsqrt). RoPE is the
+// Qwen3 split-half pairing used by rope_qk_kv_append_vbias_f32.
+//
+// Grid: (256, n_q_heads + n_k_heads + 1, 1), TG (256, 1, 1).
+//   tg.y in [0, n_q):            RMSNorm + RoPE Q in-place
+//   tg.y in [n_q, n_q+n_k):      RMSNorm K in-place, RoPE into k_cache
+//   tg.y == n_q+n_k:             copy V into v_cache
+kernel void qwen_complete_qk_rmsnorm_rope_kv_append_f32(
+    device float* q_buf              [[buffer(0)]],
+    device float* k_tok              [[buffer(1)]],
+    device const float* v_tok        [[buffer(2)]],
+    device const float* q_weight     [[buffer(3)]],
+    device const float* k_weight     [[buffer(4)]],
+    device float* k_cache            [[buffer(5)]],
+    device float* v_cache            [[buffer(6)]],
+    constant uint& n_q_heads         [[buffer(7)]],
+    constant uint& n_k_heads         [[buffer(8)]],
+    constant uint& head_dim          [[buffer(9)]],
+    constant uint& pos               [[buffer(10)]],
+    constant float& rope_base        [[buffer(11)]],
+    constant uint& kv_dim            [[buffer(12)]],
+    constant uint& kv_off            [[buffer(13)]],
+    constant float& eps              [[buffer(14)]],
+    threadgroup float* scratch       [[threadgroup(0)]],
+    uint tid                          [[thread_index_in_threadgroup]],
+    uint2 tg_pos                      [[threadgroup_position_in_grid]])
+{
+    const uint n_qk = n_q_heads + n_k_heads;
+    const uint row = tg_pos.y;
+    if (head_dim == 0u) {
+        return;
+    }
+
+    if (row < n_qk) {
+        const bool is_q = row < n_q_heads;
+        const uint head = is_q ? row : (row - n_q_heads);
+        device float* vec = is_q ? q_buf : k_tok;
+        device const float* weight = is_q ? q_weight : k_weight;
+        const uint base = head * head_dim;
+
+        float sum = 0.0f;
+        for (uint i = tid; i < head_dim; i += 256u) {
+            const float value = vec[base + i];
+            sum = fma(value, value, sum);
+        }
+        scratch[tid] = sum;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        for (uint stride = 128u; stride > 0u; stride >>= 1u) {
+            if (tid < stride) scratch[tid] += scratch[tid + stride];
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+        const float inv = rsqrt(scratch[0] / float(head_dim) + eps);
+        for (uint i = tid; i < head_dim; i += 256u) {
+            vec[base + i] = vec[base + i] * inv * weight[i];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        const uint pairs_per_head = head_dim / 2u;
+        if (tid < pairs_per_head) {
+            const uint off0 = base + tid;
+            const uint off1 = off0 + pairs_per_head;
+            const float x0 = vec[off0];
+            const float x1 = vec[off1];
+            const float theta = (float)pos
+                / pow(rope_base, 2.0f * float(tid) / float(head_dim));
+            const float c = cos(theta);
+            const float s = sin(theta);
+            const float y0 = x0 * c - x1 * s;
+            const float y1 = x0 * s + x1 * c;
+            if (is_q) {
+                q_buf[off0] = y0;
+                q_buf[off1] = y1;
+            } else {
+                k_cache[kv_off + off0] = y0;
+                k_cache[kv_off + off1] = y1;
+            }
+        }
+        return;
+    }
+
+    if (row == n_qk) {
+        for (uint i = tid; i < kv_dim; i += 256u) {
+            v_cache[kv_off + i] = v_tok[i];
+        }
+    }
+}

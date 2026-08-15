@@ -6,10 +6,11 @@
 //! all 74,391 direct-binary tensor names/shapes, and the native state layout
 //! needed by a future complete decoder.
 //!
-//! It deliberately stops at structural artifact admission plus native state
-//! allocation/direct packed-tensor upload.  It does not make a full token,
-//! generate text, expose HCLI, use a BF16/MPS fallback, or emit TPS evidence.
-//! Those remain impossible until the complete hybrid token graph is composed.
+//! The hybrid token graph is now composed from existing shaders (embedding,
+//! RMSNorm, DeltaNet, gated GQA, top-10 + shared MoE, terminal head, and
+//! device-resident AR feedback).  That composition does not generate text,
+//! expose HCLI, use a BF16/MPS fallback, load the 74,391-tensor catalog, or
+//! emit TPS evidence.  Functional generate remains a later wave.
 
 use super::qwen_complete_binary::{
     admit_complete_binary_artifact, decode_complete_binary_f32, parse_complete_binary_header,
@@ -43,8 +44,8 @@ const QWEN80_MODEL_ID: &str = "Qwen3-Coder-Next-80B";
 const QWEN80_REPOSITORY: &str = "Qwen/Qwen3-Coder-Next";
 const QWEN80_ARCHITECTURE: &str = "Qwen3NextForCausalLM";
 const QWEN80_MODEL_TYPE: &str = "qwen3_next";
-const QWEN80_LAYERS: usize = 48;
-const QWEN80_HIDDEN: usize = 2048;
+pub(crate) const QWEN80_LAYERS: usize = 48;
+pub(crate) const QWEN80_HIDDEN: usize = 2048;
 const QWEN80_FULL_ATTN_HEADS: usize = 16;
 const QWEN80_FULL_ATTN_KV_HEADS: usize = 2;
 const QWEN80_FULL_ATTN_HEAD_DIM: usize = 256;
@@ -53,22 +54,22 @@ const QWEN80_LINEAR_VALUE_HEADS: usize = 32;
 const QWEN80_LINEAR_KEY_HEAD_DIM: usize = 128;
 const QWEN80_LINEAR_VALUE_HEAD_DIM: usize = 128;
 const QWEN80_LINEAR_CONV_KERNEL: usize = 4;
-const QWEN80_EXPERTS: usize = 512;
-const QWEN80_TOP_K: usize = 10;
+pub(crate) const QWEN80_EXPERTS: usize = 512;
+pub(crate) const QWEN80_TOP_K: usize = 10;
 const QWEN80_COMPLETE_BINARY_TENSORS: usize = 74_391;
-const QWEN80_MOE_INTERMEDIATE: usize = 512;
+pub(crate) const QWEN80_MOE_INTERMEDIATE: usize = 512;
 const QWEN80_SHARED_EXPERT_INTERMEDIATE: usize = 512;
-const QWEN80_VOCAB: usize = 151_936;
+pub(crate) const QWEN80_VOCAB: usize = 151_936;
 // The source tokenizer has 151,643 base entries plus 26 added entries.  The
 // final 267 lm_head rows are source-reserved/unmapped ids; a future device
 // sampler must mask them rather than decode a non-token id.
-const QWEN80_TOKENIZER_VOCAB: usize = 151_669;
-const QWEN80_GROUP_SIZE: usize = 128;
+pub(crate) const QWEN80_TOKENIZER_VOCAB: usize = 151_669;
+pub(crate) const QWEN80_GROUP_SIZE: usize = 128;
 const QWEN80_FULL_ATTENTION_INTERVAL: usize = 4;
 const QWEN80_DECODER_SPARSE_STEP: usize = 1;
 const QWEN80_ROPE_THETA: f32 = 5_000_000.0;
 const QWEN80_PARTIAL_ROTARY_FACTOR: f32 = 0.25;
-const QWEN80_RMS_EPS: f32 = 1.0e-6;
+pub(crate) const QWEN80_RMS_EPS: f32 = 1.0e-6;
 
 // These labels are capture-only structural evidence, not a performance trace.
 // A future source-token L0→L1 continuation is valid only when one fresh,
@@ -138,6 +139,25 @@ const QWEN80_SOURCE_TOKEN_L1_MOE_SUFFIX_KERNELS: [&str; 14] = [
 ];
 
 /// Multi-layer same-runtime DeltaNet chain encode (L0..L2+).
+#[path = "qwen80_hybrid_token_graph.rs"]
+mod hybrid_token_graph;
+pub use hybrid_token_graph::{
+    qwen80_assert_native_operator_composition_complete,
+    qwen80_composed_required_native_operator_gaps, qwen80_hybrid_token_graph_kernel_trace,
+    qwen80_native_operator_wiring, Qwen80EmbedSource, Qwen80NativeOperatorWiring,
+    QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES, QWEN80_NATIVE_OPERATOR_WIRING,
+    QWEN80_TERMINAL_HEAD_KERNELS,
+};
+#[cfg(target_os = "macos")]
+pub use hybrid_token_graph::{
+    dispatch_qwen80_deltanet_mixer_prefix_tcb, dispatch_qwen80_embedding_from_device_token_tcb,
+    dispatch_qwen80_embedding_gather_tcb, dispatch_qwen80_gqa_mixer_prefix_tcb,
+    dispatch_qwen80_input_rmsnorm_tcb, dispatch_qwen80_moe_suffix_tcb,
+    dispatch_qwen80_terminal_head_tcb, encode_qwen80_hybrid_token_graph_tcb,
+    Qwen80DeltaNetResident, Qwen80GqaResident, Qwen80HybridTokenGraphBindings,
+    Qwen80HybridTokenGraphEncode, Qwen80HybridTokenGraphWorkspace, Qwen80TokenGraphLayerResident,
+};
+
 #[cfg(target_os = "macos")]
 #[path = "qwen80_multi_layer_same_runtime_encode.rs"]
 mod multi_layer_same_runtime_encode;
@@ -192,7 +212,7 @@ fn qwen80_require_same_live_pinned_allocation(
     Ok(())
 }
 
-fn model_error(message: impl Into<String>) -> Error {
+pub(crate) fn model_error(message: impl Into<String>) -> Error {
     Error::Model(format!(
         "qwen80 complete native runtime: {}",
         message.into()
@@ -241,7 +261,7 @@ fn checked_product(values: &[usize], label: &str) -> Result<usize> {
     })
 }
 
-fn bytes_for_f32(elements: usize, label: &str) -> Result<usize> {
+pub(crate) fn bytes_for_f32(elements: usize, label: &str) -> Result<usize> {
     elements
         .checked_mul(std::mem::size_of::<f32>())
         .ok_or_else(|| model_error(format!("{label} byte count overflows usize")))
@@ -1138,7 +1158,7 @@ impl Qwen80HybridNativeOperatorGap {
     }
 }
 
-const QWEN80_HYBRID_NATIVE_OPERATOR_GAPS: [Qwen80HybridNativeOperatorGap; 9] = [
+pub(crate) const QWEN80_HYBRID_NATIVE_OPERATOR_GAPS: [Qwen80HybridNativeOperatorGap; 9] = [
     Qwen80HybridNativeOperatorGap::DirectPackedEmbeddingGather,
     Qwen80HybridNativeOperatorGap::DirectPackedRmsNorm,
     Qwen80HybridNativeOperatorGap::LinearDeltaNetConvRearrangeAndGatedNorm,
@@ -1245,9 +1265,9 @@ impl Qwen80CompleteHybridDecoderPlan {
             .collect()
     }
 
-    /// The complete Qwen80 graph is intentionally marked incomplete until a
-    /// direct-packed native backend implements every listed operation group.
-    /// The scheduler itself never converts this list into a false pass.
+    /// True once every historical native-operator group has a shader and a
+    /// token-graph dispatch site.  This is operator composition, not a
+    /// generate / TPS / HCLI claim.
     pub fn has_complete_native_operator_backend(&self) -> bool {
         self.required_native_operator_gaps.is_empty()
     }
@@ -1484,7 +1504,7 @@ impl Qwen80CompleteArtifactCatalog {
             )?,
             tokenizer_vocab_size: QWEN80_TOKENIZER_VOCAB,
             reserved_lm_head_tail_rows: QWEN80_VOCAB - QWEN80_TOKENIZER_VOCAB,
-            required_native_operator_gaps: QWEN80_HYBRID_NATIVE_OPERATOR_GAPS.to_vec(),
+            required_native_operator_gaps: qwen80_composed_required_native_operator_gaps(),
         })
     }
 }
@@ -15018,8 +15038,13 @@ mod tests {
         assert_eq!(proof.gated_shared_sha256, "3".repeat(64));
         assert_eq!(proof.second_residual_sha256, "4".repeat(64));
         assert!(
-            !plan.has_complete_native_operator_backend(),
-            "a single source-bound MoE boundary must not promote the incomplete 48-layer backend"
+            plan.has_complete_native_operator_backend(),
+            "operator composition is independent of one MoE-boundary receipt; the nine gaps are wired"
+        );
+        assert!(
+            proof.first_residual_sha256 != proof.second_residual_sha256
+                || proof.gated_shared_sha256 != proof.first_residual_sha256,
+            "a single source-bound MoE boundary remains a boundary, not a generate"
         );
     }
 
@@ -15143,14 +15168,19 @@ mod tests {
         assert_eq!(plan.lm_head.name, "lm_head.weight");
         assert_eq!(plan.tokenizer_vocab_size, QWEN80_TOKENIZER_VOCAB);
         assert_eq!(plan.reserved_lm_head_tail_rows, 267);
-        assert!(!plan.has_complete_native_operator_backend());
-        assert_eq!(plan.required_native_operator_gaps.len(), 9);
+        assert!(plan.has_complete_native_operator_backend());
+        assert!(plan.required_native_operator_gaps.is_empty());
+        qwen80_assert_native_operator_composition_complete().unwrap();
         assert_eq!(
-            plan.required_native_operator_gaps[0].as_str(),
+            qwen80_native_operator_wiring()[0].gap.as_str(),
             "direct_packed_embedding_gather"
         );
         assert_eq!(
-            plan.required_native_operator_gaps.last().unwrap().as_str(),
+            qwen80_native_operator_wiring()
+                .last()
+                .unwrap()
+                .gap
+                .as_str(),
             "device_resident_autoregressive_state_and_feedback"
         );
 
@@ -15185,6 +15215,36 @@ mod tests {
             experts[9].down_proj.name,
             "model.layers.47.mlp.experts.9.down_proj.weight"
         );
+    }
+
+    #[test]
+    fn hybrid_plan_native_operator_backend_is_complete_after_token_graph_composition() {
+        let temp = tempfile::tempdir().unwrap();
+        let catalog =
+            Qwen80CompleteArtifactCatalog::from_admitted(already_admitted_catalog_fixture(&temp))
+                .unwrap();
+        let plan = catalog.complete_hybrid_decoder_plan(2).unwrap();
+        assert!(
+            plan.has_complete_native_operator_backend(),
+            "composed token graph must leave required_native_operator_gaps empty"
+        );
+        assert_eq!(plan.required_native_operator_gaps.len(), 0);
+        qwen80_assert_native_operator_composition_complete().unwrap();
+        let host = qwen80_hybrid_token_graph_kernel_trace(Qwen80EmbedSource::HostToken(1)).unwrap();
+        let device =
+            qwen80_hybrid_token_graph_kernel_trace(Qwen80EmbedSource::DeviceSampledToken).unwrap();
+        assert_eq!(host.len(), QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES);
+        assert_eq!(device.len(), QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES);
+        assert_eq!(host[0], "qwen_complete_binary_embedding_lookup");
+        assert_eq!(
+            device[0],
+            "qwen_complete_binary_embedding_lookup_device_token"
+        );
+        assert_eq!(&host[host.len() - 5..], &QWEN80_TERMINAL_HEAD_KERNELS);
+        for wiring in qwen80_native_operator_wiring() {
+            assert!(!wiring.shaders.is_empty());
+            assert!(!wiring.rust_dispatch_site.is_empty());
+        }
     }
 
     #[test]
