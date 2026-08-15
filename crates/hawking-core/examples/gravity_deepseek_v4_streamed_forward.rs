@@ -10,7 +10,7 @@
 //!     --artifact /path/to/full-43-layer-stream.gravity \
 //!     --out receipts/dsv4f_streamed_forward_l0_l42_receipt.json \
 //!     --checkpoint receipts/dsv4f_streamed_forward.ckpt.json \
-//!     [--max-layer 42] [--resume] [--skip-head]
+//!     [--max-layer 42] [--resume] [--skip-head] [--metal]
 //!
 //! If `--artifact` is omitted, the example searches HAWKING_DSV4F_ARTIFACT
 //! and the known sealed locations.
@@ -33,6 +33,7 @@ struct Args {
     max_layer: usize,
     resume: bool,
     skip_head: bool,
+    metal: bool,
 }
 
 fn parse_args() -> Result<Args, Box<dyn Error>> {
@@ -42,13 +43,18 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
     let mut max_layer = 42usize;
     let mut resume = false;
     let mut skip_head = false;
+    let mut metal = false;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--artifact" => artifact = Some(PathBuf::from(args.next().ok_or("--artifact needs a path")?)),
+            "--artifact" => {
+                artifact = Some(PathBuf::from(args.next().ok_or("--artifact needs a path")?))
+            }
             "--out" => out = Some(PathBuf::from(args.next().ok_or("--out needs a path")?)),
             "--checkpoint" => {
-                checkpoint = Some(PathBuf::from(args.next().ok_or("--checkpoint needs a path")?))
+                checkpoint = Some(PathBuf::from(
+                    args.next().ok_or("--checkpoint needs a path")?,
+                ))
             }
             "--max-layer" => {
                 max_layer = args
@@ -59,14 +65,14 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
             }
             "--resume" => resume = true,
             "--skip-head" => skip_head = true,
+            "--metal" => metal = true,
             other => return Err(format!("unknown argument {other}").into()),
         }
     }
     let artifact = match artifact {
         Some(path) => path,
-        None => discover_sealed_dsv4f_artifact().ok_or(
-            "no --artifact given and no sealed full-43-layer-stream.gravity found",
-        )?,
+        None => discover_sealed_dsv4f_artifact()
+            .ok_or("no --artifact given and no sealed full-43-layer-stream.gravity found")?,
     };
     Ok(Args {
         artifact,
@@ -75,6 +81,7 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
         max_layer,
         resume,
         skip_head,
+        metal,
     })
 }
 
@@ -85,17 +92,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let wall = Instant::now();
     eprintln!(
-        "dsv4f streamed forward: path={STREAMED_EXECUTION_PATH} artifact={} max_layer={} resume={} head={}",
+        "dsv4f streamed forward: path={STREAMED_EXECUTION_PATH} artifact={} max_layer={} resume={} head={} metal={}",
         args.artifact.display(),
         args.max_layer,
         args.resume,
-        !args.skip_head
+        !args.skip_head,
+        args.metal
     );
 
     let mut config = StreamedForwardConfig::for_layers(args.max_layer)?;
     config.checkpoint_path = args.checkpoint.clone();
     config.resume = args.resume;
     config.compute_final_head = !args.skip_head;
+    config.use_metal = args.metal;
 
     let report = run_streamed_forward(&args.artifact, config)?;
     let mut receipt = report.to_receipt_json();
@@ -117,7 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::rename(&tmp, &args.out)?;
 
     eprintln!(
-        "deepest_layer={:?} layers={:?} peak_rss_bytes={} peak_weight_bytes={} rss_ok={} weight_ok={} greedy={:?} stop={:?} receipt_sha256={digest} out={}",
+        "deepest_layer={:?} layers={:?} peak_rss_bytes={} peak_weight_bytes={} rss_ok={} weight_ok={} greedy={:?} metal_dispatches={} fallbacks={} stop={:?} receipt_sha256={digest} out={}",
         report.deepest_layer,
         report.layers_executed,
         report.peak_rss_bytes,
@@ -125,18 +134,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.rss_within_bound,
         report.weight_within_bound,
         report.greedy.as_ref().map(|g| (g.token_id, g.logit)),
+        report.honesty.metal_dispatches,
+        report.honesty.fallbacks,
         report.stop_reason,
         args.out.display()
     );
+    eprintln!("operator_profile:");
+    for row in report.operator_profile.to_sorted_rows() {
+        eprintln!(
+            "  {:>8.3}s  {:>6.2}%  {:>6}  {}",
+            row.seconds, row.percent, row.calls, row.name
+        );
+    }
     if let Some(reason) = report.stop_reason {
         return Err(format!("streamed forward stopped: {reason}").into());
     }
     if report.deepest_layer != Some(args.max_layer) {
-        return Err(format!(
-            "streamed forward deepest_layer {:?} != requested {}",
-            report.deepest_layer, args.max_layer
-        )
-        .into());
+        let head_only_from_complete_checkpoint =
+            args.resume && report.layers_executed.is_empty() && report.greedy.is_some();
+        if !head_only_from_complete_checkpoint {
+            return Err(format!(
+                "streamed forward deepest_layer {:?} != requested {}",
+                report.deepest_layer, args.max_layer
+            )
+            .into());
+        }
     }
     Ok(())
 }

@@ -23,7 +23,7 @@ use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use half::bf16;
 use serde::{Deserialize, Serialize};
@@ -42,12 +42,12 @@ use crate::gravity_deepseek_v4_layer0_attention::{
     hc_attn_post_source_algorithm, kv_non_rope_inplace_qat_source_algorithm,
     per_head_rms_norm_bf16_source_algorithm, position_zero_rope_identity,
     rms_norm_bf16_source_algorithm, sparse_attention_position_zero_source_algorithm, HEAD_DIM,
-    KV_QAT_BLOCK, NUM_HEADS, O_GROUPS, O_LORA_RANK, Q_LORA_RANK, ROPE_HEAD_DIM, WO_A_COLS,
-    WO_A_ROWS, WO_B_COLS, WO_B_ROWS, WQ_B_ROWS, WKV_ROWS,
+    KV_QAT_BLOCK, NUM_HEADS, O_GROUPS, O_LORA_RANK, Q_LORA_RANK, ROPE_HEAD_DIM, WKV_ROWS,
+    WO_A_COLS, WO_A_ROWS, WO_B_COLS, WO_B_ROWS, WQ_B_ROWS,
 };
 use crate::gravity_deepseek_v4_layer0_moe::{
     fp4_e2m1fn_x2_ue8m0_matvec, swiglu_bf16_source_algorithm, ACTIVATED_EXPERTS, FP4_BLOCK,
-    MOE_INTER_DIM, ROUTE_SCALE, ROUTED_EXPERTS,
+    MOE_INTER_DIM, ROUTED_EXPERTS, ROUTE_SCALE,
 };
 use crate::gravity_deepseek_v4_layer0_prefix::{
     hc_attn_pre_source_algorithm, HC_EPS, HC_FLAT_WIDTH, HC_MIX_WIDTH, HC_MULT, HC_SINKHORN_ITERS,
@@ -59,6 +59,10 @@ use crate::gravity_deepseek_v4_layer_source_anchors::{
     DeepSeekV4LayerMhcStage, DeepSeekV4LayerSourceAnchor,
     DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT,
 };
+use crate::gravity_deepseek_v4_runtime_spine::DSV4F_VOCAB_SIZE;
+use crate::gravity_deepseek_v4_streamed_native::{
+    finish_greedy, greedy_from_logits, StreamedNativeSession,
+};
 use crate::{Error, Result};
 
 /// Receipt / checkpoint schema for this host streamed oracle.
@@ -68,6 +72,8 @@ pub const STREAMED_CHECKPOINT_SCHEMA: &str =
     "hawking.gravity.deepseek_v4.streamed_forward_checkpoint.v1";
 /// Honest execution-path label. Never "native".
 pub const STREAMED_EXECUTION_PATH: &str = "host_cpu_streamed_bos_oracle";
+/// Opt-in Metal-linear path. Still not a native runtime claim.
+pub const STREAMED_EXECUTION_PATH_METAL: &str = "host_cpu_streamed_bos_oracle_metal_linears";
 /// Schedule keep-layer-working-set peak (layer 2, includes indexer/compressor).
 pub const SCHEDULE_STREAMED_DECODE_PEAK_BYTES: u64 = 253_719_640;
 /// Declared bound on simultaneously resident weight bytes (operator-streamed).
@@ -88,6 +94,8 @@ pub struct StreamedForwardConfig {
     pub compute_final_head: bool,
     pub peak_rss_bound_bytes: u64,
     pub peak_weight_bound_bytes: u64,
+    /// Opt-in Metal linears. Default off so the CPU oracle is unchanged.
+    pub use_metal: bool,
 }
 
 impl Default for StreamedForwardConfig {
@@ -100,6 +108,7 @@ impl Default for StreamedForwardConfig {
             compute_final_head: true,
             peak_rss_bound_bytes: DECLARED_PEAK_RSS_BOUND_BYTES,
             peak_weight_bound_bytes: DECLARED_WEIGHT_RESIDENT_BOUND_BYTES,
+            use_metal: false,
         }
     }
 }
@@ -130,6 +139,7 @@ pub struct StreamedForwardHonesty {
     pub ratio_128_full_compressed_graph: bool,
     pub lm_head_path: String,
     pub metal_dispatches: usize,
+    pub fallbacks: usize,
     pub indexer_compressor_loaded: bool,
 }
 
@@ -148,8 +158,80 @@ impl StreamedForwardHonesty {
                 "omitted".to_owned()
             },
             metal_dispatches: 0,
+            fallbacks: 0,
             indexer_compressor_loaded: false,
         }
+    }
+
+    fn with_counters(
+        compute_final_head: bool,
+        metal_dispatches: usize,
+        fallbacks: usize,
+        lm_head_on_device: bool,
+    ) -> Self {
+        let mut honesty = Self::host_oracle(compute_final_head);
+        honesty.metal_dispatches = metal_dispatches;
+        honesty.fallbacks = fallbacks;
+        if lm_head_on_device {
+            honesty.lm_head_path =
+                "host_f64_mhc_merge_rmsnorm_then_streamed_metal_lm_head_greedy".to_owned();
+        }
+        honesty
+    }
+}
+
+/// Per-operator wall times collected during a streamed run. Used to pick
+/// Metal targets; never a TPS claim.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct OperatorProfile {
+    pub buckets_ns: BTreeMap<String, u128>,
+    pub calls: BTreeMap<String, u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct OperatorProfileRow {
+    pub name: String,
+    pub seconds: f64,
+    pub percent: f64,
+    pub calls: u64,
+}
+
+impl OperatorProfile {
+    pub fn add(&mut self, name: &str, elapsed: Duration) {
+        *self.buckets_ns.entry(name.to_owned()).or_insert(0) += elapsed.as_nanos();
+        *self.calls.entry(name.to_owned()).or_insert(0) += 1;
+    }
+
+    pub fn total_ns(&self) -> u128 {
+        self.buckets_ns.values().copied().sum()
+    }
+
+    pub fn to_sorted_rows(&self) -> Vec<OperatorProfileRow> {
+        let total = self.total_ns().max(1);
+        let mut rows: Vec<OperatorProfileRow> = self
+            .buckets_ns
+            .iter()
+            .map(|(name, ns)| OperatorProfileRow {
+                name: name.clone(),
+                seconds: *ns as f64 / 1_000_000_000.0,
+                percent: (*ns as f64) * 100.0 / (total as f64),
+                calls: self.calls.get(name).copied().unwrap_or(0),
+            })
+            .collect();
+        rows.sort_by(|a, b| {
+            b.seconds
+                .partial_cmp(&a.seconds)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        rows
+    }
+
+    pub fn to_receipt_json(&self) -> serde_json::Value {
+        let rows = self.to_sorted_rows();
+        serde_json::json!({
+            "total_seconds": self.total_ns() as f64 / 1_000_000_000.0,
+            "buckets": rows,
+        })
     }
 }
 
@@ -196,6 +278,7 @@ pub struct StreamedForwardReport {
     pub greedy: Option<DeepSeekV4GreedyTokenResult>,
     pub stop_reason: Option<String>,
     pub honesty: StreamedForwardHonesty,
+    pub operator_profile: OperatorProfile,
     pub artifact_root: String,
     pub admission_view: String,
     pub manifest_seal_sha256: String,
@@ -233,6 +316,11 @@ impl StreamedForwardReport {
                 "policy": "operator_stream_load_execute_free",
             },
             "honesty": self.honesty,
+            "metal": {
+                "metal_dispatches": self.honesty.metal_dispatches,
+                "fallback": self.honesty.fallbacks,
+            },
+            "operator_profile": self.operator_profile.to_receipt_json(),
             "hc_bf16_sha256": self.hc_bf16_sha256,
             "greedy": self.greedy.as_ref().map(|g| serde_json::json!({
                 "token_id": g.token_id,
@@ -299,11 +387,10 @@ impl ResidentLedger {
     }
 
     pub fn release(&mut self, name: &str) -> Result<()> {
-        let bytes = self.live.remove(name).ok_or_else(|| {
-            gravity(format!(
-                "resident ledger release of unknown tensor {name}"
-            ))
-        })?;
+        let bytes = self
+            .live
+            .remove(name)
+            .ok_or_else(|| gravity(format!("resident ledger release of unknown tensor {name}")))?;
         self.live_bytes = self.live_bytes.saturating_sub(bytes as u64);
         Ok(())
     }
@@ -317,14 +404,13 @@ pub fn verify_content_addressed_chunk(
     expected_sha256: &str,
     expected_bytes: u64,
 ) -> Result<()> {
-    let meta = fs::metadata(path).map_err(|error| {
-        gravity(format!(
-            "chunk {} metadata: {error}",
-            path.display()
-        ))
-    })?;
+    let meta = fs::metadata(path)
+        .map_err(|error| gravity(format!("chunk {} metadata: {error}", path.display())))?;
     if !meta.is_file() {
-        return Err(gravity(format!("chunk {} is not a regular file", path.display())));
+        return Err(gravity(format!(
+            "chunk {} is not a regular file",
+            path.display()
+        )));
     }
     if meta.len() != expected_bytes {
         return Err(gravity(format!(
@@ -333,9 +419,8 @@ pub fn verify_content_addressed_chunk(
             meta.len()
         )));
     }
-    let mut file = File::open(path).map_err(|error| {
-        gravity(format!("chunk {} open: {error}", path.display()))
-    })?;
+    let mut file = File::open(path)
+        .map_err(|error| gravity(format!("chunk {} open: {error}", path.display())))?;
     let mut digest = Sha256::new();
     let mut buffer = vec![0u8; READ_BUFFER_BYTES];
     let mut observed = 0u64;
@@ -376,9 +461,9 @@ pub fn discover_sealed_dsv4f_artifact() -> Option<PathBuf> {
     let mut candidates = Vec::new();
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let root = PathBuf::from(manifest_dir);
-        candidates.push(
-            root.join("../../workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"),
-        );
+        candidates.push(root.join(
+            "../../workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        ));
         candidates.push(
             root.join("../../../Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"),
         );
@@ -389,14 +474,18 @@ pub fn discover_sealed_dsv4f_artifact() -> Option<PathBuf> {
         );
         if let Some(parent) = cwd.parent() {
             candidates.push(
-                parent.join("workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"),
+                parent.join(
+                    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+                ),
             );
         }
     }
     candidates.push(PathBuf::from(
         "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
     ));
-    candidates.into_iter().find(|path| artifact_looks_sealed(path))
+    candidates
+        .into_iter()
+        .find(|path| artifact_looks_sealed(path))
 }
 
 fn artifact_looks_sealed(path: &Path) -> bool {
@@ -435,9 +524,8 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
         )));
     }
     let restart_raw = fs::read(source.join("restart-receipt.json"))?;
-    let restart: serde_json::Value = serde_json::from_slice(&restart_raw).map_err(|error| {
-        gravity(format!("restart receipt decode failed: {error}"))
-    })?;
+    let restart: serde_json::Value = serde_json::from_slice(&restart_raw)
+        .map_err(|error| gravity(format!("restart receipt decode failed: {error}")))?;
     let expected_ranges = restart
         .get("range_journal_sha256")
         .and_then(|value| value.as_str())
@@ -449,7 +537,8 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
     let range_count = restart
         .get("range_count")
         .and_then(|value| value.as_u64())
-        .ok_or_else(|| gravity("restart receipt lacks range_count"))? as usize;
+        .ok_or_else(|| gravity("restart receipt lacks range_count"))?
+        as usize;
 
     let journal_path = source.join("stream-journal.json");
     let ranges_path = source.join("stream-ranges.jsonl");
@@ -485,7 +574,10 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
     ));
     fs::create_dir_all(&view_root)?;
     let result = (|| -> Result<()> {
-        clone_or_link_file(&source.join("manifest.json"), &view_root.join("manifest.json"))?;
+        clone_or_link_file(
+            &source.join("manifest.json"),
+            &view_root.join("manifest.json"),
+        )?;
         clone_or_link_file(
             &source.join("restart-receipt.json"),
             &view_root.join("restart-receipt.json"),
@@ -494,7 +586,11 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
             &source.join("stream-journal.json"),
             &view_root.join("stream-journal.json"),
         )?;
-        write_first_lines(&ranges_path, &view_root.join("stream-ranges.jsonl"), range_count)?;
+        write_first_lines(
+            &ranges_path,
+            &view_root.join("stream-ranges.jsonl"),
+            range_count,
+        )?;
         clone_or_link_tree(&source.join("metadata"), &view_root.join("metadata"))?;
         clone_or_link_tree(&source.join("chunks"), &view_root.join("chunks"))?;
         Ok(())
@@ -506,16 +602,17 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
     Ok(SealedAdmissionRoot {
         path: view_root.clone(),
         source_path: source.to_path_buf(),
-        view: format!(
-            "clone_view_sealed_range_journal_prefix_{range_count}_of_appended_journal"
-        ),
+        view: format!("clone_view_sealed_range_journal_prefix_{range_count}_of_appended_journal"),
         ephemeral: Some(view_root),
     })
 }
 
 fn clone_or_link_file(src: &Path, dst: &Path) -> Result<()> {
     let meta = fs::symlink_metadata(src).map_err(|error| {
-        gravity(format!("cannot inspect {} for admission view: {error}", src.display()))
+        gravity(format!(
+            "cannot inspect {} for admission view: {error}",
+            src.display()
+        ))
     })?;
     if meta.file_type().is_symlink() || !meta.is_file() {
         return Err(gravity(format!(
@@ -531,7 +628,10 @@ fn clone_or_link_file(src: &Path, dst: &Path) -> Result<()> {
 
 fn clone_or_link_tree(src: &Path, dst: &Path) -> Result<()> {
     let meta = fs::symlink_metadata(src).map_err(|error| {
-        gravity(format!("cannot inspect {} for admission view: {error}", src.display()))
+        gravity(format!(
+            "cannot inspect {} for admission view: {error}",
+            src.display()
+        ))
     })?;
     if meta.file_type().is_symlink() || !meta.is_dir() {
         return Err(gravity(format!(
@@ -583,10 +683,16 @@ fn macos_clonefile(src: &Path, dst: &Path) -> Result<()> {
             fn clonefile(src: *const i8, dst: *const i8, flags: u32) -> i32;
         }
         let src_c = CString::new(src.to_string_lossy().as_bytes()).map_err(|_| {
-            gravity(format!("clonefile src path is not CString-safe: {}", src.display()))
+            gravity(format!(
+                "clonefile src path is not CString-safe: {}",
+                src.display()
+            ))
         })?;
         let dst_c = CString::new(dst.to_string_lossy().as_bytes()).map_err(|_| {
-            gravity(format!("clonefile dst path is not CString-safe: {}", dst.display()))
+            gravity(format!(
+                "clonefile dst path is not CString-safe: {}",
+                dst.display()
+            ))
         })?;
         let rc = unsafe { clonefile(src_c.as_ptr(), dst_c.as_ptr(), 0) };
         if rc == 0 {
@@ -691,11 +797,18 @@ pub fn run_streamed_forward(
     let mut peak_rss = peak_rss_bytes();
     let mut layers_executed = Vec::new();
     let mut stop_reason = None;
+    let mut profile = OperatorProfile::default();
+    let mut metal = if config.use_metal {
+        Some(StreamedNativeSession::new()?)
+    } else {
+        None
+    };
 
     let (mut hc_bf16_bits, mut next_layer, mut completed) = if config.resume {
-        let path = config.checkpoint_path.as_ref().ok_or_else(|| {
-            gravity("resume requested without a checkpoint path")
-        })?;
+        let path = config
+            .checkpoint_path
+            .as_ref()
+            .ok_or_else(|| gravity("resume requested without a checkpoint path"))?;
         let ckpt = load_checkpoint(path)?;
         validate_checkpoint_against_reader(&ckpt, &reader)?;
         if ckpt.token_id != config.token_id {
@@ -705,11 +818,15 @@ pub fn run_streamed_forward(
         }
         let hc = decode_hex_u16(&ckpt.hc_bf16_hex)?;
         if sha256_u16(&hc) != ckpt.hc_bf16_sha256 {
-            return Err(gravity("checkpoint HC bytes do not match their recorded sha256"));
+            return Err(gravity(
+                "checkpoint HC bytes do not match their recorded sha256",
+            ));
         }
         (hc, ckpt.next_layer, ckpt.layers_completed)
     } else {
+        let t0 = Instant::now();
         let hc = load_bos_embed_hc(&reader, &mut ledger, config.token_id)?;
+        profile.add("embed", t0.elapsed());
         (hc, 0usize, Vec::new())
     };
 
@@ -725,6 +842,8 @@ pub fn run_streamed_forward(
             &hc_bf16_bits,
             config.token_id,
             &mut ledger,
+            &mut profile,
+            metal.as_mut(),
         ) {
             Ok(next_hc) => {
                 hc_bf16_bits = next_hc;
@@ -771,13 +890,42 @@ pub fn run_streamed_forward(
     }
 
     let deepest_layer = layers_executed.last().copied();
+    let mut lm_head_on_device = false;
+    let body_already_complete = next_layer == DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT
+        && config.max_layer + 1 == DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT;
     let greedy = if stop_reason.is_none()
         && config.compute_final_head
-        && deepest_layer == Some(config.max_layer)
-        && config.max_layer + 1 == DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT
+        && (body_already_complete
+            || (deepest_layer == Some(config.max_layer)
+                && config.max_layer + 1 == DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT))
     {
+        let t_merge = Instant::now();
         let merged = host_merge_final_head_from_hc_bf16(&reader, &hc_bf16_bits)?;
-        Some(host_greedy_lm_head(&reader, &merged.merged_f32)?)
+        profile.add("lm_head_merge", t_merge.elapsed());
+        let t_head = Instant::now();
+        let result = match metal.as_mut() {
+            Some(session) => {
+                match streamed_metal_lm_head(&reader, &mut ledger, session, &merged.merged_f32) {
+                    Ok(token) => {
+                        lm_head_on_device = token.lm_head_on_device;
+                        profile.add("lm_head_metal", t_head.elapsed());
+                        token
+                    }
+                    Err(error) => {
+                        session.record_fallback(format!("lm_head: {error}"));
+                        let token = host_greedy_lm_head(&reader, &merged.merged_f32)?;
+                        profile.add("lm_head_cpu", t_head.elapsed());
+                        token
+                    }
+                }
+            }
+            None => {
+                let token = host_greedy_lm_head(&reader, &merged.merged_f32)?;
+                profile.add("lm_head_cpu", t_head.elapsed());
+                token
+            }
+        };
+        Some(result)
     } else {
         None
     };
@@ -791,9 +939,17 @@ pub fn run_streamed_forward(
         )));
     }
 
+    let metal_dispatches = metal.as_ref().map(|s| s.metal_dispatches()).unwrap_or(0);
+    let fallbacks = metal.as_ref().map(|s| s.fallbacks()).unwrap_or(0);
+    let execution_path = if metal_dispatches > 0 {
+        STREAMED_EXECUTION_PATH_METAL
+    } else {
+        STREAMED_EXECUTION_PATH
+    };
+
     Ok(StreamedForwardReport {
         schema: STREAMED_FORWARD_SCHEMA,
-        execution_path: STREAMED_EXECUTION_PATH,
+        execution_path,
         native: false,
         deepest_layer,
         layers_executed,
@@ -809,9 +965,14 @@ pub fn run_streamed_forward(
         weight_within_bound,
         greedy,
         stop_reason,
-        honesty: StreamedForwardHonesty::host_oracle(
-            config.compute_final_head && deepest_layer == Some(config.max_layer),
+        honesty: StreamedForwardHonesty::with_counters(
+            config.compute_final_head
+                && (body_already_complete || deepest_layer == Some(config.max_layer)),
+            metal_dispatches,
+            fallbacks,
+            lm_head_on_device,
         ),
+        operator_profile: profile,
         artifact_root: admission.source_path.display().to_string(),
         admission_view: admission.view.clone(),
         manifest_seal_sha256: reader.manifest_seal_sha256().to_owned(),
@@ -825,9 +986,12 @@ fn execute_one_layer(
     hc_in: &[u16],
     token_id: u64,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
 ) -> Result<Vec<u16>> {
-    let attn_hc = execute_attention(reader, layer, hc_in, ledger)?;
-    execute_moe(reader, layer, &attn_hc, token_id, ledger)
+    let mut metal = metal;
+    let attn_hc = execute_attention(reader, layer, hc_in, ledger, profile, metal.as_deref_mut())?;
+    execute_moe(reader, layer, &attn_hc, token_id, ledger, profile, metal)
 }
 
 fn execute_attention(
@@ -835,11 +999,22 @@ fn execute_attention(
     layer: &DeepSeekV4LayerSourceAnchor,
     hc_in: &[u16],
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
 ) -> Result<Vec<u16>> {
+    let mut metal = metal;
     let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::Attention);
-    let hc_fn = read_f32_tracked(reader, ledger, &mhc.fn_tensor.name, HC_MIX_WIDTH * HC_FLAT_WIDTH)?;
+    let t_io = Instant::now();
+    let hc_fn = read_f32_tracked(
+        reader,
+        ledger,
+        &mhc.fn_tensor.name,
+        HC_MIX_WIDTH * HC_FLAT_WIDTH,
+    )?;
     let hc_base = read_f32_tracked(reader, ledger, &mhc.base_tensor.name, HC_MIX_WIDTH)?;
     let hc_scale = read_f32_tracked(reader, ledger, &mhc.scale_tensor.name, 3)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_mhc = Instant::now();
     let (_, _, _, post_f32, comb_f32, reduced) = hc_attn_pre_source_algorithm(
         hc_in,
         &hc_fn,
@@ -849,6 +1024,7 @@ fn execute_attention(
         HC_EPS,
         HC_SINKHORN_ITERS,
     )?;
+    profile.add("mhc_attn_pre", t_mhc.elapsed());
     ledger.release(&mhc.fn_tensor.name)?;
     ledger.release(&mhc.base_tensor.name)?;
     ledger.release(&mhc.scale_tensor.name)?;
@@ -857,9 +1033,13 @@ fn execute_attention(
     drop(hc_scale);
 
     let attn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionNorm);
+    let t_io = Instant::now();
     let attn_norm_w = read_bf16_tracked(reader, ledger, &attn_norm.name, HIDDEN_SIZE)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_norm = Instant::now();
     let attn_norm_row =
         rms_norm_bf16_source_algorithm(&reduced, &attn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)?;
+    profile.add("attn_norm", t_norm.elapsed());
     ledger.release(&attn_norm.name)?;
     drop(attn_norm_w);
 
@@ -867,6 +1047,9 @@ fn execute_attention(
     let wq_a_out = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "mla_wq_a",
         &wq_a.weight.name,
         &wq_a.scale.name,
         Q_LORA_RANK,
@@ -875,9 +1058,13 @@ fn execute_attention(
     )?;
 
     let q_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionQNorm);
+    let t_io = Instant::now();
     let q_norm_w = read_bf16_tracked(reader, ledger, &q_norm.name, Q_LORA_RANK)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_norm = Instant::now();
     let q_norm_row =
         rms_norm_bf16_source_algorithm(&wq_a_out, &q_norm_w, Q_LORA_RANK, RMS_NORM_EPS)?;
+    profile.add("q_norm", t_norm.elapsed());
     ledger.release(&q_norm.name)?;
     drop(q_norm_w);
     drop(wq_a_out);
@@ -886,6 +1073,9 @@ fn execute_attention(
     let wq_b_out = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "mla_wq_b",
         &wq_b.weight.name,
         &wq_b.scale.name,
         WQ_B_ROWS,
@@ -893,20 +1083,21 @@ fn execute_attention(
         &q_norm_row,
     )?;
     drop(q_norm_row);
-    let q_head = per_head_rms_norm_bf16_source_algorithm(
-        &wq_b_out,
-        NUM_HEADS,
-        HEAD_DIM,
-        RMS_NORM_EPS,
-    )?;
+    let t_head = Instant::now();
+    let q_head =
+        per_head_rms_norm_bf16_source_algorithm(&wq_b_out, NUM_HEADS, HEAD_DIM, RMS_NORM_EPS)?;
     drop(wq_b_out);
     let q_rope = position_zero_rope_identity(&q_head, NUM_HEADS, HEAD_DIM, ROPE_HEAD_DIM)?;
+    profile.add("q_head_norm_rope", t_head.elapsed());
     drop(q_head);
 
     let wkv = layer.control_pair(DeepSeekV4LayerControlProjection::Wkv);
     let wkv_out = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "mla_wkv",
         &wkv.weight.name,
         &wkv.scale.name,
         WKV_ROWS,
@@ -915,27 +1106,34 @@ fn execute_attention(
     )?;
     drop(attn_norm_row);
     let kv_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionKvNorm);
+    let t_io = Instant::now();
     let kv_norm_w = read_bf16_tracked(reader, ledger, &kv_norm.name, HEAD_DIM)?;
-    let kv_norm_row =
-        rms_norm_bf16_source_algorithm(&wkv_out, &kv_norm_w, HEAD_DIM, RMS_NORM_EPS)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_kv = Instant::now();
+    let kv_norm_row = rms_norm_bf16_source_algorithm(&wkv_out, &kv_norm_w, HEAD_DIM, RMS_NORM_EPS)?;
     ledger.release(&kv_norm.name)?;
     drop(kv_norm_w);
     drop(wkv_out);
-    let kv_qat =
-        kv_non_rope_inplace_qat_source_algorithm(&kv_norm_row, HEAD_DIM, ROPE_HEAD_DIM, KV_QAT_BLOCK)?;
+    let kv_qat = kv_non_rope_inplace_qat_source_algorithm(
+        &kv_norm_row,
+        HEAD_DIM,
+        ROPE_HEAD_DIM,
+        KV_QAT_BLOCK,
+    )?;
     drop(kv_norm_row);
     let kv_rope =
         position_zero_rope_identity(&kv_qat.output_bf16_bits, 1, HEAD_DIM, ROPE_HEAD_DIM)?;
+    profile.add("kv_norm_qat_rope", t_kv.elapsed());
 
     let sink = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionSink);
+    let t_io = Instant::now();
     let sink_f32 = read_f32_tracked(reader, ledger, &sink.name, NUM_HEADS)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_attn = Instant::now();
     let (_, _, attn_out) = sparse_attention_position_zero_source_algorithm(
-        &q_rope,
-        &kv_rope,
-        &sink_f32,
-        NUM_HEADS,
-        HEAD_DIM,
+        &q_rope, &kv_rope, &sink_f32, NUM_HEADS, HEAD_DIM,
     )?;
+    profile.add("sparse_attn_bos", t_attn.elapsed());
     ledger.release(&sink.name)?;
     drop(sink_f32);
     drop(q_rope);
@@ -948,6 +1146,8 @@ fn execute_attention(
     let wo_a_out = wo_a_einsum_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
         &wo_a.weight.name,
         &wo_a.scale.name,
         &attn_derotated,
@@ -958,6 +1158,9 @@ fn execute_attention(
     let wo_b_out = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "mla_wo_b",
         &wo_b.weight.name,
         &wo_b.scale.name,
         WO_B_ROWS,
@@ -966,7 +1169,10 @@ fn execute_attention(
     )?;
     drop(wo_a_out);
 
-    hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)
+    let t_post = Instant::now();
+    let out = hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)?;
+    profile.add("mhc_attn_post", t_post.elapsed());
+    Ok(out)
 }
 
 fn execute_moe(
@@ -975,11 +1181,22 @@ fn execute_moe(
     attn_hc: &[u16],
     token_id: u64,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
 ) -> Result<Vec<u16>> {
+    let mut metal = metal;
     let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::FeedForward);
-    let hc_fn = read_f32_tracked(reader, ledger, &mhc.fn_tensor.name, HC_MIX_WIDTH * HC_FLAT_WIDTH)?;
+    let t_io = Instant::now();
+    let hc_fn = read_f32_tracked(
+        reader,
+        ledger,
+        &mhc.fn_tensor.name,
+        HC_MIX_WIDTH * HC_FLAT_WIDTH,
+    )?;
     let hc_base = read_f32_tracked(reader, ledger, &mhc.base_tensor.name, HC_MIX_WIDTH)?;
     let hc_scale = read_f32_tracked(reader, ledger, &mhc.scale_tensor.name, 3)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_mhc = Instant::now();
     let (_, _, _, post_f32, comb_f32, reduced) = hc_attn_pre_source_algorithm(
         attn_hc,
         &hc_fn,
@@ -989,6 +1206,7 @@ fn execute_moe(
         HC_EPS,
         HC_SINKHORN_ITERS,
     )?;
+    profile.add("mhc_ffn_pre", t_mhc.elapsed());
     ledger.release(&mhc.fn_tensor.name)?;
     ledger.release(&mhc.base_tensor.name)?;
     ledger.release(&mhc.scale_tensor.name)?;
@@ -997,26 +1215,41 @@ fn execute_moe(
     drop(hc_scale);
 
     let ffn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::FeedForwardNorm);
+    let t_io = Instant::now();
     let ffn_norm_w = read_bf16_tracked(reader, ledger, &ffn_norm.name, HIDDEN_SIZE)?;
+    profile.add("streaming_io", t_io.elapsed());
+    let t_norm = Instant::now();
     let ffn_norm_row =
         rms_norm_bf16_source_algorithm(&reduced, &ffn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)?;
+    profile.add("ffn_norm", t_norm.elapsed());
     ledger.release(&ffn_norm.name)?;
     drop(ffn_norm_w);
 
     let gate = layer.gate_binding();
-    let logits = gate_logits_tracked(reader, ledger, &gate.score_weight.name, &ffn_norm_row)?;
+    let logits = gate_logits_tracked(
+        reader,
+        ledger,
+        profile,
+        metal.as_deref_mut(),
+        &gate.score_weight.name,
+        &ffn_norm_row,
+    )?;
+    let t_route = Instant::now();
     let (selected_ids, selected_weights) = match layer.gate_mode {
         DeepSeekV4LayerGateMode::HashTokenIdToExpertIds => {
             hash_route_from_logits(reader, ledger, &gate.route_data.name, token_id, &logits)?
         }
         DeepSeekV4LayerGateMode::LearnedScoresWithSelectionBias => {
+            let t_io = Instant::now();
             let bias = read_f32_tracked(reader, ledger, &gate.route_data.name, ROUTED_EXPERTS)?;
+            profile.add("streaming_io", t_io.elapsed());
             let route = learned_bias_route(&logits, &bias)?;
             ledger.release(&gate.route_data.name)?;
             drop(bias);
             route
         }
     };
+    profile.add("route", t_route.elapsed());
     drop(logits);
 
     let mut execution: Vec<usize> = (0..ACTIVATED_EXPERTS).collect();
@@ -1025,12 +1258,29 @@ fn execute_moe(
     for slot in execution {
         let expert_id = selected_ids[slot];
         let weight = selected_weights[slot];
-        let down = routed_expert_tracked(reader, ledger, layer, expert_id, weight, &ffn_norm_row)?;
+        let down = routed_expert_tracked(
+            reader,
+            ledger,
+            profile,
+            metal.as_deref_mut(),
+            layer,
+            expert_id,
+            weight,
+            &ffn_norm_row,
+        )?;
         for (acc, &bits) in moe_sum.iter_mut().zip(&down) {
             *acc += bf16::from_bits(bits).to_f32();
         }
     }
-    let shared = shared_expert_tracked(reader, ledger, layer, &ffn_norm_row)?;
+    let shared = shared_expert_tracked(
+        reader,
+        ledger,
+        profile,
+        metal.as_deref_mut(),
+        layer,
+        &ffn_norm_row,
+    )?;
+    let t_combine = Instant::now();
     for (acc, &bits) in moe_sum.iter_mut().zip(&shared) {
         *acc += bf16::from_bits(bits).to_f32();
     }
@@ -1044,7 +1294,11 @@ fn execute_moe(
         .into_iter()
         .map(|value| bf16::from_f32(value).to_bits())
         .collect();
-    hc_attn_post_source_algorithm(&moe_bf16, attn_hc, &post_f32, &comb_f32)
+    profile.add("moe_combine", t_combine.elapsed());
+    let t_post = Instant::now();
+    let out = hc_attn_post_source_algorithm(&moe_bf16, attn_hc, &post_f32, &comb_f32)?;
+    profile.add("mhc_ffn_post", t_post.elapsed());
+    Ok(out)
 }
 
 fn load_bos_embed_hc(
@@ -1081,10 +1335,29 @@ fn load_bos_embed_hc(
 fn gate_logits_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
     weight_name: &str,
     input_bf16: &[u16],
 ) -> Result<Vec<f32>> {
+    let t_io = Instant::now();
     let weights = read_bf16_tracked(reader, ledger, weight_name, ROUTED_EXPERTS * HIDDEN_SIZE)?;
+    profile.add("streaming_io", t_io.elapsed());
+    if let Some(session) = metal {
+        let t_metal = Instant::now();
+        match session.gate_logits(input_bf16, &weights) {
+            Ok(logits) => {
+                profile.add("gate_logits_metal", t_metal.elapsed());
+                ledger.release(weight_name)?;
+                drop(weights);
+                return Ok(logits);
+            }
+            Err(error) => {
+                session.record_fallback(format!("gate_logits: {error}"));
+            }
+        }
+    }
+    let t_cpu = Instant::now();
     let input: Vec<f32> = input_bf16
         .iter()
         .map(|bits| bf16::from_bits(*bits).to_f32())
@@ -1108,6 +1381,7 @@ fn gate_logits_tracked(
         }
         logits.push(acc);
     }
+    profile.add("gate_logits_cpu", t_cpu.elapsed());
     ledger.release(weight_name)?;
     drop(weights);
     Ok(logits)
@@ -1149,9 +1423,11 @@ fn hash_route_from_logits(
     ledger.acquire(tid2eid_name, raw.len())?;
     let mut selected = Vec::with_capacity(ACTIVATED_EXPERTS);
     for chunk in raw.chunks_exact(8) {
-        let id = i64::from_le_bytes(chunk.try_into().map_err(|_| {
-            gravity("tid2eid chunk is not a complete i64 index")
-        })?);
+        let id = i64::from_le_bytes(
+            chunk
+                .try_into()
+                .map_err(|_| gravity("tid2eid chunk is not a complete i64 index"))?,
+        );
         if id < 0 || id >= ROUTED_EXPERTS as i64 {
             return Err(gravity("tid2eid contains an out-of-range expert id"));
         }
@@ -1179,7 +1455,9 @@ fn hash_route_from_logits(
 /// Learned-bias `noaux_tc` top-6. Bias affects selection only.
 pub fn learned_bias_route(logits: &[f32], bias: &[f32]) -> Result<(Vec<u64>, Vec<f32>)> {
     if logits.len() != ROUTED_EXPERTS || bias.len() != ROUTED_EXPERTS {
-        return Err(gravity("learned-bias route requires F32[256] logits and bias"));
+        return Err(gravity(
+            "learned-bias route requires F32[256] logits and bias",
+        ));
     }
     let scores = logits
         .iter()
@@ -1248,17 +1526,23 @@ fn sqrt_softplus(logit: f32) -> Result<f32> {
 fn routed_expert_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
     layer: &DeepSeekV4LayerSourceAnchor,
     expert_id: u64,
     route_weight: f32,
     input: &[u16],
 ) -> Result<Vec<u16>> {
+    let mut metal = metal;
     let w1 = layer.routed_expert_pair(expert_id as usize, DeepSeekV4LayerExpertProjection::W1)?;
     let w3 = layer.routed_expert_pair(expert_id as usize, DeepSeekV4LayerExpertProjection::W3)?;
     let w2 = layer.routed_expert_pair(expert_id as usize, DeepSeekV4LayerExpertProjection::W2)?;
     let gate = fp4_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "routed_w1",
         &w1.weight.name,
         &w1.scale.name,
         MOE_INTER_DIM,
@@ -1268,18 +1552,26 @@ fn routed_expert_tracked(
     let up = fp4_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "routed_w3",
         &w3.weight.name,
         &w3.scale.name,
         MOE_INTER_DIM,
         HIDDEN_SIZE,
         input,
     )?;
+    let t_swiglu = Instant::now();
     let swiglu = swiglu_bf16_source_algorithm(&gate, &up, Some(route_weight))?;
+    profile.add("swiglu_routed", t_swiglu.elapsed());
     drop(gate);
     drop(up);
     fp4_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal,
+        "routed_w2",
         &w2.weight.name,
         &w2.scale.name,
         HIDDEN_SIZE,
@@ -1291,15 +1583,21 @@ fn routed_expert_tracked(
 fn shared_expert_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
     layer: &DeepSeekV4LayerSourceAnchor,
     input: &[u16],
 ) -> Result<Vec<u16>> {
+    let mut metal = metal;
     let w1 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W1);
     let w3 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W3);
     let w2 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W2);
     let gate = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "shared_w1",
         &w1.weight.name,
         &w1.scale.name,
         MOE_INTER_DIM,
@@ -1309,18 +1607,26 @@ fn shared_expert_tracked(
     let up = fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal.as_deref_mut(),
+        "shared_w3",
         &w3.weight.name,
         &w3.scale.name,
         MOE_INTER_DIM,
         HIDDEN_SIZE,
         input,
     )?;
+    let t_swiglu = Instant::now();
     let swiglu = swiglu_bf16_source_algorithm(&gate, &up, None)?;
+    profile.add("swiglu_shared", t_swiglu.elapsed());
     drop(gate);
     drop(up);
     fp8_linear_tracked(
         reader,
         ledger,
+        profile,
+        metal,
+        "shared_w2",
         &w2.weight.name,
         &w2.scale.name,
         HIDDEN_SIZE,
@@ -1332,6 +1638,9 @@ fn shared_expert_tracked(
 fn fp8_linear_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
+    bucket: &str,
     weight_name: &str,
     scale_name: &str,
     output_rows: usize,
@@ -1350,18 +1659,34 @@ fn fp8_linear_tracked(
             "{weight_name} is not the expected native FP8/E8M0 pair"
         )));
     }
-    let quantized = act_quant_bf16_ue8m0(input)?;
+    let t_io = Instant::now();
     let weights = reader.read_verified_full(weight_name, output_rows * logical_k)?;
     ledger.acquire(weight_name, weights.len())?;
     let scales = reader.read_verified_full(scale_name, scale_rows * scale_cols)?;
     ledger.acquire(scale_name, scales.len())?;
-    let output = fp8_e4m3fn_ue8m0_matvec(
-        &quantized,
-        &weights,
-        &scales,
-        output_rows,
-        logical_k,
-    )?;
+    profile.add("streaming_io", t_io.elapsed());
+    if let Some(session) = metal {
+        let t_metal = Instant::now();
+        match session.fp8_linear(input, &weights, &scales, output_rows, logical_k) {
+            Ok(output) => {
+                profile.add(bucket, t_metal.elapsed());
+                ledger.release(weight_name)?;
+                ledger.release(scale_name)?;
+                drop(weights);
+                drop(scales);
+                return Ok(output);
+            }
+            Err(error) => {
+                session.record_fallback(format!("{bucket}: {error}"));
+            }
+        }
+    }
+    let t_aq = Instant::now();
+    let quantized = act_quant_bf16_ue8m0(input)?;
+    profile.add("act_quant", t_aq.elapsed());
+    let t_mv = Instant::now();
+    let output = fp8_e4m3fn_ue8m0_matvec(&quantized, &weights, &scales, output_rows, logical_k)?;
+    profile.add(bucket, t_mv.elapsed());
     ledger.release(weight_name)?;
     ledger.release(scale_name)?;
     drop(weights);
@@ -1372,6 +1697,9 @@ fn fp8_linear_tracked(
 fn fp4_linear_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
+    bucket: &str,
     weight_name: &str,
     scale_name: &str,
     output_rows: usize,
@@ -1390,18 +1718,34 @@ fn fp4_linear_tracked(
             "{weight_name} is not the expected native FP4/E8M0 pair"
         )));
     }
-    let quantized = act_quant_bf16_ue8m0(input)?;
+    let t_io = Instant::now();
     let weights = reader.read_verified_full(weight_name, output_rows * packed_k)?;
     ledger.acquire(weight_name, weights.len())?;
     let scales = reader.read_verified_full(scale_name, output_rows * scale_cols)?;
     ledger.acquire(scale_name, scales.len())?;
-    let output = fp4_e2m1fn_x2_ue8m0_matvec(
-        &quantized,
-        &weights,
-        &scales,
-        output_rows,
-        logical_k,
-    )?;
+    profile.add("streaming_io", t_io.elapsed());
+    if let Some(session) = metal {
+        let t_metal = Instant::now();
+        match session.fp4_linear(input, &weights, &scales, output_rows, logical_k) {
+            Ok(output) => {
+                profile.add(bucket, t_metal.elapsed());
+                ledger.release(weight_name)?;
+                ledger.release(scale_name)?;
+                drop(weights);
+                drop(scales);
+                return Ok(output);
+            }
+            Err(error) => {
+                session.record_fallback(format!("{bucket}: {error}"));
+            }
+        }
+    }
+    let t_aq = Instant::now();
+    let quantized = act_quant_bf16_ue8m0(input)?;
+    profile.add("act_quant", t_aq.elapsed());
+    let t_mv = Instant::now();
+    let output = fp4_e2m1fn_x2_ue8m0_matvec(&quantized, &weights, &scales, output_rows, logical_k)?;
+    profile.add(bucket, t_mv.elapsed());
     ledger.release(weight_name)?;
     ledger.release(scale_name)?;
     drop(weights);
@@ -1412,6 +1756,8 @@ fn fp4_linear_tracked(
 fn wo_a_einsum_tracked(
     reader: &DeepSeekV4FullStreamReader,
     ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
     weight_name: &str,
     scale_name: &str,
     attention: &[u16],
@@ -1429,6 +1775,7 @@ fn wo_a_einsum_tracked(
             "{weight_name} is not the expected WO-A FP8 pair"
         )));
     }
+    let t_io = Instant::now();
     let weights = reader.read_verified_full(weight_name, WO_A_ROWS * WO_A_COLS)?;
     ledger.acquire(weight_name, weights.len())?;
     let scales = reader.read_verified_full(
@@ -1436,6 +1783,24 @@ fn wo_a_einsum_tracked(
         (WO_A_ROWS / ACT_QUANT_BLOCK) * (WO_A_COLS / ACT_QUANT_BLOCK),
     )?;
     ledger.acquire(scale_name, scales.len())?;
+    profile.add("streaming_io", t_io.elapsed());
+    if let Some(session) = metal {
+        let t_metal = Instant::now();
+        match session.wo_a_einsum(attention, &weights, &scales) {
+            Ok(output) => {
+                profile.add("mla_wo_a", t_metal.elapsed());
+                ledger.release(weight_name)?;
+                ledger.release(scale_name)?;
+                drop(weights);
+                drop(scales);
+                return Ok(output);
+            }
+            Err(error) => {
+                session.record_fallback(format!("mla_wo_a: {error}"));
+            }
+        }
+    }
+    let t_cpu = Instant::now();
     let input: Vec<f32> = attention
         .iter()
         .map(|bits| bf16::from_bits(*bits).to_f32())
@@ -1453,10 +1818,9 @@ fn wo_a_einsum_tracked(
             for column in 0..WO_A_COLS {
                 let raw = weights[row * WO_A_COLS + column];
                 let scale_index = (row / ACT_QUANT_BLOCK) * scale_cols + column / ACT_QUANT_BLOCK;
-                let converted = bf16::from_f32(
-                    decode_e4m3fn(raw)? * decode_e8m0fnu(scales[scale_index])?,
-                )
-                .to_f32();
+                let converted =
+                    bf16::from_f32(decode_e4m3fn(raw)? * decode_e8m0fnu(scales[scale_index])?)
+                        .to_f32();
                 if !converted.is_finite() {
                     return Err(gravity("WO-A conversion produced a non-finite BF16 weight"));
                 }
@@ -1468,11 +1832,57 @@ fn wo_a_einsum_tracked(
             output.push(bf16::from_f32(acc).to_bits());
         }
     }
+    profile.add("mla_wo_a", t_cpu.elapsed());
     ledger.release(weight_name)?;
     ledger.release(scale_name)?;
     drop(weights);
     drop(scales);
     Ok(output)
+}
+
+fn streamed_metal_lm_head(
+    reader: &DeepSeekV4FullStreamReader,
+    ledger: &mut ResidentLedger,
+    session: &mut StreamedNativeSession,
+    residual_f32: &[f32],
+) -> Result<DeepSeekV4GreedyTokenResult> {
+    const ROWS_PER_BLOCK: usize = 4096;
+    const LM_HEAD: &str = "head.weight";
+    if residual_f32.len() != HIDDEN_SIZE {
+        return Err(gravity("lm_head residual must be f32[4096]"));
+    }
+    let meta = reader.tensor_metadata(LM_HEAD)?;
+    if meta.dtype != "BF16"
+        || meta.shape.as_slice() != [DSV4F_VOCAB_SIZE as u64, HIDDEN_SIZE as u64]
+    {
+        return Err(gravity("head.weight is not BF16[vocab,4096]"));
+    }
+    let row_bytes = HIDDEN_SIZE * std::mem::size_of::<u16>();
+    let mut best_id = 0u32;
+    let mut best_logit = f32::NEG_INFINITY;
+    let mut row = 0usize;
+    let dispatches_before = session.metal_dispatches();
+    while row < DSV4F_VOCAB_SIZE {
+        let count = (DSV4F_VOCAB_SIZE - row).min(ROWS_PER_BLOCK);
+        let start = (row * row_bytes) as u64;
+        let end = start + (count * row_bytes) as u64;
+        let bytes = reader.read_verified_range(LM_HEAD, start..end, count * row_bytes)?;
+        ledger.acquire(LM_HEAD, bytes.len())?;
+        let logits = session.lm_head_block(residual_f32, &bytes, count)?;
+        ledger.release(LM_HEAD)?;
+        drop(bytes);
+        let (block_id, block_logit) = greedy_from_logits(&logits, row);
+        if block_logit > best_logit || (block_logit == best_logit && block_id < best_id) {
+            best_logit = block_logit;
+            best_id = block_id;
+        }
+        row += count;
+    }
+    finish_greedy(
+        best_id,
+        best_logit,
+        session.metal_dispatches().saturating_sub(dispatches_before),
+    )
 }
 
 fn read_bf16_tracked(
@@ -1621,9 +2031,8 @@ pub fn write_checkpoint(path: &Path, checkpoint: &StreamedForwardCheckpoint) -> 
             fs::create_dir_all(parent)?;
         }
     }
-    let payload = serde_json::to_vec_pretty(checkpoint).map_err(|error| {
-        gravity(format!("checkpoint encode failed: {error}"))
-    })?;
+    let payload = serde_json::to_vec_pretty(checkpoint)
+        .map_err(|error| gravity(format!("checkpoint encode failed: {error}")))?;
     let tmp = path.with_extension("json.tmp");
     {
         let mut file = File::create(&tmp)?;
@@ -1636,11 +2045,12 @@ pub fn write_checkpoint(path: &Path, checkpoint: &StreamedForwardCheckpoint) -> 
 
 pub fn load_checkpoint(path: &Path) -> Result<StreamedForwardCheckpoint> {
     let raw = fs::read(path)?;
-    let checkpoint: StreamedForwardCheckpoint = serde_json::from_slice(&raw).map_err(|error| {
-        gravity(format!("checkpoint decode failed: {error}"))
-    })?;
+    let checkpoint: StreamedForwardCheckpoint = serde_json::from_slice(&raw)
+        .map_err(|error| gravity(format!("checkpoint decode failed: {error}")))?;
     if checkpoint.schema != STREAMED_CHECKPOINT_SCHEMA {
-        return Err(gravity("checkpoint schema is not the streamed-forward v1 state"));
+        return Err(gravity(
+            "checkpoint schema is not the streamed-forward v1 state",
+        ));
     }
     if checkpoint.native || checkpoint.execution_path != STREAMED_EXECUTION_PATH {
         return Err(gravity(
@@ -1845,7 +2255,8 @@ mod tests {
             uninterrupted.peak_rss_bytes == 0
                 || uninterrupted.peak_rss_bytes <= uninterrupted.declared_rss_bound_bytes,
             "measured peak RSS {} exceeded {}",
-            uninterrupted.peak_rss_bytes, uninterrupted.declared_rss_bound_bytes
+            uninterrupted.peak_rss_bytes,
+            uninterrupted.declared_rss_bound_bytes
         );
         assert_eq!(uninterrupted.layers_executed, vec![0]);
         assert!(!uninterrupted.native);
@@ -1864,5 +2275,76 @@ mod tests {
         assert_eq!(resumed.hc_bf16_sha256, uninterrupted.hc_bf16_sha256);
         assert_eq!(resumed.layers_executed, Vec::<usize>::new());
         assert_eq!(resumed.deepest_layer, None);
+    }
+
+    #[test]
+    fn metal_path_defaults_off_and_honesty_counts_start_at_zero() {
+        let config = StreamedForwardConfig::default();
+        assert!(!config.use_metal);
+        let honesty = StreamedForwardHonesty::host_oracle(true);
+        assert_eq!(honesty.metal_dispatches, 0);
+        assert_eq!(honesty.fallbacks, 0);
+        assert!(!honesty.native);
+    }
+
+    #[test]
+    fn operator_profile_orders_buckets_by_seconds() {
+        let mut profile = OperatorProfile::default();
+        profile.add("small", Duration::from_millis(10));
+        profile.add("large", Duration::from_millis(90));
+        profile.add("large", Duration::from_millis(10));
+        let rows = profile.to_sorted_rows();
+        assert_eq!(rows[0].name, "large");
+        assert_eq!(rows[0].calls, 2);
+        assert!(rows[0].percent > rows[1].percent);
+        assert!(profile.total_ns() > 0);
+    }
+
+    #[test]
+    fn live_metal_layer0_residency_and_real_dispatch_count() {
+        let Some(artifact) = live_artifact() else {
+            eprintln!(
+                "sealed DSV4F artifact not found; live metal residency skipped (set HAWKING_DSV4F_ARTIFACT)"
+            );
+            return;
+        };
+        let _guard = LIVE_LOCK.lock().unwrap();
+        let mut cfg = StreamedForwardConfig::for_layers(0).unwrap();
+        cfg.compute_final_head = false;
+        cfg.use_metal = true;
+        let report = match run_streamed_forward(&artifact, cfg) {
+            Ok(report) => report,
+            Err(error) => {
+                eprintln!("live metal layer 0 unavailable: {error}");
+                return;
+            }
+        };
+        assert_eq!(report.layers_executed, vec![0]);
+        assert!(!report.native);
+        assert!(
+            report.honesty.metal_dispatches > 0,
+            "metal path must increment a real dispatch counter, got {}",
+            report.honesty.metal_dispatches
+        );
+        assert_eq!(
+            report.honesty.fallbacks, 0,
+            "layer-0 metal linears should not fall back: {:?}",
+            report.honesty
+        );
+        assert!(report.weight_within_bound);
+        assert!(
+            report.peak_rss_bytes == 0 || report.peak_rss_bytes <= report.declared_rss_bound_bytes
+        );
+        assert!(report.peak_weight_resident_bytes < SCHEDULE_STREAMED_DECODE_PEAK_BYTES);
+        assert!(
+            report.operator_profile.buckets_ns.contains_key("mla_wq_a")
+                && report.operator_profile.buckets_ns.contains_key("routed_w1"),
+            "expected metal linear buckets, got {:?}",
+            report
+                .operator_profile
+                .buckets_ns
+                .keys()
+                .collect::<Vec<_>>()
+        );
     }
 }

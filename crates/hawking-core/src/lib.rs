@@ -116,6 +116,10 @@ pub mod gravity_deepseek_v4_verified_tensor_cache;
 /// DeepSeek-V4-Flash 43-layer source stream. Operator-streamed CPU oracle;
 /// not native, not Engine, not a TPS or coherence claim.
 pub mod gravity_deepseek_v4_streamed_forward;
+/// Opt-in Metal operators for the streamed DeepSeek-V4-Flash BOS decode.
+/// Default-off; the CPU oracle remains the parity reference.
+pub mod gravity_deepseek_v4_streamed_native;
+
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;
