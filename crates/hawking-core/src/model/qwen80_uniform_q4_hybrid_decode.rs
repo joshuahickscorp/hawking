@@ -1127,6 +1127,33 @@ pub struct Qwen80UniformQ4HybridDecodeSession {
 }
 
 impl Qwen80UniformQ4HybridDecodeSession {
+    pub fn reload_kernels(&mut self) -> Result<Qwen80KernelReloadReport> {
+        let started = Instant::now();
+        #[cfg(target_os = "macos")]
+        {
+            match MetalQ4Accel::new() {
+                Ok(accel) => {
+                    self.metal = Some(accel);
+                    self.metal_error = None;
+                }
+                Err(error) => {
+                    self.metal = None;
+                    self.metal_error = Some(error.to_string());
+                }
+            }
+        }
+        #[cfg(target_os = "macos")]
+        let rebuilt_metal = self.metal.is_some();
+        #[cfg(not(target_os = "macos"))]
+        let rebuilt_metal = false;
+        Ok(Qwen80KernelReloadReport {
+            rebuilt_metal,
+            catalog_reopened: false,
+            elapsed_secs: started.elapsed().as_secs_f64(),
+            metal_error: self.metal_error.clone(),
+        })
+    }
+
     pub fn new(catalog: Qwen80UniformQ4StreamingCatalog, max_seq_len: usize) -> Result<Self> {
         #[cfg(target_os = "macos")]
         let (metal, metal_error) = match MetalQ4Accel::new() {
@@ -1970,4 +1997,12 @@ mod tests {
         let result = generate_greedy(&mut session, &tokenizer, &prompt, 3).unwrap();
         assert_eq!(result.generated_token_ids, vec![9707, 0, 2585]);
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct Qwen80KernelReloadReport {
+    pub rebuilt_metal: bool,
+    pub catalog_reopened: bool,
+    pub elapsed_secs: f64,
+    pub metal_error: Option<String>,
 }

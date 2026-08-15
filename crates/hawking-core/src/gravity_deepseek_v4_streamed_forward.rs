@@ -784,7 +784,33 @@ pub fn run_streamed_forward(
     }
     let admission = prepare_sealed_admission_root(artifact.as_ref())?;
     let reader = DeepSeekV4FullStreamReader::admit(&admission.path)?;
-    let anchors = verify_deepseek_v4_layer_source_anchors(&reader)?;
+    let mut metal = if config.use_metal {
+        Some(StreamedNativeSession::new()?)
+    } else {
+        None
+    };
+    let mut report = run_streamed_forward_admitted(&admission, &reader, metal.as_mut(), config)?;
+    report.wall_ms = wall.elapsed().as_millis();
+    Ok(report)
+}
+
+/// Same forward as [`run_streamed_forward`], but on an already-admitted
+/// reader and an optional live Metal session. Used by the research server so
+/// a second greedy does not re-parse the sealed stream or recompile shaders.
+pub fn run_streamed_forward_admitted(
+    admission: &SealedAdmissionRoot,
+    reader: &DeepSeekV4FullStreamReader,
+    mut metal: Option<&mut StreamedNativeSession>,
+    config: StreamedForwardConfig,
+) -> Result<StreamedForwardReport> {
+    let wall = Instant::now();
+    if config.max_layer >= DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT {
+        return Err(gravity(format!(
+            "max_layer {} is outside the 0..42 base body",
+            config.max_layer
+        )));
+    }
+    let anchors = verify_deepseek_v4_layer_source_anchors(reader)?;
     if anchors.identity().repository != PINNED_REPOSITORY
         || anchors.identity().revision != PINNED_REVISION
     {
@@ -798,11 +824,8 @@ pub fn run_streamed_forward(
     let mut layers_executed = Vec::new();
     let mut stop_reason = None;
     let mut profile = OperatorProfile::default();
-    let mut metal = if config.use_metal {
-        Some(StreamedNativeSession::new()?)
-    } else {
-        None
-    };
+    let dispatch0 = metal.as_ref().map(|s| s.metal_dispatches()).unwrap_or(0);
+    let fallback0 = metal.as_ref().map(|s| s.fallbacks()).unwrap_or(0);
 
     let (mut hc_bf16_bits, mut next_layer, mut completed) = if config.resume {
         let path = config
@@ -837,13 +860,13 @@ pub fn run_streamed_forward(
     while next_layer <= config.max_layer {
         let layer_anchor = anchors.layer(next_layer)?.clone();
         match execute_one_layer(
-            &reader,
+            reader,
             &layer_anchor,
             &hc_bf16_bits,
             config.token_id,
             &mut ledger,
             &mut profile,
-            metal.as_mut(),
+            metal.as_deref_mut(),
         ) {
             Ok(next_hc) => {
                 hc_bf16_bits = next_hc;
@@ -903,9 +926,9 @@ pub fn run_streamed_forward(
         let merged = host_merge_final_head_from_hc_bf16(&reader, &hc_bf16_bits)?;
         profile.add("lm_head_merge", t_merge.elapsed());
         let t_head = Instant::now();
-        let result = match metal.as_mut() {
+        let result = match metal.as_deref_mut() {
             Some(session) => {
-                match streamed_metal_lm_head(&reader, &mut ledger, session, &merged.merged_f32) {
+                match streamed_metal_lm_head(reader, &mut ledger, session, &merged.merged_f32) {
                     Ok(token) => {
                         lm_head_on_device = token.lm_head_on_device;
                         profile.add("lm_head_metal", t_head.elapsed());
@@ -939,8 +962,14 @@ pub fn run_streamed_forward(
         )));
     }
 
-    let metal_dispatches = metal.as_ref().map(|s| s.metal_dispatches()).unwrap_or(0);
-    let fallbacks = metal.as_ref().map(|s| s.fallbacks()).unwrap_or(0);
+    let metal_dispatches = metal
+        .as_ref()
+        .map(|s| s.metal_dispatches().saturating_sub(dispatch0))
+        .unwrap_or(0);
+    let fallbacks = metal
+        .as_ref()
+        .map(|s| s.fallbacks().saturating_sub(fallback0))
+        .unwrap_or(0);
     let execution_path = if metal_dispatches > 0 {
         STREAMED_EXECUTION_PATH_METAL
     } else {

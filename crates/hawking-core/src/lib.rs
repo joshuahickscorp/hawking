@@ -206,3 +206,7 @@ pub fn env_usize(name: &str, default: usize) -> usize {
         .and_then(|v| v.parse().ok())
         .unwrap_or(default)
 }
+
+/// Persistent local research harness: keeps Metal + one admitted model
+/// resident so a dirty Tier-1 loop does not re-pay startup. DIRTY_TIER1 only.
+pub mod research_server;

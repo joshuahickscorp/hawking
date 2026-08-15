@@ -32,6 +32,12 @@ from lab.operators.hgravs01_adapter import (
     is_hgravs01_rung,
 )
 
+import os as _os
+
+# Rung budget clamp. Historically hardcoded 0.98, which silently rebudgeted any
+# act-SVD rung above it down to rank 64 even when the prescription target was 1.5.
+_RUNG_BUDGET_BPW = float(_os.environ.get("HAWKING_RUNG_BUDGET_BPW", "0.98"))
+
 # ---------------------------------------------------------------------------
 # Absorb-lane entry points (optional). Marked STUB when absent.
 # ---------------------------------------------------------------------------
@@ -414,7 +420,7 @@ def apply_rung(
         rank = min(rank, X_rot.shape[0], W_rot.shape[0], W_rot.shape[1])
         rec_rot, nbytes = quant_act_svd(W_rot, X_rot, rank=max(1, rank), bits=bits)
         local = 8.0 * nbytes / max(W.size, 1)
-        if prefer_budget and local > 0.98:
+        if prefer_budget and local > _RUNG_BUDGET_BPW:
             rank2 = max(1, min(64, rank))
             rec_rot, nbytes = quant_act_svd(W_rot, X_rot, rank=rank2, bits=3)
             tag = f"{tag}_rebudget"
@@ -455,7 +461,7 @@ def apply_rung(
         resid_bytes = int(idx.astype(np.uint32).nbytes + vals.nbytes)
         nbytes = base_bytes + resid_bytes
         codec = f"actsvd_r{rank}_b3_sparse_resid_{frac:.0%}"
-        if prefer_budget and 8.0 * nbytes / max(W.size, 1) > 0.98:
+        if prefer_budget and 8.0 * nbytes / max(W.size, 1) > _RUNG_BUDGET_BPW:
             rec, nbytes = base, base_bytes
             codec = f"actsvd_r{rank}_b3_resid_dropped_budget"
         W_hat = (rec @ R.T) / np.maximum(s[None, :], 1e-12)
