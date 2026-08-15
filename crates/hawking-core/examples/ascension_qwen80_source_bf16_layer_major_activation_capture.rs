@@ -11,6 +11,7 @@
 //!     push ALL probe tokens through that layer (probe-local causal state)
 //!     retain router-input hiddens under per-expert first-N (after top-k known)
 //!     write retained hidden rows + full route membership
+//!     free this layer's retained hidden payloads
 //!     free the layer weights
 //! ```
 //!
@@ -38,10 +39,12 @@ fn main() {
 #[cfg(target_os = "macos")]
 mod macos {
     use hawking_core::model::qwen80_source_bf16_layer_major::{
-        capture_all_layers, embed_probes, greedy_decode_user_prompt, is_coherent_paris_continuation,
-        peak_rss_bytes, LayerTokenCapture, SourceBf16Index, DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT,
-        STREAMED_PEAK_RSS_HARD_CAP_BYTES, QWEN80_EXPERTS, QWEN80_HIDDEN, QWEN80_LAYERS,
-        QWEN80_TOP_K,
+        capture_all_layers, embed_probes, format_capture_progress, greedy_decode_user_prompt,
+        is_coherent_paris_continuation, max_hidden_tokens_per_expert_within_streamed_cap,
+        peak_rss_bytes, retained_hidden_relative_path, worst_case_retained_hidden_bytes_per_layer,
+        worst_case_unique_rows_per_layer, write_retained_hidden_f32le, LayerTokenCapture,
+        SourceBf16Index, DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, QWEN80_EXPERTS, QWEN80_HIDDEN,
+        QWEN80_LAYERS, QWEN80_TOP_K, STREAMED_PEAK_RSS_HARD_CAP_BYTES,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -212,16 +215,13 @@ mod macos {
         }
         // Worst-case unique retained rows/layer = N * experts (no multi-route
         // credit). Co-routing typically keeps realised rows well below this.
-        // At N=64 × 512 × 48 × 2048 × 4 ≈ 12.0 GiB; STREAMED_PEAK_RSS is 16 GiB.
-        let budget_bytes = max_hidden_tokens_per_expert
-            .saturating_mul(QWEN80_EXPERTS)
-            .saturating_mul(QWEN80_LAYERS)
-            .saturating_mul(QWEN80_HIDDEN)
-            .saturating_mul(4);
-        // Keep worst-case retained-hidden budget under the streamed RSS hard cap.
+        // Per-layer flush: only one layer's retained rows are resident.
+        // At N=64 × 512 × 2048 × 4 ≈ 0.25 GiB; STREAMED_PEAK_RSS is 16 GiB.
         // Do not raise STREAMED_PEAK_RSS_HARD_CAP_BYTES to fit a larger N.
-        let max_hidden_budget_bytes = STREAMED_PEAK_RSS_HARD_CAP_BYTES as usize;
-        if budget_bytes > max_hidden_budget_bytes {
+        if !max_hidden_tokens_per_expert_within_streamed_cap(max_hidden_tokens_per_expert) {
+            let budget_bytes =
+                worst_case_retained_hidden_bytes_per_layer(max_hidden_tokens_per_expert);
+            let max_hidden_budget_bytes = STREAMED_PEAK_RSS_HARD_CAP_BYTES as usize;
             return Err(format!(
                 "--max-hidden-tokens-per-expert {max_hidden_tokens_per_expert} implies \
                  worst-case ~{budget_bytes} retained hidden bytes \
@@ -390,7 +390,7 @@ mod macos {
             for probe_caps in captures {
                 for token_caps in probe_caps {
                     let layer_cap = &token_caps[layer];
-                    if layer_cap.router_input_hidden.is_empty() {
+                    if !layer_cap.hidden_retained {
                         continue;
                     }
                     for &expert in &layer_cap.selected_expert_ids {
@@ -443,33 +443,6 @@ mod macos {
         })
     }
 
-    fn write_hidden(path: &Path, values: &[f32]) -> Result<(String, usize), String> {
-        let parent = path
-            .parent()
-            .ok_or_else(|| format!("hidden capture path has no parent: {}", path.display()))?;
-        fs::create_dir_all(parent).map_err(|e| {
-            format!(
-                "cannot create hidden capture directory {}: {e}",
-                parent.display()
-            )
-        })?;
-        let mut file = OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(path)
-            .map_err(|e| format!("cannot create hidden {}: {e}", path.display()))?;
-        let mut digest = Sha256::new();
-        for value in values {
-            let bytes = value.to_le_bytes();
-            file.write_all(&bytes)
-                .map_err(|e| format!("cannot write hidden {}: {e}", path.display()))?;
-            digest.update(bytes);
-        }
-        file.flush()
-            .map_err(|e| format!("cannot flush hidden {}: {e}", path.display()))?;
-        Ok((format!("{:x}", digest.finalize()), values.len() * 4))
-    }
-
     fn write_json_new(path: &Path, value: &Value) -> Result<(), String> {
         let mut file = OpenOptions::new()
             .create_new(true)
@@ -493,9 +466,10 @@ mod macos {
     }
 
     fn run_coherence(arguments: &Arguments) {
-        let tokenizer = arguments.tokenizer_path.clone().unwrap_or_else(|| {
-            arguments.source_model_dir.join("tokenizer.json")
-        });
+        let tokenizer = arguments
+            .tokenizer_path
+            .clone()
+            .unwrap_or_else(|| arguments.source_model_dir.join("tokenizer.json"));
         if !tokenizer.is_file() {
             fail(format!("tokenizer missing at {}", tokenizer.display()));
         }
@@ -511,13 +485,9 @@ mod macos {
             arguments.max_new_tokens
         );
         let started = Instant::now();
-        let result = greedy_decode_user_prompt(
-            &index,
-            &tokenizer,
-            PARIS_PROMPT,
-            arguments.max_new_tokens,
-        )
-        .unwrap_or_else(|e| fail(e.to_string()));
+        let result =
+            greedy_decode_user_prompt(&index, &tokenizer, PARIS_PROMPT, arguments.max_new_tokens)
+                .unwrap_or_else(|e| fail(e.to_string()));
         let wall = started.elapsed();
         let peak = peak_rss_bytes().max(result.peak_rss_bytes);
         refuse_if_resident_load(peak);
@@ -593,14 +563,12 @@ mod macos {
             .saturating_mul(QWEN80_HIDDEN)
             .saturating_mul(4);
         // Worst-case unique rows/layer under first-N (no multi-route credit).
-        let worst_case_rows_per_layer = arguments
-            .max_hidden_tokens_per_expert
-            .saturating_mul(QWEN80_EXPERTS)
-            .min(total_tokens);
-        let retained_hidden_budget_bytes = worst_case_rows_per_layer
-            .saturating_mul(QWEN80_LAYERS)
-            .saturating_mul(QWEN80_HIDDEN)
-            .saturating_mul(4);
+        // Per-layer flush: the RAM budget is one layer, not ×48.
+        let worst_case_rows_per_layer =
+            worst_case_unique_rows_per_layer(arguments.max_hidden_tokens_per_expert)
+                .min(total_tokens);
+        let retained_hidden_budget_bytes =
+            worst_case_retained_hidden_bytes_per_layer(arguments.max_hidden_tokens_per_expert);
 
         fs::create_dir(&output_dir).unwrap_or_else(|e| {
             fail(format!(
@@ -619,14 +587,13 @@ mod macos {
         }
 
         eprintln!(
-            "capture: {} probes, {} tokens, per-expert first-N={} (worst-case {} rows/layer ≈{:.1} MiB f32@2048); source tensors={}",
-            probes.len(),
-            total_tokens,
-            arguments.max_hidden_tokens_per_expert,
-            worst_case_rows_per_layer,
-            (worst_case_rows_per_layer.saturating_mul(QWEN80_HIDDEN).saturating_mul(4) as f64)
-                / (1024.0 * 1024.0),
-            index.tensor_count()
+            "{}",
+            format_capture_progress(
+                probes.len(),
+                total_tokens,
+                arguments.max_hidden_tokens_per_expert,
+                index.tensor_count(),
+            )
         );
 
         let started = Instant::now();
@@ -644,22 +611,79 @@ mod macos {
             }
             refuse_if_resident_load(peak_rss_bytes());
         };
+        // hidden_writes[probe][position][layer] = metadata written during flush.
+        let mut hidden_writes: Vec<Vec<Vec<Option<(String, String, usize, usize)>>>> = probes
+            .iter()
+            .map(|(_, toks)| {
+                (0..toks.len())
+                    .map(|_| Vec::with_capacity(QWEN80_LAYERS))
+                    .collect()
+            })
+            .collect();
+        let mut hidden_bytes_written = 0usize;
+        let mut hidden_rows_retained_total = 0usize;
+        let mut hidden_rows_per_layer = vec![0usize; QWEN80_LAYERS];
+        let mut on_layer_flush = |layer_idx: usize,
+                                  captures: &mut [Vec<Vec<LayerTokenCapture>>]|
+         -> hawking_core::Result<()> {
+            for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
+                for pos in 0..token_ids.len() {
+                    let cap = captures
+                        .get(pi)
+                        .and_then(|p| p.get(pos))
+                        .and_then(|t| t.get(layer_idx))
+                        .ok_or_else(|| {
+                            hawking_core::Error::Model(format!(
+                                "flush missing capture {probe_id}@{pos} L{layer_idx}"
+                            ))
+                        })?;
+                    if cap.hidden_retained {
+                        if cap.router_input_hidden.len() != QWEN80_HIDDEN {
+                            return Err(hawking_core::Error::Model(format!(
+                                "{probe_id}@{pos} L{layer_idx}: retained hidden width {} != {QWEN80_HIDDEN}",
+                                cap.router_input_hidden.len()
+                            )));
+                        }
+                        let hidden_relative =
+                            retained_hidden_relative_path(layer_idx, probe_id, pos);
+                        let (hidden_sha256, hidden_bytes) = write_retained_hidden_f32le(
+                            &output_dir.join(&hidden_relative),
+                            &cap.router_input_hidden,
+                        )?;
+                        hidden_bytes_written = hidden_bytes_written.saturating_add(hidden_bytes);
+                        hidden_rows_retained_total = hidden_rows_retained_total.saturating_add(1);
+                        if layer_idx < QWEN80_LAYERS {
+                            hidden_rows_per_layer[layer_idx] =
+                                hidden_rows_per_layer[layer_idx].saturating_add(1);
+                        }
+                        hidden_writes[pi][pos].push(Some((
+                            hidden_relative,
+                            hidden_sha256,
+                            hidden_bytes,
+                            cap.router_input_hidden.len(),
+                        )));
+                    } else {
+                        hidden_writes[pi][pos].push(None);
+                    }
+                }
+            }
+            refuse_if_resident_load(peak_rss_bytes());
+            Ok(())
+        };
         let (captures, telem) = capture_all_layers(
             &index,
             &probes,
             &mut hiddens,
             arguments.max_hidden_tokens_per_expert,
             Some(&mut on_layer),
+            Some(&mut on_layer_flush),
         )
         .unwrap_or_else(|e| fail(e.to_string()));
         drop(hiddens);
 
         let mut probe_rows = Vec::with_capacity(probes.len());
         let mut tokens_executed = 0usize;
-        let mut hidden_bytes_written = 0usize;
         let mut route_membership_total = 0usize;
-        let mut hidden_rows_retained_total = 0usize;
-        let mut hidden_rows_per_layer = vec![0usize; QWEN80_LAYERS];
 
         for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
             let mut steps = Vec::with_capacity(token_ids.len());
@@ -682,43 +706,32 @@ mod macos {
                             layer_cap.layer
                         ));
                     }
-                    route_membership_total = route_membership_total
-                        .saturating_add(layer_cap.selected_expert_ids.len());
+                    route_membership_total =
+                        route_membership_total.saturating_add(layer_cap.selected_expert_ids.len());
                     // Per-expert first-N is decided inside capture_all_layers after
-                    // routing; the writer trusts non-empty router_input_hidden as the
-                    // sole retained-hidden authority (must not re-derive a position set).
-                    let store_hidden = !layer_cap.router_input_hidden.is_empty();
+                    // routing. Rows are written during the per-layer flush; the
+                    // retain flag (not the now-empty payload) is the authority.
+                    let store_hidden = layer_cap.hidden_retained;
                     if store_hidden {
-                        if layer_cap.router_input_hidden.len() != QWEN80_HIDDEN {
-                            fail(format!(
-                                "{probe_id}@{pos} L{}: retained hidden width {} != {QWEN80_HIDDEN}",
-                                layer_cap.layer,
-                                layer_cap.router_input_hidden.len()
-                            ));
-                        }
                         any_layer_retained = true;
-                        hidden_rows_retained_total =
-                            hidden_rows_retained_total.saturating_add(1);
-                        if layer_cap.layer < QWEN80_LAYERS {
-                            hidden_rows_per_layer[layer_cap.layer] =
-                                hidden_rows_per_layer[layer_cap.layer].saturating_add(1);
-                        }
                     }
                     let hidden_meta = if store_hidden {
-                        let hidden_relative = format!(
-                            "hidden/L{:02}/{}/{:06}.f32le",
-                            layer_cap.layer, probe_id, pos
-                        );
-                        let hidden_path = output_dir.join(&hidden_relative);
-                        let (hidden_sha256, hidden_bytes) =
-                            write_hidden(&hidden_path, &layer_cap.router_input_hidden)
-                                .unwrap_or_else(|e| fail(e));
-                        hidden_bytes_written = hidden_bytes_written.saturating_add(hidden_bytes);
+                        let written = hidden_writes
+                            .get(pi)
+                            .and_then(|p| p.get(pos))
+                            .and_then(|t| t.get(layer_cap.layer))
+                            .and_then(|slot| slot.as_ref())
+                            .unwrap_or_else(|| {
+                                fail(format!(
+                                    "{probe_id}@{pos} L{}: retained but not written during flush",
+                                    layer_cap.layer
+                                ))
+                            });
                         Some(json!({
-                            "relative_path": hidden_relative,
-                            "sha256": hidden_sha256,
-                            "bytes": hidden_bytes,
-                            "elements": layer_cap.router_input_hidden.len(),
+                            "relative_path": written.0,
+                            "sha256": written.1,
+                            "bytes": written.2,
+                            "elements": written.3,
                             "source": "BF16-source layer-streamed post-attention RMSNorm buffer at this layer, copied after router top-k and before expert wave",
                         }))
                     } else {
@@ -829,7 +842,7 @@ mod macos {
             },
             "bounded_storage": {
                 "strategy": "per_expert_first_n_router_input_hiddens_plus_full_route_membership",
-                "why": "Per-layer stratified subsample shared across 512 experts left well under 1 row/organ on Q80 (top-10). First-N per expert after routing is known guarantees up to N retained rows per (layer, expert) while keeping full route membership and staying inside the streamed RSS cap.",
+                "why": "Per-layer stratified subsample shared across 512 experts left well under 1 row/organ on Q80 (top-10). First-N per expert after routing is known guarantees up to N retained rows per (layer, expert) while keeping full route membership. Retained hidden rows are flushed per layer and freed before the next layer loads, so the streamed RSS cap bounds one layer rather than ×48.",
                 "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
                 "retention_policy": "first_N_tokens_that_route_to_expert_in_global_token_order",
                 "deterministic": true,

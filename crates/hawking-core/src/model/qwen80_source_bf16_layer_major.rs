@@ -5,7 +5,9 @@
 //! * Generation and capture both stream one layer's weights at a time via
 //!   safetensors range-reads, then free them.
 //! * Capture inverts the loop (layer-major): load layer N, push ALL corpus
-//!   tokens through it, write routes + retained hiddens, free weights.
+//!   tokens through it, write routes + retained hiddens, free that layer's
+//!   retained hidden rows, then free the layer weights. Only one layer's
+//!   hidden payloads are resident at a time; route membership stays complete.
 //!
 //! Operator semantics are **reused** from `qwen80_complete_runtime`:
 //! residual RMSNorm `(1+w)`, Gated DeltaNet recurrence, GQA q/k norm + partial
@@ -25,9 +27,10 @@ use crate::model::qwen80_complete_runtime::{
 };
 use crate::{Error, Result};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Read;
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Write};
 #[cfg(not(unix))]
 use std::io::{Seek, SeekFrom};
 #[cfg(unix)]
@@ -58,10 +61,88 @@ pub const PER_LAYER_EXPERT_BF16_BYTES: u64 = 3 * 1024 * 1024 * 1024;
 ///
 /// Chosen so organs see enough fit rows to pass the null test (failure is sharp
 /// below ~16 rows; flattens above ~32). At N=64 × 512 experts the worst-case
-/// unique rows/layer is 32768 (≈256 MiB of f32@2048). Captures stay per-layer
-/// resident for the streamed contract; worst-case all-layer unique retention is
-/// ≈12 GiB, under [`STREAMED_PEAK_RSS_HARD_CAP_BYTES`] (16 GiB).
+/// unique rows/layer is 32768 (≈256 MiB of f32@2048). Retained hidden payloads
+/// are flushed and freed at the end of each layer, so only that per-layer
+/// footprint is resident — not × [`QWEN80_LAYERS`].
 pub const DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT: usize = 64;
+
+/// Worst-case unique retained rows at one layer under first-N (no multi-route credit).
+#[inline]
+pub fn worst_case_unique_rows_per_layer(max_hidden_tokens_per_expert: usize) -> usize {
+    max_hidden_tokens_per_expert.saturating_mul(QWEN80_EXPERTS)
+}
+
+/// Worst-case resident retained-hidden bytes at one layer (`f32` × hidden).
+///
+/// Per-layer flush means this is the capture RAM budget: it is **not**
+/// multiplied by [`QWEN80_LAYERS`].
+#[inline]
+pub fn worst_case_retained_hidden_bytes_per_layer(max_hidden_tokens_per_expert: usize) -> usize {
+    worst_case_unique_rows_per_layer(max_hidden_tokens_per_expert)
+        .saturating_mul(QWEN80_HIDDEN)
+        .saturating_mul(4)
+}
+
+/// `true` iff first-N = `n` fits under [`STREAMED_PEAK_RSS_HARD_CAP_BYTES`].
+///
+/// `n == 0` is refused (the CLI requires a positive per-expert quota).
+#[inline]
+pub fn max_hidden_tokens_per_expert_within_streamed_cap(n: usize) -> bool {
+    n > 0
+        && worst_case_retained_hidden_bytes_per_layer(n)
+            <= STREAMED_PEAK_RSS_HARD_CAP_BYTES as usize
+}
+
+/// Stderr progress line printed by the layer-major capture driver.
+pub fn format_capture_progress(
+    probe_count: usize,
+    total_tokens: usize,
+    max_hidden_tokens_per_expert: usize,
+    source_tensor_count: usize,
+) -> String {
+    let worst = worst_case_unique_rows_per_layer(max_hidden_tokens_per_expert).min(total_tokens);
+    let mib = (worst.saturating_mul(QWEN80_HIDDEN).saturating_mul(4) as f64) / (1024.0 * 1024.0);
+    format!(
+        "capture: {probe_count} probes, {total_tokens} tokens, per-expert first-N={max_hidden_tokens_per_expert} (worst-case {worst} rows/layer ≈{mib:.1} MiB f32@2048); source tensors={source_tensor_count}"
+    )
+}
+
+/// On-disk relative path for one retained hidden row. Consumers resolve this
+/// against the capture output directory (`hidden/L{{layer}}/{{probe}}/{{pos}}.f32le`).
+pub fn retained_hidden_relative_path(layer: usize, probe_id: &str, position: usize) -> String {
+    format!("hidden/L{layer:02}/{probe_id}/{position:06}.f32le")
+}
+
+/// Write one retained hidden row as little-endian f32. Refuses to overwrite.
+pub fn write_retained_hidden_f32le(path: &Path, values: &[f32]) -> Result<(String, usize)> {
+    let parent = path.parent().ok_or_else(|| {
+        model_err(format!(
+            "hidden capture path has no parent: {}",
+            path.display()
+        ))
+    })?;
+    std::fs::create_dir_all(parent).map_err(|e| {
+        model_err(format!(
+            "cannot create hidden capture directory {}: {e}",
+            parent.display()
+        ))
+    })?;
+    let mut file = OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .open(path)
+        .map_err(|e| model_err(format!("cannot create hidden {}: {e}", path.display())))?;
+    let mut digest = Sha256::new();
+    for value in values {
+        let bytes = value.to_le_bytes();
+        file.write_all(&bytes)
+            .map_err(|e| model_err(format!("cannot write hidden {}: {e}", path.display())))?;
+        digest.update(bytes);
+    }
+    file.flush()
+        .map_err(|e| model_err(format!("cannot flush hidden {}: {e}", path.display())))?;
+    Ok((format!("{:x}", digest.finalize()), values.len() * 4))
+}
 
 /// Deterministic per-expert first-N retention for one token.
 ///
@@ -94,6 +175,104 @@ pub fn credit_expert_first_n_retention(
     retain
 }
 
+/// Bytes of retained hidden payloads currently sitting in `captures`.
+///
+/// After a per-layer flush this is the in-memory footprint of one layer (or
+/// zero once that layer has been released). It must not grow with layer index.
+pub fn resident_retained_hidden_bytes(captures: &[Vec<Vec<LayerTokenCapture>>]) -> usize {
+    captures
+        .iter()
+        .flatten()
+        .flatten()
+        .map(|cap| cap.router_input_hidden.len().saturating_mul(4))
+        .sum()
+}
+
+/// Drop retained hidden payloads for `layer_idx`. Route membership is left
+/// intact; [`LayerTokenCapture::hidden_retained`] still records whether a row
+/// was kept. Returns the number of `f32` elements freed.
+pub fn release_layer_retained_hiddens(
+    captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    layer_idx: usize,
+) -> usize {
+    let mut freed = 0usize;
+    for probe in captures.iter_mut() {
+        for token in probe.iter_mut() {
+            for cap in token.iter_mut() {
+                if cap.layer == layer_idx {
+                    freed = freed.saturating_add(cap.router_input_hidden.len());
+                    cap.router_input_hidden = Vec::new();
+                }
+            }
+        }
+    }
+    freed
+}
+
+/// Apply per-expert first-N retention and append one layer of captures.
+///
+/// `all_router_in` is `[token, hidden]` in the same global order as
+/// `token_index` / `routes`. Expert-retained counters reset each call (each
+/// layer). Does not touch residual streams.
+pub fn append_retained_layer_captures(
+    captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    token_index: &[(usize, usize)],
+    routes: &mut [(Vec<u32>, Vec<f32>)],
+    all_router_in: &[f32],
+    layer_idx: usize,
+    max_hidden_tokens_per_expert: usize,
+) -> Result<()> {
+    if all_router_in.len() != token_index.len().saturating_mul(QWEN80_HIDDEN) {
+        return Err(model_err("router-input/token_index length mismatch"));
+    }
+    if routes.len() != token_index.len() {
+        return Err(model_err("routes/token_index length mismatch"));
+    }
+    let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
+    for (t, &(pi, pos)) in token_index.iter().enumerate() {
+        if pi >= captures.len() || pos >= captures[pi].len() {
+            return Err(model_err(format!(
+                "token_index ({pi},{pos}) out of capture bounds"
+            )));
+        }
+        let (ids, weights) = std::mem::take(&mut routes[t]);
+        let retain = credit_expert_first_n_retention(
+            &mut expert_retained,
+            &ids,
+            max_hidden_tokens_per_expert,
+        );
+        let hidden = if retain {
+            all_router_in[t * QWEN80_HIDDEN..(t + 1) * QWEN80_HIDDEN].to_vec()
+        } else {
+            Vec::new()
+        };
+        captures[pi][pos].push(LayerTokenCapture {
+            layer: layer_idx,
+            selected_expert_ids: ids,
+            normalized_route_weights: weights,
+            router_input_hidden: hidden,
+            hidden_retained: retain,
+        });
+    }
+    Ok(())
+}
+
+/// Invoke `on_flush` (write this layer's retained rows) then drop those
+/// payloads so they are not resident when the next layer loads.
+pub fn flush_and_release_layer_hiddens<F>(
+    captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    layer_idx: usize,
+    on_flush: Option<&mut F>,
+) -> Result<usize>
+where
+    F: FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>]) -> Result<()>,
+{
+    if let Some(cb) = on_flush {
+        cb(layer_idx, captures)?;
+    }
+    Ok(release_layer_retained_hiddens(captures, layer_idx))
+}
+
 fn model_err(msg: impl Into<String>) -> Error {
     Error::Model(msg.into())
 }
@@ -115,12 +294,7 @@ pub fn widen_bf16_mat(weight_le: &[u8], rows: usize, cols: usize) -> Result<Vec<
 }
 
 /// BF16-LE → f32 widen into a caller-owned buffer (avoids per-call alloc when reused).
-pub fn widen_bf16_into(
-    weight_le: &[u8],
-    rows: usize,
-    cols: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn widen_bf16_into(weight_le: &[u8], rows: usize, cols: usize, out: &mut [f32]) -> Result<()> {
     let n = rows
         .checked_mul(cols)
         .ok_or_else(|| model_err("widen_bf16_into size overflow"))?;
@@ -355,9 +529,9 @@ fn moe_routed_experts_parallel(
         let dst = &mut moe_out[t * h..(t + 1) * h];
         for (&eid, &w) in ids.iter().zip(weights.iter()) {
             let e = eid as usize;
-            let local_i = *local_of[e].get(&t).ok_or_else(|| {
-                model_err(format!("token {t} missing local row for expert {e}"))
-            })?;
+            let local_i = *local_of[e]
+                .get(&t)
+                .ok_or_else(|| model_err(format!("token {t} missing local row for expert {e}")))?;
             let src = &expert_down[e][local_i * h..(local_i + 1) * h];
             for j in 0..h {
                 dst[j] += src[j] * w;
@@ -707,7 +881,13 @@ pub fn gemm_bf16(
 ///
 /// Large mats (lm_head, big projections): widen once and hit Accelerate GEMM.
 /// Small projections: on-the-fly convert keeps the decode working set lean.
-pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mut [f32]) -> Result<()> {
+pub fn gemv_bf16(
+    weight_le: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
     if x.len() != cols || out.len() != rows {
         return Err(model_err(format!(
             "gemv_bf16 geometry: x={} out={} rows={rows} cols={cols}",
@@ -768,7 +948,13 @@ pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mu
 }
 
 /// Row-major GEMV with f32 rows (after a one-shot BF16 widen of a small tensor).
-pub fn gemv_f32_rows(w: &[f32], rows: usize, cols: usize, x: &[f32], out: &mut [f32]) -> Result<()> {
+pub fn gemv_f32_rows(
+    w: &[f32],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
     if x.len() != cols || out.len() != rows || w.len() < rows * cols {
         return Err(model_err(format!(
             "gemv_f32 geometry: w={} x={} out={} rows={rows} cols={cols}",
@@ -843,7 +1029,9 @@ impl SourceBf16Index {
                 }
                 let (begin, end) = info.data_offsets;
                 if end < begin {
-                    return Err(model_err(format!("tensor {name} has inverted data_offsets")));
+                    return Err(model_err(format!(
+                        "tensor {name} has inverted data_offsets"
+                    )));
                 }
                 let nbytes = (end - begin) as usize;
                 map.insert(
@@ -1092,8 +1280,8 @@ struct SafetensorsTensorInfo {
 }
 
 fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
-    let mut file = File::open(path)
-        .map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
+    let mut file =
+        File::open(path).map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
     let mut len_buf = [0u8; 8];
     file.read_exact(&mut len_buf).map_err(|e| {
         model_err(format!(
@@ -1249,9 +1437,11 @@ impl LoadedLayer {
         let post_attention_layernorm =
             index.read_f32(&layer_name(layer, "post_attention_layernorm.weight"))?;
         let router = index.read_raw(&layer_name(layer, "mlp.gate.weight"))?;
-        let shared_gate = index.read_raw(&layer_name(layer, "mlp.shared_expert.gate_proj.weight"))?;
+        let shared_gate =
+            index.read_raw(&layer_name(layer, "mlp.shared_expert.gate_proj.weight"))?;
         let shared_up = index.read_raw(&layer_name(layer, "mlp.shared_expert.up_proj.weight"))?;
-        let shared_down = index.read_raw(&layer_name(layer, "mlp.shared_expert.down_proj.weight"))?;
+        let shared_down =
+            index.read_raw(&layer_name(layer, "mlp.shared_expert.down_proj.weight"))?;
         let shared_expert_gate =
             index.read_raw(&layer_name(layer, "mlp.shared_expert_gate.weight"))?;
 
@@ -1406,12 +1596,18 @@ impl GqaState {
 }
 
 /// Per-token capture surface for one layer (matches complete-binary capture).
+///
+/// After per-layer flush, [`Self::router_input_hidden`] is empty even when
+/// [`Self::hidden_retained`] is true — the row has been written and freed.
+/// Route membership stays complete for every token.
 #[derive(Clone, Debug)]
 pub struct LayerTokenCapture {
     pub layer: usize,
     pub selected_expert_ids: Vec<u32>,
     pub normalized_route_weights: Vec<f32>,
     pub router_input_hidden: Vec<f32>,
+    /// Whether first-N kept this token's hidden at this layer. Survives flush.
+    pub hidden_retained: bool,
 }
 
 pub type ProbeHidden = Vec<f32>;
@@ -1529,7 +1725,10 @@ fn deltanet_mixer_step(
         .conv1d
         .as_ref()
         .ok_or_else(|| model_err("missing conv1d"))?;
-    let a_log = layer.a_log.as_ref().ok_or_else(|| model_err("missing A_log"))?;
+    let a_log = layer
+        .a_log
+        .as_ref()
+        .ok_or_else(|| model_err("missing A_log"))?;
     let dt_bias = layer
         .dt_bias
         .as_ref()
@@ -1548,7 +1747,13 @@ fn deltanet_mixer_step(
     let ba_rows = layout.ba_projection_elements()?;
     let mut projected_qkvz = vec![0.0f32; qkvz_rows];
     let mut projected_ba = vec![0.0f32; ba_rows];
-    gemv_bf16(qkvz_w, qkvz_rows, QWEN80_HIDDEN, &input_rms, &mut projected_qkvz)?;
+    gemv_bf16(
+        qkvz_w,
+        qkvz_rows,
+        QWEN80_HIDDEN,
+        &input_rms,
+        &mut projected_qkvz,
+    )?;
     gemv_bf16(ba_w, ba_rows, QWEN80_HIDDEN, &input_rms, &mut projected_ba)?;
 
     let (raw_query, raw_key, raw_value, z) =
@@ -1580,19 +1785,14 @@ fn deltanet_mixer_step(
         let mut key_head_values = convolved_key
             [key_head * layout.key_head_dim..(key_head + 1) * layout.key_head_dim]
             .to_vec();
-        source_qwen80_l2_normalize(
-            &mut query_head,
-            (layout.key_head_dim as f32).sqrt().recip(),
-        )?;
+        source_qwen80_l2_normalize(&mut query_head, (layout.key_head_dim as f32).sqrt().recip())?;
         source_qwen80_l2_normalize(&mut key_head_values, 1.0)?;
         let destination = value_head * layout.key_head_dim;
-        repeated_query[destination..destination + layout.key_head_dim]
-            .copy_from_slice(&query_head);
+        repeated_query[destination..destination + layout.key_head_dim].copy_from_slice(&query_head);
         repeated_key[destination..destination + layout.key_head_dim]
             .copy_from_slice(&key_head_values);
     }
-    let (decay, beta) =
-        source_qwen80_ba_to_decay_beta(&projected_ba, a_log, dt_bias, layout)?;
+    let (decay, beta) = source_qwen80_ba_to_decay_beta(&projected_ba, a_log, dt_bias, layout)?;
     let recurrent_output = source_qwen80_recurrent_deltanet(
         &mut state.recurrent_state,
         &repeated_query,
@@ -1643,12 +1843,30 @@ fn gqa_mixer_step(
             state.max_seq
         )));
     }
-    let q_proj = layer.q_proj.as_ref().ok_or_else(|| model_err("missing q_proj"))?;
-    let k_proj = layer.k_proj.as_ref().ok_or_else(|| model_err("missing k_proj"))?;
-    let v_proj = layer.v_proj.as_ref().ok_or_else(|| model_err("missing v_proj"))?;
-    let o_proj = layer.o_proj.as_ref().ok_or_else(|| model_err("missing o_proj"))?;
-    let q_norm = layer.q_norm.as_ref().ok_or_else(|| model_err("missing q_norm"))?;
-    let k_norm = layer.k_norm.as_ref().ok_or_else(|| model_err("missing k_norm"))?;
+    let q_proj = layer
+        .q_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing q_proj"))?;
+    let k_proj = layer
+        .k_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing k_proj"))?;
+    let v_proj = layer
+        .v_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing v_proj"))?;
+    let o_proj = layer
+        .o_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing o_proj"))?;
+    let q_norm = layer
+        .q_norm
+        .as_ref()
+        .ok_or_else(|| model_err("missing q_norm"))?;
+    let k_norm = layer
+        .k_norm
+        .as_ref()
+        .ok_or_else(|| model_err("missing k_norm"))?;
 
     let input_rms = source_qwen80_residual_rms_norm(hidden, &layer.input_layernorm)?;
     let mut q_projection = vec![0.0f32; layout.q_proj_rows];
@@ -1744,12 +1962,30 @@ fn gqa_mixer_prefill_probe(
     if hidden.len() != seq_len * h {
         return Err(model_err("gqa_mixer_prefill_probe hidden geometry"));
     }
-    let q_proj = layer.q_proj.as_ref().ok_or_else(|| model_err("missing q_proj"))?;
-    let k_proj = layer.k_proj.as_ref().ok_or_else(|| model_err("missing k_proj"))?;
-    let v_proj = layer.v_proj.as_ref().ok_or_else(|| model_err("missing v_proj"))?;
-    let o_proj = layer.o_proj.as_ref().ok_or_else(|| model_err("missing o_proj"))?;
-    let q_norm = layer.q_norm.as_ref().ok_or_else(|| model_err("missing q_norm"))?;
-    let k_norm = layer.k_norm.as_ref().ok_or_else(|| model_err("missing k_norm"))?;
+    let q_proj = layer
+        .q_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing q_proj"))?;
+    let k_proj = layer
+        .k_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing k_proj"))?;
+    let v_proj = layer
+        .v_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing v_proj"))?;
+    let o_proj = layer
+        .o_proj
+        .as_ref()
+        .ok_or_else(|| model_err("missing o_proj"))?;
+    let q_norm = layer
+        .q_norm
+        .as_ref()
+        .ok_or_else(|| model_err("missing q_norm"))?;
+    let k_norm = layer
+        .k_norm
+        .as_ref()
+        .ok_or_else(|| model_err("missing k_norm"))?;
 
     // Widen dense projections once; per-position M=1 matvecs match scalar
     // `gqa_mixer_step` / gemv_bf16→gemm_bf16. Batched attention (sgemm QKᵀ/PV)
@@ -1933,6 +2169,7 @@ pub fn forward_layer_probe(
             selected_expert_ids: ids,
             normalized_route_weights: weights,
             router_input_hidden: if retain { router_input } else { Vec::new() },
+            hidden_retained: retain,
         });
     }
     Ok(captures)
@@ -2025,6 +2262,9 @@ impl StreamTelemetry {
 ///    [`credit_expert_first_n_retention`]): the first `max_hidden_tokens_per_expert`
 ///    tokens that route to expert E keep their hidden for that layer. Full route
 ///    membership is always recorded.
+/// 6. Invokes `on_layer_flush` (caller writes this layer's retained rows) and
+///    then drops those hidden payloads before layer `L+1` loads. The returned
+///    captures keep complete routes; `router_input_hidden` is empty after flush.
 ///
 /// Retention must happen *after* routing is known, so a precomputed global
 /// (probe, position) set cannot express per-expert quotas. Both DeltaNet and
@@ -2036,6 +2276,9 @@ pub fn capture_all_layers(
     hiddens: &mut [ProbeHidden],
     max_hidden_tokens_per_expert: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, &LoadedLayer, &StreamTelemetry)>,
+    mut on_layer_flush: Option<
+        &mut dyn FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>]) -> Result<()>,
+    >,
 ) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
     if hiddens.len() != probes.len() {
         return Err(model_err("hiddens/probes length mismatch"));
@@ -2104,8 +2347,7 @@ pub fn capture_all_layers(
                     let mut state = DeltaNetState::zero(&linear_layout)?;
                     for pos in 0..seq_len {
                         let x_in = hidden[pos * h..(pos + 1) * h].to_vec();
-                        let first =
-                            deltanet_mixer_step(&layer, &x_in, &mut state, &linear_layout)?;
+                        let first = deltanet_mixer_step(&layer, &x_in, &mut state, &linear_layout)?;
                         hidden[pos * h..(pos + 1) * h].copy_from_slice(&first);
                         let rin = source_qwen80_residual_rms_norm(
                             &first,
@@ -2187,13 +2429,8 @@ pub fn capture_all_layers(
         //     then residual combine in scalar order: routed (route-slot order)
         //     then shared*gate. ---
         moe_out.fill(0.0);
-        let (shared_down, gate_vals) = shared_expert_batched(
-            &layer,
-            &all_router_in,
-            total_tokens,
-            h,
-            shared_inter,
-        )?;
+        let (shared_down, gate_vals) =
+            shared_expert_batched(&layer, &all_router_in, total_tokens, h, shared_inter)?;
         // Drop shared BF16 after use.
         layer.shared_gate = Vec::new();
         layer.shared_up = Vec::new();
@@ -2220,14 +2457,13 @@ pub fn capture_all_layers(
             }
         }
 
-        // Apply MoE residual and record captures. Hidden retention is decided
+        // Apply MoE residual, then record captures. Hidden retention is decided
         // here, after top-k routing is known: first N tokens (global order) that
         // route to expert E keep their router-input hidden for E's organ fit. A
         // token is kept if any of its top-k experts still has an open slot;
         // co-routing may therefore give popular experts more than N rows, which
         // is a floor-not-ceiling. Route membership is always recorded.
         // expert_retained is sized from QWEN80_EXPERTS (512), never a Q30 constant.
-        let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
         for (t, &(pi, pos)) in token_index.iter().enumerate() {
             add_inplace(
                 &mut hiddens[pi][pos * h..(pos + 1) * h],
@@ -2241,23 +2477,22 @@ pub fn capture_all_layers(
                     "layer {layer_idx} probe {pi} pos {pos} second residual non-finite"
                 )));
             }
-            let (ids, weights) = std::mem::take(&mut routes[t]);
-            let retain = credit_expert_first_n_retention(
-                &mut expert_retained,
-                &ids,
-                max_hidden_tokens_per_expert,
-            );
-            captures[pi][pos].push(LayerTokenCapture {
-                layer: layer_idx,
-                selected_expert_ids: ids,
-                normalized_route_weights: weights,
-                router_input_hidden: if retain {
-                    all_router_in[t * h..(t + 1) * h].to_vec()
-                } else {
-                    Vec::new()
-                },
-            });
         }
+        append_retained_layer_captures(
+            &mut captures,
+            &token_index,
+            &mut routes,
+            &all_router_in,
+            layer_idx,
+            max_hidden_tokens_per_expert,
+        )?;
+        // Write this layer's retained rows (caller) and drop the payloads
+        // before the next layer's weights load.
+        if let Some(cb) = on_layer_flush.as_mut() {
+            cb(layer_idx, &mut captures)?;
+        }
+        release_layer_retained_hiddens(&mut captures, layer_idx);
+        debug_assert_eq!(resident_retained_hidden_bytes(&captures), 0);
 
         telem.compute_secs += comp_t0.elapsed().as_secs_f64();
         drop(layer);
@@ -2480,8 +2715,7 @@ pub fn greedy_decode_user_prompt(
     })?;
     // Source chat template for a single user turn without tools/system:
     // <|im_start|>user\n{text}<|im_end|>\n<|im_start|>assistant\n
-    let rendered =
-        format!("<|im_start|>user\n{user_text}<|im_end|>\n<|im_start|>assistant\n");
+    let rendered = format!("<|im_start|>user\n{user_text}<|im_end|>\n<|im_start|>assistant\n");
     let encoding = tokenizer
         .encode(rendered.as_str(), false)
         .map_err(|e| model_err(format!("tokenizer encode failed: {e}")))?;
@@ -2494,8 +2728,13 @@ pub fn greedy_decode_user_prompt(
     let mut delta_states: Vec<Option<DeltaNetState>> = (0..QWEN80_LAYERS).map(|_| None).collect();
     let mut gqa_states: Vec<Option<GqaState>> = (0..QWEN80_LAYERS).map(|_| None).collect();
 
-    let mut last_hidden =
-        prefill_prompt_stream(index, &token_ids, max_seq, &mut delta_states, &mut gqa_states)?;
+    let mut last_hidden = prefill_prompt_stream(
+        index,
+        &token_ids,
+        max_seq,
+        &mut delta_states,
+        &mut gqa_states,
+    )?;
     let mut generated = Vec::new();
     let eos = [151645u32, 151643u32];
 
@@ -2646,10 +2885,7 @@ mod tests {
         let gqa: Vec<_> = (0..48)
             .filter(|&l| layer_kind(l).unwrap() == LayerKind::FullAttentionGqa)
             .collect();
-        assert_eq!(
-            gqa,
-            vec![3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47]
-        );
+        assert_eq!(gqa, vec![3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47]);
     }
 
     #[test]
@@ -2676,9 +2912,7 @@ mod tests {
         // stay at zero — bookkeeping is still sized from QWEN80_EXPERTS.)
         let max_n = 3usize;
         let mut counts = vec![0usize; QWEN80_EXPERTS];
-        let routes: Vec<Vec<u32>> = (0..20u32)
-            .map(|t| vec![t % 4, 4 + (t % 4)])
-            .collect();
+        let routes: Vec<Vec<u32>> = (0..20u32).map(|t| vec![t % 4, 4 + (t % 4)]).collect();
         let mut retained_mask = Vec::new();
         for ids in &routes {
             retained_mask.push(credit_expert_first_n_retention(&mut counts, ids, max_n));
@@ -2715,6 +2949,321 @@ mod tests {
         let ids: Vec<u32> = (0..QWEN80_TOP_K as u32).collect();
         assert!(!credit_expert_first_n_retention(&mut counts, &ids, 0));
         assert!(counts.iter().all(|&c| c == 0));
+    }
+
+    fn empty_captures(probes: &[(String, Vec<u32>)]) -> Vec<Vec<Vec<LayerTokenCapture>>> {
+        probes
+            .iter()
+            .map(|(_, toks)| (0..toks.len()).map(|_| Vec::new()).collect())
+            .collect()
+    }
+
+    /// Synthetic top-10 routes + distinct hidden rows for a small probe set.
+    /// Hidden row `t` is filled with `layer as f32 + t as f32 / 1000` so two
+    /// runs at the same N are byte-comparable and layers are not interchangeable.
+    fn synthetic_layer_inputs(
+        token_count: usize,
+        layer_idx: usize,
+    ) -> (Vec<(usize, usize)>, Vec<(Vec<u32>, Vec<f32>)>, Vec<f32>) {
+        let token_index: Vec<(usize, usize)> = (0..token_count).map(|pos| (0, pos)).collect();
+        let routes: Vec<(Vec<u32>, Vec<f32>)> = (0..token_count)
+            .map(|t| {
+                let ids: Vec<u32> = (0..QWEN80_TOP_K as u32)
+                    .map(|k| (t as u32 * 3 + k) % QWEN80_EXPERTS as u32)
+                    .collect();
+                let weights = vec![0.1f32; QWEN80_TOP_K];
+                (ids, weights)
+            })
+            .collect();
+        let mut all_router_in = vec![0.0f32; token_count * QWEN80_HIDDEN];
+        for t in 0..token_count {
+            let fill = layer_idx as f32 + (t as f32) / 1000.0;
+            for x in all_router_in[t * QWEN80_HIDDEN..(t + 1) * QWEN80_HIDDEN].iter_mut() {
+                *x = fill;
+            }
+        }
+        (token_index, routes, all_router_in)
+    }
+
+    fn write_layer_if_retained(
+        output_dir: &std::path::Path,
+        probe_id: &str,
+        token_count: usize,
+        layer_idx: usize,
+        captures: &[Vec<Vec<LayerTokenCapture>>],
+    ) -> Result<()> {
+        for pos in 0..token_count {
+            let cap = &captures[0][pos][layer_idx];
+            if !cap.hidden_retained {
+                continue;
+            }
+            let rel = retained_hidden_relative_path(layer_idx, probe_id, pos);
+            write_retained_hidden_f32le(&output_dir.join(rel), &cap.router_input_hidden)?;
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn per_layer_budget_guard_admits_384_and_512_and_refuses_over_cap() {
+        let cap = STREAMED_PEAK_RSS_HARD_CAP_BYTES as usize;
+        let bytes_per_n = QWEN80_EXPERTS
+            .saturating_mul(QWEN80_HIDDEN)
+            .saturating_mul(4);
+        assert!(bytes_per_n > 0);
+        let max_admitted = cap / bytes_per_n;
+        let before_layers_factor_ceiling = cap
+            / (QWEN80_EXPERTS
+                .saturating_mul(QWEN80_LAYERS)
+                .saturating_mul(QWEN80_HIDDEN)
+                .saturating_mul(4));
+
+        assert!(
+            max_hidden_tokens_per_expert_within_streamed_cap(384),
+            "N=384 must fit the per-layer budget"
+        );
+        assert!(
+            max_hidden_tokens_per_expert_within_streamed_cap(512),
+            "N=512 must fit the per-layer budget"
+        );
+        assert!(
+            max_hidden_tokens_per_expert_within_streamed_cap(max_admitted),
+            "derived boundary N={max_admitted} must be admitted (budget == floor(cap/bytes_per_n))"
+        );
+        assert!(
+            !max_hidden_tokens_per_expert_within_streamed_cap(max_admitted + 1),
+            "N={} must exceed the per-layer cap",
+            max_admitted + 1
+        );
+        assert!(
+            !max_hidden_tokens_per_expert_within_streamed_cap(0),
+            "N=0 is not a valid quota"
+        );
+        // The old ×48 guard capped N at 85. Per-layer must raise that ceiling.
+        assert!(
+            max_admitted > before_layers_factor_ceiling,
+            "per-layer ceiling {max_admitted} should exceed the retired ×layers ceiling {before_layers_factor_ceiling}"
+        );
+        assert!(
+            max_admitted >= 512,
+            "per-layer ceiling {max_admitted} must admit the rank-192 fit target N=512"
+        );
+        assert_eq!(
+            worst_case_retained_hidden_bytes_per_layer(max_admitted),
+            max_admitted * bytes_per_n
+        );
+        assert!(worst_case_retained_hidden_bytes_per_layer(max_admitted) <= cap);
+        assert!(worst_case_retained_hidden_bytes_per_layer(max_admitted + 1) > cap);
+        // Constants this task must not change.
+        assert_eq!(DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, 64);
+        assert_eq!(STREAMED_PEAK_RSS_HARD_CAP_BYTES, 16 * 1024 * 1024 * 1024);
+    }
+
+    #[test]
+    fn retained_hiddens_do_not_accumulate_across_layers() {
+        // Structural: after each layer is appended, only that layer's hidden
+        // payloads are resident; after flush they are gone. A test that only
+        // inspected the final on-disk tree would pass even if this release
+        // were missing.
+        let token_count = 24usize;
+        let n_layers = 8usize;
+        let n = 4usize;
+        let probes = vec![("probe0".to_string(), vec![1u32; token_count])];
+        let mut captures = empty_captures(&probes);
+        let mut after_append = Vec::with_capacity(n_layers);
+        for layer_idx in 0..n_layers {
+            let (token_index, mut routes, all_router_in) =
+                synthetic_layer_inputs(token_count, layer_idx);
+            append_retained_layer_captures(
+                &mut captures,
+                &token_index,
+                &mut routes,
+                &all_router_in,
+                layer_idx,
+                n,
+            )
+            .expect("append");
+            let resident = resident_retained_hidden_bytes(&captures);
+            after_append.push(resident);
+            // Only this layer may hold hidden payloads.
+            for probe in &captures {
+                for token in probe {
+                    for cap in token {
+                        if cap.layer != layer_idx {
+                            assert!(
+                                cap.router_input_hidden.is_empty(),
+                                "layer {} still resident while appending layer {layer_idx}",
+                                cap.layer
+                            );
+                        }
+                    }
+                }
+            }
+            let freed = release_layer_retained_hiddens(&mut captures, layer_idx);
+            assert!(freed > 0, "layer {layer_idx} should have retained rows");
+            assert_eq!(
+                resident_retained_hidden_bytes(&captures),
+                0,
+                "layer {layer_idx} hiddens must be freed before the next layer"
+            );
+            // Routes stay complete for every token at every finished layer.
+            for token in &captures[0] {
+                assert_eq!(token.len(), layer_idx + 1);
+                let cap = &token[layer_idx];
+                assert_eq!(cap.selected_expert_ids.len(), QWEN80_TOP_K);
+                assert_eq!(cap.normalized_route_weights.len(), QWEN80_TOP_K);
+                assert!(cap.router_input_hidden.is_empty());
+            }
+        }
+        // Equal per-layer residency (same token count, same N) — must not grow
+        // with L. If release were skipped, after_append[L] would be (L+1)×base.
+        let base = after_append[0];
+        assert!(base > 0);
+        for (layer_idx, &bytes) in after_append.iter().enumerate() {
+            assert_eq!(
+                bytes, base,
+                "resident hidden bytes after append of layer {layer_idx} grew with L"
+            );
+        }
+        assert!(
+            base < n_layers.saturating_mul(base) / 2 + 1,
+            "sanity: one-layer footprint must be far below the accumulated {n_layers}-layer total"
+        );
+    }
+
+    #[test]
+    fn same_probe_set_same_n_is_byte_identical_across_two_runs() {
+        let token_count = 16usize;
+        let n_layers = 4usize;
+        let n = 3usize;
+        let probe_id = "det0";
+        let probes = vec![(probe_id.to_string(), vec![7u32; token_count])];
+
+        let run = |dir: &std::path::Path| {
+            let mut captures = empty_captures(&probes);
+            for layer_idx in 0..n_layers {
+                let (token_index, mut routes, all_router_in) =
+                    synthetic_layer_inputs(token_count, layer_idx);
+                append_retained_layer_captures(
+                    &mut captures,
+                    &token_index,
+                    &mut routes,
+                    &all_router_in,
+                    layer_idx,
+                    n,
+                )
+                .expect("append");
+                let mut flush = |layer: usize, caps: &mut [Vec<Vec<LayerTokenCapture>>]| {
+                    write_layer_if_retained(dir, probe_id, token_count, layer, caps)
+                };
+                flush_and_release_layer_hiddens(&mut captures, layer_idx, Some(&mut flush))
+                    .expect("flush");
+            }
+            captures
+        };
+
+        let dir_a = tempfile::tempdir().expect("tempdir a");
+        let dir_b = tempfile::tempdir().expect("tempdir b");
+        let caps_a = run(dir_a.path());
+        let caps_b = run(dir_b.path());
+
+        // Route membership + retain mask identical.
+        assert_eq!(caps_a.len(), caps_b.len());
+        for (pa, pb) in caps_a.iter().zip(caps_b.iter()) {
+            for (ta, tb) in pa.iter().zip(pb.iter()) {
+                assert_eq!(ta.len(), tb.len());
+                for (ca, cb) in ta.iter().zip(tb.iter()) {
+                    assert_eq!(ca.layer, cb.layer);
+                    assert_eq!(ca.selected_expert_ids, cb.selected_expert_ids);
+                    assert_eq!(ca.normalized_route_weights, cb.normalized_route_weights);
+                    assert_eq!(ca.hidden_retained, cb.hidden_retained);
+                    assert!(ca.router_input_hidden.is_empty());
+                    assert!(cb.router_input_hidden.is_empty());
+                }
+            }
+        }
+
+        // On-disk retained rows are byte-identical.
+        let collect = |root: &std::path::Path| -> Vec<(String, Vec<u8>)> {
+            let mut files = Vec::new();
+            for layer in 0..n_layers {
+                for pos in 0..token_count {
+                    let rel = retained_hidden_relative_path(layer, probe_id, pos);
+                    let path = root.join(&rel);
+                    if path.is_file() {
+                        files.push((rel, std::fs::read(path).expect("read hidden")));
+                    }
+                }
+            }
+            files.sort_by(|a, b| a.0.cmp(&b.0));
+            files
+        };
+        let files_a = collect(dir_a.path());
+        let files_b = collect(dir_b.path());
+        assert!(!files_a.is_empty(), "expected retained hidden files");
+        assert_eq!(files_a, files_b);
+    }
+
+    #[test]
+    fn n384_and_n512_synthetic_flush_runs_and_records_peak_rss() {
+        // Reduced configuration: no 148 GiB source. Same retain+flush+write
+        // path the capture uses, at the N values the CLI must now admit.
+        for &n in &[384usize, 512usize] {
+            assert!(
+                max_hidden_tokens_per_expert_within_streamed_cap(n),
+                "N={n} must be admitted"
+            );
+            let token_count = 8usize;
+            let n_layers = 4usize;
+            let probe_id = "nrun";
+            let probes = vec![(probe_id.to_string(), vec![3u32; token_count])];
+            let dir = tempfile::tempdir().expect("tempdir");
+            let mut captures = empty_captures(&probes);
+            eprintln!(
+                "{}",
+                format_capture_progress(probes.len(), token_count, n, 0)
+            );
+            for layer_idx in 0..n_layers {
+                let (token_index, mut routes, all_router_in) =
+                    synthetic_layer_inputs(token_count, layer_idx);
+                append_retained_layer_captures(
+                    &mut captures,
+                    &token_index,
+                    &mut routes,
+                    &all_router_in,
+                    layer_idx,
+                    n,
+                )
+                .expect("append");
+                let resident = resident_retained_hidden_bytes(&captures);
+                assert!(
+                    resident <= worst_case_retained_hidden_bytes_per_layer(n),
+                    "N={n} layer {layer_idx} resident {resident} exceeded per-layer budget"
+                );
+                let mut flush = |layer: usize, caps: &mut [Vec<Vec<LayerTokenCapture>>]| {
+                    write_layer_if_retained(dir.path(), probe_id, token_count, layer, caps)
+                };
+                flush_and_release_layer_hiddens(&mut captures, layer_idx, Some(&mut flush))
+                    .expect("flush");
+                assert_eq!(resident_retained_hidden_bytes(&captures), 0);
+            }
+            let peak = peak_rss_bytes();
+            eprintln!(
+                "synthetic N={n} peak_rss_bytes={peak} ({:.3} GiB); hard cap {}",
+                peak as f64 / (1024.0 * 1024.0 * 1024.0),
+                STREAMED_PEAK_RSS_HARD_CAP_BYTES
+            );
+            assert!(
+                peak <= STREAMED_PEAK_RSS_HARD_CAP_BYTES,
+                "synthetic N={n} peak RSS {peak} exceeds streamed hard cap"
+            );
+            // Every token still has complete top-k routes for every layer.
+            for token in &captures[0] {
+                assert_eq!(token.len(), n_layers);
+                for cap in token {
+                    assert_eq!(cap.selected_expert_ids.len(), QWEN80_TOP_K);
+                }
+            }
+        }
     }
 
     /// Manual gate: set `QWEN80_SOURCE_DIR` and run with `--ignored`.
@@ -2759,6 +3308,7 @@ mod tests {
             &probes,
             &mut h_batch,
             DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT,
+            None,
             None,
         )
         .expect("batched");
