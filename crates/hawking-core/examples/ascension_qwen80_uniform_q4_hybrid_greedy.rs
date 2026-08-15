@@ -13,8 +13,8 @@
 
 use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_composition_complete;
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
-    discover_qwen80_uniform_q4_root, generate_greedy, load_qwen80_tokenizer,
-    qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
+    discover_qwen80_tokenizer, discover_qwen80_uniform_q4_root, generate_greedy,
+    load_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
     Qwen80UniformQ4HybridDecodeSession, Qwen80UniformQ4StreamingCatalog,
     QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW, QWEN80_UNIFORM_Q4_EXPECTED_MANIFEST_SEAL,
     QWEN80_UNIFORM_Q4_EXPECTED_TERMINAL_SEAL, QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
@@ -119,7 +119,10 @@ fn run() -> Result<(), String> {
         .ok_or_else(|| {
             "qwen80 uniform-q4 artifact root not found; pass --artifact-root".to_owned()
         })?;
-    let tokenizer_path = args.tokenizer.unwrap_or_else(qwen80_default_tokenizer_path);
+    let tokenizer_path = args
+        .tokenizer
+        .or_else(discover_qwen80_tokenizer)
+        .unwrap_or_else(qwen80_default_tokenizer_path);
     let rendered = if args.raw_prompt {
         args.prompt.clone()
     } else {
@@ -189,10 +192,27 @@ fn run() -> Result<(), String> {
         result.fallbacks.host_sample
     );
     println!(
-        "native_q4_dispatches matvec={} embed={} decode_vector={}",
+        "native_q4_dispatches matvec={} embed={} decode_vector={} table_builds={} table_waves={} table_dispatches={}",
         result.native.q4_matvec_dispatches,
         result.native.q4_embedding_dispatches,
-        result.native.q4_decode_vector_dispatches
+        result.native.q4_decode_vector_dispatches,
+        result.native.expert_table_layer_builds,
+        result.native.expert_table_waves,
+        result.native.expert_table_matvec_dispatches
+    );
+    println!(
+        "stage_secs embed={:.4} deltanet={:.4} gqa={:.4} moe_norm_router={:.4} moe_shared={:.4} moe_table_build={:.4} moe_routed={:.4} moe_combine={:.4} terminal={:.4} q4_matvec={:.4} host_expert_bind={:.4}",
+        result.stages.embed_secs,
+        result.stages.deltanet_secs,
+        result.stages.gqa_secs,
+        result.stages.moe_norm_router_secs,
+        result.stages.moe_shared_secs,
+        result.stages.moe_table_build_secs,
+        result.stages.moe_routed_secs,
+        result.stages.moe_combine_secs,
+        result.stages.terminal_secs,
+        result.stages.q4_matvec_secs,
+        result.stages.host_expert_bind_secs
     );
     println!(
         "complete_physical_bpw={:.6} claim={} metal_q4_matvec_used={}",
@@ -254,6 +274,22 @@ fn run() -> Result<(), String> {
                     "q4_matvec_dispatches": result.native.q4_matvec_dispatches,
                     "q4_embedding_dispatches": result.native.q4_embedding_dispatches,
                     "q4_decode_vector_dispatches": result.native.q4_decode_vector_dispatches,
+                    "expert_table_layer_builds": result.native.expert_table_layer_builds,
+                    "expert_table_waves": result.native.expert_table_waves,
+                    "expert_table_matvec_dispatches": result.native.expert_table_matvec_dispatches,
+                },
+                "stages": {
+                    "embed_secs": result.stages.embed_secs,
+                    "deltanet_secs": result.stages.deltanet_secs,
+                    "gqa_secs": result.stages.gqa_secs,
+                    "moe_norm_router_secs": result.stages.moe_norm_router_secs,
+                    "moe_shared_secs": result.stages.moe_shared_secs,
+                    "moe_table_build_secs": result.stages.moe_table_build_secs,
+                    "moe_routed_secs": result.stages.moe_routed_secs,
+                    "moe_combine_secs": result.stages.moe_combine_secs,
+                    "terminal_secs": result.stages.terminal_secs,
+                    "q4_matvec_secs": result.stages.q4_matvec_secs,
+                    "host_expert_bind_secs": result.stages.host_expert_bind_secs,
                 },
                 "fallbacks": {
                     "total": result.fallbacks.total(),
@@ -263,7 +299,11 @@ fn run() -> Result<(), String> {
                     "host_activation": result.fallbacks.host_activation,
                     "host_expert_payload_bind": result.fallbacks.host_expert_payload_bind,
                     "host_sample": result.fallbacks.host_sample,
-                    "note": "expert gather is a host fallback; the composed graph has no 512-way device gather",
+                    "note": if result.native.expert_table_waves > 0 {
+                        "512-way device expert table is live; host_expert_payload_bind counts remaining host binds".to_string()
+                    } else {
+                        "expert gather is a host fallback; the composed graph has no 512-way device gather".to_string()
+                    },
                 },
             },
         });

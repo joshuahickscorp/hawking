@@ -353,6 +353,10 @@ pub const SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP: &str =
 /// HGRAVS01 organs.
 pub const SHADER_QWEN30_DEVICE_EXPERT_TABLE: &str =
     include_str!("../../shaders/qwen30_device_expert_table.metal");
+/// Qwen80 512-way device expert table (uniform Q4 group-64). Same ABI
+/// family as the Q30 table; n_experts=512, experts_per_token=10.
+pub const SHADER_QWEN80_DEVICE_EXPERT_TABLE: &str =
+    include_str!("../../shaders/qwen80_device_expert_table.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -417,6 +421,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER,
         SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
         SHADER_QWEN30_DEVICE_EXPERT_TABLE,
+        SHADER_QWEN80_DEVICE_EXPERT_TABLE,
         SHADER_QWEN_UNIFORM_Q4,
         SHADER_QWEN_UNIFORM_QN,
         SHADER_RWKV7,
@@ -1152,6 +1157,17 @@ mod imp {
             "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8" => {
                 "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8"
             }
+            "qwen80_expert_table_uniform_q4_matvec_serial" => {
+                "qwen80_expert_table_uniform_q4_matvec_serial"
+            }
+            "qwen80_expert_table_uniform_q4_matvec_rowblock" => {
+                "qwen80_expert_table_uniform_q4_matvec_rowblock"
+            }
+            "qwen80_expert_table_uniform_q4_matvec_simdgroup" => {
+                "qwen80_expert_table_uniform_q4_matvec_simdgroup"
+            }
+            "qwen80_expert_table_silu_mul" => "qwen80_expert_table_silu_mul",
+            "qwen80_expert_table_weighted_sum" => "qwen80_expert_table_weighted_sum",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -1840,6 +1856,25 @@ mod imp {
                 assert!(
                     SHADER_DEEPSEEK_V4_P7.contains(&format!("kernel void {kernel}(")),
                     "DeepSeek-V4 P7 kernel must remain in deepseek_v4_p7.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn qwen80_device_expert_table_kernels_are_trace_named_and_compiled() {
+            use crate::metal::SHADER_QWEN80_DEVICE_EXPERT_TABLE;
+            const KERNELS: &[&str] = &[
+                "qwen80_expert_table_uniform_q4_matvec_serial",
+                "qwen80_expert_table_uniform_q4_matvec_rowblock",
+                "qwen80_expert_table_uniform_q4_matvec_simdgroup",
+                "qwen80_expert_table_silu_mul",
+                "qwen80_expert_table_weighted_sum",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN80_DEVICE_EXPERT_TABLE.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen80_device_expert_table.metal"
                 );
             }
         }

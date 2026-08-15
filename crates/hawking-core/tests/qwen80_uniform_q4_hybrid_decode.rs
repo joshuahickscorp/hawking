@@ -5,10 +5,12 @@
 //! 3. Artifact binding: catalog count is 74,391 when the sealed body is
 //!    present; a missing or short tensor raises rather than zero-filling.
 
+use hawking_core::model::qwen80_device_expert_table::QWEN80_EXPERT_TABLE_KERNELS;
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
-    discover_qwen80_uniform_q4_root, qwen80_fixture_advance_hybrid_state,
-    qwen80_fixture_greedy_token, Qwen80HybridDecodeState, Qwen80UniformQ4StreamingCatalog,
-    QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW,
+    discover_qwen80_tokenizer, discover_qwen80_uniform_q4_root, generate_greedy,
+    load_qwen80_tokenizer, qwen80_fixture_advance_hybrid_state, qwen80_fixture_greedy_token,
+    render_qwen80_source_user_chat, Qwen80HybridDecodeState, Qwen80UniformQ4HybridDecodeSession,
+    Qwen80UniformQ4StreamingCatalog, QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW,
 };
 use hawking_core::model::qwen_complete_binary::{
     pack_uniform_q4_group64, QWEN80_UNIFORM_Q4_EXPECTED_TENSOR_COUNT, QWEN80_UNIFORM_Q4_SCHEMA,
@@ -141,4 +143,31 @@ fn artifact_binding_74391_and_missing_or_short_raises() {
         message.contains("short") || message.contains("truncated"),
         "short tensor must raise, got {message}"
     );
+}
+
+#[test]
+fn greedy_baseline_prompt_yields_hello_how_tokens() {
+    let Some(root) = discover_qwen80_uniform_q4_root() else {
+        return;
+    };
+    let Some(tokenizer_path) = discover_qwen80_tokenizer() else {
+        return;
+    };
+    let catalog = Qwen80UniformQ4StreamingCatalog::open(&root).unwrap();
+    let tokenizer = load_qwen80_tokenizer(&tokenizer_path).unwrap();
+    let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, 64).unwrap();
+    let prompt = render_qwen80_source_user_chat("Hi");
+    let result = generate_greedy(&mut session, &tokenizer, &prompt, 3).unwrap();
+    assert_eq!(result.generated_token_ids, vec![9707, 0, 2585]);
+}
+
+#[test]
+fn qwen80_expert_table_kernels_are_named() {
+    assert_eq!(QWEN80_EXPERT_TABLE_KERNELS.len(), 5);
+    for kernel in QWEN80_EXPERT_TABLE_KERNELS {
+        assert!(
+            kernel.starts_with("qwen80_expert_table_"),
+            "{kernel} is not a Q80 expert-table kernel"
+        );
+    }
 }

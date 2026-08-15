@@ -405,6 +405,20 @@ impl Qwen80Q4PackedTensor {
         }
     }
 
+    /// Packed Q4 codes (nibble body starting at `sign_offset`).
+    pub fn codes(&self) -> Result<&[u8]> {
+        self.payload
+            .get(self.header.sign_offset..self.header.payload_bytes)
+            .ok_or_else(|| q80q4_error(format!("tensor {:?} codes truncated", self.name)))
+    }
+
+    /// Packed FP16 group scales.
+    pub fn scales(&self) -> Result<&[u8]> {
+        self.payload
+            .get(self.header.scale_offset..self.header.sign_offset)
+            .ok_or_else(|| q80q4_error(format!("tensor {:?} scales truncated", self.name)))
+    }
+
     pub fn decode_f32(&self) -> Result<Vec<f32>> {
         decode_uniform_q4_group64(&self.payload)
     }
@@ -690,6 +704,28 @@ pub struct Qwen80DecodeNativeCounts {
     pub q4_matvec_dispatches: u64,
     pub q4_embedding_dispatches: u64,
     pub q4_decode_vector_dispatches: u64,
+    pub expert_table_layer_builds: u64,
+    pub expert_table_waves: u64,
+    pub expert_table_matvec_dispatches: u64,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80DecodeStageTimes {
+    pub embed_secs: f64,
+    pub deltanet_secs: f64,
+    pub gqa_secs: f64,
+    pub moe_norm_router_secs: f64,
+    pub moe_shared_secs: f64,
+    pub moe_table_build_secs: f64,
+    pub moe_routed_secs: f64,
+    pub moe_combine_secs: f64,
+    pub terminal_secs: f64,
+    pub q4_matvec_secs: f64,
+    pub host_expert_bind_secs: f64,
+}
+
+fn add_secs(slot: &mut f64, started: Instant) {
+    *slot += started.elapsed().as_secs_f64();
 }
 
 /// Advance hybrid state with a cheap, deterministic mixer that still uses the
@@ -835,14 +871,29 @@ struct MetalQ4Weight {
 struct MetalQ4Accel {
     context: crate::metal::MetalContext,
     weights: HashMap<String, MetalQ4Weight>,
+    expert_table: Option<super::qwen80_device_expert_table::Qwen80DeviceExpertTableLease>,
+    expert_wave: Option<super::qwen80_device_expert_table::Qwen80DeviceExpertWaveWorkspace>,
+    expert_kernel: super::qwen80_device_expert_table::Qwen80ExpertTableKernel,
+    expert_cache: HashMap<(usize, u32), super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet>,
+    expert_slabs: super::qwen80_device_expert_table::Qwen80CompactExpertSlabs,
 }
 
 #[cfg(target_os = "macos")]
 impl MetalQ4Accel {
     fn new() -> Result<Self> {
+        let context = crate::metal::MetalContext::new()?;
+        let expert_wave =
+            super::qwen80_device_expert_table::Qwen80DeviceExpertWaveWorkspace::allocate(&context)?;
+        let expert_slabs =
+            super::qwen80_device_expert_table::Qwen80CompactExpertSlabs::allocate(&context)?;
         Ok(Self {
-            context: crate::metal::MetalContext::new()?,
+            context,
             weights: HashMap::new(),
+            expert_table: None,
+            expert_wave: Some(expert_wave),
+            expert_kernel: super::qwen80_device_expert_table::qwen80_expert_table_kernel(),
+            expert_cache: HashMap::new(),
+            expert_slabs,
         })
     }
 
@@ -973,6 +1024,93 @@ impl MetalQ4Accel {
         native.q4_embedding_dispatches = native.q4_embedding_dispatches.saturating_add(1);
         Ok(())
     }
+
+    fn ensure_selected_expert_table(
+        &mut self,
+        catalog: &Qwen80UniformQ4StreamingCatalog,
+        layer: usize,
+        route_ids: &[u32],
+        native: &mut Qwen80DecodeNativeCounts,
+        stages: &mut Qwen80DecodeStageTimes,
+    ) -> Result<()> {
+        let started = Instant::now();
+        for &expert in route_ids {
+            if self.expert_cache.contains_key(&(layer, expert)) {
+                continue;
+            }
+            let trip = super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
+                &self.context,
+                catalog,
+                layer,
+                expert as usize,
+            )?;
+            self.expert_cache.insert((layer, expert), trip);
+        }
+        let selected: Vec<(
+            u32,
+            &super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet,
+        )> = route_ids
+            .iter()
+            .map(|&expert| {
+                let trip = self
+                    .expert_cache
+                    .get(&(layer, expert))
+                    .expect("just inserted");
+                (expert, trip)
+            })
+            .collect();
+        let reused = self.expert_table.take().map(|lease| lease.table);
+        let lease = super::qwen80_device_expert_table::write_compact_selected_table(
+            &self.context,
+            &self.expert_slabs,
+            layer,
+            &selected,
+            reused,
+        )?;
+        add_secs(&mut stages.moe_table_build_secs, started);
+        native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
+        self.expert_table = Some(lease);
+        Ok(())
+    }
+
+    fn routed_expert_table(
+        &mut self,
+        catalog: &Qwen80UniformQ4StreamingCatalog,
+        layer: usize,
+        route_ids: &[u32],
+        route_weights: &[f32],
+        input: &[f32],
+        output: &mut [f32],
+        native: &mut Qwen80DecodeNativeCounts,
+        stages: &mut Qwen80DecodeStageTimes,
+    ) -> Result<()> {
+        self.ensure_selected_expert_table(catalog, layer, route_ids, native, stages)?;
+        let lease = self
+            .expert_table
+            .as_ref()
+            .ok_or_else(|| q80q4_error("expert table lease missing after ensure"))?;
+        let wave = self
+            .expert_wave
+            .as_ref()
+            .ok_or_else(|| q80q4_error("expert table workspace missing"))?;
+        let started = Instant::now();
+        let dispatches = super::qwen80_device_expert_table::run_qwen80_routed_expert_table(
+            &self.context,
+            lease,
+            wave,
+            route_ids,
+            route_weights,
+            input,
+            output,
+            self.expert_kernel,
+        )?;
+        add_secs(&mut stages.moe_routed_secs, started);
+        native.expert_table_waves = native.expert_table_waves.saturating_add(1);
+        native.expert_table_matvec_dispatches = native
+            .expert_table_matvec_dispatches
+            .saturating_add(dispatches);
+        Ok(())
+    }
 }
 
 /// Session that streams the q4 catalog through the hybrid token schedule.
@@ -982,6 +1120,7 @@ pub struct Qwen80UniformQ4HybridDecodeSession {
     pub state: Qwen80HybridDecodeState,
     pub fallbacks: Qwen80DecodeFallbackCounts,
     pub native: Qwen80DecodeNativeCounts,
+    pub stages: Qwen80DecodeStageTimes,
     #[cfg(target_os = "macos")]
     metal: Option<MetalQ4Accel>,
     pub metal_error: Option<String>,
@@ -1002,6 +1141,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
             state: Qwen80HybridDecodeState::new(max_seq_len)?,
             fallbacks: Qwen80DecodeFallbackCounts::default(),
             native: Qwen80DecodeNativeCounts::default(),
+            stages: Qwen80DecodeStageTimes::default(),
             #[cfg(target_os = "macos")]
             metal,
             metal_error,
@@ -1017,11 +1157,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
     }
 
     fn matvec_named(&mut self, name: &str, input: &[f32], output: &mut [f32]) -> Result<()> {
+        let started = Instant::now();
         let packed = self.cache.packed(&self.catalog, name)?.clone();
         #[cfg(target_os = "macos")]
         if let Some(metal) = self.metal.as_mut() {
             match metal.matvec(&packed, input, output, &mut self.native) {
-                Ok(()) => return Ok(()),
+                Ok(()) => {
+                    add_secs(&mut self.stages.q4_matvec_secs, started);
+                    return Ok(());
+                }
                 Err(error) => {
                     if self.metal_error.is_none() {
                         self.metal_error = Some(error.to_string());
@@ -1031,6 +1175,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         }
         packed.matvec(input, output)?;
         self.fallbacks.host_q4_matvec = self.fallbacks.host_q4_matvec.saturating_add(1);
+        add_secs(&mut self.stages.q4_matvec_secs, started);
         Ok(())
     }
 
@@ -1283,9 +1428,13 @@ impl Qwen80UniformQ4HybridDecodeSession {
     }
 
     fn moe_suffix(&mut self, layer: usize, first_residual: &[f32]) -> Result<Vec<f32>> {
+        let norm_started = Instant::now();
         let post_w = self.vector(&Self::layer_name(layer, "post_attention_layernorm.weight"))?;
         let router_input = source_qwen80_residual_rms_norm(first_residual, &post_w)?;
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        add_secs(&mut self.stages.moe_norm_router_secs, norm_started);
+
+        let shared_started = Instant::now();
         let shared = self.mlp(
             &Self::layer_name(layer, "mlp.shared_expert.gate_proj.weight"),
             &Self::layer_name(layer, "mlp.shared_expert.up_proj.weight"),
@@ -1293,6 +1442,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &router_input,
             QWEN80_MOE_INTERMEDIATE,
         )?;
+        add_secs(&mut self.stages.moe_shared_secs, shared_started);
+
+        let router_started = Instant::now();
         let mut router_logits = vec![0.0f32; QWEN80_EXPERTS];
         self.matvec_named(
             &Self::layer_name(layer, "mlp.gate.weight"),
@@ -1301,31 +1453,43 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         let route = source_qwen80_topk_router(&router_logits)?;
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        add_secs(&mut self.stages.moe_norm_router_secs, router_started);
+
         let mut combined = vec![0.0f32; QWEN80_HIDDEN];
-        for (&expert, &weight) in route.ids.iter().zip(route.weights.iter()) {
-            let gate = Self::expert_name(layer, expert as usize, "gate_proj");
-            let up = Self::expert_name(layer, expert as usize, "up_proj");
-            let down = Self::expert_name(layer, expert as usize, "down_proj");
-            // Touch the three payloads so a missing/short expert raises here.
-            let _ = self.catalog.require_row(&gate)?;
-            let _ = self.catalog.require_row(&up)?;
-            let _ = self.catalog.require_row(&down)?;
-            self.fallbacks.host_expert_payload_bind =
-                self.fallbacks.host_expert_payload_bind.saturating_add(3);
-            let expert_out = self.mlp(&gate, &up, &down, &router_input, QWEN80_MOE_INTERMEDIATE)?;
-            for (dst, value) in combined.iter_mut().zip(expert_out) {
-                *dst += value * weight;
+        let used_device_table =
+            self.try_device_expert_table(layer, &route, &router_input, &mut combined)?;
+        if !used_device_table {
+            let bind_started = Instant::now();
+            for (&expert, &weight) in route.ids.iter().zip(route.weights.iter()) {
+                let gate = Self::expert_name(layer, expert as usize, "gate_proj");
+                let up = Self::expert_name(layer, expert as usize, "up_proj");
+                let down = Self::expert_name(layer, expert as usize, "down_proj");
+                // Touch the three payloads so a missing/short expert raises here.
+                let _ = self.catalog.require_row(&gate)?;
+                let _ = self.catalog.require_row(&up)?;
+                let _ = self.catalog.require_row(&down)?;
+                self.fallbacks.host_expert_payload_bind =
+                    self.fallbacks.host_expert_payload_bind.saturating_add(3);
+                let expert_out =
+                    self.mlp(&gate, &up, &down, &router_input, QWEN80_MOE_INTERMEDIATE)?;
+                for (dst, value) in combined.iter_mut().zip(expert_out) {
+                    *dst += value * weight;
+                }
+                self.cache.tensors.remove(&gate);
+                self.cache.tensors.remove(&up);
+                self.cache.tensors.remove(&down);
+                #[cfg(target_os = "macos")]
+                if let Some(metal) = self.metal.as_mut() {
+                    metal.evict(&gate);
+                    metal.evict(&up);
+                    metal.evict(&down);
+                }
             }
-            self.cache.tensors.remove(&gate);
-            self.cache.tensors.remove(&up);
-            self.cache.tensors.remove(&down);
-            #[cfg(target_os = "macos")]
-            if let Some(metal) = self.metal.as_mut() {
-                metal.evict(&gate);
-                metal.evict(&up);
-                metal.evict(&down);
-            }
+            add_secs(&mut self.stages.host_expert_bind_secs, bind_started);
+            add_secs(&mut self.stages.moe_routed_secs, bind_started);
         }
+
+        let combine_started = Instant::now();
         let mut gate_logit = [0.0f32; 1];
         self.matvec_named(
             &Self::layer_name(layer, "mlp.shared_expert_gate.weight"),
@@ -1344,12 +1508,65 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let mut out = first_residual.to_vec();
         add_inplace(&mut out, &combined);
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        add_secs(&mut self.stages.moe_combine_secs, combine_started);
         if out.iter().any(|value| !value.is_finite()) {
             return Err(q80q4_error(format!(
                 "layer {layer} second residual is non-finite"
             )));
         }
         Ok(out)
+    }
+
+    fn try_device_expert_table(
+        &mut self,
+        layer: usize,
+        route: &super::qwen80_complete_runtime::Qwen80RouteSelection,
+        router_input: &[f32],
+        combined: &mut [f32],
+    ) -> Result<bool> {
+        if !super::qwen80_device_expert_table::qwen80_device_expert_table_enabled() {
+            return Ok(false);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (layer, route, router_input, combined);
+            return Ok(false);
+        }
+        #[cfg(target_os = "macos")]
+        {
+            if self.metal.is_none() {
+                return Ok(false);
+            }
+            let mut route_ids = [0u32; 10];
+            let mut route_weights = [0.0f32; 10];
+            for (index, (&expert, &weight)) in
+                route.ids.iter().zip(route.weights.iter()).enumerate()
+            {
+                route_ids[index] = expert as u32;
+                route_weights[index] = weight;
+            }
+            let Some(metal) = self.metal.as_mut() else {
+                return Ok(false);
+            };
+            match metal.routed_expert_table(
+                &self.catalog,
+                layer,
+                &route_ids,
+                &route_weights,
+                router_input,
+                combined,
+                &mut self.native,
+                &mut self.stages,
+            ) {
+                Ok(()) => Ok(true),
+                Err(error) => {
+                    if self.metal_error.is_none() {
+                        self.metal_error = Some(error.to_string());
+                    }
+                    Ok(false)
+                }
+            }
+        }
     }
 
     fn terminal_greedy(&mut self, hidden: &[f32]) -> Result<u32> {
@@ -1386,15 +1603,29 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 self.state.position, self.state.max_seq_len
             )));
         }
+        let embed_started = Instant::now();
         let mut hidden = self.embed(token)?;
+        add_secs(&mut self.stages.embed_secs, embed_started);
         for layer in 0..QWEN80_LAYERS {
             let first = match qwen80_layer_kind(layer)? {
-                Qwen80LayerKind::LinearAttention => self.deltanet_mixer(layer, &hidden)?,
-                Qwen80LayerKind::FullAttention => self.gqa_mixer(layer, &hidden)?,
+                Qwen80LayerKind::LinearAttention => {
+                    let started = Instant::now();
+                    let value = self.deltanet_mixer(layer, &hidden)?;
+                    add_secs(&mut self.stages.deltanet_secs, started);
+                    value
+                }
+                Qwen80LayerKind::FullAttention => {
+                    let started = Instant::now();
+                    let value = self.gqa_mixer(layer, &hidden)?;
+                    add_secs(&mut self.stages.gqa_secs, started);
+                    value
+                }
             };
             hidden = self.moe_suffix(layer, &first)?;
         }
+        let terminal_started = Instant::now();
         let sampled = self.terminal_greedy(&hidden)?;
+        add_secs(&mut self.stages.terminal_secs, terminal_started);
         self.state.position = self.state.position.saturating_add(1);
         require_rss_cap("after hybrid token")?;
         Ok(sampled)
@@ -1416,6 +1647,7 @@ pub struct Qwen80UniformQ4GreedyResult {
     pub peak_rss_bytes: u64,
     pub fallbacks: Qwen80DecodeFallbackCounts,
     pub native: Qwen80DecodeNativeCounts,
+    pub stages: Qwen80DecodeStageTimes,
     pub complete_physical_bpw: f64,
     pub claim: &'static str,
     pub metal_q4_matvec_used: bool,
@@ -1524,6 +1756,7 @@ pub fn generate_greedy(
         peak_rss_bytes: peak_rss_bytes(),
         fallbacks: session.fallbacks.clone(),
         native: session.native.clone(),
+        stages: session.stages.clone(),
         complete_physical_bpw: session.catalog.complete_physical_bpw,
         claim: QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
         metal_q4_matvec_used,
@@ -1542,6 +1775,17 @@ pub fn discover_qwen80_uniform_q4_root() -> Option<PathBuf> {
     candidates.into_iter().find(|path| {
         path.join(QWEN80_UNIFORM_Q4_MANIFEST_NAME).is_file() && path.join("tensors").is_dir()
     })
+}
+
+/// Resolve the contract-relative tokenizer, then the main-repo copy.
+pub fn discover_qwen80_tokenizer() -> Option<PathBuf> {
+    let candidates = [
+        PathBuf::from(QWEN80_DEFAULT_TOKENIZER_REL),
+        PathBuf::from(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/tokenizer.json",
+        ),
+    ];
+    candidates.into_iter().find(|path| path.is_file())
 }
 
 #[cfg(test)]
@@ -1709,5 +1953,21 @@ mod tests {
         }
         assert_eq!(left_ids, right_ids);
         assert_eq!(left.fingerprint_sha256(), right.fingerprint_sha256());
+    }
+
+    #[test]
+    fn greedy_baseline_prompt_yields_hello_how_tokens() {
+        let Some(root) = discover_qwen80_uniform_q4_root() else {
+            return;
+        };
+        let Some(tokenizer_path) = discover_qwen80_tokenizer() else {
+            return;
+        };
+        let catalog = Qwen80UniformQ4StreamingCatalog::open(&root).unwrap();
+        let tokenizer = load_qwen80_tokenizer(&tokenizer_path).unwrap();
+        let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, 64).unwrap();
+        let prompt = render_qwen80_source_user_chat("Hi");
+        let result = generate_greedy(&mut session, &tokenizer, &prompt, 3).unwrap();
+        assert_eq!(result.generated_token_ids, vec![9707, 0, 2585]);
     }
 }

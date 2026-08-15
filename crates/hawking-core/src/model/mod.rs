@@ -327,3 +327,6 @@ mod tier_map_hook_tests {
         );
     }
 }
+
+/// Device-side 512-way Q80 expert table/gather.
+pub mod qwen80_device_expert_table;
