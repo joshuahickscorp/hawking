@@ -328,6 +328,10 @@ impl StreamedForwardReport {
                 "cache_hits": self.chunk_verification.cache_hits,
                 "bytes_hashed": self.chunk_verification.bytes_hashed,
                 "chunks_verified": self.chunk_verification.chunks_verified,
+                "admission_trust_hits": self.chunk_verification.admission_trust_hits,
+                "admission_trust_fallbacks": self.chunk_verification.admission_trust_fallbacks,
+                "verify_ns": self.chunk_verification.verify_ns,
+                "admission_receipt_loaded": self.chunk_verification.admission_receipt_loaded,
             },
             "hc_bf16_sha256": self.hc_bf16_sha256,
             "greedy": self.greedy.as_ref().map(|g| serde_json::json!({
@@ -601,6 +605,7 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
         )?;
         clone_or_link_tree(&source.join("metadata"), &view_root.join("metadata"))?;
         clone_or_link_tree(&source.join("chunks"), &view_root.join("chunks"))?;
+        copy_admission_receipt_into_view(source, &view_root)?;
         Ok(())
     })();
     if let Err(error) = result {
@@ -613,6 +618,25 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
         view: format!("clone_view_sealed_range_journal_prefix_{range_count}_of_appended_journal"),
         ephemeral: Some(view_root),
     })
+}
+
+fn copy_admission_receipt_into_view(source: &Path, view_root: &Path) -> Result<()> {
+    let dest = view_root.join(".hawking-admission.json");
+    let beside = source.join(".hawking-admission.json");
+    if beside.is_file() {
+        return clone_or_link_file(&beside, &dest);
+    }
+    if let Ok(raw) = fs::read(source.join("manifest.json")) {
+        if let Ok(value) = serde_json::from_slice::<serde_json::Value>(&raw) {
+            if let Some(seal) = value.get("seal_sha256").and_then(|item| item.as_str()) {
+                let cached = crate::gravity_deepseek_v4::admission_receipt_cache_path(seal);
+                if cached.is_file() {
+                    return clone_or_link_file(&cached, &dest);
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 fn clone_or_link_file(src: &Path, dst: &Path) -> Result<()> {

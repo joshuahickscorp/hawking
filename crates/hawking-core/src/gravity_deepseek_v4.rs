@@ -18,9 +18,20 @@
 //! re-hashing.  A digest mismatch still hard-fails.  Silently trusting
 //! unverified bytes is not permitted.
 //!
+//! A sealed `<artifact>/.hawking-admission.json` may authorize skipping the
+//! first-touch SHA-256 when cheap identity (size, mtime_ns, inode) still
+//! matches.  `HAWKING_DSV4F_VERIFY=full` forces the hash.  A missing,
+//! stale, or unsealed receipt never skip-hashes; the reader falls back to
+//! SHA-256 and still hard-fails on mismatch.
+//!
 //! No method here constructs an [`crate::Engine`], allocates Metal resources,
 //! performs a model forward, or changes the public CLI admission policy.
 
+use crate::gravity_deepseek_v4_admission_trust::{
+    admission_hash_threads, file_identity, identity_matches, load_admission_receipt,
+    resolve_trusted_chunk_path, seal_admission_trust_at, DeepSeekV4AdmissionChunkSpec,
+    DeepSeekV4AdmissionLoad, DeepSeekV4AdmissionTrustIndex,
+};
 use crate::{Error, Result};
 use memmap2::{Mmap, MmapOptions};
 use parking_lot::Mutex;
@@ -32,7 +43,13 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::ops::Range;
 use std::path::{Component, Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::time::Instant;
+
+pub use crate::gravity_deepseek_v4_admission_trust::{
+    admission_receipt_cache_path, admission_receipt_path, DeepSeekV4AdmissionTrustSeal,
+    DeepSeekV4VerifyMode, ADMISSION_TRUST_RECEIPT_NAME, ADMISSION_TRUST_SCHEMA,
+};
 
 /// Immutable full-stream artifact schema produced by the Condense streamer.
 pub const FULL_STREAM_SCHEMA: &str = "hawking.gravity.deepseek_v4.full_stream.v1";
@@ -147,13 +164,18 @@ pub struct FullStreamChunkVerification {
 ///
 /// `hash_invocations` increments only when SHA-256 actually runs.
 /// A second read of an already-verified `(chunk, digest)` is a cache hit
-/// and does not re-hash.
+/// and does not re-hash.  `admission_trust_hits` counts first-touch chunks
+/// whose sealed receipt identity matched so SHA-256 was skipped.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct DeepSeekV4ChunkVerificationStats {
     pub hash_invocations: u64,
     pub cache_hits: u64,
     pub bytes_hashed: u64,
     pub chunks_verified: u64,
+    pub admission_trust_hits: u64,
+    pub admission_trust_fallbacks: u64,
+    pub verify_ns: u64,
+    pub admission_receipt_loaded: bool,
 }
 
 /// Content-addressed chunk binding used by isolated integrity fixtures.
@@ -399,16 +421,24 @@ pub struct DeepSeekV4FullStreamReader {
     manifest_seal_sha256: String,
     manifest_file_sha256: String,
     restart_seal_sha256: String,
+    content_addressed_chunk_sha256: String,
     tensor_bytes: u64,
     tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
     chunks: BTreeMap<String, ChunkBinding>,
     native_pairs: BTreeMap<String, NativeScalePairGeometry>,
     source_metadata_sha256: BTreeMap<String, String>,
-    /// SHA-256 hex of chunks that have passed the manifest digest check.
+    /// SHA-256 hex of chunks that have passed the manifest digest check
+    /// or were accepted by a valid admission-trust receipt.
     verified_digests: Mutex<HashSet<String>>,
     hash_invocations: AtomicU64,
     cache_hits: AtomicU64,
     bytes_hashed: AtomicU64,
+    admission_trust_hits: AtomicU64,
+    admission_trust_fallbacks: AtomicU64,
+    verify_ns: AtomicU64,
+    verify_mode: DeepSeekV4VerifyMode,
+    admission: Option<DeepSeekV4AdmissionTrustIndex>,
+    admission_receipt_loaded: AtomicBool,
 }
 
 impl DeepSeekV4FullStreamReader {
@@ -418,6 +448,16 @@ impl DeepSeekV4FullStreamReader {
     /// first verified read (or by [`Self::verify_all_chunks`]) and then
     /// cached for the life of this reader.
     pub fn admit(root: impl AsRef<Path>) -> Result<Self> {
+        Self::admit_with_verify_mode(root, DeepSeekV4VerifyMode::from_env()?)
+    }
+
+    /// Admit the sealed stream under an explicit verify mode.  Used by the
+    /// admission sealer (`full`) and by tests that must not race on the env
+    /// var.
+    pub fn admit_with_verify_mode(
+        root: impl AsRef<Path>,
+        verify_mode: DeepSeekV4VerifyMode,
+    ) -> Result<Self> {
         let root = canonical_non_symlink_directory(root.as_ref(), "DeepSeek-V4 full artifact")?;
         let manifest_path = checked_regular_path(&root, "manifest.json", "full stream manifest")?;
         let manifest_raw = read_regular_file(&manifest_path, "full stream manifest")?;
@@ -453,6 +493,17 @@ impl DeepSeekV4FullStreamReader {
         let (tensors, chunks) = validate_tensors(&manifest, &index, &source_windows)?;
         validate_chunk_tree(&root, &chunks)?;
         let native_pairs = validate_native_scale_pairs(&tensors)?;
+        let content_addressed_chunk_sha256 =
+            manifest.artifact.content_addressed_chunk_sha256.clone();
+        let total_chunk_bytes = chunk_bytes_total(&chunks)?;
+        let admission = load_admission_if_requested(
+            &root,
+            verify_mode,
+            &manifest.seal_sha256,
+            &content_addressed_chunk_sha256,
+            chunks.len(),
+            total_chunk_bytes,
+        );
 
         Ok(Self {
             root,
@@ -463,6 +514,7 @@ impl DeepSeekV4FullStreamReader {
             manifest_seal_sha256: manifest.seal_sha256,
             manifest_file_sha256,
             restart_seal_sha256: manifest.restart_receipt.seal_sha256,
+            content_addressed_chunk_sha256,
             tensor_bytes: manifest.artifact.total_tensor_bytes,
             tensors,
             chunks,
@@ -472,6 +524,12 @@ impl DeepSeekV4FullStreamReader {
             hash_invocations: AtomicU64::new(0),
             cache_hits: AtomicU64::new(0),
             bytes_hashed: AtomicU64::new(0),
+            admission_trust_hits: AtomicU64::new(0),
+            admission_trust_fallbacks: AtomicU64::new(0),
+            verify_ns: AtomicU64::new(0),
+            verify_mode,
+            admission_receipt_loaded: AtomicBool::new(admission.is_some()),
+            admission,
         })
     }
 
@@ -482,6 +540,20 @@ impl DeepSeekV4FullStreamReader {
         root: impl AsRef<Path>,
         tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
         chunks: impl IntoIterator<Item = DeepSeekV4ChunkSpec>,
+    ) -> Result<Self> {
+        Self::bind_isolated_integrity_fixture_with_verify_mode(
+            root,
+            tensors,
+            chunks,
+            DeepSeekV4VerifyMode::from_env()?,
+        )
+    }
+
+    pub fn bind_isolated_integrity_fixture_with_verify_mode(
+        root: impl AsRef<Path>,
+        tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
+        chunks: impl IntoIterator<Item = DeepSeekV4ChunkSpec>,
+        verify_mode: DeepSeekV4VerifyMode,
     ) -> Result<Self> {
         let root = root.as_ref();
         refuse_sealed_artifact_root(root)?;
@@ -527,6 +599,16 @@ impl DeepSeekV4FullStreamReader {
                 }
             }
         }
+        let content_addressed_chunk_sha256 = content_addressed_chunk_digest(&bindings);
+        let total_chunk_bytes = chunk_bytes_total(&bindings)?;
+        let admission = load_admission_if_requested(
+            &root,
+            verify_mode,
+            "isolated-integrity-fixture",
+            &content_addressed_chunk_sha256,
+            bindings.len(),
+            total_chunk_bytes,
+        );
         Ok(Self {
             root,
             source: DeepSeekV4SourceIdentity {
@@ -536,6 +618,7 @@ impl DeepSeekV4FullStreamReader {
             manifest_seal_sha256: "isolated-integrity-fixture".to_owned(),
             manifest_file_sha256: "isolated-integrity-fixture".to_owned(),
             restart_seal_sha256: "isolated-integrity-fixture".to_owned(),
+            content_addressed_chunk_sha256,
             tensor_bytes,
             tensors,
             chunks: bindings,
@@ -545,6 +628,12 @@ impl DeepSeekV4FullStreamReader {
             hash_invocations: AtomicU64::new(0),
             cache_hits: AtomicU64::new(0),
             bytes_hashed: AtomicU64::new(0),
+            admission_trust_hits: AtomicU64::new(0),
+            admission_trust_fallbacks: AtomicU64::new(0),
+            verify_ns: AtomicU64::new(0),
+            verify_mode,
+            admission_receipt_loaded: AtomicBool::new(admission.is_some()),
+            admission,
         })
     }
 
@@ -604,7 +693,25 @@ impl DeepSeekV4FullStreamReader {
             cache_hits: self.cache_hits.load(Ordering::Relaxed),
             bytes_hashed: self.bytes_hashed.load(Ordering::Relaxed),
             chunks_verified: self.verified_digests.lock().len() as u64,
+            admission_trust_hits: self.admission_trust_hits.load(Ordering::Relaxed),
+            admission_trust_fallbacks: self.admission_trust_fallbacks.load(Ordering::Relaxed),
+            verify_ns: self.verify_ns.load(Ordering::Relaxed),
+            admission_receipt_loaded: self.admission_receipt_loaded.load(Ordering::Relaxed),
         }
+    }
+
+    pub fn verify_mode(&self) -> DeepSeekV4VerifyMode {
+        self.verify_mode
+    }
+
+    /// Artifact-level digest of the admitted chunk-hash list. Isolated
+    /// fixtures compute the same function over their bound chunks.
+    pub fn content_addressed_chunk_sha256(&self) -> &str {
+        &self.content_addressed_chunk_sha256
+    }
+
+    pub fn admission_trust_receipt_path(&self) -> PathBuf {
+        admission_receipt_path(&self.root)
     }
 
     /// Canonical non-symlink artifact root.
@@ -769,6 +876,76 @@ impl DeepSeekV4FullStreamReader {
         })
     }
 
+    /// Same as [`Self::verify_all_chunks`] but hashed across cores.  In
+    /// `admission` mode a valid receipt still skip-hashes matching chunks;
+    /// the sealer hashes the durable root directly and does not use this.
+    pub fn verify_all_chunks_parallel(&self) -> Result<FullStreamChunkVerification> {
+        let bindings: Vec<&ChunkBinding> = self.chunks.values().collect();
+        if bindings.is_empty() {
+            return Ok(FullStreamChunkVerification {
+                chunk_count: 0,
+                bytes_verified: 0,
+            });
+        }
+        let threads = admission_hash_threads().min(bindings.len()).max(1);
+        let chunk_size = (bindings.len() + threads - 1) / threads;
+        let errors = Mutex::new(Vec::new());
+        std::thread::scope(|scope| {
+            let errors = &errors;
+            for work in bindings.chunks(chunk_size.max(1)) {
+                scope.spawn(move || {
+                    for binding in work {
+                        if !errors.lock().is_empty() {
+                            break;
+                        }
+                        if let Err(error) = self.verify_chunk(binding) {
+                            errors.lock().push(error);
+                            break;
+                        }
+                    }
+                });
+            }
+        });
+        if let Some(error) = errors.into_inner().into_iter().next() {
+            return Err(error);
+        }
+        Ok(FullStreamChunkVerification {
+            chunk_count: self.chunks.len(),
+            bytes_verified: chunk_bytes_total(&self.chunks)?,
+        })
+    }
+
+    /// Full SHA-256 of every chunk under `receipt_root`, then write
+    /// `.hawking-admission.json` there.  Always hashes the durable files
+    /// (never skip), so a clone-view reader can still seal the source
+    /// artifact.
+    pub fn seal_admission_trust_at(
+        &self,
+        receipt_root: impl AsRef<Path>,
+    ) -> Result<DeepSeekV4AdmissionTrustSeal> {
+        let specs: Vec<DeepSeekV4AdmissionChunkSpec> = self
+            .chunks
+            .values()
+            .map(|chunk| DeepSeekV4AdmissionChunkSpec {
+                relative: chunk.relative.clone(),
+                sha256: chunk.sha256.clone(),
+                bytes: chunk.bytes,
+            })
+            .collect();
+        seal_admission_trust_at(
+            receipt_root,
+            &self.manifest_seal_sha256,
+            &self.content_addressed_chunk_sha256,
+            &specs,
+            env!("CARGO_PKG_VERSION"),
+        )
+    }
+
+    /// Seal a receipt beside this reader's root. Isolated fixtures use this.
+    pub fn seal_admission_trust(&self) -> Result<DeepSeekV4AdmissionTrustSeal> {
+        self.seal_admission_trust_at(&self.root)
+    }
+
     /// Return a verified source-native byte range.  Every source chunk touched
     /// by the range is SHA-256 checked against its manifest digest at least
     /// once in this process before this function succeeds.  `max_output_bytes`
@@ -919,12 +1096,35 @@ impl DeepSeekV4FullStreamReader {
     /// Verify `binding` against its manifest digest on first touch, then
     /// return a read-only mmap of the chunk.  A cached hit still remaps so
     /// the caller can extract a slice; it does not re-hash.
+    ///
+    /// In `admission` mode a valid receipt whose cheap identity still holds
+    /// skips SHA-256.  A missing/stale/unsealed receipt, or any identity
+    /// mismatch, hashes this chunk and hard-fails on digest mismatch.
     fn ensure_chunk_verified(&self, binding: &ChunkBinding) -> Result<Mmap> {
-        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
+        let started = Instant::now();
+        let result = self.ensure_chunk_verified_inner(binding);
+        self.verify_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        result
+    }
+
+    fn ensure_chunk_verified_inner(&self, binding: &ChunkBinding) -> Result<Mmap> {
+        let path = self.resolve_chunk_file(binding)?;
         let mmap = map_chunk_readonly(&path, binding.bytes, &binding.relative)?;
         if self.verified_digests.lock().contains(&binding.sha256) {
             self.cache_hits.fetch_add(1, Ordering::Relaxed);
             return Ok(mmap);
+        }
+        if self.can_trust_without_hash(binding, &path)? {
+            self.admission_trust_hits.fetch_add(1, Ordering::Relaxed);
+            self.verified_digests
+                .lock()
+                .insert(binding.sha256.clone());
+            return Ok(mmap);
+        }
+        if self.verify_mode == DeepSeekV4VerifyMode::Admission && self.admission.is_some() {
+            self.admission_trust_fallbacks
+                .fetch_add(1, Ordering::Relaxed);
         }
         self.hash_invocations.fetch_add(1, Ordering::Relaxed);
         self.bytes_hashed
@@ -936,10 +1136,66 @@ impl DeepSeekV4FullStreamReader {
                 binding.relative
             )));
         }
-        let mut cache = self.verified_digests.lock();
-        cache.insert(binding.sha256.clone());
+        self.verified_digests
+            .lock()
+            .insert(binding.sha256.clone());
         Ok(mmap)
     }
+
+    fn resolve_chunk_file(&self, binding: &ChunkBinding) -> Result<PathBuf> {
+        if self.verify_mode == DeepSeekV4VerifyMode::Admission {
+            if let Some(index) = self.admission.as_ref() {
+                let (path, _, _) =
+                    resolve_trusted_chunk_path(&self.root, &binding.relative, index)?;
+                return Ok(path);
+            }
+        }
+        checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
+    }
+
+    fn can_trust_without_hash(&self, binding: &ChunkBinding, path: &Path) -> Result<bool> {
+        if self.verify_mode != DeepSeekV4VerifyMode::Admission {
+            return Ok(false);
+        }
+        let Some(index) = self.admission.as_ref() else {
+            return Ok(false);
+        };
+        let Some(expected) = index.chunks.get(&binding.relative) else {
+            return Ok(false);
+        };
+        let mut observed = file_identity(path, "content-addressed chunk")?;
+        observed.key = binding.relative.clone();
+        Ok(identity_matches(&observed, expected))
+    }
+}
+
+fn load_admission_if_requested(
+    root: &Path,
+    verify_mode: DeepSeekV4VerifyMode,
+    manifest_seal: &str,
+    chunk_digest: &str,
+    chunk_count: usize,
+    total_bytes: u64,
+) -> Option<DeepSeekV4AdmissionTrustIndex> {
+    if verify_mode != DeepSeekV4VerifyMode::Admission {
+        return None;
+    }
+    match load_admission_receipt(root, manifest_seal, chunk_digest, chunk_count, total_bytes) {
+        DeepSeekV4AdmissionLoad::Loaded(index) => Some(index),
+        DeepSeekV4AdmissionLoad::Missing | DeepSeekV4AdmissionLoad::Rejected(_) => None,
+    }
+}
+
+fn chunk_bytes_total(chunks: &BTreeMap<String, ChunkBinding>) -> Result<u64> {
+    chunks.values().try_fold(0u64, |acc, chunk| {
+        acc.checked_add(chunk.bytes)
+            .ok_or_else(|| gravity("full stream chunk byte count overflow"))
+    })
+}
+
+fn content_addressed_chunk_digest(chunks: &BTreeMap<String, ChunkBinding>) -> String {
+    let digests: Vec<String> = chunks.values().map(|chunk| chunk.sha256.clone()).collect();
+    sha256_hex(&canonical_json_array_strings(&digests))
 }
 
 fn validate_manifest_identity(manifest: &Manifest) -> Result<()> {
@@ -1533,7 +1789,7 @@ fn validate_chunk_tree(root: &Path, chunks: &BTreeMap<String, ChunkBinding>) -> 
     Ok(())
 }
 
-fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<PathBuf> {
+pub(crate) fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<PathBuf> {
     let relative_path = Path::new(relative);
     if relative_path.is_absolute()
         || relative_path.components().any(|component| {
@@ -1574,7 +1830,7 @@ fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<Path
     Ok(path)
 }
 
-fn canonical_non_symlink_directory(path: &Path, label: &str) -> Result<PathBuf> {
+pub(crate) fn canonical_non_symlink_directory(path: &Path, label: &str) -> Result<PathBuf> {
     let metadata = fs::symlink_metadata(path).map_err(|error| {
         gravity(format!(
             "cannot inspect {label} {}: {error}",
@@ -1642,7 +1898,7 @@ fn refuse_sealed_artifact_root(root: &Path) -> Result<()> {
     Ok(())
 }
 
-fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) -> Result<Mmap> {
+pub(crate) fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) -> Result<Mmap> {
     let file = open_checked_regular_file(path, "content-addressed chunk")?;
     let observed = file.metadata()?.len();
     if observed != expected_bytes {
@@ -1702,7 +1958,7 @@ fn parse_and_verify_sealed_json(raw: &[u8], label: &str) -> Result<Value> {
 /// Python's `json.dumps(sort_keys=True, separators=(",", ":"),
 /// ensure_ascii=False)` layout used by the stream sealer.  This stays local
 /// rather than widening the legacy Gravity container API.
-fn canonical_json(value: &Value) -> Vec<u8> {
+pub(crate) fn canonical_json(value: &Value) -> Vec<u8> {
     let mut out = Vec::with_capacity(256);
     write_canonical_json(&mut out, value);
     out
@@ -1798,15 +2054,15 @@ fn is_lower_hex_byte(byte: u8) -> bool {
     byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)
 }
 
-fn is_sha256(value: &str) -> bool {
+pub(crate) fn is_sha256(value: &str) -> bool {
     value.len() == 64 && value.bytes().all(is_lower_hex_byte)
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
-fn gravity(message: impl Into<String>) -> Error {
+pub(crate) fn gravity(message: impl Into<String>) -> Error {
     Error::Gravity(message.into())
 }
 

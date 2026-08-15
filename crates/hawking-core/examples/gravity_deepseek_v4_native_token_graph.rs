@@ -9,7 +9,7 @@
 //!   cargo run -p hawking-core --release --example gravity_deepseek_v4_native_token_graph -- \
 //!     [--artifact /path/to/full-43-layer-stream.gravity] \
 //!     [--out receipts/dsv4f_native_token_graph_l0_l42_receipt.json] \
-//!     [--max-layer 42] [--skip-head]
+//!     [--max-layer 42] [--skip-head] [--verify full|admission]
 
 use hawking_core::gravity_deepseek_v4_native_token_graph::{
     run_native_bos_token, ORACLE_GREEDY_LOGIT, ORACLE_GREEDY_TOKEN_ID, ORACLE_HC_BF16_SHA256,
@@ -48,6 +48,12 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
                     .map_err(|_| "--max-layer must be an integer")?;
             }
             "--skip-head" => skip_head = true,
+            "--verify" => {
+                let mode = args.next().ok_or("--verify needs full|admission")?;
+                hawking_core::gravity_deepseek_v4::DeepSeekV4VerifyMode::parse(&mode)
+                    .map_err(|e| format!("{e}"))?;
+                std::env::set_var("HAWKING_DSV4F_VERIFY", mode);
+            }
             other => return Err(format!("unknown argument {other}").into()),
         }
     }
@@ -85,7 +91,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let greedy = report.greedy.as_ref();
     eprintln!(
-        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
+        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
         report.deepest_layer,
         report.layers_executed,
         report.wall_ms,
@@ -101,6 +107,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.counters.host_expert_gather,
         report.counters.host_expert_output_readback,
         report.counters.host_route_id_readback,
+        report.chunk_verification.hash_invocations,
+        report.chunk_verification.admission_trust_hits,
+        report.chunk_verification.bytes_hashed,
+        report.chunk_verification.admission_receipt_loaded,
         report.hc_bf16_sha256,
         greedy.map(|g| (g.token_id, g.logit)),
         ORACLE_GREEDY_TOKEN_ID,

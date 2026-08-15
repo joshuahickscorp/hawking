@@ -18,7 +18,8 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 
 use crate::gravity_deepseek_v4::{
-    DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
+    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, NativeScalePairKind,
+    PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_act_quant::ACT_QUANT_BLOCK;
 use crate::gravity_deepseek_v4_final_head::{
@@ -187,6 +188,7 @@ pub struct NativeTokenGraphReport {
     pub wall_ms: u128,
     pub init_ms: u128,
     pub body_ms: u128,
+    pub chunk_verification: DeepSeekV4ChunkVerificationStats,
 }
 
 impl NativeTokenGraphReport {
@@ -239,6 +241,16 @@ impl NativeTokenGraphReport {
             "wall_ms": self.wall_ms,
             "init_ms": self.init_ms,
             "body_ms": self.body_ms,
+            "chunk_verification": {
+                "hash_invocations": self.chunk_verification.hash_invocations,
+                "cache_hits": self.chunk_verification.cache_hits,
+                "bytes_hashed": self.chunk_verification.bytes_hashed,
+                "chunks_verified": self.chunk_verification.chunks_verified,
+                "admission_trust_hits": self.chunk_verification.admission_trust_hits,
+                "admission_trust_fallbacks": self.chunk_verification.admission_trust_fallbacks,
+                "verify_ns": self.chunk_verification.verify_ns,
+                "admission_receipt_loaded": self.chunk_verification.admission_receipt_loaded,
+            },
         })
     }
 }
@@ -978,6 +990,7 @@ mod macos {
             wall_ms: wall.elapsed().as_millis(),
             init_ms,
             body_ms: body.elapsed().as_millis(),
+            chunk_verification: reader.chunk_verification_stats(),
         })
     }
 

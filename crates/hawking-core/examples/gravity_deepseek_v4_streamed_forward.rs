@@ -10,7 +10,7 @@
 //!     --artifact /path/to/full-43-layer-stream.gravity \
 //!     --out receipts/dsv4f_streamed_forward_l0_l42_receipt.json \
 //!     --checkpoint receipts/dsv4f_streamed_forward.ckpt.json \
-//!     [--max-layer 42] [--resume] [--skip-head] [--metal]
+//!     [--max-layer 42] [--resume] [--skip-head] [--metal] [--verify full|admission]
 //!
 //! If `--artifact` is omitted, the example searches HAWKING_DSV4F_ARTIFACT
 //! and the known sealed locations.
@@ -66,6 +66,12 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
             "--resume" => resume = true,
             "--skip-head" => skip_head = true,
             "--metal" => metal = true,
+            "--verify" => {
+                let mode = args.next().ok_or("--verify needs full|admission")?;
+                hawking_core::gravity_deepseek_v4::DeepSeekV4VerifyMode::parse(&mode)
+                    .map_err(|e| format!("{e}"))?;
+                std::env::set_var("HAWKING_DSV4F_VERIFY", mode);
+            }
             other => return Err(format!("unknown argument {other}").into()),
         }
     }

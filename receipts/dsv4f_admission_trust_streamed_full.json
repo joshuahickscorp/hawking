@@ -1,0 +1,302 @@
+{
+  "artifact": {
+    "admission_view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "chunk_verification": {
+    "admission_receipt_loaded": false,
+    "admission_trust_fallbacks": 0,
+    "admission_trust_hits": 0,
+    "bytes_hashed": 10443501020,
+    "cache_hits": 378,
+    "chunks_verified": 3314,
+    "hash_invocations": 3314,
+    "verify_ns": 31009730951
+  },
+  "example_wall_ms": 96284,
+  "execution_path": "host_cpu_streamed_bos_oracle",
+  "greedy": {
+    "argmax_on_device": false,
+    "lm_head_on_device": false,
+    "logit": 16.767436981201172,
+    "metal_dispatches": 0,
+    "token_id": 5,
+    "vocab_size": 129280
+  },
+  "hc_bf16_sha256": "d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69",
+  "honesty": {
+    "bos_window_only": true,
+    "fallbacks": 0,
+    "full_compressed_indexer_graph": false,
+    "host_cpu": true,
+    "indexer_compressor_loaded": false,
+    "lm_head_path": "host_f64_mhc_merge_rmsnorm_then_host_streamed_lm_head_greedy",
+    "metal_dispatches": 0,
+    "native": false,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_4_full_compressed_graph": false
+  },
+  "metal": {
+    "fallback": 0,
+    "metal_dispatches": 0
+  },
+  "native": false,
+  "operator_profile": {
+    "buckets": [
+      {
+        "calls": 1502,
+        "name": "streaming_io",
+        "percent": 48.874151218459474,
+        "seconds": 29.191293432
+      },
+      {
+        "calls": 43,
+        "name": "mla_wo_a",
+        "percent": 12.609676963195998,
+        "seconds": 7.531440877
+      },
+      {
+        "calls": 1075,
+        "name": "act_quant",
+        "percent": 5.484234136310468,
+        "seconds": 3.275594234
+      },
+      {
+        "calls": 43,
+        "name": "mla_wo_b",
+        "percent": 5.080533394009612,
+        "seconds": 3.034473999
+      },
+      {
+        "calls": 43,
+        "name": "mla_wq_b",
+        "percent": 5.008029203136218,
+        "seconds": 2.991169081
+      },
+      {
+        "calls": 258,
+        "name": "routed_w3",
+        "percent": 4.604781476851824,
+        "seconds": 2.750319421
+      },
+      {
+        "calls": 258,
+        "name": "routed_w1",
+        "percent": 4.530710509387315,
+        "seconds": 2.706078707
+      },
+      {
+        "calls": 258,
+        "name": "routed_w2",
+        "percent": 4.522573214946926,
+        "seconds": 2.701218507
+      },
+      {
+        "calls": 1,
+        "name": "lm_head_cpu",
+        "percent": 4.039993737404792,
+        "seconds": 2.412986
+      },
+      {
+        "calls": 43,
+        "name": "shared_w1",
+        "percent": 1.3024292060530396,
+        "seconds": 0.777907998
+      },
+      {
+        "calls": 43,
+        "name": "shared_w2",
+        "percent": 1.2776684715180155,
+        "seconds": 0.763119038
+      },
+      {
+        "calls": 43,
+        "name": "shared_w3",
+        "percent": 1.270355610139492,
+        "seconds": 0.758751251
+      },
+      {
+        "calls": 43,
+        "name": "mla_wq_a",
+        "percent": 0.6774923665229923,
+        "seconds": 0.404649042
+      },
+      {
+        "calls": 43,
+        "name": "mla_wkv",
+        "percent": 0.3091054763161413,
+        "seconds": 0.184620877
+      },
+      {
+        "calls": 1,
+        "name": "embed",
+        "percent": 0.12359465494432151,
+        "seconds": 0.073819959
+      },
+      {
+        "calls": 43,
+        "name": "route",
+        "percent": 0.09409880597085722,
+        "seconds": 0.056202835
+      },
+      {
+        "calls": 43,
+        "name": "gate_logits_cpu",
+        "percent": 0.064697131421837,
+        "seconds": 0.038641959
+      },
+      {
+        "calls": 43,
+        "name": "mhc_attn_pre",
+        "percent": 0.03748365440693834,
+        "seconds": 0.022388038
+      },
+      {
+        "calls": 43,
+        "name": "kv_norm_qat_rope",
+        "percent": 0.031415965500383246,
+        "seconds": 0.018763961
+      },
+      {
+        "calls": 43,
+        "name": "mhc_ffn_pre",
+        "percent": 0.025593403338494705,
+        "seconds": 0.015286292
+      },
+      {
+        "calls": 258,
+        "name": "swiglu_routed",
+        "percent": 0.007299910888318143,
+        "seconds": 0.004360052
+      },
+      {
+        "calls": 43,
+        "name": "sparse_attn_bos",
+        "percent": 0.006357975776924412,
+        "seconds": 0.003797458
+      },
+      {
+        "calls": 43,
+        "name": "q_head_norm_rope",
+        "percent": 0.005886814005731254,
+        "seconds": 0.003516045
+      },
+      {
+        "calls": 1,
+        "name": "lm_head_merge",
+        "percent": 0.0032568766738334466,
+        "seconds": 0.00194525
+      },
+      {
+        "calls": 43,
+        "name": "mhc_ffn_post",
+        "percent": 0.002783131501685282,
+        "seconds": 0.001662294
+      },
+      {
+        "calls": 43,
+        "name": "mhc_attn_post",
+        "percent": 0.0026766026276968486,
+        "seconds": 0.001598667
+      },
+      {
+        "calls": 43,
+        "name": "swiglu_shared",
+        "percent": 0.001046210415916553,
+        "seconds": 0.000624875
+      },
+      {
+        "calls": 43,
+        "name": "attn_norm",
+        "percent": 0.0008701406743544542,
+        "seconds": 0.000519713
+      },
+      {
+        "calls": 43,
+        "name": "ffn_norm",
+        "percent": 0.0007241977745191046,
+        "seconds": 0.000432545
+      },
+      {
+        "calls": 43,
+        "name": "moe_combine",
+        "percent": 0.00025260236700232544,
+        "seconds": 0.000150873
+      },
+      {
+        "calls": 43,
+        "name": "q_norm",
+        "percent": 0.0002269374588757644,
+        "seconds": 0.000135544
+      }
+    ],
+    "total_seconds": 59.727468824
+  },
+  "residency": {
+    "declared_rss_bound_bytes": 17179869184,
+    "declared_weight_bound_bytes": 402653184,
+    "peak_rss_bytes": 1035337728,
+    "peak_weight_resident_bytes": 33556480,
+    "policy": "operator_stream_load_execute_free",
+    "rss_within_bound": true,
+    "schedule_streamed_decode_peak_bytes": 253719640,
+    "weight_within_bound": true
+  },
+  "schema": "hawking.gravity.deepseek_v4.streamed_forward.v1",
+  "scope": {
+    "deepest_layer": 42,
+    "layers_executed": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "requested_max_layer": 42,
+    "token_id": 0,
+    "token_position": 0
+  },
+  "stop_reason": null,
+  "wall_ms": 88484
+}
