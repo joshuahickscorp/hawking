@@ -497,6 +497,13 @@ mod macos {
             "expert_gemm": row(t.expert_gemm_secs),
             "retention_write": row(t.retention_write_secs),
             "total_capture_secs": t.total_secs,
+            "compute_backend": t.compute_backend,
+            "expert_mps_dispatches": t.expert_mps_dispatches,
+            "expert_mps_dispatches_per_layer": if QWEN30_LAYERS > 0 {
+                t.expert_mps_dispatches as f64 / QWEN30_LAYERS as f64
+            } else {
+                0.0
+            },
             "unaccounted_secs": (t.total_secs
                 - t.load_secs
                 - t.bf16_widen_dense_secs
@@ -755,7 +762,7 @@ mod macos {
         let capture_timing = capture_run.timing;
         let saturation = capture_run.saturation;
         eprintln!(
-            "capture timing: total={:.1}s load={:.1}s attn={:.1}s router={:.1}s expert_gemm={:.1}s retention={:.1}s widen={:.1}s",
+            "capture timing: total={:.1}s load={:.1}s attn={:.1}s router={:.1}s expert_gemm={:.1}s retention={:.1}s widen={:.1}s backend={} mps_dispatches={} ({:.1}/layer)",
             capture_timing.total_secs,
             capture_timing.load_secs,
             capture_timing.attention_secs,
@@ -763,6 +770,9 @@ mod macos {
             capture_timing.expert_gemm_secs,
             capture_timing.retention_write_secs,
             capture_timing.bf16_widen_dense_secs,
+            capture_timing.compute_backend,
+            capture_timing.expert_mps_dispatches,
+            capture_timing.expert_mps_dispatches as f64 / QWEN30_LAYERS as f64,
         );
         eprintln!(
             "saturation: global_max_token={:?} pct_corpus_after={:.1}% (per-layer first token index when every expert hit N={})",

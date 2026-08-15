@@ -11,17 +11,26 @@
 //! checking that the files are unchanged. A single metadata mismatch forces a
 //! full cold re-verify of the whole catalog.
 //!
+//! On a warm identity hit the receipt may also carry previously validated
+//! payload geometry (direct `CompleteBinaryHeader` and/or HGRAVS01 factor
+//! geometry). That is a fast-accept proxy: identity-match implies content is
+//! unchanged, so the cold-validated geometry need not be re-parsed. A
+//! mismatched identity forces cold re-parse; a sealed-receipt rewrite of the
+//! geometry blob is refused by the receipt seal.
+//!
 //! Proven on warm hit:
 //!   - manifest seal matches the protected admission binding
 //!   - source-chain seals still bind
 //!   - every payload path exists as a regular file with the same size,
 //!     mtime_ns, and inode recorded at the last cold verify (device excluded)
 //!   - payload byte length equals the receipt size after read
-//!   - direct header geometry still matches the manifest row
+//!   - cached (or re-parsed) header geometry still matches the manifest row
 //!
 //! Assumed on warm hit (not re-proven until cold rehash):
 //!   - content bits are unchanged if identity metadata is unchanged
 //!     (a metadata-preserving bitflip is outside this gate)
+//!   - previously validated factor-body scale/code integrity still holds when
+//!     identity matches (same assumption as content-sha skip)
 
 use super::{
     canonical_json, is_sha256, model_error, parse_complete_binary_header, read_regular_file,
@@ -124,9 +133,9 @@ pub fn file_identity(path: &Path, label: &str) -> Result<FileIdentity> {
 fn identity_matches(observed: &FileIdentity, expected: &FileIdentity) -> bool {
     // device (st_dev) is deliberately NOT compared: it is a mount-time artifact,
     // so a reboot/remount reassigns it without touching the file and would
-    // falsely invalidate the warm receipt, forcing a full ~10s cold rehash on
-    // every post-reboot startup. (size, mtime_ns, inode) already pin the file on
-    // a volume, and the cold verify's sealed content SHA is the ultimate
+    // falsely invalidate the warm receipt, forcing a full cold rehash on every
+    // post-reboot startup. (size, mtime_ns, inode) already pin the file on a
+    // volume, and the cold verify's sealed content SHA is the ultimate
     // authority; device is still recorded in the receipt for diagnostics.
     observed.size == expected.size
         && observed.mtime_ns == expected.mtime_ns
@@ -136,10 +145,11 @@ fn identity_matches(observed: &FileIdentity, expected: &FileIdentity) -> bool {
 /// Layout marker stored in the warm receipt.
 ///
 /// - `hq30g1b1`: direct complete-binary payload; receipt may carry a parsed header.
-/// - `hgravs01`: activation-weighted SVD factor payload; warm path re-parses geometry
-///   from bytes + manifest and never assumes header equality from the receipt alone.
+/// - `hgravs01`: activation-weighted SVD factor payload; receipt may carry the
+///   cold-validated HGRAVS01 geometry under `hgravs01_header` so a warm identity
+///   hit can skip re-parsing + re-decoding the factor bodies.
 /// - `identity_only`: identity+sha catalog entry without a stored direct header
-///   (used by mixed HGRAVS catalogs where layout is re-proven on every load).
+///   (used by mixed catalogs that re-prove layout when geometry is absent).
 pub const LAYOUT_KIND_HQ30G1B1: &str = "hq30g1b1";
 pub const LAYOUT_KIND_HGRAVS01: &str = "hgravs01";
 pub const LAYOUT_KIND_IDENTITY_ONLY: &str = "identity_only";
@@ -151,8 +161,11 @@ pub struct ReceiptEntry {
     pub artifact_sha256: String,
     pub identity: FileIdentity,
     /// Present for direct complete-binary warm loads that compare header equality.
-    /// Absent for mixed / HGRAVS catalogs that re-parse layout on every start.
     pub header: Option<CompleteBinaryHeader>,
+    /// Cold-validated HGRAVS01 geometry (JSON object). Present for `hgravs01`
+    /// entries written by a geometry-aware admission; absent on older receipts
+    /// (warm path re-parses when missing).
+    pub hgravs01_header: Option<Value>,
     pub layout_kind: String,
     pub source_shard: String,
     pub source_shard_sha256: String,
@@ -170,6 +183,8 @@ pub struct ReceiptEntrySpec {
     pub source_shard_sha256: String,
     pub source_dtype: String,
     pub header: Option<CompleteBinaryHeader>,
+    /// Optional cold-validated HGRAVS01 geometry JSON for mixed catalogs.
+    pub hgravs01_header: Option<Value>,
     pub layout_kind: String,
 }
 
@@ -254,6 +269,10 @@ fn receipt_document_unsigned(receipt: &WarmAdmissionReceipt) -> Value {
             "source_dtype": entry.source_dtype,
             "layout_kind": entry.layout_kind,
             "header": entry.header.as_ref().map(header_to_json).unwrap_or(Value::Null),
+            "hgravs01_header": entry
+                .hgravs01_header
+                .clone()
+                .unwrap_or(Value::Null),
         }));
     }
     json!({
@@ -282,6 +301,7 @@ pub fn build_receipt_from_admitted(
             source_shard_sha256: tensor.source_shard_sha256.clone(),
             source_dtype: tensor.source_dtype.clone(),
             header: Some(tensor.header.clone()),
+            hgravs01_header: None,
             layout_kind: LAYOUT_KIND_HQ30G1B1.to_owned(),
         })
         .collect();
@@ -307,6 +327,7 @@ pub fn build_receipt_from_specs(
                 artifact_sha256: spec.artifact_sha256.clone(),
                 identity,
                 header: spec.header.clone(),
+                hgravs01_header: spec.hgravs01_header.clone(),
                 layout_kind: if spec.layout_kind.is_empty() {
                     LAYOUT_KIND_IDENTITY_ONLY.to_owned()
                 } else {
@@ -447,6 +468,16 @@ pub fn load_receipt(manifest_seal_sha256: &str) -> Result<Option<WarmAdmissionRe
             None | Some(Value::Null) => None,
             Some(value) => Some(header_from_json(value, "warm admission receipt header")?),
         };
+        let hgravs01_header = match row.get("hgravs01_header") {
+            None | Some(Value::Null) => None,
+            Some(value) if value.is_object() => Some(value.clone()),
+            Some(_) => {
+                return Err(model_error(
+                    "warm admission receipt",
+                    "hgravs01_header must be an object or null",
+                ));
+            }
+        };
         let layout_kind = row
             .get("layout_kind")
             .and_then(Value::as_str)
@@ -454,6 +485,8 @@ pub fn load_receipt(manifest_seal_sha256: &str) -> Result<Option<WarmAdmissionRe
             .unwrap_or_else(|| {
                 if header.is_some() {
                     LAYOUT_KIND_HQ30G1B1.to_owned()
+                } else if hgravs01_header.is_some() {
+                    LAYOUT_KIND_HGRAVS01.to_owned()
                 } else {
                     LAYOUT_KIND_IDENTITY_ONLY.to_owned()
                 }
@@ -472,6 +505,7 @@ pub fn load_receipt(manifest_seal_sha256: &str) -> Result<Option<WarmAdmissionRe
                 artifact_sha256,
                 identity,
                 header,
+                hgravs01_header,
                 layout_kind,
                 source_shard,
                 source_shard_sha256,
@@ -605,12 +639,28 @@ pub fn receipt_covers_manifest_rows(
     Ok(true)
 }
 
+/// True when every entry that declares a known layout kind carries its
+/// validated geometry blob. Older receipts written before geometry caching
+/// return false so a warm hit re-parses once and can upgrade the receipt.
+pub fn receipt_geometry_complete(receipt: &WarmAdmissionReceipt) -> bool {
+    receipt.entries.values().all(|entry| match entry.layout_kind.as_str() {
+        LAYOUT_KIND_HQ30G1B1 => entry.header.is_some(),
+        LAYOUT_KIND_HGRAVS01 => entry.hgravs01_header.is_some(),
+        _ => true,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::{identity_matches, FileIdentity};
 
     fn id(size: u64, mtime_ns: i128, device: u64, inode: u64) -> FileIdentity {
-        FileIdentity { size, mtime_ns, device, inode }
+        FileIdentity {
+            size,
+            mtime_ns,
+            device,
+            inode,
+        }
     }
 
     #[test]
@@ -627,8 +677,18 @@ mod tests {
         let base = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_234, 197_011_751);
         // A rewrite bumps mtime and/or size; a swap changes inode. Each must
         // still force a cold re-verify.
-        assert!(!identity_matches(&id(4_000_000_001, base.mtime_ns, base.device, base.inode), &base));
-        assert!(!identity_matches(&id(base.size, base.mtime_ns + 1, base.device, base.inode), &base));
-        assert!(!identity_matches(&id(base.size, base.mtime_ns, base.device, base.inode + 1), &base));
+        assert!(!identity_matches(
+            &id(4_000_000_001, base.mtime_ns, base.device, base.inode),
+            &base
+        ));
+        assert!(!identity_matches(
+            &id(base.size, base.mtime_ns + 1, base.device, base.inode),
+            &base
+        ));
+        assert!(!identity_matches(
+            &id(base.size, base.mtime_ns, base.device, base.inode + 1),
+            &base
+        ));
     }
 }
+

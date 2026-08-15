@@ -1,10 +1,8 @@
-// Unregistered Qwen3-Coder-Next direct-packed terminal-head preflight.
+// Qwen3-Coder-Next direct-packed terminal-head kernels.
 //
-// This shader is intentionally not referenced by metal/mod.rs.  It is source
-// only: the paired Rust preflight validates ABI and future-capture conditions
-// but does not compile this library, create a Metal context, or dispatch it.
-// A future fresh component lease must bind one real post-48-layer hidden
-// [2048] buffer and the exact admitted HQ30G1B1 norm/head payload sections.
+// Registered in metal/mod.rs so the composed hybrid token graph can encode
+// final RMSNorm, all-row lm_head, reserved-tail mask, greedy sample, and
+// feedback guard.  Encoding is not a generate, HCLI, or TPS claim.
 //
 // Required command order is fixed:
 // final RMSNorm -> all 151936 rows -> tail 151669..151935 mask -> deterministic

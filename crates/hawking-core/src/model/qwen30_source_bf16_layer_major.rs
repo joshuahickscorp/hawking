@@ -269,44 +269,21 @@ fn expert_batched_moe(
     Ok(())
 }
 
-/// Parallel per-expert MoE over the flat token corpus at one layer.
+/// Host baseline: serial experts, one Accelerate GEMM pair per expert.
 ///
-/// Workers share one `moe_out` buffer. Each expert's gate/up/down GEMM runs in a
-/// private scratch; only the weighted scatter-add takes a short lock. This avoids
-/// the previous `n_workers × total_tokens × hidden` partial buffers (~2 GiB at the
-/// sealed corpus with 2 workers), which both raised RSS and serialised a full-size
-/// reduce — and lets us run more expert workers inside the 12 GiB hard cap.
-fn moe_all_experts_parallel(
+/// Parallelism is inside Accelerate sgemm (VECLIB threads). Holding all experts'
+/// down buffers at once is tokens×top_k×h×4 ≈ 7.8 GiB on the sealed corpus and
+/// blows the 12 GiB RSS cap; one-expert-at-a-time keeps expert scratch to
+/// ~O(max_n×h). Dispatch count: 2 × n_active per layer (gate_up + down).
+fn moe_all_experts_host(
     layer: &mut LoadedLayer,
     expert_members: &[Vec<(usize, f32)>],
     all_router_in: &[f32],
-    _total_tokens: usize,
+    active: &[usize],
     h: usize,
     inter: usize,
     moe_out: &mut [f32],
 ) -> Result<()> {
-    moe_out.fill(0.0);
-
-    // Active experts only.
-    let active: Vec<usize> = (0..QWEN30_EXPERTS)
-        .filter(|&e| !expert_members[e].is_empty())
-        .collect();
-    for e in 0..QWEN30_EXPERTS {
-        if expert_members[e].is_empty() {
-            layer.experts[e].gate = Vec::new();
-            layer.experts[e].up = Vec::new();
-            layer.experts[e].down = Vec::new();
-        }
-    }
-    if active.is_empty() {
-        return Ok(());
-    }
-
-    // Serial experts in ascending id order, scatter immediately. Parallelism is
-    // inside Accelerate sgemm (VECLIB threads). Holding all experts' down buffers
-    // at once is tokens×top_k×h×4 ≈ 7.8 GiB on the sealed corpus and blows the
-    // 12 GiB RSS cap; one-expert-at-a-time keeps expert scratch to ~O(max_n×h).
-    // Active list is already ascending because it is built by filtering 0..E.
     let max_n = active
         .iter()
         .map(|&e| expert_members[e].len())
@@ -318,7 +295,7 @@ fn moe_all_experts_parallel(
     let mut down = vec![0.0f32; max_n * h];
     let mut w_gu = vec![0.0f32; 2 * inter * h];
     let mut w_down = vec![0.0f32; h * inter];
-    for &e in &active {
+    for &e in active {
         expert_batched_moe(
             &layer.experts[e],
             &expert_members[e],
@@ -338,6 +315,232 @@ fn moe_all_experts_parallel(
         layer.experts[e].down = Vec::new();
     }
     Ok(())
+}
+
+/// Grouped expert MoE via MPS multi-encode (one commit/wait per chunk).
+///
+/// Tokens are already sorted by expert in `expert_members[e]`. Experts are
+/// chunked by **sum of membership rows** (no zero-pad) so scratch stays inside
+/// the 12 GiB streamed RSS cap:
+///   1. gather X rows contiguously per expert (no pad)
+///   2. widen W_gu for the chunk
+///   3. ONE command-buffer: encode B variable-M GEMMs, single wait → gu_out
+///   4. SiLU·up on host
+///   5. widen W_down; ONE CB multi-encode → down
+///   6. route-weight + scatter into moe_out
+///
+/// When a chunk has uniform M (or B==1), uses the true batched
+/// `MPSMatrixMultiplication.batchSize` API. Otherwise uses var-M multi-encode
+/// into one command buffer (still O(1) waits, not O(B)).
+///
+/// Target dispatches/layer: 2 × n_chunks  (≪ 2 × 128).
+#[cfg(target_os = "macos")]
+fn moe_all_experts_grouped_mps(
+    layer: &mut LoadedLayer,
+    expert_members: &[Vec<(usize, f32)>],
+    all_router_in: &[f32],
+    active: &[usize],
+    h: usize,
+    inter: usize,
+    moe_out: &mut [f32],
+    gpu: &mut CaptureMetalGemm,
+) -> Result<()> {
+    if active.is_empty() {
+        return Ok(());
+    }
+    let gu_rows = 2 * inter;
+    // Host-side X rows budget. Peak live scratch ≈ X + gu_out + MPS pool copy
+    // of same ≈ 2×(sum_n*h + sum_n*gu_rows)*4. Full-corpus host baseline peaks
+    // ~9.6 GiB; 400 MiB X budget keeps capture peak_rss_bytes under 12 GiB
+    // (measured 10.8 GiB at 220 MiB; room for larger chunks / fewer waits).
+    const ROW_SCRATCH_BUDGET_BYTES: usize = 400 * 1024 * 1024;
+    let max_sum_n = (ROW_SCRATCH_BUDGET_BYTES / (h.saturating_mul(4)).max(1)).max(1);
+
+    let mut i = 0usize;
+    while i < active.len() {
+        let mut j = i;
+        let mut sum_n = 0usize;
+        while j < active.len() {
+            let n = expert_members[active[j]].len();
+            if sum_n > 0 && sum_n + n > max_sum_n {
+                break;
+            }
+            sum_n += n;
+            j += 1;
+            // Prefer larger chunks for GPU occupancy, but never exceed budget.
+            if sum_n >= max_sum_n {
+                break;
+            }
+        }
+        let chunk = &active[i..j];
+        let b = chunk.len();
+        if sum_n == 0 {
+            for &e in chunk {
+                layer.experts[e].gate = Vec::new();
+                layer.experts[e].up = Vec::new();
+                layer.experts[e].down = Vec::new();
+            }
+            i = j;
+            continue;
+        }
+
+        // Contiguous unpadded packs: offsets[bi] is start row of expert bi.
+        let mut counts = vec![0usize; b];
+        let mut offsets = vec![0usize; b];
+        let mut row = 0usize;
+        for (bi, &e) in chunk.iter().enumerate() {
+            offsets[bi] = row;
+            counts[bi] = expert_members[e].len();
+            row += counts[bi];
+        }
+        debug_assert_eq!(row, sum_n);
+
+        let mut x_pack = vec![0.0f32; sum_n * h];
+        let mut w_gu = vec![0.0f32; b * gu_rows * h];
+        for (bi, &e) in chunk.iter().enumerate() {
+            let members = &expert_members[e];
+            let base = offsets[bi] * h;
+            for (ri, &(t, _)) in members.iter().enumerate() {
+                x_pack[base + ri * h..base + (ri + 1) * h]
+                    .copy_from_slice(&all_router_in[t * h..(t + 1) * h]);
+            }
+            let w_base = bi * gu_rows * h;
+            widen_bf16_into(
+                &layer.experts[e].gate,
+                inter,
+                h,
+                &mut w_gu[w_base..w_base + inter * h],
+            )?;
+            widen_bf16_into(
+                &layer.experts[e].up,
+                inter,
+                h,
+                &mut w_gu[w_base + inter * h..w_base + gu_rows * h],
+            )?;
+            layer.experts[e].gate = Vec::new();
+            layer.experts[e].up = Vec::new();
+        }
+
+        let mut gu_out = vec![0.0f32; sum_n * gu_rows];
+        gpu.gemm_x_wt_grouped_var_m(
+            &x_pack,
+            &w_gu,
+            &mut gu_out,
+            &counts,
+            &offsets,
+            gu_rows,
+            h,
+        )?;
+        drop(x_pack);
+        drop(w_gu);
+
+        // SiLU(gate)*up → act [sum_n, inter]
+        let mut act = vec![0.0f32; sum_n * inter];
+        for ri in 0..sum_n {
+            let gu = &gu_out[ri * gu_rows..(ri + 1) * gu_rows];
+            let g = &gu[..inter];
+            let u = &gu[inter..];
+            let a = &mut act[ri * inter..(ri + 1) * inter];
+            for j in 0..inter {
+                let gv = g[j];
+                a[j] = (gv / (1.0 + (-gv).exp())) * u[j];
+            }
+        }
+        drop(gu_out);
+
+        let mut w_down = vec![0.0f32; b * h * inter];
+        for (bi, &e) in chunk.iter().enumerate() {
+            let w_base = bi * h * inter;
+            widen_bf16_into(
+                &layer.experts[e].down,
+                h,
+                inter,
+                &mut w_down[w_base..w_base + h * inter],
+            )?;
+            layer.experts[e].down = Vec::new();
+        }
+
+        let mut down = vec![0.0f32; sum_n * h];
+        gpu.gemm_x_wt_grouped_var_m(&act, &w_down, &mut down, &counts, &offsets, h, inter)?;
+        drop(act);
+        drop(w_down);
+
+        for (bi, &e) in chunk.iter().enumerate() {
+            let members = &expert_members[e];
+            let base = offsets[bi];
+            for (ri, &(t, w)) in members.iter().enumerate() {
+                let src = &down[(base + ri) * h..(base + ri + 1) * h];
+                let dst = &mut moe_out[t * h..(t + 1) * h];
+                for j in 0..h {
+                    dst[j] += src[j] * w;
+                }
+            }
+        }
+        drop(down);
+        i = j;
+    }
+    Ok(())
+}
+
+/// MoE over the flat token corpus at one layer.
+///
+/// When `gpu` is `Some` and compute mode is metal, uses grouped/batched MPS
+/// expert GEMM (O(chunks) dispatches/layer). Otherwise host Accelerate serial
+/// experts (baseline). Attention stays on host either way.
+fn moe_all_experts_parallel(
+    layer: &mut LoadedLayer,
+    expert_members: &[Vec<(usize, f32)>],
+    all_router_in: &[f32],
+    _total_tokens: usize,
+    h: usize,
+    inter: usize,
+    moe_out: &mut [f32],
+    gpu: Option<&mut CaptureMetalGemm>,
+) -> Result<()> {
+    moe_out.fill(0.0);
+
+    let active: Vec<usize> = (0..QWEN30_EXPERTS)
+        .filter(|&e| !expert_members[e].is_empty())
+        .collect();
+    for e in 0..QWEN30_EXPERTS {
+        if expert_members[e].is_empty() {
+            layer.experts[e].gate = Vec::new();
+            layer.experts[e].up = Vec::new();
+            layer.experts[e].down = Vec::new();
+        }
+    }
+    if active.is_empty() {
+        return Ok(());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        if let Some(gpu) = gpu {
+            return moe_all_experts_grouped_mps(
+                layer,
+                expert_members,
+                all_router_in,
+                &active,
+                h,
+                inter,
+                moe_out,
+                gpu,
+            );
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = gpu;
+    }
+    moe_all_experts_host(
+        layer,
+        expert_members,
+        all_router_in,
+        &active,
+        h,
+        inter,
+        moe_out,
+    )
 }
 
 #[cfg(target_os = "macos")]
@@ -486,6 +689,289 @@ mod accelerate_gemm {
                 out[b * head_dim + d] = acc;
             }
         }
+    }
+}
+
+/// Compute backend for capture expert GEMMs. Router always stays on host.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum CaptureComputeBackend {
+    /// Accelerate cblas_sgemm on CPU (control / fallback).
+    Host,
+    /// Grouped/batched MPSMatrixMultiplication for expert MoE GEMMs.
+    Metal,
+}
+
+impl CaptureComputeBackend {
+    /// `HAWKING_CAPTURE_COMPUTE=host|metal` (default: metal on macOS).
+    pub fn from_env() -> Self {
+        match std::env::var("HAWKING_CAPTURE_COMPUTE")
+            .unwrap_or_default()
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "host" | "cpu" | "accelerate" => Self::Host,
+            "metal" | "mps" | "gpu" => Self::Metal,
+            "" => {
+                #[cfg(target_os = "macos")]
+                {
+                    Self::Metal
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    Self::Host
+                }
+            }
+            other => {
+                eprintln!(
+                    "warning: unknown HAWKING_CAPTURE_COMPUTE={other:?}; using host"
+                );
+                Self::Host
+            }
+        }
+    }
+}
+
+/// Metal/MPS f32 GEMM backend for capture expert matmuls.
+///
+/// Uses Apple's `MPSMatrixMultiplication` (single and batched via
+/// `matrices`/`batchSize`) through a tiny ObjC bridge with a process-global
+/// shared-buffer pool + per-call `@autoreleasepool`.
+///
+/// Router GEMMs stay on host Accelerate — FP reassociation there has flipped
+/// top-k three times in this campaign. Attention stays host-parallel (serial
+/// Metal attention lost probe parallelism in the prior lane).
+#[cfg(target_os = "macos")]
+pub struct CaptureMetalGemm {
+    device: metal::Device,
+    queue: metal::CommandQueue,
+}
+
+#[cfg(target_os = "macos")]
+extern "C" {
+    fn hawking_capture_mps_gemm_x_wt(
+        device: *mut std::ffi::c_void,
+        queue: *mut std::ffi::c_void,
+        x: *const f32,
+        w: *const f32,
+        out: *mut f32,
+        m: u32,
+        n: u32,
+        k: u32,
+    ) -> i32;
+    fn hawking_capture_mps_gemm_x_wt_batched(
+        device: *mut std::ffi::c_void,
+        queue: *mut std::ffi::c_void,
+        x: *const f32,
+        w: *const f32,
+        out: *mut f32,
+        b: u32,
+        m: u32,
+        n: u32,
+        k: u32,
+    ) -> i32;
+    fn hawking_capture_mps_gemm_x_wt_grouped_varM(
+        device: *mut std::ffi::c_void,
+        queue: *mut std::ffi::c_void,
+        xs: *const *const f32,
+        ws: *const *const f32,
+        outs: *const *mut f32,
+        ms: *const u32,
+        b: u32,
+        n: u32,
+        k: u32,
+    ) -> i32;
+    fn hawking_capture_mps_dispatch_count() -> u64;
+    fn hawking_capture_mps_dispatch_count_reset();
+}
+
+#[cfg(target_os = "macos")]
+impl CaptureMetalGemm {
+    pub fn new() -> Result<Self> {
+        use metal::Device;
+        let device = Device::system_default()
+            .ok_or_else(|| model_err("CaptureMetalGemm: no Metal device"))?;
+        let queue = device.new_command_queue();
+        Ok(Self { device, queue })
+    }
+
+    fn device_ptr(&self) -> *mut std::ffi::c_void {
+        use metal::foreign_types::ForeignType;
+        self.device.as_ptr() as *mut std::ffi::c_void
+    }
+
+    fn queue_ptr(&self) -> *mut std::ffi::c_void {
+        use metal::foreign_types::ForeignType;
+        self.queue.as_ptr() as *mut std::ffi::c_void
+    }
+
+    /// Reset process-lifetime MPS commit/wait counter (for measurement).
+    pub fn reset_dispatch_count() {
+        unsafe { hawking_capture_mps_dispatch_count_reset() }
+    }
+
+    /// Number of MPS command-buffer commit/wait pairs since last reset.
+    pub fn dispatch_count() -> u64 {
+        unsafe { hawking_capture_mps_dispatch_count() }
+    }
+
+    /// `Out = X @ Wᵀ` with X [M,K], W [N,K], Out [M,N].
+    pub fn gemm_w_times_x(
+        &mut self,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        n_batch: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        if n_batch == 0 || rows == 0 || cols == 0 {
+            return Ok(());
+        }
+        let rc = unsafe {
+            hawking_capture_mps_gemm_x_wt(
+                self.device_ptr(),
+                self.queue_ptr(),
+                x.as_ptr(),
+                w.as_ptr(),
+                out.as_mut_ptr(),
+                n_batch as u32,
+                rows as u32,
+                cols as u32,
+            )
+        };
+        if rc != 0 {
+            return Err(model_err(format!(
+                "MPS gemm_x_wt failed rc={rc} M={n_batch} N={rows} K={cols}"
+            )));
+        }
+        Ok(())
+    }
+
+    /// Batched: for b in 0..B, Out_b = X_b @ W_b^T with identical (M,N,K).
+    /// Layouts are matrix-major: matrix then row-major rows.
+    pub fn gemm_x_wt_batched(
+        &mut self,
+        x: &[f32],
+        w: &[f32],
+        out: &mut [f32],
+        batch: usize,
+        m: usize,
+        n: usize,
+        k: usize,
+    ) -> Result<()> {
+        if batch == 0 || m == 0 || n == 0 || k == 0 {
+            return Ok(());
+        }
+        debug_assert_eq!(x.len(), batch * m * k);
+        debug_assert_eq!(w.len(), batch * n * k);
+        debug_assert_eq!(out.len(), batch * m * n);
+        let rc = unsafe {
+            hawking_capture_mps_gemm_x_wt_batched(
+                self.device_ptr(),
+                self.queue_ptr(),
+                x.as_ptr(),
+                w.as_ptr(),
+                out.as_mut_ptr(),
+                batch as u32,
+                m as u32,
+                n as u32,
+                k as u32,
+            )
+        };
+        if rc != 0 {
+            return Err(model_err(format!(
+                "MPS gemm_x_wt_batched failed rc={rc} B={batch} M={m} N={n} K={k}"
+            )));
+        }
+        Ok(())
+    }
+
+    /// Grouped var-M: experts share (N,K) but each has its own M_b.
+    ///
+    /// `x` / `out` are contiguous row packs with expert `bi` starting at
+    /// `offsets[bi]` rows; `w` is B contiguous weight matrices of shape [N,K].
+    /// Uses true batch API when all M equal; otherwise one multi-encode CB.
+    pub fn gemm_x_wt_grouped_var_m(
+        &mut self,
+        x: &[f32],
+        w: &[f32],
+        out: &mut [f32],
+        counts: &[usize],
+        offsets: &[usize],
+        n: usize,
+        k: usize,
+    ) -> Result<()> {
+        let b = counts.len();
+        if b == 0 || n == 0 || k == 0 {
+            return Ok(());
+        }
+        debug_assert_eq!(offsets.len(), b);
+        debug_assert_eq!(w.len(), b * n * k);
+        let sum_n: usize = counts.iter().sum();
+        if sum_n == 0 {
+            return Ok(());
+        }
+        debug_assert_eq!(x.len(), sum_n * k);
+        debug_assert_eq!(out.len(), sum_n * n);
+
+        // Fast path: uniform M → true MPS batch (one encode).
+        let m0 = counts[0];
+        if counts.iter().all(|&c| c == m0) && m0 > 0 {
+            return self.gemm_x_wt_batched(x, w, out, b, m0, n, k);
+        }
+
+        // Var-M: pointer arrays into the contiguous packs.
+        let mut xs: Vec<*const f32> = Vec::with_capacity(b);
+        let mut ws: Vec<*const f32> = Vec::with_capacity(b);
+        let mut outs: Vec<*mut f32> = Vec::with_capacity(b);
+        let mut ms: Vec<u32> = Vec::with_capacity(b);
+        for bi in 0..b {
+            let m = counts[bi];
+            ms.push(m as u32);
+            if m == 0 {
+                xs.push(std::ptr::null());
+                ws.push(std::ptr::null());
+                outs.push(std::ptr::null_mut());
+                continue;
+            }
+            let off = offsets[bi];
+            xs.push(unsafe { x.as_ptr().add(off * k) });
+            ws.push(unsafe { w.as_ptr().add(bi * n * k) });
+            outs.push(unsafe { out.as_mut_ptr().add(off * n) });
+        }
+        let rc = unsafe {
+            hawking_capture_mps_gemm_x_wt_grouped_varM(
+                self.device_ptr(),
+                self.queue_ptr(),
+                xs.as_ptr(),
+                ws.as_ptr(),
+                outs.as_ptr(),
+                ms.as_ptr(),
+                b as u32,
+                n as u32,
+                k as u32,
+            )
+        };
+        if rc != 0 {
+            return Err(model_err(format!(
+                "MPS gemm_x_wt_grouped_varM failed rc={rc} B={b} N={n} K={k} sum_n={sum_n}"
+            )));
+        }
+        Ok(())
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+pub struct CaptureMetalGemm;
+
+#[cfg(not(target_os = "macos"))]
+impl CaptureMetalGemm {
+    pub fn new() -> Result<Self> {
+        Err(model_err("CaptureMetalGemm requires macOS"))
+    }
+    pub fn reset_dispatch_count() {}
+    pub fn dispatch_count() -> u64 {
+        0
     }
 }
 
@@ -1532,6 +2018,10 @@ pub struct CaptureTiming {
     pub expert_gemm_secs: f64,
     pub retention_write_secs: f64,
     pub total_secs: f64,
+    /// MPS command-buffer commit/wait count for expert GEMMs (0 on host path).
+    pub expert_mps_dispatches: u64,
+    /// Compute backend label: "host" or "metal_grouped".
+    pub compute_backend: String,
 }
 
 /// Per-layer first-N saturation: flat token index at which every expert first
@@ -1641,12 +2131,46 @@ pub fn capture_all_layers(
     let max_seq = probes.iter().map(|(_, t)| t.len()).max().unwrap_or(0);
 
     // MoE output + router surfaces. Expert f32 weights and gather scratch are
-    // allocated inside moe_all_experts_parallel (per-worker, one-expert-at-a-time).
+    // allocated inside moe_all_experts_parallel.
     let mut moe_out = vec![0.0f32; total_tokens * h];
     let mut all_router_in = vec![0.0f32; total_tokens * h];
     let mut router_logits = vec![0.0f32; total_tokens * QWEN30_EXPERTS];
 
     let mut layer_sat: Vec<Option<usize>> = vec![None; QWEN30_LAYERS];
+
+    // Expert GEMM backend. Attention stays host-parallel (prior lane measured
+    // serial Metal attention slower than 8-way host). Router always host.
+    let backend = CaptureComputeBackend::from_env();
+    let mut metal_gemm: Option<CaptureMetalGemm> = match backend {
+        CaptureComputeBackend::Metal => {
+            #[cfg(target_os = "macos")]
+            {
+                match CaptureMetalGemm::new() {
+                    Ok(g) => {
+                        CaptureMetalGemm::reset_dispatch_count();
+                        timing.compute_backend = "metal_grouped".into();
+                        Some(g)
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "warning: Metal GEMM unavailable ({e}); falling back to host Accelerate"
+                        );
+                        timing.compute_backend = "host".into();
+                        None
+                    }
+                }
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                timing.compute_backend = "host".into();
+                None
+            }
+        }
+        CaptureComputeBackend::Host => {
+            timing.compute_backend = "host".into();
+            None
+        }
+    };
 
     // Load layer 0; each iteration prefetches L+1 while computing L.
     let t_load0 = Instant::now();
@@ -1928,6 +2452,7 @@ pub fn capture_all_layers(
                 h,
                 inter,
                 &mut moe_out,
+                metal_gemm.as_mut(),
             )?;
             timing.expert_gemm_secs += t_moe.elapsed().as_secs_f64();
 
@@ -1986,6 +2511,9 @@ pub fn capture_all_layers(
     }
 
     timing.total_secs = wall0.elapsed().as_secs_f64();
+    timing.expert_mps_dispatches = CaptureMetalGemm::dispatch_count();
+    // Drop Metal resources before returning so RSS telemetry is clean.
+    drop(metal_gemm);
     let global_max = layer_sat.iter().flatten().copied().max();
     let pct_after = match global_max {
         Some(t) if total_tokens > 0 => {

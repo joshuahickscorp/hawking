@@ -319,6 +319,11 @@ pub const SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE: &str =
 /// watcher, or serving path selects them.
 pub const SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE: &str =
     include_str!("../../shaders/qwen80_all_ten_routed_expert_wave.metal");
+/// Composed Qwen3-Next terminal head (final RMSNorm, all-row lm_head,
+/// reserved-tail mask, greedy sample, feedback guard).  Registered so the
+/// hybrid token graph can encode it; this is not a generate or TPS claim.
+pub const SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD: &str =
+    include_str!("../../shaders/qwen80_direct_packed_terminal_head_preflight.metal");
 /// Packed binary sign + FP16 group-scale Qwen component matvec. This is a
 /// bounded operator primitive, not a complete decoder or model TPS surface.
 pub const SHADER_QWEN_BINARY: &str = include_str!("../../shaders/qwen_binary.metal");
@@ -405,6 +410,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN80_DIRECT_PACKED_SHARED_EXPERT_WAVE,
         SHADER_QWEN80_DIRECT_PACKED_MOE_COMBINE,
         SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE,
+        SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD,
         SHADER_QWEN_BINARY,
         SHADER_QWEN_COMPLETE_RUNTIME,
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED,
@@ -1035,6 +1041,7 @@ mod imp {
             "moe_route_accumulate" => "moe_route_accumulate",
             "moe_route_accumulate_add" => "moe_route_accumulate_add",
             "sample_argmax_f32" => "sample_argmax_f32",
+            "sample_argmax_f32_with_finite" => "sample_argmax_f32_with_finite",
             // Admitted Qwen30 complete-binary runtime.  These labels remain
             // per-stage so a future complete-token profile can distinguish
             // packed decode, state, and routed-expert time rather than fold
@@ -1046,6 +1053,9 @@ mod imp {
                 "qwen_binary_sign_scale_matvec_simdgroup_candidate"
             }
             "qwen_binary_sign_scale_matvec_qkv" => "qwen_binary_sign_scale_matvec_qkv",
+            "qwen_binary_sign_scale_matvec_qkv_rowblock4" => {
+                "qwen_binary_sign_scale_matvec_qkv_rowblock4"
+            }
             "qwen_binary_postnorm_router_matvec" => "qwen_binary_postnorm_router_matvec",
             "qwen_binary_sign_scale_matvec_rowblock2" => {
                 "qwen_binary_sign_scale_matvec_rowblock2"
@@ -1059,8 +1069,33 @@ mod imp {
             "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
             "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
             "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
+            "qwen_uniform_q4_group64_matvec_rowblock" => {
+                "qwen_uniform_q4_group64_matvec_rowblock"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8"
+            }
+            "qwen_uniform_q4_group64_matvec_simdgroup_x64" => {
+                "qwen_uniform_q4_group64_matvec_simdgroup_x64"
+            }
+            "qwen_uniform_q4_group64_matvec_qkv" => "qwen_uniform_q4_group64_matvec_qkv",
+            "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
+                "qwen_uniform_q4_group64_matvec_qkv_simdgroup"
+            }
             "qwen_uniform_q4_decode_vector" => "qwen_uniform_q4_decode_vector",
             "qwen_uniform_q4_embedding_lookup" => "qwen_uniform_q4_embedding_lookup",
+            "qwen_uniform_q4_embedding_lookup_device_token" => {
+                "qwen_uniform_q4_embedding_lookup_device_token"
+            }
+            "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8" => {
+                "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8"
+            },
             "qwen_uniform_qn_matvec" => "qwen_uniform_qn_matvec",
             "qwen_uniform_qn_decode_vector" => "qwen_uniform_qn_decode_vector",
             "qwen_uniform_qn_embedding_lookup" => "qwen_uniform_qn_embedding_lookup",
@@ -1068,6 +1103,9 @@ mod imp {
                 "qwen_complete_binary_embedding_lookup_device_token"
             }
             "qwen_complete_rmsnorm_rows_f32" => "qwen_complete_rmsnorm_rows_f32",
+            "qwen_complete_qk_rmsnorm_rope_kv_append_f32" => {
+                "qwen_complete_qk_rmsnorm_rope_kv_append_f32"
+            }
             "qwen_complete_normalize_route_weights" => "qwen_complete_normalize_route_weights",
             "qwen_complete_silu_mul_offset" => "qwen_complete_silu_mul_offset",
             "qwen_direct_packed_gate_up_swiglu_fused_candidate" => {
@@ -1078,6 +1116,21 @@ mod imp {
             }
             "qwen30_expert_table_binary_matvec" => "qwen30_expert_table_binary_matvec",
             "qwen30_expert_table_binary_matvec_serial" => "qwen30_expert_table_binary_matvec_serial",
+            "qwen30_expert_table_uniform_q4_matvec_serial" => {
+                "qwen30_expert_table_uniform_q4_matvec_serial"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_rowblock" => {
+                "qwen30_expert_table_uniform_q4_matvec_rowblock"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4"
+            }
+            "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8" => {
+                "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8"
+            },
             "qwen30_expert_table_binary_matvec_simdgroup" => {
                 "qwen30_expert_table_binary_matvec_simdgroup"
             }
@@ -1093,6 +1146,12 @@ mod imp {
             "qwen30_expert_table_paired_gate_up_swiglu" => {
                 "qwen30_expert_table_paired_gate_up_swiglu"
             }
+            "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu" => {
+                "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu"
+            }
+            "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8" => {
+                "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8"
+            }
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -1107,6 +1166,45 @@ mod imp {
             "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
             "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",
             "qwen_next_ba_to_decay_beta" => "qwen_next_ba_to_decay_beta",
+            "qwen_next_direct_packed_input_rmsnorm" => "qwen_next_direct_packed_input_rmsnorm",
+            "qwen_next_qkvz_rearrange_conv_l2" => "qwen_next_qkvz_rearrange_conv_l2",
+            "qwen_next_deltanet_gated_rmsnorm" => "qwen_next_deltanet_gated_rmsnorm",
+            "qwen_next_add_residual" => "qwen_next_add_residual",
+            "qwen80_attention_qk_norm_rope_cache" => "qwen80_attention_qk_norm_rope_cache",
+            "qwen80_attention_apply_sigmoid_gate" => "qwen80_attention_apply_sigmoid_gate",
+            "qwen80_postnorm_router_top10_rmsnorm" => "qwen80_postnorm_router_top10_rmsnorm",
+            "qwen80_postnorm_router_top10_matvec" => "qwen80_postnorm_router_top10_matvec",
+            "qwen80_postnorm_router_top10_select" => "qwen80_postnorm_router_top10_select",
+            "qwen80_all_ten_routed_wave_route_guard" => "qwen80_all_ten_routed_wave_route_guard",
+            "qwen80_all_ten_routed_wave_gate_up" => "qwen80_all_ten_routed_wave_gate_up",
+            "qwen80_all_ten_routed_wave_swiglu" => "qwen80_all_ten_routed_wave_swiglu",
+            "qwen80_all_ten_routed_wave_down_weighted" => {
+                "qwen80_all_ten_routed_wave_down_weighted"
+            }
+            "qwen80_shared_expert_wave_gate_up" => "qwen80_shared_expert_wave_gate_up",
+            "qwen80_shared_expert_wave_swiglu" => "qwen80_shared_expert_wave_swiglu",
+            "qwen80_shared_expert_wave_down" => "qwen80_shared_expert_wave_down",
+            "qwen80_shared_expert_wave_scalar_gate" => "qwen80_shared_expert_wave_scalar_gate",
+            "qwen80_shared_expert_wave_apply_sigmoid_gate" => {
+                "qwen80_shared_expert_wave_apply_sigmoid_gate"
+            }
+            "qwen80_moe_wave_aggregate_second_residual_route_sum" => {
+                "qwen80_moe_wave_aggregate_second_residual_route_sum"
+            }
+            "qwen80_moe_wave_aggregate_second_residual_add_shared_residual" => {
+                "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+            }
+            "qwen80_terminal_head_final_rmsnorm_direct_packed" => {
+                "qwen80_terminal_head_final_rmsnorm_direct_packed"
+            }
+            "qwen80_terminal_head_all_row_direct_packed" => {
+                "qwen80_terminal_head_all_row_direct_packed"
+            }
+            "qwen80_terminal_head_mask_reserved_tail" => "qwen80_terminal_head_mask_reserved_tail",
+            "qwen80_terminal_head_greedy_sample_lowest_id" => {
+                "qwen80_terminal_head_greedy_sample_lowest_id"
+            }
+            "qwen80_terminal_head_feedback_guard" => "qwen80_terminal_head_feedback_guard",
             // attn / rope / embed kernels
             "rope_inplace" => "rope_inplace",
             "rope_norm_llama_b9430" => "rope_norm_llama_b9430",

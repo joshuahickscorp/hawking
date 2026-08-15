@@ -497,6 +497,148 @@ kernel void qwen_binary_sign_scale_matvec_qkv(
     }
 }
 
+// Fused Q+K+V packed matvec with R=4 row ownership (RowBlock4 + Lane K / K1).
+//
+// Same surface as `qwen_binary_sign_scale_matvec_qkv`, but each simdgroup owns
+// R=4 consecutive global rows with the same tiled-column association as
+// `qwen_binary_sign_scale_matvec_rowblock4`. Concatenating Q/K/V yields
+//   ceil((q_rows + k_rows + v_rows) / 32)
+// threadgroups — 20 for Qwen30 (512+64+64) — instead of three separate
+// rowblock4 launches (16+2+2).
+//
+// Per-row accumulation is bit-identical to the split rowblock4 path: each of
+// the R rows is an independent f32 chain over contiguous 32-col tiles with
+// simd_sum reduction. Qwen30 row counts (512/64/64) are multiples of
+// rows_per_tg=32, so no TG spans a Q/K/V boundary; the general path still
+// resolves each global row to its projection independently.
+//
+// Grid: (ceil(total_rows / 32) * 256, 1, 1), TG (256, 1, 1).
+kernel void qwen_binary_sign_scale_matvec_qkv_rowblock4(
+    device const uchar* q_signs     [[buffer(0)]],
+    device const half*  q_scales    [[buffer(1)]],
+    device const uchar* k_signs     [[buffer(2)]],
+    device const half*  k_scales    [[buffer(3)]],
+    device const uchar* v_signs     [[buffer(4)]],
+    device const half*  v_scales    [[buffer(5)]],
+    device const float* input       [[buffer(6)]],
+    device float*       q_output    [[buffer(7)]],
+    device float*       k_output    [[buffer(8)]],
+    device float*       v_output    [[buffer(9)]],
+    constant uint& q_rows           [[buffer(10)]],
+    constant uint& k_rows           [[buffer(11)]],
+    constant uint& v_rows           [[buffer(12)]],
+    constant uint& cols             [[buffer(13)]],
+    constant uint& group_size       [[buffer(14)]],
+    constant uint& groups_per_row   [[buffer(15)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    const uint total_rows = q_rows + k_rows + v_rows;
+    const uint global_row0 = group_id * kRowsPerTg + simd_id * R;
+    if (global_row0 >= total_rows) {
+        return;
+    }
+
+    // Resolve each of the R global rows to a projection + local row.
+    // Inactive slots (past total_rows) alias global_row0 so the hot path
+    // stays uniform; they are never written.
+    const bool has1 = (global_row0 + 1u) < total_rows;
+    const bool has2 = (global_row0 + 2u) < total_rows;
+    const bool has3 = (global_row0 + 3u) < total_rows;
+    const uint g0 = global_row0;
+    const uint g1 = has1 ? (global_row0 + 1u) : global_row0;
+    const uint g2 = has2 ? (global_row0 + 2u) : global_row0;
+    const uint g3 = has3 ? (global_row0 + 3u) : global_row0;
+
+    device const uchar* s0 = (g0 < q_rows) ? q_signs
+        : (g0 < q_rows + k_rows) ? k_signs : v_signs;
+    device const uchar* s1 = (g1 < q_rows) ? q_signs
+        : (g1 < q_rows + k_rows) ? k_signs : v_signs;
+    device const uchar* s2 = (g2 < q_rows) ? q_signs
+        : (g2 < q_rows + k_rows) ? k_signs : v_signs;
+    device const uchar* s3 = (g3 < q_rows) ? q_signs
+        : (g3 < q_rows + k_rows) ? k_signs : v_signs;
+    device const half* sc0 = (g0 < q_rows) ? q_scales
+        : (g0 < q_rows + k_rows) ? k_scales : v_scales;
+    device const half* sc1 = (g1 < q_rows) ? q_scales
+        : (g1 < q_rows + k_rows) ? k_scales : v_scales;
+    device const half* sc2 = (g2 < q_rows) ? q_scales
+        : (g2 < q_rows + k_rows) ? k_scales : v_scales;
+    device const half* sc3 = (g3 < q_rows) ? q_scales
+        : (g3 < q_rows + k_rows) ? k_scales : v_scales;
+    device float* o0 = (g0 < q_rows) ? q_output
+        : (g0 < q_rows + k_rows) ? k_output : v_output;
+    device float* o1 = (g1 < q_rows) ? q_output
+        : (g1 < q_rows + k_rows) ? k_output : v_output;
+    device float* o2 = (g2 < q_rows) ? q_output
+        : (g2 < q_rows + k_rows) ? k_output : v_output;
+    device float* o3 = (g3 < q_rows) ? q_output
+        : (g3 < q_rows + k_rows) ? k_output : v_output;
+    const uint local0 = (g0 < q_rows) ? g0
+        : (g0 < q_rows + k_rows) ? (g0 - q_rows) : (g0 - q_rows - k_rows);
+    const uint local1 = (g1 < q_rows) ? g1
+        : (g1 < q_rows + k_rows) ? (g1 - q_rows) : (g1 - q_rows - k_rows);
+    const uint local2 = (g2 < q_rows) ? g2
+        : (g2 < q_rows + k_rows) ? (g2 - q_rows) : (g2 - q_rows - k_rows);
+    const uint local3 = (g3 < q_rows) ? g3
+        : (g3 < q_rows + k_rows) ? (g3 - q_rows) : (g3 - q_rows - k_rows);
+
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    const uint rb0 = local0 * cols, rb1 = local1 * cols;
+    const uint rb2 = local2 * cols, rb3 = local3 * cols;
+    const uint sb0 = local0 * groups_per_row, sb1 = local1 * groups_per_row;
+    const uint sb2 = local2 * groups_per_row, sb3 = local3 * groups_per_row;
+
+    // Same column tiling + independent FMA chains as rowblock4.
+    for (uint base = 0u; base < cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= cols) {
+            continue;
+        }
+        const float x = input[col];
+        const uint g = col / group_size;
+        {
+            const float scale = float(sc0[sb0 + g]);
+            const uint flat = rb0 + col;
+            const uchar byte = s0[flat >> 3u];
+            a0 += ((((byte >> (flat & 7u)) & 1u) != 0u) ? scale : -scale) * x;
+        }
+        {
+            const float scale = float(sc1[sb1 + g]);
+            const uint flat = rb1 + col;
+            const uchar byte = s1[flat >> 3u];
+            a1 += ((((byte >> (flat & 7u)) & 1u) != 0u) ? scale : -scale) * x;
+        }
+        {
+            const float scale = float(sc2[sb2 + g]);
+            const uint flat = rb2 + col;
+            const uchar byte = s2[flat >> 3u];
+            a2 += ((((byte >> (flat & 7u)) & 1u) != 0u) ? scale : -scale) * x;
+        }
+        {
+            const float scale = float(sc3[sb3 + g]);
+            const uint flat = rb3 + col;
+            const uchar byte = s3[flat >> 3u];
+            a3 += ((((byte >> (flat & 7u)) & 1u) != 0u) ? scale : -scale) * x;
+        }
+    }
+    a0 = simd_sum(a0);
+    a1 = simd_sum(a1);
+    a2 = simd_sum(a2);
+    a3 = simd_sum(a3);
+    if (simd_lane == 0u) {
+        o0[local0] = a0;
+        if (has1) o1[local1] = a1;
+        if (has2) o2[local2] = a2;
+        if (has3) o3[local3] = a3;
+    }
+}
+
 // Fused post-attention RMSNorm + router packed matvec (Lane K / K3).
 //
 // The router is only 128 rows = 16 threadgroups and cannot fill an M3 Ultra.
