@@ -165,6 +165,15 @@ objc2 = "0.5"
 objc2-foundation = "0.2"
 objc2-metal = "0.2"
 
+# Correctness-testing profile ONLY. Same opt-level as release so behaviour matches,
+# but parallel codegen and no fat LTO so test builds are not single-core bound.
+# NEVER benchmark with this: TPS numbers must come from `release` (lto="fat",
+# codegen-units=1), which is what the runtime artifacts ship with.
+[profile.release-fast]
+inherits = "release"
+lto = false
+codegen-units = 16
+
 [profile.release]
 opt-level = 3
 lto = "fat"
