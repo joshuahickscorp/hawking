@@ -45,6 +45,10 @@ from lab.operators.doctor6.coherence import (
 )
 from lab.operators.doctor6.compose import compose_organ_chain, compose_status_summary
 from lab.operators.doctor6.rungs import quant_binary, list_rung_status
+from lab.operators.hgravs01_adapter import (
+    HGRAVS01_RUNGS,
+    apply_hgravs01_to_compose_result,
+)
 from lab.operators.mixed_precision_alloc import BPW, allocate_from_holdout
 from lab.operators.one_bit_ceiling import CeilingViolation
 from lab.operators.q30_activation_aware_family_probe import load_capture
@@ -343,6 +347,7 @@ def _compose_one_prepared(
     qat_steps: int,
     qat_lr: float,
     target_cos: float,
+    target_bpw: float,
 ) -> dict[str, Any]:
     org: OrganRef = p["org"]
     print(
@@ -362,6 +367,17 @@ def _compose_one_prepared(
         qat_lr=qat_lr,
         target_cos=target_cos,
         measure_all=False,
+    )
+    # Widen the ballot with HGRAVS01. Same keep rule as compose; legality is
+    # the prescription target (the ceiling the incumbent is billed against).
+    # Does not rewrite compose.py's selection policy or 0.98 under-1.0 track.
+    result = apply_hgravs01_to_compose_result(
+        result,
+        W=p["W"],
+        X_fit=p["X_fit"],
+        X_hold=p["X_hold"],
+        target_cos=target_cos,
+        max_legal_bpw=float(target_bpw),
     )
     result.update(
         {
@@ -594,6 +610,7 @@ def prescribe(
             qat_steps=qat_steps,
             qat_lr=qat_lr,
             target_cos=target_cos,
+            target_bpw=target_bpw,
         )
 
     organ_results = map_in_stable_order(_comp, prepared, workers=workers_n)
@@ -947,4 +964,5 @@ RUNG_DEPTH = {
     "l2_mixed_prec": 4,
     "l3_outlier_residual": 5,
     "l4_block_qat": 6,
+    **{name: 7 for name in HGRAVS01_RUNGS},
 }

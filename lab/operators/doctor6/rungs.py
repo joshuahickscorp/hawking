@@ -26,6 +26,11 @@ from lab.operators.ascension_dual_gravity_worker import (
     _residual_codec,
     _uniform_codec,
 )
+from lab.operators.hgravs01_adapter import (
+    HGRAVS01_RUNGS,
+    encode_hgravs01_rung,
+    is_hgravs01_rung,
+)
 
 # ---------------------------------------------------------------------------
 # Absorb-lane entry points (optional). Marked STUB when absent.
@@ -37,6 +42,7 @@ ABSORB_ENTRYPOINTS: dict[str, str] = {
     "mixed_prec": "lab.operators.mixed_precision_alloc",
     "expert_alloc": "lab.operators.expert_alloc",
     "lowbit_qat": "lab.operators.lowbit_qat",
+    "activation_weighted": "lab.operators.hgravs01_adapter",
 }
 
 
@@ -299,6 +305,7 @@ RUNG_ORDER: tuple[str, ...] = (
     "l2_mixed_prec",
     "l3_outlier_residual",
     "l4_block_qat",
+    *HGRAVS01_RUNGS,  # activation-weighted low-rank family; rank is searchable
 )
 
 
@@ -321,6 +328,30 @@ def apply_rung(
     if name == "incumbent_binary":
         rec, nbytes = quant_binary(W)
         return RungResult(name, rec, nbytes, {"codec": "binary_g128", "role": "incumbent"})
+
+    if is_hgravs01_rung(name):
+        # Honest physical HGRAVS01 container (factors + scales + header).
+        # Rank is parsed from the rung name and clamped to n_fit_rows.
+        encoded = encode_hgravs01_rung(name, W, X_fit)
+        meta = {
+            "codec": (
+                f"hgravs01_activation_weighted_low_rank_"
+                f"r{encoded['achieved_rank']}_b{encoded['bits']}"
+            ),
+            "family": encoded["family"],
+            "schema": encoded["schema"],
+            "representation": encoded["representation"],
+            "activation_weighted": True,
+            "low_rank": True,
+            "hgravs": True,
+            "requested_rank": encoded["requested_rank"],
+            "rank": encoded["achieved_rank"],
+            "rank_clamped_to_n_fit": encoded["rank_clamped_to_n_fit"],
+            "n_fit_rows": encoded["n_fit_rows"],
+            "bits": encoded["bits"],
+            "ledger": encoded["ledger"],
+        }
+        return RungResult(name, encoded["W_hat"], int(encoded["payload_bytes"]), meta)
 
     if name == "l0_calib":
         # Domain calib is the capture rows; identity on weights. Serve via under-budget act-SVD.
@@ -477,6 +508,18 @@ def list_rung_status() -> list[dict[str, Any]]:
             "module": "lab.operators.doctor6.rungs",
             "status": "live",
             "rungs": list(RUNG_ORDER),
+        }
+    )
+    rows.append(
+        {
+            "entry": "hgravs01",
+            "module": "lab.operators.hgravs01_adapter",
+            "status": "live",
+            "family": "hgravs01",
+            "schema": "hawking.gravity.activation_weighted_svd_low_rank.v1",
+            "representation": "activation_weighted_svd_low_rank",
+            "rungs": list(HGRAVS01_RUNGS),
+            "rank_searchable": True,
         }
     )
     return rows
