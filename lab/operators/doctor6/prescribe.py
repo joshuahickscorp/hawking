@@ -13,8 +13,10 @@ import numpy as np
 from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
     COMPONENTS,
     HOLD_FRAC,
+    ROW_CAP_SEED,
     SEED,
     collect_expert_activations,
+    count_expert_activations,
     holdout_split,
     organ_activations,
 )
@@ -52,8 +54,10 @@ DEFAULT_CAPTURE = (
     / "source-bf16-capture-v1/full-run"
 )
 SAMPLE_SEED = 0xD0C70A
+assert SAMPLE_SEED == ROW_CAP_SEED
 BANDS = ((0, 11), (12, 23), (24, 35), (36, 47))
 LE_PER_BAND = 4
+DEFAULT_MAX_ROWS_PER_EXPERT = 2048
 
 
 @dataclass
@@ -80,8 +84,22 @@ def _split_seed(layer: int, expert: int, component: str) -> int:
     return SEED ^ (layer * 9176) ^ (expert * 1009) ^ (_comp_seed(component) & 0xFFFF)
 
 
+def _row_count(value: Any) -> int:
+    """Row count from a stacked array or a precomputed integer count.
+
+    deterministic_sample only needs X.shape[0]; accepting counts lets the
+    loader sample first and materialize only the chosen (layer, expert) keys.
+    """
+    if isinstance(value, (int, np.integer)):
+        return int(value)
+    shape = getattr(value, "shape", None)
+    if shape is not None:
+        return int(shape[0])
+    return int(value)
+
+
 def deterministic_sample(
-    by_layer_expert: dict[tuple[int, int], np.ndarray],
+    by_layer_expert: dict[tuple[int, int], Any],
     *,
     le_per_band: int = LE_PER_BAND,
     min_tokens: int = DEFAULT_MIN_ROWS_PER_ORGAN,
@@ -90,9 +108,9 @@ def deterministic_sample(
     organs: list[OrganRef] = []
     for band_i, (lo, hi) in enumerate(BANDS):
         eligible = [
-            (L, e, int(X.shape[0]))
+            (L, e, _row_count(X))
             for (L, e), X in by_layer_expert.items()
-            if lo <= L <= hi and X.shape[0] >= min_tokens
+            if lo <= L <= hi and _row_count(X) >= min_tokens
         ]
         eligible.sort(key=lambda t: (-t[2], t[0], t[1]))
         pool = eligible[: max(le_per_band * 8, le_per_band)]
@@ -122,6 +140,16 @@ def _jsonable_organ(row: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _peak_rss_bytes() -> int:
+    import resource
+    import sys
+
+    rss = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    if sys.platform == "darwin":
+        return rss
+    return rss * 1024
+
+
 def prescribe(
     *,
     model_id: str = "qwen3-coder-30b-a3b",
@@ -136,6 +164,8 @@ def prescribe(
     qat_lr: float = 1e-3,
     out_path: Path | None = None,
     force_over_ceiling: bool = False,
+    memory_bounded: bool = True,
+    max_rows_per_expert: int | None = DEFAULT_MAX_ROWS_PER_EXPERT,
 ) -> dict[str, Any]:
     """Run the full prescribe pipeline and return a machine-readable prescription."""
     t0 = time.perf_counter()
@@ -143,17 +173,32 @@ def prescribe(
     capture_run = Path(capture or DEFAULT_CAPTURE)
 
     # --- load capture ---
+    # Sample-first (default): count every (layer, expert) without storing x,
+    # sample the ~16 LE pairs, then materialize only those keys. The unbounded
+    # path is the historical loader (stack every routed row on every expert).
     print(f"[prescribe] loading capture {capture_run}", flush=True)
-    cap = load_capture(capture_run)
-    by_le, act_prov = collect_expert_activations(capture_run, cap)
+    if memory_bounded:
+        print(
+            "[prescribe] memory-bounded path: count all LE pairs, then "
+            "materialize only the sampled keys",
+            flush=True,
+        )
+        counts, count_prov = count_expert_activations(capture_run)
+        by_le_for_sample: dict[tuple[int, int], Any] = counts
+        act_prov = count_prov
+    else:
+        print("[prescribe] unbounded path: materializing every LE pair", flush=True)
+        cap = load_capture(capture_run)
+        by_le, act_prov = collect_expert_activations(capture_run, cap)
+        by_le_for_sample = by_le
+        counts = {k: int(v.shape[0]) for k, v in by_le.items()}
+        count_prov = act_prov
 
     # Capture starvation gate on all LE pairs that will be considered.
-    row_counts = {
-        f"L{L}_E{e}": int(X.shape[0]) for (L, e), X in by_le.items()
-    }
+    row_counts = {f"L{L}_E{e}": int(n) for (L, e), n in counts.items()}
     # Gate on the *sampled* organs' LE pairs after sampling eligibility uses min_rows.
     # First refuse if the capture overall cannot support the floor for any LE.
-    if not by_le:
+    if not by_le_for_sample:
         return {
             "schema": "hawking.doctor6.prescription.v1",
             "status": "REFUSED",
@@ -167,10 +212,13 @@ def prescribe(
     n_tokens_census = int(act_prov.get("n_tokens", act_prov.get("total_tokens", 0)) or 0)
     if n_tokens_census == 0:
         # approximate from unique rows sum (upper bound not exact)
-        n_tokens_census = int(sum(int(X.shape[0]) for X in by_le.values()))
+        n_tokens_census = int(sum(int(n) for n in counts.values()))
     census_gate = check_never_routed_census(n_tokens_census)
 
-    organs = deterministic_sample(by_le, le_per_band=le_per_band, min_tokens=min_rows)
+    organs = deterministic_sample(
+        by_le_for_sample, le_per_band=le_per_band, min_tokens=min_rows
+    )
+    wanted_keys = {(o.layer, o.expert) for o in organs}
     sample_row_counts = {o.name: o.n_routed for o in organs}
     cap_gate = check_per_organ_rows(sample_row_counts, floor=min_rows)
     if not cap_gate.ok:
@@ -184,6 +232,34 @@ def prescribe(
             },
             "elapsed_seconds": time.perf_counter() - t0,
         }
+
+    if memory_bounded:
+        cap_arg = max_rows_per_expert if max_rows_per_expert else None
+        print(
+            f"[prescribe] materializing {len(wanted_keys)} LE pairs"
+            + (f" (row cap {cap_arg})" if cap_arg is not None else " (no row cap)"),
+            flush=True,
+        )
+        by_le, mat_prov = collect_expert_activations(
+            capture_run,
+            wanted_keys=wanted_keys,
+            max_rows_per_expert=cap_arg,
+            row_sample_seed=SAMPLE_SEED,
+        )
+        # Full-census provenance from the count pass; materialization stats overlay.
+        act_prov = {**count_prov, **mat_prov}
+        act_prov["token_expert_pairs_full"] = int(count_prov.get("token_expert_pairs") or 0)
+        act_prov["layer_expert_pairs_with_hits_full"] = int(
+            count_prov.get("layer_expert_pairs_with_hits") or 0
+        )
+        act_prov["n_tokens"] = int(count_prov.get("n_tokens") or n_tokens_census)
+        missing = [k for k in wanted_keys if k not in by_le]
+        if missing:
+            raise RuntimeError(f"bounded loader missing sampled keys: {missing}")
+    else:
+        missing = [k for k in wanted_keys if k not in by_le]
+        if missing:
+            raise RuntimeError(f"unbounded loader missing sampled keys: {missing}")
 
     weight_map = load_weight_map(model_dir)
     print(f"[prescribe] sample {len(organs)} organs; composing per-organ chains", flush=True)
@@ -417,6 +493,8 @@ def prescribe(
     else:
         status = "OK"
 
+    subsampled = list(act_prov.get("subsampled_layer_experts") or [])
+    peak_rss = _peak_rss_bytes()
     prescription = {
         "schema": "hawking.doctor6.prescription.v1",
         "status": status,
@@ -438,12 +516,16 @@ def prescribe(
             "qat_lr": qat_lr,
             "min_rows_floor": min_rows,
             "holdout": {"HOLD_FRAC": HOLD_FRAC, "SEED": SEED},
+            "memory_bounded": bool(memory_bounded),
+            "max_rows_per_expert": max_rows_per_expert,
+            "row_sample_seed": SAMPLE_SEED,
             "activation_provenance": {
                 k: act_prov[k]
                 for k in act_prov
                 if k not in ("hit_counts",) and _json_safe(act_prov[k])
             },
         },
+        "peak_rss_bytes": peak_rss,
         "capture_gate": cap_gate.as_dict(),
         "never_routed_census_gate": census_gate,
         "sample": {
@@ -451,6 +533,10 @@ def prescribe(
             "le_per_band": le_per_band,
             "bands": [list(b) for b in BANDS],
             "components": list(COMPONENTS),
+            "memory_bounded": bool(memory_bounded),
+            "max_rows_per_expert": max_rows_per_expert,
+            "row_sample_seed": SAMPLE_SEED,
+            "subsampled_layer_experts": subsampled,
             "organs": [
                 {
                     "tensor_name": o.name,
@@ -459,6 +545,11 @@ def prescribe(
                     "component": o.component,
                     "band": o.band,
                     "n_routed": o.n_routed,
+                    "n_materialized": int(
+                        by_le[(o.layer, o.expert)].shape[0]
+                    )
+                    if (o.layer, o.expert) in by_le
+                    else None,
                 }
                 for o in organs
             ],

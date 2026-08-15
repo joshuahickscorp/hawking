@@ -31,7 +31,9 @@ import argparse
 import hashlib
 import json
 import math
+import mmap
 import os
+import re
 import shutil
 import struct
 import tempfile
@@ -39,7 +41,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterator, Mapping, Sequence
 
 import numpy as np
 
@@ -202,25 +204,419 @@ def capture_is_all_layer(capture: Mapping[str, Any]) -> bool:
     return False
 
 
-def collect_expert_activations(
-    run_dir: Path, capture: Mapping[str, Any]
-) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
-    """Collect router-input hiddens keyed by (layer, expert_id).
+# Seed used only for the optional per-expert row cap. Distinct from holdout SEED.
+ROW_CAP_SEED = 0xD0C70A
+_CAPTURE_RESULT_NAME = "capture-result.json"
+_STREAM_CHUNK = 1 << 20
 
-    L0-only captures are projected onto layer 0 so the rest of the packer can
-    share one code path. All-layer captures only count tokens that retained a
-    raw hidden (bounded subsample); route-only tokens contribute to hit-count
-    provenance but not to the fit matrix.
+
+def _json_value_end(s: str) -> int | None:
+    """Index after the first complete JSON value in s, or None if truncated."""
+    i = 0
+    n = len(s)
+    while i < n and s[i] in " \t\r\n":
+        i += 1
+    if i >= n:
+        return None
+    start = s[i]
+    if start == '"':
+        i += 1
+        esc = False
+        while i < n:
+            c = s[i]
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                return i + 1
+            i += 1
+        return None
+    if start in "{[":
+        depth = 0
+        in_str = False
+        esc = False
+        while i < n:
+            c = s[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif c == "\\":
+                    esc = True
+                elif c == '"':
+                    in_str = False
+            else:
+                if c == '"':
+                    in_str = True
+                elif c in "{[":
+                    depth += 1
+                elif c in "}]":
+                    depth -= 1
+                    if depth == 0:
+                        return i + 1
+            i += 1
+        return None
+    j = i
+    while j < n and s[j] not in " \t\r\n,]}":
+        j += 1
+    if j == n:
+        return None
+    return j
+
+
+def _find_top_level_array(buf: str, key: str) -> tuple[int, int] | None:
+    """Return (key_start, bracket_index) for a top-level `"key": [` array."""
+    target = f'"{key}"'
+    i = 0
+    n = len(buf)
+    depth = 0
+    in_str = False
+    esc = False
+    while i < n:
+        c = buf[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            i += 1
+            continue
+        if c == '"':
+            if depth == 1 and buf.startswith(target, i):
+                j = i + len(target)
+                while j < n and buf[j] in " \t\r\n":
+                    j += 1
+                if j >= n:
+                    return None
+                if buf[j] != ":":
+                    in_str = True
+                    i += 1
+                    continue
+                j += 1
+                while j < n and buf[j] in " \t\r\n":
+                    j += 1
+                if j >= n:
+                    return None
+                if buf[j] == "[":
+                    return i, j
+            in_str = True
+            i += 1
+            continue
+        if c in "{[":
+            depth += 1
+        elif c in "}]":
+            depth -= 1
+        i += 1
+    return None
+
+
+def _stream_capture_probes(path: Path) -> tuple[dict[str, Any], Iterator[dict[str, Any]]]:
+    """Parse capture-result.json without holding the probes array.
+
+    Yields one probe object at a time. Peak memory is one probe plus a small
+    header (schema / bounded_storage / trailing keys), not the 1–4 GiB file.
     """
 
-    by_key: dict[tuple[int, int], list[np.ndarray]] = {}
+    def _open() -> tuple[dict[str, Any], Iterator[dict[str, Any]]]:
+        fh = path.open("r", encoding="utf-8")
+        buf = ""
+        located: tuple[int, int] | None = None
+        while located is None:
+            chunk = fh.read(_STREAM_CHUNK)
+            if not chunk:
+                fh.close()
+                raise ActivationWeightedRepackError(
+                    f"{path} has no top-level probes array"
+                )
+            buf += chunk
+            located = _find_top_level_array(buf, "probes")
+        key_start, bracket = located
+        header_src = buf[:key_start].rstrip()
+        if header_src.endswith(","):
+            header_src = header_src[:-1]
+        header = json.loads(header_src + "}")
+        buf = buf[bracket + 1 :]
+
+        def _probes() -> Iterator[dict[str, Any]]:
+            nonlocal buf
+            try:
+                while True:
+                    buf = buf.lstrip(" \t\r\n")
+                    if not buf:
+                        more = fh.read(_STREAM_CHUNK)
+                        if not more:
+                            raise ActivationWeightedRepackError(
+                                f"{path} probes array is truncated"
+                            )
+                        buf = more
+                        continue
+                    if buf[0] == "]":
+                        rest = (buf[1:] + fh.read()).lstrip(" \t\r\n")
+                        if rest.startswith(","):
+                            extra_src = "{" + rest[1:]
+                            # Trailing top-level keys after probes (timing, claim_boundary).
+                            extra = json.loads(extra_src)
+                            if isinstance(extra, dict):
+                                header.update(extra)
+                        return
+                    if buf[0] == ",":
+                        buf = buf[1:]
+                        continue
+                    while True:
+                        end = _json_value_end(buf)
+                        if end is not None:
+                            break
+                        more = fh.read(_STREAM_CHUNK)
+                        if not more:
+                            raise ActivationWeightedRepackError(
+                                f"{path} truncated inside a probe object"
+                            )
+                        buf += more
+                    probe = json.loads(buf[:end])
+                    buf = buf[end:]
+                    if not isinstance(probe, dict):
+                        raise ActivationWeightedRepackError(
+                            f"{path} probes array contains a non-object"
+                        )
+                    yield probe
+            finally:
+                fh.close()
+
+        return header, _probes()
+
+    return _open()
+
+
+def iter_capture_probes(
+    run_dir: Path, capture: Mapping[str, Any] | None = None
+) -> tuple[Mapping[str, Any], Iterator[Mapping[str, Any]]]:
+    """Return (header, probe iterator). Streams from disk when capture is None."""
+    if capture is not None:
+        probes = capture.get("probes") or []
+        return capture, iter(probes)
+    path = Path(run_dir) / _CAPTURE_RESULT_NAME
+    if not path.is_file():
+        raise ActivationWeightedRepackError(f"missing {_CAPTURE_RESULT_NAME}: {path}")
+    header, probes = _stream_capture_probes(path)
+    return header, probes
+
+
+def subsample_expert_rows(
+    X: np.ndarray,
+    *,
+    max_rows: int | None,
+    seed: int,
+    layer: int,
+    expert: int,
+) -> tuple[np.ndarray, bool]:
+    """Deterministic random subsample. Preserves original relative order."""
+    n = int(X.shape[0])
+    if max_rows is None or int(max_rows) <= 0 or n <= int(max_rows):
+        return X, False
+    rng = np.random.default_rng(
+        int(seed) ^ (int(layer) * 9176) ^ (int(expert) * 1009)
+    )
+    idx = np.sort(rng.choice(n, size=int(max_rows), replace=False))
+    return X[idx], True
+
+
+# Compact all-layer layer-row. Field order is stable in the Q30 capture writer.
+# Verified bit-identical to the JSON probe walk on source-bf16 shard00
+# (782976/782976 layer-rows, 1157648 token-expert pairs).
+_COMPACT_LAYER_ROW = re.compile(
+    rb'"layer":(\d+),"normalized_route_weights":\[[0-9eE+.\-,]*\],'
+    rb'"router_input_hidden_f32le":(null|\{[^}]*\}),"selected_expert_ids":\[([0-9,]*)\]'
+)
+_REL_PATH = re.compile(rb'"relative_path":"([^"]+)"')
+_ELEMENTS = re.compile(rb'"elements":(\d+)')
+_HEADER_READ = 1 << 20
+
+
+def _read_capture_header(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as fh:
+        buf = fh.read(_HEADER_READ)
+    located = _find_top_level_array(buf, "probes")
+    if located is None:
+        raise ActivationWeightedRepackError(
+            f"{path} header (first {_HEADER_READ} bytes) has no top-level probes array"
+        )
+    key_start, _bracket = located
+    header_src = buf[:key_start].rstrip()
+    if header_src.endswith(","):
+        header_src = header_src[:-1]
+    return json.loads(header_src + "}")
+
+
+def _mmap_compact_all_layer(
+    run_dir: Path,
+    path: Path,
+    header: Mapping[str, Any],
+    *,
+    wanted_keys: set[tuple[int, int]] | None,
+    load_vectors: bool,
+) -> tuple[dict[tuple[int, int], list[np.ndarray] | int], dict[str, Any]] | None:
+    """Fast path for compact all-layer capture-result.json.
+
+    Returns None when the file is not in the compact layout so the caller
+    can fall back to the JSON probe walk (tests, pretty-printed, L0).
+    """
+    with path.open("rb") as fh:
+        mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+        try:
+            n_layer_keys = sum(1 for _ in re.finditer(rb'"layer":\d+', mm))
+            n_matches = sum(1 for _ in _COMPACT_LAYER_ROW.finditer(mm))
+        finally:
+            mm.close()
+    if n_layer_keys == 0 or n_matches != n_layer_keys:
+        return None
+
+    by_key: dict[tuple[int, int], list[np.ndarray] | int] = {}
+    layers_seen: set[int] = set()
+    n_hidden_rows = 0
+    n_null_rows = 0
+    with path.open("rb") as fh:
+        mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+        try:
+            for match in _COMPACT_LAYER_ROW.finditer(mm):
+                layer = int(match.group(1))
+                layers_seen.add(layer)
+                hidden_blob = match.group(2)
+                ids_blob = match.group(3)
+                experts = [int(e) for e in ids_blob.split(b",") if e] if ids_blob else []
+                if hidden_blob == b"null":
+                    n_null_rows += 1
+                    continue
+                n_hidden_rows += 1
+                if wanted_keys is not None and not any(
+                    (layer, e) in wanted_keys for e in experts
+                ):
+                    if load_vectors:
+                        continue
+                x: np.ndarray | None = None
+                if load_vectors:
+                    rel_m = _REL_PATH.search(hidden_blob)
+                    el_m = _ELEMENTS.search(hidden_blob)
+                    if rel_m is None or el_m is None:
+                        raise ActivationWeightedRepackError(
+                            f"compact hidden meta missing path/elements at layer {layer}"
+                        )
+                    rel = rel_m.group(1).decode("ascii")
+                    fpath = run_dir / rel
+                    x = np.fromfile(fpath, dtype="<f4")
+                    if x.size != int(el_m.group(1)):
+                        raise ActivationWeightedRepackError(
+                            f"hidden size mismatch at {fpath}"
+                        )
+                for expert_id in experts:
+                    key = (layer, expert_id)
+                    if wanted_keys is not None and key not in wanted_keys:
+                        continue
+                    if load_vectors:
+                        assert x is not None
+                        rows = by_key.setdefault(key, [])
+                        assert isinstance(rows, list)
+                        rows.append(x)
+                    else:
+                        by_key[key] = int(by_key.get(key, 0) or 0) + 1
+        finally:
+            mm.close()
+
+    # Every all-layer step carries MODEL_LAYERS layer-rows.
+    n_layer_rows = n_matches
+    total_steps = n_layer_rows // MODEL_LAYERS if MODEL_LAYERS else n_layer_rows
+    # A step is "hidden" if any of its 48 rows retained a hidden. Count from
+    # the per-step flag when present; otherwise treat mixed rows as hidden.
+    with path.open("rb") as fh:
+        mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+        try:
+            hidden_steps = sum(
+                1 for _ in re.finditer(rb'"hidden_retained_for_this_token":true', mm)
+            )
+            route_only_flag = sum(
+                1 for _ in re.finditer(rb'"hidden_retained_for_this_token":false', mm)
+            )
+        finally:
+            mm.close()
+    if hidden_steps + route_only_flag == total_steps:
+        route_only_steps = route_only_flag
+    else:
+        # Conservative: any hidden row implies the step is not route-only.
+        hidden_steps = min(total_steps, n_hidden_rows)
+        route_only_steps = max(0, total_steps - hidden_steps)
+
+    token_expert_pairs = 0
+    for value in by_key.values():
+        token_expert_pairs += len(value) if isinstance(value, list) else int(value)
+    provenance = {
+        "total_steps": int(total_steps),
+        "hidden_retained_steps": int(hidden_steps),
+        "route_only_steps": int(route_only_steps),
+        "token_expert_pairs": int(token_expert_pairs),
+        "layer_expert_pairs_with_hits": len(by_key),
+        "experts_with_hits": len({e for (_, e) in by_key}),
+        "layers_with_hidden_hits": sorted(layers_seen),
+        "n_layers_with_hidden_hits": len(layers_seen),
+        "all_layer_capture": True,
+        "capture_schema": header.get("schema"),
+        "bounded_storage": header.get("bounded_storage"),
+        "n_tokens": int(total_steps),
+        "streamed": True,
+        "compact_mmap": True,
+        "wanted_keys": (
+            None
+            if wanted_keys is None
+            else [f"L{L}.E{e}" for L, e in sorted(wanted_keys)]
+        ),
+    }
+    return by_key, provenance
+
+
+def _walk_hidden_hits(
+    run_dir: Path,
+    capture: Mapping[str, Any] | None,
+    *,
+    wanted_keys: set[tuple[int, int]] | None,
+    load_vectors: bool,
+) -> tuple[dict[tuple[int, int], list[np.ndarray] | int], dict[str, Any]]:
+    """Walk the capture once.
+
+    load_vectors=False: values are integer counts (no .f32le reads).
+    load_vectors=True: values are lists of row vectors, optionally filtered
+    to wanted_keys so unsampled (layer, expert) pairs are never materialized.
+    """
+    run_dir = Path(run_dir)
+    if capture is None:
+        path = run_dir / _CAPTURE_RESULT_NAME
+        if path.is_file():
+            header = _read_capture_header(path)
+            if capture_is_all_layer(header):
+                fast = _mmap_compact_all_layer(
+                    run_dir,
+                    path,
+                    header,
+                    wanted_keys=wanted_keys,
+                    load_vectors=load_vectors,
+                )
+                if fast is not None:
+                    return fast
+    meta, probes = iter_capture_probes(run_dir, capture)
+    all_layer = capture_is_all_layer(meta)
+    by_key: dict[tuple[int, int], list[np.ndarray] | int] = {}
     total_steps = 0
     hidden_steps = 0
     route_only_steps = 0
     layers_seen: set[int] = set()
-    all_layer = capture_is_all_layer(capture)
 
-    for probe in capture["probes"]:
+    for probe in probes:
+        if not all_layer:
+            # Structural fallback if the header lacked the all-layer schema.
+            steps0 = probe.get("steps") or []
+            if steps0 and isinstance(steps0[0], Mapping) and isinstance(
+                steps0[0].get("layers"), list
+            ):
+                all_layer = True
         for step in probe["steps"]:
             total_steps += 1
             if all_layer:
@@ -237,13 +633,33 @@ def collect_expert_activations(
                     if not hidden_meta:
                         continue
                     any_hidden = True
-                    rel = hidden_meta["relative_path"]
-                    path = run_dir / rel
-                    x = np.fromfile(path, dtype="<f4")
-                    if x.size != int(hidden_meta["elements"]):
-                        raise ActivationWeightedRepackError(f"hidden size mismatch at {path}")
-                    for expert_id in layer_row["selected_expert_ids"]:
-                        by_key.setdefault((layer, int(expert_id)), []).append(x)
+                    experts = [int(e) for e in layer_row["selected_expert_ids"]]
+                    if wanted_keys is not None and not any(
+                        (layer, e) in wanted_keys for e in experts
+                    ):
+                        if load_vectors:
+                            # Still count-eligible for provenance of this step.
+                            continue
+                    x: np.ndarray | None = None
+                    if load_vectors:
+                        rel = hidden_meta["relative_path"]
+                        path = run_dir / rel
+                        x = np.fromfile(path, dtype="<f4")
+                        if x.size != int(hidden_meta["elements"]):
+                            raise ActivationWeightedRepackError(
+                                f"hidden size mismatch at {path}"
+                            )
+                    for expert_id in experts:
+                        key = (layer, expert_id)
+                        if wanted_keys is not None and key not in wanted_keys:
+                            continue
+                        if load_vectors:
+                            assert x is not None
+                            rows = by_key.setdefault(key, [])
+                            assert isinstance(rows, list)
+                            rows.append(x)
+                        else:
+                            by_key[key] = int(by_key.get(key, 0) or 0) + 1
                 if any_hidden:
                     hidden_steps += 1
                 else:
@@ -255,36 +671,154 @@ def collect_expert_activations(
                     raise ActivationWeightedRepackError(
                         "L0 capture step missing router_input_hidden_f32le"
                     )
-                rel = hidden_meta["relative_path"]
-                path = run_dir / rel
-                x = np.fromfile(path, dtype="<f4")
-                if x.size != int(hidden_meta["elements"]):
-                    raise ActivationWeightedRepackError(f"hidden size mismatch at {path}")
+                experts = [int(e) for e in step["selected_expert_ids"]]
+                x = None
+                need_load = load_vectors and (
+                    wanted_keys is None
+                    or any((DEFAULT_LAYER, e) in wanted_keys for e in experts)
+                )
+                if need_load:
+                    rel = hidden_meta["relative_path"]
+                    path = run_dir / rel
+                    x = np.fromfile(path, dtype="<f4")
+                    if x.size != int(hidden_meta["elements"]):
+                        raise ActivationWeightedRepackError(
+                            f"hidden size mismatch at {path}"
+                        )
                 hidden_steps += 1
-                for expert_id in step["selected_expert_ids"]:
-                    by_key.setdefault((DEFAULT_LAYER, int(expert_id)), []).append(x)
+                for expert_id in experts:
+                    key = (DEFAULT_LAYER, expert_id)
+                    if wanted_keys is not None and key not in wanted_keys:
+                        continue
+                    if load_vectors:
+                        if x is None:
+                            continue
+                        rows = by_key.setdefault(key, [])
+                        assert isinstance(rows, list)
+                        rows.append(x)
+                    else:
+                        by_key[key] = int(by_key.get(key, 0) or 0) + 1
 
-    stacked = {key: np.stack(rows, axis=0) for key, rows in by_key.items()}
+    token_expert_pairs = 0
+    for value in by_key.values():
+        if isinstance(value, list):
+            token_expert_pairs += len(value)
+        else:
+            token_expert_pairs += int(value)
+    provenance = {
+        "total_steps": total_steps,
+        "hidden_retained_steps": hidden_steps,
+        "route_only_steps": route_only_steps,
+        "token_expert_pairs": int(token_expert_pairs),
+        "layer_expert_pairs_with_hits": len(by_key),
+        "experts_with_hits": len({e for (_, e) in by_key}),
+        "layers_with_hidden_hits": sorted(layers_seen),
+        "n_layers_with_hidden_hits": len(layers_seen),
+        "all_layer_capture": all_layer,
+        "capture_schema": meta.get("schema"),
+        "bounded_storage": meta.get("bounded_storage"),
+        "n_tokens": int(total_steps),
+        "streamed": capture is None,
+        "wanted_keys": (
+            None
+            if wanted_keys is None
+            else [f"L{L}.E{e}" for L, e in sorted(wanted_keys)]
+        ),
+    }
+    return by_key, provenance
+
+
+def count_expert_activations(
+    run_dir: Path, capture: Mapping[str, Any] | None = None
+) -> tuple[dict[tuple[int, int], int], dict[str, Any]]:
+    """Per-(layer, expert) row counts. Does not read or store x vectors."""
+    raw, provenance = _walk_hidden_hits(
+        run_dir, capture, wanted_keys=None, load_vectors=False
+    )
+    counts = {key: int(value) for key, value in raw.items()}
+    hit_counts = {
+        f"L{layer}.E{expert}": n
+        for (layer, expert), n in sorted(
+            counts.items(), key=lambda kv: (-kv[1], kv[0][0], kv[0][1])
+        )
+    }
+    provenance["hit_counts"] = hit_counts
+    provenance["counts_only"] = True
+    return counts, provenance
+
+
+def collect_expert_activations(
+    run_dir: Path,
+    capture: Mapping[str, Any] | None = None,
+    *,
+    wanted_keys: set[tuple[int, int]] | None = None,
+    max_rows_per_expert: int | None = None,
+    row_sample_seed: int = ROW_CAP_SEED,
+) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
+    """Collect router-input hiddens keyed by (layer, expert_id).
+
+    L0-only captures are projected onto layer 0 so the rest of the packer can
+    share one code path. All-layer captures only count tokens that retained a
+    raw hidden (bounded subsample); route-only tokens contribute to hit-count
+    provenance but not to the fit matrix.
+
+    wanted_keys: if set, only those (layer, expert) pairs are materialized.
+    max_rows_per_expert: optional cap; excess rows are a seeded random
+    subsample (row_sample_seed mixed with layer/expert). Does not change
+    which organs are eligible — apply the cap after sampling.
+    """
+
+    raw, provenance = _walk_hidden_hits(
+        run_dir,
+        capture,
+        wanted_keys=wanted_keys,
+        load_vectors=True,
+    )
+    stacked: dict[tuple[int, int], np.ndarray] = {}
+    n_before_cap: dict[str, int] = {}
+    subsampled: list[dict[str, Any]] = []
+    for key, rows in raw.items():
+        assert isinstance(rows, list)
+        arr = np.stack(rows, axis=0)
+        n_full = int(arr.shape[0])
+        n_before_cap[f"L{key[0]}.E{key[1]}"] = n_full
+        arr, capped = subsample_expert_rows(
+            arr,
+            max_rows=max_rows_per_expert,
+            seed=row_sample_seed,
+            layer=key[0],
+            expert=key[1],
+        )
+        stacked[key] = arr
+        if capped:
+            subsampled.append(
+                {
+                    "layer": int(key[0]),
+                    "expert": int(key[1]),
+                    "n_full": n_full,
+                    "n_kept": int(arr.shape[0]),
+                    "seed": int(row_sample_seed),
+                }
+            )
     hit_counts = {
         f"L{layer}.E{expert}": int(arr.shape[0])
         for (layer, expert), arr in sorted(
             stacked.items(), key=lambda kv: (-kv[1].shape[0], kv[0][0], kv[0][1])
         )
     }
-    provenance = {
-        "total_steps": total_steps,
-        "hidden_retained_steps": hidden_steps,
-        "route_only_steps": route_only_steps,
-        "token_expert_pairs": int(sum(v.shape[0] for v in stacked.values())),
-        "layer_expert_pairs_with_hits": len(stacked),
-        "experts_with_hits": len({e for (_, e) in stacked}),
-        "layers_with_hidden_hits": sorted(layers_seen),
-        "n_layers_with_hidden_hits": len(layers_seen),
-        "all_layer_capture": all_layer,
-        "hit_counts": hit_counts,
-        "capture_schema": capture.get("schema"),
-        "bounded_storage": capture.get("bounded_storage"),
-    }
+    provenance.update(
+        {
+            "token_expert_pairs": int(sum(v.shape[0] for v in stacked.values())),
+            "layer_expert_pairs_with_hits": len(stacked),
+            "experts_with_hits": len({e for (_, e) in stacked}),
+            "hit_counts": hit_counts,
+            "n_before_cap": n_before_cap,
+            "max_rows_per_expert": max_rows_per_expert,
+            "row_sample_seed": int(row_sample_seed),
+            "subsampled_layer_experts": subsampled,
+            "counts_only": False,
+        }
+    )
     return stacked, provenance
 
 

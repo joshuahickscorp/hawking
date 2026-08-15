@@ -15,11 +15,11 @@ from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
     holdout_split,
     organ_activations,
 )
+from lab.operators.doctor6.prescribe import SAMPLE_SEED
 from lab.operators.doctor6.billing import project_complete_bpw, seal_with_ceiling
 from lab.operators.doctor6.coherence import LAYER_TARGET_COS, predict_composition
 from lab.operators.doctor6.rungs import apply_rung, quant_binary, score_vs_incumbent
 from lab.operators.one_bit_ceiling import CeilingViolation
-from lab.operators.q30_activation_aware_family_probe import load_capture
 from lab.operators.qwen30b_gravity_pack import load_tensor, load_weight_map
 
 import hashlib
@@ -64,8 +64,22 @@ def treat(
     escape_receipt = (rx.get("ceiling") or {}).get("escape_receipt")
 
     print(f"[treat] loading capture {capture_run}", flush=True)
-    cap = load_capture(capture_run)
-    by_le, _ = collect_expert_activations(capture_run, cap)
+    wanted_keys = {
+        (int(o["layer"]), int(o["expert"]))
+        for o in (rx.get("organs") or [])
+    }
+    inputs = rx.get("inputs") or {}
+    sample = rx.get("sample") or {}
+    max_rows = inputs.get("max_rows_per_expert")
+    if max_rows is None:
+        max_rows = sample.get("max_rows_per_expert")
+    row_seed = int(inputs.get("row_sample_seed") or sample.get("row_sample_seed") or SAMPLE_SEED)
+    by_le, _ = collect_expert_activations(
+        capture_run,
+        wanted_keys=wanted_keys or None,
+        max_rows_per_expert=int(max_rows) if max_rows else None,
+        row_sample_seed=row_seed,
+    )
     weight_map = load_weight_map(model_dir)
 
     rows_out: list[dict[str, Any]] = []

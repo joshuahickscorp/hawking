@@ -37,6 +37,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="inflate bill to prove ceiling fail-closed (acceptance)",
     )
+    p_pre.add_argument(
+        "--max-rows-per-expert",
+        type=int,
+        default=2048,
+        help="per-expert row cap after sampling (0 disables; default 2048)",
+    )
+    p_pre.add_argument(
+        "--unbounded",
+        action="store_true",
+        help="old loader: materialize every (layer, expert) pair (OOM on dense)",
+    )
 
     p_tr = sub.add_parser("treat", help="execute a prescription and seal")
     p_tr.add_argument("--prescription", type=Path, required=True)
@@ -128,6 +139,10 @@ def main(argv: list[str] | None = None) -> int:
             qat_lr=args.qat_lr,
             out_path=args.out,
             force_over_ceiling=args.force_over_ceiling,
+            memory_bounded=not args.unbounded,
+            max_rows_per_expert=(
+                None if int(args.max_rows_per_expert) <= 0 else int(args.max_rows_per_expert)
+            ),
         )
         # Print abridged summary to stdout; full JSON is on disk.
         summary = {
