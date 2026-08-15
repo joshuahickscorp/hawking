@@ -3,13 +3,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
+import subprocess
+import sys
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Sequence
 
 import numpy as np
 
+from lab.operators.ascension_dual_gravity_worker import _mean_row_cosine
 from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
     COMPONENTS,
     HOLD_FRAC,
@@ -56,8 +62,21 @@ DEFAULT_CAPTURE = (
 SAMPLE_SEED = 0xD0C70A
 assert SAMPLE_SEED == ROW_CAP_SEED
 BANDS = ((0, 11), (12, 23), (24, 35), (36, 47))
-LE_PER_BAND = 4
+# Raised from 4 after organ-parallel prescribe. Measured compose speedup
+# plateaus at ~4.5x (16 workers vs 1 on 768x2048 organs); 16 LE/band keeps
+# wall clock at or below the old 48-organ serial budget while 4x-ing evidence.
+# 4 bands × 16 LE × 3 comps = 192 organs.
+LE_PER_BAND = 16
 DEFAULT_MAX_ROWS_PER_EXPERT = 2048
+
+# Job peak budget. Other heavy lanes may run concurrently; do not take the box.
+PEAK_RSS_BUDGET_BYTES = 32 * 1024**3
+# Conservative concurrent working set per organ (W + X + SVD/QAT temps).
+# Caps workers; not a substitute for measured swap backoff.
+_BYTES_PER_WORKER_FLOOR = 768 * 1024**2
+_SWAP_BACKOFF_GROWTH_BYTES = 256 * 1024**2
+_SWAP_USED_SOFT_BYTES = 64 * 1024**2
+_SWAP_USED_HARD_BYTES = 1024 * 1024**2
 
 
 @dataclass
@@ -82,6 +101,289 @@ def _comp_seed(component: str) -> int:
 
 def _split_seed(layer: int, expert: int, component: str) -> int:
     return SEED ^ (layer * 9176) ^ (expert * 1009) ^ (_comp_seed(component) & 0xFFFF)
+
+
+def available_parallelism() -> int:
+    """Process CPU budget. Prefers the OS-advertised allowed set over raw NCPU."""
+    getter = getattr(os, "process_cpu_count", None)
+    if callable(getter):
+        try:
+            n = getter()
+            if n:
+                return max(1, int(n))
+        except OSError:
+            pass
+    affinity = getattr(os, "sched_getaffinity", None)
+    if callable(affinity):
+        try:
+            return max(1, len(affinity(0)))
+        except OSError:
+            pass
+    return max(1, int(os.cpu_count() or 1))
+
+
+def _parse_si_bytes(value: str, unit: str) -> int:
+    scale = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+    return int(float(value) * scale[unit.upper()])
+
+
+def _free_memory_bytes() -> int | None:
+    """Best-effort currently available RAM. None if unmeasurable."""
+    if sys.platform == "linux":
+        try:
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) * 1024
+        except OSError:
+            return None
+        return None
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(["/usr/bin/vm_stat"], text=True, timeout=2)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        page_size = 4096
+        counts: dict[str, int] = {}
+        for line in out.splitlines():
+            if "page size of" in line:
+                m = re.search(r"page size of\s+(\d+)", line)
+                if m:
+                    page_size = int(m.group(1))
+                continue
+            if ":" not in line:
+                continue
+            key, rest = line.split(":", 1)
+            num = rest.strip().rstrip(".").replace(",", "")
+            if num.isdigit():
+                counts[key.strip()] = int(num)
+        pages = (
+            counts.get("Pages free", 0)
+            + counts.get("Pages inactive", 0)
+            + counts.get("Pages speculative", 0)
+            + counts.get("Pages purgeable", 0)
+        )
+        if pages <= 0:
+            return None
+        return int(pages) * int(page_size)
+    return None
+
+
+def _swap_used_bytes() -> int | None:
+    """Best-effort swap in use. None if unmeasurable."""
+    if sys.platform == "linux":
+        total = free = None
+        try:
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if line.startswith("SwapTotal:"):
+                    total = int(line.split()[1]) * 1024
+                elif line.startswith("SwapFree:"):
+                    free = int(line.split()[1]) * 1024
+        except OSError:
+            return None
+        if total is None or free is None:
+            return None
+        return max(0, int(total) - int(free))
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(
+                ["/usr/sbin/sysctl", "-n", "vm.swapusage"], text=True, timeout=2
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        m = re.search(r"used\s*=\s*([\d.]+)\s*([KMG])", out)
+        if not m:
+            return None
+        return _parse_si_bytes(m.group(1), m.group(2))
+    return None
+
+
+def default_workers(
+    *,
+    n_items: int | None = None,
+    peak_budget_bytes: int = PEAK_RSS_BUDGET_BYTES,
+    bytes_per_worker: int | None = None,
+    free_memory_bytes: int | None = None,
+    swap_used_bytes: int | None = None,
+    parallelism: int | None = None,
+) -> int:
+    """Worker count from measured cores + free memory, not a hardcoded ladder.
+
+    Caps at ``peak_budget_bytes`` (32 GiB) and backs off when swap is already
+    in use. Mid-run growth is handled separately in ``map_in_stable_order``.
+    """
+    cores = max(1, int(parallelism if parallelism is not None else available_parallelism()))
+    per = max(1, int(bytes_per_worker or _BYTES_PER_WORKER_FLOOR))
+    free = free_memory_bytes if free_memory_bytes is not None else _free_memory_bytes()
+    swap = swap_used_bytes if swap_used_bytes is not None else _swap_used_bytes()
+    mem_budget = max(1, int(peak_budget_bytes))
+    if free is not None:
+        mem_budget = min(mem_budget, max(per, int(free)))
+    n = min(cores, max(1, mem_budget // per))
+    # Back off on measured swap, not a theoretical working-set product.
+    if swap is not None and int(swap) > _SWAP_USED_SOFT_BYTES:
+        n = max(1, n // 2)
+    if swap is not None and int(swap) > _SWAP_USED_HARD_BYTES:
+        n = max(1, n // 2)
+    if n_items is not None:
+        n = min(n, max(1, int(n_items)))
+    return max(1, int(n))
+
+
+def resolve_workers(
+    requested: int | None,
+    *,
+    n_items: int,
+    **kwargs: Any,
+) -> int:
+    """Honor ``--workers`` when > 0; otherwise ``default_workers``."""
+    if requested is not None and int(requested) > 0:
+        return max(1, min(int(requested), max(1, int(n_items))))
+    return default_workers(n_items=n_items, **kwargs)
+
+
+def map_in_stable_order(
+    fn: Callable[[int, Any], Any],
+    items: Sequence[Any],
+    *,
+    workers: int,
+    swap_used: Callable[[], int | None] | None = None,
+    swap_backoff_bytes: int = _SWAP_BACKOFF_GROWTH_BYTES,
+) -> list[Any]:
+    """Apply ``fn(index, item)`` and return results in *input* order.
+
+    Worker completion order never reshuffles the output. ``workers == 1`` is a
+    plain loop (same path as the historical serial prescribe/treat). Swap
+    growth mid-flight halves the in-flight cap; already-running work finishes.
+    """
+    n = len(items)
+    if n == 0:
+        return []
+    w = max(1, int(workers))
+    if w == 1 or n == 1:
+        return [fn(i, items[i]) for i in range(n)]
+
+    out: list[Any] = [None] * n
+    probe = swap_used if swap_used is not None else _swap_used_bytes
+    try:
+        swap0 = int(probe() or 0)
+    except Exception:
+        swap0 = 0
+    live = w
+    next_i = 0
+    inflight: dict[Any, int] = {}
+    with ThreadPoolExecutor(max_workers=w) as pool:
+        while next_i < n or inflight:
+            while next_i < n and len(inflight) < live:
+                fut = pool.submit(fn, next_i, items[next_i])
+                inflight[fut] = next_i
+                next_i += 1
+            if not inflight:
+                break
+            done, _ = wait(inflight, return_when=FIRST_COMPLETED)
+            for fut in done:
+                idx = inflight.pop(fut)
+                out[idx] = fut.result()
+            try:
+                now = probe()
+            except Exception:
+                now = None
+            if now is not None and int(now) > swap0 + int(swap_backoff_bytes):
+                live = max(1, live // 2)
+                swap0 = int(now)
+    return out
+
+
+def _sens_ranks(sens_raw: Sequence[float]) -> np.ndarray:
+    """Rank organs by incumbent-fit sensitivity. Input order is the identity."""
+    order = np.argsort(np.asarray(sens_raw, dtype=np.float64))
+    ranks = np.zeros(len(sens_raw), dtype=np.float64)
+    denom = max(len(sens_raw) - 1, 1)
+    for rank_i, idx in enumerate(order):
+        ranks[idx] = rank_i / denom
+    return ranks
+
+
+def _prepare_one_organ(
+    org: OrganRef,
+    *,
+    model_dir: Path,
+    weight_map: dict[str, str],
+    by_le: dict[tuple[int, int], Any],
+) -> dict[str, Any]:
+    W = load_tensor(model_dir, weight_map, org.name).astype(np.float32, copy=False)
+    X_all = organ_activations(
+        layer=org.layer,
+        expert=org.expert,
+        component=org.component,
+        X_hidden=by_le[(org.layer, org.expert)],
+        model_dir=model_dir,
+        weight_map=weight_map,
+    )
+    X_fit, X_hold = holdout_split(
+        X_all, seed=_split_seed(org.layer, org.expert, org.component)
+    )
+    rec, _ = quant_binary(W)
+    cos_fit = float(_mean_row_cosine(X_fit @ W.T, X_fit @ rec.T))
+    return {
+        "org": org,
+        "W": W,
+        "X_fit": X_fit,
+        "X_hold": X_hold,
+        "sens_raw": 1.0 - cos_fit,
+    }
+
+
+def _compose_one_prepared(
+    i: int,
+    p: dict[str, Any],
+    *,
+    sens_rank: np.ndarray,
+    n_total: int,
+    device: str,
+    qat_steps: int,
+    qat_lr: float,
+    target_cos: float,
+) -> dict[str, Any]:
+    org: OrganRef = p["org"]
+    print(
+        f"  [{i + 1}/{n_total}] {org.name} sens={sens_rank[i]:.2f}",
+        flush=True,
+    )
+    result = compose_organ_chain(
+        W=p["W"],
+        X_fit=p["X_fit"],
+        X_hold=p["X_hold"],
+        organ_key=org.name,
+        component=org.component,
+        sensitivity=float(sens_rank[i]),
+        seed=SAMPLE_SEED,
+        device=device,
+        qat_steps=qat_steps,
+        qat_lr=qat_lr,
+        target_cos=target_cos,
+        measure_all=False,
+    )
+    result.update(
+        {
+            "tensor_name": org.name,
+            "layer": org.layer,
+            "expert": org.expert,
+            "component": org.component,
+            "band": org.band,
+            "n_routed": org.n_routed,
+            "n_params": int(p["W"].size),
+            "n_fit": int(p["X_fit"].shape[0]),
+            "n_hold": int(p["X_hold"].shape[0]),
+        }
+    )
+    print(
+        f"    chain={'+'.join(result['chain'])} "
+        f"cos={result['prescribed_cosine']:.4f} "
+        f"(inc={result['incumbent_cosine']:.4f}) "
+        f"dropped={len(result['dropped_rungs'])}",
+        flush=True,
+    )
+    return result
 
 
 def _row_count(value: Any) -> int:
@@ -166,6 +468,7 @@ def prescribe(
     force_over_ceiling: bool = False,
     memory_bounded: bool = True,
     max_rows_per_expert: int | None = DEFAULT_MAX_ROWS_PER_EXPERT,
+    workers: int | None = None,
 ) -> dict[str, Any]:
     """Run the full prescribe pipeline and return a machine-readable prescription."""
     t0 = time.perf_counter()
@@ -174,7 +477,7 @@ def prescribe(
 
     # --- load capture ---
     # Sample-first (default): count every (layer, expert) without storing x,
-    # sample the ~16 LE pairs, then materialize only those keys. The unbounded
+    # sample the chosen LE pairs, then materialize only those keys. The unbounded
     # path is the historical loader (stack every routed row on every expert).
     print(f"[prescribe] loading capture {capture_run}", flush=True)
     if memory_bounded:
@@ -262,84 +565,38 @@ def prescribe(
             raise RuntimeError(f"unbounded loader missing sampled keys: {missing}")
 
     weight_map = load_weight_map(model_dir)
-    print(f"[prescribe] sample {len(organs)} organs; composing per-organ chains", flush=True)
+    workers_n = resolve_workers(workers, n_items=len(organs))
+    print(
+        f"[prescribe] sample {len(organs)} organs; composing per-organ chains "
+        f"(workers={workers_n})",
+        flush=True,
+    )
 
-    # Sensitivity from incumbent binary fit cosine (train-free).
-    prepared: list[dict[str, Any]] = []
-    for org in organs:
-        W = load_tensor(model_dir, weight_map, org.name).astype(np.float32, copy=False)
-        X_all = organ_activations(
-            layer=org.layer,
-            expert=org.expert,
-            component=org.component,
-            X_hidden=by_le[(org.layer, org.expert)],
-            model_dir=model_dir,
-            weight_map=weight_map,
+    # Sensitivity from incumbent binary fit cosine (train-free). Per-organ
+    # prepare is independent; results are stored in sample order so the
+    # subsequent rank and compose do not depend on completion order.
+    def _prep(i: int, org: OrganRef) -> dict[str, Any]:
+        del i
+        return _prepare_one_organ(
+            org, model_dir=model_dir, weight_map=weight_map, by_le=by_le
         )
-        X_fit, X_hold = holdout_split(
-            X_all, seed=_split_seed(org.layer, org.expert, org.component)
-        )
-        rec, _ = quant_binary(W)
-        from lab.operators.ascension_dual_gravity_worker import _mean_row_cosine
 
-        cos_fit = float(_mean_row_cosine(X_fit @ W.T, X_fit @ rec.T))
-        prepared.append(
-            {
-                "org": org,
-                "W": W,
-                "X_fit": X_fit,
-                "X_hold": X_hold,
-                "sens_raw": 1.0 - cos_fit,
-            }
-        )
-    sens_raw = [p["sens_raw"] for p in prepared]
-    order = np.argsort(sens_raw)
-    sens_rank = np.zeros(len(sens_raw), dtype=np.float64)
-    for rank_i, idx in enumerate(order):
-        sens_rank[idx] = rank_i / max(len(sens_raw) - 1, 1)
+    prepared = map_in_stable_order(_prep, organs, workers=workers_n)
+    sens_rank = _sens_ranks([p["sens_raw"] for p in prepared])
 
-    organ_results: list[dict[str, Any]] = []
-    for i, p in enumerate(prepared):
-        org: OrganRef = p["org"]
-        print(
-            f"  [{i+1}/{len(prepared)}] {org.name} sens={sens_rank[i]:.2f}",
-            flush=True,
-        )
-        result = compose_organ_chain(
-            W=p["W"],
-            X_fit=p["X_fit"],
-            X_hold=p["X_hold"],
-            organ_key=org.name,
-            component=org.component,
-            sensitivity=float(sens_rank[i]),
-            seed=SAMPLE_SEED,
+    def _comp(i: int, p: dict[str, Any]) -> dict[str, Any]:
+        return _compose_one_prepared(
+            i,
+            p,
+            sens_rank=sens_rank,
+            n_total=len(prepared),
             device=device,
             qat_steps=qat_steps,
             qat_lr=qat_lr,
             target_cos=target_cos,
-            measure_all=False,
         )
-        result.update(
-            {
-                "tensor_name": org.name,
-                "layer": org.layer,
-                "expert": org.expert,
-                "component": org.component,
-                "band": org.band,
-                "n_routed": org.n_routed,
-                "n_params": int(p["W"].size),
-                "n_fit": int(p["X_fit"].shape[0]),
-                "n_hold": int(p["X_hold"].shape[0]),
-            }
-        )
-        organ_results.append(result)
-        print(
-            f"    chain={'+'.join(result['chain'])} "
-            f"cos={result['prescribed_cosine']:.4f} "
-            f"(inc={result['incumbent_cosine']:.4f}) "
-            f"dropped={len(result['dropped_rungs'])}",
-            flush=True,
-        )
+
+    organ_results = map_in_stable_order(_comp, prepared, workers=workers_n)
 
     # Atomic triple enforcement (last stage that can create partials).
     atomic = enforce_atomic_chains(organ_results)
