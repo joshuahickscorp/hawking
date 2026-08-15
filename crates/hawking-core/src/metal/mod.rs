@@ -357,6 +357,10 @@ pub const SHADER_QWEN30_DEVICE_EXPERT_TABLE: &str =
 /// family as the Q30 table; n_experts=512, experts_per_token=10.
 pub const SHADER_QWEN80_DEVICE_EXPERT_TABLE: &str =
     include_str!("../../shaders/qwen80_device_expert_table.metal");
+/// Device-resident Qwen80 hybrid-decode activations (f32 residual / SwiGLU /
+/// DeltaNet / GQA) that sit between the already-native Q4 matvecs.
+pub const SHADER_QWEN80_DEVICE_ACTIVATIONS: &str =
+    include_str!("../../shaders/qwen80_device_activations.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -422,6 +426,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN30_QUALITY_REPACK_SPARSE_GATE_UP,
         SHADER_QWEN30_DEVICE_EXPERT_TABLE,
         SHADER_QWEN80_DEVICE_EXPERT_TABLE,
+        SHADER_QWEN80_DEVICE_ACTIVATIONS,
         SHADER_QWEN_UNIFORM_Q4,
         SHADER_QWEN_UNIFORM_QN,
         SHADER_RWKV7,
@@ -1062,21 +1067,13 @@ mod imp {
                 "qwen_binary_sign_scale_matvec_qkv_rowblock4"
             }
             "qwen_binary_postnorm_router_matvec" => "qwen_binary_postnorm_router_matvec",
-            "qwen_binary_sign_scale_matvec_rowblock2" => {
-                "qwen_binary_sign_scale_matvec_rowblock2"
-            }
-            "qwen_binary_sign_scale_matvec_rowblock4" => {
-                "qwen_binary_sign_scale_matvec_rowblock4"
-            }
-            "qwen_binary_sign_scale_matvec_rowblock8" => {
-                "qwen_binary_sign_scale_matvec_rowblock8"
-            }
+            "qwen_binary_sign_scale_matvec_rowblock2" => "qwen_binary_sign_scale_matvec_rowblock2",
+            "qwen_binary_sign_scale_matvec_rowblock4" => "qwen_binary_sign_scale_matvec_rowblock4",
+            "qwen_binary_sign_scale_matvec_rowblock8" => "qwen_binary_sign_scale_matvec_rowblock8",
             "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
             "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
             "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
-            "qwen_uniform_q4_group64_matvec_rowblock" => {
-                "qwen_uniform_q4_group64_matvec_rowblock"
-            }
+            "qwen_uniform_q4_group64_matvec_rowblock" => "qwen_uniform_q4_group64_matvec_rowblock",
             "qwen_uniform_q4_group64_matvec_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_simdgroup"
             }
@@ -1100,7 +1097,7 @@ mod imp {
             }
             "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8" => {
                 "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8"
-            },
+            }
             "qwen_uniform_qn_matvec" => "qwen_uniform_qn_matvec",
             "qwen_uniform_qn_decode_vector" => "qwen_uniform_qn_decode_vector",
             "qwen_uniform_qn_embedding_lookup" => "qwen_uniform_qn_embedding_lookup",
@@ -1120,7 +1117,9 @@ mod imp {
                 "qwen_direct_packed_gate_up_swiglu_paired_scalar_order_candidate"
             }
             "qwen30_expert_table_binary_matvec" => "qwen30_expert_table_binary_matvec",
-            "qwen30_expert_table_binary_matvec_serial" => "qwen30_expert_table_binary_matvec_serial",
+            "qwen30_expert_table_binary_matvec_serial" => {
+                "qwen30_expert_table_binary_matvec_serial"
+            }
             "qwen30_expert_table_uniform_q4_matvec_serial" => {
                 "qwen30_expert_table_uniform_q4_matvec_serial"
             }
@@ -1135,7 +1134,7 @@ mod imp {
             }
             "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8" => {
                 "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8"
-            },
+            }
             "qwen30_expert_table_binary_matvec_simdgroup" => {
                 "qwen30_expert_table_binary_matvec_simdgroup"
             }
@@ -1168,6 +1167,13 @@ mod imp {
             }
             "qwen80_expert_table_silu_mul" => "qwen80_expert_table_silu_mul",
             "qwen80_expert_table_weighted_sum" => "qwen80_expert_table_weighted_sum",
+            "qwen80_residual_rmsnorm_f32" => "qwen80_residual_rmsnorm_f32",
+            "qwen80_silu_mul_f32" => "qwen80_silu_mul_f32",
+            "qwen80_qkvz_rearrange_conv_l2_f32" => "qwen80_qkvz_rearrange_conv_l2_f32",
+            "qwen80_ba_to_decay_beta_f32" => "qwen80_ba_to_decay_beta_f32",
+            "qwen80_deltanet_gated_rmsnorm_f32" => "qwen80_deltanet_gated_rmsnorm_f32",
+            "qwen80_gated_delta_decode_tg" => "qwen80_gated_delta_decode_tg",
+            "qwen80_gqa_qk_norm_rope_cache_f32" => "qwen80_gqa_qk_norm_rope_cache_f32",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -1878,6 +1884,27 @@ mod imp {
                 );
             }
         }
+
+        #[test]
+        fn qwen80_device_activation_kernels_are_trace_named_and_compiled() {
+            use crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS;
+            const KERNELS: &[&str] = &[
+                "qwen80_residual_rmsnorm_f32",
+                "qwen80_silu_mul_f32",
+                "qwen80_qkvz_rearrange_conv_l2_f32",
+                "qwen80_ba_to_decay_beta_f32",
+                "qwen80_deltanet_gated_rmsnorm_f32",
+                "qwen80_gated_delta_decode_tg",
+                "qwen80_gqa_qk_norm_rope_cache_f32",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN80_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen80_device_activations.metal"
+                );
+            }
+        }
     }
 
     /// Metallib disk cache keyed by (device name, shader source hash, math mode).
@@ -1888,7 +1915,12 @@ mod imp {
     /// and from the OS Metal shader cache for repeated `newLibraryWithSource`.
     fn metallib_cache_enabled() -> bool {
         match std::env::var("HAWKING_METALLIB_CACHE") {
-            Ok(v) if matches!(v.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+            Ok(v)
+                if matches!(
+                    v.as_str(),
+                    "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF"
+                ) =>
+            {
                 false
             }
             _ => true,
@@ -1900,7 +1932,9 @@ mod imp {
             return std::path::PathBuf::from(dir);
         }
         if let Ok(xdg) = std::env::var("XDG_CACHE_HOME") {
-            return std::path::PathBuf::from(xdg).join("hawking").join("metallib");
+            return std::path::PathBuf::from(xdg)
+                .join("hawking")
+                .join("metallib");
         }
         if let Ok(home) = std::env::var("HOME") {
             return std::path::PathBuf::from(home)
@@ -1928,7 +1962,11 @@ mod imp {
             .collect()
     }
 
-    fn metallib_cache_path(device: &Device, source_sha: &str, strict_math: bool) -> std::path::PathBuf {
+    fn metallib_cache_path(
+        device: &Device,
+        source_sha: &str,
+        strict_math: bool,
+    ) -> std::path::PathBuf {
         let math = if strict_math {
             "strict_math"
         } else {
@@ -2100,27 +2138,31 @@ mod imp {
         /// default compile options; callers must opt in explicitly and must
         /// not treat this as a runtime-wide arithmetic policy.
         pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
-            crate::startup_timing::time_ms_result("metal_context_new_with_trace_strict_math", || {
-                let device = Device::system_default()
-                    .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
-                let queue = device.new_command_queue();
-                let library = load_or_compile_shader_library(&device, /*strict_math=*/ true)?;
-                let effective =
-                    trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
-                Ok(Self {
-                    inner: Arc::new(Inner {
-                        device,
-                        queue,
-                        library,
-                        pipelines: Mutex::new(HashMap::new()),
-                        icb_pipelines: Mutex::new(HashMap::new()),
-                    }),
-                    trace: Arc::new(DispatchTrace::new()),
-                    stats: Arc::new(MetalContextStats::new()),
-                    trace_dispatch: effective,
-                    prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
-                })
-            })
+            crate::startup_timing::time_ms_result(
+                "metal_context_new_with_trace_strict_math",
+                || {
+                    let device = Device::system_default()
+                        .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
+                    let queue = device.new_command_queue();
+                    let library =
+                        load_or_compile_shader_library(&device, /*strict_math=*/ true)?;
+                    let effective =
+                        trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+                    Ok(Self {
+                        inner: Arc::new(Inner {
+                            device,
+                            queue,
+                            library,
+                            pipelines: Mutex::new(HashMap::new()),
+                            icb_pipelines: Mutex::new(HashMap::new()),
+                        }),
+                        trace: Arc::new(DispatchTrace::new()),
+                        stats: Arc::new(MetalContextStats::new()),
+                        trace_dispatch: effective,
+                        prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
+                    })
+                },
+            )
         }
 
         pub fn device(&self) -> &Device {
@@ -2180,10 +2222,7 @@ mod imp {
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
             let ms = crate::startup_timing::duration_ms(start.elapsed());
             // Aggregate first-create cost; hot path hits cache above.
-            crate::startup_timing::record_ms(
-                format!("metal_pipeline_create:{fn_name}"),
-                ms,
-            );
+            crate::startup_timing::record_ms(format!("metal_pipeline_create:{fn_name}"), ms);
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
         }
@@ -3918,8 +3957,7 @@ mod imp {
             // `computeCommandEncoder` alone. Dependent dispatches in a Q30
             // token wave (rope→mha, R@x→L@mid, topk→expert) must not run
             // concurrently or residual/router state becomes non-deterministic.
-            let enc =
-                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Serial);
+            let enc = cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Serial);
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(
                     command,
@@ -4217,10 +4255,8 @@ mod imp {
             // CpuEncode, and ProdCbGpu (ProdCbGpu keeps serial groups for
             // Q30 bit-identity). SplitCbGpu never opens a group.
             if self.concurrent_encoder.is_some() {
-                let want_wall = matches!(
-                    self.mode,
-                    TcbTraceMode::CpuEncode | TcbTraceMode::ProdCbGpu
-                );
+                let want_wall =
+                    matches!(self.mode, TcbTraceMode::CpuEncode | TcbTraceMode::ProdCbGpu);
                 let t0 = if want_wall {
                     Some(Instant::now())
                 } else {

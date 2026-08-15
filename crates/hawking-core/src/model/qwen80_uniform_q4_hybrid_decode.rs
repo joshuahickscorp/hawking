@@ -65,6 +65,32 @@ pub const QWEN80_DEFAULT_TOKENIZER_REL: &str =
     "workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/tokenizer.json";
 const QWEN80_DEFAULT_TOKENIZER_SHA256: &str =
     "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d";
+const QWEN80_DEVICE_ACTIVATION_EPS: f32 = 1.0e-6;
+const QWEN80_DEVICE_ROPE_THETA: f32 = 5_000_000.0;
+
+/// Default **on**. Set `HAWKING_QWEN80_DEVICE_ACTIVATIONS=0` / `false` /
+/// `off` / `no` to restore the host activation path for A/B.
+pub fn qwen80_device_activations_enabled() -> bool {
+    for key in [
+        "HAWKING_QWEN80_DEVICE_ACTIVATIONS",
+        "HAWKING_QWEN80_DEVICE_ACT",
+    ] {
+        if let Ok(raw) = std::env::var(key) {
+            let trimmed = raw.trim();
+            if trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no")
+            {
+                return false;
+            }
+            if !trimmed.is_empty() {
+                return true;
+            }
+        }
+    }
+    true
+}
 
 fn q80q4_error(message: impl Into<String>) -> Error {
     Error::Model(format!(
@@ -707,6 +733,7 @@ pub struct Qwen80DecodeNativeCounts {
     pub expert_table_layer_builds: u64,
     pub expert_table_waves: u64,
     pub expert_table_matvec_dispatches: u64,
+    pub device_activation_dispatches: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -722,6 +749,32 @@ pub struct Qwen80DecodeStageTimes {
     pub terminal_secs: f64,
     pub q4_matvec_secs: f64,
     pub host_expert_bind_secs: f64,
+    pub activation: Qwen80ActivationClassTimes,
+}
+
+/// Per-token attribution of the five host-activation classes.
+/// `*_secs` is wall time of that class only (CPU op, or the sandwich that
+/// includes adjacent matvec round-trips when named `_sandwich`).
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80ActivationClassTimes {
+    pub shared_swiglu_secs: f64,
+    pub shared_mlp_sandwich_secs: f64,
+    pub deltanet_conv_secs: f64,
+    pub deltanet_recurrent_secs: f64,
+    pub gqa_input_layernorm_secs: f64,
+    pub gqa_norm_rope_secs: f64,
+    pub other_host_activation_secs: f64,
+    pub metal_matvec_sync_secs: f64,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80ActivationClassCounts {
+    pub shared_swiglu: u64,
+    pub deltanet_conv: u64,
+    pub deltanet_recurrent: u64,
+    pub gqa_input_layernorm: u64,
+    pub gqa_norm_rope: u64,
+    pub other_host_activation: u64,
 }
 
 fn add_secs(slot: &mut f64, started: Instant) {
@@ -868,6 +921,46 @@ struct MetalQ4Weight {
 }
 
 #[cfg(target_os = "macos")]
+struct DeviceActivationWorkspace {
+    hidden: crate::metal::PinnedBuffer,
+    normalized: crate::metal::PinnedBuffer,
+    mixer: crate::metal::PinnedBuffer,
+    first_residual: crate::metal::PinnedBuffer,
+    gate: crate::metal::PinnedBuffer,
+    up: crate::metal::PinnedBuffer,
+    act: crate::metal::PinnedBuffer,
+    shared: crate::metal::PinnedBuffer,
+    shared_logit: crate::metal::PinnedBuffer,
+    gated_shared: crate::metal::PinnedBuffer,
+    qkvz: crate::metal::PinnedBuffer,
+    ba: crate::metal::PinnedBuffer,
+    repeated_q: crate::metal::PinnedBuffer,
+    repeated_k: crate::metal::PinnedBuffer,
+    conv_v: crate::metal::PinnedBuffer,
+    z: crate::metal::PinnedBuffer,
+    decay: crate::metal::PinnedBuffer,
+    beta: crate::metal::PinnedBuffer,
+    rec_out: crate::metal::PinnedBuffer,
+    gated: crate::metal::PinnedBuffer,
+    q_proj: crate::metal::PinnedBuffer,
+    k_proj: crate::metal::PinnedBuffer,
+    v_proj: crate::metal::PinnedBuffer,
+    query: crate::metal::PinnedBuffer,
+    attn: crate::metal::PinnedBuffer,
+    gated_attn: crate::metal::PinnedBuffer,
+    router_logits: crate::metal::PinnedBuffer,
+    logits: crate::metal::PinnedBuffer,
+    linear_conv: crate::metal::PinnedBuffer,
+    linear_recurrent: crate::metal::PinnedBuffer,
+    gqa_key: crate::metal::PinnedBuffer,
+    gqa_value: crate::metal::PinnedBuffer,
+    vectors: HashMap<String, crate::metal::PinnedBuffer>,
+    n_linear: usize,
+    n_gqa: usize,
+    max_seq_len: usize,
+}
+
+#[cfg(target_os = "macos")]
 struct MetalQ4Accel {
     context: crate::metal::MetalContext,
     weights: HashMap<String, MetalQ4Weight>,
@@ -876,16 +969,128 @@ struct MetalQ4Accel {
     expert_kernel: super::qwen80_device_expert_table::Qwen80ExpertTableKernel,
     expert_cache: HashMap<(usize, u32), super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet>,
     expert_slabs: super::qwen80_device_expert_table::Qwen80CompactExpertSlabs,
+    activations: Option<DeviceActivationWorkspace>,
+}
+
+#[cfg(target_os = "macos")]
+fn bytes_f32(n: usize, label: &str) -> Result<usize> {
+    n.checked_mul(std::mem::size_of::<f32>())
+        .ok_or_else(|| q80q4_error(format!("{label} byte count overflowed")))
+}
+
+#[cfg(target_os = "macos")]
+impl DeviceActivationWorkspace {
+    fn allocate(context: &crate::metal::MetalContext, max_seq_len: usize) -> Result<Self> {
+        let linear = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
+        linear.validate()?;
+        let gqa = Qwen80CanonicalGqaLayout::source_exact();
+        gqa.validate()?;
+        let mut n_linear = 0usize;
+        let mut n_gqa = 0usize;
+        for layer in 0..QWEN80_LAYERS {
+            match qwen80_layer_kind(layer)? {
+                Qwen80LayerKind::LinearAttention => n_linear += 1,
+                Qwen80LayerKind::FullAttention => n_gqa += 1,
+            }
+        }
+        let hidden = bytes_f32(QWEN80_HIDDEN, "act hidden")?;
+        let mid = bytes_f32(QWEN80_MOE_INTERMEDIATE, "act moe mid")?;
+        let qkvz = bytes_f32(linear.qkvz_projection_elements()?, "act qkvz")?;
+        let ba = bytes_f32(linear.ba_projection_elements()?, "act ba")?;
+        let value = bytes_f32(linear.value_elements()?, "act value")?;
+        let q_proj = bytes_f32(gqa.q_proj_rows, "act q_proj")?;
+        let kv = bytes_f32(gqa.kv_dim, "act kv")?;
+        let query = bytes_f32(gqa.query_dim, "act query")?;
+        let conv_bytes = bytes_f32(
+            n_linear
+                .checked_mul(linear.conv_state_elements()?)
+                .ok_or_else(|| q80q4_error("act conv state overflowed"))?,
+            "act conv state",
+        )?;
+        let rec_bytes = bytes_f32(
+            n_linear
+                .checked_mul(linear.recurrent_state_elements()?)
+                .ok_or_else(|| q80q4_error("act recurrent state overflowed"))?,
+            "act recurrent state",
+        )?;
+        let gqa_bytes = bytes_f32(
+            n_gqa
+                .checked_mul(max_seq_len)
+                .and_then(|v| v.checked_mul(gqa.kv_dim))
+                .ok_or_else(|| q80q4_error("act gqa cache overflowed"))?,
+            "act gqa cache",
+        )?;
+        Ok(Self {
+            hidden: context.new_buffer_checked(hidden)?,
+            normalized: context.new_buffer_checked(hidden)?,
+            mixer: context.new_buffer_checked(hidden)?,
+            first_residual: context.new_buffer_checked(hidden)?,
+            gate: context.new_buffer_checked(mid)?,
+            up: context.new_buffer_checked(mid)?,
+            act: context.new_buffer_checked(mid)?,
+            shared: context.new_buffer_checked(hidden)?,
+            shared_logit: context.new_buffer_checked(bytes_f32(1, "act shared logit")?)?,
+            gated_shared: context.new_buffer_checked(hidden)?,
+            qkvz: context.new_buffer_checked(qkvz)?,
+            ba: context.new_buffer_checked(ba)?,
+            repeated_q: context.new_buffer_checked(value)?,
+            repeated_k: context.new_buffer_checked(value)?,
+            conv_v: context.new_buffer_checked(value)?,
+            z: context.new_buffer_checked(value)?,
+            decay: context.new_buffer_checked(bytes_f32(linear.value_heads, "act decay")?)?,
+            beta: context.new_buffer_checked(bytes_f32(linear.value_heads, "act beta")?)?,
+            rec_out: context.new_buffer_checked(value)?,
+            gated: context.new_buffer_checked(value)?,
+            q_proj: context.new_buffer_checked(q_proj)?,
+            k_proj: context.new_buffer_checked(kv)?,
+            v_proj: context.new_buffer_checked(kv)?,
+            query: context.new_buffer_checked(query)?,
+            attn: context.new_buffer_checked(query)?,
+            gated_attn: context.new_buffer_checked(query)?,
+            router_logits: context.new_buffer_checked(bytes_f32(QWEN80_EXPERTS, "act router")?)?,
+            logits: context.new_buffer_checked(bytes_f32(QWEN80_VOCAB, "act logits")?)?,
+            linear_conv: context.new_buffer_checked(conv_bytes)?,
+            linear_recurrent: context.new_buffer_checked(rec_bytes)?,
+            gqa_key: context.new_buffer_checked(gqa_bytes)?,
+            gqa_value: context.new_buffer_checked(gqa_bytes)?,
+            vectors: HashMap::new(),
+            n_linear,
+            n_gqa,
+            max_seq_len,
+        })
+    }
+
+    fn zero_state(&mut self) {
+        fn zero(buf: &crate::metal::PinnedBuffer) {
+            let len = buf.length() as usize;
+            if len == 0 {
+                return;
+            }
+            unsafe {
+                std::ptr::write_bytes(buf.contents() as *mut u8, 0, len);
+            }
+        }
+        zero(&self.linear_conv);
+        zero(&self.linear_recurrent);
+        zero(&self.gqa_key);
+        zero(&self.gqa_value);
+        let _ = (self.n_linear, self.n_gqa, self.max_seq_len);
+    }
 }
 
 #[cfg(target_os = "macos")]
 impl MetalQ4Accel {
-    fn new() -> Result<Self> {
+    fn new(max_seq_len: usize) -> Result<Self> {
         let context = crate::metal::MetalContext::new()?;
         let expert_wave =
             super::qwen80_device_expert_table::Qwen80DeviceExpertWaveWorkspace::allocate(&context)?;
         let expert_slabs =
             super::qwen80_device_expert_table::Qwen80CompactExpertSlabs::allocate(&context)?;
+        let activations = if qwen80_device_activations_enabled() {
+            Some(DeviceActivationWorkspace::allocate(&context, max_seq_len)?)
+        } else {
+            None
+        };
         Ok(Self {
             context,
             weights: HashMap::new(),
@@ -894,6 +1099,7 @@ impl MetalQ4Accel {
             expert_kernel: super::qwen80_device_expert_table::qwen80_expert_table_kernel(),
             expert_cache: HashMap::new(),
             expert_slabs,
+            activations,
         })
     }
 
@@ -926,6 +1132,7 @@ impl MetalQ4Accel {
         input: &[f32],
         output: &mut [f32],
         native: &mut Qwen80DecodeNativeCounts,
+        stages: &mut Qwen80DecodeStageTimes,
     ) -> Result<()> {
         use crate::metal::TokenCommandBuffer;
         let (rows, cols) = packed.rows_cols()?;
@@ -960,10 +1167,12 @@ impl MetalQ4Accel {
             rows,
             cols,
         )?;
+        let sync_started = Instant::now();
         tcb.commit_and_wait()?;
         let observed =
             unsafe { std::slice::from_raw_parts(output_buf.contents() as *const f32, rows) };
         output.copy_from_slice(observed);
+        add_secs(&mut stages.activation.metal_matvec_sync_secs, sync_started);
         native.q4_matvec_dispatches = native.q4_matvec_dispatches.saturating_add(1);
         Ok(())
     }
@@ -1021,6 +1230,57 @@ impl MetalQ4Accel {
             std::slice::from_raw_parts(output_buf.contents() as *const f32, QWEN80_HIDDEN)
         };
         output.copy_from_slice(observed);
+        native.q4_embedding_dispatches = native.q4_embedding_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    fn embed_into(
+        &mut self,
+        packed: &Qwen80Q4PackedTensor,
+        token: u32,
+        output: &crate::metal::PinnedBuffer,
+        native: &mut Qwen80DecodeNativeCounts,
+    ) -> Result<()> {
+        use crate::metal::TokenCommandBuffer;
+        if packed.header.shape != [QWEN80_VOCAB, QWEN80_HIDDEN] {
+            return Err(q80q4_error("metal q4 embedding shape drifted"));
+        }
+        if output.length() < (QWEN80_HIDDEN * std::mem::size_of::<f32>()) as u64 {
+            return Err(q80q4_error("metal q4 embedding output buffer is short"));
+        }
+        self.upload_weight(packed)?;
+        let codes_buf = self
+            .weights
+            .get(&packed.name)
+            .expect("uploaded")
+            .codes
+            .clone();
+        let scales_buf = self
+            .weights
+            .get(&packed.name)
+            .expect("uploaded")
+            .scales
+            .clone();
+        let output_buf = output.clone();
+        let mut tcb = TokenCommandBuffer::new(&self.context);
+        tcb.dispatch_threads(
+            "qwen_uniform_q4_embedding_lookup",
+            (QWEN80_HIDDEN as u32, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&codes_buf), 0);
+                encoder.set_buffer(1, Some(&scales_buf), 0);
+                encoder.set_buffer(2, Some(&output_buf), 0);
+                encoder.set_bytes(3, 4, &token as *const u32 as *const _);
+                let hidden = QWEN80_HIDDEN as u32;
+                let vocab = QWEN80_VOCAB as u32;
+                let group = UNIFORM_Q4_GROUP_SIZE as u32;
+                encoder.set_bytes(4, 4, &hidden as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &vocab as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &group as *const u32 as *const _);
+            },
+        )?;
+        tcb.commit_and_wait()?;
         native.q4_embedding_dispatches = native.q4_embedding_dispatches.saturating_add(1);
         Ok(())
     }
@@ -1121,6 +1381,7 @@ pub struct Qwen80UniformQ4HybridDecodeSession {
     pub fallbacks: Qwen80DecodeFallbackCounts,
     pub native: Qwen80DecodeNativeCounts,
     pub stages: Qwen80DecodeStageTimes,
+    pub activation_counts: Qwen80ActivationClassCounts,
     #[cfg(target_os = "macos")]
     metal: Option<MetalQ4Accel>,
     pub metal_error: Option<String>,
@@ -1131,7 +1392,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let started = Instant::now();
         #[cfg(target_os = "macos")]
         {
-            match MetalQ4Accel::new() {
+            match MetalQ4Accel::new(self.state.max_seq_len) {
                 Ok(accel) => {
                     self.metal = Some(accel);
                     self.metal_error = None;
@@ -1156,7 +1417,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
 
     pub fn new(catalog: Qwen80UniformQ4StreamingCatalog, max_seq_len: usize) -> Result<Self> {
         #[cfg(target_os = "macos")]
-        let (metal, metal_error) = match MetalQ4Accel::new() {
+        let (metal, metal_error) = match MetalQ4Accel::new(max_seq_len) {
             Ok(accel) => (Some(accel), None),
             Err(error) => (None, Some(error.to_string())),
         };
@@ -1169,6 +1430,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
             fallbacks: Qwen80DecodeFallbackCounts::default(),
             native: Qwen80DecodeNativeCounts::default(),
             stages: Qwen80DecodeStageTimes::default(),
+            activation_counts: Qwen80ActivationClassCounts::default(),
             #[cfg(target_os = "macos")]
             metal,
             metal_error,
@@ -1181,6 +1443,12 @@ impl Qwen80UniformQ4HybridDecodeSession {
 
     pub fn reset_state(&mut self) {
         self.state.reset();
+        #[cfg(target_os = "macos")]
+        if let Some(metal) = self.metal.as_mut() {
+            if let Some(act) = metal.activations.as_mut() {
+                act.zero_state();
+            }
+        }
     }
 
     fn matvec_named(&mut self, name: &str, input: &[f32], output: &mut [f32]) -> Result<()> {
@@ -1188,7 +1456,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let packed = self.cache.packed(&self.catalog, name)?.clone();
         #[cfg(target_os = "macos")]
         if let Some(metal) = self.metal.as_mut() {
-            match metal.matvec(&packed, input, output, &mut self.native) {
+            match metal.matvec(&packed, input, output, &mut self.native, &mut self.stages) {
                 Ok(()) => {
                     add_secs(&mut self.stages.q4_matvec_secs, started);
                     return Ok(());
@@ -1256,11 +1524,20 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let mut up = vec![0.0f32; intermediate];
         let mut act = vec![0.0f32; intermediate];
         let mut down = vec![0.0f32; QWEN80_HIDDEN];
+        let sandwich = Instant::now();
         self.matvec_named(gate_name, input, &mut gate)?;
         self.matvec_named(up_name, input, &mut up)?;
+        let silu_started = Instant::now();
         silu_mul(&gate, &up, &mut act);
+        add_secs(&mut self.stages.activation.shared_swiglu_secs, silu_started);
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.shared_swiglu =
+            self.activation_counts.shared_swiglu.saturating_add(1);
         self.matvec_named(down_name, &act, &mut down)?;
+        add_secs(
+            &mut self.stages.activation.shared_mlp_sandwich_secs,
+            sandwich,
+        );
         Ok(down)
     }
 
@@ -1268,8 +1545,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let layout = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
         let slot = self.state.linear_slot_for_layer(layer)?;
         let input_w = self.vector(&Self::layer_name(layer, "input_layernorm.weight"))?;
+        let rms_started = Instant::now();
         let rms = source_qwen80_residual_rms_norm(hidden, &input_w)?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            rms_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         let qkvz_rows = layout.qkvz_projection_elements()?;
         let ba_rows = layout.ba_projection_elements()?;
         let mut projected_qkvz = vec![0.0f32; qkvz_rows];
@@ -1291,13 +1577,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
         mixed_qkv.extend_from_slice(&raw_key);
         mixed_qkv.extend_from_slice(&raw_value);
         let conv_w = self.vector(&Self::layer_name(layer, "linear_attn.conv1d.weight"))?;
+        let conv_started = Instant::now();
         let (convolved_qkv, next_conv) = source_qwen80_causal_conv_step_dense(
             &mixed_qkv,
             &self.state.linear_conv[slot],
             &conv_w,
             &layout,
         )?;
+        add_secs(&mut self.stages.activation.deltanet_conv_secs, conv_started);
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.deltanet_conv =
+            self.activation_counts.deltanet_conv.saturating_add(1);
         let raw_query_len = layout.key_elements()?;
         let raw_value_len = layout.value_elements()?;
         let convolved_query = &convolved_qkv[..raw_query_len];
@@ -1329,6 +1619,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         }
         let a_log = self.vector(&Self::layer_name(layer, "linear_attn.A_log"))?;
         let dt_bias = self.vector(&Self::layer_name(layer, "linear_attn.dt_bias"))?;
+        let recurrent_started = Instant::now();
         let (decay, beta) =
             source_qwen80_ba_to_decay_beta(&projected_ba, &a_log, &dt_bias, &layout)?;
         let recurrent_output = source_qwen80_recurrent_deltanet(
@@ -1340,12 +1631,19 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &beta,
             &layout,
         )?;
+        add_secs(
+            &mut self.stages.activation.deltanet_recurrent_secs,
+            recurrent_started,
+        );
         self.state.linear_conv[slot] = next_conv;
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.deltanet_recurrent =
+            self.activation_counts.deltanet_recurrent.saturating_add(1);
         let gated_norm = self.vector(&Self::layer_name(layer, "linear_attn.norm.weight"))?;
         let repeated_gated_norm = (0..layout.value_heads)
             .flat_map(|_| gated_norm.iter().copied())
             .collect::<Vec<_>>();
+        let gated_started = Instant::now();
         let gated_output = source_qwen80_gated_rms_norm(
             &recurrent_output,
             &z,
@@ -1353,7 +1651,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
             layout.value_heads,
             layout.value_head_dim,
         )?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            gated_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         let mut mixer_output = vec![0.0f32; QWEN80_HIDDEN];
         self.matvec_named(
             &Self::layer_name(layer, "linear_attn.out_proj.weight"),
@@ -1361,8 +1667,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &mut mixer_output,
         )?;
         let mut residual = hidden.to_vec();
+        let add_started = Instant::now();
         add_inplace(&mut residual, &mixer_output);
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            add_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         if residual.iter().any(|value| !value.is_finite()) {
             return Err(q80q4_error(format!(
                 "layer {layer} DeltaNet residual is non-finite"
@@ -1382,8 +1697,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
             )));
         }
         let input_w = self.vector(&Self::layer_name(layer, "input_layernorm.weight"))?;
+        let rms_started = Instant::now();
         let rms = source_qwen80_residual_rms_norm(hidden, &input_w)?;
+        add_secs(
+            &mut self.stages.activation.gqa_input_layernorm_secs,
+            rms_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.gqa_input_layernorm =
+            self.activation_counts.gqa_input_layernorm.saturating_add(1);
         let mut q_projection = vec![0.0f32; layout.q_proj_rows];
         let mut k_projection = vec![0.0f32; layout.kv_dim];
         let mut v_projection = vec![0.0f32; layout.kv_dim];
@@ -1405,6 +1727,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let q_norm = self.vector(&Self::layer_name(layer, "self_attn.q_norm.weight"))?;
         let k_norm = self.vector(&Self::layer_name(layer, "self_attn.k_norm.weight"))?;
         let query_raw = qwen80_gqa_query_from_interleaved_q_projection(&q_projection, &layout)?;
+        let rope_started = Instant::now();
         let query = qwen80_gqa_source_norm_rope(
             &query_raw,
             &q_norm,
@@ -1423,11 +1746,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
             position,
             "GQA k_norm + partial RoPE",
         )?;
+        add_secs(&mut self.stages.activation.gqa_norm_rope_secs, rope_started);
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(2);
+        self.activation_counts.gqa_norm_rope =
+            self.activation_counts.gqa_norm_rope.saturating_add(2);
         let start = position * layout.kv_dim;
         let end = start + layout.kv_dim;
         self.state.gqa_key[slot][start..end].copy_from_slice(&key_row);
         self.state.gqa_value[slot][start..end].copy_from_slice(&v_projection);
+        let attn_started = Instant::now();
         let attention = qwen80_gqa_causal_attention(
             &query,
             &self.state.gqa_key[slot],
@@ -1436,7 +1763,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &layout,
         )?;
         let gated = qwen80_gqa_apply_sigmoid_gate(&attention, &q_projection, &layout)?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            attn_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(2);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(2);
         let mut mixer_output = vec![0.0f32; QWEN80_HIDDEN];
         self.matvec_named(
             &Self::layer_name(layer, "self_attn.o_proj.weight"),
@@ -1444,8 +1779,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &mut mixer_output,
         )?;
         let mut residual = hidden.to_vec();
+        let add_started = Instant::now();
         add_inplace(&mut residual, &mixer_output);
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            add_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         if residual.iter().any(|value| !value.is_finite()) {
             return Err(q80q4_error(format!(
                 "layer {layer} GQA residual is non-finite"
@@ -1457,8 +1801,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
     fn moe_suffix(&mut self, layer: usize, first_residual: &[f32]) -> Result<Vec<f32>> {
         let norm_started = Instant::now();
         let post_w = self.vector(&Self::layer_name(layer, "post_attention_layernorm.weight"))?;
+        let norm_op = Instant::now();
         let router_input = source_qwen80_residual_rms_norm(first_residual, &post_w)?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            norm_op,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         add_secs(&mut self.stages.moe_norm_router_secs, norm_started);
 
         let shared_started = Instant::now();
@@ -1478,8 +1831,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &router_input,
             &mut router_logits,
         )?;
+        let route_op = Instant::now();
         let route = source_qwen80_topk_router(&router_logits)?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            route_op,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         add_secs(&mut self.stages.moe_norm_router_secs, router_started);
 
         let mut combined = vec![0.0f32; QWEN80_HIDDEN];
@@ -1529,12 +1891,21 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 "layer {layer} shared-expert gate sigmoid is invalid"
             )));
         }
+        let combine_op = Instant::now();
         for (dst, value) in combined.iter_mut().zip(shared) {
             *dst += value * gate_val;
         }
         let mut out = first_residual.to_vec();
         add_inplace(&mut out, &combined);
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            combine_op,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         add_secs(&mut self.stages.moe_combine_secs, combine_started);
         if out.iter().any(|value| !value.is_finite()) {
             return Err(q80q4_error(format!(
@@ -1598,14 +1969,806 @@ impl Qwen80UniformQ4HybridDecodeSession {
 
     fn terminal_greedy(&mut self, hidden: &[f32]) -> Result<u32> {
         let norm_w = self.vector("model.norm.weight")?;
+        let norm_op = Instant::now();
         let normed = source_qwen80_residual_rms_norm(hidden, &norm_w)?;
+        add_secs(
+            &mut self.stages.activation.other_host_activation_secs,
+            norm_op,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
         let mut logits = vec![0.0f32; QWEN80_VOCAB];
         self.matvec_named("lm_head.weight", &normed, &mut logits)?;
         for logit in logits.iter_mut().skip(QWEN80_TOKENIZER_VOCAB) {
             *logit = f32::NEG_INFINITY;
         }
         // Lowest id on a tie, matching qwen80_terminal_head_greedy_sample_lowest_id.
+        let mut best_i = 0usize;
+        let mut best_v = f32::NEG_INFINITY;
+        for (index, &value) in logits.iter().take(QWEN80_TOKENIZER_VOCAB).enumerate() {
+            if value > best_v || (value == best_v && index < best_i) {
+                best_v = value;
+                best_i = index;
+            }
+        }
+        self.fallbacks.host_sample = self.fallbacks.host_sample.saturating_add(1);
+        if !best_v.is_finite() {
+            return Err(q80q4_error("greedy sample saw no finite logit"));
+        }
+        Ok(best_i as u32)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn device_activations_live(&self) -> bool {
+        self.metal
+            .as_ref()
+            .and_then(|metal| metal.activations.as_ref())
+            .is_some()
+    }
+
+    #[cfg(target_os = "macos")]
+    fn new_token_cb(&self) -> Result<crate::metal::TokenCommandBuffer<'static>> {
+        let metal = self
+            .metal
+            .as_ref()
+            .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+        // SAFETY: the Metal context is owned by the session and outlives every
+        // command buffer created here. Callers drop the TCB before dropping
+        // `metal`.
+        let ctx: &'static crate::metal::MetalContext =
+            unsafe { &*(&metal.context as *const crate::metal::MetalContext) };
+        Ok(crate::metal::TokenCommandBuffer::new(ctx))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn device_vector_buf(&mut self, name: &str) -> Result<crate::metal::PinnedBuffer> {
+        if let Some(existing) = self
+            .metal
+            .as_ref()
+            .and_then(|metal| metal.activations.as_ref())
+            .and_then(|act| act.vectors.get(name))
+            .cloned()
+        {
+            return Ok(existing);
+        }
+        let host = self.vector(name)?;
+        let metal = self
+            .metal
+            .as_mut()
+            .ok_or_else(|| q80q4_error("device vector upload requires Metal"))?;
+        let buf = metal
+            .context
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&host))?;
+        if let Some(act) = metal.activations.as_mut() {
+            act.vectors.insert(name.to_owned(), buf.clone());
+        }
+        Ok(buf)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_q4_matvec(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        name: &str,
+        input: &crate::metal::PinnedBuffer,
+        output: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let packed = self.cache.packed(&self.catalog, name)?.clone();
+        let (rows, cols) = packed.rows_cols()?;
+        let metal = self
+            .metal
+            .as_mut()
+            .ok_or_else(|| q80q4_error("device matvec requires Metal"))?;
+        metal.upload_weight(&packed)?;
+        let codes = metal
+            .weights
+            .get(&packed.name)
+            .expect("uploaded")
+            .codes
+            .clone();
+        let scales = metal
+            .weights
+            .get(&packed.name)
+            .expect("uploaded")
+            .scales
+            .clone();
+        crate::kernels::qwen_uniform_q4_group64_matvec_component_tcb(
+            tcb, &codes, &scales, input, output, rows, cols,
+        )?;
+        self.native.q4_matvec_dispatches = self.native.q4_matvec_dispatches.saturating_add(1);
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_residual_rmsnorm(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        input: &crate::metal::PinnedBuffer,
+        weight_name: &str,
+        output: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let weight = self.device_vector_buf(weight_name)?;
+        tcb.dispatch_threads(
+            "qwen80_residual_rmsnorm_f32",
+            (256, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(input), 0);
+                encoder.set_buffer(1, Some(&weight), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                let hidden = QWEN80_HIDDEN as u32;
+                encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
+                encoder.set_bytes(
+                    4,
+                    4,
+                    &QWEN80_DEVICE_ACTIVATION_EPS as *const f32 as *const _,
+                );
+                encoder.set_threadgroup_memory_length(0, 256 * 4);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_silu_mul(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        gate: &crate::metal::PinnedBuffer,
+        up: &crate::metal::PinnedBuffer,
+        output: &crate::metal::PinnedBuffer,
+        n: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_silu_mul_f32",
+            (n, 1, 1),
+            (n.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(gate), 0);
+                encoder.set_buffer(1, Some(up), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_shared_mlp(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        input: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let (gate, up, act, shared) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (
+                actw.gate.clone(),
+                actw.up.clone(),
+                actw.act.clone(),
+                actw.shared.clone(),
+            )
+        };
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "mlp.shared_expert.gate_proj.weight"),
+            input,
+            &gate,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "mlp.shared_expert.up_proj.weight"),
+            input,
+            &up,
+        )?;
+        self.encode_silu_mul(tcb, &gate, &up, &act, QWEN80_MOE_INTERMEDIATE as u32)?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "mlp.shared_expert.down_proj.weight"),
+            &act,
+            &shared,
+        )
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_deltanet_mixer(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let layout = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
+        let slot = self.state.linear_slot_for_layer(layer)?;
+        let conv_off = (slot * layout.conv_state_elements()? * std::mem::size_of::<f32>()) as u64;
+        let rec_off_elems = slot * layout.recurrent_state_elements()?;
+        let (
+            normalized,
+            qkvz,
+            ba,
+            repeated_q,
+            repeated_k,
+            conv_v,
+            z,
+            decay,
+            beta,
+            rec_out,
+            gated,
+            mixer,
+            first_residual,
+            conv_state,
+            rec_state,
+        ) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (
+                actw.normalized.clone(),
+                actw.qkvz.clone(),
+                actw.ba.clone(),
+                actw.repeated_q.clone(),
+                actw.repeated_k.clone(),
+                actw.conv_v.clone(),
+                actw.z.clone(),
+                actw.decay.clone(),
+                actw.beta.clone(),
+                actw.rec_out.clone(),
+                actw.gated.clone(),
+                actw.mixer.clone(),
+                actw.first_residual.clone(),
+                actw.linear_conv.clone(),
+                actw.linear_recurrent.clone(),
+            )
+        };
+        self.encode_residual_rmsnorm(
+            tcb,
+            hidden,
+            &Self::layer_name(layer, "input_layernorm.weight"),
+            &normalized,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+            &normalized,
+            &qkvz,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "linear_attn.in_proj_ba.weight"),
+            &normalized,
+            &ba,
+        )?;
+        let conv_w =
+            self.device_vector_buf(&Self::layer_name(layer, "linear_attn.conv1d.weight"))?;
+        tcb.dispatch_threads(
+            "qwen80_qkvz_rearrange_conv_l2_f32",
+            (256, layout.key_heads as u32, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&qkvz), 0);
+                encoder.set_buffer(1, Some(&conv_w), 0);
+                encoder.set_buffer(2, Some(&conv_state), conv_off);
+                encoder.set_buffer(3, Some(&repeated_q), 0);
+                encoder.set_buffer(4, Some(&repeated_k), 0);
+                encoder.set_buffer(5, Some(&conv_v), 0);
+                encoder.set_buffer(6, Some(&z), 0);
+                let kh = layout.key_heads as u32;
+                let vpk = layout.value_heads_per_key_head as u32;
+                let kd = layout.key_head_dim as u32;
+                let vd = layout.value_head_dim as u32;
+                let ck = layout.conv_kernel as u32;
+                encoder.set_bytes(7, 4, &kh as *const u32 as *const _);
+                encoder.set_bytes(8, 4, &vpk as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &kd as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &vd as *const u32 as *const _);
+                encoder.set_bytes(11, 4, &ck as *const u32 as *const _);
+                encoder.set_bytes(
+                    12,
+                    4,
+                    &QWEN80_DEVICE_ACTIVATION_EPS as *const f32 as *const _,
+                );
+                encoder.set_threadgroup_memory_length(0, 4 * 256 * 4);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        let a_log = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.A_log"))?;
+        let dt_bias = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.dt_bias"))?;
+        tcb.dispatch_threads(
+            "qwen80_ba_to_decay_beta_f32",
+            (layout.value_heads as u32, 1, 1),
+            (layout.value_heads.min(32).max(1) as u32, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&ba), 0);
+                encoder.set_buffer(1, Some(&a_log), 0);
+                encoder.set_buffer(2, Some(&dt_bias), 0);
+                encoder.set_buffer(3, Some(&decay), 0);
+                encoder.set_buffer(4, Some(&beta), 0);
+                let kh = layout.key_heads as u32;
+                let vpk = layout.value_heads_per_key_head as u32;
+                encoder.set_bytes(5, 4, &kh as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &vpk as *const u32 as *const _);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        let rec_off_bytes = (rec_off_elems * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            "qwen80_gated_delta_decode_tg",
+            (layout.key_head_dim as u32, layout.value_heads as u32, 1),
+            (layout.key_head_dim as u32, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&rec_state), rec_off_bytes);
+                encoder.set_buffer(1, Some(&repeated_q), 0);
+                encoder.set_buffer(2, Some(&repeated_k), 0);
+                encoder.set_buffer(3, Some(&conv_v), 0);
+                encoder.set_buffer(4, Some(&decay), 0);
+                encoder.set_buffer(5, Some(&beta), 0);
+                encoder.set_buffer(6, Some(&rec_out), 0);
+                let heads = layout.value_heads as u32;
+                let kd = layout.key_head_dim as u32;
+                let vd = layout.value_head_dim as u32;
+                encoder.set_bytes(7, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(8, 4, &kd as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &vd as *const u32 as *const _);
+                encoder.set_threadgroup_memory_length(0, 128 * 4);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        let norm_w = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.norm.weight"))?;
+        tcb.dispatch_threads(
+            "qwen80_deltanet_gated_rmsnorm_f32",
+            (layout.value_heads as u32, 1, 1),
+            (layout.value_heads.min(32).max(1) as u32, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&rec_out), 0);
+                encoder.set_buffer(1, Some(&z), 0);
+                encoder.set_buffer(2, Some(&norm_w), 0);
+                encoder.set_buffer(3, Some(&gated), 0);
+                let heads = layout.value_heads as u32;
+                let dim = layout.value_head_dim as u32;
+                encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
+                encoder.set_bytes(
+                    6,
+                    4,
+                    &QWEN80_DEVICE_ACTIVATION_EPS as *const f32 as *const _,
+                );
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "linear_attn.out_proj.weight"),
+            &gated,
+            &mixer,
+        )?;
+        crate::kernels::qwen_next_add_residual_tcb(
+            tcb,
+            hidden,
+            &mixer,
+            &first_residual,
+            QWEN80_HIDDEN,
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_gqa_mixer(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let layout = Qwen80CanonicalGqaLayout::source_exact();
+        let slot = self.state.gqa_slot_for_layer(layer)?;
+        let position = self.state.position;
+        if position >= self.state.max_seq_len {
+            return Err(q80q4_error(format!(
+                "GQA position {position} exceeds max_seq_len {}",
+                self.state.max_seq_len
+            )));
+        }
+        let slot_elems = self.state.max_seq_len * layout.kv_dim;
+        let cache_off = (slot * slot_elems * std::mem::size_of::<f32>()) as u64;
+        let (
+            normalized,
+            q_proj,
+            k_proj,
+            v_proj,
+            query,
+            attn,
+            gated_attn,
+            mixer,
+            first_residual,
+            gqa_key,
+            gqa_value,
+        ) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (
+                actw.normalized.clone(),
+                actw.q_proj.clone(),
+                actw.k_proj.clone(),
+                actw.v_proj.clone(),
+                actw.query.clone(),
+                actw.attn.clone(),
+                actw.gated_attn.clone(),
+                actw.mixer.clone(),
+                actw.first_residual.clone(),
+                actw.gqa_key.clone(),
+                actw.gqa_value.clone(),
+            )
+        };
+        self.encode_residual_rmsnorm(
+            tcb,
+            hidden,
+            &Self::layer_name(layer, "input_layernorm.weight"),
+            &normalized,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "self_attn.q_proj.weight"),
+            &normalized,
+            &q_proj,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "self_attn.k_proj.weight"),
+            &normalized,
+            &k_proj,
+        )?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "self_attn.v_proj.weight"),
+            &normalized,
+            &v_proj,
+        )?;
+        let q_norm = self.device_vector_buf(&Self::layer_name(layer, "self_attn.q_norm.weight"))?;
+        let k_norm = self.device_vector_buf(&Self::layer_name(layer, "self_attn.k_norm.weight"))?;
+        tcb.dispatch_threads(
+            "qwen80_gqa_qk_norm_rope_cache_f32",
+            (layout.query_heads as u32, 1, 1),
+            (layout.query_heads.min(16).max(1) as u32, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&q_proj), 0);
+                encoder.set_buffer(1, Some(&k_proj), 0);
+                encoder.set_buffer(2, Some(&v_proj), 0);
+                encoder.set_buffer(3, Some(&q_norm), 0);
+                encoder.set_buffer(4, Some(&k_norm), 0);
+                encoder.set_buffer(5, Some(&query), 0);
+                encoder.set_buffer(6, Some(&gqa_key), cache_off);
+                encoder.set_buffer(7, Some(&gqa_value), cache_off);
+                let pos = position as u32;
+                let nh = layout.query_heads as u32;
+                let nkv = layout.key_value_heads as u32;
+                let hd = layout.head_dim as u32;
+                let rd = layout.rotary_dim as u32;
+                encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
+                encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
+                encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
+                encoder.set_bytes(13, 4, &QWEN80_DEVICE_ROPE_THETA as *const f32 as *const _);
+                encoder.set_bytes(
+                    14,
+                    4,
+                    &QWEN80_DEVICE_ACTIVATION_EPS as *const f32 as *const _,
+                );
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        crate::kernels::mha_decode_f32_tcb(
+            tcb,
+            &query,
+            &gqa_key,
+            cache_off as usize,
+            &gqa_value,
+            cache_off as usize,
+            &attn,
+            position + 1,
+            layout.head_dim,
+            layout.query_heads,
+            layout.key_value_heads,
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        let query_dim = layout.query_dim as u32;
+        let head_dim = layout.head_dim as u32;
+        tcb.dispatch_threads(
+            "qwen80_attention_apply_sigmoid_gate",
+            (query_dim, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(&attn), 0);
+                encoder.set_buffer(1, Some(&q_proj), 0);
+                encoder.set_buffer(2, Some(&gated_attn), 0);
+                encoder.set_bytes(3, 4, &query_dim as *const u32 as *const _);
+                encoder.set_bytes(4, 4, &head_dim as *const u32 as *const _);
+            },
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "self_attn.o_proj.weight"),
+            &gated_attn,
+            &mixer,
+        )?;
+        crate::kernels::qwen_next_add_residual_tcb(
+            tcb,
+            hidden,
+            &mixer,
+            &first_residual,
+            QWEN80_HIDDEN,
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_moe_prefix(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        postnorm: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let (first_residual, router_logits) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (actw.first_residual.clone(), actw.router_logits.clone())
+        };
+        self.encode_residual_rmsnorm(
+            tcb,
+            &first_residual,
+            &Self::layer_name(layer, "post_attention_layernorm.weight"),
+            postnorm,
+        )?;
+        self.encode_shared_mlp(tcb, layer, postnorm)?;
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "mlp.gate.weight"),
+            postnorm,
+            &router_logits,
+        )
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_moe_combine(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        hidden_out: &crate::metal::PinnedBuffer,
+        routed: &crate::metal::PinnedBuffer,
+        postnorm: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let (shared, shared_logit, gated_shared, first_residual) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (
+                actw.shared.clone(),
+                actw.shared_logit.clone(),
+                actw.gated_shared.clone(),
+                actw.first_residual.clone(),
+            )
+        };
+        self.encode_q4_matvec(
+            tcb,
+            &Self::layer_name(layer, "mlp.shared_expert_gate.weight"),
+            postnorm,
+            &shared_logit,
+        )?;
+        crate::kernels::qwen_next_shared_expert_sigmoid_gate_tcb(
+            tcb,
+            &shared,
+            &shared_logit,
+            &gated_shared,
+            QWEN80_HIDDEN,
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(1);
+        crate::kernels::qwen_next_add_residual_tcb(
+            tcb,
+            routed,
+            &gated_shared,
+            &gated_shared,
+            QWEN80_HIDDEN,
+        )?;
+        crate::kernels::qwen_next_add_residual_tcb(
+            tcb,
+            &first_residual,
+            &gated_shared,
+            hidden_out,
+            QWEN80_HIDDEN,
+        )?;
+        self.native.device_activation_dispatches =
+            self.native.device_activation_dispatches.saturating_add(2);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn snapshot_f32(buf: &crate::metal::PinnedBuffer, n: usize) -> Result<Vec<f32>> {
+        if buf.length() < (n * std::mem::size_of::<f32>()) as u64 {
+            return Err(q80q4_error("device snapshot buffer is short"));
+        }
+        let slice = unsafe { std::slice::from_raw_parts(buf.contents() as *const f32, n) };
+        Ok(slice.to_vec())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_device(&mut self, token: u32) -> Result<u32> {
+        let packed = self
+            .cache
+            .packed(&self.catalog, "model.embed_tokens.weight")?
+            .clone();
+        let hidden = {
+            let metal = self
+                .metal
+                .as_mut()
+                .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+            let hidden = metal
+                .activations
+                .as_ref()
+                .ok_or_else(|| q80q4_error("device activations missing"))?
+                .hidden
+                .clone();
+            metal.embed_into(&packed, token, &hidden, &mut self.native)?;
+            hidden
+        };
+        for layer in 0..QWEN80_LAYERS {
+            let mut prefix = self.new_token_cb()?;
+            let expert_input = {
+                let metal = self
+                    .metal
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+                metal
+                    .expert_wave
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?
+                    .input
+                    .clone()
+            };
+            let prefix_started = Instant::now();
+            match qwen80_layer_kind(layer)? {
+                Qwen80LayerKind::LinearAttention => {
+                    self.encode_deltanet_mixer(&mut prefix, layer, &hidden)?;
+                    self.encode_moe_prefix(&mut prefix, layer, &expert_input)?;
+                    prefix.commit_and_wait()?;
+                    add_secs(&mut self.stages.deltanet_secs, prefix_started);
+                }
+                Qwen80LayerKind::FullAttention => {
+                    self.encode_gqa_mixer(&mut prefix, layer, &hidden)?;
+                    self.encode_moe_prefix(&mut prefix, layer, &expert_input)?;
+                    prefix.commit_and_wait()?;
+                    add_secs(&mut self.stages.gqa_secs, prefix_started);
+                }
+            }
+
+            let router_logits = {
+                let actw = self
+                    .metal
+                    .as_ref()
+                    .and_then(|m| m.activations.as_ref())
+                    .ok_or_else(|| q80q4_error("device activations missing"))?;
+                Self::snapshot_f32(&actw.router_logits, QWEN80_EXPERTS)?
+            };
+            let route = source_qwen80_topk_router(&router_logits)?;
+            self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+            self.activation_counts.other_host_activation = self
+                .activation_counts
+                .other_host_activation
+                .saturating_add(1);
+
+            let mut route_ids = [0u32; 10];
+            let mut route_weights = [0.0f32; 10];
+            for (index, (&expert, &weight)) in
+                route.ids.iter().zip(route.weights.iter()).enumerate()
+            {
+                route_ids[index] = expert as u32;
+                route_weights[index] = weight;
+            }
+            {
+                let metal = self
+                    .metal
+                    .as_mut()
+                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+                metal.ensure_selected_expert_table(
+                    &self.catalog,
+                    layer,
+                    &route_ids,
+                    &mut self.native,
+                    &mut self.stages,
+                )?;
+                let wave = metal
+                    .expert_wave
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &wave.route_ids,
+                    bytemuck::cast_slice(&route_ids),
+                );
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &wave.route_weights,
+                    bytemuck::cast_slice(&route_weights),
+                );
+            }
+            let mut suffix = self.new_token_cb()?;
+            let (routed, dispatches) = {
+                let metal = self
+                    .metal
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+                let lease = metal
+                    .expert_table
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("expert table lease missing after ensure"))?;
+                let wave = metal
+                    .expert_wave
+                    .as_ref()
+                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
+                let dispatches =
+                    super::qwen80_device_expert_table::dispatch_qwen80_device_expert_table_tcb(
+                        &mut suffix,
+                        lease,
+                        wave,
+                        metal.expert_kernel,
+                    )?;
+                (wave.combined.clone(), dispatches)
+            };
+            self.native.expert_table_waves = self.native.expert_table_waves.saturating_add(1);
+            self.native.expert_table_matvec_dispatches = self
+                .native
+                .expert_table_matvec_dispatches
+                .saturating_add(dispatches);
+            let suffix_started = Instant::now();
+            self.encode_moe_combine(&mut suffix, layer, &hidden, &routed, &expert_input)?;
+            suffix.commit_and_wait()?;
+            add_secs(&mut self.stages.moe_combine_secs, suffix_started);
+        }
+
+        let (hidden_buf, norm_name) = (hidden, "model.norm.weight");
+        let mut terminal = self.new_token_cb()?;
+        let (normalized, logits_buf) = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            (actw.normalized.clone(), actw.logits.clone())
+        };
+        self.encode_residual_rmsnorm(&mut terminal, &hidden_buf, norm_name, &normalized)?;
+        self.encode_q4_matvec(&mut terminal, "lm_head.weight", &normalized, &logits_buf)?;
+        terminal.commit_and_wait()?;
+        let logits = Self::snapshot_f32(&logits_buf, QWEN80_VOCAB)?;
         let mut best_i = 0usize;
         let mut best_v = f32::NEG_INFINITY;
         for (index, &value) in logits.iter().take(QWEN80_TOKENIZER_VOCAB).enumerate() {
@@ -1629,6 +2792,13 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 "decode position {} exceeds max_seq_len {}",
                 self.state.position, self.state.max_seq_len
             )));
+        }
+        #[cfg(target_os = "macos")]
+        if self.device_activations_live() {
+            let sampled = self.forward_token_device(token)?;
+            self.state.position = self.state.position.saturating_add(1);
+            require_rss_cap("after hybrid token")?;
+            return Ok(sampled);
         }
         let embed_started = Instant::now();
         let mut hidden = self.embed(token)?;
@@ -1675,6 +2845,7 @@ pub struct Qwen80UniformQ4GreedyResult {
     pub fallbacks: Qwen80DecodeFallbackCounts,
     pub native: Qwen80DecodeNativeCounts,
     pub stages: Qwen80DecodeStageTimes,
+    pub activation_counts: Qwen80ActivationClassCounts,
     pub complete_physical_bpw: f64,
     pub claim: &'static str,
     pub metal_q4_matvec_used: bool,
@@ -1784,6 +2955,7 @@ pub fn generate_greedy(
         fallbacks: session.fallbacks.clone(),
         native: session.native.clone(),
         stages: session.stages.clone(),
+        activation_counts: session.activation_counts.clone(),
         complete_physical_bpw: session.catalog.complete_physical_bpw,
         claim: QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
         metal_q4_matvec_used,
@@ -1820,7 +2992,10 @@ mod tests {
     use super::*;
     use serde_json::json;
     use std::io::Write;
+    use std::sync::Mutex;
     use tempfile::TempDir;
+
+    static CATALOG_DECODE_TEST: Mutex<()> = Mutex::new(());
 
     fn write_q4_file(path: &Path, values: &[f32], shape: &[usize]) -> (u64, String) {
         let (payload, _) = pack_uniform_q4_group64(values, shape).unwrap();
@@ -1983,7 +3158,81 @@ mod tests {
     }
 
     #[test]
+    fn greedy_baseline_prompt_yields_twelve_hello_tokens() {
+        let _guard = CATALOG_DECODE_TEST
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let Some(root) = discover_qwen80_uniform_q4_root() else {
+            return;
+        };
+        let Some(tokenizer_path) = discover_qwen80_tokenizer() else {
+            return;
+        };
+        let catalog = Qwen80UniformQ4StreamingCatalog::open(&root).unwrap();
+        let tokenizer = load_qwen80_tokenizer(&tokenizer_path).unwrap();
+        let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, 64).unwrap();
+        let prompt = render_qwen80_source_user_chat("Hi");
+        let result = generate_greedy(&mut session, &tokenizer, &prompt, 12).unwrap();
+        assert_eq!(
+            result.generated_token_ids,
+            vec![9707, 0, 2585, 646, 358, 1492, 498, 3351, 30, 26525, 232, 151645]
+        );
+        assert!(
+            result.fallbacks.host_activation < 2000,
+            "device-resident activations should drop host_activation well below the 8900 host baseline, got {}",
+            result.fallbacks.host_activation
+        );
+        assert!(
+            result.fallbacks.host_activation > 0,
+            "host_activation must remain a real counter"
+        );
+    }
+
+    #[test]
+    fn device_decode_state_advance_differs_from_reset_and_repeated_same_token() {
+        let _guard = CATALOG_DECODE_TEST
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let Some(root) = discover_qwen80_uniform_q4_root() else {
+            return;
+        };
+        let catalog = Qwen80UniformQ4StreamingCatalog::open(&root).unwrap();
+        let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, 16).unwrap();
+        let token = 13048u32;
+        let first = session.forward_token(token).unwrap();
+        let second = session.forward_token(token).unwrap();
+        session.reset_state();
+        let reset_first = session.forward_token(token).unwrap();
+        session.reset_state();
+        let reset_second = session.forward_token(token).unwrap();
+        assert_eq!(first, reset_first, "first step after reset must match");
+        assert_eq!(
+            reset_first, reset_second,
+            "a reset between identical tokens must produce identical per-token output"
+        );
+        assert_ne!(
+            second, reset_second,
+            "a state reset between tokens must fail this comparison"
+        );
+
+        session.reset_state();
+        let a = session.forward_token(3).unwrap();
+        let b = session.forward_token(9).unwrap();
+        session.reset_state();
+        let c = session.forward_token(3).unwrap();
+        let d = session.forward_token(3).unwrap();
+        assert_eq!(a, c);
+        assert_ne!(
+            b, d,
+            "decoding N distinct tokens must differ from the same token N times"
+        );
+    }
+
+    #[test]
     fn greedy_baseline_prompt_yields_hello_how_tokens() {
+        let _guard = CATALOG_DECODE_TEST
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let Some(root) = discover_qwen80_uniform_q4_root() else {
             return;
         };

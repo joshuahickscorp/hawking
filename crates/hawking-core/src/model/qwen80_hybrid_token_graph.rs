@@ -1262,6 +1262,14 @@ mod device {
         let _ = dispatch_qwen80_terminal_head_tcb;
         let _ = encode_qwen80_hybrid_token_graph_tcb;
         let _ = crate::model::qwen80_device_expert_table::dispatch_qwen80_device_expert_table_tcb;
+        let _ = super::device_activations::dispatch_qwen80_residual_rmsnorm_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_silu_mul_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_qkvz_rearrange_conv_l2_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_ba_to_decay_beta_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_gated_delta_decode_tg_tcb;
+        let _ = super::device_activations::QWEN80_DEVICE_ACTIVATION_KERNELS;
     }
 }
 
@@ -1274,6 +1282,275 @@ pub use device::{
     dispatch_qwen80_terminal_head_tcb, encode_qwen80_hybrid_token_graph_tcb,
     Qwen80DeltaNetResident, Qwen80GqaResident, Qwen80HybridTokenGraphBindings,
     Qwen80HybridTokenGraphEncode, Qwen80HybridTokenGraphWorkspace, Qwen80TokenGraphLayerResident,
+};
+
+/// Additive f32 activation dispatch sites for the uniform-Q4 hybrid decode.
+/// These keep residuals device-resident between already-native Q4 matvecs.
+#[cfg(target_os = "macos")]
+mod device_activations {
+    use crate::metal::{PinnedBuffer, TokenCommandBuffer};
+    use crate::Result;
+
+    trait StageSetScalar {
+        fn stage_set_u32(&self, index: u64, value: u32);
+        fn stage_set_f32(&self, index: u64, value: f32);
+    }
+
+    impl StageSetScalar for ::metal::ComputeCommandEncoderRef {
+        #[inline(always)]
+        fn stage_set_u32(&self, index: u64, value: u32) {
+            self.set_bytes(
+                index,
+                std::mem::size_of::<u32>() as u64,
+                &value as *const u32 as *const _,
+            );
+        }
+        #[inline(always)]
+        fn stage_set_f32(&self, index: u64, value: f32) {
+            self.set_bytes(
+                index,
+                std::mem::size_of::<f32>() as u64,
+                &value as *const f32 as *const _,
+            );
+        }
+    }
+
+    pub const QWEN80_DEVICE_ACTIVATION_KERNELS: [&str; 7] = [
+        "qwen80_residual_rmsnorm_f32",
+        "qwen80_silu_mul_f32",
+        "qwen80_qkvz_rearrange_conv_l2_f32",
+        "qwen80_ba_to_decay_beta_f32",
+        "qwen80_deltanet_gated_rmsnorm_f32",
+        "qwen80_gated_delta_decode_tg",
+        "qwen80_gqa_qk_norm_rope_cache_f32",
+    ];
+
+    pub fn dispatch_qwen80_residual_rmsnorm_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        weight: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: u32,
+        eps: f32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_residual_rmsnorm_f32",
+            (256, 1, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(input), 0);
+                encoder.set_buffer(1, Some(weight), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                encoder.stage_set_u32(3, hidden);
+                encoder.stage_set_f32(4, eps);
+                encoder.set_threadgroup_memory_length(0, 256 * 4);
+            },
+        )
+    }
+
+    pub fn dispatch_qwen80_silu_mul_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate: &PinnedBuffer,
+        up: &PinnedBuffer,
+        output: &PinnedBuffer,
+        n: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_silu_mul_f32",
+            (n, 1, 1),
+            (n.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(gate), 0);
+                encoder.set_buffer(1, Some(up), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                encoder.stage_set_u32(3, n);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_qwen80_qkvz_rearrange_conv_l2_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        projected_qkvz: &PinnedBuffer,
+        conv_weight: &PinnedBuffer,
+        conv_state: &PinnedBuffer,
+        conv_state_offset_bytes: u64,
+        repeated_query: &PinnedBuffer,
+        repeated_key: &PinnedBuffer,
+        convolved_value: &PinnedBuffer,
+        z: &PinnedBuffer,
+        key_heads: u32,
+        values_per_key_head: u32,
+        key_head_dim: u32,
+        value_head_dim: u32,
+        conv_kernel: u32,
+        eps: f32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_qkvz_rearrange_conv_l2_f32",
+            (256, key_heads, 1),
+            (256, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(projected_qkvz), 0);
+                encoder.set_buffer(1, Some(conv_weight), 0);
+                encoder.set_buffer(2, Some(conv_state), conv_state_offset_bytes);
+                encoder.set_buffer(3, Some(repeated_query), 0);
+                encoder.set_buffer(4, Some(repeated_key), 0);
+                encoder.set_buffer(5, Some(convolved_value), 0);
+                encoder.set_buffer(6, Some(z), 0);
+                encoder.stage_set_u32(7, key_heads);
+                encoder.stage_set_u32(8, values_per_key_head);
+                encoder.stage_set_u32(9, key_head_dim);
+                encoder.stage_set_u32(10, value_head_dim);
+                encoder.stage_set_u32(11, conv_kernel);
+                encoder.stage_set_f32(12, eps);
+                encoder.set_threadgroup_memory_length(0, 4 * 256 * 4);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_qwen80_ba_to_decay_beta_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        projected_ba: &PinnedBuffer,
+        a_log: &PinnedBuffer,
+        dt_bias: &PinnedBuffer,
+        decay: &PinnedBuffer,
+        beta: &PinnedBuffer,
+        key_heads: u32,
+        values_per_key_head: u32,
+    ) -> Result<()> {
+        let value_heads = key_heads.saturating_mul(values_per_key_head);
+        tcb.dispatch_threads(
+            "qwen80_ba_to_decay_beta_f32",
+            (value_heads, 1, 1),
+            (value_heads.min(32).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(projected_ba), 0);
+                encoder.set_buffer(1, Some(a_log), 0);
+                encoder.set_buffer(2, Some(dt_bias), 0);
+                encoder.set_buffer(3, Some(decay), 0);
+                encoder.set_buffer(4, Some(beta), 0);
+                encoder.stage_set_u32(5, key_heads);
+                encoder.stage_set_u32(6, values_per_key_head);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_qwen80_gated_delta_decode_tg_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        state: &PinnedBuffer,
+        state_offset_bytes: u64,
+        query: &PinnedBuffer,
+        key: &PinnedBuffer,
+        value: &PinnedBuffer,
+        decay: &PinnedBuffer,
+        beta: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: u32,
+        key_dim: u32,
+        value_dim: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_gated_delta_decode_tg",
+            (key_dim, heads, 1),
+            (key_dim.max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(state), state_offset_bytes);
+                encoder.set_buffer(1, Some(query), 0);
+                encoder.set_buffer(2, Some(key), 0);
+                encoder.set_buffer(3, Some(value), 0);
+                encoder.set_buffer(4, Some(decay), 0);
+                encoder.set_buffer(5, Some(beta), 0);
+                encoder.set_buffer(6, Some(output), 0);
+                encoder.stage_set_u32(7, heads);
+                encoder.stage_set_u32(8, key_dim);
+                encoder.stage_set_u32(9, value_dim);
+                encoder.set_threadgroup_memory_length(0, 128 * 4);
+            },
+        )
+    }
+
+    pub fn dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        gate: &PinnedBuffer,
+        weight: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: u32,
+        value_head_dim: u32,
+        eps: f32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_deltanet_gated_rmsnorm_f32",
+            (heads, 1, 1),
+            (heads.min(32).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(input), 0);
+                encoder.set_buffer(1, Some(gate), 0);
+                encoder.set_buffer(2, Some(weight), 0);
+                encoder.set_buffer(3, Some(output), 0);
+                encoder.stage_set_u32(4, heads);
+                encoder.stage_set_u32(5, value_head_dim);
+                encoder.stage_set_f32(6, eps);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_proj: &PinnedBuffer,
+        k_proj: &PinnedBuffer,
+        v_proj: &PinnedBuffer,
+        q_norm: &PinnedBuffer,
+        k_norm: &PinnedBuffer,
+        query: &PinnedBuffer,
+        key_cache: &PinnedBuffer,
+        key_offset_bytes: u64,
+        value_cache: &PinnedBuffer,
+        value_offset_bytes: u64,
+        sequence_slot: u32,
+        n_heads: u32,
+        n_kv_heads: u32,
+        head_dim: u32,
+        rotary_dim: u32,
+        rope_theta: f32,
+        rms_eps: f32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_gqa_qk_norm_rope_cache_f32",
+            (n_heads, 1, 1),
+            (n_heads.min(16).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(q_proj), 0);
+                encoder.set_buffer(1, Some(k_proj), 0);
+                encoder.set_buffer(2, Some(v_proj), 0);
+                encoder.set_buffer(3, Some(q_norm), 0);
+                encoder.set_buffer(4, Some(k_norm), 0);
+                encoder.set_buffer(5, Some(query), 0);
+                encoder.set_buffer(6, Some(key_cache), key_offset_bytes);
+                encoder.set_buffer(7, Some(value_cache), value_offset_bytes);
+                encoder.stage_set_u32(8, sequence_slot);
+                encoder.stage_set_u32(9, n_heads);
+                encoder.stage_set_u32(10, n_kv_heads);
+                encoder.stage_set_u32(11, head_dim);
+                encoder.stage_set_u32(12, rotary_dim);
+                encoder.stage_set_f32(13, rope_theta);
+                encoder.stage_set_f32(14, rms_eps);
+            },
+        )
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[allow(unused_imports)]
+pub use device_activations::{
+    dispatch_qwen80_ba_to_decay_beta_f32_tcb, dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb,
+    dispatch_qwen80_gated_delta_decode_tg_tcb, dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb,
+    dispatch_qwen80_qkvz_rearrange_conv_l2_f32_tcb, dispatch_qwen80_residual_rmsnorm_f32_tcb,
+    dispatch_qwen80_silu_mul_f32_tcb, QWEN80_DEVICE_ACTIVATION_KERNELS,
 };
 
 #[cfg(target_os = "macos")]
