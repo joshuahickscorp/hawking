@@ -2,7 +2,9 @@
 //!
 //! A cold admission still fully re-hashes every payload against the sealed
 //! manifest. On success it writes a process-local receipt keyed by
-//! `(manifest_seal, per-file size, mtime_ns, device, inode)`.
+//! `(manifest_seal, per-file size, mtime_ns, inode)`. device (st_dev) is
+//! recorded for diagnostics but NOT part of the match key: it is a mount-time
+//! artifact that a remount reassigns without changing the file.
 //!
 //! A later process may skip *recomputing* content SHA-256 only when every
 //! payload file's identity metadata still matches the receipt. It never skips
@@ -13,7 +15,7 @@
 //!   - manifest seal matches the protected admission binding
 //!   - source-chain seals still bind
 //!   - every payload path exists as a regular file with the same size,
-//!     mtime_ns, device, and inode recorded at the last cold verify
+//!     mtime_ns, and inode recorded at the last cold verify (device excluded)
 //!   - payload byte length equals the receipt size after read
 //!   - direct header geometry still matches the manifest row
 //!
@@ -120,9 +122,14 @@ pub fn file_identity(path: &Path, label: &str) -> Result<FileIdentity> {
 }
 
 fn identity_matches(observed: &FileIdentity, expected: &FileIdentity) -> bool {
+    // device (st_dev) is deliberately NOT compared: it is a mount-time artifact,
+    // so a reboot/remount reassigns it without touching the file and would
+    // falsely invalidate the warm receipt, forcing a full ~10s cold rehash on
+    // every post-reboot startup. (size, mtime_ns, inode) already pin the file on
+    // a volume, and the cold verify's sealed content SHA is the ultimate
+    // authority; device is still recorded in the receipt for diagnostics.
     observed.size == expected.size
         && observed.mtime_ns == expected.mtime_ns
-        && observed.device == expected.device
         && observed.inode == expected.inode
 }
 
@@ -596,4 +603,32 @@ pub fn receipt_covers_manifest_rows(
         }
     }
     Ok(true)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{identity_matches, FileIdentity};
+
+    fn id(size: u64, mtime_ns: i128, device: u64, inode: u64) -> FileIdentity {
+        FileIdentity { size, mtime_ns, device, inode }
+    }
+
+    #[test]
+    fn device_shift_alone_still_matches() {
+        // A remount reassigns st_dev without touching the file: same file,
+        // must remain a warm hit (else every reboot pays a full cold rehash).
+        let base = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_234, 197_011_751);
+        let remounted = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_233, 197_011_751);
+        assert!(identity_matches(&remounted, &base));
+    }
+
+    #[test]
+    fn content_change_signals_still_invalidate() {
+        let base = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_234, 197_011_751);
+        // A rewrite bumps mtime and/or size; a swap changes inode. Each must
+        // still force a cold re-verify.
+        assert!(!identity_matches(&id(4_000_000_001, base.mtime_ns, base.device, base.inode), &base));
+        assert!(!identity_matches(&id(base.size, base.mtime_ns + 1, base.device, base.inode), &base));
+        assert!(!identity_matches(&id(base.size, base.mtime_ns, base.device, base.inode + 1), &base));
+    }
 }

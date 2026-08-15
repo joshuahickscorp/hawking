@@ -168,9 +168,14 @@ fn model_error(message: impl Into<String>) -> Error {
 /// wave encode into one Metal compute encoder (serial dispatch type) instead
 /// of opening/closing an encoder per kernel.  Set
 /// `HAWKING_QWEN30_SERIAL_ENCODER=0` / `false` / `off` / `no` to restore the
-/// historical per-dispatch encoder shape for A/B.  Under
-/// `HAWKING_TCB_TRACE=gpu` / `gpu_prod` the TCB already ignores serial groups
-/// so timestamp attribution is unchanged.
+/// historical per-dispatch encoder shape for A/B.
+///
+/// **Correctness**: the multi-encoder shape is **not** bit-identical to the
+/// serial-group production path on Q30 (lane-tracebug). Treat `=0` as a
+/// diagnostic topology probe only — not a production or bit-identity arm.
+/// `HAWKING_TCB_TRACE=gpu_prod` honours serial groups so the default ON path
+/// keeps production tokens; `=gpu` (split-CB) still no-ops groups for
+/// per-dispatch gpuStart/gpuEnd.
 #[cfg(target_os = "macos")]
 fn qwen30_serial_encoder_enabled() -> bool {
     qwen30_env_flag_default_on("HAWKING_QWEN30_SERIAL_ENCODER")
@@ -769,7 +774,11 @@ impl Default for Qwen30CompleteRuntimeOptions {
         Self {
             max_seq_len: 256,
             trace_dispatch: false,
-            packed_matvec_kernel: Qwen30PackedMatvecKernel::ScalarControl,
+            // R=4 register blocking measured +15.7% on complete-token wall (32.1 -> 37.15
+            // tok/s, bit-identical, 2 paired trials per arm). R=8 reaches 79 GB/s in the
+            // fused-tall microbench but LOSES wall at 33.7 -- occupancy, not bandwidth.
+            // Costs 96 dispatches (1013 -> 1109); TG3 issue budget is 1363.
+            packed_matvec_kernel: Qwen30PackedMatvecKernel::RowBlock4,
             gate_up_swiglu_kernel: Qwen30GateUpSwiGluKernel::ThreeDispatchControl,
         }
     }
@@ -2407,9 +2416,9 @@ impl Qwen30CompleteNativeRuntime {
     }
 
     /// Whether the production token path currently folds multi-dispatch waves
-    /// into one serial compute encoder.  Diagnostic `HAWKING_TCB_TRACE=gpu*`
-    /// modes ignore the serial group (no-op inside TCB) so per-kernel
-    /// timestamps remain available.
+    /// into one serial compute encoder.  `HAWKING_TCB_TRACE=gpu` (split-CB)
+    /// still no-ops groups inside the TCB; `gpu_prod` honours them so default
+    /// ON keeps production bit-identity.
     pub fn serial_encoder_enabled(&self) -> bool {
         qwen30_serial_encoder_enabled()
     }

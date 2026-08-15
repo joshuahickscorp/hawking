@@ -230,7 +230,7 @@ mod macos {
         let mut max_new_tokens = 2usize;
         let mut max_seq_len = 256usize;
         let mut trace_dispatch = false;
-        let mut packed_matvec_kernel = Qwen30PackedMatvecKernel::ScalarControl;
+        let mut packed_matvec_kernel = Qwen30PackedMatvecKernel::RowBlock4;
         let mut gate_up_swiglu_kernel = Qwen30GateUpSwiGluKernel::ThreeDispatchControl;
         let mut prompt_template = PromptTemplate::RawTextDiagnostic;
         let mut args = env::args().skip(1);
@@ -1026,27 +1026,30 @@ mod macos {
                 arguments.gate_up_swiglu_kernel
             },
         };
-        let mut runtime = if is_uniform_q4 {
-            let uq = uniform_q4_admission(&arguments).unwrap_or_else(|error| fail(error));
-            Qwen30CompleteNativeRuntime::load_uniform_q4(&arguments.manifest, &uq, options)
+        let mut runtime = hawking_core::startup_timing::time_ms("startup:runtime_load_total", || {
+            if is_uniform_q4 {
+                let uq = uniform_q4_admission(&arguments).unwrap_or_else(|error| fail(error));
+                Qwen30CompleteNativeRuntime::load_uniform_q4(&arguments.manifest, &uq, options)
+                    .unwrap_or_else(|error| fail(error.to_string()))
+            } else if is_uniform_qn {
+                let bits = if is_uniform_q3 { UniformQnBits::Three } else { UniformQnBits::Two };
+                let un = uniform_qn_admission(&arguments, bits).unwrap_or_else(|error| fail(error));
+                Qwen30CompleteNativeRuntime::load_uniform_qn(&arguments.manifest, &un, options)
+                    .unwrap_or_else(|error| fail(error.to_string()))
+            } else if is_activation_weighted {
+                let aw =
+                    activation_weighted_admission(&arguments).unwrap_or_else(|error| fail(error));
+                Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
+                    &arguments.manifest,
+                    &aw,
+                    options,
+                )
                 .unwrap_or_else(|error| fail(error.to_string()))
-        } else if is_uniform_qn {
-            let bits = if is_uniform_q3 { UniformQnBits::Three } else { UniformQnBits::Two };
-            let un = uniform_qn_admission(&arguments, bits).unwrap_or_else(|error| fail(error));
-            Qwen30CompleteNativeRuntime::load_uniform_qn(&arguments.manifest, &un, options)
-                .unwrap_or_else(|error| fail(error.to_string()))
-        } else if is_activation_weighted {
-            let aw = activation_weighted_admission(&arguments).unwrap_or_else(|error| fail(error));
-            Qwen30CompleteNativeRuntime::load_activation_weighted_svd(
-                &arguments.manifest,
-                &aw,
-                options,
-            )
-            .unwrap_or_else(|error| fail(error.to_string()))
-        } else {
-            Qwen30CompleteNativeRuntime::load(&arguments.manifest, &admission, options)
-                .unwrap_or_else(|error| fail(error.to_string()))
-        };
+            } else {
+                Qwen30CompleteNativeRuntime::load(&arguments.manifest, &admission, options)
+                    .unwrap_or_else(|error| fail(error.to_string()))
+            }
+        });
         // Exclude constructor allocation from the bounded execution profile.
         let _ = runtime.drain_profiler();
         let runtime_binding = json!({
@@ -1153,25 +1156,28 @@ mod macos {
                     .prompt
                     .as_deref()
                     .expect("validated generation prompt");
-                let (generation, prompt_template) = match arguments.prompt_template {
-                    PromptTemplate::RawTextDiagnostic => (
-                        runtime
-                            .generate_greedy(prompt, arguments.max_new_tokens)
-                            .unwrap_or_else(|error| fail(error.to_string())),
-                        json!({
-                            "mode": PromptTemplate::RawTextDiagnostic.receipt_name(),
-                            "source_template_bound": false,
-                            "applied_to_prompt": false,
-                            "claim_boundary": "raw text diagnostic only; not eligible for template-bound runtime promotion",
-                        }),
-                    ),
-                    PromptTemplate::SourceUserChat => (
-                        runtime
-                            .generate_source_user_chat_greedy(prompt, arguments.max_new_tokens)
-                            .unwrap_or_else(|error| fail(error.to_string())),
-                        source_user_template_json(&runtime, true),
-                    ),
-                };
+                let (generation, prompt_template) = hawking_core::startup_timing::time_ms(
+                    "startup:generation_total",
+                    || match arguments.prompt_template {
+                        PromptTemplate::RawTextDiagnostic => (
+                            runtime
+                                .generate_greedy(prompt, arguments.max_new_tokens)
+                                .unwrap_or_else(|error| fail(error.to_string())),
+                            json!({
+                                "mode": PromptTemplate::RawTextDiagnostic.receipt_name(),
+                                "source_template_bound": false,
+                                "applied_to_prompt": false,
+                                "claim_boundary": "raw text diagnostic only; not eligible for template-bound runtime promotion",
+                            }),
+                        ),
+                        PromptTemplate::SourceUserChat => (
+                            runtime
+                                .generate_source_user_chat_greedy(prompt, arguments.max_new_tokens)
+                                .unwrap_or_else(|error| fail(error.to_string())),
+                            source_user_template_json(&runtime, true),
+                        ),
+                    },
+                );
                 let profiler = profiler_json(runtime.drain_profiler(), None, None);
                 let steps = generation.steps.iter().map(step_json).collect::<Vec<_>>();
                 let gate_up_swiglu_device_control_parity =

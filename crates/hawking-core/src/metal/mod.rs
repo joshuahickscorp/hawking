@@ -1202,6 +1202,13 @@ mod imp {
             "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority" => {
                 "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority"
             }
+            // Ratio-0 growing-KV sibling of the position1 kernel above. It is
+            // compiled into matmul.metal and dispatched, but was never given a
+            // trace name, so every dispatch of it was attributed to "other" and
+            // vanished from per-kernel profiling.
+            "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority" => {
+                "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority"
+            }
             // Isolated P4B mHC-control precision experiment. This is never a
             // baseline/runtime selection: it may be invoked only to test
             // whether precise exponent evaluation restores control and final
@@ -3760,7 +3767,14 @@ mod imp {
                     "begin_serial_group called while a group is already active".into(),
                 ));
             }
-            if !matches!(self.mode, TcbTraceMode::Off | TcbTraceMode::CpuEncode) {
+            // SplitCbGpu still no-ops: it needs one CB per dispatch for
+            // gpuStart/gpuEnd. ProdCbGpu used to no-op too for per-dispatch
+            // counter samples, but that forced the multi-encoder topology and
+            // changed Q30 greedy tokens (lane-tracebug). Prefer numeric
+            // identity with production: honour serial groups under ProdCbGpu
+            // and Off/CpuEncode. Per-dispatch gpu_us is unavailable while a
+            // group is open (shared encoder has no per-kernel sample pair).
+            if matches!(self.mode, TcbTraceMode::SplitCbGpu) {
                 return Ok(());
             }
             let cmd = self
@@ -4065,12 +4079,16 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            // P0.1: if a concurrent group is active, record into its shared
-            // encoder. Only set under Off/CpuEncode modes by
-            // `begin_concurrent_group`, so the Split/Prod branches below
-            // remain reachable for normal (non-grouped) dispatches.
+            // Shared serial/concurrent group encoder. Opened by
+            // `begin_serial_group` / `begin_concurrent_group` under Off,
+            // CpuEncode, and ProdCbGpu (ProdCbGpu keeps serial groups for
+            // Q30 bit-identity). SplitCbGpu never opens a group.
             if self.concurrent_encoder.is_some() {
-                let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                let want_wall = matches!(
+                    self.mode,
+                    TcbTraceMode::CpuEncode | TcbTraceMode::ProdCbGpu
+                );
+                let t0 = if want_wall {
                     Some(Instant::now())
                 } else {
                     None
@@ -4087,6 +4105,8 @@ mod imp {
                     MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
                 );
                 if let Some(t0) = t0 {
+                    // Encode-wall only: a shared encoder cannot attach
+                    // per-dispatch counter-sample pairs. gpu_us stays None.
                     self.tcb_samples.push(super::DispatchSample {
                         kernel_name: static_kernel_name(fn_name),
                         wall_us: t0.elapsed().as_micros() as u64,
@@ -4176,18 +4196,17 @@ mod imp {
             // Build a per-encoder ComputePassDescriptor with one sample
             // buffer attachment at slot 0, pointing at our shared sample
             // buffer with start/end indices = (2p, 2p+1).
-            let enc = if let Some(p) = pair_index {
-                let pass = ::metal::ComputePassDescriptor::new();
-                let attachments = pass.sample_buffer_attachments();
-                let att = ::metal::ComputePassSampleBufferAttachmentDescriptor::new();
-                att.set_sample_buffer(&tracer.sample_buf);
-                att.set_start_of_encoder_sample_index((p * 2) as u64);
-                att.set_end_of_encoder_sample_index((p * 2 + 1) as u64);
-                attachments.set_object_at(0, Some(&att));
-                cmd.compute_command_encoder_with_descriptor(pass)
-            } else {
-                cmd.new_compute_command_encoder()
-            };
+            // Correctness: `compute_command_encoder_with_descriptor` with
+            // counter-sample boundary attachments changed Q30 greedy token
+            // ids vs plain `new_compute_command_encoder` under the same
+            // multi-encoder topology (deterministic; lane-tracebug). Encode
+            // compute with a plain encoder. Pair indices are still reserved
+            // so post-wait resolve stays structurally valid; without boundary
+            // samples `gpu_us` is not a trustworthy per-kernel duration
+            // (correctness outranks attribution). Prefer serial groups under
+            // ProdCbGpu for production bit-identity (see begin_serial_group).
+            let enc = cmd.new_compute_command_encoder();
+            let _ = pair_index;
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
             } else {

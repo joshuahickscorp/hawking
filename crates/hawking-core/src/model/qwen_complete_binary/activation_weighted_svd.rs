@@ -1676,8 +1676,11 @@ fn load_aw_warm_payloads_bounded_parallel(
 ///
 /// Warm path (`HAWKING_ADMISSION_WARM_RECEIPT`, default on): after a prior cold
 /// full rehash wrote a sealed receipt, a later process may skip *recomputing*
-/// content SHA-256 when every payload file's (size, mtime_ns, device, inode)
-/// still matches. It never skips the unchanged-file check. Selection, snapshot,
+/// content SHA-256 when every payload file's (size, mtime_ns, inode) still
+/// matches. device (st_dev) is deliberately excluded — it is a mount-time
+/// artifact that a remount reassigns without changing the file, and including it
+/// forced a full cold rehash on every post-reboot start. It never skips the
+/// unchanged-file check. Selection, snapshot,
 /// terminal, activation-capture, source-chain, and geometry seals still run
 /// every start. Disable with `HAWKING_ADMISSION_WARM_RECEIPT=0` to force a full
 /// cold rehash every start.
