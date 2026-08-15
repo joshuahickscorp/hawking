@@ -132,16 +132,19 @@ pub fn write_retained_hidden_f32le(path: &Path, values: &[f32]) -> Result<(Strin
         .write(true)
         .open(path)
         .map_err(|e| model_err(format!("cannot create hidden {}: {e}", path.display())))?;
-    let mut digest = Sha256::new();
+    // One LE buffer + one write. The previous per-f32 write_all was 2048
+    // syscalls per row and dominated capture wall on this machine.
+    let mut bytes = Vec::with_capacity(values.len().saturating_mul(4));
     for value in values {
-        let bytes = value.to_le_bytes();
-        file.write_all(&bytes)
-            .map_err(|e| model_err(format!("cannot write hidden {}: {e}", path.display())))?;
-        digest.update(bytes);
+        bytes.extend_from_slice(&value.to_le_bytes());
     }
+    file.write_all(&bytes)
+        .map_err(|e| model_err(format!("cannot write hidden {}: {e}", path.display())))?;
     file.flush()
         .map_err(|e| model_err(format!("cannot flush hidden {}: {e}", path.display())))?;
-    Ok((format!("{:x}", digest.finalize()), values.len() * 4))
+    let mut digest = Sha256::new();
+    digest.update(&bytes);
+    Ok((format!("{:x}", digest.finalize()), bytes.len()))
 }
 
 /// Deterministic per-expert first-N retention for one token.
@@ -362,7 +365,6 @@ fn expert_batched_down(
     h: usize,
     inter: usize,
     expert_down_out: &mut [f32],
-    _x_g: &mut [f32],
     gu_out: &mut [f32],
     act: &mut [f32],
     w_gu: &mut [f32],
@@ -408,8 +410,8 @@ fn expert_batched_down(
 /// Expert GEMMs run in parallel; residual scatter is serial and applies each
 /// token's experts in **route top-k slot order** so float accumulation matches
 /// scalar `moe_combine` (route membership stays bitwise-stable).
-fn moe_routed_experts_parallel(
-    layer: &mut LoadedLayer,
+pub fn moe_routed_experts_parallel(
+    experts: &mut [ExpertWeights],
     expert_members: &[Vec<(usize, f32)>],
     routes: &[(Vec<u32>, Vec<f32>)],
     all_router_in: &[f32],
@@ -418,77 +420,57 @@ fn moe_routed_experts_parallel(
     inter: usize,
     moe_out: &mut [f32],
 ) -> Result<()> {
+    if experts.len() != QWEN80_EXPERTS || expert_members.len() != QWEN80_EXPERTS {
+        return Err(model_err("moe_routed_experts_parallel expert table size"));
+    }
     // Active experts only.
     let active: Vec<usize> = (0..QWEN80_EXPERTS)
         .filter(|&e| !expert_members[e].is_empty())
         .collect();
     for e in 0..QWEN80_EXPERTS {
         if expert_members[e].is_empty() {
-            layer.experts[e].gate = Vec::new();
-            layer.experts[e].up = Vec::new();
-            layer.experts[e].down = Vec::new();
+            experts[e].gate = Vec::new();
+            experts[e].up = Vec::new();
+            experts[e].down = Vec::new();
         }
     }
     if active.is_empty() {
         return Ok(());
     }
 
-    // Per-expert unweighted down outputs (empty for inactive).
-    let mut expert_down: Vec<Vec<f32>> = (0..QWEN80_EXPERTS).map(|_| Vec::new()).collect();
-    let max_by_mem = if total_tokens > 40_000 {
-        2usize
-    } else if total_tokens > 4_000 {
-        4
-    } else {
-        8
-    };
-    let n_workers = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(4)
-        .clamp(1, max_by_mem)
-        .min(active.len());
+    // Per-active-expert down slots. `chunks_mut` gives each worker a disjoint
+    // exclusive borrow — no second copy of the T×top_k×h buffer.
+    let mut active_down: Vec<Vec<f32>> = active
+        .iter()
+        .map(|&e| vec![0.0f32; expert_members[e].len() * h])
+        .collect();
+    let n_workers = moe_worker_count(total_tokens, active.len());
 
     let err: Mutex<Option<String>> = Mutex::new(None);
-    // Each worker returns (expert_id, down_out) pairs for its shard.
-    let mut worker_results: Vec<Vec<(usize, Vec<f32>)>> =
-        (0..n_workers).map(|_| Vec::new()).collect();
     {
-        let experts: &[ExpertWeights] = &layer.experts;
+        let experts: &[ExpertWeights] = experts;
+        let chunk = active.len().div_ceil(n_workers);
         std::thread::scope(|scope| {
-            let chunk = active.len().div_ceil(n_workers);
-            for (wi, result_slot) in worker_results.iter_mut().enumerate() {
+            for (wi, down_chunk) in active_down.chunks_mut(chunk).enumerate() {
                 let start = wi * chunk;
-                if start >= active.len() {
-                    break;
-                }
-                let end = (start + chunk).min(active.len());
-                let my_experts = &active[start..end];
+                let my_ids = &active[start..start + down_chunk.len()];
                 let expert_members = expert_members;
                 let all_router_in = all_router_in;
                 let err = &err;
                 scope.spawn(move || {
-                    let max_n = my_experts
-                        .iter()
-                        .map(|&e| expert_members[e].len())
-                        .max()
-                        .unwrap_or(0);
-                    let mut x_g = vec![0.0f32; max_n * h];
-                    let mut gu_out = vec![0.0f32; max_n * 2 * inter];
-                    let mut act = vec![0.0f32; max_n * inter];
+                    let mut gu_out = vec![0.0f32; 2 * inter];
+                    let mut act = vec![0.0f32; inter];
                     let mut w_gu = vec![0.0f32; 2 * inter * h];
                     let mut w_down = vec![0.0f32; h * inter];
-                    let mut local: Vec<(usize, Vec<f32>)> = Vec::with_capacity(my_experts.len());
-                    for &e in my_experts {
-                        let n = expert_members[e].len();
-                        let mut out = vec![0.0f32; n * h];
+                    for (local, out) in down_chunk.iter_mut().enumerate() {
+                        let e = my_ids[local];
                         if let Err(err_e) = expert_batched_down(
                             &experts[e],
                             &expert_members[e],
                             all_router_in,
                             h,
                             inter,
-                            &mut out,
-                            &mut x_g,
+                            out,
                             &mut gu_out,
                             &mut act,
                             &mut w_gu,
@@ -499,9 +481,7 @@ fn moe_routed_experts_parallel(
                             }
                             return;
                         }
-                        local.push((e, out));
                     }
-                    *result_slot = local;
                 });
             }
         });
@@ -509,10 +489,9 @@ fn moe_routed_experts_parallel(
     if let Some(msg) = err.into_inner().unwrap_or(None) {
         return Err(model_err(msg));
     }
-    for wr in worker_results {
-        for (e, out) in wr {
-            expert_down[e] = out;
-        }
+    let mut expert_down: Vec<Vec<f32>> = (0..QWEN80_EXPERTS).map(|_| Vec::new()).collect();
+    for (i, &e) in active.iter().enumerate() {
+        expert_down[e] = std::mem::take(&mut active_down[i]);
     }
 
     // local_of[e][token] = row in expert_down[e]
@@ -540,9 +519,9 @@ fn moe_routed_experts_parallel(
     }
 
     for e in 0..QWEN80_EXPERTS {
-        layer.experts[e].gate = Vec::new();
-        layer.experts[e].up = Vec::new();
-        layer.experts[e].down = Vec::new();
+        experts[e].gate = Vec::new();
+        experts[e].up = Vec::new();
+        experts[e].down = Vec::new();
         expert_down[e] = Vec::new();
     }
     Ok(())
@@ -1713,6 +1692,21 @@ fn deltanet_mixer_step(
     state: &mut DeltaNetState,
     layout: &Qwen80CanonicalLinearDeltaNetLayout,
 ) -> Result<Vec<f32>> {
+    deltanet_mixer_step_with_weights(layer, hidden, state, layout, None, None)
+}
+
+/// Same operator as [`deltanet_mixer_step`]. When `qkvz_f32` / `out_f32` are
+/// provided they must be the one-shot BF16→f32 widen of the matching
+/// projections; `gemm_f32` then matches the large-mat `gemv_bf16` path
+/// (`gemm_bf16` = widen + `gemm_f32`) without re-widening 50 MiB per token.
+fn deltanet_mixer_step_with_weights(
+    layer: &LoadedLayer,
+    hidden: &[f32],
+    state: &mut DeltaNetState,
+    layout: &Qwen80CanonicalLinearDeltaNetLayout,
+    qkvz_f32: Option<&[f32]>,
+    out_f32: Option<&[f32]>,
+) -> Result<Vec<f32>> {
     let qkvz_w = layer
         .in_proj_qkvz
         .as_ref()
@@ -1747,13 +1741,30 @@ fn deltanet_mixer_step(
     let ba_rows = layout.ba_projection_elements()?;
     let mut projected_qkvz = vec![0.0f32; qkvz_rows];
     let mut projected_ba = vec![0.0f32; ba_rows];
-    gemv_bf16(
-        qkvz_w,
-        qkvz_rows,
-        QWEN80_HIDDEN,
-        &input_rms,
-        &mut projected_qkvz,
-    )?;
+    if let Some(w) = qkvz_f32 {
+        if w.len() < qkvz_rows * QWEN80_HIDDEN {
+            return Err(model_err("pre-widened qkvz is short"));
+        }
+        gemm_f32(
+            w,
+            qkvz_rows,
+            QWEN80_HIDDEN,
+            &input_rms,
+            1,
+            &mut projected_qkvz,
+        )?;
+    } else {
+        gemv_bf16(
+            qkvz_w,
+            qkvz_rows,
+            QWEN80_HIDDEN,
+            &input_rms,
+            &mut projected_qkvz,
+        )?;
+    }
+    // BA is 64×2048 — below gemv_bf16's widen threshold — so the scalar
+    // path is on-the-fly convert. Keep that association; do not switch to
+    // widen+sgemm (would reassociate and can flip later-layer routes).
     gemv_bf16(ba_w, ba_rows, QWEN80_HIDDEN, &input_rms, &mut projected_ba)?;
 
     let (raw_query, raw_key, raw_value, z) =
@@ -1814,19 +1825,201 @@ fn deltanet_mixer_step(
         layout.value_head_dim,
     )?;
     let mut mixer_output = vec![0.0f32; QWEN80_HIDDEN];
-    gemv_bf16(
-        out_proj,
-        QWEN80_HIDDEN,
-        raw_value_len,
-        &gated_output,
-        &mut mixer_output,
-    )?;
+    if let Some(w) = out_f32 {
+        if w.len() < QWEN80_HIDDEN * raw_value_len {
+            return Err(model_err("pre-widened out_proj is short"));
+        }
+        gemm_f32(
+            w,
+            QWEN80_HIDDEN,
+            raw_value_len,
+            &gated_output,
+            1,
+            &mut mixer_output,
+        )?;
+    } else {
+        gemv_bf16(
+            out_proj,
+            QWEN80_HIDDEN,
+            raw_value_len,
+            &gated_output,
+            &mut mixer_output,
+        )?;
+    }
     let mut residual = hidden.to_vec();
     add_inplace(&mut residual, &mixer_output);
     if residual.iter().any(|v| !v.is_finite()) {
         return Err(model_err("DeltaNet residual non-finite"));
     }
     Ok(residual)
+}
+
+/// DeltaNet prefill for one probe: widen QKVZ/out once, then the sequential
+/// recurrence. `router_in_out` is `[seq, hidden]` post-attention RMSNorm.
+fn deltanet_mixer_prefill_probe(
+    layer: &LoadedLayer,
+    hidden: &mut [f32],
+    seq_len: usize,
+    layout: &Qwen80CanonicalLinearDeltaNetLayout,
+    qkvz_f32: &[f32],
+    out_f32: &[f32],
+    router_in_out: &mut [f32],
+) -> Result<()> {
+    let h = QWEN80_HIDDEN;
+    if hidden.len() != seq_len * h || router_in_out.len() != seq_len * h {
+        return Err(model_err("deltanet_mixer_prefill_probe geometry"));
+    }
+    let mut state = DeltaNetState::zero(layout)?;
+    for pos in 0..seq_len {
+        let x_in = hidden[pos * h..(pos + 1) * h].to_vec();
+        let first = deltanet_mixer_step_with_weights(
+            layer,
+            &x_in,
+            &mut state,
+            layout,
+            Some(qkvz_f32),
+            Some(out_f32),
+        )?;
+        hidden[pos * h..(pos + 1) * h].copy_from_slice(&first);
+        let rin = source_qwen80_residual_rms_norm(&first, &layer.post_attention_layernorm)?;
+        router_in_out[pos * h..(pos + 1) * h].copy_from_slice(&rin);
+    }
+    Ok(())
+}
+
+/// Worker count for the per-probe mixer. DeltaNet steps are M=1 GEMVs (our
+/// pool should own the cores). GQA prefill uses large sgemm on long probes,
+/// so we keep a small worker count and let Accelerate use the rest.
+fn mixer_probe_workers(n_probes: usize, kind: LayerKind) -> usize {
+    if n_probes == 0 {
+        return 1;
+    }
+    let available = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .max(1);
+    match kind {
+        LayerKind::LinearDeltaNet => available.min(n_probes),
+        LayerKind::FullAttentionGqa => available.clamp(1, 4).min(n_probes),
+    }
+}
+
+/// Mixer over every probe. DeltaNet widens QKVZ/out once and shares the f32
+/// weights; recurrence stays sequential inside each probe. GQA keeps its
+/// existing per-probe batched prefill. Probes are independent.
+fn mix_probes_parallel(
+    layer: &LoadedLayer,
+    probes: &[(String, Vec<u32>)],
+    hiddens: &mut [ProbeHidden],
+    all_router_in: &mut [f32],
+    layer_idx: usize,
+    h: usize,
+    linear_layout: &Qwen80CanonicalLinearDeltaNetLayout,
+    gqa_layout: &Qwen80CanonicalGqaLayout,
+) -> Result<()> {
+    if hiddens.len() != probes.len() {
+        return Err(model_err("mix_probes_parallel hiddens/probes mismatch"));
+    }
+    for (pi, (_, tokens)) in probes.iter().enumerate() {
+        if hiddens[pi].len() != tokens.len() * h {
+            return Err(model_err(format!(
+                "layer {layer_idx} probe {pi}: hidden len {} != {}*{h}",
+                hiddens[pi].len(),
+                tokens.len()
+            )));
+        }
+    }
+
+    let qkvz_f32;
+    let out_f32;
+    if layer.kind == LayerKind::LinearDeltaNet {
+        let qkvz_rows = linear_layout.qkvz_projection_elements()?;
+        let out_cols = linear_layout.value_elements()?;
+        let qkvz_w = layer
+            .in_proj_qkvz
+            .as_ref()
+            .ok_or_else(|| model_err("missing in_proj_qkvz"))?;
+        let out_w = layer
+            .out_proj_linear
+            .as_ref()
+            .ok_or_else(|| model_err("missing linear out_proj"))?;
+        qkvz_f32 = Some(widen_bf16_mat(qkvz_w, qkvz_rows, h)?);
+        out_f32 = Some(widen_bf16_mat(out_w, h, out_cols)?);
+    } else {
+        qkvz_f32 = None;
+        out_f32 = None;
+    }
+
+    let n_workers = mixer_probe_workers(probes.len(), layer.kind);
+    let chunk = probes.len().div_ceil(n_workers).max(1);
+    let err: Mutex<Option<String>> = Mutex::new(None);
+    std::thread::scope(|scope| {
+        let mut hidden_rest = hiddens;
+        let mut router_rest = all_router_in;
+        let mut probe_idx = 0usize;
+        for _wi in 0..n_workers {
+            if probe_idx >= probes.len() {
+                break;
+            }
+            let take = chunk.min(probes.len() - probe_idx);
+            let (hid, hid_tail) = hidden_rest.split_at_mut(take);
+            hidden_rest = hid_tail;
+            let router_elems: usize = hid.iter().map(|row| row.len()).sum();
+            let (rin, rin_tail) = router_rest.split_at_mut(router_elems);
+            router_rest = rin_tail;
+            let my_probes = &probes[probe_idx..probe_idx + take];
+            let qkvz_f32 = qkvz_f32.as_deref();
+            let out_f32 = out_f32.as_deref();
+            let err = &err;
+            scope.spawn(move || {
+                let mut rin_off = 0usize;
+                for (local, (_, tokens)) in my_probes.iter().enumerate() {
+                    let seq_len = tokens.len();
+                    let hidden = &mut hid[local];
+                    let rin_slice = &mut rin[rin_off..rin_off + seq_len * h];
+                    rin_off += seq_len * h;
+                    if seq_len == 0 {
+                        continue;
+                    }
+                    let r = match layer.kind {
+                        LayerKind::LinearDeltaNet => deltanet_mixer_prefill_probe(
+                            layer,
+                            hidden,
+                            seq_len,
+                            linear_layout,
+                            qkvz_f32.expect("qkvz widened"),
+                            out_f32.expect("out widened"),
+                            rin_slice,
+                        ),
+                        LayerKind::FullAttentionGqa => gqa_mixer_prefill_probe(
+                            layer, hidden, seq_len, gqa_layout,
+                        )
+                        .and_then(|_| {
+                            for pos in 0..seq_len {
+                                let normed = source_qwen80_residual_rms_norm(
+                                    &hidden[pos * h..(pos + 1) * h],
+                                    &layer.post_attention_layernorm,
+                                )?;
+                                rin_slice[pos * h..(pos + 1) * h].copy_from_slice(&normed);
+                            }
+                            Ok(())
+                        }),
+                    };
+                    if let Err(e) = r {
+                        if let Ok(mut g) = err.lock() {
+                            *g = Some(e.to_string());
+                        }
+                        return;
+                    }
+                }
+            });
+            probe_idx += take;
+        }
+    });
+    if let Some(msg) = err.into_inner().unwrap_or(None) {
+        return Err(model_err(msg));
+    }
+    Ok(())
 }
 
 /// One GQA mixer step through first residual.
@@ -2211,6 +2404,82 @@ pub fn logits_from_final_hidden(index: &SourceBf16Index, hidden: &[f32]) -> Resu
     Ok(logits)
 }
 
+/// Per-phase wall-clock buckets summed over the layers that actually ran.
+///
+/// These are host `Instant` intervals around the named sections of
+/// [`capture_all_layers`]. They do not include weight load (`StreamTelemetry::load_secs`).
+#[derive(Clone, Debug, Default)]
+pub struct CapturePhaseTiming {
+    pub mixer_secs: f64,
+    pub router_widen_secs: f64,
+    pub router_gemm_secs: f64,
+    pub routing_secs: f64,
+    pub shared_expert_secs: f64,
+    pub routed_expert_secs: f64,
+    pub combine_secs: f64,
+    pub residual_secs: f64,
+    pub retention_flush_secs: f64,
+    /// Workers used for the routed-expert wave (last layer; same formula every layer).
+    pub moe_workers: usize,
+    /// High-water `peak_rss_bytes()` observed immediately after the routed-expert wave.
+    pub peak_rss_after_routed_bytes: u64,
+}
+
+impl CapturePhaseTiming {
+    /// Sum of the named compute phases (excludes load).
+    pub fn compute_phases_secs(&self) -> f64 {
+        self.mixer_secs
+            + self.router_widen_secs
+            + self.router_gemm_secs
+            + self.routing_secs
+            + self.shared_expert_secs
+            + self.routed_expert_secs
+            + self.combine_secs
+            + self.residual_secs
+            + self.retention_flush_secs
+    }
+
+    /// Human-readable table: seconds and percent of `compute_secs`.
+    pub fn format_table(&self, compute_secs: f64) -> String {
+        let denom = if compute_secs > 0.0 {
+            compute_secs
+        } else {
+            self.compute_phases_secs()
+        };
+        let row = |name: &str, secs: f64| {
+            let pct = if denom > 0.0 {
+                100.0 * secs / denom
+            } else {
+                0.0
+            };
+            format!("{name:<22} {secs:10.3} s  {pct:6.2}%")
+        };
+        let lines = vec![
+            row("mixer", self.mixer_secs),
+            row("router_widen", self.router_widen_secs),
+            row("router_gemm", self.router_gemm_secs),
+            row("routing", self.routing_secs),
+            row("shared_expert", self.shared_expert_secs),
+            row("routed_expert_wave", self.routed_expert_secs),
+            row("combine", self.combine_secs),
+            row("residual", self.residual_secs),
+            row("retention_flush", self.retention_flush_secs),
+            format!(
+                "{:<22} {:10.3} s  {:>6}",
+                "phases_sum",
+                self.compute_phases_secs(),
+                ""
+            ),
+            format!("moe_workers             {:>10}", self.moe_workers),
+            format!(
+                "peak_rss_after_routed   {:>10.3} GiB",
+                self.peak_rss_after_routed_bytes as f64 / (1024.0 * 1024.0 * 1024.0)
+            ),
+        ];
+        lines.join("\n")
+    }
+}
+
 /// Timing / bandwidth telemetry for one full layer-major pass.
 #[derive(Clone, Debug, Default)]
 pub struct StreamTelemetry {
@@ -2222,6 +2491,7 @@ pub struct StreamTelemetry {
     pub wall_secs: f64,
     pub max_layer_resident_bytes: u64,
     pub peak_rss_bytes: u64,
+    pub phase: CapturePhaseTiming,
 }
 
 impl StreamTelemetry {
@@ -2246,6 +2516,130 @@ impl StreamTelemetry {
         }
         self.load_secs / compute_per_token
     }
+}
+
+/// Optional `HAWKING_Q80_CAPTURE_MAX_LAYERS` (clamped to `1..=QWEN80_LAYERS`).
+pub fn capture_layer_limit() -> usize {
+    env_usize("HAWKING_Q80_CAPTURE_MAX_LAYERS")
+        .map(|n| n.clamp(1, QWEN80_LAYERS))
+        .unwrap_or(QWEN80_LAYERS)
+}
+
+/// Optional `HAWKING_Q80_MOE_WORKERS` override for the routed-expert wave.
+pub fn moe_worker_override() -> Option<usize> {
+    env_usize("HAWKING_Q80_MOE_WORKERS").filter(|&n| n >= 1)
+}
+
+fn env_usize(name: &str) -> Option<usize> {
+    std::env::var(name).ok().and_then(|s| s.parse().ok())
+}
+
+/// Historical worker cap, calibrated when all 48 layers' retained hiddens
+/// stayed resident. Retained as documentation; the live cap is
+/// [`moe_worker_count_at_rss`].
+pub fn legacy_moe_worker_mem_cap(total_tokens: usize) -> usize {
+    if total_tokens > 40_000 {
+        2
+    } else if total_tokens > 4_000 {
+        4
+    } else {
+        8
+    }
+}
+
+/// Per-worker scratch after the unused `max_n`-scaled buffers were dropped:
+/// gate/up widen + down widen + 1-token SwiGLU temps.
+pub fn moe_worker_scratch_bytes_per_worker() -> usize {
+    let inter = QWEN80_MOE_INTERMEDIATE;
+    let h = QWEN80_HIDDEN;
+    (2 * inter * h + h * inter + 3 * inter).saturating_mul(4)
+}
+
+/// Unweighted routed-expert down buffers: `tokens × top_k × hidden × 4`.
+pub fn routed_expert_down_bytes(total_tokens: usize) -> usize {
+    total_tokens
+        .saturating_mul(QWEN80_TOP_K)
+        .saturating_mul(QWEN80_HIDDEN)
+        .saturating_mul(4)
+}
+
+/// Conservative working-set estimate for the MoE wave (layer experts +
+/// activations + expert_down + worker scratch + one layer of retained hiddens).
+/// Used to refuse a worker count that cannot fit under the streamed cap.
+pub fn moe_wave_working_set_bytes(
+    total_tokens: usize,
+    n_workers: usize,
+    max_hidden_tokens_per_expert: usize,
+) -> u64 {
+    let activations = total_tokens
+        .saturating_mul(QWEN80_HIDDEN)
+        .saturating_mul(4)
+        .saturating_mul(4) as u64; // router_in + moe_out + shared_down + residual
+    PER_LAYER_EXPERT_BF16_BYTES
+        + routed_expert_down_bytes(total_tokens) as u64
+        + (moe_worker_scratch_bytes_per_worker().saturating_mul(n_workers.max(1))) as u64
+        + activations
+        + worst_case_retained_hidden_bytes_per_layer(max_hidden_tokens_per_expert) as u64
+}
+
+/// Safety margin reserved under [`STREAMED_PEAK_RSS_HARD_CAP_BYTES`] when
+/// sizing the MoE worker pool (allocator slop + file-cache noise).
+pub const MOE_WORKER_RSS_MARGIN_BYTES: u64 = 512 * 1024 * 1024;
+
+/// Measured sweet spot for the routed-expert wave on this 28-core M3 Ultra:
+/// 8 workers beat 4 (1.43 s vs 2.17 s / layer at 4719 tokens) and 12+ regress
+/// (Accelerate M=1 GEMVs oversubscribe AMX). Not the stale 4-at-4k-tokens ladder.
+pub const MOE_WORKER_DEFAULT_CAP: usize = 8;
+
+/// Routed-expert worker count given a measured RSS and an optional request.
+/// Never returns a count whose scratch + expert_down would push `current_rss`
+/// over the hard cap. Does not read the environment (callers apply override).
+pub fn moe_worker_count_at_rss(
+    total_tokens: usize,
+    n_active: usize,
+    current_rss_bytes: u64,
+) -> usize {
+    moe_workers_for_request(total_tokens, n_active, current_rss_bytes, None)
+}
+
+/// Like [`moe_worker_count_at_rss`] with an explicit request (tests / override).
+pub fn moe_workers_for_request(
+    total_tokens: usize,
+    n_active: usize,
+    current_rss_bytes: u64,
+    requested: Option<usize>,
+) -> usize {
+    if n_active == 0 {
+        return 1;
+    }
+    let available = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .max(1);
+    let requested = requested
+        .unwrap_or(available.min(MOE_WORKER_DEFAULT_CAP))
+        .clamp(1, n_active);
+
+    let per = moe_worker_scratch_bytes_per_worker() as u64;
+    let down = routed_expert_down_bytes(total_tokens) as u64;
+    let cap = STREAMED_PEAK_RSS_HARD_CAP_BYTES;
+    let headroom = cap
+        .saturating_sub(current_rss_bytes)
+        .saturating_sub(MOE_WORKER_RSS_MARGIN_BYTES);
+    let after_down = headroom.saturating_sub(down);
+    let max_by_mem = (after_down / per.max(1)).max(1) as usize;
+    requested.min(max_by_mem).max(1)
+}
+
+/// Routed-expert worker count using live `peak_rss_bytes()` and optional
+/// `HAWKING_Q80_MOE_WORKERS` (still memory-clamped).
+pub fn moe_worker_count(total_tokens: usize, n_active: usize) -> usize {
+    moe_workers_for_request(
+        total_tokens,
+        n_active,
+        peak_rss_bytes(),
+        moe_worker_override(),
+    )
 }
 
 /// Layer-major full forward over all probes.
@@ -2284,11 +2678,12 @@ pub fn capture_all_layers(
         return Err(model_err("hiddens/probes length mismatch"));
     }
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
+    let n_layers = capture_layer_limit();
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
         .map(|(_, toks)| {
             (0..toks.len())
-                .map(|_| Vec::with_capacity(QWEN80_LAYERS))
+                .map(|_| Vec::with_capacity(n_layers))
                 .collect()
         })
         .collect();
@@ -2296,7 +2691,7 @@ pub fn capture_all_layers(
     let wall0 = Instant::now();
     let bytes0 = index.bytes_read_total();
     let mut telem = StreamTelemetry {
-        layers: QWEN80_LAYERS,
+        layers: n_layers,
         tokens: total_tokens,
         ..Default::default()
     };
@@ -2313,7 +2708,7 @@ pub fn capture_all_layers(
     let mut router_logits = vec![0.0f32; total_tokens * QWEN80_EXPERTS];
     let mut moe_out = vec![0.0f32; total_tokens * h];
 
-    for layer_idx in 0..QWEN80_LAYERS {
+    for layer_idx in 0..n_layers {
         let load_t0 = Instant::now();
         let mut layer = LoadedLayer::load(index, layer_idx)?;
         telem.load_secs += load_t0.elapsed().as_secs_f64();
@@ -2325,67 +2720,30 @@ pub fn capture_all_layers(
 
         // token_index[t] = (probe_i, pos); flat order is the first-N retention domain.
         let mut token_index: Vec<(usize, usize)> = Vec::with_capacity(total_tokens);
-        let mut flat_t = 0usize;
-
-        // --- Phase 1: mixer per probe, collect router inputs. ---
-        match layer.kind {
-            LayerKind::LinearDeltaNet => {
-                // Sequential WITHIN each probe (recurrence). Across probes is free
-                // because each probe has independent DeltaNet state.
-                for (pi, (_, tokens)) in probes.iter().enumerate() {
-                    let seq_len = tokens.len();
-                    if seq_len == 0 {
-                        continue;
-                    }
-                    let hidden = &mut hiddens[pi];
-                    if hidden.len() != seq_len * h {
-                        return Err(model_err(format!(
-                            "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
-                            hidden.len()
-                        )));
-                    }
-                    let mut state = DeltaNetState::zero(&linear_layout)?;
-                    for pos in 0..seq_len {
-                        let x_in = hidden[pos * h..(pos + 1) * h].to_vec();
-                        let first = deltanet_mixer_step(&layer, &x_in, &mut state, &linear_layout)?;
-                        hidden[pos * h..(pos + 1) * h].copy_from_slice(&first);
-                        let rin = source_qwen80_residual_rms_norm(
-                            &first,
-                            &layer.post_attention_layernorm,
-                        )?;
-                        all_router_in[flat_t * h..(flat_t + 1) * h].copy_from_slice(&rin);
-                        token_index.push((pi, pos));
-                        flat_t += 1;
-                    }
+        {
+            let mut acc = 0usize;
+            for (pi, (_, tokens)) in probes.iter().enumerate() {
+                for pos in 0..tokens.len() {
+                    token_index.push((pi, pos));
                 }
+                acc += tokens.len();
             }
-            LayerKind::FullAttentionGqa => {
-                for (pi, (_, tokens)) in probes.iter().enumerate() {
-                    let seq_len = tokens.len();
-                    if seq_len == 0 {
-                        continue;
-                    }
-                    let hidden = &mut hiddens[pi];
-                    if hidden.len() != seq_len * h {
-                        return Err(model_err(format!(
-                            "layer {layer_idx} probe {pi}: hidden len {} != {seq_len}*{h}",
-                            hidden.len()
-                        )));
-                    }
-                    gqa_mixer_prefill_probe(&layer, hidden, seq_len, &gqa_layout)?;
-                    for pos in 0..seq_len {
-                        let rin = source_qwen80_residual_rms_norm(
-                            &hidden[pos * h..(pos + 1) * h],
-                            &layer.post_attention_layernorm,
-                        )?;
-                        all_router_in[flat_t * h..(flat_t + 1) * h].copy_from_slice(&rin);
-                        token_index.push((pi, pos));
-                        flat_t += 1;
-                    }
-                }
-            }
+            debug_assert_eq!(acc, total_tokens);
         }
-        debug_assert_eq!(flat_t, total_tokens);
+
+        // --- Phase 1: mixer per probe (parallel across probes), collect router inputs. ---
+        let mixer_t0 = Instant::now();
+        mix_probes_parallel(
+            &layer,
+            probes,
+            hiddens,
+            &mut all_router_in,
+            layer_idx,
+            h,
+            &linear_layout,
+            &gqa_layout,
+        )?;
+        telem.phase.mixer_secs += mixer_t0.elapsed().as_secs_f64();
 
         // Free mixer BF16 payloads before MoE (experts still needed).
         layer.in_proj_qkvz = None;
@@ -2397,8 +2755,11 @@ pub fn capture_all_layers(
         layer.o_proj = None;
 
         // --- Phase 2: router — widen once, per-token M=1 matvec (matches scalar). ---
+        let widen_t0 = Instant::now();
         let router_w = widen_bf16_mat(&layer.router, QWEN80_EXPERTS, h)?;
         layer.router = Vec::new();
+        telem.phase.router_widen_secs += widen_t0.elapsed().as_secs_f64();
+        let rgemm_t0 = Instant::now();
         for t in 0..total_tokens {
             gemm_f32(
                 &router_w,
@@ -2410,7 +2771,9 @@ pub fn capture_all_layers(
             )?;
         }
         drop(router_w);
+        telem.phase.router_gemm_secs += rgemm_t0.elapsed().as_secs_f64();
 
+        let routing_t0 = Instant::now();
         let mut routes: Vec<(Vec<u32>, Vec<f32>)> = Vec::with_capacity(total_tokens);
         let mut expert_members: Vec<Vec<(usize, f32)>> = vec![Vec::new(); QWEN80_EXPERTS];
         for t in 0..total_tokens {
@@ -2424,11 +2787,13 @@ pub fn capture_all_layers(
             }
             routes.push((ids, weights));
         }
+        telem.phase.routing_secs += routing_t0.elapsed().as_secs_f64();
 
         // --- Phase 3: shared expert (compute only) + parallel routed GEMMs,
         //     then residual combine in scalar order: routed (route-slot order)
         //     then shared*gate. ---
         moe_out.fill(0.0);
+        let shared_t0 = Instant::now();
         let (shared_down, gate_vals) =
             shared_expert_batched(&layer, &all_router_in, total_tokens, h, shared_inter)?;
         // Drop shared BF16 after use.
@@ -2436,9 +2801,14 @@ pub fn capture_all_layers(
         layer.shared_up = Vec::new();
         layer.shared_down = Vec::new();
         layer.shared_expert_gate = Vec::new();
+        telem.phase.shared_expert_secs += shared_t0.elapsed().as_secs_f64();
 
+        let n_active = expert_members.iter().filter(|m| !m.is_empty()).count();
+        telem.phase.moe_workers = moe_worker_count(total_tokens, n_active);
+
+        let routed_t0 = Instant::now();
         moe_routed_experts_parallel(
-            &mut layer,
+            &mut layer.experts,
             &expert_members,
             &routes,
             &all_router_in,
@@ -2447,7 +2817,14 @@ pub fn capture_all_layers(
             inter,
             &mut moe_out,
         )?;
+        telem.phase.routed_expert_secs += routed_t0.elapsed().as_secs_f64();
+        telem.phase.peak_rss_after_routed_bytes = telem
+            .phase
+            .peak_rss_after_routed_bytes
+            .max(peak_rss_bytes());
+
         // shared * sigmoid(gate) last — matches scalar moe_combine.
+        let combine_t0 = Instant::now();
         for t in 0..total_tokens {
             let g = gate_vals[t];
             let src = &shared_down[t * h..(t + 1) * h];
@@ -2456,6 +2833,7 @@ pub fn capture_all_layers(
                 dst[j] += src[j] * g;
             }
         }
+        telem.phase.combine_secs += combine_t0.elapsed().as_secs_f64();
 
         // Apply MoE residual, then record captures. Hidden retention is decided
         // here, after top-k routing is known: first N tokens (global order) that
@@ -2464,6 +2842,7 @@ pub fn capture_all_layers(
         // co-routing may therefore give popular experts more than N rows, which
         // is a floor-not-ceiling. Route membership is always recorded.
         // expert_retained is sized from QWEN80_EXPERTS (512), never a Q30 constant.
+        let residual_t0 = Instant::now();
         for (t, &(pi, pos)) in token_index.iter().enumerate() {
             add_inplace(
                 &mut hiddens[pi][pos * h..(pos + 1) * h],
@@ -2478,6 +2857,8 @@ pub fn capture_all_layers(
                 )));
             }
         }
+        telem.phase.residual_secs += residual_t0.elapsed().as_secs_f64();
+        let flush_t0 = Instant::now();
         append_retained_layer_captures(
             &mut captures,
             &token_index,
@@ -2493,6 +2874,7 @@ pub fn capture_all_layers(
         }
         release_layer_retained_hiddens(&mut captures, layer_idx);
         debug_assert_eq!(resident_retained_hidden_bytes(&captures), 0);
+        telem.phase.retention_flush_secs += flush_t0.elapsed().as_secs_f64();
 
         telem.compute_secs += comp_t0.elapsed().as_secs_f64();
         drop(layer);
@@ -2503,10 +2885,24 @@ pub fn capture_all_layers(
                 telem.peak_rss_bytes, STREAMED_PEAK_RSS_HARD_CAP_BYTES
             )));
         }
+        eprintln!(
+            "  layer {layer_idx:02}/{} compute={:.2}s rss={:.2} GiB workers={}",
+            n_layers.saturating_sub(1),
+            comp_t0.elapsed().as_secs_f64(),
+            telem.peak_rss_bytes as f64 / (1024.0 * 1024.0 * 1024.0),
+            telem.phase.moe_workers
+        );
     }
     telem.weight_bytes_read = index.bytes_read_total().saturating_sub(bytes0);
     telem.wall_secs = wall0.elapsed().as_secs_f64();
     telem.peak_rss_bytes = telem.peak_rss_bytes.max(peak_rss_bytes());
+    eprintln!(
+        "capture phase table ({} layers, {} tokens, compute={:.3}s):\n{}",
+        telem.layers,
+        telem.tokens,
+        telem.compute_secs,
+        telem.phase.format_table(telem.compute_secs)
+    );
     Ok((captures, telem))
 }
 

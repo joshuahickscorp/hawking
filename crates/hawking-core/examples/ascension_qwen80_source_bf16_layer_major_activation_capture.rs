@@ -384,8 +384,13 @@ mod macos {
     /// Matches the repack's collect path: a retained token contributes one row to
     /// every expert in its top-k for that layer. Sized from QWEN80_EXPERTS (512).
     fn n_fit_distribution(captures: &[Vec<Vec<LayerTokenCapture>>]) -> Value {
-        let mut counts: Vec<usize> = Vec::with_capacity(QWEN80_LAYERS * QWEN80_EXPERTS);
-        for layer in 0..QWEN80_LAYERS {
+        let n_layers = captures
+            .first()
+            .and_then(|p| p.first())
+            .map(|t| t.len())
+            .unwrap_or(0);
+        let mut counts: Vec<usize> = Vec::with_capacity(n_layers * QWEN80_EXPERTS);
+        for layer in 0..n_layers {
             let mut per_expert = vec![0usize; QWEN80_EXPERTS];
             for probe_caps in captures {
                 for token_caps in probe_caps {
@@ -415,7 +420,7 @@ mod macos {
             "unit": "retained_hidden_rows_per_layer_expert",
             "n_layer_expert_pairs": n,
             "experts": QWEN80_EXPERTS,
-            "layers": QWEN80_LAYERS,
+            "layers": n_layers,
             "p10": percentile_sorted(&sorted, 10.0),
             "p50": percentile_sorted(&sorted, 50.0),
             "p90": percentile_sorted(&sorted, 90.0),
@@ -626,6 +631,22 @@ mod macos {
         let mut on_layer_flush = |layer_idx: usize,
                                   captures: &mut [Vec<Vec<LayerTokenCapture>>]|
          -> hawking_core::Result<()> {
+            // Placeholder slot per token so hidden_writes[pi][pos][layer] is dense.
+            for (pi, (_, token_ids)) in probes.iter().enumerate() {
+                for slot in hidden_writes[pi].iter_mut().take(token_ids.len()) {
+                    slot.push(None);
+                }
+            }
+            for (probe_id, _) in probes.iter() {
+                let dir = output_dir.join(format!("hidden/L{layer_idx:02}/{probe_id}"));
+                std::fs::create_dir_all(&dir).map_err(|e| {
+                    hawking_core::Error::Model(format!(
+                        "cannot create hidden dir {}: {e}",
+                        dir.display()
+                    ))
+                })?;
+            }
+            let mut jobs: Vec<(usize, usize, String)> = Vec::new();
             for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
                 for pos in 0..token_ids.len() {
                     let cap = captures
@@ -637,34 +658,72 @@ mod macos {
                                 "flush missing capture {probe_id}@{pos} L{layer_idx}"
                             ))
                         })?;
-                    if cap.hidden_retained {
-                        if cap.router_input_hidden.len() != QWEN80_HIDDEN {
-                            return Err(hawking_core::Error::Model(format!(
-                                "{probe_id}@{pos} L{layer_idx}: retained hidden width {} != {QWEN80_HIDDEN}",
-                                cap.router_input_hidden.len()
-                            )));
-                        }
-                        let hidden_relative =
-                            retained_hidden_relative_path(layer_idx, probe_id, pos);
-                        let (hidden_sha256, hidden_bytes) = write_retained_hidden_f32le(
-                            &output_dir.join(&hidden_relative),
-                            &cap.router_input_hidden,
-                        )?;
-                        hidden_bytes_written = hidden_bytes_written.saturating_add(hidden_bytes);
-                        hidden_rows_retained_total = hidden_rows_retained_total.saturating_add(1);
-                        if layer_idx < QWEN80_LAYERS {
-                            hidden_rows_per_layer[layer_idx] =
-                                hidden_rows_per_layer[layer_idx].saturating_add(1);
-                        }
-                        hidden_writes[pi][pos].push(Some((
-                            hidden_relative,
-                            hidden_sha256,
-                            hidden_bytes,
-                            cap.router_input_hidden.len(),
-                        )));
-                    } else {
-                        hidden_writes[pi][pos].push(None);
+                    if !cap.hidden_retained {
+                        continue;
                     }
+                    if cap.router_input_hidden.len() != QWEN80_HIDDEN {
+                        return Err(hawking_core::Error::Model(format!(
+                            "{probe_id}@{pos} L{layer_idx}: retained hidden width {} != {QWEN80_HIDDEN}",
+                            cap.router_input_hidden.len()
+                        )));
+                    }
+                    jobs.push((
+                        pi,
+                        pos,
+                        retained_hidden_relative_path(layer_idx, probe_id, pos),
+                    ));
+                }
+            }
+            let n_jobs = jobs.len();
+            if n_jobs > 0 {
+                let n_workers = std::thread::available_parallelism()
+                    .map(|n| n.get())
+                    .unwrap_or(4)
+                    .clamp(1, 16)
+                    .min(n_jobs);
+                let chunk = n_jobs.div_ceil(n_workers);
+                let mut results: Vec<Option<(String, usize, usize)>> = vec![None; n_jobs];
+                let err: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+                let caps: &[Vec<Vec<LayerTokenCapture>>] = captures;
+                std::thread::scope(|scope| {
+                    for (wi, result_chunk) in results.chunks_mut(chunk).enumerate() {
+                        let start = wi * chunk;
+                        let my_jobs = &jobs[start..start + result_chunk.len()];
+                        let err = &err;
+                        let output_dir = &output_dir;
+                        scope.spawn(move || {
+                            for (local, (pi, pos, rel)) in my_jobs.iter().enumerate() {
+                                let hidden = &caps[*pi][*pos][layer_idx].router_input_hidden;
+                                match write_retained_hidden_f32le(&output_dir.join(rel), hidden) {
+                                    Ok((sha, bytes)) => {
+                                        result_chunk[local] = Some((sha, bytes, hidden.len()));
+                                    }
+                                    Err(e) => {
+                                        if let Ok(mut g) = err.lock() {
+                                            *g = Some(e.to_string());
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+                if let Some(msg) = err.into_inner().unwrap_or(None) {
+                    return Err(hawking_core::Error::Model(msg));
+                }
+                for (job, res) in jobs.iter().zip(results.into_iter()) {
+                    let (sha, bytes, elems) = res.ok_or_else(|| {
+                        hawking_core::Error::Model("parallel hidden write missing result".into())
+                    })?;
+                    hidden_bytes_written = hidden_bytes_written.saturating_add(bytes);
+                    hidden_rows_retained_total = hidden_rows_retained_total.saturating_add(1);
+                    if layer_idx < QWEN80_LAYERS {
+                        hidden_rows_per_layer[layer_idx] =
+                            hidden_rows_per_layer[layer_idx].saturating_add(1);
+                    }
+                    hidden_writes[job.0][job.1][layer_idx] =
+                        Some((job.2.clone(), sha, bytes, elems));
                 }
             }
             refuse_if_resident_load(peak_rss_bytes());
@@ -685,13 +744,14 @@ mod macos {
         let mut tokens_executed = 0usize;
         let mut route_membership_total = 0usize;
 
+        let layers_executed = telem.layers;
         for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
             let mut steps = Vec::with_capacity(token_ids.len());
             for (pos, &token_id) in token_ids.iter().enumerate() {
                 let layer_caps = &captures[pi][pos];
-                if layer_caps.len() != QWEN80_LAYERS {
+                if layer_caps.len() != layers_executed {
                     fail(format!(
-                        "{probe_id}@{pos}: captured {} layers, expected {QWEN80_LAYERS}",
+                        "{probe_id}@{pos}: captured {} layers, expected {layers_executed}",
                         layer_caps.len()
                     ));
                 }
@@ -749,7 +809,7 @@ mod macos {
                     "position": pos,
                     "input_token_id": token_id,
                     "layers": layer_rows,
-                    "all_48_layers_executed": true,
+                    "all_48_layers_executed": layers_executed == QWEN80_LAYERS,
                     "final_norm_lm_head_sampler_executed": false,
                     "autoregressive_feedback_or_generation_not_executed": true,
                     "hidden_retained_for_this_token": any_layer_retained,
@@ -768,7 +828,7 @@ mod macos {
         refuse_if_resident_load(peak);
 
         let expected_route_slots = tokens_executed
-            .saturating_mul(QWEN80_LAYERS)
+            .saturating_mul(layers_executed)
             .saturating_mul(QWEN80_TOP_K);
         if route_membership_total != expected_route_slots {
             fail(format!(
@@ -839,6 +899,20 @@ mod macos {
                 "free_corpus_crossover_tokens": free_crossover,
                 "max_layer_resident_bytes": telem.max_layer_resident_bytes.max(max_layer_resident),
                 "tokens_executed": tokens_executed,
+                "layers_executed": layers_executed,
+                "moe_workers": telem.phase.moe_workers,
+                "phase_secs": {
+                    "mixer": telem.phase.mixer_secs,
+                    "router_widen": telem.phase.router_widen_secs,
+                    "router_gemm": telem.phase.router_gemm_secs,
+                    "routing": telem.phase.routing_secs,
+                    "shared_expert": telem.phase.shared_expert_secs,
+                    "routed_expert_wave": telem.phase.routed_expert_secs,
+                    "combine": telem.phase.combine_secs,
+                    "residual": telem.phase.residual_secs,
+                    "retention_flush": telem.phase.retention_flush_secs,
+                },
+                "peak_rss_after_routed_bytes": telem.phase.peak_rss_after_routed_bytes,
             },
             "bounded_storage": {
                 "strategy": "per_expert_first_n_router_input_hiddens_plus_full_route_membership",
@@ -867,7 +941,7 @@ mod macos {
             "capture_summary": {
                 "probe_count": probe_rows.len(),
                 "total_tokens": tokens_executed,
-                "layers_executed": QWEN80_LAYERS,
+                "layers_executed": layers_executed,
                 "broad_activation_diversity": true,
                 "all_layer_activation_capture": true,
                 "hidden_rows_retained_total": hidden_rows_retained_total,
