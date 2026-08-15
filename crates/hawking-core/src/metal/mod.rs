@@ -385,6 +385,9 @@ pub const SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP: &str =
 /// for traceable future device composition only; no Engine or HCLI path selects
 /// them until P4B/P6 composition has its own parity admission.
 pub const SHADER_DEEPSEEK_V4_P7: &str = include_str!("../../shaders/deepseek_v4_p7.metal");
+/// Compact top-6 device worklist for one DeepSeek-V4-Flash BOS token.
+pub const SHADER_DSV4F_NATIVE_TOKEN_GRAPH: &str =
+    include_str!("../../shaders/dsv4f_native_token_graph.metal");
 /// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
 /// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
 /// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
@@ -433,6 +436,7 @@ pub fn all_shader_sources() -> String {
         SHADER_GRAVITY_PQ,
         SHADER_DEEPSEEK_V4_P7,
     ];
+    srcs.push(SHADER_DSV4F_NATIVE_TOKEN_GRAPH);
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
     #[cfg(feature = "tq")]
@@ -1390,6 +1394,10 @@ mod imp {
                 "deepseek_v4_p7_ffn_rmsnorm_bf16_authority"
             }
             "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
+            "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "gemv_f32_moe" => "gemv_f32_moe",
             "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
             // indexed moe batched gemm variants
@@ -1648,8 +1656,8 @@ mod imp {
     mod static_kernel_name_tests {
         use super::static_kernel_name;
         use crate::metal::{
-            SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7, SHADER_GRAVITY_PQ,
-            SHADER_MATMUL, SHADER_MOE,
+            SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7,
+            SHADER_DSV4F_NATIVE_TOKEN_GRAPH, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE,
         };
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
@@ -4976,6 +4984,25 @@ mod imp {
         pub fn commit_and_wait(self) -> Result<()> {
             Err(Error::Metal("metal unavailable on this platform".into()))
         }
+
+        #[test]
+        fn dsv4f_native_token_graph_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "dsv4f_pack_worklist",
+                "dsv4f_worklist_fp4_matvec",
+                "dsv4f_worklist_swiglu",
+                "dsv4f_worklist_combine",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    crate::metal::SHADER_DSV4F_NATIVE_TOKEN_GRAPH
+                        .contains(&format!("kernel void {kernel}(")),
+                    "DSV4F native worklist kernel must remain in dsv4f_native_token_graph.metal"
+                );
+            }
+        }
+
     }
 }
 
