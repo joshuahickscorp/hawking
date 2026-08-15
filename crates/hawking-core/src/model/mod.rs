@@ -18,6 +18,16 @@ pub mod qwen30_complete_runtime;
 /// full 56.9 GiB source (separate resource contract from the co-resident gate).
 pub mod qwen30_source_bf16_layer_major;
 pub mod qwen80_source_bf16_layer_major;
+/// Velocity-track binding: uniform-Q4 catalog -> hybrid token-graph greedy decode.
+pub mod qwen80_uniform_q4_hybrid_decode;
+
+/// Memory-bounded DSV4F activation-X capture writer.
+///
+/// Deterministic per-(layer, expert) first-N retention, per-layer flush+free,
+/// Q80/doctor6-compatible on-disk shape. Not an Engine and not a 43-layer
+/// source forward — it records X that a later job (or a reduced synthetic
+/// probe) supplies.
+pub mod dsv4f_activation_capture;
 /// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
 /// all-layer diagnostic.  It is not an Engine or endpoint selection.
 pub mod qwen30_quality_repack_diagnostic;
