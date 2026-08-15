@@ -3,6 +3,10 @@
 //! Default-off. Each operator uploads one working set, dispatches, reads
 //! back, and drops the buffers so the streaming residency policy is
 //! unchanged. `metal_dispatches` and `fallbacks` are real counters.
+//!
+//! The complete native token graph (device worklist, batched command
+//! buffers) lives in `gravity_deepseek_v4_native_token_graph` and is the
+//! replacement for this per-operator scaffold.
 
 use std::mem::size_of;
 
