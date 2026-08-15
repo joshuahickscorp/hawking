@@ -112,6 +112,10 @@ pub mod gravity_deepseek_v4_runtime_spine;
 /// ranges for a future Metal executor. It is storage-only: no device upload,
 /// forward, Engine, serving, or TPS surface exists here.
 pub mod gravity_deepseek_v4_verified_tensor_cache;
+/// Memory-bounded, restartable host streamed BOS forward over the sealed
+/// DeepSeek-V4-Flash 43-layer source stream. Operator-streamed CPU oracle;
+/// not native, not Engine, not a TPS or coherence claim.
+pub mod gravity_deepseek_v4_streamed_forward;
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;
