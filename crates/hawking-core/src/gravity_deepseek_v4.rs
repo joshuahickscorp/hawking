@@ -11,18 +11,28 @@
 //! - verified bounded range and explicitly bounded full-tensor reads; and
 //! - exact native FP8 and packed-FP4 scale-pair geometry.
 //!
+//! Chunk SHA-256 is checked against the manifest digest **once per process**
+//! (first touch or [`DeepSeekV4FullStreamReader::verify_all_chunks`]) and
+//! recorded in a `(chunk, digest)` cache.  Subsequent reads of a verified
+//! chunk mmap the file read-only and extract the requested window without
+//! re-hashing.  A digest mismatch still hard-fails.  Silently trusting
+//! unverified bytes is not permitted.
+//!
 //! No method here constructs an [`crate::Engine`], allocates Metal resources,
 //! performs a model forward, or changes the public CLI admission policy.
 
 use crate::{Error, Result};
+use memmap2::{Mmap, MmapOptions};
+use parking_lot::Mutex;
 use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs::{self, File};
 use std::io::Read;
 use std::ops::Range;
 use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Immutable full-stream artifact schema produced by the Condense streamer.
 pub const FULL_STREAM_SCHEMA: &str = "hawking.gravity.deepseek_v4.full_stream.v1";
@@ -41,7 +51,6 @@ const EXPECTED_TENSOR_COUNT: usize = 69_187;
 const EXPECTED_SOURCE_SHARDS: usize = 46;
 const FP8_BLOCK: u64 = 128;
 const FP4_LOGICAL_BLOCK: u64 = 32;
-const READ_BUFFER_BYTES: usize = 1024 * 1024;
 
 /// Pinned source identity exposed to a future adapter without opening a
 /// source parent file.
@@ -132,6 +141,111 @@ pub struct NativeScalePair<'a> {
 pub struct FullStreamChunkVerification {
     pub chunk_count: usize,
     pub bytes_verified: u64,
+}
+
+/// Process-local accounting for the verified-once chunk cache.
+///
+/// `hash_invocations` increments only when SHA-256 actually runs.
+/// A second read of an already-verified `(chunk, digest)` is a cache hit
+/// and does not re-hash.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DeepSeekV4ChunkVerificationStats {
+    pub hash_invocations: u64,
+    pub cache_hits: u64,
+    pub bytes_hashed: u64,
+    pub chunks_verified: u64,
+}
+
+/// Content-addressed chunk binding used by isolated integrity fixtures.
+/// This is not an admission of the sealed 43-layer stream.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeepSeekV4ChunkSpec {
+    pub relative: String,
+    pub sha256: String,
+    pub bytes: u64,
+}
+
+/// A verified tensor window. Single-chunk windows are a read-only mmap
+/// slice; multi-chunk windows own a concatenated copy so callers still see
+/// one contiguous byte range.
+pub struct DeepSeekV4VerifiedBytes {
+    inner: VerifiedBytesInner,
+}
+
+enum VerifiedBytesInner {
+    Mapped {
+        mmap: Mmap,
+        start: usize,
+        end: usize,
+    },
+    Owned(Vec<u8>),
+}
+
+impl DeepSeekV4VerifiedBytes {
+    fn mapped(mmap: Mmap, start: usize, end: usize) -> Result<Self> {
+        if start > end || end > mmap.len() {
+            return Err(gravity("verified mmap window escaped its chunk"));
+        }
+        Ok(Self {
+            inner: VerifiedBytesInner::Mapped { mmap, start, end },
+        })
+    }
+
+    fn owned(bytes: Vec<u8>) -> Self {
+        Self {
+            inner: VerifiedBytesInner::Owned(bytes),
+        }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        match &self.inner {
+            VerifiedBytesInner::Mapped { mmap, start, end } => &mmap[*start..*end],
+            VerifiedBytesInner::Owned(bytes) => bytes,
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.as_bytes().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.as_bytes().is_empty()
+    }
+
+    /// True when the window is a slice of a read-only mmap (no host copy).
+    pub fn is_zero_copy(&self) -> bool {
+        matches!(self.inner, VerifiedBytesInner::Mapped { .. })
+    }
+
+    pub fn into_owned(self) -> Vec<u8> {
+        match self.inner {
+            VerifiedBytesInner::Mapped { mmap, start, end } => mmap[start..end].to_vec(),
+            VerifiedBytesInner::Owned(bytes) => bytes,
+        }
+    }
+}
+
+impl AsRef<[u8]> for DeepSeekV4VerifiedBytes {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl std::ops::Deref for DeepSeekV4VerifiedBytes {
+    type Target = [u8];
+
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl std::fmt::Debug for DeepSeekV4VerifiedBytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DeepSeekV4VerifiedBytes")
+            .field("len", &self.len())
+            .field("zero_copy", &self.is_zero_copy())
+            .finish()
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -275,7 +389,9 @@ struct ChunkBinding {
 }
 
 /// A successfully admitted full source stream.  It owns no decoded weights,
-/// GPU buffers, or execution state.
+/// GPU buffers, or execution state.  Verified chunk identity is cached
+/// process-locally so a second read of the same `(chunk, digest)` does not
+/// re-hash; mmap views are not retained after the caller drops them.
 #[derive(Debug)]
 pub struct DeepSeekV4FullStreamReader {
     root: PathBuf,
@@ -288,13 +404,19 @@ pub struct DeepSeekV4FullStreamReader {
     chunks: BTreeMap<String, ChunkBinding>,
     native_pairs: BTreeMap<String, NativeScalePairGeometry>,
     source_metadata_sha256: BTreeMap<String, String>,
+    /// SHA-256 hex of chunks that have passed the manifest digest check.
+    verified_digests: Mutex<HashSet<String>>,
+    hash_invocations: AtomicU64,
+    cache_hits: AtomicU64,
+    bytes_hashed: AtomicU64,
 }
 
 impl DeepSeekV4FullStreamReader {
     /// Admit a complete, sealed V4 source stream without turning it into a
     /// runtime.  This validates all descriptor/chunk mappings and stats every
     /// declared content-addressed chunk; chunk SHA-256 bytes are checked on
-    /// verified reads or by [`Self::verify_all_chunks`].
+    /// first verified read (or by [`Self::verify_all_chunks`]) and then
+    /// cached for the life of this reader.
     pub fn admit(root: impl AsRef<Path>) -> Result<Self> {
         let root = canonical_non_symlink_directory(root.as_ref(), "DeepSeek-V4 full artifact")?;
         let manifest_path = checked_regular_path(&root, "manifest.json", "full stream manifest")?;
@@ -346,7 +468,143 @@ impl DeepSeekV4FullStreamReader {
             chunks,
             native_pairs,
             source_metadata_sha256,
+            verified_digests: Mutex::new(HashSet::new()),
+            hash_invocations: AtomicU64::new(0),
+            cache_hits: AtomicU64::new(0),
+            bytes_hashed: AtomicU64::new(0),
         })
+    }
+
+    /// Isolated integrity-path fixture.  Binds a reader to a caller-owned
+    /// content-addressed chunk tree without admitting the sealed 43-layer
+    /// stream.  Refuses any root whose path names the sealed artifact.
+    pub fn bind_isolated_integrity_fixture(
+        root: impl AsRef<Path>,
+        tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
+        chunks: impl IntoIterator<Item = DeepSeekV4ChunkSpec>,
+    ) -> Result<Self> {
+        let root = root.as_ref();
+        refuse_sealed_artifact_root(root)?;
+        let root = canonical_non_symlink_directory(root, "isolated integrity fixture")?;
+        let mut bindings = BTreeMap::new();
+        let mut tensor_bytes = 0u64;
+        for spec in chunks {
+            validate_chunk_relative_path(&spec.relative, &spec.sha256)?;
+            let path =
+                checked_regular_path(&root, &spec.relative, "isolated content-addressed chunk")?;
+            let observed = fs::metadata(&path)?.len();
+            if observed != spec.bytes {
+                return Err(gravity(format!(
+                    "isolated chunk {} is {observed} bytes, expected {}",
+                    spec.relative, spec.bytes
+                )));
+            }
+            bindings.insert(
+                spec.relative.clone(),
+                ChunkBinding {
+                    relative: spec.relative,
+                    sha256: spec.sha256,
+                    bytes: spec.bytes,
+                },
+            );
+        }
+        for tensor in tensors.values() {
+            tensor_bytes = tensor_bytes
+                .checked_add(tensor.bytes)
+                .ok_or_else(|| gravity("isolated fixture tensor byte count overflow"))?;
+            for segment in &tensor.segments {
+                let binding = bindings.get(&segment.chunk_relpath).ok_or_else(|| {
+                    gravity(format!(
+                        "isolated fixture tensor {} references unknown chunk {}",
+                        tensor.name, segment.chunk_relpath
+                    ))
+                })?;
+                if binding.sha256 != segment.sha256 {
+                    return Err(gravity(format!(
+                        "isolated fixture segment digest mismatch for {}",
+                        segment.chunk_relpath
+                    )));
+                }
+            }
+        }
+        Ok(Self {
+            root,
+            source: DeepSeekV4SourceIdentity {
+                repository: PINNED_REPOSITORY.to_owned(),
+                revision: PINNED_REVISION.to_owned(),
+            },
+            manifest_seal_sha256: "isolated-integrity-fixture".to_owned(),
+            manifest_file_sha256: "isolated-integrity-fixture".to_owned(),
+            restart_seal_sha256: "isolated-integrity-fixture".to_owned(),
+            tensor_bytes,
+            tensors,
+            chunks: bindings,
+            native_pairs: BTreeMap::new(),
+            source_metadata_sha256: BTreeMap::new(),
+            verified_digests: Mutex::new(HashSet::new()),
+            hash_invocations: AtomicU64::new(0),
+            cache_hits: AtomicU64::new(0),
+            bytes_hashed: AtomicU64::new(0),
+        })
+    }
+
+    /// Write `payload` as a content-addressed chunk under `root`.  Refuses
+    /// the sealed artifact directory.  Used by integrity tests.
+    pub fn write_isolated_content_addressed_chunk(
+        root: impl AsRef<Path>,
+        payload: &[u8],
+    ) -> Result<(DeepSeekV4Segment, DeepSeekV4ChunkSpec)> {
+        let root = root.as_ref();
+        refuse_sealed_artifact_root(root)?;
+        if payload.is_empty() {
+            return Err(gravity("isolated chunk payload must be non-empty"));
+        }
+        let sha256 = sha256_hex(payload);
+        let relative = format!("chunks/{}/{}", &sha256[..2], sha256);
+        validate_chunk_relative_path(&relative, &sha256)?;
+        let path = root.join(&relative);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        if path.exists() {
+            let existing = fs::read(&path)?;
+            if existing.as_slice() != payload {
+                return Err(gravity(format!(
+                    "isolated chunk {relative} already exists with different bytes"
+                )));
+            }
+        } else {
+            fs::write(&path, payload)?;
+        }
+        let bytes = payload.len() as u64;
+        let spec = DeepSeekV4ChunkSpec {
+            relative: relative.clone(),
+            sha256: sha256.clone(),
+            bytes,
+        };
+        let segment = DeepSeekV4Segment {
+            bytes,
+            chunk_relpath: relative,
+            sha256,
+            source_file_start: 0,
+            source_file_end: bytes,
+            tensor_start: 0,
+            tensor_end: bytes,
+            row_start: 0,
+            row_count: 1,
+        };
+        Ok((segment, spec))
+    }
+
+    /// Process-local verified-once counters.  `hash_invocations` is the
+    /// assertion surface for "second read does not re-hash".
+    pub fn chunk_verification_stats(&self) -> DeepSeekV4ChunkVerificationStats {
+        DeepSeekV4ChunkVerificationStats {
+            hash_invocations: self.hash_invocations.load(Ordering::Relaxed),
+            cache_hits: self.cache_hits.load(Ordering::Relaxed),
+            bytes_hashed: self.bytes_hashed.load(Ordering::Relaxed),
+            chunks_verified: self.verified_digests.lock().len() as u64,
+        }
     }
 
     /// Canonical non-symlink artifact root.
@@ -512,15 +770,30 @@ impl DeepSeekV4FullStreamReader {
     }
 
     /// Return a verified source-native byte range.  Every source chunk touched
-    /// by the range is SHA-256 checked in full before this function succeeds.
-    /// `max_output_bytes` is mandatory so a caller cannot accidentally turn a
-    /// bounded adapter read into an unbounded host allocation.
+    /// by the range is SHA-256 checked against its manifest digest at least
+    /// once in this process before this function succeeds.  `max_output_bytes`
+    /// is mandatory so a caller cannot accidentally turn a bounded adapter
+    /// read into an unbounded host allocation.
     pub fn read_verified_range(
         &self,
         name: &str,
         range: Range<u64>,
         max_output_bytes: usize,
     ) -> Result<Vec<u8>> {
+        Ok(self
+            .read_verified_range_view(name, range, max_output_bytes)?
+            .into_owned())
+    }
+
+    /// Zero-copy counterpart of [`Self::read_verified_range`].  A window that
+    /// lives in a single already-verified chunk is a read-only mmap slice;
+    /// multi-chunk windows are concatenated into an owned buffer.
+    pub fn read_verified_range_view(
+        &self,
+        name: &str,
+        range: Range<u64>,
+        max_output_bytes: usize,
+    ) -> Result<DeepSeekV4VerifiedBytes> {
         let tensor = self.tensor_metadata(name)?;
         if range.start >= range.end || range.end > tensor.bytes {
             return Err(gravity(format!(
@@ -537,15 +810,50 @@ impl DeepSeekV4FullStreamReader {
             )));
         }
 
-        let mut out = Vec::with_capacity(requested_usize);
-        let mut cursor = range.start;
+        let mut overlaps: Vec<(&DeepSeekV4Segment, u64, u64)> = Vec::new();
         for segment in &tensor.segments {
             if segment.tensor_end <= range.start || segment.tensor_start >= range.end {
                 continue;
             }
             let take_start = range.start.max(segment.tensor_start);
             let take_end = range.end.min(segment.tensor_end);
-            self.read_verified_segment_slice(segment, take_start, take_end, &mut out)?;
+            overlaps.push((segment, take_start, take_end));
+        }
+        if overlaps.is_empty() {
+            return Err(gravity(format!(
+                "{name}: verified segment range is not contiguous"
+            )));
+        }
+
+        if overlaps.len() == 1 {
+            let (segment, take_start, take_end) = overlaps[0];
+            if take_start != range.start || take_end != range.end {
+                return Err(gravity(format!(
+                    "{name}: verified segment range is not contiguous"
+                )));
+            }
+            let mmap = self.map_verified_segment(segment)?;
+            let local_start = usize::try_from(take_start - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice start exceeds usize"))?;
+            let local_end = usize::try_from(take_end - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice end exceeds usize"))?;
+            return DeepSeekV4VerifiedBytes::mapped(mmap, local_start, local_end);
+        }
+
+        let mut out = Vec::with_capacity(requested_usize);
+        let mut cursor = range.start;
+        for (segment, take_start, take_end) in overlaps {
+            if take_start != cursor {
+                return Err(gravity(format!(
+                    "{name}: verified segment range is not contiguous"
+                )));
+            }
+            let mmap = self.map_verified_segment(segment)?;
+            let local_start = usize::try_from(take_start - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice start exceeds usize"))?;
+            let local_end = usize::try_from(take_end - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice end exceeds usize"))?;
+            out.extend_from_slice(&mmap[local_start..local_end]);
             cursor = take_end;
         }
         if cursor != range.end || out.len() != requested_usize {
@@ -553,7 +861,7 @@ impl DeepSeekV4FullStreamReader {
                 "{name}: verified segment range is not contiguous"
             )));
         }
-        Ok(out)
+        Ok(DeepSeekV4VerifiedBytes::owned(out))
     }
 
     /// Read an entire tensor after verifying all of its source chunks.  The
@@ -564,50 +872,34 @@ impl DeepSeekV4FullStreamReader {
         self.read_verified_range(name, 0..bytes, max_output_bytes)
     }
 
+    /// Zero-copy counterpart of [`Self::read_verified_full`].
+    pub fn read_verified_full_view(
+        &self,
+        name: &str,
+        max_output_bytes: usize,
+    ) -> Result<DeepSeekV4VerifiedBytes> {
+        let bytes = self.tensor_metadata(name)?.bytes;
+        self.read_verified_range_view(name, 0..bytes, max_output_bytes)
+    }
+
     fn verify_segment(&self, segment: &DeepSeekV4Segment) -> Result<()> {
-        let binding = self.chunks.get(&segment.chunk_relpath).ok_or_else(|| {
-            gravity(format!(
-                "segment binding missing for {}",
-                segment.chunk_relpath
-            ))
-        })?;
-        self.verify_chunk(binding)
+        drop(self.map_verified_segment(segment)?);
+        Ok(())
     }
 
     fn verify_chunk(&self, binding: &ChunkBinding) -> Result<()> {
-        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
-        let file = open_checked_regular_file(&path, "content-addressed chunk")?;
-        let observed_size = file.metadata()?.len();
-        if observed_size != binding.bytes {
-            return Err(gravity(format!(
-                "chunk {} byte size {observed_size} differs from sealed {}",
-                binding.relative, binding.bytes
-            )));
-        }
-        let observed = sha256_reader(file)?;
-        if observed != binding.sha256 {
-            return Err(gravity(format!(
-                "chunk {} sha256 differs from sealed segment digest",
-                binding.relative
-            )));
-        }
+        drop(self.ensure_chunk_verified(binding)?);
         Ok(())
     }
 
-    fn read_verified_segment_slice(
-        &self,
-        segment: &DeepSeekV4Segment,
-        take_start: u64,
-        take_end: u64,
-        out: &mut Vec<u8>,
-    ) -> Result<()> {
-        if take_start < segment.tensor_start
-            || take_end > segment.tensor_end
-            || take_start >= take_end
+    fn map_verified_segment(&self, segment: &DeepSeekV4Segment) -> Result<Mmap> {
+        if segment.tensor_end <= segment.tensor_start
+            || segment.bytes != segment.tensor_end - segment.tensor_start
         {
-            return Err(gravity(
-                "internal verified segment slice escaped its segment",
-            ));
+            return Err(gravity(format!(
+                "segment {} has inconsistent tensor window",
+                segment.chunk_relpath
+            )));
         }
         let binding = self.chunks.get(&segment.chunk_relpath).ok_or_else(|| {
             gravity(format!(
@@ -615,55 +907,38 @@ impl DeepSeekV4FullStreamReader {
                 segment.chunk_relpath
             ))
         })?;
-        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
-        let mut file = open_checked_regular_file(&path, "content-addressed chunk")?;
-        let observed_size = file.metadata()?.len();
-        if observed_size != binding.bytes {
+        if binding.sha256 != segment.sha256 {
             return Err(gravity(format!(
-                "chunk {} byte size differs from sealed segment bytes",
-                binding.relative
+                "segment {} digest differs from sealed chunk binding",
+                segment.chunk_relpath
             )));
         }
+        self.ensure_chunk_verified(binding)
+    }
 
-        let wanted_start = take_start - segment.tensor_start;
-        let wanted_end = take_end - segment.tensor_start;
-        let mut digest = Sha256::new();
-        let mut buffer = vec![0u8; READ_BUFFER_BYTES];
-        let mut offset = 0u64;
-        loop {
-            let got = file.read(&mut buffer)?;
-            if got == 0 {
-                break;
-            }
-            let end = offset.checked_add(got as u64).ok_or_else(|| {
-                gravity("chunk byte offset overflow while reading verified segment")
-            })?;
-            digest.update(&buffer[..got]);
-            let overlap_start = offset.max(wanted_start);
-            let overlap_end = end.min(wanted_end);
-            if overlap_start < overlap_end {
-                let local_start = usize::try_from(overlap_start - offset)
-                    .map_err(|_| gravity("chunk slice start exceeds usize"))?;
-                let local_end = usize::try_from(overlap_end - offset)
-                    .map_err(|_| gravity("chunk slice end exceeds usize"))?;
-                out.extend_from_slice(&buffer[local_start..local_end]);
-            }
-            offset = end;
+    /// Verify `binding` against its manifest digest on first touch, then
+    /// return a read-only mmap of the chunk.  A cached hit still remaps so
+    /// the caller can extract a slice; it does not re-hash.
+    fn ensure_chunk_verified(&self, binding: &ChunkBinding) -> Result<Mmap> {
+        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
+        let mmap = map_chunk_readonly(&path, binding.bytes, &binding.relative)?;
+        if self.verified_digests.lock().contains(&binding.sha256) {
+            self.cache_hits.fetch_add(1, Ordering::Relaxed);
+            return Ok(mmap);
         }
-        if offset != binding.bytes {
-            return Err(gravity(format!(
-                "chunk {} ended at {offset}, expected {} bytes",
-                binding.relative, binding.bytes
-            )));
-        }
-        let observed = format!("{:x}", digest.finalize());
+        self.hash_invocations.fetch_add(1, Ordering::Relaxed);
+        self.bytes_hashed
+            .fetch_add(mmap.len() as u64, Ordering::Relaxed);
+        let observed = sha256_hex(&mmap);
         if observed != binding.sha256 {
             return Err(gravity(format!(
                 "chunk {} sha256 differs from sealed segment digest",
                 binding.relative
             )));
         }
-        Ok(())
+        let mut cache = self.verified_digests.lock();
+        cache.insert(binding.sha256.clone());
+        Ok(mmap)
     }
 }
 
@@ -1357,17 +1632,41 @@ fn read_regular_file(path: &Path, label: &str) -> Result<Vec<u8>> {
     Ok(raw)
 }
 
-fn sha256_reader(mut reader: File) -> Result<String> {
-    let mut digest = Sha256::new();
-    let mut buffer = vec![0u8; READ_BUFFER_BYTES];
-    loop {
-        let read = reader.read(&mut buffer)?;
-        if read == 0 {
-            break;
-        }
-        digest.update(&buffer[..read]);
+fn refuse_sealed_artifact_root(root: &Path) -> Result<()> {
+    let display = root.to_string_lossy();
+    if display.contains("full-43-layer-stream.gravity") {
+        return Err(gravity(
+            "isolated integrity fixture refuses the sealed full-stream artifact",
+        ));
     }
-    Ok(format!("{:x}", digest.finalize()))
+    Ok(())
+}
+
+fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) -> Result<Mmap> {
+    let file = open_checked_regular_file(path, "content-addressed chunk")?;
+    let observed = file.metadata()?.len();
+    if observed != expected_bytes {
+        return Err(gravity(format!(
+            "chunk {label} byte size {observed} differs from sealed {expected_bytes}"
+        )));
+    }
+    // SAFETY: the file is a just-checked regular non-symlink.  Mmap (not
+    // MmapMut) is PROT_READ / MAP_PRIVATE — a read-only view.  The sealed
+    // artifact is never mapped writable.
+    let mmap = unsafe {
+        MmapOptions::new().map(&file).map_err(|error| {
+            gravity(format!(
+                "cannot mmap content-addressed chunk {label}: {error}"
+            ))
+        })?
+    };
+    if mmap.len() as u64 != expected_bytes {
+        return Err(gravity(format!(
+            "chunk {label} mmap length {} differs from sealed {expected_bytes}",
+            mmap.len()
+        )));
+    }
+    Ok(mmap)
 }
 
 fn parse_and_verify_sealed_json(raw: &[u8], label: &str) -> Result<Value> {
@@ -1595,5 +1894,58 @@ mod tests {
         let digest = "a".repeat(64);
         assert!(validate_chunk_relative_path(&format!("chunks/aa/{digest}"), &digest).is_ok());
         assert!(validate_chunk_relative_path("chunks/aa/../bad", &digest).is_err());
+    }
+
+    #[test]
+    fn isolated_fixture_refuses_sealed_artifact_path() {
+        let sealed = PathBuf::from("/tmp/full-43-layer-stream.gravity/not-the-real-one");
+        let err =
+            DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(&sealed, b"payload")
+                .expect_err("must refuse sealed path");
+        assert!(format!("{err}").contains("refuses the sealed"));
+    }
+
+    #[test]
+    fn isolated_verified_once_and_zero_copy_round_trip() {
+        let tmp = tempfile::tempdir().expect("tempdir");
+        let payload: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        let (segment, spec) = DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(
+            tmp.path(),
+            &payload,
+        )
+        .expect("write");
+        let mut tensors = BTreeMap::new();
+        tensors.insert(
+            "probe.weight".to_owned(),
+            DeepSeekV4TensorMetadata {
+                name: "probe.weight".to_owned(),
+                dtype: "I8".to_owned(),
+                shape: vec![payload.len() as u64],
+                data_offsets: [0, payload.len() as u64],
+                bytes: payload.len() as u64,
+                source_file_start: 0,
+                source_file_end: payload.len() as u64,
+                source_shard: "model-00001-of-00046.safetensors".to_owned(),
+                segments: vec![segment],
+            },
+        );
+        let reader = DeepSeekV4FullStreamReader::bind_isolated_integrity_fixture(
+            tmp.path(),
+            tensors,
+            [spec],
+        )
+        .expect("bind");
+        let copied = reader
+            .read_verified_full("probe.weight", payload.len())
+            .expect("copy");
+        let view = reader
+            .read_verified_full_view("probe.weight", payload.len())
+            .expect("view");
+        assert_eq!(copied, payload);
+        assert_eq!(view.as_bytes(), payload.as_slice());
+        assert!(view.is_zero_copy());
+        let stats = reader.chunk_verification_stats();
+        assert_eq!(stats.hash_invocations, 1);
+        assert_eq!(stats.cache_hits, 1);
     }
 }

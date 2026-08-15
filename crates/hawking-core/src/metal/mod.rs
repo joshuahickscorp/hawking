@@ -2379,6 +2379,41 @@ mod imp {
             )
         }
 
+        /// Pin `bytes` as a shared MTLBuffer without copying when the
+        /// pointer is page-aligned (mmap views).  Falls back to
+        /// [`Self::new_buffer_with_bytes_checked`] otherwise.
+        ///
+        /// SAFETY of the no-copy arm is the same as
+        /// [`Self::new_buffer_no_copy`]: `bytes` must outlive every command
+        /// buffer that references the returned buffer.
+        pub fn new_buffer_from_verified_bytes(&self, bytes: &[u8]) -> Result<Buffer> {
+            const ALIGN: usize = if cfg!(target_arch = "aarch64") {
+                16 * 1024
+            } else {
+                4 * 1024
+            };
+            if !bytes.is_empty() && (bytes.as_ptr() as usize) % ALIGN == 0 {
+                let ceiling = self.alloc_ceiling();
+                if bytes.len() as u64 > ceiling {
+                    return Err(Error::Metal(format!(
+                        "MTLBuffer allocation of {} B exceeds device working-set ceiling {ceiling} B",
+                        bytes.len()
+                    )));
+                }
+                let buf = unsafe { self.new_buffer_no_copy(bytes) };
+                if buf.length() >= bytes.len() as u64 {
+                    if self.trace_dispatch {
+                        self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                        self.stats
+                            .bytes_allocated
+                            .fetch_add(bytes.len(), Ordering::Relaxed);
+                    }
+                    return Ok(buf);
+                }
+            }
+            self.new_buffer_with_bytes_checked(bytes)
+        }
+
         /// Drain all trace samples accumulated since the last drain.
         /// Returns an empty vec when trace is disabled.
         pub fn drain_trace(&self) -> Vec<super::DispatchSample> {

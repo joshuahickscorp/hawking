@@ -224,8 +224,8 @@ impl StreamedNativeSession {
         let input_buf = self.metal.new_buffer_with_bytes_checked(input_bytes)?;
         let quant_buf = self.metal.new_buffer_checked(logical_k)?;
         let act_scale_buf = self.metal.new_buffer_checked(scale_cols)?;
-        let weight_buf = self.metal.new_buffer_with_bytes_checked(weights)?;
-        let scale_buf = self.metal.new_buffer_with_bytes_checked(scales)?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
         let out_f32_buf = self.metal.new_buffer_checked(rows * size_of::<f32>())?;
         let out_bf16_buf = self.metal.new_buffer_checked(rows * size_of::<u16>())?;
 
@@ -294,8 +294,8 @@ impl StreamedNativeSession {
         let input_buf = self.metal.new_buffer_with_bytes_checked(input_bytes)?;
         let quant_buf = self.metal.new_buffer_checked(logical_k)?;
         let act_scale_buf = self.metal.new_buffer_checked(logical_k / ACT_QUANT_BLOCK)?;
-        let weight_buf = self.metal.new_buffer_with_bytes_checked(weights)?;
-        let scale_buf = self.metal.new_buffer_with_bytes_checked(scales)?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
         let out_f32_buf = self.metal.new_buffer_checked(rows * size_of::<f32>())?;
         let out_bf16_buf = self.metal.new_buffer_checked(rows * size_of::<u16>())?;
 
@@ -355,8 +355,8 @@ impl StreamedNativeSession {
 
         let attn_bytes = u16_as_bytes(attention_bf16);
         let attn_buf = self.metal.new_buffer_with_bytes_checked(attn_bytes)?;
-        let weight_buf = self.metal.new_buffer_with_bytes_checked(weights)?;
-        let scale_buf = self.metal.new_buffer_with_bytes_checked(scales)?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
         let out_buf = self
             .metal
             .new_buffer_checked(WO_A_ROWS * size_of::<u16>())?;
@@ -434,7 +434,7 @@ impl StreamedNativeSession {
         let residual_buf = self.metal.new_buffer_with_bytes_checked(residual_bytes)?;
         let weight_buf = self
             .metal
-            .new_buffer_with_bytes_checked(weight_bf16_bytes)?;
+            .new_buffer_from_verified_bytes(weight_bf16_bytes)?;
         let out_buf = self.metal.new_buffer_checked(rows * size_of::<f32>())?;
         let rows_u = rows as u32;
         let cols_u = HIDDEN_SIZE as u32;

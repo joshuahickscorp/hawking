@@ -126,7 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::rename(&tmp, &args.out)?;
 
     eprintln!(
-        "deepest_layer={:?} layers={:?} peak_rss_bytes={} peak_weight_bytes={} rss_ok={} weight_ok={} greedy={:?} metal_dispatches={} fallbacks={} stop={:?} receipt_sha256={digest} out={}",
+        "deepest_layer={:?} layers={:?} peak_rss_bytes={} peak_weight_bytes={} rss_ok={} weight_ok={} greedy={:?} metal_dispatches={} fallbacks={} hash_invocations={} cache_hits={} bytes_hashed={} chunks_verified={} stop={:?} receipt_sha256={digest} out={}",
         report.deepest_layer,
         report.layers_executed,
         report.peak_rss_bytes,
@@ -136,6 +136,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.greedy.as_ref().map(|g| (g.token_id, g.logit)),
         report.honesty.metal_dispatches,
         report.honesty.fallbacks,
+        report.chunk_verification.hash_invocations,
+        report.chunk_verification.cache_hits,
+        report.chunk_verification.bytes_hashed,
+        report.chunk_verification.chunks_verified,
         report.stop_reason,
         args.out.display()
     );

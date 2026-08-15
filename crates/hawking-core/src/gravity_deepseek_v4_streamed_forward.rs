@@ -30,7 +30,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::gravity_deepseek_v4::{
-    DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
+    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, NativeScalePairKind,
+    PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_act_quant::{
     act_quant_bf16_ue8m0, decode_e4m3fn, decode_e8m0fnu, fp8_e4m3fn_ue8m0_matvec, ACT_QUANT_BLOCK,
@@ -279,6 +280,7 @@ pub struct StreamedForwardReport {
     pub stop_reason: Option<String>,
     pub honesty: StreamedForwardHonesty,
     pub operator_profile: OperatorProfile,
+    pub chunk_verification: DeepSeekV4ChunkVerificationStats,
     pub artifact_root: String,
     pub admission_view: String,
     pub manifest_seal_sha256: String,
@@ -321,6 +323,12 @@ impl StreamedForwardReport {
                 "fallback": self.honesty.fallbacks,
             },
             "operator_profile": self.operator_profile.to_receipt_json(),
+            "chunk_verification": {
+                "hash_invocations": self.chunk_verification.hash_invocations,
+                "cache_hits": self.chunk_verification.cache_hits,
+                "bytes_hashed": self.chunk_verification.bytes_hashed,
+                "chunks_verified": self.chunk_verification.chunks_verified,
+            },
             "hc_bf16_sha256": self.hc_bf16_sha256,
             "greedy": self.greedy.as_ref().map(|g| serde_json::json!({
                 "token_id": g.token_id,
@@ -1002,6 +1010,7 @@ pub fn run_streamed_forward_admitted(
             lm_head_on_device,
         ),
         operator_profile: profile,
+        chunk_verification: reader.chunk_verification_stats(),
         artifact_root: admission.source_path.display().to_string(),
         admission_view: admission.view.clone(),
         manifest_seal_sha256: reader.manifest_seal_sha256().to_owned(),
@@ -1346,9 +1355,9 @@ fn load_bos_embed_hc(
     let end = start
         .checked_add(row_bytes as u64)
         .ok_or_else(|| gravity("embed row end overflow"))?;
-    let raw = reader.read_verified_range(EMBED_WEIGHT, start..end, row_bytes)?;
+    let raw = reader.read_verified_range_view(EMBED_WEIGHT, start..end, row_bytes)?;
     ledger.acquire(EMBED_WEIGHT, raw.len())?;
-    let row = decode_u16_le(&raw, EMBED_WEIGHT)?;
+    let row = decode_u16_le(raw.as_bytes(), EMBED_WEIGHT)?;
     ledger.release(EMBED_WEIGHT)?;
     drop(raw);
     if row.len() != HIDDEN_SIZE {
@@ -1689,14 +1698,20 @@ fn fp8_linear_tracked(
         )));
     }
     let t_io = Instant::now();
-    let weights = reader.read_verified_full(weight_name, output_rows * logical_k)?;
+    let weights = reader.read_verified_full_view(weight_name, output_rows * logical_k)?;
     ledger.acquire(weight_name, weights.len())?;
-    let scales = reader.read_verified_full(scale_name, scale_rows * scale_cols)?;
+    let scales = reader.read_verified_full_view(scale_name, scale_rows * scale_cols)?;
     ledger.acquire(scale_name, scales.len())?;
     profile.add("streaming_io", t_io.elapsed());
     if let Some(session) = metal {
         let t_metal = Instant::now();
-        match session.fp8_linear(input, &weights, &scales, output_rows, logical_k) {
+        match session.fp8_linear(
+            input,
+            weights.as_bytes(),
+            scales.as_bytes(),
+            output_rows,
+            logical_k,
+        ) {
             Ok(output) => {
                 profile.add(bucket, t_metal.elapsed());
                 ledger.release(weight_name)?;
@@ -1714,7 +1729,13 @@ fn fp8_linear_tracked(
     let quantized = act_quant_bf16_ue8m0(input)?;
     profile.add("act_quant", t_aq.elapsed());
     let t_mv = Instant::now();
-    let output = fp8_e4m3fn_ue8m0_matvec(&quantized, &weights, &scales, output_rows, logical_k)?;
+    let output = fp8_e4m3fn_ue8m0_matvec(
+        &quantized,
+        weights.as_bytes(),
+        scales.as_bytes(),
+        output_rows,
+        logical_k,
+    )?;
     profile.add(bucket, t_mv.elapsed());
     ledger.release(weight_name)?;
     ledger.release(scale_name)?;
@@ -1748,14 +1769,20 @@ fn fp4_linear_tracked(
         )));
     }
     let t_io = Instant::now();
-    let weights = reader.read_verified_full(weight_name, output_rows * packed_k)?;
+    let weights = reader.read_verified_full_view(weight_name, output_rows * packed_k)?;
     ledger.acquire(weight_name, weights.len())?;
-    let scales = reader.read_verified_full(scale_name, output_rows * scale_cols)?;
+    let scales = reader.read_verified_full_view(scale_name, output_rows * scale_cols)?;
     ledger.acquire(scale_name, scales.len())?;
     profile.add("streaming_io", t_io.elapsed());
     if let Some(session) = metal {
         let t_metal = Instant::now();
-        match session.fp4_linear(input, &weights, &scales, output_rows, logical_k) {
+        match session.fp4_linear(
+            input,
+            weights.as_bytes(),
+            scales.as_bytes(),
+            output_rows,
+            logical_k,
+        ) {
             Ok(output) => {
                 profile.add(bucket, t_metal.elapsed());
                 ledger.release(weight_name)?;
@@ -1773,7 +1800,13 @@ fn fp4_linear_tracked(
     let quantized = act_quant_bf16_ue8m0(input)?;
     profile.add("act_quant", t_aq.elapsed());
     let t_mv = Instant::now();
-    let output = fp4_e2m1fn_x2_ue8m0_matvec(&quantized, &weights, &scales, output_rows, logical_k)?;
+    let output = fp4_e2m1fn_x2_ue8m0_matvec(
+        &quantized,
+        weights.as_bytes(),
+        scales.as_bytes(),
+        output_rows,
+        logical_k,
+    )?;
     profile.add(bucket, t_mv.elapsed());
     ledger.release(weight_name)?;
     ledger.release(scale_name)?;
@@ -1805,9 +1838,9 @@ fn wo_a_einsum_tracked(
         )));
     }
     let t_io = Instant::now();
-    let weights = reader.read_verified_full(weight_name, WO_A_ROWS * WO_A_COLS)?;
+    let weights = reader.read_verified_full_view(weight_name, WO_A_ROWS * WO_A_COLS)?;
     ledger.acquire(weight_name, weights.len())?;
-    let scales = reader.read_verified_full(
+    let scales = reader.read_verified_full_view(
         scale_name,
         (WO_A_ROWS / ACT_QUANT_BLOCK) * (WO_A_COLS / ACT_QUANT_BLOCK),
     )?;
@@ -1815,7 +1848,7 @@ fn wo_a_einsum_tracked(
     profile.add("streaming_io", t_io.elapsed());
     if let Some(session) = metal {
         let t_metal = Instant::now();
-        match session.wo_a_einsum(attention, &weights, &scales) {
+        match session.wo_a_einsum(attention, weights.as_bytes(), scales.as_bytes()) {
             Ok(output) => {
                 profile.add("mla_wo_a", t_metal.elapsed());
                 ledger.release(weight_name)?;
@@ -1895,9 +1928,9 @@ fn streamed_metal_lm_head(
         let count = (DSV4F_VOCAB_SIZE - row).min(ROWS_PER_BLOCK);
         let start = (row * row_bytes) as u64;
         let end = start + (count * row_bytes) as u64;
-        let bytes = reader.read_verified_range(LM_HEAD, start..end, count * row_bytes)?;
+        let bytes = reader.read_verified_range_view(LM_HEAD, start..end, count * row_bytes)?;
         ledger.acquire(LM_HEAD, bytes.len())?;
-        let logits = session.lm_head_block(residual_f32, &bytes, count)?;
+        let logits = session.lm_head_block(residual_f32, bytes.as_bytes(), count)?;
         ledger.release(LM_HEAD)?;
         drop(bytes);
         let (block_id, block_logit) = greedy_from_logits(&logits, row);
@@ -1928,9 +1961,9 @@ fn read_bf16_tracked(
             meta.bytes, meta.dtype
         )));
     }
-    let raw = reader.read_verified_full(name, bytes)?;
+    let raw = reader.read_verified_full_view(name, bytes)?;
     ledger.acquire(name, raw.len())?;
-    decode_u16_le(&raw, name)
+    decode_u16_le(raw.as_bytes(), name)
 }
 
 fn read_f32_tracked(
@@ -1947,9 +1980,9 @@ fn read_f32_tracked(
             meta.bytes, meta.dtype
         )));
     }
-    let raw = reader.read_verified_full(name, bytes)?;
+    let raw = reader.read_verified_full_view(name, bytes)?;
     ledger.acquire(name, raw.len())?;
-    decode_f32_le(&raw, name)
+    decode_f32_le(raw.as_bytes(), name)
 }
 
 fn decode_u16_le(raw: &[u8], name: &str) -> Result<Vec<u16>> {
