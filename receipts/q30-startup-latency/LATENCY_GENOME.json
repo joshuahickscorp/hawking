@@ -1,0 +1,72 @@
+{
+  "schema": "hawking.latency_genome.v1",
+  "purpose": "Durable per-stage latency knowledge record for the repack/qualification umbrella. Reusable across artifacts/machines; feeds future autonomic research (Canon). Populated from real on-box measurements.",
+  "machine": {"id": "m3-ultra-96gb-28c", "os": "darwin27", "unified_memory": true},
+  "entries": [
+    {
+      "stage_id": "admit_source_chain_device_identity",
+      "input_identity": "BF16 source shards (qwen-30b), revalidation receipt",
+      "artifact": "qwen30_complete_binary + any source-bound artifact",
+      "before_ns": null,
+      "after_ns": null,
+      "mechanism": "R1: dropped st_dev from current_file_identity_matches hard-fail set (mod.rs). st_dev is a mount-time artifact; a remount reassigns it without touching the file. (bytes,inode)+sealed content sha are the real identity.",
+      "invalidation_keys": ["bytes", "inode", "mtime_ns", "ctime_ns", "sealed content sha256"],
+      "cacheability": "n/a — correctness fix; removes false HARD REFUSE on benign remount",
+      "correctness_authority": "sealed source-audit shard hashes (content); unit-covered via warm-receipt sibling",
+      "negative_science": "device/inode/mtime/ctime were ALL hard-fail keys; device changed 16777234->16777233 on remount while inode+bytes byte-identical, causing a total admission refusal. Over-strict identity = fragility, not integrity.",
+      "transfer_class": "applies to EVERY on-disk identity gate in the codebase (source chain, warm receipt, and any future artifact identity check)"
+    },
+    {
+      "stage_id": "admit_warm_receipt_identity",
+      "input_identity": "packed payload files (18867), warm receipt keyed by manifest_seal",
+      "artifact": "qwen30_complete_binary_gravity_candidate (seal 3321a99d)",
+      "before_ns": 9585000000,
+      "after_ns": 815000000,
+      "mechanism": "R2: dropped st_dev from admission_warm_receipt::identity_matches. Before, a remount's device shift falsely invalidated the warm receipt -> full cold rehash (9585ms) re-paid on every post-reboot startup. After, the warm receipt survives remount so the cold rehash is paid ONCE (pack/first admit).",
+      "invalidation_keys": ["size", "mtime_ns", "inode", "manifest_seal", "sealed content sha (cold verify)"],
+      "cacheability": "warm receipt under ~/.cache/hawking; valid until file (size/mtime/inode) changes",
+      "correctness_authority": "cold-verify content sha256 per payload (ultimate); warm path is a fast-accept proxy",
+      "negative_science": "identity_matches included device -> every reboot = false miss = 9585ms cold rehash. Verified by 2 unit tests (device shift matches; size/mtime/inode changes still invalidate).",
+      "transfer_class": "same pattern as source-chain; general 'metadata proxy for content-unchanged' should never include st_dev"
+    },
+    {
+      "stage_id": "admit_payload_warm_load_no_rehash",
+      "input_identity": "18867 payload files, 4.294 GB total, one dir",
+      "artifact": "qwen30_complete_binary_gravity_candidate",
+      "before_ns": 490000000,
+      "after_ns": 490000000,
+      "mechanism": "LOWER-BOUND (no change yet). load_warm_payloads_bounded_parallel reads all weights into host Arc<[u8]> (parallel lanes, ~8.7 GB/s effective).",
+      "invalidation_keys": ["file identity"],
+      "cacheability": "weights must reach residency; format-changeable",
+      "correctness_authority": "size + header geometry proven; no content rehash on warm",
+      "negative_science": "MEASURED floor at current format: stat-all 18867 files = 135ms (7.1us/file, irreducible open overhead at this file count); remaining ~355ms is host-residency bandwidth for 4.294GB. Reaching the directive <=100ms target is IMPOSSIBLE at the current 18867-loose-file + host-copy format. It requires (a) packed-blob layout -> 1 open (kills ~135ms), AND (b) mmap + new_buffer_no_copy on unified memory -> weights reach GPU via the mapping (faulted during execution, not admission), removing the ~355ms host copy from the admission stage. BOTH are repack-format changes -> belongs to G002 repack redesign, not a patch to the current artifact.",
+      "transfer_class": "any many-small-file artifact load; the packed-blob + mmap-no-copy pattern transfers to Q80 and every future packed model"
+    },
+    {
+      "stage_id": "runtime_metal_cold_init",
+      "input_identity": "Metal shader source + pipelines",
+      "artifact": "any",
+      "before_ns": 2461000000,
+      "after_ns": 24000000,
+      "mechanism": "OS/Metal pipeline + shader cache (warm). Cold context 1284ms + shader compile 1177ms -> warm 24ms.",
+      "invalidation_keys": ["runtime executable", "Metal driver version"],
+      "cacheability": "Metal binary archive / pipeline cache",
+      "correctness_authority": "n/a",
+      "negative_science": "Metal compile is NOT the startup lever (directive §21 closed; confirmed: warm 24ms).",
+      "transfer_class": "all Metal runtimes on this machine"
+    },
+    {
+      "stage_id": "generation_total",
+      "input_identity": "prompt (source-user-chat template) + max_new_tokens",
+      "artifact": "qwen30_complete_binary_gravity_candidate",
+      "before_ns": 1288000000,
+      "after_ns": 1288000000,
+      "mechanism": "RECLASSIFIED — real forward compute (prompt prefill dominated), NOT startup. Belongs to the whole-token TPS lane (G009). A Tier-1 SCREEN need not run full generation.",
+      "invalidation_keys": ["prompt", "kernel choice (rowblock R)"],
+      "cacheability": "n/a",
+      "correctness_authority": "bit-identity of completion_token_ids",
+      "negative_science": "directive framed startup as ~98.8% of the wall — true on the COLD path (28137ms). On the WARM path generation is the LARGER half (1288 vs 965 startup).",
+      "transfer_class": "TPS lane"
+    }
+  ]
+}
