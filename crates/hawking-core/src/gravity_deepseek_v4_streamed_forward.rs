@@ -778,6 +778,86 @@ pub fn peak_rss_bytes() -> u64 {
     crate::model::qwen80_source_bf16_layer_major::peak_rss_bytes()
 }
 
+/// Per-layer activations extracted from the existing streamed layer body.
+///
+/// This is an observation of the same `execute_attention` + `execute_moe`
+/// path `run_streamed_forward` uses. It does not change routing, residuals,
+/// or the load-execute-free residency policy.
+#[derive(Debug, Clone)]
+pub struct StreamedLayerCapture {
+    pub next_hc_bf16: Vec<u16>,
+    pub selected_expert_ids: Vec<u32>,
+    pub normalized_route_weights: Vec<f32>,
+    /// `h_post_ffn_norm` in f32 — the doctor6 router-input / routed w1+w3 X.
+    pub h_post_ffn_norm: Vec<f32>,
+}
+
+struct MoeExecuteResult {
+    next_hc: Vec<u16>,
+    selected_ids: Vec<u64>,
+    selected_weights: Vec<f32>,
+    h_post_ffn_norm_f32: Vec<f32>,
+}
+
+/// Load the BF16 embed row for `token_id` and replicate it into HC[4*4096].
+/// Same operator as the streamed BOS embed; the name is token-general.
+pub fn load_token_embed_hc(
+    reader: &DeepSeekV4FullStreamReader,
+    ledger: &mut ResidentLedger,
+    token_id: u64,
+) -> Result<Vec<u16>> {
+    load_bos_embed_hc(reader, ledger, token_id)
+}
+
+/// Execute one streamed layer and return route membership plus router-input X.
+///
+/// Algorithm and residency are identical to the private layer body used by
+/// [`run_streamed_forward`]. Extra returns are copies of values that body
+/// already materializes and then drops.
+pub fn execute_one_layer_with_x(
+    reader: &DeepSeekV4FullStreamReader,
+    layer: &DeepSeekV4LayerSourceAnchor,
+    hc_in: &[u16],
+    token_id: u64,
+    ledger: &mut ResidentLedger,
+    profile: &mut OperatorProfile,
+    metal: Option<&mut StreamedNativeSession>,
+) -> Result<StreamedLayerCapture> {
+    let mut metal = metal;
+    let attn_hc = execute_attention(reader, layer, hc_in, ledger, profile, metal.as_deref_mut())?;
+    let moe = execute_moe(reader, layer, &attn_hc, token_id, ledger, profile, metal)?;
+    if moe.selected_ids.len() != ACTIVATED_EXPERTS
+        || moe.selected_weights.len() != ACTIVATED_EXPERTS
+    {
+        return Err(gravity(format!(
+            "layer {} route membership is {} ids / {} weights; expected top-{ACTIVATED_EXPERTS}",
+            layer.layer,
+            moe.selected_ids.len(),
+            moe.selected_weights.len()
+        )));
+    }
+    if moe.h_post_ffn_norm_f32.len() != HIDDEN_SIZE {
+        return Err(gravity(format!(
+            "layer {} h_post_ffn_norm width {} != {HIDDEN_SIZE}",
+            layer.layer,
+            moe.h_post_ffn_norm_f32.len()
+        )));
+    }
+    let selected_expert_ids = moe
+        .selected_ids
+        .into_iter()
+        .map(|id| {
+            u32::try_from(id).map_err(|_| gravity(format!("expert id {id} exceeds u32")))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(StreamedLayerCapture {
+        next_hc_bf16: moe.next_hc,
+        selected_expert_ids,
+        normalized_route_weights: moe.selected_weights,
+        h_post_ffn_norm: moe.h_post_ffn_norm_f32,
+    })
+}
+
 /// Run or resume the host streamed BOS oracle.
 pub fn run_streamed_forward(
     artifact: impl AsRef<Path>,
@@ -1027,9 +1107,7 @@ fn execute_one_layer(
     profile: &mut OperatorProfile,
     metal: Option<&mut StreamedNativeSession>,
 ) -> Result<Vec<u16>> {
-    let mut metal = metal;
-    let attn_hc = execute_attention(reader, layer, hc_in, ledger, profile, metal.as_deref_mut())?;
-    execute_moe(reader, layer, &attn_hc, token_id, ledger, profile, metal)
+    Ok(execute_one_layer_with_x(reader, layer, hc_in, token_id, ledger, profile, metal)?.next_hc_bf16)
 }
 
 fn execute_attention(
@@ -1221,7 +1299,7 @@ fn execute_moe(
     ledger: &mut ResidentLedger,
     profile: &mut OperatorProfile,
     metal: Option<&mut StreamedNativeSession>,
-) -> Result<Vec<u16>> {
+) -> Result<MoeExecuteResult> {
     let mut metal = metal;
     let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::FeedForward);
     let t_io = Instant::now();
@@ -1333,10 +1411,25 @@ fn execute_moe(
         .map(|value| bf16::from_f32(value).to_bits())
         .collect();
     profile.add("moe_combine", t_combine.elapsed());
+    let h_post_ffn_norm_f32: Vec<f32> = ffn_norm_row
+        .iter()
+        .map(|bits| bf16::from_bits(*bits).to_f32())
+        .collect();
+    if h_post_ffn_norm_f32.iter().any(|value| !value.is_finite()) {
+        return Err(gravity(format!(
+            "layer {} h_post_ffn_norm contains a non-finite value",
+            layer.layer
+        )));
+    }
     let t_post = Instant::now();
     let out = hc_attn_post_source_algorithm(&moe_bf16, attn_hc, &post_f32, &comb_f32)?;
     profile.add("mhc_ffn_post", t_post.elapsed());
-    Ok(out)
+    Ok(MoeExecuteResult {
+        next_hc: out,
+        selected_ids,
+        selected_weights,
+        h_post_ffn_norm_f32,
+    })
 }
 
 fn load_bos_embed_hc(
@@ -2408,5 +2501,43 @@ mod tests {
                 .keys()
                 .collect::<Vec<_>>()
         );
+    }
+
+    #[test]
+    fn live_layer0_with_x_returns_top6_and_finite_router_input() {
+        let Some(artifact) = live_artifact() else {
+            eprintln!(
+                "sealed DSV4F artifact not found; live layer-0 capture hook skipped (set HAWKING_DSV4F_ARTIFACT)"
+            );
+            return;
+        };
+        let _guard = LIVE_LOCK.lock().unwrap();
+        let admission = prepare_sealed_admission_root(&artifact).expect("admit");
+        let reader = DeepSeekV4FullStreamReader::admit(&admission.path).expect("reader");
+        let anchors = verify_deepseek_v4_layer_source_anchors(&reader).expect("anchors");
+        let mut ledger = ResidentLedger::new(DECLARED_WEIGHT_RESIDENT_BOUND_BYTES);
+        let mut profile = OperatorProfile::default();
+        let hc = load_token_embed_hc(&reader, &mut ledger, PREFIX_TOKEN_ID).expect("embed");
+        assert_eq!(hc.len(), HC_FLAT_WIDTH);
+        let captured = execute_one_layer_with_x(
+            &reader,
+            anchors.layer(0).expect("L0"),
+            &hc,
+            PREFIX_TOKEN_ID,
+            &mut ledger,
+            &mut profile,
+            None,
+        )
+        .expect("layer 0 with x");
+        assert_eq!(captured.next_hc_bf16.len(), HC_FLAT_WIDTH);
+        assert_eq!(captured.selected_expert_ids.len(), ACTIVATED_EXPERTS);
+        assert_eq!(captured.normalized_route_weights.len(), ACTIVATED_EXPERTS);
+        assert_eq!(captured.h_post_ffn_norm.len(), HIDDEN_SIZE);
+        assert!(captured.h_post_ffn_norm.iter().all(|v| v.is_finite()));
+        assert!(captured.normalized_route_weights.iter().all(|v| v.is_finite()));
+        let unique: std::collections::BTreeSet<_> =
+            captured.selected_expert_ids.iter().copied().collect();
+        assert_eq!(unique.len(), ACTIVATED_EXPERTS);
+        assert!(ledger.live.is_empty(), "capture hook leaked {:?}", ledger.live.keys().collect::<Vec<_>>());
     }
 }
