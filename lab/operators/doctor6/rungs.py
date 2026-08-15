@@ -138,39 +138,128 @@ def quant_outlier_channel(
     return (rec_base + rec_out).astype(np.float32), billed
 
 
+def _scheduled_lr(
+    step: int,
+    *,
+    base_lr: float,
+    steps: int,
+    warmup: int,
+    schedule: str,
+) -> float:
+    if steps <= 0:
+        return float(base_lr)
+    if step < warmup:
+        return float(base_lr) * float(step + 1) / float(max(warmup, 1))
+    t = (step - warmup) / float(max(1, steps - warmup))
+    t = min(1.0, max(0.0, t))
+    if schedule == "linear":
+        return float(base_lr) * (1.0 - t)
+    # cosine (default)
+    return float(base_lr) * 0.5 * (1.0 + math.cos(math.pi * t))
+
+
 def block_qat_weights(
     W: np.ndarray,
     X_fit: np.ndarray,
     *,
     bits: int = 2,
-    steps: int = 40,
+    steps: int = 200,
     lr: float = 1e-3,
     device: str = "cpu",
+    warmup_steps: int | None = None,
+    schedule: str = "cosine",
 ) -> np.ndarray:
-    """BRECQ-lite STE. Measured: at 1-bit this REGRESSES vs post-hoc binary — caller must drop."""
+    """BRECQ-lite STE with warmup + cosine/linear LR.
+
+    Stops when FIT cosine (quantized reconstruction vs teacher) plateaus.
+    Measured: at 1-bit this REGRESSES vs post-hoc binary — caller must drop.
+    """
     import torch
     import torch.nn.functional as F
 
+    if steps <= 0:
+        return np.asarray(W, dtype=np.float32)
     dev = torch.device(device)
     W0 = torch.tensor(W, dtype=torch.float32, device=dev)
     X = torch.tensor(X_fit, dtype=torch.float32, device=dev)
     with torch.no_grad():
         Y = X @ W0.T
+        y_norm = F.normalize(Y, dim=-1)
     qmax = 2 ** (bits - 1) - 1
+    warmup = int(warmup_steps) if warmup_steps is not None else max(1, steps // 10)
+    warmup = min(max(warmup, 0), max(steps - 1, 0))
+    patience = max(16, steps // 5)
 
     def fq(w: torch.Tensor) -> torch.Tensor:
         s = (w.abs().amax(1, keepdim=True) / qmax).clamp(min=1e-8)
         q = torch.clamp((w / s).round(), -qmax - 1, qmax) * s
         return w + (q - w).detach()
 
+    def fit_cosine(w: torch.Tensor) -> float:
+        with torch.no_grad():
+            y_hat = F.normalize(X @ fq(w).T, dim=-1)
+            return float((y_hat * y_norm).sum(dim=-1).mean().clamp(-1.0, 1.0).item())
+
     W_var = W0.clone().requires_grad_(True)
     opt = torch.optim.Adam([W_var], lr=lr)
-    for _ in range(steps):
+    best_cos = fit_cosine(W_var)
+    best_state = W_var.detach().clone()
+    stall = 0
+    for step in range(int(steps)):
+        lr_t = _scheduled_lr(
+            step, base_lr=lr, steps=int(steps), warmup=warmup, schedule=schedule
+        )
+        for pg in opt.param_groups:
+            pg["lr"] = lr_t
         opt.zero_grad()
         loss = F.mse_loss(X @ fq(W_var).T, Y)
         loss.backward()
         opt.step()
-    return W_var.detach().cpu().numpy().astype(np.float32)
+        cos = fit_cosine(W_var)
+        if cos > best_cos + 1e-6:
+            best_cos = cos
+            best_state = W_var.detach().clone()
+            stall = 0
+        else:
+            stall += 1
+            if stall >= patience and step >= warmup + patience:
+                break
+    return best_state.detach().cpu().numpy().astype(np.float32)
+
+
+def selfcheck_qat_fit_ge_calib(*, device: str = "cpu") -> dict[str, Any]:
+    """ONE assert-based self-check: QAT fit ≥ calib fit on a well-conditioned organ."""
+    rng = np.random.default_rng(0)
+    # Low-rank, well-scaled plant + enough rows: STE has a real target.
+    left = rng.standard_normal((32, 6), dtype=np.float32) * 0.15
+    right = rng.standard_normal((6, 48), dtype=np.float32) * 0.15
+    W = left @ right
+    X = rng.standard_normal((256, 48), dtype=np.float32)
+    rec_calib, _ = quant_act_svd(W, X, rank=6, bits=3)
+    rec_qat = block_qat_weights(
+        W, X, bits=3, steps=160, lr=1e-3, device=device, schedule="cosine"
+    )
+    import torch
+
+    qmax = 2 ** (3 - 1) - 1
+    w = torch.as_tensor(rec_qat, dtype=torch.float32)
+    s = (w.abs().amax(1, keepdim=True) / qmax).clamp(min=1e-8)
+    rec_qat_q = (torch.clamp((w / s).round(), -qmax - 1, qmax) * s).numpy()
+    y = X @ W.T
+    cos_calib = float(_mean_row_cosine(y, X @ rec_calib.T))
+    cos_qat = float(_mean_row_cosine(y, X @ rec_qat_q.T))
+    assert cos_qat + 1e-4 >= cos_calib, (
+        f"QAT fit {cos_qat:.6f} < calib fit {cos_calib:.6f} "
+        "on synthetic well-conditioned organ"
+    )
+    return {
+        "ok": True,
+        "qat_fit": cos_qat,
+        "calib_fit": cos_calib,
+        "bits": 3,
+        "steps": 160,
+        "device": device,
+    }
 
 
 def score_vs_incumbent(
@@ -222,7 +311,8 @@ def apply_rung(
     sensitivity: float,
     seed: int,
     device: str = "cpu",
-    qat_steps: int = 40,
+    qat_steps: int = 200,
+    qat_lr: float = 1e-3,
     qat_bits: int = 2,
     prefer_budget: bool = True,
 ) -> RungResult:
@@ -348,7 +438,7 @@ def apply_rung(
     if name == "l4_block_qat":
         # MUST be measured per organ — at 1-bit STE regresses vs post-hoc binary.
         W_qat = block_qat_weights(
-            W, X_fit, bits=qat_bits, steps=qat_steps, lr=1e-3, device=device
+            W, X_fit, bits=qat_bits, steps=qat_steps, lr=qat_lr, device=device
         )
         # Pack healed weights with L3-style under-budget serve.
         inner = apply_rung(
@@ -365,6 +455,7 @@ def apply_rung(
             {
                 "block_qat_bits": qat_bits,
                 "block_qat_steps": qat_steps,
+                "block_qat_lr": qat_lr,
                 "block_qat_bpw_overhead": 0.0,
                 "source_changed": True,
                 "inner_rung": "l3_outlier_residual",

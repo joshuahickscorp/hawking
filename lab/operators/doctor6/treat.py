@@ -39,7 +39,8 @@ def treat(
     model_dir: Path | None = None,
     capture: Path | None = None,
     device: str = "cpu",
-    qat_steps: int = 30,
+    qat_steps: int = 200,
+    qat_lr: float | None = None,
     out_path: Path | None = None,
 ) -> dict[str, Any]:
     t0 = time.perf_counter()
@@ -58,6 +59,9 @@ def treat(
     capture_run = Path(capture or rx["inputs"]["capture"])
     target_bpw = float(rx["objective"]["target_bpw"])
     target_cos = float(rx["objective"].get("target_organ_cos", LAYER_TARGET_COS))
+    if qat_lr is None:
+        qat_lr = float(rx.get("inputs", {}).get("qat_lr", 1e-3))
+    escape_receipt = (rx.get("ceiling") or {}).get("escape_receipt")
 
     print(f"[treat] loading capture {capture_run}", flush=True)
     cap = load_capture(capture_run)
@@ -100,6 +104,7 @@ def treat(
                 seed=0xD0C70A,
                 device=device,
                 qat_steps=qat_steps,
+                qat_lr=float(qat_lr),
                 prefer_budget=True,
             )
             W_hat, nbytes, meta = result.W_hat, result.payload_bytes, result.meta
@@ -130,7 +135,12 @@ def treat(
     mean_payload = float(np.mean([r["payload_bytes"] for r in rows_out])) if rows_out else 0.0
     bill = project_complete_bpw(mean_expert_payload_bytes=mean_payload)
     try:
-        ceiling = seal_with_ceiling(bill, target_bpw=target_bpw, note="doctor6.treat")
+        ceiling = seal_with_ceiling(
+            bill,
+            target_bpw=target_bpw,
+            note="doctor6.treat",
+            escape_receipt=escape_receipt,
+        )
         sealed = True
     except CeilingViolation as exc:
         ceiling = {"enforcer_called": True, "legal": False, "error": str(exc)}

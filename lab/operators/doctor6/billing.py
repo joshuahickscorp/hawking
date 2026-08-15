@@ -7,8 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from lab.operators.doctor6.ceiling import (
+    SPECIALIZATION_JUSTIFICATION,
     complete_bpw_from_bytes,
     enforce_ceiling,
+    issue_specialization_escape,
     project_slots_from_expert_payload,
 )
 
@@ -63,8 +65,16 @@ def seal_with_ceiling(
     *,
     target_bpw: float = 1.0,
     note: str = "doctor6",
+    escape_receipt: dict[str, Any] | None = None,
+    justification: str | None = None,
 ) -> dict[str, Any]:
-    """Convert projected bill into ledger bits and call assert_complete_bpw_le_one."""
+    """Convert projected bill into ledger bits and enforce the ceiling.
+
+    target_bpw <= 1.0: the one-bit seal (fail-closed).
+    1.0 < target_bpw <= 1.5: issue (or reuse) a sealed specialization escape,
+    then fail-closed against the 1.5 abs hard ceiling. This is the sanctioned
+    path for --target-bpw 1.5, not a bypass of assert_complete_bpw_le_one.
+    """
     slots_bytes = bill["slots_bytes"]
     slots_bits = project_slots_from_expert_payload(
         mean_expert_payload_bytes=slots_bytes["expert_payload"] / EXPERT_TENSOR_COUNT,
@@ -75,19 +85,31 @@ def seal_with_ceiling(
         pass_through_bytes=slots_bytes.get("pass_through_tensors", 0),
         protected_islands_bytes=slots_bytes.get("protected_islands", 0),
     )
-    # enforce_ceiling raises CeilingViolation on fail.
+    issued_escape = escape_receipt
+    if float(target_bpw) > 1.0 + 1e-15 and issued_escape is None:
+        issued_escape = issue_specialization_escape(
+            target_bpw=target_bpw,
+            justification=justification or SPECIALIZATION_JUSTIFICATION,
+            note=note,
+        )
+    # enforce_ceiling raises CeilingViolation on fail (1.0 default, or 1.5
+    # under a valid sealed escape, or missing/tampered escape).
     receipt = enforce_ceiling(
         slots_bits,
         SOURCE_WEIGHT_ELEMENTS,
         reserve_bits=0,
         note=note,
         target_bpw=target_bpw,
+        escape_receipt=issued_escape,
     )
     return {
         "enforcer_called": True,
         "receipt": receipt,
+        "escape_receipt": receipt.get("escape_receipt") or issued_escape,
+        "escape_applied": bool(receipt.get("escape_applied")),
         "slots_bits": {k: int(v) for k, v in slots_bits.items()},
         "complete_physical_bpw": bill["complete_physical_bpw"],
+        "legal": bool(receipt.get("legal")),
     }
 
 

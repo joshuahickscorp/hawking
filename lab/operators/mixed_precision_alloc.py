@@ -98,26 +98,129 @@ def sensitivity_rows(
     return rows
 
 
-def allocate(
+def holdout_margin_rows(
+    organs: Sequence[Mapping[str, Any]],
+    bits_set: Sequence[int],
+    *,
+    layer_target: float,
+) -> list[dict[str, Any]]:
+    """Build allocate() rows from activation-holdout output cosine.
+
+    NOT the weight-space grid_quant relRMS proxy — input distribution decides.
+    Sensitivity at bit-width b is remaining deficit to ``layer_target`` (c^48),
+    scaled so extra bits buy more on worse organs. Water-fill then lifts the
+    worst organs first.
+    """
+    bits_set = sorted(int(b) for b in bits_set)
+    if not bits_set:
+        raise ValueError("bits_set must be non-empty")
+    hi = bits_set[-1]
+    rows: list[dict[str, Any]] = []
+    for o in organs:
+        name = str(o["name"])
+        elems = int(o["elems"])
+        if elems <= 0:
+            raise ValueError(f"{name}: elems must be positive")
+        holdout = float(o["holdout_cosine"])
+        deficit = max(float(layer_target) - holdout, 0.0) + 1e-6
+        sens = {b: float(deficit) * float(hi + 1 - b) for b in bits_set}
+        rows.append(
+            {
+                "name": name,
+                "elems": elems,
+                "holdout_cosine": holdout,
+                "margin": holdout - float(layer_target),
+                "layer_target": float(layer_target),
+                "sens": sens,
+                "component": o.get("component"),
+                "layer": o.get("layer"),
+                "band": o.get("band"),
+            }
+        )
+    return rows
+
+
+def _avg_eff_bpw(
+    rows: Sequence[Mapping[str, Any]], alloc: Mapping[str, int], total_elems: int
+) -> float:
+    return sum(BPW[alloc[str(r["name"])]] * int(r["elems"]) for r in rows) / total_elems
+
+
+def _waterfill_maxmin(
     rows: Sequence[Mapping[str, Any]],
     bits_set: Sequence[int],
     target_bpw: float,
 ) -> tuple[dict[str, int], float]:
-    """Greedy marginal water-fill under param-weighted average effective-bpw ≤ target."""
+    """Lift the worst holdout-margin organ first under avg-eff-bpw ≤ target."""
+    floor, ceil = bits_set[0], bits_set[-1]
+    alloc = {str(r["name"]): floor for r in rows}
+    total_elems = sum(int(r["elems"]) for r in rows)
+    by = {str(r["name"]): r for r in rows}
+
+    def margin(name: str) -> float:
+        r = by[name]
+        b = alloc[name]
+        if "holdout_cosine" in r:
+            holdout = float(r["holdout_cosine"])
+            target = float(r.get("layer_target", 0.9857))
+            gap = max(target - holdout, 0.0)
+            # Predicted close of the gap as bits rise, so the current
+            # worst does not hoard the whole budget at a static cosine.
+            span = max(ceil - floor, 1)
+            return holdout + gap * (b - floor) / span
+        return -float(r["sens"][b])
+
+    while True:
+        pick: tuple[tuple[float, int, str], str, int] | None = None
+        for r in rows:
+            name = str(r["name"])
+            b = alloc[name]
+            if b >= ceil:
+                continue
+            nb = bits_set[bits_set.index(b) + 1]
+            trial = dict(alloc)
+            trial[name] = nb
+            if _avg_eff_bpw(rows, trial, total_elems) > float(target_bpw) + 1e-9:
+                continue
+            # Worst holdout first; ties go to the larger organ.
+            key = (margin(name), -int(r["elems"]), name)
+            if pick is None or key < pick[0]:
+                pick = (key, name, nb)
+        if pick is None:
+            break
+        alloc[pick[1]] = pick[2]
+    return alloc, _avg_eff_bpw(rows, alloc, total_elems)
+
+
+def allocate(
+    rows: Sequence[Mapping[str, Any]],
+    bits_set: Sequence[int],
+    target_bpw: float,
+    *,
+    objective: str = "greedy_marginal",
+) -> tuple[dict[str, int], float]:
+    """Greedy / max-min water-fill under param-weighted average effective-bpw ≤ target.
+
+    objective:
+      greedy_marginal — original ds/dc gain (needs per-bit ``sens``)
+      maxmin_margin   — always lift the current worst holdout-cosine organ
+    """
     bits_set = sorted(int(b) for b in bits_set)
     if not bits_set:
         raise ValueError("bits_set must be non-empty")
     if not rows:
         return {}, 0.0
-    floor, ceil = bits_set[0], bits_set[-1]
-    alloc = {str(r["name"]): floor for r in rows}
     total_elems = sum(int(r["elems"]) for r in rows)
     if total_elems <= 0:
         raise ValueError("rows must have positive element counts")
-    by = {str(r["name"]): r for r in rows}
+    if objective == "maxmin_margin":
+        return _waterfill_maxmin(rows, bits_set, target_bpw)
+    if objective != "greedy_marginal":
+        raise ValueError(f"unknown allocate objective {objective!r}")
 
-    def avg_bpw(a: Mapping[str, int]) -> float:
-        return sum(BPW[a[str(r["name"])]] * int(r["elems"]) for r in rows) / total_elems
+    floor, ceil = bits_set[0], bits_set[-1]
+    alloc = {str(r["name"]): floor for r in rows}
+    by = {str(r["name"]): r for r in rows}
 
     def gain(name: str, b: int) -> tuple[float, int]:
         r = by[name]
@@ -136,12 +239,63 @@ def allocate(
             g, nb = gain(name, b)
             trial = dict(alloc)
             trial[name] = nb
-            if avg_bpw(trial) <= target_bpw + 1e-9 and (best is None or g > best[0]):
+            if (
+                _avg_eff_bpw(rows, trial, total_elems) <= target_bpw + 1e-9
+                and (best is None or g > best[0])
+            ):
                 best = (g, name, nb)
         if best is None:
             break
         alloc[best[1]] = best[2]
-    return alloc, avg_bpw(alloc)
+    return alloc, _avg_eff_bpw(rows, alloc, total_elems)
+
+
+def allocate_from_holdout(
+    organs: Sequence[Mapping[str, Any]],
+    *,
+    bits_set: Sequence[int] = (1, 2, 3, 4),
+    target_bpw: float = 1.5,
+    layer_target: float,
+) -> dict[str, Any]:
+    """End-to-end per-organ water-fill from activation-holdout cosine."""
+    bits_set = tuple(sorted(int(b) for b in bits_set))
+    rows = holdout_margin_rows(organs, bits_set, layer_target=layer_target)
+    alloc, avg = allocate(rows, bits_set, target_bpw, objective="maxmin_margin")
+    hist: dict[str, int] = {}
+    for b in alloc.values():
+        hist[str(int(b))] = hist.get(str(int(b)), 0) + 1
+    return {
+        "schema": "hawking.doctor.mixed_precision_alloc.v1",
+        "allocator_invoked": True,
+        "allocator": "mixed_precision_alloc.allocate",
+        "objective": "maxmin_margin_to_layer_target",
+        "sensitivity": "activation_holdout_output_cosine",
+        "not_weight_space_relrms": True,
+        "rung": "mixed_prec",
+        "bits_set": list(bits_set),
+        "target_bpw": float(target_bpw),
+        "layer_target": float(layer_target),
+        "achieved_avg_eff_bpw": float(avg),
+        "within_budget": bool(avg <= float(target_bpw) + 1e-9),
+        "allocation": alloc,
+        "histogram": hist,
+        "rung_config": emit_config(alloc, "rung"),
+        "bit_width_map": [
+            {
+                "name": r["name"],
+                "elems": r["elems"],
+                "holdout_cosine": r["holdout_cosine"],
+                "margin_to_layer_target": r["margin"],
+                "bits": alloc[r["name"]],
+                "eff_bpw": BPW[alloc[r["name"]]],
+                "component": r.get("component"),
+                "layer": r.get("layer"),
+                "band": r.get("band"),
+            }
+            for r in rows
+        ],
+        "metric": "holdout_output_cosine_margin_to_c48",
+    }
 
 
 def emit_config(alloc: Mapping[str, int], kind: str = "tensor") -> dict[str, Any]:

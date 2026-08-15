@@ -58,7 +58,8 @@ def compose_organ_chain(
     sensitivity: float,
     seed: int,
     device: str = "cpu",
-    qat_steps: int = 40,
+    qat_steps: int = 200,
+    qat_lr: float = 1e-3,
     target_cos: float = LAYER_TARGET_COS,
     measure_all: bool = False,
     max_legal_bpw: float = 0.98,
@@ -96,13 +97,19 @@ def compose_organ_chain(
         }
     ]
 
-    # Under-budget track starts empty; first legal rung that runs becomes the base.
+    # Under-budget track starts at the incumbent holdout floor: a legal rung
+    # is kept only if it matches or beats incumbent. This is the compose
+    # fallback — never emit a chain whose holdout cosine is below binary.
     best_W: np.ndarray | None = None
-    best_cos = float("-inf")
-    best_bytes = 0
-    best_meta: dict[str, Any] = {}
+    best_cos = incumbent_cos
+    best_bytes = int(inc_bytes)
+    best_meta: dict[str, Any] = {
+        "codec": "binary_g128",
+        "role": "incumbent_holdout_floor",
+    }
     chain: list[str] = []
     dropped: list[dict[str, Any]] = []
+    fallback_to_incumbent = False
 
     # Preferential order by organ type / deficit; down_proj escalates further.
     preferred = _min_rungs_for_component(component, deficit0)
@@ -136,6 +143,7 @@ def compose_organ_chain(
                 seed=seed,
                 device=device,
                 qat_steps=qat_steps,
+                qat_lr=qat_lr,
                 qat_bits=qat_bits,
                 prefer_budget=True,
             )
@@ -157,24 +165,36 @@ def compose_organ_chain(
         surplus = float(score["surplus_over_incumbent"])
         legal = bool(local_bpw <= max_legal_bpw + 1e-12)
 
-        # Keep rule (under-budget track):
+        # Keep rule (under-budget track, incumbent holdout is the floor):
         #  1. must be legal under max_legal_bpw
-        #  2. must improve on current best legal cosine (or be the first legal)
+        #  2. must match or beat incumbent, and improve on the current best
         #  3. L4 must not regress (measured 1-bit STE pathology generalizes)
         eps = 1e-4
         if not legal:
             keep = False
             reason = f"over_budget local_bpw={local_bpw:.4f} > {max_legal_bpw}"
-        elif best_W is None:
-            keep = True
-            reason = "first_legal_base"
+        elif rung == "l4_block_qat" and cos + eps < incumbent_cos:
+            keep = False
+            reason = (
+                "1-bit STE regresses → drop"
+                if qat_bits <= 1
+                else "qat_regressed_vs_incumbent"
+            )
         elif cos > best_cos + eps:
             keep = True
-            reason = "improves_best_legal"
+            reason = (
+                "improves_best_legal"
+                if best_W is not None
+                else "beats_incumbent_floor"
+            )
+        elif best_W is None and cos + eps >= incumbent_cos:
+            keep = True
+            reason = "matches_incumbent_floor"
         else:
             keep = False
             reason = (
-                f"measured_unhelpful: cos={cos:.4f} best_legal={best_cos:.4f} "
+                f"below_incumbent_or_unhelpful: cos={cos:.4f} "
+                f"incumbent={incumbent_cos:.4f} best={best_cos:.4f} "
                 f"surplus_over_incumbent={surplus:+.4f}"
             )
 
@@ -243,27 +263,29 @@ def compose_organ_chain(
                 )
             break
 
-    if best_W is None:
-        # Absolute fallback: legal act-SVD base even if scoring failed to keep.
-        from lab.operators.doctor6.rungs import apply_rung as _ar
-
-        fallback = _ar(
-            "l0_calib",
-            W,
-            X_fit,
-            organ_key=organ_key,
-            sensitivity=sensitivity,
-            seed=seed,
-            prefer_budget=True,
+    if best_W is None or best_cos + 1e-12 < incumbent_cos:
+        # Incumbent floor: never emit a chain whose holdout is below binary.
+        fallback_to_incumbent = True
+        best_W = W_inc
+        best_bytes = int(inc_bytes)
+        best_cos = incumbent_cos
+        best_meta = {
+            "codec": "binary_g128",
+            "role": "incumbent_holdout_floor",
+        }
+        chain = ["incumbent_binary"]
+        measurements.append(
+            {
+                "rung": "incumbent_binary",
+                "kept": True,
+                "keep_reason": "incumbent_holdout_floor",
+                "output_cosine": incumbent_cos,
+                "surplus_over_incumbent": 0.0,
+                "payload_bytes": int(inc_bytes),
+                "component_bpw": float(inc_bpw),
+                "legal_under_budget": bool(inc_bpw <= max_legal_bpw + 1e-12),
+            }
         )
-        best_W = fallback.W_hat
-        best_bytes = int(fallback.payload_bytes)
-        best_meta = dict(fallback.meta)
-        score = score_vs_incumbent(
-            W=W, X_hold=X_hold, W_hat=best_W, W_incumbent=W_inc
-        )
-        best_cos = float(score["output_cosine"])
-        chain = ["l0_calib"]
 
     return {
         "organ_key": organ_key,
@@ -280,6 +302,7 @@ def compose_organ_chain(
         "clears_target": bool(best_cos >= target_cos),
         "deficit_vs_target": float(target_cos - best_cos),
         "sensitivity": float(sensitivity),
+        "fallback_to_incumbent": bool(fallback_to_incumbent),
         "meta": best_meta,
         "W_hat": best_W,
         "W_incumbent": W_inc,
@@ -309,4 +332,12 @@ def compose_status_summary(organ_results: list[dict[str, Any]]) -> dict[str, Any
         "distinct_chains_by_component": by_comp,
         "chains_differ_across_components": len({"+".join(r["chain"]) for r in organ_results})
         > 1,
+        "n_prescribed_below_incumbent": sum(
+            1
+            for r in organ_results
+            if float(r["prescribed_cosine"]) + 1e-12 < float(r["incumbent_cosine"])
+        ),
+        "n_fallback_to_incumbent": sum(
+            1 for r in organ_results if r.get("fallback_to_incumbent")
+        ),
     }

@@ -37,6 +37,7 @@ from lab.operators.doctor6.coherence import (
 )
 from lab.operators.doctor6.compose import compose_organ_chain, compose_status_summary
 from lab.operators.doctor6.rungs import quant_binary, list_rung_status
+from lab.operators.mixed_precision_alloc import BPW, allocate_from_holdout
 from lab.operators.one_bit_ceiling import CeilingViolation
 from lab.operators.q30_activation_aware_family_probe import load_capture
 from lab.operators.qwen30b_gravity_pack import load_tensor, load_weight_map
@@ -131,7 +132,8 @@ def prescribe(
     le_per_band: int = LE_PER_BAND,
     min_rows: int = DEFAULT_MIN_ROWS_PER_ORGAN,
     device: str = "cpu",
-    qat_steps: int = 30,
+    qat_steps: int = 200,
+    qat_lr: float = 1e-3,
     out_path: Path | None = None,
     force_over_ceiling: bool = False,
 ) -> dict[str, Any]:
@@ -237,6 +239,7 @@ def prescribe(
             seed=SAMPLE_SEED,
             device=device,
             qat_steps=qat_steps,
+            qat_lr=qat_lr,
             target_cos=target_cos,
             measure_all=False,
         )
@@ -248,6 +251,7 @@ def prescribe(
                 "component": org.component,
                 "band": org.band,
                 "n_routed": org.n_routed,
+                "n_params": int(p["W"].size),
                 "n_fit": int(p["X_fit"].shape[0]),
                 "n_hold": int(p["X_hold"].shape[0]),
             }
@@ -287,7 +291,30 @@ def prescribe(
             doctor_bytes=10**9,
         )
 
-    alloc_report = maybe_run_gravity_allocator(
+    # Per-organ mixed-precision water-fill. Always invoked (not gated on the
+    # complete-artifact ceiling binding). Sensitivity is activation-holdout
+    # output cosine — never the weight-space grid_quant relRMS proxy.
+    waterfill = allocate_from_holdout(
+        [
+            {
+                "name": r["tensor_name"],
+                "elems": int(r.get("n_params") or 0) or 1,
+                "holdout_cosine": float(r["prescribed_cosine"]),
+                "component": r["component"],
+                "layer": r["layer"],
+                "band": r.get("band"),
+            }
+            for r in organ_results
+        ],
+        bits_set=(1, 2, 3, 4),
+        target_bpw=float(target_bpw),
+        layer_target=float(target_cos),
+    )
+    for r in organ_results:
+        bits = int(waterfill["allocation"].get(r["tensor_name"], 1))
+        r["allocated_bits"] = bits
+        r["allocated_eff_bpw"] = float(BPW.get(bits, BPW[1]))
+    gravity_alloc = maybe_run_gravity_allocator(
         bill,
         target_bpw=target_bpw,
         organ_sensitivities={
@@ -296,6 +323,8 @@ def prescribe(
             "expert_up": 0.50,
         },
     )
+    alloc_report = dict(waterfill)
+    alloc_report["gravity_allocator_gated"] = gravity_alloc
 
     ceiling_report: dict[str, Any]
     try:
@@ -306,6 +335,8 @@ def prescribe(
             "enforcer_called": True,
             "legal": False,
             "error": str(exc),
+            "escape_receipt": None,
+            "escape_applied": False,
         }
         ceiling_ok = False
 
@@ -404,6 +435,7 @@ def prescribe(
             "capture": str(capture_run),
             "device": device,
             "qat_steps": qat_steps,
+            "qat_lr": qat_lr,
             "min_rows_floor": min_rows,
             "holdout": {"HOLD_FRAC": HOLD_FRAC, "SEED": SEED},
             "activation_provenance": {
@@ -476,6 +508,8 @@ def prescribe(
                 ),
                 "incumbent_cosine": r["incumbent_cosine"],
                 "chain": r["chain"],
+                "allocated_bits": r.get("allocated_bits"),
+                "allocated_eff_bpw": r.get("allocated_eff_bpw"),
             }
             for r in organ_results
         ],

@@ -23,7 +23,8 @@ def main(argv: list[str] | None = None) -> int:
     p_pre.add_argument("--le-per-band", type=int, default=4)
     p_pre.add_argument("--min-rows", type=int, default=64)
     p_pre.add_argument("--device", default="auto")
-    p_pre.add_argument("--qat-steps", type=int, default=30)
+    p_pre.add_argument("--qat-steps", type=int, default=200)
+    p_pre.add_argument("--qat-lr", type=float, default=1e-3)
     p_pre.add_argument(
         "--out",
         type=Path,
@@ -42,7 +43,8 @@ def main(argv: list[str] | None = None) -> int:
     p_tr.add_argument("--model-dir", type=Path, default=None)
     p_tr.add_argument("--capture", type=Path, default=None)
     p_tr.add_argument("--device", default="auto")
-    p_tr.add_argument("--qat-steps", type=int, default=30)
+    p_tr.add_argument("--qat-steps", type=int, default=200)
+    p_tr.add_argument("--qat-lr", type=float, default=None)
     p_tr.add_argument(
         "--out",
         type=Path,
@@ -80,39 +82,10 @@ def main(argv: list[str] | None = None) -> int:
             return "cpu"
 
     if args.cmd == "selftest":
-        from lab.operators.doctor6.verify import verify_ground_truth_pair
-        from lab.operators.doctor6.billing import project_complete_bpw, seal_with_ceiling
-        from lab.operators.one_bit_ceiling import CeilingViolation
+        from lab.operators.doctor6.selftest import run_selftest
 
-        gt = verify_ground_truth_pair()
-        # Ceiling fail-closed: huge bill must raise.
-        bill = project_complete_bpw(mean_expert_payload_bytes=1e9)
-        ceiling_closed = False
-        ceiling_msg = ""
-        try:
-            seal_with_ceiling(bill, target_bpw=1.0, note="selftest")
-        except CeilingViolation as exc:
-            ceiling_closed = True
-            ceiling_msg = str(exc)
-        # Legal bill should pass.
-        legal = project_complete_bpw(mean_expert_payload_bytes=120_000.0)
-        legal_ok = False
-        try:
-            seal_with_ceiling(legal, target_bpw=1.0, note="selftest_legal")
-            legal_ok = True
-        except CeilingViolation as exc:
-            ceiling_msg += f" | legal failed: {exc}"
-
-        out = {
-            "coherence_ground_truth": gt,
-            "ceiling": {
-                "over_ceiling_fail_closed": ceiling_closed,
-                "legal_bill_passes": legal_ok,
-                "over_ceiling_message": ceiling_msg[:500],
-            },
-            "all_pass": bool(gt["all_pass"] and ceiling_closed and legal_ok),
-        }
-        print(json.dumps(out, indent=2))
+        out = run_selftest()
+        print(json.dumps(out, indent=2, default=str))
         return 0 if out["all_pass"] else 1
 
     if args.cmd == "verify":
@@ -152,6 +125,7 @@ def main(argv: list[str] | None = None) -> int:
             min_rows=args.min_rows,
             device=_device(args.device),
             qat_steps=args.qat_steps,
+            qat_lr=args.qat_lr,
             out_path=args.out,
             force_over_ceiling=args.force_over_ceiling,
         )
@@ -185,11 +159,29 @@ def main(argv: list[str] | None = None) -> int:
                 k: out.get("billing", {}).get(k)
                 for k in ("complete_physical_bpw", "under_1_0", "expert_local_bpw")
             },
+            "allocator": {
+                "allocator_invoked": out.get("allocator", {}).get("allocator_invoked"),
+                "achieved_avg_eff_bpw": out.get("allocator", {}).get(
+                    "achieved_avg_eff_bpw"
+                ),
+                "within_budget": out.get("allocator", {}).get("within_budget"),
+                "histogram": out.get("allocator", {}).get("histogram"),
+                "objective": out.get("allocator", {}).get("objective"),
+                "sensitivity": out.get("allocator", {}).get("sensitivity"),
+            },
             "ceiling": {
                 "enforcer_called": out.get("ceiling", {}).get("enforcer_called"),
                 "legal": out.get("ceiling", {}).get("legal")
                 or out.get("ceiling", {}).get("receipt", {}).get("legal"),
                 "error": out.get("ceiling", {}).get("error"),
+                "escape_applied": out.get("ceiling", {}).get("escape_applied")
+                or out.get("ceiling", {}).get("receipt", {}).get("escape_applied"),
+                "escape_sealed": bool(
+                    (out.get("ceiling") or {}).get("escape_receipt")
+                    and (out.get("ceiling") or {})
+                    .get("escape_receipt", {})
+                    .get("sha256")
+                ),
             },
             "deficits": out.get("deficits"),
             "out": str(args.out),
@@ -208,6 +200,7 @@ def main(argv: list[str] | None = None) -> int:
             capture=args.capture,
             device=_device(args.device),
             qat_steps=args.qat_steps,
+            qat_lr=args.qat_lr,
             out_path=args.out,
         )
         print(
