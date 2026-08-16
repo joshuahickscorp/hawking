@@ -17,9 +17,31 @@
       "complete_bpw_at_8bit_nonexpert": 1.43051,
       "status": "SCREEN_PASSED_NOT_YET_PACKED_OR_GENERATED",
       "artifact_packed": false,
-      "decode_kernel_exists": false,
+      "decode_kernel_exists": true,
       "coherence_generation_tested": false,
-      "receipt": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json"
+      "receipt": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json",
+      "decode_kernel_receipt": "receipts/ascent-2026-08-16/q80-decode-kernels.json",
+      "decode_us_per_organ": {
+        "gate_binary_group": 61,
+        "up_binary_rice_csr": 80,
+        "down_hgravs01_r160_b3": 259
+      },
+      "decode_gates": {
+        "gate": 4.77e-06,
+        "up": 4.05e-06,
+        "down": 1.14e-05,
+        "tol": 2e-05,
+        "rice_indices": "bit-identical",
+        "oracle": "ARTIFACT oracle, not BF16 parent"
+      },
+      "routed_decode_ms_per_token_projected": 192,
+      "expert_budget_ms": 8,
+      "over_budget_factor": 24,
+      "blocking_finding": "The <=1.5 representation is affordable to STORE and unaffordable to EXECUTE. Decode achieves ~0.6 GB/s against a ~800 GB/s ceiling, so it is serial-decode-bound, not bandwidth-bound. down_proj alone is 124 of the 192 ms.",
+      "open_gaps": [
+        "artifact_packed",
+        "coherence_generation_tested"
+      ]
     },
     "dsv4f": {
       "measurement_label": "DIRTY_ENGINEERING",
@@ -41,7 +63,38 @@
         "after_residency_gpu_ns": 399023000,
         "surviving_host_ns": 50000000
       },
-      "path_to_20ms": "1205 -> kill expert_slab_io 415 -> kill identity tax -> leaves GPU body 399 ms across 137 CBs as THE wall. GPU body must reach the 10-15 ms class; that is a ~27x reduction and the dominant open problem."
+      "path_to_20ms": "1205 -> kill expert_slab_io 415 -> kill identity tax -> leaves GPU body 399 ms across 137 CBs as THE wall. GPU body must reach the 10-15 ms class; that is a ~27x reduction and the dominant open problem.",
+      "cb_collapse": {
+        "receipt": "receipts/ascent-2026-08-16/dsv-cb-collapse.json",
+        "encoders_per_token": {
+          "before": 1857,
+          "after": 134
+        },
+        "command_buffers": {
+          "before": 137,
+          "after": 134
+        },
+        "dispatches": {
+          "before": 1857,
+          "after": 1642
+        },
+        "gpu_ns_median": {
+          "before": 412000000,
+          "after": 377000000
+        },
+        "occupancy_proxy_ns_per_encoder": {
+          "before": 222000,
+          "after": 2810000
+        },
+        "gpu_idle_fraction": 0.733,
+        "inter_cb_gap_ns": 1036353092,
+        "correctness": "bit-identical hc_sha c94da765... on all 6 full-token reps, 0 fallbacks",
+        "key_finding": "73% of the GPU span is IDLE, waiting on streamed weight IO and host MHC. GPU busy is only ~377 ms. This corroborates expert_slab_io as the wall and means kernel arithmetic is NOT the current war for DSV4F.",
+        "rejected": [
+          "attn+route+moe merge (host MHC sits between, would change the honesty path)",
+          "LM-head 8->1 (8 resident tiles = 1 GiB, over the 384 MiB weight bound; cosmetic)"
+        ]
+      }
     },
     "dsv4f_density_frontier": {
       "feasibility": "CONFIRMED_BY_ARITHMETIC_NOT_FITTED",
@@ -107,8 +160,9 @@
       "information_gain": 150000000,
       "transfer_value": 250000000,
       "experiment_cost": 2.0,
-      "status": "running",
-      "note": "Transfer value is high: a working packed-matvec pattern applies to DSV4F resident gravity too."
+      "status": "retained",
+      "note": "Transfer value is high: a working packed-matvec pattern applies to DSV4F resident gravity too.",
+      "tier1": "merged to main; skew guard SKEWED -> hand-composed additive conflicts, rebuilt clean"
     },
     {
       "id": "dsv-host-wall",
@@ -140,7 +194,8 @@
       "information_gain": 150000000,
       "transfer_value": 100000000,
       "experiment_cost": 1.5,
-      "status": "running"
+      "status": "retained",
+      "tier1": "merged to main; skew guard SKEWED -> hand-composed additive conflicts, rebuilt clean"
     },
     {
       "id": "dsv-resident-gravity",
@@ -283,6 +338,22 @@
       "experiment_cost": 1.0,
       "status": "running",
       "note": "SHA already went to 0 on this path, proving the pattern works. Same class killed 28s of startup and 48x'd a repack previously."
+    },
+    {
+      "id": "q80-decode-throughput",
+      "model": "q80",
+      "hypothesis": "Mixed-codec decode is serial-decode-bound at ~0.6 GB/s against a ~800 GB/s ceiling; parallelizing down_proj's 3-bit factor decode into one dispatch closes most of the 24x expert-budget gap",
+      "target_stage": "runtime/representation-execution",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-decode-throughput.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 150000000,
+      "density_frontier_gain_ns_equiv": 300000000,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "Gates the whole Q80 <=1.5 path: a representation that cannot execute in budget is storage, not density."
     }
   ],
   "history": [],
