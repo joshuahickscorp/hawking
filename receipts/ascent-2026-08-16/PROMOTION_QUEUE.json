@@ -310,6 +310,26 @@
       "skew": "UNKNOWN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "matvec-occupancy-230x-20260816-015752",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "Q4 organ still 11.0 \u00b5s / 50.45 GB/s (10.9\u00d7 below the 550 GB/s control); 1440\u00d711 \u00b5s = 15.90 ms, 1.99\u00d7 the 8 ms expert budget. Host compact_expert_slab_pack (~281 ms) remains the larger full-token term.",
+      "branch": "grok/matvec-occupancy-230x-20260816-015752",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-mixed-generate-20260816-015142",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "weight GEMV dispatch (10-expert mixed wave + Q8 mixer/shared/lm_head, ~13808 CBs/generate); GPU matvec 868332337 ns/forward",
+      "branch": "grok/q80-mixed-generate-20260816-015142",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }
