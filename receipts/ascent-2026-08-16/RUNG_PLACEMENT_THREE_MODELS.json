@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.ascent.rung_placement_three_models.v1",
+  "date": "2026-08-16",
+  "instrument": "tools/ascent/roof_rungs.py (G007), re-run by the controller against the POST-reconstruction Q80 numbers I verified myself",
+  "q80_mixed_1p5": {
+    "bytes_per_token": 2218000000,
+    "wall_ns": 301418659,
+    "gpu_ns": 36598269,
+    "tok_s": 3.32,
+    "roof_tok_s": 185.53,
+    "fraction_of_roof": 0.0179,
+    "fraction_of_roof_gpu": 0.147,
+    "current_rung": "below_A",
+    "highest_rung_reachable_at_current_bytes": "B",
+    "next_rung_blocked_by_bytes": "C",
+    "byte_budgets": {
+      "A_max_gb": 8.23,
+      "B_max_gb": 4.12,
+      "C_max_gb": 2.06
+    },
+    "VERDICT": "Q80 does NOT need more density to reach 50 OR 100 TPS. At its current 2.218 GB/token the roof is 185.5 TPS and rung B is reachable on bytes alone. It sits at 1.8% of that roof. The lever is execution efficiency, not BPW. Only rung C (200 TPS) is byte-blocked, and only just - it needs 2.06 GB against the current 2.218."
+  },
+  "qwen38": {
+    "note": "OPPOSITE regime. Bandwidth-bound at 406.2 of 411.51 GB/s = 98.7% of ceiling, so it has no execution headroom and BPW is its ONLY lever. Corrected projections with fixed 1.415 ms overhead: 2.0 BPW -> 58.2 TPS, 1.5 -> 75.5, 1.25 -> 88.7."
+  },
+  "THE_STRATEGIC_SPLIT": "The two lead models need OPPOSITE work and it is now measured on both sides. Q80: 1.8% of its roof, density irrelevant until rung C, fix execution. Qwen3.8: 98.7% of ceiling, execution maxed, fix density. Applying either model's lever to the other wastes the lane.",
+  "physical_limit_discipline": "Neither model is at a physical limit. Q80 is at 14.7% of the decode ceiling on GPU and 1.8% of roof on wall. Per S004 s4 a physical-limit claim requires naming the saturated hardware resource; nothing here saturates one."
+}
