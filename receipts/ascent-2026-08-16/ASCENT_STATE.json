@@ -139,48 +139,6 @@
           "expert first-touch: 518.7/556.7/339.2 -> 208.6/383.0/188.2 ms (in integration)"
         ],
         "consequence": "Q80's token cannot improve until expert first-touch lands. Until then every GPU win is invisible in the wall, which is exactly the specialization trap joint-token-ns was built to expose - here it is visible in advance rather than in hindsight."
-      },
-      "integrated": {
-        "merged": "grok/q80-integrate-graph-20260816-012855 (db8c8972+bb566922+3bf940aa)",
-        "composed": [
-          "deltanet-gqa2 topology (defaults historical)",
-          "expert first-touch no-copy + prefetch",
-          "full ns ledger"
-        ],
-        "reps_ms": {
-          "C": [
-            528.6,
-            298.9,
-            299.3
-          ],
-          "D": [
-            192.6,
-            177.0,
-            181.2
-          ]
-        },
-        "median_ms": {
-          "before": 299,
-          "after": 181
-        },
-        "robustness": "D beat EVERY paired C - not a median artifact",
-        "correctness": "bit-identical 6/6 ids; mmap==rehash; 0 expert-payload fallbacks",
-        "ledger_closure": "identity holds 11/11, residual 6.9 us = 0.004%, catalog_complete=true, silent_zero_stages=[]",
-        "env_escapes_exercised": [
-          "HAWKING_Q80_EXPERT_NOCOPY=0",
-          "HAWKING_Q80_EXPERT_PREFETCH=0",
-          "HAWKING_Q80_REHASH_PAYLOADS=1",
-          "HAWKING_QWEN80_TOKEN_NS_LEDGER=1"
-        ],
-        "next": "DeltaNet mixed prefix CB (mixer+shared+router+wait) 79081238 ns/token",
-        "label": "DIRTY_ENGINEERING - a CLEAN paired baseline is still owed for G001"
-      },
-      "fs_per_weight_served": {
-        "value": 156970,
-        "unit": "fs",
-        "label": "AMORTIZED THROUGHPUT METRIC - NOT PHYSICAL SINGLE-WEIGHT LATENCY",
-        "floor_at_1_392_bpw": 212.53,
-        "distance_from_floor": "~739x"
       }
     },
     "q80_density_frontier": {
@@ -295,7 +253,14 @@
         "rank_clamped": "NO - rank not clamped in the packed artifact"
       },
       "honesty": "weight-space reconstruction cosines on a sample expert are 0.80/0.84/0.60 (binary/residual/low-rank). That is NOT the 0.8604 output-space screen and must not be read as one.",
-      "remaining_gap": "native mixed decode kernel is not wired to THIS catalog, so generation cannot be measured and there is no ns/token for the artifact"
+      "remaining_gap": "native mixed decode kernel is not wired to THIS catalog, so generation cannot be measured and there is no ns/token for the artifact",
+      "lowrank_algebra": {
+        "verdict": "CONFIRMED NEGATIVE - down_proj ALREADY executes L @ (R @ x); it never reconstructed W",
+        "so": "the doctrine's representation->algebra class (highest-value per the steer) was already satisfied for this organ. Avenue correctly closed rather than re-implemented.",
+        "correctness": "numeric gate 2e-5 vs the TWO-STAGE artifact oracle (not reconstruct, not BF16); reconstruct-vs-two-stage CPU drift 1.81e-5; packed-vs-decoded-factor 0.0; rice bit-identical; 0 fallbacks",
+        "routed_48x10": "192.9 -> 18.28 ms, unchanged by this lane; still 2.285x over the 8 ms expert budget",
+        "next": "up_proj binary decode/occupancy 17250 ns, ~45% of the remaining 38 us/expert, ~15 GB/s - NOT DRAM-bound and NOT reconstruct-W-bound"
+      }
     },
     "dsv4f": {
       "measurement_label": "DIRTY_ENGINEERING",
@@ -541,27 +506,6 @@
         "note": "DSV4F has INVERTED. It began 73% GPU-idle waiting on host I/O. With expert payloads and attention weights both resident, host streaming is largely gone and metal.gpu ~393 ms is now THE wall.",
         "consequence": "The optimization target moves from host I/O to GPU occupancy - which is exactly where dsv-occupancy-geometry already measured attention GPU 127.04 -> 52.57 ms.",
         "PROJECTED_NOT_MEASURED": "If expert cache + attn cache + occupancy all compose on the 830 ms integrated body, the arithmetic suggests roughly 260-340 ms/token. This is a PROJECTION from separately-measured deltas, NOT a measured token, and joint-token-ns has already demonstrated that per-stage wins do not simply add. It must be measured on the integrated build before any claim."
-      },
-      "occupancy_integrated": {
-        "merged": "grok/dsv-integrate-occupancy-20260816-012855",
-        "what_ships": "ordered RMSNorm ONLY, bit-identical, default on (HAWKING_DSV4F_MLA_RMSNORM_SIMD)",
-        "held_back": "WO-A and FP8 occupancy behind flags, DEFAULT OFF - numeric delta not accepted",
-        "CORRECTION_of_earlier_reading": "The occupancy lane's 'closer to the CPU oracle' claim DOES NOT SURVIVE. With RMSNorm held to the authority fold, simd_sum WO-A+FP8 gives logit 16.78851, |delta| 0.00665 vs authority and 0.02107 vs the CPU ORACLE - FARTHER from the oracle than authority already is (0.01442). The earlier 0.001139 figure required reassociating RMSNorm as well. It is NOT a general accuracy improvement.",
-        "opt_in_attention_gpu_ms": [
-          73.794,
-          77.239,
-          76.866,
-          73.088
-        ],
-        "opt_in_vs_claim": "73-77 ms, NOT the 52.57 ms the standalone lane reported, and not the default",
-        "default_correctness": "bit-identical hc_sha c94da765, token 5, logit 16.7818546295166, 0 fallbacks",
-        "next": "attention GPU still ~127236000 ns on the default path; WO-A/WQ-A/WKV/WO-B still one-thread-per-row. Host exclusive remains the token-level majority (~1.0 s clean body)."
-      },
-      "fs_per_weight_served": {
-        "value": 81402,
-        "unit": "fs",
-        "label": "AMORTIZED THROUGHPUT METRIC - NOT PHYSICAL SINGLE-WEIGHT LATENCY",
-        "active_weights_per_token": 12748587008
       }
     },
     "dsv4f_density_frontier": {
@@ -988,11 +932,12 @@
       "information_gain": 300000000,
       "transfer_value": 400000000,
       "experiment_cost": 1.5,
-      "status": "running",
+      "status": "retained",
       "note": "Doctrine names representation->algebra one of the highest-value research classes. Also the controller's first live end-to-end cycle.",
       "tier1_command": "echo controller-cycle-ok",
       "tier1_expect": "controller-cycle-ok",
-      "task_id": "q80-lowrank-algebra-20260816-015251"
+      "task_id": "q80-lowrank-algebra-20260816-015251",
+      "tier1": "controller Tier-1 pass; merged; confirmed negative"
     },
     {
       "id": "q80-mixed-generate",
@@ -1013,7 +958,14 @@
       "tier1_expect": null
     }
   ],
-  "history": [],
+  "history": [
+    {
+      "id": "q80-lowrank-algebra",
+      "task_id": "q80-lowrank-algebra-20260816-015251",
+      "outcome": "done",
+      "tier1": "tier1 pass (reject-only; NOT a promotion)"
+    }
+  ],
   "negative_science": [
     "Q30 static <=1.5 coherence FAILED",
     "Q80 cross-expert shared-basis REFUTED (experts mutually orthogonal, cos 0.004)",
@@ -1030,10 +982,7 @@
     "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
     "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
     "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create.",
-    "DSV4F simd_sum WO-A+FP8 occupancy is NOT closer to the CPU oracle: 0.02107 vs oracle against authority's 0.01442. The apparent improvement required reassociating RMSNorm too. Do not treat reduction-order changes as accuracy gains without isolating each one.",
-    "DRAM row-locality interleaving is NOT the Q80/DSV4F lever: Q4 interleaved LOST (210500 -> 224916 ns), binary LOST (59750 -> 61000), only FP4 gained (75000 -> 64291). Live wall unchanged. Next bottleneck is not DRAM rows.",
-    "Expert routing co-occurrence layout is WEAK: greedy co-route order cuts mean |id_i - id_j| only 170.29 -> 164.28 (1.037x). Not worth pursuing as a layout lever.",
-    "Q80 packed code streams already sit at alpha ~0.48-0.52, i.e. essentially RANDOM switching activity (alpha_vs_random 0.96-1.03). Transition-optimized permutation is therefore a real but unshipped opportunity - and the measured next bottleneck is occupancy/dispatch, NOT switching activity."
+    "Q80 down_proj low-rank ALREADY executes L @ (R @ x) - it does not reconstruct W. The representation->algebra optimization was already in place; do not re-open it. The remaining decode cost is occupancy, not algebra."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
@@ -1092,26 +1041,5 @@
     "grok/dsv-admission-identity-20260816-003824 (no wall win; real work removed)",
     "grok/dsv-occupancy-geometry-20260816-010044 (attn GPU 127->52.6, NOT bit-identical - under review)",
     "grok/dsv-attn-weight-io-20260816-010759 (attn weight residency)"
-  ],
-  "THE_DECISIVE_MEASUREMENT": {
-    "source": "receipts/ascent-2026-08-16/dram-row-locality.json (merged)",
-    "control_same_box_same_run": {
-      "dram_row_probe_sequential_gbps": 560.25,
-      "dram_row_probe_conflict_gbps": 646.71,
-      "note": "This is a CONTROL, not a datasheet ceiling. The memory system demonstrably delivers 560-647 GB/s on this machine in this run."
-    },
-    "actual_kernels": {
-      "q80_q4_gate_matvec_gbps": 2.65,
-      "q80_mixed_binary_gate_matvec_gbps": 2.47,
-      "dsv4f_fp4_reduced_gbps": 0.93
-    },
-    "gap": "~230x. The packed matvecs are NOT memory-bound - they are catastrophically under-occupied. The control proves the hardware can do it.",
-    "implication": "If packed matvec reached even 100 GB/s (still 6x below the control), the routed decode projection would fall from 18.28 ms to roughly 0.46 ms. This is the largest single identified headroom in the campaign.",
-    "corroborates": [
-      "Q80 measured ~1% of ceiling",
-      "DSV4F MLA 24-36 GB/s of ~750",
-      "component matvec was one-thread-per-row",
-      "topology collapse failed on BOTH models while occupancy fixes worked"
-    ]
-  }
+  ]
 }
