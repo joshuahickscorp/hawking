@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.q80.g003_gap_after_all_identified_work.v1",
+  "date": "2026-08-16",
+  "WATCHDOG_L4_ROOT_CAUSE": "G003 is not closeable with any work currently identified. Summing the closed 14-component ledger with every landed and measured fix applied leaves ~85 ms/token against a 20 ms gate - still 4.3x short.",
+  "arithmetic": {
+    "token_at_decomposition_ms": 255.21,
+    "token_with_all_identified_work_ms": 85.55,
+    "tps_after": 11.69,
+    "gate_tps": 50,
+    "remaining_factor": 4.28
+  },
+  "applied": {
+    "host_preparation": "84.79 -> 25.0 LANDED (catalog re-parse cached)",
+    "synchronization": "83.38 -> 15.9 LANDED (337 -> 49 command buffers)",
+    "deltanet": "46.94 -> 4.55 MEASURED, rebase pending"
+  },
+  "what_is_left_untouched": {
+    "weight_addressing_ms": 18.594864,
+    "moe_routed_ms": 13.985185,
+    "weight_decode_ms": 3.806215,
+    "residual_host_preparation_ms": 25.0,
+    "note": "host_preparation REMAINS the largest single item at 25 ms even after the catalog fix; the lane attributed the remainder to embed packed()"
+  },
+  "NOT_a_terminal_blocker": "Q80's roof at current bytes is 185.5 TPS and it sits at ~1.8% of it, so 50 TPS is physically reachable - this is an execution gap, not a byte or bandwidth wall. Compare DSV4F, which IS terminally blocked because its 24.98 ms DRAM floor exceeds the 20 ms gate.",
+  "honest_consequence": "G003 will not close today. The identified work takes Q80 from 250 ms to about 85 ms, a 2.9x improvement on top of today's earlier 5.5x, and the remaining 4.3x needs mechanisms nobody has named yet. The next candidates by size are weight_addressing at 18.6 ms, residual host_preparation at 25 ms, and moe_routed at 14 ms."
+}
