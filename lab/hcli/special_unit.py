@@ -648,7 +648,11 @@ class ToolExecutor:
 
     def _cargo_test(self, args: Mapping[str, Any]) -> ToolResult:
         package = str(args.get("package") or "")
-        extra = [str(x) for x in (args.get("extra") or [])]
+        extra_raw = args.get("extra") or []
+        if isinstance(extra_raw, str):
+            extra = [extra_raw] if extra_raw.strip() else []
+        else:
+            extra = [str(x) for x in extra_raw]
         argv = ["cargo", "test", "--offline"]
         if package:
             argv.extend(["-p", package])

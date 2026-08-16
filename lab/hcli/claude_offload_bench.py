@@ -16,6 +16,8 @@ FAIL. The harness never rewrites the model's call into something that works.
 from __future__ import annotations
 
 import json
+import os
+import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,9 +41,20 @@ from lab.layout import REPO_ROOT
 from lab.receipts import seal
 from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
 
-SCHEMA = "hawking.special_unit.claude_offload_bench.v3"
-DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_MODEL_DRIVES_TOOLS.json"
+SCHEMA = "hawking.special_unit.claude_offload_bench.v4"
+DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_WIDER_OFFLOAD.json"
 G015 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G015_NATIVE_LEG_VERIFY_ON_MAIN.json"
+G003_GAP = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G003_GAP_AFTER_ALL_IDENTIFIED_WORK.json"
+G013_V1 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G013_FS_EFFICIENCY_CLOSURE.json"
+G013_V2 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G013_FS_EFFICIENCY_CLOSURE_V2.json"
+ASCENT_STATE = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "ASCENT_STATE.json"
+SUPERWAVE_STATE = REPO_ROOT / "SUPERWAVE_STATE.md"
+GOAL_MD = REPO_ROOT / "GOAL.md"
+MERGE_GUARD = REPO_ROOT / "tools" / "merge_guard.py"
+TOKEN_NS_GROK_REPORT = (
+    Path.home() / ".claude-grok" / "tasks" / "q80-token-ns-after-recon-20260816-160940" / "grok-report.md"
+)
+MERGE_GUARD_BRANCH = "grok/q80-device-topk-20260816-010759"
 REAL_GROK_TASK = "q80-host-facets-20260816-143023"
 PRODUCER_MODEL = "model"
 PRODUCER_HARNESS = "harness"
@@ -110,12 +123,16 @@ def _act_or_skip(
     owned_worktree: Path | None = None,
     known_tools: list[str] | None = None,
     max_rounds: int = 1,
+    max_new_tokens: int | None = None,
 ) -> tuple[ActResult | None, str, str | None]:
     unit, skip = _begin_native_unit(tmp, repo=repo, owned_worktree=owned_worktree)
     if unit is None:
         return None, skip, None
+    act_kwargs: dict[str, Any] = {"known_tools": known_tools, "max_rounds": max_rounds}
+    if max_new_tokens is not None:
+        act_kwargs["max_new_tokens"] = max_new_tokens
     try:
-        result = unit.act(user_text, known_tools=known_tools, max_rounds=max_rounds)
+        result = unit.act(user_text, **act_kwargs)
     except NativeDecodeRefused as exc:
         return None, exc.bench_detail(), None
     except NativeDecodeError as exc:
@@ -139,6 +156,18 @@ def _require_model_calls(
         names = [c.name for c in result.calls]
         return False, f"model did not call {tool}: {names}"
     return True, ""
+
+
+def _joined_tool_output(result: ActResult, name: str) -> str:
+    return "\n".join(r.output for r in result.results if r.name == name)
+
+
+def _bash_invocation(call: Any) -> str:
+    command = str(call.arguments.get("command") or "")
+    argv = call.arguments.get("argv")
+    if argv:
+        return command + " " + " ".join(str(a) for a in argv)
+    return command
 
 
 def _t_read_g015(tmp: Path) -> tuple[bool, str, str | None]:
@@ -344,17 +373,28 @@ def _t_interrupt_resume(tmp: Path) -> tuple[bool, str]:
 
 
 def _t_write_and_pytest(tmp: Path) -> tuple[bool, str, str | None]:
+    """Author two files then pytest them. Prior failure: model wrote and stopped.
+
+    G005_MODEL_DRIVES_TOOLS.json recorded FAIL detail "model did not call pytest"
+    after two successful writes. The model treated authoring as done; the act()
+    follow-up invites a plain-text stop. That is a planning miss, not a parse
+    defect. Scoring is unchanged: two writes + a pytest call + pytest ok.
+    """
+
     wt = tmp / "wt"
     wt.mkdir(parents=True, exist_ok=True)
     result, skip, produced = _act_or_skip(
         tmp,
-        "In the current directory write tiny.py implementing add(a, b) that returns "
-        "a + b, write test_tiny.py that asserts add(2, 3) == 5, then run pytest on "
-        "test_tiny.py. Emit one tool_call per action, in that order.",
+        "Write tiny.py implementing add(a, b) that returns a + b. Write "
+        "test_tiny.py that asserts add(2, 3) == 5. Then you MUST call the "
+        "pytest tool on test_tiny.py. Writing files is not enough; the last "
+        "required action is pytest. You may emit all three tool_call blocks "
+        "in one reply (write tiny.py, write test_tiny.py, pytest test_tiny.py).",
         repo=wt,
         owned_worktree=wt,
         known_tools=["write", "pytest"],
-        max_rounds=4,
+        max_rounds=5,
+        max_new_tokens=384,
     )
     if result is None:
         return False, skip, produced
@@ -418,6 +458,268 @@ def _t_model_grep_verified(tmp: Path) -> tuple[bool, str, str | None]:
         if row.name == "grep":
             hits = int(row.detail.get("hits") or 0)
     return hits > 0, f"model grep verified_complete hits={hits}", produced
+
+
+def _t_extract_g003_remaining_factor(tmp: Path) -> tuple[bool, str, str | None]:
+    if not G003_GAP.is_file():
+        return False, f"SKIP missing {G003_GAP}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/G003_GAP_AFTER_ALL_IDENTIFIED_WORK.json "
+        "and extract arithmetic.remaining_factor (the measured shortfall vs the "
+        "50 TPS gate).",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "G003_GAP_AFTER_ALL_IDENTIFIED_WORK.json" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "remaining_factor" not in blob or "4.28" not in blob:
+        return False, "G003 gap receipt missing remaining_factor 4.28", produced
+    return True, "model extracted G003 remaining_factor=4.28", produced
+
+
+def _t_grep_nativedecode_file_line(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Search lab/hcli for the symbol NativeDecodeRefused and report the "
+        "first file:line hit.",
+        known_tools=["grep"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="grep")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "grep")
+    pattern = str(call.arguments.get("pattern") or "")
+    if "NativeDecodeRefused" not in pattern:
+        return False, f"model grep pattern missed NativeDecodeRefused: {pattern!r}", produced
+    blob = _joined_tool_output(result, "grep")
+    if "special_unit.py:" not in blob:
+        return False, f"grep output had no special_unit.py:line: {blob[:200]!r}", produced
+    if not re.search(r"special_unit\.py:\d+", blob):
+        return False, f"grep output lacked a line number: {blob[:200]!r}", produced
+    hits = 0
+    for row in result.results:
+        if row.name == "grep":
+            hits = int(row.detail.get("hits") or 0)
+    return hits > 0, f"model grep NativeDecodeRefused file:line hits={hits}", produced
+
+
+def _t_cargo_test_hide_protocol_ids(tmp: Path) -> tuple[bool, str, str | None]:
+    manifest = REPO_ROOT / "Cargo.toml"
+    crate = REPO_ROOT / "crates" / "hide-protocol"
+    if not manifest.is_file():
+        return False, f"SKIP missing {manifest}", None
+    if not crate.is_dir():
+        return False, f"SKIP missing {crate}", None
+    os.environ.setdefault("CARGO_TARGET_DIR", "/tmp/g005-hide-protocol-target")
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Run cargo_test on package hide-protocol for the unit test "
+        "ids_serialize_transparently_as_bare_strings. Set package to "
+        "hide-protocol. You may pass extra "
+        '["ids_serialize_transparently_as_bare_strings"].',
+        known_tools=["cargo_test"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="cargo_test")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "cargo_test")
+    package = str(call.arguments.get("package") or "")
+    if "hide-protocol" not in package:
+        return False, f"model cargo_test package missed hide-protocol: {package!r}", produced
+    ran = next((r for r in result.results if r.name == "cargo_test"), None)
+    if ran is None:
+        return False, "cargo_test tool did not run", produced
+    out = ran.output or ""
+    if ran.ok and "0 failed" not in out and "FAILED" in out:
+        return False, out[-500:], produced
+    return ran.ok, out[-500:], produced
+
+
+def _t_extract_token_ns_grok_report(tmp: Path) -> tuple[bool, str, str | None]:
+    if not TOKEN_NS_GROK_REPORT.is_file():
+        return False, f"SKIP missing {TOKEN_NS_GROK_REPORT}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        f"Read {TOKEN_NS_GROK_REPORT} (limit 40 lines) and extract the closed "
+        "median-wall decode token time in milliseconds.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "q80-token-ns-after-recon-20260816-160940" not in path or "grok-report.md" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "250.732125" not in blob:
+        return False, "grok-report missing closed median-wall 250.732125 ms", produced
+    return True, "model extracted grok-report median-wall 250.732125 ms", produced
+
+
+def _t_compare_g013_supersession(tmp: Path) -> tuple[bool, str, str | None]:
+    if not G013_V2.is_file():
+        return False, f"SKIP missing {G013_V2}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json and "
+        "report which same-day receipt it superseded.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    paths = [str(c.arguments.get("path") or "") for c in (result.calls or []) if c.name == "read"]
+    if not any("G013_FS_EFFICIENCY_CLOSURE_V2.json" in p for p in paths):
+        return False, f"model did not read G013 v2: {paths}", produced
+    blob = _joined_tool_output(result, "read")
+    if "supersedes" not in blob or "G013_FS_EFFICIENCY_CLOSURE.json" not in blob:
+        return False, "G013 v2 did not name the superseded v1 receipt", produced
+    return True, "model read G013 v2 supersedes v1", produced
+
+
+def _t_merge_guard_device_topk(tmp: Path) -> tuple[bool, str, str | None]:
+    if not MERGE_GUARD.is_file():
+        return False, f"SKIP missing {MERGE_GUARD}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        f"Run tools/merge_guard.py against branch {MERGE_GUARD_BRANCH} and "
+        "report the verdict (SAFE or STALE).",
+        known_tools=["bash"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="bash")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "bash")
+    joined = _bash_invocation(call)
+    if "merge_guard.py" not in joined:
+        return False, f"model bash missed merge_guard.py: {joined!r}", produced
+    if "q80-device-topk-20260816-010759" not in joined:
+        return False, f"model bash missed branch: {joined!r}", produced
+    ran = next((r for r in result.results if r.name == "bash"), None)
+    if ran is None:
+        return False, "bash tool did not run", produced
+    out = ran.output or ""
+    if "STALE" not in out:
+        return False, f"expected STALE verdict: {out[-400:]}", produced
+    return True, "merge_guard verdict STALE", produced
+
+
+def _t_superwave_names_g013_v2(tmp: Path) -> tuple[bool, str, str | None]:
+    if not SUPERWAVE_STATE.is_file():
+        return False, f"SKIP missing {SUPERWAVE_STATE}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read SUPERWAVE_STATE.md (limit 80 lines) and report which receipt it "
+        "says supersedes G013_FS_EFFICIENCY_CLOSURE.json.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "SUPERWAVE_STATE.md" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "G013_FS_EFFICIENCY_CLOSURE_V2.json" not in blob:
+        return False, "SUPERWAVE_STATE.md did not name G013 v2", produced
+    return True, "SUPERWAVE_STATE names G013_FS_EFFICIENCY_CLOSURE_V2.json", produced
+
+
+def _t_classify_storage_vs_active_bpw(tmp: Path) -> tuple[bool, str, str | None]:
+    if not G013_V2.is_file():
+        return False, f"SKIP missing {G013_V2}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json. "
+        "For mixed-sub655, which figure is storage BPW and which is active BPW "
+        "among 0.6462 and 2.518?",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "G013_FS_EFFICIENCY_CLOSURE_V2.json" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "0.6462" not in blob or "2.518" not in blob:
+        return False, "G013 v2 missing the two mixed-sub655 BPW figures", produced
+    if "active_bpw" not in blob:
+        return False, "G013 v2 missing active_bpw label", produced
+    return True, "storage 0.6462 vs active 2.518 labeled in G013 v2", produced
+
+
+def _t_read_goal_md_obligations(tmp: Path) -> tuple[bool, str, str | None]:
+    if not GOAL_MD.is_file():
+        return False, f"SKIP missing {GOAL_MD}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read GOAL.md and list which obligations name the receipt "
+        "G005_BAR_UNREACHABLE.json.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "GOAL.md" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "G005_BAR_UNREACHABLE.json" not in blob:
+        return False, "GOAL.md does not name G005_BAR_UNREACHABLE.json", produced
+    return True, "GOAL.md names G005_BAR_UNREACHABLE.json", produced
+
+
+def _t_ascent_state_q80_receipt(tmp: Path) -> tuple[bool, str, str | None]:
+    if not ASCENT_STATE.is_file():
+        return False, f"SKIP missing {ASCENT_STATE}", None
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/ASCENT_STATE.json and report the receipt "
+        "cited by the q80 incumbent.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "ASCENT_STATE.json" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = _joined_tool_output(result, "read")
+    if "Q80_BASELINE_2026_08_16.json" not in blob:
+        return False, "ASCENT_STATE q80 incumbent receipt missing", produced
+    return True, "q80 incumbent cites Q80_BASELINE_2026_08_16.json", produced
 
 
 def _t_delegate_then_consume(tmp: Path) -> tuple[bool, str]:
@@ -620,11 +922,92 @@ TASKS: list[OffloadTask] = [
         PRODUCER_MODEL,
     ),
     OffloadTask(
+        "extract_g003_remaining_factor",
+        "Read G003 gap receipt and extract remaining_factor 4.28",
+        "receipts/ascent-2026-08-16/G003_GAP_AFTER_ALL_IDENTIFIED_WORK.json",
+        True,
+        _t_extract_g003_remaining_factor,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "grep_nativedecode_file_line",
+        "Grep NativeDecodeRefused and report file:line",
+        "lab/hcli/special_unit.py NativeDecodeRefused",
+        True,
+        _t_grep_nativedecode_file_line,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "cargo_test_hide_protocol_ids",
+        "Run hide-protocol ids_serialize unit test and report pass/fail",
+        "crates/hide-protocol/src/ids.rs ids_serialize_transparently_as_bare_strings",
+        True,
+        _t_cargo_test_hide_protocol_ids,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "extract_token_ns_grok_report",
+        "Read q80-token-ns grok-report and extract median-wall ms",
+        str(TOKEN_NS_GROK_REPORT),
+        True,
+        _t_extract_token_ns_grok_report,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "compare_g013_supersession",
+        "Read G013 v2 and report which receipt it superseded",
+        "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json supersedes v1",
+        True,
+        _t_compare_g013_supersession,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "merge_guard_device_topk",
+        "Run merge_guard.py on q80-device-topk and report SAFE/STALE",
+        "tools/merge_guard.py grok/q80-device-topk-20260816-010759",
+        True,
+        _t_merge_guard_device_topk,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "superwave_names_g013_v2",
+        "Read SUPERWAVE_STATE.md and name the receipt that superseded G013 v1",
+        "SUPERWAVE_STATE.md (live obligation ledger; GOAL.md is not in this repo)",
+        True,
+        _t_superwave_names_g013_v2,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "classify_storage_vs_active_bpw",
+        "Read G013 v2 and identify mixed-sub655 storage vs active BPW",
+        "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json active_bpw",
+        True,
+        _t_classify_storage_vs_active_bpw,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "read_goal_md_obligations",
+        "Read GOAL.md and list obligations that name G005_BAR_UNREACHABLE.json",
+        "GOAL.md (absent in this checkout; SKIP must name the missing path)",
+        True,
+        _t_read_goal_md_obligations,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "ascent_state_q80_receipt",
+        "Read ASCENT_STATE.json and report the q80 incumbent receipt",
+        "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.receipt",
+        True,
+        _t_ascent_state_q80_receipt,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
         "machine_state_clean_box",
         "Query tools/agentos/machine_state.py",
         "tools/agentos/machine_state.py + receipts/agentos/PROGRAM_PLAN.md W0.T10",
         True,
         _t_machine_state,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "seal_json_receipt",
@@ -632,6 +1015,7 @@ TASKS: list[OffloadTask] = [
         "lab/receipts.py — every ascent lane's last action",
         True,
         _t_seal_receipt,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "consume_q80_host_facets_report",
@@ -639,6 +1023,7 @@ TASKS: list[OffloadTask] = [
         f"~/.claude-grok/tasks/{REAL_GROK_TASK}/grok-report.md",
         True,
         _t_consume_real_grok,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "gpu_lock_inspect_without_take",
@@ -646,6 +1031,7 @@ TASKS: list[OffloadTask] = [
         "tools/gpu_lane_lock.sh + S002 anti-scope (GPU belongs to Q80/DSV)",
         True,
         _t_gpu_lock_inspect,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "session_persist_qwen38_context",
@@ -653,6 +1039,7 @@ TASKS: list[OffloadTask] = [
         "G015 open leg: persistent session + project context",
         True,
         _t_session_persist,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "plan_g015_remaining_legs",
@@ -660,6 +1047,7 @@ TASKS: list[OffloadTask] = [
         "G015_NATIVE_LEG_VERIFY_ON_MAIN.json legs_STILL_OPEN_for_G015",
         True,
         _t_plan_g015,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "proposed_vs_verified",
@@ -667,6 +1055,7 @@ TASKS: list[OffloadTask] = [
         "G015 AgentOS verification leg + lab/verification_authority.py",
         True,
         _t_proposed_vs_verified,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "resource_refuse_gpu_during_protected",
@@ -674,6 +1063,7 @@ TASKS: list[OffloadTask] = [
         "S002 anti-scope; tools/gpu_lane_lock.sh owner protocol",
         True,
         _t_resource_refuse,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "interrupt_and_resume",
@@ -681,6 +1071,7 @@ TASKS: list[OffloadTask] = [
         "G015 HCLI interrupt + restart/resume",
         True,
         _t_interrupt_resume,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "write_and_pytest_small",
@@ -696,6 +1087,7 @@ TASKS: list[OffloadTask] = [
         "S002 §16-18; ~/.claude-grok/bin/grok-run artifact layout",
         True,
         _t_delegate_then_consume,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "verification_authority_no_self_promote",
@@ -703,6 +1095,7 @@ TASKS: list[OffloadTask] = [
         "lab/verification_authority.py + bible §2 / §22",
         True,
         _t_authority_fence,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "refuse_protected_gpu_command",
@@ -710,6 +1103,7 @@ TASKS: list[OffloadTask] = [
         "tools/gpu_lane_lock.sh + ascension_qwen80_hybrid_greedy",
         True,
         _t_gpu_cmd_refuse,
+        PRODUCER_HARNESS,
     ),
     OffloadTask(
         "native_refuses_protected_lock",
@@ -717,6 +1111,7 @@ TASKS: list[OffloadTask] = [
         "tools/gpu_lane_lock.sh owner protocol + NativeQwen38Backend",
         True,
         _t_native_refuse_protected,
+        PRODUCER_HARNESS,
     ),
 ]
 
@@ -799,8 +1194,11 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
             "schema": SCHEMA,
             "date": "2026-08-16",
             "claim": (
-                "CLAUDE_OFFLOAD_BENCH with native Qwen3.8 driving the tool plane "
-                "via strict <tool_call> parse (no repair)"
+                "CLAUDE_OFFLOAD_BENCH widened with more MODEL-EXPECTED kinds of "
+                "routine Hawking work; native Qwen3.8 drives the tool plane via "
+                "strict <tool_call> parse (no repair). Displacement is still "
+                "model-produced passes / all attempted routine tasks, not "
+                "model-completed / model-expected."
             ),
             "metric_definition": (
                 "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED = "
@@ -816,6 +1214,9 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
             "passed": passed,
             "attempted": attempted,
             "skipped": skipped,
+            "catalog_size": len(TASKS),
+            "model_expected_catalog": sum(1 for t in TASKS if t.producer == PRODUCER_MODEL),
+            "harness_expected_catalog": sum(1 for t in TASKS if t.producer == PRODUCER_HARNESS),
             "model_produced_pass": model_passed,
             "model_produced_attempted": model_attempted,
             "harness_produced_pass": harness_passed,

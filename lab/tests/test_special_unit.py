@@ -124,6 +124,18 @@ def test_cargo_test_dry_and_gpu_refuse(unit: SpecialUnit) -> None:
     assert not refused.ok
 
 
+def test_cargo_test_accepts_string_extra(unit: SpecialUnit) -> None:
+    dry = unit.tool(
+        "cargo_test",
+        {"package": "hide-protocol", "extra": "ids_serialize_transparently_as_bare_strings", "dry_run": True},
+    )
+    assert dry.ok
+    argv = dry.detail.get("argv") or []
+    assert "hide-protocol" in argv
+    assert "ids_serialize_transparently_as_bare_strings" in argv
+    assert argv.count("i") == 0
+
+
 def test_grok_delegate_does_not_consume(unit: SpecialUnit, tmp_path: Path) -> None:
     contract = tmp_path / "wt" / "c.md"
     contract.parent.mkdir(parents=True, exist_ok=True)
@@ -242,22 +254,70 @@ def test_offload_catalog_cites_real_repo_files() -> None:
     from lab.hcli.claude_offload_bench import G015, PRODUCER_HARNESS, PRODUCER_MODEL, TASKS
 
     assert G015.is_file()
-    assert len(TASKS) >= 12
+    assert len(TASKS) >= 27
     assert all(t.source for t in TASKS)
     assert all(t.routine_claude for t in TASKS)
+    assert all(t.producer in {PRODUCER_HARNESS, PRODUCER_MODEL} for t in TASKS)
     producers = {t.producer for t in TASKS}
     assert PRODUCER_HARNESS in producers
     assert PRODUCER_MODEL in producers
     assert any(t.id == "native_qwen38_say" and t.producer == PRODUCER_MODEL for t in TASKS)
     model_ids = {t.id for t in TASKS if t.producer == PRODUCER_MODEL}
+    assert len(model_ids) >= 16
     assert "grep_proposed_complete" in model_ids
     assert "read_g015_open_legs" in model_ids
     assert "run_option_c_tests" in model_ids
     assert "write_and_pytest_small" in model_ids
+    assert "extract_g003_remaining_factor" in model_ids
+    assert "grep_nativedecode_file_line" in model_ids
+    assert "cargo_test_hide_protocol_ids" in model_ids
+    assert "extract_token_ns_grok_report" in model_ids
+    assert "compare_g013_supersession" in model_ids
+    assert "merge_guard_device_topk" in model_ids
+    assert "superwave_names_g013_v2" in model_ids
+    assert "classify_storage_vs_active_bpw" in model_ids
+    assert "read_goal_md_obligations" in model_ids
+    assert "ascent_state_q80_receipt" in model_ids
     harness_ids = {t.id for t in TASKS if t.producer == PRODUCER_HARNESS}
     assert "proposed_vs_verified" in harness_ids
     assert "native_refuses_protected_lock" in harness_ids
     assert "refuse_protected_gpu_command" in harness_ids
+    assert "verification_authority_no_self_promote" in harness_ids
+    assert "delegate_then_consume_roundtrip" in harness_ids
+
+
+def test_goal_md_task_skips_naming_missing_path(tmp_path: Path) -> None:
+    from lab.hcli.claude_offload_bench import GOAL_MD, _t_read_goal_md_obligations
+
+    if GOAL_MD.is_file():
+        pytest.skip("GOAL.md is present")
+    ok, detail, produced = _t_read_goal_md_obligations(tmp_path)
+    assert ok is False
+    assert produced is None
+    assert detail.startswith("SKIP ")
+    assert "GOAL.md" in detail
+
+
+def test_write_and_pytest_still_requires_pytest_call() -> None:
+    import inspect
+
+    from lab.hcli.claude_offload_bench import _t_write_and_pytest
+
+    src = inspect.getsource(_t_write_and_pytest)
+    assert "model did not call pytest" in src
+    assert "need tiny.py and test_tiny.py" in src
+    assert "MUST call the" in src or "pytest tool" in src
+
+
+def test_displacement_metric_is_not_rescored_to_model_expected() -> None:
+    import inspect
+
+    from lab.hcli.claude_offload_bench import run_bench
+
+    src = inspect.getsource(run_bench)
+    assert "model_passed / attempted" in src
+    assert "model_passed / model_expected" not in src
+    assert "model_expected_catalog" in src
 
 
 def test_native_backend_refuses_protected_lock_without_invoke(tmp_path: Path) -> None:
