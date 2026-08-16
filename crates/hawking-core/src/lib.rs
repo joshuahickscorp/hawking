@@ -130,6 +130,9 @@ pub mod gravity_deepseek_v4_streamed_native;
 pub mod gravity_deepseek_v4_native_token_graph;
 /// Per-token nanosecond ledger for the native BOS graph body.
 pub mod gravity_deepseek_v4_token_ns_ledger;
+/// Unified TOKEN_NS schema + adapters + closure + lane reconciler.
+/// Does not sit on a runtime hot path; both existing ledgers stay as-is.
+pub mod token_ns;
 
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]

@@ -404,6 +404,15 @@ fn run() -> Result<(), String> {
         let pretty = serde_json::to_string_pretty(&ledger).map_err(|e| e.to_string())?;
         fs::write(&ledger_path, pretty).map_err(|e| e.to_string())?;
         eprintln!("wrote {}", ledger_path.display());
+        let commit = std::env::var("HAWKING_GIT_COMMIT").unwrap_or_else(|_| "unknown".to_owned());
+        let unified = hawking_core::token_ns::from_q80_ledger(
+            &ledger,
+            &hawking_core::token_ns::EmitMeta::new(commit, ledger_path.display().to_string()),
+        );
+        let token_ns_path = ledger_path.with_file_name("TOKEN_NS.json");
+        let unified_pretty = serde_json::to_string_pretty(&unified).map_err(|e| e.to_string())?;
+        fs::write(&token_ns_path, unified_pretty).map_err(|e| e.to_string())?;
+        eprintln!("wrote {}", token_ns_path.display());
         if let Some(diag) = &ledger.diagnosis {
             eprintln!(
                 "token_ns_ledger verdict={} wall_ms={:.1} gpu_ms={:.1} wait_ms={:.1} cbs={:.0} disp={:.0} weight_gib={:.3} implied_gb_s_gpu={:?}",

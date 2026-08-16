@@ -1,0 +1,118 @@
+{
+  "closure": {
+    "failed": false,
+    "failure": null,
+    "identity": "sum(serial stage_ns) + residual_ns == TOTAL_TOKEN_NS",
+    "identity_holds": true,
+    "naive_all_stage_sum_ns": 15233938076,
+    "naive_overcount_ns": -361843924,
+    "residual_fraction": 0.023201396634038612,
+    "residual_limit_fraction": 0.05,
+    "residual_ns": 361843924,
+    "residual_within_limit": true,
+    "sum_serial_stage_ns": 15233938076,
+    "total_token_ns": 15595782000
+  },
+  "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+  "critical_path": {
+    "model": "q80",
+    "overlappable_ns": 0,
+    "parallel_sum_ns": 0,
+    "serial_ns": 15233938076,
+    "statement": "Named stage buckets sum to less than the run. moe_table_build dominates the run. Per-token decode is 403384727 ns and is a different object from this residual.",
+    "token_definition": "WHOLE RUN (prefill+decode), not per-token. decode/token ≈ 403384727 ns",
+    "top_serial_stages": [
+      "moe_table_build_secs (9077.7 ms)",
+      "deltanet_secs (3326.9 ms)",
+      "moe_combine_secs (1695.8 ms)",
+      "gqa_secs (1133.5 ms)"
+    ],
+    "warning": "1637 fallbacks. No GPU timestamps. Single run. CROSS_ADVERSARIAL P1-Q80-403MS-NOT-A-LEGAL-MEASUREMENT."
+  },
+  "gpu_timestamp_authority": "NOT GPU TIME. These buckets are CPU-wall Instant sums over the run.",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "model": "q80",
+  "notes": [
+    "decode_secs=4.437232 over 11 tokens → 403384727 ns/token CPU wall",
+    "fallbacks.total=1637"
+  ],
+  "residual_limit_fraction": 0.05,
+  "residual_ns": 361843924,
+  "schema": "hawking.ascent.token_ns.v1",
+  "source_path": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
+  "source_schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
+  "stages": [
+    {
+      "calls_per_token": 1.0,
+      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "confidence": "measured",
+      "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
+      "ns_per_call": 9077696633.999994,
+      "ns_per_token": 9077696633.999994,
+      "pct_of_token": 58.20610107271308,
+      "removable_or_necessary": "removable",
+      "resource_class": "CPU",
+      "serial_or_overlappable": "serial",
+      "stage": "routed_expert",
+      "substage": "moe_table_build_secs"
+    },
+    {
+      "calls_per_token": 1.0,
+      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "confidence": "measured",
+      "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
+      "ns_per_call": 3326900827.9999995,
+      "ns_per_token": 3326900827.9999995,
+      "pct_of_token": 21.33205521851998,
+      "removable_or_necessary": "necessary",
+      "resource_class": "GPU",
+      "serial_or_overlappable": "serial",
+      "stage": "attention",
+      "substage": "deltanet_secs"
+    },
+    {
+      "calls_per_token": 1.0,
+      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "confidence": "measured",
+      "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
+      "ns_per_call": 1695811704.0000024,
+      "ns_per_token": 1695811704.0000024,
+      "pct_of_token": 10.873527880807789,
+      "removable_or_necessary": "necessary",
+      "resource_class": "GPU",
+      "serial_or_overlappable": "serial",
+      "stage": "moe_combine",
+      "substage": "moe_combine_secs"
+    },
+    {
+      "calls_per_token": 1.0,
+      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "confidence": "measured",
+      "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
+      "ns_per_call": 1133528909.9999998,
+      "ns_per_token": 1133528909.9999998,
+      "pct_of_token": 7.2681761645552605,
+      "removable_or_necessary": "necessary",
+      "resource_class": "GPU",
+      "serial_or_overlappable": "serial",
+      "stage": "attention",
+      "substage": "gqa_secs"
+    }
+  ],
+  "totals": {
+    "DRAM_BYTES_PER_TOKEN": 0,
+    "TEMP_BYTES_PER_TOKEN": 0,
+    "TOTAL_BUFFER_CREATIONS": 0,
+    "TOTAL_BUFFER_REBINDS": 0,
+    "TOTAL_COMMAND_BUFFERS": 0,
+    "TOTAL_CPU_CRITICAL_NS": 15595782000,
+    "TOTAL_DISPATCHES": 11116,
+    "TOTAL_GPU_BUSY_NS": 0,
+    "TOTAL_GPU_GAP_NS": 0,
+    "TOTAL_GPU_IDLE_NS": 0,
+    "TOTAL_READBACKS": 0,
+    "TOTAL_SYNC_POINTS": 0,
+    "TOTAL_TOKEN_NS": 15595782000
+  },
+  "vehicle": "uniform-Q4 group64 v1 hybrid greedy (Q80_BASELINE_2026_08_16 whole run)"
+}
