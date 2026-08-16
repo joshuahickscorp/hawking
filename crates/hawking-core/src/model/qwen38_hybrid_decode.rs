@@ -1070,6 +1070,51 @@ mod device {
             self.position = self.position.saturating_add(1);
             Ok((sampled, timing))
         }
+
+        /// Same GPU work as [`Self::step`], with host-side Instants around
+        /// encode / commit-return / sample readback / position update so
+        /// wall − gpu can be named. Timers do not change the command buffer.
+        pub fn step_complete(&mut self, token: u32) -> Result<(u32, Qwen38StepWall)> {
+            if self.fallbacks != 0 {
+                return Err(Error::Model(
+                    "qwen38 decode refuses a run after a fallback".into(),
+                ));
+            }
+            let wall = Instant::now();
+            let encode_started = Instant::now();
+            let mut tcb = TokenCommandBuffer::new(&self.context);
+            self.encode_embed(&mut tcb, token)?;
+            self.encode_layers(&mut tcb)?;
+            self.encode_terminal(&mut tcb)?;
+            let encode_ns = encode_started.elapsed().as_nanos() as u64;
+            let commit_started = Instant::now();
+            let timing = tcb.commit_and_wait_timed()?;
+            let commit_return_ns = commit_started.elapsed().as_nanos() as u64;
+            let submit_plus_wait = timing.submit_ns.saturating_add(timing.wait_ns);
+            let commit_epilogue_ns = commit_return_ns.saturating_sub(submit_plus_wait);
+            let readback_started = Instant::now();
+            let sampled = unsafe { *(self.workspace.sampled.contents() as *const u32) };
+            let sample_readback_ns = readback_started.elapsed().as_nanos() as u64;
+            let state_started = Instant::now();
+            self.position = self.position.saturating_add(1);
+            let state_update_ns = state_started.elapsed().as_nanos() as u64;
+            Ok((
+                sampled,
+                Qwen38StepWall {
+                    wall_ns: wall.elapsed().as_nanos() as u64,
+                    encode_ns,
+                    submit_ns: timing.submit_ns,
+                    wait_ns: timing.wait_ns,
+                    gpu_ns: timing.gpu_ns,
+                    commit_epilogue_ns,
+                    sample_readback_ns,
+                    state_update_ns,
+                    tcb_encode_ns: timing.encode_ns,
+                    dispatches: timing.dispatches,
+                    command_buffers: 1,
+                },
+            ))
+        }
     }
 
     pub fn generate_greedy(
@@ -1084,27 +1129,42 @@ mod device {
         let mut tokens = prompt.to_vec();
         let mut gpu_ns = Vec::new();
         let mut wait_ns = Vec::new();
+        let mut wall_ns_per_step = Vec::new();
         let wall = Instant::now();
         let mut next = 0u32;
-        for &token in prompt {
+        let prefill = Instant::now();
+        let mut first_step_wall_ns = 0u64;
+        for (i, &token) in prompt.iter().enumerate() {
+            let step_wall = Instant::now();
             let (sampled, timing) = session.step(token)?;
+            let step_ns = step_wall.elapsed().as_nanos() as u64;
+            if i == 0 {
+                first_step_wall_ns = step_ns;
+            }
+            wall_ns_per_step.push(step_ns);
             gpu_ns.push(timing.gpu_ns);
             wait_ns.push(timing.wait_ns);
             next = sampled;
         }
+        let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
+        let decode = Instant::now();
         while tokens.len() - prompt.len() < max_new_tokens {
             if next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
                 || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT
             {
                 break;
             }
+            let step_wall = Instant::now();
             let (sampled, timing) = session.step(next)?;
+            wall_ns_per_step.push(step_wall.elapsed().as_nanos() as u64);
             gpu_ns.push(timing.gpu_ns);
             wait_ns.push(timing.wait_ns);
             tokens.push(sampled);
             next = sampled;
         }
+        let decode_wall_ns = decode.elapsed().as_nanos() as u64;
+        let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
         Ok(Qwen38GenerateResult {
             tokens,
             prompt_len: prompt.len(),
@@ -1112,7 +1172,211 @@ mod device {
             gpu_ns,
             wait_ns,
             fallbacks: session.fallbacks,
+            first_step_wall_ns,
+            prefill_wall_ns,
+            decode_wall_ns,
+            decode_steps,
+            wall_ns_per_step,
         })
+    }
+
+    pub fn generate_greedy_complete_wall(
+        session: &mut Qwen38HybridDecodeSession,
+        tokenizer: &Tokenizer,
+        prompt: &[u32],
+        max_new_tokens: usize,
+    ) -> Result<Qwen38CompleteWallResult> {
+        if prompt.is_empty() {
+            return Err(Error::Model("qwen38 prompt is empty".into()));
+        }
+        let reset_started = Instant::now();
+        session.reset();
+        let reset_ns = reset_started.elapsed().as_nanos() as u64;
+        let mut tokens = prompt.to_vec();
+        let mut steps = Vec::new();
+        let wall = Instant::now();
+        let mut next = 0u32;
+        let prefill = Instant::now();
+        for (i, &token) in prompt.iter().enumerate() {
+            let complete = Instant::now();
+            let (sampled, step) = session.step_complete(token)?;
+            let last_prompt = i + 1 == prompt.len();
+            let (tokenizer_decode_ns, bookkeeping_ns) = if last_prompt {
+                finish_new_token(tokenizer, &mut tokens, sampled)?
+            } else {
+                next = sampled;
+                (0, 0)
+            };
+            if last_prompt {
+                next = sampled;
+            }
+            steps.push(Qwen38CompleteToken {
+                role: if last_prompt {
+                    "prefill_emits_first_new"
+                } else {
+                    "prefill"
+                }
+                .to_owned(),
+                step_index: i,
+                token_in: token,
+                token_out: sampled,
+                step,
+                tokenizer_decode_ns,
+                bookkeeping_ns,
+                complete_wall_ns: complete.elapsed().as_nanos() as u64,
+            });
+        }
+        let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
+        let decode = Instant::now();
+        while tokens.len() - prompt.len() < max_new_tokens {
+            if next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
+                || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT
+            {
+                break;
+            }
+            let complete = Instant::now();
+            let (sampled, step) = session.step_complete(next)?;
+            let (tokenizer_decode_ns, bookkeeping_ns) =
+                finish_new_token(tokenizer, &mut tokens, sampled)?;
+            steps.push(Qwen38CompleteToken {
+                role: "decode".to_owned(),
+                step_index: steps.len(),
+                token_in: next,
+                token_out: sampled,
+                step,
+                tokenizer_decode_ns,
+                bookkeeping_ns,
+                complete_wall_ns: complete.elapsed().as_nanos() as u64,
+            });
+            next = sampled;
+        }
+        let decode_wall_ns = decode.elapsed().as_nanos() as u64;
+        Ok(Qwen38CompleteWallResult {
+            tokens,
+            prompt_len: prompt.len(),
+            wall_ns: wall.elapsed().as_nanos() as u64,
+            reset_ns,
+            prefill_wall_ns,
+            decode_wall_ns,
+            fallbacks: session.fallbacks,
+            steps,
+        })
+    }
+
+    fn finish_new_token(
+        tokenizer: &Tokenizer,
+        tokens: &mut Vec<u32>,
+        sampled: u32,
+    ) -> Result<(u64, u64)> {
+        let tokenizer_started = Instant::now();
+        tokenizer.decode(&[sampled], true)?;
+        let tokenizer_decode_ns = tokenizer_started.elapsed().as_nanos() as u64;
+        let bookkeeping_started = Instant::now();
+        tokens.push(sampled);
+        let bookkeeping_ns = bookkeeping_started.elapsed().as_nanos() as u64;
+        Ok((tokenizer_decode_ns, bookkeeping_ns))
+    }
+}
+
+#[derive(Clone, Debug, Default, serde::Serialize)]
+pub struct Qwen38StepWall {
+    pub wall_ns: u64,
+    pub encode_ns: u64,
+    pub submit_ns: u64,
+    pub wait_ns: u64,
+    pub gpu_ns: Option<u64>,
+    /// `commit_and_wait_timed` return minus submit minus wait: GPU timestamp
+    /// read + command-buffer status check after the host wait returns.
+    pub commit_epilogue_ns: u64,
+    pub sample_readback_ns: u64,
+    pub state_update_ns: u64,
+    /// TCB per-dispatch encode sum. Zero unless the cost ledger is recording.
+    pub tcb_encode_ns: u64,
+    pub dispatches: u64,
+    pub command_buffers: u64,
+}
+
+impl Qwen38StepWall {
+    pub fn named_sum_ns(&self) -> u64 {
+        self.encode_ns
+            .saturating_add(self.submit_ns)
+            .saturating_add(self.wait_ns)
+            .saturating_add(self.commit_epilogue_ns)
+            .saturating_add(self.sample_readback_ns)
+            .saturating_add(self.state_update_ns)
+    }
+
+    pub fn residual_ns(&self) -> i64 {
+        self.wall_ns as i64 - self.named_sum_ns() as i64
+    }
+
+    pub fn wait_minus_gpu_ns(&self) -> Option<i64> {
+        Some(self.wait_ns as i64 - self.gpu_ns? as i64)
+    }
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct Qwen38CompleteToken {
+    pub role: String,
+    pub step_index: usize,
+    pub token_in: u32,
+    pub token_out: u32,
+    pub step: Qwen38StepWall,
+    pub tokenizer_decode_ns: u64,
+    pub bookkeeping_ns: u64,
+    pub complete_wall_ns: u64,
+}
+
+impl Qwen38CompleteToken {
+    pub fn named_sum_ns(&self) -> u64 {
+        self.step
+            .named_sum_ns()
+            .saturating_add(self.tokenizer_decode_ns)
+            .saturating_add(self.bookkeeping_ns)
+    }
+
+    pub fn residual_ns(&self) -> i64 {
+        self.complete_wall_ns as i64 - self.named_sum_ns() as i64
+    }
+
+    pub fn wall_minus_gpu_ns(&self) -> Option<i64> {
+        Some(self.complete_wall_ns as i64 - self.step.gpu_ns? as i64)
+    }
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct Qwen38CompleteWallResult {
+    pub tokens: Vec<u32>,
+    pub prompt_len: usize,
+    pub wall_ns: u64,
+    pub reset_ns: u64,
+    pub prefill_wall_ns: u64,
+    pub decode_wall_ns: u64,
+    pub fallbacks: u32,
+    pub steps: Vec<Qwen38CompleteToken>,
+}
+
+impl Qwen38CompleteWallResult {
+    pub fn new_tokens(&self) -> &[u32] {
+        &self.tokens[self.prompt_len.min(self.tokens.len())..]
+    }
+
+    pub fn decode_new(&self, tokenizer: &Tokenizer) -> Result<String> {
+        tokenizer.decode(self.new_tokens(), true)
+    }
+
+    pub fn first_step(&self) -> Option<&Qwen38CompleteToken> {
+        self.steps.first()
+    }
+
+    /// Prompt walk, including the last prompt step that emits new-token[0].
+    pub fn prefill_steps(&self) -> impl Iterator<Item = &Qwen38CompleteToken> {
+        self.steps.iter().filter(|s| s.role != "decode")
+    }
+
+    /// New-tokens[1..]: Q80 mixed `steady_state` denominator.
+    pub fn steady_decode_steps(&self) -> impl Iterator<Item = &Qwen38CompleteToken> {
+        self.steps.iter().filter(|s| s.role == "decode")
     }
 }
 
@@ -1124,6 +1388,11 @@ pub struct Qwen38GenerateResult {
     pub gpu_ns: Vec<Option<u64>>,
     pub wait_ns: Vec<u64>,
     pub fallbacks: u32,
+    pub first_step_wall_ns: u64,
+    pub prefill_wall_ns: u64,
+    pub decode_wall_ns: u64,
+    pub decode_steps: usize,
+    pub wall_ns_per_step: Vec<u64>,
 }
 
 impl Qwen38GenerateResult {
@@ -1143,10 +1412,17 @@ impl Qwen38GenerateResult {
         values.sort_unstable();
         Some(values[values.len() / 2])
     }
+
+    pub fn steady_decode_wall_ns_per_token(&self) -> Option<u64> {
+        if self.decode_steps == 0 {
+            return None;
+        }
+        Some(self.decode_wall_ns / self.decode_steps as u64)
+    }
 }
 
 #[cfg(target_os = "macos")]
-pub use device::{generate_greedy, Qwen38HybridDecodeSession};
+pub use device::{generate_greedy, generate_greedy_complete_wall, Qwen38HybridDecodeSession};
 
 #[cfg(not(target_os = "macos"))]
 pub fn generate_greedy(
@@ -1155,4 +1431,72 @@ pub fn generate_greedy(
     _max_new: usize,
 ) -> Result<Qwen38GenerateResult> {
     Err(Error::Model("qwen38 native decode is Metal-only".into()))
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn generate_greedy_complete_wall(
+    _root: impl AsRef<Path>,
+    _tokenizer: &Tokenizer,
+    _prompt: &[u32],
+    _max_new: usize,
+) -> Result<Qwen38CompleteWallResult> {
+    Err(Error::Model("qwen38 native decode is Metal-only".into()))
+}
+
+#[cfg(test)]
+mod complete_wall_identity_tests {
+    use super::{Qwen38CompleteToken, Qwen38StepWall};
+
+    #[test]
+    fn step_named_sum_plus_residual_equals_wall() {
+        let step = Qwen38StepWall {
+            wall_ns: 34_000_000,
+            encode_ns: 400_000,
+            submit_ns: 20_000,
+            wait_ns: 33_500_000,
+            gpu_ns: Some(33_100_000),
+            commit_epilogue_ns: 30_000,
+            sample_readback_ns: 2_000,
+            state_update_ns: 1_000,
+            tcb_encode_ns: 0,
+            dispatches: 900,
+            command_buffers: 1,
+        };
+        assert_eq!(
+            step.named_sum_ns() as i64 + step.residual_ns(),
+            step.wall_ns as i64
+        );
+        assert_eq!(step.wait_minus_gpu_ns(), Some(400_000));
+    }
+
+    #[test]
+    fn complete_token_names_tokenizer_and_bookkeeping() {
+        let token = Qwen38CompleteToken {
+            role: "decode".into(),
+            step_index: 12,
+            token_in: 1,
+            token_out: 2,
+            step: Qwen38StepWall {
+                wall_ns: 33_953_000,
+                encode_ns: 400_000,
+                submit_ns: 20_000,
+                wait_ns: 33_500_000,
+                gpu_ns: Some(33_100_000),
+                commit_epilogue_ns: 30_000,
+                sample_readback_ns: 2_000,
+                state_update_ns: 1_000,
+                tcb_encode_ns: 0,
+                dispatches: 900,
+                command_buffers: 1,
+            },
+            tokenizer_decode_ns: 8_000,
+            bookkeeping_ns: 1_000,
+            complete_wall_ns: 33_970_000,
+        };
+        assert_eq!(
+            token.named_sum_ns() as i64 + token.residual_ns(),
+            token.complete_wall_ns as i64
+        );
+        assert_eq!(token.wall_minus_gpu_ns(), Some(870_000));
+    }
 }
