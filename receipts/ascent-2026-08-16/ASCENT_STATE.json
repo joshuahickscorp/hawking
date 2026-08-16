@@ -99,6 +99,46 @@
         ],
         "attacked_by": "q80-expert-first-touch, measured C 518.7/556.7/339.2 -> D 208.6/383.0/188.2 ms, in q80-integrate-graph",
         "after_that": "mixer+expert GPU ~132 ms/token"
+      },
+      "component_simdgroup": {
+        "branch": "grok/q80-component-simdgroup-20260816-010759 (8b1f4c10) - queued for q80 integration",
+        "mixer_gpu_ms_per_token": {
+          "before": [
+            111,
+            113,
+            105
+          ],
+          "after": [
+            36,
+            37,
+            39
+          ],
+          "factor": "~3x"
+        },
+        "what_it_fixed": "DeltaNet/GQA ran qwen_uniform_q4_group64_matvec serial, ONE THREAD PER ROW, because commit a47f8259 wired simdgroup only into the expert-table kernel and never into the component dispatcher",
+        "NOT_BIT_IDENTICAL": true,
+        "numeric_gate": {
+          "last_hidden_max_abs": 5.54e-06,
+          "last_hidden_rel_l2": 2.38e-06,
+          "last_logit_delta": 5.7e-06,
+          "min_top1_margin": 0.245,
+          "ids": "12/12 match, plus Hi [9707,0,2585]",
+          "fallbacks": 0,
+          "state_contract_tests": "passed",
+          "assessment": "STRONG numeric case: the top-1 decision margin (0.245) exceeds the logit drift (5.7e-6) by ~43,000x, so no routing or token decision is anywhere near flipping. Materially stronger than dsv-occupancy-geometry's 0.013279 drift."
+        },
+        "not_a_wall_win": "complete-token wall is still host moe_table_build; B1 lost when table-build spiked to 11.24 s",
+        "next": "host moe_table_build ~197000000 ns/token. Mixer occupancy is no longer the complete-token wall."
+      },
+      "masked_wins": {
+        "note": "FOUR separate Q80 GPU-side wins are now measured and ALL are masked by the same host wall (expert first-touch / moe_table_build).",
+        "list": [
+          "decode throughput: routed decode 192.9 -> 18.28 ms (merged)",
+          "component simdgroup: mixer GPU 111 -> 36 ms (queued)",
+          "device top-k: routing correct 1344/1344, win masked (queued)",
+          "expert first-touch: 518.7/556.7/339.2 -> 208.6/383.0/188.2 ms (in integration)"
+        ],
+        "consequence": "Q80's token cannot improve until expert first-touch lands. Until then every GPU win is invisible in the wall, which is exactly the specialization trap joint-token-ns was built to expose - here it is visible in advance rather than in hindsight."
       }
     },
     "q80_density_frontier": {
