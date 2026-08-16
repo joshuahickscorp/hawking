@@ -433,6 +433,16 @@ fn run() -> Result<(), String> {
             );
             println!("dense_w_materialized={}", result.dense_w_materialized);
             println!(
+                "deltanet gpu={} vi={} host_ns_per_token={:.0} isolated_gpu={} isolated_host={} isolated_wait={} isolated_disp={}",
+                result.deltanet_gpu_enabled,
+                result.deltanet_vi_parallel,
+                result.deltanet_recurrent_host_ns_per_token,
+                result.isolated_deltanet_gpu_ns,
+                result.isolated_deltanet_host_ns,
+                result.isolated_deltanet_wait_ns,
+                result.isolated_deltanet_dispatches
+            );
+            println!(
                 "greedy_oracle_12={:?} greedy_bit_identical={}",
                 GREEDY_ORACLE_12,
                 result.generated_token_ids == GREEDY_ORACLE_12
@@ -444,7 +454,7 @@ fn run() -> Result<(), String> {
             );
         } else {
             println!(
-                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} bind_ns={:.0} wait_minus_gpu_ns={:.0} cbs={:.1} disp={:.1} ids_match={}",
+                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} bind_ns={:.0} wait_minus_gpu_ns={:.0} cbs={:.1} disp={:.1} deltanet_host={:.0} isolated_gpu={} isolated_host={} ids_match={}",
                 rep + 1,
                 result.generated_text,
                 result.wall_ns_per_token,
@@ -453,6 +463,9 @@ fn run() -> Result<(), String> {
                 result.wait_minus_gpu_ns_per_token,
                 result.command_buffers_per_token,
                 result.dispatches_per_token,
+                result.deltanet_recurrent_host_ns_per_token,
+                result.isolated_deltanet_gpu_ns,
+                result.isolated_deltanet_host_ns,
                 result.generated_token_ids == first_ids
             );
             print_host_prep(&format!("rep{}", rep + 1), &result);

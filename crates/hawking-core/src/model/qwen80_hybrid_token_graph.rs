@@ -1269,6 +1269,7 @@ mod device {
         let _ = super::device_activations::dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_gated_delta_decode_tg_tcb;
+        let _ = super::device_activations::dispatch_qwen80_gated_delta_decode_vi_tcb;
         let _ = super::device_activations::dispatch_qwen80_add_residual_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_shared_expert_sigmoid_gate_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_attention_apply_sigmoid_gate_f32_tcb;
@@ -1321,13 +1322,14 @@ mod device_activations {
         }
     }
 
-    pub const QWEN80_DEVICE_ACTIVATION_KERNELS: [&str; 10] = [
+    pub const QWEN80_DEVICE_ACTIVATION_KERNELS: [&str; 11] = [
         "qwen80_residual_rmsnorm_f32",
         "qwen80_silu_mul_f32",
         "qwen80_qkvz_rearrange_conv_l2_f32",
         "qwen80_ba_to_decay_beta_f32",
         "qwen80_deltanet_gated_rmsnorm_f32",
         "qwen80_gated_delta_decode_tg",
+        "qwen80_gated_delta_decode_vi",
         "qwen80_gqa_qk_norm_rope_cache_f32",
         "qwen80_add_residual_f32",
         "qwen80_shared_expert_sigmoid_gate_f32",
@@ -1464,6 +1466,41 @@ mod device_activations {
         tcb.dispatch_threads(
             "qwen80_gated_delta_decode_tg",
             (key_dim, heads, 1),
+            (key_dim.max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(state), state_offset_bytes);
+                encoder.set_buffer(1, Some(query), 0);
+                encoder.set_buffer(2, Some(key), 0);
+                encoder.set_buffer(3, Some(value), 0);
+                encoder.set_buffer(4, Some(decay), 0);
+                encoder.set_buffer(5, Some(beta), 0);
+                encoder.set_buffer(6, Some(output), 0);
+                encoder.stage_set_u32(7, heads);
+                encoder.stage_set_u32(8, key_dim);
+                encoder.stage_set_u32(9, value_dim);
+                encoder.set_threadgroup_memory_length(0, 128 * 4);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_qwen80_gated_delta_decode_vi_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        state: &PinnedBuffer,
+        state_offset_bytes: u64,
+        query: &PinnedBuffer,
+        key: &PinnedBuffer,
+        value: &PinnedBuffer,
+        decay: &PinnedBuffer,
+        beta: &PinnedBuffer,
+        output: &PinnedBuffer,
+        heads: u32,
+        key_dim: u32,
+        value_dim: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_gated_delta_decode_vi",
+            (key_dim, heads, value_dim),
             (key_dim.max(1), 1, 1),
             |encoder| {
                 encoder.set_buffer(0, Some(state), state_offset_bytes);
@@ -1644,7 +1681,8 @@ mod device_activations {
 pub use device_activations::{
     dispatch_qwen80_add_residual_f32_tcb, dispatch_qwen80_attention_apply_sigmoid_gate_f32_tcb,
     dispatch_qwen80_ba_to_decay_beta_f32_tcb, dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb,
-    dispatch_qwen80_gated_delta_decode_tg_tcb, dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb,
+    dispatch_qwen80_gated_delta_decode_tg_tcb, dispatch_qwen80_gated_delta_decode_vi_tcb,
+    dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb,
     dispatch_qwen80_moe_combine_second_residual_f32_tcb,
     dispatch_qwen80_qkvz_rearrange_conv_l2_f32_tcb, dispatch_qwen80_residual_rmsnorm_f32_tcb,
     dispatch_qwen80_shared_expert_sigmoid_gate_f32_tcb, dispatch_qwen80_silu_mul_f32_tcb,
@@ -1683,6 +1721,7 @@ mod tests {
             "qwen80_ba_to_decay_beta_f32",
             "qwen80_deltanet_gated_rmsnorm_f32",
             "qwen80_gated_delta_decode_tg",
+            "qwen80_gated_delta_decode_vi",
             "qwen80_gqa_qk_norm_rope_cache_f32",
             "qwen80_add_residual_f32",
             "qwen80_shared_expert_sigmoid_gate_f32",

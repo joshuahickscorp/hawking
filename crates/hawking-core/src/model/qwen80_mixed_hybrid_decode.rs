@@ -142,6 +142,21 @@ pub fn qwen80_cache_geom_enabled() -> bool {
     crate::env_opt_out("HAWKING_Q80_CACHE_GEOM")
 }
 
+/// Default **on**. Run the Gated-Delta recurrence on the device mixer
+/// command buffer. Set `HAWKING_Q80_DELTANET_GPU=0` to keep the
+/// CB-collapse `qwen80_gated_delta_decode_tg` incumbent. Catalog / CB
+/// collapse stay.
+pub fn qwen80_deltanet_gpu_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_DELTANET_GPU")
+}
+
+/// Default **on**. One threadgroup per (head, vi). Set
+/// `HAWKING_Q80_DELTANET_VI=0` for the CB-collapse incumbent
+/// `qwen80_gated_delta_decode_tg` (1 TG/head looping 128 columns).
+pub fn qwen80_deltanet_vi_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_DELTANET_VI")
+}
+
 fn tg256_grid(rows: u32) -> (u32, u32, u32) {
     (rows.saturating_mul(256), 1, 1)
 }
@@ -300,6 +315,60 @@ fn set_u32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: u32) {
     );
 }
 
+fn qwen80_linear_slot_count() -> Result<usize> {
+    let mut slots = 0usize;
+    for layer in 0..QWEN80_LAYERS {
+        if matches!(qwen80_layer_kind(layer)?, Qwen80LayerKind::LinearAttention) {
+            slots = slots.saturating_add(1);
+        }
+    }
+    Ok(slots)
+}
+
+#[cfg(target_os = "macos")]
+fn encode_gated_delta(
+    tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+    rec_state: &crate::metal::PinnedBuffer,
+    rec_off: u64,
+    query: &crate::metal::PinnedBuffer,
+    key: &crate::metal::PinnedBuffer,
+    value: &crate::metal::PinnedBuffer,
+    decay: &crate::metal::PinnedBuffer,
+    beta: &crate::metal::PinnedBuffer,
+    rec_out: &crate::metal::PinnedBuffer,
+    heads: u32,
+    key_dim: u32,
+    value_dim: u32,
+    vi: bool,
+    native: &mut Qwen80MixedNativeCounts,
+) -> Result<()> {
+    let (kernel, grid) = if vi {
+        ("qwen80_gated_delta_decode_vi", (key_dim, heads, value_dim))
+    } else {
+        ("qwen80_gated_delta_decode_tg", (key_dim, heads, 1))
+    };
+    tcb.dispatch_threads(kernel, grid, (key_dim.max(1), 1, 1), |enc| {
+        enc.set_buffer(0, Some(rec_state), rec_off);
+        enc.set_buffer(1, Some(query), 0);
+        enc.set_buffer(2, Some(key), 0);
+        enc.set_buffer(3, Some(value), 0);
+        enc.set_buffer(4, Some(decay), 0);
+        enc.set_buffer(5, Some(beta), 0);
+        enc.set_buffer(6, Some(rec_out), 0);
+        set_u32(enc, 7, heads);
+        set_u32(enc, 8, key_dim);
+        set_u32(enc, 9, value_dim);
+        enc.set_threadgroup_memory_length(0, 128 * 4);
+    })?;
+    if vi {
+        native.deltanet_vi_dispatches = native.deltanet_vi_dispatches.saturating_add(1);
+    } else {
+        native.deltanet_tg_dispatches = native.deltanet_tg_dispatches.saturating_add(1);
+    }
+    native.device_activation_dispatches = native.device_activation_dispatches.saturating_add(1);
+    Ok(())
+}
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct Qwen80MixedFallbackCounts {
     pub host_mixed_matvec: u64,
@@ -341,6 +410,8 @@ pub struct Qwen80MixedNativeCounts {
     pub packed_calls: u64,
     pub packed_skipped: u64,
     pub device_activation_dispatches: u64,
+    pub deltanet_vi_dispatches: u64,
+    pub deltanet_tg_dispatches: u64,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -536,6 +607,14 @@ pub struct Qwen80MixedStageTimes {
     pub cb_wait_minus_gpu_ns: u64,
     pub gpu_organ: MixedGpuOrganNs,
     pub host_excl: MixedHostExclusiveNs,
+    /// Host wall of `source_qwen80_recurrent_deltanet`. Zero on the GPU path.
+    pub deltanet_recurrent_host_ns: u64,
+    /// Isolated 36-layer recurrent CB (Q38 methodology). Not part of wall.
+    pub isolated_deltanet_gpu_ns: u64,
+    pub isolated_deltanet_wait_ns: u64,
+    pub isolated_deltanet_dispatches: u64,
+    /// Isolated 36-layer host oracle. Not part of wall.
+    pub isolated_deltanet_host_ns: u64,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
@@ -2624,6 +2703,57 @@ impl MetalMixedAccel {
         }
         tcb.commit_and_wait_timed()
     }
+
+    fn measure_isolated_deltanet(&mut self) -> Result<crate::metal::CommandBufferTiming> {
+        let act = self
+            .activations
+            .as_ref()
+            .ok_or_else(|| mixed_error("isolated DeltaNet needs device activations"))?;
+        let layout = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
+        let rec_bytes_per_slot = layout
+            .recurrent_state_elements()?
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| mixed_error("isolated DeltaNet slot overflowed"))?;
+        let slots = qwen80_linear_slot_count()?;
+        if slots == 0 {
+            return Err(mixed_error("isolated DeltaNet found no linear slots"));
+        }
+        let rec_state = act.linear_recurrent.clone();
+        let query = act.repeated_q.clone();
+        let key = act.repeated_k.clone();
+        let value = act.conv_v.clone();
+        let decay = act.decay.clone();
+        let beta = act.beta.clone();
+        let rec_out = act.rec_out.clone();
+        let vi = qwen80_deltanet_gpu_enabled() && qwen80_deltanet_vi_enabled();
+        let heads = layout.value_heads as u32;
+        let kd = layout.key_head_dim as u32;
+        let vd = layout.value_head_dim as u32;
+        let mut native = Qwen80MixedNativeCounts::default();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
+        tcb.begin_serial_group()?;
+        for slot in 0..slots {
+            let rec_off = (slot * rec_bytes_per_slot) as u64;
+            encode_gated_delta(
+                &mut tcb,
+                &rec_state,
+                rec_off,
+                &query,
+                &key,
+                &value,
+                &decay,
+                &beta,
+                &rec_out,
+                heads,
+                kd,
+                vd,
+                vi,
+                &mut native,
+            )?;
+        }
+        tcb.end_concurrent_group()?;
+        tcb.commit_and_wait_timed()
+    }
 }
 
 fn mixed_weight_class(name: &str) -> &'static str {
@@ -2717,6 +2847,53 @@ impl Qwen80MixedHybridDecodeSession {
 
     pub fn cached_geometry_count(&self) -> usize {
         self.cache.geometry.len()
+    }
+
+    /// Isolated 36-layer host oracle. Mutates a scratch state, not the
+    /// session recurrent. Call after a generate, never inside the wall.
+    pub fn measure_isolated_host_recurrent(&self) -> Result<u64> {
+        let layout = Qwen80CanonicalLinearDeltaNetLayout::source_exact();
+        let rec_elems = layout.recurrent_state_elements()?;
+        let key_elems = layout.value_heads * layout.key_head_dim;
+        let value_elems = layout.value_elements()?;
+        let slots = qwen80_linear_slot_count()?;
+        let mut state = vec![0.1f32; rec_elems];
+        let query = vec![0.1f32; key_elems];
+        let key = vec![0.1f32; key_elems];
+        let value = vec![0.1f32; value_elems];
+        let decay = vec![0.9f32; layout.value_heads];
+        let beta = vec![0.5f32; layout.value_heads];
+        let started = Instant::now();
+        for _ in 0..slots {
+            let _ = source_qwen80_recurrent_deltanet(
+                &mut state,
+                &query,
+                &key,
+                &value,
+                &decay,
+                &beta,
+                &layout,
+            )?;
+        }
+        Ok(started.elapsed().as_nanos() as u64)
+    }
+
+    /// Isolated 36-layer recurrent CB. Mutates device state; call after a
+    /// generate, never inside the wall clock. GPU ns is GPUStart/GPUEnd.
+    pub fn measure_isolated_deltanet_recurrent(&mut self) -> Result<(u64, u64, u64)> {
+        #[cfg(target_os = "macos")]
+        {
+            let Some(metal) = self.metal.as_mut() else {
+                return Err(mixed_error("Metal required for isolated DeltaNet"));
+            };
+            let timing = metal.measure_isolated_deltanet()?;
+            let gpu = timing
+                .gpu_ns
+                .ok_or_else(|| mixed_error("isolated DeltaNet GPUStartTime/GPUEndTime missing"))?;
+            Ok((gpu, timing.wait_ns, timing.dispatches))
+        }
+        #[cfg(not(target_os = "macos"))]
+        Err(mixed_error("isolated DeltaNet requires macOS Metal"))
     }
 
     pub fn exclusive_snap(&self) -> MixedExclusiveSnap {
@@ -3188,6 +3365,7 @@ impl Qwen80MixedHybridDecodeSession {
         let recurrent_started = Instant::now();
         let (decay, beta) =
             source_qwen80_ba_to_decay_beta(&projected_ba, &a_log, &dt_bias, &layout)?;
+        let host_recurrent_started = Instant::now();
         let recurrent_output = source_qwen80_recurrent_deltanet(
             &mut self.state.linear_recurrent[slot],
             &repeated_query,
@@ -3197,6 +3375,10 @@ impl Qwen80MixedHybridDecodeSession {
             &beta,
             &layout,
         )?;
+        self.stages.deltanet_recurrent_host_ns = self
+            .stages
+            .deltanet_recurrent_host_ns
+            .saturating_add(host_recurrent_started.elapsed().as_nanos() as u64);
         add_secs(
             &mut self.stages.activation.deltanet_recurrent_secs,
             recurrent_started,
@@ -3833,26 +4015,22 @@ impl Qwen80MixedHybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
-        tcb.dispatch_threads(
-            "qwen80_gated_delta_decode_tg",
-            (layout.key_head_dim as u32, layout.value_heads as u32, 1),
-            (layout.key_head_dim as u32, 1, 1),
-            |encoder| {
-                encoder.set_buffer(0, Some(&rec_state), rec_off);
-                encoder.set_buffer(1, Some(&repeated_q), 0);
-                encoder.set_buffer(2, Some(&repeated_k), 0);
-                encoder.set_buffer(3, Some(&conv_v), 0);
-                encoder.set_buffer(4, Some(&decay), 0);
-                encoder.set_buffer(5, Some(&beta), 0);
-                encoder.set_buffer(6, Some(&rec_out), 0);
-                set_u32(encoder, 7, layout.value_heads as u32);
-                set_u32(encoder, 8, layout.key_head_dim as u32);
-                set_u32(encoder, 9, layout.value_head_dim as u32);
-                encoder.set_threadgroup_memory_length(0, 128 * 4);
-            },
+        encode_gated_delta(
+            tcb,
+            &rec_state,
+            rec_off,
+            &repeated_q,
+            &repeated_k,
+            &conv_v,
+            &decay,
+            &beta,
+            &rec_out,
+            layout.value_heads as u32,
+            layout.key_head_dim as u32,
+            layout.value_head_dim as u32,
+            qwen80_deltanet_gpu_enabled() && qwen80_deltanet_vi_enabled(),
+            &mut self.native,
         )?;
-        self.native.device_activation_dispatches =
-            self.native.device_activation_dispatches.saturating_add(1);
         add_secs(
             &mut self.stages.activation.deltanet_recurrent_secs,
             recurrent_started,
@@ -4545,6 +4723,13 @@ pub struct Qwen80MixedGreedyResult {
     pub wait_minus_gpu_ns_per_token: f64,
     pub command_buffers_per_token: f64,
     pub dispatches_per_token: f64,
+    pub deltanet_recurrent_host_ns_per_token: f64,
+    pub isolated_deltanet_gpu_ns: u64,
+    pub isolated_deltanet_wait_ns: u64,
+    pub isolated_deltanet_dispatches: u64,
+    pub isolated_deltanet_host_ns: u64,
+    pub deltanet_gpu_enabled: bool,
+    pub deltanet_vi_parallel: bool,
     pub peak_rss_bytes: u64,
     pub fallbacks: Qwen80MixedFallbackCounts,
     pub native: Qwen80MixedNativeCounts,
@@ -4602,6 +4787,7 @@ pub fn generate_mixed_greedy(
     let prefill_cbs = session.native.command_buffers;
     let prefill_dispatches = session.native.compute_dispatches;
     let prefill_gpu_ns = session.stages.gpu_matvec_ns;
+    let prefill_deltanet_host_ns = session.stages.deltanet_recurrent_host_ns;
     let mut generated = Vec::with_capacity(max_new_tokens);
     generated.push(next);
     let decode_started = Instant::now();
@@ -4673,6 +4859,30 @@ pub fn generate_mixed_greedy(
         .compute_dispatches
         .saturating_sub(prefill_dispatches) as f64
         / decode_forwards;
+    let deltanet_recurrent_host_ns_per_token = session
+        .stages
+        .deltanet_recurrent_host_ns
+        .saturating_sub(prefill_deltanet_host_ns) as f64
+        / decode_forwards;
+    let isolated_deltanet_host_ns = session.measure_isolated_host_recurrent()?;
+    let (isolated_deltanet_gpu_ns, isolated_deltanet_wait_ns, isolated_deltanet_dispatches) = {
+        #[cfg(target_os = "macos")]
+        {
+            if session.device_activations_live() {
+                session.measure_isolated_deltanet_recurrent()?
+            } else {
+                (0, 0, 0)
+            }
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            (0, 0, 0)
+        }
+    };
+    session.stages.isolated_deltanet_gpu_ns = isolated_deltanet_gpu_ns;
+    session.stages.isolated_deltanet_wait_ns = isolated_deltanet_wait_ns;
+    session.stages.isolated_deltanet_dispatches = isolated_deltanet_dispatches;
+    session.stages.isolated_deltanet_host_ns = isolated_deltanet_host_ns;
     Ok(Qwen80MixedGreedyResult {
         prompt: prompt.to_owned(),
         prompt_token_ids,
@@ -4690,6 +4900,13 @@ pub fn generate_mixed_greedy(
         wait_minus_gpu_ns_per_token,
         command_buffers_per_token,
         dispatches_per_token,
+        deltanet_recurrent_host_ns_per_token,
+        isolated_deltanet_gpu_ns,
+        isolated_deltanet_wait_ns,
+        isolated_deltanet_dispatches,
+        isolated_deltanet_host_ns,
+        deltanet_gpu_enabled: qwen80_deltanet_gpu_enabled(),
+        deltanet_vi_parallel: qwen80_deltanet_gpu_enabled() && qwen80_deltanet_vi_enabled(),
         peak_rss_bytes: peak_rss_bytes(),
         fallbacks: session.fallbacks.clone(),
         native: session.native.clone(),

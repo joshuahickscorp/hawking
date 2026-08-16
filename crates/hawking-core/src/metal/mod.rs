@@ -1313,6 +1313,7 @@ mod imp {
             "qwen80_ba_to_decay_beta_f32" => "qwen80_ba_to_decay_beta_f32",
             "qwen80_deltanet_gated_rmsnorm_f32" => "qwen80_deltanet_gated_rmsnorm_f32",
             "qwen80_gated_delta_decode_tg" => "qwen80_gated_delta_decode_tg",
+            "qwen80_gated_delta_decode_vi" => "qwen80_gated_delta_decode_vi",
             "qwen80_gqa_qk_norm_rope_cache_f32" => "qwen80_gqa_qk_norm_rope_cache_f32",
             "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
@@ -2122,6 +2123,7 @@ mod imp {
                 "qwen80_ba_to_decay_beta_f32",
                 "qwen80_deltanet_gated_rmsnorm_f32",
                 "qwen80_gated_delta_decode_tg",
+                "qwen80_gated_delta_decode_vi",
                 "qwen80_gqa_qk_norm_rope_cache_f32",
             ];
             for &kernel in KERNELS {
