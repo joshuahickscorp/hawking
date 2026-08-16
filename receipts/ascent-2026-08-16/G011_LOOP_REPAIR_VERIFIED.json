@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.g011.loop_repair_verified.v1",
+  "date": "2026-08-16",
+  "both_halves_of_the_G011_repair_EXERCISED_not_just_recorded": {
+    "half_1_harvest_generate": {
+      "test": "seeded a report containing 'NEXT_BOTTLENECK: host.embed_packed 25000000 ns/token' into a temp TASKS root, then called harvest() and generate_targets() directly",
+      "result": "harvest() extracted 1 bottleneck; generate_targets() created 1 PENDING target, id auto-q80-host-embed-packed",
+      "verdict": "PASS - the loop generates work when given harvestable input"
+    },
+    "half_2_reclaim_preserves_input": {
+      "test": "built a fake task dir with grok-report.md, metadata.json and a 5 MB diff.patch, then ran the patched purge block against it",
+      "result": "diff.patch deleted, grok-report.md and metadata.json survived, NEXT_BOTTLENECK still readable",
+      "verdict": "PASS - the bulk is reclaimed and the harvest input is kept"
+    }
+  },
+  "what_this_establishes": "The autonomous loop was never broken - it was starved. Both starvation causes are now fixed AND exercised: reclaim_safe.sh keeps the reports, and R010 requires my contracts to emit NEXT_BOTTLENECK.",
+  "a_detail_worth_noting": "The seeded bottleneck was host.embed_packed at 25 ms, and the target the loop generated - auto-q80-host-embed-packed - is exactly Q80's largest named remaining item. So the loop, given real input, would have aimed at the right thing on its own.",
+  "G011_STILL_NOT_MET": "The obligation is that the pipeline SURVIVES MY ABSENCE and keeps making measurable progress. Both mechanisms now work in test, but the loop has not yet run unattended and produced a real launch. That requires a finished lane emitting NEXT_BOTTLENECK under the repaired reclaim, which cannot happen while I am the one driving every lane.",
+  "what_would_close_it": "Leave the daemon running with lanes that emit NEXT_BOTTLENECK, then observe a non-null 'launched' field in its tick log. Today's log shows launched: null on every tick and zero launches all day."
+}
