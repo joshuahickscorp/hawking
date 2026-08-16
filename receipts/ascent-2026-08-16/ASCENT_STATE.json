@@ -1426,7 +1426,9 @@
     "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
     "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
     "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create.",
-    "Q80 down_proj low-rank ALREADY executes L @ (R @ x) - it does not reconstruct W. The representation->algebra optimization was already in place; do not re-open it. The remaining decode cost is occupancy, not algebra."
+    "Q80 down_proj low-rank ALREADY executes L @ (R @ x) - it does not reconstruct W. The representation->algebra optimization was already in place; do not re-open it. The remaining decode cost is occupancy, not algebra.",
+    "Matvec widening is NOT the lever once threadgroup geometry is right: rowblock 4-8, fp16 accumulation and X-tiling were flat or REGRESSIONS. Register pressure was never the limiter (all survivors at max_total_threads_per_threadgroup=1024).",
+    "A 0.59 MiB organ measured in ISOLATION cannot be judged against a 64 MiB DRAM row probe. Even MLX hits only ~2.2 GB/s on Q80's 512x2048 shape isolated. Compare against MLX incremental (~3.7 us/organ) or against in-flight throughput, never against a streaming probe."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
@@ -1585,5 +1587,52 @@
     "lane_warning_I_am_honouring": "'Comparing one organ to a 64 MiB row probe is the wrong argument.' and 'Do not average those two shapes into one campaign slogan.'",
     "corrected_framing": "There are TWO different problems, not one. (1) Q80's tiny 0.59 MiB organs are LAUNCH/OCCUPANCY bound on a per-dispatch basis - the fix is batching organs into flight, which is what MLX's 112-152 GB/s in-flight number shows is possible, and what the 1440-launches-x-11us dispatch floor already implies. (2) Qwen3.8's 50 MiB organs are large enough that ~180 GB/s is directly achievable and any shortfall is our kernel.",
     "correctness": "MLX numeric gate max_rel <= 5e-3, measured 2.4e-4 to 9.9e-4, 0 fallbacks"
+  },
+  "MATVEC_CAMPAIGN_RESOLVED": {
+    "three_lanes_converged": true,
+    "results": {
+      "matvec-occupancy-230x": {
+        "kernel": "vecgroup_x64",
+        "q4_organ_ns": [
+          212375,
+          11041
+        ],
+        "factor": "19.2x"
+      },
+      "matvec-geometry-sweep": {
+        "kernel": "named / binary tg256",
+        "q4_organ_ns": [
+          209250,
+          6709
+        ],
+        "factor": "31.2x",
+        "binary_organ_ns": [
+          60459,
+          6750
+        ],
+        "binary_factor": "9.0x",
+        "paired_q4": {
+          "A": [
+            223000,
+            224000,
+            221084
+          ],
+          "B": [
+            8458,
+            8000,
+            8541
+          ]
+        },
+        "BEST": "geometry-sweep BEAT occupancy-230x on the same organ: 6709 vs 11041 ns"
+      },
+      "matvec-mlx-reference": {
+        "mlx_incremental_ns_per_organ": 3694,
+        "so_hawking_is_now": "6709 / 3694 = ~1.8x of MLX on this shape, down from ~57x before either lane"
+      }
+    },
+    "OCCUPANCY_IS_NOW_FIXED": "Register pressure was NOT the limiter - every survivor reported max_total_threads_per_threadgroup=1024. Widening (rowblock 4-8, fp16 accumulation, X tile) was mostly flat or a REGRESSION. The win came from threadgroup geometry alone.",
+    "NEW_WALL": "per-weight DECODE/ALU, not occupancy. binary tg256 at 6750 ns/organ = 22 GB/s = 4.4% of this run's 495 GB/s control. Q4 now matched at 6709 ns. down_proj hgravs was NOT re-swept and remains open.",
+    "control_honesty": "This run's control measured 495 GB/s DIRTY. Earlier clean quotes were 560-647. The lane explicitly said 'do not launder' - use 495 when quoting this run's percentages.",
+    "correctness": "numeric gate 2e-5; binary 1.62e-5; Q4 named 1.00e-5; 0 fallbacks"
   }
 }
