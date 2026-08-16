@@ -330,6 +330,16 @@
       "skew": "UNKNOWN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "matvec-mlx-reference-20260816-022115",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "isolated 0.59 MiB qmv launch/occupancy (~250-310 us HOST_WALL; Hawking kernel 210 us GPU). Not DRAM rows. Qwen-sized organs already at ~180 GB/s on MLX \u2014 remaining gap to the 560-647 GB/s probe is ~3x, not 230x.",
+      "branch": "grok/matvec-mlx-reference-20260816-022115",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }

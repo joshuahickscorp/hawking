@@ -1017,10 +1017,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "not DRAM rows. Q80 host moe_table_build ~246 ms; DSV4F attn_weight_io_prefetch ~253 ms. GPU packed matvecs sit at ~2.5 GB/s against a 560\u2013647 GB/s read-reduce on the same box.",
-      "from_lane": "dram-row-locality-20260816-013210"
+      "from_lane": "dram-row-locality-20260816-013210",
+      "task_id": "auto-q80-not-dram-rows-q80-20260816-023959"
     },
     {
       "id": "auto-dsv4f-host-expert-slab-io",
@@ -1539,5 +1540,50 @@
     "receipt": "receipts/ascent-2026-08-16/QWEN38_REUSE_MATRIX.json",
     "recommendation": "Start at Q4 (~13.45 GB) if that packer retargets cheaply. 3 BPW allowed. Do NOT open 2-bit yet.",
     "next": "Q80 dispatch locks (DeltaNet 32x128x128, GQA 16/2/theta=5e6) plus a pack-time fuse of the split in_proj_qkv/z/a/b into Q80's fused in_proj_qkvz/ba layout. No Q38 token-ns exists yet."
+  },
+  "CORRECTION_230X_FRAMING_WAS_PARTLY_WRONG": {
+    "source": "receipts/ascent-2026-08-16/matvec-mlx-reference.json (merged)",
+    "what_I_claimed": "Packed matvecs run 2.5 GB/s against a 560-647 GB/s control, therefore a ~230x occupancy gap. I repeated this and committed it to the ledger.",
+    "what_is_actually_true": "The comparison was apples-to-oranges for Q80. A 0.59 MiB expert organ measured in ISOLATION cannot be judged against a 64 MiB DRAM row probe. Even MLX - Apple's own optimized qmv - hits only 2.12-2.43 GB/s on that same 512x2048 shape in isolation. Our 2.5 GB/s was NOT anomalous for that shape.",
+    "the_real_numbers": {
+      "q80_shape_512x2048_0.59MiB": {
+        "mlx_isolated_gb_s": [
+          2.12,
+          2.2,
+          2.22,
+          2.43,
+          2.38,
+          2.36
+        ],
+        "mlx_in_flight_N256_gb_s": [
+          142.4,
+          143.0,
+          151.5,
+          141.1,
+          112.4,
+          142.2
+        ],
+        "mlx_incremental_ns_per_organ": 3694,
+        "hawking_before_occupancy_ns": 210000,
+        "hawking_after_occupancy_ns": 11041,
+        "REAL_GAP": "Hawking 11.0 us vs MLX incremental ~3.7-4 us = ~2.75x, NOT 230x. The occupancy fix already closed most of it."
+      },
+      "qwen38_shape_5120x17408_50MiB": {
+        "mlx_isolated_gb_s": [
+          221.0,
+          161.8,
+          208.4,
+          119.0,
+          187.9,
+          175.4
+        ],
+        "median_gb_s": 182,
+        "gap_to_probe": "~3x, not 230x",
+        "verdict": "For LARGE organs the ceiling is real and ~180 GB/s is achievable. If our organs stay at 2.5 GB/s on Qwen-sized shapes, our kernels ARE the problem and MLX's qmv_fast is the reference to study."
+      }
+    },
+    "lane_warning_I_am_honouring": "'Comparing one organ to a 64 MiB row probe is the wrong argument.' and 'Do not average those two shapes into one campaign slogan.'",
+    "corrected_framing": "There are TWO different problems, not one. (1) Q80's tiny 0.59 MiB organs are LAUNCH/OCCUPANCY bound on a per-dispatch basis - the fix is batching organs into flight, which is what MLX's 112-152 GB/s in-flight number shows is possible, and what the 1440-launches-x-11us dispatch floor already implies. (2) Qwen3.8's 50 MiB organs are large enough that ~180 GB/s is directly achievable and any shortfall is our kernel.",
+    "correctness": "MLX numeric gate max_rel <= 5e-3, measured 2.4e-4 to 9.9e-4, 0 fallbacks"
   }
 }
