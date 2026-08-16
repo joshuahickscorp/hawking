@@ -170,10 +170,19 @@ def harvest() -> list[dict]:
             text = report.read_text(errors="replace")
         except Exception:
             continue
+        s = STATUS_RE.search(text)
         m = NEXT_RE.search(text)
         if not m:
+            # Report exists but names no next wall. Previously skipped outright,
+            # which is the same silent-drop bug as the report-less case: the lane
+            # finished, nobody filed it, nobody knew. File it for review.
+            found.append({
+                "lane": d.name,
+                "status": s.group(1) if s else "UNKNOWN",
+                "next_bottleneck": "",
+                "needs_manual_review": True,
+            })
             continue
-        s = STATUS_RE.search(text)
         found.append({
             "lane": d.name,
             "status": s.group(1) if s else "UNKNOWN",
@@ -465,6 +474,26 @@ def _selfcheck() -> None:
     assert not ok, "forbidden marker must reject even when the expect marker is present"
     ok, _ = tier1({"model": "q80", "tier1_command": "exit 3"})
     assert not ok, "non-zero exit must reject"
+
+    # Both silent-drop cases must now surface rather than vanish.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td)
+        (base / "no-report-lane").mkdir(); (base / "no-report-lane" / "exit_code").write_text("124")
+        (base / "no-wall-lane").mkdir()
+        (base / "no-wall-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nno wall named\n")
+        (base / "good-lane").mkdir()
+        (base / "good-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nNEXT_BOTTLENECK: x 1 ns\n")
+        global TASKS
+        saved = TASKS; TASKS = base
+        try:
+            got = {h["lane"]: h for h in harvest()}
+        finally:
+            TASKS = saved
+        assert set(got) == {"no-report-lane", "no-wall-lane", "good-lane"}, got
+        assert got["no-report-lane"]["needs_manual_review"] and "124" in got["no-report-lane"]["status"]
+        assert got["no-wall-lane"]["needs_manual_review"], "report without a wall must still be filed"
+        assert not got["good-lane"].get("needs_manual_review")
 
     txt = "STATUS: SHIPPED\nNEXT_BOTTLENECK: host.foo 123 ns/token\n"
     assert NEXT_RE.search(txt).group(1).startswith("host.foo")
