@@ -380,6 +380,26 @@
       "skew": "STALE_CLEAN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "auto-q80-q80-host-compact-expert-20260816-025648",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "moe_combine suffix CB 34540000 ns then deltanet prefix 31460000 ns (C2); metal.wait 72800000 ns contains GPU 42133942 ns across 98 CBs (DIRTY_ENGINEERING)",
+      "branch": "grok/auto-q80-q80-host-compact-expert-20260816-025648",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-recalibrate-capability-bar-20260816-023440",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the long session (17229037568 > 17179869184)",
+      "branch": "grok/q80-recalibrate-capability-bar-20260816-023440",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }

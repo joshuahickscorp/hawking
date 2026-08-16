@@ -1273,10 +1273,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "route-starved tail \u2014 p10 = 34 rows (measured); 221 never-routed pairs; ~119k tokens to put p10 at rank 160, ~171k to put the median at 2048. The 25k capture also has no on-disk post-SwiGLU X.",
-      "from_lane": "q80-capture-coverage-20260816-003209"
+      "from_lane": "q80-capture-coverage-20260816-003209",
+      "task_id": "auto-q80-route-starved-tail-p10-20260816-031702"
     },
     {
       "id": "auto-q80-all-mixed-generate-untested",
@@ -1655,6 +1656,42 @@
       "auto_generated": true,
       "from_bottleneck": "98 CBs / 1155 dispatches per token; GPU idle 50705310 ns (45% busy). Suffix moe_combine 33982886 ns; DeltaNet prefix 32727027 ns. moe_table_build now 15097311 ns.",
       "from_lane": "auto-q80-not-dram-rows-q80-20260816-023959"
+    },
+    {
+      "id": "auto-q80-moe-combine-suffix-cb",
+      "model": "q80",
+      "hypothesis": "moe_combine suffix CB 34540000 ns then deltanet prefix 31460000 ns (C2); metal.wait 72800000 ns contains GPU 42133942 ns across 98 CBs (DIRTY_ENGINEERING)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-moe-combine-suffix-cb.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "moe_combine suffix CB 34540000 ns then deltanet prefix 31460000 ns (C2); metal.wait 72800000 ns contains GPU 42133942 ns across 98 CBs (DIRTY_ENGINEERING)",
+      "from_lane": "auto-q80-q80-host-compact-expert-20260816-025648"
+    },
+    {
+      "id": "auto-q80-pack-real-sub-catalog",
+      "model": "q80",
+      "hypothesis": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the lo",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-pack-real-sub-catalog.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the long session (17229037568 > 17179869184)",
+      "from_lane": "q80-recalibrate-capability-bar-20260816-023440"
     }
   ],
   "history": [
