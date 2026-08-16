@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.special_unit.g016_packer_design.v1",
+  "date": "2026-08-16",
+  "decision": "Write a NEW thin dense driver, lab/operators/qwen38_mixed_representation_pack.py. Do NOT generalise q80_mixed_representation_pack.py.",
+  "why": "The Q80 packer is not MoE-flavoured, it is MoE-WOVEN. N_EXPERTS=512 shapes routing arrays in at least ten places - counts[N_LAYERS,N_EXPERTS], fit_rows, fit_kind, the per-expert reservoir, segment-id arithmetic. A dense model needs none of it. Threading a dense mode through that file means carrying every expert data structure as a degenerate case, which is more code and more risk than a separate driver.",
+  "what_is_actually_shared": "The codecs, and they are already geometry-agnostic - they take plain np.ndarray and nothing else. Verified signatures in lab/operators/ascension_dual_gravity_worker.py: _binary_codec(values, group_size=128), _uniform_codec(values, bits, group_size), _activation_weighted_svd_low_rank_codec(values, rank, bits, ...). No model constant reaches them. The dense driver imports the same four codecs and gets bit-identical codec behaviour for free.",
+  "role_mapping": {
+    "note": "Qwen3.8 dense SwiGLU takes the roles Q80 routed experts take.",
+    "mlp.gate_proj": "ORGAN_GATE / CODEC_BINARY (HGRAVB01 binary_group 128)",
+    "mlp.up_proj": "ORGAN_UP / CODEC_RESIDUAL (HGRAVR02 binary + rice_q1_rms @ 2%)",
+    "mlp.down_proj": "ORGAN_DOWN / CODEC_HGRAVS01 (low-rank, fit on REAL post-SwiGLU X)",
+    "attention + embeddings + norms": "must stay <=4 bits - see G016_BPW_FEASIBILITY.json, q8 fails even the 3.0 hard limit"
+  },
+  "simplifications_dense_buys": [
+    "No route capture, no reservoir, no per-expert fit tracking.",
+    "No never-routed fallback: every dense row has real activations, so the weight-space truncated-SVD path Q80 needs for unrouted experts is not required at all.",
+    "Segment layout is plain layer-major; no expert-major sub-ordering."
+  ],
+  "layer_schedule": "64 layers. Full-attention layers satisfy (layer+1)%4==0, i.e. layer%4==3 - identical predicate to Q80's is_gqa_layer, so that helper ports verbatim. 48 linear-attention layers, 16 full.",
+  "expected_result": "1.8863 BPW with non-MLP at 4 bits (G016_BPW_FEASIBILITY.json scenario A), 1.2404 with attention compressed.",
+  "hard_requirement": "The down_proj low-rank fit needs REAL post-SwiGLU X captured from the Qwen3.8 BF16 source at workspace/campaign/records/runs/qwen38-27b/bf16. Synthetic or gaussian-proxy activations are known-invalid on this project - every prior sub-bit negative traced back to that error."
+}
