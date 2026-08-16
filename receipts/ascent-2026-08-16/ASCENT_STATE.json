@@ -378,6 +378,31 @@
         "realized_bandwidth_gb_s": 92,
         "of_ceiling": 750,
         "NOT_BIT_IDENTICAL": "reduction order changes the SHA. logit 16.76857566833496 vs baseline 16.7818546295166, |delta| 0.013279; versus CPU ORACLE only 0.001139 - i.e. possibly CLOSER to true than the baseline. Under review; must not become default on lane authority."
+      },
+      "attn_weight_cache": {
+        "branch": "grok/dsv-attn-weight-io-20260816-010759 (d4dc5604) - NOT merged, queued for integration",
+        "reps_ns": {
+          "A": [
+            206977084,
+            340013752,
+            379147417
+          ],
+          "B": [
+            1589,
+            5164,
+            5665
+          ]
+        },
+        "effect": "host.attn_weight_io_prefetch from ~207-379 ms to ~1.6-5.7 MICROseconds",
+        "why_it_works": "attention weights are per-layer and reused EVERY token with no routing, so hit rate is perfect by construction - unlike experts, which are routed",
+        "correctness": "bit-identical hc_sha c94da765 on every BOS token; cached==fresh memcmp 8/8 over 868,366,176 B; 0 fallbacks",
+        "NEW_WALL": "metal.gpu 393375000 ns/token median (true GPU timestamps, 129 CBs)",
+        "next_host_candidate": "shared expert + moe_control I/O ~254 ms summed, same per-layer reuse shape"
+      },
+      "inversion": {
+        "note": "DSV4F has INVERTED. It began 73% GPU-idle waiting on host I/O. With expert payloads and attention weights both resident, host streaming is largely gone and metal.gpu ~393 ms is now THE wall.",
+        "consequence": "The optimization target moves from host I/O to GPU occupancy - which is exactly where dsv-occupancy-geometry already measured attention GPU 127.04 -> 52.57 ms.",
+        "PROJECTED_NOT_MEASURED": "If expert cache + attn cache + occupancy all compose on the 830 ms integrated body, the arithmetic suggests roughly 260-340 ms/token. This is a PROJECTION from separately-measured deltas, NOT a measured token, and joint-token-ns has already demonstrated that per-stage wins do not simply add. It must be measured on the integrated build before any claim."
       }
     },
     "dsv4f_density_frontier": {
@@ -861,5 +886,11 @@
     "receipts_that_labelled_correctly": [
       "DSV4F_HOST_WALL_BASELINE.json"
     ]
-  }
+  },
+  "pending_integration_dsv4f": [
+    "grok/dsv-expert-cache-20260816-003822 (expert payload residency)",
+    "grok/dsv-admission-identity-20260816-003824 (no wall win; real work removed)",
+    "grok/dsv-occupancy-geometry-20260816-010044 (attn GPU 127->52.6, NOT bit-identical - under review)",
+    "grok/dsv-attn-weight-io-20260816-010759 (attn weight residency)"
+  ]
 }
