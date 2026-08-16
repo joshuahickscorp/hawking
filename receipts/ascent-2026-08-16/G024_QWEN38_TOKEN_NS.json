@@ -1,0 +1,97 @@
+{
+  "schema": "hawking.special_unit.g024_qwen38_token_ns.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-token-ns",
+  "claim": "Qwen3.8 uniform-q4-v1 complete token is a closed 12-component ledger. sum(components)=35,227,918 ns against measured wall 35,227,917 ns (1 ns rounding). Production GPU median 33.912 ms, wait-gpu 0.384 ms. Weight addressing is the only existential bucket (21.293 ms, 60.4% of wall). It is DRAM traffic: addr_probe is 83-92% of every GEMV class. Kernel headroom on the GEMVs is gone; the lever is BPW.",
+  "status": "CLOSED",
+  "confidence": "HIGH on closure, GPU timestamps, coherence, and the addressing-is-traffic finding. MEDIUM on occupancy (launch-geometry derived, not a hardware counter) and on exact ns recoverable from fusion (isolated CBs, not production-fused).",
+  "measurement": {
+    "label": "DIRTY_ENGINEERING",
+    "regime": "warm after 4 discarded tokens; 3 paired production generates; isolated/probe suite after rep 1; on-main worktree",
+    "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "vehicle": "qwen38-27b/uniform-q4-v1",
+    "bpw": 4.252735126866492,
+    "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+    "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "kernel_runtime_genome": "Qwen38HybridDecodeSession + qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 + qwen38_gated_delta_decode_vi; deltanet_vi_parallel=true; concurrent_independent=false; 1 CB / 964 dispatches",
+    "commit": "57ee82ccef7aba803416ec3562c8981277120fd4",
+    "median_gpu_ns": 33912333,
+    "median_wait_ns": 34296583,
+    "median_encode_ns": 919250,
+    "median_submit_ns": 12084,
+    "median_wall_ns": 35227917,
+    "gpu_spread_ns": [33393666, 34229458],
+    "wait_minus_gpu_ns": 384250,
+    "steady_decode_steps": "all post-prompt steps across 3 generates",
+    "reference_g015_median_gpu_ns": 33536999,
+    "this_run_minus_g015_ms": 0.375,
+    "achieved_gb_s_production": 401.6,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "pct_of_ceiling": 97.6,
+    "fallbacks": 0,
+    "greedy_oracle_16": [248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149, 1061, 369, 264, 1546],
+    "greedy_bit_identical": true
+  },
+  "instrumentation_overhead": "Production step() adds two Instant::now calls around encode (~20 ns), not material. Isolated families and Q4 addr/decode/stream probes run in separate CBs after a production generate and are not inside the timed token. Isolated GPU sum 33.575 ms vs production GPU 33.912 ms (scale=1.0, no overcount). Production GPU is +0.375 ms vs G015 33.537 ms, inside the dirty-engineering band.",
+  "closure": {
+    "identity": "sum(12 serial components) == complete_token_wall; named residual is a row, not a hole",
+    "total_token_ns": 35227917,
+    "sum_components_ns": 35227918,
+    "rounding_residual_ns": -1,
+    "identity_holds": true,
+    "named_residual": "unattributed_residual = embed_row_gather (~5 µs) + intra_cb_encoder_transition_gap (337 µs) + host_tail (0)",
+    "named_residual_ns": 341925,
+    "named_residual_pct": 0.97
+  },
+  "ranked_by_ns": [
+    {"rank": 1, "component": "weight_addressing", "ns": 21293103, "ms": 21.293, "pct": 60.44, "triage": "EXISTENTIAL"},
+    {"rank": 2, "component": "deltanet", "ns": 3732795, "ms": 3.733, "pct": 10.60, "triage": "research"},
+    {"rank": 3, "component": "gqa", "ns": 2443471, "ms": 2.443, "pct": 6.94, "triage": "research"},
+    {"rank": 4, "component": "normalization", "ns": 2367415, "ms": 2.367, "pct": 6.72, "triage": "research"},
+    {"rank": 5, "component": "weight_decode_reconstruction", "ns": 1808227, "ms": 1.808, "pct": 5.13, "triage": "research"},
+    {"rank": 6, "component": "dense_swiglu", "ns": 1004198, "ms": 1.004, "pct": 2.85, "triage": "research"},
+    {"rank": 7, "component": "host_preparation", "ns": 919250, "ms": 0.919, "pct": 2.61, "triage": "below 1 ms"},
+    {"rank": 8, "component": "kv_state", "ns": 537665, "ms": 0.538, "pct": 1.53, "triage": "below 1 ms"},
+    {"rank": 9, "component": "synchronization", "ns": 384250, "ms": 0.384, "pct": 1.09, "triage": "below 1 ms"},
+    {"rank": 10, "component": "terminal_head", "ns": 383535, "ms": 0.384, "pct": 1.09, "triage": "below 1 ms"},
+    {"rank": 11, "component": "unattributed_residual", "ns": 341925, "ms": 0.342, "pct": 0.97, "triage": "NAMED, below 1 ms"},
+    {"rank": 12, "component": "command_submission", "ns": 12084, "ms": 0.012, "pct": 0.03, "triage": "noise"}
+  ],
+  "top_three_attacks": [
+    {
+      "rank": 1,
+      "mechanism": "Fewer weight bytes (BPW). Weight addressing is 21.293 ms of sequential Q4 DRAM traffic; addr_probe is 87% of MLP, 91% of DeltaNet GEMVs, 83% of GQA GEMVs, 92% of lm_head. geo_tpr64_tg128 already launches 8704 TGs on the 17408-row gate (145 TGs/core) — not occupancy-starved. Production token is at 401.6 / 411.51 GB/s = 97.6% of the honest decode ceiling.",
+      "expected_ns_recovered": "At 2.0 / 4.2527 BPW the addressing bucket scales to ~10.01 ms (recover ~11.28 ms). Decode + GEMV FMA scale with it: ~12.5 ms total from the GEMV-traffic class. This is the only existential lever. Do not shave microseconds on #2/#3 while this stands.",
+      "not_a_kernel_win": true
+    },
+    {
+      "rank": 2,
+      "mechanism": "Fuse DeltaNet activation tails. Isolated gated_rmsnorm is 1.308 ms for 48 launches of 16-wide reductions; ba_to_decay 0.139 ms; rearrange leftover after conv-state stream ~0.33 ms. These are launch + low-occupancy ALU, 223× their bandwidth floor.",
+      "expected_ns_recovered": "1.0–1.5 ms if gated_rmsnorm + ba + rearrange fuse into the vi kernel or one encoder. Cannot go below the rec-state floor already parked in kv_state (0.47 ms).",
+      "not_a_kernel_win": false
+    },
+    {
+      "rank": 3,
+      "mechanism": "Collapse 129 RMSNorms (input 1.137 ms + post 1.213 ms + final 0.019 ms). 122× bandwidth floor. Same story as GQA rope (1.557 ms / 16 layers at 24 threads): encoder-per-tiny-kernel tax.",
+      "expected_ns_recovered": "1.2–1.8 ms by folding RMSNorm into the following GEMV or sharing one persistent encoder. GQA rope is the alternate 1.2 ms if norms are left alone.",
+      "not_a_kernel_win": false
+    }
+  ],
+  "action": "G016 density on the 13.618 GB active budget is the only attack that moves a millisecond-class EXISTENTIAL bucket. Fusion of DeltaNet tails and RMSNorms is queued behind it. Do not optimize the Q4 representation itself — uniform-q4-v1 is an oracle.",
+  "unresolved": [
+    "Occupancy is launch-geometry derived (60 cores), not a hardware counter sample.",
+    "Energy (pJ/weight) was not wrapped; TOKEN_NS energy remains unfilled.",
+    "This is DIRTY_ENGINEERING, not BASE_TRUE: other work was on the box; spread is reported.",
+    "Addr/decode fractions come from diagnostic kernels with the same launch geometry; they do not change production tokens.",
+    "1 ns rounding remainder on the wall (35,227,918 vs 35,227,917)."
+  ],
+  "files": [
+    "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+    "receipts/ascent-2026-08-16/TOKEN_NS_QWEN38.json",
+    "receipts/ascent-2026-08-16/G024_QWEN38_TOKEN_NS.json",
+    "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+    "crates/hawking-core/examples/ascension_qwen38_token_ns.rs",
+    "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+    "crates/hawking-core/shaders/qwen38_device_activations.metal"
+  ]
+}
