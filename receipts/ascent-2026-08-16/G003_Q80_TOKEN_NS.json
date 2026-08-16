@@ -1,0 +1,135 @@
+{
+  "schema": "hawking.special_unit.g003_q80_token_ns.v1",
+  "date": "2026-08-16",
+  "lane": "q80-token-ns-after-recon",
+  "claim": "Q80 mixed-1p5-v1 complete token after recon-fuse is a closed 14-component ledger. Median-wall decode token 250,732,125 ns. sum(components)=250,732,125 ns (0 ns rounding). GPU matvec is 36.533 ms (14.6% of wall), not 74%. The token is now dominated by 337-CB wait tax (83.375 ms), host catalog reparse of already-uploaded weights (68.416 ms), and host DeltaNet recurrence (43.518 ms). gk_*_simd is unused and SLOWER than the shipped tg256/simd3 kernels.",
+  "status": "CLOSED",
+  "confidence": "HIGH on closure, GPU timestamps, greedy identity, and the three named mechanisms. MEDIUM on occupancy (launch-geometry derived, not a hardware counter) and on exact ns recoverable from CB fusion (not measured as a fused production token).",
+  "measurement": {
+    "label": "DIRTY_ENGINEERING",
+    "regime": "warm after 4 discarded tokens; 3 production 12-token generates; isolated/probe/simd suite after production rep 1; sealed from the median-wall decode token (n=33 decode steps). Waited on gpu lock held by g002-per-facet-ab-warm at start.",
+    "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "vehicle": "qwen80/mixed-1p5-v1",
+    "bpw": 1.4444457,
+    "model": "Qwen3-Coder-Next-mixed-1p5-v1",
+    "kernel_runtime_genome": "Qwen80MixedHybridDecodeSession recon_fuse=true facet1=true facet2=true; q80_binary_group_matvec_tg256 + q80_binary_group_csr_matvec_tg256 + q80_uniform8_matvec_tg256/simd_bytes + q80_hgravs01_factor_matvec_simd3; host DeltaNet/GQA/RMS/topk; 337 CBs / 2413 dispatches",
+    "commit": "895ff340e64825008567fcab2aedcaeccacba7cf",
+    "median_gpu_ns": 36533213,
+    "median_wait_ns": 119908494,
+    "median_encode_ns": 2442913,
+    "median_submit_ns": 1225409,
+    "median_wall_ns": 250732125,
+    "gpu_spread_ns": [27574458, 38222002],
+    "wait_minus_gpu_ns": 83375281,
+    "steady_decode_steps": 33,
+    "production_generate_wall_ns_per_token": [278462080, 244992114, 251410538],
+    "warmup_wall_ns_per_token": 304943458,
+    "achieved_gb_s_gpu": 64.4,
+    "achieved_gb_s_addressing": 128.9,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "pct_of_ceiling_gpu": 15.6,
+    "fallbacks": 0,
+    "greedy_oracle_12": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+    "greedy_bit_identical": true,
+    "timestamps_missing": 0,
+    "cbs_per_token": 337,
+    "dispatches_per_token": 2413
+  },
+  "instrumentation_overhead": "Production dispatch_threads always takes Instant around encode (~20 ns × 2413 ≈ 48 µs/token). packed() and vector() cache-hit add two more Instant pairs per call. Isolated families and addr/decode/simd probes run in separate CBs AFTER production generate 1 and are not inside the timed token. Organ GPU sum equals production GPU on the median-wall token (36,533,213 ns). First closed run without catalog clocks had median wall 249.7 ms; this run 250.7 ms — Instant overhead is not the 68 ms catalog bucket.",
+  "closure": {
+    "identity": "sum(14 serial components) == complete_token_wall; named residual is a row, not a hole",
+    "total_token_ns": 250732125,
+    "sum_components_ns": 250732125,
+    "rounding_residual_ns": 0,
+    "identity_holds": true,
+    "named_residual": "unattributed_residual = exclusive-clock composition overcount (−4.476 ms). Instant fields on one token over-sum the wall by 1.8%; folded so the table closes.",
+    "named_residual_ns": -4476287,
+    "named_residual_pct": -1.79
+  },
+  "host_prep_split_ns": {
+    "catalog_reparse": 68416159,
+    "embed_row_gather": 8861500,
+    "buffer_prep": 4877777,
+    "encode": 2442913,
+    "vector_clone": 191087,
+    "expert_bind": 0,
+    "note": "catalog.load_packed is called on every matvec_named even after the weight is already a resident MTLBuffer. That is 68.4 ms of mmap header reparse, not first-touch I/O."
+  },
+  "gpu_organ_ns": {
+    "moe_routed": 27271519,
+    "deltanet": 4328589,
+    "moe_shared": 1703963,
+    "gqa": 1389653,
+    "terminal": 751708,
+    "moe_router": 716682,
+    "moe_combine_gate": 371099,
+    "other": 0,
+    "note": "bytes and time invert: routed is 10% of active bytes and 75% of GPU time; qkvz-class Q8 is most of the rest."
+  },
+  "ranked_by_ns": [
+    {"rank": 1, "component": "host_preparation", "ns": 84789436, "ms": 84.789, "pct": 33.82, "triage": "EXISTENTIAL"},
+    {"rank": 2, "component": "synchronization", "ns": 83375281, "ms": 83.375, "pct": 33.25, "triage": "EXISTENTIAL"},
+    {"rank": 3, "component": "deltanet", "ns": 46938519, "ms": 46.939, "pct": 18.72, "triage": "EXISTENTIAL"},
+    {"rank": 4, "component": "weight_addressing", "ns": 18594864, "ms": 18.595, "pct": 7.42, "triage": "EXISTENTIAL"},
+    {"rank": 5, "component": "moe_routed", "ns": 13985185, "ms": 13.985, "pct": 5.58, "triage": "EXISTENTIAL"},
+    {"rank": 6, "component": "weight_decode_reconstruction", "ns": 3806215, "ms": 3.806, "pct": 1.52, "triage": "research"},
+    {"rank": 7, "component": "gqa", "ns": 1495996, "ms": 1.496, "pct": 0.60, "triage": "research"},
+    {"rank": 8, "component": "command_submission", "ns": 1225409, "ms": 1.225, "pct": 0.49, "triage": "research"},
+    {"rank": 9, "component": "moe_combine", "ns": 523086, "ms": 0.523, "pct": 0.21, "triage": "below 1 ms"},
+    {"rank": 10, "component": "normalization", "ns": 275334, "ms": 0.275, "pct": 0.11, "triage": "below 1 ms"},
+    {"rank": 11, "component": "terminal_head", "ns": 117541, "ms": 0.118, "pct": 0.05, "triage": "below 1 ms"},
+    {"rank": 12, "component": "moe_shared", "ns": 47629, "ms": 0.048, "pct": 0.02, "triage": "below 1 ms"},
+    {"rank": 13, "component": "kv_state", "ns": 33708, "ms": 0.034, "pct": 0.01, "triage": "below 1 ms"},
+    {"rank": 14, "component": "unattributed_residual", "ns": -4476287, "ms": -4.476, "pct": -1.79, "triage": "NAMED composition overcount"}
+  ],
+  "top_three_attacks": [
+    {
+      "rank": 1,
+      "mechanism": "Stop re-parsing the mixed catalog on every GEMV. 68.416 ms of host_preparation is catalog.load_packed after the tensor is already a no-copy MTLBuffer. 289 packed() calls/token walk mmap headers for geometry the session already knows.",
+      "expected_ns_recovered": 68000000,
+      "expected_ns_recovered_note": "68 ms if packed() is skipped after ensure_named_weight. encode (2.4 ms) + embed gather (8.9 ms) + buffer write/read (4.9 ms) stay.",
+      "not_a_kernel_win": true
+    },
+    {
+      "rank": 2,
+      "mechanism": "Collapse 337 command buffers. wait−gpu is 83.375 ms (247 µs/CB). Qwen38 ships 1 CB / 964 dispatches. This path still commits ~7 CBs per layer (mixer groups + shared + router + routed wave + combine gate) plus terminal.",
+      "expected_ns_recovered": 75000000,
+      "expected_ns_recovered_note": "75–83 ms if the token is one or a few CBs. Submit (1.2 ms) is already small. Cannot go below driver enqueue on the remaining CBs.",
+      "not_a_kernel_win": true
+    },
+    {
+      "rank": 3,
+      "mechanism": "Move DeltaNet recurrence off the host. source_qwen80_recurrent_deltanet is 43.518 ms of scalar CPU. Qwen38 already runs gated_delta_decode_vi on device. Conv is only 2.245 ms beside it.",
+      "expected_ns_recovered": 40000000,
+      "expected_ns_recovered_note": "35–42 ms. Residual bandwidth floor of the rec-state tensor is ~0.01 ms. Rearrange/L2 (0.68 ms) and gated RMS (0.43 ms) can fuse with it.",
+      "not_a_kernel_win": false
+    }
+  ],
+  "gk_simd_verdict": {
+    "wired_on_mixed_token_path": false,
+    "should_wire_now": false,
+    "evidence": [
+      "binary 512-row gate: shipped tg256 11.25 µs vs q80_binary_group_matvec_simd 59.67 µs (0.19×) vs gk_matvec_binary_simd 51.50 µs (0.22×). Occupancy tile already beats simd.",
+      "hgravs down-R: shipped simd3 12.00 µs vs gk_matvec_hgravs_simd 20.33 µs (0.59×). 8-unpack simd3 stays.",
+      "Q8 qkvz 12288×2048: shipped tg256 69.38 µs vs q80_uniform8_matvec_simd_bytes 59.38 µs (1.17×). Modest, not the historical 8–45× (that was vs the serial bit-walk, now gone)."
+    ]
+  },
+  "stale_profiles": "Every pre-recon Q80 profile (gpu_matvec 867 ms / 74% of 1376 ms) is superseded. GPU is 36.5 ms / 14.6% of 250.7 ms. Host catalog + CB wait + host DeltaNet were invisible behind the serial extract.",
+  "action": "Do not spend a lane on gk_*_simd wiring. The three existential mechanisms are host catalog reparse, 337-CB wait tax, and host DeltaNet recurrence. Weight addressing is 18.6 ms at 129 GB/s (3.2× the 411.51 GB/s floor) and is fourth.",
+  "unresolved": [
+    "Occupancy is launch-geometry derived (60 cores), not a hardware counter sample.",
+    "Energy (pJ/weight) was not wrapped; TOKEN_NS energy remains unfilled.",
+    "This is DIRTY_ENGINEERING: g002 held the GPU lock at process start; isolated probes sit between production rep 1 and 2. Spread is reported.",
+    "Addr/decode fractions come from diagnostic kernels with the same launch geometry; they do not change production tokens.",
+    "Exclusive Instant sum over-counts the wall by 4.476 ms (1.8%); named residual carries the overcount so the table closes."
+  ],
+  "files": [
+    "receipts/ascent-2026-08-16/QWEN80_MIXED_TOKEN_NS_LEDGER.json",
+    "receipts/ascent-2026-08-16/TOKEN_NS_Q80_MIXED.json",
+    "receipts/ascent-2026-08-16/G003_Q80_TOKEN_NS.json",
+    "crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs",
+    "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+    "crates/hawking-core/examples/ascension_qwen80_mixed_token_ns.rs",
+    "crates/hawking-core/shaders/q80_mixed_decode.metal"
+  ]
+}

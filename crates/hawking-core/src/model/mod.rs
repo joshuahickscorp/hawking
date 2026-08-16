@@ -28,6 +28,8 @@ pub mod qwen80_mixed_catalog;
 /// Mixed-catalog binding of the Q4 hybrid token graph. Expert organs use the
 /// packed mixed codecs; non-experts stay HGRAVU01-q8. Not a dense-W path.
 pub mod qwen80_mixed_hybrid_decode;
+/// Closed TOKEN_NS cover of the mixed-1p5-v1 complete token after recon-fuse.
+pub mod qwen80_mixed_token_ns_ledger;
 
 /// Memory-bounded DSV4F activation-X capture writer.
 ///
