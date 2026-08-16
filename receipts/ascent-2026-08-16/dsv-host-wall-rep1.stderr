@@ -1,0 +1,61 @@
+dsv4f native token graph: artifact=/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity max_layer=42 head=true
+dsv4f native graph layer 0 done; peak_rss=585957376 live=0
+dsv4f native graph layer 1 done; peak_rss=586121216 live=0
+dsv4f native graph layer 2 done; peak_rss=586186752 live=0
+dsv4f native graph layer 3 done; peak_rss=586285056 live=0
+dsv4f native graph layer 4 done; peak_rss=586301440 live=0
+dsv4f native graph layer 5 done; peak_rss=586317824 live=0
+dsv4f native graph layer 6 done; peak_rss=586317824 live=0
+dsv4f native graph layer 7 done; peak_rss=586448896 live=0
+dsv4f native graph layer 8 done; peak_rss=586465280 live=0
+dsv4f native graph layer 9 done; peak_rss=586498048 live=0
+dsv4f native graph layer 10 done; peak_rss=586514432 live=0
+dsv4f native graph layer 11 done; peak_rss=586530816 live=0
+dsv4f native graph layer 12 done; peak_rss=588185600 live=0
+dsv4f native graph layer 13 done; peak_rss=588185600 live=0
+dsv4f native graph layer 14 done; peak_rss=589807616 live=0
+dsv4f native graph layer 15 done; peak_rss=589824000 live=0
+dsv4f native graph layer 16 done; peak_rss=589824000 live=0
+dsv4f native graph layer 17 done; peak_rss=589824000 live=0
+dsv4f native graph layer 18 done; peak_rss=589824000 live=0
+dsv4f native graph layer 19 done; peak_rss=589856768 live=0
+dsv4f native graph layer 20 done; peak_rss=589856768 live=0
+dsv4f native graph layer 21 done; peak_rss=589905920 live=0
+dsv4f native graph layer 22 done; peak_rss=589922304 live=0
+dsv4f native graph layer 23 done; peak_rss=590118912 live=0
+dsv4f native graph layer 24 done; peak_rss=590135296 live=0
+dsv4f native graph layer 25 done; peak_rss=590151680 live=0
+dsv4f native graph layer 26 done; peak_rss=590151680 live=0
+dsv4f native graph layer 27 done; peak_rss=590168064 live=0
+dsv4f native graph layer 28 done; peak_rss=590168064 live=0
+dsv4f native graph layer 29 done; peak_rss=590184448 live=0
+dsv4f native graph layer 30 done; peak_rss=591773696 live=0
+dsv4f native graph layer 31 done; peak_rss=591773696 live=0
+dsv4f native graph layer 32 done; peak_rss=591773696 live=0
+dsv4f native graph layer 33 done; peak_rss=591790080 live=0
+dsv4f native graph layer 34 done; peak_rss=591790080 live=0
+dsv4f native graph layer 35 done; peak_rss=591822848 live=0
+dsv4f native graph layer 36 done; peak_rss=591822848 live=0
+dsv4f native graph layer 37 done; peak_rss=591822848 live=0
+dsv4f native graph layer 38 done; peak_rss=591839232 live=0
+dsv4f native graph layer 39 done; peak_rss=591888384 live=0
+dsv4f native graph layer 40 done; peak_rss=591888384 live=0
+dsv4f native graph layer 41 done; peak_rss=591921152 live=0
+dsv4f native graph layer 42 done; peak_rss=591921152 live=0
+wrote receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json
+deepest_layer=Some(42) layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42] wall_ms=9578 init_ms=1165 body_ms=8408 s/token=9.5780 (body 8.4080) peak_rss_bytes=1705754624 peak_weight_bytes=134230144 metal_dispatches=1857 command_buffers=137 fallbacks=0 host_expert_gather=0 host_expert_output_readback=0 host_route_id_readback=40 hash_invocations=0 admission_trust_hits=3314 bytes_hashed=0 admission_receipt_loaded=true artifact_index_loaded=true hc_sha=c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597 greedy=Some((5, 16.781855)) oracle=(token=5 logit=16.767437 sha=d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69) stop=None receipt_sha256=03cb6dcf62bbfd575766f477528aaf0437fe7a47ac46a3a5316057a869520944
+token_ns_ledger diagnosis=IoBound body_ns=8408485000 host_exclusive_ns=6224007000 metal_gpu_ns=565477000 metal_wait_ns=101170000 verify_ns=3713973615 cbs=137 isolated=0 proof=host_exclusive=6224007000ns (74.0% of body) verify_ns=3713973615 (44.2%); metal_gpu=565477000ns (6.7%) metal_wait=101170000ns (1.2%). Weight streaming / host memcpy / MHC sit outside GPU occupancy.
+host_class memcpy ns=8014320498 ns/token=8014320498 pct_body=95.31 calls=2909 bytes=21326508740
+host_class file_source_reads ns=7318371624 ns/token=7318371624 pct_body=87.04 calls=218 bytes=5857237264
+host_class table_construction ns=237052542 ns/token=237052542 pct_body=2.82 calls=345 bytes=135988296
+host_class state_movement ns=31727789 ns/token=31727789 pct_body=0.38 calls=259 bytes=0
+host_class synchronization ns=122583 ns/token=122583 pct_body=0.00 calls=94 bytes=1221632
+host_class route_preparation ns=105292 ns/token=105292 pct_body=0.00 calls=80 bytes=2880
+host_class unaccounted_host_exclusive ns=0 ns/token=0 pct_body=0.00 calls=1 bytes=0
+reader_sum reader.mmap ns=2493280595 calls=3314 (parallel-sum, not wall)
+reader_sum reader.path_resolve ns=1164064988 calls=3314 (parallel-sum, not wall)
+reader_sum reader.identity ns=48792855 calls=3314 (parallel-sum, not wall)
+reader_sum reader.tensor_lookup ns=14844938 calls=140261 (parallel-sum, not wall)
+reader_sum reader.digest_cache ns=3375932 calls=3314 (parallel-sum, not wall)
+second_touch_probe_ns=4449000 cache_hits_delta=26 identity_delta=0 mmap_delta=26 host_read_views=2808 owned_allocs=145 owned_alloc_bytes=5387862180 owned_copy_ns=1661543 mmap_calls=3314 identity_calls=3314 path_resolve_ns=1164064988 tensor_lookup_ns=14844938
+wrote receipts/ascent-2026-08-16/dsv-host-wall-rep1.json

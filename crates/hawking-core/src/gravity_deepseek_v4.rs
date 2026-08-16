@@ -181,6 +181,85 @@ pub struct DeepSeekV4ChunkVerificationStats {
     pub verify_ns: u64,
     pub admission_receipt_loaded: bool,
     pub artifact_index_loaded: bool,
+    pub host_read: DeepSeekV4HostReadStats,
+}
+
+/// Per-token host-read breakdown for the DSV4F streamed reader.
+///
+/// `*_ns` fields that live under `ensure_chunk_verified` are the **sum of
+/// parallel worker-thread time**, not wall time.  `par_read_views` fans out
+/// one thread per tensor, so these sums can exceed body wall.  Counts and
+/// bytes are exact.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DeepSeekV4HostReadStats {
+    pub read_view_calls: u64,
+    pub read_owned_calls: u64,
+    pub mapped_windows: u64,
+    pub mapped_window_bytes: u64,
+    pub owned_windows: u64,
+    pub owned_window_bytes: u64,
+    pub owned_allocs: u64,
+    pub owned_alloc_bytes: u64,
+    pub owned_copy_ns: u64,
+    pub mmap_calls: u64,
+    pub mmap_ns: u64,
+    pub identity_calls: u64,
+    pub identity_ns: u64,
+    pub path_resolve_calls: u64,
+    pub path_resolve_ns: u64,
+    pub digest_cache_probes: u64,
+    pub digest_cache_ns: u64,
+    pub tensor_lookup_calls: u64,
+    pub tensor_lookup_ns: u64,
+}
+
+#[derive(Debug, Default)]
+struct HostReadCounters {
+    read_view_calls: AtomicU64,
+    read_owned_calls: AtomicU64,
+    mapped_windows: AtomicU64,
+    mapped_window_bytes: AtomicU64,
+    owned_windows: AtomicU64,
+    owned_window_bytes: AtomicU64,
+    owned_allocs: AtomicU64,
+    owned_alloc_bytes: AtomicU64,
+    owned_copy_ns: AtomicU64,
+    mmap_calls: AtomicU64,
+    mmap_ns: AtomicU64,
+    identity_calls: AtomicU64,
+    identity_ns: AtomicU64,
+    path_resolve_calls: AtomicU64,
+    path_resolve_ns: AtomicU64,
+    digest_cache_probes: AtomicU64,
+    digest_cache_ns: AtomicU64,
+    tensor_lookup_calls: AtomicU64,
+    tensor_lookup_ns: AtomicU64,
+}
+
+impl HostReadCounters {
+    fn snapshot(&self) -> DeepSeekV4HostReadStats {
+        DeepSeekV4HostReadStats {
+            read_view_calls: self.read_view_calls.load(Ordering::Relaxed),
+            read_owned_calls: self.read_owned_calls.load(Ordering::Relaxed),
+            mapped_windows: self.mapped_windows.load(Ordering::Relaxed),
+            mapped_window_bytes: self.mapped_window_bytes.load(Ordering::Relaxed),
+            owned_windows: self.owned_windows.load(Ordering::Relaxed),
+            owned_window_bytes: self.owned_window_bytes.load(Ordering::Relaxed),
+            owned_allocs: self.owned_allocs.load(Ordering::Relaxed),
+            owned_alloc_bytes: self.owned_alloc_bytes.load(Ordering::Relaxed),
+            owned_copy_ns: self.owned_copy_ns.load(Ordering::Relaxed),
+            mmap_calls: self.mmap_calls.load(Ordering::Relaxed),
+            mmap_ns: self.mmap_ns.load(Ordering::Relaxed),
+            identity_calls: self.identity_calls.load(Ordering::Relaxed),
+            identity_ns: self.identity_ns.load(Ordering::Relaxed),
+            path_resolve_calls: self.path_resolve_calls.load(Ordering::Relaxed),
+            path_resolve_ns: self.path_resolve_ns.load(Ordering::Relaxed),
+            digest_cache_probes: self.digest_cache_probes.load(Ordering::Relaxed),
+            digest_cache_ns: self.digest_cache_ns.load(Ordering::Relaxed),
+            tensor_lookup_calls: self.tensor_lookup_calls.load(Ordering::Relaxed),
+            tensor_lookup_ns: self.tensor_lookup_ns.load(Ordering::Relaxed),
+        }
+    }
 }
 
 /// Content-addressed chunk binding used by isolated integrity fixtures.
@@ -445,6 +524,7 @@ pub struct DeepSeekV4FullStreamReader {
     admission: Option<DeepSeekV4AdmissionTrustIndex>,
     admission_receipt_loaded: AtomicBool,
     artifact_index_loaded: AtomicBool,
+    host_read: HostReadCounters,
 }
 
 impl DeepSeekV4FullStreamReader {
@@ -539,6 +619,7 @@ impl DeepSeekV4FullStreamReader {
             admission_receipt_loaded: AtomicBool::new(admission.is_some()),
             artifact_index_loaded: AtomicBool::new(true),
             admission,
+            host_read: HostReadCounters::default(),
         })
     }
 
@@ -645,6 +726,7 @@ impl DeepSeekV4FullStreamReader {
             admission_receipt_loaded: AtomicBool::new(admission.is_some()),
             artifact_index_loaded: AtomicBool::new(false),
             admission,
+            host_read: HostReadCounters::default(),
         })
     }
 
@@ -750,6 +832,7 @@ impl DeepSeekV4FullStreamReader {
             admission_receipt_loaded: AtomicBool::new(admission.is_some()),
             artifact_index_loaded: AtomicBool::new(false),
             admission,
+            host_read: HostReadCounters::default(),
         })
     }
 
@@ -814,6 +897,7 @@ impl DeepSeekV4FullStreamReader {
             verify_ns: self.verify_ns.load(Ordering::Relaxed),
             admission_receipt_loaded: self.admission_receipt_loaded.load(Ordering::Relaxed),
             artifact_index_loaded: self.artifact_index_loaded.load(Ordering::Relaxed),
+            host_read: self.host_read.snapshot(),
         }
     }
 
@@ -941,9 +1025,15 @@ impl DeepSeekV4FullStreamReader {
 
     /// Metadata only; this cannot read or execute a tensor.
     pub fn tensor_metadata(&self, name: &str) -> Result<&DeepSeekV4TensorMetadata> {
-        self.tensors
-            .get(name)
-            .ok_or_else(|| gravity(format!("full stream has no tensor {name:?}")))
+        self.host_read
+            .tensor_lookup_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let started = Instant::now();
+        let found = self.tensors.get(name);
+        self.host_read
+            .tensor_lookup_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        found.ok_or_else(|| gravity(format!("full stream has no tensor {name:?}")))
     }
 
     /// Return an already validated native scale-pair contract for `weight_name`.
@@ -1193,9 +1283,25 @@ impl DeepSeekV4FullStreamReader {
         range: Range<u64>,
         max_output_bytes: usize,
     ) -> Result<Vec<u8>> {
-        Ok(self
-            .read_verified_range_view(name, range, max_output_bytes)?
-            .into_owned())
+        self.host_read
+            .read_owned_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let view = self.read_verified_range_view(name, range, max_output_bytes)?;
+        if view.is_zero_copy() {
+            let bytes = view.len() as u64;
+            let started = Instant::now();
+            let owned = view.into_owned();
+            self.host_read
+                .owned_copy_ns
+                .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+            self.host_read.owned_allocs.fetch_add(1, Ordering::Relaxed);
+            self.host_read
+                .owned_alloc_bytes
+                .fetch_add(bytes, Ordering::Relaxed);
+            Ok(owned)
+        } else {
+            Ok(view.into_owned())
+        }
     }
 
     /// Zero-copy counterpart of [`Self::read_verified_range`].  A window that
@@ -1207,6 +1313,9 @@ impl DeepSeekV4FullStreamReader {
         range: Range<u64>,
         max_output_bytes: usize,
     ) -> Result<DeepSeekV4VerifiedBytes> {
+        self.host_read
+            .read_view_calls
+            .fetch_add(1, Ordering::Relaxed);
         let tensor = self.tensor_metadata(name)?;
         if range.start >= range.end || range.end > tensor.bytes {
             return Err(gravity(format!(
@@ -1250,6 +1359,10 @@ impl DeepSeekV4FullStreamReader {
                 .map_err(|_| gravity("chunk slice start exceeds usize"))?;
             let local_end = usize::try_from(take_end - segment.tensor_start)
                 .map_err(|_| gravity("chunk slice end exceeds usize"))?;
+            self.host_read.mapped_windows.fetch_add(1, Ordering::Relaxed);
+            self.host_read
+                .mapped_window_bytes
+                .fetch_add(requested, Ordering::Relaxed);
             return DeepSeekV4VerifiedBytes::mapped(mmap, local_start, local_end);
         }
 
@@ -1274,6 +1387,14 @@ impl DeepSeekV4FullStreamReader {
                 "{name}: verified segment range is not contiguous"
             )));
         }
+        self.host_read.owned_windows.fetch_add(1, Ordering::Relaxed);
+        self.host_read
+            .owned_window_bytes
+            .fetch_add(requested, Ordering::Relaxed);
+        self.host_read.owned_allocs.fetch_add(1, Ordering::Relaxed);
+        self.host_read
+            .owned_alloc_bytes
+            .fetch_add(requested, Ordering::Relaxed);
         Ok(DeepSeekV4VerifiedBytes::owned(out))
     }
 
@@ -1346,12 +1467,35 @@ impl DeepSeekV4FullStreamReader {
 
     fn ensure_chunk_verified_inner(&self, binding: &ChunkBinding) -> Result<Mmap> {
         let path = self.resolve_chunk_file(binding)?;
+        let mmap_started = Instant::now();
         let mmap = map_chunk_readonly(&path, binding.bytes, &binding.relative)?;
-        if self.verified_digests.lock().contains(&binding.sha256) {
+        self.host_read
+            .mmap_ns
+            .fetch_add(mmap_started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        self.host_read.mmap_calls.fetch_add(1, Ordering::Relaxed);
+        let cache_started = Instant::now();
+        let cached = self.verified_digests.lock().contains(&binding.sha256);
+        self.host_read.digest_cache_ns.fetch_add(
+            cache_started.elapsed().as_nanos() as u64,
+            Ordering::Relaxed,
+        );
+        self.host_read
+            .digest_cache_probes
+            .fetch_add(1, Ordering::Relaxed);
+        if cached {
             self.cache_hits.fetch_add(1, Ordering::Relaxed);
             return Ok(mmap);
         }
-        if self.can_trust_without_hash(binding, &path)? {
+        let identity_started = Instant::now();
+        let trusted = self.can_trust_without_hash(binding, &path)?;
+        self.host_read.identity_ns.fetch_add(
+            identity_started.elapsed().as_nanos() as u64,
+            Ordering::Relaxed,
+        );
+        self.host_read
+            .identity_calls
+            .fetch_add(1, Ordering::Relaxed);
+        if trusted {
             self.admission_trust_hits.fetch_add(1, Ordering::Relaxed);
             self.verified_digests.lock().insert(binding.sha256.clone());
             return Ok(mmap);
@@ -1375,14 +1519,25 @@ impl DeepSeekV4FullStreamReader {
     }
 
     fn resolve_chunk_file(&self, binding: &ChunkBinding) -> Result<PathBuf> {
-        if self.verify_mode == DeepSeekV4VerifyMode::Admission {
+        self.host_read
+            .path_resolve_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let started = Instant::now();
+        let path = if self.verify_mode == DeepSeekV4VerifyMode::Admission {
             if let Some(index) = self.admission.as_ref() {
                 let (path, _, _) =
                     resolve_trusted_chunk_path(&self.root, &binding.relative, index)?;
-                return Ok(path);
+                Ok(path)
+            } else {
+                checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
             }
-        }
-        checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
+        } else {
+            checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
+        };
+        self.host_read
+            .path_resolve_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        path
     }
 
     fn can_trust_without_hash(&self, binding: &ChunkBinding, path: &Path) -> Result<bool> {

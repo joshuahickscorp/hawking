@@ -110,6 +110,8 @@ pub struct TokenNsLedger {
     pub route_id_readbacks: Vec<RouteReadbackRow>,
     pub isolated_kernels: Vec<IsolatedKernelRow>,
     pub metal_vs_host: MetalVsHost,
+    pub host_wall_classes: Vec<StageRow>,
+    pub reader_parallel_sum: Vec<StageRow>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -311,6 +313,8 @@ impl TokenNsCollector {
 
         let stages = finalize_stages(&self.stages, body_ns);
         let operator_classes = operator_class_rows(&self.stages, &self.isolated_kernels, body_ns);
+        let host_wall_classes = host_wall_class_rows(&self.stages, body_ns, host_exclusive_ns);
+        let reader_parallel_sum = reader_parallel_sum_rows(&self.stages, body_ns);
         let (diagnosis, diagnosis_proof) = diagnose(
             body_ns,
             host_exclusive_ns,
@@ -350,6 +354,8 @@ impl TokenNsCollector {
                 production_dispatches,
                 isolated_probe_overhead_ns: self.probe_overhead_ns,
             },
+            host_wall_classes,
+            reader_parallel_sum,
         }
     }
 }
@@ -448,6 +454,90 @@ fn operator_class_rows(
         .collect();
     rows.sort_by(|a, b| b.ns.cmp(&a.ns).then_with(|| a.name.cmp(&b.name)));
     rows
+}
+
+fn host_wall_class(name: &str) -> Option<&'static str> {
+    if name.starts_with("metal.")
+        || name.starts_with("reader.")
+        || name.starts_with("probe.")
+        || name.ends_with("_bytes")
+        || name.ends_with("_prefetched")
+        || name == "host.attn_weight_io_prefetch"
+    {
+        return None;
+    }
+    if name.contains("identity") || name.contains("digest") || name.contains("verify") {
+        Some("validation_identity")
+    } else if name.contains("mmap") {
+        Some("mmap_page_fault")
+    } else if name.contains("memcpy")
+        || name.contains("upload")
+        || name.contains("prefetch_fill")
+        || name.contains("owned_copy")
+    {
+        Some("memcpy")
+    } else if name.contains("tensor_lookup")
+        || name.contains("path_resolve")
+        || name.contains("address")
+    {
+        Some("address_lookup")
+    } else if name.contains("decode") || name.contains("table") {
+        Some("table_construction")
+    } else if name.contains("route") {
+        Some("route_preparation")
+    } else if name.contains("mhc") || name.contains("rmsnorm") {
+        Some("state_movement")
+    } else if name.contains("readback") || name.contains("sync") {
+        Some("synchronization")
+    } else if name.contains("_io") || name.contains("embed") {
+        Some("file_source_reads")
+    } else if name.contains("buffer") || name.contains("ledger") {
+        Some("buffer_lifecycle")
+    } else {
+        None
+    }
+}
+
+fn host_wall_class_rows(
+    stages: &BTreeMap<String, StageAccum>,
+    body_ns: u64,
+    host_exclusive_ns: u64,
+) -> Vec<StageRow> {
+    let mut classes: BTreeMap<&'static str, StageAccum> = BTreeMap::new();
+    for (name, acc) in stages {
+        if let Some(class) = host_wall_class(name) {
+            let row = classes.entry(class).or_default();
+            row.ns = row.ns.saturating_add(acc.ns);
+            row.calls = row.calls.saturating_add(acc.calls);
+            row.bytes = row.bytes.saturating_add(acc.bytes);
+        }
+    }
+    let accounted: u64 = classes.values().map(|row| row.ns).sum();
+    classes.insert(
+        "unaccounted_host_exclusive",
+        StageAccum {
+            ns: host_exclusive_ns.saturating_sub(accounted),
+            calls: 1,
+            bytes: 0,
+        },
+    );
+    finalize_stages(
+        &classes
+            .into_iter()
+            .map(|(name, acc)| (name.to_owned(), acc))
+            .collect(),
+        body_ns,
+    )
+}
+
+fn reader_parallel_sum_rows(stages: &BTreeMap<String, StageAccum>, body_ns: u64) -> Vec<StageRow> {
+    let mut selected: BTreeMap<String, StageAccum> = BTreeMap::new();
+    for (name, acc) in stages {
+        if name.starts_with("reader.") {
+            selected.insert(name.clone(), acc.clone());
+        }
+    }
+    finalize_stages(&selected, body_ns)
 }
 
 fn isolated_class(name: &str) -> &'static str {
@@ -629,5 +719,21 @@ mod tests {
         c.add_stage("host.attn_weight_io", 2_000_000_000, 43, 8_000_000_000);
         let ledger = c.finish(3_000_000_000, 200_000_000, 3_200_000_000, 1_200_000_000);
         assert_eq!(ledger.diagnosis, TokenBodyDiagnosis::IoBound);
+        assert!(
+            ledger
+                .host_wall_classes
+                .iter()
+                .any(|row| row.name == "file_source_reads" && row.ns == 2_000_000_000)
+        );
+    }
+
+    #[test]
+    fn host_wall_class_skips_metal_and_reader_sum() {
+        assert_eq!(host_wall_class("metal.wait"), None);
+        assert_eq!(host_wall_class("reader.mmap"), None);
+        assert_eq!(host_wall_class("host.attn_weight_io_prefetch"), None);
+        assert_eq!(host_wall_class("host.memcpy"), Some("memcpy"));
+        assert_eq!(host_wall_class("host.mhc_pre"), Some("state_movement"));
+        assert_eq!(host_wall_class("host.expert_slab_io"), Some("file_source_reads"));
     }
 }
