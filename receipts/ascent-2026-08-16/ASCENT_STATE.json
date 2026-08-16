@@ -143,11 +143,11 @@
     },
     "q80_density_frontier": {
       "complete_bpw_at_8bit_nonexpert": 1.43051,
-      "status": "SCREEN_PASSED_NOT_YET_PACKED_OR_GENERATED",
-      "artifact_packed": false,
+      "status": "SHIPPED_PACKED_NOT_GENERATED",
+      "artifact_packed": true,
       "decode_kernel_exists": true,
       "coherence_generation_tested": false,
-      "receipt": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json",
+      "receipt": "receipts/ascent-2026-08-16/Q80_PACK.json",
       "decode_kernel_receipt": "receipts/ascent-2026-08-16/q80-decode-kernels.json",
       "decode_us_per_organ": {
         "gate_binary_group": 61,
@@ -229,7 +229,31 @@
         "correctness": "numeric gate 2e-5; drift gate 1.81e-5, up 1.10e-5, down 1.14e-5; rice indices bit-identical; 0 fallbacks; NO dense W",
         "decoded_weight_cache": "REJECTED with arithmetic: dense restore is 12 MiB/expert, 120 MiB for the live top-10, 288 GiB for all (layer,expert). Packed is 471 KiB/expert, 11 GiB for all 48x512. Caching decoded W undoes the representation.",
         "next": "up_proj fused binary+CSR at 17.25 us = 8.28 ms at 48x10, ~45% of the remaining 38 us/expert. Achieved 15 GB/s - still decode/occupancy bound, not DRAM. Reaching 8 ms needs ~17 us/expert; currently 38."
-      }
+      },
+      "artifact_root": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+      "complete_physical_bpw_ON_DISK": 1.44445,
+      "rust_catalog_open_bpw": 1.4444456847927971,
+      "threshold": 1.5,
+      "margin": 0.05555,
+      "all_required_execute_bytes": 14385668506,
+      "artifact_gib": 13.4,
+      "tensors": 74391,
+      "segments": 50,
+      "per_organ_physical_bpw": {
+        "routed_gate_proj": 1.126923,
+        "routed_up_proj": 1.291849,
+        "routed_down_proj": 1.28587,
+        "nonexpert_8bit": 8.250601
+      },
+      "design_vs_physical": "design identity 1.44313 vs on-disk 1.44445; the 0.00132 delta is catalog+manifest+terminal+format+fit_table overhead, counted rather than excluded",
+      "down_proj_fit_composition": {
+        "activation_weighted_r160_nfit_ge_160": 17040,
+        "activation_weighted_r160_nfit_1_to_159": 7315,
+        "never_routed_weight_space_svd_r160": 221,
+        "rank_clamped": "NO - rank not clamped in the packed artifact"
+      },
+      "honesty": "weight-space reconstruction cosines on a sample expert are 0.80/0.84/0.60 (binary/residual/low-rank). That is NOT the 0.8604 output-space screen and must not be read as one.",
+      "remaining_gap": "native mixed decode kernel is not wired to THIS catalog, so generation cannot be measured and there is no ns/token for the artifact"
     },
     "dsv4f": {
       "measurement_label": "DIRTY_ENGINEERING",
