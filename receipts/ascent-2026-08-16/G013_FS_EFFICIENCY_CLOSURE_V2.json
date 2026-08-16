@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.ascension.g013_fs_efficiency_closure.v2",
+  "date": "2026-08-16",
+  "supersedes": "G013_FS_EFFICIENCY_CLOSURE.json (v1, same day) - THAT RECEIPT WAS WRONG",
+  "what_v1_got_wrong": [
+    "v1 used STORAGE BPW (0.6462, averaged over all 512 experts) as if it were the BPW decode actually moves. At batch=1 only 10 of 512 experts are read per token, so storage BPW understates per-token traffic by ~4x.",
+    "v1 accepted 560-647 GB/s as the achievable band. That band came from a REUSE-friendly pattern. A no-model control in the real decode shape (98 CBs, 10-of-512 gather, unique bytes once) reaches only 320-411 GB/s.",
+    "The 0.135% efficiency figure was a CATEGORY ERROR: it divided a mixed-artifact storage floor (212.53 fs at 1.392467 BPW) by a Q4-VEHICLE runtime (156,970 fs). Two different vehicles. Same-vehicle Q4 wall rate is 3.38 GB/s = 0.413% of peak, 1.1% of the honest control."
+  ],
+  "measured_control": {
+    "token_shape_gpu_gb_s": [
+      320,
+      363
+    ],
+    "unique_once_sweep_gb_s": [
+      302,
+      411
+    ],
+    "method": "no model logic; same unique bytes, same 98-command-buffer topology, same 10-of-512 gather",
+    "note": "819 GB/s is the published peak and is NOT reachable in this access shape"
+  },
+  "per_token_byte_budget_verified": {
+    "attention": 818151424,
+    "lm_head": 165329552,
+    "routed_experts": 100915200,
+    "router": 26742448,
+    "shared_expert": 10091520,
+    "total_bytes": 1121230144,
+    "independent_cross_check": "Every class matches receipts/QWEN80_TOKEN_NS_LEDGER.json theoretical_weight_bytes to within 0.03%: attention 818,036,736 vs 818,151,424; lm_head 165,306,368 vs 165,329,552; router 26,738,688 vs 26,742,448; routed experts = Q4 802,160,640 scaled by the 7.951x expert BPW ratio = 100,885,362 vs 100,915,200. The lane did not author that ledger, so this is genuine independent corroboration."
+  },
+  "THE_HEADLINE": "Attention + lm_head are 86-88% of the bytes moved per token. Routed experts are 9%. The entire density campaign has been compressing the 9%.",
+  "active_bpw": {
+    "mixed_sub655_v1": 2.518,
+    "mixed_1p5_v1": 4.98,
+    "note": "NOT the storage figures 0.6462 and 1.4444. Storage averages over experts that decode never touches."
+  },
+  "fs_per_weight_actual": {
+    "sub655_at_320_gb_s": 985,
+    "sub655_at_411_gb_s": 765,
+    "sub655_at_unity_819": 384,
+    "mixed_1p5_at_363_gb_s": 1714,
+    "mixed_1p5_at_unity": 760
+  },
+  "sub_100_fs_requirement_restated": {
+    "active_bpw_at_320_gb_s": 0.256,
+    "active_bpw_at_411_gb_s": 0.329,
+    "must_include": "attention and lm_head, which are the dominant mass - not just experts",
+    "v1_claimed": "0.448-0.518 storage BPW - WRONG on both the mass and the ceiling"
+  },
+  "verdict": "Sub-100 fs/weight is UNREACHABLE on this box with any existing Q80 pack. The best existing artifact bottoms out at 765-985 fs even with a perfect load-only kernel, and at 384 fs even at an unachievable unity bandwidth. A proven negative with arithmetic, which the contract defines as a success.",
+  "consequence_for_TPS_not_just_fs": "This also redirects G001/G020. Crushing unused experts cannot move either fs/weight or TPS, because experts are 9% of per-token bytes. Attention at 73% is the only mass whose compression changes the token time."
+}
