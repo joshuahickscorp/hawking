@@ -1,0 +1,232 @@
+{
+  "schema": "hawking.special_unit.g005_special_unit_ready.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-special-unit-20260816-154007",
+  "claim": "The Qwen3.8 special-unit harness legs are useful: session/context/interrupt/resume, tools, build/test, Grok delegate+consume, AgentOS plan, proposed_complete vs verified_complete, and a resource gate that does not contaminate a protected Q80/DSV bench.",
+  "status": "SHIPPED",
+  "class": "CPU / HARNESS",
+  "gpu_used": false,
+  "native_model_touched": false,
+  "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED": 1.0,
+  "offload_bench": {
+    "schema": "hawking.special_unit.claude_offload_bench.v1",
+    "status": "PASS",
+    "passed": 16,
+    "attempted": 16,
+    "skipped": 0,
+    "seal_sha256": "97d19f361db4b0c58220847de5a3c0b1648e46a3a173a5d488ccab485f7c3b37",
+    "tasks": [
+      {
+        "id": "read_g015_open_legs",
+        "title": "Read G015 and extract still-open harness legs",
+        "source": "receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "extracted G015 open legs"
+      },
+      {
+        "id": "grep_proposed_complete",
+        "title": "Search the HCLI tree for proposed_complete",
+        "source": "lab/hcli/special_unit.py (this lane's first recon move, same shape as every Claude grep)",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "hits=11"
+      },
+      {
+        "id": "run_option_c_tests",
+        "title": "Run lab/tests/test_option_c.py",
+        "source": "lab/tests/test_option_c.py \u2014 standing Option-C suite Claude already maintains",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": ".............                                                            [100%]\n13 passed in 0.05s\n"
+      },
+      {
+        "id": "machine_state_clean_box",
+        "title": "Query tools/agentos/machine_state.py",
+        "source": "tools/agentos/machine_state.py + receipts/agentos/PROGRAM_PLAN.md W0.T10",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "machine_state snapshot ok"
+      },
+      {
+        "id": "seal_json_receipt",
+        "title": "Seal a JSON receipt and write it in an owned worktree",
+        "source": "lab/receipts.py \u2014 every ascent lane's last action",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "sealed + wrote receipt"
+      },
+      {
+        "id": "consume_q80_host_facets_report",
+        "title": "Consume a real grok-run result (q80-host-facets)",
+        "source": "~/.claude-grok/tasks/q80-host-facets-20260816-143023/grok-report.md",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "consumed q80-host-facets-20260816-143023; verified_complete=False"
+      },
+      {
+        "id": "gpu_lock_inspect_without_take",
+        "title": "Inspect the GPU lock without creating or taking it",
+        "source": "tools/gpu_lane_lock.sh + S002 anti-scope (GPU belongs to Q80/DSV)",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "protected bench holds gpu lock: q80-recon-fuse-base-p3"
+      },
+      {
+        "id": "session_persist_qwen38_context",
+        "title": "Persist a Qwen3.8 conversation and resume it in a new process object",
+        "source": "G015 open leg: persistent session + project context",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "resumed su-57791028c344 with 2 turns"
+      },
+      {
+        "id": "plan_g015_remaining_legs",
+        "title": "Plan the remaining G015 harness legs as a DAG",
+        "source": "G015_NATIVE_LEG_VERIFY_ON_MAIN.json legs_STILL_OPEN_for_G015",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "steps=['session_context', 'interrupt_resume', 'tool_execution', 'build_test', 'grok_delegate', 'grok_consume', 'agentos_plan', 'agentos_verify', 'resource_pause']"
+      },
+      {
+        "id": "proposed_vs_verified",
+        "title": "proposed_complete must not equal verified_complete",
+        "source": "G015 AgentOS verification leg + lab/verification_authority.py",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "verified_complete"
+      },
+      {
+        "id": "resource_refuse_gpu_during_protected",
+        "title": "Pause GPU work while a fake q80 lock is held; CPU still runs",
+        "source": "S002 anti-scope; tools/gpu_lane_lock.sh owner protocol",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "final=idle pause_reason=None"
+      },
+      {
+        "id": "interrupt_and_resume",
+        "title": "Interrupt a live session and resume it",
+        "source": "G015 HCLI interrupt + restart/resume",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "idle"
+      },
+      {
+        "id": "write_and_pytest_small",
+        "title": "Write a tiny module in an owned worktree and pytest it",
+        "source": "routine Claude test-authoring (same motion as lab/tests/*)",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": ".                                                                        [100%]\n1 passed in 0.00s\n"
+      },
+      {
+        "id": "delegate_then_consume_roundtrip",
+        "title": "Dispatch a Grok handle, refuse to treat it as done, then consume artifacts",
+        "source": "S002 \u00a716-18; ~/.claude-grok/bin/grok-run artifact layout",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "delegate+consume; verified_complete=False"
+      },
+      {
+        "id": "verification_authority_no_self_promote",
+        "title": "Sandbox principal cannot certify verified_complete",
+        "source": "lab/verification_authority.py + bible \u00a72 / \u00a722",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "sandbox cannot certify verified_complete"
+      },
+      {
+        "id": "refuse_protected_gpu_command",
+        "title": "Refuse a gpu_lane_lock + Q80 greedy command",
+        "source": "tools/gpu_lane_lock.sh + ascension_qwen80_hybrid_greedy",
+        "routine_claude": true,
+        "status": "PASS",
+        "detail": "refused: command matches a GPU/protected-bench pattern"
+      }
+    ]
+  },
+  "legs": [
+    {
+      "id": "hcli_conversation",
+      "status": "DONE",
+      "boundary": "scripted backend; native Qwen generate not called (CPU-side)"
+    },
+    {
+      "id": "project_context",
+      "status": "DONE",
+      "boundary": "git + SUPERWAVE + ascent receipts + gpu lock owner"
+    },
+    {
+      "id": "persistent_session",
+      "status": "DONE",
+      "boundary": ".hide/special-unit/sessions + open() reload"
+    },
+    {
+      "id": "interrupt",
+      "status": "DONE",
+      "boundary": "session flag + SIGTERM process group"
+    },
+    {
+      "id": "restart_resume",
+      "status": "DONE",
+      "boundary": "disk reload; stays paused if protected lock still held"
+    },
+    {
+      "id": "tool_execution",
+      "status": "DONE",
+      "boundary": "read/write/grep/bash under execution_sandbox"
+    },
+    {
+      "id": "build_test_execution",
+      "status": "DONE",
+      "boundary": "pytest tool ran lab/tests/test_option_c.py (13 passed); cargo_test dry/refuse only"
+    },
+    {
+      "id": "grok_delegation",
+      "status": "DONE",
+      "boundary": "dispatch handle is not consume; live grok-run is injected-runner only so we do not surprise GPU lanes"
+    },
+    {
+      "id": "grok_result_consumption",
+      "status": "DONE",
+      "boundary": "real ~/.claude-grok/tasks/q80-host-facets-20260816-143023 consumed; verified_complete stays false"
+    },
+    {
+      "id": "agentos_planning",
+      "status": "DONE",
+      "boundary": "G015 remaining-legs DAG"
+    },
+    {
+      "id": "agentos_verification",
+      "status": "DONE",
+      "boundary": "proposed_complete != verified_complete; sandbox cannot certify"
+    },
+    {
+      "id": "resource_aware_pause_resume",
+      "status": "DONE",
+      "boundary": "never takes /tmp/hawking-gpu-lane.lock; refuses GPU_HEAVY while q80/dsv4f owner holds it"
+    },
+    {
+      "id": "claude_offload_bench",
+      "status": "DONE",
+      "boundary": "16/16 real Hawking tasks; FRACTION=1.0"
+    }
+  ],
+  "files": [
+    "lab/hcli/special_unit.py",
+    "lab/hcli/claude_offload_bench.py",
+    "lab/hcli/__init__.py",
+    "lab/tests/test_special_unit.py",
+    "receipts/ascent-2026-08-16/G005_SPECIAL_UNIT_READY.json"
+  ],
+  "confidence": "HIGH on the CPU harness and the 16/16 bench. The native Qwen3.8 generate path is deliberately not re-entered.",
+  "action": "STOP engineering the special unit and use it. Do not gold-plate. Do not wire GPU decode from this harness while a protected Q80/DSV lock is live.",
+  "unresolved": [
+    "say() uses a scripted backend; live Qwen3.8 decode remains the already-verified native example and is GPU-side.",
+    "grok-run delegate is not fired by default (would start another lane). Consumption of real grok-run artifacts is proven.",
+    "hide-backend hcli.rs is not the product surface here; this harness is the useful CPU unit on the existing lab policy/authority stack."
+  ],
+  "resource_note": "During the bench a protected owner held /tmp/hawking-gpu-lane.lock (q80-recon-fuse-ours-p2). The harness inspected it and did not take it.",
+  "seal_sha256": "254d15a0ae77c961d84ec7433051697038093d7d4fd30acf9e5bd8656649c102"
+}

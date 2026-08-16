@@ -1,0 +1,10 @@
+{
+  "schema": "hawking.ops.merge_serialisation_lesson.v1",
+  "date": "2026-08-16",
+  "what_happened": "The DeltaNet rebase lane did exactly what was asked - rebased onto current main, re-measured the CURRENT baseline (host recurrent 43.074 ms, not evaporated), and delivered a clean result: component 43.074 -> 4.549 ms, wall 295.285 -> 258.331 ms, median -37.97, 6/6 pairs won, ids identical 14/14, 0 fallbacks. Then I merged catalog-reparse and CB-collapse into the same file while it was working, and made its baseline stale before I read it.",
+  "result": "12 conflict hunks across qwen80_mixed_hybrid_decode.rs and qwen80_hybrid_token_graph.rs, one spanning 174 lines. Merge ABORTED rather than hand-resolved.",
+  "why_aborted_rather_than_resolved": "A 2-hunk merge of the same file an hour earlier hid a semantic API collision - ensure_named_weight had changed to Option<&MixedPackedTensor> and a call site still passed the old type. That surfaced only because the compiler caught it. A 12-hunk hand-resolution in decode hot-path code is where a silent correctness bug lands instead, and greedy-id checks would not necessarily catch it.",
+  "THE_LESSON": "Merges must be SERIALISED against in-flight lanes touching the same file. Three lanes edited qwen80_mixed_hybrid_decode.rs today; I merged two of them while the third was mid-rebase. The merge_guard catches a stale lane at merge time, but nothing stopped me creating the staleness in the first place.",
+  "the_rule": "Before merging a lane, check which OTHER live lanes touch the same files. If any does, either merge it first or wait. git worktree list plus git diff --name-only per lane answers this in one command.",
+  "cost": "The DeltaNet win - 38.5 ms component, ~13% of the token, the largest remaining Q80 item - is measured and real but not landed. It needs a third rebase, which is pure waste caused by my merge ordering."
+}

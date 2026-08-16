@@ -40,6 +40,7 @@ const Q80_GQA_O_COLS: u64 = 4_096;
 pub enum ModelId {
     Q80,
     Dsv4f,
+    Qwen38,
     Unknown,
 }
 
@@ -48,6 +49,7 @@ impl ModelId {
         match model {
             "q80" | "qwen80" | "Q80" => Self::Q80,
             "dsv4f" | "dsv" | "deepseek_v4" | "DSV4F" => Self::Dsv4f,
+            "qwen38" | "qwen3.8" | "Qwen38" | "QWEN38" => Self::Qwen38,
             _ => Self::Unknown,
         }
     }
@@ -75,6 +77,7 @@ impl ActiveWeightGeometry {
         match id {
             ModelId::Q80 => q80_geometry(),
             ModelId::Dsv4f => dsv4f_geometry(),
+            ModelId::Qwen38 => qwen38_geometry(),
             ModelId::Unknown => ActiveWeightGeometry {
                 model: "unknown".into(),
                 active_weights_per_token: 0,
@@ -262,6 +265,70 @@ pub fn dsv4f_geometry() -> ActiveWeightGeometry {
             },
         ],
         derivation: "Same class as Q80 PHYSICAL_FLOOR: attention (MLA) + routed(top_k) + shared + router + lm_head. 43 layers, top-6 of 256, one shared expert.".into(),
+        matches_physical_floor_q80: None,
+    }
+}
+
+/// Qwen3.8 served GEMM weights for one decode token.
+///
+/// Dense model: every GEMV is read every token except the embedding table
+/// (one row). No experts.
+pub fn qwen38_geometry() -> ActiveWeightGeometry {
+    use crate::model::qwen38_geometry::{
+        QWEN38_DELTANET_LAYERS, QWEN38_GQA_LAYERS, QWEN38_HIDDEN, QWEN38_INTERMEDIATE,
+        QWEN38_LAYERS, QWEN38_VOCAB,
+    };
+    let h = QWEN38_HIDDEN as u64;
+    let mid = QWEN38_INTERMEDIATE as u64;
+    let layers = QWEN38_LAYERS as u64;
+    let dn = QWEN38_DELTANET_LAYERS as u64;
+    let gqa = QWEN38_GQA_LAYERS as u64;
+    let vocab = QWEN38_VOCAB as u64;
+    let mlp = layers * (mid * h * 2 + h * mid);
+    let linear = dn * (16_384 * h + 96 * h + h * 6_144);
+    let full = gqa * (12_288 * h + 1_024 * h * 2 + h * 6_144);
+    let lm_head = vocab * h;
+    let embed_row = h;
+    let embed_table = vocab * h;
+    let active = mlp + linear + full + lm_head;
+    ActiveWeightGeometry {
+        model: "qwen38".into(),
+        active_weights_per_token: active,
+        components: vec![
+            WeightComponent {
+                name: "dense_swiglu".into(),
+                weights: mlp,
+                how: format!("{layers} layers × (gate+up {mid}×{h} + down {h}×{mid})"),
+            },
+            WeightComponent {
+                name: "deltanet_gemv".into(),
+                weights: linear,
+                how: format!("{dn} DeltaNet layers × (qkvz 16384×{h} + ba 96×{h} + out {h}×6144)"),
+            },
+            WeightComponent {
+                name: "gqa_gemv".into(),
+                weights: full,
+                how: format!("{gqa} GQA layers × (q 12288×{h} + k/v 1024×{h} + o {h}×6144)"),
+            },
+            WeightComponent {
+                name: "lm_head".into(),
+                weights: lm_head,
+                how: format!("full GEMV {vocab} × {h}"),
+            },
+        ],
+        excluded_from_denominator: vec![
+            WeightComponent {
+                name: "embed_row".into(),
+                weights: embed_row,
+                how: "one vocab row is gathered per token".into(),
+            },
+            WeightComponent {
+                name: "embed_full_table_not_served".into(),
+                weights: embed_table,
+                how: "dense model reads every weight except the embedding table".into(),
+            },
+        ],
+        derivation: "Dense Qwen3.8: MLP + linear-attn GEMVs + GQA GEMVs + lm_head. Embed table excluded.".into(),
         matches_physical_floor_q80: None,
     }
 }

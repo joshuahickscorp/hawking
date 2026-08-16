@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.ascension.g023_kernel_axes.v1",
+  "date": "2026-08-16",
+  "finding": "G023 is NOT one family. The three models share kernels along TWO ORTHOGONAL AXES, and no single abstraction spans all three. Grouping by vendor name ('Qwen family vs DSV4F') is the wrong cut and would force an abstraction over genuinely different math.",
+  "axes": {
+    "axis_1_linear_attention_deltanet": {
+      "members": [
+        "Q80",
+        "Qwen3.8"
+      ],
+      "evidence": "QWEN38_REUSE_MATRIX.json: 'SAME recurrence as Q80 Gated DeltaNet. Port is parameterization + projection-layout adapter.' Q80 DeltaNet(36)+GQA(12) vs Qwen3.8 linear(48)+full(16), both a 3:1 hybrid interval.",
+      "excludes": "DSV4F",
+      "verdict": "REAL SHARED KERNEL. Highest-confidence unification target in G023."
+    },
+    "axis_2_moe_expert_path": {
+      "members": [
+        "Q80",
+        "DSV4F"
+      ],
+      "evidence": "Both MoE with routed/shared experts, expert residency, device top-k, expert address tables. Qwen3.8 has NO num_experts key.",
+      "excludes": "Qwen3.8 (DENSE)",
+      "verdict": "REAL SHARED KERNEL. This is where the current per-token cost lives (Q80 host bind 54-79 ms, DSV4F expert slab I/O 523 ms)."
+    }
+  },
+  "qwen38_specifics": {
+    "dense_not_moe": true,
+    "do_not_port": [
+      "moe_table_build",
+      "expert residency",
+      "device top-k",
+      "expert address tables",
+      "first-touch upload",
+      "routed/shared expert waves"
+    ],
+    "start_from": "qwen80_hybrid_token_graph.rs, NOT qwen_dense.rs",
+    "vision_tower": "SKIP for bring-up; text path stands alone",
+    "layers": 64,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "full_attention_rule": "(layer + 1) % 4 == 0",
+    "full": 16,
+    "linear": 48
+  },
+  "consequence_for_g023": "Build TWO shared kernel paths, not one: a deltanet/linear-attention kernel parameterized across Q80 and Qwen3.8, and an MoE expert path shared by Q80 and DSV4F. Q80 is the ONLY model on both axes, which makes it the integration point and the natural first consumer of each.",
+  "consequence_for_g016": "Qwen3.8 needs NO MoE kernel work at all. Its <=2.0 BPW gravity pack and its custom kernel ride axis 1 plus a dense SwiGLU path. The uniform-q4-v1 pack already on disk (13.65 GB) is ~4.3 BPW and CANNOT satisfy the 2.0 target or the 3.0 hard limit -- it is a bring-up vehicle only, never a G016 candidate."
+}

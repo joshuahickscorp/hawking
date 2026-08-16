@@ -1,0 +1,201 @@
+{
+  "schema": "hawking.ascension.g003_q80_mixed_deltanet_vi.v3_rebase",
+  "date": "2026-08-16",
+  "lane": "q80-deltanet-rebase3-20260816-173632",
+  "parent": "10f91abf6f591a1dacd248de7bd95881fbac295c",
+  "catalog_fix_ancestor": "922c016d4",
+  "cb_collapse_ancestor": "e84d93dfa",
+  "predecessor_rebase": "1d4a171d5",
+  "vehicle": "mixed-1p5-v1",
+  "complete_physical_bpw": 1.4444457,
+  "status": "REMEASURED_AFTER_REBASE3",
+  "candidate": "Q80 mixed: port GPU Gated-Delta vi-parallel onto catalog+CB-collapse main",
+  "stale_baseline_note": "Predecessor rebase measured host 43.074 ms / wall 295.285 ms on post-reconstruction main before catalog-reparse and CB-collapse landed. Those numbers are dead. This receipt re-measures on 10f91abf6.",
+  "what_current_main_already_did": "CB collapse already dispatches qwen80_gated_delta_decode_tg (1 TG/head, 128-column loop) inside the fused 49-CB token. Host source_qwen80_recurrent_deltanet is no longer on the default path. The remaining mechanism is the Q38 vi launch (1 TG per (head, vi)).",
+  "conflict_resolution": {
+    "rule": "catalog and CB-collapse WIN on overlapping decode hot-path. The predecessor MixedDeltaNetGpu organ was not replayed.",
+    "kept_from_catalog_and_cb": [
+      "ensure_named_weight(Option<&MixedPackedTensor>)",
+      "DeviceActivationWorkspace",
+      "device_activation_dispatches",
+      "qwen80_cache_geom_enabled",
+      "encode_deltanet_mixer on the fused layer CB",
+      "49 CBs / 2834 dispatches topology"
+    ],
+    "kept_from_port": [
+      "qwen80_gated_delta_decode_vi",
+      "HAWKING_Q80_DELTANET_GPU",
+      "HAWKING_Q80_DELTANET_VI",
+      "isolated 36-layer recurrent CB probe"
+    ],
+    "default_launch": "qwen80_gated_delta_decode_vi when HAWKING_Q80_DELTANET_GPU and HAWKING_Q80_DELTANET_VI are on (both default on). HAWKING_Q80_DELTANET_GPU=0 or HAWKING_Q80_DELTANET_VI=0 keeps the CB-collapse tg incumbent."
+  },
+  "generated_token_ids": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "ids_identical_all_runs": true,
+  "runs_checked": 19,
+  "silent_fallback_counters": {
+    "dense_w_materialized": 0,
+    "host_expert_payload_bind": 0,
+    "host_mixed_matvec": 0,
+    "all_runs_zero": true
+  },
+  "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "lock": "tools/gpu_lane_lock.sh",
+  "pairs": 6,
+  "alternating": "BASE(HAWKING_Q80_DELTANET_GPU=0 → tg incumbent on the 49-CB device path) then OURS(default vi) per pair, new process each arm",
+  "default_on": {
+    "HAWKING_Q80_DELTANET_GPU": true,
+    "HAWKING_Q80_DELTANET_VI": true,
+    "HAWKING_Q80_DEVICE_ACTIVATIONS": true,
+    "HAWKING_Q80_COLLAPSE_FUSE": true,
+    "HAWKING_Q80_CACHE_GEOM": true,
+    "HAWKING_Q80_RECON_FUSE": true
+  },
+  "kernel": {
+    "name": "qwen80_gated_delta_decode_vi",
+    "launch": "1 TG per (head, vi), grid (128, 32, 128), TG (128,1,1)",
+    "not": "1-thread-per-vi column-parallel; that is a different launch",
+    "math": "same S/delta/S/o as source_qwen80_recurrent_deltanet / qwen80_gated_delta_decode_tg",
+    "layers": 36,
+    "value_heads": 32,
+    "state": "128x128 f32, device-resident"
+  },
+  "host_remeasured_on_current_main": {
+    "note": "HAWKING_Q80_DEVICE_ACTIVATIONS=0, catalog cache and recon-fuse still on, 337 CBs. This is the live host source_qwen80_recurrent_deltanet on decode tokens. First-touch walls (233/320/201 ms) are not the paired baseline.",
+    "deltanet_recurrent_host_ns_per_token": [42706357.0, 42375883.0, 41404749.0],
+    "min": 41404749.0,
+    "median": 42375883.0,
+    "mean": 42162329.666666664,
+    "max": 42706357.0,
+    "spread": 1301608.0,
+    "n": 3,
+    "median_ms": 42.375883,
+    "predecessor_used_and_must_not_be_reused": 43.073808863636366
+  },
+  "component": {
+    "note": "Host is source_qwen80_recurrent_deltanet on the DEVICE_ACTIVATIONS=0 decode tokens (re-measured). Isolated host is a 36-layer dummy-input oracle after generate (not inside wall). Isolated GPU is 36-layer recurrent CB GPUStart/GPUEnd, Q38 methodology, not inside the token wall. Isolated tg is the CB-collapse incumbent, measured with HAWKING_Q80_DELTANET_VI=0.",
+    "host_on_token_ns_per_token": {
+      "all": [42706357.0, 42375883.0, 41404749.0],
+      "min": 41404749.0,
+      "median": 42375883.0,
+      "mean": 42162329.666666664,
+      "max": 42706357.0,
+      "spread": 1301608.0,
+      "n": 3
+    },
+    "isolated_host_ns": {
+      "all": [40605458, 40033084, 39947708, 39577125, 40020208, 39259959],
+      "min": 39259959,
+      "median": 39983958.0,
+      "mean": 39907257.0,
+      "max": 40605458,
+      "spread": 1345499,
+      "n": 6
+    },
+    "isolated_tg_ns": {
+      "all": [63026416, 63006749, 63116250],
+      "min": 63006749,
+      "median": 63026416.0,
+      "mean": 63049805.0,
+      "max": 63116250,
+      "spread": 109501,
+      "n": 3,
+      "note": "The CB-collapse default kernel is slower than the host oracle. That is why the wall save vs live main is larger than host-minus-vi."
+    },
+    "isolated_vi_ns": {
+      "all": [4448208, 4459833, 2791124, 4409583, 4449541, 4459874],
+      "min": 2791124,
+      "median": 4448874.5,
+      "mean": 4169693.8333333335,
+      "max": 4459874,
+      "spread": 1668750,
+      "n": 6
+    },
+    "save_vs_on_token_host_ns_median": 37927008.5,
+    "save_vs_on_token_host_ms_median": 37.9270085,
+    "save_vs_isolated_host_ns_median": 35535083.5,
+    "save_vs_isolated_host_ms_median": 35.5350835,
+    "save_vs_isolated_tg_ns_median": 58577541.5,
+    "save_vs_isolated_tg_ms_median": 58.5775415,
+    "paired_isolated_host_minus_vi_ms": [36.157, 35.573, 37.157, 35.167, 35.571, 34.800],
+    "first3_host_on_token_ns": [42706357.0, 42375883.0, 41404749.0],
+    "first3_isolated_vi_ns": [4448208, 4459833, 2791124]
+  },
+  "wall": {
+    "note": "Process-level pairs under gpu_lane_lock.sh. First-touch ours_smoke wall (221.6 ms) is discarded. The six alternating pairs are the wall. BASE is current-main default topology (device activations + CB fuse + catalog cache) with the tg recurrent. OURS is the same topology with vi. This is not DEVICE_ACTIVATIONS=0 vs vi; that would re-credit the already-shipped CB collapse.",
+    "pairs": 6,
+    "required_min_pairs": 3,
+    "base_ns": [160081215.9090909, 165155253.8181818, 160876075.72727272, 161997481.0909091, 159829443.18181816, 158934227.27272728],
+    "ours_ns": [111608867.45454545, 115191435.63636364, 111025507.63636364, 111857299.27272728, 112976427.99999999, 109990954.54545455],
+    "delta_ns": [-48472348.45454545, -49963818.18181817, -49850568.09090908, -50140181.81818181, -46853015.18181817, -48943272.727272734],
+    "base_spread": {
+      "all": [160081215.9090909, 165155253.8181818, 160876075.72727272, 161997481.0909091, 159829443.18181816, 158934227.27272728],
+      "min": 158934227.27272728,
+      "median": 160478645.8181818,
+      "mean": 161145616.16666666,
+      "max": 165155253.8181818,
+      "spread": 6221026.545454532,
+      "n": 6
+    },
+    "ours_spread": {
+      "all": [111608867.45454545, 115191435.63636364, 111025507.63636364, 111857299.27272728, 112976427.99999999, 109990954.54545455],
+      "min": 109990954.54545455,
+      "median": 111733083.36363637,
+      "mean": 112108415.42424242,
+      "max": 115191435.63636364,
+      "spread": 5200481.090909094,
+      "n": 6
+    },
+    "delta_spread": {
+      "all": [-48472348.45454545, -49963818.18181817, -49850568.09090908, -50140181.81818181, -46853015.18181817, -48943272.727272734],
+      "min": -50140181.81818181,
+      "median": -49396920.40909091,
+      "mean": -49037200.742424235,
+      "max": -46853015.18181817,
+      "spread": 3287166.63636364,
+      "n": 6
+    },
+    "wins": 6,
+    "first3_delta_ns": [-48472348.45454545, -49963818.18181817, -49850568.09090908],
+    "gpu_matvec_base_ns": [87783597.63636364, 88001149.54545455, 87896002.9090909, 87863938.0909091, 87729358.27272727, 87746452.18181819],
+    "gpu_matvec_ours_ns": [37875885.36363637, 43786073.09090909, 38646313.90909091, 39564038.90909091, 41867134.27272727, 38500104.54545455],
+    "gpu_matvec_delta_ns": [-49907712.27272727, -44215076.45454545, -49249689.0, -48299899.18181819, -45862223.99999999, -49246347.63636364],
+    "gpu_matvec_base_median_ms": 87.82376786363637,
+    "gpu_matvec_ours_median_ms": 39.10517640909091,
+    "wait_minus_gpu_base_ns": [17526079.818181816, 19134104.636363637, 15973273.545454545, 18037895.727272727, 17598166.636363637, 16764760.090909092],
+    "wait_minus_gpu_ours_ns": [17708877.545454547, 17745295.09090909, 17699463.181818184, 17709237.0, 17191341.818181816, 16999956.272727273],
+    "tok_s_base": [6.24682911309153, 6.054908801756271, 6.215964651544977, 6.172935488045176, 6.256669485248871, 6.291910919125207],
+    "tok_s_ours": [8.959861548700568, 8.681200945848095, 9.006939227652538, 8.93996195600815, 8.851403940652116, 9.091656710613806]
+  },
+  "cbs_per_token": {
+    "base": 49.0,
+    "ours": 49.0,
+    "host_activation": 337.0
+  },
+  "dispatches_per_token": {
+    "base": 2834.0,
+    "ours": 2834.0,
+    "host_activation": 2413.0
+  },
+  "gk_family_parity": {
+    "numeric_and_source_family_tests": "7/7 PASS",
+    "both_graphs_dispatch_the_shared_family": "FAIL pre-existing on main: gravity_deepseek_v4_native_token_graph.rs has no PACK_WORKLIST string. Not fixed here."
+  },
+  "verdict": {
+    "component": "POSITIVE",
+    "component_host_on_token_median_ms": 42.375883,
+    "component_isolated_vi_median_ms": 4.4488745,
+    "component_save_vs_host_median_ms": 37.9270085,
+    "component_isolated_tg_median_ms": 63.026416,
+    "component_save_vs_tg_median_ms": 58.5775415,
+    "wall": "POSITIVE_TRACKS_COMPONENT",
+    "wall_base_median_ms": 160.4786458181818,
+    "wall_ours_median_ms": 111.73308336363637,
+    "wall_median_delta_ms": -49.39692040909091,
+    "wall_spread_ms": [-50.14018181818181, -46.85301518181817],
+    "win_evaporated": false,
+    "win_shrunk_vs_predecessor_38ms": false,
+    "why_wall_save_exceeds_host_minus_vi": "Live main already runs the tg kernel. Isolated tg is 63.0 ms, slower than the 42.4 ms host oracle. vi replaces that 63 ms GPU loop, so the 49.4 ms wall tracks GPU 87.8 → 39.1 rather than host 42.4 → 4.4."
+  }
+}

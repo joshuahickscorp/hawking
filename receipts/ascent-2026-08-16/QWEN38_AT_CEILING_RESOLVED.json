@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.special_unit.qwen38_at_ceiling_resolved.v1",
+  "date": "2026-08-16",
+  "resolves": "The open question from QWEN38_ACTIVE_BUDGET_MEASURED.json: is Qwen3.8's 406.2 GB/s its ceiling?",
+  "answer": "YES. It runs at 98.7% of the measured honest decode ceiling. There is essentially no kernel headroom. My original claim was correct; my subsequent self-correction was wrong.",
+  "method_note": "No new benchmark was needed. The fs-occupancy lane had ALREADY measured this; I had only read its summary, not its full receipt. Q80_DECODE_SHAPE_BANDWIDTH.json on branch grok/fs-occupancy-20260816-143029.",
+  "the_distinction_that_actually_matters": {
+    "i_worried_about": "gather vs sequential access",
+    "what_matters_instead": "REUSE vs NO-REUSE. Decode reads each weight exactly once per token, so the relevant control is unique-bytes-once regardless of whether the pattern is gather or sequential. Gather-vs-sequential was the wrong axis to worry about.",
+    "evidence": "The lane measured a 64 MiB buffer reused 4096x at 535.9-637.5 GB/s and explicitly flagged it not_the_decode_ceiling=True, because a 64 MiB working set is cache-resident. Its unique-once sweep at 1024 MiB gives 301.6 GB/s and its honest_decode_ceiling_gbps is 411.5."
+  },
+  "measured": {
+    "qwen38_achieved_gb_s": 406.2,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "pct_of_ceiling": 98.7,
+    "unique_once_1024mib_gb_s": 301.6,
+    "reuse_band_gb_s": [
+      535.9,
+      637.5
+    ],
+    "reuse_band_is_not_the_ceiling": true
+  },
+  "consequence": "Qwen3.8 has NO meaningful kernel headroom - it is already at the wall. Its ONLY lever is fewer bytes, i.e. BPW. This restores the original strategic split: Q80 is 21-27x off its control and needs kernels; Qwen3.8 is at its control and needs density. The 63.4 TPS projection at 2.0 BPW is therefore an ESTIMATE, not a floor - there is no kernel upside to add on top.",
+  "what_this_costs": "The hoped-for ~2x kernel headroom on Qwen3.8 does not exist. 2.0 BPW yields ~63.4 TPS and that is the realistic figure, not a conservative one."
+}

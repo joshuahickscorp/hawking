@@ -1,0 +1,101 @@
+{
+  "schema": "hawking.ascent.qwen38_native_mixed_reader.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-native-mixed-reader",
+  "status": "SHIPPED",
+  "prerequisite_for": ["G006", "G005_qwen38_leg", "G007_qwen38_leg"],
+  "blocker_closed": "receipts/ascent-2026-08-16/QWEN38_NO_NATIVE_MIXED_READER.json",
+  "what_landed": {
+    "reader": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "catalog": "HQ38M20 (same 128-byte record layout as HQ80M15, different magic)",
+    "mlp": {
+      "gate_proj": "HGRAVB01 -> q80_binary_group_matvec_tg256 (serial family fallback via decode_family::matvec_binary)",
+      "up_proj": "HGRAVR02 -> q80_binary_group_csr_matvec_tg256 (CSR leftover q80_sparse_q1_apply_csr when fuse off)",
+      "down_proj": "HGRAVS01 r160_b3 -> two-stage q80_hgravs01_factor_matvec_simd3 (L @ (R @ x), mid[160] only)"
+    },
+    "non_mlp": {
+      "attention_embed_lm_head": "HGRAVU01 bits=4 group-64 via q80_hgravs01_factor_matvec_simd / qwen38_hgravu_embedding_lookup",
+      "small_vectors": "HGRAVU01 dequant to f32 at load; residual/q/k norms converted MLX-scale -> HF delta-from-one",
+      "split_in_proj": "qkv/z/a/b GEMVs then qwen38_fuse_split_qkvz_f32 / qwen38_fuse_split_ba_f32 (activation interleave, not weight reconstruct)"
+    },
+    "not_imported": ["expert worklists", "routing", "Q80 MoE wave", "reconstruct-to-Q4"],
+    "uniform_q4_path": "unchanged: catalog.hq38m20 absent -> existing HQ30UQ4/f32v2 graph"
+  },
+  "fail_loud": {
+    "unknown_codec": true,
+    "mlp_not_native_mixed": true,
+    "missing_gemv": true,
+    "silent_reconstruct_to_q4": false,
+    "dense_w_materialized": 0
+  },
+  "verify": {
+    "build": {
+      "command": "cargo build --release -p hawking-core --example ascension_qwen38_hybrid_greedy",
+      "CARGO_TARGET_DIR": "workspace/ops/build/rust",
+      "exit": 0
+    },
+    "gk_family_parity": {
+      "command": "cargo test --release -p hawking-core --test gk_family_parity",
+      "result": "ok. 8 passed; 0 failed",
+      "gpu_lock": "tools/gpu_lane_lock.sh qwen38-native-mixed-reader"
+    },
+    "oracle_uniform_q4_v1": {
+      "seal": "receipts/ascent-2026-08-16/QWEN38_COHERENCE_SEAL.json",
+      "sealed_prompts": 3,
+      "prompts_file_has": 6,
+      "official_6_line_file": "FAIL: 0 sealed-prompt drifts; 3 extra prompts are not in the seal (tool cannot certify them). The 3 sealed prompts were id-identical.",
+      "sealed_3_prompt_subset": "PASS: 3 prompts id-identical to seal",
+      "verdict": "reader addition did not perturb the HQ30UQ4 path"
+    }
+  },
+  "mixed_2p0_v1_native_generate": {
+    "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-2p0-v1",
+    "catalog": "catalog.hq38m20",
+    "reconstruct_to_q4": false,
+    "session_open_s": 3.391,
+    "max_new_tokens": 16,
+    "fallbacks_total": 0,
+    "dense_w_materialized_total": 0,
+    "gpu_lock": "tools/gpu_lane_lock.sh qwen38-native-mixed-2p0",
+    "detail": "receipts/ascent-2026-08-16/QWEN38_NATIVE_MIXED_2P0_GENERATE.json",
+    "prompts": [
+      {
+        "prompt": "Say hi.",
+        "generated_text": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+        "new_token_ids": [198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198]
+      },
+      {
+        "prompt": "Write a function that reverses a string.",
+        "generated_text": "......)...)............)\n...............",
+        "new_token_ids": [1076, 1076, 8, 1076, 8, 1076, 1076, 1076, 1076, 8, 198, 1076, 1076, 1076, 1076, 1076]
+      },
+      {
+        "prompt": "What is the capital of France?",
+        "generated_text": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n)",
+        "new_token_ids": [198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 8]
+      },
+      {
+        "prompt": "Explain what a hash map is in one sentence.",
+        "generated_text": "\n\n\n\n\n\n\n\n\n)..)).\n",
+        "new_token_ids": [198, 198, 198, 198, 198, 198, 198, 198, 198, 8, 13, 13, 8, 8, 13, 198]
+      },
+      {
+        "prompt": "def fibonacci(n):",
+        "generated_text": ")))))))))\n\n\n\n\n\n\n\n\n\n\n",
+        "new_token_ids": [578, 578, 578, 578, 8, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198]
+      },
+      {
+        "prompt": "The three primary colors are",
+        "generated_text": ")\n\n\n\n\n\n\n\n\n\n\n))))",
+        "new_token_ids": [8, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 198, 8, 8, 8, 8]
+      }
+    ],
+    "coherence_verdict": "INCOHERENT",
+    "coherence_verdict_plain": "mixed-2p0-v1 is INCOHERENT natively. Every prompt collapsed to newlines / ')' / '.' salad. This is now attributable to the packed representation (plus whatever numeric error the existing Q80 occupancy tiles have), not to a mixed->float->Q4 double quantisation. The reconstructed-Q4 vehicle had produced a single <|im_end|>; the native path produces a different collapse. Neither is English or a correct France/Paris answer.",
+    "compared_to_reconstructed_q4": {
+      "mixed-2p0-materialized": "single token 248046 <|im_end|>",
+      "native_hq38m20": "newline/punctuation cycle, no EOS",
+      "uniform-q4-v1": "'<think>' / sealed greedy ids, coherent"
+    }
+  }
+}

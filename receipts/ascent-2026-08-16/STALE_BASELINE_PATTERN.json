@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.ascent.stale_baseline_pattern.v1",
+  "date": "2026-08-16",
+  "pattern": "A lane measures a win against a baseline that a CONCURRENT lane then invalidates. The number was true when taken and is false by the time it is read. Parallel fan-out causes this structurally - it is the cost of the throughput.",
+  "three_instances_today": [
+    {
+      "case": "gk_*_simd",
+      "claimed": "2x on binary, 8-45x on Q8, sitting unused on main",
+      "measured_against": "the serial 1-thread-per-row extract",
+      "invalidated_by": "the reconstruction fix removed that extract from the hot path",
+      "outcome": "MEASURED NEGATIVE - SIMD is 2.5x SLOWER than the shipping tiles (91.28 vs 36.53 ms). I had promoted this lead TWICE before it was tested."
+    },
+    {
+      "case": "BPW descent screen rice penalty",
+      "claimed": "rice codecs carry a 5.9x reconstruction penalty",
+      "measured_against": "Q80 mixed-vs-Q4, transferred not re-measured",
+      "invalidated_by": "that 5.9x was a kernel artifact, not a codec property",
+      "outcome": "re-screen launched with the penalty removed; the lane had flagged the transfer as unresolved itself"
+    },
+    {
+      "case": "DeltaNet GPU port",
+      "claimed": "host recurrent 43.26 ms -> isolated GPU vi 2.77 ms",
+      "measured_against": "the pre-reconstruction 1376 ms token",
+      "invalidated_by": "the reconstruction fix took the token to 301 ms and rewrote the same file",
+      "outcome": "NOT MERGED. 4 conflict markers in qwen80_mixed_hybrid_decode.rs. Rebase and re-measure before any merge decision."
+    }
+  ],
+  "the_rule": "A lane result is valid only against the HEAD it was measured on. Before merging any lane that branched before a landed change to the same files: check ancestry, rebase, RE-MEASURE. Do not merge a number whose baseline no longer exists.",
+  "cheap_check": "git merge-base --is-ancestor <landed-commit> <lane-branch> - if NO, the lane predates it and its baseline is suspect wherever the files overlap.",
+  "why_this_is_not_an_argument_against_fan_out": "All three were caught, two of them BY the fan-out itself: the diagnosis lane found the simd subsumption, and the descent lane flagged its own transferred assumption. The fix is an ancestry check at merge time, not fewer lanes."
+}

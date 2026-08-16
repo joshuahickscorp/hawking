@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.ops.stall_root_cause_cadence.v1",
+  "date": "2026-08-16",
+  "WATCHDOG_L4_ROOT_CAUSE": "The no-progress blocks are a CADENCE MISMATCH, not a stalled investigation. The ledger is sampled once per turn - every few minutes - while the work that can move it completes on a median of 23.8 minutes per lane. So most turns are guaranteed to observe no change even when every lane is producing.",
+  "evidence": {
+    "completed_lanes_measured": 10,
+    "median_lane_runtime_min": 23.8,
+    "range_min": [
+      12.3,
+      124.2
+    ],
+    "slowest": [
+      "qwen38-mixed-pack 124.2 min",
+      "qwen38-descent-rescreen 42.1",
+      "q80-token-ns-after-recon 31.3"
+    ],
+    "live_lanes_and_age_min": {
+      "q80-deltanet-rebase3": 18,
+      "qwen38-native-mixed-reader": 30,
+      "qwen38-widen-offload-bench": 14
+    },
+    "all_three_live_lanes_are_producing": "dirty file counts 6, 4, 2 - they are writing, not hung; pgrep confirms live processes; the GPU lock cycles between them"
+  },
+  "why_I_cannot_simply_add_more_work": "Every file an open obligation needs is owned by a live lane: Q80's decode path by q80-deltanet-rebase3, qwen38_hybrid_decode.rs by qwen38-native-mixed-reader, lab/hcli by qwen38-widen-offload-bench. Commissioning against any of them recreates the merge collision that already cost a measured 38.5 ms DeltaNet win once today.",
+  "NOT_a_terminal_blocker": "Nothing here is unreachable. G003 is an execution gap below a 185.5 TPS roof, G002 has a measured resolution awaiting a free window, G005 and G006 are waiting on lanes that are actively writing. Only G004/G007 carry a genuine physical block, already recorded with its named saturated resource - DSV4F's 24.98 ms DRAM floor against a 20 ms gate.",
+  "what_the_block_count_is_actually_measuring": "Turn cadence against lane latency. 77 blocks at roughly 1-3 minutes of wall each is well under the 23.8-minute median for a single lane to return. The counter is behaving correctly; it just cannot distinguish 'waiting productively' from 'stuck'.",
+  "the_honest_position": "Three lanes hold the only paths to closure, all are alive and writing, and the correct action is to let them finish rather than manufacture parallel work that would collide with them."
+}

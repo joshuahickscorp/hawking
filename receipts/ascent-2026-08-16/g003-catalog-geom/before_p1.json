@@ -1,0 +1,377 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 12781,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 12460,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "greedy_bit_identical": true,
+    "greedy_oracle_12": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 9.5367431640625e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 8.493661880493164e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.9073486328125e-6,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "degrade": {
+    "down_mix": 1.0,
+    "gate_mix": 1.0,
+    "hgravs_rank_cap": 160,
+    "mix_seed": 3232857105,
+    "up_mix": 1.0
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26880,
+      "command_buffers": 9436,
+      "compute_dispatches": 67564,
+      "expert_copy_binds": 0,
+      "expert_nocopy_binds": 13098,
+      "hgravs_factor_dispatches": 26880,
+      "packed_calls": 11409,
+      "packed_skipped": 0,
+      "residual_dispatches": 13440,
+      "routed_expert_waves": 1344,
+      "segment_nocopy_binds": 0,
+      "uniform8_dispatches": 11116
+    },
+    "peak_rss_bytes": 9803268096,
+    "stages": {
+      "cb_encode_ns": 64925906,
+      "cb_submit_ns": 37986489,
+      "cb_wait_minus_gpu_ns": 2703158870,
+      "cb_wait_ns": 3695398320,
+      "deltanet_secs": 3.2344998760000023,
+      "embed_secs": 0.25405500100000006,
+      "gpu_matvec_ns": 992239450,
+      "gpu_matvec_timestamps_missing": 0,
+      "gpu_organ": {
+        "deltanet": 107383272,
+        "gqa": 32826960,
+        "moe_combine_gate": 13500322,
+        "moe_routed": 753072393,
+        "moe_router": 17344200,
+        "moe_shared": 46922278,
+        "other": 0,
+        "terminal": 21190025
+      },
+      "gqa_secs": 0.5668051599999995,
+      "host_excl": {
+        "argmax": 1761832,
+        "buffer_prep": 124335308,
+        "catalog_reparse": 1973564126,
+        "combine": 1652872,
+        "dn_conv": 62818051,
+        "dn_gated": 10509831,
+        "dn_rearrange_l2": 17079441,
+        "dn_recurrent": 1201775685,
+        "dn_residual": 305655,
+        "dn_rms": 2564857,
+        "embed": 254055959,
+        "expert_bind": 2060975408,
+        "final_rms": 74252,
+        "gqa_attn": 15785662,
+        "gqa_interleave": 584454,
+        "gqa_kv_copy": 697963,
+        "gqa_residual": 107577,
+        "gqa_rms": 862487,
+        "gqa_rope": 4639525,
+        "post_rms": 3364452,
+        "silu": 1244173,
+        "topk": 11435959,
+        "vector_clone": 4951122
+      },
+      "host_expert_bind_ns": 2060975408,
+      "host_expert_bind_secs": 2.060975407999993,
+      "mixed_matvec_secs": 4.538997578000006,
+      "moe_combine_secs": 0.4146672020000001,
+      "moe_norm_router_secs": 0.4543853810000013,
+      "moe_routed_secs": 3.4151437219999976,
+      "moe_shared_secs": 0.9494850460000008,
+      "terminal_secs": 0.3048897890000001
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true,
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "timing": {
+    "authority": "wall decode_secs/generated_tokens; GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime of weight GEMVs only",
+    "cache_geom_enabled": false,
+    "command_buffers_per_token_reps": [
+      337.0,
+      337.0
+    ],
+    "decode_family_binary": "gk_matvec_binary",
+    "decode_family_enabled": true,
+    "decode_family_hgravs": "gk_matvec_hgravs",
+    "decode_secs": 3.298229875,
+    "dispatches_per_token_reps": [
+      2413.0,
+      2413.0
+    ],
+    "facet1_enabled": true,
+    "facet2_enabled": true,
+    "gk_simd_enabled": false,
+    "gpu_matvec_ns_per_token_reps": [
+      35540296.09090909,
+      35563733.81818182
+    ],
+    "gpu_timestamps_missing": 0,
+    "host_expert_bind_ns_per_token_reps": [
+      42733539.54545455,
+      0.0
+    ],
+    "host_preparation_decode": {
+      "buffer_prep_ns_median": 4619406,
+      "catalog_reparse_ns_median": 65604629,
+      "catalog_reparse_ns_reps": [
+        64944613,
+        63870665,
+        64108232,
+        64015047,
+        66062287,
+        66158280,
+        64098874,
+        69426296,
+        69209382,
+        65648636,
+        65604629
+      ],
+      "decode_tokens": 11,
+      "embed_ns_median": 8447375,
+      "encode_ns_median": 2351995,
+      "expert_bind_ns_median": 37844998,
+      "gpu_ns_median": 35512618,
+      "host_preparation_ns_median": 119582629,
+      "host_preparation_ns_reps": [
+        162528382,
+        128822944,
+        118836335,
+        114403424,
+        119582629,
+        107934621,
+        95875552,
+        110462945,
+        119854295,
+        150495191,
+        135011141
+      ],
+      "vector_clone_ns_median": 180874,
+      "wall_ns_median": 293747250
+    },
+    "label": "DIRTY_ENGINEERING",
+    "packed_calls": 11409,
+    "packed_skipped": 0,
+    "prefill_secs": 6.297977417,
+    "recon_fuse_enabled": true,
+    "reps_host_preparation_decode": [
+      {
+        "buffer_prep_ns_median": 4619406,
+        "catalog_reparse_ns_median": 65604629,
+        "catalog_reparse_ns_reps": [
+          64944613,
+          63870665,
+          64108232,
+          64015047,
+          66062287,
+          66158280,
+          64098874,
+          69426296,
+          69209382,
+          65648636,
+          65604629
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8447375,
+        "encode_ns_median": 2351995,
+        "expert_bind_ns_median": 37844998,
+        "gpu_ns_median": 35512618,
+        "host_preparation_ns_median": 119582629,
+        "host_preparation_ns_reps": [
+          162528382,
+          128822944,
+          118836335,
+          114403424,
+          119582629,
+          107934621,
+          95875552,
+          110462945,
+          119854295,
+          150495191,
+          135011141
+        ],
+        "vector_clone_ns_median": 180874,
+        "wall_ns_median": 293747250
+      },
+      {
+        "buffer_prep_ns_median": 4462137,
+        "catalog_reparse_ns_median": 64182729,
+        "catalog_reparse_ns_reps": [
+          64294482,
+          65233497,
+          64064081,
+          64148796,
+          68569118,
+          66762003,
+          64113866,
+          64182729,
+          63895915,
+          63608422,
+          64536697
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8521417,
+        "encode_ns_median": 2096710,
+        "expert_bind_ns_median": 0,
+        "gpu_ns_median": 35530359,
+        "host_preparation_ns_median": 79555059,
+        "host_preparation_ns_reps": [
+          79555059,
+          80845180,
+          79296526,
+          79804060,
+          84680346,
+          84154889,
+          79134413,
+          79168196,
+          78774924,
+          78593597,
+          79939539
+        ],
+        "vector_clone_ns_median": 181540,
+        "wall_ns_median": 253081125
+      }
+    ],
+    "steady_state_tok_s": 3.3351224243853843,
+    "wait_minus_gpu_ns_per_token_reps": [
+      94690330.54545455,
+      92555247.63636364
+    ],
+    "wall_ns_per_token_reps": [
+      299839068.1818182,
+      253235249.99999997
+    ]
+  }
+}

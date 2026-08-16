@@ -1,0 +1,48 @@
+{
+  "binary": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/main_target/release/examples/ascension_qwen38_hybrid_greedy",
+  "args": "--artifact-root workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1 --tokenizer workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json --max-new-tokens 12",
+  "ids": {
+    "Say hi.": [
+      248068,
+      198,
+      760,
+      1156,
+      4777,
+      6587,
+      728,
+      310,
+      1910,
+      328,
+      5834,
+      1149
+    ],
+    "Write a function that reverses a string.": [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      264,
+      709,
+      421,
+      16915,
+      287,
+      264,
+      886
+    ],
+    "What is the capital of France?": [
+      248068,
+      198,
+      760,
+      1156,
+      369,
+      9859,
+      264,
+      4145,
+      57879,
+      3296,
+      25,
+      3437
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.special_unit.bpw_descent_review.v1",
+  "date": "2026-08-16",
+  "lane_result": {
+    "cheap_coherence_floor": "q3 @ 3.25 BPW",
+    "finding": "No cheap in-register pack is BOTH <2.0 BPW and quality-intact.",
+    "best_cheap_descent": "ternary + two-stage low-rank down + ternary attention ~= 1.99 BPW",
+    "lane_projected_tps": 61,
+    "generation_not_run": true
+  },
+  "MY_RESCALE": {
+    "method": "scale GPU by the BPW ratio and hold the NAMED fixed overhead constant; wall-gpu is 1.229 ms and does not shrink with bytes",
+    "this_session_gpu_ms": 36.987,
+    "fixed_ms": 1.229,
+    "1.99_bpw_ms": 18.54,
+    "1.99_bpw_tps": 53.9,
+    "2.00_bpw_tps": 53.7,
+    "3.25_bpw_tps": 33.9,
+    "correction": "The lane's 61 TPS is optimistic; from the MEASURED 38.217 ms wall the 1.99 recipe gives ~54 TPS. It still clears 50, and the q3 cheap floor at 3.25 BPW does NOT (33.9)."
+  },
+  "A_CAVEAT_THAT_MAY_INVALIDATE_THE_SCREEN": {
+    "lane_stated": "rice 5.9x penalty transferred from Q80, not re-measured on dense sequential Qwen3.8",
+    "why_that_matters": "That 5.9x was DISPROVEN today. Q80's mixed matvec was slow because of a serial 1-thread-per-row extract doing 8 bit-loads per weight, NOT because rice/binary/low-rank codecs are expensive. Consuming codes in-register took gpu_matvec 867.0 -> 36.6 ms and made mixed FASTER per byte than Q4. See Q80_RECONSTRUCTION_WON.json.",
+    "consequence": "The screen penalised rice-based candidates using a number that turned out to be a kernel artifact. Cheaper-to-reconstruct codecs may no longer be the right axis to optimise, and rice vehicles may be viable again. The recipe should be re-screened with the reconstruction penalty REMOVED before it is treated as final.",
+    "status": "NOT a refutation of the lane - it flagged this transfer honestly as unresolved. It is a consequence of a result that landed after the lane started."
+  },
+  "where_this_leaves_G006": "A <=2.0 BPW route exists on paper at 1.99 BPW / ~54 TPS, but generation has not been run so coherence is unproven, and the screen's codec ranking rests on a superseded penalty. The sibling qwen38-mixed-pack lane is building the actual pack."
+}

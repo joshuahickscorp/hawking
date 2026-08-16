@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.ascent.regression_check_2.v1",
+  "date": "2026-08-16",
+  "head": "b443eb396",
+  "why": "Four more merges landed since the last full regression check - catalog-reparse, CB collapse, model-driven tool use, plus an aborted DeltaNet merge that touched the working tree. One of those merges needed a hand-resolved semantic conflict on ensure_named_weight's signature, so a green build is not by itself evidence.",
+  "all_three_models_verified_on_current_main": {
+    "qwen38": {
+      "gate": "tools/coherence_gate.py, 3 prompts vs a seal taken BEFORE the merges",
+      "result": "PASS - id-identical"
+    },
+    "dsv4f": {
+      "gate": "hc_sha assert against the sealed graph hash",
+      "result": "PASS",
+      "note": "gate proven to FAIL on a corrupted constant earlier today, so a pass carries information"
+    },
+    "q80": {
+      "gate": "greedy ids + sample parity + silent fallbacks on mixed-1p5-v1",
+      "result": "PASS",
+      "ids": [
+        8420,
+        748,
+        264,
+        729,
+        429,
+        17431,
+        288,
+        264,
+        914,
+        320,
+        72,
+        1734
+      ],
+      "sample_parity": true,
+      "silent_fallbacks": 0,
+      "cache_geom": true,
+      "note": "cache_geom=true confirms the catalog fix is live on the shipping path"
+    }
+  },
+  "verdict": "All three production graphs are numerically correct on merged main after the full day's integration.",
+  "scope": "NUMERICS only. Every timing on main remains DIRTY_ENGINEERING; the qualifying CLEAN_CANDIDATE runs for G003 and G008 still require a drained box, which the three live lanes preclude."
+}

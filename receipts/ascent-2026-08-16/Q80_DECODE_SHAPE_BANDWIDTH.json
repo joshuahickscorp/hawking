@@ -1,0 +1,997 @@
+{
+  "arithmetic_intensity": {
+    "bytes": 4194304,
+    "cols": 2048,
+    "fma_minus_load_median_ns": 103084,
+    "launch": "512 threads, one thread per row",
+    "load_only": {
+      "gbps": [
+        53.092455696202535,
+        53.008581358609796,
+        53.6870912
+      ],
+      "gpu_ns": [
+        79000,
+        79125,
+        78125
+      ],
+      "max_gbps": 53.6870912,
+      "max_ns": 79125,
+      "median_gbps": 53.092455696202535,
+      "median_ns": 79000,
+      "min_gbps": 53.008581358609796,
+      "min_ns": 78125
+    },
+    "load_plus_fma": {
+      "gbps": [
+        22.96160204964252,
+        23.034994837547504,
+        23.109112947658403
+      ],
+      "gpu_ns": [
+        182666,
+        182084,
+        181500
+      ],
+      "max_gbps": 23.109112947658403,
+      "max_ns": 182666,
+      "median_gbps": 23.034994837547504,
+      "median_ns": 182084,
+      "min_gbps": 22.96160204964252,
+      "min_ns": 181500
+    },
+    "rows": 512
+  },
+  "byte_budget": {
+    "mixed_1p5_v1": {
+      "active_decode_bpw": 4.979465705545386,
+      "classes": {
+        "activations_temp": {
+          "bytes": 16711680,
+          "source": "TOKEN_NS_Q80 TEMP_BYTES_PER_TOKEN"
+        },
+        "expert_table_metadata": {
+          "bytes": 32768,
+          "note": "512-way address table; payloads billed under routed/shared"
+        },
+        "kv_new_gqa_f16": {
+          "bytes": 24576,
+          "note": "12 GQA layers \u00d7 512 dim \u00d7 k+v \u00d7 f16, seq increment = 1"
+        },
+        "weights_attention": {
+          "bytes": 1588069296,
+          "pct_of_weights": 0.7162246598775861
+        },
+        "weights_lm_head": {
+          "bytes": 320912208,
+          "pct_of_weights": 0.1447324985152066
+        },
+        "weights_routed_experts": {
+          "bytes": 233080320,
+          "pct_of_weights": 0.10512001795931639
+        },
+        "weights_router": {
+          "bytes": 51908304,
+          "pct_of_weights": 0.02341082185195925
+        },
+        "weights_shared_expert": {
+          "bytes": 23308032,
+          "pct_of_weights": 0.010512001795931638
+        }
+      },
+      "expert_mean_bpw": 1.2348805110280712,
+      "name": "mixed-1p5-v1",
+      "nonexpert_bpw": 8.250600705299505,
+      "organ_bytes": {
+        "down": 168544,
+        "gate": 147712,
+        "triplet": 485584,
+        "up": 169328
+      },
+      "storage_complete_bpw": 1.4444457,
+      "storage_vs_active_note": "complete_physical_bpw averages unused experts (97% of stored mass). Decode only moves top-10+shared experts plus ALL nonexpert active weights.",
+      "total_bytes_per_token": 2234047184,
+      "vs_peak_819": {
+        "fs_per_weight_at_unity": 759.9919492020057,
+        "total_floor_ns": 2727774,
+        "weight_floor_ns": 2707299
+      },
+      "weight_bytes_per_token": 2217278160
+    },
+    "mixed_sub655_v1": {
+      "active_decode_bpw": 2.5180093101497536,
+      "classes": {
+        "activations_temp": {
+          "bytes": 16711680,
+          "source": "TOKEN_NS_Q80 TEMP_BYTES_PER_TOKEN"
+        },
+        "expert_table_metadata": {
+          "bytes": 32768,
+          "note": "512-way address table; payloads billed under routed/shared"
+        },
+        "kv_new_gqa_f16": {
+          "bytes": 24576,
+          "note": "12 GQA layers \u00d7 512 dim \u00d7 k+v \u00d7 f16, seq increment = 1"
+        },
+        "weights_attention": {
+          "bytes": 818151424,
+          "pct_of_weights": 0.7296908920779069
+        },
+        "weights_lm_head": {
+          "bytes": 165329552,
+          "pct_of_weights": 0.14745371669208351
+        },
+        "weights_routed_experts": {
+          "bytes": 100915200,
+          "pct_of_weights": 0.0900040018902667
+        },
+        "weights_router": {
+          "bytes": 26742448,
+          "pct_of_weights": 0.023850989150716234
+        },
+        "weights_shared_expert": {
+          "bytes": 10091520,
+          "pct_of_weights": 0.00900040018902667
+        }
+      },
+      "expert_mean_bpw": 0.5345848147860832,
+      "name": "mixed-sub655-v1",
+      "nonexpert_bpw": 4.250595793629995,
+      "organ_bytes": {
+        "down": 147712,
+        "gate": 18784,
+        "triplet": 210240,
+        "up": 43744
+      },
+      "storage_complete_bpw": 0.6462038524865996,
+      "storage_vs_active_note": "complete_physical_bpw averages unused experts (97% of stored mass). Decode only moves top-10+shared experts plus ALL nonexpert active weights.",
+      "total_bytes_per_token": 1137999168,
+      "vs_peak_819": {
+        "fs_per_weight_at_unity": 384.3116745634682,
+        "total_floor_ns": 1389498,
+        "weight_floor_ns": 1369023
+      },
+      "weight_bytes_per_token": 1121230144
+    },
+    "q4_ledger_cross_check_bytes": 1892511808,
+    "q4_vehicle_budget_only": {
+      "active_decode_bpw": 4.259257976350357,
+      "classes": {
+        "activations_temp": {
+          "bytes": 16711680,
+          "source": "TOKEN_NS_Q80 TEMP_BYTES_PER_TOKEN"
+        },
+        "expert_table_metadata": {
+          "bytes": 32768,
+          "note": "512-way address table; payloads billed under routed/shared"
+        },
+        "kv_new_gqa_f16": {
+          "bytes": 24576,
+          "note": "12 GQA layers \u00d7 512 dim \u00d7 k+v \u00d7 f16, seq increment = 1"
+        },
+        "weights_attention": {
+          "bytes": 819815440,
+          "pct_of_weights": 0.43225966680183764
+        },
+        "weights_lm_head": {
+          "bytes": 165665808,
+          "pct_of_weights": 0.08734971735411229
+        },
+        "weights_routed_experts": {
+          "bytes": 803911680,
+          "pct_of_weights": 0.42387417701587266
+        },
+        "weights_router": {
+          "bytes": 26796832,
+          "pct_of_weights": 0.014129021126590174
+        },
+        "weights_shared_expert": {
+          "bytes": 80391168,
+          "pct_of_weights": 0.042387417701587264
+        }
+      },
+      "expert_mean_bpw": 4.259241,
+      "name": "uniform-q4-group64-v1 (DE-AUTHORISED vehicle; budget only, no Q4 kernel)",
+      "nonexpert_bpw": 4.259241,
+      "organ_bytes": {
+        "down": 558272,
+        "gate": 558272,
+        "triplet": 1674816,
+        "up": 558272
+      },
+      "storage_complete_bpw": 4.259241,
+      "storage_vs_active_note": "complete_physical_bpw averages unused experts (97% of stored mass). Decode only moves top-10+shared experts plus ALL nonexpert active weights.",
+      "total_bytes_per_token": 1913349952,
+      "vs_peak_819": {
+        "fs_per_weight_at_unity": 650.0701004920685,
+        "total_floor_ns": 2336202,
+        "weight_floor_ns": 2315727
+      },
+      "weight_bytes_per_token": 1896580928
+    }
+  },
+  "claim_boundary": {
+    "dense_weight_not_materialized_as_decode": true,
+    "no_model_logic": true,
+    "no_q4_kernel": true,
+    "reuse_64mib_x_iters_is_a_cache_friendly_roofline_not_decode": true,
+    "storage_complete_bpw_is_not_active_decode_bpw": true,
+    "unique_once_is_the_honest_decode_control": true
+  },
+  "controls": {
+    "honest_decode_ceiling_gbps": 411.51358589633037,
+    "published_peak_gbps": 819.0,
+    "reuse_64mib_read_reduce": {
+      "bytes_moved_per_dispatch": 1006632960,
+      "conflict": {
+        "gbps": [
+          632.6882588192259,
+          637.4964044632153,
+          648.691067289345
+        ],
+        "gpu_ns": [
+          1591041,
+          1579041,
+          1551791
+        ],
+        "max_gbps": 648.691067289345,
+        "max_ns": 1591041,
+        "median_gbps": 637.4964044632153,
+        "median_ns": 1579041,
+        "min_gbps": 632.6882588192259,
+        "min_ns": 1551791
+      },
+      "note": "64 MiB reused 4096 times. Cache-friendly roofline, NOT decode traffic.",
+      "sequential": {
+        "gbps": [
+          515.2971384694139,
+          535.8823163028844,
+          545.5883961386224
+        ],
+        "gpu_ns": [
+          1953500,
+          1878459,
+          1845041
+        ],
+        "max_gbps": 545.5883961386224,
+        "max_ns": 1953500,
+        "median_gbps": 535.8823163028844,
+        "median_ns": 1878459,
+        "min_gbps": 515.2971384694139,
+        "min_ns": 1845041
+      },
+      "working_set_bytes": 67108864
+    },
+    "reuse_band_gbps": [
+      535.8823163028844,
+      637.4964044632153
+    ],
+    "unique_once_sweep": {
+      "unique_once_1024mib": {
+        "all_ns": [
+          3559750,
+          3537959,
+          3577459
+        ],
+        "bytes": 1073741824,
+        "median_gbps": 301.63405407683126,
+        "median_ns": 3559750,
+        "spread": {
+          "gbps": [
+            301.63405407683126,
+            303.4918787922641,
+            300.1409167792
+          ],
+          "gpu_ns": [
+            3559750,
+            3537959,
+            3577459
+          ],
+          "max_gbps": 303.4918787922641,
+          "max_ns": 3577459,
+          "median_gbps": 301.63405407683126,
+          "median_ns": 3559750,
+          "min_gbps": 300.1409167792,
+          "min_ns": 3537959
+        },
+        "threads": 15360
+      },
+      "unique_once_256mib": {
+        "all_ns": [
+          653875,
+          654791,
+          650625
+        ],
+        "bytes": 268435456,
+        "median_gbps": 410.5302328426687,
+        "median_ns": 653875,
+        "spread": {
+          "gbps": [
+            410.5302328426687,
+            409.9559340308587,
+            412.58091219980787
+          ],
+          "gpu_ns": [
+            653875,
+            654791,
+            650625
+          ],
+          "max_gbps": 412.58091219980787,
+          "max_ns": 654791,
+          "median_gbps": 410.5302328426687,
+          "median_ns": 653875,
+          "min_gbps": 409.9559340308587,
+          "min_ns": 650625
+        },
+        "threads": 15360
+      },
+      "unique_once_512mib": {
+        "all_ns": [
+          1303625,
+          1304625,
+          1370834
+        ],
+        "bytes": 536870912,
+        "median_gbps": 411.51358589633037,
+        "median_ns": 1304625,
+        "spread": {
+          "gbps": [
+            411.82925457857897,
+            411.51358589633037,
+            391.6381647960293
+          ],
+          "gpu_ns": [
+            1303625,
+            1304625,
+            1370834
+          ],
+          "max_gbps": 411.82925457857897,
+          "max_ns": 1370834,
+          "median_gbps": 411.51358589633037,
+          "median_ns": 1304625,
+          "min_gbps": 391.6381647960293,
+          "min_ns": 1303625
+        },
+        "threads": 15360
+      },
+      "unique_once_64mib": {
+        "all_ns": [
+          140625,
+          143916,
+          146209
+        ],
+        "bytes": 67108864,
+        "median_gbps": 466.30578948831266,
+        "median_ns": 143916,
+        "spread": {
+          "gbps": [
+            477.21858844444444,
+            466.30578948831266,
+            458.99270222763306
+          ],
+          "gpu_ns": [
+            140625,
+            143916,
+            146209
+          ],
+          "max_gbps": 477.21858844444444,
+          "max_ns": 146209,
+          "median_gbps": 466.30578948831266,
+          "median_ns": 143916,
+          "min_gbps": 458.99270222763306,
+          "min_ns": 140625
+        },
+        "threads": 15360
+      }
+    }
+  },
+  "date": "2026-08-16",
+  "device_name": "Apple M3 Ultra",
+  "dispatch_and_cb": {
+    "eleven55_nops_one_cb": {
+      "gpu_ns": [
+        1424500,
+        2098750,
+        1483875
+      ],
+      "median_gpu_ns": 1483875
+    },
+    "ninety_eight_cbs_x_12_nops": {
+      "gpu_ns": [
+        1884916,
+        1911873,
+        1900377
+      ],
+      "host_ns": [
+        21041916,
+        21980333,
+        22814041
+      ],
+      "median_gpu_ns": 1900377,
+      "median_host_minus_gpu_ns": 20079956,
+      "median_host_ns": 21980333
+    },
+    "one_nop_cb": {
+      "gpu_ns": [
+        3334,
+        3750,
+        3125
+      ],
+      "host_ns": [
+        192083,
+        213833,
+        167708
+      ],
+      "median_gpu_ns": 3334,
+      "median_host_ns": 192083,
+      "projected_1155_serial_cbs_gpu_ns": 3850770,
+      "projected_1155_serial_cbs_host_ns": 221855865,
+      "projected_98_serial_cbs_gpu_ns": 326732,
+      "projected_98_serial_cbs_host_ns": 18824134
+    },
+    "topology": {
+      "production_cbs": 98,
+      "production_dispatches": 1155
+    },
+    "twelve_nops_one_cb": {
+      "gpu_ns": [
+        24959,
+        16416,
+        21416
+      ],
+      "median_gpu_ns": 21416
+    }
+  },
+  "gather_vs_sequential": {
+    "bytes": 2102400,
+    "organ_bytes": 210240,
+    "scattered_10_of_512": {
+      "gbps": [
+        160.6848058697646,
+        132.0934908268409,
+        150.17142857142858
+      ],
+      "gpu_ns": [
+        13084,
+        15916,
+        14000
+      ],
+      "max_gbps": 160.6848058697646,
+      "max_ns": 15916,
+      "median_gbps": 150.17142857142858,
+      "median_ns": 14000,
+      "min_gbps": 132.0934908268409,
+      "min_ns": 13084
+    },
+    "sequential_10": {
+      "gbps": [
+        146.25391304347826,
+        121.00143884892087,
+        107.12866242038217
+      ],
+      "gpu_ns": [
+        14375,
+        17375,
+        19625
+      ],
+      "max_gbps": 146.25391304347826,
+      "max_ns": 19625,
+      "median_gbps": 121.00143884892087,
+      "median_ns": 17375,
+      "min_gbps": 107.12866242038217,
+      "min_ns": 14375
+    },
+    "table_experts": 512,
+    "top_k": 10
+  },
+  "gpu_time_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "historical_0_135_pct": {
+    "q4_efficiency_vs_peak_pct": 0.41413385263532754,
+    "q4_gpu_only_gbps": 8.158485434502186,
+    "q4_wall_gbps": 3.3844916691995053,
+    "what_it_was": "212.53 fs mixed-storage floor / 156970 fs Q4-runtime",
+    "why_it_is_a_category_error": "numerator used mixed-1p5 STORAGE complete_bpw (1.392467) as if it were active-decode BPW; denominator is the Q4 vehicle token. Those are different vehicles and different masses."
+  },
+  "lane": "fs-occupancy",
+  "launch_geometry": {
+    "one_organ_512_threads": {
+      "bytes": 210240,
+      "grid": 512,
+      "n_organs": 1,
+      "occupancy_vs_15360": 0.03333333333333333,
+      "spread": {
+        "gbps": [
+          16.8192,
+          16.018285714285714,
+          16.8192
+        ],
+        "gpu_ns": [
+          12500,
+          13125,
+          12500
+        ],
+        "max_gbps": 16.8192,
+        "max_ns": 13125,
+        "median_gbps": 16.8192,
+        "median_ns": 12500,
+        "min_gbps": 16.018285714285714,
+        "min_ns": 12500
+      },
+      "threads_per_organ": 512
+    },
+    "one_organ_full_threads_capped_by_bytes": {
+      "bytes": 210240,
+      "grid": 15360,
+      "n_organs": 1,
+      "occupancy_vs_15360": 1.0,
+      "spread": {
+        "gbps": [
+          25.226781857451403,
+          35.78553191489362,
+          36.03702434007542
+        ],
+        "gpu_ns": [
+          8334,
+          5875,
+          5834
+        ],
+        "max_gbps": 36.03702434007542,
+        "max_ns": 8334,
+        "median_gbps": 35.78553191489362,
+        "median_ns": 5875,
+        "min_gbps": 25.226781857451403,
+        "min_ns": 5834
+      },
+      "threads_per_organ": 15360
+    },
+    "ten_organs_5120_threads": {
+      "bytes": 2102400,
+      "grid": 5120,
+      "n_organs": 10,
+      "occupancy_vs_15360": 0.3333333333333333,
+      "spread": {
+        "gbps": [
+          163.29320388349515,
+          164.36556954108357,
+          149.7329250053415
+        ],
+        "gpu_ns": [
+          12875,
+          12791,
+          14041
+        ],
+        "max_gbps": 164.36556954108357,
+        "max_ns": 14041,
+        "median_gbps": 163.29320388349515,
+        "median_ns": 12875,
+        "min_gbps": 149.7329250053415,
+        "min_ns": 12791
+      },
+      "threads_per_organ": 512
+    },
+    "thirty_organs_15360_threads": {
+      "bytes": 6307200,
+      "grid": 15360,
+      "n_organs": 30,
+      "occupancy_vs_15360": 1.0,
+      "spread": {
+        "gbps": [
+          457.341744616054,
+          420.48,
+          454.572972972973
+        ],
+        "gpu_ns": [
+          13791,
+          15000,
+          13875
+        ],
+        "max_gbps": 457.341744616054,
+        "max_ns": 15000,
+        "median_gbps": 454.572972972973,
+        "median_ns": 13875,
+        "min_gbps": 420.48,
+        "min_ns": 13791
+      },
+      "threads_per_organ": 512
+    }
+  },
+  "measurement_label": "DIRTY_ENGINEERING",
+  "q4_kernels_benchmarked": false,
+  "ranked_occupancy_caps": {
+    "order": "descending measured-or-projected ns",
+    "unit": "nanoseconds attributed to one decode token of mixed-sub655 size unless noted",
+    "fix_note": "v1 receipt had unique_once_bandwidth_floor off by 1e9 (treated GB/s as B/s). Corrected from the same measured spreads; GPU was not rerun for this arithmetic fix.",
+    "rows": [
+      {
+        "rank": 1,
+        "facet": "dispatch_count_1155_serial_cbs_HOST",
+        "ns": 221855865,
+        "how": "projected from one nop CB host median 192 us * 1155. GPU part of this is only 3.85 ms; the rest is host wait."
+      },
+      {
+        "rank": 2,
+        "facet": "token_shape_host_wall_sub655",
+        "ns": 22005459,
+        "how": "full decode-shaped control, mixed-sub655 bytes, 98 CBs. Includes the CB wait tax."
+      },
+      {
+        "rank": 3,
+        "facet": "cb_serialization_98_host_minus_gpu",
+        "ns": 20079956,
+        "how": "98 CBs of 12 live nops: host wall minus GPU busy. Matches token-shape host-minus-gpu ~18-23 ms."
+      },
+      {
+        "rank": 4,
+        "facet": "launch_geometry_unbatched_512_thread_organs",
+        "ns": 6350250,
+        "how": "528 organs at 16.8 GB/s (512 threads) minus the same bytes batched 30-wide at 455 GB/s."
+      },
+      {
+        "rank": 5,
+        "facet": "token_shape_gpu_busy_sub655",
+        "ns": 3559785,
+        "how": "measured GPUStart/GPUEnd sum, mixed-sub655 decode-shaped control, 319.7 GB/s."
+      },
+      {
+        "rank": 6,
+        "facet": "unique_once_dram_floor_sub655_at_411GBs",
+        "ns": 2765399,
+        "how": "1.138 GB / 411.5 GB/s (512 MiB unique-once median). Irreducible if those bytes move once."
+      },
+      {
+        "rank": 7,
+        "facet": "host_memcpy_96MiB_analog",
+        "ns": 1711333,
+        "how": "CPU memcpy of routed-expert-sized payload at 59 GB/s. Does not explain 246 ms moe_table_build."
+      },
+      {
+        "rank": 8,
+        "facet": "dispatch_count_1155_nops_one_cb_GPU",
+        "ns": 1483875,
+        "how": "1155 nops fused into one command buffer. GPU dispatch tax is milliseconds, not hundreds of ms."
+      },
+      {
+        "rank": 9,
+        "facet": "arithmetic_intensity_fma_extra_one_organ",
+        "ns": 103084,
+        "how": "serial f32 MAC minus load-only on one 512x2048 organ at 512 threads (2.3x). Not scaled across the token."
+      },
+      {
+        "rank": 10,
+        "facet": "residency_cold_minus_warm",
+        "ns": 51541,
+        "how": "first GPU read of an untouched 96 MiB buffer minus warm reread."
+      },
+      {
+        "rank": 11,
+        "facet": "moe_gather_10_of_512_vs_sequential",
+        "ns": 0,
+        "how": "scattered top-10 was not slower than sequential (150 vs 121 GB/s, spreads overlap)."
+      }
+    ]
+  },
+  "residency": {
+    "bytes": 100915200,
+    "cold_first_gpu_read": {
+      "gbps": [
+        353.3136105032823,
+        353.15905511811025,
+        376.1983224603914
+      ],
+      "gpu_ns": [
+        285625,
+        285750,
+        268250
+      ],
+      "max_gbps": 376.1983224603914,
+      "max_ns": 285750,
+      "median_gbps": 353.3136105032823,
+      "median_ns": 285625,
+      "min_gbps": 353.15905511811025,
+      "min_ns": 268250
+    },
+    "host_memcpy_median_gbps": 58.968768790177016,
+    "host_memcpy_median_ns": 1711333,
+    "host_memcpy_scaled_ns": [
+      5978861,
+      1638339,
+      1711333
+    ],
+    "note": "cold = new MTLBuffer, no CPU touch. warm = every 4 KiB page poked then GPU reread. host memcpy is a CPU Instant, labeled as such, analog of compact_expert_slab_pack.",
+    "warm_after_page_touch": {
+      "gbps": [
+        431.1067821807556,
+        427.22842906070474,
+        457.66530612244895
+      ],
+      "gpu_ns": [
+        234084,
+        236209,
+        220500
+      ],
+      "max_gbps": 457.66530612244895,
+      "max_ns": 236209,
+      "median_gbps": 431.1067821807556,
+      "median_ns": 234084,
+      "min_gbps": 427.22842906070474,
+      "min_ns": 220500
+    }
+  },
+  "schema": "hawking.ascension.q80_decode_shape_bandwidth.v1",
+  "sub_100_fs_requirement": {
+    "bpw_required_for_sub_100_fs": {
+      "at_reuse_high": 0.5099969652675143,
+      "at_reuse_low": 0.428705719972052,
+      "at_unique_once_ceiling": 0.3292107665300424,
+      "at_unity_819": 0.655199796625983,
+      "note": "These are ACTIVE decode BPW, not storage complete_bpw.",
+      "at_token_shape_sub655_319p7": 0.25574551603878726,
+      "at_token_shape_1p5_363p2": 0.2905213202387283,
+      "at_unique_once_1024mib_301p6": 0.24130716835971994
+    },
+    "efficiency_definition": "achieved_gbps / 819",
+    "g013_correction": {
+      "actual": "decode moves nonexpert at 4.25 BPW and experts at 0.53 BPW; active mix is much higher than 0.6462",
+      "g013_assumed": "storage 0.6462 BPW at 647 GB/s",
+      "g013_claimed_sub655_best_fs": 124.85
+    },
+    "law": "fs_per_weight = 152.6252 * ACTIVE_decode_BPW / efficiency",
+    "measured_unique_once_ceiling_gbps": 411.51358589633037,
+    "measured_unique_once_efficiency": 0.5024585908380103,
+    "reuse_roofline_efficiency": [
+      0.6543129625187843,
+      0.7783838882334742
+    ],
+    "reuse_roofline_gbps": [
+      535.8823163028844,
+      637.4964044632153
+    ],
+    "vehicles_at_unique_once_ceiling": {
+      "mixed_1p5_v1": {
+        "active_bpw": 4.979465705545386,
+        "fs_at_unique_ceiling": 1512.5464328005146,
+        "fs_at_unity": 759.9919492020057,
+        "reaches_sub_100": false,
+        "storage_bpw": 1.4444457
+      },
+      "mixed_sub655_v1": {
+        "active_bpw": 2.5180093101497536,
+        "fs_at_unique_ceiling": 764.8623818382838,
+        "fs_at_unity": 384.3116745634682,
+        "reaches_sub_100": false,
+        "storage_bpw": 0.6462038524865996
+      },
+      "q4_budget_only": {
+        "active_bpw": 4.259257976350357,
+        "fs_at_unique_ceiling": 1293.7784572612618
+      }
+    },
+    "measured_token_shape_gbps": {
+      "mixed_sub655": 319.6819942777443,
+      "mixed_1p5": 363.1517630206826
+    },
+    "vehicles_at_token_shape": {
+      "mixed_1p5_v1": {
+        "active_bpw": 4.979465705545386,
+        "fs_at_own_token_shape": 1713.9760006094014,
+        "fs_at_unique_once_411": 1512.5464328005146,
+        "fs_at_unity": 759.9919492020057,
+        "reaches_sub_100_at_any_measured_efficiency": false
+      },
+      "mixed_sub655_v1": {
+        "active_bpw": 2.5180093101497536,
+        "storage_bpw": 0.6462038524865996,
+        "fs_at_own_token_shape": 984.5761322235122,
+        "fs_at_unique_once_411": 764.8623818382838,
+        "fs_at_unity": 384.3116745634682,
+        "reaches_sub_100_at_any_measured_efficiency": false,
+        "even_if_active_bpw_equaled_storage_0_6462": {
+          "fs_at_token_shape_320": 252.6745580902361,
+          "fs_at_unique_once_411": 196.2887967783489,
+          "fs_at_reuse_637": 126.70739170921131,
+          "fs_at_unity": 98.62699222653777,
+          "sub_100_only_if": "unity 819 GB/s AND active BPW <= 0.655. Unity was not measured. 0.6462 is storage, not active."
+        }
+      }
+    },
+    "verdict": "Sub-100 fs/weight is unreachable on this box with any existing Q80 pack. mixed-sub655 storage 0.6462 BPW has ACTIVE decode BPW 2.518; at the measured token-shape 319.7 GB/s that is 984 fs. Crushing unused experts does not move the metric. Sub-100 fs needs ACTIVE BPW < 0.256-0.329 at the 320-411 GB/s decode band, including attention and lm_head (73%+ of bytes moved)."
+  },
+  "token_shape": {
+    "mixed_1p5_v1": {
+      "active_decode_bpw": 4.979465705545386,
+      "median_gpu_gbps": 363.1517630206826,
+      "median_gpu_ns": 6151828,
+      "median_host_ns": 28590000,
+      "reps": [
+        {
+          "bytes": 2234047184,
+          "command_buffers": 98,
+          "gbps_gpu": 365.4560659599914,
+          "gbps_host_wall": 79.44903167758741,
+          "gpu_ns": 6113039,
+          "host_minus_gpu_ns": 22006211,
+          "host_ns": 28119250,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 2916041,
+            "embed_gpu_ns": 6125,
+            "gqa_prefix_gpu_ns": 1036418,
+            "lm_head_gpu_ns": 763291,
+            "moe_suffix_gpu_ns": 1391164
+          }
+        },
+        {
+          "bytes": 2234047184,
+          "command_buffers": 98,
+          "gbps_gpu": 360.69845245226173,
+          "gbps_host_wall": 78.1408598810773,
+          "gpu_ns": 6193670,
+          "host_minus_gpu_ns": 22396330,
+          "host_ns": 28590000,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 3021502,
+            "embed_gpu_ns": 6375,
+            "gqa_prefix_gpu_ns": 960752,
+            "lm_head_gpu_ns": 794916,
+            "moe_suffix_gpu_ns": 1410125
+          }
+        },
+        {
+          "bytes": 2234047184,
+          "command_buffers": 98,
+          "gbps_gpu": 363.1517630206826,
+          "gbps_host_wall": 76.71437236074567,
+          "gpu_ns": 6151828,
+          "host_minus_gpu_ns": 22969797,
+          "host_ns": 29121625,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 2952287,
+            "embed_gpu_ns": 5875,
+            "gqa_prefix_gpu_ns": 986750,
+            "lm_head_gpu_ns": 784750,
+            "moe_suffix_gpu_ns": 1422166
+          }
+        }
+      ],
+      "same_weight_bytes_one_dispatch_gbps": 227.2664578988647,
+      "same_weight_bytes_one_dispatch_gpu_ns": 9722125,
+      "total_bytes": 2234047184,
+      "vehicle": "mixed-1p5-v1",
+      "weight_bytes": 2217278160,
+      "working_set_bytes": 2209512912
+    },
+    "mixed_sub655_v1": {
+      "active_decode_bpw": 2.5180093101497536,
+      "median_gpu_gbps": 319.6819942777443,
+      "median_gpu_ns": 3559785,
+      "median_host_ns": 22005459,
+      "reps": [
+        {
+          "bytes": 1137999168,
+          "command_buffers": 98,
+          "gbps_gpu": 314.6370675361494,
+          "gbps_host_wall": 51.714402685260964,
+          "gpu_ns": 3616863,
+          "host_minus_gpu_ns": 18388596,
+          "host_ns": 22005459,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 1790492,
+            "embed_gpu_ns": 5791,
+            "gqa_prefix_gpu_ns": 580750,
+            "lm_head_gpu_ns": 418916,
+            "moe_suffix_gpu_ns": 820914
+          }
+        },
+        {
+          "bytes": 1137999168,
+          "command_buffers": 98,
+          "gbps_gpu": 321.00042988138205,
+          "gbps_host_wall": 50.746048527616594,
+          "gpu_ns": 3545164,
+          "host_minus_gpu_ns": 18880211,
+          "host_ns": 22425375,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 1733629,
+            "embed_gpu_ns": 5959,
+            "gqa_prefix_gpu_ns": 569791,
+            "lm_head_gpu_ns": 410250,
+            "moe_suffix_gpu_ns": 825535
+          }
+        },
+        {
+          "bytes": 1137999168,
+          "command_buffers": 98,
+          "gbps_gpu": 319.6819942777443,
+          "gbps_host_wall": 52.11464093673067,
+          "gpu_ns": 3559785,
+          "host_minus_gpu_ns": 18276673,
+          "host_ns": 21836458,
+          "parts": {
+            "deltanet_prefix_gpu_ns": 1752078,
+            "embed_gpu_ns": 5916,
+            "gqa_prefix_gpu_ns": 602834,
+            "lm_head_gpu_ns": 385416,
+            "moe_suffix_gpu_ns": 813541
+          }
+        }
+      ],
+      "same_weight_bytes_one_dispatch_gbps": 296.74364402561633,
+      "same_weight_bytes_one_dispatch_gpu_ns": 3767125,
+      "total_bytes": 1137999168,
+      "vehicle": "mixed-sub655-v1",
+      "weight_bytes": 1121230144,
+      "working_set_bytes": 1117870400
+    }
+  },
+  "honest_control": {
+    "question": "What is the real ceiling for batch=1 MoE decode on this box?",
+    "answer": "320-411 GB/s for unique-bytes-once decode-shaped traffic. The 536-637 GB/s reuse band is a 64 MiB cache-friendly roofline and is NOT the decode ceiling. Published 819 GB/s was not achieved in any probe.",
+    "token_shape_no_model_logic": {
+      "mixed_sub655_v1": {
+        "gpu_gbps_spread": [
+          314.6370675361494,
+          321.00042988138205,
+          319.6819942777443
+        ],
+        "gpu_ns_spread": [
+          3616863,
+          3545164,
+          3559785
+        ],
+        "host_ns_spread": [
+          22005459,
+          22425375,
+          21836458
+        ],
+        "median_gpu_gbps": 319.6819942777443,
+        "median_gpu_ns": 3559785,
+        "median_host_ns": 22005459,
+        "bytes": 1137999168
+      },
+      "mixed_1p5_v1": {
+        "gpu_gbps_spread": [
+          365.4560659599914,
+          360.69845245226173,
+          363.1517630206826
+        ],
+        "gpu_ns_spread": [
+          6113039,
+          6193670,
+          6151828
+        ],
+        "host_ns_spread": [
+          28119250,
+          28590000,
+          29121625
+        ],
+        "median_gpu_gbps": 363.1517630206826,
+        "median_gpu_ns": 6151828,
+        "median_host_ns": 28590000,
+        "bytes": 2234047184
+      }
+    },
+    "unique_once_full_occupancy_gbps": {
+      "64_mib": 466.30578948831266,
+      "256_mib": 410.5302328426687,
+      "512_mib": 411.51358589633037,
+      "1024_mib": 301.63405407683126,
+      "note": "Rate falls as the unique working set grows past the SLC. A 1-2 GB token lives in the 300-411 GB/s band, not the 536-637 reuse band."
+    },
+    "reuse_64mib_x_4096_gbps": {
+      "sequential_spread": [
+        515.2971384694139,
+        535.8823163028844,
+        545.5883961386224
+      ],
+      "conflict_spread": [
+        632.6882588192259,
+        637.4964044632153,
+        648.691067289345
+      ],
+      "median_band": [
+        535.8823163028844,
+        637.4964044632153
+      ],
+      "not_the_decode_ceiling": true
+    }
+  }
+}

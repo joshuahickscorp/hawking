@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.special_unit.displacement_bar_was_unreachable.v1",
+  "date": "2026-08-16",
+  "MY_ERROR": "I set G005's READY bar at FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED >= 0.50 against a bench where only 7 of 20 tasks are model-expected. Maximum achievable displacement on this bench is 7/20 = 0.35. The bar was unreachable BY CONSTRUCTION, exactly like G006's coherence bar before I redefined it.",
+  "the_breakdown": {
+    "model_expected": 7,
+    "model_expected_passed": 6,
+    "model_expected_failed": 1,
+    "harness_expected_by_design": 11,
+    "skipped": 2,
+    "total": 20,
+    "harness_produced_but_model_expected": 0,
+    "max_possible_displacement": 0.35,
+    "my_bar": 0.5,
+    "measured": 0.3333
+  },
+  "why_11_tasks_are_harness_work_by_design": "session_persist, plan, interrupt_and_resume, gpu_lock_inspect_without_take, proposed_vs_verified, verification_authority_no_self_promote, refuse_protected_gpu_command, native_refuses_protected_lock, delegate_then_consume_roundtrip, resource_refuse_gpu_during_protected, seal_json_receipt. These are HARNESS responsibilities - a model should not be the thing that refuses a GPU lock or certifies its own work. Counting them against the model is a category error.",
+  "the_honest_metric": "Of tasks the model is EXPECTED to produce, it completed 6 of 7 = 0.857. The single failure is write_and_pytest_small.",
+  "TWO_WAYS_TO_FIX_THE_BAR": {
+    "a_rescope": "Measure model-expected-completed / model-expected. Today that is 0.857 and G005 would be close to met.",
+    "b_widen_the_bench": "SPECIAL_UNIT_READY should mean the unit does MORE KINDS of work, so add model-expected tasks rather than re-scoring the existing ones. 7 model-expected tasks out of 20 is a thin basis for calling a unit ready.",
+    "which_is_right": "(b). Rescoring to 0.857 would close G005 by redefinition while the unit still only attempts 7 kinds of task. The bench needs more model-expected work before READY means anything."
+  },
+  "pattern_this_is_the_third_instance": "G006 said 'coherent' with no measurable bar; G015 said 'capability' with no test; G005 had a threshold that its own metric could not reach. Each looked complete until someone tried to close it. Defining a bar is not the same as defining a REACHABLE bar - check the metric's ceiling against the threshold."
+}

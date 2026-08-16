@@ -220,6 +220,105 @@ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128(
     }
 }
 
+// Diagnostic: same launch geometry as geo_tpr64_tg128, but only the
+// addressing + DRAM load of scales and packed codes. The loaded values
+// are sunk into `acc` so the compiler cannot DCE the traffic. No nibble
+// unpack, no input-vector load, no FMA.
+kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        const uint rgb0 = row * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += scale + as_type<float>(packed);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+    (void)input;
+}
+
+static inline float qwen_uniform_q4_unpack8_noxin(uint packed, float scale)
+{
+    float sum = 0.0f;
+    for (uint i = 0u; i < 4u; ++i) {
+        const uint byte = (packed >> (8u * i)) & 0xffu;
+        sum += float(int(byte & 0x0fu) - 8) * scale;
+        sum += float(int(byte >> 4u) - 8) * scale;
+    }
+    return sum;
+}
+
+// Diagnostic: address + dequant, still no input-vector load / FMA.
+// Difference vs addr_probe is the reconstruction ALU.
+kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        const uint rgb0 = row * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8_noxin(packed, scale);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+    (void)input;
+}
+
 // Lever B-fast: 4 rows/simdgroup, 32 rows/TG. Not bit-identical.
 // Grid: (ceil(rows / 32) * 256, 1, 1), TG (256, 1, 1).
 kernel void qwen_uniform_q4_group64_matvec_simdgroup_rowblock4(

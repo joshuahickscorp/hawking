@@ -1,0 +1,377 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 12781,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 12460,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "greedy_bit_identical": true,
+    "greedy_oracle_12": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 9.5367431640625e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 8.493661880493164e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.9073486328125e-6,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "degrade": {
+    "down_mix": 1.0,
+    "gate_mix": 1.0,
+    "hgravs_rank_cap": 160,
+    "mix_seed": 3232857105,
+    "up_mix": 1.0
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26880,
+      "command_buffers": 9436,
+      "compute_dispatches": 67564,
+      "expert_copy_binds": 0,
+      "expert_nocopy_binds": 13098,
+      "hgravs_factor_dispatches": 26880,
+      "packed_calls": 293,
+      "packed_skipped": 11116,
+      "residual_dispatches": 13440,
+      "routed_expert_waves": 1344,
+      "segment_nocopy_binds": 0,
+      "uniform8_dispatches": 11116
+    },
+    "peak_rss_bytes": 9753788416,
+    "stages": {
+      "cb_encode_ns": 66865875,
+      "cb_submit_ns": 40231716,
+      "cb_wait_minus_gpu_ns": 2684322318,
+      "cb_wait_ns": 3674145998,
+      "deltanet_secs": 2.2959205510000023,
+      "embed_secs": 0.25774100099999997,
+      "gpu_matvec_ns": 989823680,
+      "gpu_matvec_timestamps_missing": 0,
+      "gpu_organ": {
+        "deltanet": 106463868,
+        "gqa": 32440879,
+        "moe_combine_gate": 13729119,
+        "moe_routed": 752969927,
+        "moe_router": 17258159,
+        "moe_shared": 46179074,
+        "other": 0,
+        "terminal": 20782654
+      },
+      "gqa_secs": 0.3040352480000004,
+      "host_excl": {
+        "argmax": 1778084,
+        "buffer_prep": 131668648,
+        "catalog_reparse": 263521785,
+        "combine": 1840651,
+        "dn_conv": 62639730,
+        "dn_gated": 10569579,
+        "dn_rearrange_l2": 16633852,
+        "dn_recurrent": 1205371715,
+        "dn_residual": 300026,
+        "dn_rms": 2543449,
+        "embed": 257741750,
+        "expert_bind": 2101676162,
+        "final_rms": 71003,
+        "gqa_attn": 15886007,
+        "gqa_interleave": 543252,
+        "gqa_kv_copy": 1111377,
+        "gqa_residual": 108363,
+        "gqa_rms": 833929,
+        "gqa_rope": 4604663,
+        "post_rms": 3293792,
+        "silu": 1175518,
+        "topk": 11306118,
+        "vector_clone": 5219121
+      },
+      "host_expert_bind_ns": 2101676162,
+      "host_expert_bind_secs": 2.101676161999999,
+      "mixed_matvec_secs": 2.936074564999993,
+      "moe_combine_secs": 0.4224673230000001,
+      "moe_norm_router_secs": 0.42089660300000026,
+      "moe_routed_secs": 3.467487182999995,
+      "moe_shared_secs": 0.8191130569999995,
+      "terminal_secs": 0.060287293000000006
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true,
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "timing": {
+    "authority": "wall decode_secs/generated_tokens; GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime of weight GEMVs only",
+    "cache_geom_enabled": true,
+    "command_buffers_per_token_reps": [
+      337.0,
+      337.0
+    ],
+    "decode_family_binary": "gk_matvec_binary",
+    "decode_family_enabled": true,
+    "decode_family_hgravs": "gk_matvec_hgravs",
+    "decode_secs": 2.670505541,
+    "dispatches_per_token_reps": [
+      2413.0,
+      2413.0
+    ],
+    "facet1_enabled": true,
+    "facet2_enabled": true,
+    "gk_simd_enabled": false,
+    "gpu_matvec_ns_per_token_reps": [
+      35461543.90909091,
+      35568841.09090909
+    ],
+    "gpu_timestamps_missing": 0,
+    "host_expert_bind_ns_per_token_reps": [
+      43792067.09090909,
+      0.0
+    ],
+    "host_preparation_decode": {
+      "buffer_prep_ns_median": 4805250,
+      "catalog_reparse_ns_median": 8547917,
+      "catalog_reparse_ns_reps": [
+        8456875,
+        8409167,
+        9673542,
+        8547917,
+        8593750,
+        8398208,
+        8685667,
+        8501625,
+        8378084,
+        8673083,
+        8564375
+      ],
+      "decode_tokens": 11,
+      "embed_ns_median": 8559916,
+      "encode_ns_median": 2391154,
+      "expert_bind_ns_median": 40641748,
+      "gpu_ns_median": 35410165,
+      "host_preparation_ns_median": 67144206,
+      "host_preparation_ns_reps": [
+        105956858,
+        74961523,
+        67144206,
+        60140932,
+        67330469,
+        50904109,
+        41873244,
+        50459143,
+        60108095,
+        95406902,
+        79939023
+      ],
+      "vector_clone_ns_median": 192366,
+      "wall_ns_median": 241022208
+    },
+    "label": "DIRTY_ENGINEERING",
+    "packed_calls": 293,
+    "packed_skipped": 11116,
+    "prefill_secs": 5.379711791,
+    "recon_fuse_enabled": true,
+    "reps_host_preparation_decode": [
+      {
+        "buffer_prep_ns_median": 4805250,
+        "catalog_reparse_ns_median": 8547917,
+        "catalog_reparse_ns_reps": [
+          8456875,
+          8409167,
+          9673542,
+          8547917,
+          8593750,
+          8398208,
+          8685667,
+          8501625,
+          8378084,
+          8673083,
+          8564375
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8559916,
+        "encode_ns_median": 2391154,
+        "expert_bind_ns_median": 40641748,
+        "gpu_ns_median": 35410165,
+        "host_preparation_ns_median": 67144206,
+        "host_preparation_ns_reps": [
+          105956858,
+          74961523,
+          67144206,
+          60140932,
+          67330469,
+          50904109,
+          41873244,
+          50459143,
+          60108095,
+          95406902,
+          79939023
+        ],
+        "vector_clone_ns_median": 192366,
+        "wall_ns_median": 241022208
+      },
+      {
+        "buffer_prep_ns_median": 5296205,
+        "catalog_reparse_ns_median": 8678458,
+        "catalog_reparse_ns_reps": [
+          8678458,
+          8521916,
+          8675083,
+          8718417,
+          10074917,
+          8858917,
+          10120125,
+          8642375,
+          8691958,
+          8605959,
+          8616458
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8690791,
+        "encode_ns_median": 2679039,
+        "expert_bind_ns_median": 0,
+        "gpu_ns_median": 35634121,
+        "host_preparation_ns_median": 25500341,
+        "host_preparation_ns_reps": [
+          25613306,
+          25447265,
+          25500341,
+          26016400,
+          29536074,
+          26578904,
+          28332204,
+          25270085,
+          25244145,
+          25148555,
+          24941052
+        ],
+        "vector_clone_ns_median": 204590,
+        "wall_ns_median": 196901375
+      }
+    ],
+    "steady_state_tok_s": 4.119070854432089,
+    "wait_minus_gpu_ns_per_token_reps": [
+      92926445.63636364,
+      89852782.18181819
+    ],
+    "wall_ns_per_token_reps": [
+      242773197.0,
+      198238583.3636364
+    ]
+  }
+}

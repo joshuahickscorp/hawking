@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.special_unit.reconstruction_is_free.v1",
+  "date": "2026-08-16",
+  "claim": "At the production tpr64 launch geometry, reconstruction costs NOTHING on Qwen3.8. Codec choice is not constrained by reconstruction time.",
+  "evidence": {
+    "activation": "REAL captured BF16 post-norm hidden, token 192 of a 256-token holdout - explicitly not synthetic",
+    "organs": 2,
+    "variants": 33,
+    "gpu_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+    "f32_control_tpr64_ns": {
+      "gate": 15125,
+      "down": 7083
+    },
+    "codecs_at_tpr64_ns": "15,124-15,541 for q4/q3/q2/binary/ternary/additive_q2q2/hadamard/rice - i.e. the SAME as uncompressed f32",
+    "recon_excess_ns_zero_on": "32 of 33 variants",
+    "cosine_1.000000_on": "32 of 33 variants",
+    "same_codecs_at_tg256_ns": "~26,500 - the penalty is LAUNCH GEOMETRY, not the codec"
+  },
+  "what_this_retires": "The 5.9x rice reconstruction penalty. It was an artifact twice over: first measured against Q80's serial 1-thread-per-row extract, then TRANSFERRED to Qwen3.8 without re-measurement. Both steps were wrong and the second was flagged as unresolved by the lane that did it.",
+  "corroboration": "Q80's reconstruction fix reached the same conclusion from the opposite direction - in-register consumption took gpu_matvec from 867.0 to 36.6 ms without changing a single codec.",
+  "consequence_for_G006": "The descent under 1.5 BPW can select on QUALITY ALONE. Take the lowest BPW that preserves coherence; it will not cost time at tpr64. This removes the tradeoff the first descent screen was built around.",
+  "how_this_survived": "The lane DIED without writing grok-report.md or an exit code. tools/lane_health.py detected it processless and idle, preserved the worktree to 709820607, and the measurement survived. Without that tool this result would have been reaped."
+}

@@ -1,0 +1,28 @@
+{
+  "q80_lm_head": {
+    "n": 192,
+    "q4": {
+      "top1_agree": 0.9427083333333334,
+      "ref_top1_in_pred_top5": 1.0,
+      "pred_top1_in_ref_top5": 1.0
+    },
+    "q3": {
+      "top1_agree": 0.875,
+      "ref_top1_in_pred_top5": 1.0,
+      "pred_top1_in_ref_top5": 0.9947916666666666
+    }
+  },
+  "qwen38_lm_head": {
+    "n": 128,
+    "q4": {
+      "top1_agree": 0.890625,
+      "ref_top1_in_pred_top5": 1.0,
+      "pred_top1_in_ref_top5": 1.0
+    },
+    "q3": {
+      "top1_agree": 0.84375,
+      "ref_top1_in_pred_top5": 1.0,
+      "pred_top1_in_ref_top5": 1.0
+    }
+  }
+}

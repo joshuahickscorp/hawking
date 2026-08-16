@@ -1,0 +1,44 @@
+{
+  "schema": "hawking.dsv4f.unblock_requires_reseal.v1",
+  "date": "2026-08-16",
+  "THE_FORK": "DSV4F can clear the 50 TPS gate, or keep hc_sha bit-identity. Not both.",
+  "census_exact_gpu_unique_bos": {
+    "MLA": 4.599,
+    "routed_top6": 3.449,
+    "shared": 1.082,
+    "lm_head": 1.059,
+    "router": 0.09,
+    "total_gb": 10.280061568,
+    "corrects": "the 4.7/3.4/1.1 split carried in earlier ledger text omitted lm_head and router"
+  },
+  "measured_bpw_vs_entropy": {
+    "routed": "4.25 native / H~3.88",
+    "MLA_shared": "8.0005 native / H~6.54-6.85",
+    "head_router": "16 native / H~10.5",
+    "conclusion": "Q80's compression rates do NOT transfer to DSV4F"
+  },
+  "option_C1_keep_bit_identity": {
+    "bytes_gb": 8.839,
+    "floor_ms": 21.48,
+    "roof_tps": 46.56,
+    "clears_50": false,
+    "short_by_gb": 0.608,
+    "hc_sha": "c94da765 PRESERVED"
+  },
+  "option_C2_reseal": {
+    "bytes_gb": 7.042,
+    "floor_ms": 17.11,
+    "roof_tps": 58.44,
+    "clears_50": true,
+    "with_pos_gt_0_indexer": {
+      "bytes_gb": 7.843,
+      "floor_ms": 19.06,
+      "still_under_20ms": true
+    },
+    "hc_sha": "MUST reseal SEALED_GRAPH_HC_BF16_SHA256",
+    "replacement_contract": "greedy-token identity + logit delta <= 0.05 + HC cosine >= 0.995 (wq_a probe measured 0.99653)"
+  },
+  "WHY_THIS_IS_NOT_MINE_TO_DECIDE": "Resealing hc_sha abandons bit-identity as DSV4F's correctness contract. That contract is what the e2e assert enforces, what every DSV4F result today was validated against, and what makes 'the graph is unchanged' checkable. Trading it for a TPS gate is a change in what correctness MEANS for this model, not an optimisation. The lane is explicit that the assert must not simply be dropped - C2 requires a NEW sealed hash plus the behavioural contract above.",
+  "note_on_the_ALU": "DSV4F's ALU is idle at 0.77%, so extra reconstruction cost is affordable if it cuts bytes - the opposite of Q80's trade. That is why a lower-BPW DSV4F representation is viable at all.",
+  "recommendation": "C2 is the only route to G004. I would take it, because the replacement contract is behavioural rather than weaker in kind - greedy-token identity is what actually matters for generation, and logit<=0.05 with HC cosine>=0.995 is a real bound, not a hand-wave. But it should be an explicit authorisation, not something absorbed silently in a lane."
+}

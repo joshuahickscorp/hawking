@@ -1,0 +1,343 @@
+{
+  "schema": "hawking.ascent.q80_terminal_head_pack_design.v1",
+  "date": "2026-08-16",
+  "lane": "q80-terminal-head",
+  "status": "MEASURED_PACK_DESIGN_NO_ARTIFACT_REPACKED",
+  "gpu_used": false,
+  "remote_touched": false,
+  "evidence": [
+    "receipts/ascent-2026-08-16/Q80_TERMINAL_HEAD_PACK_PROBE.json",
+    "receipts/ascent-2026-08-16/Q80_TERMINAL_HEAD_PACK_PROBE_FOLLOWUP.json",
+    "receipts/QWEN80_TOKEN_NS_LEDGER.json",
+    "receipts/QWEN80_BIT_BUDGET_LEDGER.json",
+    "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json",
+    "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+    "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md",
+    "quality-candidates/mixed-1p5-v1/catalog.hq80m15",
+    "quality-candidates/mixed-1p5-ne4-v1/catalog.hq80m15"
+  ],
+  "geometry": {
+    "model": "Qwen3-Coder-Next",
+    "lm_head": {"name": "lm_head.weight", "shape": [151936, 2048], "params": 311164928, "tied": false},
+    "embed": {"name": "model.embed_tokens.weight", "shape": [151936, 2048], "params": 311164928, "tied": false},
+    "tokenizer_vocab": 151669,
+    "reserved_lm_head_tail_rows_masked": 267,
+    "qwen38": {
+      "lm_head": "language_model.lm_head.weight",
+      "embed": "language_model.model.embed_tokens.weight",
+      "shape": [248320, 5120],
+      "params": 1271398400,
+      "tied": false,
+      "q4_table_bytes_measured": 675430440
+    }
+  },
+  "bytes_today": {
+    "q4_vehicle_traffic": {
+      "lm_head": 165306368,
+      "embed_row": 1088,
+      "embed_table": 165306368,
+      "note": "theoretical Q4 group-64 codes+f16 scales. Catalog payload is 165306651 (container header)."
+    },
+    "mixed_1p5_v1_catalog": {
+      "lm_head": 320889115,
+      "embed_table": 320889115,
+      "codec": "HGRAVU01 bits=8 group=64",
+      "codec_bpw": 8.250007629394531,
+      "flags": "SENSITIVE_UNTOUCHED",
+      "embed_row_traffic": 2112
+    },
+    "mixed_1p5_ne4_v1_catalog": {
+      "lm_head": 165306651,
+      "embed_table": 165306651,
+      "codec": "HGRAVU01 bits=4 group=64",
+      "codec_bpw": 4.250007152557373,
+      "note": "Already packed. Not token-identical to mixed-1p5 Q8 on the 384-hidden screen."
+    },
+    "qwen38_uniform_q4_v1": {
+      "lm_head": 675430440,
+      "embed_table": 675430440,
+      "embed_row_traffic": 2720
+    }
+  },
+  "time_share_honesty": {
+    "q4_vehicle_terminal_gpu_ns_median": 1253249,
+    "q4_vehicle_n_tokens": 16,
+    "implied_sequential_gb_s": 131.9,
+    "lm_head_ms_q4": 1.25,
+    "lm_head_ms_q8_scaled": 2.43,
+    "embed_gpu_ns_median": 4874,
+    "q4_token_ms": 225,
+    "mixed_token_ms": 1171,
+    "lm_head_pct_of_q4_token": 0.56,
+    "lm_head_pct_of_mixed_token": 0.21,
+    "byte_share_q4_vehicle": 0.147,
+    "note": "14.7% of per-token BYTES is not 14.7% of token TIME. lm_head is a single sequential uniform matvec and already runs at ~132 GB/s on the Q4 vehicle. Attention + mixed expert reconstruction remain the time wall. Rank still uses bytes_saved/recon_ns as required."
+  },
+  "measurement": {
+    "n_hiddens": 384,
+    "hidden_source": "source-bf16-capture-n192-scale64 hidden/L47, 64 probes, one-plus-fill sample, seed=80",
+    "hidden_caveat": "L47 router-input (post-mixer residual entering the last MoE), then RMSNorm(model.norm). Capture did not run final_norm/lm_head. Not the exact pre-lm_head hidden. Screen, not a generate certificate.",
+    "authority": "source BF16 lm_head, reserved tail 267 rows masked, greedy argmax",
+    "svd_energy_vs_full_frob": {
+      "16": 0.1482,
+      "32": 0.1646,
+      "64": 0.1910,
+      "128": 0.2330,
+      "160": 0.2511,
+      "256": 0.2992
+    },
+    "headline_greedy_vs_bf16": {
+      "q8": {"match": 382, "n": 384, "rate": 0.9948, "mismatch": 2, "identity_k_as_draft": 2},
+      "q6": {"match": 382, "n": 384, "rate": 0.9948, "mismatch": 2, "identity_k_as_draft": 2},
+      "q4": {"match": 373, "n": 384, "rate": 0.9714, "mismatch": 11, "identity_k_as_draft": 4},
+      "q3": {"match": 347, "n": 384, "rate": 0.9036, "mismatch": 37, "identity_k_as_draft": 8},
+      "q2": {"match": 268, "n": 384, "rate": 0.6979, "mismatch": 116, "identity_k_as_draft": 1024},
+      "binary_g128": {"match": 284, "n": 384, "rate": 0.7396, "mismatch": 100, "identity_k_as_draft": null},
+      "svd_r256_replace": {"match": 35, "n": 384, "rate": 0.0911, "mismatch": 349}
+    },
+    "q4_vs_q8_artifact": {
+      "match": 371,
+      "n": 384,
+      "rate": 0.9661,
+      "mismatch": 13,
+      "identity_k_q4_draft_rescored_on_q8": 4,
+      "alters_emitted_tokens": true
+    }
+  },
+  "q80_lesson_applied": {
+    "mixed_vs_q4_per_byte": "5.9x slower (2.57 vs 15.2 GB/s); mixed token 1171 ms vs Q4 225 ms",
+    "consequence": "Do not put binary / rice_q1 / hgravs01 on lm_head. Those codecs buy BPW and lose far more to reconstruction. lm_head is already a cheap sequential uniform organ.",
+    "rank_key": "bytes_saved / reconstruction_ns, then greedy-token identity as a hard gate"
+  },
+  "table": [
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "bytes_today_which": "Q4-vehicle traffic and mixed-1p5-ne4 catalog (165306651 with header). mixed-1p5-v1 is 320889115 Q8.",
+      "candidate": "keep HGRAVU01 q4 (incumbent Q4 vehicle / ne4)",
+      "projected_bytes": 165306368,
+      "reconstruction_cost_class": "uniform_dequant_gemv; measured 1.25 ms @ 131.9 GB/s on this tensor",
+      "quality": "vs BF16: 373/384 greedy match (97.14%), 11 flips. vs mixed-1p5 Q8: 371/384 (96.61%), 13 flips. weight cosine 0.99364, logit cosine 0.99622.",
+      "alters_emitted_tokens": true,
+      "alters_vs": ["source_bf16", "mixed-1p5 Q8 artifact"],
+      "bytes_saved_per_recon_ns_vs_q8": 124.2,
+      "verdict": "KEEP as the Q4-vehicle / ne4 incumbent. Do not advertise as token-identical to mixed-1p5 or to BF16. The 12-token reverse-string generate is too small a gate: this 384-hidden screen already flips 3.4% vs Q8."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 320889115,
+      "bytes_today_which": "mixed-1p5-v1 catalog, SENSITIVE_UNTOUCHED Q8",
+      "candidate": "keep HGRAVU01 q8 (incumbent mixed-1p5)",
+      "projected_bytes": 320889115,
+      "reconstruction_cost_class": "uniform_dequant_gemv; scaled 2.43 ms @ 131.9 GB/s",
+      "quality": "vs BF16: 382/384 (99.48%), 2 flips, both near-tie (margins 0.0027 and 0.013). weight cosine 0.999980, logit cosine 0.999988. Draft coverage vs BF16 hits 100% at k=2.",
+      "alters_emitted_tokens": true,
+      "alters_vs": ["source_bf16 (2 near-tie flips)"],
+      "alters_note": "Campaign grades mixed-1p5 against the artifact oracle, not BF16. Q8 is the mixed-1p5 authority.",
+      "bytes_saved_per_recon_ns_vs_q8": 0.0,
+      "verdict": "KEEP for mixed-1p5. Highest-fidelity packed head we have. Still not bit-identical to BF16."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 320889115,
+      "candidate": "drop mixed-1p5 lm_head Q8 → Q4 full eval (already on disk as mixed-1p5-ne4)",
+      "projected_bytes": 165306651,
+      "reconstruction_cost_class": "uniform_dequant_gemv CHEAPER than Q8 (fewer bytes, same kernel family)",
+      "quality": "13/384 greedy flips vs Q8 authority (3.39%). Mean top1-top2 margin on the Q8 side is 1.72; some flips have margin 0.15, not just ties.",
+      "alters_emitted_tokens": true,
+      "alters_vs": ["mixed-1p5 Q8", "source_bf16"],
+      "bytes_saved_per_recon_ns_vs_q8": 124.2,
+      "verdict": "CAPABILITY CHANGE, not an optimization. Reject as a silent overlay onto mixed-1p5. ne4 is a different artifact and must be generate-gated on its own."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "candidate": "HGRAVU01 q3 full eval",
+      "projected_bytes": 126410752,
+      "reconstruction_cost_class": "uniform_dequant_gemv, 0.96 ms",
+      "quality": "347/384 (90.36%), 37 flips. weight cosine 0.9670, logit cosine 0.9800.",
+      "alters_emitted_tokens": true,
+      "bytes_saved_per_recon_ns_vs_q4": 40.6,
+      "verdict": "REJECT as full eval. Capability change."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "candidate": "HGRAVU01 q2 full eval",
+      "projected_bytes": 87515136,
+      "reconstruction_cost_class": "uniform_dequant_gemv, 0.66 ms",
+      "quality": "268/384 (69.79%), 116 flips. weight cosine 0.7669.",
+      "alters_emitted_tokens": true,
+      "verdict": "REJECT as full eval. Capability change."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "candidate": "HGRAVB01 binary g128 full eval",
+      "projected_bytes": 43757568,
+      "reconstruction_cost_class": "plain sign*mean-abs is cheap sequential; a rice/outlier residual on top would fall to mixed 2.57 GB/s and become a LOSS",
+      "quality": "284/384 (73.96%), 100 flips. weight cosine 0.7943.",
+      "alters_emitted_tokens": true,
+      "verdict": "REJECT. Capability change. Also the wrong codec family for this organ under the Q80 reconstruction lesson."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "candidate": "replace with SVD r256 f16 (or hgravs01-style two-matvec)",
+      "projected_bytes": 78839808,
+      "reconstruction_cost_class": "two_matvec, cheap; CPU 9 ms-class for r256 vs 15 ms materialized gemv (DIRTY, one hidden)",
+      "quality": "35/384 (9.11%) greedy match. r256 captures only 29.92% of ||W||_F^2. r160 (hgravs analog) captures 25.11%. lm_head is HIGH RANK.",
+      "alters_emitted_tokens": true,
+      "verdict": "REJECT. Structural negative: low-rank is the wrong tool for this matrix. Do not port down_proj's HGRAVS01 here."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 320889115,
+      "candidate": "two-pass: Q3 uniform DRAFT + exact rescore of k=8 authority rows",
+      "projected_bytes_traffic": 126419456,
+      "projected_bytes_storage_if_q3_plus_q8": 447299867,
+      "projected_bytes_storage_if_q3_plus_q4": 291717403,
+      "reconstruction_cost_class": "uniform_dequant_gemv on 126 MB then 8 row gathers (~17 KB). ~0.96 ms sequential.",
+      "quality": "On 384 L47-proxy hiddens, Q3 top-8 contains the BF16 argmax 384/384 and the Q8 argmax 384/384. Q3 top-4 is 99.5%. Q3 used as full eval (no rescore) flips 37/384 — that path is a capability change. Exact rescore of those 8 rows is NOT.",
+      "alters_emitted_tokens": false,
+      "alters_note": "False only if the rescore is exact against the same authority matrix and k>=8 holds on generate, not just this screen. Sampling / top-p is a different gate: a draft that covers greedy argmax can still miss nucleus mass and change sampled tokens. GREEDY identity is the gate that passed here. Sampling is UNMEASURED and must be treated as a capability change until measured.",
+      "bytes_saved_per_recon_ns_vs_q8": 202.9,
+      "bytes_saved_per_recon_ns_vs_q4": 40.5,
+      "verdict": "ONLY traffic mechanism that cleared the greedy-identity gate. Storage tax is real (must keep exact rows). Best vs mixed-1p5 Q8 traffic (321→126 MB). Marginal vs a Q4-only vehicle (165→126 MB) and costs a second tensor. Do not ship without a generate-id identity gate. Recommend k=32 in any implementation (35 KB) as a screen margin; k=8 was exact-100 on this set."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 320889115,
+      "candidate": "two-pass: Q4 uniform DRAFT + exact rescore of k=4 authority rows",
+      "projected_bytes_traffic": 165314816,
+      "reconstruction_cost_class": "uniform_dequant_gemv 1.25 ms + 4 row gathers",
+      "quality": "Q4 top-4 contains BF16 argmax 384/384 and Q8 argmax 384/384. Q4 top-2 is 99.22% vs BF16 / 99.22% vs Q8. Q4 full eval (no rescore) flips 11 vs BF16 and 13 vs Q8.",
+      "alters_emitted_tokens": false,
+      "alters_note": "Same conditions as the Q3 two-pass row. Sampling UNMEASURED.",
+      "bytes_saved_per_recon_ns_vs_q8": 124.2,
+      "verdict": "Identity-preserving vs Q8/BF16 on this screen, but traffic equals just running Q4. Only useful if authority stays Q8 (or BF16) and you refuse to change tokens. Storage = Q4 + authority."
+    },
+    {
+      "tensor": "lm_head.weight",
+      "bytes_today": 165306368,
+      "candidate": "two-pass: SVD r256 / prefix-d512 cheap projection + exact rescore",
+      "projected_bytes_traffic_if_it_worked": "r256 f16 factors 78.8 MB + k rows; prefix-d512 Q4 41.3 MB + k rows",
+      "reconstruction_cost_class": "two_matvec or prefix sequential read, cheap",
+      "quality": "NO k<=1024 reached 100% coverage. SVD r256 k=1024 hit 87.8%. prefix d512 k=1024 hit 98.2%. SVD r256 k=32 hit 47.9%.",
+      "alters_emitted_tokens": true,
+      "alters_note": "Using these drafts to pick a candidate set and then even exact-rescoring that set WILL change the greedy token whenever the true argmax is outside the set. That happened on this screen at every k we tried.",
+      "verdict": "REJECT. This is a capability change, not an optimization. The 'cheap projection' idea is the right SHAPE and the wrong BASIS for this matrix. Uniform-quant drafts work; low-rank and row-prefix drafts do not."
+    },
+    {
+      "tensor": "model.embed_tokens.weight",
+      "bytes_today_table_q4": 165306651,
+      "bytes_today_table_q8": 320889115,
+      "bytes_today_traffic": 1088,
+      "candidate": "keep current uniform row gather (Q4 or Q8 matching the pack)",
+      "projected_traffic": 1088,
+      "reconstruction_cost_class": "row_gather; measured ~5 us GPU on the Q4 vehicle (launch-bound, not bandwidth)",
+      "quality": "Q8 row cosine mean 0.999981 min 0.999878 (520 rows). Q4 mean 0.993933 min 0.978141. Q3 mean 0.9687 min 0.9273. Q2 mean 0.7759 min 0.6929. binary min 0.3118.",
+      "alters_emitted_tokens": "INDIRECT if the row changes. A gather error shifts the residual of every subsequent layer. Not a logit-local error. Token identity after 48 layers UNMEASURED for any embed requant.",
+      "verdict": "LEAVE. Embed is a TABLE, not traffic. Exactly one row is gathered per token (1088 B Q4 / 2112 B Q8 / 2720 B on Qwen3.8 Q4). Compressing the table cannot move TPS. Sub-Q4 and binary have an ugly min-row-cosine tail; bit-budget ledger already records GLM R0 sub-bit embed as catastrophic. Do not spend reconstruction cost on 1 KB."
+    },
+    {
+      "tensor": "model.embed_tokens.weight",
+      "bytes_today_traffic": 1088,
+      "candidate": "Q3/Q2/binary embed, or cluster/interpolate a row from centroids",
+      "projected_traffic": "770 / 514 / 258 B",
+      "reconstruction_cost_class": "row_gather, still launch-bound",
+      "quality": "Q2 min row cosine 0.693; binary min 0.312. Cluster interpolation would not be the source row.",
+      "alters_emitted_tokens": true,
+      "verdict": "REJECT. Capability risk on the first residual of every token, for a traffic save of <1 KB. Storage-only win is not the Q80 lever."
+    },
+    {
+      "tensor": "Qwen3.8 language_model.lm_head.weight",
+      "bytes_today": 675430440,
+      "candidate": "same family as Q80: keep Q4 full eval; optional Q3-draft+k rescore only if generate-gated",
+      "projected_bytes_q4": 675430440,
+      "projected_bytes_q3_draft": 516505600,
+      "reconstruction_cost_class": "uniform_dequant_gemv, sequential. At the measured Qwen3.8 406 GB/s this is 1.66 ms Q4 / 1.27 ms Q3. At the Q80 lm_head 132 GB/s it is 5.12 / 3.91 ms.",
+      "quality": "Not re-measured on Qwen3.8 activations. Q80 result (high-rank, uniform drafts work, SVD does not) is the prior, not a certificate.",
+      "alters_emitted_tokens": "Q4 is the incumbent artifact. Further full-eval crush is a capability change until measured. Two-pass with exact rescore is identity-preserving only under the same k-coverage gate.",
+      "verdict": "Same organ, bigger. 675 MB is 5.0% of Qwen3.8's 13.62 GB active bytes and is REAL traffic (unlike the same-sized embed table). Do not confuse the two. Do not apply mixed expert codecs. Q3-draft+rescore is the only plausible traffic cut, and only after a Qwen3.8 generate-identity gate."
+    },
+    {
+      "tensor": "Qwen3.8 language_model.model.embed_tokens.weight",
+      "bytes_today_table": 675430440,
+      "bytes_today_traffic": 2720,
+      "candidate": "keep Q4 row gather",
+      "projected_traffic": 2720,
+      "reconstruction_cost_class": "row_gather, launch-bound",
+      "quality": "untied, same shape as lm_head, NOT traffic",
+      "alters_emitted_tokens": "INDIRECT if requantized",
+      "verdict": "LEAVE. Same confusion trap the Q80 note already called: the table is 675,430,440 B; the per-token gather is 2,720 B."
+    }
+  ],
+  "pack_design": {
+    "do_not_repack_mixed_1p5_sensitive_3pct": true,
+    "lm_head_codec": "HGRAVU01",
+    "embed_codec": "HGRAVU01",
+    "mixed_1p5_bits": 8,
+    "q4_vehicle_and_ne4_bits": 4,
+    "forbidden_on_these_organs": [
+      "HGRAVB01 binary as a replacement",
+      "HGRAVR02 rice residual",
+      "HGRAVS01 / any SVD replacement",
+      "silent Q8→Q4 overlay on mixed-1p5"
+    ],
+    "optional_two_pass_layout_not_to_ship_without_generate_gate": {
+      "segment": "99_terminal",
+      "tensors": [
+        "model.norm.weight  (incumbent uniform)",
+        "lm_head.weight     (incumbent uniform; AUTHORITY for rescore)",
+        "lm_head.draft.weight  (HGRAVU01 bits=3 group=64; OPTIONAL second payload)"
+      ],
+      "runtime": "y_draft = draft @ h; idx = topk(y_draft, k=32); y_exact = gather_rows(authority, idx) @ h; greedy(y_exact) with reserved tail masked",
+      "storage_tax_q3_plus_q8": 447299867,
+      "traffic_q3_plus_k32_q8_rows": 126478336,
+      "identity_gate": "generated ids must equal authority full-eval ids on the certified prompt AND a broader held-out set. One 12-token reverse-string is not enough. 384 L47-proxy hiddens is a screen, not that gate.",
+      "sampling_gate": "top-p / temperature is a capability change until the draft set is shown to cover the nucleus, not just the greedy argmax."
+    }
+  },
+  "ranking_identity_preserving_only": [
+    {
+      "rank": 1,
+      "candidate": "Q3 draft + exact k=8..32 rescore, vs mixed-1p5 Q8 traffic",
+      "bytes_saved": 194469659,
+      "recon_ns": 958000,
+      "bytes_per_ns": 202.9,
+      "why": "largest identity-preserving traffic cut; same cheap uniform class; storage tax"
+    },
+    {
+      "rank": 2,
+      "candidate": "Q4 draft + exact k=4 rescore, vs mixed-1p5 Q8 traffic",
+      "bytes_saved": 155574299,
+      "recon_ns": 1253000,
+      "bytes_per_ns": 124.2,
+      "why": "identity-preserving vs Q8, but traffic equals Q4 full eval; only makes sense if Q8 remains authority"
+    },
+    {
+      "rank": 3,
+      "candidate": "leave incumbent (Q8 on mixed-1p5, Q4 on Q4 vehicle)",
+      "bytes_saved": 0,
+      "why": "zero risk, and lm_head is already <1% of Q80 token time"
+    }
+  ],
+  "central_risk": {
+    "statement": "lm_head is the most accuracy-sensitive tensor: a logit error becomes the emitted token with no downstream layer to absorb it.",
+    "measured_not_assumed": true,
+    "what_we_measured": "On 384 real late-layer (L47 router-input, RMSNorm'd) hiddens, even Q8 already flips 2 near-tie greeds vs BF16. Q4 flips 11 vs BF16 and 13 vs Q8. Q3/Q2/binary/SVD flip tens to hundreds. The risk is real and shows up as soon as you leave Q8, not only at sub-bit.",
+    "what_two_pass_changes": "A cheap draft that misses the true argmax is the same risk. SVD and prefix drafts miss it more than half the time at k=32. A Q3/Q4 uniform draft plus exact rescore did not miss it on this screen."
+  },
+  "claim_boundary": {
+    "gpu_benchmark_not_run": true,
+    "generate_not_run": true,
+    "no_repack": true,
+    "no_push_merge_remote": true,
+    "hidden_is_l47_router_input_not_post_final_moe": true,
+    "n_hidden": 384,
+    "qwen38_quality_not_measured": true,
+    "sampling_distribution_not_measured": true,
+    "12_token_generate_not_reused_as_lm_head_certificate": true
+  }
+}

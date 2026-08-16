@@ -1,0 +1,870 @@
+{
+  "activation": {
+    "not_synthetic": true,
+    "note": "first holdout token of the 256-token real capture",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+    "sha256_self": "fdd937e20500b862452cf4732aa525087e1a3d209c1271e6c021811620687512",
+    "status": "CAPTURED_REAL_BF16_POST_NORM_HIDDEN",
+    "token_index": 192
+  },
+  "control": {
+    "gbps": 54748375.629935764,
+    "gpu_ns": [
+      8333,
+      20125,
+      20083,
+      24041,
+      16500
+    ],
+    "kernel": "disc_stream_control",
+    "median_gpu_ns": 20083,
+    "threadgroups": 60,
+    "threads_per_threadgroup": 256,
+    "traffic_bytes": 1099511627776
+  },
+  "date": "2026-08-16",
+  "device_name": "Apple M3 Ultra",
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "honest_ceiling_gbps": 411.51,
+  "lane": "qwen38-descent-rescreen",
+  "launch_primary": "64 threads/row, TG 128, 2 rows/TG (production Qwen3.8 q4 winner)",
+  "organs": [
+    {
+      "cols": 5120,
+      "name": "gate",
+      "rows": 17408,
+      "variants": [
+        {
+          "bandwidth_floor_ns": 877735.8936484491,
+          "correctness": {
+            "cosine": 0.9999999999999698,
+            "max_abs": 1.1920928955078125e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 57.28329628975808,
+          "frac_of_qwen38_achieved": 58.03212519989746,
+          "gpu_ns": [
+            15499,
+            15124,
+            15125,
+            15125,
+            14958
+          ],
+          "kernel": "disc_f32_tpr64",
+          "median_gpu_ns": 15125,
+          "name": "f32_tpr64",
+          "note": "uncompressed occupancy-tile control",
+          "packed_gbps": 23572.649256198347,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.017231834894128037,
+          "traffic_bytes": 356536320
+        },
+        {
+          "bandwidth_floor_ns": 116567.60216642049,
+          "correctness": {
+            "cosine": 0.999999999999975,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 7.423448338573672,
+          "frac_of_qwen38_achieved": 7.520490462349709,
+          "gpu_ns": [
+            15916,
+            15999,
+            15500,
+            14999,
+            15125
+          ],
+          "kernel": "disc_q4_nibble_tpr64",
+          "median_gpu_ns": 15500,
+          "name": "prod_q4_nibble_g64",
+          "note": "production Qwen3.8 q4 layout, occupancy tile",
+          "packed_gbps": 3054.823225806452,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.13297005095696365,
+          "traffic_bytes": 47349760
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.9999999999999772,
+            "max_abs": 1.4901161193847656e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 7.566026411676804,
+          "frac_of_qwen38_achieved": 7.664932369938754,
+          "gpu_ns": [
+            15499,
+            19125,
+            14874,
+            15041,
+            15208
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 15208,
+          "name": "uniform_q4_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 3113.4955286691215,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.13046429527831443,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.9999999999999805,
+            "max_abs": 1.7881393432617188e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 4.3353351293764675,
+          "frac_of_qwen38_achieved": 4.392008269546308,
+          "gpu_ns": [
+            26375,
+            26749,
+            26541,
+            26541,
+            26749
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 26541,
+          "name": "uniform_q4_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 1784.0337590897102,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.22768627439385478,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 89140.62038404727,
+          "correctness": {
+            "cosine": 0.9999999999999784,
+            "max_abs": 1.1920928955078125e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 5.8175455804675025,
+          "frac_of_qwen38_achieved": 5.8935947361353564,
+          "gpu_ns": [
+            15375,
+            15249,
+            15125,
+            14916,
+            14749
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 15125,
+          "name": "uniform_q3_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 2393.978181818182,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.16967573183624365,
+          "traffic_bytes": 36208920
+        },
+        {
+          "bandwidth_floor_ns": 89140.62038404727,
+          "correctness": {
+            "cosine": 0.9999999999999819,
+            "max_abs": 1.1920928955078125e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 3.315262307545721,
+          "frac_of_qwen38_achieved": 3.358600670059428,
+          "gpu_ns": [
+            26374,
+            26666,
+            26541,
+            26499,
+            26541
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 26541,
+          "name": "uniform_q3_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 1364.2635921781396,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.29774304784566896,
+          "traffic_bytes": 36208920
+        },
+        {
+          "bandwidth_floor_ns": 61712.94928606598,
+          "correctness": {
+            "cosine": 0.9999999999999861,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 3.962314566174132,
+          "frac_of_qwen38_achieved": 4.014111440488225,
+          "gpu_ns": [
+            15374,
+            15375,
+            15125,
+            15375,
+            15125
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 15374,
+          "name": "uniform_q2_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 1630.532067126317,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.24912113548057666,
+          "traffic_bytes": 25067800
+        },
+        {
+          "bandwidth_floor_ns": 61712.94928606598,
+          "correctness": {
+            "cosine": 0.9999999999999865,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 2.2808381061989333,
+          "frac_of_qwen38_achieved": 2.3106540843966594,
+          "gpu_ns": [
+            27000,
+            26708,
+            26833,
+            26499,
+            26625
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 26708,
+          "name": "uniform_q2_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 938.587689081923,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.43277789036134,
+          "traffic_bytes": 25067800
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.9999999999994067,
+            "max_abs": 1.5497207641601562e-6,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 24.88411108753911,
+          "frac_of_qwen38_achieved": 25.20940559732452,
+          "gpu_ns": [
+            4583,
+            4625,
+            4375,
+            4624,
+            4791
+          ],
+          "kernel": "disc_uniform_bits_serial",
+          "median_gpu_ns": 4624,
+          "name": "uniform_q4_g64/disc_uniform_bits_serial",
+          "note": "DISPROVEN PATH: 1 thread/row serial extract",
+          "packed_gbps": 10240.060553633219,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.03966773417720449,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 30856.772525849337,
+          "correctness": {
+            "cosine": 0.999999999999974,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 1.9757788083294987,
+          "frac_of_qwen38_achieved": 2.0016069360307043,
+          "gpu_ns": [
+            16124,
+            22500,
+            15124,
+            15416,
+            15374
+          ],
+          "kernel": "disc_binary_tpr64",
+          "median_gpu_ns": 15416,
+          "name": "binary_g128/disc_binary_tpr64",
+          "note": "in-register sign*scale, occupancy tile",
+          "packed_gbps": 813.052737415672,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.4995985885136142,
+          "traffic_bytes": 12534021
+        },
+        {
+          "bandwidth_floor_ns": 30856.772525849337,
+          "correctness": {
+            "cosine": 0.9999999999999819,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 1.14760582152924,
+          "frac_of_qwen38_achieved": 1.1626077587826131,
+          "gpu_ns": [
+            26708,
+            26249,
+            26499,
+            26624,
+            26541
+          ],
+          "kernel": "disc_binary_tg256",
+          "median_gpu_ns": 26541,
+          "name": "binary_g128/disc_binary_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 472.2512716174975,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.8601353228943848,
+          "traffic_bytes": 12534021
+        },
+        {
+          "bandwidth_floor_ns": 61713.07976366322,
+          "correctness": {
+            "cosine": 0.9999999999999842,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 3.919744735494182,
+          "frac_of_qwen38_achieved": 3.97098512088432,
+          "gpu_ns": [
+            15833,
+            15999,
+            15541,
+            15541,
+            15333
+          ],
+          "kernel": "disc_ternary_tpr64",
+          "median_gpu_ns": 15541,
+          "name": "ternary_t0.7_g128",
+          "note": "2-bit in-register {0,+s,-s}",
+          "packed_gbps": 1613.0141561032108,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.2518266801708148,
+          "traffic_bytes": 25067853
+        },
+        {
+          "bandwidth_floor_ns": 123425.64254062039,
+          "correctness": {
+            "cosine": 0.9999999999999664,
+            "max_abs": 1.4901161193847656e-7,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 8.055074086146346,
+          "frac_of_qwen38_achieved": 8.160373060536886,
+          "gpu_ns": [
+            15166,
+            14958,
+            14833,
+            15125,
+            15166
+          ],
+          "kernel": "disc_additive_tpr64",
+          "median_gpu_ns": 15125,
+          "name": "additive_q2q2_g64",
+          "note": "two in-register q2 lookups",
+          "packed_gbps": 3314.743537190083,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.1225434171430158,
+          "traffic_bytes": 50135496
+        },
+        {
+          "bandwidth_floor_ns": 58284.80059084195,
+          "correctness": {
+            "cosine": 1.0,
+            "max_abs": 0.8912336826324463,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 3.3192587107964515,
+          "frac_of_qwen38_achieved": 3.362649315804647,
+          "gpu_ns": [
+            17250,
+            18374,
+            17333,
+            17916,
+            17333
+          ],
+          "kernel": "disc_walsh_hadamard_x+disc_uniform_bits_tpr64",
+          "median_gpu_ns": 17333,
+          "name": "hadamard_q2_g128",
+          "note": "per-token WH(x) + in-register q2; WH is O(cols log 128)",
+          "packed_gbps": 1365.9081520798477,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.2973845638021015,
+          "traffic_bytes": 23675286
+        },
+        {
+          "bandwidth_floor_ns": 49129.83998030527,
+          "correctness": {
+            "cosine": 0.9999999999999762,
+            "max_abs": 5.960464477539063e-8,
+            "n": 17408
+          },
+          "frac_of_honest_ceiling": 3.206339401892366,
+          "frac_of_qwen38_achieved": 3.24825388299539,
+          "gpu_ns": [
+            15000,
+            15125,
+            15208,
+            14916,
+            15333
+          ],
+          "kernel": "disc_binary_csr_tpr64",
+          "median_gpu_ns": 15125,
+          "name": "rice_q1_rms_2pct/csr_inregister",
+          "note": "Q80-won: bind-expanded CSR consumed in-register with binary",
+          "packed_gbps": 1319.4407272727274,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.30785770940966173,
+          "storage_bpw": 1.287565523035386,
+          "storage_bytes": 14344922,
+          "traffic_bytes": 19956541
+        },
+        {
+          "bandwidth_floor_ns": 35314.92368291482,
+          "correctness": null,
+          "frac_of_honest_ceiling": 8.716986906321731,
+          "frac_of_qwen38_achieved": 8.830938655392554,
+          "gpu_ns": [
+            4041,
+            2958,
+            3999,
+            3124,
+            4041
+          ],
+          "kernel": "disc_csr_serial_one_thread",
+          "median_gpu_ns": 3999,
+          "name": "rice_q1_rms_2pct/serial_one_thread",
+          "note": "ARTIFACT PATH: one thread walks every outlier. Not used for ranking.",
+          "packed_gbps": 3587.127281820455,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.11323824556173955,
+          "traffic_bytes": 14344922
+        }
+      ]
+    },
+    {
+      "cols": 17408,
+      "name": "down",
+      "rows": 5120,
+      "variants": [
+        {
+          "bandwidth_floor_ns": 877856.8980797636,
+          "correctness": {
+            "cosine": 0.999999999999963,
+            "max_abs": 5.960464477539063e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 122.3393052957069,
+          "frac_of_qwen38_achieved": 123.93857095577633,
+          "gpu_ns": [
+            7250,
+            7041,
+            7083,
+            7041,
+            7124
+          ],
+          "kernel": "disc_f32_tpr64",
+          "median_gpu_ns": 7083,
+          "name": "f32_tpr64",
+          "note": "uncompressed occupancy-tile control",
+          "packed_gbps": 50343.84752223634,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.008068513234324925,
+          "traffic_bytes": 356585472
+        },
+        {
+          "bandwidth_floor_ns": 116567.60216642049,
+          "correctness": {
+            "cosine": 0.9999999999999759,
+            "max_abs": 1.30385160446167e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 15.341793233052256,
+          "frac_of_qwen38_achieved": 15.542346955522733,
+          "gpu_ns": [
+            7999,
+            7708,
+            7499,
+            7499,
+            7500
+          ],
+          "kernel": "disc_q4_nibble_tpr64",
+          "median_gpu_ns": 7500,
+          "name": "prod_q4_nibble_g64",
+          "note": "production Qwen3.8 q4 layout, occupancy tile",
+          "packed_gbps": 6313.301333333334,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.06434034723724048,
+          "traffic_bytes": 47349760
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.9999999999999584,
+            "max_abs": 1.1920928955078125e-7,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 15.604031688199193,
+          "frac_of_qwen38_achieved": 15.808013490917896,
+          "gpu_ns": [
+            7291,
+            7374,
+            7291,
+            7416,
+            7624
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 7374,
+          "name": "uniform_q4_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 6421.215080010849,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.06325905532497966,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.99999999999997,
+            "max_abs": 5.960464477539063e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 10.662971890351297,
+          "frac_of_qwen38_achieved": 10.802362290985874,
+          "gpu_ns": [
+            11000,
+            10750,
+            10916,
+            10791,
+            10583
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 10791,
+          "name": "uniform_q4_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 4387.919562598462,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.09257234418386974,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 89140.62038404727,
+          "correctness": {
+            "cosine": 0.9999999999999708,
+            "max_abs": 5.960464477539063e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 12.278869230333655,
+          "frac_of_qwen38_achieved": 12.43938325203004,
+          "gpu_ns": [
+            7166,
+            7250,
+            7124,
+            7333,
+            7125
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 7166,
+          "name": "uniform_q3_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 5052.877476974602,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.08038983764221633,
+          "traffic_bytes": 36208920
+        },
+        {
+          "bandwidth_floor_ns": 89140.62038404727,
+          "correctness": {
+            "cosine": 0.9999999999999797,
+            "max_abs": 1.4901161193847656e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 8.091813215428635,
+          "frac_of_qwen38_achieved": 8.197592457609645,
+          "gpu_ns": [
+            10958,
+            10874,
+            10874,
+            10625,
+            10499
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 10874,
+          "name": "uniform_q3_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 3329.8620562810374,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.12198703523883064,
+          "traffic_bytes": 36208920
+        },
+        {
+          "bandwidth_floor_ns": 61712.94928606598,
+          "correctness": {
+            "cosine": 0.9999999999999858,
+            "max_abs": 1.1175870895385742e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 7.903038938811768,
+          "frac_of_qwen38_achieved": 8.006350452265956,
+          "gpu_ns": [
+            7708,
+            7874,
+            7708,
+            7750,
+            7166
+          ],
+          "kernel": "disc_uniform_bits_tpr64",
+          "median_gpu_ns": 7708,
+          "name": "uniform_q2_g64/disc_uniform_bits_tpr64",
+          "note": "gravity bitstream, wide extract, occupancy tile",
+          "packed_gbps": 3252.179553710431,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.12490085288697053,
+          "traffic_bytes": 25067800
+        },
+        {
+          "bandwidth_floor_ns": 61712.94928606598,
+          "correctness": {
+            "cosine": 0.9999999999999812,
+            "max_abs": 2.9802322387695312e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 5.559100578605687,
+          "frac_of_qwen38_achieved": 5.631771243481108,
+          "gpu_ns": [
+            11000,
+            10750,
+            10958,
+            10750,
+            11000
+          ],
+          "kernel": "disc_uniform_bits_tg256",
+          "median_gpu_ns": 10958,
+          "name": "uniform_q2_g64/disc_uniform_bits_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 2287.625479102026,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.17756403034969162,
+          "traffic_bytes": 25067800
+        },
+        {
+          "bandwidth_floor_ns": 116568.29148202857,
+          "correctness": {
+            "cosine": 0.9999999999979986,
+            "max_abs": 1.3709068298339844e-6,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 27.901098367793608,
+          "frac_of_qwen38_achieved": 28.265832076146594,
+          "gpu_ns": [
+            3625,
+            5624,
+            9166,
+            4124,
+            3333
+          ],
+          "kernel": "disc_uniform_bits_serial",
+          "median_gpu_ns": 4124,
+          "name": "uniform_q4_g64/disc_uniform_bits_serial",
+          "note": "DISPROVEN PATH: 1 thread/row serial extract",
+          "packed_gbps": 11481.580989330747,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.03537840305942719,
+          "traffic_bytes": 47350040
+        },
+        {
+          "bandwidth_floor_ns": 30856.772525849337,
+          "correctness": {
+            "cosine": 0.9999999999999772,
+            "max_abs": 7.683411240577698e-9,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 4.13054056268071,
+          "frac_of_qwen38_achieved": 4.184536550833922,
+          "gpu_ns": [
+            7374,
+            7333,
+            7208,
+            7374,
+            7458
+          ],
+          "kernel": "disc_binary_tpr64",
+          "median_gpu_ns": 7374,
+          "name": "binary_g128/disc_binary_tpr64",
+          "note": "in-register sign*scale, occupancy tile",
+          "packed_gbps": 1699.758746948739,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.2389750902762968,
+          "traffic_bytes": 12534021
+        },
+        {
+          "bandwidth_floor_ns": 30856.772525849337,
+          "correctness": {
+            "cosine": 0.9999999999999895,
+            "max_abs": 5.587935447692871e-9,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 2.8895366767107062,
+          "frac_of_qwen38_achieved": 2.9273097927947385,
+          "gpu_ns": [
+            10625,
+            10541,
+            10375,
+            10625,
+            10499
+          ],
+          "kernel": "disc_binary_tg256",
+          "median_gpu_ns": 10541,
+          "name": "binary_g128/disc_binary_tg256",
+          "note": "Q80-won 256 threads/row",
+          "packed_gbps": 1189.0732378332227,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.3416105813130519,
+          "traffic_bytes": 12534021
+        },
+        {
+          "bandwidth_floor_ns": 61713.07976366322,
+          "correctness": {
+            "cosine": 0.9999999999999868,
+            "max_abs": 7.450580596923828e-9,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 8.261018841105924,
+          "frac_of_qwen38_achieved": 8.369010003209008,
+          "gpu_ns": [
+            7374,
+            7333,
+            7624,
+            7416,
+            7333
+          ],
+          "kernel": "disc_ternary_tpr64",
+          "median_gpu_ns": 7374,
+          "name": "ternary_t0.7_g128",
+          "note": "2-bit in-register {0,+s,-s}",
+          "packed_gbps": 3399.4918633034986,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.1194884460188912,
+          "traffic_bytes": 25067853
+        },
+        {
+          "bandwidth_floor_ns": 123425.64254062039,
+          "correctness": {
+            "cosine": 0.9999999999999657,
+            "max_abs": 2.0489096641540527e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 15.89264225840901,
+          "frac_of_qwen38_achieved": 16.100396887636364,
+          "gpu_ns": [
+            7708,
+            7666,
+            7749,
+            7416,
+            7499
+          ],
+          "kernel": "disc_additive_tpr64",
+          "median_gpu_ns": 7666,
+          "name": "additive_q2q2_g64",
+          "note": "two in-register q2 lookups",
+          "packed_gbps": 6539.981215757892,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.06211027013675101,
+          "traffic_bytes": 50135496
+        },
+        {
+          "bandwidth_floor_ns": 58284.80059084195,
+          "correctness": {
+            "cosine": 1.0,
+            "max_abs": 0.5623984336853027,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 5.826097340175686,
+          "frac_of_qwen38_achieved": 5.902258287680198,
+          "gpu_ns": [
+            9625,
+            10416,
+            18583,
+            9875,
+            9249
+          ],
+          "kernel": "disc_walsh_hadamard_x+disc_uniform_bits_tpr64",
+          "median_gpu_ns": 9875,
+          "name": "hadamard_q2_g128",
+          "note": "per-token WH(x) + in-register q2; WH is O(cols log 128)",
+          "packed_gbps": 2397.4973164556964,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.16942667556370808,
+          "traffic_bytes": 23675286
+        },
+        {
+          "bandwidth_floor_ns": 49008.835548990646,
+          "correctness": {
+            "cosine": 0.99999999999996,
+            "max_abs": 5.960464477539063e-8,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 6.5232524847250675,
+          "frac_of_qwen38_achieved": 6.608526907900572,
+          "gpu_ns": [
+            7666,
+            7583,
+            7374,
+            7416,
+            7416
+          ],
+          "kernel": "disc_binary_csr_tpr64",
+          "median_gpu_ns": 7416,
+          "name": "rice_q1_rms_2pct/csr_inregister",
+          "note": "Q80-won: bind-expanded CSR consumed in-register with binary",
+          "packed_gbps": 2684.3836299892123,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.15131965322021887,
+          "storage_bpw": 1.287540749942555,
+          "storage_bytes": 14344646,
+          "traffic_bytes": 19907389
+        },
+        {
+          "bandwidth_floor_ns": 35314.24421467257,
+          "correctness": null,
+          "frac_of_honest_ceiling": 11.154739180092829,
+          "frac_of_qwen38_achieved": 11.300558148695224,
+          "gpu_ns": [
+            2999,
+            4083,
+            3125,
+            4583,
+            3125
+          ],
+          "kernel": "disc_csr_serial_one_thread",
+          "median_gpu_ns": 3125,
+          "name": "rice_q1_rms_2pct/serial_one_thread",
+          "note": "ARTIFACT PATH: one thread walks every outlier. Not used for ranking.",
+          "packed_gbps": 4590.28672,
+          "recon_excess_ns": 0.0,
+          "recon_penalty_vs_bandwidth": 0.08849120431413923,
+          "traffic_bytes": 14344646
+        },
+        {
+          "bandwidth_floor_ns": 3606.2604628261943,
+          "correctness": {
+            "cosine": 0.9317445022309366,
+            "max_abs": 0.12392914295196533,
+            "n": 5120
+          },
+          "frac_of_honest_ceiling": 0.04981564518457932,
+          "frac_of_qwen38_achieved": 0.05046685413566282,
+          "gpu_ns": [
+            71208,
+            71624,
+            71458,
+            71124,
+            71749
+          ],
+          "kernel": "L@(R@x) two disc_uniform_bits_tpr64",
+          "median_gpu_ns": 71458,
+          "name": "hgravs01_r160_q3",
+          "note": "two-stage algebra, never reconstructs W. Rank 160 on real X.",
+          "packed_gbps": 20.499636149906237,
+          "recon_excess_ns": 67851.73953717381,
+          "recon_penalty_vs_bandwidth": 19.814985838266104,
+          "traffic_bytes": 1464863
+        }
+      ]
+    }
+  ],
+  "qwen38_achieved_gbps": 406.2,
+  "schema": "hawking.special_unit.qwen38_recon_measured.v1"
+}

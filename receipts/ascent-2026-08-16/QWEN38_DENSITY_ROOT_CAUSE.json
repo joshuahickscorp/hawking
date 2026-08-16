@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.special_unit.density_root_cause.v1",
+  "date": "2026-08-16",
+  "WATCHDOG_L4_ROOT_CAUSE": "Qwen3.8's BPW floor is set by ATTENTION, not by the MLP. The MLP is already at 0.848 BPW. Attention+embed+norms sit at 4.250 BPW and are 5.20 GB of the 7.01 GB artifact - 74%. Complete BPW is therefore attention-dominated at 2.0856.",
+  "evidence": {
+    "artifact": "workspace/campaign/records/runs/qwen38-27b/mixed-2p0-v1/PACK_REPORT.json",
+    "complete_physical_bpw": 2.0855934079220506,
+    "mlp_physical_bpw": 0.8480504639008466,
+    "nonmlp_physical_bpw": 4.250142713483966,
+    "organ_bytes": {
+      "mlp_gate_proj": 802177344,
+      "mlp_up_proj": 918036000,
+      "mlp_down_proj": 93847197,
+      "attention_embed_norm_4bit": 5197519789
+    },
+    "attention_share_of_artifact": 0.741
+  },
+  "why_every_qwen38_result_today_now_reconciles": [
+    "the sub-1.5 pack reached ~1.29 BPW by compressing ATTENTION with rice_q1 - and generates a degenerate token cycle (measured by me, 0 fallbacks)",
+    "the attention-density lane concluded independently that attention cannot be cheaply compressed below uniform-Q4 at Q4-equivalent quality, and that going lower is a NEW codec family which existing Gravity does not have",
+    "the same pattern holds on Q80: attention is 73% of per-token bytes and has never been compressed"
+  ],
+  "CONSEQUENCE_FOR_G006": "G006 as specified - coherent under 1.5 BPW - requires compressing attention below Q4, which needs a codec family that does not exist yet. Two independent lines of evidence now say so: the attention-density screen, and my own measured incoherence at 1.29 BPW.",
+  "CONSEQUENCE_FOR_G005_AND_G007": "These need only ~2.0 BPW to clear 50 TPS, and that artifact ALREADY EXISTS at 2.0856 BPW. Projected from the measured 38.217 ms wall with the 1.415 ms fixed overhead held constant: 19.47 ms/token = 51.4 TPS. IT CLEARS 50.",
+  "THE_ACTUAL_BLOCKER_RIGHT_NOW": "mixed-2p0-v1 is PACKED but NOT MATERIALIZED as a native generate catalog - it has no manifest.json, so ascension_qwen38_hybrid_greedy cannot read it. The runtime errors with 'cannot read .../manifest.json'. That is a materialisation gap, not a science gap.",
+  "why_this_is_the_root_cause_of_the_stall": "I have been driving toward G006's under-1.5 target, which needs a codec family nobody has built, while the artifact that satisfies the ACTUAL 50 TPS gates for G005 and G007 has been sitting on disk unmaterialised at 2.0856 BPW."
+}

@@ -1,0 +1,1072 @@
+{
+  "schema": "hawking.ascension.qwen38_token_ns_ledger.v1",
+  "model": "qwen38",
+  "vehicle": "qwen38-27b/uniform-q4-v1",
+  "bpw": 4.252735126866492,
+  "kernel_runtime_genome": "Qwen38HybridDecodeSession + qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 + qwen38_gated_delta_decode_vi + qwen38_qkvz_rearrange_conv_l2_f32 + qwen38_gqa_qk_norm_rope_cache_f32; deltanet_vi_parallel=true concurrent_independent=false; 1 production CB / 964 dispatches; uniform-q4-v1 BPW=4.252735126866492; PocketAiHub/Qwen3.8-27B-Abliterated-MLX rev 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "commit": "1ac1a22017ce94992a5497b6584b29f3da4fa524",
+  "regime": "warm after 4-token discarded generate; paired 1 production generates interleaved with one isolated/probe suite after rep 1; on-main worktree",
+  "production_cb_shape": true,
+  "weight_bytes": {
+    "mlp_bytes": 9091153920,
+    "linear_attn_bytes": 2953789440,
+    "full_attn_bytes": 891289600,
+    "lm_head_bytes": 675430400,
+    "norms_bytes": 6475776,
+    "embed_row_bytes": 2720,
+    "embed_table_excluded_bytes": 675430440,
+    "active_bytes": 13618141856,
+    "note": "Q4 group-64 codes+f16 scales from geometry; norms are f32 scales. Embed table excluded except one gathered row."
+  },
+  "state_bytes": {
+    "conv_state_rw_bytes": 11796480,
+    "rec_state_rw_bytes": 301989888,
+    "gqa_kv_write_bytes": 131072,
+    "gqa_kv_read_bytes_at_pos": 2490368,
+    "total_rw_bytes": 316407808,
+    "rec_state_resident_bytes": 150994944,
+    "conv_state_resident_bytes": 5898240,
+    "note": "conv/recurrent state is read+written every DeltaNet layer; GQA writes one slot and reads seq_len slots"
+  },
+  "dispatches": {
+    "embed": 1,
+    "mixer_prefix": 576,
+    "mlp_suffix": 384,
+    "terminal": 3,
+    "total": 964,
+    "production_command_buffers": 1
+  },
+  "occupancy": [
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rows": 17408,
+      "threadgroups": 8704,
+      "threads": 1114112,
+      "gpu_cores": 60,
+      "threadgroups_per_core_if_spread": 145.06666666666666,
+      "note": "Not a hardware occupancy counter. Derived from launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rows": 248320,
+      "threadgroups": 124160,
+      "threads": 15892480,
+      "gpu_cores": 60,
+      "threadgroups_per_core_if_spread": 2069.3333333333335,
+      "note": "Not a hardware occupancy counter. Derived from launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+    }
+  ],
+  "production_steps": [
+    {
+      "position": 0,
+      "kind": "prefill",
+      "gpu_ns": 36398624,
+      "wait_ns": 36736542,
+      "encode_ns": 897042,
+      "submit_ns": 11333,
+      "dispatches": 964,
+      "wall_ns": 37644917
+    },
+    {
+      "position": 1,
+      "kind": "prefill",
+      "gpu_ns": 36357500,
+      "wait_ns": 36739375,
+      "encode_ns": 881625,
+      "submit_ns": 7209,
+      "dispatches": 964,
+      "wall_ns": 37628209
+    },
+    {
+      "position": 2,
+      "kind": "prefill",
+      "gpu_ns": 36287458,
+      "wait_ns": 36678000,
+      "encode_ns": 776291,
+      "submit_ns": 7291,
+      "dispatches": 964,
+      "wall_ns": 37461582
+    },
+    {
+      "position": 3,
+      "kind": "prefill",
+      "gpu_ns": 36591125,
+      "wait_ns": 36988167,
+      "encode_ns": 850917,
+      "submit_ns": 13959,
+      "dispatches": 964,
+      "wall_ns": 37853043
+    },
+    {
+      "position": 4,
+      "kind": "prefill",
+      "gpu_ns": 36259125,
+      "wait_ns": 36611667,
+      "encode_ns": 927958,
+      "submit_ns": 12291,
+      "dispatches": 964,
+      "wall_ns": 37551916
+    },
+    {
+      "position": 5,
+      "kind": "prefill",
+      "gpu_ns": 36352999,
+      "wait_ns": 36705667,
+      "encode_ns": 788875,
+      "submit_ns": 7458,
+      "dispatches": 964,
+      "wall_ns": 37502000
+    },
+    {
+      "position": 6,
+      "kind": "prefill",
+      "gpu_ns": 36312583,
+      "wait_ns": 36684875,
+      "encode_ns": 897541,
+      "submit_ns": 6583,
+      "dispatches": 964,
+      "wall_ns": 37588999
+    },
+    {
+      "position": 7,
+      "kind": "prefill",
+      "gpu_ns": 36350416,
+      "wait_ns": 36771042,
+      "encode_ns": 788291,
+      "submit_ns": 7167,
+      "dispatches": 964,
+      "wall_ns": 37566500
+    },
+    {
+      "position": 8,
+      "kind": "prefill",
+      "gpu_ns": 36279375,
+      "wait_ns": 36640375,
+      "encode_ns": 786750,
+      "submit_ns": 7083,
+      "dispatches": 964,
+      "wall_ns": 37434208
+    },
+    {
+      "position": 9,
+      "kind": "prefill",
+      "gpu_ns": 36247000,
+      "wait_ns": 36598334,
+      "encode_ns": 814083,
+      "submit_ns": 7416,
+      "dispatches": 964,
+      "wall_ns": 37419833
+    },
+    {
+      "position": 10,
+      "kind": "prefill",
+      "gpu_ns": 36474374,
+      "wait_ns": 36906959,
+      "encode_ns": 792833,
+      "submit_ns": 7500,
+      "dispatches": 964,
+      "wall_ns": 37707292
+    },
+    {
+      "position": 11,
+      "kind": "decode",
+      "gpu_ns": 36728749,
+      "wait_ns": 37071958,
+      "encode_ns": 801375,
+      "submit_ns": 8291,
+      "dispatches": 964,
+      "wall_ns": 37881624
+    },
+    {
+      "position": 12,
+      "kind": "decode",
+      "gpu_ns": 36714041,
+      "wait_ns": 37070292,
+      "encode_ns": 825833,
+      "submit_ns": 9125,
+      "dispatches": 964,
+      "wall_ns": 37905250
+    },
+    {
+      "position": 13,
+      "kind": "decode",
+      "gpu_ns": 36518749,
+      "wait_ns": 36897542,
+      "encode_ns": 809333,
+      "submit_ns": 8000,
+      "dispatches": 964,
+      "wall_ns": 37714875
+    },
+    {
+      "position": 14,
+      "kind": "decode",
+      "gpu_ns": 36486375,
+      "wait_ns": 36840583,
+      "encode_ns": 891167,
+      "submit_ns": 10000,
+      "dispatches": 964,
+      "wall_ns": 37741750
+    },
+    {
+      "position": 15,
+      "kind": "decode",
+      "gpu_ns": 36551875,
+      "wait_ns": 36900500,
+      "encode_ns": 836041,
+      "submit_ns": 13625,
+      "dispatches": 964,
+      "wall_ns": 37750166
+    },
+    {
+      "position": 16,
+      "kind": "decode",
+      "gpu_ns": 36718374,
+      "wait_ns": 37315333,
+      "encode_ns": 889417,
+      "submit_ns": 13125,
+      "dispatches": 964,
+      "wall_ns": 38217875
+    },
+    {
+      "position": 17,
+      "kind": "decode",
+      "gpu_ns": 36292624,
+      "wait_ns": 36656375,
+      "encode_ns": 794208,
+      "submit_ns": 8833,
+      "dispatches": 964,
+      "wall_ns": 37459416
+    },
+    {
+      "position": 18,
+      "kind": "decode",
+      "gpu_ns": 36745833,
+      "wait_ns": 37048333,
+      "encode_ns": 874083,
+      "submit_ns": 8167,
+      "dispatches": 964,
+      "wall_ns": 37930583
+    },
+    {
+      "position": 19,
+      "kind": "decode",
+      "gpu_ns": 36523875,
+      "wait_ns": 36905250,
+      "encode_ns": 848541,
+      "submit_ns": 9958,
+      "dispatches": 964,
+      "wall_ns": 37763749
+    },
+    {
+      "position": 20,
+      "kind": "decode",
+      "gpu_ns": 36493333,
+      "wait_ns": 36891750,
+      "encode_ns": 817417,
+      "submit_ns": 7625,
+      "dispatches": 964,
+      "wall_ns": 37716792
+    },
+    {
+      "position": 21,
+      "kind": "decode",
+      "gpu_ns": 36491124,
+      "wait_ns": 36867916,
+      "encode_ns": 767542,
+      "submit_ns": 7667,
+      "dispatches": 964,
+      "wall_ns": 37643125
+    },
+    {
+      "position": 22,
+      "kind": "decode",
+      "gpu_ns": 36725874,
+      "wait_ns": 37053208,
+      "encode_ns": 894667,
+      "submit_ns": 9625,
+      "dispatches": 964,
+      "wall_ns": 37957500
+    },
+    {
+      "position": 23,
+      "kind": "decode",
+      "gpu_ns": 36641874,
+      "wait_ns": 37023459,
+      "encode_ns": 949708,
+      "submit_ns": 9083,
+      "dispatches": 964,
+      "wall_ns": 37982250
+    },
+    {
+      "position": 24,
+      "kind": "decode",
+      "gpu_ns": 36645000,
+      "wait_ns": 37048334,
+      "encode_ns": 853625,
+      "submit_ns": 10000,
+      "dispatches": 964,
+      "wall_ns": 37911959
+    },
+    {
+      "position": 25,
+      "kind": "decode",
+      "gpu_ns": 36608833,
+      "wait_ns": 37031417,
+      "encode_ns": 928666,
+      "submit_ns": 11208,
+      "dispatches": 964,
+      "wall_ns": 37971291
+    }
+  ],
+  "steady_gpu_ns": [
+    36728749,
+    36714041,
+    36518749,
+    36486375,
+    36551875,
+    36718374,
+    36292624,
+    36745833,
+    36523875,
+    36493333,
+    36491124,
+    36725874,
+    36641874,
+    36645000,
+    36608833
+  ],
+  "steady_wait_ns": [
+    37071958,
+    37070292,
+    36897542,
+    36840583,
+    36900500,
+    37315333,
+    36656375,
+    37048333,
+    36905250,
+    36891750,
+    36867916,
+    37053208,
+    37023459,
+    37048334,
+    37031417
+  ],
+  "steady_encode_ns": [
+    801375,
+    825833,
+    809333,
+    891167,
+    836041,
+    889417,
+    794208,
+    874083,
+    848541,
+    817417,
+    767542,
+    894667,
+    949708,
+    853625,
+    928666
+  ],
+  "steady_submit_ns": [
+    8291,
+    9125,
+    8000,
+    10000,
+    13625,
+    13125,
+    8833,
+    8167,
+    9958,
+    7625,
+    7667,
+    9625,
+    9083,
+    10000,
+    11208
+  ],
+  "median_gpu_ns": 36608833,
+  "median_wait_ns": 37023459,
+  "median_encode_ns": 848541,
+  "median_submit_ns": 9125,
+  "median_wall_ns": 37881125,
+  "gpu_spread_ns": [
+    36292624,
+    36745833
+  ],
+  "wait_minus_gpu_ns": 414626,
+  "isolated": [
+    {
+      "name": "input_norms",
+      "gpu_ns_reps": [
+        1302499
+      ],
+      "median_gpu_ns": 1302499,
+      "wait_ns_median": 1509000,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "post_norms",
+      "gpu_ns_reps": [
+        1257249
+      ],
+      "median_gpu_ns": 1257249,
+      "wait_ns_median": 1492375,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "final_norm",
+      "gpu_ns_reps": [
+        21208
+      ],
+      "median_gpu_ns": 21208,
+      "wait_ns_median": 221000,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "silu_64",
+      "gpu_ns_reps": [
+        155333
+      ],
+      "median_gpu_ns": 155333,
+      "wait_ns_median": 355291,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_residual_64",
+      "gpu_ns_reps": [
+        116749
+      ],
+      "median_gpu_ns": 116749,
+      "wait_ns_median": 318000,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "mixer_residual_64",
+      "gpu_ns_reps": [
+        133333
+      ],
+      "median_gpu_ns": 133333,
+      "wait_ns_median": 334084,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "rearrange_48",
+      "gpu_ns_reps": [
+        377291
+      ],
+      "median_gpu_ns": 377291,
+      "wait_ns_median": 580166,
+      "dispatches": 48,
+      "command_buffers": 1
+    },
+    {
+      "name": "ba_to_decay_48",
+      "gpu_ns_reps": [
+        127583
+      ],
+      "median_gpu_ns": 127583,
+      "wait_ns_median": 447042,
+      "dispatches": 48,
+      "command_buffers": 1
+    },
+    {
+      "name": "gated_rmsnorm_48",
+      "gpu_ns_reps": [
+        1298166
+      ],
+      "median_gpu_ns": 1298166,
+      "wait_ns_median": 1524375,
+      "dispatches": 48,
+      "command_buffers": 1
+    },
+    {
+      "name": "rope_cache_16",
+      "gpu_ns_reps": [
+        1555374
+      ],
+      "median_gpu_ns": 1555374,
+      "wait_ns_median": 1760583,
+      "dispatches": 16,
+      "command_buffers": 1
+    },
+    {
+      "name": "mha_16",
+      "gpu_ns_reps": [
+        740041
+      ],
+      "median_gpu_ns": 740041,
+      "wait_ns_median": 953709,
+      "dispatches": 16,
+      "command_buffers": 1
+    },
+    {
+      "name": "sigmoid_16",
+      "gpu_ns_reps": [
+        38500
+      ],
+      "median_gpu_ns": 38500,
+      "wait_ns_median": 240042,
+      "dispatches": 16,
+      "command_buffers": 1
+    },
+    {
+      "name": "argmax",
+      "gpu_ns_reps": [
+        423291
+      ],
+      "median_gpu_ns": 423291,
+      "wait_ns_median": 625916,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "dn_gemvs",
+      "gpu_ns_reps": [
+        5364874
+      ],
+      "median_gpu_ns": 5364874,
+      "wait_ns_median": 5626792,
+      "dispatches": 144,
+      "command_buffers": 1
+    },
+    {
+      "name": "gqa_gemvs",
+      "gpu_ns_reps": [
+        1841125
+      ],
+      "median_gpu_ns": 1841125,
+      "wait_ns_median": 2053333,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_matvecs_64",
+      "gpu_ns_reps": [
+        15416583
+      ],
+      "median_gpu_ns": 15416583,
+      "wait_ns_median": 15687292,
+      "dispatches": 192,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_full_64",
+      "gpu_ns_reps": [
+        16871249
+      ],
+      "median_gpu_ns": 16871249,
+      "wait_ns_median": 17181250,
+      "dispatches": 384,
+      "command_buffers": 1
+    },
+    {
+      "name": "lm_head",
+      "gpu_ns_reps": [
+        1010750
+      ],
+      "median_gpu_ns": 1010750,
+      "wait_ns_median": 1245125,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "embed",
+      "gpu_ns_reps": [
+        5874
+      ],
+      "median_gpu_ns": 5874,
+      "wait_ns_median": 203750,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "gated_delta_48",
+      "gpu_ns_reps": [
+        5321833
+      ],
+      "median_gpu_ns": 5321833,
+      "wait_ns_median": 5549958,
+      "dispatches": 48,
+      "command_buffers": 1
+    },
+    {
+      "name": "stream_rec_state",
+      "gpu_ns_reps": [
+        477374
+      ],
+      "median_gpu_ns": 477374,
+      "wait_ns_median": 7098459,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "stream_conv_state",
+      "gpu_ns_reps": [
+        21500
+      ],
+      "median_gpu_ns": 21500,
+      "wait_ns_median": 406083,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "stream_gqa_key",
+      "gpu_ns_reps": [
+        28874
+      ],
+      "median_gpu_ns": 28874,
+      "wait_ns_median": 403500,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "stream_gqa_value",
+      "gpu_ns_reps": [
+        28208
+      ],
+      "median_gpu_ns": 28208,
+      "wait_ns_median": 155792,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_full_probe",
+      "gpu_ns_reps": [
+        15414125
+      ],
+      "median_gpu_ns": 15414125,
+      "wait_ns_median": 15687750,
+      "dispatches": 192,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_addr_probe",
+      "gpu_ns_reps": [
+        13001749
+      ],
+      "median_gpu_ns": 13001749,
+      "wait_ns_median": 13315750,
+      "dispatches": 192,
+      "command_buffers": 1
+    },
+    {
+      "name": "mlp_decode_probe",
+      "gpu_ns_reps": [
+        14851500
+      ],
+      "median_gpu_ns": 14851500,
+      "wait_ns_median": 15369417,
+      "dispatches": 192,
+      "command_buffers": 1
+    },
+    {
+      "name": "dn_full_probe",
+      "gpu_ns_reps": [
+        5465375
+      ],
+      "median_gpu_ns": 5465375,
+      "wait_ns_median": 5761083,
+      "dispatches": 144,
+      "command_buffers": 1
+    },
+    {
+      "name": "dn_addr_probe",
+      "gpu_ns_reps": [
+        4641999
+      ],
+      "median_gpu_ns": 4641999,
+      "wait_ns_median": 4952917,
+      "dispatches": 144,
+      "command_buffers": 1
+    },
+    {
+      "name": "dn_decode_probe",
+      "gpu_ns_reps": [
+        5208124
+      ],
+      "median_gpu_ns": 5208124,
+      "wait_ns_median": 5537500,
+      "dispatches": 144,
+      "command_buffers": 1
+    },
+    {
+      "name": "gqa_full_probe",
+      "gpu_ns_reps": [
+        1710874
+      ],
+      "median_gpu_ns": 1710874,
+      "wait_ns_median": 1937958,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "gqa_addr_probe",
+      "gpu_ns_reps": [
+        1509125
+      ],
+      "median_gpu_ns": 1509125,
+      "wait_ns_median": 1788041,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "gqa_decode_probe",
+      "gpu_ns_reps": [
+        1678624
+      ],
+      "median_gpu_ns": 1678624,
+      "wait_ns_median": 1935542,
+      "dispatches": 64,
+      "command_buffers": 1
+    },
+    {
+      "name": "lm_head_full_probe",
+      "gpu_ns_reps": [
+        1012708
+      ],
+      "median_gpu_ns": 1012708,
+      "wait_ns_median": 1224666,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "lm_head_addr_probe",
+      "gpu_ns_reps": [
+        870124
+      ],
+      "median_gpu_ns": 870124,
+      "wait_ns_median": 1116375,
+      "dispatches": 1,
+      "command_buffers": 1
+    },
+    {
+      "name": "lm_head_decode_probe",
+      "gpu_ns_reps": [
+        990500
+      ],
+      "median_gpu_ns": 990500,
+      "wait_ns_median": 1210833,
+      "dispatches": 1,
+      "command_buffers": 1
+    }
+  ],
+  "probes": [
+    {
+      "class": "mlp",
+      "full_median_gpu_ns": 15414125,
+      "addr_median_gpu_ns": 13001749,
+      "decode_median_gpu_ns": 14851500,
+      "addr_frac_of_full": 0.8434957547055055,
+      "decode_minus_addr_frac": 0.12000363303139167,
+      "fma_remainder_frac": 0.036500612263102805
+    },
+    {
+      "class": "dn",
+      "full_median_gpu_ns": 5465375,
+      "addr_median_gpu_ns": 4641999,
+      "decode_median_gpu_ns": 5208124,
+      "addr_frac_of_full": 0.8493468426228759,
+      "decode_minus_addr_frac": 0.10358392608009515,
+      "fma_remainder_frac": 0.047069231297029
+    },
+    {
+      "class": "gqa",
+      "full_median_gpu_ns": 1710874,
+      "addr_median_gpu_ns": 1509125,
+      "decode_median_gpu_ns": 1678624,
+      "addr_frac_of_full": 0.8820783996951266,
+      "decode_minus_addr_frac": 0.09907158563400928,
+      "fma_remainder_frac": 0.01885001467086414
+    },
+    {
+      "class": "lm_head",
+      "full_median_gpu_ns": 1012708,
+      "addr_median_gpu_ns": 870124,
+      "decode_median_gpu_ns": 990500,
+      "addr_frac_of_full": 0.8592052200634339,
+      "decode_minus_addr_frac": 0.11886545776275097,
+      "fma_remainder_frac": 0.021929322173815116
+    }
+  ],
+  "components": [
+    {
+      "component": "host_preparation",
+      "ns_per_token": 848541.0,
+      "pct_of_token_wall": 2.240010031381064,
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "dispatches": 964,
+      "command_buffers": 1,
+      "cpu_involvement": "CPU Instant around TokenCommandBuffer encode (pipeline lookup + set_buffer + dispatch). Not GPU.",
+      "gpu_occupancy": "n/a (CPU)",
+      "effective_gb_s": 0.0,
+      "theoretical_lower_bound_ns": 0.0,
+      "measured_over_floor": null,
+      "resource_class": "cpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "host Instant wrapping encode of the production single-CB token"
+    },
+    {
+      "component": "weight_addressing",
+      "ns_per_token": 20052919.375352427,
+      "pct_of_token_wall": 52.936440972522405,
+      "bytes_read": 13611663360,
+      "bytes_written": 0,
+      "dispatches": 401,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel; host bind is in host_preparation",
+      "gpu_occupancy": "geo_tpr64_tg128; gate organ 8704 TGs",
+      "effective_gb_s": 678.7871184846259,
+      "theoretical_lower_bound_ns": 33077357.439673398,
+      "measured_over_floor": 0.6062430897608738,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "addr_probe / full GEMV fraction, applied to isolated class GEMV GPU time, then scaled onto production GPU"
+    },
+    {
+      "component": "weight_decode_reconstruction",
+      "ns_per_token": 2708307.1153091313,
+      "pct_of_token_wall": 7.149489660904028,
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "dispatches": 401,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "same launch as addressing; extra ALU is nibble unpack",
+      "effective_gb_s": 0.0,
+      "theoretical_lower_bound_ns": 0.0,
+      "measured_over_floor": null,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "(decode_probe − addr_probe) / full, applied to isolated class GEMV GPU time"
+    },
+    {
+      "component": "command_submission",
+      "ns_per_token": 9125.0,
+      "pct_of_token_wall": 0.02408851373870232,
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "dispatches": 0,
+      "command_buffers": 1,
+      "cpu_involvement": "CPU Instant around MTLCommandBuffer.commit",
+      "gpu_occupancy": "n/a (CPU)",
+      "effective_gb_s": 0.0,
+      "theoretical_lower_bound_ns": 0.0,
+      "measured_over_floor": null,
+      "resource_class": "cpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "host Instant around commit on the production CB"
+    },
+    {
+      "component": "deltanet",
+      "ns_per_token": 6978519.245185417,
+      "pct_of_token_wall": 18.422154160377804,
+      "bytes_read": 4718592,
+      "bytes_written": 2162688,
+      "dispatches": 192,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "gated_delta_vi: grid (128,48,128) = 786432 TGs/layer; 48 layers",
+      "effective_gb_s": 0.9860659200370474,
+      "theoretical_lower_bound_ns": 16722.023766129623,
+      "measured_over_floor": 417.3250404846555,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "isolated rearrange+ba+gated_delta+gated_rmsnorm+dn FMA remainder + 48/64 mixer residual, minus KV/state streams attributed out"
+    },
+    {
+      "component": "gqa",
+      "ns_per_token": 2344871.4832608947,
+      "pct_of_token_wall": 6.190078787947546,
+      "bytes_read": 2883584,
+      "bytes_written": 327680,
+      "dispatches": 64,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "mha_decode_f32 TG=128, 16 layers, seq≈19; rope 24 threads",
+      "effective_gb_s": 1.3694840092192417,
+      "theoretical_lower_bound_ns": 7803.611090860491,
+      "measured_over_floor": 300.48543628823126,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "isolated rope+mha+sigmoid+gqa FMA remainder + 16/64 mixer residual, minus KV/state stream"
+    },
+    {
+      "component": "dense_swiglu",
+      "ns_per_token": 834796.718504943,
+      "pct_of_token_wall": 2.203727366874513,
+      "bytes_read": 8912896,
+      "bytes_written": 5767168,
+      "dispatches": 128,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "silu 17408 threads; residual 5120 threads; GEMV FMA remainder after addr/decode",
+      "effective_gb_s": 17.585196101741836,
+      "theoretical_lower_bound_ns": 35673.65070107653,
+      "measured_over_floor": 23.400933240615917,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "isolated silu + mlp residual + MLP GEMV FMA remainder (full − addr − decode)"
+    },
+    {
+      "component": "normalization",
+      "ns_per_token": 2580956.0,
+      "pct_of_token_wall": 6.813303459176569,
+      "bytes_read": 5283840,
+      "bytes_written": 2641920,
+      "dispatches": 129,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "qwen80_residual_rmsnorm_f32 TG=256, 129 launches",
+      "effective_gb_s": 3.0708621146582895,
+      "theoretical_lower_bound_ns": 19260.188087774295,
+      "measured_over_floor": 134.00471419270832,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "isolated input + post + final RMSNorm CBs"
+    },
+    {
+      "component": "kv_state",
+      "ns_per_token": 555956.0,
+      "pct_of_token_wall": 1.4676332870261906,
+      "bytes_read": 159383552,
+      "bytes_written": 157024256,
+      "dispatches": 3,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel",
+      "gpu_occupancy": "qwen38_f32_stream_probe over rec/conv/GQA resident tensors",
+      "effective_gb_s": 569.1238299433768,
+      "theoretical_lower_bound_ns": 768894.57850356,
+      "measured_over_floor": 0.7230588113678914,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "measured sequential f32 stream of rec_state + conv_state + GQA cache, capped by fused parent GPU time"
+    },
+    {
+      "component": "terminal_head",
+      "ns_per_token": 445456.06238718366,
+      "pct_of_token_wall": 1.1759314497317164,
+      "bytes_read": 675430400,
+      "bytes_written": 993284,
+      "dispatches": 2,
+      "command_buffers": 1,
+      "cpu_involvement": "none in kernel; sampled u32 is read after wait (in synchronization)",
+      "gpu_occupancy": "lm_head 124160 TGs; argmax TG=256",
+      "effective_gb_s": 1518.4969767277805,
+      "theoretical_lower_bound_ns": 1643760.0155524774,
+      "measured_over_floor": 0.27099823464039136,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "isolated argmax + lm_head FMA remainder. lm_head weight traffic lives in addressing/decode."
+    },
+    {
+      "component": "synchronization",
+      "ns_per_token": 414626.0,
+      "pct_of_token_wall": 1.0945451065669247,
+      "bytes_read": 0,
+      "bytes_written": 4,
+      "dispatches": 0,
+      "command_buffers": 1,
+      "cpu_involvement": "CPU blocked in waitUntilCompleted minus GPU busy; includes 4-byte sampled-id visibility",
+      "gpu_occupancy": "n/a (CPU/sync)",
+      "effective_gb_s": 9.647248363585497e-6,
+      "theoretical_lower_bound_ns": 0.009720298413161285,
+      "measured_over_floor": 42655686.315,
+      "resource_class": "sync",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "production wait_ns − gpu_ns (GPUEnd−GPUStart). Host is not the wall if this is << GPU."
+    },
+    {
+      "component": "unattributed_residual",
+      "ns_per_token": 107051.0,
+      "pct_of_token_wall": 0.28259720375252845,
+      "bytes_read": 2720,
+      "bytes_written": 20480,
+      "dispatches": 1,
+      "command_buffers": 1,
+      "cpu_involvement": "none beyond the host tail between Instant marks",
+      "gpu_occupancy": "embed lookup 5120 threads",
+      "effective_gb_s": 0.21671913387077188,
+      "theoretical_lower_bound_ns": 56.37773079633545,
+      "measured_over_floor": 1898.8171125,
+      "resource_class": "gpu",
+      "serial_or_overlappable": "serial",
+      "in_identity_sum": true,
+      "confidence": "measured",
+      "method": "NAMED residual = embed_row_gather (5874 ns) + intra_cb_encoder_transition_gap (107051 ns) + host_tail_outside_encode_submit_wait (0 ns) + rounding"
+    }
+  ],
+  "closure": {
+    "identity": "sum(serial components) + residual == complete_token_wall; residual is the named unattributed_residual row",
+    "total_token_ns": 37881125,
+    "sum_serial_ns": 37881124,
+    "residual_ns": 1,
+    "residual_name": "unattributed_residual = embed_row_gather + intra_cb_encoder_transition_gap + host_tail",
+    "residual_reason": "embed=5874 ns, gpu_gap=107051 ns, host_tail=0 ns. The named residual row is inside the component table, so sum(components) == wall and residual_ns here is only rounding.",
+    "identity_holds": true,
+    "isolated_family_sum_gpu_ns": 36507656,
+    "production_gpu_ns": 36608833,
+    "isolated_over_production": -101177,
+    "gpu_scale_applied": 1.0,
+    "scale_reason": "isolated family GPU sum does not exceed production GPU; raw isolated timestamps used."
+  },
+  "greedy_token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    4777,
+    6587,
+    728,
+    310,
+    1910,
+    328,
+    5834,
+    1149,
+    1061,
+    369,
+    264,
+    1546
+  ],
+  "greedy_matches_oracle": true,
+  "fallbacks": 0,
+  "instrumentation_overhead": "Production step() adds two Instant::now calls around encode (~20 ns). Isolated families and Q4 probes run in separate CBs AFTER a production generate; they do not sit inside the timed token. Isolated GPU sum=36507656 ns vs production GPU 36608833 ns; scale=1.000000. Reference G015 median 33.537 ms; this run median 36.609 ms.",
+  "notes": [
+    "honest decode ceiling 411.51 GB/s; peak 819 GB/s",
+    "uniform-q4-v1 is an ORACLE for profiling ONLY, never an endpoint",
+    "GPU time is GPUEndTime-GPUStartTime on completed CBs only",
+    "decode_family_enabled=true swiglu=gk_swiglu_f32"
+  ]
+}

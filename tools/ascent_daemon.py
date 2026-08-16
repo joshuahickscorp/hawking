@@ -40,8 +40,10 @@ GROK = Path.home() / ".claude-grok" / "bin" / "grok-run"
 LANES = REPO / "workspace" / "ops" / "ascent-lanes"
 
 DISK_FLOOR_GIB = 15.0
-DISK_WARN_GIB = 40.0
-MAX_CONCURRENT = 7
+DISK_WARN_GIB = 90.0   # raised after a 0-byte stall: lanes cost 1-19 GiB each
+MAX_CONCURRENT = 10    # raised again per user steer: the 0-byte stall is now guarded
+                       # by the governor reaping the grok worktree pool, which is the
+                       # real protection - the cap was only ever a blunt proxy for it
 POLL_SECONDS = 300
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
@@ -114,6 +116,37 @@ def our_live_lanes(snap: dict) -> list[str]:
     return ours
 
 
+def reap_finished_worktrees() -> int:
+    """Delete worktrees of finished lanes that have NOTHING to lose.
+
+    reclaim_safe.sh clears build dirs and repo-aware worktrees but NOT the grok
+    worktree pool - which is what actually fills this disk. Lanes cost 1-19 GiB
+    each; the pool reached 67 GiB and hit 0 bytes free, stalling every tool on the
+    box including the shell itself. Only reaped when the lane is NOT live AND the
+    worktree is clean, so no uncommitted work can be lost. Branches always survive.
+    """
+    pool = Path.home() / ".claude-grok" / "worktrees"
+    if not pool.is_dir():
+        return 0
+    code, out = sh(f"{GROK} status", timeout=300)
+    if code != 0:
+        return 0          # cannot tell what is live -> reap nothing
+    live = {parts[2] for parts in (l.split() for l in out.splitlines())
+            if len(parts) > 2 and parts[0] == "running"}
+    freed = 0
+    for d in sorted(pool.iterdir()):
+        if not d.is_dir() or d.name in live:
+            continue
+        rc, dirty = sh(f"git -C {d} status --porcelain 2>/dev/null | wc -l", timeout=120)
+        if rc != 0 or dirty.strip() != "0":
+            continue      # dirty or unreadable -> preserve
+        _, sz = sh(f"du -sm {d} 2>/dev/null | cut -f1", timeout=300)
+        sh(f"rm -rf {d}", timeout=600)
+        try: freed += int(sz.strip() or 0)
+        except ValueError: pass
+    return freed
+
+
 def govern(snap: dict) -> str | None:
     """Return a reason to hold off, or None to proceed."""
     free = snap.get("disk_free_gib") or 0
@@ -121,7 +154,9 @@ def govern(snap: dict) -> str | None:
         script = REPO / "tools" / "reclaim_safe.sh"
         if script.is_file():
             sh(f"bash {script}", timeout=900)
-            free = machine().get("disk_free_gib") or 0
+        sh("find ~/.claude-grok/tasks -name diff.patch -size +50M -delete", timeout=600)
+        reap_finished_worktrees()
+        free = machine().get("disk_free_gib") or 0
     if free < DISK_FLOOR_GIB:
         return f"disk {free} GiB below floor {DISK_FLOOR_GIB}"
     ours = our_live_lanes(snap)
@@ -170,10 +205,19 @@ def harvest() -> list[dict]:
             text = report.read_text(errors="replace")
         except Exception:
             continue
+        s = STATUS_RE.search(text)
         m = NEXT_RE.search(text)
         if not m:
+            # Report exists but names no next wall. Previously skipped outright,
+            # which is the same silent-drop bug as the report-less case: the lane
+            # finished, nobody filed it, nobody knew. File it for review.
+            found.append({
+                "lane": d.name,
+                "status": s.group(1) if s else "UNKNOWN",
+                "next_bottleneck": "",
+                "needs_manual_review": True,
+            })
             continue
-        s = STATUS_RE.search(text)
         found.append({
             "lane": d.name,
             "status": s.group(1) if s else "UNKNOWN",
@@ -277,8 +321,21 @@ Model: {model}
   token effect). A parallel sum is not token latency.
 - Q80 down_proj low-rank ALREADY executes L @ (R @ x); it never reconstructs W.
 - Q80 decoded-weight caching: refuted by arithmetic (288 GiB dense vs 11 GiB packed).
-- The kernels are NOT bandwidth-limited: a same-box control streams 560-647 GB/s
-  while packed matvecs run 2.5. Occupancy and work geometry are the open axis.
+- CORRECTED 2026-08-16: the 560-647 GB/s figure is CACHE-RESIDENT REUSE (64 MiB x 4096)
+  and is NOT a decode ceiling. Decode reads each weight ONCE per token, so the honest
+  control is unique-bytes-once: 411.51 GB/s (Q80_DECODE_SHAPE_BANDWIDTH.json). What
+  governs decode is reuse-vs-no-reuse, NOT gather-vs-sequential.
+- Q80 mixed matvec runs 2.57 GB/s = 0.62% of that 411.51 ceiling, 160x off, and Q4 runs
+  15.2 GB/s - so mixed is 5.9x SLOWER PER BYTE. Reconstruction cost, not bytes moved, is
+  Q80's dominant term.
+- DEAD NUMBERS, do not cite: "0.135% efficiency" (a category error dividing a mixed-artifact
+  floor by a Q4 runtime), "sub-100 fs needs BPW < 0.448-0.518" (assumed unity bandwidth),
+  and storage BPW used as if it were active BPW (at batch=1 only 10 of 512 experts are read).
+- Qwen3.8 is at 406.2 of 411.51 GB/s = 98.7% of ceiling: it has NO kernel headroom and BPW
+  is its only lever. Its token is a CLOSED 12-component ledger; weight_addressing is 60.44%
+  and is DRAM traffic (G024_QWEN38_TOKEN_NS.json).
+- Q4 vehicles are DE-AUTHORISED. The ~20 h DSV4F determined teacher-X capture is
+  DE-AUTHORISED; do not propose or restart it.
 
 ## Commit
 You are on `gate` (unsandboxed). Commit normally, then verify with `git log` that
@@ -381,6 +438,13 @@ def one_pass() -> dict:
     save(STATE, state)
     report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
 
+    # 2b. reap lanes that died without saying so, preserving their work first.
+    # grok-run status reports `running` for processes that are gone - two DSV4F
+    # lanes held slots ~2 h that way, one of them sitting on a COMPLETED paired
+    # measurement that was uncommitted. Liveness is pgrep + worktree mtime.
+    rc, _ = sh(f"python3 {REPO / 'tools' / 'lane_health.py'}", timeout=900)
+    report["dead_lanes_found"] = rc if rc and rc < 100 else 0
+
     # 3. launch the top pending target if the box allows
     hold = govern(snap)
     report["our_live_lanes"] = len(snap.get("our_live_lanes") or [])
@@ -389,7 +453,32 @@ def one_pass() -> dict:
         report["hold"] = hold
         return report
 
-    pending = [t for t in state["targets"] if t.get("status") == "pending"]
+    # Work de-authorised by a steer must be EXCLUDED, never merely down-ranked.
+    # A relative weight cannot stop a launch when the whole queue is one model:
+    # max() still returns something, which is how the ~20 h G007 teacher-X capture
+    # relaunched itself after the Qwen-first amendment de-authorised it.
+    DEAUTHORISED = ("determined-teacher-x", "teacher_x_capture", "uniform-q4", "uniform_q4")
+
+    def deauthorised(t: dict) -> str | None:
+        blob = f"{t.get('id','')} {t.get('contract','')} {t.get('title','')}".lower()
+        for pat in DEAUTHORISED:
+            if pat in blob:
+                return pat
+        if str(t.get("obligation_status", "")).upper() == "BLOCKED":
+            return "obligation BLOCKED"
+        return None
+
+    pending = []
+    for t in state["targets"]:
+        if t.get("status") != "pending":
+            continue
+        why = deauthorised(t)
+        if why:
+            t["status"] = "deauthorised"
+            t["tier1"] = f"excluded: {why}"
+            continue
+        pending.append(t)
+    save(STATE, state)
     if not pending:
         report["launched"] = None
         report["hold"] = "queue dry - harvest supplied no new pending target"
@@ -465,6 +554,26 @@ def _selfcheck() -> None:
     assert not ok, "forbidden marker must reject even when the expect marker is present"
     ok, _ = tier1({"model": "q80", "tier1_command": "exit 3"})
     assert not ok, "non-zero exit must reject"
+
+    # Both silent-drop cases must now surface rather than vanish.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td)
+        (base / "no-report-lane").mkdir(); (base / "no-report-lane" / "exit_code").write_text("124")
+        (base / "no-wall-lane").mkdir()
+        (base / "no-wall-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nno wall named\n")
+        (base / "good-lane").mkdir()
+        (base / "good-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nNEXT_BOTTLENECK: x 1 ns\n")
+        global TASKS
+        saved = TASKS; TASKS = base
+        try:
+            got = {h["lane"]: h for h in harvest()}
+        finally:
+            TASKS = saved
+        assert set(got) == {"no-report-lane", "no-wall-lane", "good-lane"}, got
+        assert got["no-report-lane"]["needs_manual_review"] and "124" in got["no-report-lane"]["status"]
+        assert got["no-wall-lane"]["needs_manual_review"], "report without a wall must still be filed"
+        assert not got["good-lane"].get("needs_manual_review")
 
     txt = "STATUS: SHIPPED\nNEXT_BOTTLENECK: host.foo 123 ns/token\n"
     assert NEXT_RE.search(txt).group(1).startswith("host.foo")

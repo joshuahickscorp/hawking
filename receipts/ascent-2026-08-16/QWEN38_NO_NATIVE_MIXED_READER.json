@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.special_unit.mixed_artifacts_cannot_be_tested_natively.v1",
+  "date": "2026-08-16",
+  "THE_REAL_BLOCKER": "The Qwen3.8 runtime cannot read mixed-codec artifacts AT ALL. ascension_qwen38_hybrid_greedy speaks only HQ30UQ4 and f32v2. Grep finds NO HGRAVB01/HGRAVR02/HGRAVS01 reader in qwen38_hybrid_decode.rs. So every coherence test of a mixed artifact must first RECONSTRUCT it back to Q4 - a second lossy quantisation - which confounds the result.",
+  "what_I_measured": {
+    "mixed-sub15-v1 (~1.29 BPW, attention rice-compressed)": "degenerate two-token cycle, ids [220,264,220,...], 0 fallbacks",
+    "mixed-2p0-materialized (MLP 0.848 BPW, attention Q4)": "single token 248046 = <|im_end|>, immediate empty answer, 0 fallbacks",
+    "uniform-q4-v1 control, same harness and prompt": "'<think>' - coherent"
+  },
+  "WHY_THESE_RESULTS_CANNOT_BE_ATTRIBUTED_YET": "Both mixed artifacts were tested through a mixed -> float -> Q4 round trip, because that is the only format the runtime reads. An incoherent result could mean (a) the mixed representation is genuinely below the coherence floor, or (b) the DOUBLE quantisation destroyed it while the mixed representation itself is fine. This experiment cannot separate those.",
+  "what_this_means_for_G006": "G006's 'with its own custom kernel' clause is not a performance nicety - the kernel is REQUIRED to evaluate the artifact at all. Without a native mixed reader there is no way to test whether any sub-Q4 Qwen3.8 pack is coherent, so the coherence floor CANNOT BE MEASURED on the current runtime.",
+  "status_of_mixed-2p0-v1": "Its own receipt says CANDIDATE_MIXED_REPRESENTATION_PACKED. It was packed and never generate-tested. My 51.4 TPS projection from it stands as arithmetic but its coherence is UNKNOWN, not established - and I should not have implied otherwise.",
+  "the_corrected_next_step": "Build a native mixed-codec reader for the Qwen3.8 decode path - at minimum HGRAVB01 binary, HGRAVR02 rice, HGRAVS01 low-rank - so artifacts can be generate-tested in their real representation. That is prerequisite to BOTH G006's coherence floor and any measured (not projected) TPS.",
+  "evidence_paths": [
+    "/tmp/q38_2p0mat.json",
+    "/tmp/sub15_a.json",
+    "/tmp/sub15_b.json",
+    "tools/qwen38_sub15_pack.py lines 13-15 state the limitation explicitly"
+  ]
+}

@@ -10,6 +10,7 @@
 //! oracle. Expert outputs are never read back or gathered on the host.
 //! The CPU oracle in `gravity_deepseek_v4_streamed_forward` is unchanged.
 
+use std::cell::Cell;
 use std::mem::size_of;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -21,6 +22,26 @@ static HOST_MEMCPY_CALLS: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_NS: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_BYTES: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_CALLS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_NS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_BYTES: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_CALLS: AtomicU64 = AtomicU64::new(0);
+
+thread_local! {
+    static IN_CB_OVERLAP: Cell<bool> = const { Cell::new(false) };
+}
+
+struct CbOverlapGuard;
+
+impl Drop for CbOverlapGuard {
+    fn drop(&mut self) {
+        IN_CB_OVERLAP.with(|flag| flag.set(false));
+    }
+}
+
+fn enter_cb_overlap() -> CbOverlapGuard {
+    IN_CB_OVERLAP.with(|flag| flag.set(true));
+    CbOverlapGuard
+}
 
 fn reset_host_copy_stats() {
     HOST_MEMCPY_NS.store(0, Ordering::Relaxed);
@@ -29,6 +50,9 @@ fn reset_host_copy_stats() {
     HOST_DECODE_NS.store(0, Ordering::Relaxed);
     HOST_DECODE_BYTES.store(0, Ordering::Relaxed);
     HOST_DECODE_CALLS.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_NS.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_BYTES.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_CALLS.store(0, Ordering::Relaxed);
 }
 
 fn note_memcpy(bytes: usize, ns: u64) {
@@ -38,9 +62,15 @@ fn note_memcpy(bytes: usize, ns: u64) {
 }
 
 fn note_decode(bytes: usize, ns: u64) {
-    HOST_DECODE_NS.fetch_add(ns, Ordering::Relaxed);
-    HOST_DECODE_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
-    HOST_DECODE_CALLS.fetch_add(1, Ordering::Relaxed);
+    if IN_CB_OVERLAP.with(Cell::get) {
+        HOST_DECODE_IN_OVERLAP_NS.fetch_add(ns, Ordering::Relaxed);
+        HOST_DECODE_IN_OVERLAP_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+        HOST_DECODE_IN_OVERLAP_CALLS.fetch_add(1, Ordering::Relaxed);
+    } else {
+        HOST_DECODE_NS.fetch_add(ns, Ordering::Relaxed);
+        HOST_DECODE_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+        HOST_DECODE_CALLS.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 use serde::Serialize;
@@ -101,13 +131,8 @@ fn greedy_from_logits(logits: &[f32], vocab_offset: usize) -> (u32, f32) {
 }
 
 /// New kernels introduced by this graph. Each must have a `static_kernel_name` arm.
-pub const NATIVE_TOKEN_GRAPH_KERNELS: &[&str] = &[
-    "dsv4f_pack_worklist",
-    "dsv4f_worklist_fp4_matvec",
-    "dsv4f_worklist_fp4_matvec_simd",
-    "dsv4f_worklist_swiglu",
-    "dsv4f_worklist_combine",
-];
+/// After G023 these are the shared decode-family specializations (K=6, FP4, BF16).
+pub const NATIVE_TOKEN_GRAPH_KERNELS: &[&str] = crate::decode_family::DSV4F_GRAPH_KERNELS;
 
 pub const NATIVE_TOKEN_GRAPH_SCHEMA: &str = "hawking.gravity.deepseek_v4.native_token_graph.v1";
 pub const NATIVE_TOKEN_GRAPH_PATH: &str = "device_worklist_bos_token";
@@ -136,12 +161,22 @@ const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const HASH_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority";
 const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority";
 const SHARED_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
-const PACK_KERNEL: &str = "dsv4f_pack_worklist";
-const WORKLIST_FP4_KERNEL: &str = "dsv4f_worklist_fp4_matvec";
-const WORKLIST_FP4_SIMD_KERNEL: &str = "dsv4f_worklist_fp4_matvec_simd";
+fn pack_kernel() -> &'static str {
+    crate::decode_family::pack_worklist()
+}
+fn worklist_fp4_kernel() -> &'static str {
+    crate::decode_family::worklist_fp4()
+}
+fn worklist_fp4_simd_kernel() -> &'static str {
+    crate::decode_family::worklist_fp4_simd()
+}
 const WORKLIST_FP4_SIMD_ROWS_PER_TG: u32 = 8;
-const WORKLIST_SWIGLU_KERNEL: &str = "dsv4f_worklist_swiglu";
-const WORKLIST_COMBINE_KERNEL: &str = "dsv4f_worklist_combine";
+fn worklist_swiglu_kernel() -> &'static str {
+    crate::decode_family::swiglu_bf16_worklist()
+}
+fn worklist_combine_kernel() -> &'static str {
+    crate::decode_family::combine_bf16()
+}
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
 const EMBED_WEIGHT: &str = "embed.weight";
 const LM_HEAD_WEIGHT: &str = "head.weight";
@@ -331,6 +366,14 @@ impl NativeTokenGraphReport {
             },
             "honesty": self.honesty,
             "metal": {
+                "decode_family_enabled": crate::decode_family::family_dispatch_enabled(),
+                "decode_family_kernels": [
+                    crate::decode_family::pack_worklist(),
+                    crate::decode_family::worklist_fp4(),
+                    crate::decode_family::worklist_fp4_simd(),
+                    crate::decode_family::swiglu_bf16_worklist(),
+                    crate::decode_family::combine_bf16(),
+                ],
                 "metal_dispatches": self.counters.metal_dispatches,
                 "command_buffers": self.counters.command_buffers,
                 "fallback": self.counters.fallbacks,
@@ -839,7 +882,7 @@ mod macos {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
                 fp8_occ_tg: align_simd(pipeline_tg(&metal, FP8_OCC_KERNEL, 256)?),
-                fp4_tg: pipeline_tg(&metal, WORKLIST_FP4_KERNEL, 256)?,
+                fp4_tg: pipeline_tg(&metal, worklist_fp4_kernel(), 256)?,
                 cast_tg: pipeline_tg(&metal, CAST_KERNEL, 256)?,
                 gate_tg: pipeline_tg(&metal, GATE_KERNEL, 256)?,
                 wo_a_tg: pipeline_tg(&metal, WO_A_KERNEL, 256)?,
@@ -1805,12 +1848,12 @@ mod macos {
         let (kernel, grid, tg) = if occupancy {
             let groups = rows.div_ceil(WORKLIST_FP4_SIMD_ROWS_PER_TG);
             (
-                WORKLIST_FP4_SIMD_KERNEL,
+                worklist_fp4_simd_kernel(),
                 top_k * groups * 256,
                 256u32,
             )
         } else {
-            (WORKLIST_FP4_KERNEL, top_k * rows, tg.min(rows.max(1)))
+            (worklist_fp4_kernel(), top_k * rows, tg.min(rows.max(1)))
         };
         batch.dispatch_threads(kernel, (grid, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(worklist), 0);
@@ -2298,6 +2341,12 @@ mod macos {
             super::HOST_DECODE_NS.load(Ordering::Relaxed),
             super::HOST_DECODE_CALLS.load(Ordering::Relaxed),
             super::HOST_DECODE_BYTES.load(Ordering::Relaxed),
+        );
+        profiler.add_stage(
+            "host.decode_in_cb_overlap",
+            super::HOST_DECODE_IN_OVERLAP_NS.load(Ordering::Relaxed),
+            super::HOST_DECODE_IN_OVERLAP_CALLS.load(Ordering::Relaxed),
+            super::HOST_DECODE_IN_OVERLAP_BYTES.load(Ordering::Relaxed),
         );
         profiler.add_stage(
             "host.owned_copy",
@@ -2888,6 +2937,7 @@ mod macos {
         ledger: &mut ResidentLedger,
         profiler: &mut TokenNsCollector,
     ) -> Result<MoePreload> {
+        let _overlap = super::enter_cb_overlap();
         let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::FeedForward);
         let ffn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::FeedForwardNorm);
         let gate = layer.gate_binding();
@@ -3099,7 +3149,7 @@ mod macos {
             })?;
         }
         n += 1;
-        batch.dispatch_threads(PACK_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+        batch.dispatch_threads(pack_kernel(), (1, 1, 1), (1, 1, 1), |enc| {
             enc.set_buffer(0, Some(&s.route_ids), 0);
             enc.set_buffer(1, Some(&s.route_weights), 0);
             enc.set_buffer(2, Some(&s.worklist), 0);
@@ -3182,7 +3232,7 @@ mod macos {
         n += 1;
         dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
         n += 1;
-        batch.dispatch_threads(WORKLIST_SWIGLU_KERNEL, (gate_count, 1, 1), (tg, 1, 1), |enc| {
+        batch.dispatch_threads(worklist_swiglu_kernel(), (gate_count, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(&s.worklist), 0);
             enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
             enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
@@ -3336,7 +3386,7 @@ mod macos {
         )?;
         n += 1;
         batch.dispatch_threads(
-            WORKLIST_COMBINE_KERNEL,
+            worklist_combine_kernel(),
             (HIDDEN_SIZE as u32, 1, 1),
             (p.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
             |enc| {
@@ -4174,7 +4224,7 @@ mod macos {
         })?;
         probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
             batch.dispatch_threads(
-                WORKLIST_COMBINE_KERNEL,
+                worklist_combine_kernel(),
                 (HIDDEN_SIZE as u32, 1, 1),
                 (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
                 |enc| {
@@ -4199,10 +4249,13 @@ mod tests {
 
     #[test]
     fn new_kernels_are_publicly_enumerated() {
-        assert_eq!(NATIVE_TOKEN_GRAPH_KERNELS.len(), 4);
+        assert_eq!(NATIVE_TOKEN_GRAPH_KERNELS.len(), 5);
         for kernel in NATIVE_TOKEN_GRAPH_KERNELS {
             assert!(!kernel.is_empty());
-            assert!(kernel.starts_with("dsv4f_"));
+            assert!(
+                crate::decode_family::is_family_kernel(kernel),
+                "{kernel} is not a G023 family kernel"
+            );
         }
     }
 

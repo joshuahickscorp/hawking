@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.ops.grok_contract_gate_format.v1",
+  "date": "2026-08-16",
+  "why": "The revamped grok-run rejects contracts before launch. It cost three relaunch attempts because a contract can read as rigorous to a human and still parse as EMPTY to the gate.",
+  "what_the_gate_actually_parses": {
+    "commands": "ONLY from BACKTICK-quoted strings containing cargo|npm|pytest|go|make|node|pnpm|yarn. An indented code block is INVISIBLE to it.",
+    "write_roots": "from lines led by EDIT / WRITE / OUTPUT, or containing modify|edit|change|implement|write|create|add|fix|refactor|touch - with the path on the SAME line. A prose list of paths under a '## WRITE SCOPE' heading is invisible.",
+    "verification_roots": "lines led by VERIFY, or containing verify|test|tests must|run the tests",
+    "acceptance": "the word acceptance, or 'must pass', or 'exit 0'"
+  },
+  "the_four_errors_it_raises": [
+    "NO_ACCEPTANCE - nothing can mark the task done",
+    "NO_VERIFICATION - no test path and no runnable command",
+    "UNBOUNDED_WRITE - asks for changes but names no writable path",
+    "CONTRADICTORY_PATHS - a path is both writable and denied"
+  ],
+  "working_template": "Use '## VERIFY' with a backticked `cargo ...` command, and one '## EDIT <path>' line per writable root, plus 'DENY <path>' lines for files concurrent lanes own.",
+  "my_assessment": "The gate is right and I was wrong to find it obstructive. Every rejection named a real hole: my catalog contract had no machine-checkable command and no bounded write scope, which is exactly how two lanes collided on qwen38_hybrid_decode.rs earlier today and forced a manual conflict resolution. Do not reach for SG_OFF - fix the contract.",
+  "source": "~/.claude-grok/v2/contract.mjs lint() and the parser table above it"
+}

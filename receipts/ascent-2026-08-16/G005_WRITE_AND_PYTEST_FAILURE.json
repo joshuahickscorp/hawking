@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.special_unit.write_and_pytest_failure.v1",
+  "date": "2026-08-16",
+  "task": "write_and_pytest_small",
+  "prior_receipt": "receipts/ascent-2026-08-16/G005_MODEL_DRIVES_TOOLS.json",
+  "prior_status": "FAIL",
+  "prior_detail": "model did not call pytest",
+  "why_that_detail_means_the_writes_worked": "The bench returns 'model wrote N file(s)' if writes < 2, and 'malformed tool call refused' if a later round broke the parse. The recorded detail is specifically 'model did not call pytest', so the model emitted at least two well-formed write calls and then stopped.",
+  "root_cause": "Planning follow-through, not a harness parse/repair issue and not a missing tool. act() feeds tool results back with 'Continue. Emit the next tool_call if more work remains, or reply with plain text if the task is done.' After writing tiny.py and test_tiny.py the model treated the authoring as complete and replied in plain text. The original prompt also said 'Emit one tool_call per action', which forced multi-round instead of using the already-supported multi-block parse.",
+  "what_was_not_done": [
+    "Harness did not inject a pytest call",
+    "Scoring was not weakened to write-only",
+    "A malformed call was not repaired into pytest",
+    "The task was not reclassified as harness-expected"
+  ],
+  "what_changed_after_the_diagnosis": "Prompt now requires a pytest tool_call as the last action, allows all three <tool_call> blocks in one reply, and gives five rounds / 384 new tokens. Pass criteria are unchanged: two writes (tiny.py + test_tiny.py) plus a pytest call that succeeds.",
+  "after_prompt_change": {
+    "status": "FAIL",
+    "detail": "model did not write test_tiny.py: ['tiny.py', 'tiny.py', 'tiny.py']",
+    "meaning": "The clearer prompt did not produce follow-through. The model wrote tiny.py three times and never authored the test or called pytest. Kept as a FAIL, not weakened."
+  },
+  "if_it_still_fails": "Keep the FAIL. That is a model-capability finding on multi-step author-then-test, not a reason to shrink the bench.",
+  "seal_sha256": "19968c3228cdd84133d28b3b87e0463a5d843d91f90742b8aab63e306e538cff"
+}

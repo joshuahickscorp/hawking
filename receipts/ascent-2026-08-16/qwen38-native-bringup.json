@@ -1,0 +1,95 @@
+{
+  "schema": "hawking.special_unit.qwen38_native_bringup.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-native-bringup",
+  "status": "SHIPPED",
+  "class": "COMPILE / CPU pack, GPU generate under lock",
+  "timing_label": "DIRTY_ENGINEERING",
+  "identity": {
+    "source": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+    "pack": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+    "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+    "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "language_only": true,
+    "skipped_vision_tensors": 333
+  },
+  "pack": {
+    "tensor_count": 755,
+    "q4_tensors": 402,
+    "f32_tensors": 353,
+    "fused_in_proj_layers": 48,
+    "source_weight_elements": 26895998464,
+    "tensor_payload_bytes": 14297694680,
+    "complete_physical_bpw": 4.252735126866492,
+    "min_q4_cosine_first_pack": 0.9894805330134487,
+    "note": "Started at uniform Q4 as reuse-matrix recommended. 2.0 BPW is the TPS target, not this bring-up. No 2-bit campaign."
+  },
+  "adapters": {
+    "in_proj_fuse": "pack-time QKVZ [Q128,K128,V384,Z384]/key-head and BA [b×3,a×3]/key-head",
+    "mlx_rmsnorm": "input/post/final/q_norm/k_norm stored as materialized scales (~1); packed as w-1 so Q80 (1+w) kernels apply. Gated DeltaNet norm left as conventional scale.",
+    "forked_shaders": [
+      "qwen38_qkvz_rearrange_conv_l2_f32 (values_per_key=3, loops 384 value rows)",
+      "qwen38_gqa_qk_norm_rope_cache_f32 (24/4/θ=1e7)",
+      "qwen38_attention_apply_sigmoid_gate (24*256)"
+    ],
+    "reused_unmodified": [
+      "qwen80_residual_rmsnorm_f32",
+      "qwen80_silu_mul_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen80_deltanet_gated_rmsnorm_f32",
+      "qwen80_gated_delta_decode_tg",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_embedding_lookup",
+      "mha_decode_f32",
+      "qwen_next_add_residual",
+      "sample_argmax_f32"
+    ]
+  },
+  "generation": {
+    "prompt": "<|im_start|>user\nSay hi.<|im_end|>\n<|im_start|>assistant\n",
+    "verbatim_A2_24_new_tokens": "<think>\nThe user simply wants me to say \"hi.\" This is a very simple, direct request. I'll just",
+    "verbatim_B_reps_16_new_tokens": "<think>\nThe user simply wants me to say \"hi.\" This is a very",
+    "greedy_token_ids_16": [248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149, 1061, 369, 264, 1546],
+    "greedy_bit_identical_across_B1_B2_B3": true,
+    "fallbacks": 0,
+    "pre_fix_A1_garbage": " Say  1 -/  \" say body (说 h -  (MLX residual norms applied as 1+w; discarded)"
+  },
+  "timing": {
+    "label": "DIRTY_ENGINEERING",
+    "gpu_definition": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait",
+    "note": "No two-variant pair existed; four locked repeats of the same vehicle after the RMSNorm adapter. Other lanes were running.",
+    "median_gpu_ns_per_token": {
+      "A2_24tok": 42460625,
+      "B1_16tok": 42988583,
+      "B2_16tok": 43036874,
+      "B3_16tok": 43225083
+    },
+    "spread_ns": [42460625, 42988583, 43036874, 43225083],
+    "spread_ms": [42.461, 42.989, 43.037, 43.225],
+    "result_ns_per_token": 43036874,
+    "result_tok_s_gpu": 23.24,
+    "first_step_gpu_ns_includes_compile_or_cold": {
+      "A2": 69016708,
+      "B1": 83413125,
+      "B2": 108421124,
+      "B3": 94505500
+    },
+    "wait_is_not_gpu": true,
+    "A2_steady_gpu_ns_full": [42220333, 42210500, 42237499, 42145000, 42203875, 42287166, 42221083, 42394874, 42323583, 42337666, 42298666, 42448749, 42559249, 42391124, 42410499, 42504250, 42356125, 42460625, 42507083, 42416875, 42734500, 42437166, 42597791, 42755708, 42560999, 42587333, 42925999, 42846749, 42964583, 43413583, 43381041, 43259708, 42851999]
+  },
+  "correctness": {
+    "fusion_unit_test": "qkvz_and_ba_fuse_are_invertible bit-identical",
+    "schedule_unit_test": "48 DeltaNet + 16 GQA, interval-4, dense MLP suffix, no MoE",
+    "config_refuse": "qwen3_next / qwen3_moe / qwen3 rejected",
+    "generation": "greedy token-identical across B1/B2/B3; readable on-topic English",
+    "numeric_gate": "Q4 pack min cosine 0.98948 vs BF16 source; RMSNorm adapter is pack-time w-1 (stated, not bit-identical to MLX raw scale)",
+    "fallbacks": 0
+  },
+  "next_bottleneck": {
+    "what": "64-layer dense SwiGLU Q4 matvecs (gate+up+down) plus mixer GEMVs. GPU-bound: wait ≈ gpu + 0.5ms.",
+    "measured_ns": 43036874,
+    "dram_floor_at_4bpw_ms": 14.414,
+    "ratio_to_4bpw_floor": 3.0,
+    "not_doing": "sub-bit campaign, kernel tournament, TG3, vision, MTP"
+  }
+}

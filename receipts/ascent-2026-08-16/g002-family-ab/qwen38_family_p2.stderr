@@ -1,0 +1,66 @@
+qwen38-token-ns opening catalog; prompt tokens=11
+qwen38-decode opening Metal + 755 catalog tensors
+qwen38-decode upload 0/755
+qwen38-decode upload 50/755
+qwen38-decode upload 100/755
+qwen38-decode upload 150/755
+qwen38-decode upload 200/755
+qwen38-decode upload 250/755
+qwen38-decode upload 300/755
+qwen38-decode upload 350/755
+qwen38-decode upload 400/755
+qwen38-decode upload 450/755
+qwen38-decode upload 500/755
+qwen38-decode upload 550/755
+qwen38-decode upload 600/755
+qwen38-decode upload 650/755
+qwen38-decode upload 700/755
+qwen38-decode upload 750/755
+warmup generate (4 new tokens, discarded from claims)
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+production generate rep 1
+  median_gpu=Some(36450999) wall=978000959 tokens=[248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149, 1061, 369, 264, 1546]
+isolated families (1 reps each)
+  input_norms rep1 gpu=1287583 wait=1545667 disp=64
+  post_norms rep1 gpu=1240000 wait=1472417 disp=64
+  final_norm rep1 gpu=21291 wait=251417 disp=1
+  silu_64 rep1 gpu=155791 wait=361959 disp=64
+  mlp_residual_64 rep1 gpu=116541 wait=314000 disp=64
+  mixer_residual_64 rep1 gpu=133999 wait=329667 disp=64
+  rearrange_48 rep1 gpu=366624 wait=569750 disp=48
+  ba_to_decay_48 rep1 gpu=128000 wait=332084 disp=48
+  gated_rmsnorm_48 rep1 gpu=1320749 wait=1512833 disp=48
+  rope_cache_16 rep1 gpu=1574333 wait=1777375 disp=16
+  mha_16 rep1 gpu=743666 wait=977583 disp=16
+  sigmoid_16 rep1 gpu=38624 wait=243000 disp=16
+  argmax rep1 gpu=417499 wait=617667 disp=1
+  dn_gemvs rep1 gpu=5412999 wait=5766084 disp=144
+  gqa_gemvs rep1 gpu=1724374 wait=1975334 disp=64
+  mlp_matvecs_64 rep1 gpu=15598208 wait=15901375 disp=192
+  mlp_full_64 rep1 gpu=16691250 wait=17030667 disp=384
+  lm_head rep1 gpu=1058249 wait=1268291 disp=1
+  embed rep1 gpu=9708 wait=212125 disp=1
+  gated_delta_48 rep1 gpu=5568458 wait=5766583 disp=48
+  stream_rec_state rep1 gpu=457416 wait=5607416 disp=1
+  stream_conv_state rep1 gpu=20999 wait=413833 disp=1
+  stream_gqa_key rep1 gpu=27625 wait=415292 disp=1
+  stream_gqa_value rep1 gpu=26833 wait=240666 disp=1
+Q4 addr/decode probes
+  mlp_full_probe rep1 gpu=15599374 wait=15862625 disp=192
+  mlp_addr_probe rep1 gpu=13152041 wait=13453458 disp=192
+  mlp_decode_probe rep1 gpu=15014124 wait=15544417 disp=192
+  mlp addr_frac=0.8431 decode_frac=0.1194 fma_frac=0.0375
+  dn_full_probe rep1 gpu=5377999 wait=5644917 disp=144
+  dn_addr_probe rep1 gpu=4707041 wait=4994000 disp=144
+  dn_decode_probe rep1 gpu=5346874 wait=5740250 disp=144
+  dn addr_frac=0.8752 decode_frac=0.1190 fma_frac=0.0058
+  gqa_full_probe rep1 gpu=1723458 wait=1969875 disp=64
+  gqa_addr_probe rep1 gpu=1472833 wait=1705750 disp=64
+  gqa_decode_probe rep1 gpu=1664125 wait=1916000 disp=64
+  gqa addr_frac=0.8546 decode_frac=0.1110 fma_frac=0.0344
+  lm_head_full_probe rep1 gpu=1012458 wait=1241667 disp=1
+  lm_head_addr_probe rep1 gpu=867083 wait=1087250 disp=1
+  lm_head_decode_probe rep1 gpu=990375 wait=1237166 disp=1
+  lm_head addr_frac=0.8564 decode_frac=0.1218 fma_frac=0.0218
+wrote /Users/scammermike/.claude-grok/worktrees/g002-per-facet-ab-20260816-162057/receipts/ascent-2026-08-16/g002-family-ab/qwen38_family_p2.json
+wrote /Users/scammermike/.claude-grok/worktrees/g002-per-facet-ab-20260816-162057/receipts/ascent-2026-08-16/g002-family-ab/TOKEN_NS_QWEN38.json

@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.g002.exact_patch_site.v1",
+  "date": "2026-08-16",
+  "finding": "The G002 regression is a hardcoded kernel name in ONE function, not a structural divergence. production_kernel_for() in qwen80_mixed_hybrid_decode.rs (~line 2247) selects the tile kernel by literal string when recon-fuse is enabled - the default - and only consults decode_family on the non-default branch.",
+  "the_code": {
+    "file": "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+    "fn": "production_kernel_for",
+    "approx_line": 2247,
+    "shipping_branch": "if qwen80_recon_fuse_enabled() { (\"q80_binary_group_matvec_tg256\", tg256_grid(body.rows)) }",
+    "family_branch": "else { (crate::decode_family::MATVEC_BINARY, (body.rows, 1, 1)) }"
+  },
+  "why_the_earlier_reading_was_incomplete": "I reported the family had 'left Q80's hot path'. More precisely: Q80 still CONSULTS decode_family at four dispatch sites via matvec_binary() and matvec_hgravs(), and the family accessor even has a legacy toggle. But production_kernel_for bypasses all of that with a literal on the default branch, so the family's answer is computed and discarded.",
+  "THE_FIX_IS_SMALL": "Add the tile kernels as family constants - e.g. MATVEC_BINARY_TILES = 'q80_binary_group_matvec_tg256' and the CSR equivalent - and have production_kernel_for return decode_family::matvec_binary_tiles() on the recon-fuse branch. The family then OWNS the faster geometry instead of Q80 hardcoding it, which is the resolution already recorded in G002_Q80_HOT_PATH_RESOLUTION.json, now located to a single function.",
+  "measured_justification_for_keeping_the_tiles": "gk_simd on Q80 is 91.28 ms against 36.53 for the tiles - the family's EXISTING kernels are 2.5x slower here, so the tiles must be added to the family rather than replaced by it.",
+  "why_the_parity_test_cannot_see_this": "gk_family_parity asserts mixed.contains('decode_family::'), which passes because those four consult sites exist. A source-substring test cannot tell that production_kernel_for discards the result on the default branch. That is the blind spot recorded in G002_PARITY_TEST_BLIND_SPOT.json.",
+  "still_sequenced": "q80-deltanet-rebase3 owns this file. The patch waits for it, per the merge-serialisation rule."
+}

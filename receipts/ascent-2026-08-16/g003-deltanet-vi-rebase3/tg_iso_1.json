@@ -1,0 +1,339 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 1665,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 1344,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "greedy_bit_identical": true,
+    "greedy_oracle_12": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 9.5367431640625e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 8.493661880493164e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.9073486328125e-6,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "degrade": {
+    "down_mix": 1.0,
+    "gate_mix": 1.0,
+    "hgravs_rank_cap": 160,
+    "mix_seed": 3232857105,
+    "up_mix": 1.0
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26880,
+      "command_buffers": 1372,
+      "compute_dispatches": 79352,
+      "deltanet_tg_dispatches": 1008,
+      "deltanet_vi_dispatches": 0,
+      "device_activation_dispatches": 14476,
+      "expert_copy_binds": 0,
+      "expert_nocopy_binds": 13098,
+      "hgravs_factor_dispatches": 26880,
+      "packed_calls": 689,
+      "packed_skipped": 0,
+      "residual_dispatches": 13440,
+      "routed_expert_waves": 1344,
+      "segment_nocopy_binds": 0,
+      "uniform8_dispatches": 11116
+    },
+    "peak_rss_bytes": 9838854144,
+    "stages": {
+      "cb_encode_ns": 41508497,
+      "cb_submit_ns": 7127988,
+      "cb_wait_minus_gpu_ns": 515137306,
+      "cb_wait_ns": 3133269345,
+      "deltanet_recurrent_host_ns": 0,
+      "deltanet_secs": 0.22279242600000035,
+      "embed_secs": 0.248244538,
+      "gpu_matvec_ns": 2618132039,
+      "gpu_matvec_timestamps_missing": 0,
+      "gpu_organ": {
+        "deltanet": 2388534427,
+        "gqa": 203672794,
+        "moe_combine_gate": 0,
+        "moe_routed": 0,
+        "moe_router": 0,
+        "moe_shared": 0,
+        "other": 0,
+        "terminal": 25924818
+      },
+      "gqa_secs": 0.059447630000000015,
+      "host_excl": {
+        "argmax": 2401041,
+        "buffer_prep": 0,
+        "catalog_reparse": 425640552,
+        "combine": 0,
+        "dn_conv": 1591402,
+        "dn_gated": 0,
+        "dn_rearrange_l2": 0,
+        "dn_recurrent": 2380624,
+        "dn_residual": 0,
+        "dn_rms": 16795,
+        "embed": 248245790,
+        "expert_bind": 1970838819,
+        "final_rms": 0,
+        "gqa_attn": 0,
+        "gqa_interleave": 0,
+        "gqa_kv_copy": 0,
+        "gqa_residual": 0,
+        "gqa_rms": 1316206,
+        "gqa_rope": 679947,
+        "post_rms": 0,
+        "silu": 0,
+        "topk": 12015157,
+        "vector_clone": 0
+      },
+      "host_expert_bind_ns": 1970838819,
+      "host_expert_bind_secs": 1.970838818999997,
+      "isolated_deltanet_dispatches": 36,
+      "isolated_deltanet_gpu_ns": 63026416,
+      "isolated_deltanet_host_ns": 37973167,
+      "isolated_deltanet_wait_ns": 63266708,
+      "mixed_matvec_secs": 0.0,
+      "moe_combine_secs": 0.04548734799999996,
+      "moe_norm_router_secs": 0.0,
+      "moe_routed_secs": 0.04552439599999999,
+      "moe_shared_secs": 0.044988437000000096,
+      "terminal_secs": 0.029689918999999995
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "timing": {
+    "authority": "wall decode_secs/generated_tokens; GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime of weight GEMVs only",
+    "cache_geom_enabled": true,
+    "command_buffers_per_token_reps": [
+      49.0
+    ],
+    "decode_family_binary": "gk_matvec_binary",
+    "decode_family_enabled": true,
+    "decode_family_hgravs": "gk_matvec_hgravs",
+    "decode_secs": 1.737058084,
+    "dispatches_per_token_reps": [
+      2834.0
+    ],
+    "facet1_enabled": true,
+    "facet2_enabled": true,
+    "gk_simd_enabled": false,
+    "gpu_matvec_ns_per_token_reps": [
+      87800067.0
+    ],
+    "gpu_timestamps_missing": 0,
+    "host_expert_bind_ns_per_token_reps": [
+      41008316.81818182
+    ],
+    "host_preparation_decode": {
+      "buffer_prep_ns_median": 0,
+      "catalog_reparse_ns_median": 8326792,
+      "catalog_reparse_ns_reps": [
+        8689541,
+        8512417,
+        8034333,
+        8326792,
+        8567083,
+        8438541,
+        8191250,
+        8506333,
+        8269167,
+        8313250,
+        8074875
+      ],
+      "decode_tokens": 11,
+      "embed_ns_median": 8338458,
+      "encode_ns_median": 1482169,
+      "expert_bind_ns_median": 37202086,
+      "gpu_ns_median": 87758017,
+      "host_preparation_ns_median": 55831505,
+      "host_preparation_ns_reps": [
+        98606745,
+        68284597,
+        57567757,
+        54110530,
+        55831505,
+        44034745,
+        34841735,
+        40416624,
+        48766900,
+        81418271,
+        66951342
+      ],
+      "vector_clone_ns_median": 0,
+      "wall_ns_median": 154050958
+    },
+    "label": "DIRTY_ENGINEERING",
+    "packed_calls": 689,
+    "packed_skipped": 0,
+    "prefill_secs": 4.054029375,
+    "recon_fuse_enabled": true,
+    "reps_host_preparation_decode": [
+      {
+        "buffer_prep_ns_median": 0,
+        "catalog_reparse_ns_median": 8326792,
+        "catalog_reparse_ns_reps": [
+          8689541,
+          8512417,
+          8034333,
+          8326792,
+          8567083,
+          8438541,
+          8191250,
+          8506333,
+          8269167,
+          8313250,
+          8074875
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8338458,
+        "encode_ns_median": 1482169,
+        "expert_bind_ns_median": 37202086,
+        "gpu_ns_median": 87758017,
+        "host_preparation_ns_median": 55831505,
+        "host_preparation_ns_reps": [
+          98606745,
+          68284597,
+          57567757,
+          54110530,
+          55831505,
+          44034745,
+          34841735,
+          40416624,
+          48766900,
+          81418271,
+          66951342
+        ],
+        "vector_clone_ns_median": 0,
+        "wall_ns_median": 154050958
+      }
+    ],
+    "steady_state_tok_s": 6.332547392624933,
+    "wait_minus_gpu_ns_per_token_reps": [
+      17006028.454545453
+    ],
+    "wall_ns_per_token_reps": [
+      157914333.36363637
+    ]
+  }
+}

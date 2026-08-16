@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.special_unit.qwen38_rung_targets.v1",
+  "date": "2026-08-16",
+  "instrument": "tools/ascent/roof_rungs.py against the MEASURED 38.217 ms wall and 13.622 GB/token",
+  "where_it_stands": {
+    "bytes_per_token_gb": 13.622,
+    "wall_ms": 38.217,
+    "tok_s": 26.17,
+    "measured_bandwidth_gb_s": 356.44,
+    "fraction_of_own_roof": 0.866,
+    "fraction_of_ceiling_gpu": 0.895,
+    "roof_tok_s": 30.21,
+    "current_rung": "below_A",
+    "next_rung_blocked_by_bytes": "A",
+    "roof_limited_below_next_rung": true
+  },
+  "THE_KEY_FACT": "Qwen3.8 sits at 86.6% of its OWN roof. Only ~1.15x of execution headroom exists. Density is not merely the best lever, it is nearly the only one - which is the exact opposite of Q80, now at 1.8% of its roof with ~190 ms of removable ceremony.",
+  "byte_budgets_at_the_411.51_gb_s_ceiling": {
+    "A_50tps": {
+      "max_bytes_gb": 8.23,
+      "bpw_at_ceiling": 2.569
+    },
+    "B_100tps": {
+      "max_bytes_gb": 4.115,
+      "bpw_at_ceiling": 1.285
+    },
+    "C_200tps": {
+      "max_bytes_gb": 2.058,
+      "bpw_at_ceiling": 0.642
+    }
+  },
+  "realistic_projections_scaling_measured_gpu_and_holding_the_1.229ms_fixed_overhead": {
+    "2.569": 42.4,
+    "2.0": 53.7,
+    "1.5": 70.1,
+    "1.285": 80.6,
+    "1.25": 82.6,
+    "1.0": 100.7
+  },
+  "what_S001_asks_for": "Under 1.5 BPW = 4.804 GB/token -> ~75 TPS realistic. That CLEARS rung A comfortably and approaches B.",
+  "what_100_TPS_needs": "~1.25 BPW realistic (4.0 GB/token), AND the 1.229 ms fixed overhead cut - at 10 ms/token that overhead is 12% of the whole budget. Both lanes for this are running: qwen38-sub15-pack and qwen38-kill-fixed-overhead.",
+  "caveat": "The byte budgets assume running AT the 411.51 GB/s ceiling; Qwen3.8 achieves 356.44. The realistic column scales the MEASURED time instead and is the one to plan against."
+}

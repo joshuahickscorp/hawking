@@ -12,7 +12,8 @@ use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_
 use hawking_core::model::qwen80_mixed_catalog::Qwen80MixedStreamingCatalog;
 use hawking_core::model::qwen80_mixed_hybrid_decode::{
     discover_qwen80_mixed_root, generate_mixed_greedy, load_mixed_tokenizer, MixedDegradeConfig,
-    Qwen80MixedHybridDecodeSession, QWEN80_MIXED_CLAIM, QWEN80_MIXED_EXPECTED_MANIFEST_SEAL,
+    MixedTokenSample, Qwen80MixedGreedyResult, Qwen80MixedHybridDecodeSession,
+    QWEN80_MIXED_CLAIM, QWEN80_MIXED_EXPECTED_MANIFEST_SEAL,
 };
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
     discover_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
@@ -202,6 +203,62 @@ const DEFAULT_NEEDLES: &[&str] = &[
     "def ", "function", "reverse", "string", "python", "here's", "here is",
 ];
 
+const GREEDY_ORACLE_12: [u32; 12] = [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734];
+
+fn median_u64(values: &[u64]) -> u64 {
+    if values.is_empty() {
+        return 0;
+    }
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    sorted[sorted.len() / 2]
+}
+
+fn decode_host_prep(result: &Qwen80MixedGreedyResult) -> serde_json::Value {
+    let decode: Vec<&MixedTokenSample> = result
+        .token_samples
+        .iter()
+        .filter(|s| s.kind == "decode")
+        .collect();
+    let n = decode.len();
+    let pick = |f: fn(&MixedTokenSample) -> u64| -> u64 {
+        median_u64(&decode.iter().map(|s| f(s)).collect::<Vec<_>>())
+    };
+    json!({
+        "decode_tokens": n,
+        "wall_ns_median": pick(|s| s.wall_ns),
+        "gpu_ns_median": pick(|s| s.snap.gpu_ns),
+        "host_preparation_ns_median": pick(|s| s.snap.host_preparation_ns()),
+        "catalog_reparse_ns_median": pick(|s| s.snap.host_excl.catalog_reparse),
+        "embed_ns_median": pick(|s| s.snap.host_excl.embed),
+        "buffer_prep_ns_median": pick(|s| s.snap.host_excl.buffer_prep),
+        "encode_ns_median": pick(|s| s.snap.encode_ns),
+        "expert_bind_ns_median": pick(|s| s.snap.host_excl.expert_bind),
+        "vector_clone_ns_median": pick(|s| s.snap.host_excl.vector_clone),
+        "host_preparation_ns_reps": decode.iter().map(|s| s.snap.host_preparation_ns()).collect::<Vec<_>>(),
+        "catalog_reparse_ns_reps": decode.iter().map(|s| s.snap.host_excl.catalog_reparse).collect::<Vec<_>>(),
+    })
+}
+
+fn print_host_prep(label: &str, result: &Qwen80MixedGreedyResult) {
+    let table = decode_host_prep(result);
+    println!(
+        "{label} host_prep decode_n={} wall_med={} gpu_med={} host_prep_med={} catalog_reparse={} embed={} buffer_prep={} encode={} expert_bind={} vector_clone={} packed_calls={} packed_skipped={}",
+        table["decode_tokens"],
+        table["wall_ns_median"],
+        table["gpu_ns_median"],
+        table["host_preparation_ns_median"],
+        table["catalog_reparse_ns_median"],
+        table["embed_ns_median"],
+        table["buffer_prep_ns_median"],
+        table["encode_ns_median"],
+        table["expert_bind_ns_median"],
+        table["vector_clone_ns_median"],
+        result.native.packed_calls,
+        result.native.packed_skipped
+    );
+}
+
 fn degrade_from_json(value: &serde_json::Value) -> Result<MixedDegradeConfig, String> {
     let mut cfg = MixedDegradeConfig::default();
     if let Some(v) = value.get("hgravs_rank_cap").and_then(|x| x.as_u64()) {
@@ -268,10 +325,11 @@ fn run() -> Result<(), String> {
     let mut session = Qwen80MixedHybridDecodeSession::new(catalog, args.max_seq_len)
         .map_err(|e| e.to_string())?;
     eprintln!(
-        "sample parity passed={} dense_w={} silent_fallbacks={}",
+        "sample parity passed={} dense_w={} silent_fallbacks={} cache_geom={}",
         session.parity.passed,
         session.parity.dense_w_materialized,
-        session.fallbacks.silent_or_invalid()
+        session.fallbacks.silent_or_invalid(),
+        hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_cache_geom_enabled()
     );
 
     if let Some(plan_path) = args.plan.as_ref() {
@@ -335,6 +393,13 @@ fn run() -> Result<(), String> {
                 "gpu_matvec_ns_per_token={:.0} (MTLCommandBuffer GPUEnd-GPUStart)",
                 result.gpu_matvec_ns_per_token
             );
+            println!(
+                "facet1_bind_ns_per_token={:.0} facet2_wait_minus_gpu_ns_per_token={:.0} cbs_per_token={:.1} dispatches_per_token={:.1}",
+                result.host_expert_bind_ns_per_token,
+                result.wait_minus_gpu_ns_per_token,
+                result.command_buffers_per_token,
+                result.dispatches_per_token
+            );
             println!("peak_rss_bytes={}", result.peak_rss_bytes);
             println!(
                 "fallback silent={} designed_host={} (vec={} embed={} act={} sample={})",
@@ -367,15 +432,43 @@ fn run() -> Result<(), String> {
                 result.stages.gpu_matvec_ns
             );
             println!("dense_w_materialized={}", result.dense_w_materialized);
+            println!(
+                "deltanet gpu={} vi={} host_ns_per_token={:.0} isolated_gpu={} isolated_host={} isolated_wait={} isolated_disp={}",
+                result.deltanet_gpu_enabled,
+                result.deltanet_vi_parallel,
+                result.deltanet_recurrent_host_ns_per_token,
+                result.isolated_deltanet_gpu_ns,
+                result.isolated_deltanet_host_ns,
+                result.isolated_deltanet_wait_ns,
+                result.isolated_deltanet_dispatches
+            );
+            println!(
+                "greedy_oracle_12={:?} greedy_bit_identical={}",
+                GREEDY_ORACLE_12,
+                result.generated_token_ids == GREEDY_ORACLE_12
+            );
+            print_host_prep("rep1", &result);
+            println!(
+                "cached_geometry_count={}",
+                session.cached_geometry_count()
+            );
         } else {
             println!(
-                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} ids_match={}",
+                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} bind_ns={:.0} wait_minus_gpu_ns={:.0} cbs={:.1} disp={:.1} deltanet_host={:.0} isolated_gpu={} isolated_host={} ids_match={}",
                 rep + 1,
                 result.generated_text,
                 result.wall_ns_per_token,
                 result.gpu_matvec_ns_per_token,
+                result.host_expert_bind_ns_per_token,
+                result.wait_minus_gpu_ns_per_token,
+                result.command_buffers_per_token,
+                result.dispatches_per_token,
+                result.deltanet_recurrent_host_ns_per_token,
+                result.isolated_deltanet_gpu_ns,
+                result.isolated_deltanet_host_ns,
                 result.generated_token_ids == first_ids
             );
+            print_host_prep(&format!("rep{}", rep + 1), &result);
         }
         reps.push(result);
     }
@@ -387,6 +480,10 @@ fn run() -> Result<(), String> {
         let first = &reps[0];
         let wall: Vec<f64> = reps.iter().map(|r| r.wall_ns_per_token).collect();
         let gpu: Vec<f64> = reps.iter().map(|r| r.gpu_matvec_ns_per_token).collect();
+        let bind: Vec<f64> = reps.iter().map(|r| r.host_expert_bind_ns_per_token).collect();
+        let wait_minus: Vec<f64> = reps.iter().map(|r| r.wait_minus_gpu_ns_per_token).collect();
+        let cbs: Vec<f64> = reps.iter().map(|r| r.command_buffers_per_token).collect();
+        let disps: Vec<f64> = reps.iter().map(|r| r.dispatches_per_token).collect();
         let receipt = json!({
             "schema": "hawking.ascent.q80_mixed_generate.v1",
             "lane": "q80-mixed-generate",
@@ -419,6 +516,8 @@ fn run() -> Result<(), String> {
                 "silent_fallback_count": first.fallbacks.silent_or_invalid(),
                 "designed_host_ops": first.fallbacks.designed_host_ops(),
                 "fallbacks": first.fallbacks,
+                "greedy_oracle_12": GREEDY_ORACLE_12,
+                "greedy_bit_identical": first.generated_token_ids == GREEDY_ORACLE_12,
             },
             "execution": {
                 "native": first.native,
@@ -435,7 +534,23 @@ fn run() -> Result<(), String> {
                 "steady_state_tok_s": first.steady_state_tok_s,
                 "wall_ns_per_token_reps": wall,
                 "gpu_matvec_ns_per_token_reps": gpu,
+                "host_expert_bind_ns_per_token_reps": bind,
+                "wait_minus_gpu_ns_per_token_reps": wait_minus,
+                "command_buffers_per_token_reps": cbs,
+                "dispatches_per_token_reps": disps,
                 "gpu_timestamps_missing": first.stages.gpu_matvec_timestamps_missing,
+                "facet1_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet1_enabled(),
+                "facet2_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet2_enabled(),
+                "recon_fuse_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_recon_fuse_enabled(),
+                "gk_simd_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_gk_simd_enabled(),
+                "cache_geom_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_cache_geom_enabled(),
+                "decode_family_enabled": hawking_core::decode_family::family_dispatch_enabled(),
+                "decode_family_binary": hawking_core::decode_family::matvec_binary(),
+                "decode_family_hgravs": hawking_core::decode_family::matvec_hgravs(),
+                "host_preparation_decode": decode_host_prep(first),
+                "packed_calls": first.native.packed_calls,
+                "packed_skipped": first.native.packed_skipped,
+                "reps_host_preparation_decode": reps.iter().map(decode_host_prep).collect::<Vec<_>>(),
             },
             "reps_generated_text": reps.iter().map(|r| r.generated_text.clone()).collect::<Vec<_>>(),
             "reps_ids_match_first": reps.iter().map(|r| r.generated_token_ids == first_ids).collect::<Vec<_>>(),

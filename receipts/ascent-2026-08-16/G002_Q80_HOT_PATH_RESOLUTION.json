@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.g002.q80_hot_path_resolution.v1",
+  "date": "2026-08-16",
+  "the_open_question": "G002 requires ONE kernel family serving both Qwen graphs and DSV4F. The reconstruction fix moved Q80's hot path onto occupancy tiles named q80_binary_group_matvec_tg256 / q80_binary_group_csr_matvec_tg256, so the family no longer serves Q80's matvec. Two resolutions were possible: make Q80 use the family's kernels, or record Q80's path as a structural exception.",
+  "EVIDENCE_THAT_SETTLES_IT": {
+    "family_kernels_on_q80_ms": 91.28,
+    "shipping_occupancy_tiles_ms": 36.53,
+    "family_is_slower_by": 2.5,
+    "source": "Q80_GK_SIMD_NEGATIVE.json, 3 alternating pairs, ids identical all 6 runs"
+  },
+  "RESOLUTION": "NEITHER of the two options as stated. Making Q80 use the family's existing kernels would cost about 55 ms/token, a regression - that is ruled out by measurement. But calling it a structural exception is also wrong, because the tiles are not a different ALGORITHM, they are a better LAUNCH GEOMETRY for the same codecs the family already implements. The correct action is to move the occupancy tiles INTO gk_family.metal as family entry points, so the family gains the faster geometry rather than Q80 losing it.",
+  "why_this_matters_beyond_bookkeeping": "The tiles beat the family precisely because in-register consumption on occupancy tiles is what took Q80 from 867 to 36.6 ms. Qwen3.8's own re-screen then measured the SAME effect from the other direction: at tpr64 every codec runs at the uncompressed f32 speed, while the same codecs at tg256 cost 26,500 ns against 15,125. Launch geometry is the shared lesson, so it belongs in the shared family, not fenced off in one model's file.",
+  "NOT_DONE_HERE": "This is a recorded decision, not a completed action. The port touches crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs, which the live q80-deltanet-rebase3 lane owns. Launching it now would recreate the merge collision that already cost the 38.5 ms DeltaNet win once today. It goes after that lane returns.",
+  "g002_status_after_this": "Still PENDING. The per-facet A/B is done, numerics are verified on all three graphs, the reuse matrix documents the genuine STRUCTURAL exclusions - and the one remaining gap now has a measured answer and a sequencing constraint rather than an open question."
+}

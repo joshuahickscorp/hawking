@@ -13,6 +13,7 @@ pub mod served_weight;
 
 pub use adapt::{
     from_dsv4f_json, from_dsv4f_ledger, from_q80_baseline_run_json, from_q80_json, from_q80_ledger,
+    from_qwen38_ledger,
 };
 pub use audit::{flag_receipt, FlagSeverity, ReceiptFlag};
 pub use energy::{
@@ -30,7 +31,7 @@ pub use schema::{
     DEFAULT_RESIDUAL_LIMIT, GPU_TIMESTAMP_AUTHORITY, TOKEN_NS_SCHEMA,
 };
 pub use served_weight::{
-    dsv4f_geometry, q80_geometry, ActiveWeightGeometry, ModelId, ServedWeightHonesty,
+    dsv4f_geometry, q80_geometry, qwen38_geometry, ActiveWeightGeometry, ModelId, ServedWeightHonesty,
     ServedWeightMetrics, AMORTIZED_CAVEAT, FS_PER_WEIGHT_SERVED_FIELD, HARDWARE_PS_PER_BIT,
     M3_ULTRA_96GB_PEAK_BYTES_PER_S,
 };

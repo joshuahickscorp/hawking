@@ -1,0 +1,103 @@
+{
+  "schema": "hawking.ascension.g014_fs_occupancy_control.v1",
+  "date": "2026-08-16",
+  "lane": "fs-occupancy",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "device": "Apple M3 Ultra, 60 GPU cores, 96 GB unified, 819 GB/s published peak",
+  "gpu_time_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "q4_kernels_benchmarked": false,
+  "evidence": "receipts/ascent-2026-08-16/Q80_DECODE_SHAPE_BANDWIDTH.json",
+  "claim": "Efficiency is the dominant term, but the 0.135% figure and the 0.6462-pack 124.85 fs ceiling are both category errors. The honest batch=1 decode control on this box is 320-411 GB/s unique-bytes-once, not 819 and not the 536-637 reuse band. Against that control, every existing Q80 pack is hundreds of fs/weight even at a perfect load-only kernel. Sub-100 fs is unreachable unless ACTIVE decode BPW (attention + lm_head included) drops below 0.256-0.329.",
+  "status": "CLOSED_WITH_NEGATIVE_ON_SUB_100_FS",
+  "honest_control_gbps": {
+    "token_shape_mixed_sub655": {"median": 319.682, "spread": [314.637, 321.000, 319.682]},
+    "token_shape_mixed_1p5": {"median": 363.152, "spread": [365.456, 360.698, 363.152]},
+    "unique_once_full_occupancy": {
+      "64_mib": {"median": 466.306, "spread": [477.219, 466.306, 458.993]},
+      "256_mib": {"median": 410.530, "spread": [410.530, 409.956, 412.581]},
+      "512_mib": {"median": 411.514, "spread": [411.829, 411.514, 391.638]},
+      "1024_mib": {"median": 301.634, "spread": [301.634, 303.492, 300.141]}
+    },
+    "reuse_64mib_x_4096_NOT_decode": {
+      "sequential": {"median": 535.882, "spread": [515.297, 535.882, 545.588]},
+      "conflict": {"median": 637.496, "spread": [632.688, 637.496, 648.691]}
+    },
+    "published_peak": 819.0,
+    "what_to_use": "token-shape 320-363 GB/s is the honest control for a 1-2 GB unique-once decode. 536-637 is a cache-reuse roofline. 819 was not measured."
+  },
+  "byte_budget_per_token": {
+    "note": "complete_physical_bpw is a STORAGE average over 79.67 B weights, 97% of which are unused experts. Decode moves top-10+shared experts plus ALL nonexpert active weights.",
+    "mixed_1p5_v1": {
+      "storage_bpw": 1.4444457,
+      "active_decode_bpw": 4.9795,
+      "weight_bytes": 2217278160,
+      "total_bytes": 2234047184,
+      "classes_bytes": {
+        "attention": 1588069296,
+        "lm_head": 320912208,
+        "routed_experts": 233080320,
+        "router": 51908304,
+        "shared_expert": 23308032,
+        "activations_temp": 16711680,
+        "kv_new": 24576,
+        "expert_table_meta": 32768
+      },
+      "attention_plus_lm_head_pct_of_weights": 0.861
+    },
+    "mixed_sub655_v1": {
+      "storage_bpw": 0.64620385,
+      "active_decode_bpw": 2.5180,
+      "weight_bytes": 1121230144,
+      "total_bytes": 1137999168,
+      "classes_bytes": {
+        "attention": 818151424,
+        "lm_head": 165329552,
+        "routed_experts": 100915200,
+        "router": 26742448,
+        "shared_expert": 10091520,
+        "activations_temp": 16711680,
+        "kv_new": 24576,
+        "expert_table_meta": 32768
+      },
+      "attention_plus_lm_head_pct_of_weights": 0.877
+    }
+  },
+  "ranked_caps_ns": [
+    {"rank": 1, "facet": "1155 serial CBs, HOST (counterfactual)", "ns": 221855865, "note": "192 us host/CB * 1155. Production is 98 CBs, not 1155."},
+    {"rank": 2, "facet": "token-shape host wall (98 CBs, production topology)", "ns": 22005459},
+    {"rank": 3, "facet": "98 CB serialization, host minus GPU", "ns": 20079956},
+    {"rank": 4, "facet": "unbatched 512-thread organs vs 30-wide batch", "ns": 6350250},
+    {"rank": 5, "facet": "token-shape GPU busy (the honest byte-move)", "ns": 3559785},
+    {"rank": 6, "facet": "unique-once DRAM floor at 411 GB/s", "ns": 2765399},
+    {"rank": 7, "facet": "host memcpy analog of expert slab", "ns": 1711333},
+    {"rank": 8, "facet": "1155 nops in ONE CB, GPU", "ns": 1483875},
+    {"rank": 9, "facet": "fma extra on one starved organ", "ns": 103084},
+    {"rank": 10, "facet": "residency cold minus warm", "ns": 51541},
+    {"rank": 11, "facet": "10-of-512 gather vs sequential", "ns": 0, "note": "scatter was not slower; spreads overlap"}
+  ],
+  "why_q80_is_not_at_the_control": {
+    "q4_vehicle_wall_gbps": 3.384,
+    "q4_vehicle_gpu_gbps": 8.158,
+    "q4_wall_vs_honest_control_pct": 1.06,
+    "q4_gpu_vs_honest_control_pct": 2.55,
+    "q4_wall_vs_peak_pct": 0.413,
+    "historical_0_135_pct": "category error: mixed STORAGE floor 212.53 fs / Q4-runtime 156970 fs",
+    "live_remainder_above_22ms_control": "host moe_table_build ~246 ms (identity/catalog, not memcpy) plus packed-kernel occupancy. The access pattern itself is not the 740x."
+  },
+  "sub_100_fs": {
+    "law": "fs_per_weight = 152.6252 * ACTIVE_decode_BPW / (achieved_gbps / 819)",
+    "required_active_bpw": {
+      "at_token_shape_319.7": 0.2557,
+      "at_token_shape_363.2": 0.2905,
+      "at_unique_once_411.5": 0.3292,
+      "at_reuse_637.5_NOT_decode": 0.5100,
+      "at_unity_819_NOT_measured": 0.6552
+    },
+    "existing_packs": {
+      "mixed_1p5_v1": {"active_bpw": 4.9795, "fs_at_363": 1714, "fs_at_unity": 760},
+      "mixed_sub655_v1": {"active_bpw": 2.5180, "fs_at_320": 985, "fs_at_411": 765, "fs_at_unity": 384},
+      "if_0.6462_were_active": {"fs_at_320": 253, "fs_at_411": 196, "fs_at_637": 127, "fs_at_819": 98.6}
+    },
+    "verdict": "UNREACHABLE on this hardware with any existing pack. A negative with a proof."
+  }
+}

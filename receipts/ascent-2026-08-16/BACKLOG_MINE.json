@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.ascent.backlog_mine.v1",
+  "date": "2026-08-16",
+  "steer": "S004 section 9",
+  "corpus": {
+    "local_grok_branches": 505,
+    "unmerged": 160,
+    "in_2026_08_16_slice": 108,
+    "noise_touches": 10641,
+    "note": "noise is artifact churn from blunt preservation commits, not source"
+  },
+  "HEADLINE": "Q80 mixed generate STILL launches serial q80_binary_group_matvec. Four unmerged stacks fix that and still apply to current main. This is the same 863 ms gpu_matvec that measures 2.57 GB/s = 0.62% of the 411.51 GB/s ceiling.",
+  "recommended_consume_order": [
+    "1. leftover occupancy bind + host-cache + 1p5-ne4",
+    "2. two-stage down_proj",
+    "3. sharex batch-10",
+    "4. fused 10-expert wave"
+  ],
+  "consume_method": "ONE rebase worktree from main, all four into qwen80_mixed_hybrid_decode.rs / q80_mixed_decode.metal, then a dirty 3-6 token generate, and only then a paired promotion.",
+  "isolation_warning": "DSV LRU + ordered-FP8 are a SEPARATE rebase and must not share a GPU window with that generate.",
+  "skip_list_summary": "Sections A-E of BACKLOG_MINE_REPORT.md enumerate tips that are empty at main, superseded by a later tip, or already landed - DeltaNet mixer copies, occupancy-bind earlier copies, packer duplicates, suffix/expert-table copies, host first-touch copies (main already has the persistent address table and first-touch mmap), named-GEMV/mixer-fold copies, DSV prefetch copies, and receipt-hash-only tips. A future lane should not open these.",
+  "already_landed": "Qwen3.8 native is on main. geo_tpr64 is already the Q38/Q80 default.",
+  "full_report": "receipts/ascent-2026-08-16/BACKLOG_MINE_REPORT.md",
+  "collision_note": "Lane q80-matvec-reconstruction is CURRENTLY writing new code against the same matvec. These four stacks are EXISTING work that already fixes serial dispatch. Do not consume them into the same files while that lane is live - compare the two when it returns and take the better, or rebase one onto the other."
+}

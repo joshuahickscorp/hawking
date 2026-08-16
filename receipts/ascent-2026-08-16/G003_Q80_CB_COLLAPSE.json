@@ -1,0 +1,97 @@
+{
+  "schema": "hawking.special_unit.g003_q80_cb_collapse.v1",
+  "date": "2026-08-16",
+  "lane": "q80-collapse-command-buffers",
+  "claim": "Q80 mixed-1p5-v1 command buffers per decode token fell from 337 to 49 by keeping RMSNorm, DeltaNet conv/recurrent, GQA rope+attn, SwiGLU, residual add, and the shared/combine tail device-resident in the same MTLCommandBuffer as the mixed GEMVs. synchronization (wait−gpu) is a named component: paired-process median 15.864 ms vs 78.684 ms on the host-activation arm and 83.375 ms in the closed G003 ledger. Greedy ids stay [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734]. Silent fallbacks remain 0. The remaining split is the 512-logit router readback that binds ten mixed expert payloads.",
+  "status": "CLOSED",
+  "confidence": "HIGH on CB count, greedy identity, silent-fallback zero, and GPU timestamps. MEDIUM on the exact ns still locked behind a bindless mixed expert table (not measured; would need qwen80_device_expert_table.rs, outside this lane).",
+  "measurement": {
+    "label": "DIRTY_ENGINEERING",
+    "regime": "3 alternating paired process reps (base = HAWKING_Q80_DEVICE_ACTIVATIONS=0, ours = default device activations + fuse) plus one ours process with 3 generates. Decode-only ns (prefill subtracted). GPU time from completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait.",
+    "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "vehicle": "qwen80/mixed-1p5-v1",
+    "bpw": 1.4444457,
+    "model": "Qwen3-Coder-Next-mixed-1p5-v1",
+    "kernel_runtime_genome": "Qwen80MixedHybridDecodeSession recon_fuse=true facet1=true facet2=true device_activations=true collapse_fuse=true; prefix = device RMS + mixed GEMV + device DeltaNet/GQA + residual + post-RMS + shared SwiGLU + router; wait; host top-10; suffix = routed wave + device combine. Fused CB = suffix_i + prefix_{i+1}. 49 CBs / 2834 dispatches per decode token.",
+    "commit": "c6fb494bf420a44199305fe42ba2fef94e9e7b36",
+    "median_gpu_ns": 87838017,
+    "median_wait_minus_gpu_ns": 15864347,
+    "median_wall_ns": 156989314,
+    "gpu_spread_ns": [87789865, 87958468],
+    "wait_spread_ns": [15448155, 16034211],
+    "wait_minus_gpu_ns": 15864347,
+    "g003_closed_wait_minus_gpu_ns": 83375281,
+    "paired_base_median_wait_minus_gpu_ns": 78683757,
+    "ns_recovered_vs_g003": 67510934,
+    "ns_recovered_vs_paired_base": 62819410,
+    "steady_decode_steps": 11,
+    "fallbacks": 0,
+    "greedy_oracle_12": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+    "greedy_bit_identical": true,
+    "timestamps_missing": 0,
+    "cbs_per_token": 49,
+    "cbs_per_token_was": 337,
+    "dispatches_per_token": 2834,
+    "dispatches_per_token_was": 2413
+  },
+  "synchronization": {
+    "component": "synchronization",
+    "definition": "sum over decode CBs of (wait_ns − gpu_ns) from completed MTLCommandBuffer timestamps; not folded into wall",
+    "ours_median_ns": 15864347,
+    "ours_median_ms": 15.864,
+    "ours_pct_of_median_wall": 10.11,
+    "paired_base_median_ns": 78683757,
+    "paired_base_median_ms": 78.684,
+    "g003_closed_ns": 83375281,
+    "g003_closed_ms": 83.375,
+    "per_cb_ours_us": 324,
+    "per_cb_g003_us": 247,
+    "note": "49 CBs remain, so wait−gpu cannot fall to the Qwen38 0.384 ms (1 CB) band. Recovered 62.8 ms vs the paired host-activation arm and 67.5 ms vs G003. The 75–83 ms prize was the 1-CB hypothetical."
+  },
+  "topology": {
+    "default": "fuse",
+    "cbs_per_token": 49,
+    "breakdown": "1× L0 mixer+prefix, 47× (suffix_i + mixer/prefix_{i+1}), 1× (last suffix + terminal RMS + lm_head)",
+    "opt_out": "HAWKING_Q80_COLLAPSE_FUSE=0 → 97 CBs (prefix CB + suffix CB + terminal). HAWKING_Q80_DEVICE_ACTIVATIONS=0 → 337 CBs host path."
+  },
+  "silent_fallbacks": {
+    "dense_w_materialized": 0,
+    "host_expert_payload_bind": 0,
+    "host_mixed_matvec": 0
+  },
+  "designed_host_ops_still_present": {
+    "host_activation": "1344 = 48 layers × 28 forwards; this is host top-10 only, not RMS/DeltaNet/GQA",
+    "host_q8_embed_gather": 28,
+    "host_q8_vector_decode": 265,
+    "host_sample": 28
+  },
+  "remaining_cb_split_readbacks": [
+    {
+      "name": "router_logits_readback",
+      "why_it_still_forces_a_split": "512 f32 router logits must return to the host so source_qwen80_topk_router can pick 10 experts and bind their mixed binary/CSR/HGRAVS payloads. A device top-10 does not remove the split: mixed expert buffers are still bound from host-known IDs. A bindless mixed expert table would live in qwen80_device_expert_table.rs, which this lane cannot edit."
+    },
+    {
+      "name": "lm_head_logits_readback",
+      "why_it_still_forces_a_split": "Host greedy argmax needs the vocab logit vector after the terminal CB. This is one wait at the end of the token, not a per-layer split. The next token's embed is still a host Q8 row gather, so the sampled id must cross back to the CPU."
+    }
+  ],
+  "gpu_ns_rose_because": "GPU timestamps now cover the whole fused CB, including device DeltaNet/GQA/RMS/SwiGLU that G003 counted as host exclusive (43.5 ms host DeltaNet). That is a move from host to GPU, not a GEMV regression. Wall still dropped (paired median 157 ms vs 261 ms).",
+  "gk_family_parity": {
+    "numeric_and_source_family_tests": "7/7 PASS (q80 binary, hgravs, swiglu f32/bf16, dsv4f fp4, serial tile, no runtime codec switch)",
+    "both_graphs_dispatch_the_shared_family": "FAIL pre-existing: gravity_deepseek_v4_native_token_graph.rs has no PACK_WORKLIST string. This lane did not edit that file (DENY gravity). Mixed-decode asserts in the same test (decode_family, MATVEC_BINARY, MATVEC_HGRAVS, q80_sparse_q1_apply_csr) hold."
+  },
+  "files": [
+    "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+    "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs",
+    "crates/hawking-core/shaders/qwen80_device_activations.metal",
+    "receipts/ascent-2026-08-16/G003_Q80_CB_COLLAPSE.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/SUMMARY.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/base_p1.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/ours_p1.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/base_p2.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/ours_p2.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/base_p3.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/ours_p3.json",
+    "receipts/ascent-2026-08-16/q80-collapse-cb/ours_warm3.json"
+  ]
+}

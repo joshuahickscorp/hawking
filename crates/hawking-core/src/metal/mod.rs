@@ -280,6 +280,9 @@ pub const SHADER_MOE: &str = include_str!("../../shaders/moe.metal");
 pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
+/// G023 shared decode family (Q80 + Qwen3.8 + DSV4F). Concatenated before
+/// the per-family wrappers so `gk_*` inlines are visible in one TU.
+pub const SHADER_GK_FAMILY: &str = include_str!("../../shaders/gk_family.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
 /// Exact single-token Gated DeltaNet recurrence for Qwen3-Next.  The initial
@@ -362,6 +365,10 @@ pub const SHADER_QWEN80_DEVICE_EXPERT_TABLE: &str =
 /// DeltaNet / GQA) that sit between the already-native Q4 matvecs.
 pub const SHADER_QWEN80_DEVICE_ACTIVATIONS: &str =
     include_str!("../../shaders/qwen80_device_activations.metal");
+/// Qwen3.8 forks: rearrange with values_per_key=3 and GQA 24:4 θ=1e7.
+/// Does not change the Q80-locked kernels above.
+pub const SHADER_QWEN38_DEVICE_ACTIVATIONS: &str =
+    include_str!("../../shaders/qwen38_device_activations.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -417,6 +424,7 @@ pub fn all_shader_sources() -> String {
         // mHC control exp must precede matmul/P7 kernels that call it.
         SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP,
         SHADER_MATMUL,
+        SHADER_GK_FAMILY,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
         SHADER_QWEN_NEXT,
@@ -444,6 +452,7 @@ pub fn all_shader_sources() -> String {
     ];
     srcs.push(SHADER_DSV4F_NATIVE_TOKEN_GRAPH);
     srcs.push(SHADER_DSV4F_ACTIVATION_X_BATCH);
+    srcs.push(SHADER_QWEN38_DEVICE_ACTIVATIONS);
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
     #[cfg(feature = "tq")]
@@ -622,9 +631,9 @@ mod imp {
     use metal::objc::{class, msg_send, sel, sel_impl};
     use metal::{
         Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineDescriptor,
-        ComputePipelineState, Device, IndirectCommandBuffer, IndirectCommandBufferDescriptor,
-        Library, MTLDispatchType, MTLIndirectCommandType, MTLResourceOptions, MTLResourceUsage,
-        MTLSize, NSRange,
+        ComputePipelineState, Device, FunctionConstantValues, IndirectCommandBuffer,
+        IndirectCommandBufferDescriptor, Library, MTLDispatchType, MTLIndirectCommandType,
+        MTLResourceOptions, MTLResourceUsage, MTLSize, NSRange,
     };
 
     /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
@@ -1104,14 +1113,30 @@ mod imp {
             "q80_binary_group_matvec" => "q80_binary_group_matvec",
             "q80_binary_group_matvec_interleaved" => "q80_binary_group_matvec_interleaved",
             "dram_row_locality_read_reduce" => "dram_row_locality_read_reduce",
+            "q80_decode_shape_unique_once" => "q80_decode_shape_unique_once",
+            "q80_decode_shape_gather" => "q80_decode_shape_gather",
+            "q80_decode_shape_nop" => "q80_decode_shape_nop",
+            "q80_decode_shape_fma" => "q80_decode_shape_fma",
             "q80_binary_group_matvec_simd" => "q80_binary_group_matvec_simd",
             "q80_binary_group_matvec_simd_bytes" => "q80_binary_group_matvec_simd_bytes",
             "q80_binary_group_matvec_chunk" => "q80_binary_group_matvec_chunk",
             "q80_binary_group_matvec_tg256" => "q80_binary_group_matvec_tg256",
+            "q80_binary_group_matvec_tg256_addr_probe" => {
+                "q80_binary_group_matvec_tg256_addr_probe"
+            }
+            "q80_binary_group_matvec_tg256_decode_probe" => {
+                "q80_binary_group_matvec_tg256_decode_probe"
+            }
             "q80_binary_group_matvec_rowblock4" => "q80_binary_group_matvec_rowblock4",
             "q80_binary_group_csr_matvec" => "q80_binary_group_csr_matvec",
             "q80_binary_group_csr_matvec_bytes" => "q80_binary_group_csr_matvec_bytes",
             "q80_binary_group_csr_matvec_tg256" => "q80_binary_group_csr_matvec_tg256",
+            "q80_binary_group_csr_matvec_tg256_addr_probe" => {
+                "q80_binary_group_csr_matvec_tg256_addr_probe"
+            }
+            "q80_binary_group_csr_matvec_tg256_decode_probe" => {
+                "q80_binary_group_csr_matvec_tg256_decode_probe"
+            }
             "q80_rice_q1_residual_apply" => "q80_rice_q1_residual_apply",
             "q80_sparse_q1_apply_csr" => "q80_sparse_q1_apply_csr",
             "q80_sparse_q1_apply_csr_simd" => "q80_sparse_q1_apply_csr_simd",
@@ -1119,6 +1144,24 @@ mod imp {
             "q80_hgravs01_factor_matvec" => "q80_hgravs01_factor_matvec",
             "q80_hgravs01_factor_matvec_simd" => "q80_hgravs01_factor_matvec_simd",
             "q80_hgravs01_factor_matvec_simd3" => "q80_hgravs01_factor_matvec_simd3",
+            "q80_hgravs01_factor_matvec_simd3_addr_probe" => {
+                "q80_hgravs01_factor_matvec_simd3_addr_probe"
+            }
+            "q80_hgravs01_factor_matvec_simd3_decode_probe" => {
+                "q80_hgravs01_factor_matvec_simd3_decode_probe"
+            }
+            "q80_uniform8_matvec_simd_bytes" => "q80_uniform8_matvec_simd_bytes",
+            "q80_uniform8_matvec_simd_bytes_addr_probe" => {
+                "q80_uniform8_matvec_simd_bytes_addr_probe"
+            }
+            "q80_uniform8_matvec_simd_bytes_decode_probe" => {
+                "q80_uniform8_matvec_simd_bytes_decode_probe"
+            }
+            "q80_uniform8_matvec_tg256" => "q80_uniform8_matvec_tg256",
+            "q80_uniform8_matvec_tg256_addr_probe" => "q80_uniform8_matvec_tg256_addr_probe",
+            "q80_uniform8_matvec_tg256_decode_probe" => {
+                "q80_uniform8_matvec_tg256_decode_probe"
+            }
             "q80_hgravs01_two_stage_matvec" => "q80_hgravs01_two_stage_matvec",
             "q80_hgravs01_two_stage_matvec_rowblock4" => {
                 "q80_hgravs01_two_stage_matvec_rowblock4"
@@ -1173,6 +1216,12 @@ mod imp {
             }
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe" => {
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe"
+            }
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe" => {
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe"
             }
             "qwen_uniform_q4_group64_matvec_qkv" => "qwen_uniform_q4_group64_matvec_qkv",
             "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
@@ -1264,7 +1313,13 @@ mod imp {
             "qwen80_ba_to_decay_beta_f32" => "qwen80_ba_to_decay_beta_f32",
             "qwen80_deltanet_gated_rmsnorm_f32" => "qwen80_deltanet_gated_rmsnorm_f32",
             "qwen80_gated_delta_decode_tg" => "qwen80_gated_delta_decode_tg",
+            "qwen80_gated_delta_decode_vi" => "qwen80_gated_delta_decode_vi",
             "qwen80_gqa_qk_norm_rope_cache_f32" => "qwen80_gqa_qk_norm_rope_cache_f32",
+            "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
+            "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
+            "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
+            "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
+            "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -1496,6 +1551,17 @@ mod imp {
                 "deepseek_v4_p7_ffn_rmsnorm_bf16_authority"
             }
             "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
+            "gk_matvec_binary" => "gk_matvec_binary",
+            "gk_matvec_binary_simd" => "gk_matvec_binary_simd",
+            "gk_matvec_hgravs" => "gk_matvec_hgravs",
+            "gk_matvec_hgravs_simd" => "gk_matvec_hgravs_simd",
+            "gk_matvec_fp4" => "gk_matvec_fp4",
+            "gk_worklist_fp4" => "gk_worklist_fp4",
+            "gk_worklist_fp4_simd" => "gk_worklist_fp4_simd",
+            "gk_swiglu_f32" => "gk_swiglu_f32",
+            "gk_swiglu_bf16_worklist" => "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16" => "gk_combine_bf16",
+            "gk_pack_worklist" => "gk_pack_worklist",
             "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
             "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
             "dsv4f_fp4_matvec_split" => "dsv4f_fp4_matvec_split",
@@ -1503,6 +1569,8 @@ mod imp {
             "dsv4f_fp4_matvec_split_simd_r4" => "dsv4f_fp4_matvec_split_simd_r4",
             "dsv4f_fp4_matvec_interleaved" => "dsv4f_fp4_matvec_interleaved",
             "dsv4f_worklist_fp4_matvec_simd" => "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_diag_fp4_load_only_simd" => "dsv4f_diag_fp4_load_only_simd",
+            "dsv4f_diag_f32_matvec_simd" => "dsv4f_diag_f32_matvec_simd",
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",
@@ -1772,8 +1840,20 @@ mod imp {
         use super::static_kernel_name;
         use crate::metal::{
             SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7,
-            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE,
+            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GK_FAMILY, SHADER_GRAVITY_PQ,
+            SHADER_MATMUL, SHADER_MOE,
         };
+
+        #[test]
+        fn gk_family_kernels_have_static_trace_names() {
+            for &name in crate::decode_family::FAMILY_KERNELS {
+                assert_eq!(static_kernel_name(name), name);
+                assert!(
+                    SHADER_GK_FAMILY.contains(&format!("kernel void {name}(")),
+                    "{name} missing from gk_family.metal"
+                );
+            }
+        }
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -2043,6 +2123,7 @@ mod imp {
                 "qwen80_ba_to_decay_beta_f32",
                 "qwen80_deltanet_gated_rmsnorm_f32",
                 "qwen80_gated_delta_decode_tg",
+                "qwen80_gated_delta_decode_vi",
                 "qwen80_gqa_qk_norm_rope_cache_f32",
             ];
             for &kernel in KERNELS {
@@ -2050,6 +2131,35 @@ mod imp {
                 assert!(
                     SHADER_QWEN80_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
                     "{kernel} must compile from qwen80_device_activations.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn qwen38_device_activation_kernels_are_trace_named_and_compiled() {
+            use crate::metal::{SHADER_QWEN38_DEVICE_ACTIVATIONS, SHADER_QWEN_UNIFORM_Q4};
+            const KERNELS: &[&str] = &[
+                "qwen38_qkvz_rearrange_conv_l2_f32",
+                "qwen38_gqa_qk_norm_rope_cache_f32",
+                "qwen38_gated_delta_decode_vi",
+                "qwen38_attention_apply_sigmoid_gate",
+                "qwen38_f32_stream_probe",
+            ];
+            for &kernel in &[
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN_UNIFORM_Q4.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen_uniform_q4.metal"
+                );
+            }
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN38_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen38_device_activations.metal"
                 );
             }
         }
@@ -2373,10 +2483,18 @@ mod imp {
                 return Ok(p.clone());
             }
             let start = std::time::Instant::now();
+            // G023 family kernels declare function constants with defaults.
+            // Metal will abort pipeline creation if those functions are
+            // fetched with `None`; an empty dictionary selects the default.
+            let constants = if fn_name.starts_with("gk_") {
+                Some(FunctionConstantValues::new())
+            } else {
+                None
+            };
             let f = self
                 .inner
                 .library
-                .get_function(fn_name, None)
+                .get_function(fn_name, constants)
                 .map_err(|e| Error::Metal(format!("kernel `{fn_name}` not found: {e}")))?;
             let p = self
                 .inner
@@ -4658,15 +4776,11 @@ mod imp {
             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
             self.dispatch_count += 1;
             self.has_encoded_work = true;
-            // Cost-ledger encode wall: Instant only while a token is active.
-            // Folded into MetalEncode at commit_and_wait_split. Default-off
-            // path pays one atomic load via is_recording().
-            let ledger_t0 = if crate::cost_ledger::is_recording() {
-                Some(Instant::now())
-            } else {
-                None
-            };
-            if ledger_t0.is_some() {
+            // Encode wall is always collected so TOKEN_NS can close. The
+            // Instant pair is ~20 ns and is not the work being measured.
+            // Cost-ledger stage counts stay gated on is_recording().
+            let encode_t0 = Instant::now();
+            if crate::cost_ledger::is_recording() {
                 let stage = crate::cost_ledger::current_gpu_stage()
                     .unwrap_or(crate::cost_ledger::GpuStage::Untagged);
                 let slot = &mut self.ledger_stage_dispatches[stage.index()];
@@ -4678,11 +4792,9 @@ mod imp {
                     names.push(fn_name.to_owned());
                 }
             }
-            if let Some(t0) = ledger_t0 {
-                self.ledger_encode_ns = self
-                    .ledger_encode_ns
-                    .saturating_add(t0.elapsed().as_nanos());
-            }
+            self.ledger_encode_ns = self
+                .ledger_encode_ns
+                .saturating_add(encode_t0.elapsed().as_nanos());
             result
         }
 
@@ -5574,6 +5686,8 @@ mod imp {
                 "dsv4f_pack_worklist",
                 "dsv4f_worklist_fp4_matvec",
                 "dsv4f_worklist_fp4_matvec_simd",
+                "dsv4f_diag_fp4_load_only_simd",
+                "dsv4f_diag_f32_matvec_simd",
                 "dsv4f_worklist_swiglu",
                 "dsv4f_worklist_combine",
             ];

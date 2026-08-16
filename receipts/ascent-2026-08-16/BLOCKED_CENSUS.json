@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.ascent.blocked_census.v1",
+  "date": "2026-08-16",
+  "four_blocked_obligations_and_their_named_missing_inputs": {
+    "G004_dsv4f_50tps": {
+      "blocker": "PHYSICAL - 10.280 GB/token at the measured 411.51 GB/s ceiling is a 24.98 ms floor against a 20 ms gate; roof 40.03 TPS is below the 50 TPS gate itself",
+      "missing_input": "a DSV4F artifact under 8.230 GB/token, realistically far under; C2 at 7.042 GB exists on paper but REQUIRES resealing hc_sha - trading bit-identity for greedy-token + logit<=0.05 + HC cosine>=0.995",
+      "decision_owner": "USER - resealing changes what correctness MEANS for that model"
+    },
+    "G006_qwen38_under_1p5_bpw": {
+      "blocker": "COHERENCE FLOOR is above 2.0856 BPW, verified natively with the double-quantisation confound removed",
+      "missing_input": "an attention codec that holds coherence below Q4; attention is 74% of the artifact at 4.250 BPW while the MLP is already at 0.848",
+      "decision_owner": "research - the attention-density lane says this is a family Gravity does not have"
+    },
+    "G007_all_three_50tps": {
+      "blocker": "inherits BOTH - DSV4F is physically short, and Qwen3.8 needs ~2.0 BPW for 50 TPS but 2.0856 is incoherent",
+      "missing_input": "both of the above"
+    },
+    "fourth": "see GOAL.md - a pre-existing V1 obligation, not from today's frontier"
+  },
+  "WHAT_IS_NOT_BLOCKED": {
+    "G003_q80_50tps": "execution gap of 4.28x beneath a 185.5 TPS roof. Today: 1376 -> ~250 ms measured, ~85 ms with identified work. Reachable, needs mechanisms not yet named.",
+    "G002_kernel_family": "located to ONE literal in production_kernel_for(); the fix is adding tile kernels as family constants. Sequenced behind the DeltaNet rebase.",
+    "G005_special_unit": "harness legs done, model wired and driving tools at 0.3333 displacement. Its SPEED leg inherits G006's block; its capability leg does not.",
+    "G015_tournament": "sequenced last, and its capability metric depends on the bench-widening lane now running."
+  },
+  "the_honest_shape_of_the_day": "Two obligations are blocked on physics or missing science with named inputs, one is blocked on a user decision about a correctness contract, and the rest are reachable but distant. No obligation is blocked on effort or on anything I can resolve by commissioning more lanes."
+}

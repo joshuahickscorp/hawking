@@ -65,7 +65,9 @@ fn registered_shader_and_probe_keep_the_layer3_gated_gqa_boundary() {
     let shader = hawking_core::metal::all_shader_sources();
     assert!(shader.contains("qwen80_attention_qk_norm_rope_cache"));
     assert!(shader.contains("qwen80_attention_apply_sigmoid_gate"));
-    assert!(shader.contains("n_heads != 16u || n_kv_heads != 2u"));
+    assert!(shader.contains("gk_gqa_geometry_ok"));
+    assert!(shader.contains("n_heads == 16u && n_kv_heads == 2u"));
+    assert!(shader.contains("n_heads == 24u && n_kv_heads == 4u"));
     assert!(shader.contains("head_dim != 256u || rotary_dim != 64u"));
 
     let probe = include_str!("../examples/ascension_qwen80_direct_packed_attention_stage.rs");

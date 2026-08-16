@@ -1,0 +1,16 @@
+prompt_token_ids=[151644, 872, 198, 7985, 264, 729, 429, 17431, 288, 264, 914, 13, 151645, 198, 151644, 77091, 198]
+generated_token_ids=[8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734]
+generated_text="Here’s a function that reverses a string (i.e"
+coherence_class=COHERENT
+prefill_secs=6.205451
+first_token_latency_secs=6.205451
+decode_secs=3.273081
+steady_state_tokens=11 steady_state_decode_secs=3.273081 steady_state_tok_s=3.360748
+wall_ns_per_token=297552803
+gpu_matvec_ns_per_token=36289663 (MTLCommandBuffer GPUEnd-GPUStart)
+facet1_bind_ns_per_token=43621004 facet2_wait_minus_gpu_ns_per_token=90585924 cbs_per_token=337.0 dispatches_per_token=2413.0
+peak_rss_bytes=9799663616
+fallback silent=0 designed_host=12781 (vec=265 embed=28 act=12460 sample=28)
+native binary=26880 residual=13440 hgravs=26880 q8=11116 waves=1344 cbs=9436
+stages embed=0.2521 deltanet=3.1852 gqa=0.5598 moe_shared=0.9131 moe_routed=3.4275 moe_combine=0.3995 terminal=0.2989 mixed_matvec=4.3990 gpu_matvec_ns=1009452780
+dense_w_materialized=false

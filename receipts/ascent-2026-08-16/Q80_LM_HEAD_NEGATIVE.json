@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.q80.lm_head_negative.v1",
+  "date": "2026-08-16",
+  "result": "NEGATIVE, and it prevents a tempting mistake. lm_head cannot go below Q8 without changing emitted tokens.",
+  "greedy_flips_vs_bf16": {
+    "q4": "11-13",
+    "q3": 37,
+    "q2_or_binary": "~100",
+    "svd_r256": 349
+  },
+  "why": "A logit error becomes the emitted token with no downstream layer to absorb it. The risk starts as soon as you leave Q8, not at sub-bit.",
+  "design": "Keep lm_head and embed at HGRAVU01 bits=8 on mixed-1p5. HGRAVB01/HGRAVR02/HGRAVS01 and any silent Q8->Q4 overlay are FORBIDDEN on these two tensors.",
+  "only_identity_preserving_route": "Q3 draft -> top-32 -> gather exact rows -> rescore -> greedy with reserved tail masked. Ship ONLY if generated ids equal authority full-eval ids on MORE THAN ONE prompt. Two-pass does not dodge the risk unless the true argmax is in the candidate set; uniform drafts put it there, structured cheap projections do not.",
+  "bytes_vs_time_again": "lm_head is 14.7% of per-token bytes but only ~1.25 ms of GPU. Another instance of size not predicting cost on this machine.",
+  "A_CAUTION_ABOUT_MY_OWN_GATE": {
+    "lane_said": "A 12-token reverse-string match does not certify lm_head.",
+    "why_it_lands": "My coherence gate throughout today has been greedy-id identity over 12 tokens on ONE prompt. That is sufficient to catch gross breakage - and it did, repeatedly - but this screen shows Q4 lm_head produces only 11-13 flips across 384 samples, so a 12-token single-prompt check could easily miss it entirely.",
+    "consequence": "The 12-token gate is a SMOKE TEST, not a certification. Any change touching lm_head, embed, or sampling needs a broader id-identity gate across multiple prompts before it can be trusted."
+  }
+}

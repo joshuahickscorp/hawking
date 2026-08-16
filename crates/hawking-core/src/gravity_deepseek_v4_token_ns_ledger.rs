@@ -335,6 +335,16 @@ impl TokenNsCollector {
         self.add_stage("metal.encode", encode_ns, 1, 0);
         self.add_stage("metal.submit", submit_ns, 1, 0);
         self.add_stage("metal.wait", wait_ns, 1, 0);
+        // host_wall starts at submit_batch and ends after wait. The gap vs
+        // encode+submit+wait is host work between commit and wait (shared I/O
+        // during attn GPU, prefetch_fill during moe GPU). Raw observation;
+        // TOKEN_NS partitions it into exclusive serial classes.
+        let overlap_ns = host_wall_ns.saturating_sub(
+            encode_ns
+                .saturating_add(submit_ns)
+                .saturating_add(wait_ns),
+        );
+        self.add_stage("metal.cb_overlap_host", overlap_ns, 1, 0);
         if let Some(gpu) = gpu_ns {
             self.add_stage("metal.gpu", gpu, 1, 0);
         } else {

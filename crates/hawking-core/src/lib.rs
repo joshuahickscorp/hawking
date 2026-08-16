@@ -141,6 +141,8 @@ pub mod gravity_llama;
 pub mod json_constrain;
 pub mod kernel_bench;
 pub mod kernels;
+/// G023 shared decode family (Q80 + Qwen3.8 + DSV4F).
+pub mod decode_family;
 pub mod metal;
 pub mod mixed_quant_store;
 pub mod model;

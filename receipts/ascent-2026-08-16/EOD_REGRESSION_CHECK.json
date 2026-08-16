@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.ascent.eod_regression_check.v1",
+  "date": "2026-08-16",
+  "head": "f8f074044",
+  "why": "Nine merges landed today, one of them a hand-resolved conflict in qwen38_hybrid_decode.rs where two lanes had instrumented the same decode path. A regression check against baselines sealed BEFORE those merges is the only way to know the day's integration did not cost correctness.",
+  "qwen38": {
+    "gate": "tools/coherence_gate.py, 3 prompts, seal taken pre-merge",
+    "result": "PASS - id-identical on all 3"
+  },
+  "dsv4f": {
+    "gate": "HAWKING_DSV4F_NATIVE_GRAPH_E2E=1 hc_sha assert against the sealed graph hash",
+    "result": "PASS",
+    "note": "this gate is real - it was proven to FAIL on a corrupted sealed constant earlier today"
+  },
+  "merges_covered": [
+    "gk_* shared kernel family (both graphs)",
+    "Q80 host-facet reductions (-73.6 ms)",
+    "Q80 reconstruction fix (867 -> 36.6 ms gpu_matvec)",
+    "matvec diagnosis",
+    "Qwen3.8 TOKEN_NS decomposition (G001)",
+    "Qwen3.8 complete-wall authority (conflict resolved as union)",
+    "special-unit harness",
+    "BPW descent screen",
+    "lm_head pack design",
+    "decode-shape bandwidth control",
+    "rung instrument",
+    "negative-science register"
+  ],
+  "verdict": "Both production graphs are correct on merged main. The day's integration cost nothing in numerics.",
+  "honest_scope": "This proves NUMERIC correctness, not performance. Every timing on main remains DIRTY_ENGINEERING; the qualifying CLEAN_CANDIDATE runs still require a drained box."
+}

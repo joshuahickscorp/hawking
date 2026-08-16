@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.ascension.q80_mixed_reconstruction_wall.v1",
+  "date": "2026-08-16",
+  "verified_by_me": "Read the lane's 12 receipts directly. 3 alternating pairs per arm, greedy ids identical across all 12 runs ([8420,748,264,729,429,17431,288,264,914,320,72,1734]), silent-fallback counters dense_w_materialized / host_expert_payload_bind / host_mixed_matvec all 0 in every run.",
+  "host_facets_WON": {
+    "wall_ns_per_token": {
+      "base_ms": 1244.3,
+      "ours_ms": 1170.7,
+      "delta_ms": -73.6
+    },
+    "host_expert_bind": {
+      "base_ms": 63.6,
+      "ours_ms": 45.8,
+      "delta_ms": -17.8
+    },
+    "wait_minus_gpu": {
+      "base_ms": 175.1,
+      "ours_ms": 123.5,
+      "delta_ms": -51.6
+    },
+    "command_buffers_per_token": {
+      "base": 493,
+      "ours": 337,
+      "delta": -156
+    },
+    "dispatches_per_token": {
+      "base": 2797,
+      "ours": 2893,
+      "delta": 96,
+      "note": "extra device SiLU + weighted sum"
+    },
+    "spreads": "tight and non-overlapping on wall, bind, wait-gpu, CBs"
+  },
+  "THE_FINDING": {
+    "gpu_matvec_ns_per_token_ms": 863.4,
+    "pct_of_token": 73.8,
+    "did_not_move": true,
+    "active_bytes_per_token_gb": 2.218,
+    "achieved_gb_s": 2.57,
+    "honest_ceiling_gb_s": 411.51,
+    "factor_off_ceiling": 160.0,
+    "pct_of_ceiling": 0.62
+  },
+  "WHY_THIS_REFRAMES_Q80": "Q80's mixed vehicle is GPU-MATVEC-BOUND, not host-bound. My earlier 'Q80 is host/sync-bound' came from the Q4 vehicle (125 ms GPU of a 225 ms token). On the mixed artifact - the actual G020 sealing vehicle - gpu_matvec is 863 ms of a 1171 ms token, 74%. Host work is the remaining 307 ms and this lane just removed 74 ms of it.",
+  "DENSITY_IS_COSTING_SPEED": {
+    "claim": "Compressing Q80 from Q4 to 1.4444 BPW made the kernel ~6x SLOWER PER BYTE, because mixed codecs (binary / rice_q1 / low-rank) need expensive per-weight reconstruction.",
+    "q4_gb_s": 15.2,
+    "mixed_gb_s": 2.57,
+    "slowdown_per_byte_x": 5.9,
+    "net_effect": "Q4 token 225 ms vs mixed token 1171 ms. Density bought bytes and lost far more to reconstruction.",
+    "consequence": "For Q80, RECONSTRUCTION COST is the dominant term, not bytes moved. S004 section 7 items 5-6 - reconstruction in-register, reconstruction fused into consumption - are the levers that matter, and they outrank further BPW reduction."
+  }
+}

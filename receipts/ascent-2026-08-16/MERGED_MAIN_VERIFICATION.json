@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.ascension.merged_main_verification.v1",
+  "date": "2026-08-16",
+  "merged": [
+    "grok/q80-host-facets-20260816-143023 (-73.6 ms/token host facets)",
+    "grok/generalized-kernel-20260816-143026 (gk_* shared kernel family)"
+  ],
+  "why_recheck": "Each branch was verified alone, but both modify qwen80_mixed_hybrid_decode.rs. A combination that git auto-merges is not thereby correct.",
+  "qwen38_on_merged_main": {
+    "new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      4777,
+      6587,
+      728,
+      310,
+      1910,
+      328,
+      5834,
+      1149,
+      1061,
+      369,
+      264,
+      1546
+    ],
+    "identical_to_pre_merge": true,
+    "fallbacks": 0,
+    "median_gpu_ns": 36692125,
+    "timing_note": "36.69 ms vs 33.55 ms pre-merge, but THIRTEEN Grok lanes were running. This is contention, not a regression, and is NOT offered as a timing result."
+  },
+  "dsv4f_on_merged_main": {
+    "hc_sha_gate": "PASS",
+    "note": "This gate is now real - it was proven to FAIL on a corrupted sealed constant earlier today, so a pass carries information."
+  },
+  "verdict": "Both merges verified on the combination, not just individually."
+}

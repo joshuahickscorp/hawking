@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.special_unit.g005_native_wired.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-wire-model-to-harness-20260816-161138",
+  "claim": "ScriptedBackend is no longer the production conversation path. say() is answered by the verified ascension_qwen38_hybrid_greedy binary. The decode path was not modified.",
+  "status": "SHIPPED",
+  "class": "HARNESS + one locked native generate",
+  "native_decode_modified": false,
+  "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy",
+  "artifact_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+  "tokenizer": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
+  "wire": {
+    "backend": "lab.hcli.special_unit.NativeQwen38Backend",
+    "cli_default": "python -m lab.hcli.special_unit say --backend native",
+    "lock_protocol": "inspect /tmp/hawking-gpu-lane.lock; refuse if protected or any owner holds it; otherwise generate under ./tools/gpu_lane_lock.sh qwen38-special-unit",
+    "tool_path_still_refuses_gpu": true,
+    "proposed_complete_is_not_verified_complete": true,
+    "sandbox_cannot_certify": true
+  },
+  "offload_bench": {
+    "receipt": "receipts/ascent-2026-08-16/G005_MODEL_WIRED_OFFLOAD.json",
+    "seal_sha256": "98adda2f75a014d02672c2a5d59fc40a3012b6253dd96ae580597cd37c4395be",
+    "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED": 0.0588,
+    "model_produced_pass": 1,
+    "model_produced_attempted": 1,
+    "harness_produced_pass": 16,
+    "harness_produced_attempted": 16,
+    "skipped": 1,
+    "skipped_reason": "consume_q80_host_facets_report: grok-run task dir no longer on disk",
+    "native_model_untouched": false,
+    "gpu_lock_untouched": false,
+    "native_generates_completed": 1,
+    "fallbacks": 0,
+    "generated_excerpt": "<think> The user simply wants me to say \"hi.\" This is a very"
+  },
+  "files": [
+    "lab/hcli/special_unit.py",
+    "lab/hcli/claude_offload_bench.py",
+    "lab/tests/test_special_unit.py",
+    "receipts/ascent-2026-08-16/G005_MODEL_WIRED_OFFLOAD.json",
+    "receipts/ascent-2026-08-16/G005_NATIVE_WIRED.json"
+  ],
+  "unresolved": [
+    "The model answers say() with 16 greedy tokens. It does not yet drive tools, so most catalog tasks remain harness-produced.",
+    "consume_q80_host_facets_report skipped: ~/.claude-grok/tasks/q80-host-facets-20260816-143023 is gone."
+  ],
+  "seal_sha256": "47feac3c1ea20b1d6602a48cd9ad5b6c3010bd0a9a8f0157c5d2f7012119c29d"
+}

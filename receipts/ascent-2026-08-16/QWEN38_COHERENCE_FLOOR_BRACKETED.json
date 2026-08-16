@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.special_unit.coherence_floor_bracketed.v1",
+  "date": "2026-08-16",
+  "VERIFIED_BY_CONTROLLER": "I ran the native path myself under gpu_lane_lock.sh on the merged code. mixed-2p0-v1 emits [198]x15 then [8] - fifteen newlines and a close-paren - for 'What is the capital of France?'. FALLBACKS 0, DENSE_W_MATERIALIZED 0. The Q4 oracle on the identical prompt and binary emits '<think>'.",
+  "why_this_is_now_ATTRIBUTABLE": "Earlier incoherence results went through a mixed->float->Q4 round trip, so a collapse could have been the representation OR the second quantisation. The native reader removes that step: the runtime consumes HGRAVB01/R02/S01 directly, 0 fallbacks and 0 dense W confirm no silent escape to another path. The collapse is the artifact.",
+  "COHERENCE_FLOOR_BRACKETED": {
+    "4.2527_BPW_q4_oracle": "COHERENT",
+    "2.0856_BPW_mixed-2p0-v1": "INCOHERENT (native, verified twice - lane and controller)",
+    "1.2910_BPW_mixed-sub15-v1": "INCOHERENT",
+    "conclusion": "Qwen3.8's coherence floor with current codecs lies between 2.0856 and 4.2527 BPW."
+  },
+  "CONSEQUENCE_FOR_G006": "S001 requires coherent UNDER 1.5 BPW. The floor is above 2.0856, so G006 as specified is NOT reachable with the current codec set. It needs either a codec family that survives lower - the attention-density lane already said attention below Q4 needs a family Gravity does not have - or the target revisited.",
+  "CONSEQUENCE_FOR_G005_AND_G007": "Qwen3.8 needs about 2.0 BPW to clear 50 TPS from its measured 38.217 ms wall. 2.0856 BPW is incoherent. So Qwen3.8 CANNOT currently reach 50 TPS with a coherent artifact, which blocks the S001 sequence at its first step - Qwen3.8 was to hit 50-100 TPS first and then serve as proto-HCLI for Q80.",
+  "WHAT_IS_NOT_YET_KNOWN": "The floor is bracketed, not located. Nothing has been tested between 2.0856 and 4.2527 BPW. If the floor sits near 3.0, a coherent 3.0 BPW artifact projects 1.415 + 36.802*(3.0/4.2527) = 27.4 ms = 36.5 TPS - still short of 50 but a real number, and the 3.0 figure is the hard limit S002 originally named.",
+  "honest_note": "This does not prove sub-2.0 BPW Qwen3.8 is impossible. It proves THIS recipe fails there. The MLP compresses to 0.848 BPW fine; it is attention at 4.250 and 74% of the artifact that dominates, and no attention codec below Q4 exists yet."
+}

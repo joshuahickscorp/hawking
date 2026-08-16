@@ -33,59 +33,32 @@ static_assert(sizeof(Dsv4fExpertRef) == 16, "Dsv4fExpertRef ABI drift");
 
 static inline float dsv4f_tg_bf16_value(ushort bits)
 {
-    return as_type<float>(((uint)bits) << 16u);
+    return gk_bf16_value(bits);
 }
 
 static inline ushort dsv4f_tg_bf16_encode_rne(float value)
 {
-    const uint bits = as_type<uint>(value);
-    const uint low_lsb = (bits >> 16u) & 1u;
-    return (ushort)((bits + 0x7fffu + low_lsb) >> 16u);
+    return gk_bf16_encode_rne(value);
 }
 
 static inline float dsv4f_tg_e4m3fn_value(uchar bits)
 {
-    const uint raw = (uint)bits;
-    const uint exponent = (raw >> 3u) & 0x0fu;
-    const uint mantissa = raw & 0x07u;
-    if (exponent == 0x0fu && mantissa == 0x07u) return 0.0f;
-    const float magnitude = exponent == 0u
-        ? (float)mantissa * 0.001953125f
-        : as_type<float>(((exponent + 120u) << 23u) | (mantissa << 20u));
-    return (raw & 0x80u) != 0u ? -magnitude : magnitude;
+    return gk_e4m3fn_value(bits);
 }
 
 static inline float dsv4f_tg_e8m0fnu_value(uchar bits)
 {
-    if ((uint)bits == 0xffu) return 0.0f;
-    return (uint)bits == 0u
-        ? as_type<float>(0x00400000u)
-        : as_type<float>(((uint)bits) << 23u);
+    return gk_e8m0fnu_value(bits);
 }
 
 static inline float dsv4f_tg_e2m1fn_value(uchar packed, bool high_nibble)
 {
-    const uint nibble = high_nibble ? (((uint)packed >> 4u) & 0x0fu)
-                                     : ((uint)packed & 0x0fu);
-    float magnitude = 0.0f;
-    switch (nibble & 0x07u) {
-        case 0u: magnitude = 0.0f; break;
-        case 1u: magnitude = 0.5f; break;
-        case 2u: magnitude = 1.0f; break;
-        case 3u: magnitude = 1.5f; break;
-        case 4u: magnitude = 2.0f; break;
-        case 5u: magnitude = 3.0f; break;
-        case 6u: magnitude = 4.0f; break;
-        default: magnitude = 6.0f; break;
-    }
-    return (nibble & 0x08u) != 0u ? -magnitude : magnitude;
+    return gk_e2m1fn_value(packed, high_nibble);
 }
 
 static inline float dsv4f_tg_silu(float value)
 {
-    if (value >= 0.0f) return value / (1.0f + exp(-value));
-    const float e = exp(value);
-    return value * e / (1.0f + e);
+    return gk_silu_dsv4f(value);
 }
 
 // Sort the six device route IDs into execution order (ascending expert id,
@@ -532,5 +505,80 @@ kernel void dsv4f_fp4_matvec_interleaved(
             + block_accumulator * (activation_scale * weight_scale);
     }
     output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// Diagnostic only. Same launch geometry and the same packed/act/scale
+// addresses as dsv4f_fp4_matvec_split_simd, but the loaded bytes are
+// accumulated as floats with no e2m1/e4m3/e8m0 decode and no MAC. If this
+// runs at the same GPU time as the real kernel, reconstruction is free.
+#pragma clang fp contract(off)
+kernel void dsv4f_diag_fp4_load_only_simd(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint group_id                       [[threadgroup_position_in_grid]],
+    uint simd_lane                      [[thread_index_in_simdgroup]],
+    uint simd_id                        [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * DSV4F_FP4_BLOCK + simd_lane;
+        const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+        const uchar act = quantized[col];
+        float block_accumulator = float(packed) + float(act);
+        block_accumulator = simd_sum(block_accumulator);
+        if (simd_lane == 0u) {
+            const uchar activation_scale =
+                act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)];
+            const uchar weight_scale = weight_scales[scale_base + (ulong)block];
+            row_accumulator = row_accumulator
+                + block_accumulator + float(activation_scale) + float(weight_scale);
+        }
+    }
+    if (simd_lane == 0u) output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// Diagnostic only. Uncompressed F32 matvec at the same 8-simdgroup
+// threadgroup geometry as dsv4f_fp4_matvec_split_simd. Isolates access
+// pattern / occupancy from FP4 reconstruction.
+#pragma clang fp contract(off)
+kernel void dsv4f_diag_f32_matvec_simd(
+    device const float* weights [[buffer(0)]],
+    device const float* x       [[buffer(1)]],
+    device       float* output  [[buffer(2)]],
+    constant uint& rows          [[buffer(3)]],
+    constant uint& cols          [[buffer(4)]],
+    uint group_id                [[threadgroup_position_in_grid]],
+    uint simd_lane               [[thread_index_in_simdgroup]],
+    uint simd_id                 [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || cols == 0u || (cols % 32u) != 0u) return;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)cols;
+    float row_accumulator = 0.0f;
+    for (uint col = simd_lane; col < cols; col += 32u) {
+        row_accumulator = row_accumulator
+            + weights[weight_base + (ulong)col] * x[col];
+    }
+    row_accumulator = simd_sum(row_accumulator);
+    if (simd_lane == 0u) output[row] = row_accumulator;
 }
 #pragma clang fp contract(on)

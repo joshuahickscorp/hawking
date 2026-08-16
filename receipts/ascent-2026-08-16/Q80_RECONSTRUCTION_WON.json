@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.ascension.q80_reconstruction_won.v1",
+  "date": "2026-08-16",
+  "verified_by_controller": "Both arms run by me under tools/gpu_lane_lock.sh on the merged code, not accepted from the lane report.",
+  "measured": {
+    "base": {
+      "gpu_matvec_ns": 867040696,
+      "wall_ns_per_token": 1376263011,
+      "tok_s": 0.726605
+    },
+    "ours": {
+      "gpu_matvec_ns": 36598269,
+      "wall_ns_per_token": 301418659,
+      "tok_s": 3.317645
+    },
+    "gpu_matvec_speedup": 23.7,
+    "wall_speedup": 4.57
+  },
+  "coherence": {
+    "greedy_ids": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "identical_both_arms": true,
+    "sample_parity": "passed",
+    "silent_fallbacks": 0
+  },
+  "mechanism": "Consume codes IN-REGISTER on occupancy tiles; fuse binary with CSR. Replaces a serial one-thread-per-row extract doing 8 bit-loads per weight.",
+  "independent_diagnosis": "A separate lane, run before this one's result was known, identified the same limiter from variant timings: on qkvz x-only 138 us, load-only 175, f32 serial 250, byte-serial 287, shipped 1586 - the ALU was busy on the extract, not stalled on DRAM.",
+  "CORRECTIONS_TO_MY_EARLIER_RECORD": [
+    "I recorded 'density is costing speed - mixed is 5.9x slower per byte than Q4 because binary/rice/low-rank reconstruction is expensive'. The codecs were never the cause. Q4's 15.2 GB/s came from a DIFFERENT KERNEL (simdgroup); isolated Q4 serial on the same shape is ~2.5 GB/s, the same as mixed. The cause was a kernel choice, not codec cost.",
+    "I recorded gpu_matvec as a uniform 2.57 GB/s. It was a BLEND: f32 at the same launch hits 402-545 GB/s on the large organs (at or above ceiling) while ba and router run 0.09-0.69 GB/s.",
+    "I recorded 'reconstruction cost, not bytes moved, is Q80's dominant term'. Closer to true is that LAUNCH GEOMETRY was dominant - bytes and time are inverted across organs: ba is 0.2% of bytes and 7% of time; qkvz is 41% of bytes and 7% of time."
+  ],
+  "where_q80_stands": {
+    "wall_ms_per_token": 301.4,
+    "gate_ms": 20,
+    "factor_off_gate": 15.1,
+    "gpu_matvec_share": "11% of the token, was 74%",
+    "next": "The token is now dominated by what was previously invisible behind the matvec."
+  },
+  "note_for_g003": "The backlog mine's four unmerged stacks targeted this same serial matvec. They are now likely SUPERSEDED - compare before consuming, do not merge them blind."
+}

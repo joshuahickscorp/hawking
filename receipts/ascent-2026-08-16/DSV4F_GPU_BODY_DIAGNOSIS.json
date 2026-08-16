@@ -1,0 +1,350 @@
+{
+  "byte_budget_unique_stored": {
+    "lm_head_bf16": 1059061760,
+    "mla_fp8_plus_scale": 4599335040,
+    "note": "Unique stored bytes the GPU must read at least once per BOS token. Activations and scratch are extra and small. TOKEN_NS 5.857 GB used a 3.67 BPW blend and is not the stored traffic.",
+    "routed_fp4_plus_scale": 3449290752,
+    "router_bf16": 90177536,
+    "shared_fp8_plus_scale": 1082196480,
+    "total_gb": 10.280061568,
+    "total_unique_weight_scale_bytes": 10280061568
+  },
+  "correctness": {
+    "fp4_simd_max_abs_error": 0.0,
+    "passed": true
+  },
+  "date": "2026-08-16",
+  "device_name": "Apple M3 Ultra",
+  "discriminator": {
+    "alu_idle_proof": {
+      "fp4_alu_utilization_if_21tflops": 0.007689553744874919,
+      "fp4_w1_simd_gflops": 163.01853939134827,
+      "m3_ultra_60c_fp32_tflops_published_approx": 21.2,
+      "note": "Even counting ~8 extra decode FLOPs per weight, utilization stays well under 1% of a 21 TFLOP GPU. ALU is idle. Pipeline max_total_threads_per_threadgroup=1024 on the FP4 kernels: not register-bound."
+    },
+    "f32_over_fp4_bytes": 7.529411764705882,
+    "f32_over_fp4_time": 0.7603288118465544,
+    "fp4_gbps_vs_row_count": {
+      "2048": 43.30179952582689,
+      "256": 6.143638609493559,
+      "4096": 46.72553604193971
+    },
+    "load_only_over_fp4_time": 0.545347662171091,
+    "named_limiter": "occupancy_on_mla_and_gate__issue_latency_on_fp4_access_pattern",
+    "question": "Is DSV4F GPU time reconstruction (ALU) or occupancy/launch geometry?"
+  },
+  "fallbacks": 0,
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "hc_sha_untouched": true,
+  "honest_ceiling_gb_s": 411.51,
+  "isolated": {
+    "fp4_row_count_scaling": {
+      "note": "Same FP4 decode, same K walk. If GB/s rises with rows, occupancy is the limiter; reconstruction cost per byte is independent of row count.",
+      "rows_2048_w1_gbps": 43.30179952582689,
+      "rows_256_gbps": 6.143638609493559,
+      "rows_256_gpu_ns": [
+        10875,
+        11334,
+        11416
+      ],
+      "rows_4096_w2_gbps": 46.72553604193971,
+      "rows_4096_w2_gpu_ns": [
+        95250,
+        95375,
+        95541
+      ],
+      "small_bytes": 69632,
+      "w2_bytes": 4456448
+    },
+    "fp4_w1_2048x4096": {
+      "bytes_packed_plus_scale": 4456448,
+      "bytes_plus_activation": 4460576,
+      "f32_bytes": 33554432,
+      "f32_gbps": 428.8106325878594,
+      "f32_gpu_ns": [
+        76916,
+        78375,
+        78250
+      ],
+      "f32_median_gpu_ns": 78250,
+      "f32_over_fp4_bytes": 7.529411764705882,
+      "f32_over_fp4_time": 0.7603288118465544,
+      "fp4_simd_gflops": 163.01853939134827,
+      "gk_serial_gpu_ns": [
+        617084,
+        557250,
+        634875
+      ],
+      "gk_serial_median_gpu_ns": 617084,
+      "load_only_gbps": 79.40219153674833,
+      "load_only_gpu_ns": [
+        56250,
+        56084,
+        56125
+      ],
+      "load_only_median_gpu_ns": 56125,
+      "load_only_over_fp4_time": 0.545347662171091,
+      "serial_gbps": 7.177215597600964,
+      "serial_gpu_ns": [
+        555625,
+        623125,
+        620916
+      ],
+      "serial_median_gpu_ns": 620916,
+      "simd_frac_of_ceiling": 0.10522660330448079,
+      "simd_gbps": 43.30179952582689,
+      "simd_gpu_ns": [
+        102209,
+        103000,
+        102916
+      ],
+      "simd_median_gpu_ns": 102916,
+      "simd_r4_gbps": 39.671408478287965,
+      "simd_r4_gpu_ns": [
+        111875,
+        112375,
+        112334
+      ],
+      "simd_r4_median_gpu_ns": 112334,
+      "threadgroups_serial": 8,
+      "threadgroups_simd": 256,
+      "threads_serial": 2048,
+      "threads_simd": 65536
+    },
+    "fp8_mla_organs": {
+      "wkv_512x4096": {
+        "authority_frac_of_ceiling": 0.01711450938406038,
+        "authority_gbps": 7.042791756634687,
+        "authority_gpu_ns": [
+          293750,
+          299250,
+          297791
+        ],
+        "authority_median_gpu_ns": 297791,
+        "bytes": 2097280,
+        "cols": 4096,
+        "kernel_authority": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "kernel_occupancy": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "occupancy_frac_of_ceiling": 0.28446901451153855,
+        "occupancy_gbps": 117.06184416164322,
+        "occupancy_gpu_ns": [
+          18000,
+          17834,
+          17916
+        ],
+        "occupancy_median_gpu_ns": 17916,
+        "rows": 512,
+        "threadgroups_authority": 2,
+        "threads_authority": 512
+      },
+      "wo_a_8192x4096": {
+        "authority_frac_of_ceiling": 0.15288446182108198,
+        "authority_gbps": 62.91348488399344,
+        "authority_gpu_ns": [
+          533375,
+          524125,
+          541166
+        ],
+        "authority_median_gpu_ns": 533375,
+        "bytes": 33556480,
+        "cols": 4096,
+        "kernel_authority": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "kernel_occupancy": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "occupancy_frac_of_ceiling": 0.6064655383709502,
+        "occupancy_gbps": 249.5666336950297,
+        "occupancy_gpu_ns": [
+          151750,
+          134334,
+          134459
+        ],
+        "occupancy_median_gpu_ns": 134459,
+        "rows": 8192,
+        "threadgroups_authority": 32,
+        "threads_authority": 8192
+      },
+      "wo_b_4096x8192": {
+        "authority_frac_of_ceiling": 0.13849523824891957,
+        "authority_gbps": 56.99217549181289,
+        "authority_gpu_ns": [
+          588791,
+          593834,
+          588750
+        ],
+        "authority_median_gpu_ns": 588791,
+        "bytes": 33556480,
+        "cols": 8192,
+        "kernel_authority": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "kernel_occupancy": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "occupancy_frac_of_ceiling": 0.5847220317356326,
+        "occupancy_gbps": 240.6189632795302,
+        "occupancy_gpu_ns": [
+          138625,
+          139459,
+          139459
+        ],
+        "occupancy_median_gpu_ns": 139459,
+        "rows": 4096,
+        "threadgroups_authority": 16,
+        "threads_authority": 4096
+      },
+      "wq_a_1024x4096": {
+        "authority_frac_of_ceiling": 0.03455286009483881,
+        "authority_gbps": 14.218847457627119,
+        "authority_gpu_ns": [
+          293584,
+          301375,
+          295000
+        ],
+        "authority_median_gpu_ns": 295000,
+        "bytes": 4194560,
+        "cols": 4096,
+        "kernel_authority": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "kernel_occupancy": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "occupancy_frac_of_ceiling": 0.3939359894870512,
+        "occupancy_gbps": 162.10859903381643,
+        "occupancy_gpu_ns": [
+          26125,
+          25709,
+          25875
+        ],
+        "occupancy_median_gpu_ns": 25875,
+        "rows": 1024,
+        "threadgroups_authority": 4,
+        "threads_authority": 1024
+      },
+      "wq_b_32768x1024": {
+        "authority_frac_of_ceiling": 0.4188956973678999,
+        "authority_gbps": 172.37976842386448,
+        "authority_gpu_ns": [
+          195166,
+          194666,
+          194000
+        ],
+        "authority_median_gpu_ns": 194666,
+        "bytes": 33556480,
+        "cols": 1024,
+        "kernel_authority": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "kernel_occupancy": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "occupancy_frac_of_ceiling": 0.6104380002381992,
+        "occupancy_gbps": 251.20134147802133,
+        "occupancy_gpu_ns": [
+          133584,
+          133541,
+          134375
+        ],
+        "occupancy_median_gpu_ns": 133584,
+        "rows": 32768,
+        "threadgroups_authority": 128,
+        "threads_authority": 32768
+      }
+    },
+    "fp8_mla_projected_token": {
+      "authority_ms": 82.113789,
+      "authority_ns": 82113789,
+      "occupancy_ms": 19.405599,
+      "occupancy_ns": 19405599
+    },
+    "gate_256x4096_bf16": {
+      "authority_gbps": 5.523430736214667,
+      "authority_gpu_ns": [
+        381166,
+        381250,
+        364166
+      ],
+      "authority_median_gpu_ns": 381166,
+      "authority_threads": 256,
+      "bytes": 2105344,
+      "c4_gbps": 50.2276934822025,
+      "c4_median_gpu_ns": 41916,
+      "c4_simd_gpu_ns": [
+        41916,
+        41250,
+        42875
+      ],
+      "c4_threads": 8192,
+      "token_authority_ms": 16.390138,
+      "token_c4_ms": 1.802388
+    },
+    "worklist_6_expert_w1": {
+      "bytes": 26738688,
+      "frac_of_ceiling": 0.1289011486857422,
+      "gbps": 53.04411169566977,
+      "gpu_ns": [
+        504084,
+        503750,
+        504084
+      ],
+      "kernel": "dsv4f_worklist_fp4_matvec_simd",
+      "median_gpu_ns": 504084,
+      "projected_routed_ms": 65.026836,
+      "projected_routed_w1w2w3_ns": 65026836,
+      "threads": 393216
+    }
+  },
+  "lane": "dsv4f-gpu-body",
+  "measurement_label": "isolated organs; production token numbers live in DSV4F_HOST_WALL_BASELINE",
+  "pipeline": {
+    "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 512,
+      "thread_execution_width": 32
+    },
+    "deepseek_v4_p0_gate_reduction_c4_simd32_fma_candidate": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "deepseek_v4_p6a_gate_bf16_matvec_authority": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_diag_f32_matvec_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_diag_fp4_load_only_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_fp4_matvec_split": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_fp4_matvec_split_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_fp4_matvec_split_simd_r4": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "dsv4f_worklist_fp4_matvec_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "gk_matvec_fp4": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "gk_worklist_fp4_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    }
+  },
+  "protocol": "warmup=2; 3 alternating paired reps, full spread, one CB per dispatch",
+  "schema": "hawking.ascension.dsv4f_gpu_body_diagnosis.v1"
+}

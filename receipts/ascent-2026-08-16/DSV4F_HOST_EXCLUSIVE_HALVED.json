@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.dsv4f.host_exclusive_halved.v1",
+  "date": "2026-08-16",
+  "RECOVERED_FROM_A_SILENT_LANE_DEATH": "grok-run status reported this lane RUNNING with no process alive and no worktree write for 117 minutes. Its completed paired measurement was unpreserved and would have been lost. This is the second time today a lane finished with work uncommitted; here the lane also died without reporting.",
+  "branch": "grok/auto-dsv4f-level-host-exclusive-not-20260816-135420 @ 8c4d93142",
+  "paired_measurement": {
+    "method": "3 alternating pairs, same artifact",
+    "arms": {
+      "base_body_ms": [
+        849.9,
+        854.2,
+        760.6
+      ],
+      "ours_body_ms": [
+        703.0,
+        700.3,
+        688.0
+      ],
+      "base_host_exclusive_ms": [
+        460.7,
+        464.3,
+        390.0
+      ],
+      "ours_host_exclusive_ms": [
+        226.1,
+        220.1,
+        221.0
+      ]
+    }
+  },
+  "result": {
+    "body_median_ms": {
+      "base": 849.9,
+      "ours": 700.3,
+      "delta": -149.6
+    },
+    "host_exclusive_median_ms": {
+      "base": 460.7,
+      "ours": 221.0,
+      "delta": -239.7,
+      "reduction_pct": 52.0
+    }
+  },
+  "correctness": {
+    "hc_sha_matches_sealed_value_in_all_6_runs": true,
+    "sealed": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "fallbacks": 0,
+    "admission_trust_fallbacks": 0
+  },
+  "diagnosis_carried": "io_bound",
+  "context": "Base body here is 849.9 ms, better than the 1109 ms in the standing ledger, so the baseline had already improved before this lane ran. The delta is measured against ITS OWN base arm, which is the correct comparison.",
+  "still_far_from_gate": "G004 needs <=20 ms/token. 700 ms is 35x off. host_exclusive halving is real progress and not close to sufficient; the 410 ms GPU body remains untouched and lane dsv4f-gpu-body owns it."
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.ops.drain_requires_user_coordination.v1",
+  "date": "2026-08-16",
+  "FINDING": "A drained box for the G003/G008 CLEAN_CANDIDATE measurement is NOT something I can arrange alone. 13 lanes are live and 9 of them belong to the user's OTHER projects - 6 alpha-* and 3 searcher-* - which I must not stop.",
+  "live_lane_census": {
+    "total": 13,
+    "mine": [
+      "q80-deltanet-rebase3",
+      "qwen38-native-mixed-reader",
+      "qwen38-widen-offload-bench"
+    ],
+    "users_other_projects": 9,
+    "dead_but_listed": 1,
+    "not_mine": [
+      "alpha-gates",
+      "alpha-governance",
+      "alpha-recovery",
+      "alpha-security",
+      "alpha-staging",
+      "alpha-stripe",
+      "searcher-expand",
+      "searcher-latency",
+      "searcher-truthful"
+    ]
+  },
+  "why_it_matters": "G003 and G008 both require CLEAN_CANDIDATE paired reps on a DRAINED box. Every timing today is DIRTY_ENGINEERING and correctly labelled so. The qualifying run therefore needs a window where NOTHING else is on the GPU - including work that is not mine and that I have no authority to interrupt.",
+  "the_coordination_need": "When Q80 is close enough to the gate to attempt a seal, the user must agree to a quiet window. This is not a technical blocker and it is cheap to arrange in advance; it is expensive to discover at seal time, which is why it is recorded now rather than then.",
+  "not_urgent_yet": "Q80 is at ~250 ms against a 20 ms gate, so there is nothing to qualify. The drain matters only when the number is plausibly inside the gate.",
+  "checklist_rehearsed_today": [
+    "grok-run status count",
+    "pgrep per lane - the status file reports dead processes as running, confirmed again today with v2-compact",
+    "python3 tools/lane_health.py returns 0 dead and nothing dirty",
+    "/tmp/hawking-gpu-lane.lock absent",
+    "no cargo build or test in flight - build contention corrupted a measurement earlier today",
+    "THEN >=3 alternating paired reps under gpu_lane_lock.sh, full spread, labelled CLEAN not DIRTY"
+  ],
+  "dry_run_result": "Checklist works. Steps 1-5 all executed cleanly and correctly identified 1 dead-but-listed lane and a held GPU lock (g003-rebase3-pairs, the DeltaNet lane mid-paired-rep)."
+}

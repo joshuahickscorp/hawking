@@ -28,6 +28,8 @@ pub mod qwen80_mixed_catalog;
 /// Mixed-catalog binding of the Q4 hybrid token graph. Expert organs use the
 /// packed mixed codecs; non-experts stay HGRAVU01-q8. Not a dense-W path.
 pub mod qwen80_mixed_hybrid_decode;
+/// Closed TOKEN_NS cover of the mixed-1p5-v1 complete token after recon-fuse.
+pub mod qwen80_mixed_token_ns_ledger;
 
 /// Memory-bounded DSV4F activation-X capture writer.
 ///
@@ -42,6 +44,14 @@ pub mod qwen30_quality_repack_diagnostic;
 /// Exact 48-layer execution schedule (mixer assignment, state slots, kernel
 /// sequences). CPU/build authority only — not an Engine dispatch.
 pub mod qwen80_48_layer_execution_schedule;
+/// Qwen3.8-27B (qwen3_5 text) geometry, pack-time in_proj fusion, and native
+/// hybrid decode. Language-only; vision is skipped.
+pub mod qwen38_geometry;
+pub mod qwen38_64_layer_execution_schedule;
+pub mod qwen38_pack;
+pub mod qwen38_hybrid_decode;
+/// Per-token ns ledger for the Qwen3.8 uniform-Q4 hybrid vehicle.
+pub mod qwen38_token_ns_ledger;
 /// Strict Qwen3-Coder-Next complete-binary hybrid catalog and native-state
 /// bootstrap.  It deliberately is not an Engine dispatch until its full token
 /// graph has real capability evidence.

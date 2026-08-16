@@ -1,16 +1,22 @@
-// Device-resident Qwen80 hybrid-decode activations (uniform-Q4 neighbor ops).
+// Device-resident Qwen80 hybrid-decode activations.
 //
 // These kernels keep the residual / mixer / SwiGLU / DeltaNet / GQA control
-// stream on Metal between the already-native Q4 matvecs. Weights that are
-// small vectors are uploaded once as f32 (the catalog already decodes them
-// that way). Math mirrors the host oracles in qwen80_complete_runtime.rs:
+// stream on Metal between the already-native mixed (and Q4) matvecs. Weights
+// that are small vectors are uploaded once as f32 (the catalog already
+// decodes them that way). Math mirrors the host oracles in
+// qwen80_complete_runtime.rs:
 //   residual RMSNorm: x * rsqrt(mean(x^2)+eps) * (1+w)
 //   SwiGLU: silu(gate) * up
 //   DeltaNet conv + L2 + BA + gated RMSNorm
 //   GQA per-head (1+w) RMSNorm + rotate_half RoPE on the first 64 dims
+//   second residual: first + routed + shared * sigmoid(gate_logit)
 //
 // Serial reductions follow the host left-to-right f32 sum so greedy tokens
 // stay on the measured "Hi" sequence.
+//
+// Mixed-decode CB collapse (G003 rank-2) encodes these into the same
+// TokenCommandBuffer as the mixed GEMVs. The remaining host wait is the
+// 512-logit router readback that binds the ten mixed expert payloads.
 
 #include <metal_stdlib>
 using namespace metal;
@@ -252,6 +258,62 @@ kernel void qwen80_gated_delta_decode_tg(
     }
 }
 
+// Same per-value-dim association as `qwen80_gated_delta_decode_tg` / the
+// host oracle, but one threadgroup per (head, vi) instead of looping 128
+// value columns inside each head. Port of `qwen38_gated_delta_decode_vi`
+// (grid.z = value_dim). This is not the 1-thread-per-vi column-parallel
+// launch: 128 threads still walk the key axis and reduce 0..127 in order.
+kernel void qwen80_gated_delta_decode_vi(
+    device float* state            [[buffer(0)]],
+    device const float* query      [[buffer(1)]],
+    device const float* key        [[buffer(2)]],
+    device const float* value      [[buffer(3)]],
+    device const float* decay      [[buffer(4)]],
+    device const float* beta       [[buffer(5)]],
+    device float* output           [[buffer(6)]],
+    constant uint& heads           [[buffer(7)]],
+    constant uint& key_dim         [[buffer(8)]],
+    constant uint& value_dim       [[buffer(9)]],
+    threadgroup float* scratch     [[threadgroup(0)]],
+    uint tid                        [[thread_index_in_threadgroup]],
+    uint3 group                     [[threadgroup_position_in_grid]])
+{
+    const uint head = group.y;
+    const uint vi = group.z;
+    if (head >= heads || vi >= value_dim || key_dim != 128u || value_dim != 128u) {
+        return;
+    }
+    const uint state_base = head * key_dim * value_dim;
+    const uint key_base = head * key_dim;
+    const uint value_base = head * value_dim;
+    const float d = decay[head];
+    const float b = beta[head];
+    const uint ki = tid;
+    const uint index = state_base + ki * value_dim + vi;
+
+    const float decayed = state[index] * d;
+    state[index] = decayed;
+    scratch[tid] = ki < key_dim ? decayed * key[key_base + ki] : 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float kv_mem = 0.0f;
+        for (uint i = 0u; i < key_dim; ++i) kv_mem += scratch[i];
+        scratch[0] = kv_mem;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float delta = (value[value_base + vi] - scratch[0]) * b;
+    state[index] += key[key_base + ki] * delta;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    scratch[tid] = ki < key_dim ? state[index] * query[key_base + ki] : 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float sum = 0.0f;
+        for (uint i = 0u; i < key_dim; ++i) sum += scratch[i];
+        output[value_base + vi] = sum;
+    }
+}
+
 kernel void qwen80_gqa_qk_norm_rope_cache_f32(
     device const float* q_proj     [[buffer(0)]],
     device const float* k_proj     [[buffer(1)]],
@@ -270,9 +332,8 @@ kernel void qwen80_gqa_qk_norm_rope_cache_f32(
     constant float& rms_epsilon    [[buffer(14)]],
     uint head                       [[thread_position_in_grid]])
 {
-    if (head >= n_heads || n_heads != 16u || n_kv_heads != 2u ||
-        head_dim != 256u || rotary_dim != 64u ||
-        rope_theta != 5000000.0f || rms_epsilon != 1.0e-6f) {
+    if (head >= n_heads ||
+        !gk_gqa_geometry_ok(n_heads, n_kv_heads, head_dim, rotary_dim, rope_theta, rms_epsilon)) {
         return;
     }
 
@@ -337,4 +398,43 @@ kernel void qwen80_gqa_qk_norm_rope_cache_f32(
             value_cache[cache_base + dim] = v_proj[kv_base + dim];
         }
     }
+}
+
+kernel void qwen80_add_residual_f32(
+    device const float* input  [[buffer(0)]],
+    device const float* mixer  [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    constant uint& elements    [[buffer(3)]],
+    uint id                     [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    output[id] = input[id] + mixer[id];
+}
+
+kernel void qwen80_shared_expert_sigmoid_gate_f32(
+    device const float* shared_output [[buffer(0)]],
+    device const float* gate_logit    [[buffer(1)]],
+    device float* gated_output        [[buffer(2)]],
+    constant uint& elements           [[buffer(3)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
+    gated_output[id] = shared_output[id] * gate;
+}
+
+// first + routed + shared * sigmoid(gate). One dispatch at the layer
+// boundary so suffix + next mixer can share a command buffer.
+kernel void qwen80_moe_combine_second_residual_f32(
+    device const float* first_residual [[buffer(0)]],
+    device const float* routed         [[buffer(1)]],
+    device const float* shared         [[buffer(2)]],
+    device const float* gate_logit     [[buffer(3)]],
+    device float* output               [[buffer(4)]],
+    constant uint& hidden              [[buffer(5)]],
+    uint id                             [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
+    output[id] = first_residual[id] + routed[id] + shared[id] * gate;
 }
