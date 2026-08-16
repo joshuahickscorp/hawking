@@ -463,6 +463,11 @@ fn main() {
             format!("honest decode ceiling {HONEST_DECODE_CEILING_GB_S} GB/s; peak 819 GB/s"),
             "uniform-q4-v1 is an ORACLE for profiling ONLY, never an endpoint".into(),
             "GPU time is GPUEndTime-GPUStartTime on completed CBs only".into(),
+            format!(
+                "decode_family_enabled={} swiglu={}",
+                hawking_core::decode_family::family_dispatch_enabled(),
+                hawking_core::decode_family::swiglu_f32()
+            ),
         ],
     };
 

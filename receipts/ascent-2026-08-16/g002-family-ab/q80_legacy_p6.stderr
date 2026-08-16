@@ -1,0 +1,7 @@
+opening mixed catalog at /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1
+catalog tensors=74391 complete_physical_bpw=1.444446 claim=MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+sample parity passed=true dense_w=false silent_fallbacks=0
+degrade rank_cap=160 gate_mix=1 up_mix=1 down_mix=1 identity=true
+greedy rep 1/1 prompt_chars=90 max_new_tokens=12
+wrote /Users/scammermike/.claude-grok/worktrees/g002-per-facet-ab-20260816-162057/receipts/ascent-2026-08-16/g002-family-ab/q80_legacy_p6.json

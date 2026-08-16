@@ -701,7 +701,7 @@ mod device {
         fn encode_silu(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
             let n = QWEN38_INTERMEDIATE as u32;
             tcb.dispatch_threads(
-                "qwen80_silu_mul_f32",
+                crate::decode_family::swiglu_f32(),
                 (n, 1, 1),
                 (n.min(256).max(1), 1, 1),
                 |encoder| {
@@ -1354,7 +1354,7 @@ mod device {
                 &self.workspace.up,
             )?;
             tcb.dispatch_threads(
-                "qwen80_silu_mul_f32",
+                crate::decode_family::swiglu_f32(),
                 (n, 1, 1),
                 (n.min(256).max(1), 1, 1),
                 |encoder| {

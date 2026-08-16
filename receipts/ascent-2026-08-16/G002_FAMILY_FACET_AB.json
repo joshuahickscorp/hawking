@@ -1,0 +1,3321 @@
+{
+  "schema": "hawking.ascent.g002_family_facet_ab.v1",
+  "date": "2026-08-16",
+  "lane": "g002-per-facet-ab-20260816-162057",
+  "status": "MEASURED",
+  "commit": "1ac1a22017ce94992a5497b6584b29f3da4fa524",
+  "gpu_touched": true,
+  "timing_label": "MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "profile": "release-fast (same binary both arms; relative A/B, not a BASE_TRUE_TPS claim)",
+  "toggle": {
+    "env": "HAWKING_DECODE_FAMILY",
+    "default": "on (family names)",
+    "legacy": "0/false/off/no",
+    "what_it_changes": "kernel symbol only. Host bind, recon-fuse occupancy tiles, CB fusion, act-quant, DSV4F FP4 occupancy stay on their own levers.",
+    "implementation": "crates/hawking-core/src/decode_family.rs family_dispatch_enabled() + pick()"
+  },
+  "confound_avoided": {
+    "do_not_compare_to_morning": "This A/B never subtracts this morning's 867.0 ms Q80 gpu_matvec. Reconstruction fuse stayed ON for both arms. A before/after that straddled the fuse would attribute 867->36.6 to the family, which is wrong.",
+    "one_build_one_session": "Both arms are the same release-fast binaries hashed below. Alternating family/legacy in one GPU lock, then three more warm pairs after a short gap.",
+    "page_cache": "Pair 1 of each lock session (Q80/DSV p1 and p4) is first-touch / page-cache. Family always ran first, so those pairs bias against family. Analysis medians drop p1 and p4. Raw pairs remain in the table (full spread)."
+  },
+  "binaries": {
+    "q80": "53a8cbb544c2a5b9e2402a83b72ecd4e03e3cc8b00487c8f5f86a4ba18c5f9c2",
+    "dsv4f": "04fc39f936b7c6f49926b2291e63823e08d7ec1ece0983f71bcd25896921db3d",
+    "qwen38": "a61e2488189cf0e503f826f579e0be03cc7846be16644daeb86be84933eb1d34"
+  },
+  "correctness": {
+    "q80_greedy_ids": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "q80_all_reps_match": true,
+    "dsv4f_hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "dsv4f_all_reps_match": true,
+    "qwen38_greedy_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      4777,
+      6587,
+      728,
+      310,
+      1910,
+      328,
+      5834,
+      1149,
+      1061,
+      369,
+      264,
+      1546
+    ],
+    "qwen38_all_reps_match": true
+  },
+  "q80_mixed": {
+    "vehicle": "mixed-1p5-v1",
+    "reps": 6,
+    "protocol": "alternating family/legacy, 12-token greedy, --reps 1 per process, gpu_lane_lock",
+    "shipping_dispatch_note": "HAWKING_Q80_RECON_FUSE default ON. dispatch_binary/residual/factor launch occupancy tiles (q80_binary_group_matvec_tg256 / csr_tg256 / hgravs simd3 / uniform8). The family/legacy toggle only fills the unused serial_name. Q80 gpu_matvec is therefore the same occupancy kernels both arms. That is the shipping token path. It is not a serial-wrapper microbench.",
+    "dispatched_serial_names_recorded_but_unused_when_recon_fuse_on": {
+      "family": [
+        "gk_matvec_binary",
+        "gk_matvec_hgravs"
+      ],
+      "legacy": [
+        "q80_binary_group_matvec",
+        "q80_hgravs01_factor_matvec"
+      ]
+    },
+    "analysis_pairs": [
+      2,
+      3,
+      5,
+      6
+    ],
+    "raw": {
+      "family": [
+        {
+          "pair": 1,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 453349204.54545456,
+          "gpu_matvec_ns": 33885875.54545455,
+          "host_expert_bind_ns": 206950234.36363637,
+          "wait_minus_gpu_ns": 86149638.0,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 2,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 266176140.1818182,
+          "gpu_matvec_ns": 25684902.545454547,
+          "host_expert_bind_ns": 42474208.36363637,
+          "wait_minus_gpu_ns": 75622731.0909091,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 3,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 270453261.3636363,
+          "gpu_matvec_ns": 26354290.818181816,
+          "host_expert_bind_ns": 42916510.63636363,
+          "wait_minus_gpu_ns": 78607786.63636364,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 4,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 379793159.0909091,
+          "gpu_matvec_ns": 36589742.81818182,
+          "host_expert_bind_ns": 122134606.36363636,
+          "wait_minus_gpu_ns": 94462199.81818181,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 5,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 293589477.27272725,
+          "gpu_matvec_ns": 36267116.09090909,
+          "host_expert_bind_ns": 42576227.0,
+          "wait_minus_gpu_ns": 89713390.0909091,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 6,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "serial_binary": "gk_matvec_binary",
+          "serial_hgravs": "gk_matvec_hgravs",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 290948227.2727273,
+          "gpu_matvec_ns": 36268993.63636363,
+          "host_expert_bind_ns": 42382576.27272727,
+          "wait_minus_gpu_ns": 88043008.27272727,
+          "command_buffers": 337.0
+        }
+      ],
+      "legacy": [
+        {
+          "pair": 1,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 267321837.09090906,
+          "gpu_matvec_ns": 25759202.363636363,
+          "host_expert_bind_ns": 42901672.63636363,
+          "wait_minus_gpu_ns": 76229950.72727273,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 2,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 274477920.4545455,
+          "gpu_matvec_ns": 27340664.0,
+          "host_expert_bind_ns": 43276402.36363637,
+          "wait_minus_gpu_ns": 80056202.63636364,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 3,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 315867776.54545456,
+          "gpu_matvec_ns": 36232233.81818182,
+          "host_expert_bind_ns": 47711899.81818182,
+          "wait_minus_gpu_ns": 93624538.81818181,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 4,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 297552803.09090906,
+          "gpu_matvec_ns": 36289663.36363637,
+          "host_expert_bind_ns": 43621004.0,
+          "wait_minus_gpu_ns": 90585924.45454545,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 5,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 319907697.0,
+          "gpu_matvec_ns": 36224849.45454545,
+          "host_expert_bind_ns": 46639066.54545455,
+          "wait_minus_gpu_ns": 95926222.36363636,
+          "command_buffers": 337.0
+        },
+        {
+          "pair": 6,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "serial_binary": "q80_binary_group_matvec",
+          "serial_hgravs": "q80_hgravs01_factor_matvec",
+          "recon_fuse_enabled": true,
+          "generated_token_ids": [
+            8420,
+            748,
+            264,
+            729,
+            429,
+            17431,
+            288,
+            264,
+            914,
+            320,
+            72,
+            1734
+          ],
+          "ids_ok": true,
+          "silent_fallbacks": 0,
+          "wall_ns": 296355056.8181818,
+          "gpu_matvec_ns": 36176682.63636363,
+          "host_expert_bind_ns": 42920400.18181818,
+          "wait_minus_gpu_ns": 91158927.63636364,
+          "command_buffers": 337.0
+        }
+      ]
+    },
+    "facets": {
+      "host_expert_bind": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 206950234.36363637,
+            "legacy": 42901672.63636363,
+            "delta_family_minus_legacy": 164048561.72727275,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 42474208.36363637,
+            "legacy": 43276402.36363637,
+            "delta_family_minus_legacy": -802194.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 42916510.63636363,
+            "legacy": 47711899.81818182,
+            "delta_family_minus_legacy": -4795389.181818187,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 122134606.36363636,
+            "legacy": 43621004.0,
+            "delta_family_minus_legacy": 78513602.36363636,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 42576227.0,
+            "legacy": 46639066.54545455,
+            "delta_family_minus_legacy": -4062839.545454547,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 42382576.27272727,
+            "legacy": 42920400.18181818,
+            "delta_family_minus_legacy": -537823.9090909064,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          42474208.36363637,
+          42916510.63636363,
+          42576227.0,
+          42382576.27272727
+        ],
+        "analysis_legacy": [
+          43276402.36363637,
+          47711899.81818182,
+          46639066.54545455,
+          42920400.18181818
+        ],
+        "analysis_family_median": 42525217.68181819,
+        "analysis_legacy_median": 44957734.45454545,
+        "analysis_family_spread": [
+          42382576.27272727,
+          42916510.63636363
+        ],
+        "analysis_legacy_spread": [
+          42920400.18181818,
+          47711899.81818182
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -802194.0,
+          -4795389.181818187,
+          -4062839.545454547,
+          -537823.9090909064
+        ],
+        "analysis_delta_median": -2432516.7727272734,
+        "all_family_spread": [
+          42382576.27272727,
+          206950234.36363637
+        ],
+        "all_legacy_spread": [
+          42901672.63636363,
+          47711899.81818182
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "command_buffers": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 337.0,
+            "legacy": 337.0,
+            "delta_family_minus_legacy": 0.0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          337.0,
+          337.0,
+          337.0,
+          337.0
+        ],
+        "analysis_legacy": [
+          337.0,
+          337.0,
+          337.0,
+          337.0
+        ],
+        "analysis_family_median": 337.0,
+        "analysis_legacy_median": 337.0,
+        "analysis_family_spread": [
+          337.0,
+          337.0
+        ],
+        "analysis_legacy_spread": [
+          337.0,
+          337.0
+        ],
+        "analysis_delta_family_minus_legacy": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "analysis_delta_median": 0.0,
+        "all_family_spread": [
+          337.0,
+          337.0
+        ],
+        "all_legacy_spread": [
+          337.0,
+          337.0
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "wait_minus_gpu": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 86149638.0,
+            "legacy": 76229950.72727273,
+            "delta_family_minus_legacy": 9919687.272727266,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 75622731.0909091,
+            "legacy": 80056202.63636364,
+            "delta_family_minus_legacy": -4433471.545454547,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 78607786.63636364,
+            "legacy": 93624538.81818181,
+            "delta_family_minus_legacy": -15016752.181818172,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 94462199.81818181,
+            "legacy": 90585924.45454545,
+            "delta_family_minus_legacy": 3876275.3636363596,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 89713390.0909091,
+            "legacy": 95926222.36363636,
+            "delta_family_minus_legacy": -6212832.272727266,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 88043008.27272727,
+            "legacy": 91158927.63636364,
+            "delta_family_minus_legacy": -3115919.3636363745,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          75622731.0909091,
+          78607786.63636364,
+          89713390.0909091,
+          88043008.27272727
+        ],
+        "analysis_legacy": [
+          80056202.63636364,
+          93624538.81818181,
+          95926222.36363636,
+          91158927.63636364
+        ],
+        "analysis_family_median": 83325397.45454545,
+        "analysis_legacy_median": 92391733.22727272,
+        "analysis_family_spread": [
+          75622731.0909091,
+          89713390.0909091
+        ],
+        "analysis_legacy_spread": [
+          80056202.63636364,
+          95926222.36363636
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -4433471.545454547,
+          -15016752.181818172,
+          -6212832.272727266,
+          -3115919.3636363745
+        ],
+        "analysis_delta_median": -5323151.909090906,
+        "all_family_spread": [
+          75622731.0909091,
+          94462199.81818181
+        ],
+        "all_legacy_spread": [
+          76229950.72727273,
+          95926222.36363636
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "gpu_matvec": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 33885875.54545455,
+            "legacy": 25759202.363636363,
+            "delta_family_minus_legacy": 8126673.1818181835,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 25684902.545454547,
+            "legacy": 27340664.0,
+            "delta_family_minus_legacy": -1655761.4545454532,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 26354290.818181816,
+            "legacy": 36232233.81818182,
+            "delta_family_minus_legacy": -9877943.000000004,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 36589742.81818182,
+            "legacy": 36289663.36363637,
+            "delta_family_minus_legacy": 300079.4545454532,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 36267116.09090909,
+            "legacy": 36224849.45454545,
+            "delta_family_minus_legacy": 42266.63636364043,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 36268993.63636363,
+            "legacy": 36176682.63636363,
+            "delta_family_minus_legacy": 92311.0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          25684902.545454547,
+          26354290.818181816,
+          36267116.09090909,
+          36268993.63636363
+        ],
+        "analysis_legacy": [
+          27340664.0,
+          36232233.81818182,
+          36224849.45454545,
+          36176682.63636363
+        ],
+        "analysis_family_median": 31310703.454545453,
+        "analysis_legacy_median": 36200766.04545455,
+        "analysis_family_spread": [
+          25684902.545454547,
+          36268993.63636363
+        ],
+        "analysis_legacy_spread": [
+          27340664.0,
+          36232233.81818182
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -1655761.4545454532,
+          -9877943.000000004,
+          42266.63636364043,
+          92311.0
+        ],
+        "analysis_delta_median": -806747.4090909064,
+        "all_family_spread": [
+          25684902.545454547,
+          36589742.81818182
+        ],
+        "all_legacy_spread": [
+          25759202.363636363,
+          36289663.36363637
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "wall": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 453349204.54545456,
+            "legacy": 267321837.09090906,
+            "delta_family_minus_legacy": 186027367.4545455,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 266176140.1818182,
+            "legacy": 274477920.4545455,
+            "delta_family_minus_legacy": -8301780.272727311,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 270453261.3636363,
+            "legacy": 315867776.54545456,
+            "delta_family_minus_legacy": -45414515.18181825,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 379793159.0909091,
+            "legacy": 297552803.09090906,
+            "delta_family_minus_legacy": 82240356.00000006,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 293589477.27272725,
+            "legacy": 319907697.0,
+            "delta_family_minus_legacy": -26318219.72727275,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 290948227.2727273,
+            "legacy": 296355056.8181818,
+            "delta_family_minus_legacy": -5406829.545454502,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          266176140.1818182,
+          270453261.3636363,
+          293589477.27272725,
+          290948227.2727273
+        ],
+        "analysis_legacy": [
+          274477920.4545455,
+          315867776.54545456,
+          319907697.0,
+          296355056.8181818
+        ],
+        "analysis_family_median": 280700744.3181818,
+        "analysis_legacy_median": 306111416.6818182,
+        "analysis_family_spread": [
+          266176140.1818182,
+          293589477.27272725
+        ],
+        "analysis_legacy_spread": [
+          274477920.4545455,
+          319907697.0
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -8301780.272727311,
+          -45414515.18181825,
+          -26318219.72727275,
+          -5406829.545454502
+        ],
+        "analysis_delta_median": -17310000.00000003,
+        "all_family_spread": [
+          266176140.1818182,
+          453349204.54545456
+        ],
+        "all_legacy_spread": [
+          267321837.09090906,
+          319907697.0
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      }
+    },
+    "summary": {
+      "host_expert_bind": {
+        "verdict": "does_not_move",
+        "family_median_ns": 42525217.68181819,
+        "legacy_median_ns": 44957734.45454545,
+        "delta_ns": -2432516.7727272734,
+        "family_spread_ns": [
+          42382576.27272727,
+          42916510.63636363
+        ],
+        "legacy_spread_ns": [
+          42920400.18181818,
+          47711899.81818182
+        ]
+      },
+      "command_buffers": {
+        "verdict": "does_not_move",
+        "family_median_ns": 337.0,
+        "legacy_median_ns": 337.0,
+        "delta_ns": 0.0,
+        "family_spread_ns": [
+          337.0,
+          337.0
+        ],
+        "legacy_spread_ns": [
+          337.0,
+          337.0
+        ]
+      },
+      "wait_minus_gpu": {
+        "verdict": "does_not_move",
+        "family_median_ns": 83325397.45454545,
+        "legacy_median_ns": 92391733.22727272,
+        "delta_ns": -5323151.909090906,
+        "family_spread_ns": [
+          75622731.0909091,
+          89713390.0909091
+        ],
+        "legacy_spread_ns": [
+          80056202.63636364,
+          95926222.36363636
+        ]
+      },
+      "gpu_matvec": {
+        "verdict": "does_not_move",
+        "family_median_ns": 31310703.454545453,
+        "legacy_median_ns": 36200766.04545455,
+        "delta_ns": -806747.4090909064,
+        "family_spread_ns": [
+          25684902.545454547,
+          36268993.63636363
+        ],
+        "legacy_spread_ns": [
+          27340664.0,
+          36232233.81818182
+        ]
+      },
+      "wall": {
+        "verdict": "does_not_move",
+        "family_median_ns": 280700744.3181818,
+        "legacy_median_ns": 306111416.6818182,
+        "delta_ns": -17310000.00000003,
+        "family_spread_ns": [
+          266176140.1818182,
+          293589477.27272725
+        ],
+        "legacy_spread_ns": [
+          274477920.4545455,
+          319907697.0
+        ]
+      }
+    }
+  },
+  "dsv4f_native": {
+    "vehicle": "full-43-layer-stream.gravity BOS token, max_layer=42",
+    "reps": 6,
+    "protocol": "alternating family/legacy, one BOS token per process, gpu_lane_lock",
+    "shipping_dispatch_note": "Native graph dispatches the toggled names. Family: gk_pack_worklist / gk_worklist_fp4(_simd) / gk_swiglu_bf16_worklist / gk_combine_bf16. Legacy: dsv4f_pack_worklist / dsv4f_worklist_fp4_matvec(_simd) / dsv4f_worklist_swiglu / dsv4f_worklist_combine. Same helpers, different entry points. HAWKING_DSV4F_FP4_OCCUPANCY stays default-on both arms.",
+    "analysis_pairs": [
+      2,
+      3,
+      5,
+      6
+    ],
+    "raw": {
+      "family": [
+        {
+          "pair": 1,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 9593000000,
+          "body_ns": 9359000000,
+          "metal_gpu_ns": 475399000,
+          "host_exclusive_ns": 4783057336,
+          "host_expert_slab_io_ns": 3570381668,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 2,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1094000000,
+          "body_ns": 890000000,
+          "metal_gpu_ns": 292734000,
+          "host_exclusive_ns": 456195084,
+          "host_expert_slab_io_ns": 228937961,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 3,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1288000000,
+          "body_ns": 1087000000,
+          "metal_gpu_ns": 304353000,
+          "host_exclusive_ns": 639753249,
+          "host_expert_slab_io_ns": 236840876,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 4,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 7093000000,
+          "body_ns": 6876000000,
+          "metal_gpu_ns": 430246000,
+          "host_exclusive_ns": 3944757039,
+          "host_expert_slab_io_ns": 2949235291,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 5,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1074000000,
+          "body_ns": 873000000,
+          "metal_gpu_ns": 276920000,
+          "host_exclusive_ns": 475712042,
+          "host_expert_slab_io_ns": 225565833,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 6,
+          "arm": "family",
+          "decode_family_enabled": true,
+          "kernels": [
+            "gk_pack_worklist",
+            "gk_worklist_fp4",
+            "gk_worklist_fp4_simd",
+            "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1096000000,
+          "body_ns": 889000000,
+          "metal_gpu_ns": 292813000,
+          "host_exclusive_ns": 470096752,
+          "host_expert_slab_io_ns": 224345207,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        }
+      ],
+      "legacy": [
+        {
+          "pair": 1,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1241000000,
+          "body_ns": 973000000,
+          "metal_gpu_ns": 311032000,
+          "host_exclusive_ns": 485854125,
+          "host_expert_slab_io_ns": 307892750,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 2,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1202000000,
+          "body_ns": 995000000,
+          "metal_gpu_ns": 300694000,
+          "host_exclusive_ns": 555590502,
+          "host_expert_slab_io_ns": 231532834,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 3,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1121000000,
+          "body_ns": 922000000,
+          "metal_gpu_ns": 286909000,
+          "host_exclusive_ns": 491168212,
+          "host_expert_slab_io_ns": 234512291,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 4,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1198000000,
+          "body_ns": 935000000,
+          "metal_gpu_ns": 276866000,
+          "host_exclusive_ns": 495970374,
+          "host_expert_slab_io_ns": 234968000,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 5,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1097000000,
+          "body_ns": 897000000,
+          "metal_gpu_ns": 272434000,
+          "host_exclusive_ns": 496539374,
+          "host_expert_slab_io_ns": 237628914,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        },
+        {
+          "pair": 6,
+          "arm": "legacy",
+          "decode_family_enabled": false,
+          "kernels": [
+            "dsv4f_pack_worklist",
+            "dsv4f_worklist_fp4_matvec",
+            "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_worklist_swiglu",
+            "dsv4f_worklist_combine"
+          ],
+          "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+          "hc_ok": true,
+          "fallbacks": 0,
+          "wall_ns": 1090000000,
+          "body_ns": 889000000,
+          "metal_gpu_ns": 273264000,
+          "host_exclusive_ns": 495122456,
+          "host_expert_slab_io_ns": 259359170,
+          "command_buffers": 134,
+          "gpu_missing_cbs": 0
+        }
+      ]
+    },
+    "facets": {
+      "host.expert_slab_io": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 3570381668,
+            "legacy": 307892750,
+            "delta_family_minus_legacy": 3262488918,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 228937961,
+            "legacy": 231532834,
+            "delta_family_minus_legacy": -2594873,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 236840876,
+            "legacy": 234512291,
+            "delta_family_minus_legacy": 2328585,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 2949235291,
+            "legacy": 234968000,
+            "delta_family_minus_legacy": 2714267291,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 225565833,
+            "legacy": 237628914,
+            "delta_family_minus_legacy": -12063081,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 224345207,
+            "legacy": 259359170,
+            "delta_family_minus_legacy": -35013963,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          228937961,
+          236840876,
+          225565833,
+          224345207
+        ],
+        "analysis_legacy": [
+          231532834,
+          234512291,
+          237628914,
+          259359170
+        ],
+        "analysis_family_median": 227251897.0,
+        "analysis_legacy_median": 236070602.5,
+        "analysis_family_spread": [
+          224345207,
+          236840876
+        ],
+        "analysis_legacy_spread": [
+          231532834,
+          259359170
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -2594873,
+          2328585,
+          -12063081,
+          -35013963
+        ],
+        "analysis_delta_median": -7328977.0,
+        "all_family_spread": [
+          224345207,
+          3570381668
+        ],
+        "all_legacy_spread": [
+          231532834,
+          307892750
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "metal_gpu": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 475399000,
+            "legacy": 311032000,
+            "delta_family_minus_legacy": 164367000,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 292734000,
+            "legacy": 300694000,
+            "delta_family_minus_legacy": -7960000,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 304353000,
+            "legacy": 286909000,
+            "delta_family_minus_legacy": 17444000,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 430246000,
+            "legacy": 276866000,
+            "delta_family_minus_legacy": 153380000,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 276920000,
+            "legacy": 272434000,
+            "delta_family_minus_legacy": 4486000,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 292813000,
+            "legacy": 273264000,
+            "delta_family_minus_legacy": 19549000,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          292734000,
+          304353000,
+          276920000,
+          292813000
+        ],
+        "analysis_legacy": [
+          300694000,
+          286909000,
+          272434000,
+          273264000
+        ],
+        "analysis_family_median": 292773500.0,
+        "analysis_legacy_median": 280086500.0,
+        "analysis_family_spread": [
+          276920000,
+          304353000
+        ],
+        "analysis_legacy_spread": [
+          272434000,
+          300694000
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -7960000,
+          17444000,
+          4486000,
+          19549000
+        ],
+        "analysis_delta_median": 10965000.0,
+        "all_family_spread": [
+          276920000,
+          475399000
+        ],
+        "all_legacy_spread": [
+          272434000,
+          311032000
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "host_exclusive": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 4783057336,
+            "legacy": 485854125,
+            "delta_family_minus_legacy": 4297203211,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 456195084,
+            "legacy": 555590502,
+            "delta_family_minus_legacy": -99395418,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 639753249,
+            "legacy": 491168212,
+            "delta_family_minus_legacy": 148585037,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 3944757039,
+            "legacy": 495970374,
+            "delta_family_minus_legacy": 3448786665,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 475712042,
+            "legacy": 496539374,
+            "delta_family_minus_legacy": -20827332,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 470096752,
+            "legacy": 495122456,
+            "delta_family_minus_legacy": -25025704,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          456195084,
+          639753249,
+          475712042,
+          470096752
+        ],
+        "analysis_legacy": [
+          555590502,
+          491168212,
+          496539374,
+          495122456
+        ],
+        "analysis_family_median": 472904397.0,
+        "analysis_legacy_median": 495830915.0,
+        "analysis_family_spread": [
+          456195084,
+          639753249
+        ],
+        "analysis_legacy_spread": [
+          491168212,
+          555590502
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -99395418,
+          148585037,
+          -20827332,
+          -25025704
+        ],
+        "analysis_delta_median": -22926518.0,
+        "all_family_spread": [
+          456195084,
+          4783057336
+        ],
+        "all_legacy_spread": [
+          485854125,
+          555590502
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "command_buffers": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 134,
+            "legacy": 134,
+            "delta_family_minus_legacy": 0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          134,
+          134,
+          134,
+          134
+        ],
+        "analysis_legacy": [
+          134,
+          134,
+          134,
+          134
+        ],
+        "analysis_family_median": 134.0,
+        "analysis_legacy_median": 134.0,
+        "analysis_family_spread": [
+          134,
+          134
+        ],
+        "analysis_legacy_spread": [
+          134,
+          134
+        ],
+        "analysis_delta_family_minus_legacy": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "analysis_delta_median": 0.0,
+        "all_family_spread": [
+          134,
+          134
+        ],
+        "all_legacy_spread": [
+          134,
+          134
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "wall": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 9593000000,
+            "legacy": 1241000000,
+            "delta_family_minus_legacy": 8352000000,
+            "in_analysis": false
+          },
+          {
+            "pair": 2,
+            "family": 1094000000,
+            "legacy": 1202000000,
+            "delta_family_minus_legacy": -108000000,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 1288000000,
+            "legacy": 1121000000,
+            "delta_family_minus_legacy": 167000000,
+            "in_analysis": true
+          },
+          {
+            "pair": 4,
+            "family": 7093000000,
+            "legacy": 1198000000,
+            "delta_family_minus_legacy": 5895000000,
+            "in_analysis": false
+          },
+          {
+            "pair": 5,
+            "family": 1074000000,
+            "legacy": 1097000000,
+            "delta_family_minus_legacy": -23000000,
+            "in_analysis": true
+          },
+          {
+            "pair": 6,
+            "family": 1096000000,
+            "legacy": 1090000000,
+            "delta_family_minus_legacy": 6000000,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "analysis_family": [
+          1094000000,
+          1288000000,
+          1074000000,
+          1096000000
+        ],
+        "analysis_legacy": [
+          1202000000,
+          1121000000,
+          1097000000,
+          1090000000
+        ],
+        "analysis_family_median": 1095000000.0,
+        "analysis_legacy_median": 1109000000.0,
+        "analysis_family_spread": [
+          1074000000,
+          1288000000
+        ],
+        "analysis_legacy_spread": [
+          1090000000,
+          1202000000
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -108000000,
+          167000000,
+          -23000000,
+          6000000
+        ],
+        "analysis_delta_median": -8500000.0,
+        "all_family_spread": [
+          1074000000,
+          9593000000
+        ],
+        "all_legacy_spread": [
+          1090000000,
+          1241000000
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      }
+    },
+    "summary": {
+      "host.expert_slab_io": {
+        "verdict": "does_not_move",
+        "family_median_ns": 227251897.0,
+        "legacy_median_ns": 236070602.5,
+        "delta_ns": -7328977.0,
+        "family_spread_ns": [
+          224345207,
+          236840876
+        ],
+        "legacy_spread_ns": [
+          231532834,
+          259359170
+        ]
+      },
+      "metal_gpu": {
+        "verdict": "does_not_move",
+        "family_median_ns": 292773500.0,
+        "legacy_median_ns": 280086500.0,
+        "delta_ns": 10965000.0,
+        "family_spread_ns": [
+          276920000,
+          304353000
+        ],
+        "legacy_spread_ns": [
+          272434000,
+          300694000
+        ]
+      },
+      "host_exclusive": {
+        "verdict": "does_not_move",
+        "family_median_ns": 472904397.0,
+        "legacy_median_ns": 495830915.0,
+        "delta_ns": -22926518.0,
+        "family_spread_ns": [
+          456195084,
+          639753249
+        ],
+        "legacy_spread_ns": [
+          491168212,
+          555590502
+        ]
+      },
+      "command_buffers": {
+        "verdict": "does_not_move",
+        "family_median_ns": 134.0,
+        "legacy_median_ns": 134.0,
+        "delta_ns": 0.0,
+        "family_spread_ns": [
+          134,
+          134
+        ],
+        "legacy_spread_ns": [
+          134,
+          134
+        ]
+      },
+      "wall": {
+        "verdict": "does_not_move",
+        "family_median_ns": 1095000000.0,
+        "legacy_median_ns": 1109000000.0,
+        "delta_ns": -8500000.0,
+        "family_spread_ns": [
+          1074000000,
+          1288000000
+        ],
+        "legacy_spread_ns": [
+          1090000000,
+          1202000000
+        ]
+      }
+    }
+  },
+  "qwen38": {
+    "vehicle": "qwen38-27b/uniform-q4-v1",
+    "reps": 3,
+    "protocol": "alternating family/legacy, warmup 4 + 16-token generate + isolated 12-component suite, --reps 1, gpu_lane_lock",
+    "shipping_dispatch_note": "Only dense SwiGLU is in the family. Family dispatches gk_swiglu_f32; legacy dispatches qwen80_silu_mul_f32. Q4 matvec / DeltaNet / GQA are STRUCTURAL leftovers and stay on their original kernels.",
+    "analysis_pairs": [
+      1,
+      2,
+      3
+    ],
+    "raw": {
+      "family": [
+        {
+          "pair": 1,
+          "arm": "family",
+          "note": "decode_family_enabled=true swiglu=gk_swiglu_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37615333,
+          "median_gpu_ns": 36534124,
+          "gpu_spread_ns": [
+            36361874,
+            36694583
+          ],
+          "isolated_silu_64_gpu_ns": 155125,
+          "components": {
+            "host_preparation": 757958.0,
+            "weight_addressing": 20197182.09988028,
+            "weight_decode_reconstruction": 2890081.566837674,
+            "command_submission": 4625.0,
+            "deltanet": 6811814.763656624,
+            "gqa": 2359761.7562475917,
+            "dense_swiglu": 786765.4389009593,
+            "normalization": 2543455.0286657386,
+            "kv_state": 525028.1093822976,
+            "terminal_head": 415137.6121765126,
+            "synchronization": 318626.0,
+            "unattributed_residual": 4897.6242523267865
+          }
+        },
+        {
+          "pair": 2,
+          "arm": "family",
+          "note": "decode_family_enabled=true swiglu=gk_swiglu_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37701041,
+          "median_gpu_ns": 36540666,
+          "gpu_spread_ns": [
+            36312833,
+            36652583
+          ],
+          "isolated_silu_64_gpu_ns": 155791,
+          "components": {
+            "host_preparation": 802083.0,
+            "weight_addressing": 20062192.639427792,
+            "weight_decode_reconstruction": 2797415.2766398867,
+            "command_submission": 6583.0,
+            "deltanet": 6965562.116724186,
+            "gqa": 2370633.7414035844,
+            "dense_swiglu": 848803.4503968501,
+            "normalization": 2522911.4087047228,
+            "kv_state": 527445.2056440262,
+            "terminal_head": 436093.04583564226,
+            "synchronization": 351709.0,
+            "unattributed_residual": 9609.115223310888
+          }
+        },
+        {
+          "pair": 3,
+          "arm": "family",
+          "note": "decode_family_enabled=true swiglu=gk_swiglu_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37881125,
+          "median_gpu_ns": 36608833,
+          "gpu_spread_ns": [
+            36292624,
+            36745833
+          ],
+          "isolated_silu_64_gpu_ns": 155333,
+          "components": {
+            "host_preparation": 848541.0,
+            "weight_addressing": 20052919.375352427,
+            "weight_decode_reconstruction": 2708307.1153091313,
+            "command_submission": 9125.0,
+            "deltanet": 6978519.245185417,
+            "gqa": 2344871.4832608947,
+            "dense_swiglu": 834796.718504943,
+            "normalization": 2580956.0,
+            "kv_state": 555956.0,
+            "terminal_head": 445456.06238718366,
+            "synchronization": 414626.0,
+            "unattributed_residual": 107051.0
+          }
+        }
+      ],
+      "legacy": [
+        {
+          "pair": 1,
+          "arm": "legacy",
+          "note": "decode_family_enabled=false swiglu=qwen80_silu_mul_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37640459,
+          "median_gpu_ns": 36538374,
+          "gpu_spread_ns": [
+            36402791,
+            36812500
+          ],
+          "isolated_silu_64_gpu_ns": 200583,
+          "components": {
+            "host_preparation": 750584.0,
+            "weight_addressing": 20077159.5343495,
+            "weight_decode_reconstruction": 2682260.5320175886,
+            "command_submission": 4708.0,
+            "deltanet": 7015307.325626727,
+            "gqa": 2357902.0788538745,
+            "dense_swiglu": 901371.5220775149,
+            "normalization": 2541461.706603617,
+            "kv_state": 548709.6834352679,
+            "terminal_head": 409114.05972660193,
+            "synchronization": 346793.0,
+            "unattributed_residual": 5087.557309299707
+          }
+        },
+        {
+          "pair": 2,
+          "arm": "legacy",
+          "note": "decode_family_enabled=false swiglu=qwen80_silu_mul_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37838624,
+          "median_gpu_ns": 36656416,
+          "gpu_spread_ns": [
+            36336375,
+            37121874
+          ],
+          "isolated_silu_64_gpu_ns": 154666,
+          "components": {
+            "host_preparation": 834208.0,
+            "weight_addressing": 20920247.933154795,
+            "weight_decode_reconstruction": 1933707.4416302145,
+            "command_submission": 7541.0,
+            "deltanet": 6931017.947680623,
+            "gqa": 2362657.851366291,
+            "dense_swiglu": 1011592.4011003547,
+            "normalization": 2549062.5860809814,
+            "kv_state": 545151.385726206,
+            "terminal_head": 398270.5827011192,
+            "synchronization": 340459.0,
+            "unattributed_residual": 4707.870559416711
+          }
+        },
+        {
+          "pair": 3,
+          "arm": "legacy",
+          "note": "decode_family_enabled=false swiglu=qwen80_silu_mul_f32",
+          "greedy_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            1546
+          ],
+          "oracle_ok": true,
+          "fallbacks": 0,
+          "closure_holds": true,
+          "median_wall_ns": 37543083,
+          "median_gpu_ns": 36375708,
+          "gpu_spread_ns": [
+            36255916,
+            36514749
+          ],
+          "isolated_silu_64_gpu_ns": 180875,
+          "components": {
+            "host_preparation": 787750.0,
+            "weight_addressing": 20134234.616762657,
+            "weight_decode_reconstruction": 2476744.965308362,
+            "command_submission": 8958.0,
+            "deltanet": 7035912.633181258,
+            "gqa": 2366696.8106710096,
+            "dense_swiglu": 836958.2198127927,
+            "normalization": 2545993.3035246357,
+            "kv_state": 540652.9600409226,
+            "terminal_head": 433243.51609959156,
+            "synchronization": 370667.0,
+            "unattributed_residual": 5270.974598772824
+          }
+        }
+      ]
+    },
+    "facets": {
+      "host_preparation": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 757958.0,
+            "legacy": 750584.0,
+            "delta_family_minus_legacy": 7374.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 802083.0,
+            "legacy": 834208.0,
+            "delta_family_minus_legacy": -32125.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 848541.0,
+            "legacy": 787750.0,
+            "delta_family_minus_legacy": 60791.0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          757958.0,
+          802083.0,
+          848541.0
+        ],
+        "analysis_legacy": [
+          750584.0,
+          834208.0,
+          787750.0
+        ],
+        "analysis_family_median": 802083.0,
+        "analysis_legacy_median": 787750.0,
+        "analysis_family_spread": [
+          757958.0,
+          848541.0
+        ],
+        "analysis_legacy_spread": [
+          750584.0,
+          834208.0
+        ],
+        "analysis_delta_family_minus_legacy": [
+          7374.0,
+          -32125.0,
+          60791.0
+        ],
+        "analysis_delta_median": 7374.0,
+        "all_family_spread": [
+          757958.0,
+          848541.0
+        ],
+        "all_legacy_spread": [
+          750584.0,
+          834208.0
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "weight_addressing": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 20197182.09988028,
+            "legacy": 20077159.5343495,
+            "delta_family_minus_legacy": 120022.5655307807,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 20062192.639427792,
+            "legacy": 20920247.933154795,
+            "delta_family_minus_legacy": -858055.293727003,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 20052919.375352427,
+            "legacy": 20134234.616762657,
+            "delta_family_minus_legacy": -81315.24141022936,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          20197182.09988028,
+          20062192.639427792,
+          20052919.375352427
+        ],
+        "analysis_legacy": [
+          20077159.5343495,
+          20920247.933154795,
+          20134234.616762657
+        ],
+        "analysis_family_median": 20062192.639427792,
+        "analysis_legacy_median": 20134234.616762657,
+        "analysis_family_spread": [
+          20052919.375352427,
+          20197182.09988028
+        ],
+        "analysis_legacy_spread": [
+          20077159.5343495,
+          20920247.933154795
+        ],
+        "analysis_delta_family_minus_legacy": [
+          120022.5655307807,
+          -858055.293727003,
+          -81315.24141022936
+        ],
+        "analysis_delta_median": -81315.24141022936,
+        "all_family_spread": [
+          20052919.375352427,
+          20197182.09988028
+        ],
+        "all_legacy_spread": [
+          20077159.5343495,
+          20920247.933154795
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "weight_decode_reconstruction": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 2890081.566837674,
+            "legacy": 2682260.5320175886,
+            "delta_family_minus_legacy": 207821.0348200854,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 2797415.2766398867,
+            "legacy": 1933707.4416302145,
+            "delta_family_minus_legacy": 863707.8350096722,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 2708307.1153091313,
+            "legacy": 2476744.965308362,
+            "delta_family_minus_legacy": 231562.15000076918,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          2890081.566837674,
+          2797415.2766398867,
+          2708307.1153091313
+        ],
+        "analysis_legacy": [
+          2682260.5320175886,
+          1933707.4416302145,
+          2476744.965308362
+        ],
+        "analysis_family_median": 2797415.2766398867,
+        "analysis_legacy_median": 2476744.965308362,
+        "analysis_family_spread": [
+          2708307.1153091313,
+          2890081.566837674
+        ],
+        "analysis_legacy_spread": [
+          1933707.4416302145,
+          2682260.5320175886
+        ],
+        "analysis_delta_family_minus_legacy": [
+          207821.0348200854,
+          863707.8350096722,
+          231562.15000076918
+        ],
+        "analysis_delta_median": 231562.15000076918,
+        "all_family_spread": [
+          2708307.1153091313,
+          2890081.566837674
+        ],
+        "all_legacy_spread": [
+          1933707.4416302145,
+          2682260.5320175886
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "command_submission": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 4625.0,
+            "legacy": 4708.0,
+            "delta_family_minus_legacy": -83.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 6583.0,
+            "legacy": 7541.0,
+            "delta_family_minus_legacy": -958.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 9125.0,
+            "legacy": 8958.0,
+            "delta_family_minus_legacy": 167.0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          4625.0,
+          6583.0,
+          9125.0
+        ],
+        "analysis_legacy": [
+          4708.0,
+          7541.0,
+          8958.0
+        ],
+        "analysis_family_median": 6583.0,
+        "analysis_legacy_median": 7541.0,
+        "analysis_family_spread": [
+          4625.0,
+          9125.0
+        ],
+        "analysis_legacy_spread": [
+          4708.0,
+          8958.0
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -83.0,
+          -958.0,
+          167.0
+        ],
+        "analysis_delta_median": -83.0,
+        "all_family_spread": [
+          4625.0,
+          9125.0
+        ],
+        "all_legacy_spread": [
+          4708.0,
+          8958.0
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "deltanet": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 6811814.763656624,
+            "legacy": 7015307.325626727,
+            "delta_family_minus_legacy": -203492.56197010353,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 6965562.116724186,
+            "legacy": 6931017.947680623,
+            "delta_family_minus_legacy": 34544.169043562375,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 6978519.245185417,
+            "legacy": 7035912.633181258,
+            "delta_family_minus_legacy": -57393.38799584098,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          6811814.763656624,
+          6965562.116724186,
+          6978519.245185417
+        ],
+        "analysis_legacy": [
+          7015307.325626727,
+          6931017.947680623,
+          7035912.633181258
+        ],
+        "analysis_family_median": 6965562.116724186,
+        "analysis_legacy_median": 7015307.325626727,
+        "analysis_family_spread": [
+          6811814.763656624,
+          6978519.245185417
+        ],
+        "analysis_legacy_spread": [
+          6931017.947680623,
+          7035912.633181258
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -203492.56197010353,
+          34544.169043562375,
+          -57393.38799584098
+        ],
+        "analysis_delta_median": -57393.38799584098,
+        "all_family_spread": [
+          6811814.763656624,
+          6978519.245185417
+        ],
+        "all_legacy_spread": [
+          6931017.947680623,
+          7035912.633181258
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "gqa": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 2359761.7562475917,
+            "legacy": 2357902.0788538745,
+            "delta_family_minus_legacy": 1859.6773937172256,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 2370633.7414035844,
+            "legacy": 2362657.851366291,
+            "delta_family_minus_legacy": 7975.890037293546,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 2344871.4832608947,
+            "legacy": 2366696.8106710096,
+            "delta_family_minus_legacy": -21825.32741011493,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          2359761.7562475917,
+          2370633.7414035844,
+          2344871.4832608947
+        ],
+        "analysis_legacy": [
+          2357902.0788538745,
+          2362657.851366291,
+          2366696.8106710096
+        ],
+        "analysis_family_median": 2359761.7562475917,
+        "analysis_legacy_median": 2362657.851366291,
+        "analysis_family_spread": [
+          2344871.4832608947,
+          2370633.7414035844
+        ],
+        "analysis_legacy_spread": [
+          2357902.0788538745,
+          2366696.8106710096
+        ],
+        "analysis_delta_family_minus_legacy": [
+          1859.6773937172256,
+          7975.890037293546,
+          -21825.32741011493
+        ],
+        "analysis_delta_median": 1859.6773937172256,
+        "all_family_spread": [
+          2344871.4832608947,
+          2370633.7414035844
+        ],
+        "all_legacy_spread": [
+          2357902.0788538745,
+          2366696.8106710096
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "dense_swiglu": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 786765.4389009593,
+            "legacy": 901371.5220775149,
+            "delta_family_minus_legacy": -114606.08317655558,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 848803.4503968501,
+            "legacy": 1011592.4011003547,
+            "delta_family_minus_legacy": -162788.9507035046,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 834796.718504943,
+            "legacy": 836958.2198127927,
+            "delta_family_minus_legacy": -2161.5013078497723,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          786765.4389009593,
+          848803.4503968501,
+          834796.718504943
+        ],
+        "analysis_legacy": [
+          901371.5220775149,
+          1011592.4011003547,
+          836958.2198127927
+        ],
+        "analysis_family_median": 834796.718504943,
+        "analysis_legacy_median": 901371.5220775149,
+        "analysis_family_spread": [
+          786765.4389009593,
+          848803.4503968501
+        ],
+        "analysis_legacy_spread": [
+          836958.2198127927,
+          1011592.4011003547
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -114606.08317655558,
+          -162788.9507035046,
+          -2161.5013078497723
+        ],
+        "analysis_delta_median": -114606.08317655558,
+        "all_family_spread": [
+          786765.4389009593,
+          848803.4503968501
+        ],
+        "all_legacy_spread": [
+          836958.2198127927,
+          1011592.4011003547
+        ],
+        "moves": false,
+        "verdict": "does_not_move",
+        "heuristic_overridden": true,
+        "override_reason": "Heuristic barely tripped (|median delta| 114.6 us vs band 112 us) on a DERIVED exclusive partition (isolated silu + mlp residual + Q4 MLP FMA remainder). The only family kernel in this row is silu; isolated_silu_64_gpu does_not_move (family 155.3 us vs legacy 180.9 us, signs change). Pair 3 dense_swiglu is 834.8 vs 837.0 us. Not a systematic generality tax."
+      },
+      "normalization": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 2543455.0286657386,
+            "legacy": 2541461.706603617,
+            "delta_family_minus_legacy": 1993.3220621217042,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 2522911.4087047228,
+            "legacy": 2549062.5860809814,
+            "delta_family_minus_legacy": -26151.177376258653,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 2580956.0,
+            "legacy": 2545993.3035246357,
+            "delta_family_minus_legacy": 34962.69647536427,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          2543455.0286657386,
+          2522911.4087047228,
+          2580956.0
+        ],
+        "analysis_legacy": [
+          2541461.706603617,
+          2549062.5860809814,
+          2545993.3035246357
+        ],
+        "analysis_family_median": 2543455.0286657386,
+        "analysis_legacy_median": 2545993.3035246357,
+        "analysis_family_spread": [
+          2522911.4087047228,
+          2580956.0
+        ],
+        "analysis_legacy_spread": [
+          2541461.706603617,
+          2549062.5860809814
+        ],
+        "analysis_delta_family_minus_legacy": [
+          1993.3220621217042,
+          -26151.177376258653,
+          34962.69647536427
+        ],
+        "analysis_delta_median": 1993.3220621217042,
+        "all_family_spread": [
+          2522911.4087047228,
+          2580956.0
+        ],
+        "all_legacy_spread": [
+          2541461.706603617,
+          2549062.5860809814
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "kv_state": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 525028.1093822976,
+            "legacy": 548709.6834352679,
+            "delta_family_minus_legacy": -23681.574052970274,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 527445.2056440262,
+            "legacy": 545151.385726206,
+            "delta_family_minus_legacy": -17706.18008217984,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 555956.0,
+            "legacy": 540652.9600409226,
+            "delta_family_minus_legacy": 15303.039959077374,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          525028.1093822976,
+          527445.2056440262,
+          555956.0
+        ],
+        "analysis_legacy": [
+          548709.6834352679,
+          545151.385726206,
+          540652.9600409226
+        ],
+        "analysis_family_median": 527445.2056440262,
+        "analysis_legacy_median": 545151.385726206,
+        "analysis_family_spread": [
+          525028.1093822976,
+          555956.0
+        ],
+        "analysis_legacy_spread": [
+          540652.9600409226,
+          548709.6834352679
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -23681.574052970274,
+          -17706.18008217984,
+          15303.039959077374
+        ],
+        "analysis_delta_median": -17706.18008217984,
+        "all_family_spread": [
+          525028.1093822976,
+          555956.0
+        ],
+        "all_legacy_spread": [
+          540652.9600409226,
+          548709.6834352679
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "terminal_head": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 415137.6121765126,
+            "legacy": 409114.05972660193,
+            "delta_family_minus_legacy": 6023.552449910669,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 436093.04583564226,
+            "legacy": 398270.5827011192,
+            "delta_family_minus_legacy": 37822.463134523074,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 445456.06238718366,
+            "legacy": 433243.51609959156,
+            "delta_family_minus_legacy": 12212.546287592093,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          415137.6121765126,
+          436093.04583564226,
+          445456.06238718366
+        ],
+        "analysis_legacy": [
+          409114.05972660193,
+          398270.5827011192,
+          433243.51609959156
+        ],
+        "analysis_family_median": 436093.04583564226,
+        "analysis_legacy_median": 409114.05972660193,
+        "analysis_family_spread": [
+          415137.6121765126,
+          445456.06238718366
+        ],
+        "analysis_legacy_spread": [
+          398270.5827011192,
+          433243.51609959156
+        ],
+        "analysis_delta_family_minus_legacy": [
+          6023.552449910669,
+          37822.463134523074,
+          12212.546287592093
+        ],
+        "analysis_delta_median": 12212.546287592093,
+        "all_family_spread": [
+          415137.6121765126,
+          445456.06238718366
+        ],
+        "all_legacy_spread": [
+          398270.5827011192,
+          433243.51609959156
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "synchronization": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 318626.0,
+            "legacy": 346793.0,
+            "delta_family_minus_legacy": -28167.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 351709.0,
+            "legacy": 340459.0,
+            "delta_family_minus_legacy": 11250.0,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 414626.0,
+            "legacy": 370667.0,
+            "delta_family_minus_legacy": 43959.0,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          318626.0,
+          351709.0,
+          414626.0
+        ],
+        "analysis_legacy": [
+          346793.0,
+          340459.0,
+          370667.0
+        ],
+        "analysis_family_median": 351709.0,
+        "analysis_legacy_median": 346793.0,
+        "analysis_family_spread": [
+          318626.0,
+          414626.0
+        ],
+        "analysis_legacy_spread": [
+          340459.0,
+          370667.0
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -28167.0,
+          11250.0,
+          43959.0
+        ],
+        "analysis_delta_median": 11250.0,
+        "all_family_spread": [
+          318626.0,
+          414626.0
+        ],
+        "all_legacy_spread": [
+          340459.0,
+          370667.0
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "unattributed_residual": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 4897.6242523267865,
+            "legacy": 5087.557309299707,
+            "delta_family_minus_legacy": -189.9330569729209,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 9609.115223310888,
+            "legacy": 4707.870559416711,
+            "delta_family_minus_legacy": 4901.2446638941765,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 107051.0,
+            "legacy": 5270.974598772824,
+            "delta_family_minus_legacy": 101780.02540122718,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          4897.6242523267865,
+          9609.115223310888,
+          107051.0
+        ],
+        "analysis_legacy": [
+          5087.557309299707,
+          4707.870559416711,
+          5270.974598772824
+        ],
+        "analysis_family_median": 9609.115223310888,
+        "analysis_legacy_median": 5087.557309299707,
+        "analysis_family_spread": [
+          4897.6242523267865,
+          107051.0
+        ],
+        "analysis_legacy_spread": [
+          4707.870559416711,
+          5270.974598772824
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -189.9330569729209,
+          4901.2446638941765,
+          101780.02540122718
+        ],
+        "analysis_delta_median": 4901.2446638941765,
+        "all_family_spread": [
+          4897.6242523267865,
+          107051.0
+        ],
+        "all_legacy_spread": [
+          4707.870559416711,
+          5270.974598772824
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "isolated_silu_64_gpu": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 155125,
+            "legacy": 200583,
+            "delta_family_minus_legacy": -45458,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 155791,
+            "legacy": 154666,
+            "delta_family_minus_legacy": 1125,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 155333,
+            "legacy": 180875,
+            "delta_family_minus_legacy": -25542,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          155125,
+          155791,
+          155333
+        ],
+        "analysis_legacy": [
+          200583,
+          154666,
+          180875
+        ],
+        "analysis_family_median": 155333,
+        "analysis_legacy_median": 180875,
+        "analysis_family_spread": [
+          155125,
+          155791
+        ],
+        "analysis_legacy_spread": [
+          154666,
+          200583
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -45458,
+          1125,
+          -25542
+        ],
+        "analysis_delta_median": -25542,
+        "all_family_spread": [
+          155125,
+          155791
+        ],
+        "all_legacy_spread": [
+          154666,
+          200583
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "wall": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 37615333,
+            "legacy": 37640459,
+            "delta_family_minus_legacy": -25126,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 37701041,
+            "legacy": 37838624,
+            "delta_family_minus_legacy": -137583,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 37881125,
+            "legacy": 37543083,
+            "delta_family_minus_legacy": 338042,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          37615333,
+          37701041,
+          37881125
+        ],
+        "analysis_legacy": [
+          37640459,
+          37838624,
+          37543083
+        ],
+        "analysis_family_median": 37701041,
+        "analysis_legacy_median": 37640459,
+        "analysis_family_spread": [
+          37615333,
+          37881125
+        ],
+        "analysis_legacy_spread": [
+          37543083,
+          37838624
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -25126,
+          -137583,
+          338042
+        ],
+        "analysis_delta_median": -25126,
+        "all_family_spread": [
+          37615333,
+          37881125
+        ],
+        "all_legacy_spread": [
+          37543083,
+          37838624
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      },
+      "production_gpu": {
+        "all_pairs": [
+          {
+            "pair": 1,
+            "family": 36534124,
+            "legacy": 36538374,
+            "delta_family_minus_legacy": -4250,
+            "in_analysis": true
+          },
+          {
+            "pair": 2,
+            "family": 36540666,
+            "legacy": 36656416,
+            "delta_family_minus_legacy": -115750,
+            "in_analysis": true
+          },
+          {
+            "pair": 3,
+            "family": 36608833,
+            "legacy": 36375708,
+            "delta_family_minus_legacy": 233125,
+            "in_analysis": true
+          }
+        ],
+        "analysis_pairs": [
+          1,
+          2,
+          3
+        ],
+        "analysis_family": [
+          36534124,
+          36540666,
+          36608833
+        ],
+        "analysis_legacy": [
+          36538374,
+          36656416,
+          36375708
+        ],
+        "analysis_family_median": 36540666,
+        "analysis_legacy_median": 36538374,
+        "analysis_family_spread": [
+          36534124,
+          36608833
+        ],
+        "analysis_legacy_spread": [
+          36375708,
+          36656416
+        ],
+        "analysis_delta_family_minus_legacy": [
+          -4250,
+          -115750,
+          233125
+        ],
+        "analysis_delta_median": -4250,
+        "all_family_spread": [
+          36534124,
+          36608833
+        ],
+        "all_legacy_spread": [
+          36375708,
+          36656416
+        ],
+        "moves": false,
+        "verdict": "does_not_move"
+      }
+    },
+    "summary": {
+      "host_preparation": {
+        "verdict": "does_not_move",
+        "family_median_ns": 802083.0,
+        "legacy_median_ns": 787750.0,
+        "delta_ns": 7374.0,
+        "family_spread_ns": [
+          757958.0,
+          848541.0
+        ],
+        "legacy_spread_ns": [
+          750584.0,
+          834208.0
+        ]
+      },
+      "weight_addressing": {
+        "verdict": "does_not_move",
+        "family_median_ns": 20062192.639427792,
+        "legacy_median_ns": 20134234.616762657,
+        "delta_ns": -81315.24141022936,
+        "family_spread_ns": [
+          20052919.375352427,
+          20197182.09988028
+        ],
+        "legacy_spread_ns": [
+          20077159.5343495,
+          20920247.933154795
+        ]
+      },
+      "weight_decode_reconstruction": {
+        "verdict": "does_not_move",
+        "family_median_ns": 2797415.2766398867,
+        "legacy_median_ns": 2476744.965308362,
+        "delta_ns": 231562.15000076918,
+        "family_spread_ns": [
+          2708307.1153091313,
+          2890081.566837674
+        ],
+        "legacy_spread_ns": [
+          1933707.4416302145,
+          2682260.5320175886
+        ]
+      },
+      "command_submission": {
+        "verdict": "does_not_move",
+        "family_median_ns": 6583.0,
+        "legacy_median_ns": 7541.0,
+        "delta_ns": -83.0,
+        "family_spread_ns": [
+          4625.0,
+          9125.0
+        ],
+        "legacy_spread_ns": [
+          4708.0,
+          8958.0
+        ]
+      },
+      "deltanet": {
+        "verdict": "does_not_move",
+        "family_median_ns": 6965562.116724186,
+        "legacy_median_ns": 7015307.325626727,
+        "delta_ns": -57393.38799584098,
+        "family_spread_ns": [
+          6811814.763656624,
+          6978519.245185417
+        ],
+        "legacy_spread_ns": [
+          6931017.947680623,
+          7035912.633181258
+        ]
+      },
+      "gqa": {
+        "verdict": "does_not_move",
+        "family_median_ns": 2359761.7562475917,
+        "legacy_median_ns": 2362657.851366291,
+        "delta_ns": 1859.6773937172256,
+        "family_spread_ns": [
+          2344871.4832608947,
+          2370633.7414035844
+        ],
+        "legacy_spread_ns": [
+          2357902.0788538745,
+          2366696.8106710096
+        ]
+      },
+      "dense_swiglu": {
+        "verdict": "does_not_move",
+        "family_median_ns": 834796.718504943,
+        "legacy_median_ns": 901371.5220775149,
+        "delta_ns": -114606.08317655558,
+        "family_spread_ns": [
+          786765.4389009593,
+          848803.4503968501
+        ],
+        "legacy_spread_ns": [
+          836958.2198127927,
+          1011592.4011003547
+        ],
+        "override_reason": "Heuristic barely tripped (|median delta| 114.6 us vs band 112 us) on a DERIVED exclusive partition (isolated silu + mlp residual + Q4 MLP FMA remainder). The only family kernel in this row is silu; isolated_silu_64_gpu does_not_move (family 155.3 us vs legacy 180.9 us, signs change). Pair 3 dense_swiglu is 834.8 vs 837.0 us. Not a systematic generality tax."
+      },
+      "normalization": {
+        "verdict": "does_not_move",
+        "family_median_ns": 2543455.0286657386,
+        "legacy_median_ns": 2545993.3035246357,
+        "delta_ns": 1993.3220621217042,
+        "family_spread_ns": [
+          2522911.4087047228,
+          2580956.0
+        ],
+        "legacy_spread_ns": [
+          2541461.706603617,
+          2549062.5860809814
+        ]
+      },
+      "kv_state": {
+        "verdict": "does_not_move",
+        "family_median_ns": 527445.2056440262,
+        "legacy_median_ns": 545151.385726206,
+        "delta_ns": -17706.18008217984,
+        "family_spread_ns": [
+          525028.1093822976,
+          555956.0
+        ],
+        "legacy_spread_ns": [
+          540652.9600409226,
+          548709.6834352679
+        ]
+      },
+      "terminal_head": {
+        "verdict": "does_not_move",
+        "family_median_ns": 436093.04583564226,
+        "legacy_median_ns": 409114.05972660193,
+        "delta_ns": 12212.546287592093,
+        "family_spread_ns": [
+          415137.6121765126,
+          445456.06238718366
+        ],
+        "legacy_spread_ns": [
+          398270.5827011192,
+          433243.51609959156
+        ]
+      },
+      "synchronization": {
+        "verdict": "does_not_move",
+        "family_median_ns": 351709.0,
+        "legacy_median_ns": 346793.0,
+        "delta_ns": 11250.0,
+        "family_spread_ns": [
+          318626.0,
+          414626.0
+        ],
+        "legacy_spread_ns": [
+          340459.0,
+          370667.0
+        ]
+      },
+      "unattributed_residual": {
+        "verdict": "does_not_move",
+        "family_median_ns": 9609.115223310888,
+        "legacy_median_ns": 5087.557309299707,
+        "delta_ns": 4901.2446638941765,
+        "family_spread_ns": [
+          4897.6242523267865,
+          107051.0
+        ],
+        "legacy_spread_ns": [
+          4707.870559416711,
+          5270.974598772824
+        ]
+      },
+      "isolated_silu_64_gpu": {
+        "verdict": "does_not_move",
+        "family_median_ns": 155333,
+        "legacy_median_ns": 180875,
+        "delta_ns": -25542,
+        "family_spread_ns": [
+          155125,
+          155791
+        ],
+        "legacy_spread_ns": [
+          154666,
+          200583
+        ]
+      },
+      "wall": {
+        "verdict": "does_not_move",
+        "family_median_ns": 37701041,
+        "legacy_median_ns": 37640459,
+        "delta_ns": -25126,
+        "family_spread_ns": [
+          37615333,
+          37881125
+        ],
+        "legacy_spread_ns": [
+          37543083,
+          37838624
+        ]
+      },
+      "production_gpu": {
+        "verdict": "does_not_move",
+        "family_median_ns": 36540666,
+        "legacy_median_ns": 36538374,
+        "delta_ns": -4250,
+        "family_spread_ns": [
+          36534124,
+          36608833
+        ],
+        "legacy_spread_ns": [
+          36375708,
+          36656416
+        ]
+      }
+    }
+  },
+  "verdict": {
+    "q80_mixed": {
+      "host_expert_bind": "does_not_move",
+      "command_buffers": "does_not_move",
+      "wait_minus_gpu": "does_not_move",
+      "gpu_matvec": "does_not_move",
+      "wall": "does_not_move"
+    },
+    "dsv4f_native": {
+      "host.expert_slab_io": "does_not_move",
+      "metal_gpu": "does_not_move",
+      "host_exclusive": "does_not_move",
+      "command_buffers": "does_not_move",
+      "wall": "does_not_move"
+    },
+    "qwen38": {
+      "host_preparation": "does_not_move",
+      "weight_addressing": "does_not_move",
+      "weight_decode_reconstruction": "does_not_move",
+      "command_submission": "does_not_move",
+      "deltanet": "does_not_move",
+      "gqa": "does_not_move",
+      "dense_swiglu": "does_not_move",
+      "normalization": "does_not_move",
+      "kv_state": "does_not_move",
+      "terminal_head": "does_not_move",
+      "synchronization": "does_not_move",
+      "unattributed_residual": "does_not_move",
+      "isolated_silu_64_gpu": "does_not_move",
+      "wall": "does_not_move",
+      "production_gpu": "does_not_move"
+    },
+    "headline": "No systematic generality tax. Every requested facet is either identical (command_buffers) or inside the warm-pair spread both ways. Q80 shipping GPU work is occupancy tiles either arm; DSV4F and Qwen3.8 SwiGLU actually swap entry points and still do not move."
+  }
+}

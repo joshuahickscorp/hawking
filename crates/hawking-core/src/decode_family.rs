@@ -61,6 +61,65 @@ pub fn is_family_kernel(name: &str) -> bool {
     FAMILY_KERNELS.contains(&name)
 }
 
+/// Default **on**. Dispatch the G023 family entry points. Set
+/// `HAWKING_DECODE_FAMILY=0` / `false` / `off` / `no` to dispatch the
+/// pre-family wrapper names (same helpers, old kernel symbols).
+///
+/// This is a name-only switch. Host bind, recon-fuse occupancy tiles,
+/// command-buffer fusion, and act-quant stay on their own levers.
+pub fn family_dispatch_enabled() -> bool {
+    crate::env_opt_out("HAWKING_DECODE_FAMILY")
+}
+
+pub const LEGACY_MATVEC_BINARY: &str = "q80_binary_group_matvec";
+pub const LEGACY_MATVEC_HGRAVS: &str = "q80_hgravs01_factor_matvec";
+pub const LEGACY_PACK_WORKLIST: &str = "dsv4f_pack_worklist";
+pub const LEGACY_WORKLIST_FP4: &str = "dsv4f_worklist_fp4_matvec";
+pub const LEGACY_WORKLIST_FP4_SIMD: &str = "dsv4f_worklist_fp4_matvec_simd";
+pub const LEGACY_SWIGLU_F32: &str = "qwen80_silu_mul_f32";
+pub const LEGACY_SWIGLU_BF16_WORKLIST: &str = "dsv4f_worklist_swiglu";
+pub const LEGACY_COMBINE_BF16: &str = "dsv4f_worklist_combine";
+
+fn pick<'a>(family: &'a str, legacy: &'a str) -> &'a str {
+    if family_dispatch_enabled() {
+        family
+    } else {
+        legacy
+    }
+}
+
+pub fn matvec_binary() -> &'static str {
+    pick(MATVEC_BINARY, LEGACY_MATVEC_BINARY)
+}
+
+pub fn matvec_hgravs() -> &'static str {
+    pick(MATVEC_HGRAVS, LEGACY_MATVEC_HGRAVS)
+}
+
+pub fn pack_worklist() -> &'static str {
+    pick(PACK_WORKLIST, LEGACY_PACK_WORKLIST)
+}
+
+pub fn worklist_fp4() -> &'static str {
+    pick(WORKLIST_FP4, LEGACY_WORKLIST_FP4)
+}
+
+pub fn worklist_fp4_simd() -> &'static str {
+    pick(WORKLIST_FP4_SIMD, LEGACY_WORKLIST_FP4_SIMD)
+}
+
+pub fn swiglu_f32() -> &'static str {
+    pick(SWIGLU_F32, LEGACY_SWIGLU_F32)
+}
+
+pub fn swiglu_bf16_worklist() -> &'static str {
+    pick(SWIGLU_BF16_WORKLIST, LEGACY_SWIGLU_BF16_WORKLIST)
+}
+
+pub fn combine_bf16() -> &'static str {
+    pick(COMBINE_BF16, LEGACY_COMBINE_BF16)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,6 +140,18 @@ mod tests {
         for &kernel in Q80_GRAPH_KERNELS.iter().chain(DSV4F_GRAPH_KERNELS) {
             assert!(is_family_kernel(kernel), "{kernel} is not a family kernel");
         }
+    }
+
+    #[test]
+    fn legacy_aliases_are_the_pre_family_entry_points() {
+        assert_eq!(LEGACY_MATVEC_BINARY, "q80_binary_group_matvec");
+        assert_eq!(LEGACY_MATVEC_HGRAVS, "q80_hgravs01_factor_matvec");
+        assert_eq!(LEGACY_PACK_WORKLIST, "dsv4f_pack_worklist");
+        assert_eq!(LEGACY_WORKLIST_FP4, "dsv4f_worklist_fp4_matvec");
+        assert_eq!(LEGACY_WORKLIST_FP4_SIMD, "dsv4f_worklist_fp4_matvec_simd");
+        assert_eq!(LEGACY_SWIGLU_F32, "qwen80_silu_mul_f32");
+        assert_eq!(LEGACY_SWIGLU_BF16_WORKLIST, "dsv4f_worklist_swiglu");
+        assert_eq!(LEGACY_COMBINE_BF16, "dsv4f_worklist_combine");
     }
 
     #[test]

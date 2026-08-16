@@ -888,11 +888,11 @@ impl MetalMixedAccel {
     ) -> Result<()> {
         match weight {
             GpuWeight::Binary(body) => {
-                dispatch_binary(tcb, body, input, output, 0, "q80_binary_group_matvec")?;
+                dispatch_binary(tcb, body, input, output, 0, crate::decode_family::matvec_binary())?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
             }
             GpuWeight::Residual(body) => {
-                dispatch_residual(tcb, body, input, output, 0, "q80_binary_group_matvec")?;
+                dispatch_residual(tcb, body, input, output, 0, crate::decode_family::matvec_binary())?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
                 native.residual_dispatches = native.residual_dispatches.saturating_add(1);
             }
@@ -917,7 +917,7 @@ impl MetalMixedAccel {
                     body.bound,
                     body.code_off,
                     body.scale_off,
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::matvec_hgravs(),
                 )?;
                 native.uniform8_dispatches = native.uniform8_dispatches.saturating_add(1);
             }
@@ -989,7 +989,7 @@ impl MetalMixedAccel {
                     &input_buf,
                     &output_buf,
                     0,
-                    crate::decode_family::MATVEC_BINARY,
+                    crate::decode_family::matvec_binary(),
                 )?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
             }
@@ -1000,7 +1000,7 @@ impl MetalMixedAccel {
                     &input_buf,
                     &output_buf,
                     0,
-                    crate::decode_family::MATVEC_BINARY,
+                    crate::decode_family::matvec_binary(),
                 )?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
                 native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -1024,7 +1024,7 @@ impl MetalMixedAccel {
                     body.bound,
                     body.right_code_off,
                     body.right_scale_off,
-                    crate::decode_family::MATVEC_HGRAVS,
+                    crate::decode_family::matvec_hgravs(),
                 )?;
                 dispatch_factor(
                     &mut tcb,
@@ -1041,7 +1041,7 @@ impl MetalMixedAccel {
                     body.bound,
                     body.left_code_off,
                     body.left_scale_off,
-                    crate::decode_family::MATVEC_HGRAVS,
+                    crate::decode_family::matvec_hgravs(),
                 )?;
                 native.hgravs_factor_dispatches =
                     native.hgravs_factor_dispatches.saturating_add(2);
@@ -1062,7 +1062,7 @@ impl MetalMixedAccel {
                     body.bound,
                     body.code_off,
                     body.scale_off,
-                    crate::decode_family::MATVEC_HGRAVS,
+                    crate::decode_family::matvec_hgravs(),
                 )?;
                 native.uniform8_dispatches = native.uniform8_dispatches.saturating_add(1);
             }
@@ -1279,7 +1279,7 @@ impl MetalMixedAccel {
                 &self.wave.input,
                 &self.wave.gate,
                 mid_off,
-                "q80_binary_group_matvec",
+                crate::decode_family::matvec_binary(),
             )?;
             dispatch_residual(
                 &mut tcb,
@@ -1287,7 +1287,7 @@ impl MetalMixedAccel {
                 &self.wave.input,
                 &self.wave.up,
                 mid_off,
-                "q80_binary_group_matvec",
+                crate::decode_family::matvec_binary(),
             )?;
             native.binary_dispatches = native.binary_dispatches.saturating_add(2);
             native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -1327,7 +1327,7 @@ impl MetalMixedAccel {
                 trip.down.bound,
                 trip.down.right_code_off,
                 trip.down.right_scale_off,
-                "q80_hgravs01_factor_matvec",
+                crate::decode_family::matvec_hgravs(),
             )?;
             dispatch_factor(
                 &mut tcb,
@@ -1344,7 +1344,7 @@ impl MetalMixedAccel {
                 trip.down.bound,
                 trip.down.left_code_off,
                 trip.down.left_scale_off,
-                "q80_hgravs01_factor_matvec",
+                crate::decode_family::matvec_hgravs(),
             )?;
             native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(2);
         }
@@ -1406,7 +1406,7 @@ impl MetalMixedAccel {
                 &self.wave.input,
                 &self.wave.gate,
                 mid_off,
-                crate::decode_family::MATVEC_BINARY,
+                crate::decode_family::matvec_binary(),
             )?;
             dispatch_residual(
                 &mut tcb,
@@ -1414,7 +1414,7 @@ impl MetalMixedAccel {
                 &self.wave.input,
                 &self.wave.up,
                 mid_off,
-                crate::decode_family::MATVEC_BINARY,
+                crate::decode_family::matvec_binary(),
             )?;
             native.binary_dispatches = native.binary_dispatches.saturating_add(2);
             native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -1473,7 +1473,7 @@ impl MetalMixedAccel {
                 trip.down.bound,
                 trip.down.right_code_off,
                 trip.down.right_scale_off,
-                crate::decode_family::MATVEC_HGRAVS,
+                crate::decode_family::matvec_hgravs(),
             )?;
             if fused {
                 let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
@@ -1492,7 +1492,7 @@ impl MetalMixedAccel {
                     trip.down.bound,
                     trip.down.left_code_off,
                     trip.down.left_scale_off,
-                    crate::decode_family::MATVEC_HGRAVS,
+                    crate::decode_family::matvec_hgravs(),
                 )?;
             }
             native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(1);
@@ -1532,7 +1532,7 @@ impl MetalMixedAccel {
                     trip.down.bound,
                     trip.down.left_code_off,
                     trip.down.left_scale_off,
-                    crate::decode_family::MATVEC_HGRAVS,
+                    crate::decode_family::matvec_hgravs(),
                 )?;
                 native.hgravs_factor_dispatches =
                     native.hgravs_factor_dispatches.saturating_add(1);
