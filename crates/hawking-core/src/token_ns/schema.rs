@@ -7,6 +7,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::served_weight::ServedWeightMetrics;
+
 pub const TOKEN_NS_SCHEMA: &str = "hawking.ascent.token_ns.v1";
 
 /// Fail the closure when unattributed residual exceeds this fraction of the
@@ -270,10 +272,17 @@ pub struct TokenNsDocument {
     pub residual_limit_fraction: f64,
     pub stages: Vec<TokenNsStage>,
     pub totals: TokenNsTotals,
+    pub served_weight: ServedWeightMetrics,
     pub residual_ns: i128,
     pub closure: ClosureReport,
     pub critical_path: CriticalPath,
     pub notes: Vec<String>,
+    /// When TOTAL_TOKEN_NS is a whole run (Q80 baseline residual), this is
+    /// the per-token ns the physical units must use.
+    #[serde(skip)]
+    pub physical_token_ns_override: Option<u64>,
+    #[serde(skip)]
+    pub joules_per_token_in: Option<f64>,
 }
 
 impl TokenNsDocument {
@@ -299,6 +308,27 @@ impl TokenNsDocument {
             self.critical_path.statement.clone(),
             self.critical_path.warning.clone(),
         );
+        let token_ns = self
+            .physical_token_ns_override
+            .unwrap_or(self.totals.total_token_ns);
+        self.served_weight = ServedWeightMetrics::compute(
+            &self.model,
+            token_ns,
+            self.totals.dram_bytes_per_token,
+            self.joules_per_token_in,
+            None,
+        );
+        if !self
+            .notes
+            .iter()
+            .any(|n| n.contains("amortized throughput-derived"))
+        {
+            self.notes.push(format!(
+                "{} — {}",
+                crate::token_ns::served_weight::FS_PER_WEIGHT_SERVED_FIELD,
+                crate::token_ns::served_weight::AMORTIZED_CAVEAT
+            ));
+        }
         self
     }
 }
@@ -350,6 +380,10 @@ pub struct EmitMeta {
     pub source_path: String,
     pub measurement_label: MeasurementLabel,
     pub residual_limit_fraction: f64,
+    /// Optional measured joules over the same interval as the token.
+    pub joules_per_token: Option<f64>,
+    /// Override when totals.total_token_ns is not one token.
+    pub physical_token_ns: Option<u64>,
 }
 
 impl EmitMeta {
@@ -359,6 +393,8 @@ impl EmitMeta {
             source_path: source_path.into(),
             measurement_label: MeasurementLabel::DirtyEngineering,
             residual_limit_fraction: DEFAULT_RESIDUAL_LIMIT,
+            joules_per_token: None,
+            physical_token_ns: None,
         }
     }
 }

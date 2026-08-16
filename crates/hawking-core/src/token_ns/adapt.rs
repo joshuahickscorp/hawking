@@ -11,6 +11,7 @@ use super::schema::{
     ResourceClass, SerialOrOverlappable, TokenNsDocument, TokenNsStage, TokenNsTotals,
     GPU_TIMESTAMP_AUTHORITY, TOKEN_NS_SCHEMA,
 };
+use super::served_weight::ServedWeightMetrics;
 use crate::gravity_deepseek_v4_token_ns_ledger::TokenNsLedger as DsvLedger;
 use crate::model::qwen80_token_ns_ledger::{
     Qwen80TokenNsLedger, Qwen80TokenNsToken, QWEN80_TOKEN_NS_LEDGER_SCHEMA,
@@ -339,7 +340,10 @@ pub fn from_dsv4f_ledger(ledger: &DsvLedger, meta: &EmitMeta) -> TokenNsDocument
             dram_bytes_per_token: dram,
             temp_bytes_per_token: temp,
         },
+        served_weight: ServedWeightMetrics::default(),
         residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns,
+        joules_per_token_in: meta.joules_per_token,
         closure: ClosureReport::compute(total, &[], meta.residual_limit_fraction),
         critical_path: CriticalPath {
             model: "dsv4f".to_owned(),
@@ -576,7 +580,10 @@ pub fn from_q80_ledger(ledger: &Qwen80TokenNsLedger, meta: &EmitMeta) -> TokenNs
             dram_bytes_per_token: dram,
             temp_bytes_per_token: 16_711_680,
         },
+        served_weight: ServedWeightMetrics::default(),
         residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns,
+        joules_per_token_in: meta.joules_per_token,
         closure: ClosureReport::compute(total, &[], meta.residual_limit_fraction),
         critical_path: CriticalPath {
             model: "q80".to_owned(),
@@ -755,7 +762,10 @@ pub fn from_dsv4f_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument,
             dram_bytes_per_token: if dram > 0 { dram } else { mapped },
             temp_bytes_per_token: temp,
         },
+        served_weight: ServedWeightMetrics::default(),
         residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns,
+        joules_per_token_in: meta.joules_per_token,
         closure: ClosureReport::compute(total, &[], meta.residual_limit_fraction),
         critical_path: CriticalPath {
             model: "dsv4f".to_owned(),
@@ -926,7 +936,10 @@ pub fn from_q80_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument, S
             dram_bytes_per_token: dram,
             temp_bytes_per_token: 16_711_680,
         },
+        served_weight: ServedWeightMetrics::default(),
         residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns,
+        joules_per_token_in: meta.joules_per_token,
         closure: ClosureReport::compute(total, &[], meta.residual_limit_fraction),
         critical_path: CriticalPath {
             model: "q80".to_owned(),
@@ -1051,10 +1064,14 @@ pub fn from_q80_baseline_run_json(root: &Value, meta: &EmitMeta) -> Result<Token
             total_readbacks: 0,
             total_buffer_creations: 0,
             total_buffer_rebinds: 0,
-            dram_bytes_per_token: 0,
+            dram_bytes_per_token: crate::model::qwen80_token_ns_ledger::theoretical_weight_bytes_per_token()
+                .total_bytes,
             temp_bytes_per_token: 0,
         },
+        served_weight: ServedWeightMetrics::default(),
         residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns.or(Some(decode_ns_per_token)),
+        joules_per_token_in: meta.joules_per_token,
         closure: ClosureReport::compute(total_run_ns, &[], meta.residual_limit_fraction),
         critical_path: CriticalPath {
             model: "q80".to_owned(),
@@ -1120,6 +1137,8 @@ mod tests {
             doc.closure.sum_serial_stage_ns + doc.closure.residual_ns,
             doc.totals.total_token_ns as i128
         );
+        assert_eq!(doc.served_weight.active_weights_per_token, 12_748_587_008);
+        assert!(doc.served_weight.honesty.caveat.contains("NOT latency"));
     }
 
     #[test]
@@ -1146,6 +1165,8 @@ mod tests {
                     command_buffers: 10.0,
                     dispatches: 20.0,
                     weight_bytes: 1_000.0,
+                    gpu_gap_ns: 0.0,
+                    gpu_gap_edges: 0.0,
                 },
             ),
             ranked_aggregate: Vec::new(),
@@ -1162,6 +1183,10 @@ mod tests {
                 .any(|s| s.stage == "metal_gpu"
                     && s.serial_or_overlappable == SerialOrOverlappable::Overlappable)
         );
+        assert_eq!(doc.served_weight.active_weights_per_token, 3_562_274_816);
+        assert!(doc.served_weight.honesty.not_latency);
+        assert!(doc.served_weight.fs_per_weight_served > 0.0);
+        assert!(!doc.served_weight.energy_available);
     }
 
     #[test]

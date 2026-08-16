@@ -13,7 +13,7 @@
     "sum_serial_stage_ns": 749028102,
     "total_token_ns": 1024054500
   },
-  "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+  "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
   "critical_path": {
     "model": "dsv4f",
     "overlappable_ns": 1594961335,
@@ -36,17 +36,107 @@
   "model": "dsv4f",
   "notes": [
     "verify_ns=2333329911 is a parallel sum (227.85212222591667% of body) and is not in TOTAL_TOKEN_NS.",
-    "Named serial stages do not include metal.cb_host_wall − (encode+submit+wait). That hole is residual_ns."
+    "Named serial stages do not include metal.cb_host_wall − (encode+submit+wait). That hole is residual_ns.",
+    "fs_per_weight_served (amortized throughput-derived, NOT latency) — fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency."
   ],
   "residual_limit_fraction": 0.05,
   "residual_ns": 275026398,
   "schema": "hawking.ascent.token_ns.v1",
+  "served_weight": {
+    "active_weights_per_token": 12748587008,
+    "bits_moved_per_token": 46857898112,
+    "bpw_this_run": 3.6755365973182523,
+    "bytes_moved_per_token": 5857237264,
+    "distance_from_floor": 143.19048344769254,
+    "energy": {
+      "energy_available": false,
+      "fill_command": "sudo powermetrics --samplers gpu_power,cpu_power -i 50 -n 40 --show-process-coalition -o receipts/ascent-2026-08-16/POWERMETRICS_<lane>.txt",
+      "fill_howto": "Run the timed token under the GPU lock and, in another terminal as root, start powermetrics before the token body (not during init). joules_per_token ≈ (mean GPU+CPU watts) × (token_ns × 1e-9). Then re-emit TOKEN_NS with EmitMeta.joules_per_token set. Do not copy a datasheet TDP. Prefer wrapping EnergySampler::start/stop around the same interval as body_ns / decode wall_ns. IOReport Energy Model `GPU Energy` (nJ) is the verified non-root GPU rail; it is GPU-only, not DRAM.",
+      "joules_per_token": null,
+      "non_root_ioreport": {
+        "dram_mj_channels_present": true,
+        "dram_mj_observed_incrementing": false,
+        "energy_model_channels": 565,
+        "gpu_energy_nj_increments_without_root": true,
+        "libioreport_dlopen_without_root": true,
+        "note": "2026-08-16 this machine, no root. IOReportCopyChannelsInGroup(\"Energy Model\") returns 565 channels. GPU Energy (nJ) incremented ~0.98 W over a 1 s idle window. GPU0_0 / DRAM0_0 / DRAM0_1 / DIE_*_CPU Energy (mJ) were present but SimpleGetIntegerValue did not increment over 1 s. powermetrics still requires root.",
+        "probed": true
+      },
+      "reason": "no joules_per_token supplied; historical TOKEN_NS ledgers have no energy wrap",
+      "scope": "none"
+    },
+    "energy_available": false,
+    "fs_per_weight_floor": 560.9793341450325,
+    "fs_per_weight_served (amortized throughput-derived, NOT latency)": 80326.90206039185,
+    "geometry": {
+      "active_weights_per_token": 12748587008,
+      "components": [
+        {
+          "how": "43 layers × (wq_a 1024×4096 + wq_b 32768×1024 + wkv 512×4096 + wo_a 8192×4096 + wo_b 4096×8192) = 106954752/layer",
+          "name": "mla",
+          "weights": 4599054336
+        },
+        {
+          "how": "43 layers × top-6 of 256 × 3 proj × 2048 × 4096",
+          "name": "routed_expert",
+          "weights": 6492782592
+        },
+        {
+          "how": "43 layers × 1 shared × 3 proj × 2048 × 4096",
+          "name": "shared_expert",
+          "weights": 1082130432
+        },
+        {
+          "how": "43 layers × 256 × 4096",
+          "name": "router",
+          "weights": 45088768
+        },
+        {
+          "how": "full GEMV 129280 × 4096",
+          "name": "lm_head",
+          "weights": 529530880
+        }
+      ],
+      "derivation": "Same class as Q80 PHYSICAL_FLOOR: attention (MLA) + routed(top_k) + shared + router + lm_head. 43 layers, top-6 of 256, one shared expert.",
+      "excluded_from_denominator": [
+        {
+          "how": "one vocab row is looked up per token",
+          "name": "embed_row",
+          "weights": 4096
+        },
+        {
+          "how": "dsv-resident-gravity lower bound counted the full table; this denominator does not, because a lookup does not serve vocab×hidden weights",
+          "name": "embed_full_table_not_served",
+          "weights": 529530880
+        },
+        {
+          "how": "ratio-4/128 indexer+compressor, mHC hc_fn, and RMSNorms fire on some/all layers but are kept out of the Q80-comparable denominator. They are not zero cost; they are a different organ class.",
+          "name": "indexer_compressor_mhc_norms",
+          "weights": 0
+        }
+      ],
+      "matches_physical_floor_q80": null,
+      "model": "dsv4f"
+    },
+    "hardware_ps_per_bit": 0.15262515262515264,
+    "honesty": {
+      "caveat": "fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency.",
+      "field_label": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+      "not_latency": true,
+      "single_weight_dram_round_trip_ns_approx": 100.0
+    },
+    "pJ_per_weight_served": null,
+    "peak_bandwidth_bytes_per_s": 819000000000.0,
+    "ps_per_bit_moved": 21.854469390673465,
+    "reference_floors": [],
+    "token_ns": 1024054500
+  },
   "source_path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
   "source_schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
   "stages": [
     {
       "calls_per_token": 3314.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "parallel worker-thread sum inside the reader; not token wall",
       "ns_per_call": 397720.43934821966,
@@ -60,7 +150,7 @@
     },
     {
       "calls_per_token": 3314.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "parallel worker-thread sum inside the reader; not token wall",
       "ns_per_call": 280793.5706095353,
@@ -74,7 +164,7 @@
     },
     {
       "calls_per_token": 2499.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "nested inside an I/O wall; do not add to the parent",
       "ns_per_call": 213867.84393757503,
@@ -88,7 +178,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around streamed top-6 expert read+fill; GPU-idle",
       "ns_per_call": 9449184.162790697,
@@ -102,7 +192,7 @@
     },
     {
       "calls_per_token": 42.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "same host wall as expert_slab_io; do not add",
       "ns_per_call": 9494558.57142857,
@@ -116,7 +206,7 @@
     },
     {
       "calls_per_token": 137.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
       "ns_per_call": 2894518.2481751824,
@@ -130,7 +220,7 @@
     },
     {
       "calls_per_token": 137.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around wait_until_completed; includes GPU + queue delay",
       "ns_per_call": 1776452.5547445256,
@@ -144,7 +234,7 @@
     },
     {
       "calls_per_token": 42.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "nested inside an I/O wall; do not add to the parent",
       "ns_per_call": 2195913.6904761903,
@@ -158,7 +248,7 @@
     },
     {
       "calls_per_token": 3314.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "parallel worker-thread sum inside the reader; not token wall",
       "ns_per_call": 20785.836753168376,
@@ -172,7 +262,7 @@
     },
     {
       "calls_per_token": 8.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 6220994.625,
@@ -186,7 +276,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around streamed LM-head tile I/O",
       "ns_per_call": 36883000.0,
@@ -200,7 +290,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "shared/control I/O overlapped with attention GPU",
       "ns_per_call": 819787.8837209302,
@@ -214,7 +304,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "shared/control I/O overlapped with attention GPU",
       "ns_per_call": 767504.976744186,
@@ -228,7 +318,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "shared/control I/O overlapped with attention GPU",
       "ns_per_call": 757405.976744186,
@@ -242,7 +332,7 @@
     },
     {
       "calls_per_token": 86.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant; SHA-sealed host MHC between command buffers",
       "ns_per_call": 295797.9418604651,
@@ -256,7 +346,7 @@
     },
     {
       "calls_per_token": 345.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around MHC/norm table construction",
       "ns_per_call": 55262.942028985504,
@@ -270,7 +360,7 @@
     },
     {
       "calls_per_token": 140261.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "parallel worker-thread sum inside the reader; not token wall",
       "ns_per_call": 87.25348457518483,
@@ -284,7 +374,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "shared/control I/O overlapped with attention GPU",
       "ns_per_call": 234535.83720930232,
@@ -298,7 +388,7 @@
     },
     {
       "calls_per_token": 3314.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "parallel worker-thread sum inside the reader; not token wall",
       "ns_per_call": 2315.546469523235,
@@ -312,7 +402,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around layer-0 attention weight I/O",
       "ns_per_call": 7268333.0,
@@ -326,7 +416,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "diagnostic probe; excluded from body closure",
       "ns_per_call": 5882584.0,
@@ -340,7 +430,7 @@
     },
     {
       "calls_per_token": 137.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around Metal encode",
       "ns_per_call": 34116.788321167885,
@@ -354,7 +444,7 @@
     },
     {
       "calls_per_token": 86.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant; SHA-sealed host MHC between command buffers",
       "ns_per_call": 43116.22093023256,
@@ -368,7 +458,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 43971.88372093023,
@@ -382,7 +472,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 43053.27906976744,
@@ -396,7 +486,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 42082.441860465115,
@@ -410,7 +500,7 @@
     },
     {
       "calls_per_token": 137.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around command-buffer commit",
       "ns_per_call": 5496.350364963504,
@@ -424,7 +514,7 @@
     },
     {
       "calls_per_token": 86.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around RMSNorm",
       "ns_per_call": 8443.89534883721,
@@ -438,7 +528,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 11741.279069767443,
@@ -452,7 +542,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant; SHA-sealed host MHC between command buffers",
       "ns_per_call": 481958.0,
@@ -466,7 +556,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host write into a Metal buffer; nested in the parent I/O wall",
       "ns_per_call": 6327.46511627907,
@@ -480,7 +570,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around embedding I/O",
       "ns_per_call": 95416.0,
@@ -494,7 +584,7 @@
     },
     {
       "calls_per_token": 145.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "nested inside an I/O wall; do not add to the parent",
       "ns_per_call": 486.50344827586207,
@@ -508,7 +598,7 @@
     },
     {
       "calls_per_token": 40.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around a device-to-host readback",
       "ns_per_call": 1751.15,
@@ -522,7 +612,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around a device-to-host readback",
       "ns_per_call": 1141.5116279069769,
@@ -536,7 +626,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around a device-to-host readback",
       "ns_per_call": 1113.4418604651162,
@@ -550,7 +640,7 @@
     },
     {
       "calls_per_token": 8.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around a device-to-host readback",
       "ns_per_call": 5062.25,
@@ -564,7 +654,7 @@
     },
     {
       "calls_per_token": 40.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "host Instant around a device-to-host readback",
       "ns_per_call": 936.525,
@@ -578,7 +668,7 @@
     },
     {
       "calls_per_token": 42.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
@@ -592,7 +682,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
@@ -606,7 +696,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
@@ -620,7 +710,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
@@ -634,7 +724,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
@@ -648,7 +738,7 @@
     },
     {
       "calls_per_token": 43.0,
-      "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
       "confidence": "measured",
       "method": "byte/hit counter, not a duration",
       "ns_per_call": 0.0,
