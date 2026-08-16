@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.special_unit.g015_native_leg_verify_on_main.v1",
+  "date": "2026-08-16",
+  "what_this_verifies": "The Qwen3.8 native leg re-run from MAIN after the merge, not from the lane worktree. Fresh evidence from the current implementation state.",
+  "head": "b2a5d0dcd+ (post-merge 00f3a03c9)",
+  "binary": "workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy (rebuilt from main)",
+  "acceptance_clauses_now_evidenced": {
+    "exact_model_identity": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX, base rev 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0, language-only",
+    "coherent_generation": "GENERATED_TEXT_VERBATIM readable on-topic English",
+    "stable_NATIVE_runtime_not_python_bridge": "native Rust+Metal example, no Python in the decode path",
+    "no_hidden_fallback": "FALLBACKS: 0",
+    "useful_speed": "median steady GPU 33.55 ms/token = 29.8 tok/s"
+  },
+  "measured": {
+    "median_gpu_ns_steady": 33535999,
+    "min_gpu_ns_steady": 32739833,
+    "max_gpu_ns_steady": 33898375,
+    "median_wait_ns_steady": 33896792,
+    "cold_first_step_ns": 107972875,
+    "wall_ns": 1068090708,
+    "fallbacks": 0,
+    "new_tokens": 0
+  },
+  "gpu_bound_confirmed": "wait median exceeds gpu median by ~0.4 ms. The host is not the wall for this model - the regime split holds on main.",
+  "robustness_note": "Measured with SEVEN Grok lanes running. It still reproduces the 33.45 ms worktree figure at 33.55 ms, so the number is robust to box load rather than an artifact of a quiet box. This STRENGTHENS the measurement; it is still not a clean-room result and is not offered as one.",
+  "legs_STILL_OPEN_for_G015": [
+    "HCLI conversation + project context + persistent session + interrupt + restart/resume",
+    "tool execution",
+    "build/test execution",
+    "Grok delegation",
+    "Grok RESULT CONSUMPTION",
+    "AgentOS planning",
+    "AgentOS verification (proposed_complete vs verified_complete)",
+    "resource-aware pause/resume that never contaminates a protected Q80/DSV benchmark",
+    "CLAUDE_OFFLOAD_BENCH from real Hawking tasks + FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED"
+  ],
+  "verdict": "G015 stays PENDING. Five of its acceptance clauses are now evidenced from main; the agentic harness legs are untouched and are the bulk of the obligation."
+}
