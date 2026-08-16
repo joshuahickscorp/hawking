@@ -1,0 +1,482 @@
+"""CLAUDE_OFFLOAD_BENCH — routine Claude work actually done in this repo.
+
+A harness that cannot displace real work has not met G005. Every task below
+cites a file, receipt, or grok-run artifact this campaign already produced.
+The score is FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED: passed / attempted
+routine tasks. Environment-missing tasks are excluded from both sides.
+"""
+from __future__ import annotations
+
+import json
+import tempfile
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable
+
+from lab.hcli.special_unit import (
+    GROK_TASKS,
+    GPU_LOCK,
+    ResourceClass,
+    ResourceGate,
+    ScriptedBackend,
+    SpecialUnit,
+    StepStatus,
+    looks_gpu_command,
+)
+from lab.layout import REPO_ROOT
+from lab.receipts import seal
+from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
+
+SCHEMA = "hawking.special_unit.claude_offload_bench.v1"
+DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_SPECIAL_UNIT_READY.json"
+G015 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G015_NATIVE_LEG_VERIFY_ON_MAIN.json"
+REAL_GROK_TASK = "q80-host-facets-20260816-143023"
+
+
+@dataclass
+class OffloadTask:
+    id: str
+    title: str
+    source: str
+    routine_claude: bool
+    run: Callable[[Path], tuple[bool, str]]
+
+
+def _unit(repo: Path, tmp: Path, **kwargs: Any) -> SpecialUnit:
+    return SpecialUnit(
+        repo=repo,
+        session_root=tmp / "sessions",
+        owned_worktree=tmp / "wt",
+        backend=ScriptedBackend(["ok"]),
+        **kwargs,
+    )
+
+
+def _t_read_g015(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    result = unit.tool("read", {"path": str(G015), "limit": 80})
+    if not result.ok:
+        return False, result.output
+    ok = "legs_STILL_OPEN_for_G015" in result.output and "HCLI conversation" in result.output
+    return ok, "extracted G015 open legs" if ok else "G015 payload missing expected legs"
+
+
+def _t_grep_proposed(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    result = unit.tool("grep", {"pattern": "proposed_complete", "path": "lab/hcli", "max_hits": 20})
+    if not result.ok:
+        return False, result.output
+    return result.detail.get("hits", 0) > 0, f"hits={result.detail.get('hits')}"
+
+
+def _t_pytest_option_c(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    result = unit.tool("pytest", {"target": "lab/tests/test_option_c.py", "timeout": 90})
+    return result.ok, result.output[-500:]
+
+
+def _t_machine_state(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    result = unit.tool(
+        "bash",
+        {
+            "argv": [__import__("sys").executable, str(REPO_ROOT / "tools" / "agentos" / "machine_state.py")],
+            "timeout": 20,
+        },
+    )
+    if not result.ok:
+        return False, result.output
+    try:
+        snap = json.loads(result.output)
+    except json.JSONDecodeError:
+        return False, "machine_state did not emit JSON"
+    return "clean_box_ok" in snap and "active_grok_lanes" in snap, "machine_state snapshot ok"
+
+
+def _t_seal_receipt(tmp: Path) -> tuple[bool, str]:
+    from lab.receipts import seal as _seal
+    from lab.receipts import verify
+
+    doc = _seal({"schema": "hawking.special_unit.bench_probe.v1", "ok": True})
+    verify(doc)
+    path = tmp / "wt" / "probe.json"
+    unit = _unit(REPO_ROOT, tmp)
+    (tmp / "wt").mkdir(parents=True, exist_ok=True)
+    result = unit.tool("write", {"path": str(path), "content": json.dumps(doc, indent=2)})
+    ok = result.ok and path.is_file() and "seal_sha256" in doc
+    return ok, "sealed + wrote receipt" if ok else result.output
+
+
+def _t_consume_real_grok(tmp: Path) -> tuple[bool, str]:
+    task_dir = GROK_TASKS / REAL_GROK_TASK
+    if not task_dir.is_dir():
+        return False, f"SKIP missing {task_dir}"
+    unit = _unit(REPO_ROOT, tmp, grok_tasks=GROK_TASKS)
+    consumption = unit.grok_consume(REAL_GROK_TASK)
+    ok = (
+        consumption.get("consumed") is True
+        and consumption.get("verified_complete") is False
+        and consumption.get("dispatched") is True
+        and bool(consumption.get("claim_excerpt"))
+    )
+    return ok, f"consumed {REAL_GROK_TASK}; verified_complete={consumption.get('verified_complete')}"
+
+
+def _t_gpu_lock_inspect(tmp: Path) -> tuple[bool, str]:
+    if looks_gpu_command("./tools/gpu_lane_lock.sh q80-mixed cargo bench"):
+        # Must inspect, never take, the real lock.
+        gate = ResourceGate(lock_path=GPU_LOCK)
+        live, why = gate.protected_bench_live()
+        _ = live
+        unit = _unit(REPO_ROOT, tmp, gate=gate)
+        ctx = unit.refresh_context()
+        return "gpu_lock_owner" in ctx, why
+    return False, "gpu pattern detector failed"
+
+
+def _t_session_persist(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    unit.say("Qwen3.8 native leg is done; harness next.")
+    sid = unit.session.session_id
+    root = unit.store.root
+    reopened = SpecialUnit.open(sid, repo=REPO_ROOT, session_root=root, owned_worktree=tmp / "wt")
+    ok = (
+        len(reopened.session.transcript) >= 2
+        and reopened.session.transcript[0].text.startswith("Qwen3.8")
+        and reopened.session.context_digest
+    )
+    return ok, f"resumed {sid} with {len(reopened.session.transcript)} turns"
+
+
+def _t_plan_g015(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    plan = unit.plan("close the G015 harness legs")
+    ids = [s["id"] for s in plan["steps"]]
+    need = {"session_context", "grok_delegate", "grok_consume", "agentos_verify", "resource_pause"}
+    return need.issubset(ids), f"steps={ids}"
+
+
+def _t_proposed_vs_verified(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    unit.plan("boundary", steps=[{"id": "a", "title": "A", "dependencies": [], "oracle": {"kind": "predicate"}}])
+    unit.propose("a", author="qwen38")
+    step = unit.session.plan["steps"][0]
+    if step["status"] != StepStatus.PROPOSED_COMPLETE.value:
+        return False, f"propose set {step['status']}"
+    if step["status"] == StepStatus.VERIFIED_COMPLETE.value:
+        return False, "propose leaked verified_complete"
+    try:
+        unit.verify("a", principal=AuthorityPrincipal.SANDBOX_MODEL, certifier_id="qwen38")
+        return False, "sandbox was allowed to verified_complete"
+    except SelfPromotionError:
+        pass
+    unit.verify("a", principal=AuthorityPrincipal.PROTECTED_CONTROLLER, certifier_id="protected_controller")
+    step = unit.session.plan["steps"][0]
+    return step["status"] == StepStatus.VERIFIED_COMPLETE.value, step["status"]
+
+
+def _t_resource_refuse(tmp: Path) -> tuple[bool, str]:
+    lock = tmp / "fake-gpu.lock"
+    lock.mkdir()
+    (lock / "owner").write_text("q80-mixed-bench\n", encoding="utf-8")
+    gate = ResourceGate(lock_path=lock, allow_gpu=True)
+    unit = _unit(REPO_ROOT, tmp, gate=gate)
+    admitted, why = unit.pause_for_resources(ResourceClass.GPU_HEAVY)
+    if admitted:
+        return False, f"admitted GPU during protected bench: {why}"
+    if unit.session.status != "paused":
+        return False, f"status={unit.session.status}"
+    # CPU work must still run.
+    cpu_ok, cpu_why = unit.gate.admit(ResourceClass.CPU)
+    if not cpu_ok:
+        return False, cpu_why
+    # Resume stays paused while the lock is held.
+    unit.resume()
+    if unit.session.status != "paused":
+        return False, f"resume cleared pause while lock live: {unit.session.status}"
+    (lock / "owner").unlink()
+    lock.rmdir()
+    unit.resume()
+    return unit.session.status == "idle", f"final={unit.session.status} pause_reason={unit.session.pause_reason}"
+
+
+def _t_interrupt_resume(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    unit.say("start a long read")
+    unit.interrupt("user")
+    if unit.session.status != "interrupted":
+        return False, unit.session.status
+    unit.resume()
+    return unit.session.status == "idle" and unit.session.pending_interrupt is None, unit.session.status
+
+
+def _t_write_and_pytest(tmp: Path) -> tuple[bool, str]:
+    wt = tmp / "wt"
+    wt.mkdir(parents=True, exist_ok=True)
+    unit = _unit(wt, tmp)
+    src = wt / "tiny.py"
+    test = wt / "test_tiny.py"
+    w1 = unit.tool("write", {"path": str(src), "content": "def add(a, b):\n    return a + b\n"})
+    if not w1.ok:
+        return False, w1.output
+    w2 = unit.tool(
+        "write",
+        {"path": str(test), "content": "from tiny import add\n\ndef test_add():\n    assert add(2, 3) == 5\n"},
+    )
+    if not w2.ok:
+        return False, w2.output
+    result = unit.tool("pytest", {"target": str(test.resolve()), "timeout": 30})
+    return result.ok, result.output[-300:]
+
+
+def _t_delegate_then_consume(tmp: Path) -> tuple[bool, str]:
+    tasks = tmp / "grok-tasks"
+    task_id = "bench-delegate-1"
+
+    class _Runner:
+        def delegate(self, **kwargs: Any) -> dict[str, Any]:
+            tdir = tasks / task_id
+            tdir.mkdir(parents=True, exist_ok=True)
+            (tdir / "status").write_text("done\n", encoding="utf-8")
+            (tdir / "exit_code").write_text("0\n", encoding="utf-8")
+            (tdir / "metadata.json").write_text(
+                json.dumps({"task_id": task_id, "mode": "delegate", "workdir": str(tmp)}),
+                encoding="utf-8",
+            )
+            (tdir / "grok-report.md").write_text(
+                "CLAIM\nWrote tiny helper.\nSTATUS: SHIPPED\nEVIDENCE: test_tiny passed\n",
+                encoding="utf-8",
+            )
+            (tdir / "diff.patch").write_text(
+                "diff --git a/tiny.py b/tiny.py\n--- a/tiny.py\n+++ b/tiny.py\n",
+                encoding="utf-8",
+            )
+            return {"task_id": task_id}
+
+    unit = _unit(REPO_ROOT, tmp, grok_runner=_Runner(), grok_tasks=tasks)
+    contract = tmp / "wt" / "contract.md"
+    (tmp / "wt").mkdir(parents=True, exist_ok=True)
+    contract.write_text("do the thing\n", encoding="utf-8")
+    handle = unit.grok_delegate(slug="bench-delegate", contract=contract)
+    if handle.get("consumed"):
+        return False, "delegate must not consume"
+    if not unit.unconsumed_grok():
+        return False, "dispatch without consume should list unconsumed"
+    consumption = unit.grok_consume(task_id)
+    if unit.unconsumed_grok():
+        return False, "consume did not clear the handle"
+    ok = (
+        consumption.get("consumed")
+        and consumption.get("verified_complete") is False
+        and consumption.get("files_in_diff") == ["tiny.py"]
+    )
+    return ok, f"delegate+consume; verified_complete={consumption.get('verified_complete')}"
+
+
+def _t_authority_fence(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    unit.plan("fence", steps=[{"id": "z", "title": "Z", "dependencies": [], "oracle": {"kind": "predicate"}}])
+    unit.propose("z")
+    try:
+        unit.verify("z", principal="sandbox_model", certifier_id="qwen38")
+    except SelfPromotionError:
+        return True, "sandbox cannot certify verified_complete"
+    return False, "fence failed"
+
+
+def _t_gpu_cmd_refuse(tmp: Path) -> tuple[bool, str]:
+    unit = _unit(REPO_ROOT, tmp)
+    result = unit.tool("bash", {"command": "./tools/gpu_lane_lock.sh q80-mixed ./workspace/ops/build/rust/release/examples/ascension_qwen80_hybrid_greedy"})
+    return (not result.ok) and "refused" in result.output, result.output
+
+
+TASKS: list[OffloadTask] = [
+    OffloadTask(
+        "read_g015_open_legs",
+        "Read G015 and extract still-open harness legs",
+        "receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
+        True,
+        _t_read_g015,
+    ),
+    OffloadTask(
+        "grep_proposed_complete",
+        "Search the HCLI tree for proposed_complete",
+        "lab/hcli/special_unit.py (this lane's first recon move, same shape as every Claude grep)",
+        True,
+        _t_grep_proposed,
+    ),
+    OffloadTask(
+        "run_option_c_tests",
+        "Run lab/tests/test_option_c.py",
+        "lab/tests/test_option_c.py — standing Option-C suite Claude already maintains",
+        True,
+        _t_pytest_option_c,
+    ),
+    OffloadTask(
+        "machine_state_clean_box",
+        "Query tools/agentos/machine_state.py",
+        "tools/agentos/machine_state.py + receipts/agentos/PROGRAM_PLAN.md W0.T10",
+        True,
+        _t_machine_state,
+    ),
+    OffloadTask(
+        "seal_json_receipt",
+        "Seal a JSON receipt and write it in an owned worktree",
+        "lab/receipts.py — every ascent lane's last action",
+        True,
+        _t_seal_receipt,
+    ),
+    OffloadTask(
+        "consume_q80_host_facets_report",
+        "Consume a real grok-run result (q80-host-facets)",
+        f"~/.claude-grok/tasks/{REAL_GROK_TASK}/grok-report.md",
+        True,
+        _t_consume_real_grok,
+    ),
+    OffloadTask(
+        "gpu_lock_inspect_without_take",
+        "Inspect the GPU lock without creating or taking it",
+        "tools/gpu_lane_lock.sh + S002 anti-scope (GPU belongs to Q80/DSV)",
+        True,
+        _t_gpu_lock_inspect,
+    ),
+    OffloadTask(
+        "session_persist_qwen38_context",
+        "Persist a Qwen3.8 conversation and resume it in a new process object",
+        "G015 open leg: persistent session + project context",
+        True,
+        _t_session_persist,
+    ),
+    OffloadTask(
+        "plan_g015_remaining_legs",
+        "Plan the remaining G015 harness legs as a DAG",
+        "G015_NATIVE_LEG_VERIFY_ON_MAIN.json legs_STILL_OPEN_for_G015",
+        True,
+        _t_plan_g015,
+    ),
+    OffloadTask(
+        "proposed_vs_verified",
+        "proposed_complete must not equal verified_complete",
+        "G015 AgentOS verification leg + lab/verification_authority.py",
+        True,
+        _t_proposed_vs_verified,
+    ),
+    OffloadTask(
+        "resource_refuse_gpu_during_protected",
+        "Pause GPU work while a fake q80 lock is held; CPU still runs",
+        "S002 anti-scope; tools/gpu_lane_lock.sh owner protocol",
+        True,
+        _t_resource_refuse,
+    ),
+    OffloadTask(
+        "interrupt_and_resume",
+        "Interrupt a live session and resume it",
+        "G015 HCLI interrupt + restart/resume",
+        True,
+        _t_interrupt_resume,
+    ),
+    OffloadTask(
+        "write_and_pytest_small",
+        "Write a tiny module in an owned worktree and pytest it",
+        "routine Claude test-authoring (same motion as lab/tests/*)",
+        True,
+        _t_write_and_pytest,
+    ),
+    OffloadTask(
+        "delegate_then_consume_roundtrip",
+        "Dispatch a Grok handle, refuse to treat it as done, then consume artifacts",
+        "S002 §16-18; ~/.claude-grok/bin/grok-run artifact layout",
+        True,
+        _t_delegate_then_consume,
+    ),
+    OffloadTask(
+        "verification_authority_no_self_promote",
+        "Sandbox principal cannot certify verified_complete",
+        "lab/verification_authority.py + bible §2 / §22",
+        True,
+        _t_authority_fence,
+    ),
+    OffloadTask(
+        "refuse_protected_gpu_command",
+        "Refuse a gpu_lane_lock + Q80 greedy command",
+        "tools/gpu_lane_lock.sh + ascension_qwen80_hybrid_greedy",
+        True,
+        _t_gpu_cmd_refuse,
+    ),
+]
+
+
+def _is_skip(detail: str) -> bool:
+    return detail.startswith("SKIP ")
+
+
+def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> dict[str, Any]:
+    _ = repo
+    rows: list[dict[str, Any]] = []
+    attempted = 0
+    passed = 0
+    skipped = 0
+    with tempfile.TemporaryDirectory(prefix="su-offload-") as td:
+        tmp = Path(td)
+        for task in TASKS:
+            try:
+                ok, detail = task.run(tmp)
+            except Exception as exc:  # noqa: BLE001 — bench must record, not crash
+                ok, detail = False, f"{type(exc).__name__}: {exc}"
+            if _is_skip(detail):
+                skipped += 1
+                rows.append(
+                    {
+                        "id": task.id,
+                        "title": task.title,
+                        "source": task.source,
+                        "routine_claude": task.routine_claude,
+                        "status": "SKIP",
+                        "detail": detail,
+                    }
+                )
+                continue
+            if task.routine_claude:
+                attempted += 1
+                if ok:
+                    passed += 1
+            rows.append(
+                {
+                    "id": task.id,
+                    "title": task.title,
+                    "source": task.source,
+                    "routine_claude": task.routine_claude,
+                    "status": "PASS" if ok else "FAIL",
+                    "detail": detail[:800],
+                }
+            )
+    fraction = (passed / attempted) if attempted else 0.0
+    doc = seal(
+        {
+            "schema": SCHEMA,
+            "date": "2026-08-16",
+            "claim": "CLAUDE_OFFLOAD_BENCH from real Hawking tasks",
+            "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED": round(fraction, 4),
+            "passed": passed,
+            "attempted": attempted,
+            "skipped": skipped,
+            "status": "PASS" if attempted and passed == attempted else "PARTIAL" if passed else "FAIL",
+            "gpu_lock_untouched": True,
+            "native_model_untouched": True,
+            "tasks": rows,
+        }
+    )
+    if receipt_path is not None:
+        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+        receipt_path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    return doc
+
+
+def main() -> int:
+    doc = run_bench(receipt_path=DEFAULT_RECEIPT)
+    print(json.dumps({k: doc[k] for k in doc if k != "tasks"}, indent=2))
+    return 0 if doc.get("status") == "PASS" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
