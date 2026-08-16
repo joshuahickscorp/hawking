@@ -67,6 +67,38 @@
       "ns_ledger": {
         "branch": "grok/q80-ns-ledger-20260816-010044 - in q80-integrate-graph",
         "finding": "moe_table_build 246283892 ns = 57.4% of a 428985708 ns wall; the seven zero-reporting stages now populate"
+      },
+      "device_topk": {
+        "branch": "grok/q80-device-topk-20260816-010759 (4627b0f6) - queued for q80 integration",
+        "status": "PARTIAL - correct but not a robust wall win",
+        "correctness": "bit-identical generated ids; device route ids matched host 1344/1344 per layer per token, weight drift <= 2e-5. The tie-break divergence risk is CLOSED.",
+        "reps_ns": {
+          "A": [
+            613225625,
+            308567564,
+            309706277
+          ],
+          "B": [
+            428772807,
+            384132595,
+            519979621
+          ]
+        },
+        "why_no_win": "expert first-touch noise dominates the paired wall: B1 -184 ms, B2 +76 ms, B3 +210 ms. 4383 unique (layer,expert) first-touches over a 12-token harness.",
+        "conditional_value": "Its win is MASKED, not absent. Device routing removes host work between router and experts, but that only becomes visible once expert first-touch upload (241-396 ms/token) stops dominating. Re-measure after q80-expert-first-touch integrates.",
+        "seam": "Qwen80ExpertGpuTriplet - device-topk owns routing/address construction, expert-first-touch owns payload upload"
+      },
+      "confirmed_wall": {
+        "stage": "expert first-touch upload (catalog read + SHA-256 + MTLBuffer copy)",
+        "ns_per_token": "241542041 - 396000000",
+        "corroborated_by": [
+          "q80-runtime-residency (90-245 ms late-token)",
+          "q80-device-topk (241-396 ms, 4383 unique first-touches / 12 tokens)",
+          "q80-ns-ledger (moe_table_build 246 ms = 57.4% of wall)",
+          "joint-token-ns (compact_expert_slab_pack 281 ms serial)"
+        ],
+        "attacked_by": "q80-expert-first-touch, measured C 518.7/556.7/339.2 -> D 208.6/383.0/188.2 ms, in q80-integrate-graph",
+        "after_that": "mixer+expert GPU ~132 ms/token"
       }
     },
     "q80_density_frontier": {
