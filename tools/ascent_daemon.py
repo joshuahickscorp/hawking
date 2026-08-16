@@ -96,6 +96,24 @@ def machine() -> dict:
                 "active_grok_lanes": []}
 
 
+def our_live_lanes(snap: dict) -> list[str]:
+    """Live lanes belonging to THIS repo only.
+
+    machine_state reports every live grok lane on the box, including other
+    projects'. Counting those against our concurrency cap made the daemon idle
+    while unrelated repos held the budget - measured 10 live, only 4 ours. The
+    cap must govern our own spend, not the machine's.
+    """
+    ours = []
+    for lane in snap.get("active_grok_lanes") or []:
+        wt = Path.home() / ".claude-grok" / "worktrees" / lane
+        code, out = sh(f"git -C {wt} rev-parse --path-format=absolute "
+                       f"--git-common-dir 2>/dev/null", timeout=60)
+        if code == 0 and str(REPO) in out:
+            ours.append(lane)
+    return ours
+
+
 def govern(snap: dict) -> str | None:
     """Return a reason to hold off, or None to proceed."""
     free = snap.get("disk_free_gib") or 0
@@ -106,9 +124,10 @@ def govern(snap: dict) -> str | None:
             free = machine().get("disk_free_gib") or 0
     if free < DISK_FLOOR_GIB:
         return f"disk {free} GiB below floor {DISK_FLOOR_GIB}"
-    live = len(snap.get("active_grok_lanes") or [])
-    if live >= MAX_CONCURRENT:
-        return f"{live} lanes live, at the {MAX_CONCURRENT} cap"
+    ours = our_live_lanes(snap)
+    snap["our_live_lanes"] = ours
+    if len(ours) >= MAX_CONCURRENT:
+        return f"{len(ours)} OUR lanes live, at the {MAX_CONCURRENT} cap"
     return None
 
 
@@ -305,7 +324,7 @@ def skew(branch: str) -> str:
 def one_pass() -> dict:
     snap = machine()
     report = {"disk_free_gib": snap.get("disk_free_gib"),
-              "live_lanes": len(snap.get("active_grok_lanes") or [])}
+              "live_lanes_all_repos": len(snap.get("active_grok_lanes") or [])}
 
     state = load(STATE, {"targets": [], "history": []})
     queue = load(QUEUE, {"schema": "hawking.ascent.promotion_queue.v1", "entries": []})
@@ -344,6 +363,7 @@ def one_pass() -> dict:
 
     # 3. launch the top pending target if the box allows
     hold = govern(snap)
+    report["our_live_lanes"] = len(snap.get("our_live_lanes") or [])
     if hold:
         report["launched"] = None
         report["hold"] = hold
@@ -356,7 +376,17 @@ def one_pass() -> dict:
         return report
 
     from ascent_controller import value  # reuse the ranking, do not duplicate it
-    target = max(pending, key=value)
+
+    def ranked(t: dict) -> float:
+        """Value, with the 2026-08-16 Qwen-first amendment applied.
+
+        DSV4F is theory-only: it keeps its ledger record and stays re-openable,
+        but must not consume lanes while Q80 seals and Qwen3.8 comes up.
+        """
+        v = value(t)
+        return v * 0.05 if t.get("model") == "dsv4f" else v
+
+    target = max(pending, key=ranked)
     contract = Path(target.get("contract", ""))
     if not contract.is_file():
         target["status"] = "launch_failed"
