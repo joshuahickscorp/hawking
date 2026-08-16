@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.ascension.fs_per_weight_law.v1",
+  "date": "2026-08-16",
+  "closed_form": "fs_per_weight_floor = 152.6252 * BPW",
+  "derivation": "(BPW/8 bytes per weight) / 819e9 B/s * 1e15 fs/s. Model-independent: active-weight count cancels.",
+  "validation": {
+    "bpw_1_392467": 212.53,
+    "receipt_says": 212.53,
+    "bpw_4_259241": 650.07,
+    "receipt_says_2": 650.07
+  },
+  "full_form": "fs_per_weight = 152.63 * BPW / efficiency, where efficiency = achieved_bandwidth / peak",
+  "q80_now": {
+    "measured_fs": 156970,
+    "floor_fs_at_1_392467": 212.53,
+    "efficiency_pct_of_peak": 0.135
+  },
+  "targets": {
+    "150": {
+      "required_bpw": 0.9828,
+      "gb_per_token": 0.438,
+      "implied_tok_s": 1871
+    },
+    "100": {
+      "required_bpw": 0.6552,
+      "gb_per_token": 0.292,
+      "implied_tok_s": 2807
+    },
+    "50": {
+      "required_bpw": 0.3276,
+      "gb_per_token": 0.146,
+      "implied_tok_s": 5614
+    },
+    "25": {
+      "required_bpw": 0.1638,
+      "gb_per_token": 0.073,
+      "implied_tok_s": 11229
+    }
+  },
+  "REQUIREMENT_FOR_SUB_100_FS": "BPW < 0.6552 AND bandwidth efficiency near 1.0. BOTH are mandatory; neither alone suffices. Fixing occupancy alone takes Q80 to 212.53 fs, not below 100.",
+  "sparsity_is_neutral": "Halving active weights halves token_ns AND the denominator, leaving fs/weight UNCHANGED. Active-parameter reduction raises TPS but does not move fs/weight-served. Do not spend on it expecting this metric to improve.",
+  "no_kernel_trick_escapes_the_floor": "At batch=1 a decode matvec touches every active weight EXACTLY ONCE - arithmetic intensity ~1 flop/byte, zero reuse to amortize the read. This is why only BPW and efficiency appear, and why every topology/fusion attack failed on both models while every occupancy fix won: fusion cannot create reuse that does not exist.",
+  "precedent_for_sub_bit": "Activation-aware sub-bit reached 0.167 BPW at 0.755 cosine on REAL activations for GLM (every prior sub-bit negative was a Gaussian-proxy artifact). 0.167 BPW = 25.5 fs/weight floor. But 0.755 cosine is low and Q30 at <=1.5 failed coherence, so the binding constraint is CAPABILITY, not bits.",
+  "label": "AMORTIZED THROUGHPUT METRIC - NOT PHYSICAL SINGLE-WEIGHT LATENCY"
+}
