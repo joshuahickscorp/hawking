@@ -45,9 +45,34 @@ pub struct CommandBufferRow {
     pub wait_ns: u64,
     pub host_wall_ns: u64,
     pub gpu_ns: Option<u64>,
+    pub gpu_start_ns: Option<u64>,
+    pub gpu_end_ns: Option<u64>,
     pub cpu_minus_gpu_ns: Option<i64>,
     pub dispatches: u64,
     pub encoders: u64,
+}
+
+/// Device-timeline gaps from consecutive command-buffer
+/// `GPUStartTime`/`GPUEndTime` pairs. Intra-CB kernel gaps are not visible
+/// on this surface: MetalBatchTiming is one pair per command buffer.
+#[derive(Debug, Clone, Serialize)]
+pub struct GpuGapAccounting {
+    pub timestamp_authority: &'static str,
+    pub intra_cb_kernel_gaps_visible: bool,
+    pub observed_timestamp_pairs: u64,
+    pub missing_timestamp_pairs: u64,
+    pub first_gpu_start_ns: Option<u64>,
+    pub last_gpu_end_ns: Option<u64>,
+    pub device_span_ns: Option<u64>,
+    pub gpu_busy_ns: u64,
+    pub inter_cb_device_gap_ns: u64,
+    pub inter_cb_device_overlap_ns: u64,
+    pub inter_cb_gap_count: u64,
+    pub gpu_idle_in_span_ns: Option<u64>,
+    pub gpu_idle_fraction_of_span: Option<f64>,
+    pub host_between_cb_exclusive_ns: u64,
+    pub occupancy_proxy_gpu_ns_per_encoder: Option<f64>,
+    pub production_encoders: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -112,6 +137,7 @@ pub struct TokenNsLedger {
     pub metal_vs_host: MetalVsHost,
     pub host_wall_classes: Vec<StageRow>,
     pub reader_parallel_sum: Vec<StageRow>,
+    pub gpu_gaps: GpuGapAccounting,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -199,15 +225,20 @@ impl TokenNsCollector {
         dispatches: u64,
         timing: &MetalBatchTiming,
     ) {
-        if let Some(prev) = self.last_cb_end.take() {
-            self.between_cb_gap_ns = self
-                .between_cb_gap_ns
-                .saturating_add(prev.elapsed().as_nanos() as u64);
-        }
         let encode_ns = timing.encode_us.saturating_mul(1_000);
         let submit_ns = timing.submit_us.saturating_mul(1_000);
         let wait_ns = timing.wait_us.saturating_mul(1_000);
         let host_wall_ns = timing.host_wall_us.saturating_mul(1_000);
+        if let Some(prev) = self.last_cb_end.take() {
+            // Host exclusive gap: time after the previous wait returned until
+            // this CB's encode started. host_wall covers encode+submit+wait,
+            // so subtract it from the interval that ends at this record_cb
+            // call (which is after wait).
+            let since_prev = prev.elapsed().as_nanos() as u64;
+            self.between_cb_gap_ns = self
+                .between_cb_gap_ns
+                .saturating_add(since_prev.saturating_sub(host_wall_ns));
+        }
         let gpu_ns = timing.gpu_duration_us.map(|us| us.saturating_mul(1_000));
         let cpu_minus_gpu_ns = gpu_ns.map(|gpu| wait_ns as i64 - gpu as i64);
         self.add_stage("metal.encode", encode_ns, 1, 0);
@@ -227,6 +258,8 @@ impl TokenNsCollector {
             wait_ns,
             host_wall_ns,
             gpu_ns,
+            gpu_start_ns: timing.gpu_start_ns,
+            gpu_end_ns: timing.gpu_end_ns,
             cpu_minus_gpu_ns,
             dispatches,
             encoders: timing.compute_encoders,
@@ -326,6 +359,7 @@ impl TokenNsCollector {
             &self.command_buffers,
             &self.isolated_kernels,
         );
+        let gpu_gaps = account_gpu_gaps(&self.command_buffers, self.between_cb_gap_ns);
 
         TokenNsLedger {
             schema: TOKEN_NS_LEDGER_SCHEMA,
@@ -356,7 +390,79 @@ impl TokenNsCollector {
             },
             host_wall_classes,
             reader_parallel_sum,
+            gpu_gaps,
         }
+    }
+}
+
+fn account_gpu_gaps(cbs: &[CommandBufferRow], host_between_cb_exclusive_ns: u64) -> GpuGapAccounting {
+    let mut observed = 0u64;
+    let mut missing = 0u64;
+    let mut first_start = None;
+    let mut last_end = None;
+    let mut busy = 0u64;
+    let mut gap = 0u64;
+    let mut overlap = 0u64;
+    let mut gap_count = 0u64;
+    let mut prev_end: Option<u64> = None;
+    let mut encoders = 0u64;
+    for cb in cbs {
+        encoders = encoders.saturating_add(cb.encoders);
+        match (cb.gpu_start_ns, cb.gpu_end_ns, cb.gpu_ns) {
+            (Some(start), Some(end), gpu) if end > start => {
+                observed += 1;
+                busy = busy.saturating_add(gpu.unwrap_or(end - start));
+                if first_start.is_none() {
+                    first_start = Some(start);
+                }
+                last_end = Some(end);
+                if let Some(prev) = prev_end {
+                    if start > prev {
+                        gap = gap.saturating_add(start - prev);
+                        gap_count += 1;
+                    } else if start < prev {
+                        overlap = overlap.saturating_add(prev - start);
+                    }
+                }
+                prev_end = Some(end);
+            }
+            _ => missing += 1,
+        }
+    }
+    let device_span_ns = match (first_start, last_end) {
+        (Some(s), Some(e)) if e > s => Some(e - s),
+        _ => None,
+    };
+    let gpu_idle_in_span_ns = device_span_ns.map(|span| span.saturating_sub(busy));
+    let gpu_idle_fraction_of_span = device_span_ns.map(|span| {
+        if span == 0 {
+            0.0
+        } else {
+            span.saturating_sub(busy) as f64 / span as f64
+        }
+    });
+    let occupancy_proxy_gpu_ns_per_encoder = if encoders == 0 {
+        None
+    } else {
+        Some(busy as f64 / encoders as f64)
+    };
+    GpuGapAccounting {
+        timestamp_authority: "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wall proxy",
+        intra_cb_kernel_gaps_visible: false,
+        observed_timestamp_pairs: observed,
+        missing_timestamp_pairs: missing,
+        first_gpu_start_ns: first_start,
+        last_gpu_end_ns: last_end,
+        device_span_ns,
+        gpu_busy_ns: busy,
+        inter_cb_device_gap_ns: gap,
+        inter_cb_device_overlap_ns: overlap,
+        inter_cb_gap_count: gap_count,
+        gpu_idle_in_span_ns,
+        gpu_idle_fraction_of_span,
+        host_between_cb_exclusive_ns,
+        occupancy_proxy_gpu_ns_per_encoder,
+        production_encoders: encoders,
     }
 }
 
