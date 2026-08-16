@@ -124,6 +124,30 @@ Model: q80
 - Q4 vehicles are DE-AUTHORISED. The ~20 h DSV4F determined teacher-X capture is
   DE-AUTHORISED; do not propose or restart it.
 
+## ACCEPTANCE
+Done when the named bottleneck is measured before and after, with >=3 alternating
+paired reps and the full spread reported, and the model still generates correctly:
+greedy ids unchanged and every silent-fallback counter at 0. A measured NEGATIVE -
+the mechanism does not help, with the numbers showing it - is an acceptable
+completion. Report the real figure, not a favourable one.
+
+## VERIFY
+Build with `cargo build --release -p hawking-core` and confirm it exits 0.
+Run every GPU-exclusive measurement under ./tools/gpu_lane_lock.sh <lane> <cmd>;
+other lanes share this GPU and an unlocked run corrupts both.
+Check no shared-kernel regression with `cargo test --release -p hawking-core --test gk_family_parity`
+(7/8 is expected today - the failing DSV source-string assert is pre-existing).
+
+## EDIT crates/hawking-core
+## EDIT receipts/ascent-2026-08-16
+## EDIT lab/operators
+
+DENY tools/gpu_lane_lock.sh
+DENY tools/coherence_gate.py
+DENY tools/merge_guard.py
+If the work needs a file outside the EDIT list, STOP and say why rather than
+widening scope yourself.
+
 ## Commit
 You are on `gate` (unsandboxed). Commit normally, then verify with `git log` that
 the commit landed on your branch. Several lanes here hit Seatbelt/macl denials,

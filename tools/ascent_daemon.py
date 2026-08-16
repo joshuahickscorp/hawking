@@ -259,7 +259,14 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
     # missing a key must not crash the unattended loop.
     existing = {t.get("id") for t in state["targets"]}
     seen_bn = {t.get("from_bottleneck") for t in state["targets"]}
-    generated = sum(1 for t in state["targets"] if t.get("auto_generated"))
+    # Count only targets still in play. This was a LIFETIME cap: it counted every
+    # target ever auto-generated, including retained and stale ones, so once 96 had
+    # been created the daemon never generated again. On 2026-08-16 it sat at 96/96
+    # with 0 pending and 106 phantom "running" targets, and logged "queue dry" on
+    # every tick. MAX_GENERATED is meant to bound the ACTIVE POOL, not the history.
+    ACTIVE = {"pending", "running"}
+    generated = sum(1 for t in state["targets"]
+                    if t.get("auto_generated") and t.get("status") in ACTIVE)
     made = 0
 
     # Qwen-family first (q80, qwen38) per the 2026-08-16 amendment; dsv4f is theory.
@@ -336,6 +343,30 @@ Model: {model}
   and is DRAM traffic (G024_QWEN38_TOKEN_NS.json).
 - Q4 vehicles are DE-AUTHORISED. The ~20 h DSV4F determined teacher-X capture is
   DE-AUTHORISED; do not propose or restart it.
+
+## ACCEPTANCE
+Done when the named bottleneck is measured before and after, with >=3 alternating
+paired reps and the full spread reported, and the model still generates correctly:
+greedy ids unchanged and every silent-fallback counter at 0. A measured NEGATIVE -
+the mechanism does not help, with the numbers showing it - is an acceptable
+completion. Report the real figure, not a favourable one.
+
+## VERIFY
+Build with `cargo build --release -p hawking-core` and confirm it exits 0.
+Run every GPU-exclusive measurement under ./tools/gpu_lane_lock.sh <lane> <cmd>;
+other lanes share this GPU and an unlocked run corrupts both.
+Check no shared-kernel regression with `cargo test --release -p hawking-core --test gk_family_parity`
+(7/8 is expected today - the failing DSV source-string assert is pre-existing).
+
+## EDIT crates/hawking-core
+## EDIT receipts/ascent-2026-08-16
+## EDIT lab/operators
+
+DENY tools/gpu_lane_lock.sh
+DENY tools/coherence_gate.py
+DENY tools/merge_guard.py
+If the work needs a file outside the EDIT list, STOP and say why rather than
+widening scope yourself.
 
 ## Commit
 You are on `gate` (unsandboxed). Commit normally, then verify with `git log` that
@@ -437,6 +468,28 @@ def one_pass() -> dict:
     report["generated"] = generate_targets(state, harvested)
     save(STATE, state)
     report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
+
+    # 2a. reconcile targets whose lane is gone. ASCENT_STATE marks a target
+    # "running" when it launches and relies on a later tick to close it, but a
+    # lane that dies without reporting leaves the target stuck forever. On
+    # 2026-08-16 there were 106 such phantoms against 0 live processes, which
+    # saturated MAX_GENERATED (96/96) and left status=pending at 0 - so the
+    # daemon could neither generate new work nor launch any, and logged
+    # "queue dry" on every tick while looking healthy. Same lesson as
+    # lane_health: a status field is not evidence a process exists.
+    phantom = 0
+    for tgt in state.get("targets", []):
+        if tgt.get("status") != "running":
+            continue
+        lane_id = tgt.get("lane_id") or tgt.get("id") or ""
+        if not lane_id:
+            continue
+        rc, out = sh(f"pgrep -f {lane_id!r}", timeout=60)
+        if rc == 0 and out.strip():
+            continue
+        tgt["status"] = "stale_no_process"
+        phantom += 1
+    report["phantom_targets_reconciled"] = phantom
 
     # 2b. reap lanes that died without saying so, preserving their work first.
     # grok-run status reports `running` for processes that are gone - two DSV4F
@@ -589,11 +642,19 @@ def _selfcheck() -> None:
     assert generate_targets(st, h) == 0, "must dedupe on repeat passes"
     assert {t["model"] for t in st["targets"]} == {"q80", "dsv4f"}
     assert all(t["status"] == "pending" and t["auto_generated"] for t in st["targets"])
-    st["targets"] = [{"auto_generated": True, "from_bottleneck": f"b{i}"}
-                     for i in range(MAX_GENERATED)]
+    # MAX_GENERATED bounds the ACTIVE pool, so the cap test must fill it with
+    # ACTIVE targets. A pool of finished ones must NOT block new work - that was
+    # the 2026-08-16 bug, where 96 lifetime generations wedged the loop shut.
+    st["targets"] = [{"auto_generated": True, "from_bottleneck": f"b{i}",
+                      "status": "pending"} for i in range(MAX_GENERATED)]
     assert generate_targets(st, [{"lane": "q80-z-1", "status": "SHIPPED",
                                   "next_bottleneck": "brand new wall"}]) == 0, \
-        "must stop at MAX_GENERATED"
+        "must stop at MAX_GENERATED when the ACTIVE pool is full"
+    st["targets"] = [{"auto_generated": True, "from_bottleneck": f"c{i}",
+                      "status": "stale_no_process"} for i in range(MAX_GENERATED)]
+    assert generate_targets(st, [{"lane": "q80-z-2", "status": "SHIPPED",
+                                  "next_bottleneck": "another new wall"}]) == 1, \
+        "a pool of FINISHED targets must not block new generation"
 
     # The daemon must never promote or merge on its own authority. Check the
     # executable surface (sh() call sites), not the file text - an earlier version

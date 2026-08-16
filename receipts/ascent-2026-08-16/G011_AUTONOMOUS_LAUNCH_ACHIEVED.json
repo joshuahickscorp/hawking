@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.g011.autonomous_launch_achieved.v1",
+  "date": "2026-08-16",
+  "RESULT": "The autonomous loop launched a lane on its own: auto-q80-host-preparation-residual-embed-20260816-182129. First non-null 'launched' field of the day, after 88 blocks of 'queue dry'.",
+  "THREE_root_causes_found_and_fixed_in_sequence": {
+    "1_reports_deleted": {
+      "cause": "reclaim_safe.sh purged every non-running task dir, and harvest() reads exactly those dirs for NEXT_BOTTLENECK. I made this fire on most ticks by raising DISK_WARN_GIB 40->90 after the morning's 0-byte stall.",
+      "fix": "preserve grok-report.md and metadata.json, delete the bulk (diff.patch, grok-output.json)",
+      "verified": "5 MB diff.patch purged, report survived, field still readable"
+    },
+    "2_contracts_emitted_nothing": {
+      "cause": "my hand-written contracts never carried _COMMON.md's reporting block, so ~20 lanes finished without a NEXT_BOTTLENECK line",
+      "fix": "REPLAN R010 - every contract ends with the reporting block or at minimum NEXT_BOTTLENECK"
+    },
+    "3a_phantom_targets": {
+      "cause": "106 targets stuck at status=running against 0 live processes. ASCENT_STATE marks a target running at launch and relies on a later tick to close it; a lane dying without reporting leaves it stuck forever.",
+      "fix": "reconcile against pgrep each tick, mark stale_no_process",
+      "verified": "106 reconciled on the first tick"
+    },
+    "3b_lifetime_cap": {
+      "cause": "MAX_GENERATED counted every target EVER auto-generated, including retained and stale, so after 96 lifetime generations the daemon never generated again. It sat at exactly 96/96.",
+      "fix": "count only targets with status pending or running - the cap bounds the ACTIVE POOL, not history",
+      "verified": "selfcheck extended: a full ACTIVE pool blocks, a pool of FINISHED targets does not"
+    },
+    "3c_gate_rejection": {
+      "cause": "the revamped grok-run lints contracts before launch, and the daemon's brief template predates it - no ACCEPTANCE, no bounded write scope. Every autonomous launch was rejected.",
+      "fix": "brief template now carries ACCEPTANCE, VERIFY with backticked commands, EDIT roots and DENY lines",
+      "verified": "the next tick launched"
+    }
+  },
+  "why_it_stayed_hidden_all_day": "Every tick reported healthy - disk fine, dead_lanes_found 0, live lanes counted - and its one failure, launched: null with a dry queue, reads as idle rather than starved. Five distinct faults all presenting as 'nothing to do'.",
+  "G011_STATUS": "NOT met, but no longer blocked. The loop now generates and launches unattended. The obligation asks that it SURVIVE MY ABSENCE and keep making measurable progress, which needs the launched lane to finish, emit NEXT_BOTTLENECK under the repaired reclaim, and drive the next generation - a full cycle without me.",
+  "what_it_chose": "Given the real bottleneck from the merged G003 decomposition, the loop targeted host_preparation residual embed_packed at 25 ms - Q80's largest named remaining item. Its judgement was never the problem."
+}
