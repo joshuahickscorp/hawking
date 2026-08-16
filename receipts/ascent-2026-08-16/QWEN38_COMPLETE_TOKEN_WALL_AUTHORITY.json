@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.ascent.qwen38_complete_token_wall.authority.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-complete-wall",
+  "timing_label": "DIRTY_ENGINEERING",
+  "not_base_true_tps": true,
+  "not_clean_candidate": true,
+  "vehicle": {
+    "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+    "role": "PROFILING_ORACLE_ONLY",
+    "complete_physical_bpw": 4.252735126866492,
+    "optimized": false
+  },
+  "gpu_lock": "./tools/gpu_lane_lock.sh qwen38-complete-wall",
+  "binary": "target/release/examples/ascension_qwen38_hybrid_greedy",
+  "profile": "release lto=fat codegen-units=1",
+  "definition": {
+    "complete_token": "native decode step + every recurring per-token host cost: encode/prepare, submit, wait, GPU-timestamp epilogue, sample readback, position update, tokenizer decode of the new id, bookkeeping. Sampling is device argmax in the same CB.",
+    "prefill_exclusion": "Q80 generate_mixed_greedy definition. Prefill = teacher-forced walk of all 11 prompt tokens. Last prefill step emits new-token[0] (first_token_latency). Steady denominator is new-tokens[1..] only. Prompt encode, chat render, session.open, session.reset are request/process-level and are not divided into the per-token wall.",
+    "cold_first_step": "First step of the first generate in a fresh process is graph-cold (pipeline first-touch). Measured 272.285 ms wall / 142.669 ms GPU. Reported, never averaged into the steady median. After that generate, subsequent first steps are warm (~38 ms).",
+    "authority_set": "3 alternating A/B pairs = 6 warm in-process generates after one discarded cold generate. Headline = median of the 6 per-rep medians of per-step complete_wall_ns on decode steps.",
+    "gpu_definition": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait; never a CPU-wait proxy."
+  },
+  "correctness": {
+    "fallbacks": 0,
+    "greedy_16_ids_match_sealed_bringup": true,
+    "greedy_16_ids": [248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149, 1061, 369, 264, 1546],
+    "generated_text_32tok": "<think>\nThe user simply wants me to say \"hi.\" This is a very simple, direct request. I'll just say hi in a friendly, natural way",
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1
+  },
+  "headline_32_new_tokens": {
+    "steady_decode_steps_per_rep": 31,
+    "complete_wall_ns_per_token": 38216792,
+    "complete_wall_ms_per_token": 38.216792,
+    "complete_tps": 26.1665,
+    "gpu_ns_per_token": 36987458,
+    "gpu_ms_per_token": 36.987458,
+    "wall_minus_gpu_ns": 1229334,
+    "wall_minus_gpu_ms": 1.229334,
+    "gpu_as_fraction_of_wall": 0.96783,
+    "rep_median_complete_wall_ns": [38245417, 38149458, 38142333, 37922375, 38216792, 38700583],
+    "rep_median_complete_wall_ms": [38.245, 38.149, 38.142, 37.922, 38.217, 38.701],
+    "spread_rep_median_wall_ns": { "min": 37922375, "median": 38216792, "max": 38700583 },
+    "pooled_186_steps_wall_ns": { "min": 37614375, "median": 38210417, "max": 42126875 },
+    "pooled_186_steps_gpu_ns": { "min": 36409749, "median": 36883374, "max": 40895500 }
+  },
+  "g015_length_confirmation_16_new_tokens": {
+    "receipt": "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL_16tok.json",
+    "steady_decode_steps_per_rep": 15,
+    "complete_wall_ns_per_token": 38543084,
+    "complete_wall_ms_per_token": 38.543084,
+    "gpu_ns_per_token": 37143000,
+    "gpu_ms_per_token": 37.143,
+    "rep_median_complete_wall_ns": [38313792, 38417583, 38537958, 38676292, 38554584, 38543084],
+    "spread_rep_median_wall_ns": { "min": 38313792, "median": 38543084, "max": 38676292 }
+  },
+  "wall_minus_gpu_named": {
+    "basis": "mean of 6 warm-rep per-step means on the 32-token series, so the parts sum to mean wall",
+    "mean_complete_wall_ms": 38.3272,
+    "mean_gpu_ms": 36.9950,
+    "mean_wall_minus_gpu_ms": 1.3322,
+    "identity_holds": true,
+    "unattributed_ns": 0,
+    "residual_named_as": "instant_inter_phase_gap",
+    "max_abs_per_step_residual_ns": 1084,
+    "components_ms": [
+      { "name": "encode_host_prepare", "ms": 0.8862, "pct_wall": 2.312, "pct_wall_minus_gpu": 66.52 },
+      { "name": "wait_minus_gpu", "ms": 0.4259, "pct_wall": 1.111, "pct_wall_minus_gpu": 31.97 },
+      { "name": "submit", "ms": 0.0105, "pct_wall": 0.027, "pct_wall_minus_gpu": 0.78 },
+      { "name": "tokenizer_decode_new_token", "ms": 0.0063, "pct_wall": 0.016, "pct_wall_minus_gpu": 0.47 },
+      { "name": "commit_epilogue_gpu_timestamp_and_status", "ms": 0.0018, "pct_wall": 0.005, "pct_wall_minus_gpu": 0.13 },
+      { "name": "sample_readback", "ms": 0.0009, "pct_wall": 0.002, "pct_wall_minus_gpu": 0.07 },
+      { "name": "instant_inter_phase_gap", "ms": 0.0006, "pct_wall": 0.001, "pct_wall_minus_gpu": 0.04 },
+      { "name": "bookkeeping", "ms": 0.0001, "pct_wall": 0.000, "pct_wall_minus_gpu": 0.01 },
+      { "name": "state_update", "ms": 0.0000, "pct_wall": 0.000, "pct_wall_minus_gpu": 0.00 }
+    ]
+  },
+  "is_33537_gpu_an_honest_proxy_for_wall": {
+    "answer": "NO",
+    "recorded_g015_gpu_ms": 33.537,
+    "this_session_gpu_ms": 36.987,
+    "this_session_complete_wall_ms": 38.217,
+    "g015_gpu_as_fraction_of_this_wall": 0.8775,
+    "this_gpu_as_fraction_of_this_wall": 0.9678,
+    "why": "Two independent gaps. (1) Structural: wait ~= gpu + 0.43 ms is true, but wait is not wall. Host encode of 964 dispatches is 0.89 ms — 67% of wall−gpu. Wall = gpu + 1.23 ms headline (1.33 ms on means). (2) Sample: this locked series GPU is 36.99 ms, not 33.54, at both 32-new and 16-new (G015 length). 33.537 is a different session's GPU median over a different denominator (drop first step only; leftover prefill kept).",
+    "wait_is_not_wall": true
+  },
+  "density_ladder": {
+    "scale": "ms_at_target = measured_ms * (target_bpw / 4.252735126866492)",
+    "from_g015_gpu_33_537": { "bpw_2_0_ms": 15.772, "bpw_2_0_tps": 63.40, "bpw_3_0_ms": 23.658, "bpw_3_0_tps": 42.27 },
+    "from_this_complete_wall_38_217": { "bpw_2_0_ms": 17.973, "bpw_2_0_tps": 55.64, "bpw_3_0_ms": 26.959, "bpw_3_0_tps": 37.09 },
+    "optimism_of_63_4_tps_claim": { "tps": 7.76, "ms": 2.201, "fraction": 0.122 },
+    "2_0_bpw_still_clears_50": true,
+    "3_0_bpw_still_misses_50": true
+  },
+  "instrumentation_does_not_dominate": {
+    "control_uninstrumented_decode_wall_ns_per_token_32": 38997006,
+    "complete_wall_headline_32": 38216792,
+    "control_minus_complete_ns": 780214,
+    "note": "Uninstrumented generate_greedy decode wall is 0.78 ms SLOWER than the instrumented complete wall, not faster. Instant splits do not add the host term."
+  },
+  "request_level_excluded_from_per_token": {
+    "session_open_ns": 6284320375,
+    "prompt_encode_ns": 27542,
+    "chat_template": "once per request"
+  },
+  "cold_first_step_measured": {
+    "complete_wall_ns": 272284750,
+    "gpu_ns": 142669124,
+    "wait_ns": 267362916,
+    "encode_ns": 4822541
+  },
+  "full_receipts": [
+    "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL.json",
+    "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL_16tok.json"
+  ]
+}

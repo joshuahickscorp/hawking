@@ -30,5 +30,19 @@
     "1.75": 65.7,
     "1.5": 75.5,
     "1.25": 88.7
+  },
+  "SUPERSEDED_2026-08-16": {
+    "by": "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL_AUTHORITY.json",
+    "my_estimate_ms": 34.951,
+    "measured_ms": 38.217,
+    "i_was_low_by_pct": 8.5,
+    "why_my_method_was_weaker": "I took one run's wall aggregate and divided the unattributed remainder across 25 steps. The authority uses 6 alternating paired warm reps with prefill excluded by the Q80 rule and the 272 ms cold step held out.",
+    "my_wrong_conclusion": "I concluded GPU understates wall by 4.2% and is an honest proxy. Against the G015 GPU figure it is 12.3%. Worse, 33.537 was not this session's GPU at all - it was another session's median over a different step set.",
+    "corrected_projection": {
+      "2.0_bpw_tps_from_wall": 55.6,
+      "was_claimed_from_gpu": 63.4,
+      "still_clears_50": true,
+      "3.0_hard_limit_still_misses": true
+    }
   }
 }
