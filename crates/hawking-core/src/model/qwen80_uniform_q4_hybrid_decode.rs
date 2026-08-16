@@ -735,6 +735,12 @@ pub struct Qwen80DecodeNativeCounts {
     pub expert_table_waves: u64,
     pub expert_table_matvec_dispatches: u64,
     pub device_activation_dispatches: u64,
+    pub expert_upload_hits: u64,
+    pub expert_upload_misses: u64,
+    pub expert_residency_evictions: u64,
+    pub expert_table_slot_patches: u64,
+    pub expert_resident_slots: u64,
+    pub expert_resident_bytes: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -745,6 +751,11 @@ pub struct Qwen80DecodeStageTimes {
     pub moe_norm_router_secs: f64,
     pub moe_shared_secs: f64,
     pub moe_table_build_secs: f64,
+    pub moe_table_upload_miss_secs: f64,
+    pub moe_table_entries_fill_secs: f64,
+    pub moe_table_buffer_write_secs: f64,
+    pub moe_table_resource_clone_secs: f64,
+    pub moe_table_lease_secs: f64,
     pub moe_routed_secs: f64,
     pub moe_combine_secs: f64,
     pub terminal_secs: f64,
@@ -970,6 +981,11 @@ struct MetalQ4Accel {
     expert_kernel: super::qwen80_device_expert_table::Qwen80ExpertTableKernel,
     expert_cache: HashMap<(usize, u32), super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet>,
     expert_slabs: Option<super::qwen80_device_expert_table::Qwen80CompactExpertSlabs>,
+    residency: Option<
+        super::device_residency::ResidencyPool<
+            super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet,
+        >,
+    >,
     activations: Option<DeviceActivationWorkspace>,
 }
 
@@ -1091,6 +1107,20 @@ impl MetalQ4Accel {
         } else {
             None
         };
+        let residency = if super::device_residency::persistent_address_table_enabled()
+            && expert_slabs.is_none()
+        {
+            let table = super::device_residency::PersistentAddressTable::allocate(
+                &context,
+                super::qwen80_device_expert_table::qwen80_q4_address_geometry(),
+            )?;
+            Some(super::device_residency::ResidencyPool::new(
+                table,
+                super::device_residency::residency_budget_bytes(),
+            ))
+        } else {
+            None
+        };
         let activations = if qwen80_device_activations_enabled() {
             Some(DeviceActivationWorkspace::allocate(&context, max_seq_len)?)
         } else {
@@ -1104,6 +1134,7 @@ impl MetalQ4Accel {
             expert_kernel: super::qwen80_device_expert_table::qwen80_expert_table_kernel(),
             expert_cache: HashMap::new(),
             expert_slabs,
+            residency,
             activations,
         })
     }
@@ -1290,6 +1321,21 @@ impl MetalQ4Accel {
         Ok(timing)
     }
 
+    fn bind_real_route_ids(&self) -> bool {
+        self.residency.is_some() || self.expert_slabs.is_some()
+    }
+
+    fn copy_residency_snapshot(&self, native: &mut Qwen80DecodeNativeCounts) {
+        if let Some(pool) = self.residency.as_ref() {
+            native.expert_upload_hits = pool.stats.upload_hits;
+            native.expert_upload_misses = pool.stats.upload_misses;
+            native.expert_residency_evictions = pool.stats.evictions;
+            native.expert_table_slot_patches = pool.stats.table_slot_patches;
+            native.expert_resident_slots = pool.stats.resident_slots;
+            native.expert_resident_bytes = pool.stats.resident_bytes;
+        }
+    }
+
     fn ensure_selected_expert_table(
         &mut self,
         catalog: &Qwen80UniformQ4StreamingCatalog,
@@ -1299,18 +1345,55 @@ impl MetalQ4Accel {
         stages: &mut Qwen80DecodeStageTimes,
     ) -> Result<()> {
         let started = Instant::now();
+        if self.residency.is_some() {
+            {
+                let context = self.context.clone();
+                let pool = self.residency.as_mut().expect("residency checked");
+                pool.ensure_selected(layer, route_ids, |miss_layer, miss_expert| {
+                    super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
+                        &context,
+                        catalog,
+                        miss_layer,
+                        miss_expert as usize,
+                    )
+                })?;
+                stages.moe_table_upload_miss_secs = pool.stats.upload_miss_secs;
+                stages.moe_table_entries_fill_secs = pool.stats.entries_fill_secs;
+                stages.moe_table_buffer_write_secs = pool.stats.buffer_write_secs;
+                stages.moe_table_resource_clone_secs = pool.stats.resource_clone_secs;
+                stages.moe_table_lease_secs = pool.stats.lease_secs;
+            }
+            let bind = self
+                .residency
+                .as_mut()
+                .expect("residency checked")
+                .layer_bind(layer, route_ids)?;
+            self.copy_residency_snapshot(native);
+            self.expert_table =
+                Some(super::qwen80_device_expert_table::Qwen80DeviceExpertTableLease::from_residency_bind(
+                    bind,
+                ));
+            add_secs(&mut stages.moe_table_build_secs, started);
+            native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
+            return Ok(());
+        }
         for &expert in route_ids {
             if self.expert_cache.contains_key(&(layer, expert)) {
+                native.expert_upload_hits = native.expert_upload_hits.saturating_add(1);
                 continue;
             }
+            native.expert_upload_misses = native.expert_upload_misses.saturating_add(1);
+            let upload_started = Instant::now();
             let trip = super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
                 &self.context,
                 catalog,
                 layer,
                 expert as usize,
             )?;
+            add_secs(&mut stages.moe_table_upload_miss_secs, upload_started);
             self.expert_cache.insert((layer, expert), trip);
         }
+        let fill_started = Instant::now();
         let selected: Vec<(
             u32,
             &super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet,
@@ -1324,7 +1407,9 @@ impl MetalQ4Accel {
                 (expert, trip)
             })
             .collect();
+        add_secs(&mut stages.moe_table_entries_fill_secs, fill_started);
         let reused = self.expert_table.take().map(|lease| lease.table);
+        let write_started = Instant::now();
         let lease = if let Some(slabs) = self.expert_slabs.as_ref() {
             super::qwen80_device_expert_table::write_compact_selected_table(
                 &self.context,
@@ -1334,10 +1419,7 @@ impl MetalQ4Accel {
                 reused,
             )?
         } else {
-            // Ten-entry address table of already-resident triplets. The
-            // compact-slab memcpy copied 16.7 MiB/layer; the 512-entry
-            // address rewrite still cost ~50 ms/token on the late-token
-            // ledger. Caller remaps route ids to 0..10.
+            // Historical A/B path: ten-entry rewrite + 0..10 remap.
             super::qwen80_device_expert_table::write_top10_address_table(
                 &self.context,
                 layer,
@@ -1345,9 +1427,13 @@ impl MetalQ4Accel {
                 reused,
             )?
         };
+        add_secs(&mut stages.moe_table_buffer_write_secs, write_started);
+        let lease_started = Instant::now();
+        self.expert_table = Some(lease);
+        add_secs(&mut stages.moe_table_lease_secs, lease_started);
+        native.expert_resident_slots = self.expert_cache.len() as u64;
         add_secs(&mut stages.moe_table_build_secs, started);
         native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
-        self.expert_table = Some(lease);
         Ok(())
     }
 
@@ -1459,6 +1545,42 @@ impl Qwen80UniformQ4HybridDecodeSession {
 
     pub fn catalog(&self) -> &Qwen80UniformQ4StreamingCatalog {
         &self.catalog
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn device_memory_limits(&self) -> Option<crate::metal::DeviceMemoryLimits> {
+        self.metal.as_ref().map(|metal| metal.context.device_memory_limits())
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    pub fn device_memory_limits(&self) -> Option<crate::metal::DeviceMemoryLimits> {
+        None
+    }
+
+    pub fn residency_stats(&self) -> Option<super::device_residency::ResidencyStats> {
+        #[cfg(target_os = "macos")]
+        {
+            return self
+                .metal
+                .as_ref()
+                .and_then(|metal| metal.residency.as_ref())
+                .map(|pool| pool.stats.clone());
+        }
+        #[cfg(not(target_os = "macos"))]
+        None
+    }
+
+    pub fn residency_budget_bytes(&self) -> Option<u64> {
+        #[cfg(target_os = "macos")]
+        {
+            return self
+                .metal
+                .as_ref()
+                .and_then(|metal| metal.residency.as_ref())
+                .map(|pool| pool.budget_bytes());
+        }
+        #[cfg(not(target_os = "macos"))]
+        None
     }
 
     pub fn reset_state(&mut self) {
@@ -2814,7 +2936,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
                     .expert_wave
                     .as_ref()
                     .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
-                let bind_ids = if metal.expert_slabs.is_some() {
+                let bind_ids = if metal.bind_real_route_ids() {
                     route_ids
                 } else {
                     let mut remapped = [0u32; 10];
@@ -2831,16 +2953,26 @@ impl Qwen80UniformQ4HybridDecodeSession {
                     &wave.route_weights,
                     bytemuck::cast_slice(&route_weights),
                 );
-                let pack_bytes = (QWEN80_EXPERTS
-                    * std::mem::size_of::<
-                        super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet,
-                    >()) as u64;
+                let pack_bytes = if metal.residency.is_some() {
+                    (super::qwen80_device_expert_table::QWEN80_EXPERT_TABLE_TOP_K
+                        * std::mem::size_of::<u32>()) as u64
+                } else {
+                    (QWEN80_EXPERTS
+                        * std::mem::size_of::<
+                            super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet,
+                        >()) as u64
+                };
+                let bind_note = if metal.residency.is_some() {
+                    "token-dynamic: write top-10 route ids; kernel indirects the persistent all-layer address table"
+                } else {
+                    "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets"
+                };
                 self.token_ns.record_host_work(
                     "expert_address_table_bind",
                     Some(layer as u32),
                     pack_started.elapsed().as_nanos() as u64,
                     pack_bytes,
-                    "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets",
+                    bind_note,
                 );
             }
             let mut suffix = self.new_token_cb()?;

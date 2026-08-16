@@ -2269,6 +2269,18 @@ mod imp {
             self.inner.device.name().to_string()
         }
 
+        pub fn device_memory_limits(&self) -> super::DeviceMemoryLimits {
+            super::DeviceMemoryLimits {
+                max_buffer_length: self.inner.device.max_buffer_length() as u64,
+                recommended_max_working_set_size: self
+                    .inner
+                    .device
+                    .recommended_max_working_set_size(),
+                current_allocated_size: self.inner.device.current_allocated_size() as u64,
+                has_unified_memory: self.inner.device.has_unified_memory(),
+            }
+        }
+
         /// Look up -- or create + cache -- a compute pipeline for a
         /// kernel function.
         pub fn pipeline(&self, fn_name: &str) -> Result<ComputePipelineState> {
@@ -5168,6 +5180,10 @@ mod imp {
             "metal-unavailable".into()
         }
 
+        pub fn device_memory_limits(&self) -> super::DeviceMemoryLimits {
+            super::DeviceMemoryLimits::default()
+        }
+
         pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
             Vec::new()
         }
@@ -5241,6 +5257,16 @@ mod imp {
         }
 
     }
+}
+
+/// Device memory ceilings. `max_buffer_length` is `MTLDevice.maxBufferLength`
+/// (objc), not the metal-rs 0.29 feature-set helper that hardcodes 1 GiB.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DeviceMemoryLimits {
+    pub max_buffer_length: u64,
+    pub recommended_max_working_set_size: u64,
+    pub current_allocated_size: u64,
+    pub has_unified_memory: bool,
 }
 
 pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};

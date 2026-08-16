@@ -11,7 +11,13 @@
 //!   --out receipts/QWEN80_UNIFORM_Q4_VELOCITY_BASELINE.json
 //! ```
 
+use hawking_core::model::device_residency::{
+    persistent_address_table_enabled, residency_budget_bytes,
+};
 use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_composition_complete;
+use hawking_core::model::qwen80_device_expert_table::{
+    qwen80_q4_address_geometry, QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES,
+};
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
     discover_qwen80_tokenizer, discover_qwen80_uniform_q4_root, generate_greedy,
     load_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
@@ -203,13 +209,19 @@ fn run() -> Result<(), String> {
         result.fallbacks.host_sample
     );
     println!(
-        "native_q4_dispatches matvec={} embed={} decode_vector={} table_builds={} table_waves={} table_dispatches={}",
+        "native_q4_dispatches matvec={} embed={} decode_vector={} table_builds={} table_waves={} table_dispatches={} upload_hits={} upload_misses={} evictions={} slot_patches={} resident_slots={} resident_bytes={}",
         result.native.q4_matvec_dispatches,
         result.native.q4_embedding_dispatches,
         result.native.q4_decode_vector_dispatches,
         result.native.expert_table_layer_builds,
         result.native.expert_table_waves,
-        result.native.expert_table_matvec_dispatches
+        result.native.expert_table_matvec_dispatches,
+        result.native.expert_upload_hits,
+        result.native.expert_upload_misses,
+        result.native.expert_residency_evictions,
+        result.native.expert_table_slot_patches,
+        result.native.expert_resident_slots,
+        result.native.expert_resident_bytes
     );
     println!(
         "stage_secs embed={:.4} deltanet={:.4} gqa={:.4} moe_norm_router={:.4} moe_shared={:.4} moe_table_build={:.4} moe_routed={:.4} moe_combine={:.4} terminal={:.4} q4_matvec={:.4} host_expert_bind={:.4}",
@@ -226,6 +238,36 @@ fn run() -> Result<(), String> {
         result.stages.host_expert_bind_secs
     );
     println!(
+        "moe_table_split upload_miss={:.6} entries_fill={:.6} buffer_write={:.6} resource_clone={:.6} lease={:.6}",
+        result.stages.moe_table_upload_miss_secs,
+        result.stages.moe_table_entries_fill_secs,
+        result.stages.moe_table_buffer_write_secs,
+        result.stages.moe_table_resource_clone_secs,
+        result.stages.moe_table_lease_secs
+    );
+    let geometry = qwen80_q4_address_geometry();
+    let limits = session.device_memory_limits();
+    println!(
+        "residency persistent={} budget_bytes={} table_bytes={} q4_full_payload_bytes={} scaled_1_5_payload_bytes={} triplet_payload_bytes={}",
+        persistent_address_table_enabled(),
+        session
+            .residency_budget_bytes()
+            .unwrap_or_else(residency_budget_bytes),
+        geometry.table_bytes(),
+        geometry.full_payload_bytes(),
+        geometry.scaled_payload_bytes(QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW, 1.5),
+        QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES
+    );
+    if let Some(limits) = limits {
+        println!(
+            "device_limits max_buffer_length={} recommended_max_working_set_size={} current_allocated_size={} has_unified_memory={}",
+            limits.max_buffer_length,
+            limits.recommended_max_working_set_size,
+            limits.current_allocated_size,
+            limits.has_unified_memory
+        );
+    }
+    println!(
         "complete_physical_bpw={:.6} claim={} metal_q4_matvec_used={}",
         result.complete_physical_bpw, result.claim, result.metal_q4_matvec_used
     );
@@ -237,6 +279,15 @@ fn run() -> Result<(), String> {
         if let Some(parent) = out.parent() {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
+        let upload_total = result
+            .native
+            .expert_upload_hits
+            .saturating_add(result.native.expert_upload_misses);
+        let hit_rate = if upload_total == 0 {
+            0.0
+        } else {
+            result.native.expert_upload_hits as f64 / upload_total as f64
+        };
         let receipt = json!({
             "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
             "status": QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
@@ -288,6 +339,30 @@ fn run() -> Result<(), String> {
                     "expert_table_layer_builds": result.native.expert_table_layer_builds,
                     "expert_table_waves": result.native.expert_table_waves,
                     "expert_table_matvec_dispatches": result.native.expert_table_matvec_dispatches,
+                    "expert_upload_hits": result.native.expert_upload_hits,
+                    "expert_upload_misses": result.native.expert_upload_misses,
+                    "expert_residency_evictions": result.native.expert_residency_evictions,
+                    "expert_table_slot_patches": result.native.expert_table_slot_patches,
+                    "expert_resident_slots": result.native.expert_resident_slots,
+                    "expert_resident_bytes": result.native.expert_resident_bytes,
+                },
+                "residency": {
+                    "persistent_address_table": persistent_address_table_enabled(),
+                    "budget_bytes": session.residency_budget_bytes().unwrap_or_else(residency_budget_bytes),
+                    "table_bytes": geometry.table_bytes(),
+                    "q4_full_payload_bytes": geometry.full_payload_bytes(),
+                    "scaled_1_5_payload_bytes": geometry.scaled_payload_bytes(
+                        QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW,
+                        1.5,
+                    ),
+                    "triplet_payload_bytes": QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES,
+                    "device_limits": limits.map(|lim| json!({
+                        "max_buffer_length": lim.max_buffer_length,
+                        "recommended_max_working_set_size": lim.recommended_max_working_set_size,
+                        "current_allocated_size": lim.current_allocated_size,
+                        "has_unified_memory": lim.has_unified_memory,
+                    })),
+                    "hit_rate": hit_rate,
                 },
                 "stages": {
                     "embed_secs": result.stages.embed_secs,
@@ -296,6 +371,11 @@ fn run() -> Result<(), String> {
                     "moe_norm_router_secs": result.stages.moe_norm_router_secs,
                     "moe_shared_secs": result.stages.moe_shared_secs,
                     "moe_table_build_secs": result.stages.moe_table_build_secs,
+                    "moe_table_upload_miss_secs": result.stages.moe_table_upload_miss_secs,
+                    "moe_table_entries_fill_secs": result.stages.moe_table_entries_fill_secs,
+                    "moe_table_buffer_write_secs": result.stages.moe_table_buffer_write_secs,
+                    "moe_table_resource_clone_secs": result.stages.moe_table_resource_clone_secs,
+                    "moe_table_lease_secs": result.stages.moe_table_lease_secs,
                     "moe_routed_secs": result.stages.moe_routed_secs,
                     "moe_combine_secs": result.stages.moe_combine_secs,
                     "terminal_secs": result.stages.terminal_secs,

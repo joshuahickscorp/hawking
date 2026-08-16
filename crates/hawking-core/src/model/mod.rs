@@ -332,3 +332,5 @@ mod tier_map_hook_tests {
 
 /// Device-side 512-way Q80 expert table/gather.
 pub mod qwen80_device_expert_table;
+/// Artifact-static payload residency + one persistent address table.
+pub mod device_residency;
