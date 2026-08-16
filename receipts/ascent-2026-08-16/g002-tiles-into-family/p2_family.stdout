@@ -1,0 +1,20 @@
+prompt_token_ids=[151644, 872, 198, 7985, 264, 729, 429, 17431, 288, 264, 914, 13, 151645, 198, 151644, 77091, 198]
+generated_token_ids=[8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734]
+generated_text="Here’s a function that reverses a string (i.e"
+coherence_class=COHERENT
+prefill_secs=3.198902
+first_token_latency_secs=3.198902
+decode_secs=1.201137
+steady_state_tokens=11 steady_state_decode_secs=1.201136 steady_state_tok_s=9.157995
+wall_ns_per_token=109194208
+gpu_matvec_ns_per_token=40852813 (MTLCommandBuffer GPUEnd-GPUStart)
+facet1_bind_ns_per_token=40320131 facet2_wait_minus_gpu_ns_per_token=16433283 cbs_per_token=49.0 dispatches_per_token=2834.0
+peak_rss_bytes=9838772224
+fallback silent=0 designed_host=1665 (vec=265 embed=28 act=1344 sample=28)
+native binary=26880 residual=13440 hgravs=26880 q8=11116 waves=1344 cbs=1372
+stages embed=0.2496 deltanet=0.2169 gqa=0.0582 moe_shared=0.0444 moe_routed=0.0421 moe_combine=0.0421 terminal=0.0287 mixed_matvec=0.0000 gpu_matvec_ns=1233002880
+dense_w_materialized=false
+deltanet gpu=true vi=true host_ns_per_token=0 isolated_gpu=4449291 isolated_host=40764334 isolated_wait=5131292 isolated_disp=36
+greedy_oracle_12=[8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734] greedy_bit_identical=true
+rep1 host_prep decode_n=11 wall_med=105913125 gpu_med=45294355 host_prep_med=53046188 catalog_reparse=8435792 embed=8447917 buffer_prep=0 encode=1208770 expert_bind=35475038 vector_clone=0 packed_calls=689 packed_skipped=0
+cached_geometry_count=666

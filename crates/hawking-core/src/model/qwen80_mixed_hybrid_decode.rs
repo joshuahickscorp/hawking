@@ -161,6 +161,27 @@ fn tg256_grid(rows: u32) -> (u32, u32, u32) {
     (rows.saturating_mul(256), 1, 1)
 }
 
+#[cfg(target_os = "macos")]
+thread_local! {
+    static DISPATCHED_KERNELS: std::cell::RefCell<Vec<String>> =
+        const { std::cell::RefCell::new(Vec::new()) };
+}
+
+#[cfg(target_os = "macos")]
+fn note_dispatched_kernel(name: &str) {
+    DISPATCHED_KERNELS.with(|slot| {
+        let mut names = slot.borrow_mut();
+        if !names.iter().any(|k| k == name) {
+            names.push(name.to_owned());
+        }
+    });
+}
+
+#[cfg(target_os = "macos")]
+fn take_dispatched_kernels() -> Vec<String> {
+    DISPATCHED_KERNELS.with(|slot| slot.borrow_mut().drain(..).collect())
+}
+
 fn simd8_grid(rows: u32) -> (u32, u32, u32) {
     (rows.div_ceil(8).saturating_mul(256).max(256), 1, 1)
 }
@@ -412,6 +433,11 @@ pub struct Qwen80MixedNativeCounts {
     pub device_activation_dispatches: u64,
     pub deltanet_vi_dispatches: u64,
     pub deltanet_tg_dispatches: u64,
+    /// Unique kernel symbols actually passed to `dispatch_threads` on the
+    /// mixed matvec path. Receipt proof that recon-fuse still launches the
+    /// occupancy tiles, now via `decode_family` accessors.
+    #[serde(default)]
+    pub dispatched_kernels: Vec<String>,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -891,20 +917,25 @@ fn dispatch_binary(
     serial_name: &str,
 ) -> Result<()> {
     if qwen80_gk_simd_enabled() {
+        let name = crate::decode_family::MATVEC_BINARY_SIMD;
+        note_dispatched_kernel(name);
         tcb.dispatch_threads(
-            crate::decode_family::MATVEC_BINARY_SIMD,
+            name,
             simd8_grid(body.rows),
             (256, 1, 1),
             |enc| encode_binary(enc, body, input, output, output_offset),
         )
     } else if qwen80_recon_fuse_enabled() {
+        let name = crate::decode_family::matvec_binary_tiles();
+        note_dispatched_kernel(name);
         tcb.dispatch_threads(
-            "q80_binary_group_matvec_tg256",
+            name,
             tg256_grid(body.rows),
             (256, 1, 1),
             |enc| encode_binary(enc, body, input, output, output_offset),
         )
     } else {
+        note_dispatched_kernel(serial_name);
         tcb.dispatch_threads(
             serial_name,
             (body.rows, 1, 1),
@@ -924,19 +955,23 @@ fn dispatch_residual(
     serial_binary: &str,
 ) -> Result<()> {
     if qwen80_recon_fuse_enabled() {
+        let name = crate::decode_family::matvec_binary_csr_tiles();
+        note_dispatched_kernel(name);
         tcb.dispatch_threads(
-            "q80_binary_group_csr_matvec_tg256",
+            name,
             tg256_grid(body.binary.rows),
             (256, 1, 1),
             |enc| encode_binary_csr(enc, body, input, output, output_offset),
         )
     } else {
+        note_dispatched_kernel(serial_binary);
         tcb.dispatch_threads(
             serial_binary,
             (body.binary.rows, 1, 1),
             (256, 1, 1),
             |enc| encode_binary(enc, &body.binary, input, output, output_offset),
         )?;
+        note_dispatched_kernel("q80_sparse_q1_apply_csr");
         tcb.dispatch_threads(
             "q80_sparse_q1_apply_csr",
             (body.binary.rows, 1, 1),
@@ -983,26 +1018,37 @@ fn dispatch_factor(
         )
     };
     if qwen80_gk_simd_enabled() {
-        tcb.dispatch_threads(
-            crate::decode_family::MATVEC_HGRAVS_SIMD,
-            simd8_grid(rows),
-            (256, 1, 1),
-            encode,
-        )
+        let name = crate::decode_family::MATVEC_HGRAVS_SIMD;
+        note_dispatched_kernel(name);
+        tcb.dispatch_threads(name, simd8_grid(rows), (256, 1, 1), encode)
     } else if qwen80_recon_fuse_enabled() {
         let (name, grid) = if bits == 8 {
             if cols >= 2048 {
-                ("q80_uniform8_matvec_tg256", tg256_grid(rows))
+                (
+                    crate::decode_family::matvec_uniform8_tiles(),
+                    tg256_grid(rows),
+                )
             } else {
-                ("q80_uniform8_matvec_simd_bytes", simd8_grid(rows))
+                (
+                    crate::decode_family::matvec_uniform8_simd_bytes(),
+                    simd8_grid(rows),
+                )
             }
         } else if bits == 3 {
-            ("q80_hgravs01_factor_matvec_simd3", simd8_grid(rows))
+            (
+                crate::decode_family::matvec_hgravs_tiles(),
+                simd8_grid(rows),
+            )
         } else {
-            ("q80_hgravs01_factor_matvec_simd", simd8_grid(rows))
+            (
+                crate::decode_family::matvec_hgravs_nbit_tiles(),
+                simd8_grid(rows),
+            )
         };
+        note_dispatched_kernel(name);
         tcb.dispatch_threads(name, grid, (256, 1, 1), encode)
     } else {
+        note_dispatched_kernel(serial_name);
         tcb.dispatch_threads(serial_name, (rows, 1, 1), (256, 1, 1), encode)
     }
 }
@@ -2327,7 +2373,10 @@ impl MetalMixedAccel {
         match weight {
             GpuWeight::Binary(body) => {
                 if qwen80_recon_fuse_enabled() {
-                    ("q80_binary_group_matvec_tg256", tg256_grid(body.rows))
+                    (
+                        crate::decode_family::matvec_binary_tiles(),
+                        tg256_grid(body.rows),
+                    )
                 } else {
                     (crate::decode_family::MATVEC_BINARY, (body.rows, 1, 1))
                 }
@@ -2335,7 +2384,7 @@ impl MetalMixedAccel {
             GpuWeight::Residual(body) => {
                 if qwen80_recon_fuse_enabled() {
                     (
-                        "q80_binary_group_csr_matvec_tg256",
+                        crate::decode_family::matvec_binary_csr_tiles(),
                         tg256_grid(body.binary.rows),
                     )
                 } else {
@@ -2348,13 +2397,25 @@ impl MetalMixedAccel {
             GpuWeight::Uniform(body) => {
                 if qwen80_recon_fuse_enabled() {
                     if body.bits == 8 && body.cols >= 2048 {
-                        ("q80_uniform8_matvec_tg256", tg256_grid(body.rows))
+                        (
+                            crate::decode_family::matvec_uniform8_tiles(),
+                            tg256_grid(body.rows),
+                        )
                     } else if body.bits == 8 {
-                        ("q80_uniform8_matvec_simd_bytes", simd8_grid(body.rows))
+                        (
+                            crate::decode_family::matvec_uniform8_simd_bytes(),
+                            simd8_grid(body.rows),
+                        )
                     } else if body.bits == 3 {
-                        ("q80_hgravs01_factor_matvec_simd3", simd8_grid(body.rows))
+                        (
+                            crate::decode_family::matvec_hgravs_tiles(),
+                            simd8_grid(body.rows),
+                        )
                     } else {
-                        ("q80_hgravs01_factor_matvec_simd", simd8_grid(body.rows))
+                        (
+                            crate::decode_family::matvec_hgravs_nbit_tiles(),
+                            simd8_grid(body.rows),
+                        )
                     }
                 } else {
                     (crate::decode_family::MATVEC_HGRAVS, (body.rows, 1, 1))
@@ -2363,7 +2424,7 @@ impl MetalMixedAccel {
             GpuWeight::Hgravs(body) => {
                 if qwen80_recon_fuse_enabled() {
                     (
-                        "q80_hgravs01_factor_matvec_simd3",
+                        crate::decode_family::matvec_hgravs_tiles(),
                         simd8_grid(body.right_rows),
                     )
                 } else {
@@ -2383,34 +2444,34 @@ impl MetalMixedAccel {
         let (full, grid) = Self::production_kernel_for(weight);
         let name = match (mode, full) {
             (MixedProbeMode::Full, _) => full,
-            (MixedProbeMode::Addr, "q80_binary_group_matvec_tg256") => {
+            (MixedProbeMode::Addr, crate::decode_family::MATVEC_BINARY_TILES) => {
                 "q80_binary_group_matvec_tg256_addr_probe"
             }
-            (MixedProbeMode::Decode, "q80_binary_group_matvec_tg256") => {
+            (MixedProbeMode::Decode, crate::decode_family::MATVEC_BINARY_TILES) => {
                 "q80_binary_group_matvec_tg256_decode_probe"
             }
-            (MixedProbeMode::Addr, "q80_binary_group_csr_matvec_tg256") => {
+            (MixedProbeMode::Addr, crate::decode_family::MATVEC_BINARY_CSR_TILES) => {
                 "q80_binary_group_csr_matvec_tg256_addr_probe"
             }
-            (MixedProbeMode::Decode, "q80_binary_group_csr_matvec_tg256") => {
+            (MixedProbeMode::Decode, crate::decode_family::MATVEC_BINARY_CSR_TILES) => {
                 "q80_binary_group_csr_matvec_tg256_decode_probe"
             }
-            (MixedProbeMode::Addr, "q80_uniform8_matvec_tg256") => {
+            (MixedProbeMode::Addr, crate::decode_family::MATVEC_UNIFORM8_TILES) => {
                 "q80_uniform8_matvec_tg256_addr_probe"
             }
-            (MixedProbeMode::Decode, "q80_uniform8_matvec_tg256") => {
+            (MixedProbeMode::Decode, crate::decode_family::MATVEC_UNIFORM8_TILES) => {
                 "q80_uniform8_matvec_tg256_decode_probe"
             }
-            (MixedProbeMode::Addr, "q80_uniform8_matvec_simd_bytes") => {
+            (MixedProbeMode::Addr, crate::decode_family::MATVEC_UNIFORM8_SIMD_BYTES) => {
                 "q80_uniform8_matvec_simd_bytes_addr_probe"
             }
-            (MixedProbeMode::Decode, "q80_uniform8_matvec_simd_bytes") => {
+            (MixedProbeMode::Decode, crate::decode_family::MATVEC_UNIFORM8_SIMD_BYTES) => {
                 "q80_uniform8_matvec_simd_bytes_decode_probe"
             }
-            (MixedProbeMode::Addr, "q80_hgravs01_factor_matvec_simd3") => {
+            (MixedProbeMode::Addr, crate::decode_family::MATVEC_HGRAVS_TILES) => {
                 "q80_hgravs01_factor_matvec_simd3_addr_probe"
             }
-            (MixedProbeMode::Decode, "q80_hgravs01_factor_matvec_simd3") => {
+            (MixedProbeMode::Decode, crate::decode_family::MATVEC_HGRAVS_TILES) => {
                 "q80_hgravs01_factor_matvec_simd3_decode_probe"
             }
             (MixedProbeMode::BinarySimd, _) => "q80_binary_group_matvec_simd",
@@ -4765,6 +4826,10 @@ pub fn generate_mixed_greedy(
     session.fallbacks = Qwen80MixedFallbackCounts::default();
     session.native = Qwen80MixedNativeCounts::default();
     session.stages = Qwen80MixedStageTimes::default();
+    #[cfg(target_os = "macos")]
+    {
+        let _ = take_dispatched_kernels();
+    }
     let mut token_samples = Vec::new();
     let prefill_started = Instant::now();
     let mut next = 0u32;
@@ -4883,6 +4948,10 @@ pub fn generate_mixed_greedy(
     session.stages.isolated_deltanet_wait_ns = isolated_deltanet_wait_ns;
     session.stages.isolated_deltanet_dispatches = isolated_deltanet_dispatches;
     session.stages.isolated_deltanet_host_ns = isolated_deltanet_host_ns;
+    #[cfg(target_os = "macos")]
+    {
+        session.native.dispatched_kernels = take_dispatched_kernels();
+    }
     Ok(Qwen80MixedGreedyResult {
         prompt: prompt.to_owned(),
         prompt_token_ids,
