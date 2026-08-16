@@ -1,0 +1,156 @@
+{
+  "schema": "hawking.ascension.qwen_attention_density_verdict.v1",
+  "date": "2026-08-16",
+  "status": "MEASURED",
+  "claim": "Attention GEMVs cannot be cheaply compressed below uniform-Q4 at Q4-equivalent output quality. Existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01) do not transfer. The only cheap Q4-quality action on the 86-88% mass is: (1) on mixed-1p5, drop attention+lm_head from Q8 to Q4 (they were over-protected); (2) lm_head Q3 is cosine-legal but top-1-risky and needs a generate test. Q3 on the attention mass fails the 0.99 bar, especially out_proj.",
+  "quality_bound": {
+    "primary": "mean row output cosine >= 0.990 vs BF16 W on real captured X (Qwen3.8 Q4 vs bf16 min cosine is 0.98948)",
+    "not_used": "expert organ bar 0.8604 — attention is HIGH sensitivity",
+    "lm_head_extra": "top-1 agreement vs BF16 logits on the same X. Cosine 0.99 is NOT sufficient for token identity.",
+    "q80_L47_k_and_o_q4_sits_at_0p9888_to_0p9896": "treated as Q4-incumbent, not a reason to spend Q5"
+  },
+  "activation_honesty": {
+    "used_synthetic_or_gaussian": false,
+    "q80": "source-bf16-capture-n192-scale64, 25258 tokens, post-attention RMSNorm (router-input). Same width, wrong residual point for in-proj. out_proj X is real-derived v*silu(z) / GQA-repeat(v)*sigmoid(gate).",
+    "qwen38": "activation-capture-v1, 256 tokens, CAPTURED_REAL_BF16_POST_NORM_HIDDEN width 5120. Schema name says post_swiglu but stored width is hidden, not 17408.",
+    "why_this_is_not_the_known_invalid_class": "every prior sub-bit negative was Gaussian-proxy. These X are real BF16-source hiddens from the same models."
+  },
+  "codec_applicability": {
+    "HGRAVU01_uniform_group": {
+      "applies_to_attention": true,
+      "why": "geometry-agnostic; already ships on attention at Q4 (Q4 vehicle) and Q8 (mixed-1p5)",
+      "reconstruction": "CHEAP_INREGISTER",
+      "shipping_kernel": "qwen_uniform_q4_group64_matvec",
+      "quality": "Q4 clears 0.99 on the attention mass. Q3 typically 0.96-0.98 and fails out_proj / late k."
+    },
+    "HGRAVB01_binary": {
+      "applies_to_attention": "encode_yes_recipe_no",
+      "why": "encoder takes a plain matrix, but the gate_proj sign-scale recipe exploits SwiGLU sign structure that attention does not have",
+      "reconstruction": "algorithmically cheap; no attention kernel (expert-gate only)",
+      "quality": "max cosine seen 0.946 (qwen38 L63 v). Typical 0.75-0.88. FAILS 0.99 everywhere."
+    },
+    "HGRAVR02_binary_residual": {
+      "applies_to_attention": "encode_yes_recipe_no",
+      "why": "2% rice residual was fit for up_proj, not Q/K/V/O or DeltaNet",
+      "reconstruction": "EXPENSIVE_SCATTER — a LOSS even if quality passed (mixed 5.9x slower per byte)",
+      "quality": "max cosine 0.958 (q80 L3 q). Typical 0.82-0.91. FAILS 0.99 everywhere."
+    },
+    "HGRAVS01_act_weighted_svd": {
+      "applies_to_attention": "encode_yes_recipe_no",
+      "why": "r160 / post-SwiGLU / in-dim 512 is a down_proj recipe. Attention in-dim is 2048 or 5120 and is not low-rank under the same fit.",
+      "reconstruction": "CONDITIONAL_TWOSTAGE — cheap iff fused y=L@(R@x). Existing kernel is expert down [2048,512] r160 ONLY. Materialize-W is a LOSS.",
+      "quality": "0 clears of 0.99 at ranks whose BPW beats Q4. Typical 0.83-0.89 at r=512. Attention is not a low-rank organ."
+    },
+    "HGRAVH01_hadamard": {
+      "applies_to_attention": true,
+      "reconstruction": "MEDIUM_INREGISTER_TRANSFORM (extra Walsh-Hadamard ALU, no shipping attention kernel)",
+      "quality": "q4 ~matches uniform Q4 at 4.125 vs 4.250 BPW. 2.9% save, not the mass."
+    },
+    "HGRAVT01_ternary": {
+      "applies_to_attention": "encode_yes",
+      "reconstruction": "cheap-ish, no attention kernel",
+      "quality": "fails 0.99 (typical 0.77-0.92)"
+    },
+    "expert_mlp_bundle_gate_binary_up_residual_down_hgravs01": {
+      "transfers": false,
+      "say_so": "Do not apply the routed gate/up/down recipe to attention. Measured: all three families miss 0.99 by a wide margin on every attention GEMV sampled."
+    }
+  },
+  "reconstruction_cost_classes": {
+    "CHEAP_TODAY": ["HGRAVU01 q2-q8"],
+    "CHEAP_IF_NEW_KERNEL_BUT_QUALITY_FAILS": ["HGRAVB01"],
+    "LOSS_EVEN_IF_QUALITY_PASSED": ["HGRAVR02", "HGRAVS01 materialized"],
+    "CONDITIONAL_ON_NEW_FUSED_KERNEL_AND_QUALITY_FAILS": ["HGRAVS01 y=L@(R@x)"],
+    "measured_warning": "Q80 mixed 1.4444 BPW is 5.9x slower per byte than Q4 (2.57 vs 15.2 GB/s); token 1171 ms vs 225 ms. Halving bytes with an expensive reconstruct is a net LOSS."
+  },
+  "q80_q4_vehicle": {
+    "today_token_bytes": {
+      "attention": 818151424,
+      "lm_head": 165329552,
+      "routed_experts_q4": 802160640,
+      "router": 26742448,
+      "shared_expert_q4": 80216064,
+      "total_approx": 1892600128
+    },
+    "conservative_proposed": {
+      "attention_codec": "HGRAVU01_q4_g64 STAY",
+      "attention_bpw": 4.25,
+      "attention_bytes": 818036736,
+      "lm_head_codec": "HGRAVU01_q4_g64 STAY (top-1 risk on Q3)",
+      "lm_head_bpw": 4.25,
+      "lm_head_bytes": 165306368,
+      "token_byte_delta": 0,
+      "complete_storage_bpw_delta": 0.0,
+      "why": "Q3 fails 0.99 on qkvz (0.981-0.984) and out_proj (0.959-0.961). Late GQA k/o Q4 already sits at 0.9888-0.9896."
+    },
+    "lm_head_q3_candidate": {
+      "codec": "HGRAVU01_q3_g64",
+      "bpw": 3.25,
+      "bytes": 126410752,
+      "byte_delta": -38895616,
+      "token_bytes_new_approx": 1853699056,
+      "complete_storage_bpw_delta": -0.00391,
+      "output_cosine": {"q80": 0.99528, "qwen38": 0.99419},
+      "top1_vs_bf16": {"q80_q4": 0.9427, "q80_q3": 0.875, "qwen38_q4": 0.8906, "qwen38_q3": 0.8438, "n_q80": 192, "n_qwen38": 128},
+      "reconstruction": "CHEAP_INREGISTER",
+      "status": "COSINE_PASS_TOP1_REGRESSION_NEEDS_GENERATE"
+    }
+  },
+  "q80_mixed_1p5_vehicle": {
+    "today": "attention+lm_head+router+shared are HGRAVU01 q8 (sensitive 3% untouched), 8.25 BPW",
+    "today_attention_bytes_at_q8": 1587953664,
+    "today_lm_head_bytes_at_q8": 320888832,
+    "action": "Drop attention + lm_head from Q8 to Q4. Same kernel family. Q4 vehicle already generates. This probe's Q4 cosines are 0.992-0.997 on the attention mass.",
+    "proposed_attention_bytes": 818036736,
+    "proposed_lm_head_bytes": 165306368,
+    "token_byte_delta_attention": -769916928,
+    "token_byte_delta_lm_head": -155582464,
+    "token_byte_delta_total": -925499392,
+    "reconstruction": "CHEAP_INREGISTER (this is a bit-width drop inside the existing uniform kernel, not a new reconstruct)",
+    "complete_physical_bpw_today": 1.44445,
+    "complete_physical_bpw_after": 1.351,
+    "note": "This is the largest cheap byte win this lane found. It is a policy correction on mixed-1p5, not a new codec."
+  },
+  "qwen38_q4_vehicle": {
+    "today_active_bytes": {
+      "mlp": 9091161600,
+      "linear_attn": 2961704064,
+      "full_attn": 891325184,
+      "lm_head": 675430440,
+      "norms": 2642952,
+      "total": 13622264240
+    },
+    "today_complete_bpw": 4.252735126866492,
+    "conservative_proposed": {
+      "attention": "HGRAVU01_q4_g64 STAY",
+      "lm_head": "HGRAVU01_q4_g64 STAY pending generate",
+      "token_byte_delta": 0,
+      "complete_bpw": 4.252735126866492
+    },
+    "lm_head_q3_candidate": {
+      "lm_head_bytes": 516505630,
+      "token_bytes_new": 13463339430,
+      "token_byte_delta": -158924810,
+      "complete_bpw": 4.205,
+      "reconstruction": "CHEAP_INREGISTER",
+      "status": "COSINE_PASS_TOP1_REGRESSION_NEEDS_GENERATE"
+    },
+    "if_q3_all_attention_rejected": {
+      "why": "out_proj Q3 cosine 0.953 (L0, kurtosis 149) / 0.968 (L32). in_proj Q3 0.975-0.980. Not a Q4-quality pack.",
+      "byte_delta_if_forced": -906000000,
+      "reconstruction": "CHEAP_INREGISTER",
+      "verdict": "QUALITY_FAIL"
+    }
+  },
+  "per_tensor_table_notes": "bytes_today are Q4-vehicle group-64 body bytes (4.25 BPW exact). proposed is the conservative cheap pack (stay Q4 on attention; lm_head listed as Q4 with Q3 as a candidate).",
+  "probe": {
+    "path": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json",
+    "n_probes": 34,
+    "wall_s": 1718.3,
+    "layers_q80": [0, 3, 36, 47],
+    "layers_qwen38": [0, 3, 32, 63]
+  },
+  "topk": {
+    "path": "receipts/ascent-2026-08-16/QWEN_ATTENTION_LMHEAD_TOPK.json"
+  }
+}
