@@ -400,6 +400,26 @@
       "skew": "UNKNOWN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "qwen38-native-bringup-20260816-024947",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "64-layer dense Q4 SwiGLU + mixer GEMVs, 43036874 ns/token GPU (~3\u00d7 4 BPW DRAM floor)",
+      "branch": "grok/qwen38-native-bringup-20260816-024947",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-dsv4f-host-expert-slab-20260816-031154",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
+      "branch": "grok/auto-q80-dsv4f-host-expert-slab-20260816-031154",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }

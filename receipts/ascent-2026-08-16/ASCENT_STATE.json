@@ -1292,10 +1292,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "all-48 mixed generate (untested). Secondary: L0 structured error (mix/null 2.06) and typical-organ capture (p50 258 rows vs dim 2048/512).",
-      "from_lane": "q80-coherence-probe-20260816-002153"
+      "from_lane": "q80-coherence-probe-20260816-002153",
+      "task_id": "auto-q80-all-mixed-generate-untested-20260816-032208"
     },
     {
       "id": "auto-q80-host-moe-table-build",
@@ -1310,10 +1311,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "host moe_table_build ~197000000 ns/token (A1 5.530 s / 28 forwards; B1 spiked to 11.24 s). Mixer occupancy is no longer the complete-token wall.",
-      "from_lane": "q80-component-simdgroup-20260816-010759"
+      "from_lane": "q80-component-simdgroup-20260816-010759",
+      "task_id": "auto-q80-host-moe-table-build-20260816-032723"
     },
     {
       "id": "auto-q80-down-proj-hgravs01-two",
@@ -1692,6 +1694,42 @@
       "auto_generated": true,
       "from_bottleneck": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the long session (17229037568 > 17179869184)",
       "from_lane": "q80-recalibrate-capability-bar-20260816-023440"
+    },
+    {
+      "id": "auto-qwen38-layer-dense-q4-swiglu",
+      "model": "qwen38",
+      "hypothesis": "64-layer dense Q4 SwiGLU + mixer GEMVs, 43036874 ns/token GPU (~3\u00d7 4 BPW DRAM floor)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-qwen38-layer-dense-q4-swiglu.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "64-layer dense Q4 SwiGLU + mixer GEMVs, 43036874 ns/token GPU (~3\u00d7 4 BPW DRAM floor)",
+      "from_lane": "qwen38-native-bringup-20260816-024947"
+    },
+    {
+      "id": "auto-q80-host-expert-slab-read",
+      "model": "q80",
+      "hypothesis": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-host-expert-slab-read.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
+      "from_lane": "auto-q80-dsv4f-host-expert-slab-20260816-031154"
     }
   ],
   "history": [
