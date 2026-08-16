@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.ops.harvest_note_g006.v1",
+  "date": "2026-08-16",
+  "NOTE_TO_SELF_AT_HARVEST": "Lane qwen38-sub15-pack-20260816-165029 is running against MY FAULTY contract, which pointed it at QWEN38_COHERENCE_SEAL.json (taken on the 4.2527 BPW oracle) as a pass/fail gate. A lower-BPW artifact cannot be id-identical to that seal. Do NOT judge the lane against id-identity.",
+  "judge_it_against_this_instead": [
+    "well-formed English or code on all 6 prompts - no repetition loops, no token salad, no degenerate cycles",
+    "factual prompts answered correctly (capital of France -> Paris)",
+    "0 silent fallbacks, 0 dense_w_materialized",
+    "artifact-oracle numeric parity passes",
+    "greedy-id drift vs the oracle seal REPORTED per prompt as a quality signal, never as pass/fail"
+  ],
+  "if_the_lane_stopped_early_because_ids_drifted": "That is my error surfacing, not a real coherence floor. Relaunch it with the corrected bar and tell it divergence from the oracle ids is EXPECTED and not failure.",
+  "why_the_revision_did_not_land": "grok-run revise runs in the FOREGROUND with no --background flag and blocked for 10 minutes before timing out. The lane kept running on the original contract. Revising a live lane is not cheap here; correcting at harvest is.",
+  "the_general_lesson": "A contract can be internally consistent and still name an unreachable acceptance bar. G006 said 'coherent' with no measurable definition, so I substituted the nearest available artifact - a seal built for a different purpose. Define the bar in the ledger BEFORE commissioning work against it."
+}
