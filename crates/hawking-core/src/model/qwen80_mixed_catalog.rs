@@ -322,6 +322,10 @@ impl Qwen80MixedStreamingCatalog {
             .ok_or_else(|| mixed_error(format!("missing tensor {name:?}")))
     }
 
+    pub fn rows(&self) -> &HashMap<String, Qwen80MixedCatalogRow> {
+        &self.rows
+    }
+
     fn mmap_segment(&self, path: &Path) -> Result<Arc<Mmap>> {
         if let Some(existing) = self
             .maps

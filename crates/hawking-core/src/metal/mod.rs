@@ -1121,10 +1121,22 @@ mod imp {
             "q80_binary_group_matvec_simd_bytes" => "q80_binary_group_matvec_simd_bytes",
             "q80_binary_group_matvec_chunk" => "q80_binary_group_matvec_chunk",
             "q80_binary_group_matvec_tg256" => "q80_binary_group_matvec_tg256",
+            "q80_binary_group_matvec_tg256_addr_probe" => {
+                "q80_binary_group_matvec_tg256_addr_probe"
+            }
+            "q80_binary_group_matvec_tg256_decode_probe" => {
+                "q80_binary_group_matvec_tg256_decode_probe"
+            }
             "q80_binary_group_matvec_rowblock4" => "q80_binary_group_matvec_rowblock4",
             "q80_binary_group_csr_matvec" => "q80_binary_group_csr_matvec",
             "q80_binary_group_csr_matvec_bytes" => "q80_binary_group_csr_matvec_bytes",
             "q80_binary_group_csr_matvec_tg256" => "q80_binary_group_csr_matvec_tg256",
+            "q80_binary_group_csr_matvec_tg256_addr_probe" => {
+                "q80_binary_group_csr_matvec_tg256_addr_probe"
+            }
+            "q80_binary_group_csr_matvec_tg256_decode_probe" => {
+                "q80_binary_group_csr_matvec_tg256_decode_probe"
+            }
             "q80_rice_q1_residual_apply" => "q80_rice_q1_residual_apply",
             "q80_sparse_q1_apply_csr" => "q80_sparse_q1_apply_csr",
             "q80_sparse_q1_apply_csr_simd" => "q80_sparse_q1_apply_csr_simd",
@@ -1132,8 +1144,24 @@ mod imp {
             "q80_hgravs01_factor_matvec" => "q80_hgravs01_factor_matvec",
             "q80_hgravs01_factor_matvec_simd" => "q80_hgravs01_factor_matvec_simd",
             "q80_hgravs01_factor_matvec_simd3" => "q80_hgravs01_factor_matvec_simd3",
+            "q80_hgravs01_factor_matvec_simd3_addr_probe" => {
+                "q80_hgravs01_factor_matvec_simd3_addr_probe"
+            }
+            "q80_hgravs01_factor_matvec_simd3_decode_probe" => {
+                "q80_hgravs01_factor_matvec_simd3_decode_probe"
+            }
             "q80_uniform8_matvec_simd_bytes" => "q80_uniform8_matvec_simd_bytes",
+            "q80_uniform8_matvec_simd_bytes_addr_probe" => {
+                "q80_uniform8_matvec_simd_bytes_addr_probe"
+            }
+            "q80_uniform8_matvec_simd_bytes_decode_probe" => {
+                "q80_uniform8_matvec_simd_bytes_decode_probe"
+            }
             "q80_uniform8_matvec_tg256" => "q80_uniform8_matvec_tg256",
+            "q80_uniform8_matvec_tg256_addr_probe" => "q80_uniform8_matvec_tg256_addr_probe",
+            "q80_uniform8_matvec_tg256_decode_probe" => {
+                "q80_uniform8_matvec_tg256_decode_probe"
+            }
             "q80_hgravs01_two_stage_matvec" => "q80_hgravs01_two_stage_matvec",
             "q80_hgravs01_two_stage_matvec_rowblock4" => {
                 "q80_hgravs01_two_stage_matvec_rowblock4"
@@ -4744,15 +4772,11 @@ mod imp {
             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
             self.dispatch_count += 1;
             self.has_encoded_work = true;
-            // Cost-ledger encode wall: Instant only while a token is active.
-            // Folded into MetalEncode at commit_and_wait_split. Default-off
-            // path pays one atomic load via is_recording().
-            let ledger_t0 = if crate::cost_ledger::is_recording() {
-                Some(Instant::now())
-            } else {
-                None
-            };
-            if ledger_t0.is_some() {
+            // Encode wall is always collected so TOKEN_NS can close. The
+            // Instant pair is ~20 ns and is not the work being measured.
+            // Cost-ledger stage counts stay gated on is_recording().
+            let encode_t0 = Instant::now();
+            if crate::cost_ledger::is_recording() {
                 let stage = crate::cost_ledger::current_gpu_stage()
                     .unwrap_or(crate::cost_ledger::GpuStage::Untagged);
                 let slot = &mut self.ledger_stage_dispatches[stage.index()];
@@ -4764,11 +4788,9 @@ mod imp {
                     names.push(fn_name.to_owned());
                 }
             }
-            if let Some(t0) = ledger_t0 {
-                self.ledger_encode_ns = self
-                    .ledger_encode_ns
-                    .saturating_add(t0.elapsed().as_nanos());
-            }
+            self.ledger_encode_ns = self
+                .ledger_encode_ns
+                .saturating_add(encode_t0.elapsed().as_nanos());
             result
         }
 

@@ -1315,3 +1315,457 @@ kernel void q80_decode_shape_fma(
     }
     out[tid] = acc;
 }
+
+// ---------------------------------------------------------------------------
+// TOKEN_NS diagnostic probes. Same launch geometry as the production
+// recon-fuse kernels. Addr loads packed bytes + scales and keeps the
+// loads live. Decode unpacks to a register accumulator and does not
+// touch the input vector. Difference vs full is FMA with x.
+// ---------------------------------------------------------------------------
+
+kernel void q80_binary_group_matvec_tg256_addr_probe(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    float partial = 0.0f;
+    if (row < rows) {
+        const uint col = lid * 8u;
+        if (col + 8u <= cols) {
+            const float scale = float(scales[row * groups_per_row + col / group_size]);
+            const uchar byte = signs[(row * cols + col) >> 3u];
+            partial = scale + float(byte);
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
+    }
+    (void)input;
+}
+
+kernel void q80_binary_group_matvec_tg256_decode_probe(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    float partial = 0.0f;
+    if (row < rows) {
+        const uint col = lid * 8u;
+        if (col + 8u <= cols) {
+            const float scale = float(scales[row * groups_per_row + col / group_size]);
+            const uchar byte = signs[(row * cols + col) >> 3u];
+            partial += (byte & 0x01u) ? scale : -scale;
+            partial += (byte & 0x02u) ? scale : -scale;
+            partial += (byte & 0x04u) ? scale : -scale;
+            partial += (byte & 0x08u) ? scale : -scale;
+            partial += (byte & 0x10u) ? scale : -scale;
+            partial += (byte & 0x20u) ? scale : -scale;
+            partial += (byte & 0x40u) ? scale : -scale;
+            partial += (byte & 0x80u) ? scale : -scale;
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
+    }
+    (void)input;
+}
+
+kernel void q80_uniform8_matvec_tg256_addr_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    float partial = 0.0f;
+    if (row < rows && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint tile = 0u; tile < cols; tile += 2048u) {
+            const uint col = tile + lid * 8u;
+            if (col + 8u > cols) {
+                continue;
+            }
+            const uint element = row_base + col;
+            const float scale = float(scales[element / group_size]);
+            partial += scale + float(codes[element]) + float(codes[element + 7u]);
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
+    }
+    (void)input;
+    (void)bits;
+    (void)bound;
+}
+
+kernel void q80_uniform8_matvec_tg256_decode_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    const int ibound = int(bound);
+    float partial = 0.0f;
+    if (row < rows && bits == 8u && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint tile = 0u; tile < cols; tile += 2048u) {
+            const uint col = tile + lid * 8u;
+            if (col + 8u > cols) {
+                continue;
+            }
+            const uint element = row_base + col;
+            const float scale = float(scales[element / group_size]);
+            for (uint k = 0u; k < 8u; ++k) {
+                partial += float(int(codes[element + k]) - ibound) * scale;
+            }
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
+    }
+    (void)input;
+}
+
+kernel void q80_uniform8_matvec_simd_bytes_addr_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    float partial = 0.0f;
+    if (row < rows && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint base = 0u; base < cols; base += 256u) {
+            const uint col = base + simd_lane * 8u;
+            if (col + 8u > cols) {
+                continue;
+            }
+            const uint element = row_base + col;
+            const float scale = float(scales[element / group_size]);
+            partial += scale + float(codes[element]) + float(codes[element + 7u]);
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u && row < rows) {
+        output[row] = partial;
+    }
+    (void)input;
+    (void)bits;
+    (void)bound;
+}
+
+kernel void q80_uniform8_matvec_simd_bytes_decode_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    const int ibound = int(bound);
+    float partial = 0.0f;
+    if (row < rows && bits == 8u && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint base = 0u; base < cols; base += 256u) {
+            const uint col = base + simd_lane * 8u;
+            if (col + 8u > cols) {
+                continue;
+            }
+            const uint element = row_base + col;
+            const float scale = float(scales[element / group_size]);
+            for (uint k = 0u; k < 8u; ++k) {
+                partial += float(int(codes[element + k]) - ibound) * scale;
+            }
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u && row < rows) {
+        output[row] = partial;
+    }
+    (void)input;
+}
+
+kernel void q80_hgravs01_factor_matvec_simd3_addr_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    float partial = 0.0f;
+    if (row < rows && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
+            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint b0 = uint(codes[byte0]);
+            const uint b2 = uint(codes[byte0 + 2u]);
+            const float s0 = float(scales[(row_base + col) / group_size]);
+            partial += float(b0) + float(b2) + s0;
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u && row < rows) {
+        output[row] = partial;
+    }
+    (void)input;
+    (void)bits;
+    (void)bound;
+}
+
+kernel void q80_hgravs01_factor_matvec_simd3_decode_probe(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    float partial = 0.0f;
+    if (row < rows && bits == 3u && group_size != 0u) {
+        const uint row_base = row * cols;
+        for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
+            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint b0 = uint(codes[byte0]);
+            const uint b1 = uint(codes[byte0 + 1u]);
+            const uint b2 = uint(codes[byte0 + 2u]);
+            const int q0 = int(b0 & 7u) - 3;
+            const int q1 = int((b0 >> 3u) & 7u) - 3;
+            const int q2 = int(((b0 >> 6u) | (b1 << 2u)) & 7u) - 3;
+            const int q3 = int((b1 >> 1u) & 7u) - 3;
+            const int q4 = int((b1 >> 4u) & 7u) - 3;
+            const int q5 = int(((b1 >> 7u) | (b2 << 1u)) & 7u) - 3;
+            const int q6 = int((b2 >> 2u) & 7u) - 3;
+            const int q7 = int((b2 >> 5u) & 7u) - 3;
+            const float s0 = float(scales[(row_base + col) / group_size]);
+            partial += float(q0 + q1 + q2 + q3 + q4 + q5 + q6 + q7) * s0;
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u && row < rows) {
+        output[row] = partial;
+    }
+    (void)input;
+    (void)bound;
+}
+
+kernel void q80_binary_group_csr_matvec_tg256_addr_probe(
+    device const uchar* signs           [[buffer(0)]],
+    device const half* scales           [[buffer(1)]],
+    device const float* input           [[buffer(2)]],
+    device float* output                [[buffer(3)]],
+    device const uint* indices          [[buffer(4)]],
+    device const uint* row_ptr          [[buffer(5)]],
+    device const uchar* residual_signs  [[buffer(6)]],
+    constant uint& rows                 [[buffer(7)]],
+    constant uint& cols                 [[buffer(8)]],
+    constant uint& group_size           [[buffer(9)]],
+    constant uint& groups_per_row       [[buffer(10)]],
+    constant uint& residual_scale_bits  [[buffer(11)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint lid                             [[thread_index_in_threadgroup]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    float partial = 0.0f;
+    if (row < rows) {
+        const uint col = lid * 8u;
+        if (col + 8u <= cols) {
+            const float scale = float(scales[row * groups_per_row + col / group_size]);
+            const uchar byte = signs[(row * cols + col) >> 3u];
+            partial = scale + float(byte);
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        const uint begin = row_ptr[row];
+        const uint end = row_ptr[row + 1u];
+        if (begin < end) {
+            acc += float(indices[begin] % cols) + float(residual_signs[begin]);
+        }
+        acc += float(as_type<half>(ushort(residual_scale_bits)));
+        output[row] = acc;
+    }
+    (void)input;
+}
+
+kernel void q80_binary_group_csr_matvec_tg256_decode_probe(
+    device const uchar* signs           [[buffer(0)]],
+    device const half* scales           [[buffer(1)]],
+    device const float* input           [[buffer(2)]],
+    device float* output                [[buffer(3)]],
+    device const uint* indices          [[buffer(4)]],
+    device const uint* row_ptr          [[buffer(5)]],
+    device const uchar* residual_signs  [[buffer(6)]],
+    constant uint& rows                 [[buffer(7)]],
+    constant uint& cols                 [[buffer(8)]],
+    constant uint& group_size           [[buffer(9)]],
+    constant uint& groups_per_row       [[buffer(10)]],
+    constant uint& residual_scale_bits  [[buffer(11)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint lid                             [[thread_index_in_threadgroup]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    float partial = 0.0f;
+    if (row < rows) {
+        const uint col = lid * 8u;
+        if (col + 8u <= cols) {
+            const float scale = float(scales[row * groups_per_row + col / group_size]);
+            const uchar byte = signs[(row * cols + col) >> 3u];
+            partial += (byte & 0x01u) ? scale : -scale;
+            partial += (byte & 0x02u) ? scale : -scale;
+            partial += (byte & 0x04u) ? scale : -scale;
+            partial += (byte & 0x08u) ? scale : -scale;
+            partial += (byte & 0x10u) ? scale : -scale;
+            partial += (byte & 0x20u) ? scale : -scale;
+            partial += (byte & 0x40u) ? scale : -scale;
+            partial += (byte & 0x80u) ? scale : -scale;
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u && row < rows) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        const float rscale = float(as_type<half>(ushort(residual_scale_bits)));
+        const uint begin = row_ptr[row];
+        const uint end = row_ptr[row + 1u];
+        for (uint n = begin; n < end; ++n) {
+            acc += q80_residual_q1_value(residual_signs, n, rscale);
+        }
+        output[row] = acc;
+    }
+    (void)input;
+    (void)indices;
+}
