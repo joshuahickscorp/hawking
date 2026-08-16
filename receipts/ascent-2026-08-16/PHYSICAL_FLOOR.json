@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.ascension.physical_floor.v1",
+  "date": "2026-08-16",
+  "machine": {
+    "chip": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_mem_gb": 96,
+    "peak_bandwidth_gb_s": 819,
+    "gpu_clock_hz": 1400000000.0,
+    "clock_period_ps": 714
+  },
+  "question": "Is sub-nanosecond latency a physically targetable goal?",
+  "answer_per_operation": "ALREADY TRUE. One GPU clock cycle is 714 ps, i.e. 0.714 ns. Individual instruction issue is already sub-nanosecond, and across 60 cores the effective per-FLOP time is femtoseconds. There is nothing left to target here.",
+  "answer_per_token": "PHYSICALLY IMPOSSIBLE by ~6 orders of magnitude. A 1 ns token is 1,000,000,000 tok/s. The binding constraint is bytes moved per token divided by memory bandwidth, and that floor is in MICROseconds.",
+  "floors": {
+    "q80_mixed_1_392467": {
+      "bpw": 1.392467,
+      "active_params_per_token": 3562274816,
+      "bytes_per_token": 620043766,
+      "dram_floor_ns": 757074,
+      "dram_floor_us": 757.1,
+      "implied_ceiling_tok_s": 1321
+    },
+    "q80_q4_vehicle_4_259241": {
+      "bpw": 4.259241,
+      "active_params_per_token": 3562274816,
+      "bytes_per_token": 1896573369,
+      "dram_floor_ns": 2315718,
+      "dram_floor_us": 2315.7,
+      "implied_ceiling_tok_s": 432
+    }
+  },
+  "dispatch_floor": {
+    "note": "A second floor of the same order: the 48-layer dependency chain cannot be collapsed below ~1 Metal dispatch per layer, and dispatch launch latency is ~2-5 us. 48 sequential dispatches is ~100-240 us, comparable to the DRAM floor. Practical floor is therefore ~1 ms/token, i.e. ~1000 tok/s, not the 757 us pure-bandwidth number."
+  },
+  "headroom_against_targets": {
+    "50_tps_budget_ns": 20000000,
+    "50_tps_headroom_vs_q80_floor": "26x - comfortably physical",
+    "333_tps_budget_ns": 3003003,
+    "333_tps_headroom_vs_q80_floor": "4x - physical but tight",
+    "1000_tps_budget_ns": 1000000,
+    "1000_tps_headroom": "1.3x - at the practical wall"
+  },
+  "the_real_framing": "Q80 currently runs 403,000,000 ns/token against its own 757,074 ns floor. That is 532x above the physical limit. The gap is engineering, not physics - every nanosecond of it is dispatch, host work, occupancy and idle, none of which is bounded below by the machine.",
+  "density_is_velocity_quantified": "Dropping 4.259241 -> 1.392467 BPW raises the CEILING from 432 to 1321 tok/s, a 3.06x increase in what is physically attainable at all. At 4.259 BPW, 333 TPS (TG3) sits at only 1.30x the floor and would require ~77% of peak bandwidth sustained - not credible. The <=1.5 artifact is what makes the tournament ladder physically reachable, independent of any runtime win."
+}
