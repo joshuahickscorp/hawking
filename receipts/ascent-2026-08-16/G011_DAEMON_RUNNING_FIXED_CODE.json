@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.g011.daemon_running_fixed_code.v1",
+  "date": "2026-08-16",
+  "operational_gap_caught": "The daemon I restarted earlier (pid 41428) had started BEFORE the five fixes and was executing the old code - its ticks showed phantom_targets_reconciled: None. The fixes existed on disk but were not loaded. Restarted at pid 52775.",
+  "why_this_mattered": "Without the restart the loop would have reverted to its broken behaviour on the next tick while every receipt claimed it was fixed. Editing a file does not restart a daemon.",
+  "current_tick": {
+    "phantom_targets_reconciled": 0,
+    "dead_lanes_found": 0,
+    "our_live_lanes": 3,
+    "launched": null,
+    "hold": "queue dry - harvest supplied no new pending target"
+  },
+  "THE_DISTINCTION_THAT_MATTERS": "'queue dry' now means something different from this morning. Then it meant STARVED - reports deleted, no NEXT_BOTTLENECK emitted, 106 phantom targets, a saturated lifetime cap, and a contract gate rejecting every brief. Now it means WAITING - three lanes are live and none has finished, so there is genuinely nothing to harvest. Same message, opposite condition.",
+  "how_to_tell_them_apart_next_time": "phantom_targets_reconciled present in the tick proves the fixed code is loaded. our_live_lanes > 0 with queue dry means waiting. our_live_lanes 0 with queue dry and finished lanes on disk means starved.",
+  "G011_state": "The loop launched once autonomously and is now correctly idle while its lane runs. The obligation still needs a full unattended cycle: this lane finishing, emitting NEXT_BOTTLENECK, and driving a second launch."
+}
