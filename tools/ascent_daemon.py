@@ -423,6 +423,13 @@ def one_pass() -> dict:
     save(STATE, state)
     report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
 
+    # 2b. reap lanes that died without saying so, preserving their work first.
+    # grok-run status reports `running` for processes that are gone - two DSV4F
+    # lanes held slots ~2 h that way, one of them sitting on a COMPLETED paired
+    # measurement that was uncommitted. Liveness is pgrep + worktree mtime.
+    rc, _ = sh(f"python3 {REPO / 'tools' / 'lane_health.py'}", timeout=900)
+    report["dead_lanes_found"] = rc if rc and rc < 100 else 0
+
     # 3. launch the top pending target if the box allows
     hold = govern(snap)
     report["our_live_lanes"] = len(snap.get("our_live_lanes") or [])
