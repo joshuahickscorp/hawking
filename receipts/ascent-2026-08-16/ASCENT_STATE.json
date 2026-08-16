@@ -160,6 +160,38 @@
         "honest_caveat": "One of three pairs FLIPPED (no-copy 1404 > pack 1278). Median improves; the spread is wide on a loaded box.",
         "hard_constraint": "384 MiB Metal weight bound means all 256 experts cannot be pinned (3.3 GiB/layer). Streaming 6-of-256 is forced.",
         "next_wall": "post-route host remap/open of the six expert chunks + next-layer attn views ~262 ms; GPU arithmetic 374 ms"
+      },
+      "mla": {
+        "branch": "grok/dsv-mla-20260816-003211 (1983ec3b) - NOT on main, dsv-integrate-graph running",
+        "regime": "OCCUPANCY-limited, NOT bandwidth-limited: 24-36 GB/s realized of a ~750 GB/s ceiling",
+        "thread_geometry_problem": "RMSNorm dispatches on 1 THREAD; WQ-A 1024; WKV 512; sparse attention 64",
+        "negative_result": "Collapsing the 17 attention dispatches into one serial encoder took encoders 731 -> 43 BIT-IDENTICALLY but attention GPU did NOT move (195-220 ms both arms). Encoder gaps are not the attention wall. Do not re-pay for this hypothesis.",
+        "real_win": "simdgroup KV QAT on the same E4M3FN table encoder: isolated kv_qat 2.9 ms -> 107 us/layer",
+        "attention_gpu_ms_pairs": [
+          [
+            198.32,
+            127.84
+          ],
+          [
+            196.97,
+            161.74
+          ],
+          [
+            269.4,
+            168.68
+          ]
+        ],
+        "attention_gpu_ms": {
+          "before": 198,
+          "after": 128
+        },
+        "layer_p50_ms": {
+          "before": 4.535,
+          "after": 2.898
+        },
+        "correctness": "hc_sha c94da765... preserved every rep, logit 16.7818546295166 (delta 0.0144), 0 fallbacks",
+        "no_structural_blocker": "no attention CB exceeds 20 ms",
+        "next": "wo_a 0.67-1.08 ms and wo_b 0.64-1.01 ms per layer (29-44 ms/token), then wq_a/wkv on 1024/512-thread grids. Still ~9x the 15 ms GPU-body budget. Occupancy plus convert+einsum, not bandwidth."
       }
     },
     "dsv4f_density_frontier": {
@@ -341,7 +373,8 @@
       "information_gain": 150000000,
       "transfer_value": 150000000,
       "experiment_cost": 1.5,
-      "status": "running"
+      "status": "retained_pending_integration",
+      "tier1": "SHIPPED, hc_sha preserved. Skews with cb-collapse and dsv-expert across the same graph/ledger files; folded into dsv-integrate-graph."
     },
     {
       "id": "dsv-expert",
@@ -441,20 +474,20 @@
       "note": "DECIDES whether the Q80 <=1.5 path is alive. Ranks first in the queue."
     },
     {
-      "id": "dsv-integrate-expert",
+      "id": "dsv-integrate-graph",
       "model": "dsv4f",
-      "hypothesis": "The no-copy expert bind and the collapsed single-encoder topology are complementary and can both land with bit-identity and the win intact",
+      "hypothesis": "cb-collapse, dsv-expert no-copy binds, and dsv-mla simdgroup KV QAT are complementary and can all land with bit-identity and every win intact",
       "target_stage": "integration",
-      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-integrate-expert.md",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-integrate-graph.md",
       "resource_class": "GPU_EXCLUSIVE",
       "probability_of_success": 0.8,
-      "recoverable_ns_per_token": 219000000,
+      "recoverable_ns_per_token": 289000000,
       "density_frontier_gain_ns_equiv": 0,
       "information_gain": 100000000,
       "transfer_value": 100000000,
       "experiment_cost": 1.0,
       "status": "running",
-      "note": "Two independent restructurings of the same hot path. Guessing at 262 lines of Metal dispatch would risk silently breaking bit-identity."
+      "note": "Three independent restructurings of the same hot path. Relaunched to absorb all three in one pass rather than two sequential integrations."
     }
   ],
   "history": [],
@@ -468,7 +501,8 @@
     "raw activation cosine is deceptive here: measured null baseline 0.898",
     "fits with rows < fitted dimension are UNDERDETERMINED and their scores meaningless",
     "never calibrate on a degraded baseline or on synthetic/Gaussian activations",
-    "immutable-identity recomputation per token has been the real latency three times"
+    "immutable-identity recomputation per token has been the real latency three times",
+    "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
