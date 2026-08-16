@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.ascent.reachability_audit.v1",
+  "date": "2026-08-16",
+  "why": "Three obligations were found today with acceptance bars that could not be satisfied - G006's undefined 'coherent', G015's undefined 'capability', G005's 0.50 against a 0.35 ceiling. This audits the rest before more lanes burn against them.",
+  "audit": {
+    "G003": {
+      "bar": "<=20 ms/token",
+      "fact": "roof at current bytes is 185.5 TPS = 5.4 ms floor",
+      "verdict": "REACHABLE",
+      "note": "20 ms sits above the physical floor; the 4.28x remaining is an execution gap, not a wall"
+    },
+    "G007": {
+      "bar": "all three >=50 TPS",
+      "fact": "DSV4F roof is 40.03 TPS at 10.280 GB/token",
+      "verdict": "UNREACHABLE on the current DSV4F artifact",
+      "note": "already recorded as inheriting G004's block; needs the C2 reseal decision"
+    },
+    "G002": {
+      "bar": "family serves BOTH graphs, per-facet measured",
+      "fact": "per-facet A/B is DONE; but the family left Q80's hot path when the reconstruction fix landed",
+      "verdict": "REACHABLE",
+      "note": "either port the occupancy tiles into the family, or record Q80's hot path as a documented structural exception"
+    },
+    "G015": {
+      "bar": "capability via CLAUDE_OFFLOAD_BENCH",
+      "fact": "that bench has 7 model-expected tasks of 20",
+      "verdict": "COMPROMISED until the bench widens",
+      "note": "a tournament on it would pick which model to KEEP from seven task kinds"
+    }
+  },
+  "standing_rule": "Before commissioning against an obligation, check the metric's CEILING against the threshold, not just that a threshold exists. Four of six frontier obligations needed this check and three failed it."
+}
