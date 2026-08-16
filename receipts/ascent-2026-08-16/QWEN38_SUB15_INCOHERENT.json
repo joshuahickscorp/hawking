@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.special_unit.sub15_pack_incoherent.v1",
+  "date": "2026-08-16",
+  "MEASURED_BY_CONTROLLER": "I ran this myself under tools/gpu_lane_lock.sh rather than waiting for a lane, using the packer the stopped lane left on main.",
+  "artifact": "workspace/campaign/records/runs/qwen38-27b/mixed-sub15-v1",
+  "recipe": "mlp.gate_proj HGRAVB01 binary_g128 | mlp.up_proj HGRAVR02 rice_q1_rms 2% | mlp.down_proj HGRAVS01 r160_b3 on real X | attention GEMVs rice_q1_rms 2% from BF16 | embed+lm_head HQ30UQ4 g64 | norms/A_log/dt_bias/conv1d f32",
+  "projection_the_packer_reported": {
+    "projected_ms_per_token": 12.588,
+    "projected_tps": 79.44,
+    "implied_bpw": 1.291
+  },
+  "RESULT": "INCOHERENT. FAILS criterion 1 of the G006 coherence bar - degenerate cycle.",
+  "evidence": {
+    "prompt_1": {
+      "text": "What is the capital of France?",
+      "generated": "  a    a  a  a  a  a  a",
+      "token_ids": [
+        220,
+        264,
+        220,
+        220,
+        220,
+        264,
+        220,
+        264,
+        220,
+        264,
+        220,
+        264,
+        220,
+        264,
+        220,
+        264
+      ],
+      "note": "a two-token cycle between 220 (space) and 264 (' a')"
+    },
+    "prompt_2": {
+      "text": "Write a function that reverses a string.",
+      "generated": "  a  a  a  a  a  a  a  a"
+    },
+    "control_same_prompt_on_the_4.2527_BPW_oracle": {
+      "generated": "<think>",
+      "note": "the oracle begins a coherent reasoning block, so the runtime and harness are fine"
+    },
+    "fallbacks": 0,
+    "why_fallbacks_matter": "0 silent fallbacks means this is NOT a runtime bug or a missing kernel path. The artifact itself encodes garbage."
+  },
+  "WHAT_THIS_ESTABLISHES_FOR_G006": "~1.29 BPW with this recipe is BELOW Qwen3.8's coherence floor. The floor is somewhere above it. This is a measured negative and, per the coherence bar recorded in the ledger, a valid G006 result - the bar states that the BPW at which coherence breaks is itself a first-class finding.",
+  "what_it_does_NOT_establish": "It does not establish that 1.29 BPW is unreachable in principle, only that THIS recipe fails there. The binary_g128 gate, rice_q1 up, and r160_b3 down combination is one point in a large space, and the reconstruction-is-free finding means cheaper-to-reconstruct codecs are no longer required, so the space is wider than when this recipe was chosen.",
+  "next": "The running qwen38-coherence-floor lane should bisect UPWARD from here: 1.29 fails, so try 1.5, 1.75, 2.0 to find where coherence returns. Its contract already permits a floor above 1.5 as a valid finding.",
+  "speed_caveat_carried": "The packer's own docstring is explicit that TPS is PROJECTED from packed bytes, not measured - the generate vehicle is HQ30UQ4-format files holding reconstructed weights. So the 79.44 TPS figure was never a measured result even if the pack had been coherent. A native sub-1.5 BPW kernel is still required by G006's 'own custom kernel' clause."
+}
