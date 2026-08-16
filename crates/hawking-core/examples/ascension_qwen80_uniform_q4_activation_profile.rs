@@ -113,6 +113,19 @@ fn run() -> Result<(), String> {
             act.metal_matvec_sync_secs / n
         );
     }
+    let fam = &result.family_gpu;
+    println!(
+        "family_gpu overlap={} serial={} kernel={} deltanet_gpu_ms={:.3} gqa_gpu_ms={:.3} prefix_gpu_ms={:.3} suffix_gpu_ms={:.3} gap_ms={:.3} gap_edges={}",
+        fam.overlap_cbs,
+        fam.serial_mixer,
+        fam.component_matvec_kernel,
+        fam.deltanet_mixer_gpu_ns as f64 / 1e6,
+        fam.gqa_mixer_gpu_ns as f64 / 1e6,
+        fam.moe_prefix_gpu_ns as f64 / 1e6,
+        fam.moe_suffix_gpu_ns as f64 / 1e6,
+        fam.gpu_gap_ns as f64 / 1e6,
+        fam.gpu_gap_edges
+    );
     println!(
         "stage_secs embed={:.4} deltanet={:.4} gqa={:.4} moe_shared={:.4} moe_routed={:.4} moe_table_build={:.4} moe_norm_router={:.4} moe_combine={:.4} terminal={:.4} q4_matvec={:.4}",
         result.stages.embed_secs,

@@ -1,0 +1,111 @@
+{
+  "schema": "hawking.ascent.q80-deltanet-gqa2.v1",
+  "lane": "q80-deltanet-gqa2",
+  "date": "2026-08-16",
+  "label": "DIRTY_ENGINEERING",
+  "status": "PARTIAL",
+  "artifact": "uniform-q4-group64-v1 used as harness only; no Q4-specific assumption shipped as a default",
+  "correctness": {
+    "generated_token_ids": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "generated_text": "Here's a simple function in Python that reverses a string",
+    "runs_matching": 18,
+    "host_q4_matvec_fallbacks": 0,
+    "host_expert_payload_bind": 0,
+    "state_contract": "qwen80_fixture_advance_hybrid_state multi-token reset / determinism tests passed"
+  },
+  "measurement_bugs_fixed": [
+    "deltanet_conv_secs / deltanet_recurrent_secs / gqa_* were only written on the host-fallback mixer. Production uses forward_token_device, so the baseline ~0 was an unwritten timer, not a measured zero. Device path now records host encode-wall of those kernels: conv ~2 ms / 28 tokens, recurrent ~3 ms, gqa rms ~2-4 ms, rope ~1 ms. They are genuinely tiny.",
+    "deltanet_secs / gqa_secs on the device path were the entire prefix CB wall (mixer + shared MLP + router + wait), not mixer work. moe_combine_secs was the entire suffix CB (routed experts + combine + wait).",
+    "qwen_uniform_q4_group64_matvec_component_tcb still hardcodes qwen_uniform_q4_group64_matvec (serial, 1 thread/row). a47f8259 switched the expert-table kernel to simdgroup; DeltaNet/GQA/shared/router/lm_head never reach it. simdgroup is documented not bit-identical, so it was not made the component default."
+  ],
+  "classification": {
+    "verdict": "GPU idle because no work is ready (sync / host-bind bound). Opposite of under-occupied-kernel as the complete-token wall.",
+    "a1_steady_state_decode": {
+      "wall_ns_per_token": 345460739,
+      "gpu_ns": 129846600,
+      "gpu_busy_fraction": 0.376,
+      "cpu_wait_ns": 179969546,
+      "host_work_ns": 157820564,
+      "gpu_gap_ns": 214918293,
+      "cbs": 98,
+      "dispatches": 1155,
+      "implied_gb_s_from_gpu": 14.57,
+      "bandwidth_fraction_of_819": 0.0178,
+      "ledger_verdict": "sync-bound"
+    },
+    "honest_family_gpu_b3_split_path_28_forwards": {
+      "note": "split overlap path attributes mixer / moe_prefix / suffix to separate CBs. GPU ns are GPUEndTime-GPUStartTime. Per-token = total/28.",
+      "deltanet_mixer_gpu_ns_per_token": 48700301,
+      "gqa_mixer_gpu_ns_per_token": 17697483,
+      "moe_prefix_shared_router_gpu_ns_per_token": 40045220,
+      "moe_suffix_routed_plus_combine_gpu_ns_per_token": 24930530,
+      "mixer_gpu_ms_per_layer": {"deltanet": 1.35, "gqa": 1.48}
+    },
+    "deltanet_conv_recurrent": "encode-wall microseconds; not the 3.33 s bucket. The 3.33 s was mixed prefix CB wall.",
+    "moe_combine_in_scope": "suffix GPU is ~25 ms/token of real routed+combine work; the 1.68 s stage (60 ms/token) is ~half wait. Overlap removes that wait but did not win complete-token wall."
+  },
+  "optimizations_tried": {
+    "split_overlap": {
+      "env": "HAWKING_QWEN80_OVERLAP_CBS=split (then =1 on the first binary)",
+      "what": "submit suffix and next mixer without wait; wait only on moe_prefix for router logits",
+      "correctness": "bit-identical 12 ids",
+      "paired_steady_ns_per_token": {
+        "A1": 345461360,
+        "B1": 311683330,
+        "A2": 346148208,
+        "B2": 426375205,
+        "A3": 292366651,
+        "B3": 287545587
+      },
+      "verdict": "not a robust win. B1 -34 ms, B2 +80 ms (table_build spiked), B3 -5 ms. Prefill often slower (146 CBs vs 98)."
+    },
+    "fuse": {
+      "env": "HAWKING_QWEN80_OVERLAP_CBS=fuse",
+      "what": "suffix_L + mixer_{L+1} + moe_prefix_{L+1} in one CB, 51 CBs/token",
+      "correctness": "bit-identical 12 ids",
+      "paired_steady_ns_per_token": {
+        "A4": 306493947,
+        "F1": 515709170,
+        "A5": 513770875,
+        "F2": 402554572,
+        "A6": 620567936,
+        "F3": 488202129
+      },
+      "verdict": "regression on the cleanest pair (F1 vs A4). Default off."
+    },
+    "serial_encoder": {
+      "env": "HAWKING_QWEN80_SERIAL_MIXER=1",
+      "what": "one serial compute encoder per mixer/prefix/suffix CB",
+      "correctness": "bit-identical 12 ids",
+      "paired_steady_ns_per_token": {
+        "S0a": 343922731,
+        "S1a": 359405939,
+        "S0b": 538103311,
+        "S1b": 460622485,
+        "S0c": 482941970,
+        "S1c": 425940292
+      },
+      "verdict": "not a robust complete-token win. Default off."
+    }
+  },
+  "defaults_shipped": {
+    "HAWKING_QWEN80_OVERLAP_CBS": "off (historical 2-wait topology)",
+    "HAWKING_QWEN80_SERIAL_MIXER": "off (per-dispatch encoders)",
+    "component_matvec": "qwen_uniform_q4_group64_matvec serial",
+    "measurement": "family GPU timestamps, device-path substage encode-wall, token_ns gpu_start/end + gap"
+  },
+  "next_bottleneck": {
+    "name": "host top-10 + expert address-table bind (moe_table_build_secs)",
+    "a1_table_build_secs_over_28_forwards": 5.917,
+    "a1_host_work_ns_per_decode_token": 157820565,
+    "note": "48 layers × host softmax/top-10 on 512 logits + 512-entry gpuAddress rewrite. GPU is idle during this. Device-side top-k would let suffix+next prefix stay on the queue. Out of this lane if treated as MoE table work; it is the reason mixer overlap cannot fill the GPU."
+  },
+  "published_baseline": {
+    "steady_state_tok_s": 2.479023,
+    "ns_per_token": 403363000,
+    "label": "DIRTY_ENGINEERING",
+    "deltanet_secs": 3.3269,
+    "gqa_secs": 1.1335,
+    "moe_combine_secs": 1.6958
+  }
+}

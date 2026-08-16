@@ -93,6 +93,77 @@ pub fn qwen80_device_activations_enabled() -> bool {
     true
 }
 
+/// Default **off**. Measured 2026-08-16 (DIRTY_ENGINEERING):
+/// `split` (3 CBs, no-wait suffix/mixer) is bit-identical but not a
+/// robust tok/s win (extra submits tax prefill). `fuse` (suffix + next
+/// mixer + moe_prefix in one CB) was a regression vs the 2-wait
+/// topology on the same paired reps.
+///
+/// `HAWKING_QWEN80_OVERLAP_CBS=split` or `=fuse` to opt in.
+pub fn qwen80_overlap_cbs_enabled() -> bool {
+    match std::env::var("HAWKING_QWEN80_OVERLAP_CBS") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.is_empty()
+                || trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => false,
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum OverlapMode {
+    Off,
+    Split,
+    Fuse,
+}
+
+fn qwen80_overlap_mode() -> OverlapMode {
+    match std::env::var("HAWKING_QWEN80_OVERLAP_CBS") {
+        Ok(raw) => {
+            let trimmed = raw.trim().to_ascii_lowercase();
+            if trimmed == "0"
+                || trimmed == "false"
+                || trimmed == "off"
+                || trimmed == "no"
+            {
+                OverlapMode::Off
+            } else if trimmed == "split" {
+                OverlapMode::Split
+            } else {
+                OverlapMode::Fuse
+            }
+        }
+        Err(_) => OverlapMode::Off,
+    }
+}
+
+/// Default **off**. One serial compute encoder per mixer / prefix / suffix
+/// CB. Paired 2026-08-16 DIRTY_ENGINEERING reps did not show a robust
+/// complete-token win vs per-dispatch encoders. Opt in with
+/// `HAWKING_QWEN80_SERIAL_MIXER=1`.
+pub fn qwen80_serial_mixer_enabled() -> bool {
+    match std::env::var("HAWKING_QWEN80_SERIAL_MIXER") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.is_empty()
+                || trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => false,
+    }
+}
+
+/// Component (DeltaNet / GQA / shared / router / lm_head) matvec kernel.
+/// Expert-table matvecs use the simdgroup default from a47f8259; this
+/// path still dispatches the serial one-thread-per-row kernel.
+pub const QWEN80_COMPONENT_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec";
+
 fn q80q4_error(message: impl Into<String>) -> Error {
     Error::Model(format!(
         "qwen80 uniform-q4 hybrid decode: {}",
@@ -778,6 +849,75 @@ pub struct Qwen80ActivationClassCounts {
     pub other_host_activation: u64,
 }
 
+/// Device-path GPU / host split for mixer families.
+///
+/// GPU nanoseconds are `MTLCommandBuffer.GPUEndTime − GPUStartTime` after
+/// wait (or after a later same-queue wait for overlapped CBs). They are
+/// never a CPU-wall proxy. On the historical fused-prefix path the mixer
+/// CB also contains shared-expert + router work and is flagged mixed.
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80FamilyGpuTimes {
+    pub overlap_cbs: bool,
+    pub overlap_mode: &'static str,
+    pub serial_mixer: bool,
+    pub component_matvec_kernel: &'static str,
+    pub deltanet_mixer_cbs: u64,
+    pub deltanet_mixer_dispatches: u64,
+    pub deltanet_mixer_gpu_ns: u64,
+    pub deltanet_mixer_wait_ns: u64,
+    pub deltanet_mixer_encode_ns: u64,
+    pub deltanet_mixer_mixed_with_moe_prefix: bool,
+    pub gqa_mixer_cbs: u64,
+    pub gqa_mixer_dispatches: u64,
+    pub gqa_mixer_gpu_ns: u64,
+    pub gqa_mixer_wait_ns: u64,
+    pub gqa_mixer_encode_ns: u64,
+    pub gqa_mixer_mixed_with_moe_prefix: bool,
+    pub moe_prefix_cbs: u64,
+    pub moe_prefix_dispatches: u64,
+    pub moe_prefix_gpu_ns: u64,
+    pub moe_prefix_wait_ns: u64,
+    pub moe_prefix_encode_ns: u64,
+    pub moe_suffix_cbs: u64,
+    pub moe_suffix_dispatches: u64,
+    pub moe_suffix_gpu_ns: u64,
+    pub moe_suffix_wait_ns: u64,
+    pub moe_suffix_encode_ns: u64,
+    pub moe_suffix_combine_dispatches: u64,
+    pub fused_layer_cbs: u64,
+    pub fused_layer_dispatches: u64,
+    pub fused_layer_gpu_ns: u64,
+    pub fused_layer_wait_ns: u64,
+    pub gpu_gap_ns: u64,
+    pub gpu_gap_edges: u64,
+    pub bytes_read_weight: u64,
+    pub last_gpu_end_ns: Option<u64>,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum FamilyGpuKind {
+    DeltaNetMixer { mixed: bool },
+    GqaMixer { mixed: bool },
+    MoePrefix,
+    MoeSuffix,
+    FusedLayer,
+    Other,
+}
+
+impl Qwen80FamilyGpuTimes {
+    fn note_cb(&mut self, timing: &crate::metal::CommandBufferTiming) {
+        if let (Some(start), Some(prev_end)) = (timing.gpu_start_ns, self.last_gpu_end_ns) {
+            if start > prev_end {
+                self.gpu_gap_ns = self.gpu_gap_ns.saturating_add(start - prev_end);
+                self.gpu_gap_edges = self.gpu_gap_edges.saturating_add(1);
+            }
+        }
+        if let Some(end) = timing.gpu_end_ns {
+            self.last_gpu_end_ns = Some(end);
+        }
+    }
+}
+
 fn add_secs(slot: &mut f64, started: Instant) {
     *slot += started.elapsed().as_secs_f64();
 }
@@ -1400,6 +1540,7 @@ pub struct Qwen80UniformQ4HybridDecodeSession {
     pub native: Qwen80DecodeNativeCounts,
     pub stages: Qwen80DecodeStageTimes,
     pub activation_counts: Qwen80ActivationClassCounts,
+    pub family_gpu: Qwen80FamilyGpuTimes,
     pub token_ns: Qwen80TokenNsSession,
     #[cfg(target_os = "macos")]
     metal: Option<MetalQ4Accel>,
@@ -1450,6 +1591,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
             native: Qwen80DecodeNativeCounts::default(),
             stages: Qwen80DecodeStageTimes::default(),
             activation_counts: Qwen80ActivationClassCounts::default(),
+            family_gpu: Qwen80FamilyGpuTimes {
+                overlap_cbs: qwen80_overlap_cbs_enabled(),
+                overlap_mode: match qwen80_overlap_mode() {
+                    OverlapMode::Off => "off",
+                    OverlapMode::Split => "split",
+                    OverlapMode::Fuse => "fuse",
+                },
+                serial_mixer: qwen80_serial_mixer_enabled(),
+                component_matvec_kernel: QWEN80_COMPONENT_MATVEC_KERNEL,
+                ..Qwen80FamilyGpuTimes::default()
+            },
             token_ns: Qwen80TokenNsSession::from_env(),
             #[cfg(target_os = "macos")]
             metal,
@@ -2037,9 +2189,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
         layer: Option<u32>,
         operator_classes: &[&str],
         force_sync_reason: &str,
-    ) -> Result<()> {
+        family: FamilyGpuKind,
+    ) -> Result<crate::metal::CommandBufferTiming> {
+        let timing = tcb.commit_and_wait_timed()?;
+        self.record_family_timing(family, &timing);
         if self.token_ns.enabled {
-            let timing = tcb.commit_and_wait_timed()?;
             self.token_ns.record_cb(
                 name,
                 layer,
@@ -2047,9 +2201,137 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 timing,
                 force_sync_reason,
             );
-            Ok(())
-        } else {
-            tcb.commit_and_wait()
+        }
+        Ok(timing)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn commit_submit_retain_profiled(
+        &mut self,
+        tcb: crate::metal::TokenCommandBuffer<'static>,
+    ) -> Result<crate::metal::SubmittedTokenCommandBuffer> {
+        tcb.commit_submit_retain()
+    }
+
+    #[cfg(target_os = "macos")]
+    fn resolve_submitted(
+        &mut self,
+        submitted: crate::metal::SubmittedTokenCommandBuffer,
+        name: &str,
+        layer: Option<u32>,
+        operator_classes: &[&str],
+        force_sync_reason: &str,
+        family: FamilyGpuKind,
+    ) -> crate::metal::CommandBufferTiming {
+        let timing = submitted.resolve();
+        self.record_family_timing(family, &timing);
+        if self.token_ns.enabled {
+            self.token_ns.record_cb(
+                name,
+                layer,
+                operator_classes,
+                timing,
+                force_sync_reason,
+            );
+        }
+        timing
+    }
+
+    #[cfg(target_os = "macos")]
+    fn record_family_timing(
+        &mut self,
+        family: FamilyGpuKind,
+        timing: &crate::metal::CommandBufferTiming,
+    ) {
+        self.family_gpu.note_cb(timing);
+        let gpu = timing.gpu_ns.unwrap_or(0);
+        match family {
+            FamilyGpuKind::DeltaNetMixer { mixed } => {
+                self.family_gpu.deltanet_mixer_cbs =
+                    self.family_gpu.deltanet_mixer_cbs.saturating_add(1);
+                self.family_gpu.deltanet_mixer_dispatches = self
+                    .family_gpu
+                    .deltanet_mixer_dispatches
+                    .saturating_add(timing.dispatches);
+                self.family_gpu.deltanet_mixer_gpu_ns =
+                    self.family_gpu.deltanet_mixer_gpu_ns.saturating_add(gpu);
+                self.family_gpu.deltanet_mixer_wait_ns = self
+                    .family_gpu
+                    .deltanet_mixer_wait_ns
+                    .saturating_add(timing.wait_ns);
+                self.family_gpu.deltanet_mixer_encode_ns = self
+                    .family_gpu
+                    .deltanet_mixer_encode_ns
+                    .saturating_add(timing.encode_ns);
+                self.family_gpu.deltanet_mixer_mixed_with_moe_prefix = mixed;
+            }
+            FamilyGpuKind::GqaMixer { mixed } => {
+                self.family_gpu.gqa_mixer_cbs = self.family_gpu.gqa_mixer_cbs.saturating_add(1);
+                self.family_gpu.gqa_mixer_dispatches = self
+                    .family_gpu
+                    .gqa_mixer_dispatches
+                    .saturating_add(timing.dispatches);
+                self.family_gpu.gqa_mixer_gpu_ns =
+                    self.family_gpu.gqa_mixer_gpu_ns.saturating_add(gpu);
+                self.family_gpu.gqa_mixer_wait_ns = self
+                    .family_gpu
+                    .gqa_mixer_wait_ns
+                    .saturating_add(timing.wait_ns);
+                self.family_gpu.gqa_mixer_encode_ns = self
+                    .family_gpu
+                    .gqa_mixer_encode_ns
+                    .saturating_add(timing.encode_ns);
+                self.family_gpu.gqa_mixer_mixed_with_moe_prefix = mixed;
+            }
+            FamilyGpuKind::MoePrefix => {
+                self.family_gpu.moe_prefix_cbs = self.family_gpu.moe_prefix_cbs.saturating_add(1);
+                self.family_gpu.moe_prefix_dispatches = self
+                    .family_gpu
+                    .moe_prefix_dispatches
+                    .saturating_add(timing.dispatches);
+                self.family_gpu.moe_prefix_gpu_ns =
+                    self.family_gpu.moe_prefix_gpu_ns.saturating_add(gpu);
+                self.family_gpu.moe_prefix_wait_ns = self
+                    .family_gpu
+                    .moe_prefix_wait_ns
+                    .saturating_add(timing.wait_ns);
+                self.family_gpu.moe_prefix_encode_ns = self
+                    .family_gpu
+                    .moe_prefix_encode_ns
+                    .saturating_add(timing.encode_ns);
+            }
+            FamilyGpuKind::MoeSuffix => {
+                self.family_gpu.moe_suffix_cbs = self.family_gpu.moe_suffix_cbs.saturating_add(1);
+                self.family_gpu.moe_suffix_dispatches = self
+                    .family_gpu
+                    .moe_suffix_dispatches
+                    .saturating_add(timing.dispatches);
+                self.family_gpu.moe_suffix_gpu_ns =
+                    self.family_gpu.moe_suffix_gpu_ns.saturating_add(gpu);
+                self.family_gpu.moe_suffix_wait_ns = self
+                    .family_gpu
+                    .moe_suffix_wait_ns
+                    .saturating_add(timing.wait_ns);
+                self.family_gpu.moe_suffix_encode_ns = self
+                    .family_gpu
+                    .moe_suffix_encode_ns
+                    .saturating_add(timing.encode_ns);
+            }
+            FamilyGpuKind::FusedLayer => {
+                self.family_gpu.fused_layer_cbs =
+                    self.family_gpu.fused_layer_cbs.saturating_add(1);
+                self.family_gpu.fused_layer_dispatches = self
+                    .family_gpu
+                    .fused_layer_dispatches
+                    .saturating_add(timing.dispatches);
+                self.family_gpu.fused_layer_gpu_ns =
+                    self.family_gpu.fused_layer_gpu_ns.saturating_add(gpu);
+                self.family_gpu.fused_layer_wait_ns = self
+                    .family_gpu
+                    .fused_layer_wait_ns
+                    .saturating_add(timing.wait_ns);
+            }
+            FamilyGpuKind::Other => {}
         }
     }
 
@@ -2122,12 +2404,14 @@ impl Qwen80UniformQ4HybridDecodeSession {
         crate::kernels::qwen_uniform_q4_group64_matvec_component_tcb(
             tcb, &codes, &scales, input, output, rows, cols,
         )?;
+        let bytes = packed
+            .codes()
+            .map(|c| c.len() as u64)
+            .unwrap_or(0)
+            .saturating_add(packed.scales().map(|s| s.len() as u64).unwrap_or(0));
+        self.family_gpu.bytes_read_weight =
+            self.family_gpu.bytes_read_weight.saturating_add(bytes);
         if self.token_ns.enabled {
-            let bytes = packed
-                .codes()
-                .map(|c| c.len() as u64)
-                .unwrap_or(0)
-                .saturating_add(packed.scales().map(|s| s.len() as u64).unwrap_or(0));
             self.token_ns.add_weight_bytes(bytes);
         }
         self.native.q4_matvec_dispatches = self.native.q4_matvec_dispatches.saturating_add(1);
@@ -2285,6 +2569,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 actw.linear_recurrent.clone(),
             )
         };
+        if qwen80_serial_mixer_enabled() {
+            tcb.begin_serial_group()?;
+        }
         self.encode_residual_rmsnorm(
             tcb,
             hidden,
@@ -2305,6 +2592,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         let conv_w =
             self.device_vector_buf(&Self::layer_name(layer, "linear_attn.conv1d.weight"))?;
+        let conv_started = Instant::now();
         tcb.dispatch_threads(
             "qwen80_qkvz_rearrange_conv_l2_f32",
             (256, layout.key_heads as u32, 1),
@@ -2337,8 +2625,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        add_secs(
+            &mut self.stages.activation.deltanet_conv_secs,
+            conv_started,
+        );
+        self.activation_counts.deltanet_conv =
+            self.activation_counts.deltanet_conv.saturating_add(1);
         let a_log = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.A_log"))?;
         let dt_bias = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.dt_bias"))?;
+        let recurrent_started = Instant::now();
         tcb.dispatch_threads(
             "qwen80_ba_to_decay_beta_f32",
             (layout.value_heads as u32, 1, 1),
@@ -2381,6 +2676,14 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        add_secs(
+            &mut self.stages.activation.deltanet_recurrent_secs,
+            recurrent_started,
+        );
+        self.activation_counts.deltanet_recurrent = self
+            .activation_counts
+            .deltanet_recurrent
+            .saturating_add(1);
         let norm_w = self.device_vector_buf(&Self::layer_name(layer, "linear_attn.norm.weight"))?;
         tcb.dispatch_threads(
             "qwen80_deltanet_gated_rmsnorm_f32",
@@ -2419,6 +2722,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        if qwen80_serial_mixer_enabled() {
+            tcb.end_concurrent_group()?;
+        }
         Ok(())
     }
 
@@ -2472,12 +2778,24 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 actw.gqa_value.clone(),
             )
         };
+        if qwen80_serial_mixer_enabled() {
+            tcb.begin_serial_group()?;
+        }
+        let rms_started = Instant::now();
         self.encode_residual_rmsnorm(
             tcb,
             hidden,
             &Self::layer_name(layer, "input_layernorm.weight"),
             &normalized,
         )?;
+        add_secs(
+            &mut self.stages.activation.gqa_input_layernorm_secs,
+            rms_started,
+        );
+        self.activation_counts.gqa_input_layernorm = self
+            .activation_counts
+            .gqa_input_layernorm
+            .saturating_add(1);
         self.encode_q4_matvec(
             tcb,
             &Self::layer_name(layer, "self_attn.q_proj.weight"),
@@ -2498,6 +2816,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         let q_norm = self.device_vector_buf(&Self::layer_name(layer, "self_attn.q_norm.weight"))?;
         let k_norm = self.device_vector_buf(&Self::layer_name(layer, "self_attn.k_norm.weight"))?;
+        let rope_started = Instant::now();
         tcb.dispatch_threads(
             "qwen80_gqa_qk_norm_rope_cache_f32",
             (layout.query_heads as u32, 1, 1),
@@ -2531,6 +2850,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        add_secs(&mut self.stages.activation.gqa_norm_rope_secs, rope_started);
+        self.activation_counts.gqa_norm_rope =
+            self.activation_counts.gqa_norm_rope.saturating_add(1);
         crate::kernels::mha_decode_f32_tcb(
             tcb,
             &query,
@@ -2577,6 +2899,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        if qwen80_serial_mixer_enabled() {
+            tcb.end_concurrent_group()?;
+        }
         Ok(())
     }
 
@@ -2595,6 +2920,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 .ok_or_else(|| q80q4_error("device activations missing"))?;
             (actw.first_residual.clone(), actw.router_logits.clone())
         };
+        if qwen80_serial_mixer_enabled() {
+            tcb.begin_serial_group()?;
+        }
         self.encode_residual_rmsnorm(
             tcb,
             &first_residual,
@@ -2607,7 +2935,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &Self::layer_name(layer, "mlp.gate.weight"),
             postnorm,
             &router_logits,
-        )
+        )?;
+        if qwen80_serial_mixer_enabled() {
+            tcb.end_concurrent_group()?;
+        }
+        Ok(())
     }
 
     #[cfg(target_os = "macos")]
@@ -2632,6 +2964,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 actw.first_residual.clone(),
             )
         };
+        if qwen80_serial_mixer_enabled() {
+            tcb.begin_serial_group()?;
+        }
         self.encode_q4_matvec(
             tcb,
             &Self::layer_name(layer, "mlp.shared_expert_gate.weight"),
@@ -2663,7 +2998,397 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(2);
+        self.family_gpu.moe_suffix_combine_dispatches = self
+            .family_gpu
+            .moe_suffix_combine_dispatches
+            .saturating_add(4);
+        if qwen80_serial_mixer_enabled() {
+            tcb.end_concurrent_group()?;
+        }
         Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_mixer_into(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+    ) -> Result<(&'static str, FamilyGpuKind)> {
+        match qwen80_layer_kind(layer)? {
+            Qwen80LayerKind::LinearAttention => {
+                self.encode_deltanet_mixer(tcb, layer, hidden)?;
+                Ok((
+                    "deltanet",
+                    FamilyGpuKind::DeltaNetMixer { mixed: false },
+                ))
+            }
+            Qwen80LayerKind::FullAttention => {
+                self.encode_gqa_mixer(tcb, layer, hidden)?;
+                Ok(("gqa", FamilyGpuKind::GqaMixer { mixed: false }))
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    fn host_route_and_bind(&mut self, layer: usize) -> Result<()> {
+        let snap_started = Instant::now();
+        let router_logits = {
+            let actw = self
+                .metal
+                .as_ref()
+                .and_then(|m| m.activations.as_ref())
+                .ok_or_else(|| q80q4_error("device activations missing"))?;
+            Self::snapshot_f32(&actw.router_logits, QWEN80_EXPERTS)?
+        };
+        let snap_ns = snap_started.elapsed().as_nanos() as u64;
+        self.token_ns.record_sync(
+            "router_logits_readback",
+            Some(layer as u32),
+            "prefix CB wait then memcpy 512 f32 logits; forces CPU top-k",
+            snap_ns,
+            (QWEN80_EXPERTS * std::mem::size_of::<f32>()) as u64,
+            "device_to_host",
+        );
+        let route_started = Instant::now();
+        let route = source_qwen80_topk_router(&router_logits)?;
+        self.token_ns.record_host_work(
+            "host_topk_router",
+            Some(layer as u32),
+            route_started.elapsed().as_nanos() as u64,
+            0,
+            "softmax + top-10 + renormalize on 512 host logits",
+        );
+        self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
+        self.activation_counts.other_host_activation = self
+            .activation_counts
+            .other_host_activation
+            .saturating_add(1);
+
+        let mut route_ids = [0u32; 10];
+        let mut route_weights = [0.0f32; 10];
+        for (index, (&expert, &weight)) in route.ids.iter().zip(route.weights.iter()).enumerate() {
+            route_ids[index] = expert as u32;
+            route_weights[index] = weight;
+        }
+        let pack_started = Instant::now();
+        let metal = self
+            .metal
+            .as_mut()
+            .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+        metal.ensure_selected_expert_table(
+            &self.catalog,
+            layer,
+            &route_ids,
+            &mut self.native,
+            &mut self.stages,
+        )?;
+        let wave = metal
+            .expert_wave
+            .as_ref()
+            .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
+        let bind_ids = if metal.expert_slabs.is_some() {
+            route_ids
+        } else {
+            let mut remapped = [0u32; 10];
+            for (slot, id) in remapped.iter_mut().enumerate() {
+                *id = slot as u32;
+            }
+            remapped
+        };
+        crate::metal::MetalContext::write_buffer_bytes(
+            &wave.route_ids,
+            bytemuck::cast_slice(&bind_ids),
+        );
+        crate::metal::MetalContext::write_buffer_bytes(
+            &wave.route_weights,
+            bytemuck::cast_slice(&route_weights),
+        );
+        let pack_bytes = (QWEN80_EXPERTS
+            * std::mem::size_of::<super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet>(
+            )) as u64;
+        self.token_ns.record_host_work(
+            "expert_address_table_bind",
+            Some(layer as u32),
+            pack_started.elapsed().as_nanos() as u64,
+            pack_bytes,
+            "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets",
+        );
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_suffix_into(
+        &mut self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        let (routed, dispatches) = {
+            let metal = self
+                .metal
+                .as_ref()
+                .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+            let lease = metal
+                .expert_table
+                .as_ref()
+                .ok_or_else(|| q80q4_error("expert table lease missing after ensure"))?;
+            let wave = metal
+                .expert_wave
+                .as_ref()
+                .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
+            let dispatches =
+                super::qwen80_device_expert_table::dispatch_qwen80_device_expert_table_tcb(
+                    tcb,
+                    lease,
+                    wave,
+                    metal.expert_kernel,
+                )?;
+            (wave.combined.clone(), dispatches)
+        };
+        self.native.expert_table_waves = self.native.expert_table_waves.saturating_add(1);
+        self.native.expert_table_matvec_dispatches = self
+            .native
+            .expert_table_matvec_dispatches
+            .saturating_add(dispatches);
+        let expert_bytes = (super::qwen80_device_expert_table::QWEN80_EXPERT_TABLE_TOP_K
+            * 3
+            * (super::qwen80_device_expert_table::QWEN80_EXPERT_CODE_BYTES
+                + super::qwen80_device_expert_table::QWEN80_EXPERT_SCALE_BYTES))
+            as u64;
+        self.family_gpu.bytes_read_weight = self
+            .family_gpu
+            .bytes_read_weight
+            .saturating_add(expert_bytes);
+        if self.token_ns.enabled {
+            self.token_ns.add_weight_bytes(expert_bytes);
+        }
+        self.encode_moe_combine(tcb, layer, hidden, &routed, expert_input)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn submit_mixer(
+        &mut self,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+    ) -> Result<(
+        crate::metal::SubmittedTokenCommandBuffer,
+        &'static str,
+        FamilyGpuKind,
+    )> {
+        crate::metal::set_current_layer(Some(layer as u32));
+        let mut tcb = self.new_token_cb()?;
+        let started = Instant::now();
+        let (mixer_class, family) = self.encode_mixer_into(&mut tcb, layer, hidden)?;
+        match mixer_class {
+            "deltanet" => add_secs(&mut self.stages.deltanet_secs, started),
+            _ => add_secs(&mut self.stages.gqa_secs, started),
+        }
+        let submitted = self.commit_submit_retain_profiled(tcb)?;
+        Ok((submitted, mixer_class, family))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn wait_moe_prefix(
+        &mut self,
+        layer: usize,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<()> {
+        crate::metal::set_current_layer(Some(layer as u32));
+        let mut tcb = self.new_token_cb()?;
+        let started = Instant::now();
+        self.encode_moe_prefix(&mut tcb, layer, expert_input)?;
+        self.commit_profiled(
+            tcb,
+            &format!("L{layer}.moe_prefix"),
+            Some(layer as u32),
+            &["shared_expert", "router", "norm"],
+            "host top-10 router needs 512 router logits on the CPU",
+            FamilyGpuKind::MoePrefix,
+        )?;
+        add_secs(&mut self.stages.moe_shared_secs, started);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn submit_suffix(
+        &mut self,
+        layer: usize,
+        hidden: &crate::metal::PinnedBuffer,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<crate::metal::SubmittedTokenCommandBuffer> {
+        crate::metal::set_current_layer(Some(layer as u32));
+        let mut tcb = self.new_token_cb()?;
+        let started = Instant::now();
+        self.encode_suffix_into(&mut tcb, layer, hidden, expert_input)?;
+        add_secs(&mut self.stages.moe_combine_secs, started);
+        self.commit_submit_retain_profiled(tcb)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_device_overlapped(
+        &mut self,
+        hidden: &crate::metal::PinnedBuffer,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<Option<crate::metal::SubmittedTokenCommandBuffer>> {
+        let (mixer0, class0, family0) = self.submit_mixer(0, hidden)?;
+        self.wait_moe_prefix(0, expert_input)?;
+        self.resolve_submitted(
+            mixer0,
+            &format!("L0.mixer.{class0}"),
+            Some(0),
+            &[class0],
+            "overlapped mixer; resolved after moe_prefix wait",
+            family0,
+        );
+        self.host_route_and_bind(0)?;
+
+        for layer in 0..(QWEN80_LAYERS - 1) {
+            let next = layer + 1;
+            let suffix = self.submit_suffix(layer, hidden, expert_input)?;
+            let (mixer, class, family) = self.submit_mixer(next, hidden)?;
+            self.wait_moe_prefix(next, expert_input)?;
+            self.resolve_submitted(
+                suffix,
+                &format!("L{layer}.suffix"),
+                Some(layer as u32),
+                &["routed_expert", "combine"],
+                "overlapped suffix; resolved after next moe_prefix wait",
+                FamilyGpuKind::MoeSuffix,
+            );
+            self.resolve_submitted(
+                mixer,
+                &format!("L{next}.mixer.{class}"),
+                Some(next as u32),
+                &[class],
+                "overlapped mixer; resolved after moe_prefix wait",
+                family,
+            );
+            self.host_route_and_bind(next)?;
+        }
+        let last = QWEN80_LAYERS - 1;
+        let suffix = self.submit_suffix(last, hidden, expert_input)?;
+        Ok(Some(suffix))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_device_fused(
+        &mut self,
+        hidden: &crate::metal::PinnedBuffer,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<Option<crate::metal::SubmittedTokenCommandBuffer>> {
+        // Layer 0: mixer + moe_prefix, wait for router logits.
+        crate::metal::set_current_layer(Some(0));
+        let mut first = self.new_token_cb()?;
+        let started = Instant::now();
+        let (class0, family0) = self.encode_mixer_into(&mut first, 0, hidden)?;
+        match class0 {
+            "deltanet" => add_secs(&mut self.stages.deltanet_secs, started),
+            _ => add_secs(&mut self.stages.gqa_secs, started),
+        }
+        let prefix_started = Instant::now();
+        self.encode_moe_prefix(&mut first, 0, expert_input)?;
+        add_secs(&mut self.stages.moe_shared_secs, prefix_started);
+        self.commit_profiled(
+            first,
+            "L0.mixer+moe_prefix",
+            Some(0),
+            &[class0, "shared_expert", "router", "norm"],
+            "host top-10 router needs 512 router logits on the CPU",
+            match family0 {
+                FamilyGpuKind::DeltaNetMixer { .. } => {
+                    FamilyGpuKind::DeltaNetMixer { mixed: true }
+                }
+                FamilyGpuKind::GqaMixer { .. } => FamilyGpuKind::GqaMixer { mixed: true },
+                other => other,
+            },
+        )?;
+        self.host_route_and_bind(0)?;
+
+        for layer in 0..(QWEN80_LAYERS - 1) {
+            let next = layer + 1;
+            crate::metal::set_current_layer(Some(next as u32));
+            let mut fused = self.new_token_cb()?;
+            let suffix_started = Instant::now();
+            self.encode_suffix_into(&mut fused, layer, hidden, expert_input)?;
+            add_secs(&mut self.stages.moe_combine_secs, suffix_started);
+            let mix_started = Instant::now();
+            let (class, _family) = self.encode_mixer_into(&mut fused, next, hidden)?;
+            match class {
+                "deltanet" => add_secs(&mut self.stages.deltanet_secs, mix_started),
+                _ => add_secs(&mut self.stages.gqa_secs, mix_started),
+            }
+            let prefix_started = Instant::now();
+            self.encode_moe_prefix(&mut fused, next, expert_input)?;
+            add_secs(&mut self.stages.moe_shared_secs, prefix_started);
+            self.commit_profiled(
+                fused,
+                &format!("L{layer}.suffix+L{next}.mixer+prefix"),
+                Some(next as u32),
+                &["routed_expert", "combine", class, "shared_expert", "router"],
+                "fused suffix + next mixer + moe_prefix; wait only for next router logits",
+                FamilyGpuKind::FusedLayer,
+            )?;
+            self.host_route_and_bind(next)?;
+        }
+
+        let last = QWEN80_LAYERS - 1;
+        let suffix = self.submit_suffix(last, hidden, expert_input)?;
+        Ok(Some(suffix))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_device_serial_waits(
+        &mut self,
+        hidden: &crate::metal::PinnedBuffer,
+        expert_input: &crate::metal::PinnedBuffer,
+    ) -> Result<Option<crate::metal::SubmittedTokenCommandBuffer>> {
+        for layer in 0..QWEN80_LAYERS {
+            crate::metal::set_current_layer(Some(layer as u32));
+            let mut prefix = self.new_token_cb()?;
+            let prefix_started = Instant::now();
+            let (mixer_class, family) = match qwen80_layer_kind(layer)? {
+                Qwen80LayerKind::LinearAttention => {
+                    self.encode_deltanet_mixer(&mut prefix, layer, hidden)?;
+                    (
+                        "deltanet",
+                        FamilyGpuKind::DeltaNetMixer { mixed: true },
+                    )
+                }
+                Qwen80LayerKind::FullAttention => {
+                    self.encode_gqa_mixer(&mut prefix, layer, hidden)?;
+                    ("gqa", FamilyGpuKind::GqaMixer { mixed: true })
+                }
+            };
+            self.encode_moe_prefix(&mut prefix, layer, expert_input)?;
+            self.commit_profiled(
+                prefix,
+                &format!("L{layer}.prefix"),
+                Some(layer as u32),
+                &[mixer_class, "shared_expert", "router", "norm"],
+                "host top-10 router needs 512 router logits on the CPU",
+                family,
+            )?;
+            match mixer_class {
+                "deltanet" => add_secs(&mut self.stages.deltanet_secs, prefix_started),
+                _ => add_secs(&mut self.stages.gqa_secs, prefix_started),
+            }
+            self.host_route_and_bind(layer)?;
+            let mut suffix = self.new_token_cb()?;
+            let suffix_started = Instant::now();
+            self.encode_suffix_into(&mut suffix, layer, hidden, expert_input)?;
+            self.commit_profiled(
+                suffix,
+                &format!("L{layer}.suffix"),
+                Some(layer as u32),
+                &["routed_expert", "combine"],
+                "next layer mixer reads the updated residual hidden",
+                FamilyGpuKind::MoeSuffix,
+            )?;
+            add_secs(&mut self.stages.moe_combine_secs, suffix_started);
+        }
+        Ok(None)
     }
 
     #[cfg(target_os = "macos")]
@@ -2715,181 +3440,29 @@ impl Qwen80UniformQ4HybridDecodeSession {
             }
             hidden
         };
-        for layer in 0..QWEN80_LAYERS {
-            crate::metal::set_current_layer(Some(layer as u32));
-            let mut prefix = self.new_token_cb()?;
-            let expert_input = {
-                let metal = self
-                    .metal
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
-                metal
-                    .expert_wave
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?
-                    .input
-                    .clone()
-            };
-            let prefix_started = Instant::now();
-            let (mixer_class, prefix_name) = match qwen80_layer_kind(layer)? {
-                Qwen80LayerKind::LinearAttention => {
-                    self.encode_deltanet_mixer(&mut prefix, layer, &hidden)?;
-                    self.encode_moe_prefix(&mut prefix, layer, &expert_input)?;
-                    ("deltanet", "L.prefix.deltanet+shared+router")
-                }
-                Qwen80LayerKind::FullAttention => {
-                    self.encode_gqa_mixer(&mut prefix, layer, &hidden)?;
-                    self.encode_moe_prefix(&mut prefix, layer, &expert_input)?;
-                    ("gqa", "L.prefix.gqa+shared+router")
-                }
-            };
-            self.commit_profiled(
-                prefix,
-                &format!("L{layer}.prefix"),
-                Some(layer as u32),
-                &[mixer_class, "shared_expert", "router", "norm"],
-                "host top-10 router needs 512 router logits on the CPU",
-            )?;
-            match mixer_class {
-                "deltanet" => add_secs(&mut self.stages.deltanet_secs, prefix_started),
-                _ => add_secs(&mut self.stages.gqa_secs, prefix_started),
+        let expert_input = {
+            let metal = self
+                .metal
+                .as_ref()
+                .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+            metal
+                .expert_wave
+                .as_ref()
+                .ok_or_else(|| q80q4_error("expert wave workspace missing"))?
+                .input
+                .clone()
+        };
+        let pending_suffix = match qwen80_overlap_mode() {
+            OverlapMode::Fuse => {
+                self.forward_token_device_fused(&hidden, &expert_input)?
             }
-            let _ = prefix_name;
-
-            let snap_started = Instant::now();
-            let router_logits = {
-                let actw = self
-                    .metal
-                    .as_ref()
-                    .and_then(|m| m.activations.as_ref())
-                    .ok_or_else(|| q80q4_error("device activations missing"))?;
-                Self::snapshot_f32(&actw.router_logits, QWEN80_EXPERTS)?
-            };
-            let snap_ns = snap_started.elapsed().as_nanos() as u64;
-            self.token_ns.record_sync(
-                "router_logits_readback",
-                Some(layer as u32),
-                "prefix CB wait then memcpy 512 f32 logits; forces CPU top-k",
-                snap_ns,
-                (QWEN80_EXPERTS * std::mem::size_of::<f32>()) as u64,
-                "device_to_host",
-            );
-            let route_started = Instant::now();
-            let route = source_qwen80_topk_router(&router_logits)?;
-            self.token_ns.record_host_work(
-                "host_topk_router",
-                Some(layer as u32),
-                route_started.elapsed().as_nanos() as u64,
-                0,
-                "softmax + top-10 + renormalize on 512 host logits",
-            );
-            self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
-            self.activation_counts.other_host_activation = self
-                .activation_counts
-                .other_host_activation
-                .saturating_add(1);
-
-            let mut route_ids = [0u32; 10];
-            let mut route_weights = [0.0f32; 10];
-            for (index, (&expert, &weight)) in
-                route.ids.iter().zip(route.weights.iter()).enumerate()
-            {
-                route_ids[index] = expert as u32;
-                route_weights[index] = weight;
+            OverlapMode::Split => {
+                self.forward_token_device_overlapped(&hidden, &expert_input)?
             }
-            {
-                let pack_started = Instant::now();
-                let metal = self
-                    .metal
-                    .as_mut()
-                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
-                metal.ensure_selected_expert_table(
-                    &self.catalog,
-                    layer,
-                    &route_ids,
-                    &mut self.native,
-                    &mut self.stages,
-                )?;
-                let wave = metal
-                    .expert_wave
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
-                let bind_ids = if metal.expert_slabs.is_some() {
-                    route_ids
-                } else {
-                    let mut remapped = [0u32; 10];
-                    for (slot, id) in remapped.iter_mut().enumerate() {
-                        *id = slot as u32;
-                    }
-                    remapped
-                };
-                crate::metal::MetalContext::write_buffer_bytes(
-                    &wave.route_ids,
-                    bytemuck::cast_slice(&bind_ids),
-                );
-                crate::metal::MetalContext::write_buffer_bytes(
-                    &wave.route_weights,
-                    bytemuck::cast_slice(&route_weights),
-                );
-                let pack_bytes = (QWEN80_EXPERTS
-                    * std::mem::size_of::<
-                        super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet,
-                    >()) as u64;
-                self.token_ns.record_host_work(
-                    "expert_address_table_bind",
-                    Some(layer as u32),
-                    pack_started.elapsed().as_nanos() as u64,
-                    pack_bytes,
-                    "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets",
-                );
+            OverlapMode::Off => {
+                self.forward_token_device_serial_waits(&hidden, &expert_input)?
             }
-            let mut suffix = self.new_token_cb()?;
-            let (routed, dispatches) = {
-                let metal = self
-                    .metal
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
-                let lease = metal
-                    .expert_table
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("expert table lease missing after ensure"))?;
-                let wave = metal
-                    .expert_wave
-                    .as_ref()
-                    .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
-                let dispatches =
-                    super::qwen80_device_expert_table::dispatch_qwen80_device_expert_table_tcb(
-                        &mut suffix,
-                        lease,
-                        wave,
-                        metal.expert_kernel,
-                    )?;
-                (wave.combined.clone(), dispatches)
-            };
-            self.native.expert_table_waves = self.native.expert_table_waves.saturating_add(1);
-            self.native.expert_table_matvec_dispatches = self
-                .native
-                .expert_table_matvec_dispatches
-                .saturating_add(dispatches);
-            if self.token_ns.enabled {
-                let expert_bytes = (super::qwen80_device_expert_table::QWEN80_EXPERT_TABLE_TOP_K
-                    * 3
-                    * (super::qwen80_device_expert_table::QWEN80_EXPERT_CODE_BYTES
-                        + super::qwen80_device_expert_table::QWEN80_EXPERT_SCALE_BYTES))
-                    as u64;
-                self.token_ns.add_weight_bytes(expert_bytes);
-            }
-            let suffix_started = Instant::now();
-            self.encode_moe_combine(&mut suffix, layer, &hidden, &routed, &expert_input)?;
-            self.commit_profiled(
-                suffix,
-                &format!("L{layer}.suffix"),
-                Some(layer as u32),
-                &["routed_expert", "combine"],
-                "next layer mixer reads the updated residual hidden",
-            )?;
-            add_secs(&mut self.stages.moe_combine_secs, suffix_started);
-        }
+        };
         crate::metal::set_current_layer(None);
 
         let (hidden_buf, norm_name) = (hidden, "model.norm.weight");
@@ -2910,7 +3483,18 @@ impl Qwen80UniformQ4HybridDecodeSession {
             None,
             &["norm", "lm_head"],
             "host greedy argmax needs the full vocab logits",
+            FamilyGpuKind::Other,
         )?;
+        if let Some(suffix) = pending_suffix {
+            self.resolve_submitted(
+                suffix,
+                &format!("L{}.suffix", QWEN80_LAYERS - 1),
+                Some((QWEN80_LAYERS - 1) as u32),
+                &["routed_expert", "combine"],
+                "last suffix resolved after terminal wait",
+                FamilyGpuKind::MoeSuffix,
+            );
+        }
         let snap_started = Instant::now();
         let logits = Self::snapshot_f32(&logits_buf, QWEN80_VOCAB)?;
         self.token_ns.record_sync(
@@ -3006,6 +3590,7 @@ pub struct Qwen80UniformQ4GreedyResult {
     pub native: Qwen80DecodeNativeCounts,
     pub stages: Qwen80DecodeStageTimes,
     pub activation_counts: Qwen80ActivationClassCounts,
+    pub family_gpu: Qwen80FamilyGpuTimes,
     pub complete_physical_bpw: f64,
     pub claim: &'static str,
     pub metal_q4_matvec_used: bool,
@@ -3125,6 +3710,7 @@ pub fn generate_greedy(
         native: session.native.clone(),
         stages: session.stages.clone(),
         activation_counts: session.activation_counts.clone(),
+        family_gpu: session.family_gpu.clone(),
         complete_physical_bpw: session.catalog.complete_physical_bpw,
         claim: QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
         metal_q4_matvec_used,
@@ -3302,6 +3888,27 @@ mod tests {
             b, d,
             "decoding N distinct tokens must differ from the same token N times"
         );
+    }
+
+    #[test]
+    fn component_matvec_kernel_is_serial_not_the_expert_table_simdgroup() {
+        assert_eq!(
+            QWEN80_COMPONENT_MATVEC_KERNEL,
+            "qwen_uniform_q4_group64_matvec"
+        );
+        assert!(
+            !QWEN80_COMPONENT_MATVEC_KERNEL.contains("simdgroup"),
+            "DeltaNet/GQA/shared/router still dispatch the serial component kernel"
+        );
+    }
+
+    #[test]
+    fn overlap_and_serial_mixer_default_off() {
+        // Defaults are opt-in; paired 2026-08-16 reps did not justify
+        // changing the production command-buffer topology.
+        assert!(!qwen80_overlap_cbs_enabled());
+        assert!(!qwen80_serial_mixer_enabled());
+        assert!(matches!(qwen80_overlap_mode(), OverlapMode::Off));
     }
 
     #[test]
