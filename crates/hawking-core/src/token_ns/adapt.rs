@@ -1132,6 +1132,8 @@ mod tests {
             box_note: "test",
             theoretical_weight_bytes:
                 crate::model::qwen80_token_ns_ledger::theoretical_weight_bytes_per_token(),
+            theoretical_temp_bytes:
+                crate::model::qwen80_token_ns_ledger::theoretical_temp_bytes(64),
             tokens: Vec::new(),
             steady_state_mean: Some(
                 crate::model::qwen80_token_ns_ledger::SteadyStateMean {
@@ -1146,9 +1148,14 @@ mod tests {
                     command_buffers: 10.0,
                     dispatches: 20.0,
                     weight_bytes: 1_000.0,
+                    gpu_gap_ns: 0.0,
+                    gpu_gap_edges: 0.0,
                 },
             ),
             ranked_aggregate: Vec::new(),
+            stage_table: Vec::new(),
+            identity: None,
+            totals_mean_decode: None,
             diagnosis: None,
         };
         let doc = from_q80_ledger(&ledger, &meta());

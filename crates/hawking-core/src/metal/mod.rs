@@ -575,6 +575,12 @@ pub struct CommandBufferTiming {
     /// `GPUEndTime` as ns since the driver epoch.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_end_ns: Option<u64>,
+    /// Absolute `GPUStartTime` seconds, when the driver exposes a valid pair.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_s: Option<f64>,
+    /// Absolute `GPUEndTime` seconds, paired with `gpu_start_s`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_s: Option<f64>,
     pub dispatches: u64,
     pub encode_ns: u64,
 }
@@ -2312,6 +2318,21 @@ mod imp {
             self.inner.device.name().to_string()
         }
 
+        pub fn device_memory_limits(&self) -> super::DeviceMemoryLimits {
+            // metal-rs 0.29 hardcodes `max_buffer_length()` to 1 GiB on
+            // macOS ≥ 12. Read `MTLDevice.maxBufferLength` via objc.
+            let device: &metal::DeviceRef = &self.inner.device;
+            let max_buffer_length: u64 = unsafe { msg_send![device, maxBufferLength] };
+            let current_allocated_size: u64 = unsafe { msg_send![device, currentAllocatedSize] };
+            let has_unified: bool = unsafe { msg_send![device, hasUnifiedMemory] };
+            super::DeviceMemoryLimits {
+                max_buffer_length,
+                recommended_max_working_set_size: device.recommended_max_working_set_size(),
+                current_allocated_size,
+                has_unified_memory: has_unified,
+            }
+        }
+
         /// Look up -- or create + cache -- a compute pipeline for a
         /// kernel function.
         pub fn pipeline(&self, fn_name: &str) -> Result<ComputePipelineState> {
@@ -2497,31 +2518,74 @@ mod imp {
         /// [`Self::new_buffer_no_copy`]: `bytes` must outlive every command
         /// buffer that references the returned buffer.
         pub fn new_buffer_from_verified_bytes(&self, bytes: &[u8]) -> Result<Buffer> {
-            const ALIGN: usize = if cfg!(target_arch = "aarch64") {
-                16 * 1024
-            } else {
-                4 * 1024
-            };
-            if !bytes.is_empty() && (bytes.as_ptr() as usize) % ALIGN == 0 {
-                let ceiling = self.alloc_ceiling();
-                if bytes.len() as u64 > ceiling {
-                    return Err(Error::Metal(format!(
-                        "MTLBuffer allocation of {} B exceeds device working-set ceiling {ceiling} B",
-                        bytes.len()
-                    )));
-                }
-                let buf = unsafe { self.new_buffer_no_copy(bytes) };
-                if buf.length() >= bytes.len() as u64 {
-                    if self.trace_dispatch {
-                        self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
-                        self.stats
-                            .bytes_allocated
-                            .fetch_add(bytes.len(), Ordering::Relaxed);
-                    }
-                    return Ok(buf);
-                }
+            match self.new_buffer_no_copy_checked(bytes, "verified-bytes") {
+                Ok(buf) => Ok(buf),
+                Err(_) => self.new_buffer_with_bytes_checked(bytes),
             }
-            self.new_buffer_with_bytes_checked(bytes)
+        }
+
+        /// Apple Silicon page size for `newBufferWithBytesNoCopy`.
+        pub const NO_COPY_PAGE_ALIGN: usize = if cfg!(target_arch = "aarch64") {
+            16 * 1024
+        } else {
+            4 * 1024
+        };
+
+        /// Pin `bytes` as a shared MTLBuffer with no host copy.
+        ///
+        /// Fail-closed: the window must be page-aligned in both pointer and
+        /// length, the returned buffer must alias `bytes` (same `contents()`
+        /// pointer), and a silent copy is an error rather than a fallback.
+        /// Same lifetime rule as [`Self::new_buffer_no_copy`].
+        pub fn new_buffer_no_copy_checked(&self, bytes: &[u8], label: &str) -> Result<Buffer> {
+            const ALIGN: usize = MetalContext::NO_COPY_PAGE_ALIGN;
+            if bytes.is_empty()
+                || (bytes.as_ptr() as usize) % ALIGN != 0
+                || bytes.len() % ALIGN != 0
+            {
+                return Err(Error::Metal(format!(
+                    "{label} is not a {ALIGN}-aligned mmap window (ptr={:p} len={})",
+                    bytes.as_ptr(),
+                    bytes.len()
+                )));
+            }
+            let ceiling = self.alloc_ceiling();
+            if bytes.len() as u64 > ceiling {
+                return Err(Error::Metal(format!(
+                    "{label}: MTLBuffer allocation of {} B exceeds device working-set ceiling {ceiling} B",
+                    bytes.len()
+                )));
+            }
+            let buf = unsafe { self.new_buffer_no_copy(bytes) };
+            if buf.contents() as usize != bytes.as_ptr() as usize {
+                return Err(Error::Metal(format!(
+                    "{label} no-copy bind copied {} bytes; refusing a silent host pack",
+                    bytes.len()
+                )));
+            }
+            if buf.length() < bytes.len() as u64 {
+                return Err(Error::Metal(format!(
+                    "{label} no-copy bind returned length {} < window {}",
+                    buf.length(),
+                    bytes.len()
+                )));
+            }
+            if self.trace_dispatch {
+                self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                self.stats
+                    .bytes_allocated
+                    .fetch_add(bytes.len(), Ordering::Relaxed);
+            }
+            Ok(buf)
+        }
+
+        /// Drain the serial command queue. An empty committed CB still
+        /// waits for every earlier buffer on the same queue.
+        pub fn wait_idle(&self) -> Result<()> {
+            let cmd = self.inner.queue.new_command_buffer();
+            cmd.commit();
+            cmd.wait_until_completed();
+            Ok(())
         }
 
         /// Drain all trace samples accumulated since the last drain.
@@ -5180,6 +5244,8 @@ mod imp {
                     timing.gpu_end_ns = Some((end * 1_000_000_000.0) as u64);
                     if end > start {
                         timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
+                        timing.gpu_start_s = Some(start);
+                        timing.gpu_end_s = Some(end);
                     }
                 }
 
@@ -5390,6 +5456,24 @@ mod imp {
             "metal-unavailable".into()
         }
 
+        pub fn device_memory_limits(&self) -> super::DeviceMemoryLimits {
+            super::DeviceMemoryLimits::default()
+        }
+
+        pub const NO_COPY_PAGE_ALIGN: usize = 16 * 1024;
+
+        pub fn new_buffer_no_copy_checked(
+            &self,
+            _bytes: &[u8],
+            _label: &str,
+        ) -> Result<PinnedBuffer> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn wait_idle(&self) -> Result<()> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
         pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
             Vec::new()
         }
@@ -5482,6 +5566,16 @@ mod imp {
             }
         }
     }
+}
+
+/// Device memory ceilings. `max_buffer_length` is `MTLDevice.maxBufferLength`
+/// (objc), not the metal-rs 0.29 feature-set helper that hardcodes 1 GiB.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DeviceMemoryLimits {
+    pub max_buffer_length: u64,
+    pub recommended_max_working_set_size: u64,
+    pub current_allocated_size: u64,
+    pub has_unified_memory: bool,
 }
 
 pub use imp::{MetalContext, PinnedBuffer, SubmittedTokenCommandBuffer, TokenCommandBuffer};

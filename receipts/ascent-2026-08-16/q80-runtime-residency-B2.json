@@ -1,0 +1,134 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 4.259241137535204,
+    "manifest_seal_sha256": "d4a140ab353f2756f08365c59da4e7ae646f389b969e6aa87e2d7b8f053df55b",
+    "mean_component_cosine": 0.994152710325234,
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1",
+    "tensor_count": 74391,
+    "terminal_seal_sha256": "b84e2d53532fbed700a99390d7d32c9eff223963e80ee079ee45cde9edfa3b39"
+  },
+  "claim_boundary": {
+    "artifact_cannot_satisfy_1_5_bpw_gate": true,
+    "base_true_tps": false,
+    "capability": false,
+    "coherence": false,
+    "complete_physical_bpw": 4.259241137535204,
+    "complete_physical_bpw_reported": 4.259241,
+    "density_gate_bpw_max": 1.5,
+    "hcli": false,
+    "restart": false,
+    "tournament": false
+  },
+  "execution": {
+    "fallbacks": {
+      "host_activation": 1344,
+      "host_expert_payload_bind": 0,
+      "host_q4_embedding_gather": 0,
+      "host_q4_matvec": 0,
+      "host_q4_vector_decode": 265,
+      "host_sample": 28,
+      "note": "512-way device expert table is live; host_expert_payload_bind counts remaining host binds",
+      "total": 1637
+    },
+    "hybrid_token_graph": "embed + 48-layer mixer/MoE + terminal greedy",
+    "metal_error": null,
+    "metal_q4_matvec_used": true,
+    "native": {
+      "expert_residency_evictions": 2492,
+      "expert_resident_bytes": 4294901760,
+      "expert_resident_slots": 2570,
+      "expert_table_layer_builds": 1344,
+      "expert_table_matvec_dispatches": 6720,
+      "expert_table_slot_patches": 5062,
+      "expert_table_waves": 1344,
+      "expert_upload_hits": 8378,
+      "expert_upload_misses": 5062,
+      "q4_decode_vector_dispatches": 0,
+      "q4_embedding_dispatches": 28,
+      "q4_matvec_dispatches": 11116
+    },
+    "residency": {
+      "budget_bytes": 4294967296,
+      "device_limits": {
+        "current_allocated_size": 5642977280,
+        "has_unified_memory": true,
+        "max_buffer_length": 62620631040,
+        "recommended_max_working_set_size": 83494174720
+      },
+      "hit_rate": 0.6233630952380952,
+      "persistent_address_table": true,
+      "q4_full_payload_bytes": 41070624768,
+      "scaled_1_5_payload_bytes": 14464064643,
+      "table_bytes": 3145728,
+      "triplet_payload_bytes": 1671168
+    },
+    "stages": {
+      "deltanet_secs": 4.3797085000000004,
+      "embed_secs": 0.0,
+      "gqa_secs": 1.511215806,
+      "host_expert_bind_secs": 0.0,
+      "moe_combine_secs": 2.4137590909999953,
+      "moe_norm_router_secs": 0.0,
+      "moe_routed_secs": 0.0,
+      "moe_shared_secs": 0.0,
+      "moe_table_buffer_write_secs": 0.003207542000000038,
+      "moe_table_build_secs": 9.757672336000024,
+      "moe_table_entries_fill_secs": 0.0034876730000000062,
+      "moe_table_lease_secs": 0.000050444999999999664,
+      "moe_table_resource_clone_secs": 0.0055525940000000044,
+      "moe_table_upload_miss_secs": 9.426740866000026,
+      "q4_matvec_secs": 0.0,
+      "terminal_secs": 0.0
+    },
+    "weight_codec": "uniform_q4_group64"
+  },
+  "generated_text": "Here's a simple function in Python that reverses a string",
+  "generated_token_ids": [
+    8420,
+    594,
+    264,
+    4285,
+    729,
+    304,
+    13027,
+    429,
+    17431,
+    288,
+    264,
+    914
+  ],
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "resources": {
+    "peak_rss_bytes": 7717011456,
+    "streamed_rss_cap_bytes": 17179869184
+  },
+  "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
+  "status": "VELOCITY_BASELINE_NOT_BASE_TRUE_TPS",
+  "timing": {
+    "decode_secs": 5.878790083,
+    "first_token_latency_secs": 12.888300875,
+    "prefill_secs": 12.888300875,
+    "steady_state_decode_secs": 5.878789458,
+    "steady_state_tok_s": 1.8711335179780817,
+    "steady_state_tokens": 11
+  }
+}

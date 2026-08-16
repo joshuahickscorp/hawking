@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.ascent.q80_integrate_graph.v1",
+  "lane": "q80-integrate-graph",
+  "status": "SHIPPED",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "date": "2026-08-16",
+  "commit": "bb5669220e9a0496682c3ecc75805f0eb38815b8",
+  "branch": "grok/q80-integrate-graph-20260816-012855",
+  "parents": {
+    "main": "e3068e69",
+    "deltanet_gqa2": "ae19c053 (already on main via 49b452f1)",
+    "expert_first_touch": "5f78cb35",
+    "ns_ledger": "2f1d0a3f"
+  },
+  "composition": {
+    "defaults": {
+      "historical_topology": "ON (OverlapMode::Off)",
+      "HAWKING_QWEN80_OVERLAP_CBS": "unset -> Off; split/fuse remain opt-in",
+      "HAWKING_QWEN80_SERIAL_MIXER": "unset -> off",
+      "HAWKING_Q80_EXPERT_NOCOPY": "unset -> on",
+      "HAWKING_Q80_EXPERT_PREFETCH": "unset -> on",
+      "HAWKING_Q80_REHASH_PAYLOADS": "unset -> off",
+      "HAWKING_QWEN80_TOKEN_NS_LEDGER": "unset -> off; when on, every named stage is measured or marked absorbed/N/A"
+    },
+    "how": [
+      "No wholesale file copy. Merged expert-first-touch then ns-ledger onto main (deltanet-gqa2 + joint-token-ns already present).",
+      "OverlapMode dispatch stays in forward_token_device. Fuse/split remain reachable.",
+      "No-copy pack + remember_routes live in host_route_and_bind so every topology gets the first-touch win.",
+      "Prefetch (commit_no_wait + wait_idle) is only on the serial default path and is suppressed when the ns ledger is on, so production CB shape is unchanged for measurement.",
+      "Device maxBufferLength is read via objc, not the metal-rs 0.29 1 GiB helper.",
+      "Ledger v2 keeps gpu_start_ns/gpu_end_ns for the joint TOKEN_NS adapter and gpu_start_s/gpu_end_s for the compact receipt."
+    ]
+  },
+  "correctness": {
+    "gate": "generated ids must match the 12-token Q4 reverse-string harness list",
+    "prompt": "Write a function that reverses a string.",
+    "expected": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "observed": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "runs_matching": 6,
+    "all_runs_bit_identical": true,
+    "host_q4_matvec": 0,
+    "host_expert_payload_bind": 0,
+    "fallbacks_total": 1637,
+    "fallback_note": "1637 is the pre-existing host_activation (router readback + top-k) plus embed/sample counters. Identical on C and D. 0 expert-payload fallbacks.",
+    "state_contract": {
+      "qwen80_fixture_advance_hybrid_state": "PASS",
+      "fixture_greedy_is_deterministic": "PASS",
+      "device_decode_state_advance_differs_from_reset_and_repeated_same_token": "PASS",
+      "admit_then_mmap_matches_rehash_and_wrong_sha_still_raises": "PASS",
+      "real_expert_mmap_matches_rehash_when_catalog_present": "PASS",
+      "overlap_and_serial_mixer_default_off": "PASS (also asserts nocopy/prefetch default on, rehash default off)",
+      "qwen80_token_ns_ledger unit tests": "8/8 PASS including identity_phases_sum_to_wall",
+      "token_ns adapter q80_wait_plus_host_work_closes_tightly": "PASS"
+    }
+  },
+  "first_touch_win": {
+    "method": "alternating C (NOCOPY=0 PREFETCH=0 REHASH=1) vs D (defaults: nocopy+prefetch on), 3 pairs, same binary, reverse-string 12-token harness, one gpu_lane_lock",
+    "label": "DIRTY_ENGINEERING",
+    "C_ns_per_token": [528575913, 298865932, 299282750],
+    "D_ns_per_token": [192585519, 177001371, 181203996],
+    "C_ms_per_token": [528.6, 298.9, 299.3],
+    "D_ms_per_token": [192.6, 177.0, 181.2],
+    "paired": [
+      "C1 528.6 -> D1 192.6",
+      "C2 298.9 -> D2 177.0",
+      "C3 299.3 -> D3 181.2"
+    ],
+    "lane_target_D_ms": [208.6, 383.0, 188.2],
+    "lane_target_C_ms": [518.7, 556.7, 339.2],
+    "verdict": "Win survives. Every D pair is faster than its C. D spread 177.0/181.2/192.6 ms is at or better than the lane's 188.2/208.6/383.0 ms (no cold-page-in D in this lock).",
+    "C_binds": {"copy": 13149, "nocopy": 0, "hashed": 13814},
+    "D_binds": {"copy": 0, "nocopy": 13149, "hashed": 4, "mmapped": 13149}
+  },
+  "ns_ledger": {
+    "schema": "hawking.ascension.qwen80_token_ns_ledger.v2",
+    "source": "D3 with HAWKING_QWEN80_TOKEN_NS_LEDGER=1",
+    "production_cb_shape": true,
+    "catalog_complete": true,
+    "silent_zero_stages": [],
+    "identity_holds_all": true,
+    "n": 11,
+    "mean_wall_ns": 181192871,
+    "mean_sum_identity_ns": 181186011,
+    "mean_residual_ns": 6860,
+    "residual_frac": 0.000038,
+    "residual_name": "inter_phase_gap_plus_seal_jitter",
+    "embed_and_terminal_were_zero": "now measured: embed_ns=73247250, terminal_ns=103631872 on the 28-forward run (stage wall, not GPU time)",
+    "compact_receipt_bytes": 64391
+  },
+  "baseline_ns_per_token": {
+    "value": 299282750,
+    "label": "DIRTY_ENGINEERING",
+    "source": "median of the three C reps (SHA+copy first-touch)",
+    "spread_ns": [298865932, 299282750, 528575913]
+  },
+  "result_ns_per_token": {
+    "value": 181203996,
+    "label": "DIRTY_ENGINEERING",
+    "source": "median of the three D reps (session seal + mmap no-copy + prefetch default-on)",
+    "spread_ns": [177001371, 181203996, 192585519]
+  },
+  "next_bottleneck": {
+    "what": "DeltaNet mixed prefix CB (36 layers of mixer+shared+router+wait) on the historical 2-wait topology",
+    "measured_ns_per_token": 79081238,
+    "source": "D3 identity stage deltanet/prefix_cb_mixed, DIRTY_ENGINEERING",
+    "then": "moe_combine suffix mixed 42854568 ns/token; moe_table_build 28926345 ns/token (down from C1 11.68 s whole-run / ~1.06 s/token); gqa prefix 27812912 ns/token"
+  },
+  "env_escapes_verified": {
+    "HAWKING_Q80_EXPERT_NOCOPY=0": "C1-C3: copy_binds=13149, nocopy_binds=0",
+    "HAWKING_Q80_EXPERT_PREFETCH=0": "C1-C3: prefetch=false",
+    "HAWKING_Q80_REHASH_PAYLOADS=1": "C1-C3: hashed=13814",
+    "HAWKING_QWEN80_OVERLAP_CBS / SERIAL_MIXER": "defaults off (unit test); OverlapMode::Fuse/Split still compiled and dispatched from forward_token_device",
+    "HAWKING_QWEN80_TOKEN_NS_LEDGER=1": "D3 compact receipt, identity holds, no silent zeros"
+  },
+  "files": [
+    "crates/hawking-core/src/metal/mod.rs",
+    "crates/hawking-core/src/model/qwen80_uniform_q4_hybrid_decode.rs",
+    "crates/hawking-core/src/model/qwen80_token_ns_ledger.rs",
+    "crates/hawking-core/src/model/qwen80_device_expert_table.rs",
+    "crates/hawking-core/src/model/device_residency.rs",
+    "crates/hawking-core/src/model/mod.rs",
+    "crates/hawking-core/src/token_ns/adapt.rs",
+    "crates/hawking-core/examples/ascension_qwen80_uniform_q4_hybrid_greedy.rs",
+    "receipts/ascent-2026-08-16/q80-integrate-graph.json"
+  ]
+}

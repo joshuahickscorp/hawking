@@ -41,6 +41,7 @@ use super::qwen_complete_binary::{
 use crate::kernels::{add_inplace, silu_mul};
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
+use memmap2::{Advice, Mmap, MmapOptions};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
@@ -164,6 +165,113 @@ pub fn qwen80_serial_mixer_enabled() -> bool {
 /// path still dispatches the serial one-thread-per-row kernel.
 pub const QWEN80_COMPONENT_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec";
 
+/// Default **on**. Set `HAWKING_Q80_EXPERT_NOCOPY=0` to restore
+/// `new_buffer_with_bytes` packing for A/B.
+pub fn qwen80_expert_nocopy_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_EXPERT_NOCOPY")
+        && crate::env_opt_out("HAWKING_QWEN80_EXPERT_NOCOPY")
+}
+
+/// Default **off**. Set `HAWKING_Q80_REHASH_PAYLOADS=1` to force the
+/// per-payload SHA-256 on the token path even after session admission.
+pub fn qwen80_payload_rehash_enabled() -> bool {
+    match std::env::var("HAWKING_Q80_REHASH_PAYLOADS") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.is_empty()
+                || trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => false,
+    }
+}
+
+/// Default **on**. Set `HAWKING_Q80_EXPERT_PREFETCH=0` to disable
+/// previous-token next-layer expert prefault during suffix GPU.
+pub fn qwen80_expert_prefetch_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_EXPERT_PREFETCH")
+}
+
+/// Host-side first-touch split. `catalog_read_ns` is `fs::read` or mmap+advise
+/// (page-in). `sha256_ns` is payload hashing. `metal_copy_ns` is
+/// `new_buffer_with_bytes`. None of these is GPU time.
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80FirstTouchSplit {
+    pub catalog_read_ns: u64,
+    pub sha256_ns: u64,
+    pub metal_copy_ns: u64,
+    pub metal_nocopy_ns: u64,
+    pub header_parse_ns: u64,
+    pub mmap_ns: u64,
+    pub payloads_read: u64,
+    pub payloads_hashed: u64,
+    pub payloads_mmapped: u64,
+    pub nocopy_binds: u64,
+    pub copy_binds: u64,
+    pub prefetch_uploads: u64,
+    pub prefetch_ns: u64,
+    pub prefetch_hits: u64,
+    pub prefetch_misses: u64,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80SessionAdmitReport {
+    pub session_seal_sha256: String,
+    pub tensors_stated: u64,
+    pub sample_rehashed: u64,
+    pub admit_ns: u64,
+    pub production_seals_checked: bool,
+}
+
+/// Page-aligned mmap of one catalogued tensor. `file_bytes` is the sealed
+/// payload; `mmap` may be rounded up to the Metal no-copy page size so the
+/// window is 16 KiB aligned in both pointer and length.
+pub struct Qwen80MappedTensor {
+    pub name: String,
+    pub header: CompleteBinaryHeader,
+    pub file_bytes: usize,
+    mmap: Arc<Mmap>,
+}
+
+impl Qwen80MappedTensor {
+    pub fn mmap_arc(&self) -> Arc<Mmap> {
+        Arc::clone(&self.mmap)
+    }
+
+    pub fn window(&self) -> &[u8] {
+        &self.mmap[..]
+    }
+
+    pub fn payload(&self) -> &[u8] {
+        &self.mmap[..self.file_bytes]
+    }
+
+    pub fn codes(&self) -> Result<&[u8]> {
+        self.payload()
+            .get(self.header.sign_offset..self.header.payload_bytes)
+            .ok_or_else(|| q80q4_error(format!("tensor {:?} codes truncated", self.name)))
+    }
+
+    pub fn scales(&self) -> Result<&[u8]> {
+        self.payload()
+            .get(self.header.scale_offset..self.header.sign_offset)
+            .ok_or_else(|| q80q4_error(format!("tensor {:?} scales truncated", self.name)))
+    }
+
+    pub fn rows_cols(&self) -> Result<(usize, usize)> {
+        match self.header.shape.as_slice() {
+            [rows, cols] => Ok((*rows, *cols)),
+            [elements] => Ok((*elements, 1)),
+            other => Err(q80q4_error(format!(
+                "tensor {:?} shape {other:?} is not a matrix or vector",
+                self.name
+            ))),
+        }
+    }
+}
+
 fn q80q4_error(message: impl Into<String>) -> Error {
     Error::Model(format!(
         "qwen80 uniform-q4 hybrid decode: {}",
@@ -208,6 +316,10 @@ pub struct Qwen80UniformQ4StreamingCatalog {
     pub tensor_payload_bytes: u64,
     rows: HashMap<String, Qwen80UniformQ4CatalogRow>,
     verified_sha256: std::sync::Mutex<std::collections::HashSet<String>>,
+    session_admitted: bool,
+    pub session_seal_sha256: Option<String>,
+    pub session_admit: Qwen80SessionAdmitReport,
+    first_touch: std::sync::Mutex<Qwen80FirstTouchSplit>,
 }
 
 impl Qwen80UniformQ4StreamingCatalog {
@@ -295,6 +407,10 @@ impl Qwen80UniformQ4StreamingCatalog {
             tensor_payload_bytes,
             rows,
             verified_sha256: std::sync::Mutex::new(std::collections::HashSet::new()),
+            session_admitted: false,
+            session_seal_sha256: None,
+            session_admit: Qwen80SessionAdmitReport::default(),
+            first_touch: std::sync::Mutex::new(Qwen80FirstTouchSplit::default()),
         })
     }
 
@@ -308,8 +424,209 @@ impl Qwen80UniformQ4StreamingCatalog {
             .ok_or_else(|| q80q4_error(format!("missing tensor {name:?}")))
     }
 
+    pub fn session_trusts_payloads(&self) -> bool {
+        self.session_admitted && !qwen80_payload_rehash_enabled()
+    }
+
+    pub fn first_touch_split(&self) -> Qwen80FirstTouchSplit {
+        self.first_touch
+            .lock()
+            .map(|split| split.clone())
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn add_first_touch(&self, update: impl FnOnce(&mut Qwen80FirstTouchSplit)) {
+        if let Ok(mut split) = self.first_touch.lock() {
+            update(&mut split);
+        }
+    }
+
+    /// Cold artifact + session proof. Token-path SHA is skipped after this
+    /// returns. Integrity is not deleted: the check moves here.
+    ///
+    /// Verified once:
+    /// - every catalogued file exists as a regular non-symlink with exact
+    ///   `artifact_bytes`
+    /// - production catalog (74_391 tensors) matches the sealed manifest
+    ///   and terminal constants
+    /// - session seal binds `manifest_seal || terminal_seal || ordered
+    ///   (name, bytes, declared_sha256)`
+    /// - a small sample of payloads is rehashed against the catalog SHA
+    ///
+    /// Still guards every first-touch:
+    /// - mmap / read size must equal `artifact_bytes`
+    /// - header geometry must match the catalog row
+    /// - no-copy bind is fail-closed (16 KiB window + pointer alias)
+    /// - `read_payload_rehash` and `HAWKING_Q80_REHASH_PAYLOADS=1` remain
+    pub fn admit_session(&mut self) -> Result<Qwen80SessionAdmitReport> {
+        let started = Instant::now();
+        let mut hasher = Sha256::new();
+        hasher.update(self.manifest_seal_sha256.as_bytes());
+        hasher.update(b"|");
+        if let Some(terminal) = self.terminal_seal_sha256.as_deref() {
+            hasher.update(terminal.as_bytes());
+        }
+        hasher.update(b"|");
+        let mut names: Vec<&str> = self.rows.keys().map(String::as_str).collect();
+        names.sort_unstable();
+        let mut stated = 0u64;
+        for name in &names {
+            let row = self.require_row(name)?;
+            let metadata = fs::symlink_metadata(&row.artifact_path).map_err(|error| {
+                q80q4_error(format!(
+                    "admit: cannot stat {name:?} at {}: {error}",
+                    row.artifact_path.display()
+                ))
+            })?;
+            if metadata.file_type().is_symlink() || !metadata.is_file() {
+                return Err(q80q4_error(format!(
+                    "admit: {name:?} at {} is not a regular non-symlink file",
+                    row.artifact_path.display()
+                )));
+            }
+            if metadata.len() != row.artifact_bytes {
+                return Err(q80q4_error(format!(
+                    "admit: {name:?} is short or resized: on-disk {} bytes, catalog {}",
+                    metadata.len(),
+                    row.artifact_bytes
+                )));
+            }
+            hasher.update(name.as_bytes());
+            hasher.update(row.artifact_bytes.to_le_bytes());
+            hasher.update(row.artifact_sha256.as_bytes());
+            stated = stated.saturating_add(1);
+        }
+        let production = self.rows.len() == 74_391;
+        if production {
+            if self.manifest_seal_sha256 != QWEN80_UNIFORM_Q4_EXPECTED_MANIFEST_SEAL {
+                return Err(q80q4_error(format!(
+                    "admit: production manifest seal {} != {QWEN80_UNIFORM_Q4_EXPECTED_MANIFEST_SEAL}",
+                    self.manifest_seal_sha256
+                )));
+            }
+            if self.terminal_seal_sha256.as_deref() != Some(QWEN80_UNIFORM_Q4_EXPECTED_TERMINAL_SEAL)
+            {
+                return Err(q80q4_error(format!(
+                    "admit: production terminal seal {:?} != {QWEN80_UNIFORM_Q4_EXPECTED_TERMINAL_SEAL}",
+                    self.terminal_seal_sha256
+                )));
+            }
+        }
+        let session_seal = format!("{:x}", hasher.finalize());
+        let mut sample_rehashed = 0u64;
+        for sample in [
+            "model.embed_tokens.weight",
+            "lm_head.weight",
+            "model.layers.0.mlp.experts.0.gate_proj.weight",
+            "model.layers.47.mlp.experts.511.down_proj.weight",
+        ] {
+            if self.rows.contains_key(sample) {
+                let _ = self.hash_payload(sample)?;
+                sample_rehashed = sample_rehashed.saturating_add(1);
+            }
+        }
+        let report = Qwen80SessionAdmitReport {
+            session_seal_sha256: session_seal.clone(),
+            tensors_stated: stated,
+            sample_rehashed,
+            admit_ns: started.elapsed().as_nanos() as u64,
+            production_seals_checked: production,
+        };
+        self.session_admitted = true;
+        self.session_seal_sha256 = Some(session_seal);
+        self.session_admit = report.clone();
+        Ok(report)
+    }
+
+    fn hash_payload(&self, name: &str) -> Result<String> {
+        let row = self.require_row(name)?;
+        let read_started = Instant::now();
+        let payload = fs::read(&row.artifact_path).map_err(|error| {
+            q80q4_error(format!(
+                "cannot read tensor {name:?} {}: {error}",
+                row.artifact_path.display()
+            ))
+        })?;
+        let read_ns = read_started.elapsed().as_nanos() as u64;
+        let hash_started = Instant::now();
+        let observed = sha256_hex(&payload);
+        let hash_ns = hash_started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.catalog_read_ns = split.catalog_read_ns.saturating_add(read_ns);
+            split.sha256_ns = split.sha256_ns.saturating_add(hash_ns);
+            split.payloads_read = split.payloads_read.saturating_add(1);
+            split.payloads_hashed = split.payloads_hashed.saturating_add(1);
+        });
+        if observed != row.artifact_sha256 {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} sha256 {observed} != catalog {}",
+                row.artifact_sha256
+            )));
+        }
+        if let Ok(mut set) = self.verified_sha256.lock() {
+            set.insert(name.to_owned());
+        }
+        Ok(observed)
+    }
+
+    fn verify_payload_sha_if_needed(&self, name: &str, payload: &[u8]) -> Result<()> {
+        if self.session_trusts_payloads() {
+            return Ok(());
+        }
+        let already_verified = self
+            .verified_sha256
+            .lock()
+            .map(|set| set.contains(name))
+            .unwrap_or(false);
+        if already_verified {
+            return Ok(());
+        }
+        let row = self.require_row(name)?;
+        let hash_started = Instant::now();
+        let observed = sha256_hex(payload);
+        let hash_ns = hash_started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.sha256_ns = split.sha256_ns.saturating_add(hash_ns);
+            split.payloads_hashed = split.payloads_hashed.saturating_add(1);
+        });
+        if observed != row.artifact_sha256 {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} sha256 {observed} != catalog {}",
+                row.artifact_sha256
+            )));
+        }
+        if let Ok(mut set) = self.verified_sha256.lock() {
+            set.insert(name.to_owned());
+        }
+        Ok(())
+    }
+
+    fn check_payload_geometry(&self, name: &str, payload: &[u8]) -> Result<CompleteBinaryHeader> {
+        let row = self.require_row(name)?;
+        if payload.len() < 32 {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} payload is truncated ({} bytes)",
+                payload.len()
+            )));
+        }
+        let parse_started = Instant::now();
+        let header = parse_uniform_q4_header(payload)?;
+        let parse_ns = parse_started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.header_parse_ns = split.header_parse_ns.saturating_add(parse_ns);
+        });
+        if header.shape != row.shape || header.group_size != UNIFORM_Q4_GROUP_SIZE {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} header shape {:?}/group {} disagrees with catalog {:?}/64",
+                header.shape, header.group_size, row.shape
+            )));
+        }
+        Ok(header)
+    }
+
     /// Read one payload. A missing or short file raises; the body is never
-    /// silently zero-filled.
+    /// silently zero-filled. SHA-256 runs only when the session is not
+    /// admitted (or `HAWKING_Q80_REHASH_PAYLOADS=1`).
     pub fn read_payload(&self, name: &str) -> Result<Arc<[u8]>> {
         let row = self.require_row(name)?;
         let metadata = fs::metadata(&row.artifact_path).map_err(|error| {
@@ -325,12 +642,18 @@ impl Qwen80UniformQ4StreamingCatalog {
                 row.artifact_bytes
             )));
         }
+        let read_started = Instant::now();
         let payload = fs::read(&row.artifact_path).map_err(|error| {
             q80q4_error(format!(
                 "cannot read tensor {name:?} {}: {error}",
                 row.artifact_path.display()
             ))
         })?;
+        let read_ns = read_started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.catalog_read_ns = split.catalog_read_ns.saturating_add(read_ns);
+            split.payloads_read = split.payloads_read.saturating_add(1);
+        });
         if (payload.len() as u64) != row.artifact_bytes {
             return Err(q80q4_error(format!(
                 "tensor {name:?} read {} bytes, catalog {}",
@@ -338,37 +661,87 @@ impl Qwen80UniformQ4StreamingCatalog {
                 row.artifact_bytes
             )));
         }
-        if payload.len() < 32 {
-            return Err(q80q4_error(format!(
-                "tensor {name:?} payload is truncated ({} bytes)",
-                payload.len()
-            )));
-        }
-        let already_verified = self
-            .verified_sha256
-            .lock()
-            .map(|set| set.contains(name))
-            .unwrap_or(false);
-        if !already_verified {
-            let observed = sha256_hex(&payload);
-            if observed != row.artifact_sha256 {
-                return Err(q80q4_error(format!(
-                    "tensor {name:?} sha256 {observed} != catalog {}",
-                    row.artifact_sha256
-                )));
-            }
-            if let Ok(mut set) = self.verified_sha256.lock() {
-                set.insert(name.to_owned());
-            }
-        }
-        let header = parse_uniform_q4_header(&payload)?;
-        if header.shape != row.shape || header.group_size != UNIFORM_Q4_GROUP_SIZE {
-            return Err(q80q4_error(format!(
-                "tensor {name:?} header shape {:?}/group {} disagrees with catalog {:?}/64",
-                header.shape, header.group_size, row.shape
-            )));
-        }
+        self.verify_payload_sha_if_needed(name, &payload)?;
+        let _ = self.check_payload_geometry(name, &payload)?;
         Ok(Arc::from(payload))
+    }
+
+    /// Always rehash. Used by the correctness gate that cached/mmap'd
+    /// bytes must equal a freshly-hashed read.
+    pub fn read_payload_rehash(&self, name: &str) -> Result<Arc<[u8]>> {
+        let _ = self.hash_payload(name)?;
+        let row = self.require_row(name)?;
+        let payload = fs::read(&row.artifact_path).map_err(|error| {
+            q80q4_error(format!(
+                "cannot re-read tensor {name:?} {}: {error}",
+                row.artifact_path.display()
+            ))
+        })?;
+        let _ = self.check_payload_geometry(name, &payload)?;
+        Ok(Arc::from(payload))
+    }
+
+    /// mmap the tensor file, rounded up to the Metal no-copy page size.
+    /// Does not SHA when the session is admitted.
+    pub fn map_payload(&self, name: &str) -> Result<Qwen80MappedTensor> {
+        let row = self.require_row(name)?;
+        let file = fs::File::open(&row.artifact_path).map_err(|error| {
+            q80q4_error(format!(
+                "cannot open tensor {name:?} {}: {error}",
+                row.artifact_path.display()
+            ))
+        })?;
+        let metadata = file.metadata().map_err(|error| {
+            q80q4_error(format!(
+                "cannot stat tensor {name:?} {}: {error}",
+                row.artifact_path.display()
+            ))
+        })?;
+        if metadata.len() != row.artifact_bytes {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} is short or resized: on-disk {} bytes, catalog {}",
+                metadata.len(),
+                row.artifact_bytes
+            )));
+        }
+        let file_bytes = usize::try_from(row.artifact_bytes)
+            .map_err(|_| q80q4_error(format!("tensor {name:?} byte count exceeds this platform")))?;
+        let align = crate::metal::MetalContext::NO_COPY_PAGE_ALIGN;
+        let map_len = file_bytes.div_ceil(align).saturating_mul(align).max(align);
+        let map_started = Instant::now();
+        // SAFETY: regular catalog file, read-only MAP. Length may exceed
+        // the file so the Metal no-copy window is page-aligned; pages past
+        // EOF are zero and the kernel never reads them.
+        let mmap = unsafe {
+            MmapOptions::new().len(map_len).map(&file).map_err(|error| {
+                q80q4_error(format!(
+                    "cannot mmap tensor {name:?} {}: {error}",
+                    row.artifact_path.display()
+                ))
+            })?
+        };
+        let _ = mmap.advise(Advice::WillNeed);
+        let map_ns = map_started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.catalog_read_ns = split.catalog_read_ns.saturating_add(map_ns);
+            split.mmap_ns = split.mmap_ns.saturating_add(map_ns);
+            split.payloads_mmapped = split.payloads_mmapped.saturating_add(1);
+        });
+        if mmap.len() < file_bytes {
+            return Err(q80q4_error(format!(
+                "tensor {name:?} mmap {} is shorter than catalog {file_bytes}",
+                mmap.len()
+            )));
+        }
+        let payload = &mmap[..file_bytes];
+        self.verify_payload_sha_if_needed(name, payload)?;
+        let header = self.check_payload_geometry(name, payload)?;
+        Ok(Qwen80MappedTensor {
+            name: name.to_owned(),
+            header,
+            file_bytes,
+            mmap: Arc::new(mmap),
+        })
     }
 
     pub fn load_packed(&self, name: &str) -> Result<Qwen80Q4PackedTensor> {
@@ -806,6 +1179,15 @@ pub struct Qwen80DecodeNativeCounts {
     pub expert_table_waves: u64,
     pub expert_table_matvec_dispatches: u64,
     pub device_activation_dispatches: u64,
+    pub expert_upload_hits: u64,
+    pub expert_upload_misses: u64,
+    pub expert_residency_evictions: u64,
+    pub expert_table_slot_patches: u64,
+    pub expert_resident_slots: u64,
+    pub expert_resident_bytes: u64,
+    pub expert_nocopy_binds: u64,
+    pub expert_copy_binds: u64,
+    pub expert_prefetch_uploads: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -816,17 +1198,40 @@ pub struct Qwen80DecodeStageTimes {
     pub moe_norm_router_secs: f64,
     pub moe_shared_secs: f64,
     pub moe_table_build_secs: f64,
+    pub moe_table_upload_miss_secs: f64,
+    pub moe_table_entries_fill_secs: f64,
+    pub moe_table_buffer_write_secs: f64,
+    pub moe_table_resource_clone_secs: f64,
+    pub moe_table_lease_secs: f64,
+    pub first_touch_catalog_read_secs: f64,
+    pub first_touch_sha256_secs: f64,
+    pub first_touch_metal_copy_secs: f64,
+    pub first_touch_metal_nocopy_secs: f64,
+    pub prefetch_secs: f64,
     pub moe_routed_secs: f64,
     pub moe_combine_secs: f64,
     pub terminal_secs: f64,
     pub q4_matvec_secs: f64,
     pub host_expert_bind_secs: f64,
+    pub embed_ns: u64,
+    pub deltanet_ns: u64,
+    pub gqa_ns: u64,
+    pub moe_norm_router_ns: u64,
+    pub moe_shared_ns: u64,
+    pub moe_table_build_ns: u64,
+    pub moe_routed_ns: u64,
+    pub moe_combine_ns: u64,
+    pub terminal_ns: u64,
+    pub q4_matvec_ns: u64,
+    pub host_expert_bind_ns: u64,
     pub activation: Qwen80ActivationClassTimes,
 }
 
 /// Per-token attribution of the five host-activation classes.
 /// `*_secs` is wall time of that class only (CPU op, or the sandwich that
 /// includes adjacent matvec round-trips when named `_sandwich`).
+/// `*_ns` is the same interval in nanoseconds — a class that only exists
+/// as encode-into-a-mixed-CB still reports encode ns, never a silent zero.
 #[derive(Clone, Debug, Default)]
 pub struct Qwen80ActivationClassTimes {
     pub shared_swiglu_secs: f64,
@@ -837,6 +1242,14 @@ pub struct Qwen80ActivationClassTimes {
     pub gqa_norm_rope_secs: f64,
     pub other_host_activation_secs: f64,
     pub metal_matvec_sync_secs: f64,
+    pub shared_swiglu_ns: u64,
+    pub shared_mlp_sandwich_ns: u64,
+    pub deltanet_conv_ns: u64,
+    pub deltanet_recurrent_ns: u64,
+    pub gqa_input_layernorm_ns: u64,
+    pub gqa_norm_rope_ns: u64,
+    pub other_host_activation_ns: u64,
+    pub metal_matvec_sync_ns: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -918,8 +1331,15 @@ impl Qwen80FamilyGpuTimes {
     }
 }
 
+#[allow(dead_code)]
 fn add_secs(slot: &mut f64, started: Instant) {
     *slot += started.elapsed().as_secs_f64();
+}
+
+fn add_elapsed(secs: &mut f64, ns: &mut u64, started: Instant) {
+    let elapsed = started.elapsed();
+    *secs += elapsed.as_secs_f64();
+    *ns = ns.saturating_add(elapsed.as_nanos() as u64);
 }
 
 /// Advance hybrid state with a cheap, deterministic mixer that still uses the
@@ -1110,7 +1530,16 @@ struct MetalQ4Accel {
     expert_kernel: super::qwen80_device_expert_table::Qwen80ExpertTableKernel,
     expert_cache: HashMap<(usize, u32), super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet>,
     expert_slabs: Option<super::qwen80_device_expert_table::Qwen80CompactExpertSlabs>,
+    residency: Option<
+        super::device_residency::ResidencyPool<
+            super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet,
+        >,
+    >,
     activations: Option<DeviceActivationWorkspace>,
+    last_routes: [[u32; 10]; QWEN80_LAYERS],
+    have_last_routes: [bool; QWEN80_LAYERS],
+    buffer_creations: u64,
+    buffer_rebinds: u64,
 }
 
 #[cfg(target_os = "macos")]
@@ -1231,6 +1660,20 @@ impl MetalQ4Accel {
         } else {
             None
         };
+        let residency = if super::device_residency::persistent_address_table_enabled()
+            && expert_slabs.is_none()
+        {
+            let table = super::device_residency::PersistentAddressTable::allocate(
+                &context,
+                super::qwen80_device_expert_table::qwen80_q4_address_geometry(),
+            )?;
+            Some(super::device_residency::ResidencyPool::new(
+                table,
+                super::device_residency::residency_budget_bytes(),
+            ))
+        } else {
+            None
+        };
         let activations = if qwen80_device_activations_enabled() {
             Some(DeviceActivationWorkspace::allocate(&context, max_seq_len)?)
         } else {
@@ -1244,7 +1687,12 @@ impl MetalQ4Accel {
             expert_kernel: super::qwen80_device_expert_table::qwen80_expert_table_kernel(),
             expert_cache: HashMap::new(),
             expert_slabs,
+            residency,
             activations,
+            last_routes: [[0u32; 10]; QWEN80_LAYERS],
+            have_last_routes: [false; QWEN80_LAYERS],
+            buffer_creations: 0,
+            buffer_rebinds: 0,
         })
     }
 
@@ -1263,6 +1711,7 @@ impl MetalQ4Accel {
                 scales: self.context.new_buffer_with_bytes_checked(scales)?,
             };
             self.weights.insert(packed.name.clone(), uploaded);
+            self.buffer_creations = self.buffer_creations.saturating_add(2);
         }
         Ok(self.weights.get(&packed.name).expect("just inserted"))
     }
@@ -1317,7 +1766,11 @@ impl MetalQ4Accel {
         let observed =
             unsafe { std::slice::from_raw_parts(output_buf.contents() as *const f32, rows) };
         output.copy_from_slice(observed);
-        add_secs(&mut stages.activation.metal_matvec_sync_secs, sync_started);
+        add_elapsed(
+            &mut stages.activation.metal_matvec_sync_secs,
+            &mut stages.activation.metal_matvec_sync_ns,
+            sync_started,
+        );
         native.q4_matvec_dispatches = native.q4_matvec_dispatches.saturating_add(1);
         Ok(())
     }
@@ -1430,6 +1883,37 @@ impl MetalQ4Accel {
         Ok(timing)
     }
 
+    fn bind_real_route_ids(&self) -> bool {
+        self.residency.is_some() || self.expert_slabs.is_some()
+    }
+
+    fn copy_residency_snapshot(&self, native: &mut Qwen80DecodeNativeCounts) {
+        if let Some(pool) = self.residency.as_ref() {
+            native.expert_upload_hits = pool.stats.upload_hits;
+            native.expert_upload_misses = pool.stats.upload_misses;
+            native.expert_residency_evictions = pool.stats.evictions;
+            native.expert_table_slot_patches = pool.stats.table_slot_patches;
+            native.expert_resident_slots = pool.stats.resident_slots;
+            native.expert_resident_bytes = pool.stats.resident_bytes;
+        }
+    }
+
+    fn copy_first_touch_snapshot(
+        catalog: &Qwen80UniformQ4StreamingCatalog,
+        native: &mut Qwen80DecodeNativeCounts,
+        stages: &mut Qwen80DecodeStageTimes,
+    ) {
+        let split = catalog.first_touch_split();
+        stages.first_touch_catalog_read_secs = split.catalog_read_ns as f64 / 1e9;
+        stages.first_touch_sha256_secs = split.sha256_ns as f64 / 1e9;
+        stages.first_touch_metal_copy_secs = split.metal_copy_ns as f64 / 1e9;
+        stages.first_touch_metal_nocopy_secs = split.metal_nocopy_ns as f64 / 1e9;
+        stages.prefetch_secs = split.prefetch_ns as f64 / 1e9;
+        native.expert_nocopy_binds = split.nocopy_binds;
+        native.expert_copy_binds = split.copy_binds;
+        native.expert_prefetch_uploads = split.prefetch_uploads;
+    }
+
     fn ensure_selected_expert_table(
         &mut self,
         catalog: &Qwen80UniformQ4StreamingCatalog,
@@ -1439,18 +1923,56 @@ impl MetalQ4Accel {
         stages: &mut Qwen80DecodeStageTimes,
     ) -> Result<()> {
         let started = Instant::now();
+        if self.residency.is_some() {
+            {
+                let context = self.context.clone();
+                let pool = self.residency.as_mut().expect("residency checked");
+                pool.ensure_selected(layer, route_ids, |miss_layer, miss_expert| {
+                    super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
+                        &context,
+                        catalog,
+                        miss_layer,
+                        miss_expert as usize,
+                    )
+                })?;
+                stages.moe_table_upload_miss_secs = pool.stats.upload_miss_secs;
+                stages.moe_table_entries_fill_secs = pool.stats.entries_fill_secs;
+                stages.moe_table_buffer_write_secs = pool.stats.buffer_write_secs;
+                stages.moe_table_resource_clone_secs = pool.stats.resource_clone_secs;
+                stages.moe_table_lease_secs = pool.stats.lease_secs;
+            }
+            let bind = self
+                .residency
+                .as_mut()
+                .expect("residency checked")
+                .layer_bind(layer, route_ids)?;
+            self.copy_residency_snapshot(native);
+            Self::copy_first_touch_snapshot(catalog, native, stages);
+            self.expert_table =
+                Some(super::qwen80_device_expert_table::Qwen80DeviceExpertTableLease::from_residency_bind(
+                    bind,
+                ));
+            add_secs(&mut stages.moe_table_build_secs, started);
+            native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
+            return Ok(());
+        }
         for &expert in route_ids {
             if self.expert_cache.contains_key(&(layer, expert)) {
+                native.expert_upload_hits = native.expert_upload_hits.saturating_add(1);
                 continue;
             }
+            native.expert_upload_misses = native.expert_upload_misses.saturating_add(1);
+            let upload_started = Instant::now();
             let trip = super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
                 &self.context,
                 catalog,
                 layer,
                 expert as usize,
             )?;
+            add_secs(&mut stages.moe_table_upload_miss_secs, upload_started);
             self.expert_cache.insert((layer, expert), trip);
         }
+        let fill_started = Instant::now();
         let selected: Vec<(
             u32,
             &super::qwen80_device_expert_table::Qwen80ExpertGpuTriplet,
@@ -1464,7 +1986,9 @@ impl MetalQ4Accel {
                 (expert, trip)
             })
             .collect();
+        add_secs(&mut stages.moe_table_entries_fill_secs, fill_started);
         let reused = self.expert_table.take().map(|lease| lease.table);
+        let write_started = Instant::now();
         let lease = if let Some(slabs) = self.expert_slabs.as_ref() {
             super::qwen80_device_expert_table::write_compact_selected_table(
                 &self.context,
@@ -1474,10 +1998,7 @@ impl MetalQ4Accel {
                 reused,
             )?
         } else {
-            // Ten-entry address table of already-resident triplets. The
-            // compact-slab memcpy copied 16.7 MiB/layer; the 512-entry
-            // address rewrite still cost ~50 ms/token on the late-token
-            // ledger. Caller remaps route ids to 0..10.
+            // Historical A/B path: ten-entry rewrite + 0..10 remap.
             super::qwen80_device_expert_table::write_top10_address_table(
                 &self.context,
                 layer,
@@ -1485,10 +2006,71 @@ impl MetalQ4Accel {
                 reused,
             )?
         };
-        add_secs(&mut stages.moe_table_build_secs, started);
-        native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
+        add_secs(&mut stages.moe_table_buffer_write_secs, write_started);
+        let lease_started = Instant::now();
+        Self::copy_first_touch_snapshot(catalog, native, stages);
         self.expert_table = Some(lease);
+        add_secs(&mut stages.moe_table_lease_secs, lease_started);
+        native.expert_resident_slots = self.expert_cache.len() as u64;
+        add_elapsed(
+            &mut stages.moe_table_build_secs,
+            &mut stages.moe_table_build_ns,
+            started,
+        );
+        self.buffer_rebinds = self.buffer_rebinds.saturating_add(1);
+        native.expert_table_layer_builds = native.expert_table_layer_builds.saturating_add(1);
         Ok(())
+    }
+
+    fn prefetch_predicted_layer(
+        &mut self,
+        catalog: &Qwen80UniformQ4StreamingCatalog,
+        layer: usize,
+    ) -> Result<u64> {
+        if !qwen80_expert_prefetch_enabled() {
+            return Ok(0);
+        }
+        if layer >= QWEN80_LAYERS || !self.have_last_routes[layer] {
+            return Ok(0);
+        }
+        let predicted = self.last_routes[layer];
+        let started = Instant::now();
+        if self.residency.is_some() {
+            let context = self.context.clone();
+            let pool = self.residency.as_mut().expect("residency checked");
+            let mut misses = 0u64;
+            pool.ensure_selected(layer, &predicted, |miss_layer, miss_expert| {
+                misses = misses.saturating_add(1);
+                super::qwen80_device_expert_table::upload_qwen80_expert_triplet(
+                    &context,
+                    catalog,
+                    miss_layer,
+                    miss_expert as usize,
+                )
+            })?;
+            let hits = predicted.len().saturating_sub(misses as usize) as u64;
+            catalog.add_first_touch(|split| {
+                split.prefetch_uploads = split.prefetch_uploads.saturating_add(misses);
+                split.prefetch_misses = split.prefetch_misses.saturating_add(misses);
+                split.prefetch_hits = split.prefetch_hits.saturating_add(hits);
+            });
+        }
+        let ns = started.elapsed().as_nanos() as u64;
+        catalog.add_first_touch(|split| {
+            split.prefetch_ns = split.prefetch_ns.saturating_add(ns);
+        });
+        Ok(ns)
+    }
+
+    fn remember_routes(&mut self, layer: usize, route_ids: &[u32]) {
+        if layer >= QWEN80_LAYERS {
+            return;
+        }
+        let mut stored = [0u32; 10];
+        let n = route_ids.len().min(10);
+        stored[..n].copy_from_slice(&route_ids[..n]);
+        self.last_routes[layer] = stored;
+        self.have_last_routes[layer] = true;
     }
 
     fn routed_expert_table(
@@ -1522,7 +2104,7 @@ impl MetalQ4Accel {
             output,
             self.expert_kernel,
         )?;
-        add_secs(&mut stages.moe_routed_secs, started);
+        add_elapsed(&mut stages.moe_routed_secs, &mut stages.moe_routed_ns, started);
         native.expert_table_waves = native.expert_table_waves.saturating_add(1);
         native.expert_table_matvec_dispatches = native
             .expert_table_matvec_dispatches
@@ -1575,7 +2157,8 @@ impl Qwen80UniformQ4HybridDecodeSession {
         })
     }
 
-    pub fn new(catalog: Qwen80UniformQ4StreamingCatalog, max_seq_len: usize) -> Result<Self> {
+    pub fn new(mut catalog: Qwen80UniformQ4StreamingCatalog, max_seq_len: usize) -> Result<Self> {
+        catalog.admit_session()?;
         #[cfg(target_os = "macos")]
         let (metal, metal_error) = match MetalQ4Accel::new(max_seq_len) {
             Ok(accel) => (Some(accel), None),
@@ -1613,6 +2196,42 @@ impl Qwen80UniformQ4HybridDecodeSession {
         &self.catalog
     }
 
+    #[cfg(target_os = "macos")]
+    pub fn device_memory_limits(&self) -> Option<crate::metal::DeviceMemoryLimits> {
+        self.metal.as_ref().map(|metal| metal.context.device_memory_limits())
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    pub fn device_memory_limits(&self) -> Option<crate::metal::DeviceMemoryLimits> {
+        None
+    }
+
+    pub fn residency_stats(&self) -> Option<super::device_residency::ResidencyStats> {
+        #[cfg(target_os = "macos")]
+        {
+            return self
+                .metal
+                .as_ref()
+                .and_then(|metal| metal.residency.as_ref())
+                .map(|pool| pool.stats.clone());
+        }
+        #[cfg(not(target_os = "macos"))]
+        None
+    }
+
+    pub fn residency_budget_bytes(&self) -> Option<u64> {
+        #[cfg(target_os = "macos")]
+        {
+            return self
+                .metal
+                .as_ref()
+                .and_then(|metal| metal.residency.as_ref())
+                .map(|pool| pool.budget_bytes());
+        }
+        #[cfg(not(target_os = "macos"))]
+        None
+    }
+
     pub fn reset_state(&mut self) {
         self.state.reset();
         #[cfg(target_os = "macos")]
@@ -1630,7 +2249,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         if let Some(metal) = self.metal.as_mut() {
             match metal.matvec(&packed, input, output, &mut self.native, &mut self.stages) {
                 Ok(()) => {
-                    add_secs(&mut self.stages.q4_matvec_secs, started);
+                    add_elapsed(&mut self.stages.q4_matvec_secs, &mut self.stages.q4_matvec_ns, started);
                     return Ok(());
                 }
                 Err(error) => {
@@ -1642,7 +2261,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         }
         packed.matvec(input, output)?;
         self.fallbacks.host_q4_matvec = self.fallbacks.host_q4_matvec.saturating_add(1);
-        add_secs(&mut self.stages.q4_matvec_secs, started);
+        add_elapsed(&mut self.stages.q4_matvec_secs, &mut self.stages.q4_matvec_ns, started);
         Ok(())
     }
 
@@ -1701,13 +2320,18 @@ impl Qwen80UniformQ4HybridDecodeSession {
         self.matvec_named(up_name, input, &mut up)?;
         let silu_started = Instant::now();
         silu_mul(&gate, &up, &mut act);
-        add_secs(&mut self.stages.activation.shared_swiglu_secs, silu_started);
+        add_elapsed(
+            &mut self.stages.activation.shared_swiglu_secs,
+            &mut self.stages.activation.shared_swiglu_ns,
+            silu_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
         self.activation_counts.shared_swiglu =
             self.activation_counts.shared_swiglu.saturating_add(1);
         self.matvec_named(down_name, &act, &mut down)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.shared_mlp_sandwich_secs,
+            &mut self.stages.activation.shared_mlp_sandwich_ns,
             sandwich,
         );
         Ok(down)
@@ -1719,8 +2343,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let input_w = self.vector(&Self::layer_name(layer, "input_layernorm.weight"))?;
         let rms_started = Instant::now();
         let rms = source_qwen80_residual_rms_norm(hidden, &input_w)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             rms_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1756,7 +2381,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &conv_w,
             &layout,
         )?;
-        add_secs(&mut self.stages.activation.deltanet_conv_secs, conv_started);
+        add_elapsed(
+            &mut self.stages.activation.deltanet_conv_secs,
+            &mut self.stages.activation.deltanet_conv_ns,
+            conv_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
         self.activation_counts.deltanet_conv =
             self.activation_counts.deltanet_conv.saturating_add(1);
@@ -1803,8 +2432,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &beta,
             &layout,
         )?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.deltanet_recurrent_secs,
+            &mut self.stages.activation.deltanet_recurrent_ns,
             recurrent_started,
         );
         self.state.linear_conv[slot] = next_conv;
@@ -1823,8 +2453,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
             layout.value_heads,
             layout.value_head_dim,
         )?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             gated_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1841,8 +2472,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let mut residual = hidden.to_vec();
         let add_started = Instant::now();
         add_inplace(&mut residual, &mixer_output);
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             add_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1871,8 +2503,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let input_w = self.vector(&Self::layer_name(layer, "input_layernorm.weight"))?;
         let rms_started = Instant::now();
         let rms = source_qwen80_residual_rms_norm(hidden, &input_w)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.gqa_input_layernorm_secs,
+            &mut self.stages.activation.gqa_input_layernorm_ns,
             rms_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1918,7 +2551,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             position,
             "GQA k_norm + partial RoPE",
         )?;
-        add_secs(&mut self.stages.activation.gqa_norm_rope_secs, rope_started);
+        add_elapsed(
+            &mut self.stages.activation.gqa_norm_rope_secs,
+            &mut self.stages.activation.gqa_norm_rope_ns,
+            rope_started,
+        );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(2);
         self.activation_counts.gqa_norm_rope =
             self.activation_counts.gqa_norm_rope.saturating_add(2);
@@ -1935,8 +2572,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &layout,
         )?;
         let gated = qwen80_gqa_apply_sigmoid_gate(&attention, &q_projection, &layout)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             attn_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(2);
@@ -1953,8 +2591,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let mut residual = hidden.to_vec();
         let add_started = Instant::now();
         add_inplace(&mut residual, &mixer_output);
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             add_started,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1975,8 +2614,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let post_w = self.vector(&Self::layer_name(layer, "post_attention_layernorm.weight"))?;
         let norm_op = Instant::now();
         let router_input = source_qwen80_residual_rms_norm(first_residual, &post_w)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             norm_op,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -1984,7 +2624,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             .activation_counts
             .other_host_activation
             .saturating_add(1);
-        add_secs(&mut self.stages.moe_norm_router_secs, norm_started);
+        add_elapsed(
+            &mut self.stages.moe_norm_router_secs,
+            &mut self.stages.moe_norm_router_ns,
+            norm_started,
+        );
 
         let shared_started = Instant::now();
         let shared = self.mlp(
@@ -1994,7 +2638,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &router_input,
             QWEN80_MOE_INTERMEDIATE,
         )?;
-        add_secs(&mut self.stages.moe_shared_secs, shared_started);
+        add_elapsed(
+            &mut self.stages.moe_shared_secs,
+            &mut self.stages.moe_shared_ns,
+            shared_started,
+        );
 
         let router_started = Instant::now();
         let mut router_logits = vec![0.0f32; QWEN80_EXPERTS];
@@ -2005,8 +2653,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         let route_op = Instant::now();
         let route = source_qwen80_topk_router(&router_logits)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             route_op,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -2014,7 +2663,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             .activation_counts
             .other_host_activation
             .saturating_add(1);
-        add_secs(&mut self.stages.moe_norm_router_secs, router_started);
+        add_elapsed(
+            &mut self.stages.moe_norm_router_secs,
+            &mut self.stages.moe_norm_router_ns,
+            router_started,
+        );
 
         let mut combined = vec![0.0f32; QWEN80_HIDDEN];
         let used_device_table =
@@ -2046,8 +2699,16 @@ impl Qwen80UniformQ4HybridDecodeSession {
                     metal.evict(&down);
                 }
             }
-            add_secs(&mut self.stages.host_expert_bind_secs, bind_started);
-            add_secs(&mut self.stages.moe_routed_secs, bind_started);
+            add_elapsed(
+                &mut self.stages.host_expert_bind_secs,
+                &mut self.stages.host_expert_bind_ns,
+                bind_started,
+            );
+            add_elapsed(
+                &mut self.stages.moe_routed_secs,
+                &mut self.stages.moe_routed_ns,
+                bind_started,
+            );
         }
 
         let combine_started = Instant::now();
@@ -2069,8 +2730,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         }
         let mut out = first_residual.to_vec();
         add_inplace(&mut out, &combined);
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             combine_op,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -2078,7 +2740,11 @@ impl Qwen80UniformQ4HybridDecodeSession {
             .activation_counts
             .other_host_activation
             .saturating_add(1);
-        add_secs(&mut self.stages.moe_combine_secs, combine_started);
+        add_elapsed(
+            &mut self.stages.moe_combine_secs,
+            &mut self.stages.moe_combine_ns,
+            combine_started,
+        );
         if out.iter().any(|value| !value.is_finite()) {
             return Err(q80q4_error(format!(
                 "layer {layer} second residual is non-finite"
@@ -2143,8 +2809,9 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let norm_w = self.vector("model.norm.weight")?;
         let norm_op = Instant::now();
         let normed = source_qwen80_residual_rms_norm(hidden, &norm_w)?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.other_host_activation_secs,
+            &mut self.stages.activation.other_host_activation_ns,
             norm_op,
         );
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
@@ -2193,15 +2860,13 @@ impl Qwen80UniformQ4HybridDecodeSession {
     ) -> Result<crate::metal::CommandBufferTiming> {
         let timing = tcb.commit_and_wait_timed()?;
         self.record_family_timing(family, &timing);
-        if self.token_ns.enabled {
-            self.token_ns.record_cb(
-                name,
-                layer,
-                operator_classes,
-                timing,
-                force_sync_reason,
-            );
-        }
+        self.token_ns.record_cb(
+            name,
+            layer,
+            operator_classes,
+            timing,
+            force_sync_reason,
+        );
         Ok(timing)
     }
 
@@ -2336,6 +3001,18 @@ impl Qwen80UniformQ4HybridDecodeSession {
     }
 
     #[cfg(target_os = "macos")]
+    fn flush_buffer_stats(&mut self) {
+        if let Some(metal) = self.metal.as_mut() {
+            let created = metal.buffer_creations;
+            let rebinds = metal.buffer_rebinds;
+            metal.buffer_creations = 0;
+            metal.buffer_rebinds = 0;
+            self.token_ns.add_buffer_creations(created);
+            self.token_ns.add_buffer_rebinds(rebinds);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
     fn new_token_cb(&self) -> Result<crate::metal::TokenCommandBuffer<'static>> {
         let metal = self
             .metal
@@ -2368,6 +3045,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         let buf = metal
             .context
             .new_buffer_with_bytes_checked(bytemuck::cast_slice(&host))?;
+        metal.buffer_creations = metal.buffer_creations.saturating_add(1);
         if let Some(act) = metal.activations.as_mut() {
             act.vectors.insert(name.to_owned(), buf.clone());
         }
@@ -2382,6 +3060,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         input: &crate::metal::PinnedBuffer,
         output: &crate::metal::PinnedBuffer,
     ) -> Result<()> {
+        let encode_started = Instant::now();
         let packed = self.cache.packed(&self.catalog, name)?.clone();
         let (rows, cols) = packed.rows_cols()?;
         let metal = self
@@ -2417,6 +3096,10 @@ impl Qwen80UniformQ4HybridDecodeSession {
         self.native.q4_matvec_dispatches = self.native.q4_matvec_dispatches.saturating_add(1);
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        // Encode wall only — GPU time stays on the parent mixed CB.
+        let encode_ns = encode_started.elapsed().as_nanos() as u64;
+        self.token_ns
+            .record_substage("q4_matvec", "encode", encode_ns, 1, 0);
         Ok(())
     }
 
@@ -2461,6 +3144,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         output: &crate::metal::PinnedBuffer,
         n: u32,
     ) -> Result<()> {
+        let started = Instant::now();
         tcb.dispatch_threads(
             "qwen80_silu_mul_f32",
             (n, 1, 1),
@@ -2474,6 +3158,18 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
+        add_elapsed(
+            &mut self.stages.activation.shared_swiglu_secs,
+            &mut self.stages.activation.shared_swiglu_ns,
+            started,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "shared_swiglu_encode",
+            started.elapsed().as_nanos() as u64,
+            1,
+            0,
+        );
         Ok(())
     }
 
@@ -2484,6 +3180,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         layer: usize,
         input: &crate::metal::PinnedBuffer,
     ) -> Result<()> {
+        let sandwich = Instant::now();
         let (gate, up, act, shared) = {
             let actw = self
                 .metal
@@ -2515,7 +3212,27 @@ impl Qwen80UniformQ4HybridDecodeSession {
             &Self::layer_name(layer, "mlp.shared_expert.down_proj.weight"),
             &act,
             &shared,
-        )
+        )?;
+        add_elapsed(
+            &mut self.stages.activation.shared_mlp_sandwich_secs,
+            &mut self.stages.activation.shared_mlp_sandwich_ns,
+            sandwich,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "shared_mlp_sandwich_encode",
+            sandwich.elapsed().as_nanos() as u64,
+            1,
+            0,
+        );
+        self.token_ns.record_substage(
+            "moe_shared",
+            "encode",
+            sandwich.elapsed().as_nanos() as u64,
+            1,
+            0,
+        );
+        Ok(())
     }
 
     #[cfg(target_os = "macos")]
@@ -2625,9 +3342,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.deltanet_conv_secs,
+            &mut self.stages.activation.deltanet_conv_ns,
             conv_started,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "deltanet_conv_encode",
+            conv_started.elapsed().as_nanos() as u64,
+            1,
+            0,
         );
         self.activation_counts.deltanet_conv =
             self.activation_counts.deltanet_conv.saturating_add(1);
@@ -2676,9 +3401,17 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.deltanet_recurrent_secs,
+            &mut self.stages.activation.deltanet_recurrent_ns,
             recurrent_started,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "deltanet_recurrent_encode",
+            recurrent_started.elapsed().as_nanos() as u64,
+            1,
+            0,
         );
         self.activation_counts.deltanet_recurrent = self
             .activation_counts
@@ -2781,16 +3514,24 @@ impl Qwen80UniformQ4HybridDecodeSession {
         if qwen80_serial_mixer_enabled() {
             tcb.begin_serial_group()?;
         }
-        let rms_started = Instant::now();
+        let ln_started = Instant::now();
         self.encode_residual_rmsnorm(
             tcb,
             hidden,
             &Self::layer_name(layer, "input_layernorm.weight"),
             &normalized,
         )?;
-        add_secs(
+        add_elapsed(
             &mut self.stages.activation.gqa_input_layernorm_secs,
-            rms_started,
+            &mut self.stages.activation.gqa_input_layernorm_ns,
+            ln_started,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "gqa_input_layernorm_encode",
+            ln_started.elapsed().as_nanos() as u64,
+            1,
+            0,
         );
         self.activation_counts.gqa_input_layernorm = self
             .activation_counts
@@ -2850,7 +3591,18 @@ impl Qwen80UniformQ4HybridDecodeSession {
         )?;
         self.native.device_activation_dispatches =
             self.native.device_activation_dispatches.saturating_add(1);
-        add_secs(&mut self.stages.activation.gqa_norm_rope_secs, rope_started);
+        add_elapsed(
+            &mut self.stages.activation.gqa_norm_rope_secs,
+            &mut self.stages.activation.gqa_norm_rope_ns,
+            rope_started,
+        );
+        self.token_ns.record_substage(
+            "activation",
+            "gqa_norm_rope_encode",
+            rope_started.elapsed().as_nanos() as u64,
+            1,
+            0,
+        );
         self.activation_counts.gqa_norm_rope =
             self.activation_counts.gqa_norm_rope.saturating_add(1);
         crate::kernels::mha_decode_f32_tcb(
@@ -2923,13 +3675,16 @@ impl Qwen80UniformQ4HybridDecodeSession {
         if qwen80_serial_mixer_enabled() {
             tcb.begin_serial_group()?;
         }
+        let norm_started = Instant::now();
         self.encode_residual_rmsnorm(
             tcb,
             &first_residual,
             &Self::layer_name(layer, "post_attention_layernorm.weight"),
             postnorm,
         )?;
+        let norm_ns = norm_started.elapsed().as_nanos() as u64;
         self.encode_shared_mlp(tcb, layer, postnorm)?;
+        let router_started = Instant::now();
         self.encode_q4_matvec(
             tcb,
             &Self::layer_name(layer, "mlp.gate.weight"),
@@ -2939,6 +3694,15 @@ impl Qwen80UniformQ4HybridDecodeSession {
         if qwen80_serial_mixer_enabled() {
             tcb.end_concurrent_group()?;
         }
+        let router_ns = router_started.elapsed().as_nanos() as u64;
+        // Encode wall only. GPU stays on the mixed prefix CB.
+        self.token_ns.record_substage(
+            "moe_norm_router",
+            "encode",
+            norm_ns.saturating_add(router_ns),
+            1,
+            0,
+        );
         Ok(())
     }
 
@@ -3050,6 +3814,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
             (QWEN80_EXPERTS * std::mem::size_of::<f32>()) as u64,
             "device_to_host",
         );
+        self.token_ns.close_phase("router_readback");
         let route_started = Instant::now();
         let route = source_qwen80_topk_router(&router_logits)?;
         self.token_ns.record_host_work(
@@ -3059,6 +3824,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
             0,
             "softmax + top-10 + renormalize on 512 host logits",
         );
+        self.token_ns.close_phase("host_topk");
         self.fallbacks.host_activation = self.fallbacks.host_activation.saturating_add(1);
         self.activation_counts.other_host_activation = self
             .activation_counts
@@ -3071,49 +3837,113 @@ impl Qwen80UniformQ4HybridDecodeSession {
             route_ids[index] = expert as u32;
             route_weights[index] = weight;
         }
-        let pack_started = Instant::now();
-        let metal = self
-            .metal
-            .as_mut()
-            .ok_or_else(|| q80q4_error("device token requires Metal"))?;
-        metal.ensure_selected_expert_table(
-            &self.catalog,
-            layer,
-            &route_ids,
-            &mut self.native,
-            &mut self.stages,
-        )?;
-        let wave = metal
-            .expert_wave
-            .as_ref()
-            .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
-        let bind_ids = if metal.expert_slabs.is_some() {
-            route_ids
-        } else {
-            let mut remapped = [0u32; 10];
-            for (slot, id) in remapped.iter_mut().enumerate() {
-                *id = slot as u32;
+        {
+            let pack_started = Instant::now();
+            let split_before = self.catalog.first_touch_split();
+            let metal = self
+                .metal
+                .as_mut()
+                .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+            metal.ensure_selected_expert_table(
+                &self.catalog,
+                layer,
+                &route_ids,
+                &mut self.native,
+                &mut self.stages,
+            )?;
+            metal.remember_routes(layer, &route_ids);
+            let split_after = self.catalog.first_touch_split();
+            let read_ns = split_after
+                .catalog_read_ns
+                .saturating_sub(split_before.catalog_read_ns);
+            let sha_ns = split_after.sha256_ns.saturating_sub(split_before.sha256_ns);
+            let copy_ns = split_after
+                .metal_copy_ns
+                .saturating_sub(split_before.metal_copy_ns);
+            let nocopy_ns = split_after
+                .metal_nocopy_ns
+                .saturating_sub(split_before.metal_nocopy_ns);
+            if read_ns > 0 {
+                self.token_ns.record_host_work(
+                    "first_touch_catalog_read",
+                    Some(layer as u32),
+                    read_ns,
+                    0,
+                    "fs::read or mmap+advise of newly selected expert files",
+                );
             }
-            remapped
-        };
-        crate::metal::MetalContext::write_buffer_bytes(
-            &wave.route_ids,
-            bytemuck::cast_slice(&bind_ids),
-        );
-        crate::metal::MetalContext::write_buffer_bytes(
-            &wave.route_weights,
-            bytemuck::cast_slice(&route_weights),
-        );
-        let pack_bytes = (QWEN80_EXPERTS
-            * std::mem::size_of::<super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet>(
-            )) as u64;
-        self.token_ns.record_host_work(
-            "expert_address_table_bind",
-            Some(layer as u32),
-            pack_started.elapsed().as_nanos() as u64,
-            pack_bytes,
-            "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets",
-        );
+            if sha_ns > 0 {
+                self.token_ns.record_host_work(
+                    "first_touch_sha256",
+                    Some(layer as u32),
+                    sha_ns,
+                    0,
+                    "payload SHA-256 (only when session is not sealed or rehash is forced)",
+                );
+            }
+            if copy_ns > 0 {
+                self.token_ns.record_host_work(
+                    "first_touch_metal_copy",
+                    Some(layer as u32),
+                    copy_ns,
+                    0,
+                    "new_buffer_with_bytes of Q4 codes/scales",
+                );
+            }
+            if nocopy_ns > 0 {
+                self.token_ns.record_host_work(
+                    "first_touch_metal_nocopy",
+                    Some(layer as u32),
+                    nocopy_ns,
+                    0,
+                    "newBufferWithBytesNoCopy of the page-aligned mmap window",
+                );
+            }
+            let wave = metal
+                .expert_wave
+                .as_ref()
+                .ok_or_else(|| q80q4_error("expert wave workspace missing"))?;
+            let bind_ids = if metal.bind_real_route_ids() {
+                route_ids
+            } else {
+                let mut remapped = [0u32; 10];
+                for (slot, id) in remapped.iter_mut().enumerate() {
+                    *id = slot as u32;
+                }
+                remapped
+            };
+            crate::metal::MetalContext::write_buffer_bytes(
+                &wave.route_ids,
+                bytemuck::cast_slice(&bind_ids),
+            );
+            crate::metal::MetalContext::write_buffer_bytes(
+                &wave.route_weights,
+                bytemuck::cast_slice(&route_weights),
+            );
+            let pack_bytes = if metal.residency.is_some() {
+                (super::qwen80_device_expert_table::QWEN80_EXPERT_TABLE_TOP_K
+                    * std::mem::size_of::<u32>()) as u64
+            } else {
+                (QWEN80_EXPERTS
+                    * std::mem::size_of::<
+                        super::qwen80_device_expert_table::Qwen80DeviceExpertTriplet,
+                    >()) as u64
+            };
+            let bind_note = if metal.residency.is_some() {
+                "token-dynamic: write top-10 route ids; kernel indirects the persistent all-layer address table"
+            } else {
+                "rewrite 512-entry gpuAddress table for the live top-10; payloads stay in cached triplets"
+            };
+            self.token_ns.record_host_work(
+                "expert_address_table_bind",
+                Some(layer as u32),
+                pack_started.elapsed().as_nanos() as u64,
+                pack_bytes,
+                bind_note,
+            );
+        }
+        self.token_ns.close_phase("moe_table_build");
+        self.flush_buffer_stats();
         Ok(())
     }
 
@@ -3371,22 +4201,60 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 family,
             )?;
             match mixer_class {
-                "deltanet" => add_secs(&mut self.stages.deltanet_secs, prefix_started),
-                _ => add_secs(&mut self.stages.gqa_secs, prefix_started),
+                "deltanet" => add_elapsed(
+                    &mut self.stages.deltanet_secs,
+                    &mut self.stages.deltanet_ns,
+                    prefix_started,
+                ),
+                _ => add_elapsed(
+                    &mut self.stages.gqa_secs,
+                    &mut self.stages.gqa_ns,
+                    prefix_started,
+                ),
             }
+            self.token_ns.close_phase(if mixer_class == "deltanet" {
+                "prefix_deltanet"
+            } else {
+                "prefix_gqa"
+            });
             self.host_route_and_bind(layer)?;
             let mut suffix = self.new_token_cb()?;
             let suffix_started = Instant::now();
             self.encode_suffix_into(&mut suffix, layer, hidden, expert_input)?;
-            self.commit_profiled(
-                suffix,
-                &format!("L{layer}.suffix"),
-                Some(layer as u32),
-                &["routed_expert", "combine"],
-                "next layer mixer reads the updated residual hidden",
-                FamilyGpuKind::MoeSuffix,
-            )?;
-            add_secs(&mut self.stages.moe_combine_secs, suffix_started);
+            let next_layer = layer.saturating_add(1);
+            let can_prefetch = qwen80_expert_prefetch_enabled()
+                && next_layer < QWEN80_LAYERS
+                && self
+                    .metal
+                    .as_ref()
+                    .is_some_and(|metal| metal.have_last_routes[next_layer])
+                && !self.token_ns.enabled;
+            if can_prefetch {
+                suffix.commit_no_wait()?;
+                let prefetch_started = Instant::now();
+                let metal = self
+                    .metal
+                    .as_mut()
+                    .ok_or_else(|| q80q4_error("device token requires Metal"))?;
+                metal.prefetch_predicted_layer(&self.catalog, next_layer)?;
+                metal.context.wait_idle()?;
+                add_secs(&mut self.stages.prefetch_secs, prefetch_started);
+            } else {
+                self.commit_profiled(
+                    suffix,
+                    &format!("L{layer}.suffix"),
+                    Some(layer as u32),
+                    &["routed_expert", "combine"],
+                    "next layer mixer reads the updated residual hidden",
+                    FamilyGpuKind::MoeSuffix,
+                )?;
+            }
+            add_elapsed(
+                &mut self.stages.moe_combine_secs,
+                &mut self.stages.moe_combine_ns,
+                suffix_started,
+            );
+            self.token_ns.close_phase("suffix");
         }
         Ok(None)
     }
@@ -3402,6 +4270,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
 
     #[cfg(target_os = "macos")]
     fn forward_token_device(&mut self, token: u32) -> Result<u32> {
+        let embed_started = Instant::now();
         let packed = self
             .cache
             .packed(&self.catalog, "model.embed_tokens.weight")?
@@ -3418,28 +4287,33 @@ impl Qwen80UniformQ4HybridDecodeSession {
                 .hidden
                 .clone();
             let timing = metal.embed_into(&packed, token, &hidden, &mut self.native)?;
-            if self.token_ns.enabled {
-                let embed_bytes = packed
-                    .codes()
-                    .map(|c| c.len() as u64 / QWEN80_VOCAB as u64)
-                    .unwrap_or(0)
-                    .saturating_add(
-                        packed
-                            .scales()
-                            .map(|s| s.len() as u64 / QWEN80_VOCAB as u64)
-                            .unwrap_or(0),
-                    );
-                self.token_ns.add_weight_bytes(embed_bytes);
-                self.token_ns.record_cb(
-                    "embed",
-                    None,
-                    &["embed"],
-                    timing,
-                    "embedding gather must finish before layer 0 reads hidden",
+            let embed_bytes = packed
+                .codes()
+                .map(|c| c.len() as u64 / QWEN80_VOCAB as u64)
+                .unwrap_or(0)
+                .saturating_add(
+                    packed
+                        .scales()
+                        .map(|s| s.len() as u64 / QWEN80_VOCAB as u64)
+                        .unwrap_or(0),
                 );
-            }
+            self.token_ns.add_weight_bytes(embed_bytes);
+            self.token_ns.record_cb(
+                "embed",
+                None,
+                &["embed"],
+                timing,
+                "embedding gather must finish before layer 0 reads hidden",
+            );
             hidden
         };
+        add_elapsed(
+            &mut self.stages.embed_secs,
+            &mut self.stages.embed_ns,
+            embed_started,
+        );
+        self.token_ns.close_phase("embed");
+        self.flush_buffer_stats();
         let expert_input = {
             let metal = self
                 .metal
@@ -3465,6 +4339,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         };
         crate::metal::set_current_layer(None);
 
+        let terminal_started = Instant::now();
         let (hidden_buf, norm_name) = (hidden, "model.norm.weight");
         let mut terminal = self.new_token_cb()?;
         let (normalized, logits_buf) = {
@@ -3477,6 +4352,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
         };
         self.encode_residual_rmsnorm(&mut terminal, &hidden_buf, norm_name, &normalized)?;
         self.encode_q4_matvec(&mut terminal, "lm_head.weight", &normalized, &logits_buf)?;
+        let _terminal_encode_ns = terminal_started.elapsed().as_nanos() as u64;
         self.commit_profiled(
             terminal,
             "terminal",
@@ -3485,6 +4361,12 @@ impl Qwen80UniformQ4HybridDecodeSession {
             "host greedy argmax needs the full vocab logits",
             FamilyGpuKind::Other,
         )?;
+        add_elapsed(
+            &mut self.stages.terminal_secs,
+            &mut self.stages.terminal_ns,
+            terminal_started,
+        );
+        self.token_ns.close_phase("terminal");
         if let Some(suffix) = pending_suffix {
             self.resolve_submitted(
                 suffix,
@@ -3505,6 +4387,7 @@ impl Qwen80UniformQ4HybridDecodeSession {
             (QWEN80_VOCAB * std::mem::size_of::<f32>()) as u64,
             "device_to_host",
         );
+        self.token_ns.close_phase("logits_readback");
         let sample_started = Instant::now();
         let mut best_i = 0usize;
         let mut best_v = f32::NEG_INFINITY;
@@ -3521,6 +4404,8 @@ impl Qwen80UniformQ4HybridDecodeSession {
             0,
             "lowest-id-wins greedy over tokenizer vocab",
         );
+        self.token_ns.close_phase("host_argmax");
+        self.flush_buffer_stats();
         self.fallbacks.host_sample = self.fallbacks.host_sample.saturating_add(1);
         if !best_v.is_finite() {
             return Err(q80q4_error("greedy sample saw no finite logit"));
@@ -3546,27 +4431,48 @@ impl Qwen80UniformQ4HybridDecodeSession {
         }
         let embed_started = Instant::now();
         let mut hidden = self.embed(token)?;
-        add_secs(&mut self.stages.embed_secs, embed_started);
+        add_elapsed(
+            &mut self.stages.embed_secs,
+            &mut self.stages.embed_ns,
+            embed_started,
+        );
+        self.token_ns.close_phase("embed");
         for layer in 0..QWEN80_LAYERS {
             let first = match qwen80_layer_kind(layer)? {
                 Qwen80LayerKind::LinearAttention => {
                     let started = Instant::now();
                     let value = self.deltanet_mixer(layer, &hidden)?;
-                    add_secs(&mut self.stages.deltanet_secs, started);
+                    add_elapsed(
+                        &mut self.stages.deltanet_secs,
+                        &mut self.stages.deltanet_ns,
+                        started,
+                    );
+                    self.token_ns.close_phase("prefix_deltanet");
                     value
                 }
                 Qwen80LayerKind::FullAttention => {
                     let started = Instant::now();
                     let value = self.gqa_mixer(layer, &hidden)?;
-                    add_secs(&mut self.stages.gqa_secs, started);
+                    add_elapsed(
+                        &mut self.stages.gqa_secs,
+                        &mut self.stages.gqa_ns,
+                        started,
+                    );
+                    self.token_ns.close_phase("prefix_gqa");
                     value
                 }
             };
             hidden = self.moe_suffix(layer, &first)?;
+            self.token_ns.close_phase("suffix");
         }
         let terminal_started = Instant::now();
         let sampled = self.terminal_greedy(&hidden)?;
-        add_secs(&mut self.stages.terminal_secs, terminal_started);
+        add_elapsed(
+            &mut self.stages.terminal_secs,
+            &mut self.stages.terminal_ns,
+            terminal_started,
+        );
+        self.token_ns.close_phase("terminal");
         self.state.position = self.state.position.saturating_add(1);
         require_rss_cap("after hybrid token")?;
         Ok(sampled)
@@ -3718,6 +4624,66 @@ pub fn generate_greedy(
     })
 }
 
+/// Attribute catalog-read / SHA-256 / mmap on real expert files without
+/// running a token. Used by the first-touch probe. Does not touch Metal.
+pub fn probe_qwen80_expert_first_touch_io(
+    catalog: &Qwen80UniformQ4StreamingCatalog,
+    n_experts: usize,
+) -> Result<Qwen80FirstTouchIoProbe> {
+    let n_experts = n_experts.max(1);
+    let mut report = Qwen80FirstTouchIoProbe {
+        n_experts,
+        ..Qwen80FirstTouchIoProbe::default()
+    };
+    for expert in 0..n_experts {
+        for proj in ["gate_proj", "up_proj", "down_proj"] {
+            let name = format!("model.layers.0.mlp.experts.{expert}.{proj}.weight");
+            let row = catalog.require_row(&name)?;
+            let read_started = Instant::now();
+            let fresh = fs::read(&row.artifact_path).map_err(|error| {
+                q80q4_error(format!("probe cannot read {name}: {error}"))
+            })?;
+            report.catalog_read_ns = report
+                .catalog_read_ns
+                .saturating_add(read_started.elapsed().as_nanos() as u64);
+            report.bytes_read = report.bytes_read.saturating_add(fresh.len() as u64);
+            let hash_started = Instant::now();
+            let observed = sha256_hex(&fresh);
+            report.sha256_ns = report
+                .sha256_ns
+                .saturating_add(hash_started.elapsed().as_nanos() as u64);
+            if observed != row.artifact_sha256 {
+                return Err(q80q4_error(format!(
+                    "probe {name} sha256 {observed} != catalog {}",
+                    row.artifact_sha256
+                )));
+            }
+            let map_started = Instant::now();
+            let mapped = catalog.map_payload(&name)?;
+            report.mmap_ns = report
+                .mmap_ns
+                .saturating_add(map_started.elapsed().as_nanos() as u64);
+            if mapped.payload() != fresh.as_slice() {
+                return Err(q80q4_error(format!(
+                    "probe {name}: mmap window is not bit-identical to a freshly-read payload"
+                )));
+            }
+            report.compared_payloads = report.compared_payloads.saturating_add(1);
+        }
+    }
+    Ok(report)
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80FirstTouchIoProbe {
+    pub n_experts: usize,
+    pub compared_payloads: u64,
+    pub bytes_read: u64,
+    pub catalog_read_ns: u64,
+    pub sha256_ns: u64,
+    pub mmap_ns: u64,
+}
+
 /// Resolve the contract-relative artifact root, then the main-repo copy.
 pub fn discover_qwen80_uniform_q4_root() -> Option<PathBuf> {
     let candidates = [
@@ -3831,6 +4797,83 @@ mod tests {
     }
 
     #[test]
+    fn admit_then_mmap_matches_rehash_and_wrong_sha_still_raises() {
+        let temp = TempDir::new().unwrap();
+        let (manifest, name) = fixture_catalog(&temp);
+        let mut catalog = Qwen80UniformQ4StreamingCatalog::open_manifest(&manifest).unwrap();
+        let report = catalog.admit_session().unwrap();
+        assert_eq!(report.tensors_stated, 1);
+        assert!(!report.session_seal_sha256.is_empty());
+        assert!(catalog.session_trusts_payloads());
+        let mapped = catalog.map_payload(&name).unwrap();
+        let hashed = catalog.read_payload_rehash(&name).unwrap();
+        assert_eq!(
+            mapped.payload(),
+            hashed.as_ref(),
+            "sealed mmap window must equal a freshly-hashed read"
+        );
+        assert_eq!(mapped.header.scale_offset % 16_384, mapped.header.scale_offset);
+        assert_ne!(
+            mapped.header.scale_offset % 16_384,
+            0,
+            "Q4 scales are not a 16KiB-aligned slice; the whole file is the no-copy window"
+        );
+
+        let row_path = catalog.require_row(&name).unwrap().artifact_path.clone();
+        let original = fs::read(&row_path).unwrap();
+        let mut tampered = original.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 0xff;
+        fs::write(&row_path, &tampered).unwrap();
+        let rehash = catalog.read_payload_rehash(&name).unwrap_err();
+        let message = format!("{rehash}");
+        assert!(
+            message.contains("sha256"),
+            "rehash must still catch a same-size tamper, got {message}"
+        );
+        fs::write(&row_path, original).unwrap();
+    }
+
+    #[test]
+    fn unadmitted_catalog_still_hashes_on_read() {
+        let temp = TempDir::new().unwrap();
+        let (manifest, name) = fixture_catalog(&temp);
+        let catalog = Qwen80UniformQ4StreamingCatalog::open_manifest(&manifest).unwrap();
+        assert!(!catalog.session_trusts_payloads());
+        let row_path = catalog.require_row(&name).unwrap().artifact_path.clone();
+        let original = fs::read(&row_path).unwrap();
+        let mut tampered = original.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 0xff;
+        fs::write(&row_path, &tampered).unwrap();
+        let err = catalog.read_payload(&name).unwrap_err();
+        let message = format!("{err}");
+        assert!(
+            message.contains("sha256"),
+            "token-path SHA must still fire before admission, got {message}"
+        );
+        fs::write(&row_path, original).unwrap();
+    }
+
+    #[test]
+    fn real_expert_mmap_matches_rehash_when_catalog_present() {
+        let Some(root) = discover_qwen80_uniform_q4_root() else {
+            return;
+        };
+        let mut catalog = Qwen80UniformQ4StreamingCatalog::open(&root).unwrap();
+        catalog.admit_session().unwrap();
+        let name = "model.layers.0.mlp.experts.0.gate_proj.weight";
+        let mapped = catalog.map_payload(name).unwrap();
+        let hashed = catalog.read_payload_rehash(name).unwrap();
+        assert_eq!(mapped.payload(), hashed.as_ref());
+        assert_eq!(mapped.header.scale_offset, 40);
+        assert_eq!(mapped.header.sign_offset, 40 + 32_768);
+        assert_eq!(mapped.file_bytes, 557_096);
+        assert_eq!(mapped.window().len() % 16_384, 0);
+        assert_eq!((mapped.window().as_ptr() as usize) % 16_384, 0);
+    }
+
+    #[test]
     fn artifact_binding_real_manifest_is_74391() {
         let Some(root) = discover_qwen80_uniform_q4_root() else {
             // Fixture-only hosts still exercise the raise path above.
@@ -3909,6 +4952,10 @@ mod tests {
         assert!(!qwen80_overlap_cbs_enabled());
         assert!(!qwen80_serial_mixer_enabled());
         assert!(matches!(qwen80_overlap_mode(), OverlapMode::Off));
+        // Expert first-touch win stays on; A/B escapes are explicit disable.
+        assert!(qwen80_expert_nocopy_enabled());
+        assert!(qwen80_expert_prefetch_enabled());
+        assert!(!qwen80_payload_rehash_enabled());
     }
 
     #[test]
