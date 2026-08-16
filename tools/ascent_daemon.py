@@ -431,7 +431,32 @@ def one_pass() -> dict:
         report["hold"] = hold
         return report
 
-    pending = [t for t in state["targets"] if t.get("status") == "pending"]
+    # Work de-authorised by a steer must be EXCLUDED, never merely down-ranked.
+    # A relative weight cannot stop a launch when the whole queue is one model:
+    # max() still returns something, which is how the ~20 h G007 teacher-X capture
+    # relaunched itself after the Qwen-first amendment de-authorised it.
+    DEAUTHORISED = ("determined-teacher-x", "teacher_x_capture", "uniform-q4", "uniform_q4")
+
+    def deauthorised(t: dict) -> str | None:
+        blob = f"{t.get('id','')} {t.get('contract','')} {t.get('title','')}".lower()
+        for pat in DEAUTHORISED:
+            if pat in blob:
+                return pat
+        if str(t.get("obligation_status", "")).upper() == "BLOCKED":
+            return "obligation BLOCKED"
+        return None
+
+    pending = []
+    for t in state["targets"]:
+        if t.get("status") != "pending":
+            continue
+        why = deauthorised(t)
+        if why:
+            t["status"] = "deauthorised"
+            t["tier1"] = f"excluded: {why}"
+            continue
+        pending.append(t)
+    save(STATE, state)
     if not pending:
         report["launched"] = None
         report["hold"] = "queue dry - harvest supplied no new pending target"
